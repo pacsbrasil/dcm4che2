@@ -38,6 +38,12 @@
 
 package org.dcm4che2.audit.message;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.io.DicomOutputStream;
+
 /**
  * This message describes the event of a Query being issued or received.
  * The message does not record the response to the query, but merely
@@ -48,7 +54,7 @@ package org.dcm4che2.audit.message;
  * <li>General Purpose Worklist</li>
  * <li>Composite Instance Query</li>
  * </ul>
- * <p>
+  * <blockquote>
  * Notes:
  * <ol>
  * <li>The response to a query may result in one or more Instances Transferred 
@@ -60,45 +66,71 @@ package org.dcm4che2.audit.message;
  * Object ID Type Code, the Participant Object ID, and the Query fields may 
  * have values related to such non-DICOM queries.</li>
  * </ol>
+ * </blockquote>
+ * 
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.13 Query 
  */
 public class QueryMessage extends AuditMessage {
 
-    public QueryMessage(AuditEvent event, Source src, Destination dst, 
-            QuerySOPClass sopClass) {
-        super(event, src);
-        super.addActiveParticipant(dst);
-        super.addParticipantObject(sopClass);
+    public QueryMessage() {
+        super(new AuditEvent(AuditEvent.ID.PROCEDURE_RECORD,
+                AuditEvent.ActionCode.EXECUTE));
     }
-
-    public QueryMessage addOtherParticipant(ActiveParticipant apart) {
-        super.addActiveParticipant(apart);
-        return this;
+ 
+    public ActiveParticipant addSourceProcess(String processID, String[] aets,
+            String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
-
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated use {@link #addOtherParticipant(ActiveParticipant)}
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        return super.addActiveParticipant(apart);
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     * @deprecated <tt>QueryMessage</tt> has no additional <tt>ParticipantObject</tt>
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        throw new IllegalArgumentException();
+    
+    public ActiveParticipant addDestinationProcess(String processID, String[] aets, 
+            String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
     }
         
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
+    public ActiveParticipant addOtherParticipantPerson(String userID,
+            String altUserID, String userName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, requestor));
+    }
+    
+    public ActiveParticipant addOtherParticipantProcess(String processID,
+            String[] aets, String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor));
+    }
 
-        public AuditEvent() {
-            super(ID.QUERY);
-            super.setEventActionCode(ActionCode.EXECUTE);
-        }        
-    }    
+    public ParticipantObject addQuerySOPClass(String cuid, String tsuid, 
+           byte[] query) {
+        return addParticipantObject(
+                ParticipantObject.createQuerySOPClass(cuid, tsuid, query));
+    }
+
+    public ParticipantObject addQuerySOPClass(String cuid, String tsuid, 
+            DicomObject keys) {
+        return addQuerySOPClass(cuid, tsuid, writeDataset(keys, tsuid));
+    }
+
+    private static byte[] writeDataset(DicomObject keys, String tsuid) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
+        DicomOutputStream dos = new DicomOutputStream(baos);
+        try {
+            dos.writeDataset(keys, tsuid);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return baos.toByteArray();
+    }
+    
 }

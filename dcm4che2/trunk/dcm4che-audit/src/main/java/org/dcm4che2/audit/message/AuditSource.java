@@ -54,6 +54,7 @@ import java.util.List;
  */
 public class AuditSource extends BaseElement {
 
+    private static AuditSource defAuditSource;
     private final ArrayList auditSourceTypeCodes = new ArrayList(1);
     
     public AuditSource(String id) {
@@ -96,13 +97,8 @@ public class AuditSource extends BaseElement {
 
     public static class TypeCode extends CodeElement {
 
-        public TypeCode(String code) {
+        private TypeCode(String code) {
             super("AuditSourceTypeCode", code);
-            if (code.length() != 1 || "123456789".indexOf(code.charAt(0)) == -1) {
-                throw new IllegalArgumentException(
-                        "Illegal Audit Source Type code: " + code);
-            }
-            setReadOnly(true);
         }
         
         public static final TypeCode END_USER_DISPLAY_DEVICE = 
@@ -124,5 +120,40 @@ public class AuditSource extends BaseElement {
         public static final TypeCode OTHER = 
                 new TypeCode("9");
         
+        private static TypeCode[] TYPE_CODES = { 
+                END_USER_DISPLAY_DEVICE,
+                DATA_ACQUISITION_DEVICE,
+                WEB_SERVER_PROCESS,
+                APPLICATION_SERVER_PROCESS,
+                DATABASE_SERVER_PROCESS,
+                SECURITY_SERVER,
+                ISO_LEVEL_1_3_NETWORK_COMPONENT,
+                ISO_LEVEL_4_6_OPERATING_SOFTWARE,
+                OTHER,
+        };
+        
+        public static TypeCode valueOf(String code) {
+            try {
+                return TYPE_CODES[Integer.parseInt(code) - 1];
+            } catch (Exception e) {
+                throw new IllegalArgumentException("code:" + code);
+            }            
+        }
+        
     }
- }
+ 
+    public static AuditSource getDefaultAuditSource() {
+        if (defAuditSource == null) {
+            defAuditSource = new AuditSource(AuditMessageUtils.getLocalHostName());
+        }
+        return defAuditSource;
+    }
+    
+    public static void setDefaultAuditSource(AuditSource defAuditSource) {
+        if (defAuditSource == null) {
+            throw new NullPointerException("defAuditSource");
+        }
+        AuditSource.defAuditSource = defAuditSource;
+    }
+
+}

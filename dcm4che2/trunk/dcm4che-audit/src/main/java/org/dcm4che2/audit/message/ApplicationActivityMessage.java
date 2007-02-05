@@ -42,6 +42,118 @@ package org.dcm4che2.audit.message;
  * This audit message describes the event of an Application Entity 
  * starting or stopping.
  * 
+ * <h4>Message Structure</h4>
+ * <table border="0" cellpadding="1" cellspacing="0">
+ * <tr align="left" bgcolor="#ccccff">
+ * <th>Field Name</th>
+ * <th>Opt.</th>
+ * <th>Value Constraints</th>
+ * </tr>
+ * <tr><th>&nbsp;</th></tr>
+ * <tr align="left"><th colspan="3">Event</th></tr>
+ * <tr valign="top">
+ * <td>EventID</td>
+ * <td>M</td>
+ * <td>EV (110100, DCM,"Application Activity")</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>EventActionCode</td>
+ * <td>M</td>
+ * <td>EV "E" (Execute)</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>EventDateTime</td>
+ * <td>M</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>EventOutcomeIndicator</td>
+ * <td>M</td>
+ * <td>not specialized</td>
+ * <tr valign="top">
+ * <td>EventTypeCode</td>
+ * <td>M</td>
+ * <td>DT (110120, DCM, "Application Start")<br/>
+ * DT (110121, DCM, "Application Stop")</td>
+ * </tr>
+ * <tr><th>&nbsp;</th></tr>
+ * <tr align="left"><th colspan="3">ID of the Application started (1)</th></tr>
+ * <tr valign="top">
+ * <td>UserID</td>
+ * <td>M</td>
+ * <td>The identity of the process started or stopped formatted as specified in A.1.2.1.
+ * </tr>
+ * <tr valign="top">
+ * <td>AlternateUserID</td>
+ * <td>MC</td>
+ * <td>If the process supports DICOM, then the AE Titles supported as specified in A.1.2.2.</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>UserName</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>UserIsRequestor</td>
+ * <td>U</td>
+ * <td>EV FALSE</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>RoleIDCode</td>
+ * <td>M</td>
+ * <td>EV (110150, DCM, "Application")</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>NetworkAccessPointTypeCode</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>NetworkAccessPointID</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr><th>&nbsp;</th></tr>
+ * <tr align="left"><th colspan="3">ID of person or process that started the Application (0..N)</th></tr>
+ * <tr valign="top">
+ * <td>UserID</td>
+ * <td>M</td>
+ * <td>The person or process starting or stopping the Application</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>AlternateUserID</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>UserName</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>UserIsRequestor</td>
+ * <td>U</td>
+ * <td>EV TRUE</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>RoleIDCode</td>
+ * <td>M</td>
+ * <td>EV (110151, DCM, "Application Launcher")</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>NetworkAccessPointTypeCode</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * <tr valign="top">
+ * <td>NetworkAccessPointID</td>
+ * <td>U</td>
+ * <td>not specialized</td>
+ * </tr>
+ * </table>
+ * 
+ * <p>No Participant Objects are needed for this message.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 21, 2006
@@ -50,83 +162,34 @@ package org.dcm4che2.audit.message;
  */
 public class ApplicationActivityMessage extends AuditMessage {
 
-    public ApplicationActivityMessage(AuditEvent event, Application app) {
-        super(event, app);
+    public ApplicationActivityMessage(AuditEvent.TypeCode typeCode) {
+        super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
+                AuditEvent.ActionCode.EXECUTE, typeCode));
     }
     
-    /**
-     * Adds ID of person or process that started the Application.
-     * @param launcher ID of person or process that started the Application
-     * @return this <tt>ApplicationActivityMessage</tt> obejct.
-     */
-    public ApplicationActivityMessage addApplicationLauncher(
-            ApplicationLauncher launcher) {
-        super.addActiveParticipant(launcher);
-        return this;
-    }
-    
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if apart is not an
-     * instance of <tt>ApplicationLauncher</tt>
-     * @see #addApplicationLauncher(ApplicationLauncher)
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        if (apart instanceof ApplicationLauncher) {
-            return super.addActiveParticipant(apart);
-        }
-        throw new IllegalArgumentException();
+    public static ApplicationActivityMessage createApplicationStartMessage() {
+        return new ApplicationActivityMessage(
+                AuditEvent.TypeCode.APPLICATION_START);
     }
 
-    /**
-     * This method is deprecated and should not be used because Application
-     * Activity Audit Messages do not have a Participant Object.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        throw new IllegalArgumentException();
-    }
-    
-    /**
-     * Event of {@link ApplicationActivityMessage}.
-     * <p>
-     * Value Constraints:
-     * <ul>
-     *   <li>eventID: {@link AuditEvent.ID#APPLICATION_ACTIVITY}</li>
-     *   <li>eventActionCode: {@link AuditEvent.ActionCode#EXECUTE}</li>
-     *   <li>eventTypeCode: defined values:
-     *     <ul>
-     *       <li>{@link AuditEvent.TypeCode#APPLICATION_START}</li>
-     *       <li>{@link AuditEvent.TypeCode#APPLICATION_STOP}</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     */
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        public AuditEvent(TypeCode code) {
-            super(ID.APPLICATION_ACTIVITY);
-            setEventActionCode(ActionCode.EXECUTE);
-            addEventTypeCode(code);
-        }
-        
-        public static class Start extends AuditEvent {
-
-            public Start() {
-                super(TypeCode.APPLICATION_START);
-            }        
-        }
-
-        public static class Stop extends AuditEvent {
-
-            public Stop() {
-                super(TypeCode.APPLICATION_STOP);
-            }        
-        }       
+    public static ApplicationActivityMessage createApplicationStopMessage() {
+        return new ApplicationActivityMessage(
+                AuditEvent.TypeCode.APPLICATION_STOP);
     }
         
+    public ActiveParticipant addApplication(String processID, String[] aets, 
+            String processName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, false)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION));
+    }
+
+    public ActiveParticipant addApplicationLauncher(String userID,
+            String altUserID, String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, true)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION_LAUNCHER));
+    }
 }

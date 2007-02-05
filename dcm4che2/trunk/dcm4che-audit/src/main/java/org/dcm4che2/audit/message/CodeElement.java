@@ -47,20 +47,32 @@ package org.dcm4che2.audit.message;
  */
 public class CodeElement extends BaseElement {
 
-    protected CodeElement(String name, String code) {
-        super(name);
-        addAttribute("code", code);
-    }
+    private final boolean readonly;
 
+    protected CodeElement(String name, String code) {
+        this(name, code, false);
+    }
+    
     /**
      * Used by derived classes to instantiate <tt>Code</tt> constants. 
      */
     protected CodeElement(String name, String code, String codeSystemName, 
             String displayName) {
-        this(name, code);
-        setCodeSystemName(codeSystemName);
-        setDisplayName(displayName);
-        setReadOnly(true);
+        this(name, code, true);
+        addAttribute("codeSystemName", codeSystemName);
+        addAttribute("displayName", displayName);
+    }
+
+    protected CodeElement(String name, String code, boolean readonly) {
+        super(name);
+        addAttribute("code", code);
+        this.readonly = readonly;
+    }    
+    
+    private void checkReadOnly() {
+        if (readonly) {
+            throw new IllegalStateException("Cannot modify Code constant");
+        }        
     }
     
     public final String getCode() {
@@ -77,6 +89,7 @@ public class CodeElement extends BaseElement {
      * @return this <tt>Code</tt> object.
      */
     public final CodeElement setCodeSystem(String codeSystem) {
+        checkReadOnly();
         addAttribute("codeSystem", codeSystem);
         return this;
     }
@@ -91,6 +104,7 @@ public class CodeElement extends BaseElement {
      * @return this <tt>Code</tt> object.
      */
     public final CodeElement setCodeSystemName(String codeSystemName) {
+        checkReadOnly();
         addAttribute("codeSystemName", codeSystemName);
         return this;
     }
@@ -105,16 +119,22 @@ public class CodeElement extends BaseElement {
      * @return this <tt>Code</tt> object.
      */
     public final CodeElement setDisplayName(String displayName) {
+        checkReadOnly();
         addAttribute("displayName", displayName);
         return this;
     }
 
+    public final String getOriginalText() {
+        return (String) getAttribute("originalText");
+    }
+            
     /**
      * Sets original Text Input value that was translated to this code.
      * @param originalText value that was translated to this code
      * @return this <tt>Code</tt> object.
      */
     public final CodeElement setOriginalText(String originalText) {
+        checkReadOnly();
         addAttribute("originalText", originalText);
         return this;
     }    

@@ -3,8 +3,9 @@ package org.dcm4che2.audit.message;
 /**
  * This message describes the event of a procedure record being created,
  * accessed, modified, accessed, or deleted.  This message may only include
- * information about a single patient.
- * <p>
+ * information about a single Procedure.
+ * 
+ * <blockquote>
  * Notes:<ol>
  * <li>DICOM applications often manipulate procedure records, e.g. with
  * MPPS update.  Modality Worklist query events are described by the Query
@@ -13,90 +14,48 @@ package org.dcm4che2.audit.message;
  * The Study participant fields or the entire message may be repeated to
  * capture such many to many relationships.</li>
  * </ol>
-
+ * </blockquote>
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.12 Procedure Record</a>
  */
 public class ProcedureRecordMessage extends AuditMessage {
     
-    public ProcedureRecordMessage(AuditEvent event, ActiveParticipant user,
-            Patient patient) {
-        super(event, user);
-        super.addParticipantObject(patient);
+    public ProcedureRecordMessage(AuditEvent.ActionCode action) {
+        super(new AuditEvent(AuditEvent.ID.PROCEDURE_RECORD, check(action)));
     }
     
-    public ProcedureRecordMessage(AuditEvent event, ActiveParticipant user1,
-            ActiveParticipant user2, Patient patient) {
-        super(event, user1);
-        super.addActiveParticipant(user2); 
-        super.addParticipantObject(patient);
-    }
-    
-    public ProcedureRecordMessage addStudy(Study study) {
-        super.addParticipantObject(study);
-        return this;
-    } 
-
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();        
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if obj is not a 
-     * {@link Study}
-     * @see #addStudy(Study)
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        if (obj instanceof Study) {
-            return super.addParticipantObject(obj);            
+    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
+        if (action == AuditEvent.ActionCode.EXECUTE) {
+            throw new IllegalArgumentException("action=Execute");
         }
-        throw new IllegalArgumentException();
+        return action;
+    }
+
+    public ActiveParticipant addUserPerson(String userID, String altUserID, 
+            String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, true));
     }
     
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        protected AuditEvent(ActionCode actionCode) {
-            super(ID.PROCEDURE_RECORD);
-            setEventActionCode(actionCode);
-        }  
+    public ActiveParticipant addUserProcess(String processID, String[] aets, 
+            String processName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, true));
+    }
         
-        public static class Create extends AuditEvent {
-
-            public Create() {
-                super(ActionCode.CREATE);
-            }        
-        }
-
-        public static class Read extends AuditEvent {
-
-            public Read() {
-                super(ActionCode.READ);
-            }        
-        }
-
-        public static class Update extends AuditEvent {
-
-            public Update() {
-                super(ActionCode.UPDATE);
-            }        
-        }
-
-        public static class Delete extends AuditEvent {
-
-            public Delete() {
-                super(ActionCode.DELETE);
-            }        
-        }
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
+
+    public ParticipantObject addStudy(String uid,
+            ParticipantObjectDescription desc) {
+        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
+    }
 }

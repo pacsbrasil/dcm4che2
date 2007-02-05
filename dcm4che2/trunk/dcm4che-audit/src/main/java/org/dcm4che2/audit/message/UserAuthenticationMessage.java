@@ -42,63 +42,42 @@ package org.dcm4che2.audit.message;
  * This message describes the event of a user has attempting to log on or
  * log off, whether successful or not.  No Participant Objects are needed
  * for this message.
-
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.15 User Authentication
  */
 public class UserAuthenticationMessage extends AuditMessage {
     
-    public UserAuthenticationMessage(AuditEvent event, UserWithLocation user) {
-        super(event, user);
+    public UserAuthenticationMessage(AuditEvent.TypeCode typeCode,
+            AuditEvent.OutcomeIndicator outcome) {
+        super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
+                AuditEvent.ActionCode.EXECUTE, typeCode,
+                outcome != null ? outcome : AuditEvent.OutcomeIndicator.SUCCESS));
     }
     
-    public UserAuthenticationMessage(AuditEvent event, UserWithLocation user, 
-            ActiveParticipant node) {
-        super(event, user);
-        super.addActiveParticipant(node);
+    public static UserAuthenticationMessage createLoginMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new UserAuthenticationMessage(
+                AuditEvent.TypeCode.LOGIN, outcome);
     }
 
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();
+    public static UserAuthenticationMessage createLogoutMessage() {
+        return new UserAuthenticationMessage(
+                AuditEvent.TypeCode.LOGOUT, AuditEvent.OutcomeIndicator.SUCCESS);
     }
 
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        throw new IllegalArgumentException();
+    public ActiveParticipant addUser(String userID, String altUserID,
+            String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, true));
     }
-    
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-        
-        protected AuditEvent(TypeCode code) {
-            super(ID.USER_AUTHENTICATION);
-            setEventActionCode(ActionCode.EXECUTE);
-            addEventTypeCode(code);
-        }
-       
-        public static class Login extends AuditEvent {
 
-            public Login() {
-                super(TypeCode.LOGIN);
-            }        
-        }
-
-        public static class Logout extends AuditEvent {
-
-            public Logout() {
-                super(TypeCode.LOGOUT);
-            }        
-        }
+    public ActiveParticipant addNode(String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveNode(hostname, false));
     }
 }

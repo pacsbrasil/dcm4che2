@@ -62,6 +62,9 @@ public class ParticipantObject extends BaseElement {
     
     public ParticipantObject(String id, IDTypeCode idTypeCode) {
         super("ParticipantObjectIdentification");
+        if (id.length() == 0) {
+            throw new IllegalArgumentException("id=\"\"");
+        }       
         if (idTypeCode == null) {
             throw new NullPointerException("idTypeCode");
         }
@@ -121,11 +124,15 @@ public class ParticipantObject extends BaseElement {
     }
     
     public final ParticipantObject setParticipantObjectName(String name) {
-        if (this.query != null) {
-            throw new IllegalStateException("Cannot set ParticipantObjectName " +
-                        "and ParticipantObjectQuery");
+        if (name == null || name.length() == 0) {
+            this.name = null;
+        } else {
+            if (this.query != null) {
+                throw new IllegalStateException(
+                        "Cannot set ParticipantObjectName and ParticipantObjectQuery");
+            }
+            this.name = new Name(name);
         }
-        this.name = new Name(name);
         return this;
     }
     
@@ -134,11 +141,15 @@ public class ParticipantObject extends BaseElement {
     }
     
     public final ParticipantObject setParticipantObjectQuery(byte[] query) {
-        if (this.name != null) {
-            throw new IllegalStateException("Cannot set ParticipantObjectName " +
-                        "and ParticipantObjectQuery");
+        if (query == null || query.length == 0) {
+            this.query = null;
+        } else {
+            if (this.name != null) {
+                throw new IllegalStateException("Cannot set ParticipantObjectName " +
+                            "and ParticipantObjectQuery");
+            }
+            this.query = new Query(query);
         }
-        this.query = new Query(query);
         return this;
     }
 
@@ -187,6 +198,63 @@ public class ParticipantObject extends BaseElement {
         outputChilds(out, descs);
     }
     
+    public static ParticipantObject createPatient(String id, String name) {
+        ParticipantObject pat = new ParticipantObject(id, IDTypeCode.PATIENT_ID);
+        pat.setParticipantObjectTypeCode(TypeCode.PERSON);
+        pat.setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
+        pat.setParticipantObjectName(name);
+        return pat;
+    }
+
+    public static ParticipantObject createStudy(String uid,
+            ParticipantObjectDescription desc) {
+        ParticipantObject study = new ParticipantObject(uid, 
+                IDTypeCode.STUDY_INSTANCE_UID);
+        study.setParticipantObjectTypeCode(TypeCode.SYSTEM);
+        study.setParticipantObjectTypeCodeRole(TypeCodeRole.REPORT);
+        if (desc != null) {
+            study.addParticipantObjectDescription(desc);
+        }
+        return study;
+    }
+    
+    public static ParticipantObject createQuerySOPClass(String cuid, 
+            String tsuid, byte[] query) {
+        ParticipantObject queryObj = new ParticipantObject(cuid, 
+                IDTypeCode.SOP_CLASS_UID);
+        queryObj.setParticipantObjectTypeCode(TypeCode.SYSTEM);
+        queryObj.setParticipantObjectTypeCodeRole(TypeCodeRole.REPORT);
+        queryObj.setParticipantObjectQuery(query);
+        queryObj.addParticipantObjectDetail("TransferSyntax", tsuid);
+        return queryObj;
+    }
+  
+    public static ParticipantObject createSecurityAuditLog(String uri) {
+        ParticipantObject obj = new ParticipantObject(uri, IDTypeCode.URI);
+        obj.setParticipantObjectTypeCode(TypeCode.SYSTEM);
+        obj.setParticipantObjectTypeCodeRole(TypeCodeRole.SECURITY_RESOURCE);
+        obj.setParticipantObjectName("Security Audit Log");
+        return obj;
+    }
+    
+    public static ParticipantObject createAlertSubject(String id, 
+            IDTypeCode idTypeCode, String desc) {
+        ParticipantObject obj = new ParticipantObject(id, idTypeCode);
+        obj.setParticipantObjectTypeCode(TypeCode.SYSTEM);
+        obj.addParticipantObjectDetail("AlertDescription", desc);
+        return obj;
+    }
+
+    public static ParticipantObject createAlertSubjectWithURI(String uri, 
+            String desc) {
+        return createAlertSubject(uri, IDTypeCode.URI, desc);
+    }
+    
+    public static ParticipantObject createAlertSubjectWithNodeID(String nodeID, 
+            String desc) {
+        return createAlertSubject(nodeID, IDTypeCode.NODE_ID, desc);
+    }
+
     public static class IDTypeCode extends CodeElement {
 
         public static final IDTypeCode MEDIAL_RECORD_NUMBER = 
@@ -399,4 +467,5 @@ public class ParticipantObject extends BaseElement {
             }
         }
     }
+    
  }

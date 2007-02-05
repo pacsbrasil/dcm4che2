@@ -166,7 +166,7 @@ public class AuditEvent extends BaseElement {
                 new ID("110101", "DCM", "Audit Log Used");
         
         /**
-         * Event ID of {@link BeginTransferingMessage}.
+         * Event ID of {@link BeginTransferringMessage}.
          */
         public static final ID BEGIN_TRANSFERRING_DICOM_INSTANCES = 
                 new ID("110102", "DCM", "Begin Transferring DICOM Instances");
@@ -178,7 +178,7 @@ public class AuditEvent extends BaseElement {
                 new ID("110103", "DCM", "DICOM Instances Accessed");
         
         /**
-         * Event ID of {@link InstancesTransferedMessage}.
+         * Event ID of {@link InstancesTransferredMessage}.
          */
         public static final ID DICOM_INSTANCES_TRANSFERRED = 
                 new ID("110104", "DCM", "DICOM Instances Transferred");

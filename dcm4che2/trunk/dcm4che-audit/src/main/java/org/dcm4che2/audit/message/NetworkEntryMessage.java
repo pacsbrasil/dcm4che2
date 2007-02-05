@@ -44,56 +44,51 @@ package org.dcm4che2.audit.message;
  * intended to report network problems, loose cables, or other unintentional
  * detach and reattach situations.
  * 
+ * <blockquote>
+ * Note: The machine should attempt to send this message prior to detaching.
+ * If this is not possible, it should retain the message in a local buffer so
+ * that it can be sent later. The mobile machine can then capture audit
+ * messages in a local buffer while it is outside the secure domain. When it is
+ * reconnected to the secure domain, it can send the detach message (if buffered),
+ * followed by the buffered messages, followed by a mobile machine message for
+ * rejoining the secure domain. The timestamps on these messages is  the time
+ * that the event occurred, not the time that the message is sent. 
+ * </blockquote>
+ * 
+ * No Participant Objects are needed for this message.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.9 Network Entry</a>
  */
 public class NetworkEntryMessage extends AuditMessage {
     
-    public NetworkEntryMessage(AuditEvent event, ActiveParticipant node) {
-        super(event, node);
+    public NetworkEntryMessage(AuditEvent.TypeCode type) {
+        super(new AuditEvent(AuditEvent.ID.NETWORK_ENTRY,
+                AuditEvent.ActionCode.EXECUTE, check(type)));
     }
 
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        throw new IllegalArgumentException();
+    private static AuditEvent.TypeCode check(AuditEvent.TypeCode type) {
+        if (type != AuditEvent.TypeCode.ATTACH 
+                && type != AuditEvent.TypeCode.DETACH) {
+            throw new IllegalArgumentException(type.toString());
+        }
+        return type;
     }
     
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        protected AuditEvent(TypeCode code) {
-            super(ID.NETWORK_ENTRY);
-            setEventActionCode(ActionCode.EXECUTE);
-            addEventTypeCode(code);
-        }
-       
-        public static class Attach extends AuditEvent {
-
-            public Attach() {
-                super(TypeCode.ATTACH);
-            }        
-        }
-
-        public static class Detach extends AuditEvent {
-
-            public Detach() {
-                super(TypeCode.DETACH);
-            }        
-        }
+    public static NetworkEntryMessage createAttachMessage() {
+        return new NetworkEntryMessage(AuditEvent.TypeCode.ATTACH);
     }
+    
+    public static NetworkEntryMessage createDetachMessage() {
+        return new NetworkEntryMessage(AuditEvent.TypeCode.DETACH);
+    }
+
+    public ActiveParticipant addNode(String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveNode(hostname, false));
+    }    
+
 }

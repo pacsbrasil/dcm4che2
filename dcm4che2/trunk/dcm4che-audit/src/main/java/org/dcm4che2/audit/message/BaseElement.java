@@ -41,12 +41,9 @@ package org.dcm4che2.audit.message;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -55,11 +52,8 @@ import java.util.Map;
  */
 class BaseElement {
     
-    private static String dateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-
     protected final String name;
-    protected LinkedHashMap atts;
-    private boolean readOnly = false;
+    private Attr firstAttr;
     
     public BaseElement(String name) {
         this.name = name;
@@ -70,46 +64,54 @@ class BaseElement {
         addAttribute(attr, val);
     }
 
-    public static final String getDateTimeFormat() {
-        return dateTimeFormat;
-    }
-
-    public static final void setDateTimeFormat(String pattern) {
-        if (pattern == null) {
-            throw new NullPointerException();
+    private static class Attr {
+        String name;
+        Object val;
+        Attr next;
+        Attr(String name, Object val) {
+            this.name = name;
+            this.val = val;
         }
-        BaseElement.dateTimeFormat = pattern;
     }
 
-    protected void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-    
     protected void addAttribute(String name, Object val) {
-        if (readOnly) {
-            throw new IllegalArgumentException("read only");
+        if (val == null || val.equals("")) {
+            return;
         }
-        if (val == null) {
-            throw new NullPointerException(name);
+        if (firstAttr == null) {
+            firstAttr = new Attr(name, val);
+            return;
         }
-        if (val instanceof String && ((String) val).length() == 0) {
-            throw new IllegalArgumentException("empty value");
+        Attr prev = firstAttr;
+        while (!name.equals(prev.name)) {
+            if (prev.next == null) {
+                prev.next = new Attr(name, val);
+                return;                
+            }
+            prev = prev.next;
         }
-        if (atts == null) {
-            atts = new LinkedHashMap();
-        }
-        atts.put(name, val);
+        prev.val = val;
     }
     
     protected Object getAttribute(String name) {
-        return atts.get(name);
+        for (Attr attr = firstAttr; attr != null; attr = attr.next) {
+            if (name.equals(attr.name)) {
+                return attr.val;
+            }
+        }
+        return null;
     }
-
+    
     public void output(Writer out) throws IOException {
         out.write('<');
         out.write(name);
-        if (atts != null) {
-            outputAtts(out);
+        if (firstAttr != null) {
+            for (Attr attr = firstAttr; attr != null; attr = attr.next) {
+                out.write(' ');
+                out.write(attr.name);
+                out.write('=');
+                outputAttrValue(out, attr.name);
+            }
         }
         if (isEmpty()) {
             out.write('/');
@@ -139,33 +141,10 @@ class BaseElement {
         return sw.toString();
     }
     
-    private void outputAtts(Writer out) throws IOException {
-        for (Iterator iter = atts.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            out.write(' ');
-            out.write(entry.getKey().toString());
-            out.write('=');
-            outputAttValue(out, entry.getValue());
-        }
-    }
-
-    protected boolean isEmpty() {
-        return true;
-    }
-
-    protected void outputContent(Writer out) throws IOException {
-    }
-    
-    protected void outputChilds(Writer out, List childs) throws IOException {
-        for (Iterator iter = childs.iterator(); iter.hasNext();) {
-            ((BaseElement) iter.next()).output(out);            
-        }
-    }
-    
-    private void outputAttValue(Writer out, Object val) throws IOException {
+    private void outputAttrValue(Writer out, Object val) throws IOException {
         if (val instanceof Date) {
             out.write('"');
-            out.write(toDateTimeStr((Date) val));
+            out.write(AuditMessageUtils.toDateTimeStr((Date) val));
             out.write('"');
         } else if (val instanceof byte[]) {
             out.write('"');
@@ -185,6 +164,19 @@ class BaseElement {
         }
     }
 
+    protected boolean isEmpty() {
+        return true;
+    }
+
+    protected void outputContent(Writer out) throws IOException {
+    }
+    
+    protected void outputChilds(Writer out, List childs) throws IOException {
+        for (Iterator iter = childs.iterator(); iter.hasNext();) {
+            ((BaseElement) iter.next()).output(out);            
+        }
+    }
+    
     protected void outputEscaped(Writer out, String val, String apos)
     throws IOException {
         char[] cs = val.toCharArray();
@@ -206,18 +198,6 @@ class BaseElement {
                 out.write(cs[i]); 
             }
         }
-    }
-
-    private static String toDateTimeStr(Date date) {
-        String str = new SimpleDateFormat(dateTimeFormat).format(date);
-        if (dateTimeFormat.endsWith("Z")) {
-            int len = str.length();
-            StringBuffer sb = new StringBuffer(len+1);
-            sb.append(str);
-            sb.insert(len - 2, ':');
-            str = sb.toString();
-        }
-        return str;
     }
 
 }

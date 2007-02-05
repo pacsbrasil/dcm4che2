@@ -47,66 +47,45 @@ package org.dcm4che2.audit.message;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.5 Data Import</a>
  */
 public class DataImportMessage extends AuditMessage {
 
-    public DataImportMessage(AuditEvent event, Destination importer, SourceMedia src, 
-            Patient patient) {
-        super(event, importer);
-        super.addActiveParticipant(src);
-        super.addParticipantObject(patient);
-    }
-    
-    public DataImportMessage(AuditEvent event, Destination importer1,
-            Destination importer2, SourceMedia src, Patient patient) {
-        super(event, importer1);
-        super.addActiveParticipant(importer2); 
-        super.addActiveParticipant(src); 
-        super.addParticipantObject(patient);
-    }
-        
-    public DataImportMessage addPatient(Patient patient) {
-        super.addParticipantObject(patient);
-        return this;
-    }
-    
-    public DataImportMessage addStudy(Study study) {
-        super.addParticipantObject(study);
-        return this;
+    public DataImportMessage() {
+        super(new AuditEvent(AuditEvent.ID.IMPORT, 
+                AuditEvent.ActionCode.CREATE));
     }
 
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if obj is not a 
-     * {@link Patient} or a {@link Study}.
-     * @see #addPatient(Patient)
-     * @see #addStudy(Study)
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        if (obj instanceof Patient || obj instanceof Study) {
-            return super.addParticipantObject(obj);            
-        }
-        throw new IllegalArgumentException();
+    
+    public ActiveParticipant addExporterPerson(String userID, String altUserID, 
+            String userName, boolean requestor, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, requestor))
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
     }
     
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        public AuditEvent() {
-            super(ID.IMPORT);
-            setEventActionCode(ActionCode.CREATE);
-        }        
+    public ActiveParticipant addExporterProcess(String processID, String[] aets, 
+            String processName, boolean requestor, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
     
+    public ActiveParticipant addDestinationMedia(String mediaID, String mediaUID) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveMedia(mediaID, mediaUID)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION_MEDIA));
+    }
+    
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
+    }
+
+    public ParticipantObject addStudy(String uid,
+            ParticipantObjectDescription desc) {
+        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
+    }
 }

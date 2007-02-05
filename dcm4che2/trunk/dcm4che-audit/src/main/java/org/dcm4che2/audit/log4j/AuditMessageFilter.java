@@ -39,6 +39,7 @@
 package org.dcm4che2.audit.log4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -48,8 +49,8 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.AuditMessageUtils;
 import org.dcm4che2.audit.message.CodeElement;
-import org.dcm4che2.audit.message.NetworkAccessPoint;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -67,7 +68,7 @@ public class AuditMessageFilter extends Filter {
     private Boolean userIsRequestorToMatch;
     private String aeTitleToMatch;
     private String roleIDCodeToMatch;
-    private String hostNameToMatch;
+    private String machineNameToMatch;
     private String ipAddressToMatch;
  
     public int decide(LoggingEvent event) {
@@ -145,7 +146,10 @@ public class AuditMessageFilter extends Filter {
             }
         }
         if (aeTitleToMatch != null && aeTitleToMatch.length() != 0) {
-            if (participant.getAETitles().indexOf(aeTitleToMatch) == -1) {
+            if (Arrays.asList(
+                    AuditMessageUtils.altUserIDToAETs(
+                            participant.getAlternativeUserID()))
+                    .indexOf(aeTitleToMatch) == -1) {
                 return false;
             }
         }
@@ -161,15 +165,16 @@ public class AuditMessageFilter extends Filter {
             }
         }
         String napid = participant.getNetworkAccessPointID();
-        String naptype = participant.getNetworkAccessPointTypeCode();
-        if (hostNameToMatch != null && hostNameToMatch.length() != 0) {
-            if (!NetworkAccessPoint.HOST_NAME.equals(naptype)
-                    || !hostNameToMatch.equals(napid)) {
+        ActiveParticipant.NetworkAccessPointTypeCode naptype = 
+            participant.getNetworkAccessPointTypeCode();
+        if (machineNameToMatch != null && machineNameToMatch.length() != 0) {
+            if (naptype != ActiveParticipant.NetworkAccessPointTypeCode.MACHINE_NAME
+                    || !machineNameToMatch.equals(napid)) {
                         return false;
             }
         }
         if (ipAddressToMatch != null && ipAddressToMatch.length() != 0) {
-            if (!NetworkAccessPoint.IP_ADDRESS.equals(naptype)
+            if (naptype != ActiveParticipant.NetworkAccessPointTypeCode.IP_ADDRESS
                     || !ipAddressToMatch.equals(napid)) {
                         return false;
             }
@@ -311,12 +316,12 @@ public class AuditMessageFilter extends Filter {
         this.userIsRequestorToMatch = userIsRequestor;
     }
     
-    public final String getHostNameToMatch() {
-        return hostNameToMatch;
+    public final String getMachineNameToMatch() {
+        return machineNameToMatch;
     }
 
-    public final void setHostNameToMatch(String hostNameToMatch) {
-        this.hostNameToMatch = hostNameToMatch;
+    public final void setMachineNameToMatch(String machineName) {
+        this.machineNameToMatch = machineName;
     }
 
     public final String getIpAddressToMatch() {

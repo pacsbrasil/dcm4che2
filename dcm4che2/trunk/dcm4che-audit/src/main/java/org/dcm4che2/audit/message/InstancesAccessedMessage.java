@@ -46,88 +46,60 @@ package org.dcm4che2.audit.message;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.6 DICOM Instances Accessed</a>
  */
 public class InstancesAccessedMessage extends AuditMessage {
 
-    public InstancesAccessedMessage(AuditEvent event, ActiveParticipant user,
-            Patient patient, Study study) {
-        super(event, user);
-        super.addParticipantObject(patient);
-        super.addParticipantObject(study);
+    public InstancesAccessedMessage(AuditEvent.ActionCode action) {
+        super(new AuditEvent(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, 
+                check(action)));
     }
-
-    public InstancesAccessedMessage(AuditEvent event, ActiveParticipant user1,
-            ActiveParticipant user2, Patient patient, Study study) {
-        super(event, user1);
-        super.addActiveParticipant(user2);
-        super.addParticipantObject(patient);
-        super.addParticipantObject(study);
-    }
-
-    public InstancesAccessedMessage addStudy(Study study) {
-        super.addParticipantObject(study);
-        return this;
-    }
- 
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if obj is not a 
-     * {@link Study}.
-     * @see #addStudy(Study)
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        if (obj instanceof Patient || obj instanceof Study) {
-            return super.addParticipantObject(obj);            
+    
+    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
+        if (action == AuditEvent.ActionCode.EXECUTE) {
+            throw new IllegalArgumentException("action=Execute");
         }
-        throw new IllegalArgumentException();
+        return action;
+    }
+
+    public static InstancesAccessedMessage createInstancesCreateMessage() {
+        return new InstancesAccessedMessage(AuditEvent.ActionCode.CREATE);
+    }
+    
+    public static InstancesAccessedMessage createInstancesReadMessage() {
+        return new InstancesAccessedMessage(AuditEvent.ActionCode.READ);
+    }
+    
+    public static InstancesAccessedMessage createInstancesUpdateMessage() {
+        return new InstancesAccessedMessage(AuditEvent.ActionCode.UPDATE);
+    }
+    
+    public static InstancesAccessedMessage createInstancesDeleteMessage() {
+        return new InstancesAccessedMessage(AuditEvent.ActionCode.DELETE);
     }
         
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        protected AuditEvent(ActionCode actionCode) {
-            super(ID.DICOM_INSTANCES_ACCESSED);
-            super.setEventActionCode(actionCode);
-        }
+    public ActiveParticipant addUserPerson(String userID, String altUserID, 
+            String userName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, requestor));
+    }
+    
+    public ActiveParticipant addUserProcess(String processID, String[] aets, 
+            String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor));
+    }
         
-        public static class Create extends AuditEvent {
-
-            public Create() {
-                super(ActionCode.CREATE);
-            }        
-        }
-
-        public static class Read extends AuditEvent {
-
-            public Read() {
-                super(ActionCode.READ);
-            }        
-        }
-
-        public static class Update extends AuditEvent {
-
-            public Update() {
-                super(ActionCode.UPDATE);
-            }        
-        }
-
-        public static class Delete extends AuditEvent {
-
-            public Delete() {
-                super(ActionCode.DELETE);
-            }        
-        }
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
+    public ParticipantObject addStudy(String uid,
+            ParticipantObjectDescription desc) {
+        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
+    }
+    
 }

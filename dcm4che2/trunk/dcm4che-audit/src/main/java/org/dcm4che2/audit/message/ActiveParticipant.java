@@ -40,10 +40,11 @@ package org.dcm4che2.audit.message;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Identifies a user for the purpose of documenting accountability for the
@@ -56,11 +57,54 @@ import java.util.List;
  */
 public class ActiveParticipant extends BaseElement {
 
+    private static final Pattern IP4 = Pattern.compile("\\d+(\\.\\d+){3}");
+    private static final Pattern IP6 = Pattern
+            .compile("[0-9a-fA-F]*(\\:[0-9a-fA-F]*){7}");
+    private static final Pattern TEL_NO = Pattern
+            .compile("(\\++\\d+\\s*)?(\\(\\d+\\)\\s*)?\\d+"
+                    + "([-\\s]\\d+)*(X\\d+)?(B\\d+)?(C.*)?");
+    private static boolean encodeUserIsRequestorTrue = false;
+
     private ArrayList roleIDCodes = new ArrayList(1);
     
-    public ActiveParticipant(String userId) {
+    public ActiveParticipant(String userID, boolean userIsRequestor) {
         super("ActiveParticipant");
-        addAttribute("UserID", userId);
+        if (userID.length() == 0) {
+            throw new IllegalArgumentException("userID=\"\"");
+        }
+        addAttribute("UserID", userID);
+        if (!userIsRequestor || encodeUserIsRequestorTrue) {
+            addAttribute("UserIsRequestor", Boolean.valueOf(userIsRequestor));
+        }
+    }
+
+    public static ActiveParticipant createActivePerson(String userID,
+            String altUserID, String userName, String hostname, boolean requestor) {
+        ActiveParticipant ap = new ActiveParticipant(userID, requestor);
+        ap.setAlternativeUserID(altUserID);
+        ap.setUserName(userName);
+        ap.setNetworkAccessPointID(hostname);
+        return ap;
+    }
+
+    public static ActiveParticipant createActiveProcess(String processID,
+            String[] aets, String processName, String hostname, boolean requestor) {
+        return createActivePerson(processID, AuditMessageUtils.aetsToAltUserID(aets), 
+                processName, hostname, requestor) ;
+    }
+
+    public static ActiveParticipant createActiveNode(String hostname,
+            boolean requestor) {
+        ActiveParticipant ap = new ActiveParticipant(hostname, requestor);
+        ap.setNetworkAccessPointID(hostname);
+        return ap;
+    }
+    
+    public static ActiveParticipant createActiveMedia(String mediaID,
+            String mediaUID) {
+        ActiveParticipant ap = new ActiveParticipant(mediaID, false);
+        ap.setAlternativeUserID(mediaUID);
+        return ap;
     }
     
     public String getUserID() {
@@ -74,51 +118,6 @@ public class ActiveParticipant extends BaseElement {
     public ActiveParticipant setAlternativeUserID(String id) {
         addAttribute("AlternativeUserID", id);
         return this;
-    }
-    
-    public List getAETitles() {
-        String altID = getAlternativeUserID();
-        if (altID != null && altID.startsWith("AETITLES=")) {
-            List aets = new ArrayList();
-            int left = 9;
-            int right;
-            while ((right = altID.indexOf(';', left)) != -1) {
-                if (right > left) {
-                    aets.add(altID.substring(left, right));
-                }
-                left = right + 1;
-            }
-            if (left < altID.length()) {
-                aets.add(altID.substring(left));
-            }
-            return aets;
-        } else {
-            return Collections.EMPTY_LIST;
-        }
-    }
-
-    public ActiveParticipant setAETitle(String aet) {
-        if (aet.length() == 0) {
-            throw new IllegalArgumentException("empty value");
-        }
-        setAlternativeUserID("AETITLES=" + aet);
-        return this;
-    }
-
-    public ActiveParticipant setAETitles(List aets) {
-        if (aets.isEmpty()) {
-            throw new IllegalArgumentException("empty value");
-        }
-        StringBuffer sb = new StringBuffer("AETITLES=");
-        for (Iterator iter = aets.iterator(); iter.hasNext();) {
-            String aet = (String) iter.next();
-            if (aet.length() == 0) {
-                throw new IllegalArgumentException("empty value");
-            }
-            sb.append(aet).append(';');
-        }
-        setAlternativeUserID(sb.substring(0,sb.length()-1));
-        return this;            
     }
     
     public String getUserName() {
@@ -135,31 +134,41 @@ public class ActiveParticipant extends BaseElement {
         return requestor == null || requestor.booleanValue();
     }
     
-    public ActiveParticipant setUserIsRequestor(boolean requestor) {
-        addAttribute("UserIsRequestor", Boolean.valueOf(requestor));
-        return this;
-    }
-    
     public String getNetworkAccessPointID() {
         return (String) getAttribute("NetworkAccessPointID");
     }
 
-    public String getNetworkAccessPointTypeCode() {
-        return (String) getAttribute("NetworkAccessPointTypeCode");
+    public NetworkAccessPointTypeCode getNetworkAccessPointTypeCode() {
+        return (NetworkAccessPointTypeCode) 
+                getAttribute("NetworkAccessPointTypeCode");
     }
 
-    public ActiveParticipant setNetworkAccessPoint(NetworkAccessPoint nap) {
-        addAttribute("NetworkAccessPointID", nap.getID());
-        addAttribute("NetworkAccessPointTypeCode", nap.getTypeCode());
+    public ActiveParticipant setNetworkAccessPointID(String id, 
+            NetworkAccessPointTypeCode type) {
+        addAttribute("NetworkAccessPointID", id);
+        addAttribute("NetworkAccessPointTypeCode", type);
+        return this;
+    }
+
+    public ActiveParticipant setNetworkAccessPointID(String id) {
+        if (id != null && id.length() > 0) {
+            addAttribute("NetworkAccessPointID", id);
+            addAttribute("NetworkAccessPointTypeCode", 
+                    NetworkAccessPointTypeCode.valueOf(id));
+        }
         return this;
     }
     
+    public void setNetworkAccessPointID(InetAddress ip) {
+        setNetworkAccessPointID(AuditMessageUtils.getHostName(ip));       
+    }
+
     public List getRoleIDCodeIDs() {
         return Collections.unmodifiableList(roleIDCodes);
     }
     
     public ActiveParticipant addRoleIDCode(RoleIDCode code) {
-        if (code == null) {
+        if (code != null) {
             throw new NullPointerException();
         }
         roleIDCodes.add(code);
@@ -199,5 +208,38 @@ public class ActiveParticipant extends BaseElement {
             super("RoleIDCode", code, codeSystemName, displayName);
         }
     }
+
+    static boolean isIP(String id) {
+        return IP4.matcher(id).matches() || IP6.matcher(id).matches();
+    }
+
+    static boolean isTelNo(String id) {
+        return TEL_NO.matcher(id).matches();
+    }
+
+    
+    public static class NetworkAccessPointTypeCode {
+        private final String value;
+
+        public static final NetworkAccessPointTypeCode MACHINE_NAME = 
+                new NetworkAccessPointTypeCode("1");
+        public static final NetworkAccessPointTypeCode IP_ADDRESS = 
+                new NetworkAccessPointTypeCode("2");
+        public static final NetworkAccessPointTypeCode TEL_NR = 
+                new NetworkAccessPointTypeCode("3");
+        
+        private NetworkAccessPointTypeCode(final String value) {
+            this.value = value;
+        }
+        
+        public static NetworkAccessPointTypeCode valueOf(String id) {
+            return isIP(id) ? IP_ADDRESS : isTelNo(id) ? TEL_NR : MACHINE_NAME;
+        }
+
+        public String toString() {
+            return value;
+        }
+    }
+
     
 }

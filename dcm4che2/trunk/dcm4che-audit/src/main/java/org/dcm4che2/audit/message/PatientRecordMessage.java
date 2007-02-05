@@ -14,76 +14,38 @@ package org.dcm4che2.audit.message;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 21, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.11 Patient Record</a>
  */
 public class PatientRecordMessage extends AuditMessage {
     
-    public PatientRecordMessage(AuditEvent event, ActiveParticipant user,
-            Patient patient) {
-        super(event, user);
-        super.addParticipantObject(patient);
+    public PatientRecordMessage(AuditEvent.ActionCode action) {
+        super(new AuditEvent(AuditEvent.ID.PATIENT_RECORD, check(action)));
     }
     
-    public PatientRecordMessage(AuditEvent event, ActiveParticipant user1,
-            ActiveParticipant user2, Patient patient) {
-        super(event, user1);
-        super.addActiveParticipant(user2); 
-        super.addParticipantObject(patient);
+    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
+        if (action == AuditEvent.ActionCode.EXECUTE) {
+            throw new IllegalArgumentException("action=Execute");
+        }
+        return action;
     }
 
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        throw new IllegalArgumentException();
+    public ActiveParticipant addUserPerson(String userID, String altUserID, 
+            String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, true));
     }
     
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        protected AuditEvent(ActionCode actionCode) {
-            super(ID.PATIENT_RECORD);
-            setEventActionCode(actionCode);
-        }  
+    public ActiveParticipant addUserProcess(String processID, String[] aets, 
+            String processName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, true));
+    }
         
-        public static class Create extends AuditEvent {
-
-            public Create() {
-                super(ActionCode.CREATE);
-            }        
-        }
-
-        public static class Read extends AuditEvent {
-
-            public Read() {
-                super(ActionCode.READ);
-            }        
-        }
-
-        public static class Update extends AuditEvent {
-
-            public Update() {
-                super(ActionCode.UPDATE);
-            }        
-        }
-
-        public static class Delete extends AuditEvent {
-
-            public Delete() {
-                super(ActionCode.DELETE);
-            }        
-        }
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
 }

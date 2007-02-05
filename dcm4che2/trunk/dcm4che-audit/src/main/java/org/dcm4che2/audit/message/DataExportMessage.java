@@ -49,67 +49,43 @@ package org.dcm4che2.audit.message;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.4 Data Export</a>
  */
 public class DataExportMessage extends AuditMessage {
 
-    public DataExportMessage(AuditEvent event, Source exporter, DestinationMedia dst, 
-            Patient patient) {
-        super(event, exporter);
-        super.addActiveParticipant(dst);
-        super.addParticipantObject(patient);
+    public DataExportMessage() {
+        super(new AuditEvent(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ));
+    }
+       
+    public ActiveParticipant addImporterPerson(String userID, String altUserID, 
+            String userName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, requestor))
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION);
     }
     
-    public DataExportMessage(AuditEvent event, Source user, Source process, 
-            DestinationMedia dst, Patient patient) {
-        super(event, user);
-        super.addActiveParticipant(process); 
-        super.addActiveParticipant(dst); 
-        super.addParticipantObject(patient);
+    public ActiveParticipant addImporterProcess(String processID, String[] aets, 
+            String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
     }
     
-    public DataExportMessage addPatient(Patient patient) {
-        super.addParticipantObject(patient);
-        return this;
+    public ActiveParticipant addSourceMedia(String mediaID, String mediaUID) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveMedia(mediaID, mediaUID)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE_MEDIA));
     }
     
-    public DataExportMessage addStudy(Study study) {
-        super.addParticipantObject(study);
-        return this;
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if this method is invoked
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        throw new IllegalArgumentException();
+    public ParticipantObject addStudy(String uid,
+            ParticipantObjectDescription desc) {
+        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if obj is not a 
-     * {@link Patient} or a {@link Study}.
-     * @see #addPatient(Patient)
-     * @see #addStudy(Study)
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        if (obj instanceof Patient || obj instanceof Study) {
-            return super.addParticipantObject(obj);            
-        }
-        throw new IllegalArgumentException();
-    }
-    
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        public AuditEvent() {
-            super(ID.EXPORT);
-            setEventActionCode(ActionCode.READ);
-        }        
-    };
-
-
 }

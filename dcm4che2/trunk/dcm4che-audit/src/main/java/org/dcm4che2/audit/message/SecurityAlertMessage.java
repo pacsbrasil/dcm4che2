@@ -42,162 +42,145 @@ package org.dcm4che2.audit.message;
  * This message describes any event for which a node needs to report a 
  * security alert, e.g., a node authentication failure when establishing a 
  * secure communications channel.
- * <p>
+ * <blockquote>
  * Note: The Node Authentication event can be used to report both successes
  * and failures. If reporting of success is done, this could generate a very
  * large number of audit messages, since every authenticated DICOM association,
  * HL7 transaction, and HTML connection should result in a successful node
  * authentication. It is expected that in most situations only the node
  * authentication failures will be reported.
+ * </blockquote>
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.14 Security Alert
  */
 public class SecurityAlertMessage extends AuditMessage {
     
-    public SecurityAlertMessage(AuditEvent event, ActiveParticipant reporter) {
-        super(event, reporter);
+    public SecurityAlertMessage(AuditEvent.TypeCode type,
+            AuditEvent.OutcomeIndicator outcome) {
+        super(new AuditEvent(AuditEvent.ID.SECURITY_ALERT,
+                AuditEvent.ActionCode.EXECUTE, type, 
+                outcome != null ? outcome : AuditEvent.OutcomeIndicator.SUCCESS));        
+    }
+
+    public static SecurityAlertMessage createNodeAuthenticationMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.NODE_AUTHENTICATION, outcome);
     }
     
-    public SecurityAlertMessage(AuditEvent event, ActiveParticipant reporter1,
-            ActiveParticipant reporter2) {
-        super(event, reporter1);
-        super.addActiveParticipant(reporter2); 
+    public static SecurityAlertMessage createEmergencyOverrideMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.EMERGENCY_OVERRIDE, outcome);
+    }
+
+    public static SecurityAlertMessage createNetworkConfigurationMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.NETWORK_CONFIGURATION, outcome);
+    }
+
+    public static SecurityAlertMessage createSecurityConfigurationMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.SECURITY_CONFIGURATION, outcome);
+    }
+
+    public static SecurityAlertMessage createHardwareConfigurationMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.HARDWARE_CONFIGURATION, outcome);
+    }
+
+    public static SecurityAlertMessage createSoftwareConfigurationMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.SOFTWARE_CONFIGURATION, outcome);
+    }
+
+    public static SecurityAlertMessage createUseOfRestrictedFunctionMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.USE_OF_RESTRICTED_FUNCTION, outcome);
+    }
+
+    public static SecurityAlertMessage createAuditRecordingStoppedMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.AUDIT_RECORDING_STOPPED, outcome);
+    }
+
+    public static SecurityAlertMessage createAuditRecordingStartedMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.AUDIT_RECORDING_STARTED, outcome);
+    }
+
+    public static SecurityAlertMessage createObjectSecurityAttributesChangedMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.OBJECT_SECURITY_ATTRIBUTES_CHANGED, outcome);
+    }
+
+    public static SecurityAlertMessage createSecurityRolesChangedMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.SECURITY_ROLES_CHANGED, outcome);
+    }
+
+    public static SecurityAlertMessage createUserSecurityAttributesChangedMessage(
+            AuditEvent.OutcomeIndicator outcome) {
+        return new SecurityAlertMessage(
+                AuditEvent.TypeCode.USER_SECURITY_ATTRIBUTES_CHANGED, outcome);
+    }
+
+    public ActiveParticipant addReportingPerson(String userID, String altUserID, 
+            String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, true));
     }
     
-    public SecurityAlertMessage addPerfomingParticipant(
-            PerformingParticipant performer) {
-        super.addActiveParticipant(performer);
-        return this;
-    }
-
-    public SecurityAlertMessage addAlertSubject(AlertSubject subject) {
-        super.addParticipantObject(subject);
-        return this;
-    } 
-
-    /**
-     * This method is deprecated and should not be used.
-     * 
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if apart is not a 
-     * {@link PerformingParticipant}
-     * @see #addPerfomingParticipant(PerformingParticipant)
-     */
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        if (apart instanceof PerformingParticipant) {
-            return super.addActiveParticipant(apart);            
-        }
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * This method is deprecated and should not be used.
-     *
-     * @deprecated
-     * @exception java.lang.IllegalArgumentException if obj is not a 
-     * {@link AlertSubject}
-     * @see #addAlertSubject(AlertSubject)
-     */
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
-        if (obj instanceof Study) {
-            return super.addParticipantObject(obj);            
-        }
-        throw new IllegalArgumentException();
+    public ActiveParticipant addReportingProcess(String processID, String[] aets, 
+            String processName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, true));
     }
     
-    public static class AuditEvent extends org.dcm4che2.audit.message.AuditEvent {
-
-        public AuditEvent(TypeCode code) {
-            super(ID.SECURITY_ALERT);
-            super.setEventActionCode(ActionCode.EXECUTE);
-            super.addEventTypeCode(code);
-        }
-        
-        public static class NodeAuthentication extends AuditEvent {
-
-            public NodeAuthentication() {
-                super(TypeCode.NODE_AUTHENTICATION);
-            }        
-        }
-        
-        public static class EmergencyOverride extends AuditEvent {
-
-            public EmergencyOverride() {
-                super(TypeCode.EMERGENCY_OVERRIDE);
-            }        
-        }
-
-        public static class NetworkConfiguration extends AuditEvent {
-
-            public NetworkConfiguration() {
-                super(TypeCode.NETWORK_CONFIGURATION);
-            }        
-        }
-
-        public static class SecurityConfiguration extends AuditEvent {
-
-            public SecurityConfiguration() {
-                super(TypeCode.SECURITY_CONFIGURATION);
-            }        
-        }
- 
-        public static class HardwareConfiguration extends AuditEvent {
-
-            public HardwareConfiguration() {
-                super(TypeCode.HARDWARE_CONFIGURATION);
-            }        
-        }
- 
-        public static class SoftwareConfiguration extends AuditEvent {
-
-            public SoftwareConfiguration() {
-                super(TypeCode.SOFTWARE_CONFIGURATION);
-            }        
-        }
-
-        public static class UseOfRestrictedFunction extends AuditEvent {
-
-            public UseOfRestrictedFunction() {
-                super(TypeCode.USE_OF_RESTRICTED_FUNCTION);
-            }        
-        }
- 
-        public static class AuditRecordingStopped extends AuditEvent {
-
-            public AuditRecordingStopped() {
-                super(TypeCode.AUDIT_RECORDING_STOPPED);
-            }        
-        }
- 
-        public static class AuditRecordingStarted extends AuditEvent {
-
-            public AuditRecordingStarted() {
-                super(TypeCode.AUDIT_RECORDING_STARTED);
-            }        
-        }
-  
-        public static class ObjectSecurityAttributesChanged extends AuditEvent {
-
-            public ObjectSecurityAttributesChanged() {
-                super(TypeCode.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
-            }        
-        }
-  
-        public static class SecurityRolesChanged extends AuditEvent {
-
-            public SecurityRolesChanged() {
-                super(TypeCode.SECURITY_ROLES_CHANGED);
-            }        
-        }
-
-        public static class UserSecurityAttributesChanged extends AuditEvent {
-
-            public UserSecurityAttributesChanged() {
-                super(TypeCode.USER_SECURITY_ATTRIBUTES_CHANGED);
-            }        
-        }
+    public ActiveParticipant addPerformingPerson(String userID, String altUserID, 
+            String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, false));
     }
     
+    public ActiveParticipant addPerformingProcess(String processID, String[] aets, 
+            String processName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, false));
+    }
+    
+    public ActiveParticipant addPerformingNode(String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveNode(hostname, false));
+    }
+    
+    public ParticipantObject addAlertSubjectWithURI(String uri, 
+            String desc) {
+        return addParticipantObject(
+                ParticipantObject.createAlertSubjectWithURI(uri, desc));
+    }
+    
+    public ParticipantObject addAlertSubjectWithNodeID(String nodeID, 
+            String desc) {
+        return addParticipantObject(
+                ParticipantObject.createAlertSubjectWithNodeID(nodeID, desc));
+    }
+   
 }

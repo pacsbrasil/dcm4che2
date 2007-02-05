@@ -39,47 +39,68 @@
 package org.dcm4che2.audit.message;
 
 /**
- * This message may be generated whenever there are medication orders or
- * administration within an instance or episode of care. These include 
- * initial order, dispensing, delivery, and cancellation.
+ * This message describes the event of a system begining to transfer a set 
+ * of DICOM instances from one node to another node within control of the
+ * system's security domain. This message may only include information about
+ * a single patient.
+ * 
+ * <blockquote>
+ * Note: A separate Instances Transferred message is defined for transfer
+ * completion, allowing comparison of what was intended to be sent and what was
+ * actually sent.
+ * </blockquote>
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 29, 2006
- * 
- * @see <a href="http://www.ihe.net/Technical_Framework/upload/ihe_iti_tf_2.0_vol2_FT_2005-08-15.pdf">
- * IHE IT Infrastructure Technical Framework, vol. 2: Transactions,
- * 3.20.7.3.2 Medication Event</a>
+ * @since Nov 23, 2006
+ * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.3 Begin Transferring DICOM Instances</a>
  */
-public class MedicationEventMessage extends AuditMessage {
+public class BeginTransferringMessage extends AuditMessage {
 
-    public MedicationEventMessage(AuditEvent.ActionCode action) {
-        super(new AuditEvent(AuditEvent.ID.MEDICATION_EVENT, check(action)));
-    }
-    
-    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
-        if (action == AuditEvent.ActionCode.EXECUTE) {
-            throw new IllegalArgumentException("action=Execute");
-        }
-        return action;
+    public BeginTransferringMessage() {
+        super(new AuditEvent(AuditEvent.ID.BEGIN_TRANSFERRING_DICOM_INSTANCES,
+                AuditEvent.ActionCode.EXECUTE));
     }
 
-    public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true));
-    }
-    
-    public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname) {
+    public ActiveParticipant addSourceProcess(String processID, String[] aets,
+            String processName, String hostname, boolean requestor) {
         return addActiveParticipant(
                 ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, true));
+                        processName, hostname, requestor)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
-        
+    
+    public ActiveParticipant addDestinationProcess(String processID, String[] aets, 
+            String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
+    }
+
+    public ActiveParticipant addOtherParticipantPerson(String userID,
+            String altUserID, String userName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, requestor));
+    }
+    
+    public ActiveParticipant addOtherParticipantProcess(String processID,
+            String[] aets, String processName, String hostname, boolean requestor) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, requestor));
+    }
+            
     public ParticipantObject addPatient(String id, String name) {
         return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
+
+    public ParticipantObject addStudy(String uid,
+            ParticipantObjectDescription desc) {
+        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
+    }
+
 
 }

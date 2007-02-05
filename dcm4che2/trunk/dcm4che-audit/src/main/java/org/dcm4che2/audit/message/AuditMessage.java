@@ -57,19 +57,17 @@ public class AuditMessage extends BaseElement {
     private static final String XML_VERSION_1_0_ENCODING_UTF_8 = 
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     private static boolean incXMLDecl = false;
-    private static AuditSource defaultAuditSource;
     private final AuditEvent event;
-    private final ArrayList activeParticipants = new ArrayList();
+    private final ArrayList activeParticipants = new ArrayList(3);
     private final ArrayList auditSources = new ArrayList(1);
-    private final ArrayList participantObjects = new ArrayList();
+    private final ArrayList participantObjects = new ArrayList(3);
     
-    public AuditMessage(AuditEvent event, ActiveParticipant apart) {
+    public AuditMessage(AuditEvent event) {
         super("AuditMessage");
         if (event == null) {
             throw new NullPointerException();
         }
         this.event = event;
-        addActiveParticipantInternal(apart);
     }
     
     public static final boolean isIncludeXMLDeclaration() {
@@ -80,14 +78,6 @@ public class AuditMessage extends BaseElement {
         AuditMessage.incXMLDecl = incXMLDecl;
     }
 
-    public static AuditSource getDefaultAuditSource() {
-        return defaultAuditSource;
-    }
-    
-    public static void setDefaultAuditSource(AuditSource sourceId) {
-        defaultAuditSource = sourceId;
-    }
-
     public final AuditEvent getAuditEvent() {
         return event;
     }
@@ -96,40 +86,36 @@ public class AuditMessage extends BaseElement {
         return Collections.unmodifiableList(auditSources);
     }
        
-    public AuditMessage addAuditSource(AuditSource sourceId) {
+    public AuditSource addAuditSource(AuditSource sourceId) {
         if (sourceId == null) {
             throw new NullPointerException();
         }
         auditSources.add(sourceId);
-        return this;
+        return sourceId;
     }
 
     public List getActiveParticipants() {
         return Collections.unmodifiableList(activeParticipants);
     }
            
-    public AuditMessage addActiveParticipant(ActiveParticipant apart) {
-        return addActiveParticipantInternal(apart);
-    }
-
-    private AuditMessage addActiveParticipantInternal(ActiveParticipant apart) {
+    public ActiveParticipant addActiveParticipant(ActiveParticipant apart) {
         if (apart == null) {
             throw new NullPointerException();
         }
         activeParticipants.add(apart);
-        return this;
+        return apart;
     }
     
     public List getParticipantObjects() {
         return Collections.unmodifiableList(participantObjects);
     }
            
-    public AuditMessage addParticipantObject(ParticipantObject obj) {
+    public ParticipantObject addParticipantObject(ParticipantObject obj) {
         if (obj == null) {
             throw new NullPointerException();
         }
         participantObjects.add(obj);
-        return this;
+        return obj;
     }
     
     protected boolean isEmpty() {
@@ -141,116 +127,27 @@ public class AuditMessage extends BaseElement {
     }    
     
     public void output(Writer out) throws IOException {
-        if (auditSources.isEmpty() && defaultAuditSource == null) {
-            throw new IllegalStateException("No Audit Source specified!");
-        }
+        validate();
         if (incXMLDecl) {
             out.write(XML_VERSION_1_0_ENCODING_UTF_8);
         }
         super.output(out);
+    }
+
+    public void validate() {
+        if (activeParticipants.isEmpty()) {
+            throw new IllegalStateException("No Active Participant");
+        }
     }
     
     protected void outputContent(Writer out) throws IOException {
         event.output(out);
         outputChilds(out, activeParticipants);
         if (auditSources.isEmpty()) {
-            defaultAuditSource.output(out);
+            AuditSource.getDefaultAuditSource().output(out);
         } else {
             outputChilds(out, auditSources);
         }
         outputChilds(out, participantObjects);
     }
-    
-    public static AuditMessage createApplicationActivityMessage(
-            AuditEvent.TypeCode code, Application app) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY,
-                        AuditEvent.ActionCode.EXECUTE),
-                app);
-    }
-
-    public static AuditMessage createApplicationStartMessage(Application app) {
-        return createApplicationActivityMessage(
-                AuditEvent.TypeCode.APPLICATION_START, app);
-    }
-
-    public static AuditMessage createApplicationStopMessage(Application app) {
-        return createApplicationActivityMessage(
-                AuditEvent.TypeCode.APPLICATION_STOP, app);
-    }
-
-    public static AuditMessage createAuditLogUsedMessage(
-            ActiveParticipant userOrProcess, AuditLog auditLog) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.AUDIT_LOG_USED,
-                        AuditEvent.ActionCode.READ),
-                        userOrProcess)
-                .addParticipantObject(auditLog);        
-    }
-    
-    public static AuditMessage createAuditLogUsedMessage(ActiveParticipant user,
-            ActiveParticipant process, AuditLog auditLog) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.AUDIT_LOG_USED,
-                        AuditEvent.ActionCode.READ),
-                        user)
-                .addActiveParticipant(process)        
-                .addParticipantObject(auditLog);        
-    }
-    
-    public static AuditMessage createBeginTransferingMessage(Source src,
-            Destination dst, Patient patient, Study study) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.BEGIN_TRANSFERRING_DICOM_INSTANCES,
-                        AuditEvent.ActionCode.EXECUTE),
-                src)
-                .addActiveParticipant(dst)
-                .addParticipantObject(patient)
-                .addParticipantObject(study);
-    }
-
-    public static AuditMessage createExportMessage(Source userOrProcess, 
-            DestinationMedia dstMedia, Patient patient) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.EXPORT,
-                        AuditEvent.ActionCode.READ),
-                        userOrProcess)
-                .addActiveParticipant(dstMedia)
-                .addParticipantObject(patient);
-    }
-    
-    public static AuditMessage createExportMessage(Source user, Source process,
-            DestinationMedia dstMedia, Patient patient) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.EXPORT,
-                        AuditEvent.ActionCode.READ),
-                        user)
-                .addActiveParticipant(process)
-                .addActiveParticipant(dstMedia)
-                .addParticipantObject(patient);
-    }
-
-    public static AuditMessage createImportMessage(
-            ActiveParticipant userOrProcess, ActiveParticipant srcMedia,
-            ParticipantObject patient) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.IMPORT,
-                        AuditEvent.ActionCode.CREATE),
-                        userOrProcess)
-                .addActiveParticipant(srcMedia)
-                .addParticipantObject(patient);
-    }
-    
-    public static AuditMessage createImportMessage(
-            ActiveParticipant user, ActiveParticipant process,
-            ActiveParticipant srcMedia, ParticipantObject patient) {
-        return new AuditMessage(
-                new AuditEvent(AuditEvent.ID.IMPORT,
-                        AuditEvent.ActionCode.CREATE),
-                        user)
-                .addActiveParticipant(process)
-                .addActiveParticipant(srcMedia)
-                .addParticipantObject(patient);
-    }
-    
 }
