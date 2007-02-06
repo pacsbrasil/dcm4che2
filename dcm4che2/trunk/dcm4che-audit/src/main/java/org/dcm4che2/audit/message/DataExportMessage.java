@@ -63,27 +63,35 @@ public class DataExportMessage extends AuditMessage {
                 eventDT, outcome));
     }
        
-    public ActiveParticipant addImporterPerson(String userID, String altUserID, 
-            String userName, String hostname, boolean requestor) {
+    public ActiveParticipant addExporterPerson(String userID, String altUserID, 
+            String userName, boolean requestor, String hostname) {
         return addActiveParticipant(
                 ActiveParticipant.createActivePerson(userID, altUserID, 
                         userName, hostname, requestor))
-                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION);
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
     }
     
-    public ActiveParticipant addImporterProcess(String processID, String[] aets, 
-            String processName, String hostname, boolean requestor) {
+    public ActiveParticipant addExporterProcess(String processID, String[] aets, 
+            String processName, boolean requestor, String hostname) {
         return addActiveParticipant(
                 ActiveParticipant.createActiveProcess(processID, aets, 
                         processName, hostname, requestor)
-                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
     
-    public ActiveParticipant addSourceMedia(String mediaID, String mediaUID) {
+    public ActiveParticipant addDestinationMedia(String mediaID, String mediaUID) {
         return addActiveParticipant(
-                ActiveParticipant.createActiveMedia(mediaID, mediaUID)
-                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE_MEDIA));
+                ActiveParticipant.createMedia(mediaID, mediaUID)
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION_MEDIA));
     }
+
+    public ActiveParticipant addDestinationMedia(String userID, String altUserID, 
+            String userName, boolean requestor, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, requestor))
+                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION_MEDIA);
+    }    
     
     public ParticipantObject addPatient(String id, String name) {
         return addParticipantObject(ParticipantObject.createPatient(id, name));
@@ -92,5 +100,9 @@ public class DataExportMessage extends AuditMessage {
     public ParticipantObject addStudy(String uid,
             ParticipantObjectDescription desc) {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
+    }
+
+    public ParticipantObject addDataRepository(String uri) {
+        return addParticipantObject(ParticipantObject.createDataRepository(uri));
     }
 }

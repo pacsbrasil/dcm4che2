@@ -8,6 +8,7 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  * This message describes the event of an order being  created, modified,
  * accessed, or deleted.  This message may only include information about 
  * a single patient.
+ * 
  * <blockquote>
  * Note: An order record typically is managed by a non-DICOM system.
  * However, DICOM applications often manipulate order records, and thus

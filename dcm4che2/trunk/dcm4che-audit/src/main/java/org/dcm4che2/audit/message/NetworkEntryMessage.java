@@ -59,8 +59,6 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  * that the event occurred, not the time that the message is sent. 
  * </blockquote>
  * 
- * No Participant Objects are needed for this message.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 23, 2006

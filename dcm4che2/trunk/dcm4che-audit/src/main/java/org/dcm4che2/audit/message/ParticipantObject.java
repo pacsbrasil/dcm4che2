@@ -217,6 +217,14 @@ public class ParticipantObject extends BaseElement {
         }
         return study;
     }
+
+
+    public static ParticipantObject createDataRepository(String uri) {
+        ParticipantObject obj = new ParticipantObject(uri, IDTypeCode.URI);
+        obj.setParticipantObjectTypeCode(TypeCode.SYSTEM);
+        obj.setParticipantObjectTypeCodeRole(TypeCodeRole.DATA_REPOSITORY);
+        return obj;
+    }
     
     public static ParticipantObject createQuerySOPClass(String cuid, 
             String tsuid, byte[] query) {
@@ -329,9 +337,9 @@ public class ParticipantObject extends BaseElement {
         public static final TypeCodeRole SECURITY_GRANULARITY_DEFINITION = 
                 new TypeCodeRole("14");
         public static final TypeCodeRole PROVIDER = new TypeCodeRole("15");
-        public static final TypeCodeRole REPORT_DESTINATION =  
+        public static final TypeCodeRole DATA_DESTINATION =  
                 new TypeCodeRole("16");
-        public static final TypeCodeRole REPORT_LIBRARY = 
+        public static final TypeCodeRole DATA_REPOSITORY = 
                 new TypeCodeRole("17");
         public static final TypeCodeRole SCHEDULE = new TypeCodeRole("18");
         public static final TypeCodeRole CUSTOMER = new TypeCodeRole("19");
@@ -407,7 +415,8 @@ public class ParticipantObject extends BaseElement {
         protected void outputContent(Writer out) throws IOException {
             outputEscaped(out, value, "'");
         }
-    }    
+    }
+    
     private static class Query extends BaseElement {
 
         private final byte[] value;

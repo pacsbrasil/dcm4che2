@@ -44,6 +44,7 @@ import java.util.Date;
  * This message describes any event for which a node needs to report a 
  * security alert, e.g., a node authentication failure when establishing a 
  * secure communications channel.
+ * 
  * <blockquote>
  * Note: The Node Authentication event can be used to report both successes
  * and failures. If reporting of success is done, this could generate a very

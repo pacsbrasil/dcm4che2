@@ -40,8 +40,6 @@ package org.dcm4che2.audit.message;
 
 import java.util.Date;
 
-import org.dcm4che2.audit.message.AuditEvent.TypeCode;
-
 /**
  * This message describes the event of a user has attempting to log on or
  * log off, whether successful or not.  No Participant Objects are needed

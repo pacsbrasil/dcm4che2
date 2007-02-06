@@ -7,13 +7,15 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
 /**
  * This message describes the event of a patient record being created,
  * modified, accessed, or deleted.
- * <p>
+ * 
+ * <blockquote>
  * Note: There are several types of patient records managed by both DICOM
  * and non-DICOM system.  DICOM applications often manipulate patient
  * records managed by a variety of systems, and thus may be obligated by
  * site security policies to record such events in the audit logs. This
  * audit event can be used to record the access or manipulation of patient
  * records where specific DICOM SOP Instances are not involved.
+ * </blockquote>
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$

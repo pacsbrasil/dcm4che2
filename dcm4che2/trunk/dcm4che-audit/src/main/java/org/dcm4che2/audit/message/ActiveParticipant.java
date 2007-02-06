@@ -100,7 +100,7 @@ public class ActiveParticipant extends BaseElement {
         return ap;
     }
     
-    public static ActiveParticipant createActiveMedia(String mediaID,
+    public static ActiveParticipant createMedia(String mediaID,
             String mediaUID) {
         ActiveParticipant ap = new ActiveParticipant(mediaID, false);
         ap.setAlternativeUserID(mediaUID);
