@@ -38,6 +38,11 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+import org.dcm4che2.audit.message.AuditEvent.TypeCode;
+
 /**
  * This audit message describes the event of an Application Entity 
  * starting or stopping.
@@ -162,21 +167,26 @@ package org.dcm4che2.audit.message;
  */
 public class ApplicationActivityMessage extends AuditMessage {
 
-    public ApplicationActivityMessage(AuditEvent.TypeCode typeCode) {
-        super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
-                AuditEvent.ActionCode.EXECUTE, typeCode));
-    }
+    public static final AuditEvent.TypeCode APPLICATION_START =
+            AuditEvent.TypeCode.APPLICATION_START;
+    public static final AuditEvent.TypeCode APPLICATION_STOP =
+            AuditEvent.TypeCode.APPLICATION_STOP;
     
-    public static ApplicationActivityMessage createApplicationStartMessage() {
-        return new ApplicationActivityMessage(
-                AuditEvent.TypeCode.APPLICATION_START);
+    
+    public ApplicationActivityMessage(AuditEvent.TypeCode typeCode, 
+            Date eventDT, OutcomeIndicator outcome) {
+        super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
+                AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+            .addEventTypeCode(check(typeCode)));
+    }
+       
+    private static TypeCode check(TypeCode typeCode) {
+        if (typeCode == null) {
+            throw new NullPointerException("typeCode");
+        }
+        return typeCode;
     }
 
-    public static ApplicationActivityMessage createApplicationStopMessage() {
-        return new ApplicationActivityMessage(
-                AuditEvent.TypeCode.APPLICATION_STOP);
-    }
-        
     public ActiveParticipant addApplication(String processID, String[] aets, 
             String processName, String hostname) {
         return addActiveParticipant(

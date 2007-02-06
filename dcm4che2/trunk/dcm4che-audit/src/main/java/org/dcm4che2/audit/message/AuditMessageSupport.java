@@ -40,29 +40,45 @@ package org.dcm4che2.audit.message;
 
 import java.util.Date;
 
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+public class AuditMessageSupport extends AuditMessage {
 
-/**
- * This message may be generated whenever health services are scheduled and
- * performed within an instance or episode of care. These include scheduling, 
- * initiation, updates or amendments, performing or completing an act, and 
- * cancellation.
- * 
- * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since Nov 29, 2006
- * 
- * @see <a href="http://www.ihe.net/Technical_Framework/upload/ihe_iti_tf_2.0_vol2_FT_2005-08-15.pdf">
- * IHE IT Infrastructure Technical Framework, vol. 2: Transactions,
- * 3.20.7.3.1 Health Services Provision Event</a>
- */
-public class HealthServicesProvisionEventMessage extends AuditMessageSupport {
-
-    public HealthServicesProvisionEventMessage(AuditEvent.ActionCode action,
-            Date eventDT, OutcomeIndicator outcome) {
-        super(AuditEvent.ID.HEALTH_SERVICE_PROVISION_EVENT, action, eventDT,
-                outcome);
+    public static final AuditEvent.ActionCode CREATE = 
+            AuditEvent.ActionCode.CREATE;
+    public static final AuditEvent.ActionCode READ = 
+            AuditEvent.ActionCode.READ;
+    public static final AuditEvent.ActionCode UPDATE = 
+            AuditEvent.ActionCode.UPDATE;
+    public static final AuditEvent.ActionCode DELETE = 
+            AuditEvent.ActionCode.DELETE;
+    
+    protected AuditMessageSupport(AuditEvent.ID id, AuditEvent.ActionCode action,
+            Date eventDT, AuditEvent.OutcomeIndicator outcome) {
+        super(new AuditEvent(id, check(action), eventDT, outcome));
     }      
+    
+    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
+        if (action == AuditEvent.ActionCode.EXECUTE) {
+            throw new IllegalArgumentException("action=Execute");
+        }
+        return action;
+    }
 
+    public ActiveParticipant addUserPerson(String userID, String altUserID, 
+            String userName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, hostname, true));
+    }
+    
+    public ActiveParticipant addUserProcess(String processID, String[] aets, 
+            String processName, String hostname) {
+        return addActiveParticipant(
+                ActiveParticipant.createActiveProcess(processID, aets, 
+                        processName, hostname, true));
+    }
+        
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
+    }
 
 }

@@ -58,37 +58,17 @@ public class AuditEvent extends BaseElement {
     private final ID eventID;
     private final ArrayList eventTypeCodes = new ArrayList(1);
 
-    public AuditEvent(ID eventID, OutcomeIndicator outcome) {
+    public AuditEvent(ID eventID, ActionCode action, Date eventDT, 
+            OutcomeIndicator outcome) {
         super("EventIdentification");
         if (eventID == null) {
             throw new NullPointerException();
         }
         this.eventID = eventID;
-        setEventDateTime(new Date());
-        setEventOutcomeIndicator(outcome);
-    }
-
-    public AuditEvent(ID eventID) {
-        this(eventID, OutcomeIndicator.SUCCESS);
-    }
-    
-    public AuditEvent(ID eventID, ActionCode action, OutcomeIndicator outcome) {
-        this(eventID, outcome);
-        setEventActionCode(action);
-    }
-
-    public AuditEvent(ID eventID, ActionCode action) {
-        this(eventID, action, OutcomeIndicator.SUCCESS);
-    }
-
-    public AuditEvent(ID eventID, ActionCode action, TypeCode type,
-            OutcomeIndicator outcome) {
-        this(eventID, action, outcome);
-        addEventTypeCode(type);
-    }
-
-    public AuditEvent(ID eventID, ActionCode action, TypeCode type) {
-        this(eventID, action, type, OutcomeIndicator.SUCCESS);
+        addAttribute("EventActionCode", action);
+        addAttribute("EventDateTime", eventDT != null ? eventDT : new Date());
+        addAttribute("EventOutcomeIndicator", 
+                outcome != null ? outcome : OutcomeIndicator.SUCCESS);
     }
 
     public ID getEventID() {
@@ -99,30 +79,14 @@ public class AuditEvent extends BaseElement {
         return (ActionCode) getAttribute("EventActionCode");
     }
 
-    public AuditEvent setEventActionCode(ActionCode code) {
-        addAttribute("EventActionCode", code);
-        return this;
-    }
-
     public Date getEventDateTime() {
         return (Date) getAttribute("EventDateTime");
-    }
-
-    public AuditEvent setEventDateTime(Date date) {
-        addAttribute("EventDateTime", date);
-        return this;
     }
 
     public OutcomeIndicator getEventOutcomeIndicator() {
         return (OutcomeIndicator) getAttribute("EventOutcomeIndicator");
     }
     
-    public AuditEvent setEventOutcomeIndicator(
-            OutcomeIndicator code) {
-        addAttribute("EventOutcomeIndicator", code);
-        return this;
-    }
-
     public List getEventTypeCodes() {
         return Collections.unmodifiableList(eventTypeCodes);
     }
@@ -444,6 +408,5 @@ public class AuditEvent extends BaseElement {
                 String displayName) {
             super("EventTypeCode", code, codeSystemName, displayName);
         }
-    }
-    
+    }    
 }

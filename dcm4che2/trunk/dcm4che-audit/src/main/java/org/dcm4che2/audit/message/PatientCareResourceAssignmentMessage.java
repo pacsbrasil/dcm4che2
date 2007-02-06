@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message may be generated whenever there are staffing or participant 
  * assignment actions relevant to the assignment of healthcare professionals, 
@@ -53,36 +57,12 @@ package org.dcm4che2.audit.message;
  * IHE IT Infrastructure Technical Framework, vol. 2: Transactions,
  * 3.20.7.3.3 Patient Care Resource Assignment Event</a>
  */
-public class PatientCareResourceAssignmentMessage extends AuditMessage {
+public class PatientCareResourceAssignmentMessage extends AuditMessageSupport {
 
-    public PatientCareResourceAssignmentMessage(AuditEvent.ActionCode action) {
-        super(new AuditEvent(AuditEvent.ID.PATIENT_CARE_RESOURCE_ASSIGNMENT,
-                check(action)));
-    }
-    
-    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
-        if (action == AuditEvent.ActionCode.EXECUTE) {
-            throw new IllegalArgumentException("action=Execute");
-        }
-        return action;
-    }
-
-    public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true));
-    }
-    
-    public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, true));
-    }
-        
-    public ParticipantObject addPatient(String id, String name) {
-        return addParticipantObject(ParticipantObject.createPatient(id, name));
+    public PatientCareResourceAssignmentMessage(AuditEvent.ActionCode action,
+            Date eventDT, OutcomeIndicator outcome) {
+        super(AuditEvent.ID.PATIENT_CARE_RESOURCE_ASSIGNMENT, action, eventDT,
+                outcome);
     }
 
 }

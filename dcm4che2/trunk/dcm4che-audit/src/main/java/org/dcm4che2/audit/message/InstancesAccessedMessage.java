@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message describes the event of DICOM SOP Instances  being viewed,
  * utilized, updated, or deleted. This event is summarized at the level of
@@ -49,52 +53,12 @@ package org.dcm4che2.audit.message;
  * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
  * DICOM Supp 95: Audit Trail Messages, A.1.3.6 DICOM Instances Accessed</a>
  */
-public class InstancesAccessedMessage extends AuditMessage {
+public class InstancesAccessedMessage extends AuditMessageSupport {
 
-    public InstancesAccessedMessage(AuditEvent.ActionCode action) {
-        super(new AuditEvent(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, 
-                check(action)));
-    }
-    
-    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
-        if (action == AuditEvent.ActionCode.EXECUTE) {
-            throw new IllegalArgumentException("action=Execute");
-        }
-        return action;
-    }
-
-    public static InstancesAccessedMessage createInstancesCreateMessage() {
-        return new InstancesAccessedMessage(AuditEvent.ActionCode.CREATE);
-    }
-    
-    public static InstancesAccessedMessage createInstancesReadMessage() {
-        return new InstancesAccessedMessage(AuditEvent.ActionCode.READ);
-    }
-    
-    public static InstancesAccessedMessage createInstancesUpdateMessage() {
-        return new InstancesAccessedMessage(AuditEvent.ActionCode.UPDATE);
-    }
-    
-    public static InstancesAccessedMessage createInstancesDeleteMessage() {
-        return new InstancesAccessedMessage(AuditEvent.ActionCode.DELETE);
-    }
-        
-    public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname, boolean requestor) {
-        return addActiveParticipant(
-                ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, requestor));
-    }
-    
-    public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname, boolean requestor) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, requestor));
-    }
-        
-    public ParticipantObject addPatient(String id, String name) {
-        return addParticipantObject(ParticipantObject.createPatient(id, name));
+    public InstancesAccessedMessage(AuditEvent.ActionCode action,
+            Date eventDT, OutcomeIndicator outcome) {
+        super(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, action, eventDT,
+                outcome);
     }
 
     public ParticipantObject addStudy(String uid,

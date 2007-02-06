@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message describes the event of exporting data from a system, implying
  * that the data is leaving control of the system's security domain.
@@ -54,8 +58,9 @@ package org.dcm4che2.audit.message;
  */
 public class DataExportMessage extends AuditMessage {
 
-    public DataExportMessage() {
-        super(new AuditEvent(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ));
+    public DataExportMessage(Date eventDT, OutcomeIndicator outcome) {
+        super(new AuditEvent(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ,
+                eventDT, outcome));
     }
        
     public ActiveParticipant addImporterPerson(String userID, String altUserID, 

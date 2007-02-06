@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message may be generated whenever there are specific patient care 
  * episodes or problems that occur within an instance of care. These include 
@@ -52,35 +56,11 @@ package org.dcm4che2.audit.message;
  * IHE IT Infrastructure Technical Framework, vol. 2: Transactions,
  * 3.20.7.3.4 Patient Care Protocol Episode</a>
  */
-public class PatientCareProtocolMessage extends AuditMessage {
+public class PatientCareProtocolMessage extends AuditMessageSupport {
 
-    public PatientCareProtocolMessage(AuditEvent.ActionCode action) {
-        super(new AuditEvent(AuditEvent.ID.PATIENT_CARE_PROTOCOL, check(action)));
-    }
-    
-    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
-        if (action == AuditEvent.ActionCode.EXECUTE) {
-            throw new IllegalArgumentException("action=Execute");
-        }
-        return action;
-    }
-
-    public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true));
-    }
-    
-    public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, true));
-    }
-        
-    public ParticipantObject addPatient(String id, String name) {
-        return addParticipantObject(ParticipantObject.createPatient(id, name));
+    public PatientCareProtocolMessage(AuditEvent.ActionCode action,
+            Date eventDT, OutcomeIndicator outcome) {
+        super(AuditEvent.ID.PATIENT_CARE_PROTOCOL, action, eventDT, outcome);
     }
 
 }

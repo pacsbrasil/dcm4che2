@@ -38,6 +38,8 @@
 
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
 /**
  * This message describes any event for which a node needs to report a 
  * security alert, e.g., a node authentication failure when establishing a 
@@ -59,83 +61,36 @@ package org.dcm4che2.audit.message;
  */
 public class SecurityAlertMessage extends AuditMessage {
     
-    public SecurityAlertMessage(AuditEvent.TypeCode type,
+    public static final AuditEvent.TypeCode NODE_AUTHENTICATION =
+            AuditEvent.TypeCode.NODE_AUTHENTICATION;
+    public static final AuditEvent.TypeCode EMERGENCY_OVERRIDE =
+            AuditEvent.TypeCode.EMERGENCY_OVERRIDE;
+    public static final AuditEvent.TypeCode NETWORK_CONFIGURATION =
+            AuditEvent.TypeCode.NETWORK_CONFIGURATION;
+    public static final AuditEvent.TypeCode SECURITY_CONFIGURATION =
+            AuditEvent.TypeCode.SECURITY_CONFIGURATION;
+    public static final AuditEvent.TypeCode HARDWARE_CONFIGURATION =
+            AuditEvent.TypeCode.HARDWARE_CONFIGURATION;
+    public static final AuditEvent.TypeCode SOFTWARE_CONFIGURATION =
+            AuditEvent.TypeCode.SOFTWARE_CONFIGURATION;
+    public static final AuditEvent.TypeCode USE_OF_RESTRICTED_FUNCTION =
+            AuditEvent.TypeCode.USE_OF_RESTRICTED_FUNCTION;
+    public static final AuditEvent.TypeCode AUDIT_RECORDING_STOPPED =
+            AuditEvent.TypeCode.AUDIT_RECORDING_STOPPED;
+    public static final AuditEvent.TypeCode AUDIT_RECORDING_STARTED =
+            AuditEvent.TypeCode.AUDIT_RECORDING_STARTED;
+    public static final AuditEvent.TypeCode OBJECT_SECURITY_ATTRIBUTES_CHANGED =
+            AuditEvent.TypeCode.OBJECT_SECURITY_ATTRIBUTES_CHANGED;
+    public static final AuditEvent.TypeCode SECURITY_ROLES_CHANGED =
+            AuditEvent.TypeCode.SECURITY_ROLES_CHANGED;
+    public static final AuditEvent.TypeCode USER_SECURITY_ATTRIBUTES_CHANGED =
+            AuditEvent.TypeCode.USER_SECURITY_ATTRIBUTES_CHANGED;
+    
+    public SecurityAlertMessage(AuditEvent.TypeCode type, Date eventDT,
             AuditEvent.OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.SECURITY_ALERT,
-                AuditEvent.ActionCode.EXECUTE, type, 
-                outcome != null ? outcome : AuditEvent.OutcomeIndicator.SUCCESS));        
-    }
-
-    public static SecurityAlertMessage createNodeAuthenticationMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.NODE_AUTHENTICATION, outcome);
-    }
-    
-    public static SecurityAlertMessage createEmergencyOverrideMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.EMERGENCY_OVERRIDE, outcome);
-    }
-
-    public static SecurityAlertMessage createNetworkConfigurationMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.NETWORK_CONFIGURATION, outcome);
-    }
-
-    public static SecurityAlertMessage createSecurityConfigurationMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.SECURITY_CONFIGURATION, outcome);
-    }
-
-    public static SecurityAlertMessage createHardwareConfigurationMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.HARDWARE_CONFIGURATION, outcome);
-    }
-
-    public static SecurityAlertMessage createSoftwareConfigurationMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.SOFTWARE_CONFIGURATION, outcome);
-    }
-
-    public static SecurityAlertMessage createUseOfRestrictedFunctionMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.USE_OF_RESTRICTED_FUNCTION, outcome);
-    }
-
-    public static SecurityAlertMessage createAuditRecordingStoppedMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.AUDIT_RECORDING_STOPPED, outcome);
-    }
-
-    public static SecurityAlertMessage createAuditRecordingStartedMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.AUDIT_RECORDING_STARTED, outcome);
-    }
-
-    public static SecurityAlertMessage createObjectSecurityAttributesChangedMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.OBJECT_SECURITY_ATTRIBUTES_CHANGED, outcome);
-    }
-
-    public static SecurityAlertMessage createSecurityRolesChangedMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.SECURITY_ROLES_CHANGED, outcome);
-    }
-
-    public static SecurityAlertMessage createUserSecurityAttributesChangedMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new SecurityAlertMessage(
-                AuditEvent.TypeCode.USER_SECURITY_ATTRIBUTES_CHANGED, outcome);
+                AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+            .addEventTypeCode(type));        
     }
 
     public ActiveParticipant addReportingPerson(String userID, String altUserID, 

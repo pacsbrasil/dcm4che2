@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message describes the event of a system, such as a mobile device, 
  * entering or leaving the network as a normal part of operations. It is not
@@ -65,9 +69,16 @@ package org.dcm4che2.audit.message;
  */
 public class NetworkEntryMessage extends AuditMessage {
     
-    public NetworkEntryMessage(AuditEvent.TypeCode type) {
+    public static final AuditEvent.TypeCode ATTACH = 
+            AuditEvent.TypeCode.ATTACH;
+    public static final AuditEvent.TypeCode DETACH = 
+            AuditEvent.TypeCode.DETACH;
+    
+    public NetworkEntryMessage(AuditEvent.TypeCode type, Date eventDT,
+            OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.NETWORK_ENTRY,
-                AuditEvent.ActionCode.EXECUTE, check(type)));
+                    AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+                .addEventTypeCode(check(type)));
     }
 
     private static AuditEvent.TypeCode check(AuditEvent.TypeCode type) {
@@ -78,14 +89,6 @@ public class NetworkEntryMessage extends AuditMessage {
         return type;
     }
     
-    public static NetworkEntryMessage createAttachMessage() {
-        return new NetworkEntryMessage(AuditEvent.TypeCode.ATTACH);
-    }
-    
-    public static NetworkEntryMessage createDetachMessage() {
-        return new NetworkEntryMessage(AuditEvent.TypeCode.DETACH);
-    }
-
     public ActiveParticipant addNode(String hostname) {
         return addActiveParticipant(
                 ActiveParticipant.createActiveNode(hostname, false));

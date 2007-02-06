@@ -40,7 +40,9 @@ package org.dcm4che2.audit.message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomOutputStream;
 
@@ -76,9 +78,9 @@ import org.dcm4che2.io.DicomOutputStream;
  */
 public class QueryMessage extends AuditMessage {
 
-    public QueryMessage() {
-        super(new AuditEvent(AuditEvent.ID.PROCEDURE_RECORD,
-                AuditEvent.ActionCode.EXECUTE));
+    public QueryMessage(Date eventDT, OutcomeIndicator outcome) {
+        super(new AuditEvent(AuditEvent.ID.QUERY, AuditEvent.ActionCode.EXECUTE,
+                eventDT, outcome));
     }
  
     public ActiveParticipant addSourceProcess(String processID, String[] aets,

@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message describes the event of the completion of transferring DICOM 
  * SOP Instances  between two Application Entities. This message may only 
@@ -364,9 +368,19 @@ package org.dcm4che2.audit.message;
  */
 public class InstancesTransferredMessage extends AuditMessage {
 
-    public InstancesTransferredMessage(AuditEvent.ActionCode action) {
+    public static final AuditEvent.ActionCode CREATE = 
+            AuditEvent.ActionCode.CREATE;
+    public static final AuditEvent.ActionCode READ = 
+            AuditEvent.ActionCode.READ;
+    public static final AuditEvent.ActionCode UPDATE = 
+            AuditEvent.ActionCode.UPDATE;
+    public static final AuditEvent.ActionCode EXECUTE = 
+            AuditEvent.ActionCode.EXECUTE;
+
+    public InstancesTransferredMessage(AuditEvent.ActionCode action,
+            Date eventDT, OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, 
-                check(action)));
+                check(action), eventDT, outcome));
     }
     
     private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {

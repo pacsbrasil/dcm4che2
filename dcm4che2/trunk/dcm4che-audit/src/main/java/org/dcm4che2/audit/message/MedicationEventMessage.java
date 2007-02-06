@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message may be generated whenever there are medication orders or
  * administration within an instance or episode of care. These include 
@@ -51,35 +55,11 @@ package org.dcm4che2.audit.message;
  * IHE IT Infrastructure Technical Framework, vol. 2: Transactions,
  * 3.20.7.3.2 Medication Event</a>
  */
-public class MedicationEventMessage extends AuditMessage {
+public class MedicationEventMessage extends AuditMessageSupport {
 
-    public MedicationEventMessage(AuditEvent.ActionCode action) {
-        super(new AuditEvent(AuditEvent.ID.MEDICATION_EVENT, check(action)));
-    }
-    
-    private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
-        if (action == AuditEvent.ActionCode.EXECUTE) {
-            throw new IllegalArgumentException("action=Execute");
-        }
-        return action;
-    }
-
-    public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true));
-    }
-    
-    public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, true));
-    }
-        
-    public ParticipantObject addPatient(String id, String name) {
-        return addParticipantObject(ParticipantObject.createPatient(id, name));
+    public MedicationEventMessage(AuditEvent.ActionCode action, Date eventDT,
+            OutcomeIndicator outcome) {
+        super(AuditEvent.ID.MEDICATION_EVENT, action, eventDT, outcome);
     }
 
 }

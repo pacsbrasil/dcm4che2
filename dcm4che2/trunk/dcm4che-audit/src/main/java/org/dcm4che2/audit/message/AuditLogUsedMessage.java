@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 
 /**
  * This message describes the event of a person or process accessing a log 
@@ -183,9 +187,9 @@ package org.dcm4che2.audit.message;
  */
 public class AuditLogUsedMessage extends AuditMessage {
 
-    public AuditLogUsedMessage() {
+    public AuditLogUsedMessage(Date eventDT, OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.AUDIT_LOG_USED, 
-                AuditEvent.ActionCode.READ));
+                AuditEvent.ActionCode.READ, eventDT, outcome));
     }
     
     public ActiveParticipant addUserPerson(String userID, String altUserID, 

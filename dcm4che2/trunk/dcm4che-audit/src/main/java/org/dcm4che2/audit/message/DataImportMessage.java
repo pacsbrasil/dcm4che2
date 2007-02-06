@@ -38,6 +38,10 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+
 /**
  * This message describes the event of importing data into a system, implying
  * that the data now entering the system may not have been under the control
@@ -52,11 +56,10 @@ package org.dcm4che2.audit.message;
  */
 public class DataImportMessage extends AuditMessage {
 
-    public DataImportMessage() {
-        super(new AuditEvent(AuditEvent.ID.IMPORT, 
-                AuditEvent.ActionCode.CREATE));
+    public DataImportMessage(Date eventDT, OutcomeIndicator outcome) {
+        super(new AuditEvent(AuditEvent.ID.IMPORT, AuditEvent.ActionCode.CREATE,
+                eventDT, outcome));
     }
-
     
     public ActiveParticipant addExporterPerson(String userID, String altUserID, 
             String userName, boolean requestor, String hostname) {

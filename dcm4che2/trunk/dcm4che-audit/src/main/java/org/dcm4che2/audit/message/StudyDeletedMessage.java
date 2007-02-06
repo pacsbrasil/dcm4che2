@@ -38,6 +38,8 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
 /**
  * This message describes the event of deletion of one or more studies and 
  * all associated SOP Instances  in a single action. This message may only 
@@ -51,23 +53,24 @@ package org.dcm4che2.audit.message;
  */
 public class StudyDeletedMessage extends AuditMessage {
 
-    public StudyDeletedMessage() {
+    public StudyDeletedMessage(Date eventDT, 
+            AuditEvent.OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.DICOM_STUDY_DELETED,
-                AuditEvent.ActionCode.DELETE));
+                AuditEvent.ActionCode.DELETE, eventDT, outcome));
     }
    
     public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname, boolean requestor) {
+            String userName, String hostname) {
         return addActiveParticipant(
                 ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, requestor));
+                        userName, hostname, true));
     }
     
     public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname, boolean requestor) {
+            String processName, String hostname) {
         return addActiveParticipant(
                 ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, requestor));
+                        processName, hostname, true));
     }
         
     public ParticipantObject addPatient(String id, String name) {

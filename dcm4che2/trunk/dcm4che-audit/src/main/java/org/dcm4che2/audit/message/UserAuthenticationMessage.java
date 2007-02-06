@@ -38,6 +38,10 @@
 
 package org.dcm4che2.audit.message;
 
+import java.util.Date;
+
+import org.dcm4che2.audit.message.AuditEvent.TypeCode;
+
 /**
  * This message describes the event of a user has attempting to log on or
  * log off, whether successful or not.  No Participant Objects are needed
@@ -51,24 +55,24 @@ package org.dcm4che2.audit.message;
  */
 public class UserAuthenticationMessage extends AuditMessage {
     
-    public UserAuthenticationMessage(AuditEvent.TypeCode typeCode,
+    public static final AuditEvent.TypeCode LOGIN = AuditEvent.TypeCode.LOGIN;
+    public static final AuditEvent.TypeCode LOGOUT = AuditEvent.TypeCode.LOGOUT;
+   
+    public UserAuthenticationMessage(AuditEvent.TypeCode typeCode, Date eventDT, 
             AuditEvent.OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
-                AuditEvent.ActionCode.EXECUTE, typeCode,
-                outcome != null ? outcome : AuditEvent.OutcomeIndicator.SUCCESS));
-    }
-    
-    public static UserAuthenticationMessage createLoginMessage(
-            AuditEvent.OutcomeIndicator outcome) {
-        return new UserAuthenticationMessage(
-                AuditEvent.TypeCode.LOGIN, outcome);
+                AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+            .addEventTypeCode(check(typeCode)));
     }
 
-    public static UserAuthenticationMessage createLogoutMessage() {
-        return new UserAuthenticationMessage(
-                AuditEvent.TypeCode.LOGOUT, AuditEvent.OutcomeIndicator.SUCCESS);
+    private static AuditEvent.TypeCode check(AuditEvent.TypeCode type) {
+        if (type != AuditEvent.TypeCode.LOGIN 
+                && type != AuditEvent.TypeCode.LOGOUT) {
+            throw new IllegalArgumentException(type.toString());
+        }
+        return type;
     }
-
+        
     public ActiveParticipant addUser(String userID, String altUserID,
             String userName, String hostname) {
         return addActiveParticipant(
