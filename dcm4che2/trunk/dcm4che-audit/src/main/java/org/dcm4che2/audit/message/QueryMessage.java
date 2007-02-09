@@ -38,13 +38,7 @@
 
 package org.dcm4che2.audit.message;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.io.DicomOutputStream;
 
 /**
  * This message describes the event of a Query being issued or received.
@@ -78,7 +72,7 @@ import org.dcm4che2.io.DicomOutputStream;
  */
 public class QueryMessage extends AuditMessage {
 
-    public QueryMessage(Date eventDT, OutcomeIndicator outcome) {
+    public QueryMessage(Date eventDT, AuditEvent.OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.QUERY, AuditEvent.ActionCode.EXECUTE,
                 eventDT, outcome));
     }
@@ -118,21 +112,4 @@ public class QueryMessage extends AuditMessage {
         return addParticipantObject(
                 ParticipantObject.createQuerySOPClass(cuid, tsuid, query));
     }
-
-    public ParticipantObject addQuerySOPClass(String cuid, String tsuid, 
-            DicomObject keys) {
-        return addQuerySOPClass(cuid, tsuid, writeDataset(keys, tsuid));
-    }
-
-    private static byte[] writeDataset(DicomObject keys, String tsuid) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
-        DicomOutputStream dos = new DicomOutputStream(baos);
-        try {
-            dos.writeDataset(keys, tsuid);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return baos.toByteArray();
-    }
-    
 }
