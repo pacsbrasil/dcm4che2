@@ -702,23 +702,37 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 timerIDCheckFilesToPurge, purgeFilesInterval,
                 purgeFilesListener);
         jmsDelegate.startListening(purgeStudyQueueName, this, 1);
-
     }
 
-    private void initStorageFileSystem() throws Exception {
+    /**
+     * Initialize file system to make sure there's a DEF_RW one ready
+     * 
+     * @param availability the file system availability, ONLINE, NEARLINE
+     * @return the default RW file system
+     * @throws Exception
+     */
+    protected FileSystemDTO initFileSystem(int availability) throws Exception {
         FileSystemMgt fsmgt = newFileSystemMgt();
         FileSystemDTO[] c = fsmgt.findFileSystems(retrieveAET,
-                Availability.ONLINE, FileSystemStatus.DEF_RW);
+        		availability, FileSystemStatus.DEF_RW);
+        FileSystemDTO fsDTO = null;
         if (c.length > 0) {
-            storageFileSystem = c[0];
+            fsDTO = c[0];
         } else {
-            c = fsmgt.findFileSystems(retrieveAET, Availability.ONLINE,
-                    FileSystemStatus.RW);
+            c = fsmgt.findFileSystems(retrieveAET, availability, FileSystemStatus.RW);
             if (c.length > 0) {
-                storageFileSystem = c[0];
-                storageFileSystem.setStatus(FileSystemStatus.DEF_RW);
-                fsmgt.updateFileSystem(storageFileSystem);
-            } else if(defStorageDir != null && !defStorageDir.equals("NONE")){
+            	fsDTO = c[0];
+                c[0].setStatus(FileSystemStatus.DEF_RW);
+                fsmgt.updateFileSystem(c[0]);
+            }   
+        }     
+        return fsDTO;
+    }
+    
+    protected void initStorageFileSystem() throws Exception {
+    	storageFileSystem = initFileSystem(Availability.ONLINE);
+    	if(storageFileSystem == null) {
+    		if(defStorageDir != null && !defStorageDir.equals("NONE")){
                 storageFileSystem = addFileSystem(defStorageDir, retrieveAET,
                         Availability.ONLINE, FileSystemStatus.DEF_RW, null);
                 log.warn("No writeable Storage Directory configured for retrieve AET "
@@ -727,14 +741,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             	log.warn("No writeable Storage Directory configured for retrieve AET " +
             			retrieveAET + "- online storage is not available at this moment but should be configured later." );
             }            
-        }
-        checkStorageFileSystem();
+    	}
+    	checkStorageFileSystem();
     }
 
     public FileSystemDTO selectStorageFileSystem() throws Exception {
         if (storageFileSystem == null) {
-            initStorageFileSystem();
+        	initStorageFileSystem();
         }
+        
         boolean checkDiskSpace = checkStorageFileSystem == 0L
                 || checkStorageFileSystem < System.currentTimeMillis();
         if (checkStorageFileSystemStatus || checkDiskSpace) {
@@ -856,7 +871,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         super.stopService();
     }
 
-    private FileSystemMgt newFileSystemMgt() {
+    protected FileSystemMgt newFileSystemMgt() {
         try {
             FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
                     .getFactory().lookup(FileSystemMgtHome.class,
@@ -1423,7 +1438,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     public boolean updateFileSystemAvailability(String dirPath,
-            String availability) throws RemoteException, FinderException {
+            String availability) throws Exception {
         FileSystemMgt mgt = newFileSystemMgt();
         int iAvail = Availability.toInt(availability);
         log.info("Update availability of " + dirPath + " to " + availability
