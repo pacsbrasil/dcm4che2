@@ -18,12 +18,20 @@
 //package org.apache.log4j.net;
 package org.dcm4che2.audit.log4j.net;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Calendar;
+import java.util.Locale;
+
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.Layout;
 //import org.apache.log4j.helpers.SyslogWriter;
+//import org.apache.log4j.helpers.SyslogQuietWriter;
 import org.dcm4che2.audit.log4j.helpers.SyslogWriter;
-import org.apache.log4j.helpers.SyslogQuietWriter;
 
 // Contributors: Yves Bossel <ybossel@opengets.cl>
 //               Christopher Taylor <cstaylor@pacbell.net>
@@ -82,31 +90,53 @@ public class SyslogAppender extends AppenderSkeleton {
   final static public int LOG_LOCAL6 = 22<<3;
   /** reserved for local use*/
   final static public int LOG_LOCAL7 = 23<<3;
+  
+  /** system is unusable */
+  final static public int PRI_EMERGENCY = 0;
+  /** action must be taken immediately */
+  final static public int PRI_ALERT = 1;  
+  /** critical conditions */
+  final static public int PRI_CRITICAL = 2;
+  /** error conditions */
+  final static public int PRI_ERROR = 3;
+  /** warning conditions */
+  final static public int PRI_WARNING = 4;
+  /** normal but significant condition */
+  final static public int PRI_NOTICE = 5;
+  /** informational messages */
+  final static public int PRI_INFORMATIONAL = 6;
+  /** debug-level messages */
+  final static public int PRI_DEBUG = 7;
 
   protected static final int SYSLOG_HOST_OI = 0;
   protected static final int FACILITY_OI = 1;
-
-  static final String TAB = "    ";
+  private static final String[] SHORT_MONTHS = {
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
   // Have LOG_USER as default
   int syslogFacility = LOG_USER;
-  String facilityStr;
-  boolean facilityPrinting = false;
-
+  
+  int fatalPriority = PRI_EMERGENCY;
+  int errorPriority = PRI_ERROR;
+  int warnPriority = PRI_WARNING;
+  int infoPriority = PRI_NOTICE;
+  int debugPriority = PRI_DEBUG;
+  String encoding = "UTF-8";
+ 
   //SyslogTracerPrintWriter stp;
-  SyslogQuietWriter sqw;
+  SyslogWriter sw;
   String syslogHost;
+  String localHostname;
 
   public
   SyslogAppender() {
-    this.initSyslogFacilityStr();
   }
 
   public
   SyslogAppender(Layout layout, int syslogFacility) {
     this.layout = layout;
     this.syslogFacility = syslogFacility;
-    this.initSyslogFacilityStr();
   }
 
   public
@@ -126,21 +156,7 @@ public class SyslogAppender extends AppenderSkeleton {
     closed = true;
     // A SyslogWriter is UDP based and needs no opening. Hence, it
     // can't be closed. We just unset the variables here.
-    sqw = null;
-  }
-
-  private
-  void initSyslogFacilityStr() {
-    facilityStr = getFacilityString(this.syslogFacility);
-
-    if (facilityStr == null) {
-      System.err.println("\"" + syslogFacility +
-                  "\" is an unknown syslog facility. Defaulting to \"USER\".");
-      this.syslogFacility = LOG_USER;
-      facilityStr = "user:";
-    } else {
-      facilityStr += ":";
-    }
+    sw = null;
   }
 
   /**
@@ -237,6 +253,77 @@ public class SyslogAppender extends AppenderSkeleton {
     }
   }
 
+  int priorityOf(Level level) {
+      if (level.isGreaterOrEqual(Level.FATAL)) {
+          return fatalPriority ;
+      } else if (level.isGreaterOrEqual(Level.ERROR)) {
+          return errorPriority;
+      } else if (level.isGreaterOrEqual(Level.WARN)) {
+          return warnPriority;
+      } else if (level.isGreaterOrEqual(Level.INFO)) {
+          return infoPriority;
+      } else {
+          return debugPriority;
+      }
+  }
+
+  public String getLocalHostname() {
+      try {
+        InetAddress addr = InetAddress.getLocalHost();
+        return addr.getHostName();
+      } catch (UnknownHostException uhe) {
+        return "UNKNOWN_HOST";
+      }
+    }
+  
+  public final int getFatalPriority() {
+      return fatalPriority;
+  }
+
+  public final void setFatalPriority(int fatalPriority) {
+      this.fatalPriority = fatalPriority;
+  }
+
+  public final int getErrorPriority() {
+      return errorPriority;
+  }
+
+  public final void setErrorPriority(int errorPriority) {
+      this.errorPriority = errorPriority;
+  }
+
+  public final int getWarnPriority() {
+      return warnPriority;
+  }
+
+  public final void setWarnPriority(int warnPriority) {
+      this.warnPriority = warnPriority;
+  }
+
+  public final int getInfoPriority() {
+      return infoPriority;
+  }
+
+  public final void setInfoPriority(int infoPriority) {
+      this.infoPriority = infoPriority;
+  }  
+
+  public final int getDebugPriority() {
+      return debugPriority;
+  }
+
+  public final void setDebugPriority(int debugPriority) {
+      this.debugPriority = debugPriority;
+  }
+
+  public final String getEncoding() {
+    return encoding;
+  }
+
+  public final void setEncoding(String encoding) {
+    this.encoding = encoding;
+  }
+
   public
   void append(LoggingEvent event) {
 
@@ -244,38 +331,56 @@ public class SyslogAppender extends AppenderSkeleton {
       return;
 
     // We must not attempt to append if sqw is null.
-    if(sqw == null) {
+    if(sw == null) {
       errorHandler.error("No syslog host is set for SyslogAppedender named \""+
                         this.name+"\".");
       return;
     }
-
-    String buffer = (facilityPrinting? facilityStr : "") +
-                          layout.format(event);
-
-    sqw.setLevel(event.getLevel().getSyslogEquivalent());
-    sqw.write(buffer);
-
-    if (layout.ignoresThrowable()) {
-      String[] s = event.getThrowableStrRep();
-      if (s != null) {
-        int len = s.length;
-        if(len > 0) {
-          sqw.write(s[0]);
-          for(int i = 1; i < len; i++) {
-            sqw.write(TAB+s[i].substring(1));
-          }
+    synchronized (sw) {
+        Calendar now = Calendar.getInstance(Locale.ENGLISH);
+        int pri = syslogFacility + priorityOf(event.getLevel());
+        sw.write('<');
+        sw.write(String.valueOf(pri));
+        sw.write('>');
+        sw.write(SHORT_MONTHS[now.get(Calendar.MONTH)]);
+        sw.write(' ');
+        writeNN(' ', now.get(Calendar.DAY_OF_MONTH));
+        sw.write(' ');
+        writeNN('0', now.get(Calendar.HOUR_OF_DAY));
+        sw.write(':');
+        writeNN('0', now.get(Calendar.MINUTE));
+        sw.write(':');
+        writeNN('0', now.get(Calendar.SECOND));
+        sw.write(' ');
+        sw.write(localHostname);
+        sw.write(' ');
+        sw.write(layout.format(event));
+        try {
+            sw.flush();
+        } catch (IOException e) {
+            errorHandler.error("Failed to emit UDP message to " + syslogHost, e, 
+                             ErrorCode.WRITE_FAILURE);        
+            sw.reset();
         }
-      }
     }
   }
 
-  /**
+
+  private void writeNN(char c, int n) {        
+      if (n < 10) {
+          sw.write(c);           
+      }
+      sw.write(String.valueOf(n));
+  }
+  
+/**
      This method returns immediately as options are activated when they
      are set.
   */
   public
   void activateOptions() {
+      this.sw = new SyslogWriter(syslogHost, encoding);
+      this.localHostname = getLocalHostname();
   }
 
   /**
@@ -299,9 +404,6 @@ public class SyslogAppender extends AppenderSkeleton {
    */
   public
   void setSyslogHost(final String syslogHost) {
-    this.sqw = new SyslogQuietWriter(new SyslogWriter(syslogHost),
-                                     syslogFacility, errorHandler);
-    //this.stp = new SyslogTracerPrintWriter(sqw);
     this.syslogHost = syslogHost;
   }
 
@@ -333,13 +435,6 @@ public class SyslogAppender extends AppenderSkeleton {
                   "] is an unknown syslog facility. Defaulting to [USER].");
       syslogFacility = LOG_USER;
     }
-
-    this.initSyslogFacilityStr();
-
-    // If there is already a sqw, make it use the new facility.
-    if(sqw != null) {
-      sqw.setSyslogFacility(this.syslogFacility);
-    }
   }
 
   /**
@@ -350,21 +445,4 @@ public class SyslogAppender extends AppenderSkeleton {
     return getFacilityString(syslogFacility);
   }
 
-  /**
-    If the <b>FacilityPrinting</b> option is set to true, the printed
-    message will include the facility name of the application. It is
-    <em>false</em> by default.
-   */
-  public
-  void setFacilityPrinting(boolean on) {
-    facilityPrinting = on;
-  }
-
-  /**
-     Returns the value of the <b>FacilityPrinting</b> option.
-   */
-  public
-  boolean getFacilityPrinting() {
-    return facilityPrinting;
-  }
 }
