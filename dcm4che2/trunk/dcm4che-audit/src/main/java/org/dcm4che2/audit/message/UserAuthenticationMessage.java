@@ -49,7 +49,7 @@ import java.util.Date;
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
  * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
- * DICOM Supp 95: Audit Trail Messages, A.1.3.15 User Authentication
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.15 User Authentication</a>
  */
 public class UserAuthenticationMessage extends AuditMessage {
     
@@ -71,7 +71,7 @@ public class UserAuthenticationMessage extends AuditMessage {
         return type;
     }
         
-    public ActiveParticipant addUser(String userID, String altUserID,
+    public ActiveParticipant addUserPerson(String userID, String altUserID,
             String userName, String hostname) {
         return addActiveParticipant(
                 ActiveParticipant.createActivePerson(userID, altUserID, 

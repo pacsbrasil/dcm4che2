@@ -68,7 +68,7 @@ import java.util.Date;
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
  * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
- * DICOM Supp 95: Audit Trail Messages, A.1.3.13 Query 
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.13 Query</a>
  */
 public class QueryMessage extends AuditMessage {
 

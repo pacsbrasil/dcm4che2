@@ -58,7 +58,7 @@ import java.util.Date;
  * @version $Revision$ $Date$
  * @since Nov 23, 2006
  * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
- * DICOM Supp 95: Audit Trail Messages, A.1.3.14 Security Alert
+ * DICOM Supp 95: Audit Trail Messages, A.1.3.14 Security Alert</a>
  */
 public class SecurityAlertMessage extends AuditMessage {
     
