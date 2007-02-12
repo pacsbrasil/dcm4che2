@@ -46,7 +46,7 @@ import java.util.List;
  * @version $Revision$ $Date$
  * @since Feb 12, 2007
  */
-public class TransferMessageSupport extends AuditMessage {
+class TransferMessageSupport extends AuditMessage {
 
     protected TransferMessageSupport(AuditEvent.ID id,
             AuditEvent.ActionCode action) {

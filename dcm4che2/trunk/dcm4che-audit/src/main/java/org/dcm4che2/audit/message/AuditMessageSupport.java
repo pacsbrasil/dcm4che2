@@ -40,7 +40,7 @@ package org.dcm4che2.audit.message;
 
 import java.util.Iterator;
 
-public class AuditMessageSupport extends AuditMessage {
+class AuditMessageSupport extends AuditMessage {
 
     public static final AuditEvent.ActionCode CREATE = 
             AuditEvent.ActionCode.CREATE;

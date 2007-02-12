@@ -39,7 +39,6 @@
 package org.dcm4che2.audit.message;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * This message describes the event of deletion of one or more studies and 
