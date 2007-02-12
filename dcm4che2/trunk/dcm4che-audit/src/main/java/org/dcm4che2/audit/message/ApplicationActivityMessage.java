@@ -47,6 +47,13 @@ import org.dcm4che2.audit.message.AuditEvent.TypeCode;
  * This audit message describes the event of an Application Entity 
  * starting or stopping.
  * 
+ * <h4>Message Structure</h4>
+ * <ul>
+ * <li>Event</li>
+ * <li>ID of the Application started/stopped (1)</li>
+ * <li>ID of person or process that started/stopped the Application (0..1)</li>
+ * </ul>
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 21, 2006
@@ -55,12 +62,31 @@ import org.dcm4che2.audit.message.AuditEvent.TypeCode;
  */
 public class ApplicationActivityMessage extends AuditMessage {
 
+    /**
+     * Action Type code for {@link #ApplicationActivityMessage}.
+     */
     public static final AuditEvent.TypeCode APPLICATION_START =
             AuditEvent.TypeCode.APPLICATION_START;
+    
+    /**
+     * Action Type code for {@link #ApplicationActivityMessage}.
+     */
     public static final AuditEvent.TypeCode APPLICATION_STOP =
             AuditEvent.TypeCode.APPLICATION_STOP;
     
     
+    /**
+     * Constructs an Application Entity message.
+     * 
+     * @param typeCode indicator for type of action, typically
+     *                {@link #APPLICATION_START} or {@link #APPLICATION_STOP}
+     * @param eventDT the time at which the application was started/stopped.
+     *                <code>null</code> will be replaced by current time.
+     * @param outcome indicates whether the event succeeded or failed.
+     *                <code>null</code> will be replaced by 
+     *                {@link AuditEvent.OutcomeIndicator.SUCCESS}.
+     * @throws NullPointerException If <code>typeCode=null</code>
+     */
     public ApplicationActivityMessage(AuditEvent.TypeCode typeCode, 
             Date eventDT, OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
@@ -75,19 +101,54 @@ public class ApplicationActivityMessage extends AuditMessage {
         return typeCode;
     }
 
-    public ActiveParticipant addApplication(String processID, String[] aets, 
-            String processName, String hostname) {
+    /**
+     * Adds {@link ActiveParticipant} identifying the Application.
+     * 
+     * @param processID
+     *            the identity of the process started or stopped. Use
+     *            {@link AuditMessageUtils#getProcessID()} for this Java VM.
+     * @param aets
+     *            if the process supports DICOM, then the AE Titles supported,
+     *            otherwise <code>null</code>
+     * @param processName
+     *            process name
+     * @param nodeID
+     *            DNS name or IP address of the node. Use
+     *            {@link AuditMessageUtils#getLocalHostName()} for this node.
+     *            
+     * @return added {@link ActiveParticipant} identifying the Application.
+     */
+    public ActiveParticipant addApplication(String processID, String[] aets,
+            String processName, String nodeID) {
         return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, false)
+                ActiveParticipant.createActiveProcess(processID, aets,
+                        processName, nodeID, false)
                 .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION));
     }
 
+    /**
+     * Adds {@link ActiveParticipant} identifying the person or process that 
+     * started/stopped the Application.
+     * 
+     * @param userID
+     *            unique identifier for the person used by the application
+     * @param altUserID
+     *            Alternative User ID, used for authentication (e.g. SSO),
+     *            - if available, otherwise <code>null</code>.
+     * @param userName
+     *            person's name - if available, otherwise <code>null</code>
+     * @param napID
+     *            identifier for the user's network access point (Machine Name,
+     *            DNS name, IP Address or Telephone Number) - if available,
+     *            otherwise <code>null</code>.
+     * 
+     * @return {@link ActiveParticipant} identifying the person or process.
+     */
     public ActiveParticipant addApplicationLauncher(String userID,
-            String altUserID, String userName, String hostname) {
+            String altUserID, String userName, String napID) {
         return addActiveParticipant(
                 ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true)
+                        userName, napID, true)
                 .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION_LAUNCHER));
     }
 }

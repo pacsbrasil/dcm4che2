@@ -51,6 +51,13 @@ import java.util.regex.Pattern;
  * audited event. A user may be a person, or a hardware device or software
  * process for events that are not initiated by a person.
  * 
+ * Optionally, the user's network access location may be specified.
+ *
+ * There may be more than one user per event, for example, in cases of
+ * actions initiated by one user for other users, or in events that
+ * involve more than one user, hardware device, or system process.
+ * However, only one user may be the initiator/requestor for the event.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 17, 2006
@@ -67,6 +74,18 @@ public class ActiveParticipant extends BaseElement {
 
     private ArrayList roleIDCodes = new ArrayList(1);
     
+    /**
+     * Constructs an Active Participant with given user ID. Use 
+     * {@link #setAlternativeUserID}, {@link #setUserName},
+     * {@link #setNetworkAccessPointID}, {@link #addRoleIDCode} to initalize
+     * other attributes.
+     * 
+     * @param userID
+     *            unique identifier for the user
+     * @param userIsRequestor
+     *            <code>true</code>, if the user is the initiator/requestor for
+     *            the event, otherwise <code>false</code>.
+     */
     public ActiveParticipant(String userID, boolean userIsRequestor) {
         super("ActiveParticipant");
         if (userID.length() == 0) {
@@ -78,25 +97,58 @@ public class ActiveParticipant extends BaseElement {
         }
     }
 
+    /**
+     * Creates an Active Participant identifying a person with the specified
+     * User ID, Alternative User ID, User Name and Network Access Point ID.
+     * 
+     * @param userID
+     *            unique identifier for the person used by the application
+     * @param altUserID
+     *            Alternative User ID, used for authentication (e.g. SSO)
+     * @param userName
+     *            person's name
+     * @param napID
+     *            identifier for the user's network access point (Machine Name,
+     *            including DNS name, IP Address or Telephone Number)
+     * @param requestor
+     *            <code>true</code>, if the user is the initiator/requestor
+     *            for the event, otherwise <code>false</code>.
+     * @return Active Participant with the specified User ID, Alternative User
+     *         ID, User Name and Network Access Point ID.
+     */
     public static ActiveParticipant createActivePerson(String userID,
-            String altUserID, String userName, String hostname, boolean requestor) {
+            String altUserID, String userName, String napID, boolean requestor) {
         ActiveParticipant ap = new ActiveParticipant(userID, requestor);
         ap.setAlternativeUserID(altUserID);
         ap.setUserName(userName);
-        ap.setNetworkAccessPointID(hostname);
+        ap.setNetworkAccessPointID(napID);
         return ap;
     }
 
+    /**
+     * Creates an Active Participant identifying a process with the specified
+     * Process ID, AETs, Process Name and Node ID.
+     * 
+     * @param processID
+     * @param aets
+     * @param processName
+     * @param nodeID
+     * @param requestor
+     *            <code>true</code>, if the process is the initiator/requestor
+     *            for the event, otherwise <code>false</code>.
+     * @return Active Participant with the specified Process ID, AETs, Process
+     *         Name and Network Access Point ID.
+     */
     public static ActiveParticipant createActiveProcess(String processID,
-            String[] aets, String processName, String hostname, boolean requestor) {
+            String[] aets, String processName, String nodeID, boolean requestor) {
         return createActivePerson(processID, AuditMessageUtils.aetsToAltUserID(aets), 
-                processName, hostname, requestor) ;
+                processName, nodeID, requestor) ;
     }
 
-    public static ActiveParticipant createActiveNode(String hostname,
+    public static ActiveParticipant createActiveNode(String nodeID,
             boolean requestor) {
-        ActiveParticipant ap = new ActiveParticipant(hostname, requestor);
-        ap.setNetworkAccessPointID(hostname);
+        ActiveParticipant ap = new ActiveParticipant(nodeID, requestor);
+        ap.setNetworkAccessPointID(nodeID);
         return ap;
     }
     

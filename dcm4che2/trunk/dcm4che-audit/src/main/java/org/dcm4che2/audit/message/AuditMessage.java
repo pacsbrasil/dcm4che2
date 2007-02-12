@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -98,9 +99,21 @@ public class AuditMessage extends BaseElement {
         return Collections.unmodifiableList(activeParticipants);
     }
            
+    public ActiveParticipant getRequestingActiveParticipants() {
+        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
+            ActiveParticipant ap = (ActiveParticipant) iter.next();
+            if (ap.isUserIsRequestor()) {
+                return ap;
+            }            
+        }
+        return null;
+    }
+           
     public ActiveParticipant addActiveParticipant(ActiveParticipant apart) {
-        if (apart == null) {
-            throw new NullPointerException();
+        if (apart.isUserIsRequestor()
+                && getRequestingActiveParticipants() != null) {
+            throw new IllegalStateException(
+                    "Message already contains requesting Active Participant");
         }
         activeParticipants.add(apart);
         return apart;

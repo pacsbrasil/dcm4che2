@@ -62,6 +62,15 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class BeginTransferringMessage extends AuditMessage {
 
+    /**
+     * Constructs an Instances Transferred message.
+     * 
+     * @param eventDT the time when the transfer has started.
+     *                <code>null</code> will be replaced by current time.
+     * @param outcome indicates whether the event succeeded or failed.
+     *                <code>null</code> will be replaced by 
+     *                {@link AuditEvent.OutcomeIndicator.SUCCESS}.
+     */
     public BeginTransferringMessage(Date eventDT, OutcomeIndicator outcome) {
         super(new AuditEvent(AuditEvent.ID.BEGIN_TRANSFERRING_DICOM_INSTANCES, 
                 AuditEvent.ActionCode.EXECUTE, eventDT, outcome));
