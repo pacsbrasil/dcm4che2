@@ -38,10 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message may be generated whenever there are staffing or participant 
  * assignment actions relevant to the assignment of healthcare professionals, 
@@ -59,10 +55,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class PatientCareResourceAssignmentMessage extends AuditMessageSupport {
 
-    public PatientCareResourceAssignmentMessage(AuditEvent.ActionCode action,
-            Date eventDT, OutcomeIndicator outcome) {
-        super(AuditEvent.ID.PATIENT_CARE_RESOURCE_ASSIGNMENT, action, eventDT,
-                outcome);
+    public PatientCareResourceAssignmentMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.PATIENT_CARE_RESOURCE_ASSIGNMENT, action);
     }
 
 }

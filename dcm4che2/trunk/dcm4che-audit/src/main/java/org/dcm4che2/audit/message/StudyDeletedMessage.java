@@ -38,7 +38,8 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This message describes the event of deletion of one or more studies and 
@@ -53,24 +54,23 @@ import java.util.Date;
  */
 public class StudyDeletedMessage extends AuditMessage {
 
-    public StudyDeletedMessage(Date eventDT, 
-            AuditEvent.OutcomeIndicator outcome) {
+    public StudyDeletedMessage() {
         super(new AuditEvent(AuditEvent.ID.DICOM_STUDY_DELETED,
-                AuditEvent.ActionCode.DELETE, eventDT, outcome));
+                AuditEvent.ActionCode.DELETE));
     }
    
     public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname) {
+            String userName, String hostname, boolean requestor) {
         return addActiveParticipant(
                 ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true));
+                        userName, hostname, requestor));
     }
     
     public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname) {
+            String processName, String hostname, boolean requestor) {
         return addActiveParticipant(
                 ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, true));
+                        processName, hostname, requestor));
     }
         
     public ParticipantObject addPatient(String id, String name) {
@@ -81,4 +81,37 @@ public class StudyDeletedMessage extends AuditMessage {
             ParticipantObjectDescription desc) {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
+    
+    public void validate() {
+        super.validate();
+        ActiveParticipant user = getRequestingActiveParticipants();
+        if (user == null) {
+            throw new IllegalStateException("No Requesting User");
+        }
+       
+        ParticipantObject patient = null;        
+        ParticipantObject study = null;        
+        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
+            ParticipantObject po = (ParticipantObject) iter.next();
+            if (ParticipantObject.TypeCodeRole.PATIENT
+                    == po.getParticipantObjectTypeCodeRole()) {
+                if (patient != null) {
+                    throw new IllegalStateException(
+                            "Multiple Patient identification");
+                }
+                patient = po;
+            } else if (ParticipantObject.TypeCodeRole.REPORT
+                        == po.getParticipantObjectTypeCodeRole()
+                    && ParticipantObject.IDTypeCode.STUDY_INSTANCE_UID
+                        == po.getParticipantObjectIDTypeCode()) {
+                study = po;
+            }        
+        }
+        if (patient == null) {
+            throw new IllegalStateException("No Patient identification");
+        }
+        if (study == null) {
+            throw new IllegalStateException("No Study identification");
+        }
+    }    
 }

@@ -12,11 +12,11 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Agfa HealthCare.
+ * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -42,42 +42,17 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * This message describes the event of a Query being issued or received.
- * The message does not record the response to the query, but merely
- * records the fact that a query was issued. For example, this would report
- * queries using the DICOM SOP Classes:
- * <ul>
- * <li>Modality Worklist</li>
- * <li>General Purpose Worklist</li>
- * <li>Composite Instance Query</li>
- * </ul>
-  * <blockquote>
- * Notes:
- * <ol>
- * <li>The response to a query may result in one or more Instances Transferred 
- * or Instances Accessed messages, depending on what events transpire after the
- * query. If there were security-related failures, such as access violations,
- * when processing a query, those failures should show up in other audit 
- * messages, such as a Security Alert message.</li>
- * <li>Non-DICOM queries may also be captured by this message. The Participant
- * Object ID Type Code, the Participant Object ID, and the Query fields may 
- * have values related to such non-DICOM queries.</li>
- * </ol>
- * </blockquote>
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 23, 2006
- * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
- * DICOM Supp 95: Audit Trail Messages, A.1.3.13 Query</a>
+ * @since Feb 12, 2007
  */
-public class QueryMessage extends AuditMessage {
+public class TransferMessageSupport extends AuditMessage {
 
-    public QueryMessage() {
-        super(new AuditEvent(AuditEvent.ID.QUERY,
-                AuditEvent.ActionCode.EXECUTE));
+    protected TransferMessageSupport(AuditEvent.ID id,
+            AuditEvent.ActionCode action) {
+        super(new AuditEvent(id, action));
     }
- 
+
     public ActiveParticipant addSourceProcess(String processID, String[] aets,
             String processName, String hostname, boolean requestor) {
         return addActiveParticipant(
@@ -93,7 +68,7 @@ public class QueryMessage extends AuditMessage {
                         processName, hostname, requestor)
                 .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
     }
-        
+
     public ActiveParticipant addOtherParticipantPerson(String userID,
             String altUserID, String userName, String hostname, boolean requestor) {
         return addActiveParticipant(
@@ -107,13 +82,16 @@ public class QueryMessage extends AuditMessage {
                 ActiveParticipant.createActiveProcess(processID, aets, 
                         processName, hostname, requestor));
     }
-
-    public ParticipantObject addQuerySOPClass(String cuid, String tsuid, 
-           byte[] query) {
-        return addParticipantObject(
-                ParticipantObject.createQuerySOPClass(cuid, tsuid, query));
+            
+    public ParticipantObject addPatient(String id, String name) {
+        return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
-    
+
+    public ParticipantObject addStudy(String uid,
+            ParticipantObjectDescription desc) {
+        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
+    }
+
     public void validate() {
         super.validate();
         
@@ -153,22 +131,29 @@ public class QueryMessage extends AuditMessage {
             throw new IllegalStateException("No Requesting User");
         }
        
-        ParticipantObject sopClass = null;        
+        ParticipantObject patient = null;        
+        ParticipantObject study = null;        
         for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
             ParticipantObject po = (ParticipantObject) iter.next();
-            if (ParticipantObject.TypeCodeRole.REPORT
-                        == po.getParticipantObjectTypeCodeRole()
-                    && ParticipantObject.IDTypeCode.SOP_CLASS_UID
-                        == po.getParticipantObjectIDTypeCode()) {
-                if (sopClass != null) {
+            if (ParticipantObject.TypeCodeRole.PATIENT
+                    == po.getParticipantObjectTypeCodeRole()) {
+                if (patient != null) {
                     throw new IllegalStateException(
-                            "Multiple Query SOP Class identification");
+                            "Multiple Patient identification");
                 }
-                sopClass = po;
+                patient = po;
+            } else if (ParticipantObject.TypeCodeRole.REPORT
+                        == po.getParticipantObjectTypeCodeRole()
+                    && ParticipantObject.IDTypeCode.STUDY_INSTANCE_UID
+                        == po.getParticipantObjectIDTypeCode()) {
+                study = po;
             }        
         }
-        if (sopClass == null) {
-            throw new IllegalStateException("No Query SOP Class identification");
+        if (patient == null) {
+            throw new IllegalStateException("No Patient identification");
         }
-    }        
+        if (study == null) {
+            throw new IllegalStateException("No Study identification");
+        }
+    }    
 }

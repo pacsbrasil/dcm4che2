@@ -38,7 +38,7 @@
 
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
+import java.util.Iterator;
 
 /**
  * This message describes any event for which a node needs to report a 
@@ -62,38 +62,99 @@ import java.util.Date;
  */
 public class SecurityAlertMessage extends AuditMessage {
     
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode NODE_AUTHENTICATION =
             AuditEvent.TypeCode.NODE_AUTHENTICATION;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode EMERGENCY_OVERRIDE =
             AuditEvent.TypeCode.EMERGENCY_OVERRIDE;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode NETWORK_CONFIGURATION =
             AuditEvent.TypeCode.NETWORK_CONFIGURATION;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode SECURITY_CONFIGURATION =
             AuditEvent.TypeCode.SECURITY_CONFIGURATION;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode HARDWARE_CONFIGURATION =
             AuditEvent.TypeCode.HARDWARE_CONFIGURATION;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode SOFTWARE_CONFIGURATION =
             AuditEvent.TypeCode.SOFTWARE_CONFIGURATION;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode USE_OF_RESTRICTED_FUNCTION =
             AuditEvent.TypeCode.USE_OF_RESTRICTED_FUNCTION;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode AUDIT_RECORDING_STOPPED =
             AuditEvent.TypeCode.AUDIT_RECORDING_STOPPED;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode AUDIT_RECORDING_STARTED =
             AuditEvent.TypeCode.AUDIT_RECORDING_STARTED;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode OBJECT_SECURITY_ATTRIBUTES_CHANGED =
             AuditEvent.TypeCode.OBJECT_SECURITY_ATTRIBUTES_CHANGED;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode SECURITY_ROLES_CHANGED =
             AuditEvent.TypeCode.SECURITY_ROLES_CHANGED;
+    
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
     public static final AuditEvent.TypeCode USER_SECURITY_ATTRIBUTES_CHANGED =
             AuditEvent.TypeCode.USER_SECURITY_ATTRIBUTES_CHANGED;
     
-    public SecurityAlertMessage(AuditEvent.TypeCode type, Date eventDT,
-            AuditEvent.OutcomeIndicator outcome) {
+    /**
+     * Constructs an Security Alert message. Use {@link #setOutcomeIndicator}
+     * to modify default success indicator to describe failures.
+     * 
+     * @param typeCode indicator for type of security alert
+     * @throws NullPointerException If <code>typeCode=null</code>
+     */
+    public SecurityAlertMessage(AuditEvent.TypeCode type) {
         super(new AuditEvent(AuditEvent.ID.SECURITY_ALERT,
-                AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
-            .addEventTypeCode(type));        
+                AuditEvent.ActionCode.EXECUTE)
+            .addEventTypeCode(check(type)));        
     }
 
+    private static AuditEvent.TypeCode check(AuditEvent.TypeCode typeCode) {
+        if (typeCode == null) {
+            throw new NullPointerException("typeCode");
+        }
+        return typeCode;
+    }
+
+    
     public ActiveParticipant addReportingPerson(String userID, String altUserID, 
             String userName, String hostname) {
         return addActiveParticipant(
@@ -139,4 +200,11 @@ public class SecurityAlertMessage extends AuditMessage {
                 ParticipantObject.createAlertSubjectWithNodeID(nodeID, desc));
     }
    
+    public void validate() {
+        super.validate();
+        ActiveParticipant user = getRequestingActiveParticipants();
+        if (user == null) {
+            throw new IllegalStateException("No Reporting User");
+        }
+    }    
 }

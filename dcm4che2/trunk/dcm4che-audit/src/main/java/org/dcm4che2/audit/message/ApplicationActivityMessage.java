@@ -38,11 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-import org.dcm4che2.audit.message.AuditEvent.TypeCode;
-
 /**
  * This audit message describes the event of an Application Entity 
  * starting or stopping.
@@ -80,21 +75,15 @@ public class ApplicationActivityMessage extends AuditMessage {
      * 
      * @param typeCode indicator for type of action, typically
      *                {@link #APPLICATION_START} or {@link #APPLICATION_STOP}
-     * @param eventDT the time at which the application was started/stopped.
-     *                <code>null</code> will be replaced by current time.
-     * @param outcome indicates whether the event succeeded or failed.
-     *                <code>null</code> will be replaced by 
-     *                {@link AuditEvent.OutcomeIndicator.SUCCESS}.
      * @throws NullPointerException If <code>typeCode=null</code>
      */
-    public ApplicationActivityMessage(AuditEvent.TypeCode typeCode, 
-            Date eventDT, OutcomeIndicator outcome) {
+    public ApplicationActivityMessage(AuditEvent.TypeCode typeCode) {
         super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
-                AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+                AuditEvent.ActionCode.EXECUTE)
             .addEventTypeCode(check(typeCode)));
     }
        
-    private static TypeCode check(TypeCode typeCode) {
+    private static AuditEvent.TypeCode check(AuditEvent.TypeCode typeCode) {
         if (typeCode == null) {
             throw new NullPointerException("typeCode");
         }
@@ -151,4 +140,14 @@ public class ApplicationActivityMessage extends AuditMessage {
                         userName, napID, true)
                 .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION_LAUNCHER));
     }
+
+    public void validate() {
+        super.validate();
+        ActiveParticipant app = getRequestingActiveParticipants();
+        if (app == null || !app.getRoleIDCodeIDs().contains(
+                ActiveParticipant.RoleIDCode.APPLICATION)) {
+            throw new IllegalStateException("No Application Identification");
+        }
+    }    
+    
 }

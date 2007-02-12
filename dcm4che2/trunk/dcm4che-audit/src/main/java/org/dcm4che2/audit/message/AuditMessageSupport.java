@@ -38,7 +38,7 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
+import java.util.Iterator;
 
 public class AuditMessageSupport extends AuditMessage {
 
@@ -51,9 +51,9 @@ public class AuditMessageSupport extends AuditMessage {
     public static final AuditEvent.ActionCode DELETE = 
             AuditEvent.ActionCode.DELETE;
     
-    protected AuditMessageSupport(AuditEvent.ID id, AuditEvent.ActionCode action,
-            Date eventDT, AuditEvent.OutcomeIndicator outcome) {
-        super(new AuditEvent(id, check(action), eventDT, outcome));
+    protected AuditMessageSupport(AuditEvent.ID id,
+            AuditEvent.ActionCode action) {
+        super(new AuditEvent(id, check(action)));
     }      
     
     private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
@@ -64,21 +64,43 @@ public class AuditMessageSupport extends AuditMessage {
     }
 
     public ActiveParticipant addUserPerson(String userID, String altUserID, 
-            String userName, String hostname) {
+            String userName, String hostname, boolean requestor) {
         return addActiveParticipant(
                 ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, true));
+                        userName, hostname, requestor));
     }
     
     public ActiveParticipant addUserProcess(String processID, String[] aets, 
-            String processName, String hostname) {
+            String processName, String hostname, boolean requestor) {
         return addActiveParticipant(
                 ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, true));
+                        processName, hostname, requestor));
     }
         
     public ParticipantObject addPatient(String id, String name) {
         return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
+    public void validate() {
+        super.validate();
+        ActiveParticipant user = getRequestingActiveParticipants();
+        if (user == null) {
+            throw new IllegalStateException("No Requesting User");
+        }
+        ParticipantObject patient = null;        
+        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
+            ParticipantObject po = (ParticipantObject) iter.next();
+            if (ParticipantObject.TypeCodeRole.PATIENT
+                    == po.getParticipantObjectTypeCodeRole()) {
+                if (patient != null) {
+                    throw new IllegalStateException(
+                            "Multiple Patient identification");
+                }
+                patient = po;
+            }        
+        }
+        if (patient == null) {
+            throw new IllegalStateException("No Patient identification");
+        }
+    }   
 }

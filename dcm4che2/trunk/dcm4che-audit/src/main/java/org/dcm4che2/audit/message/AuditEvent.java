@@ -58,17 +58,15 @@ public class AuditEvent extends BaseElement {
     private final ID eventID;
     private final ArrayList eventTypeCodes = new ArrayList(1);
 
-    public AuditEvent(ID eventID, ActionCode action, Date eventDT, 
-            OutcomeIndicator outcome) {
+    public AuditEvent(ID eventID, ActionCode action) {
         super("EventIdentification");
         if (eventID == null) {
             throw new NullPointerException();
         }
         this.eventID = eventID;
         addAttribute("EventActionCode", action);
-        addAttribute("EventDateTime", eventDT != null ? eventDT : new Date());
-        addAttribute("EventOutcomeIndicator", 
-                outcome != null ? outcome : OutcomeIndicator.SUCCESS);
+        setEventDateTime(new Date());
+        setOutcomeIndicator(OutcomeIndicator.SUCCESS);
     }
 
     public ID getEventID() {
@@ -83,8 +81,24 @@ public class AuditEvent extends BaseElement {
         return (Date) getAttribute("EventDateTime");
     }
 
+    public AuditEvent setEventDateTime(Date datetime) {
+        if (datetime == null) {
+            throw new NullPointerException("datetime");
+        }
+        addAttribute("EventDateTime", datetime);
+        return this;
+    }
+    
     public OutcomeIndicator getEventOutcomeIndicator() {
         return (OutcomeIndicator) getAttribute("EventOutcomeIndicator");
+    }
+    
+    public AuditEvent setOutcomeIndicator(OutcomeIndicator outcome) {
+        if (outcome == null) {
+            throw new NullPointerException("outcome");
+        }
+        addAttribute("EventOutcomeIndicator", outcome);
+        return this;
     }
     
     public List getEventTypeCodes() {
@@ -93,7 +107,7 @@ public class AuditEvent extends BaseElement {
     
     public AuditEvent addEventTypeCode(TypeCode code) {
         if (code == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("code");
         }
         eventTypeCodes.add(code);
         return this;

@@ -1,9 +1,5 @@
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message describes the event of a patient record being created,
  * modified, accessed, or deleted.
@@ -25,8 +21,7 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class PatientRecordMessage extends AuditMessageSupport {
     
-    public PatientRecordMessage(AuditEvent.ActionCode action, Date eventDT,
-            OutcomeIndicator outcome) {
-        super(AuditEvent.ID.PATIENT_RECORD, action, eventDT, outcome);
+    public PatientRecordMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.PATIENT_RECORD, action);
     }
 }

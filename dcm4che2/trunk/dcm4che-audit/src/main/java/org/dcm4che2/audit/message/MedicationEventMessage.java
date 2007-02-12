@@ -38,10 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message may be generated whenever there are medication orders or
  * administration within an instance or episode of care. These include 
@@ -57,9 +53,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class MedicationEventMessage extends AuditMessageSupport {
 
-    public MedicationEventMessage(AuditEvent.ActionCode action, Date eventDT,
-            OutcomeIndicator outcome) {
-        super(AuditEvent.ID.MEDICATION_EVENT, action, eventDT, outcome);
+    public MedicationEventMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.MEDICATION_EVENT, action);
     }
 
 }

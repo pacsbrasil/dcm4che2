@@ -38,10 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message may be generated whenever health services are scheduled and
  * performed within an instance or episode of care. These include scheduling, 
@@ -58,10 +54,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class HealthServicesProvisionEventMessage extends AuditMessageSupport {
 
-    public HealthServicesProvisionEventMessage(AuditEvent.ActionCode action,
-            Date eventDT, OutcomeIndicator outcome) {
-        super(AuditEvent.ID.HEALTH_SERVICE_PROVISION_EVENT, action, eventDT,
-                outcome);
+    public HealthServicesProvisionEventMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.HEALTH_SERVICE_PROVISION_EVENT, action);
     }      
 
 

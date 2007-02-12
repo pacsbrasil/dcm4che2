@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -58,10 +59,10 @@ public class AuditMessage extends BaseElement {
     private static final String XML_VERSION_1_0_ENCODING_UTF_8 = 
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     private static boolean incXMLDecl = false;
-    private final AuditEvent event;
-    private final ArrayList activeParticipants = new ArrayList(3);
-    private final ArrayList auditSources = new ArrayList(1);
-    private final ArrayList participantObjects = new ArrayList(3);
+    protected final AuditEvent event;
+    protected final ArrayList activeParticipants = new ArrayList(3);
+    protected final ArrayList auditSources = new ArrayList(1);
+    protected final ArrayList participantObjects = new ArrayList(3);
     
     public AuditMessage(AuditEvent event) {
         super("AuditMessage");
@@ -83,6 +84,14 @@ public class AuditMessage extends BaseElement {
         return event;
     }
     
+    public void setEventDateTime(Date datetime) {
+        event.setEventDateTime(datetime);
+    }
+
+    public void setOutcomeIndicator(AuditEvent.OutcomeIndicator outcome) {
+        event.setOutcomeIndicator(outcome);
+    }
+
     public List getAuditSources() {
         return Collections.unmodifiableList(auditSources);
     }

@@ -38,10 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message describes the event of a system, such as a mobile device, 
  * entering or leaving the network as a normal part of operations. It is not
@@ -72,10 +68,9 @@ public class NetworkEntryMessage extends AuditMessage {
     public static final AuditEvent.TypeCode DETACH = 
             AuditEvent.TypeCode.DETACH;
     
-    public NetworkEntryMessage(AuditEvent.TypeCode type, Date eventDT,
-            OutcomeIndicator outcome) {
+    public NetworkEntryMessage(AuditEvent.TypeCode type) {
         super(new AuditEvent(AuditEvent.ID.NETWORK_ENTRY,
-                    AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+                    AuditEvent.ActionCode.EXECUTE)
                 .addEventTypeCode(check(type)));
     }
 

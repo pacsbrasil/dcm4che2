@@ -38,9 +38,8 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This message describes the event of importing data into a system, implying
@@ -56,9 +55,9 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class DataImportMessage extends AuditMessage {
 
-    public DataImportMessage(Date eventDT, OutcomeIndicator outcome) {
-        super(new AuditEvent(AuditEvent.ID.IMPORT, AuditEvent.ActionCode.CREATE,
-                eventDT, outcome));
+    public DataImportMessage() {
+        super(new AuditEvent(AuditEvent.ID.IMPORT,
+                AuditEvent.ActionCode.CREATE));
     }
         
     public ActiveParticipant addImporterPerson(String userID, String altUserID, 
@@ -99,4 +98,39 @@ public class DataImportMessage extends AuditMessage {
             ParticipantObjectDescription desc) {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
+    
+    public void validate() {
+        super.validate();
+        ActiveParticipant importer = null;
+        ActiveParticipant source = null;
+        ActiveParticipant requestor = null;
+        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
+            ActiveParticipant ap = (ActiveParticipant) iter.next();
+            List roleIDCodeIDs = ap.getRoleIDCodeIDs();
+            if (roleIDCodeIDs.contains(
+                ActiveParticipant.RoleIDCode.DESTINATION)) {
+                importer = ap;               
+            } else if (roleIDCodeIDs.contains(
+                ActiveParticipant.RoleIDCode.SOURCE_MEDIA)) {
+                if (importer != null) {
+                    throw new IllegalStateException(
+                            "Multiple Source identification");
+                }
+                source = ap;               
+            } 
+            if (ap.isUserIsRequestor()) {
+                requestor = ap;
+            }            
+        }
+        if (importer == null) {
+            throw new IllegalStateException("No Importer identification");
+        }
+        if (source == null) {
+            throw new IllegalStateException("No Source identification");
+        }
+        if (requestor == null) {
+            throw new IllegalStateException("No Requesting User");
+        }
+    }    
+    
 }

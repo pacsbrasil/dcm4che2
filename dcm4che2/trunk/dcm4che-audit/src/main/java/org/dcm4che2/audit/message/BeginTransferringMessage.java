@@ -38,10 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message describes the event of a system begining to transfer a set 
  * of DICOM instances from one node to another node within control of the
@@ -60,60 +56,15 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  * @see <a href="ftp://medical.nema.org/medical/dicom/supps/sup95_fz.pdf">
  * DICOM Supp 95: Audit Trail Messages, A.1.3.3 Begin Transferring DICOM Instances</a>
  */
-public class BeginTransferringMessage extends AuditMessage {
+public class BeginTransferringMessage extends TransferMessageSupport {
 
     /**
-     * Constructs an Instances Transferred message.
+     * Constructs a Begin Transferring DICOM Instances message.
      * 
-     * @param eventDT the time when the transfer has started.
-     *                <code>null</code> will be replaced by current time.
-     * @param outcome indicates whether the event succeeded or failed.
-     *                <code>null</code> will be replaced by 
-     *                {@link AuditEvent.OutcomeIndicator.SUCCESS}.
      */
-    public BeginTransferringMessage(Date eventDT, OutcomeIndicator outcome) {
-        super(new AuditEvent(AuditEvent.ID.BEGIN_TRANSFERRING_DICOM_INSTANCES, 
-                AuditEvent.ActionCode.EXECUTE, eventDT, outcome));
+    public BeginTransferringMessage() {
+        super(AuditEvent.ID.BEGIN_TRANSFERRING_DICOM_INSTANCES, 
+                AuditEvent.ActionCode.EXECUTE);
     }
-
-    public ActiveParticipant addSourceProcess(String processID, String[] aets,
-            String processName, String hostname, boolean requestor) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, requestor)
-                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
-    }
-    
-    public ActiveParticipant addDestinationProcess(String processID, String[] aets, 
-            String processName, String hostname, boolean requestor) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, requestor)
-                .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
-    }
-
-    public ActiveParticipant addOtherParticipantPerson(String userID,
-            String altUserID, String userName, String hostname, boolean requestor) {
-        return addActiveParticipant(
-                ActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, hostname, requestor));
-    }
-    
-    public ActiveParticipant addOtherParticipantProcess(String processID,
-            String[] aets, String processName, String hostname, boolean requestor) {
-        return addActiveParticipant(
-                ActiveParticipant.createActiveProcess(processID, aets, 
-                        processName, hostname, requestor));
-    }
-            
-    public ParticipantObject addPatient(String id, String name) {
-        return addParticipantObject(ParticipantObject.createPatient(id, name));
-    }
-
-    public ParticipantObject addStudy(String uid,
-            ParticipantObjectDescription desc) {
-        return addParticipantObject(ParticipantObject.createStudy(uid, desc));
-    }
-
 
 }

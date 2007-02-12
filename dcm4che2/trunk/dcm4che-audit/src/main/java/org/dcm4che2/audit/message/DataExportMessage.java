@@ -38,9 +38,8 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This message describes the event of exporting data from a system, implying
@@ -58,9 +57,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class DataExportMessage extends AuditMessage {
 
-    public DataExportMessage(Date eventDT, OutcomeIndicator outcome) {
-        super(new AuditEvent(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ,
-                eventDT, outcome));
+    public DataExportMessage() {
+        super(new AuditEvent(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ));
     }
        
     public ActiveParticipant addExporterPerson(String userID, String altUserID, 
@@ -105,4 +103,39 @@ public class DataExportMessage extends AuditMessage {
     public ParticipantObject addDataRepository(String uri) {
         return addParticipantObject(ParticipantObject.createDataRepository(uri));
     }
+    
+    public void validate() {
+        super.validate();
+        ActiveParticipant exporter = null;
+        ActiveParticipant dest = null;
+        ActiveParticipant requestor = null;
+        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
+            ActiveParticipant ap = (ActiveParticipant) iter.next();
+            List roleIDCodeIDs = ap.getRoleIDCodeIDs();
+            if (roleIDCodeIDs.contains(
+                ActiveParticipant.RoleIDCode.SOURCE)) {
+                exporter = ap;               
+            } else if (roleIDCodeIDs.contains(
+                ActiveParticipant.RoleIDCode.DESTINATION_MEDIA)) {
+                if (exporter != null) {
+                    throw new IllegalStateException(
+                            "Multiple Destination identification");
+                }
+                dest = ap;               
+            } 
+            if (ap.isUserIsRequestor()) {
+                requestor = ap;
+            }            
+        }
+        if (exporter == null) {
+            throw new IllegalStateException("No Exporter identification");
+        }
+        if (dest == null) {
+            throw new IllegalStateException("No Destination identification");
+        }
+        if (requestor == null) {
+            throw new IllegalStateException("No Requesting User");
+        }
+    }    
+    
 }

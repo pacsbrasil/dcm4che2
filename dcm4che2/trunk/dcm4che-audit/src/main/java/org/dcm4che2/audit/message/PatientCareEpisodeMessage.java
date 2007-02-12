@@ -38,10 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message may be generated whenever there is a patient association with 
  * a care protocol. These include initial assignment, scheduling, updates or 
@@ -57,9 +53,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class PatientCareEpisodeMessage extends AuditMessageSupport {
 
-    public PatientCareEpisodeMessage(AuditEvent.ActionCode action, Date eventDT,
-            OutcomeIndicator outcome) {
-        super(AuditEvent.ID.PATIENT_CARE_EPISODE, action, eventDT, outcome);
+    public PatientCareEpisodeMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.PATIENT_CARE_EPISODE, action);
     }
 
 }

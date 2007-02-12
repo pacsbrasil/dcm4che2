@@ -1,9 +1,5 @@
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message describes the event of a procedure record being created,
  * accessed, modified, accessed, or deleted.  This message may only include
@@ -28,9 +24,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class ProcedureRecordMessage extends AuditMessageSupport {
     
-    public ProcedureRecordMessage(AuditEvent.ActionCode action, Date eventDT,
-            OutcomeIndicator outcome) {
-        super(AuditEvent.ID.PROCEDURE_RECORD, action, eventDT, outcome);
+    public ProcedureRecordMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.PROCEDURE_RECORD, action);
     }
 
     public ParticipantObject addStudy(String uid,

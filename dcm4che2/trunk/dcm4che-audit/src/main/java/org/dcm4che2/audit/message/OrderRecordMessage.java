@@ -1,9 +1,5 @@
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
 /**
  * This message describes the event of an order being  created, modified,
  * accessed, or deleted.  This message may only include information about 
@@ -24,9 +20,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class OrderRecordMessage extends AuditMessageSupport {
 
-    public OrderRecordMessage(AuditEvent.ActionCode action, Date eventDT,
-            OutcomeIndicator outcome) {
-        super(AuditEvent.ID.ORDER_RECORD, action, eventDT, outcome);
+    public OrderRecordMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.ORDER_RECORD, action);
     }
 
 }

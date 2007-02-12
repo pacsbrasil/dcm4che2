@@ -38,8 +38,6 @@
 
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
 /**
  * This message describes the event of a user has attempting to log on or
  * log off, whether successful or not.  No Participant Objects are needed
@@ -53,20 +51,40 @@ import java.util.Date;
  */
 public class UserAuthenticationMessage extends AuditMessage {
     
+    /**
+     * Action Type code for {@link #UserAuthenticationMessage}.
+     */
     public static final AuditEvent.TypeCode LOGIN = AuditEvent.TypeCode.LOGIN;
+    
+    /**
+     * Action Type code for {@link #UserAuthenticationMessage}.
+     */
     public static final AuditEvent.TypeCode LOGOUT = AuditEvent.TypeCode.LOGOUT;
    
-    public UserAuthenticationMessage(AuditEvent.TypeCode typeCode, Date eventDT, 
-            AuditEvent.OutcomeIndicator outcome) {
-        super(new AuditEvent(AuditEvent.ID.APPLICATION_ACTIVITY, 
-                AuditEvent.ActionCode.EXECUTE, eventDT, outcome)
+    /**
+     * Constructs an User Authentication message. 
+     * Use {@link #setOutcomeIndicator} to modify default success indicator
+     * to describe a failed user login.
+     * 
+     * @param typeCode indicator for type of action,
+     *                {@link #LOGIN} or {@link #LOGOUT}
+     * @throws NullPointerException If <code>typeCode=null</code>
+     * @throws IllegalArgumentException If <code>typeCode</code> is neither
+     *                {@link #LOGIN} nor {@link #LOGOUT}
+     */
+    public UserAuthenticationMessage(AuditEvent.TypeCode typeCode) {
+        super(new AuditEvent(AuditEvent.ID.USER_AUTHENTICATION, 
+                AuditEvent.ActionCode.EXECUTE)
             .addEventTypeCode(check(typeCode)));
     }
 
-    private static AuditEvent.TypeCode check(AuditEvent.TypeCode type) {
-        if (type != AuditEvent.TypeCode.LOGIN 
-                && type != AuditEvent.TypeCode.LOGOUT) {
-            throw new IllegalArgumentException(type.toString());
+    private static AuditEvent.TypeCode check(AuditEvent.TypeCode typeCode) {
+        if (typeCode == null) {
+            throw new NullPointerException("typeCode");
+        }        
+        if (typeCode != AuditEvent.TypeCode.LOGIN 
+                && typeCode != AuditEvent.TypeCode.LOGOUT) {
+            throw new IllegalArgumentException(typeCode.toString());
         }
         return type;
     }
@@ -82,4 +100,13 @@ public class UserAuthenticationMessage extends AuditMessage {
         return addActiveParticipant(
                 ActiveParticipant.createActiveNode(hostname, false));
     }
+
+    
+    public void validate() {
+        super.validate();
+        ActiveParticipant user = getRequestingActiveParticipants();
+        if (user == null) {
+            throw new IllegalStateException("No Requesting User Information");
+        }
+    }    
 }

@@ -38,9 +38,7 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+import java.util.Iterator;
 
 /**
  * This message describes the event of DICOM SOP Instances  being viewed,
@@ -55,10 +53,8 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class InstancesAccessedMessage extends AuditMessageSupport {
 
-    public InstancesAccessedMessage(AuditEvent.ActionCode action,
-            Date eventDT, OutcomeIndicator outcome) {
-        super(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, action, eventDT,
-                outcome);
+    public InstancesAccessedMessage(AuditEvent.ActionCode action) {
+        super(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, action);
     }
 
     public ParticipantObject addStudy(String uid,
@@ -66,4 +62,20 @@ public class InstancesAccessedMessage extends AuditMessageSupport {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
     
+    public void validate() {
+        super.validate();
+        ParticipantObject study = null;        
+        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
+            ParticipantObject po = (ParticipantObject) iter.next();
+            if (ParticipantObject.TypeCodeRole.REPORT
+                        == po.getParticipantObjectTypeCodeRole()
+                    && ParticipantObject.IDTypeCode.STUDY_INSTANCE_UID
+                        == po.getParticipantObjectIDTypeCode()) {
+                study = po;
+            }        
+        }
+        if (study == null) {
+            throw new IllegalStateException("No Study identification");
+        }
+    }
 }

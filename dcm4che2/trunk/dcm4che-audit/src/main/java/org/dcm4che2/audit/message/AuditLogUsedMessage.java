@@ -38,10 +38,7 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Date;
-
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
-
+import java.util.Iterator;
 
 /**
  * This message describes the event of a person or process accessing a log 
@@ -61,9 +58,9 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class AuditLogUsedMessage extends AuditMessage {
 
-    public AuditLogUsedMessage(Date eventDT, OutcomeIndicator outcome) {
+    public AuditLogUsedMessage() {
         super(new AuditEvent(AuditEvent.ID.AUDIT_LOG_USED, 
-                AuditEvent.ActionCode.READ, eventDT, outcome));
+                AuditEvent.ActionCode.READ));
     }
     
     public ActiveParticipant addUserPerson(String userID, String altUserID, 
@@ -86,4 +83,27 @@ public class AuditLogUsedMessage extends AuditMessage {
         return obj;
     }
 
+    public void validate() {
+        super.validate();
+        ActiveParticipant user = getRequestingActiveParticipants();
+        if (user == null) {
+            throw new IllegalStateException("No Requesting User");
+        }
+        ParticipantObject auditLog = null;        
+        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
+            ParticipantObject po = (ParticipantObject) iter.next();
+            if (ParticipantObject.TypeCodeRole.SECURITY_RESOURCE
+                    == po.getParticipantObjectTypeCodeRole()) {
+                if (auditLog != null) {
+                    throw new IllegalStateException(
+                            "Multiple Audit Log identification");
+                }
+                auditLog = po;
+            }            
+        }
+        if (auditLog == null) {
+            throw new IllegalStateException("No Audit Log identification");
+        }
+    }    
+        
 }
