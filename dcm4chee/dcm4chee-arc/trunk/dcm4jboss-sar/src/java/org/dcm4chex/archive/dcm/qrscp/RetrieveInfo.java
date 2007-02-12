@@ -57,6 +57,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 /**
@@ -99,6 +100,12 @@ final class RetrieveInfo {
             fileInfos = instInfos[i];
             iuid = fileInfos[0].sopIUID;
             cuid = fileInfos[0].sopCUID;
+            
+            // Check the availability first. If it's not ONLINE or NEARLINE,
+            // we skip it.
+            if(fileInfos[0].availability >= Availability.OFFLINE)
+            	continue;
+            
             iuidsAndTsuids = (IuidsAndTsuids) iuidsAndTsuidsByCuid.get(cuid);
             if (iuidsAndTsuids == null) {
                 iuidsAndTsuids = new IuidsAndTsuids();
