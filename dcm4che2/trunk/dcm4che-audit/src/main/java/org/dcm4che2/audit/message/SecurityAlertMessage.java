@@ -38,8 +38,6 @@
 
 package org.dcm4che2.audit.message;
 
-import java.util.Iterator;
-
 /**
  * This message describes any event for which a node needs to report a 
  * security alert, e.g., a node authentication failure when establishing a 

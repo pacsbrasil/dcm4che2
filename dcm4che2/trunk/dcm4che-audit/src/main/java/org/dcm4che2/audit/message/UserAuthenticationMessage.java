@@ -86,7 +86,7 @@ public class UserAuthenticationMessage extends AuditMessage {
                 && typeCode != AuditEvent.TypeCode.LOGOUT) {
             throw new IllegalArgumentException(typeCode.toString());
         }
-        return type;
+        return typeCode;
     }
         
     public ActiveParticipant addUserPerson(String userID, String altUserID,
