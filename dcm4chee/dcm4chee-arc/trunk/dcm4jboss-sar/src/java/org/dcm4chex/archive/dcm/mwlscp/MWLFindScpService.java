@@ -74,7 +74,7 @@ public class MWLFindScpService extends AbstractScpService implements
 
     private static final String SPS_STATUS_STARTED = "STARTED";
 
-    private static final String PPS_STATUS_IN_PROGRESS = "IN_PROGRESS";
+    private static final String PPS_STATUS_IN_PROGRESS = "IN PROGRESS";
 
     private static final NotificationFilterSupport mppsFilter = 
             new NotificationFilterSupport();
