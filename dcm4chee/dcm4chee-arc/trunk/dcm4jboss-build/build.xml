@@ -9,7 +9,7 @@
   <property name="jboss.server.home" value="${jboss.home}/server/default"/>
   <!-- Override with your dcm4chee-arr-3.0 location -->
   <property name="dcm4chee-arr.home" value="${user.home}/dcm4chee/dcm4chee-arr"/>
-  <property name="dcm4chee-arr.ejb" value="${dcm4chee-arr.home}/dcm4chee-arr-ejb"/>
+  <property name="dcm4chee-arr.entities" value="${dcm4chee-arr.home}/dcm4chee-arr-entities"/>
   <property name="dcm4chee-arr.ear" value="${dcm4chee-arr.home}/dcm4chee-arr-ear"/>
   <!-- Override with your FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
@@ -250,15 +250,15 @@
         <include name="deploy/jmx-console.war/**"/>
         <exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
         <!--exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/-->
-        <include name="deploy/naming.sar/**"/>
-        <include name="deploy/security.sar/**"/>
-      	<include name="deploy/dynclassloader-service.xml"/>
-     	<include name="deploy/ejb-deployer.xml"/>
+        <!--include name="deploy/naming.sar/**"/-->
+        <!--include name="deploy/security.sar/**"/-->
+      	<!--include name="deploy/dynclassloader-service.xml"/-->
+     	<!--include name="deploy/ejb-deployer.xml"/-->
       	<!--include name="deploy/ejb-timer-service.xml"/-->
-      	<include name="deploy/invokers-service.xml"/>
+      	<!--include name="deploy/invokers-service.xml"/-->
         <include name="deploy/jbossjca-service.xml"/>
         <include name="deploy/jboss-local-jdbc.rar"/>
-      	<include name="deploy/jdbc-metadata-service.xml"/>
+      	<!--include name="deploy/jdbc-metadata-service.xml"/-->
         <include name="deploy/jmx-invoker-service.xml"/>
         <include name="lib/activation.jar"/>
         <include name="lib/bcel.jar"/>
@@ -288,9 +288,6 @@
         <include name="lib/jpl-util.jar"/>
         <include name="lib/log4j.jar"/>
         <include name="lib/mail.jar"/>
-      	<!-- use copy in dcm4jboss-sar/lib/, because not included in jems-installer ejb3 option
-        <include name="lib/scheduler-plugin.jar"/>
-        -->
       </zipfileset>
       <zipfileset dir="${fop.home}/build" prefix="${dist.standalone.config}/lib">
         <include name="fop.jar"/>
@@ -344,7 +341,7 @@
 	  	<include name="deploy/jbossws.sar/**"/>
 	  	<include name="deploy/ear-deployer.xml"/>
 	  	<include name="deploy/ejb3-interceptors-aop.xml"/>
-	  	<include name="deploy/usertx-service.xml"/>
+	  	<!--include name="deploy/usertx-service.xml"/-->
 	  	<include name="lib/antlr-2.7.6.jar"/>
 	  	<include name="lib/cglib.jar"/>
 	  	<include name="lib/ejb3-persistence.jar"/>
@@ -362,7 +359,7 @@
       <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.standalone.config}/deploy">
         <include name="dcm4chee-arr-${db.name}-*.ear"/>
       </zipfileset>
-      <zipfileset dir="${dcm4chee-arr.ejb}/target/generated/schema/" prefix="${dist.standalone}/sql">
+      <zipfileset dir="${dcm4chee-arr.entities}/target/hibernate3/sql" prefix="${dist.standalone}/sql">
         <include name="dcm4chee-arr-${db.name}.ddl"/>
       </zipfileset>      
       <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">

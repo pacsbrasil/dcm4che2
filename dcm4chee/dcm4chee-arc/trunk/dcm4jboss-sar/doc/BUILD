@@ -10,7 +10,7 @@ to download and install:
 
 - JBoss 4.0.5.GA + EJB3 
 (Run JEMS-Installer 
-[http://prdownloads.sourceforge.net/jboss/jems-installer-1.2.0.BETA2.jar?download]
+[http://prdownloads.sourceforge.net/jboss/jems-installer-1.2.0.GA.jar?download]
 with ejb3 profile)
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
