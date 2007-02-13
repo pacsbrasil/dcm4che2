@@ -450,7 +450,7 @@ public class IANScuService extends ServiceMBeanSupport implements
             if (notifyOtherServices) {
                 sendMPPSInstancesAvailableNotification(mpps);
             }
-            if (!sendOneIANforEachMPPS) {
+            if (sendOneIANforEachMPPS) {
                 schedule(ian);
             }
         }
