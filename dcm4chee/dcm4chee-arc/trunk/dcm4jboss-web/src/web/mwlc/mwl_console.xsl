@@ -267,8 +267,8 @@
 				</xsl:if>
 			</td>	
 			<td title="Function">
-				<a href="mwl_console.m?action=inspect&amp;spsID={spsID}" target="xmlview">
-					<img src="images/xml.gif" alt="xml" border="0" title="Inspect MWL DICOM object"/>		
+				<a href="mwl_console.m?action=inspect&amp;spsID={spsID}" target="_blank">
+					<img src="images/attrs.gif" alt="attrs" border="0" title="Show MWL item attributes"/>		
 				</a>
 			</td>
 			<td title="Function" align="center" valign="bottom">

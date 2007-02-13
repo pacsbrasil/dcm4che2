@@ -221,8 +221,8 @@
 				<xsl:value-of select="PPSStatus"/>
 		 	</td>
 			<td title="Function">
-				<a href="gppps_console.m?action=inspect&amp;gpppsIUID={gpppsIUID}" target="xmlview">
-					<img src="images/xml.gif" alt="xml" border="0" title="Inspect GPPPS DICOM object"/>		
+				<a href="gppps_console.m?action=inspect&amp;gpppsIUID={gpppsIUID}" target="_blank">
+					<img src="images/attrs.gif" alt="attrs" border="0" title="Show GP-PPS attributes"/>		
 				</a>
 			</td>	
 			<td title="Function">

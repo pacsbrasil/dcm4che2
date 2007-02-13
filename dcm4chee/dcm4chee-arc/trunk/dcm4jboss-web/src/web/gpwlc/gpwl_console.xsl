@@ -281,8 +281,8 @@
 				</a>
 			</td>
 			<td title="Function">
-				<a href="gpwl_console.m?action=inspect&amp;gpwlIUID={IUID}" target="xmlview">
-					<img src="images/xml.gif" alt="xml" border="0" title="Inspect GPWL DICOM object"/>		
+				<a href="gpwl_console.m?action=inspect&amp;gpwlIUID={IUID}" target="_blank">
+					<img src="images/attrs.gif" alt="attrs" border="0" title="Show GP-SPS attributes"/>		
 				</a>
 			</td>	
 			<td title="Function" align="center" valign="bottom">

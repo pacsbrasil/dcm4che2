@@ -265,8 +265,8 @@
 				</xsl:otherwise>
 			</xsl:choose>
 			<td title="Function">
-				<a href="mpps_console.m?action=inspect&amp;mppsIUID={mppsIUID}" target="xmlview">
-					<img src="images/xml.gif" alt="xml" border="0" title="Inspect MPPS DICOM object"/>		
+				<a href="mpps_console.m?action=inspect&amp;mppsIUID={mppsIUID}" target="_blank">
+					<img src="images/attrs.gif" alt="attrs" border="0" title="Show MPPS attributes"/>		
 				</a>
 			</td>
 			<td title="Function">

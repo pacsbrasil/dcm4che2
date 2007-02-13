@@ -922,8 +922,8 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
 						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
 					</a>
-					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="xmlview" >
-						<img src="images/xml.gif" alt="XML" border="0" title="View Dicom object as XML"/>		
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="Show DICOM attributes"/>		
 					</a>
 				</xsl:when>
 				<xsl:otherwise>
@@ -1003,8 +1003,8 @@
 		<td class="instance_mark" align="right">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
-					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="xmlview" >
-						<img src="images/xml.gif" alt="XML" border="0" title="View Dicom object as XML"/>		
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="Show DICOM attributes"/>		
 					</a>
 				</xsl:when>
 				<xsl:otherwise>
@@ -1104,8 +1104,8 @@
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
 					</a>
-					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="xmlview" >
-						<img src="images/xml.gif" alt="XML" border="0" title="View Dicom object as XML"/>		
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="Show DICOM attributes"/>		
 					</a>
 				</td>
 			</xsl:when>
@@ -1180,10 +1180,10 @@
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
-						<img src="images/waveform.gif" alt="View waveform" border="0" title="View waveform"/>		
+						<img src="images/waveform.gif" alt="waveform" border="0" title="View waveform"/>		
 					</a>
-					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="xmlview" >
-						<img src="images/xml.gif" alt="XML" border="0" title="View Dicom object as XML"/>		
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="Show DICOM attributes"/>		
 					</a>
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
@@ -1257,8 +1257,8 @@
 	  	<td title="XML">
 	  		&#160;
 	    	<xsl:if test="position()=1">
-				<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;useOrig=true&amp;studyUID=1&amp;seriesUID=1&amp;objectUID={../../sopIUID}" target="xmlview" >
-					<img src="images/xml.gif" alt="XML" border="0" title="View original Dicom Header as XML"/>		
+				<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;useOrig=true&amp;studyUID=1&amp;seriesUID=1&amp;objectUID={../../sopIUID}" target="_blank" >
+					<img src="images/attrs.gif" alt="XML" border="0" title="Show original DICOM attributes"/>		
 				</a>
 			</xsl:if>
 		</td>
