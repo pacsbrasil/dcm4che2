@@ -16,3 +16,5 @@ UPDATE mwl_item SET sps_status=sps_status+1 where sps_status > 1;
 
 DROP INDEX code_value ON code;
 CREATE UNIQUE INDEX code_value ON code(code_value,code_designator);
+
+UPDATE roles SET roles='AuditLogUser' WHERE roles='arr-user';

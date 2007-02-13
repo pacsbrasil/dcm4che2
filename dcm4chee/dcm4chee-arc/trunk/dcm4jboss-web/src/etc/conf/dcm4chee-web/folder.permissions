@@ -37,7 +37,7 @@ mpps_console=DatacareUser(*);WebAdmin(*)
 gpwl_console=DatacareUser(*);WebAdmin(*)
 gppps_console=DatacareUser(*);WebAdmin(*)
 user_admin=WebAdmin(*)
-audit_repository=arr-user(*)
+audit_repository=AuditLogUser(*)
 
 # USER AE Filter mapping
 # Format:aefilter.<userId>=<AET1>[,<AET2>[,...[,<AETn>]]]

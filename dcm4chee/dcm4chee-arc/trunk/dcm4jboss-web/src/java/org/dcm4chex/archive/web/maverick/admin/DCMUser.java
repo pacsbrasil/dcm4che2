@@ -54,7 +54,7 @@ public class DCMUser {
 	public static final String JBOSSADMIN = "JBossAdmin";
 	public static final String WEBADMIN = "WebAdmin";
 	public static final String WEBUSER = "WebUser";
-	public static final String ARRUSER = "arr-user";
+	public static final String ARRUSER = "AuditLogUser";
 	public static final String MCMUSER = "McmUser";
 	public static final String DATACARE_USER = "DatacareUser";
 	

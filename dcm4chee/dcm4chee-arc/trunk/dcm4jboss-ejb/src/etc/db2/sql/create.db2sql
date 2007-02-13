@@ -604,7 +604,7 @@ INSERT INTO roles VALUES('admin','JBossAdmin');
 INSERT INTO roles VALUES('admin','WebAdmin');
 INSERT INTO roles VALUES('admin','WebUser');
 INSERT INTO roles VALUES('admin','McmUser');
-INSERT INTO roles VALUES('admin','arr-user');
+INSERT INTO roles VALUES('admin','AuditLogUser');
 
 INSERT INTO users VALUES('user','Et6pb+wgWTVmq3VpLJlJWWgzrck=');
 INSERT INTO roles VALUES('user','WebUser');
