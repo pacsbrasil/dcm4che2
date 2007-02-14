@@ -1072,6 +1072,7 @@
   <element tag="(0028,6114)" name="Mask Sub-pixel Shift" vr="FL" vm="2" key="MaskSubPixelShift" />
   <element tag="(0028,6120)" name="TID Offset" vr="SS" vm="1" key="TIDOffset" />
   <element tag="(0028,6190)" name="Mask Operation Explanation" vr="ST" vm="1" key="MaskOperationExplanation" />
+  <element tag="(0028,7FE0)" name="Pixel Data Provider URL" vr="UT" vm="1" key="PixelDataProviderURL" />
   <element tag="(0028,9001)" name="Data Point Rows" vr="UL" vm="1" key="DataPointRows" />
   <element tag="(0028,9002)" name="Data Point Columns" vr="UL" vm="1" key="DataPointColumns" />
   <element tag="(0028,9003)" name="Signal Domain Columns" vr="CS" vm="1" key="SignalDomain" />
@@ -2393,9 +2394,12 @@
   <uid value="1.2.840.10008.1.2.4.81" name="JPEG-LS Lossy (Near-Lossless) Image Compression" key="JPEGLSLossy" />
   <uid value="1.2.840.10008.1.2.4.90" name="JPEG 2000 Lossless Image Compression" key="JPEG2000Lossless" />
   <uid value="1.2.840.10008.1.2.4.91" name="JPEG 2000 Lossy Image Compression" key="JPEG2000Lossy" />
+  <uid value="1.2.840.10008.1.2.4.94" name="JPIP Referenced" key="JPIPReferenced" />
+  <uid value="1.2.840.10008.1.2.4.95" name="JPIP Referenced Deflated" key="JPIPReferencedDeflated" />
   <uid value="1.2.840.10008.1.2.4.100" name="MPEG2 Main Profile @ Main Level" key="MPEG2" />
   <uid value="1.2.840.10008.1.2.5" name="RLE Lossless" key="RLELossless" />
   <uid value="1.2.840.10008.1.2.6.1" name="RFC 2557 MIME encapsulation" key="RFC2557MIMEEncapsulation" />
+  <uid value="1.2.40.0.13.1.1.2.4.94" name="Tiani URI Referenced" key="TianiURIReferenced" />  
 </uids>
 
 <uids type="SOPClass">
