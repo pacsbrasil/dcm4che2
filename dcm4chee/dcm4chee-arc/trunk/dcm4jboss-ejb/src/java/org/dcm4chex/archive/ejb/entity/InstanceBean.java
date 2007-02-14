@@ -472,7 +472,10 @@ public abstract class InstanceBean implements EntityBean {
             setRetrieveAETs(aets);
         return updated;
     }
-/*    
+    
+    /* Commented out: Does not work for instances which are only external
+     * retrieveable (= no (longer) files located on filesystems of this archive
+     * installation) [GZ]
     private Set getInternalRetrieveAETs(Long pk) throws FinderException {
     	Collection aets = fsHome.allRetrieveAETs();
     	if(aets.size() > 1)
@@ -482,7 +485,8 @@ public abstract class InstanceBean implements EntityBean {
         	// we just simply return this only one.
     		return new HashSet(aets);    	
     }
-*/ 
+     */ 
+    
     /**
      * @ejb.select query="SELECT MIN(f.fileSystem.availability) FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
      */ 

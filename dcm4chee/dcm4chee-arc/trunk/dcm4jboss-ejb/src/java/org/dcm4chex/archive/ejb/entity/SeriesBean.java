@@ -472,6 +472,7 @@ public abstract class SeriesBean implements EntityBean {
         String aets = null;
         if (numI > 0) {
 	        StringBuffer sb = new StringBuffer();
+//                Set iAetSet = getInternalRetrieveAETs(pk);
 	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
 	        if (iAetSet.remove(null))
 	            log.warn("Series[iuid=" + getSeriesIuid()
@@ -493,7 +494,10 @@ public abstract class SeriesBean implements EntityBean {
         }
         return updated;
     }
-/*    
+
+    /* Commented out: Does not work for instances which are only external
+     * retrieveable (= no (longer) files located on filesystems of this archive
+     * installation) [GZ]
     private Set getInternalRetrieveAETs(Long pk) throws FinderException {
     	Collection aets = fsHome.allRetrieveAETs();
     	if(aets.size() > 1)
@@ -503,7 +507,8 @@ public abstract class SeriesBean implements EntityBean {
         	// we just simply return this only one.
     		return new HashSet(aets);    	
     }
-*/    
+     */
+    
     private boolean updateExternalRetrieveAET(Long pk, int numI) throws FinderException {
     	boolean updated = false;
     	String aet = null;
