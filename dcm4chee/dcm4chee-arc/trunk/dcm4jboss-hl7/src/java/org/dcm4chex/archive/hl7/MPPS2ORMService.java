@@ -95,6 +95,8 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     private String receivingApplication;
 
     private String receivingFacility;
+    
+    private boolean enabled;
 
     private boolean ignoreUnscheduled;
 
@@ -145,6 +147,14 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
 
     public final void setReceivingFacility(String receivingFacility) {
         this.receivingFacility = receivingFacility;
+    }
+
+    public final boolean isEnabled() {
+        return enabled;
+    }
+
+    public final void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public final boolean isIgnoreUnscheduled() {
@@ -227,6 +237,9 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
      *      java.lang.Object)
      */
     public void handleNotification(Notification notif, Object handback) {
+        if (!enabled) {
+            return;
+        }
         Dataset mpps = (Dataset) notif.getUserData();
         if (ignoreInProgress
                 && "IN PROGRESS".equals(mpps.getString(Tags.PPSStatus)))

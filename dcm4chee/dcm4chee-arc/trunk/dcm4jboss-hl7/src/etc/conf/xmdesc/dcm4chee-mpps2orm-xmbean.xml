@@ -23,6 +23,14 @@
    </constructor>
 
    <!-- Attributes -->
+   <attribute access="read-write" getMethod="isEnabled" setMethod="setEnabled">
+      <description>Enable/disable this service</description>
+      <name>Enabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getReceivingApplication" setMethod="setReceivingApplication">
       <description>Identifies the Receiving Application in HL7 messages that are directed to
          the HL7 Send Service. The values in the ReceivingApplication attribute may be used to
