@@ -132,7 +132,7 @@ public abstract class SeriesBean implements EntityBean {
     private EntityContext ejbctx;
     private MPPSLocalHome mppsHome;
     private SeriesRequestLocalHome reqHome;
-    private FileSystemLocalHome fsHome;
+//    private FileSystemLocalHome fsHome;
 
     public void setEntityContext(EntityContext ctx) {
         ejbctx = ctx;
@@ -143,8 +143,8 @@ public abstract class SeriesBean implements EntityBean {
                     jndiCtx.lookup("java:comp/env/ejb/MPPS");
             reqHome = (SeriesRequestLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/Request");
-            fsHome = (FileSystemLocalHome)
-            		jndiCtx.lookup("java:comp/env/ejb/FileSystem");
+//            fsHome = (FileSystemLocalHome)
+//            		jndiCtx.lookup("java:comp/env/ejb/FileSystem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -160,7 +160,7 @@ public abstract class SeriesBean implements EntityBean {
     public void unsetEntityContext() {
         mppsHome = null;
         reqHome = null;
-        fsHome = null;
+//        fsHome = null;
         ejbctx = null;
     }
 
@@ -472,7 +472,7 @@ public abstract class SeriesBean implements EntityBean {
         String aets = null;
         if (numI > 0) {
 	        StringBuffer sb = new StringBuffer();
-	        Set iAetSet = getInternalRetrieveAETs(pk);
+	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
 	        if (iAetSet.remove(null))
 	            log.warn("Series[iuid=" + getSeriesIuid()
 	                    + "] contains Instance(s) with unspecified Retrieve AET");
@@ -493,7 +493,7 @@ public abstract class SeriesBean implements EntityBean {
         }
         return updated;
     }
-    
+/*    
     private Set getInternalRetrieveAETs(Long pk) throws FinderException {
     	Collection aets = fsHome.allRetrieveAETs();
     	if(aets.size() > 1)
@@ -503,7 +503,7 @@ public abstract class SeriesBean implements EntityBean {
         	// we just simply return this only one.
     		return new HashSet(aets);    	
     }
-    
+*/    
     private boolean updateExternalRetrieveAET(Long pk, int numI) throws FinderException {
     	boolean updated = false;
     	String aet = null;

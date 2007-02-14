@@ -128,14 +128,14 @@ public abstract class InstanceBean implements EntityBean {
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
     private CodeLocalHome codeHome;
-    private FileSystemLocalHome fsHome;
+//    private FileSystemLocalHome fsHome;
     
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
-            fsHome = (FileSystemLocalHome) jndiCtx.lookup("java:comp/env/ejb/FileSystem");
+//            fsHome = (FileSystemLocalHome) jndiCtx.lookup("java:comp/env/ejb/FileSystem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -150,7 +150,7 @@ public abstract class InstanceBean implements EntityBean {
 
     public void unsetEntityContext() {
         codeHome = null;
-        fsHome = null;
+//        fsHome = null;
     }
 
     /**
@@ -462,7 +462,7 @@ public abstract class InstanceBean implements EntityBean {
     }
     
     private boolean updateRetrieveAETs(Long pk) throws FinderException {
-        final Set aetSet = getInternalRetrieveAETs(pk);
+        final Set aetSet = ejbSelectRetrieveAETs(pk);
         if (aetSet.remove(null))
             log.warn("Instance[iuid=" + getSopIuid()
                     + "] reference File(s) with unspecified Retrieve AET");
@@ -472,7 +472,7 @@ public abstract class InstanceBean implements EntityBean {
             setRetrieveAETs(aets);
         return updated;
     }
-    
+/*    
     private Set getInternalRetrieveAETs(Long pk) throws FinderException {
     	Collection aets = fsHome.allRetrieveAETs();
     	if(aets.size() > 1)
@@ -482,7 +482,7 @@ public abstract class InstanceBean implements EntityBean {
         	// we just simply return this only one.
     		return new HashSet(aets);    	
     }
- 
+*/ 
     /**
      * @ejb.select query="SELECT MIN(f.fileSystem.availability) FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
      */ 
