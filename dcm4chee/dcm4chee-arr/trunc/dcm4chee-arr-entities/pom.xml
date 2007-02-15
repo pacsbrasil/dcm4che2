@@ -9,7 +9,7 @@
   <name>Entity EJBs for ARR</name>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-entities-${db}</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
   <properties>
     <hibernate.hbm2ddl.auto>update</hibernate.hbm2ddl.auto>
     <hibernate.show_sql>false</hibernate.show_sql>

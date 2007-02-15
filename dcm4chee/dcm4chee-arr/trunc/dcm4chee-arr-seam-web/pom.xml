@@ -8,7 +8,7 @@
   <name>Web Application for ARR</name>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-seam-web-${db}</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
   <properties>
     <ear>dcm4chee-arr-${db}-${version}</ear>
