@@ -372,8 +372,16 @@ public class DcmImageReader extends ImageReader {
         this.theImage = getDestination(param, imageTypes, this.width,
                 this.height);
         if (decompressor != null) {
-        	ImageReadParam decompressorReadParam = decompressor.getDefaultReadParam();
-        	decompressorReadParam.setDestination(theImage);
+            ImageReadParam decompressorReadParam = decompressor.getDefaultReadParam();
+            decompressorReadParam.setDestination(theImage);
+            decompressorReadParam.setSourceRegion(readParam.getSourceRegion());
+            decompressorReadParam.setSourceSubsampling(
+                    readParam.getSourceXSubsampling(), 
+                    readParam.getSourceYSubsampling(),
+                    readParam.getSubsamplingXOffset(),
+                    readParam.getSubsamplingYOffset());
+            decompressorReadParam.setDestinationOffset(
+                    readParam.getDestinationOffset());
             if (imageIndex > 0 && frameStartPos[imageIndex] == 0) {
                 if (itemParser.getNumberOfDataFragments() == frameStartPos.length) {
                     for (int i = 1; i < frameStartPos.length; ++i)
