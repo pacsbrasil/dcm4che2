@@ -398,6 +398,7 @@ public class CompressionService extends ServiceMBeanSupport {
             fileDTO.setFilePath(destFilePath );
             fileDTO.setFileSize((int)destFile.length());
             fileDTO.setFileMd5(md5);
+            fileDTO.setFileTsuid(info.getTransferSyntax());
             srcFile.delete();
         } catch (Exception x) {
             log.error("Can't compress file:" + srcFile, x);
