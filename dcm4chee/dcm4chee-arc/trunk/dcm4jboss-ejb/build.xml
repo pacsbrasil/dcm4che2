@@ -397,6 +397,18 @@
                 <include name="**/tools/EditMwl*"/>
             </fileset>
         </jar>
+        <jar jarfile="${target.common.bin}/pwd2hash.jar">
+         	<manifest>
+				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.Pwd2Hash"/>
+				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
+				<attribute name="Implementation-Title" value="pwd2hash"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
+          	</manifest>	
+        	<fileset dir="${target.classes}">
+                <include name="**/tools/Pwd2Hash*"/>
+            </fileset>
+        </jar>
     </target>
 	
     <target name="ejb-jdbc-jar">
