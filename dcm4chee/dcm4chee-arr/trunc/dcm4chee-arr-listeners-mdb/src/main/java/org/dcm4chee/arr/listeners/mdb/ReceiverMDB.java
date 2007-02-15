@@ -92,7 +92,8 @@ public class ReceiverMDB implements MessageListener {
     @PersistenceContext(unitName="dcm4chee-arr")
     private EntityManager em;
     private XMLReader xmlReader;
-    private XMLFilter xmlFilter;
+    private SAXTransformerFactory tf;
+//    private XMLFilter xmlFilter;
 
     public void onMessage(Message msg) {
     	if(!(msg instanceof BytesMessage)) {
@@ -156,17 +157,15 @@ public class ReceiverMDB implements MessageListener {
     }
 
     private XMLFilter xmlFilter() throws TransformerConfigurationException {
-        if (xmlFilter == null) {
-            SAXTransformerFactory tf = 
-                    (SAXTransformerFactory) TransformerFactory.newInstance();
-            if (iheYr4toATNATpl == null) {
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                iheYr4toATNATpl = tf.newTemplates(new StreamSource(
-                        cl.getResource(IHEYR4_TO_ATNA_XSL).toString()));
-            }
-            xmlFilter = tf.newXMLFilter(iheYr4toATNATpl);
+        if (tf == null) {
+            tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         }
-        return xmlFilter;
+        if (iheYr4toATNATpl == null) {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            iheYr4toATNATpl = tf.newTemplates(new StreamSource(
+                    cl.getResource(IHEYR4_TO_ATNA_XSL).toString()));
+        }
+        return tf.newXMLFilter(iheYr4toATNATpl);
     }
 
     private static boolean isIHEYr4(byte[] xmldata) {
