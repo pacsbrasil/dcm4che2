@@ -97,9 +97,9 @@ public class AuditRecord implements Serializable {
 
     private int sourceType;
 
-    private Collection<ActiveParticipant> activeParticipant;
+    private Collection<ActiveParticipant> activeParticipants;
 
-    private Collection<ParticipantObject> participantObject;
+    private Collection<ParticipantObject> participantObjects;
 
     private boolean iheYr4;
 
@@ -167,36 +167,36 @@ public class AuditRecord implements Serializable {
     }
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "auditRecord")
-    public Collection<ActiveParticipant> getActiveParticipant() {
-        return activeParticipant;
+    public Collection<ActiveParticipant> getActiveParticipants() {
+        return activeParticipants;
     }
 
-    public void setActiveParticipant(Collection<ActiveParticipant> c) {
-        this.activeParticipant = c;
+    public void setActiveParticipants(Collection<ActiveParticipant> c) {
+        this.activeParticipants = c;
     }
 
     public void addActiveParticipant(ActiveParticipant ap) {
-        if (activeParticipant == null) {
-            activeParticipant = new ArrayList<ActiveParticipant>(3);
+        if (activeParticipants == null) {
+            activeParticipants = new ArrayList<ActiveParticipant>(3);
         }
-        activeParticipant.add(ap);
+        activeParticipants.add(ap);
         ap.setAuditRecord(this);
     }
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "auditRecord")
-    public Collection<ParticipantObject> getParticipantObject() {
-        return participantObject;
+    public Collection<ParticipantObject> getParticipantObjects() {
+        return participantObjects;
     }
 
-    public void setParticipantObject(Collection<ParticipantObject> c) {
-        this.participantObject = c;
+    public void setParticipantObjects(Collection<ParticipantObject> c) {
+        this.participantObjects = c;
     }
 
     public void addParticipantObject(ParticipantObject po) {
-        if (participantObject == null) {
-            participantObject = new ArrayList<ParticipantObject>(3);
+        if (participantObjects == null) {
+            participantObjects = new ArrayList<ParticipantObject>(3);
         }
-        participantObject.add(po);
+        participantObjects.add(po);
         po.setAuditRecord(this);
     }
 

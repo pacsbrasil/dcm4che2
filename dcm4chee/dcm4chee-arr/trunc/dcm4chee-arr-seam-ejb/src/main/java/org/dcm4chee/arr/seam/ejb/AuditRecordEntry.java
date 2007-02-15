@@ -65,8 +65,8 @@ public class AuditRecordEntry {
         return XSLTUtils.toSummary(auditRecord.getXmldata());
     }    
 
-    public Collection<ActiveParticipant> getActiveParticipant() {
-        return auditRecord.getActiveParticipant();
+    public Collection<ActiveParticipant> getActiveParticipants() {
+        return auditRecord.getActiveParticipants();
     }
 
     public String getEnterpriseSiteID() {
@@ -93,8 +93,8 @@ public class AuditRecordEntry {
         return auditRecord.getEventType();
     }
 
-    public Collection<ParticipantObject> getParticipantObject() {
-        return auditRecord.getParticipantObject();
+    public Collection<ParticipantObject> getParticipantObjects() {
+        return auditRecord.getParticipantObjects();
     }
 
     public int getPk() {

@@ -816,9 +816,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         return showXml;
     }
 
-    public void selectRow() {
-    }
-
     public void showXml() {
         showXml = true;
     }

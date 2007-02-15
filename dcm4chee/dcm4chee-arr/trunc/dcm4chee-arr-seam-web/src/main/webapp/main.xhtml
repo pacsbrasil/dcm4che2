@@ -263,7 +263,10 @@
       <h:panelGroup rendered="#{records.rowCount>0}">
         <div>
           <h:outputFormat escape="false"
-            value="Displaying records &lt;strong&gt;{0}&lt;/strong&gt; to &lt;strong&gt;{1}&lt;/strong&gt; of &lt;strong&gt;{2}&lt;/strong&gt; matching records.">
+            value="Displaying records &lt;strong&gt;{0}&lt;/strong&gt;
+                                   to &lt;strong&gt;{1}&lt;/strong&gt;
+                                   of &lt;strong&gt;{2}&lt;/strong&gt;
+                                   matching records.">
             <f:param value="#{auditRecordList.firstResult+1}"/>
             <f:param value="#{auditRecordList.firstResult+records.rowCount}"/>
             <f:param value="#{auditRecordList.count}"/>
@@ -311,7 +314,13 @@
             <f:facet name="header">
               <h:outputText value="O"  title="Event Outcome"/>
             </f:facet>
-            <h:graphicImage title="#{rec.eventOutcome>0 ? (rec.eventOutcome>4 ? (rec.eventOutcome>8 ? messages.majorFailure : messages.seriousFailure) : messages.minorFailure) : messages.success}"
+            <h:graphicImage title="#{rec.eventOutcome>0
+               ? (rec.eventOutcome>4
+                 ? (rec.eventOutcome>8
+                   ? messages.majorFailure 
+                   : messages.seriousFailure)
+                 : messages.minorFailure)
+               : messages.success}"
               url="img/outcome-#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
@@ -337,8 +346,9 @@
             <f:facet name="header">Summary</f:facet>
             <h:outputText escape="false" value="#{rec.summary}"/>
             <f:verbatim><br/></f:verbatim>
-            <s:link value="Select for Details" 
-                action="#{auditRecordList.selectRow}"/>
+            <s:link value="Details" action="#{auditRecordList.showDetails}"/>
+            <f:verbatim> | </f:verbatim>
+            <s:link value="XML" action="#{auditRecordList.showXml}"/>
           </h:column>
         </h:dataTable>
       </h:panelGroup>

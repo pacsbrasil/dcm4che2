@@ -146,7 +146,6 @@ interface AuditRecordList {
     
     String find();
     void selectPage();
-    void selectRow();   
     boolean isShowXml();
     void showXml();
     void showDetails();
