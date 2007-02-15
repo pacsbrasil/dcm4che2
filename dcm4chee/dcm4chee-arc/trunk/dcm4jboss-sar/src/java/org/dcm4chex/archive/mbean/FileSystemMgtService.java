@@ -1470,7 +1470,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             }
         }
         server.invoke(aeServiceName, "updateAETitle", 
-                new Object[]{ retrieveAET, newAET },
+                new Object[]{ prevAET, newAET },
                 new String[]{ 
                     String.class.getName(), 
                     String.class.getName()});
