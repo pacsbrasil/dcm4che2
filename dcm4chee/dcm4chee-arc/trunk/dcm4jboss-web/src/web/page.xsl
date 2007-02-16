@@ -142,9 +142,24 @@
     				</xsl:choose>
       				<a class="tab" href="useradmin_console.m">User Admin</a>
 	      		</td>
+	      		<xsl:if test="$audit_repository='true'">
+		      		<td width="120" align="center">
+		      			<xsl:choose>
+		    				<xsl:when test="model/modelName = 'ARR'">
+								<xsl:attribute name="class">tab-selected</xsl:attribute>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:attribute name="class">tab</xsl:attribute>
+							</xsl:otherwise>
+		    			</xsl:choose>
+		      			<a class="tab" href="arr.m">Audit Repository</a>
+		      		</td>
+		      	</xsl:if>
+		      	<!-- 
 	    		<xsl:if test="$audit_repository='true'">
 			      	<td class="tab" width="120" align="center"><a class="tab" href="../dcm4chee-arr">Audit Repository</a></td>
 		      	</xsl:if>
+		      	 -->
 		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Logout</a></td>
 				<td width="40%"></td>
 			  	<xsl:apply-templates select="model"/>
