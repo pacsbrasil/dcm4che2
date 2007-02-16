@@ -76,7 +76,7 @@ public class HPDisplaySet {
         int numImageBoxes = imageBoxesSeq.countItems();
         this.imageBoxes = new ArrayList(numImageBoxes);
         for (int i = 0; i < numImageBoxes; i++) {
-            imageBoxes.add(new HPImageBox(imageBoxesSeq.getDicomObject(i),
+            imageBoxes.add(createHPImageBox(imageBoxesSeq.getDicomObject(i),
                     numImageBoxes));
         }
         DicomElement filterOpSeq = dcmobj.get(Tag.FilterOperationsSequence);
@@ -113,6 +113,10 @@ public class HPDisplaySet {
         dcmobj.putSequence(Tag.SortingOperationsSequence);
     }
 
+    protected HPImageBox createHPImageBox(DicomObject item, int numImageBoxes) {
+        return new HPImageBox(item, numImageBoxes);
+    }
+    
     public final DicomObject getDicomObject() {
         return dcmobj;
     }
@@ -136,6 +140,11 @@ public class HPDisplaySet {
                 imageBox.getDicomObject());
         imageBoxes.add(imageBox);
     }
+    
+    public void removeAllImageBoxes() {
+        dcmobj.putSequence(Tag.ImageBoxesSequence);
+        imageBoxes.clear();
+    }    
 
     public List getFilterOperations() {
         return Collections.unmodifiableList(filters);
