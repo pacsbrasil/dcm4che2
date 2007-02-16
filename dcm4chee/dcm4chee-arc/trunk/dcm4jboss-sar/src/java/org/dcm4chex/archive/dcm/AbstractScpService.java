@@ -47,8 +47,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.management.Attribute;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
@@ -114,6 +119,38 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected Hashtable templates = new Hashtable();
 
+    private final NotificationListener callingAETChangeListener = 
+        new NotificationListener() {
+            public void handleNotification(Notification notif, Object handback) {
+                try {
+                    log.debug("Handle callingAET change notification!");
+                    String[] affectedCalledAETs = (String[]) notif.getUserData();
+                    if ( areCalledAETsAffected(affectedCalledAETs)) {
+                        AcceptorPolicy policy1 = dcmHandler.getAcceptorPolicy()
+                            .getPolicyForCalledAET(affectedCalledAETs[0]);
+                        String[] calledCallingAETs = policy1.getCallingAETs();
+                        String newCallingAETs = calledCallingAETs.length > 0 ? StringUtils.toString(calledCallingAETs,'\\') : "ANY";
+                        log.debug("newCallingAETs:"+newCallingAETs);
+                        server.setAttribute(serviceName, new Attribute("CallingAETitles", newCallingAETs));
+                    }
+                } catch (Throwable th) {
+                   log.warn("Failed to process callingAET change notification: ", th);       
+                }
+            }
+
+            private boolean areCalledAETsAffected(String[] affectedCalledAETs) {
+                if ( calledAETs == null) return true;
+                if ( affectedCalledAETs != null ) {
+                    for ( int i = 0 ; i < affectedCalledAETs.length ; i++ ) {
+                        for ( int j = 0 ; j < calledAETs.length ; j++) {
+                            if ( affectedCalledAETs[i].equals(calledAETs[j])) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        };
+        
     public final ObjectName getDcmServerName() {
         return dcmServerName;
     }
@@ -191,9 +228,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
     }
 
-    protected void enableService() {
+    protected boolean enableService() {
         if (dcmHandler == null)
-            return;
+            return false;
+        boolean changed = false;
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
             AcceptorPolicy policy1 = policy
@@ -203,14 +241,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 policy1.setCallingAETs(callingAETs);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);
                 policy.addCalledAET(calledAETs[i]);
+                changed = true;
             } else {
-                if (policy1.getCallingAETs().length > 0) {
-                    if (callingAETs == null) {
-                        policy1.setCallingAETs(null);
-                    } else {
-                        for (int j = 0; j < callingAETs.length; j++) {
-                            policy1.addCallingAET(callingAETs[j]);
-                        }
+                String[] aets = policy1.getCallingAETs();
+                if (aets.length == 0 ) {
+                    if (callingAETs != null) {
+                        policy1.setCallingAETs(callingAETs);
+                        changed = true;
+                    }
+                } else {
+                    if ( ! haveSameItems(aets, callingAETs) ) {
+                        policy1.setCallingAETs(callingAETs);
+                        changed = true;
                     }
                 }
             }
@@ -218,6 +260,23 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             policy1.setAsyncOpsWindow(maxOpsInvoked, maxOpsPerformed);
             updatePresContexts(policy1, true);
         }
+        return changed;
+    }
+
+    // Only check if all items in o1 are also in o2! (and same length) 
+    // e.g. {"a","a","d"}, {"a","d","d"} will also return true!
+    private boolean haveSameItems(Object[] o1, Object[] o2) {
+        if ( o1 == null || o2 == null || o1.length != o2.length ) return false;
+        if ( o1.length == 1 ) 
+            return o1[0].equals(o2[0]);
+        iloop:for ( int i = 0, len = o1.length ; i < len ; i++ ) {
+            for ( int j = 0 ; j < len ; j++ ) {
+                if ( o1[i].equals( o2[j]))
+                    continue iloop;
+            }
+            return false;
+        }
+        return true;
     }
 
     private void disableService() {
@@ -242,12 +301,16 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 : ANY;
     }
 
-    public final void setCallingAETs(String callingAETs) {
+    public final void setCallingAETs(String callingAETs) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (getCallingAETs().equals(callingAETs))
             return;
         this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null
                 : StringUtils.split(callingAETs, '\\');
-        enableService();
+        if ( enableService() ) {
+            server.invoke(dcmServerName, "notifyCallingAETchange",
+                    new Object[] {calledAETs} , 
+                    new String[] {String[].class.getName()});
+        }
     }
 
     protected void updateAcceptedSOPClass(Map cuidMap, String newval,
@@ -350,6 +413,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
+        server.addNotificationListener(dcmServerName, callingAETChangeListener, null, null);
         enableService();
     }
 
@@ -358,7 +422,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
         templates.clear();
-    }
+        server.removeNotificationListener(dcmServerName, callingAETChangeListener);
+     }
 
     protected abstract void bindDcmServices(DcmServiceRegistry services);
 

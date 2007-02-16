@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm;
 
+import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.dcm4che.net.AcceptorPolicy;
@@ -58,7 +59,6 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class DcmServerService extends ServiceMBeanSupport {
 
-    
     private ServerFactory sf = ServerFactory.getInstance();
 
     private AssociationFactory af = AssociationFactory.getInstance();
@@ -217,7 +217,14 @@ public class DcmServerService extends ServiceMBeanSupport {
         policy.setMaxPDULength(newMaxPDULength);
     }
 
-    
+    public void notifyCallingAETchange(String[] affectedCalledAETs) {
+        long eventID = this.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(this.getClass().getName(), this, eventID );
+        notif.setUserData(affectedCalledAETs);
+        log.debug("send callingAET changed notif:"+notif);
+        this.sendNotification( notif );
+    }
+
     protected void startService() throws Exception {
         dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
         dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());

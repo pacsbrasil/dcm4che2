@@ -36,7 +36,7 @@ QueryRetrieveScp service.</description>
       <description>Accepted calling AE titles, separated by \(backslash).
       ANY = accept any. 
       </description>
-      <name>CallingAEtitles</name>
+      <name>CallingAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY"/>

@@ -202,5 +202,15 @@
       <name>dcmHandler</name>
       <return-type>org.dcm4che.server.DcmHandler</return-type>
    </operation>
+   <operation impact="INFO">
+      <description>Send CallingAET changed notification</description>
+      <name>notifyCallingAETchange</name>
+      <parameter>
+        <description>List of affected CalledAETs</description>
+        <name>calledAETs</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
 </mbean>
     
