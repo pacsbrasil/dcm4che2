@@ -405,6 +405,14 @@ default-transform-type="xslt">
 	    <view name="cancel" type="redirect" path="folder.m" />        
      </command>
      
+     <!-- ******* ARR comands ******* -->
+     <command name="arr">
+        <controller class="org.dcm4chex.archive.web.maverick.arr.ArrCtrl" />    
+	    <view name="success">
+    	  <transform path="arr.xsl" />
+	    </view>
+     </command>
+     
   </commands>
 </maverick>
 
