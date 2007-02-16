@@ -68,6 +68,7 @@ import org.jboss.seam.annotations.RequestParameter;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
 import org.jboss.seam.annotations.datamodel.DataModelSelectionIndex;
+import org.jboss.annotation.ejb.cache.simple.CacheConfig;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -77,6 +78,7 @@ import org.jboss.seam.annotations.datamodel.DataModelSelectionIndex;
 @Stateful
 @Name("auditRecordList")
 @Scope(ScopeType.SESSION)
+@CacheConfig(idleTimeoutSeconds=900)
 public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     private static final long serialVersionUID = 8681124252579882410L;
@@ -568,7 +570,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     }
 
     private Criterion addCriteriaForActiveParticipant1(Criteria criteria) {
-        criteria.createAlias("activeParticipant", "ap1");
+        criteria.createAlias("activeParticipants", "ap1");
         Conjunction criterion = Expression.conjunction();
 
         // User ID
@@ -611,7 +613,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     }
 
     private Criterion addCriteriaForActiveParticipant2(Criteria criteria) {
-        criteria.createAlias("activeParticipant", "ap2");
+        criteria.createAlias("activeParticipants", "ap2");
         Conjunction criterion = Expression.conjunction();
 
         // User ID
@@ -657,7 +659,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         if (hasCriteria(objectTypes) || hasCriteria(objectRoles)
                 || hasCriteria(lifeCycles) || hasCriteria(objectIDTypes)
                 || hasCriteria(objectID) || hasCriteria(objectName)) {
-            criteria.createAlias("participantObject", "po");
+            criteria.createAlias("participantObjects", "po");
         } else
             return criteria;
 
