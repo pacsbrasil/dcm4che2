@@ -51,58 +51,50 @@ import org.dcm4che2.data.VR;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Oct 23, 2005
- *
+ * 
  */
-public class HPNavigationGroup
-{
+public class HPNavigationGroup {
     private HPDisplaySet navDisplaySet;
+
     private final List refDisplaySets;
 
-    public HPNavigationGroup()
-    {
+    public HPNavigationGroup() {
         refDisplaySets = new ArrayList();
     }
 
-    public HPNavigationGroup(int initalCapacity)
-    {
+    public HPNavigationGroup(int initalCapacity) {
         refDisplaySets = new ArrayList(initalCapacity);
     }
 
-    public final HPDisplaySet getNavigationDisplaySet()
-    {
+    public final HPDisplaySet getNavigationDisplaySet() {
         return navDisplaySet;
     }
 
-    public final void setNavigationDisplaySet(HPDisplaySet displaySet)
-    {
+    public final void setNavigationDisplaySet(HPDisplaySet displaySet) {
         this.navDisplaySet = displaySet;
     }
 
-    public List getReferenceDisplaySets()
-    {
+    public List getReferenceDisplaySets() {
         return Collections.unmodifiableList(refDisplaySets);
     }
-    
-    public void addReferenceDisplaySet(HPDisplaySet displaySet)
-    {
+
+    public void addReferenceDisplaySet(HPDisplaySet displaySet) {
         if (displaySet == null)
             throw new NullPointerException();
-        
-        refDisplaySets.add(displaySet);        
+
+        refDisplaySets.add(displaySet);
     }
-    
-    public DicomObject getDicomObject()
-    {
+
+    public DicomObject getDicomObject() {
         DicomObject item = new BasicDicomObject();
-        if (navDisplaySet != null)
-        {
-            item.putInt(Tag.NavigationDisplaySet, VR.US,
-                    navDisplaySet.getDisplaySetNumber());            
+        if (navDisplaySet != null) {
+            item.putInt(Tag.NavigationDisplaySet, VR.US, navDisplaySet
+                    .getDisplaySetNumber());
         }
         int[] val = new int[refDisplaySets.size()];
-        for (int i = 0; i < val.length; i++)
-        {
-            val[i] = ((HPDisplaySet) refDisplaySets.get(i)).getDisplaySetNumber();
+        for (int i = 0; i < val.length; i++) {
+            val[i] = ((HPDisplaySet) refDisplaySets.get(i))
+                    .getDisplaySetNumber();
         }
         item.putInts(Tag.ReferenceDisplaySets, VR.US, val);
         return item;

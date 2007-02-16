@@ -51,41 +51,34 @@ import org.dcm4che2.data.VR;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Oct 23, 2005
- *
+ * 
  */
-public class HPScrollingGroup
-{
+public class HPScrollingGroup {
     private final List displaySets;
 
-    public HPScrollingGroup()
-    {
+    public HPScrollingGroup() {
         displaySets = new ArrayList();
     }
 
-    public HPScrollingGroup(int initalCapacity)
-    {
+    public HPScrollingGroup(int initalCapacity) {
         displaySets = new ArrayList(initalCapacity);
     }
 
-    public List getDisplaySets()
-    {
+    public List getDisplaySets() {
         return Collections.unmodifiableList(displaySets);
     }
-    
-    public void addDisplaySet(HPDisplaySet displaySet)
-    {
+
+    public void addDisplaySet(HPDisplaySet displaySet) {
         if (displaySet == null)
             throw new NullPointerException();
-        
-        displaySets.add(displaySet);        
+
+        displaySets.add(displaySet);
     }
-    
-    public DicomObject getDicomObject()
-    {
+
+    public DicomObject getDicomObject() {
         DicomObject item = new BasicDicomObject();
         int[] val = new int[displaySets.size()];
-        for (int i = 0; i < val.length; i++)
-        {
+        for (int i = 0; i < val.length; i++) {
             val[i] = ((HPDisplaySet) displaySets.get(i)).getDisplaySetNumber();
         }
         item.putInts(Tag.DisplaySetScrollingGroup, VR.US, val);
