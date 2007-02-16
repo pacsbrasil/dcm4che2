@@ -54,17 +54,19 @@ import org.dcm4che2.data.VR;
  * @since Jul 30, 2005
  * 
  */
-public class HPDisplaySet
-{
+public class HPDisplaySet {
 
     private final DicomObject dcmobj;
+
     private HPImageSet imageSet;
+
     private final List imageBoxes;
+
     private final List filters;
+
     private final List cmps;
 
-    HPDisplaySet(DicomObject dcmobj, HPImageSet imageSet)
-    {
+    HPDisplaySet(DicomObject dcmobj, HPImageSet imageSet) {
         this.imageSet = imageSet;
         this.dcmobj = dcmobj;
         DicomElement imageBoxesSeq = dcmobj.get(Tag.ImageBoxesSequence);
@@ -73,43 +75,35 @@ public class HPDisplaySet
                     "Missing (0072,0300) Image Boxes Sequence");
         int numImageBoxes = imageBoxesSeq.countItems();
         this.imageBoxes = new ArrayList(numImageBoxes);
-        for (int i = 0; i < numImageBoxes; i++)
-        {
+        for (int i = 0; i < numImageBoxes; i++) {
             imageBoxes.add(new HPImageBox(imageBoxesSeq.getDicomObject(i),
                     numImageBoxes));
         }
         DicomElement filterOpSeq = dcmobj.get(Tag.FilterOperationsSequence);
-        if (filterOpSeq == null || filterOpSeq.isEmpty())
-        {
+        if (filterOpSeq == null || filterOpSeq.isEmpty()) {
             this.filters = Collections.EMPTY_LIST;
-        }
-        else
-        {
+        } else {
             int n = filterOpSeq.countItems();
             this.filters = new ArrayList(n);
-            for (int i = 0; i < n; i++)
-            {
-                filters.add(HPSelectorFactory.createDisplaySetFilter(filterOpSeq.getDicomObject(i)));
+            for (int i = 0; i < n; i++) {
+                filters.add(HPSelectorFactory
+                        .createDisplaySetFilter(filterOpSeq.getDicomObject(i)));
             }
         }
         DicomElement sortingOpSeq = dcmobj.get(Tag.SortingOperationsSequence);
-        if (sortingOpSeq == null || sortingOpSeq.isEmpty())
-        {
+        if (sortingOpSeq == null || sortingOpSeq.isEmpty()) {
             this.cmps = Collections.EMPTY_LIST;
-        }
-        else
-        {
+        } else {
             int n = sortingOpSeq.countItems();
             this.cmps = new ArrayList();
-            for (int i = 0; i < n; i++)
-            {
-                cmps.add(HPComparatorFactory.createHPComparator(sortingOpSeq.getDicomObject(i)));
+            for (int i = 0; i < n; i++) {
+                cmps.add(HPComparatorFactory.createHPComparator(sortingOpSeq
+                        .getDicomObject(i)));
             }
         }
     }
 
-    public HPDisplaySet()
-    {
+    public HPDisplaySet() {
         imageBoxes = new ArrayList();
         filters = new ArrayList();
         cmps = new ArrayList();
@@ -119,60 +113,52 @@ public class HPDisplaySet
         dcmobj.putSequence(Tag.SortingOperationsSequence);
     }
 
-    public final DicomObject getDicomObject()
-    {
+    public final DicomObject getDicomObject() {
         return dcmobj;
     }
 
-    public final HPImageSet getImageSet()
-    {
+    public final HPImageSet getImageSet() {
         return imageSet;
     }
 
-    public void setImageSet(HPImageSet imageSet)
-    {
+    public void setImageSet(HPImageSet imageSet) {
         dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSet.getImageSetNumber());
         this.imageSet = imageSet;
     }
 
-    public List getImageBoxes()
-    {
+    public List getImageBoxes() {
         return Collections.unmodifiableList(imageBoxes);
     }
 
-    public void addImageBox(HPImageBox imageBox)
-    {
+    public void addImageBox(HPImageBox imageBox) {
         imageBox.setImageBoxNumber(imageBoxes.size() + 1);
-        dcmobj.get(Tag.ImageBoxesSequence).addDicomObject(imageBox.getDicomObject());
+        dcmobj.get(Tag.ImageBoxesSequence).addDicomObject(
+                imageBox.getDicomObject());
         imageBoxes.add(imageBox);
     }
 
-    public List getFilterOperations()
-    {
+    public List getFilterOperations() {
         return Collections.unmodifiableList(filters);
     }
 
-    public void addFilterOperation(HPSelector selector)
-    {
-        dcmobj.get(Tag.FilterOperationsSequence).addDicomObject(selector.getDicomObject());
+    public void addFilterOperation(HPSelector selector) {
+        dcmobj.get(Tag.FilterOperationsSequence).addDicomObject(
+                selector.getDicomObject());
         filters.add(selector);
     }
 
-    public List getSortingOperations()
-    {
+    public List getSortingOperations() {
         return Collections.unmodifiableList(cmps);
     }
 
-    public void addSortingOperation(HPComparator cmp)
-    {
-        dcmobj.get(Tag.SortingOperationsSequence).addDicomObject(cmp.getDicomObject());
+    public void addSortingOperation(HPComparator cmp) {
+        dcmobj.get(Tag.SortingOperationsSequence).addDicomObject(
+                cmp.getDicomObject());
         cmps.add(cmp);
     }
 
-    public boolean contains(DicomObject o, int frame)
-    {
-        for (int i = 0, n = filters.size(); i < n; i++)
-        {
+    public boolean contains(DicomObject o, int frame) {
+        for (int i = 0, n = filters.size(); i < n; i++) {
             HPSelector selector = (HPSelector) filters.get(i);
             if (!selector.matches(o, frame))
                 return false;
@@ -180,177 +166,146 @@ public class HPDisplaySet
         return true;
     }
 
-    public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2)
-    {
+    public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2) {
         int result = 0;
-        for (int i = 0, n = cmps.size(); result == 0 && i < n; i++)
-        {
+        for (int i = 0, n = cmps.size(); result == 0 && i < n; i++) {
             HPComparator cmp = (HPComparator) cmps.get(i);
             result = cmp.compare(o1, frame1, o2, frame2);
         }
         return result;
     }
 
-    public int getDisplaySetNumber()
-    {
+    public int getDisplaySetNumber() {
         return dcmobj.getInt(Tag.DisplaySetNumber);
     }
 
-    public void setDisplaySetNumber(int displaySetNumber)
-    {
+    public void setDisplaySetNumber(int displaySetNumber) {
         dcmobj.putInt(Tag.DisplaySetNumber, VR.US, displaySetNumber);
     }
-    
-    public int getDisplaySetPresentationGroup()
-    {
+
+    public int getDisplaySetPresentationGroup() {
         return dcmobj.getInt(Tag.DisplaySetPresentationGroup);
     }
 
-    public void setDisplaySetPresentationGroup(int group)
-    {
+    public void setDisplaySetPresentationGroup(int group) {
         dcmobj.putInt(Tag.DisplaySetPresentationGroup, VR.US, group);
     }
-    
-    public String getBlendingOperationType()
-    {
+
+    public String getBlendingOperationType() {
         return dcmobj.getString(Tag.BlendingOperationType);
     }
 
-    public void setBlendingOperationType(String type)
-    {
+    public void setBlendingOperationType(String type) {
         dcmobj.putString(Tag.BlendingOperationType, VR.CS, type);
     }
-    
-    public String getReformattingOperationType()
-    {
+
+    public String getReformattingOperationType() {
         return dcmobj.getString(Tag.ReformattingOperationType);
     }
 
-    public void setReformattingOperationType(String type)
-    {
+    public void setReformattingOperationType(String type) {
         dcmobj.putString(Tag.ReformattingOperationType, VR.CS, type);
     }
-    
-    public double getReformattingThickness()
-    {
+
+    public double getReformattingThickness() {
         return dcmobj.getDouble(Tag.ReformattingThickness);
     }
 
-    public void setReformattingThickness(double thickness)
-    {
+    public void setReformattingThickness(double thickness) {
         dcmobj.putDouble(Tag.ReformattingThickness, VR.FD, thickness);
     }
-    
-    public double getReformattingInterval()
-    {
+
+    public double getReformattingInterval() {
         return dcmobj.getDouble(Tag.ReformattingInterval);
     }
 
-    public void setReformattingInterval(double interval)
-    {
+    public void setReformattingInterval(double interval) {
         dcmobj.putDouble(Tag.ReformattingInterval, VR.FD, interval);
     }
-    
-    public String getReformattingOperationInitialViewDirection()
-    {
+
+    public String getReformattingOperationInitialViewDirection() {
         return dcmobj.getString(Tag.ReformattingOperationInitialViewDirection);
     }
 
-    public void setReformattingOperationInitialViewDirection(String direction)
-    {
-        dcmobj.putString(Tag.ReformattingOperationInitialViewDirection, VR.CS, direction);
+    public void setReformattingOperationInitialViewDirection(String direction) {
+        dcmobj.putString(Tag.ReformattingOperationInitialViewDirection, VR.CS,
+                direction);
     }
-    
-    public String[] get3DRenderingType()
-    {
+
+    public String[] get3DRenderingType() {
         return dcmobj.getStrings(Tag._3DRenderingType);
     }
 
-    public void set3DRenderingType(String[] type)
-    {
+    public void set3DRenderingType(String[] type) {
         dcmobj.putStrings(Tag._3DRenderingType, VR.CS, type);
     }
-    
-    public PatientOrientation getDisplaySetPatientOrientation()
-    {
-        String[] orientation = dcmobj.getStrings(Tag.DisplaySetPatientOrientation);
+
+    public PatientOrientation getDisplaySetPatientOrientation() {
+        String[] orientation = dcmobj
+                .getStrings(Tag.DisplaySetPatientOrientation);
         return orientation == null ? null : new PatientOrientation(orientation);
     }
 
-    public void setDisplaySetPatientOrientation(PatientOrientation orientation)
-    {
-        dcmobj.putStrings(Tag.DisplaySetPatientOrientation, VR.CS,
-                orientation.values());
+    public void setDisplaySetPatientOrientation(PatientOrientation orientation) {
+        dcmobj.putStrings(Tag.DisplaySetPatientOrientation, VR.CS, orientation
+                .values());
     }
-    
-    public String getVOIType()
-    {
+
+    public String getVOIType() {
         return dcmobj.getString(Tag.VOIType);
     }
 
-    public void setVOIType(String type)
-    {
+    public void setVOIType(String type) {
         dcmobj.putString(Tag.VOIType, VR.CS, type);
     }
-    
-    public String getPseudoColorType()
-    {
+
+    public String getPseudoColorType() {
         return dcmobj.getString(Tag.PseudocolorType);
     }
 
-    public void setPseudoColorType(String type)
-    {
+    public void setPseudoColorType(String type) {
         dcmobj.putString(Tag.PseudocolorType, VR.CS, type);
     }
-    
-    public String getShowGrayscaleInverted()
-    {
+
+    public String getShowGrayscaleInverted() {
         return dcmobj.getString(Tag.ShowGrayscaleInverted);
     }
 
-    public void setShowGrayscaleInverted(String flag)
-    {
+    public void setShowGrayscaleInverted(String flag) {
         dcmobj.putString(Tag.ShowGrayscaleInverted, VR.CS, flag);
-    }    
+    }
 
-    public String getShowImageTrueSizeFlag()
-    {
+    public String getShowImageTrueSizeFlag() {
         return dcmobj.getString(Tag.ShowImageTrueSizeFlag);
     }
 
-    public void setShowImageTrueSizeFlag(String flag)
-    {
+    public void setShowImageTrueSizeFlag(String flag) {
         dcmobj.putString(Tag.ShowImageTrueSizeFlag, VR.CS, flag);
-    }    
+    }
 
-    public String getShowGraphicAnnotationFlag()
-    {
+    public String getShowGraphicAnnotationFlag() {
         return dcmobj.getString(Tag.ShowGraphicAnnotationFlag);
     }
 
-    public void setShowGraphicAnnotationFlag(String flag)
-    {
+    public void setShowGraphicAnnotationFlag(String flag) {
         dcmobj.putString(Tag.ShowGraphicAnnotationFlag, VR.CS, flag);
-    }    
+    }
 
-    public String getShowAcquisitionTechniquesFlag()
-    {
+    public String getShowAcquisitionTechniquesFlag() {
         return dcmobj.getString(Tag.ShowAcquisitionTechniquesFlag);
     }
 
-    public void setShowAcquisitionTechniquesFlag(String flag)
-    {
+    public void setShowAcquisitionTechniquesFlag(String flag) {
         dcmobj.putString(Tag.ShowAcquisitionTechniquesFlag, VR.CS, flag);
-    }    
+    }
 
-    public String getDisplaySetPresentationGroupDescription()
-    {
+    public String getDisplaySetPresentationGroupDescription() {
         return dcmobj.getString(Tag.DisplaySetPresentationGroupDescription);
     }
 
-    public void setDisplaySetPresentationGroupDescription(String description)
-    {
-        dcmobj.putString(Tag.DisplaySetPresentationGroupDescription, VR.CS, description);
+    public void setDisplaySetPresentationGroupDescription(String description) {
+        dcmobj.putString(Tag.DisplaySetPresentationGroupDescription, VR.CS,
+                description);
     }
-        
+
 }
