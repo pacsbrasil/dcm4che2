@@ -45,10 +45,33 @@ package org.dcm4che2.net.pdu;
  */
 public class AAssociateAC extends AAssociateRQAC
 {
+    protected UserIdentityAC userIdentity;
 
     public String toString()
     {
         return super.toString("A-ASSOCIATE-AC");
     }
 
+    
+    public final UserIdentityAC getUserIdentity() {
+        return userIdentity;
+    }
+
+    public final void setUserIdentity(UserIdentityAC userIdentity) {
+        this.userIdentity = userIdentity;
+    }
+    
+    public int userInfoLength() {
+        int len = super.userInfoLength();
+        if (userIdentity != null)
+            len += 4 + userIdentity.length();
+        return len;
+    }
+
+
+    protected void appendUserIdentity(StringBuffer sb) {
+        if (userIdentity != null)
+            sb.append("\n  ").append(userIdentity);
+    }
+    
 }

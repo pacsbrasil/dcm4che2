@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,49 +38,29 @@
 
 package org.dcm4che2.net.pdu;
 
-
 /**
- * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
- * @since Sep 15, 2005
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Feb 12, 2007
  */
-public class AAssociateRQ extends AAssociateRQAC
-{
-    protected int pcid = -1;
-    protected UserIdentityRQ userIdentity;
+public class UserIdentityAC {
 
-    public String toString()
-    {
-        return super.toString("A-ASSOCIATE-RQ");
+    private byte[] serverResponse = {};
+
+    public final byte[] getServerResponse() {
+        return (byte[]) serverResponse.clone();
+    }
+
+    public final void setServerResponse(byte[] serverResponse) {
+        this.serverResponse = (byte[]) serverResponse.clone();
+    }
+
+    public int length() {
+        return 2 + serverResponse.length;
+    }
+
+    public String toString() {
+        return "UserIdentity[serverResponse(" + serverResponse.length + ")]";
     }
     
-    public synchronized int nextPCID() {
-        if (pcs.size() >= 128)
-            throw new IllegalStateException(
-                    "Maximal Number (128) of Presentation Context obtained.");
-        do {
-            pcid = (pcid + 2) & 0xff;
-        } while (pcidMap.get(pcid) != null);
-        return pcid;
-    }
-    
-    public final UserIdentityRQ getUserIdentity() {
-        return userIdentity;
-    }
-
-    public final void setUserIdentity(UserIdentityRQ userIdentity) {
-        this.userIdentity = userIdentity;
-    }
-
-    public int userInfoLength() {
-        int len = super.userInfoLength();
-        if (userIdentity != null)
-            len += 4 + userIdentity.length();
-        return len;
-    }
-
-    protected void appendUserIdentity(StringBuffer sb) {
-        if (userIdentity != null)
-            sb.append("\n  ").append(userIdentity);
-    }
 }

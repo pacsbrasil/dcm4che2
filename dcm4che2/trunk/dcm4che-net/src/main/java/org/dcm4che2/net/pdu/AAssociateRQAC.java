@@ -70,7 +70,6 @@ public abstract class AAssociateRQAC {
     protected String applicationContext = UID.DICOMApplicationContextName;
     protected String implClassUID = Implementation.classUID();
     protected String implVersionName = Implementation.versionName();
-    protected UserIdentity userIdentity;
     protected final ArrayList pcs = new ArrayList();
     protected final IntHashtable pcidMap = new IntHashtable();
     protected final LinkedHashMap roleSelMap = new LinkedHashMap();
@@ -255,14 +254,6 @@ public abstract class AAssociateRQAC {
         return (CommonExtendedNegotiation) commonExtNegMap.remove(cuid);
     }
 
-    public final UserIdentity getUserIdentity() {
-        return userIdentity;
-    }
-
-    public final void setUserIdentity(UserIdentity userIdentity) {
-        this.userIdentity = userIdentity;
-    }
-
     public int length() {
         int len = 68; // Fix AA-RQ/AC PDU fields
         len += 4 + applicationContext.length();
@@ -285,8 +276,6 @@ public abstract class AAssociateRQAC {
             len += 4 + ((ExtendedNegotiation) it.next()).length();
         for (Iterator it = commonExtNegMap.values().iterator(); it.hasNext();)
             len += 4 + ((CommonExtendedNegotiation) it.next()).length();
-        if (userIdentity != null)
-            len += 4 + userIdentity.length();
         return len;
     }
 
@@ -307,8 +296,7 @@ public abstract class AAssociateRQAC {
         sb.append("\n  maxPDULength = ").append(maxPDULength);
         sb.append("\n  maxOpsInvoked/maxOpsPerformed = ").append(maxOpsInvoked)
                 .append("/").append(maxOpsPerformed);
-        if (userIdentity != null)
-            sb.append("\n  ").append(userIdentity);
+        appendUserIdentity(sb);
         promptPresentationContext(sb);
         promptRoleSelection(sb);
         promptExtendedNegotiation(sb);
@@ -316,6 +304,8 @@ public abstract class AAssociateRQAC {
         sb.append("\n]");
         return sb.toString();
     }
+
+    protected abstract void appendUserIdentity(StringBuffer sb);
 
     private void promptPresentationContext(StringBuffer sb) {
         ArrayList tmp = new ArrayList(pcs);

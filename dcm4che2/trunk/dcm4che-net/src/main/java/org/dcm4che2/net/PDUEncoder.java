@@ -56,7 +56,8 @@ import org.dcm4che2.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
-import org.dcm4che2.net.pdu.UserIdentity;
+import org.dcm4che2.net.pdu.UserIdentityAC;
+import org.dcm4che2.net.pdu.UserIdentityRQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,7 +287,11 @@ class PDUEncoder extends PDVOutputStream
                 .hasNext();)
             encodeCommonExtendedNegotiation((CommonExtendedNegotiation) it
                     .next());
-        encodeUserIdentity(rqac.getUserIdentity());
+        if (rqac instanceof AAssociateRQ) {
+            encodeUserIdentityRQ(((AAssociateRQ) rqac).getUserIdentity());
+        } else {
+            encodeUserIdentityAC(((AAssociateAC) rqac).getUserIdentity());            
+        }
     }
 
     private void encodeRoleSelection(RoleSelection selection)
@@ -327,18 +332,26 @@ class PDUEncoder extends PDVOutputStream
         putInt(maxPDULength);
     }
 
-    private void encodeUserIdentity(UserIdentity userIdentity)
+    private void encodeUserIdentityRQ(UserIdentityRQ userIdentity)
     {
         if (userIdentity == null)
             return;
 
-        encodeItemHeader(ItemType.USER_IDENTITY, userIdentity.length());
+        encodeItemHeader(ItemType.RQ_USER_IDENTITY, userIdentity.length());
         put(userIdentity.getUserIdentityType());
         put(userIdentity.isPositiveResponseRequested() ? 1 : 0);
         encodeBytes(userIdentity.getPrimaryField());
         encodeBytes(userIdentity.getSecondaryField());
      }
 
+    private void encodeUserIdentityAC(UserIdentityAC userIdentity) {
+        if (userIdentity == null)
+            return;
+
+        encodeItemHeader(ItemType.AC_USER_IDENTITY, userIdentity.length());
+        encodeBytes(userIdentity.getServerResponse());
+    }
+   
     private void encodeBytes(byte[] b)
     {
         putShort(b.length);

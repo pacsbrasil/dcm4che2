@@ -57,7 +57,8 @@ import org.dcm4che2.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
-import org.dcm4che2.net.pdu.UserIdentity;
+import org.dcm4che2.net.pdu.UserIdentityAC;
+import org.dcm4che2.net.pdu.UserIdentityRQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -379,8 +380,13 @@ class PDUDecoder extends PDVInputStream
         case ItemType.COMMON_EXT_NEG:
             rqac.addCommonExtendedNegotiation(decodeCommonExtendedNegotiation(itemLength));
             break;
-        case ItemType.USER_IDENTITY:
-            rqac.setUserIdentity(decodeUserIdentity(itemLength));
+        case ItemType.RQ_USER_IDENTITY:
+        case ItemType.AC_USER_IDENTITY:
+            if (rqac instanceof AAssociateRQ) {
+                ((AAssociateRQ) rqac).setUserIdentity(decodeUserIdentityRQ(itemLength));               
+            } else {
+                ((AAssociateAC) rqac).setUserIdentity(decodeUserIdentityAC(itemLength));                
+            }
             break;
         default:
             skip(itemLength);
@@ -432,11 +438,11 @@ class PDUDecoder extends PDVInputStream
             extNeg.addRelatedGeneralSOPClassUID(decodeASCIIString());
     }
 
-    private UserIdentity decodeUserIdentity(int itemLength)
+    private UserIdentityRQ decodeUserIdentityRQ(int itemLength)
     throws AAbort
     {
         int endPos = pos + itemLength;
-        UserIdentity user = new UserIdentity();
+        UserIdentityRQ user = new UserIdentityRQ();
         user.setUserIdentityType(get() & 0xff);
         user.setPositiveResponseRequested(get() != 0);
         user.setPrimaryField(decodeBytes());
@@ -451,6 +457,24 @@ class PDUDecoder extends PDVInputStream
         }
         return user;
     }
+
+    private UserIdentityAC decodeUserIdentityAC(int itemLength)
+            throws AAbort
+    {
+        int endPos = pos + itemLength;
+        UserIdentityAC user = new UserIdentityAC();
+        user.setServerResponse(decodeBytes());
+        if (pos != endPos)
+        {
+            log.warn(as.toString() + ": Mismatch of encoded (" + itemLength 
+                    + ") with actual (" + (itemLength + pos - itemLength)
+                    + ") User Identity item length");
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.INVALID_PDU_PARAMETER_VALUE);
+        }
+        return user;
+    }
+
     
     public void decodeDIMSE() throws IOException
     {
