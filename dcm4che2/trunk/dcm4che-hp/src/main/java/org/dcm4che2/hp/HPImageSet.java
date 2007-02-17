@@ -54,20 +54,18 @@ import org.dcm4che2.data.VR;
  * @since Jul 30, 2005
  * 
  */
-public class HPImageSet
-{
+public class HPImageSet {
 
     private final DicomObject dcmobj;
+
     private final List selectors;
 
-    HPImageSet(List selectors, DicomObject dcmobj)
-    {
+    HPImageSet(List selectors, DicomObject dcmobj) {
         this.selectors = selectors;
         this.dcmobj = dcmobj;
     }
 
-    public HPImageSet()
-    {
+    public HPImageSet() {
         this.selectors = new ArrayList();
         this.dcmobj = new BasicDicomObject();
         DicomObject is = new BasicDicomObject();
@@ -75,24 +73,20 @@ public class HPImageSet
         DicomElement tbissq = is.putSequence(Tag.TimeBasedImageSetsSequence);
         tbissq.addDicomObject(dcmobj);
     }
-    
-    public HPImageSet(HPImageSet shareSelectors)
-    {
+
+    public HPImageSet(HPImageSet shareSelectors) {
         this.selectors = shareSelectors.selectors;
         this.dcmobj = new BasicDicomObject();
         DicomElement tbissq = shareSelectors.getTimeBasedImageSetsSequence();
         tbissq.addDicomObject(dcmobj);
     }
-    
-    public DicomObject getDicomObject()
-    {
+
+    public DicomObject getDicomObject() {
         return dcmobj;
     }
 
-    public boolean contains(DicomObject o, int frame)
-    {
-        for (int i = 0, n = selectors.size(); i < n; i++)
-        {
+    public boolean contains(DicomObject o, int frame) {
+        for (int i = 0, n = selectors.size(); i < n; i++) {
             HPSelector selector = (HPSelector) selectors.get(i);
             if (!selector.matches(o, frame))
                 return false;
@@ -100,105 +94,88 @@ public class HPImageSet
         return true;
     }
 
-    public int getImageSetNumber()
-    {
+    public int getImageSetNumber() {
         return dcmobj.getInt(Tag.ImageSetNumber);
     }
 
-    public void setImageSetNumber(int imageSetNumber)
-    {
+    public void setImageSetNumber(int imageSetNumber) {
         dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSetNumber);
     }
 
-    public String getImageSetLabel()
-    {
+    public String getImageSetLabel() {
         return dcmobj.getString(Tag.ImageSetLabel);
     }
 
-    public void setImageSetLabel(String imageSetLabel)
-    {
+    public void setImageSetLabel(String imageSetLabel) {
         dcmobj.putString(Tag.ImageSetLabel, VR.LO, imageSetLabel);
     }
 
-    public String getImageSetSelectorCategory()
-    {
+    public String getImageSetSelectorCategory() {
         return dcmobj.getString(Tag.ImageSetSelectorCategory);
     }
 
-    public boolean hasRelativeTime()
-    {
+    public boolean hasRelativeTime() {
         return dcmobj.containsValue(Tag.RelativeTime);
     }
-    
-    public RelativeTime getRelativeTime()
-    {
-        RelativeTimeUnits units = 
-                RelativeTimeUnits.valueOf(dcmobj.getString(Tag.RelativeTimeUnits));
+
+    public RelativeTime getRelativeTime() {
+        RelativeTimeUnits units = RelativeTimeUnits.valueOf(dcmobj
+                .getString(Tag.RelativeTimeUnits));
         return new RelativeTime(dcmobj.getInts(Tag.RelativeTime), units);
     }
 
-    public void setRelativeTime(RelativeTime relativeTime)
-    {
-        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
+    public void setRelativeTime(RelativeTime relativeTime) {
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS,
                 CodeString.RELATIVE_TIME);
         dcmobj.putInts(Tag.RelativeTime, VR.US, relativeTime.getValues());
-        dcmobj.putString(Tag.RelativeTimeUnits, VR.CS, 
-                relativeTime.getUnits().getCodeString());
+        dcmobj.putString(Tag.RelativeTimeUnits, VR.CS, relativeTime.getUnits()
+                .getCodeString());
     }
 
-    public boolean hasAbstractPriorValue()
-    {
+    public boolean hasAbstractPriorValue() {
         return dcmobj.containsValue(Tag.AbstractPriorValue);
     }
 
-    public AbstractPriorValue getAbstractPriorValue()
-    {
+    public AbstractPriorValue getAbstractPriorValue() {
         return new AbstractPriorValue(dcmobj.getInts(Tag.AbstractPriorValue));
     }
 
-    public void setAbstractPriorValue(AbstractPriorValue abstractPriorValue)
-    {
-        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
+    public void setAbstractPriorValue(AbstractPriorValue abstractPriorValue) {
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS,
                 CodeString.ABSTRACT_PRIOR);
-        dcmobj.putInts(Tag.AbstractPriorValue, VR.US, abstractPriorValue.getValues());
+        dcmobj.putInts(Tag.AbstractPriorValue, VR.US, abstractPriorValue
+                .getValues());
     }
 
-    public boolean hasAbstractPriorCode()
-    {
+    public boolean hasAbstractPriorCode() {
         return dcmobj.containsValue(Tag.AbstractPriorCodeSequence);
     }
 
-    public Code getAbstractPriorCode()
-    {
-        return new Code(
-                dcmobj.getNestedDicomObject(Tag.AbstractPriorCodeSequence));
+    public Code getAbstractPriorCode() {
+        return new Code(dcmobj
+                .getNestedDicomObject(Tag.AbstractPriorCodeSequence));
     }
 
-    public void setAbstractPriorCode(Code code)
-    {
-        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS, 
+    public void setAbstractPriorCode(Code code) {
+        dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS,
                 CodeString.ABSTRACT_PRIOR);
-        dcmobj.putNestedDicomObject(Tag.AbstractPriorCodeSequence,
-                code.getDicomObject());
+        dcmobj.putNestedDicomObject(Tag.AbstractPriorCodeSequence, code
+                .getDicomObject());
     }
 
-    public DicomElement getImageSetSelectorSequence()
-    {
+    public DicomElement getImageSetSelectorSequence() {
         return dcmobj.getParent().get(Tag.ImageSetSelectorSequence);
     }
 
-    public DicomElement getTimeBasedImageSetsSequence()
-    {
+    public DicomElement getTimeBasedImageSetsSequence() {
         return dcmobj.getParent().get(Tag.TimeBasedImageSetsSequence);
     }
 
-    public List getImageSetSelectors()
-    {
+    public List getImageSetSelectors() {
         return Collections.unmodifiableList(selectors);
     }
-    
-    public void addImageSetSelector(HPSelector selector)
-    {
+
+    public void addImageSetSelector(HPSelector selector) {
         getImageSetSelectorSequence().addDicomObject(selector.getDicomObject());
         selectors.add(selector);
     }
