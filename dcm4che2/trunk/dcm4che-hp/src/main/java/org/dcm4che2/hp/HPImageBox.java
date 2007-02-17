@@ -49,162 +49,132 @@ import org.dcm4che2.data.VR;
  * @since Aug 8, 2005
  * 
  */
-public class HPImageBox
-{
+public class HPImageBox {
 
     private final DicomObject dcmobj;
 
-    public HPImageBox(DicomObject item, int tot)
-    {
+    public HPImageBox(DicomObject item, int tot) {
         if (item.getInt(Tag.ImageBoxNumber) != item.getItemPosition())
             throw new IllegalArgumentException(""
                     + item.get(Tag.ImageBoxNumber));
-        if (tot > 1)
-        {
-            if (!CodeString.TILED.equals(item.getString(Tag.ImageBoxLayoutType)))
+        if (tot > 1) {
+            if (!CodeString.TILED
+                    .equals(item.getString(Tag.ImageBoxLayoutType)))
                 throw new IllegalArgumentException(""
                         + item.get(Tag.ImageBoxLayoutType));
         }
         this.dcmobj = item;
     }
 
-    public HPImageBox()
-    {
+    public HPImageBox() {
         this.dcmobj = new BasicDicomObject();
     }
-    
-    public DicomObject getDicomObject()
-    {
+
+    public DicomObject getDicomObject() {
         return dcmobj;
     }
 
-    public int getImageBoxNumber()
-    {
+    public int getImageBoxNumber() {
         return dcmobj.getInt(Tag.ImageBoxNumber);
     }
 
-    public void setImageBoxNumber(int value)
-    {
+    public void setImageBoxNumber(int value) {
         dcmobj.putInt(Tag.ImageBoxNumber, VR.US, value);
     }
 
-    public double[] getDisplayEnvironmentSpatialPosition()
-    {
+    public double[] getDisplayEnvironmentSpatialPosition() {
         return dcmobj.getDoubles(Tag.DisplayEnvironmentSpatialPosition);
     }
 
-    public void setDisplayEnvironmentSpatialPosition(double[] values)
-    {
+    public void setDisplayEnvironmentSpatialPosition(double[] values) {
         dcmobj.putDoubles(Tag.DisplayEnvironmentSpatialPosition, VR.FD, values);
     }
 
-    public String getImageBoxLayoutType()
-    {
+    public String getImageBoxLayoutType() {
         return dcmobj.getString(Tag.ImageBoxLayoutType);
     }
 
-    public void setImageBoxLayoutType(String type)
-    {
+    public void setImageBoxLayoutType(String type) {
         dcmobj.putString(Tag.ImageBoxLayoutType, VR.CS, type);
     }
 
-    public int getImageBoxTileHorizontalDimension()
-    {
+    public int getImageBoxTileHorizontalDimension() {
         return dcmobj.getInt(Tag.ImageBoxTileHorizontalDimension);
     }
 
-    public void setImageBoxTileHorizontalDimension(int value)
-    {
+    public void setImageBoxTileHorizontalDimension(int value) {
         dcmobj.putInt(Tag.ImageBoxTileHorizontalDimension, VR.US, value);
     }
 
-    public int getImageBoxTileVerticalDimension()
-    {
+    public int getImageBoxTileVerticalDimension() {
         return dcmobj.getInt(Tag.ImageBoxTileVerticalDimension);
     }
 
-    public void setImageBoxTileVerticalDimension(int value)
-    {
+    public void setImageBoxTileVerticalDimension(int value) {
         dcmobj.putInt(Tag.ImageBoxTileVerticalDimension, VR.US, value);
     }
 
-    public String getImageBoxScrollDirection()
-    {
+    public String getImageBoxScrollDirection() {
         return dcmobj.getString(Tag.ImageBoxScrollDirection);
     }
 
-    public void setImageBoxScrollDirection(String value)
-    {
+    public void setImageBoxScrollDirection(String value) {
         dcmobj.putString(Tag.ImageBoxScrollDirection, VR.CS, value);
     }
 
-    public String getImageBoxSmallScrollType()
-    {
+    public String getImageBoxSmallScrollType() {
         return dcmobj.getString(Tag.ImageBoxSmallScrollType);
     }
 
-    public void setImageBoxSmallScrollType(String value)
-    {
+    public void setImageBoxSmallScrollType(String value) {
         dcmobj.putString(Tag.ImageBoxSmallScrollType, VR.CS, value);
     }
 
-    public int getImageBoxSmallScrollAmount()
-    {
+    public int getImageBoxSmallScrollAmount() {
         return dcmobj.getInt(Tag.ImageBoxSmallScrollAmount);
     }
 
-    public void setImageBoxSmallScrollAmount(int value)
-    {
+    public void setImageBoxSmallScrollAmount(int value) {
         dcmobj.putInt(Tag.ImageBoxSmallScrollAmount, VR.US, value);
     }
 
-    public String getImageBoxLargeScrollType()
-    {
+    public String getImageBoxLargeScrollType() {
         return dcmobj.getString(Tag.ImageBoxLargeScrollType);
     }
 
-    public void setImageBoxLargeScrollType(String value)
-    {
+    public void setImageBoxLargeScrollType(String value) {
         dcmobj.putString(Tag.ImageBoxLargeScrollType, VR.CS, value);
     }
 
-    public int getImageBoxOverlapPriority()
-    {
+    public int getImageBoxOverlapPriority() {
         return dcmobj.getInt(Tag.ImageBoxOverlapPriority);
     }
 
-    public void setImageBoxOverlapPriority(int value)
-    {
+    public void setImageBoxOverlapPriority(int value) {
         dcmobj.putInt(Tag.ImageBoxOverlapPriority, VR.US, value);
     }
 
-    public int getPreferredPlaybackSequencing()
-    {
+    public int getPreferredPlaybackSequencing() {
         return dcmobj.getInt(Tag.PreferredPlaybackSequencing);
     }
 
-    public void setPreferredPlaybackSequencing(int value)
-    {
+    public void setPreferredPlaybackSequencing(int value) {
         dcmobj.putInt(Tag.PreferredPlaybackSequencing, VR.US, value);
     }
 
-    public int getRecommendedDisplayFrameRate()
-    {
+    public int getRecommendedDisplayFrameRate() {
         return dcmobj.getInt(Tag.RecommendedDisplayFrameRate);
     }
 
-    public void setRecommendedDisplayFrameRate(int value)
-    {
+    public void setRecommendedDisplayFrameRate(int value) {
         dcmobj.putInt(Tag.RecommendedDisplayFrameRate, VR.IS, value);
     }
 
-    public double getCineRelativeToRealTime()
-    {
+    public double getCineRelativeToRealTime() {
         return dcmobj.getDouble(Tag.CineRelativeToRealTime);
     }
 
-    public void setCineRelativeToRealTime(double value)
-    {
+    public void setCineRelativeToRealTime(double value) {
         dcmobj.putDouble(Tag.CineRelativeToRealTime, VR.FD, value);
     }
 
