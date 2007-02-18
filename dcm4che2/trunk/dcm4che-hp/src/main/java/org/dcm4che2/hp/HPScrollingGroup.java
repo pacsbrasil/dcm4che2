@@ -54,35 +54,76 @@ import org.dcm4che2.data.VR;
  * 
  */
 public class HPScrollingGroup {
+    
+    private final DicomObject dcmobj;
+
     private final List displaySets;
 
     public HPScrollingGroup() {
+        dcmobj = new BasicDicomObject();
         displaySets = new ArrayList();
     }
 
-    public HPScrollingGroup(int initalCapacity) {
-        displaySets = new ArrayList(initalCapacity);
+    public HPScrollingGroup(DicomObject dcmobj, List totDisplaySets) {
+        this.dcmobj = dcmobj;
+        int[] group = dcmobj.getInts(Tag.DisplaySetScrollingGroup);
+        if (group == null)
+            throw new IllegalArgumentException(
+                    "Missing (0072,0212) Display Set Scrolling Group");
+        if (group.length < 2) {
+            throw new IllegalArgumentException(
+                    "" + dcmobj.get(Tag.DisplaySetScrollingGroup));           
+        }
+        this.displaySets = new ArrayList(group.length);
+        for (int j = 0; j < group.length; j++) {
+            try {
+                this.displaySets.add(totDisplaySets.get(group[j] - 1));
+            } catch (IndexOutOfBoundsException e) {
+                throw new IllegalArgumentException(
+                        "Referenced Display Set does not exists: "
+                                + dcmobj.get(Tag.DisplaySetScrollingGroup));
+            }
+        }
     }
-
+ 
+    public final DicomObject getDicomObject() {        
+        return dcmobj;
+    }
+    
     public List getDisplaySets() {
         return Collections.unmodifiableList(displaySets);
     }
 
     public void addDisplaySet(HPDisplaySet displaySet) {
+        if (displaySet.getDisplaySetNumber() == 0) {
+            throw new IllegalArgumentException("Missing Display Set Number");
+        }
+        displaySets.add(displaySet);
+        updateDicomObject();
+    }
+    
+    public boolean removeDisplaySet(HPDisplaySet displaySet) {
         if (displaySet == null)
             throw new NullPointerException();
-
-        displaySets.add(displaySet);
+       
+        if (!displaySets.remove(displaySet)) {
+            return false;            
+        }
+        updateDicomObject();
+        return true;
     }
 
-    public DicomObject getDicomObject() {
-        DicomObject item = new BasicDicomObject();
+    public void updateDicomObject() {
         int[] val = new int[displaySets.size()];
         for (int i = 0; i < val.length; i++) {
-            val[i] = ((HPDisplaySet) displaySets.get(i)).getDisplaySetNumber();
+            val[i] = 
+                ((HPDisplaySet) displaySets.get(i)).getDisplaySetNumber();
         }
-        item.putInts(Tag.DisplaySetScrollingGroup, VR.US, val);
-        return item;
+        dcmobj.putInts(Tag.DisplaySetScrollingGroup, VR.US, val);
+    }
+    
+    public boolean isValid() {
+        return displaySets.size() >= 2;
     }
 
 }

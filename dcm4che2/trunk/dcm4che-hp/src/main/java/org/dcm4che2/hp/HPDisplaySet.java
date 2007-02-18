@@ -141,6 +141,20 @@ public class HPDisplaySet {
         imageBoxes.add(imageBox);
     }
     
+    public boolean removeImageBox(HPImageBox imageBox) {
+        int index = imageBoxes.indexOf(imageBox);
+        if (index == -1) {
+            return false;
+        }
+        DicomElement imageBoxesSeq = dcmobj.get(Tag.ImageBoxesSequence);
+        imageBoxesSeq.removeDicomObject(index);
+        imageBoxes.remove(index);
+        for (; index < imageBoxes.size(); ++index) {
+            ((HPImageBox) imageBoxes.get(index)).setImageBoxNumber(index+1);
+        }
+        return true;
+    }    
+    
     public void removeAllImageBoxes() {
         dcmobj.putSequence(Tag.ImageBoxesSequence);
         imageBoxes.clear();

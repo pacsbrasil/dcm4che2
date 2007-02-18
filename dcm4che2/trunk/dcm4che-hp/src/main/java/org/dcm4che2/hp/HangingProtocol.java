@@ -88,15 +88,37 @@ public class HangingProtocol {
         screenDefs = new ArrayList();
         imageSets = new ArrayList();
         displaySets = new ArrayList();
-        scrollingGroups = new ArrayList();
-        navigationGroups = new ArrayList();
-        this.dcmobj = new BasicDicomObject();
+        dcmobj = new BasicDicomObject();
         dcmobj.putSequence(Tag.HangingProtocolDefinitionSequence);
         dcmobj.putSequence(Tag.NominalScreenDefinitionSequence);
         dcmobj.putSequence(Tag.ImageSetsSequence);
         dcmobj.putSequence(Tag.DisplaySetsSequence);
     }
 
+    protected HPImageSet createImageSet(List selectors, DicomObject dcmobj) {
+        return new HPImageSet(selectors, dcmobj);
+    }
+
+    protected HPDisplaySet createDisplaySet(DicomObject ds, HPImageSet is) {
+        return new HPDisplaySet(ds, is);
+    }
+    
+    protected HPDefinition createHangingProtocolDefinition(DicomObject dcmobj) {
+        return new HPDefinition(dcmobj);
+    }
+    
+    protected HPScreenDefinition createNominalScreenDefinition(DicomObject item) {
+        return new HPScreenDefinition(item);
+    }
+
+    protected HPNavigationGroup createNavigationGroup(DicomObject dcmobj) {
+        return new HPNavigationGroup(dcmobj, displaySets);
+    }
+
+    protected HPScrollingGroup createScrollingGroup(DicomObject dssg) {
+        return new HPScrollingGroup(dssg, displaySets);
+    }
+    
     public DicomObject getDicomObject() {
         return dcmobj;
     }
@@ -204,9 +226,28 @@ public class HangingProtocol {
         if (def == null)
             throw new NullPointerException();
 
-        getHangingProtocolDefinationSequence().addDicomObject(
+        dcmobj.get(Tag.HangingProtocolDefinitionSequence).addDicomObject(
                 def.getDicomObject());
         definitions.add(def);
+    }
+    
+    public boolean removeHangingProtocolDefinition(HPDefinition def) {
+        if (def == null)
+            throw new NullPointerException();
+        
+        int index = definitions.indexOf(def);
+        if (index == -1) {
+            return false;
+        }
+        
+        dcmobj.get(Tag.HangingProtocolDefinitionSequence).removeDicomObject(index);
+        definitions.remove(index);
+        return true;
+    }
+
+    public void removeAllHangingProtocolDefinition() {
+        dcmobj.putSequence(Tag.HangingProtocolDefinitionSequence);
+        definitions.clear();
     }
 
     public List getImageSets() {
@@ -218,10 +259,46 @@ public class HangingProtocol {
             throw new NullPointerException();
 
         imageSet.setImageSetNumber(imageSets.size() + 1);
-        getImageSetsSequence().addDicomObject(imageSet.getDicomObject());
+        dcmobj.get(Tag.ImageSetsSequence).addDicomObject(imageSet.getDicomObject());
         imageSets.add(imageSet);
     }
 
+    public boolean removeImageSet(HPImageSet imageSet) {
+        if (imageSet == null)
+            throw new NullPointerException();
+        
+        int index = imageSets.indexOf(imageSet);
+        if (index == -1) {
+            return false;
+        }
+       
+        for (Iterator iter = getDisplaySetsOfImageSet(imageSet).iterator();
+                iter.hasNext();) {
+            removeDisplaySet((HPDisplaySet) iter.next());            
+        }
+        
+        dcmobj.get(Tag.ImageSetsSequence).removeDicomObject(index);
+        imageSets.remove(index);
+        
+        for (; index < imageSets.size(); ++index) {
+            HPImageSet otherImageSet = (HPImageSet) imageSets.get(index);
+            otherImageSet.setImageSetNumber(index+1);
+            for (Iterator iter = getDisplaySetsOfImageSet(otherImageSet).iterator();
+                    iter.hasNext();) {
+                ((HPDisplaySet) iter.next()).setImageSet(otherImageSet);            
+            }        
+        }
+        
+        return true;
+    }
+    
+    public void removeAllImageSets() {
+        dcmobj.putSequence(Tag.ImageSetsSequence);
+        imageSets.clear();
+        removeAllDisplaySets();
+    }
+ 
+    
     public List getNominalScreenDefinitions() {
         return Collections.unmodifiableList(screenDefs);
     }
@@ -230,11 +307,30 @@ public class HangingProtocol {
         if (def == null)
             throw new NullPointerException();
 
-        getNominalScreenDefinitionSequence().addDicomObject(
+        dcmobj.get(Tag.NominalScreenDefinitionSequence).addDicomObject(
                 def.getDicomObject());
         screenDefs.add(def);
     }
 
+    public boolean removeNominalScreenDefinition(HPScreenDefinition def) {
+        if (def == null)
+            throw new NullPointerException();
+        
+        int index = screenDefs.indexOf(def);
+        if (index == -1) {
+            return false;
+        }
+        
+        dcmobj.get(Tag.NominalScreenDefinitionSequence).removeDicomObject(index);
+        screenDefs.remove(index);
+        return true;
+    }
+    
+    public void removeAllNominalScreenDefinitions() {
+        dcmobj.putSequence(Tag.NominalScreenDefinitionSequence);
+        screenDefs.clear();
+    }
+        
     public int getNumberOfPresentationGroups() {
         return maxPresGroup;
     }
@@ -244,6 +340,16 @@ public class HangingProtocol {
         for (int i = 0, n = displaySets.size(); i < n; i++) {
             HPDisplaySet ds = (HPDisplaySet) displaySets.get(i);
             if (ds.getDisplaySetPresentationGroup() == pgNo)
+                result.add(ds);
+        }
+        return result;
+    }
+
+    public List getDisplaySetsOfImageSet(HPImageSet is) {
+        ArrayList result = new ArrayList(displaySets.size());
+        for (int i = 0, n = displaySets.size(); i < n; i++) {
+            HPDisplaySet ds = (HPDisplaySet) displaySets.get(i);
+            if (ds.getImageSet() == is)
                 result.add(ds);
         }
         return result;
@@ -276,10 +382,68 @@ public class HangingProtocol {
             displaySet.setDisplaySetPresentationGroup(group);
         }
         maxPresGroup = Math.max(maxPresGroup, group);
-        getDisplaySetsSequence().addDicomObject(displaySet.getDicomObject());
+        dcmobj.get(Tag.DisplaySetsSequence).addDicomObject(displaySet.getDicomObject());
         displaySets.add(displaySet);
     }
 
+    public boolean removeDisplaySet(HPDisplaySet displaySet) {
+        if (displaySet == null)
+            throw new NullPointerException();
+
+        int index = displaySets.indexOf(displaySet);
+        if (index == -1) {
+            return false;
+        }
+                
+        DicomElement displaySetsSeq = dcmobj.get(Tag.DisplaySetsSequence);
+        displaySetsSeq.removeDicomObject(index);
+        displaySets.remove(index);
+        
+        for (; index < displaySets.size(); ++index) {
+            ((HPDisplaySet) displaySets.get(index)).setDisplaySetNumber(index+1);
+        }
+        
+        if (scrollingGroups != null) {
+            int sgi = 0;
+            for (Iterator iter = scrollingGroups.iterator(); iter.hasNext(); ++sgi) {
+                HPScrollingGroup sg = (HPScrollingGroup) iter.next();
+                if (sg.removeDisplaySet(displaySet) && !sg.isValid()) {
+                    dcmobj.get(Tag.SynchronizedScrollingSequence).removeDicomObject(sgi--);
+                    iter.remove();
+                } else {
+                    sg.updateDicomObject();
+                }
+            }
+        }
+        
+        if (navigationGroups != null) {
+            int ngi = 0;
+            for (Iterator iter = navigationGroups.iterator(); iter.hasNext(); ++ngi) {
+                HPNavigationGroup ng = (HPNavigationGroup) iter.next();
+                if (ng.removeReferenceDisplaySet(displaySet) && !ng.isValid()
+                        || ng.getNavigationDisplaySet() == displaySet) {
+                    if (ng.getNavigationDisplaySet() == displaySet) {
+                        ng.setNavigationDisplaySet(null);
+                    }
+                    dcmobj.get(Tag.NavigationIndicatorSequence).removeDicomObject(ngi--);
+                    iter.remove();
+                } else {
+                    ng.updateDicomObject();
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    public void removeAllDisplaySets() {
+        dcmobj.putSequence(Tag.DisplaySetsSequence);
+        displaySets.clear();
+        removeAllScrollingGroups();
+        removeAllNavigationGroups();
+        maxPresGroup = 0;
+    }
+    
     public List getScrollingGroups() {
         return maskNull(scrollingGroups);
     }
@@ -289,9 +453,34 @@ public class HangingProtocol {
         if (sq == null)
             sq = dcmobj.putSequence(Tag.SynchronizedScrollingSequence);
         sq.addDicomObject(scrollingGroup.getDicomObject());
+        if (scrollingGroups == null)
+            scrollingGroups = new ArrayList();
         scrollingGroups.add(scrollingGroup);
     }
 
+    public boolean removeScrollingGroup(HPScrollingGroup scrollingGroup) {
+        if (scrollingGroup == null)
+            throw new NullPointerException();
+        
+        if (scrollingGroups == null) {
+            return false;
+        }       
+
+        int index = scrollingGroups.indexOf(scrollingGroup);
+        if (index == -1) {
+            return false;
+        }
+        
+        dcmobj.get(Tag.SynchronizedScrollingSequence).removeDicomObject(index);
+        scrollingGroups.remove(index);
+        return true;
+    }
+    
+    public void removeAllScrollingGroups() {
+        dcmobj.remove(Tag.SynchronizedScrollingSequence);
+        scrollingGroups = null;
+    }
+    
     public List getNavigationGroups() {
         return maskNull(navigationGroups);
     }
@@ -306,9 +495,34 @@ public class HangingProtocol {
         if (sq == null)
             sq = dcmobj.putSequence(Tag.NavigationIndicatorSequence);
         sq.addDicomObject(navigationGroup.getDicomObject());
+        if (navigationGroups == null)
+            navigationGroups = new ArrayList();
         navigationGroups.add(navigationGroup);
     }
 
+    public boolean removeNavigationGroup(HPNavigationGroup navigationGroup) {
+        if (navigationGroup == null)
+            throw new NullPointerException();
+        
+        if (navigationGroups == null) {
+            return false;
+        }
+        
+        int index = navigationGroups.indexOf(navigationGroup);
+        if (index == -1) {
+            return false;
+        }
+        
+        dcmobj.get(Tag.NavigationIndicatorSequence).removeDicomObject(index);
+        navigationGroups.remove(index);
+        return true;
+    }
+
+    public void removeAllNavigationGroups() {
+        dcmobj.remove(Tag.NavigationIndicatorSequence);
+        navigationGroups = null;
+    }    
+    
     private void init() {
         initHangingProtocolDefinition();
         initNominalScreenDefinition();
@@ -326,34 +540,8 @@ public class HangingProtocol {
         int numNavGroups = nis.countItems();
         navigationGroups = new ArrayList(numNavGroups);
         for (int i = 0; i < numNavGroups; i++) {
-            DicomObject ni = nis.getDicomObject(i);
-            int[] group = ni.getInts(Tag.ReferenceDisplaySets);
-            if (group == null)
-                throw new IllegalArgumentException(
-                        "Missing (0072,0218) Reference Display Sets");
-            HPNavigationGroup ng = new HPNavigationGroup(group.length);
-            int nds = ni.getInt(Tag.NavigationDisplaySet);
-            if (nds != 0) {
-                try {
-                    ng.setNavigationDisplaySet((HPDisplaySet) displaySets
-                            .get(nds - 1));
-                } catch (IndexOutOfBoundsException e) {
-                    throw new IllegalArgumentException(
-                            "Referenced Display Set does not exists: "
-                                    + ni.get(Tag.NavigationDisplaySet));
-                }
-            }
-            for (int j = 0; j < group.length; j++) {
-                try {
-                    ng.addReferenceDisplaySet((HPDisplaySet) displaySets
-                            .get(group[j] - 1));
-                } catch (IndexOutOfBoundsException e) {
-                    throw new IllegalArgumentException(
-                            "Referenced Display Set does not exists: "
-                                    + ni.get(Tag.ReferenceDisplaySets));
-                }
-            }
-            navigationGroups.add(ng);
+            navigationGroups.add(
+                    createNavigationGroup(nis.getDicomObject(i)));
         }
     }
 
@@ -365,32 +553,13 @@ public class HangingProtocol {
         int numScrollingGroups = ssq.countItems();
         scrollingGroups = new ArrayList(numScrollingGroups);
         for (int i = 0; i < numScrollingGroups; i++) {
-            DicomObject dssg = ssq.getDicomObject(i);
-            int[] group = dssg.getInts(Tag.DisplaySetScrollingGroup);
-            if (group == null)
-                throw new IllegalArgumentException(
-                        "Missing (0072,0212) Display Set Scrolling Group");
-            if (group.length < 2)
-                throw new IllegalArgumentException(""
-                        + dssg.get(Tag.DisplaySetScrollingGroup));
-            HPScrollingGroup sg = new HPScrollingGroup(group.length);
-            for (int j = 0; j < group.length; j++) {
-                try {
-                    sg.addDisplaySet((HPDisplaySet) displaySets
-                            .get(group[j] - 1));
-                } catch (IndexOutOfBoundsException e) {
-                    throw new IllegalArgumentException(
-                            "Referenced Display Set does not exists: "
-                                    + dssg.get(Tag.DisplaySetScrollingGroup));
-                }
-            }
-            scrollingGroups.add(sg);
+            scrollingGroups.add(createScrollingGroup(ssq.getDicomObject(i)));
         }
 
     }
 
     private void initDisplaySets() {
-        DicomElement dssq = getDisplaySetsSequence();
+        DicomElement dssq = dcmobj.get(Tag.DisplaySetsSequence);
         if (dssq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0200) Display Sets Sequence");
@@ -421,12 +590,12 @@ public class HangingProtocol {
                         "Missing or invalid (0072,0032) Image Set Number: "
                                 + ds.get(Tag.ImageSetNumber));
             }
-            displaySets.add(new HPDisplaySet(ds, is));
+            displaySets.add(createDisplaySet(ds, is));
         }
     }
 
     private void initImageSets() {
-        DicomElement issq = getImageSetsSequence();
+        DicomElement issq = dcmobj.get(Tag.ImageSetsSequence);
         if (issq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0020) Image Sets Sequence");
@@ -464,26 +633,26 @@ public class HangingProtocol {
                             "Missing or invalid (0072,0032) Image Set Number: "
                                     + timeBasedSelector.get(Tag.ImageSetNumber));
                 }
-                imageSets.add(new HPImageSet(selectors, timeBasedSelector));
+                imageSets.add(createImageSet(selectors, timeBasedSelector));
             }
         }
     }
 
     private void initNominalScreenDefinition() {
-        DicomElement nsdsq = getNominalScreenDefinitionSequence();
+        DicomElement nsdsq = dcmobj.get(Tag.NominalScreenDefinitionSequence);
         if (nsdsq == null || nsdsq.isEmpty()) {
             screenDefs = Collections.EMPTY_LIST;
         } else {
             int numScreenDef = nsdsq.countItems();
             screenDefs = new ArrayList(numScreenDef);
             for (int i = 0; i < numScreenDef; i++) {
-                screenDefs.add(new HPScreenDefinition(nsdsq.getDicomObject(i)));
+                screenDefs.add(createNominalScreenDefinition(nsdsq.getDicomObject(i)));
             }
         }
     }
 
     private void initHangingProtocolDefinition() {
-        DicomElement defsq = getHangingProtocolDefinationSequence();
+        DicomElement defsq = dcmobj.get(Tag.HangingProtocolDefinitionSequence);
         if (defsq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,000C) Hanging Protocol Definition Sequence");
@@ -493,24 +662,8 @@ public class HangingProtocol {
         int numDefinitions = defsq.countItems();
         definitions = new ArrayList(numDefinitions);
         for (int i = 0; i < numDefinitions; i++) {
-            definitions.add(new HPDefinition(defsq.getDicomObject(i)));
+            definitions.add(createHangingProtocolDefinition(defsq.getDicomObject(i)));
         }
-    }
-
-    public DicomElement getDisplaySetsSequence() {
-        return dcmobj.get(Tag.DisplaySetsSequence);
-    }
-
-    public DicomElement getImageSetsSequence() {
-        return dcmobj.get(Tag.ImageSetsSequence);
-    }
-
-    public DicomElement getNominalScreenDefinitionSequence() {
-        return dcmobj.get(Tag.NominalScreenDefinitionSequence);
-    }
-
-    public DicomElement getHangingProtocolDefinationSequence() {
-        return dcmobj.get(Tag.HangingProtocolDefinitionSequence);
     }
 
     public static void scanForPlugins(ClassLoader cl) {

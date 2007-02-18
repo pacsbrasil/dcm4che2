@@ -54,16 +54,58 @@ import org.dcm4che2.data.VR;
  * 
  */
 public class HPNavigationGroup {
+    
+    private final DicomObject dcmobj;
+
     private HPDisplaySet navDisplaySet;
 
     private final List refDisplaySets;
 
     public HPNavigationGroup() {
+        dcmobj = new BasicDicomObject();
         refDisplaySets = new ArrayList();
     }
 
-    public HPNavigationGroup(int initalCapacity) {
-        refDisplaySets = new ArrayList(initalCapacity);
+    public HPNavigationGroup(DicomObject dcmobj, List displaySets) {
+        this.dcmobj = dcmobj;
+        int[] group = dcmobj.getInts(Tag.ReferenceDisplaySets);
+        if (group == null)
+            throw new IllegalArgumentException(
+                    "Missing (0072,0218) Reference Display Sets");
+        if (group.length == 0) {
+            throw new IllegalArgumentException(
+                    "Empty (0072,0218) Reference Display Sets");           
+        }
+        int nds = dcmobj.getInt(Tag.NavigationDisplaySet);
+        if (nds != 0) {
+            try {
+                navDisplaySet = (HPDisplaySet) displaySets.get(nds - 1);
+            } catch (IndexOutOfBoundsException e) {
+                throw new IllegalArgumentException(
+                        "Navigation Display Set does not exists: "
+                                + dcmobj.get(Tag.NavigationDisplaySet));
+            }
+        } else {
+            if (group.length == 1) {
+                throw new IllegalArgumentException(
+                        "Singular Reference Display Set without Navigation Display Set: "
+                                + dcmobj.get(Tag.ReferenceDisplaySets));
+            }
+        }
+        refDisplaySets = new ArrayList(group.length);
+        for (int j = 0; j < group.length; j++) {
+            try {
+                refDisplaySets.add(displaySets.get(group[j] - 1));
+            } catch (IndexOutOfBoundsException e) {
+                throw new IllegalArgumentException(
+                        "Reference Display Set does not exists: "
+                                + dcmobj.get(Tag.ReferenceDisplaySets));
+            }
+        }
+    }
+
+    public DicomObject getDicomObject() {
+        return dcmobj;
     }
 
     public final HPDisplaySet getNavigationDisplaySet() {
@@ -71,6 +113,15 @@ public class HPNavigationGroup {
     }
 
     public final void setNavigationDisplaySet(HPDisplaySet displaySet) {
+        if (displaySet != null) {
+            dcmobj.remove(Tag.NavigationDisplaySet);
+        } else {
+            int dsn = displaySet.getDisplaySetNumber();
+            if (dsn == 0) {
+                throw new IllegalArgumentException("Missing Display Set Number");
+            }
+            dcmobj.putInt(Tag.NavigationDisplaySet, VR.US, dsn);
+        }
         this.navDisplaySet = displaySet;
     }
 
@@ -79,25 +130,45 @@ public class HPNavigationGroup {
     }
 
     public void addReferenceDisplaySet(HPDisplaySet displaySet) {
+        if (displaySet.getDisplaySetNumber() == 0) {
+            throw new IllegalArgumentException("Missing Display Set Number");
+        }
+        refDisplaySets.add(displaySet);
+        updateReferenceDisplaySets();
+    }
+
+    public boolean removeReferenceDisplaySet(HPDisplaySet displaySet) {
         if (displaySet == null)
             throw new NullPointerException();
-
-        refDisplaySets.add(displaySet);
-    }
-
-    public DicomObject getDicomObject() {
-        DicomObject item = new BasicDicomObject();
-        if (navDisplaySet != null) {
-            item.putInt(Tag.NavigationDisplaySet, VR.US, navDisplaySet
-                    .getDisplaySetNumber());
+       
+        if (!refDisplaySets.remove(displaySet)) {
+            return false;            
         }
+        updateReferenceDisplaySets();
+        return true;
+    }
+    
+    public void updateDicomObject() {
+        if (navDisplaySet != null) {
+            dcmobj.remove(Tag.NavigationDisplaySet);
+        } else {
+            dcmobj.putInt(Tag.NavigationDisplaySet, VR.US,
+                    navDisplaySet.getDisplaySetNumber());
+        }        
+        updateReferenceDisplaySets();        
+    }
+    
+    private void updateReferenceDisplaySets() {
         int[] val = new int[refDisplaySets.size()];
         for (int i = 0; i < val.length; i++) {
-            val[i] = ((HPDisplaySet) refDisplaySets.get(i))
-                    .getDisplaySetNumber();
+            val[i] = 
+                ((HPDisplaySet) refDisplaySets.get(i)).getDisplaySetNumber();
         }
-        item.putInts(Tag.ReferenceDisplaySets, VR.US, val);
-        return item;
+        dcmobj.putInts(Tag.ReferenceDisplaySets, VR.US, val);
     }
 
+    
+    public boolean isValid() {
+        return refDisplaySets.size() >= (navDisplaySet != null ? 1 : 2);
+    }
 }
