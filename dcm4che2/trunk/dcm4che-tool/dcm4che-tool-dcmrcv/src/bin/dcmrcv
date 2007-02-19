@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.tool.dcmrcv.DcmRcv
-MAIN_JAR=dcm4che-tool-dcmrcv-2.0.8-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-dcmrcv-2.0.8.jar
 
 DIRNAME=`dirname $0`
 
@@ -43,11 +43,11 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.8-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-2.0.8-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.8.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-2.0.8.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.1.0.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.1.0.jar"
-CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.14.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.13.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
 
 # For Cygwin, switch paths to Windows format before running java

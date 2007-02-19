@@ -150,8 +150,6 @@ public class DcmSnd {
 
     private long totalSize = 0L;
     
-    private DicomObject coerceAttrs;
-
     public DcmSnd() {
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
