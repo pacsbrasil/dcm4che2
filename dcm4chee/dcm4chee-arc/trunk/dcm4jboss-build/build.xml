@@ -249,6 +249,7 @@
         <include name="deploy/jms/uil2-service.xml"/>
         <include name="deploy/jmx-console.war/**"/>
         <exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
+        <exclude name="deploy/jbossweb-tomcat55.sar/server.xml"/>
         <!--exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/-->
         <!--include name="deploy/naming.sar/**"/-->
         <!--include name="deploy/security.sar/**"/-->
