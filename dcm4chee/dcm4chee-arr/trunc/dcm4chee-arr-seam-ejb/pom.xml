@@ -31,6 +31,12 @@
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
+      <artifactId>jboss-annotations-ejb3</artifactId>
+      <version>4.0.5.GA</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jboss</groupId>
       <artifactId>ejb3-persistence</artifactId>
       <version>4.0.5.GA</version>
       <scope>provided</scope>
