@@ -59,7 +59,9 @@ public class KeyObjectViewCtrl extends Dcm4cheeFormController {
     private int seriesPk;
 
     private String sopIUID;
-    
+
+    private String popupMsg = null;
+
     private PatientModel patient;
     
     public PatientModel getPatient() {
@@ -103,15 +105,23 @@ public class KeyObjectViewCtrl extends Dcm4cheeFormController {
 		this.sopIUID = sopIUID;
 	}
 
+    public String getPopupMsg() {
+        return popupMsg;
+    }
+
     protected String perform() throws Exception {
-    	ContentManager cm = lookupContentManager();
-    	patient = new PatientModel( cm.getPatientForStudy( studyPk ) );
-    	if ( sopIUID == null && seriesPk >= 0 ) {
-    		List l = cm.listInstancesOfSeries( seriesPk );
-    		if ( l != null && !l.isEmpty() ) {
-    			sopIUID = ((Dataset) l.get(0)).getString( Tags.SOPInstanceUID);
-    		}
-    	}
+        try {
+        	ContentManager cm = lookupContentManager();
+        	patient = new PatientModel( cm.getPatientForStudy( studyPk ) );
+        	if ( sopIUID == null && seriesPk >= 0 ) {
+        		List l = cm.listInstancesOfSeries( seriesPk );
+        		if ( l != null && !l.isEmpty() ) {
+        			sopIUID = ((Dataset) l.get(0)).getString( Tags.SOPInstanceUID);
+        		}
+        	}
+        } catch (Exception x ) {
+            popupMsg = "Failure opening WebViewer: "+x.getMessage();
+        }
         return SUCCESS;
     }
     

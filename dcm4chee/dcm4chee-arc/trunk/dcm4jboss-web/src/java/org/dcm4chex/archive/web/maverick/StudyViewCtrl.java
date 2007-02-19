@@ -79,6 +79,8 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
     private StudyContainer study;
 
     private int selectedSeries = 1;
+   
+    private String popupMsg = null;
     
     protected static Logger log = Logger.getLogger(StudyViewCtrl.class);
 
@@ -164,47 +166,60 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
 	public void setAccNr(String accNr) {
 		this.accNr = accNr;
 	}
+    /**
+     * @return the popupMsg
+     */
+    public String getPopupMsg() {
+        return popupMsg;
+    }
     protected String perform() throws Exception { 
-    	if ( studyPk < 0 ) {
-    		if ( calcStudyPk() > 1 ) return SELECT;
-    	}
-    	patient = new PatientModel( lookupContentManager().getPatientForStudy( studyPk ) );
-    	ContentManager cm = lookupContentManager();
-    	Dataset sopIUIDs = cm.getSOPInstanceRefMacro( studyPk, true );
-    	String serIUID = seriesPk < 0 ? seriesUID:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
-    	study = new StudyContainer( sopIUIDs, serIUID );
-       return SUCCESS;
+        try {
+        	if ( studyPk < 0 ) {
+        		if ( calcStudyPk() > 1 ) return SELECT;
+        	}
+        	patient = new PatientModel( lookupContentManager().getPatientForStudy( studyPk ) );
+        	ContentManager cm = lookupContentManager();
+        	Dataset sopIUIDs = cm.getSOPInstanceRefMacro( studyPk, true );
+        	String serIUID = seriesPk < 0 ? seriesUID:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
+        	study = new StudyContainer( sopIUIDs, serIUID );
+        } catch (Exception x ) {
+            popupMsg = "Cant open Webviewer for given id! Reason: "+x.getMessage();
+            log.error(popupMsg, x);
+        }
+        return SUCCESS;
     }
     
     private int calcStudyPk() throws Exception {
-    	if ( studyUID == null ) {
-    		if ( seriesPk >= 0 ) {
-    			log.debug("Try to get studyUID via seriesPk!");
-        		studyUID = lookupContentManager().getSeries(seriesPk).getString(Tags.StudyInstanceUID);
-    		} else if ( seriesUID != null ) {
-    			log.debug("Try to get studyUID via seriesUID!");
-        		studyUID = lookupContentManager().getSeriesByIUID(seriesUID).getString(Tags.StudyInstanceUID);
-    		} else if ( accNr != null ) {
-    			log.debug("Try to get studyUID via accession number!");
-	    		Dataset queryDS = DcmObjectFactory.getInstance().newDataset();
-	    		queryDS.putSH(Tags.AccessionNumber, accNr);
-	    		queryDS.putUI(Tags.StudyInstanceUID);
-	    		List l = new QueryStudiesCmd(queryDS, true, true).list(0, 10);
-	    		if ( l.size() < 1 ) {
-	    			log.warn("No study found for Accession Number:"+accNr);
-	    			return 0;
-	    		} 
-	    		if ( l.size() > 1 ) {
-	    			log.warn("More than one study found for Accession Number:"+accNr);
-	    			FolderForm.getFolderForm(getCtx()).setStudies(l);
-	    			return l.size();
-	    		} 
-	    		studyUID = ((Dataset) l.get(0)).getString( Tags.StudyInstanceUID );
-    		} else {
-    			log.warn("StudyView call need either studyPk, studyUID or accNr!");
-    			return 0;
-    		}
-    	}
+        if ( studyUID == null ) {
+            if ( seriesPk >= 0 ) {
+                log.debug("Try to get studyUID via seriesPk!");
+                studyUID = lookupContentManager().getSeries(seriesPk).getString(Tags.StudyInstanceUID);
+            } else if ( seriesUID != null ) {
+                log.debug("Try to get studyUID via seriesUID!");
+                studyUID = lookupContentManager().getSeriesByIUID(seriesUID).getString(Tags.StudyInstanceUID);
+            } else if ( accNr != null ) {
+                log.debug("Try to get studyUID via accession number!");
+                Dataset queryDS = DcmObjectFactory.getInstance().newDataset();
+                queryDS.putSH(Tags.AccessionNumber, accNr);
+                queryDS.putUI(Tags.StudyInstanceUID);
+                List l = new QueryStudiesCmd(queryDS, true, true).list(0, 10);
+                if ( l.size() < 1 ) {
+                    popupMsg = "No study found for Accession Number:"+accNr;
+                    log.warn(popupMsg);
+                    return 0;
+                } 
+                if ( l.size() > 1 ) {
+                    log.warn("More than one study found for Accession Number:"+accNr);
+                    FolderForm.getFolderForm(getCtx()).setStudies(l);
+                    return l.size();
+                } 
+                studyUID = ((Dataset) l.get(0)).getString( Tags.StudyInstanceUID );
+            } else {
+                popupMsg = "StudyView call need either studyPk, studyUID or accNr!";
+                log.warn("StudyView call need either studyPk, studyUID or accNr!");
+                return 0;
+            }
+        }
         ByteBuffer bb = lookupContentManager().getStudyByIUID(studyUID).getByteBuffer(PrivateTags.StudyPk);
         studyPk = bb == null ? -1 : Convert.toLong(bb.array());
     	return 1;

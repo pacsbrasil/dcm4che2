@@ -8,9 +8,10 @@
 <xsl:template match="/model">
 <html>
 <head>
-   <title><xsl:value-of select="patient/patientName" /> (<xsl:value-of select="patient/patientSex" />)</title>
+	<title><xsl:value-of select="patient/patientName" /> (<xsl:value-of select="patient/patientSex" />)</title>
+	<script language = "JavaScript" src= "dcm4che.js"/>
 </head>
-<body>
+<body onLoad="checkPopup('{popupMsg}')" >
 	<script language="JavaScript"><xsl:text>&lt;!--
         	var W=600,H=600;
                 if (parseInt(navigator.appVersion)>3) 
