@@ -93,7 +93,7 @@ public class FolderUtil {
 		if ( stickyInstances.size() > 0 ) {
 			Set set = new HashSet();
 			for ( Iterator iter = stickyInstances.iterator() ; iter.hasNext() ; ) {
-				set.add( Integer.valueOf(iter.next().toString()));
+				set.add( Long.valueOf(iter.next().toString()));
 			}
 			try {
 				Collection col = lookupContentManager().getSOPInstanceRefMacros(set);
