@@ -1,6 +1,7 @@
 <project name="dcm4chee-web" default="war">
 
 	<property file="build.properties"/>
+        <property file="../build.properties"/>
 	<property name="lib.dir" value="${basedir}/lib"/>
 
 	<!-- Override with your JBoss dist location -->
