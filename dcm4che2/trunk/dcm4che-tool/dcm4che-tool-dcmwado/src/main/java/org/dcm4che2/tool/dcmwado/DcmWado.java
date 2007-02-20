@@ -271,7 +271,7 @@ public class DcmWado {
         if (narg == 0)
             exit("Missing url of WADO server");
         if (narg == 1) {
-            if (cl.hasOption("uid")) {
+            if (!cl.hasOption("uid")) {
                 exit("You must either option -uid <uids> or <file>|<directory> specify");
             }
         } else {
