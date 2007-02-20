@@ -4,6 +4,7 @@
 	modifying this build script.
 	--> 
 	<property file="build.properties"/>
+	<property file="../build.properties"/>
 
 	<property name="version" value="2.10.13"/>
 	<property name="javac.debug" value="on"/>	
