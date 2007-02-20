@@ -251,7 +251,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         return new Itr(attrs.iterator(fromTag, toTag));
     }
 
-    private class Itr implements Iterator
+    protected class Itr implements Iterator
     {
         final Iterator itr;
         DicomElement next;
