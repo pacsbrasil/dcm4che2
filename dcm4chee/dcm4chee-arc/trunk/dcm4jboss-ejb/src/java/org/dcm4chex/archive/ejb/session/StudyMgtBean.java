@@ -197,7 +197,7 @@ public abstract class StudyMgtBean implements SessionBean {
 		try {
 			return studyHome.findByStudyIuid(suid);
 		} catch (ObjectNotFoundException e) {
-			throw new DcmServiceException(Status.NoSuchSOPClass, suid);
+			throw new DcmServiceException(Status.NoSuchObjectInstance, suid);
 		}
 	}
 	
@@ -236,6 +236,12 @@ public abstract class StudyMgtBean implements SessionBean {
 			throws DcmServiceException {
 		try {
 			StudyLocal study = getStudy(iuid);
+			if(study == null) {
+				// Study may be deleted already
+				log.warn("Unable to update the study that does not exist. StudyIuid: " + iuid);
+				return;
+			}
+			
 			Dataset attrs = study.getAttributes(false);
 			attrs.putAll(ds);
 			study.setAttributes(attrs);
