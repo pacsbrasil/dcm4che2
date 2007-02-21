@@ -42,7 +42,10 @@ package org.dcm4chex.archive.ejb.session;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -59,6 +62,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
@@ -79,6 +83,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -334,7 +339,77 @@ public abstract class PrivateManagerBean implements SessionBean {
         }
     }
     
-
+    /**
+     * Delete a list of instances, i.e., move them to trash bin
+     * 
+     * @ejb.interface-method
+     *
+     * @param iuids A list of instance uid
+     * @param cascading True to delete the series/study if there's no instance/series
+     * @return a collection of Dataset containing the actuall detetion information per study
+     * @throws RemoteException
+     */
+    public Collection moveInstancesToTrash(String[] iuids, boolean cascading) throws RemoteException {
+    	try {
+    		// These instances may belong to multiple studies, 
+    		// although mostly they should be the same study
+    		Map mapStudies = new HashMap();
+    		for(int i = 0; i < iuids.length; i++) {
+	    		InstanceLocal instance = instHome.findBySopIuid(iuids[i]);
+	    		SeriesLocal series = instance.getSeries();
+	    		StudyLocal study = series.getStudy();
+	    		if(!mapStudies.containsKey(study))
+	    			mapStudies.put(study, new HashMap());
+	    		Map mapSeries = (Map)mapStudies.get(study);
+	            if(!mapSeries.containsKey(series))
+	            	mapSeries.put( series, new ArrayList() );
+	            Collection colInstances = (Collection)mapSeries.get(series);
+	            colInstances.add( instance );	            
+	    	}
+    		
+	    	List dss = new ArrayList();
+			Iterator iter = mapStudies.keySet().iterator();
+			while ( iter.hasNext() ) {
+				StudyLocal study = (StudyLocal) iter.next();
+		    	dss.add(getStudyMgtDataset( study, (Map)mapStudies.get(study)));	            
+		    	Iterator iter2 = ((Map)mapStudies.get(study)).keySet().iterator();
+		    	while ( iter2.hasNext() ) { 
+		    		SeriesLocal series = (SeriesLocal)iter2.next(); 
+		    		List instances = (List)((Map)mapStudies.get(study)).get(series);
+		    		for(int i = 0; i < instances.size();i++) {
+			            // Delete the instance now, i.e., move to trash bin, becoming private instance
+			            getPrivateInstance( (InstanceLocal)instances.get(i), DELETED, null );
+			            ((InstanceLocal)instances.get(i)).remove();
+		    		}
+		    		if(series.getInstances().size() == 0 && cascading) {
+		    			// Delete the series too since there's no instance left
+		                getPrivateSeries( series, DELETED, null, false );
+		                series.remove();
+		    		}
+		    		else
+		    			series.updateDerivedFields(true, true, true, true, true);
+		    	}
+		    	if(study.getSeries().size() == 0 && cascading) {
+		    		// Delete the study too since there's no series left
+		    		getPrivateStudy( study, DELETED, null, false );
+		            study.remove();
+		    	}
+		    	else
+		    		study.updateDerivedFields(true, true, true, true, true, true);
+	    	}
+	    	
+	    	return dss;
+        } catch (CreateException e) {
+            throw new RemoteException(e.getMessage());
+         } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+    
     /**
      * @ejb.interface-method
      */
@@ -342,11 +417,13 @@ public abstract class PrivateManagerBean implements SessionBean {
         try {
             InstanceLocal instance = instHome.findByPrimaryKey(new Long(
                     instance_pk));
+            Collection colInstance = new ArrayList(); 
+            colInstance.add( instance );
             SeriesLocal series = instance.getSeries();
-            Collection colSeries = new ArrayList(); colSeries.add( series );
-            Collection colInstance = new ArrayList(); colInstance.add( instance );
-        	Dataset ds = getStudyMgtDataset( series.getStudy(), colSeries, colInstance );
-            PrivateInstanceLocal privInstance =getPrivateInstance( instance, DELETED, null );
+            Map mapSeries = new HashMap(); 
+            mapSeries.put( series, colInstance );
+        	Dataset ds = getStudyMgtDataset( series.getStudy(), mapSeries);
+            getPrivateInstance( instance, DELETED, null );
             instance.remove();
             series.updateDerivedFields(true, true, true, true, true);
             series.getStudy().updateDerivedFields(true, true, true, true, true, true);
@@ -369,10 +446,10 @@ public abstract class PrivateManagerBean implements SessionBean {
         try {
             SeriesLocal series = seriesHome.findByPrimaryKey(new Long(series_pk));
             StudyLocal study = series.getStudy();
-            Collection colSeries = new ArrayList(); colSeries.add( series );
-            Collection colInstance = series.getInstances();
-        	Dataset ds = getStudyMgtDataset( series.getStudy(), colSeries, colInstance );
-            PrivateSeriesLocal privSeries =getPrivateSeries( series, DELETED, null, true );
+            Map mapSeries = new HashMap(); 
+            mapSeries.put( series, series.getInstances() );
+        	Dataset ds = getStudyMgtDataset( series.getStudy(), mapSeries );
+            getPrivateSeries( series, DELETED, null, true );
             series.remove();
             study.updateDerivedFields(true, true, true, true, true, true);
             return ds;
@@ -418,13 +495,28 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public Dataset moveStudyToTrash(String iuid) throws RemoteException {
+    	try {
+	    	StudyLocal study = studyHome.findByStudyIuid(iuid);
+	    	if(study != null)
+	    		return moveStudyToTrash(study.getPk().longValue());
+	    	else
+	    		return null;
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public Dataset moveStudyToTrash(long study_pk) throws RemoteException {
         try {
             StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
-            Collection colSeries = study.getSeries();
-        	Dataset ds = getStudyMgtDataset( study, colSeries, null );
-            PrivateStudyLocal privStudy =getPrivateStudy( study, DELETED, null, true );
-            PatientLocal patient = study.getPatient();
+        	Dataset ds = getStudyMgtDataset( study, null );
+            getPrivateStudy( study, DELETED, null, true );
             study.remove();
             return ds;
         } catch (CreateException e) {
@@ -445,7 +537,7 @@ public abstract class PrivateManagerBean implements SessionBean {
         try {
         	PatientLocal patient = patHome.findByPrimaryKey(new Long(pat_pk));
         	Dataset ds = patient.getAttributes(true);
-            PrivatePatientLocal privPat =getPrivatePatient( patient, DELETED, true );
+            getPrivatePatient( patient, DELETED, true );
             patient.remove();
             return ds;
         } catch (CreateException e) {
@@ -538,18 +630,21 @@ public abstract class PrivateManagerBean implements SessionBean {
      	 return privPat;
    }
     
-    private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {
+    private Dataset getStudyMgtDataset( StudyLocal study, Map mapSeries ) {
     	Dataset ds = dof.newDataset();
     	ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
+        ds.putOB( PrivateTags.StudyPk, Convert.toBytes(study.getPk().longValue()));
+        
     	log.debug("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
 		DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
-		Iterator iter = series.iterator();
+		
+		Iterator iter = (mapSeries == null) ? study.getSeries().iterator() : mapSeries.keySet().iterator();
 		while ( iter.hasNext() ) {
 			SeriesLocal sl = (SeriesLocal) iter.next();
 			Dataset dsSer = refSeriesSeq.addNewItem();
 			dsSer.putUI( Tags.SeriesInstanceUID, sl.getSeriesIuid() );
-			Collection colInstances = ( instances != null && series.size() == 1 ) ? instances : sl.getInstances();
-			Iterator iter2 = colInstances.iterator();
+			Collection instances = (mapSeries == null) ? sl.getInstances() : (Collection)mapSeries.get(sl);
+			Iterator iter2 = instances.iterator();
 			DcmElement refSopSeq = null;
 			if ( iter2.hasNext() )
 				refSopSeq = dsSer.putSQ( Tags.RefSOPSeq );
