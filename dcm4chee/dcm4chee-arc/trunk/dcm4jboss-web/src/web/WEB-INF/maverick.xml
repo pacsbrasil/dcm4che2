@@ -7,6 +7,7 @@
 default-transform-type="xslt">
   <modules>
     <view-factory type="domify" provider="org.infohazard.maverick.opt.view.DomifyViewFactory" />
+	<shunt-factory provider="org.dcm4chex.archive.web.maverick.shunt.LanguageShuntFactory"/>
   </modules>
 
   <views>
@@ -26,13 +27,20 @@ default-transform-type="xslt">
       <transform path="logout.xsl" />
     </view>
   </views>
+  <views mode="de">
+    <view id="folder" name="folder">
+      <transform path="de/folder.xsl" />
+    </view>
+    <view id="trash" name="trash">
+      <transform path="de/trash.xsl" />
+    </view>
+  </views>
 
   <commands>
     <command name="folder">
       <controller class="org.dcm4chex.archive.web.maverick.FolderCtrl" />
       <view ref="folder" />
       <view ref="logout" />
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="foldersubmit">
@@ -47,7 +55,6 @@ default-transform-type="xslt">
       <view ref="logout" />
 	  <view name="exportSelector" type="redirect" path="tfSelector.m"/>
 	  <view name="xdsi_export" type="redirect" path="xdsiExport.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
 
@@ -56,7 +63,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandPatientCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandStudy">
@@ -64,7 +70,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandStudyCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandSeries">
@@ -72,7 +77,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandSeriesCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandInstance">
@@ -80,7 +84,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.ExpandInstanceCtrl" />
 
 	  <view name="success" type="redirect" path="folder.m"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="patientEdit">
@@ -88,14 +91,12 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="patient_edit.xsl" />
 	    </view>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="patientUpdate">
         <controller class="org.dcm4chex.archive.web.maverick.PatientUpdateCtrl" />    
 	    <view type="redirect" path="folder.m" name="success"/>        
 	  <view name="error" type="redirect" path="patientEdit.m?pk=-1"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="patientMerge">
@@ -103,7 +104,6 @@ default-transform-type="xslt">
 	    <view type="redirect" path="foldersubmit.m?filter=" name="success"/>        
 	    <view type="redirect" path="mpps_console.m?filter.x=1" name="mpps_link"/>        
 	    <view ref="error" />
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="studyEdit">
@@ -111,7 +111,6 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="study_edit.xsl" />
 	    </view>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
  
     <command name="studyView">
@@ -120,7 +119,6 @@ default-transform-type="xslt">
     	  <transform path="study_view.xsl" />
 	    </view>
 	  <view name="select" type="redirect" path="folder.m?showWithoutStudies=false"/>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="koView">
@@ -128,7 +126,6 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="ko_view.xsl" />
 	    </view>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
      
      <command name="addWorklist">
@@ -151,7 +148,6 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="series_edit.xsl" />
 	    </view>
-	  <view name="sessionChanged" type="redirect" path="foldersubmit.m?sessionChanged=true"/>
      </command>
 
     <command name="seriesUpdate">
@@ -166,7 +162,6 @@ default-transform-type="xslt">
 		<view ref="trash" />
 	  	<view name="folder" type="redirect" path="folder.m"/>
       	<view ref="logout" />
-	  	<view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandTrashPatient">
@@ -174,7 +169,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashPatientCtrl" />
 
 	  <view name="success" type="redirect" path="trashfolder.m"/>
-	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandTrashStudy">
@@ -182,7 +176,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashStudyCtrl" />
 
 	  <view name="success" type="redirect" path="trashfolder.m"/>
-	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
     </command>
 
     <command name="expandTrashSeries">
@@ -190,7 +183,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashSeriesCtrl" />
 
 	  <view name="success" type="redirect" path="trashfolder.m"/>
-	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
     </command>
     
     <command name="expandTrashInstance">
@@ -198,7 +190,6 @@ default-transform-type="xslt">
       class="org.dcm4chex.archive.web.maverick.trash.ExpandTrashInstanceCtrl" />
 
 	  <view name="success" type="redirect" path="trashfolder.m"/>
-	  <view name="sessionChanged" type="redirect" path="trashfoldersubmit.m?sessionChanged=true"/>
     </command>
 
 	<!-- ****** AE related commands ******-->
