@@ -80,7 +80,7 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
         try {
             HttpServletRequest request = getCtx().getRequest();
     		model = GPWLModel.getModel(request);
-    		model.setPopupMsg(null);
+    		model.clearPopupMsg();
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
 	        		checkFilter( request );
@@ -98,7 +98,7 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
         		String[] gpspsIDs = getSPSIds(request);
         		if ( gpspsIDs == null || gpspsIDs.length < 1) {
-        			model.setPopupMsg("No Worklist Entry selected!");
+        			model.setPopupMsg("gpwl.err_delete_selection", "");
         		} else {
         			for ( int i = 0 ; i < gpspsIDs.length ; i++ ) {
         				delegate.deleteGPWLEntry( gpspsIDs[i] );
@@ -139,7 +139,7 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
                 this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
                 return INSPECT;
             } else {
-                model.setPopupMsg("GPWL Entry not found! SPS ID:"+iuid);
+                model.setPopupMsg("gpwl.err_inspect",iuid);
             }
         }
         return SUCCESS;   

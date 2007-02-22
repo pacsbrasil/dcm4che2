@@ -188,7 +188,7 @@ public class FolderForm extends BasicFolderForm {
             }
         }
         form.setErrorCode( NO_ERROR ); //reset error code
-		form.setPopupMsg(null);
+		form.clearPopupMsg();
         
         return form;
     }
@@ -421,9 +421,8 @@ public class FolderForm extends BasicFolderForm {
 	 * @param ctx
 	 * @param string
 	 */
-	public static void setExternalPopupMsg(ControllerContext ctx, String msg) {
-		getFolderForm(ctx).setExternalPopupMsg(msg);
-		
+	public static void setExternalPopupMsg(ControllerContext ctx, String msgId, String[] args) {
+		getFolderForm(ctx).setExternalPopupMsg(msgId, args);
 	}
 
 }

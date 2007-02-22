@@ -54,7 +54,6 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	private String passwd = null;
 	private String passwd1 = null;
 	private DCMUser user = new DCMUser("",null);
-	private String newPar = null;
 	private String cancelPar = null;
 	
 	private static Logger log = Logger.getLogger(UserEditSubmitCtrl.class.getName());
@@ -75,7 +74,6 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	 * @param newPar The newPar to set.
 	 */
 	public void setNew(String newPar) {
-		this.newPar = newPar;
 	}
 	/**
 	 * @param passwd The passwd to set.
@@ -137,7 +135,7 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	{
 		UserAdminModel model = UserAdminModel.getModel(this.getCtx().getRequest());
 		model.setErrorCode("OK");
-		model.setPopupMsg(null);
+		model.clearPopupMsg();
 		if ( !model.isAdmin()) {
 			log.warn("Illegal access to UserEditSubmitCtrl! User "+this.getCtx().getRequest().getUserPrincipal()+"is not in role WebAdmin!");
 			return "error";
@@ -149,7 +147,7 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 				String userID = user.getUserID();
 				if ( userID == null || userID.trim().length() < 3 ) {
 					model.setEditUser(user);
-					model.setPopupMsg("UserID is too short! You have to type a user ID with at least 3 characters!");
+					model.setPopupMsg("admin.err_edit_userid", userID);
 					return "passwd_mismatch";
 				}
 				if ( passwd.equals(passwd1)) {
@@ -159,13 +157,13 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 						}
 					} else {
 						model.setEditUser(user);
-						model.setPopupMsg("Password is too short! You have to type a password with at least 3 characters!");
+						model.setPopupMsg("admin.err_chgpwd_short",userID);
 						return "passwd_mismatch";
 						
 					}
 				} else {
 					model.setEditUser(user);
-					model.setPopupMsg("Password mismatch! You have to type the same password in both password field!");
+					model.setPopupMsg("admin.err_chgpwd_newpwd",userID);
 					return "passwd_mismatch";
 				}
 			}

@@ -73,11 +73,11 @@ public class TFSelectorCtrl extends Dcm4cheeFormController {
     	TFModel model = (TFModel) getForm();
         try {
         	if ( model.getNumberOfInstances() < 1) {
-        		FolderForm.setExternalPopupMsg(getCtx(),"Nothing selected for export! Please select at least one patient, study, series or instance");
+        		FolderForm.setExternalPopupMsg(getCtx(),"tf.err_selection", null);
         		return CANCEL;
         	}
         	model.setErrorCode("OK");
-        	model.setPopupMsg(null);
+        	model.clearPopupMsg();
         	HttpServletRequest rq = getCtx().getRequest();
         	model.getManifestModel().fillParams(rq);
         	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
@@ -95,7 +95,7 @@ public class TFSelectorCtrl extends Dcm4cheeFormController {
         	}
             return TFSELECT;//Show selection page for docTitle, delay reason,..
         } catch (Exception x) {
-        	model.setPopupMsg("Error:"+x.getMessage());
+        	model.setPopupMsg("tf.err",x.getMessage());
         	return ERROR;
         }
     }

@@ -116,7 +116,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         try {
             FolderForm folderForm = (FolderForm) getForm();
     		folderForm.setErrorCode( FolderForm.NO_ERROR );//reset error code
-    		folderForm.setPopupMsg(null);
+    		folderForm.clearPopupMsg();
             HttpServletRequest rq = getCtx().getRequest();
             if ( rq.getParameter("accNr") != null ) {
             	log.warn("Somebody tried AutoLogin for web folder! Denied!");
@@ -139,11 +139,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		        log.debug( "UserPrincipal is in role "+DCMUser.DATACARE_USER+":"+rq.isUserInRole(DCMUser.DATACARE_USER) );
 		        log.debug( "UserPrincipal is in role "+DCMUser.JBOSSADMIN+":"+rq.isUserInRole(DCMUser.JBOSSADMIN) );
 		        log.debug( "UserPrincipal is in role "+DCMUser.ARRUSER+":"+rq.isUserInRole(DCMUser.ARRUSER) );
-            }
-            if (rq.getParameter("sessionChanged") != null ) {
-            	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
-            	rq.getSession().setAttribute("dcm4chee-session", "RELOADED");
-            	return query(true); 
             }
         	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if ( (folderForm.getTotal() < 1 && !"true".equals(getCtx().getServletConfig().getInitParameter("startWithoutQuery" ) ) )
@@ -500,7 +495,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		TFModel.getModel( getCtx().getRequest() ).setInstances(instances); 
     	} catch ( Exception x ) {
     		log.error("Error in export Teaching File:", x);
-    		folderForm.setPopupMsg("Error:"+x.getMessage());
+    		folderForm.setPopupMsg("folder.err_tf",x.getMessage());
     		return FOLDER;
     	}
 		return EXPORT_SELECTOR;
@@ -529,7 +524,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		XDSIModel.getModel( getCtx().getRequest() ).setInstances(instances); 
     	} catch ( Exception x ) {
     		log.error("Error in XDSI export! :", x);
-    		folderForm.setPopupMsg("Error:"+x.getMessage());
+    		folderForm.setPopupMsg("folder.err_xdsi",x.getMessage());
     		return FOLDER;
     	}
 		return XDSI_EXPORT;

@@ -39,7 +39,10 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -120,7 +123,8 @@ public class KeyObjectViewCtrl extends Dcm4cheeFormController {
         		}
         	}
         } catch (Exception x ) {
-            popupMsg = "Failure opening WebViewer: "+x.getMessage();
+            popupMsg = MessageFormat.format(ResourceBundle.getBundle("messages")
+                    .getString("koview.err"), new String[]{x.getMessage()});
         }
         return SUCCESS;
     }

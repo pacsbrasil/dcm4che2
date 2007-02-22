@@ -61,7 +61,7 @@ public class AEEditCtrl extends AEFormCtrl
 		}
 		catch (Exception e)
 		{
-			model.setPopupMsg("Failed to open AE Editor! Reason:"+e.getMessage());
+			model.setPopupMsg("ae.err",e.getMessage());
 			return FAILED;
 		}	
 	}

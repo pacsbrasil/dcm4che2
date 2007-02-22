@@ -87,11 +87,11 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
                 model.setPdfExport(false);
             }
         	if ( model.getNumberOfInstances() < 1) {
-    			FolderForm.setExternalPopupMsg(this.getCtx(),"Nothing selected for export! Please select at least one patient, study, series or instance");
+    			FolderForm.setExternalPopupMsg(this.getCtx(),"xdsi.err_selection", null);
     			return CANCEL;
         	}
         	model.setErrorCode("OK");
-        	model.setPopupMsg(null);
+        	model.clearPopupMsg();
         	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
         		return CANCEL;
         	}
@@ -114,16 +114,16 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
 
             if ( rq.getParameter("export") != null || rq.getParameter("export.x") != null ) {
 	        	if ( ! delegate.exportXDSI(model) ) {
-	        		model.setPopupMsg("XDS-I Export failed!");
+	        		model.setPopupMsg("xdsi.err_failed","");
 	        		return XDSI_EXPORT;
 	        	}
 	    		clear(model, false);
-	    		FolderForm.setExternalPopupMsg(getCtx(), "XDS-I Export done!");
+	    		FolderForm.setExternalPopupMsg(getCtx(), "xdsi.done", null);
 	        	return SUCCESS;//export done
         	}
             return XDSI_EXPORT;//Show selection page for authorRole, ... selection
         } catch (Exception x) {
-        	model.setPopupMsg("Error:"+x.getMessage());
+        	model.setPopupMsg("xdsi.err",x.getMessage());
         	return ERROR;
         }
     }

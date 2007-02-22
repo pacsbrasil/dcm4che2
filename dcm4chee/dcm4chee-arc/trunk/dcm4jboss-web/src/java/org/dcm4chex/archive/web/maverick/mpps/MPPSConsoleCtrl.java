@@ -46,7 +46,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
-import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 
 /**
  * @author franz.willer
@@ -80,7 +79,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
             HttpServletRequest request = getCtx().getRequest();
     		model = MPPSModel.getModel(request);
     		model.setErrorCode( MPPSModel.NO_ERROR );
-    		model.setPopupMsg(null);
+    		model.clearPopupMsg();
     		model.setMppsIUIDs( request.getParameterValues("mppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
@@ -104,7 +103,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 	            	model.setMppsIUIDs(null, false);
 	            	model.filterWorkList( true );
             	} else {
-            		model.setPopupMsg("Please select at least one MPPS entry!");
+            		model.setPopupMsg("mpps.err_delete","");
             	}
             } else {
             	String action = request.getParameter("action");
@@ -114,7 +113,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
             }
             return SUCCESS;
         } catch (Exception e) {
-            model.setPopupMsg(e.getMessage());
+            model.setPopupMsg("mpps.err",e.getMessage());
             return "error";
         }
     }
@@ -126,7 +125,6 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 	private String performAction(String action, HttpServletRequest request) {
 		if ( "linkDone".equals(action) ) {
         	model.filterWorkList( false );
-			model.setPopupMsg( MWLModel.getModel( request ).getPopupMsg() ); //popup message of doLink is set in MWL!
 		} else if ( "unlink".equals(action) ) {
 			return unlink(request.getParameterValues( "mppsIUID" ));
 		} else if ( "inspect".equals(action) ) {
@@ -145,7 +143,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 				model.setMppsIUIDs(null, false);
 				model.filterWorkList( false );
 			} else {
-				model.setPopupMsg("Unlink failed!");
+				model.setPopupMsg("mpps.err_unlink", "");
 			}
 		}
 		return SUCCESS;
@@ -159,7 +157,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
                 this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
                 return INSPECT;
             } else {
-                model.setPopupMsg("MPPS Entry not found! MPPS IUID:"+mppsIUID);
+                model.setPopupMsg("mpps.err_inspect",mppsIUID);
             }
         }
         return SUCCESS;

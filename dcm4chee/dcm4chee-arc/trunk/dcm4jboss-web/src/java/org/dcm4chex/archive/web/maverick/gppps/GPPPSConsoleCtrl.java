@@ -46,7 +46,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSEntry;
 import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSModel;
-import org.dcm4chex.archive.web.maverick.gpwl.model.GPWLEntry;
 
 /**
  * @author franz.willer
@@ -80,7 +79,7 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
             HttpServletRequest request = getCtx().getRequest();
     		model = GPPPSModel.getModel(request);
     		model.setErrorCode( GPPPSModel.NO_ERROR );
-    		model.setPopupMsg(null);
+    		model.clearPopupMsg();
     		model.setGpppsIUIDs( request.getParameterValues("gpppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
@@ -103,7 +102,7 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
 	            	model.setGpppsIUIDs(null, false);
 	            	model.filterWorkList( true );
             	} else {
-            		model.setPopupMsg("Please select at least one GPPPS entry!");
+            		model.setPopupMsg("gppps.err_delete_selection","");
             	}
             } else {
             	String action = request.getParameter("action");
@@ -113,7 +112,7 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
             }
             return SUCCESS;
         } catch (Exception e) {
-            model.setPopupMsg(e.getMessage());
+            model.setPopupMsg("gppps.err", e.getMessage());
             return "error";
         }
     }
@@ -139,7 +138,7 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
                 this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
                 return INSPECT;
             } else {
-                model.setPopupMsg("GPPPS Entry not found! IUID:"+iuid);
+                model.setPopupMsg("gppps.err_inspect",iuid);
             }
         }
         return SUCCESS;   

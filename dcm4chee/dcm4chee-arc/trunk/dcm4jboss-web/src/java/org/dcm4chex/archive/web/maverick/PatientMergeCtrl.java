@@ -70,7 +70,7 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
             if (merge != null) executeMerge();
             return view_name;
         } catch (Exception e1) {
-        	((FolderForm) getForm()).setPopupMsg("Merge failed! reason:"+e1.getMessage());
+        	((FolderForm) getForm()).setPopupMsg("folder.err_merge",e1.getMessage());
             return view_name;
         }
     }

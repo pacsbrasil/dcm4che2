@@ -40,19 +40,14 @@
 package org.dcm4chex.archive.web.maverick.xdsi;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 import org.dcm4chex.archive.web.maverick.util.CodeItem;
 import org.dcm4chex.archive.xdsi.XDSIService;
@@ -64,13 +59,13 @@ import org.dcm4chex.archive.xdsi.XDSIService;
  */
 public class XDSIModel extends BasicFormModel {
 
-	/** The session attribute name to store the model in http session. */
+	private static final String PROP_USER = "user";
+
+    /** The session attribute name to store the model in http session. */
 	public static final String XDSI_ATTR_NAME = "xdsiModel";
 	
     private static Logger log = Logger.getLogger( XDSIModel.class.getName() );
 
-	private String user;
-	
 	private Set instances;
 	
 	private boolean exportPDF;
@@ -98,7 +93,7 @@ public class XDSIModel extends BasicFormModel {
 	 */
 	private XDSIModel(String user, HttpServletRequest request) {
 		super(request);
-		this.user = user;
+		props.setProperty(PROP_USER, user != null ? user : request.getRemoteUser());
 	}
 	
 	public void setMetadataProperties(Properties props) {
@@ -117,7 +112,7 @@ public class XDSIModel extends BasicFormModel {
 	 * @return Returns the user.
 	 */
 	public String getUser() {
-		return user;
+		return props.getProperty(PROP_USER);
 	}
 	
 	/**

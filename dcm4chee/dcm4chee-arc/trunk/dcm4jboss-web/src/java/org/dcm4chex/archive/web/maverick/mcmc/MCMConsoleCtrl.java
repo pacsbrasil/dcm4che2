@@ -78,9 +78,9 @@ public class MCMConsoleCtrl extends Dcm4cheeFormController {
         try {
             HttpServletRequest request = getCtx().getRequest();
     		model = MCMModel.getModel(request);
-    		model.setPopupMsg(null);
+    		model.clearPopupMsg();
     		if ( getPermissions().getPermissionsForApp("offline_storage").isEmpty() ) {
-    			model.setPopupMsg("Access denied!");
+    			model.setPopupMsg("mcm.access_denied", model.getCurrentUser());
     			return SUCCESS;
     		}
     		model.setErrorCode( MCMModel.NO_ERROR );
@@ -140,7 +140,7 @@ public class MCMConsoleCtrl extends Dcm4cheeFormController {
            	}
 		} else if ( action.equalsIgnoreCase("delete") ) {
     		if ( !model.isAdmin() ) {
-    			model.setPopupMsg("You are not allowed to delete Media Creation Managment items!!");
+    			model.setPopupMsg("mcm.err_delete_notadmin", model.getCurrentUser());
     			return;
     		}
 			if ( ! delegate.deleteMedia( Integer.parseInt( request.getParameter("mediaPk"))) ) {

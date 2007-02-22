@@ -79,7 +79,6 @@ public class ContentEditDelegate {
                     new Object[] { ds },
                     new String[] { Dataset.class.getName() });
         } catch (Throwable t) {
-            log.warn("Failed to create Patient:", t);
             while ( t.getCause() != null) {
             	t = t.getCause();
             }

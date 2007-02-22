@@ -39,6 +39,10 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
@@ -49,6 +53,8 @@ import org.dcm4chex.archive.web.maverick.admin.DCMUser;
  * @since 13.02.2006
  */
 public abstract class BasicFormModel {
+
+    private static final String RESOURCE_BUNDLE_MESSAGES = "messages";
 
     public static final String NO_ERROR ="OK";
 
@@ -62,13 +68,26 @@ public abstract class BasicFormModel {
     private String popupMsg = null;
     /** externalPopup message (from a foreign controller) */
     private String externalPopupMsg = null;
+    private Locale locale = Locale.ENGLISH;
+    private ResourceBundle[] messages;
+
     
 	protected BasicFormModel( HttpServletRequest request ) {
 		currentUser = request.getUserPrincipal().getName();
     	admin = request.isUserInRole(DCMUser.WEBADMIN);
+        messages = (ResourceBundle[]) request.getSession().getAttribute("dcm4chee-web-messages");
+        if ( messages == null ) {
+            Locale.setDefault(locale);
+            messages = new ResourceBundle[]{ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale)};
+            request.getSession().setAttribute("dcm4chee-web-messages", messages);
+        }
    }
 	
 	public String getModelName() { return "BASIC"; }
+
+    protected String formatMessage(String key, String[] args) {
+        return MessageFormat.format(messages[0].getString(key), args);
+    }
 
 	/**
 	 * @return Returns the currentUser.
@@ -106,12 +125,16 @@ public abstract class BasicFormModel {
 		}
 		return popupMsg;
 	}
-	/**
-	 * @param popupMsg The popupMsg to set.
-	 */
-	public void setPopupMsg(String popupMsg) {
-		this.popupMsg = popupMsg;
-	}
+
+    public void clearPopupMsg() {
+        this.popupMsg = null;
+    }
+    public void setPopupMsg(String msgId, String arg) {
+        setPopupMsg(msgId, new String[]{arg});
+    }
+    public void setPopupMsg(String msgId, String[] args) {
+        this.popupMsg = msgId != null ? formatMessage(msgId, args) : null;
+    }
 
 	/**
 	 * @return Returns the externalPopupMsg.
@@ -122,7 +145,27 @@ public abstract class BasicFormModel {
 	/**
 	 * @param externalPopupMsg The externalPopupMsg to set.
 	 */
-	public void setExternalPopupMsg(String externalPopupMsg) {
-		this.externalPopupMsg = externalPopupMsg;
+	public void setExternalPopupMsg(String msgId, String[] args) {
+		this.externalPopupMsg = formatMessage(msgId, args);
 	}
+
+    /**
+     * @return the locale
+     */
+    public String getLanguage() {
+        return locale.getLanguage();
+    }
+
+    /**
+     * @param locale the locale to set
+     */
+    public void setLanguage(String arg) {
+        if ( arg == null || arg.trim().length() < 2) return;
+        Locale l = new Locale(arg);
+        if ( ! l.equals(locale) ) {
+            this.locale = l;
+            Locale.setDefault(locale);
+            messages[0] = ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale);
+        }
+    }
 }

@@ -50,13 +50,13 @@ public class AEDeleteCtrl extends AEFormCtrl
 	protected String perform() throws Exception
 	{
 		AEModel model = AEModel.getModel(getCtx().getRequest());
-		model.setPopupMsg(null);
+        model.clearPopupMsg();
 		try
 		{
 			lookupAEDelegate().delAE(model.getAE().getTitle());
 		} catch (Throwable e)
 		{
-			model.setPopupMsg("Failed to delete AE Title:"+model.getAE().getTitle()+"!");
+			model.setPopupMsg("ae.err_delete", model.getAE().getTitle());
 		}
 		return SUCCESS;				
 	}	

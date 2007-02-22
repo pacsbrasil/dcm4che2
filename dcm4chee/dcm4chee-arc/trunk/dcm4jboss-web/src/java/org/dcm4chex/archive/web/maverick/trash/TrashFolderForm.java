@@ -81,7 +81,7 @@ public class TrashFolderForm extends BasicFolderForm {
             }
         }
         form.setErrorCode( NO_ERROR ); //reset error code
-		form.setPopupMsg(null);
+		form.clearPopupMsg();
         
         return form;
     }

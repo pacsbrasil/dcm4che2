@@ -133,7 +133,7 @@ public class UserAdminModel extends BasicFormModel {
 	public DCMUser createUser( DCMUser user, String passwd ) {
 		if ( getUserList().contains( user ) ) {
 			log.warn("Cant create user! UserID "+user.getUserID()+" already exists!");
-			this.setPopupMsg("Cant create user! UserID "+user.getUserID()+" already exists!");
+			setPopupMsg("admin.user_exists", user.getUserID());
 			editUser = user;
 			return null;
 		} else {
@@ -143,7 +143,7 @@ public class UserAdminModel extends BasicFormModel {
 				delegate.addUser(user.getUserID(), hashedPasswd, user.roles());
 			} catch (Exception e) {
 				log.error("Cant create new user "+userID+" with roles "+user.roles(), e);
-				this.setPopupMsg("Cant create user "+userID+"! Exception:"+e.getMessage());
+				this.setPopupMsg("admin.err_create", new String[]{userID,e.getMessage()});
 				return null;
 			}
 			log.info("User "+user+" created! roles:"+user.roles());
@@ -169,12 +169,11 @@ public class UserAdminModel extends BasicFormModel {
 		} else {
 			String userID = ((DCMUser)getUserList().get(idx)).getUserID();
 			Collection roles = user.roles();
-			String role;
 			try {
 				delegate.updateUser(userID, roles);
 			} catch (Exception e) {
 				log.error("Cant update user "+userID+" with roles "+roles, e);
-				this.setPopupMsg( "Cant update user "+userID+"! Exception:"+e.getMessage());
+				this.setPopupMsg( "admin.err_update", new String[]{userID,e.getMessage()});
 				return null;
 			}
 			log.info("User "+userID+" updated:"+user);
@@ -193,7 +192,7 @@ public class UserAdminModel extends BasicFormModel {
 		} catch (Exception e) {
 			log.error("Cant change password for user "+user);
 		}
-		this.setPopupMsg( "Cant change password for user "+user);
+		this.setPopupMsg( "admin.err_chgpwd",user);
 		return false;
 	}
 	
@@ -240,7 +239,7 @@ public class UserAdminModel extends BasicFormModel {
 			delegate.removeUser( userID );
 		} catch (Exception e) {
 			log.error("Cant delete user "+userID, e );
-			this.setPopupMsg( "Cant delete user "+userID+"! Reason:"+e.getMessage());
+			setPopupMsg( "admin.err_delete", new String[]{userID, e.getMessage()});
 			return false;
 		}
 		return true;
@@ -255,7 +254,7 @@ public class UserAdminModel extends BasicFormModel {
 			userList = delegate.queryUsers();
 		} catch ( Exception x ) {
 			log.error("Cant query user list!", x);
-			this.setPopupMsg( "Cant query user list! Exception:"+x.getMessage());
+			setPopupMsg( "admin.err_query",x.getMessage());
 		}
 	}
 	
@@ -272,17 +271,14 @@ public class UserAdminModel extends BasicFormModel {
 		{
 		   final MessageDigest digest = MessageDigest.getInstance("SHA");
 		   byte[] hashBytes = digest.digest((password).getBytes("UTF-8"));
-		   System.out.println("Create Hash: original string=" + password+ 
-		   		", bytes=" + (password).getBytes("UTF-8").toString() + 
-				", hashBytes=" + hashBytes.toString());
 		   return hashBytes;
 		} catch ( NoSuchAlgorithmException ex ) {
 			log.error("Cannot create safe password!", ex);
-			this.setPopupMsg( "Cannot create safe password! Exception:" + ex.getMessage());
+			setPopupMsg( "admin.err_pwdhash", ex.getMessage());
 			return new byte[0];
 		} catch ( UnsupportedEncodingException ex ) {
 			log.error("Cannot convert to UTF-8!", ex);
-			this.setPopupMsg( "Cannot convert to UTF-8! Exception:" + ex.getMessage());
+			setPopupMsg( "admin.err_pwdhash", ex.getMessage());
 			return new byte[0];
 		}
 	}

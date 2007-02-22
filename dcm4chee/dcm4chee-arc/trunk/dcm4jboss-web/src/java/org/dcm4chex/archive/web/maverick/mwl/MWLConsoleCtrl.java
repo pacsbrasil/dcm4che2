@@ -83,7 +83,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             HttpServletRequest request = getCtx().getRequest();
     		model = MWLModel.getModel(request);
     		model.setErrorCode( MWLModel.NO_ERROR );
-    		model.setPopupMsg(null);
+    		model.clearPopupMsg();
     		model.setPatMergeAttributes(null);
             if ( request.getParameter("filter.x") != null ) {//action from filter button
             	try {
@@ -106,7 +106,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
         		String[] spsIDs = getSPSIds(request);
         		if ( spsIDs == null || spsIDs.length < 1) {
-        			model.setPopupMsg("No Worklist Entry selected!");
+        			model.setPopupMsg("mwl.err_delete", "");
         		} else {
         			for ( int i = 0 ; i < spsIDs.length ; i++ ) {
         				delegate.deleteMWLEntry( spsIDs[i] );
@@ -176,13 +176,14 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 		model.setMppsIDs(null);
 		String[] spsIDs = getSPSIds(request);
 		if ( spsIDs == null || spsIDs.length < 1) {
-			model.setPopupMsg("No Worklist Entry selected!");
+			model.setPopupMsg("mwl.err_link_selection", "");
 			return SUCCESS;
 		} else if ( spsIDs.length > 1 ) {
 			String patID = (String) model.getMWLEntry(spsIDs[0]).getPatientID();
 			for ( int i = 1 ; i < spsIDs.length ; i++ ) {
 				if ( ! patID.equals(model.getMWLEntry(spsIDs[i]).getPatientID())) {
-					model.setPopupMsg("All selected Worklist Entries must be from the same patient!");
+					model.setPopupMsg("mwl.err_link_pat", 
+                            new String[]{patID,model.getMWLEntry(spsIDs[i]).getPatientID()});
 					return SUCCESS;
 				}
 			}
@@ -190,7 +191,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 		if ( mppsIUIDs != null ) {
 			Map map = delegate.linkMppsToMwl( spsIDs, mppsIUIDs );
 			if ( map == null ) {
-				model.setPopupMsg("Link selected MPPS to selected MWL failed!");
+				MPPSModel.getModel(request).setExternalPopupMsg("mwl.err_link_failed", null);
 			} else if ( map.get("dominant") != null ) {
 				model.setPatMergeAttributes(map);
 				return "mergePatient";
@@ -206,7 +207,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
                 this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
                 return INSPECT;
             } else {
-                model.setPopupMsg("MWL Entry not found! SPS ID:"+spsID);
+                model.setPopupMsg("mwl.err_inspect",spsID);
             }
         }
 	    return SUCCESS;   

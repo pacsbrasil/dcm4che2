@@ -187,10 +187,6 @@ public class XDSIExportDelegate {
         }
 	}
 
-	private Dataset getBasicDS(Collection instances ) throws Exception {
-    	String iuid = instances.iterator().next().toString();
-    	return lookupContentManager().getInstanceInfo( iuid, false);
-    }
 	/**
 	 * @param xdsiModel
 	 * @return

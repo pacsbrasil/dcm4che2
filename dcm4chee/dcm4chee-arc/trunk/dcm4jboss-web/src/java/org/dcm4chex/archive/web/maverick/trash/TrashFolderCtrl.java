@@ -99,7 +99,7 @@ public class TrashFolderCtrl extends FolderCtrl {
             TrashFolderForm folderForm = (TrashFolderForm) getForm();
         	if ( getPermissions().getPermissionsForApp("trash") == null ) return FOLDER;
     		folderForm.setErrorCode( TrashFolderForm.NO_ERROR );//reset error code
-    		folderForm.setPopupMsg(null);
+    		folderForm.clearPopupMsg();
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
@@ -111,11 +111,6 @@ public class TrashFolderCtrl extends FolderCtrl {
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
             	return logout();
             
-            if (rq.getParameter("sessionChanged") != null ) {
-            	folderForm.setPopupMsg("Session changed! Reloaded view with empty filter!");
-            	rq.getSession().setAttribute("dcm4chee-session", "RELOADED");
-            	return query(true); 
-            }
         	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if (folderForm.getTotal() < 1 || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }

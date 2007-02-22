@@ -55,7 +55,7 @@ public class AENewSubmitCtrl extends AEFormCtrl
 	{
 		HttpServletRequest request = getCtx().getRequest();
 		AEModel model = AEModel.getModel(request);
-		model.setPopupMsg(null);
+        model.clearPopupMsg();
 		AEData ae = model.getAE();
 		if (request.getParameter("new") != null )
 		{
@@ -66,7 +66,7 @@ public class AENewSubmitCtrl extends AEFormCtrl
 				return SUCCESS;
 			} catch (Throwable e)
 			{
-				model.setPopupMsg("Failed to create new AE Title:"+ae+"! Reason:"+e.getMessage());
+				model.setPopupMsg("ae.err_create", new String[]{ae.toString(),e.getMessage()});
 				return FAILED;				
 			}
 		}

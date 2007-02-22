@@ -59,7 +59,7 @@ public class AEListCtrl extends AEFormCtrl
 
 	protected String perform() throws Exception 
 	{
-		AEModel.getModel(getCtx().getRequest()).setPopupMsg(null);
+		AEModel.getModel(getCtx().getRequest()).clearPopupMsg();
 		return SUCCESS;
 	}    
 	

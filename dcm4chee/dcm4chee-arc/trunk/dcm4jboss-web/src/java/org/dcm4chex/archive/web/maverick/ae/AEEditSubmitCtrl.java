@@ -55,7 +55,7 @@ public class AEEditSubmitCtrl extends AEFormCtrl
 	{
 		HttpServletRequest request = getCtx().getRequest();
 		AEModel model = AEModel.getModel(request);
-		model.setPopupMsg(null);
+        model.clearPopupMsg();
 		AEDelegate delegate = lookupAEDelegate();
 		if (request.getParameter("update") != null)
 		{
@@ -67,11 +67,11 @@ public class AEEditSubmitCtrl extends AEFormCtrl
 			} catch (Throwable e) {
 				Throwable t = e.getCause();
 				if ( t == null ) t = e;
-				model.setPopupMsg("Failed to change AE Title! Reason:"+t.getMessage());
+				model.setPopupMsg("ae.err_chg",t.getMessage());
 				return "failed";
 			}
 		} else 	if (request.getParameter("echo") != null ) {
-			model.setPopupMsg( delegate.echo( model.getAE(), 5));
+			model.setPopupMsg( "ae.echo", delegate.echo( model.getAE(), 5));
 			return SUCCESS;
 		} else
 			return SUCCESS;

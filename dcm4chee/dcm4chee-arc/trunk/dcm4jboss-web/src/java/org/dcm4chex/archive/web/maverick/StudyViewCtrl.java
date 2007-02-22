@@ -40,8 +40,10 @@
 package org.dcm4chex.archive.web.maverick;
 
 import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -81,6 +83,8 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
     private int selectedSeries = 1;
    
     private String popupMsg = null;
+
+    private ResourceBundle messages;
     
     protected static Logger log = Logger.getLogger(StudyViewCtrl.class);
 
@@ -183,8 +187,8 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
         	String serIUID = seriesPk < 0 ? seriesUID:cm.getSeries( this.seriesPk ).getString( Tags.SeriesInstanceUID );
         	study = new StudyContainer( sopIUIDs, serIUID );
         } catch (Exception x ) {
-            popupMsg = "Cant open Webviewer for given id! Reason: "+x.getMessage();
-            log.error(popupMsg, x);
+            popupMsg = formatMessage("studyview.err",new String[]{x.getMessage()});
+            log.debug("Open WebViewer failed!",x);
         }
         return SUCCESS;
     }
@@ -204,8 +208,8 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
                 queryDS.putUI(Tags.StudyInstanceUID);
                 List l = new QueryStudiesCmd(queryDS, true, true).list(0, 10);
                 if ( l.size() < 1 ) {
-                    popupMsg = "No study found for Accession Number:"+accNr;
-                    log.warn(popupMsg);
+                    popupMsg = formatMessage("studyview.noAccNr",new String[]{accNr});
+                    log.warn("No study found for Accession Number:"+accNr);
                     return 0;
                 } 
                 if ( l.size() > 1 ) {
@@ -215,7 +219,7 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
                 } 
                 studyUID = ((Dataset) l.get(0)).getString( Tags.StudyInstanceUID );
             } else {
-                popupMsg = "StudyView call need either studyPk, studyUID or accNr!";
+                popupMsg = formatMessage("studyview.missingAttr",null);
                 log.warn("StudyView call need either studyPk, studyUID or accNr!");
                 return 0;
             }
@@ -224,7 +228,11 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
         studyPk = bb == null ? -1 : Convert.toLong(bb.array());
     	return 1;
     }
-    
+
+    private String formatMessage( String msgId, String[] args) {
+        if ( messages == null) messages = ResourceBundle.getBundle("messages");
+        return MessageFormat.format(messages.getString(msgId), args);
+    }
     private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);

@@ -91,20 +91,20 @@ public class UserChgPwdSubmitCtrl extends UserAdminCtrl
 	protected String perform() throws Exception
 	{
 		UserAdminModel model = UserAdminModel.getModel( getCtx().getRequest() );
-		model.setPopupMsg(null);
+		model.clearPopupMsg();
 		if ( cancelPar == null ) {
 			if ( passwd.equals(passwd1)) {
 				if ( passwd.trim().length() > 2 ) {
 					if ( ! model.changePassword( userID, oldPasswd, passwd ) ) {
-						model.setPopupMsg("Password not changed! Retry with correctly typed old and new password.");
+						model.setPopupMsg("admin.err_chgpwd_oldpwd", userID);
 						return "chgpwd_error";
 					}
 				} else {
-					model.setPopupMsg("Password is too short! You have to type a password with at least 3 characters!");
+					model.setPopupMsg("admin.err_chgpwd_short", userID);
 					return "chgpwd_error";
 				}
 			} else {
-				model.setPopupMsg("Password mismatch! You have to type the same password in both new password field!");
+				model.setPopupMsg("admin.err_chgpwd_newpwd", userID);
 				return "chgpwd_error";
 			}
 		}
