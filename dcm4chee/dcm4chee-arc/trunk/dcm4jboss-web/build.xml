@@ -16,6 +16,7 @@
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
 	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
 	<property name="maverick.jar" value="${lib.dir}/maverick.jar"/>
+	<property name="jdom.jar" value="${lib.dir}/jdom.jar"/>
 	<property name="commons-beanutils.jar" value="${lib.dir}/commons-beanutils.jar"/>
 
     <!-- Override with your dcm4che dist location -->
@@ -43,6 +44,7 @@
 
 	<property name="javasrc.dir" value="src/java"/>
 	<property name="classes.dir" value="${target.dir}/classes"/>
+	<property name="target.lib.dir" value="${target.dir}/lib"/>
 	<property name="web.dir" value="src/web"/>
 	<property name="etc.dir" value="src/etc"/>
 
@@ -52,6 +54,7 @@
 		<pathelement location="${j2ee.jar}"/>
 		<pathelement location="${log4j.jar}"/>
 		<pathelement location="${maverick.jar}"/>
+		<pathelement location="${jdom.jar}"/>
 		<pathelement location="${commons-beanutils.jar}"/>
 		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${dcm4chee-ejb-client.jar}"/>
@@ -77,10 +80,11 @@
 	</target>
 
    	<target name="jar" depends="classes">
-    	<tstamp>
+   		<mkdir dir="${target.lib.dir}"/>
+   		<tstamp>
             <format property="TODAY" pattern="dd.MM.yyyy"/>
         </tstamp>
-        <jar jarfile="${lib.dir}/dcm4chee-web.jar">
+        <jar jarfile="${target.lib.dir}/dcm4chee-web.jar">
         	<manifest>
 				<attribute name="Implementation-Title" value="dcm4chee"/>
 				<attribute name="Implementation-Version" value="Version:${version} (${TODAY})"/> 
@@ -102,12 +106,14 @@
 				<exclude name="WEB-INF/web.xml" />
 			</fileset>
 			<lib dir="${lib.dir}">
-				<include name="dcm4chee-web.jar" />
 				<include name="maverick.jar" />
 				<include name="commons-beanutils.jar" />
 				<include name="jdom.jar" />
 				<include name="domify.jar" />
 				<include name="opt-domify.jar" />
+			</lib>
+			<lib dir="${target.lib.dir}">
+				<include name="dcm4chee-web.jar" />
 			</lib>
 		</war>
 	</target>
