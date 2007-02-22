@@ -240,7 +240,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isFilePathComponents"
+      getMethod="getFilePathComponents"
       setMethod="setFilePathComponents">
       <description><![CDATA[Used to split directory path (mount point) from file path
       components in the (0040,E010) Retrieve URI, referring an already existing file
