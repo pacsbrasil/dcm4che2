@@ -96,7 +96,6 @@ public class UserAdminModel extends BasicFormModel {
 		if (model == null) {
 				model = new UserAdminModel(request);
 				request.getSession().setAttribute(USERMODEL_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
 	}

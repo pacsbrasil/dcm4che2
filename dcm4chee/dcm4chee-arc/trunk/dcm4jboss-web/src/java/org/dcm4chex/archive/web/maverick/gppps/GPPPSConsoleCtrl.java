@@ -78,7 +78,6 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
         try {
             HttpServletRequest request = getCtx().getRequest();
     		model = GPPPSModel.getModel(request);
-    		model.setErrorCode( GPPPSModel.NO_ERROR );
     		model.clearPopupMsg();
     		model.setGpppsIUIDs( request.getParameterValues("gpppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
@@ -86,7 +85,7 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
 	        		checkFilter( request );
 	            	model.filterWorkList( true );
             	} catch ( ParseException x ) {
-            		model.setErrorCode( ERROR_PARSE_DATETIME );
+            		model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd HH:mm" );
             	}
             } else if ( request.getParameter("prev.x") != null ) { 
         		model.performPrevious();

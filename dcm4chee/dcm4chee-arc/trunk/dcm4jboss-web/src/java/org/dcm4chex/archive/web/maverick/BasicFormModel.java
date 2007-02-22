@@ -56,13 +56,8 @@ public abstract class BasicFormModel {
 
     private static final String RESOURCE_BUNDLE_MESSAGES = "messages";
 
-    public static final String NO_ERROR ="OK";
-
     private String currentUser;
     private final boolean admin;
-    
-    /** Error code for rendering message. */
-    private String errorCode = NO_ERROR;
     
     /** Popup message */
     private String popupMsg = null;
@@ -102,16 +97,6 @@ public abstract class BasicFormModel {
 		return admin;
 	}
 	
-    
-    public final String getErrorCode() {
-    	return errorCode;
-    }
-    
-    
-    public final void setErrorCode( String err ) {
-    	errorCode = err;
-    }
-
 	/**
 	 * Returns the popup message.
 	 * <p>

@@ -90,7 +90,6 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
     			FolderForm.setExternalPopupMsg(this.getCtx(),"xdsi.err_selection", null);
     			return CANCEL;
         	}
-        	model.setErrorCode("OK");
         	model.clearPopupMsg();
         	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
         		return CANCEL;

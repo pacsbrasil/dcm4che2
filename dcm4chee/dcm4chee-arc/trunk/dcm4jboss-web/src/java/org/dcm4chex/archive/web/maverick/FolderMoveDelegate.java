@@ -107,8 +107,6 @@ public class FolderMoveDelegate {
     	if ( moveType != MOVE_ERROR) {
     		if (! this.checkStickyPlacement(srcDest[0], srcDest[1]) ) return false;
     		
-    		folderForm.setErrorCode( FolderForm.NO_ERROR );
-    		int[] iaSrc;
     		int iDest = srcDest[1];
     		ContentManager cm = null;
     		try {
@@ -127,7 +125,7 @@ public class FolderMoveDelegate {
 	    		ctrl.clearSticky();
 	    		ret = true;
     		} catch ( Exception x ) {
-        		folderForm.setErrorCode( FolderForm.ERROR_MOVE );
+        		folderForm.setPopupMsg("folder.err_move", x.getMessage() );
     			System.err.println("Exception:"+x);
     			x.printStackTrace(System.err);
     			
@@ -386,10 +384,10 @@ public class FolderMoveDelegate {
 			break;
 			
 		case 0x00:
-			folderForm.setErrorCode( FolderForm.ERROR_MOVE_NO_SELECTION );
+			folderForm.setPopupMsg( "folder.err_move_no_selection", "" );
 			break;
 		default:
-			folderForm.setErrorCode( FolderForm.ERROR_MOVE_NO_SOURCE );
+            folderForm.setPopupMsg( "folder.err_move_no_source", "" );
     	}
     	return new int[]{src,dest};
  	}
@@ -411,7 +409,7 @@ public class FolderMoveDelegate {
     private boolean checkStickyPlacement( int src, int dest ) {
 		Set stickyDst = getStickies( dest );
 		if ( stickyDst.size() > 1) {
-			folderForm.setErrorCode( FolderForm.ERROR_MOVE_TO_MANY_DEST );
+            folderForm.setPopupMsg( "folder.err_move_toManyDest", "" );
 			return false;
 		} 
 		Set stickySrc = getStickies( src );
@@ -420,11 +418,11 @@ public class FolderMoveDelegate {
 		int listParentSize = listDst.size()-1;
 		if ( listDst.get(listParentSize).equals( listSrc.get(listSrc.size()-1) ) ) {
 			if ( src == STUDY)
-				folderForm.setErrorCode( FolderForm.ERROR_MOVE_SAME_PATIENT );
+                folderForm.setPopupMsg( "folder.err_move_samePatient", "" );
 			else if ( src == SERIES)
-				folderForm.setErrorCode( FolderForm.ERROR_MOVE_SAME_STUDY );
+                folderForm.setPopupMsg( "folder.err_move_sameStudy", "" );
 			else if ( src == INSTANCE)
-				folderForm.setErrorCode( FolderForm.ERROR_MOVE_SAME_SERIES );
+                folderForm.setPopupMsg( "folder.err_move_sameSeries", "" );
 			return false; //same parent;
 		}
 		AbstractModel model = (AbstractModel) listSrc.get(listSrc.size()-2);//parent model of first child
@@ -433,11 +431,11 @@ public class FolderMoveDelegate {
 		while ( iter.hasNext() ) {
 			if ( !model.containsPK( Long.valueOf( iter.next().toString() ) ) ) {
 				if ( src == STUDY)
-					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_STUDY_PARENT );
+                    folderForm.setPopupMsg( "folder.err_move_diffStudyParent", "" );
 				else if ( src == SERIES)
-					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_SERIES_PARENT );
+                    folderForm.setPopupMsg( "folder.err_move_diffSeriesParent", "" );
 				else if ( src == INSTANCE)
-					folderForm.setErrorCode( FolderForm.ERROR_MOVE_DIFF_INSTANCE_PARENT );
+                    folderForm.setPopupMsg( "folder.err_move_diffInstanceParent", "" );
 				return false; //this child has not the same parent as first child element
 			}
 		}

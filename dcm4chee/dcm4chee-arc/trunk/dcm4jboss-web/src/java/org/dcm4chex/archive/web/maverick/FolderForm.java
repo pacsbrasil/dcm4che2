@@ -63,35 +63,6 @@ public class FolderForm extends BasicFolderForm {
 
     static final String FOLDER_ATTRNAME = "folderFrom";
 
-    /** Error code: General move Error. */
-    public static final String ERROR_MOVE ="moveError";
-    /** Error code: nothing is selected. */
-    public static final String ERROR_MOVE_NO_SELECTION ="moveError_noSelection";
-    /** Error code: More than one destination is selected. */
-    public static final String ERROR_MOVE_TO_MANY_DEST ="moveError_toManyDest";
-    /** Error code: No source is selected. */
-    public static final String ERROR_MOVE_NO_SOURCE ="moveError_noSource";
-    /** Error code: series and/or instances are selected. */
-    public static final String ERROR_MOVE_UNSELECT_SERIES ="moveError_unselectSeries";
-    /** Error code: series and/or instances are selected. */
-    public static final String ERROR_MOVE_UNSELECT_INSTANCES ="moveError_unselectInstances";
-    /** Error code: move studies to the same patient is not usefull. */
-    public static final String ERROR_MOVE_SAME_PATIENT ="moveError_samePatient";
-    /** Error code: move series to the same study is not usefull. */
-    public static final String ERROR_MOVE_SAME_STUDY ="moveError_sameStudy";
-    /** Error code: move instances to the same series is not usefull. */
-    public static final String ERROR_MOVE_SAME_SERIES ="moveError_sameSeries";
-    /** Error code: move series is only allowed between studies of the same patient. */
-    public static final String ERROR_MOVE_DIFF_PATIENT ="moveError_diffPatient";
-    /** Error code: move instances is only allowed between series of the same study. */
-    public static final String ERROR_MOVE_DIFF_STUDY ="moveError_diffStudy";
-    /** Error code: You can only move studies from one patient to another patient. */
-    public static final String ERROR_MOVE_DIFF_STUDY_PARENT ="moveError_diffStudyParent";
-    /** Error code: You can only move series from one study to another study. */
-    public static final String ERROR_MOVE_DIFF_SERIES_PARENT ="moveError_diffSeriesParent";
-    /** Error code: You can only move instances from one series to another series. */
-    public static final String ERROR_MOVE_DIFF_INSTANCE_PARENT ="moveError_diffInstanceParent";
-
     private String patientID;
 
     private String patientName;
@@ -187,7 +158,6 @@ public class FolderForm extends BasicFolderForm {
         		form.setNoMatchForNoValue(true);
             }
         }
-        form.setErrorCode( NO_ERROR ); //reset error code
 		form.clearPopupMsg();
         
         return form;

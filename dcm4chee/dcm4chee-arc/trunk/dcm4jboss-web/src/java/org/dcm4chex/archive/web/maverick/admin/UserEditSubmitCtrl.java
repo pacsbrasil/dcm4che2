@@ -134,7 +134,6 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	protected String perform() throws Exception
 	{
 		UserAdminModel model = UserAdminModel.getModel(this.getCtx().getRequest());
-		model.setErrorCode("OK");
 		model.clearPopupMsg();
 		if ( !model.isAdmin()) {
 			log.warn("Illegal access to UserEditSubmitCtrl! User "+this.getCtx().getRequest().getUserPrincipal()+"is not in role WebAdmin!");

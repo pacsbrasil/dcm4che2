@@ -36,26 +36,31 @@ function validateRadios(radios, radio_type)  //checks if a radio button have bee
 	return false;
 }
 
-function checkNotEmpty( field,field_type ) //checks if a field value is not null and not empty
+function checkNotEmpty( field,field_name ) //checks if a field value is not null and not empty
 {
 	if ( isBlank(field.value) ) {
-		alert('Field ' + field_type + ' is empty!' );
+		alert('Field ' + field_name + ' is empty!' );
 		field.focus();
 		return false;
 	}
 	return true;
 }
 
-function checkPatientFields( id,name ) //checks if a field value is not null and not empty
+function checkPatientFields( form ) //checks if certain patient fields are not empty
 {
-	if ( isBlank(id.value) ) {
+	if ( isBlank(form.patientID.value) ) {
 		alert('Field Patient ID is empty!' );
-		id.focus();
+		form.patientID.focus();
 		return false;
 	}
-	if ( isBlank(name.value) ) {
+	if ( isBlank(form.issuerOfPatientID.value) ) {
+		alert('Field Issuer of Patient ID is empty!' );
+		form.issuerOfPatientID.focus();
+		return false;
+	}
+	if ( isBlank(form.patientName.value) ) {
 		alert('Field Patient Name is empty!' );
-		name.focus();
+		form.patientName.focus();
 		return false;
 	}
 	return true;
@@ -73,53 +78,6 @@ function isBlank(val){
 		}
 	}
 	return true;
-}
-
-
-function checkError( errCode )
-{
-	if ( errCode != 'OK' && errCode != '' ) {
-		var msg = 'Error: ';
-    	if ( errCode == 'moveError' ) 
-    		msg = msg + 'Unexpected error during move operation!'
-    	else if ( errCode == 'parseError_date' ) 
-    		msg = msg + ' Wrong date format! Use yyyy/mm/dd.'
-    	else if ( errCode == 'parseError_time' ) 
-    		msg = msg + ' Wrong time format! Use hh:mm:ss.'
-    	else if ( errCode == 'parseError_datetime' ) 
-    		msg = msg + ' Wrong date/time format! Use yyyy/mm/dd hh:mm:ss.'
-    	else if ( errCode == 'moveError_noSelection' ) 
-    		msg = msg + ' Nothing selected! Please select a destination and one or more sources.'
-    	else if ( errCode == 'moveError_toManyDest' ) 
-    		msg = msg + 'Please select only one destination!'
-    	else if ( errCode == 'moveError_noSource' ) 
-    		msg = msg + 'Please select one destination and at least one source!'
-    	else if ( errCode == 'moveError_unselectSeries' ) 
-    		msg = msg + 'Please check that all series and instances are unselected.'
-    	else if ( errCode == 'moveError_unselectInstances' ) 
-    		msg = msg + 'Please check that all instances are unselected.'
-    	else if ( errCode == 'moveError_samePatient' ) 
-    		msg = msg + 'Move studies to the same patient is not usefull.'
-    	else if ( errCode == 'moveError_sameStudy' ) 
-    		msg = msg + 'Move series to the same study is not usefull.'
-    	else if ( errCode == 'moveError_sameSeries' ) 
-    		msg = msg + 'Move instances to the same series is not usefull.'
-    	else if ( errCode == 'moveError_diffPatient' ) 
-    		msg = msg + 'Not allowed! move series is only allowed between studies of the same patient.'
-    	else if ( errCode == 'moveError_diffStudy' ) 
-    		msg = msg + 'Not allowed! move instances is only allowed between series of the same study.'
-    	else if ( errCode == 'moveError_diffStudyParent' ) 
-    		msg = msg + 'Not allowed! You can only move studies from one patient to another patient.'
-    	else if ( errCode == 'moveError_diffSeriesParent' ) 
-    		msg = msg + 'Not allowed! All series must be of the same study.'
-    	else if ( errCode == 'moveError_diffInstanceParent' ) 
-    		msg = msg + 'Not allowed! All instances must be of the same series.'
-    	else if ( errCode == 'MEDIA_DELETE_FAILED' ) 
-    		msg = msg + 'Delete media failed!'
-    	else if ( errCode == 'deleteError_mwlEntry' ) 
-    		msg = msg + 'Delete worklist entry failed!'
-		alert(msg);
-	}
 }
 
 function checkPopup( popupMsg )

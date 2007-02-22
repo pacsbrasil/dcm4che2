@@ -115,7 +115,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
     protected String perform() throws Exception {
         try {
             FolderForm folderForm = (FolderForm) getForm();
-    		folderForm.setErrorCode( FolderForm.NO_ERROR );//reset error code
     		folderForm.clearPopupMsg();
             HttpServletRequest rq = getCtx().getRequest();
             if ( rq.getParameter("accNr") != null ) {
@@ -196,7 +195,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             		filter.setCallingAETs( allowedAets );
             	}
             } catch ( NumberFormatException x ) {
-            	folderForm.setErrorCode( ERROR_PARSE_DATE );
+            	folderForm.setPopupMsg("folder.err_date", new String[]{folderForm.getStudyDateRange(),"yyyy/mm/dd"} );
             	return FOLDER;
             }
             if (newQuery) {

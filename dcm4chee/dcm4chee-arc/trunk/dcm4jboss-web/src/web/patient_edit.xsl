@@ -93,7 +93,7 @@
 							   <xsl:choose>
 								 	<xsl:when test="pk = -1">
 										<input type="submit" name="submit" value="Add Patient" 
-											onclick="return checkPatientFields(this.form.patientID, this.form.patientName)"/>									
+											onclick="return checkPatientFields(this.form)"/>									
 									</xsl:when>
 									<xsl:otherwise>
 										<input type="submit" name="submit" value="Update" />

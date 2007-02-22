@@ -67,10 +67,6 @@ public class Dcm4cheeFormController extends Throwaway2
 				"offline_storage","mwl_console","mpps_console",
 				"gpwl_console","gppps_console","user_admin","audit_repository"};	
 	
-	public static final String ERROR_PARSE_DATE = "parseError_date";
-	public static final String ERROR_PARSE_TIME = "parseError_time";
-    public static final String ERROR_PARSE_DATETIME = "parseError_datetime";
-
     public static final String INSPECT = "inspect";
     
 	private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());

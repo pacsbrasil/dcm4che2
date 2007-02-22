@@ -130,7 +130,6 @@ public class XDSIModel extends BasicFormModel {
 		if (model == null) {
 				model = new XDSIModel(request.getUserPrincipal().getName(), request);
 				request.getSession().setAttribute(XDSI_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
 	}

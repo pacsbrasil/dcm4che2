@@ -196,7 +196,6 @@ public class AEModel extends BasicFormModel {
 		if (model == null) {
 				model = new AEModel(request.getUserPrincipal().getName(), request);
 				request.getSession().setAttribute(AE_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
 	}
