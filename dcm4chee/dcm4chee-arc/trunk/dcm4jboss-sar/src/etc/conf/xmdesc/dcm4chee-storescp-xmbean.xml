@@ -240,6 +240,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isFilePathComponents"
+      setMethod="setFilePathComponents">
+      <description><![CDATA[Used to split directory path (mount point) from file path
+      components in the (0040,E010) Retrieve URI, referring an already existing file
+      of this object in a configured read-only file system. Only effective for receiving
+      objects encoded with private Transfer Syntax: 1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced.]]>
+      </description>
+      <name>FilePathComponents</name>
+      <type>int</type>
+      <descriptors>
+         <value value="2"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isMd5sum"
       setMethod="setMd5sum">
       <description><![CDATA[Generates MD5 file check sum during storage and 
@@ -457,7 +471,8 @@ StoreSCP service.
         JPEGLSLossy,
         JPEG2000Lossless,
         JPEG2000Lossy,
-        RLELossless        
+        RLELossless,
+        TianiURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForImageSOPClasses</name>
@@ -475,7 +490,8 @@ StoreSCP service.
          JPEGBaseline
          JPEGExtended
          JPEGLSLossy
-         JPEG2000Lossy"/>
+         JPEG2000Lossy
+         TianiURIReferenced"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -503,13 +519,16 @@ StoreSCP service.
         List of Transfer Syntaxes for Video SOP Classes that Store SCP
         service accepts. Order defines selection preference. Use either the 
         Transfer Syntaxes UID value or following defined symbolic names: 
-        MPEG2        
+        MPEG2,
+        TianiURIReferenced        
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForVideoSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MPEG2"/>
+         <value value="
+           MPEG2
+           TianiURIReferenced"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -544,7 +563,8 @@ StoreSCP service.
         ImplicitVRLittleEndian,
         ExplicitVRLittleEndian,
         DeflatedExplicitVRLittleEndian,
-        ExplicitVRBigEndian
+        ExplicitVRBigEndian,
+        TianiURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForWaveformSOPClasses</name>
@@ -553,6 +573,7 @@ StoreSCP service.
          <value value="
            ExplicitVRLittleEndian
            ImplicitVRLittleEndian
+           TianiURIReferenced
            "/>
       </descriptors>
    </attribute>
@@ -592,7 +613,8 @@ StoreSCP service.
         ImplicitVRLittleEndian,
         ExplicitVRLittleEndian,
         DeflatedExplicitVRLittleEndian,
-        ExplicitVRBigEndian
+        ExplicitVRBigEndian,
+        TianiURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForSRSOPClasses</name>
@@ -602,6 +624,7 @@ StoreSCP service.
            DeflatedExplicitVRLittleEndian
            ExplicitVRLittleEndian
            ImplicitVRLittleEndian
+           TianiURIReferenced
            "/>
       </descriptors>
    </attribute>
@@ -660,7 +683,8 @@ StoreSCP service.
         ImplicitVRLittleEndian,
         ExplicitVRLittleEndian,
         DeflatedExplicitVRLittleEndian,
-        ExplicitVRBigEndian
+        ExplicitVRBigEndian,
+        TianiURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForOtherSOPClasses</name>
@@ -669,6 +693,7 @@ StoreSCP service.
          <value value="
            ExplicitVRLittleEndian
            ImplicitVRLittleEndian
+           TianiURIReferenced
          "/>
       </descriptors>
    </attribute>

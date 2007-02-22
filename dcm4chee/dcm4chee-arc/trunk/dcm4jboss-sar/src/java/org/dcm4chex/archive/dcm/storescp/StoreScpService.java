@@ -255,6 +255,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setHourInFilePath(enable);
     }
 
+    public final int getFilePathComponents() {
+		return scp.getFilePathComponents();
+	}
+
+	public void setFilePathComponents(int filePathComponents) {
+        scp.setFilePathComponents(filePathComponents);		
+	}
+
     public final boolean isAcceptMissingPatientID() {
         return scp.isAcceptMissingPatientID();
     }
@@ -582,6 +590,19 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
+
+	public FileSystemDTO findStorageFileSystem(String dirPath)
+			throws DcmServiceException {
+        try {
+            return (FileSystemDTO) server.invoke(
+                    fileSystemMgtName, "findStorageFileSystem",
+                    new Object[]{ dirPath },
+                    new String[]{ String.class.getName()});
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+	}
+	
     boolean isLocalRetrieveAET(String aet) {
         try {
             return aet.equals(server.getAttribute(fileSystemMgtName,
@@ -749,5 +770,6 @@ public class StoreScpService extends AbstractScpService {
 
     protected void doPostProcess(Dataset ds) throws Exception {
         // Extension Point for customized StoreScpService    
-    }    
+    }
+   
 }

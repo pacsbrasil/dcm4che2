@@ -40,11 +40,13 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -52,6 +54,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
@@ -67,6 +70,7 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -86,6 +90,8 @@ import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -149,6 +155,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
+    private int filePathComponents = 2;
     
     private PerfMonDelegate perfMon;
 
@@ -327,7 +334,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.hourInFilePath = hourInFilePath;
     }
 
-    public final boolean isStoreDuplicateIfDiffHost() {
+    public int getFilePathComponents() {
+		return filePathComponents;
+	}
+
+	public void setFilePathComponents(int filePathComponents) {
+		if (filePathComponents < 1) {
+			throw new IllegalArgumentException(
+					"filePathComponents: " + filePathComponents);
+		}
+		this.filePathComponents = filePathComponents;
+	}
+
+	public final boolean isStoreDuplicateIfDiffHost() {
         return storeDuplicateIfDiffHost;
     }
 
@@ -397,6 +416,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         String iuid = rqCmd.getAffectedSOPInstanceUID();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
+        boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(UIDs.TianiURIReferenced);
         File file = null;
         try {		
         	perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN );
@@ -434,36 +454,83 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 log.info("Received Instance[uid=" + iuid
                         + "] ignored! Reason: Incorrect Worklist entry selected!");
                 return;
-            }            	
-            FileSystemDTO fsDTO = service.selectStorageFileSystem();
-            File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-            file = makeFile(baseDir, ds);
-            String compressTSUID = (parser.getReadTag() == Tags.PixelData
-                                && parser.getReadLength() != -1) 
-                    ? compressionRules.getTransferSyntaxFor(assoc, ds)
-                    : null;
-            String tsuid = (compressTSUID != null)
-                    ? compressTSUID 
-                    : rq.getTransferSyntaxUID();
-            ds.setFileMetaInfo(objFact.newFileMetaInfo(
-                    rqCmd.getAffectedSOPClassUID(),
-                    rqCmd.getAffectedSOPInstanceUID(), tsuid));
-
-            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
-            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, file);            
-            byte[] md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
-            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
-            
-            if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
-                log.info("Received Instance[uid=" + iuid
-                        + "] already exists - ignored");
-                deleteFailedStorage(file);
-                return;
             }
-
-            final int baseDirPathLength = baseDir.getPath().length();
-            final String filePath = file.getPath().substring(
-                    baseDirPathLength + 1).replace(File.separatorChar, '/');
+            FileSystemDTO fsDTO;
+            String dirPath = null;
+            String filePath;
+            byte[] md5sum;
+ 			if (tianiURIReferenced) {
+ 				String uri = ds.getString(Tags.RetrieveURI);
+		    	if (uri == null) {
+		            throw new DcmServiceException(
+		                    Status.DataSetDoesNotMatchSOPClassError,
+		                    "Missing (0040,E010) Retrieve URI - required for Tiani Retrieve URI Transfer Syntax");            		
+		    	}
+		    	StringTokenizer stk = new StringTokenizer(uri, "/");
+		    	int dirPathComponents = stk.countTokens() - filePathComponents - 1;
+		    	if (dirPathComponents < 1 || !stk.nextToken().equals("file:")) {
+		    		throw new DcmServiceException(
+		    				Status.DataSetDoesNotMatchSOPClassError,
+		    				"Illegal (0040,E010) Retrieve URI: " + uri);     		
+		    	}
+		    	StringBuffer sb = new StringBuffer();
+		    	for (int i = 0; stk.hasMoreTokens(); i++) {
+		    		if (i == dirPathComponents) {		    			
+		    			dirPath = sb.toString();
+		    			sb.setLength(0);
+		    		} else {
+		    			sb.append('/');
+		    		}
+		    		sb.append(stk.nextToken());
+				}
+		    	filePath = sb.toString();
+		    	file = FileUtils.toFile(dirPath, filePath);
+		    	Dataset fileDS = objFact.newDataset();
+		    	FileInputStream fis = new FileInputStream(file);
+		    	try {
+		    		MessageDigest digest = MessageDigest.getInstance("MD5");
+					DigestInputStream dis = new DigestInputStream(fis, digest);
+					fileDS.readFile(dis, null, Tags.PixelData);
+					byte[] buf = getByteBuffer(assoc);
+					while (in.read(buf) != -1);
+					md5sum = digest.digest();
+		    	} finally {
+		    		fis.close();
+		    	}
+		    	fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
+		    	ds = fileDS;
+		    	fsDTO = getFileSystemMgt().getFileSystem(dirPath);
+             } else {
+	            fsDTO = service.selectStorageFileSystem();
+	            dirPath = fsDTO.getDirectoryPath();
+				File baseDir = FileUtils.toFile(dirPath);
+	            file = makeFile(baseDir, ds);
+	            filePath = file.getPath().substring(
+	            		baseDir.getPath().length() + 1)
+	            		.replace(File.separatorChar, '/');            }
+	            String compressTSUID = (parser.getReadTag() == Tags.PixelData
+	                                && parser.getReadLength() != -1) 
+	                    ? compressionRules.getTransferSyntaxFor(assoc, ds)
+	                    : null;
+	            String tsuid = (compressTSUID != null)
+	                    ? compressTSUID 
+	                    : rq.getTransferSyntaxUID();
+	            ds.setFileMetaInfo(objFact.newFileMetaInfo(
+	                    rqCmd.getAffectedSOPClassUID(),
+	                    rqCmd.getAffectedSOPInstanceUID(), tsuid));
+	
+	            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+	            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, file);            
+	            md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+	            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);            
+ 			if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
+ 				log.info("Received Instance[uid=" + iuid
+ 						+ "] already exists - ignored");
+ 				if (!tianiURIReferenced) {
+ 					deleteFailedStorage(file);
+ 				}
+ 				return;
+ 			}
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
@@ -497,6 +564,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             
             perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
+
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
@@ -520,16 +588,20 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
-            deleteFailedStorage(file);
+            if (!tianiURIReferenced) {
+            	deleteFailedStorage(file);
+            }
             throw e;
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
-            deleteFailedStorage(file);
+            if (!tianiURIReferenced) {
+            	deleteFailedStorage(file);
+            }
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
 
-    private Dataset merge(Dataset ds, Dataset merge) {
+	private Dataset merge(Dataset ds, Dataset merge) {
         if (ds == null) {
             return merge;
         }
@@ -598,10 +670,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private MPPSManager getMPPSManager() throws CreateException,
-    RemoteException, HomeFactoryException {
-        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
-    }
+			RemoteException, HomeFactoryException {
+		return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+				MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
+	}
+
+	private FileSystemMgt getFileSystemMgt() throws RemoteException,
+			CreateException, HomeFactoryException {
+		return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+				FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
+	}    
 
     private byte[] getByteBuffer(Association assoc) {
         byte[] buf = (byte[]) assoc.getProperty(RECEIVE_BUFFER);
