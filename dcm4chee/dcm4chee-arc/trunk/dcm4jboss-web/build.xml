@@ -3,6 +3,9 @@
 	<property file="build.properties"/>
         <property file="../build.properties"/>
 	<property name="lib.dir" value="${basedir}/lib"/>
+	
+	<property name="version" value="DEVELOP-2.10.13"/>
+	<property name="vendor" value="Agfa Healthcare"/>
 
 	<!-- Override with your JBoss dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA" />
@@ -73,18 +76,33 @@
 		</javac>
 	</target>
 
-	<target name="war" depends="classes">
+   	<target name="jar" depends="classes">
+    	<tstamp>
+            <format property="TODAY" pattern="dd.MM.yyyy"/>
+        </tstamp>
+        <jar jarfile="${lib.dir}/dcm4chee-web.jar">
+        	<manifest>
+				<attribute name="Implementation-Title" value="dcm4chee"/>
+				<attribute name="Implementation-Version" value="Version:${version} (${TODAY})"/> 
+				<attribute name="Implementation-Vendor" value="Agfa Healthcare"/>
+        	</manifest>
+        	<fileset dir="${classes.dir}" />
+        </jar>
+    </target>
+	
+	<target name="war" depends="jar">
 		<mkdir dir="${target.dir}/deploy/"/>
 		<war warfile="${product}" webxml="${web.dir}/WEB-INF/web.xml">
+	     	<manifest>
+				<attribute name="Implementation-Title" value="dcm4chee-wado"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="${vendor}"/>
+	     	</manifest>
 			<fileset dir="${web.dir}">
 				<exclude name="WEB-INF/web.xml" />
 			</fileset>
-			
-			<classes dir="${classes.dir}">
-				<include name="org/**/*.class" />
-			</classes>
-
 			<lib dir="${lib.dir}">
+				<include name="dcm4chee-web.jar" />
 				<include name="maverick.jar" />
 				<include name="commons-beanutils.jar" />
 				<include name="jdom.jar" />

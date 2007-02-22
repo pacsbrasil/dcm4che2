@@ -36,7 +36,9 @@
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="war"/>
-    <ant inheritAll="false" dir="../dcm4jboss-web" target="war"/>
+    <ant inheritAll="false" dir="../dcm4jboss-web" target="war">
+		<property name="version" value="${version}" />
+	</ant>
     <ant inheritAll="false" dir="../dcm4jboss-xds" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds" target="war"/>
     <ant inheritAll="false" dir="../dcm4jboss-arr" target="jar"/>

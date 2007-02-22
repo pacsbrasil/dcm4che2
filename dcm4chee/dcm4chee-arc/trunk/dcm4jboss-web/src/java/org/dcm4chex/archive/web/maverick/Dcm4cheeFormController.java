@@ -63,7 +63,7 @@ import org.infohazard.maverick.flow.ControllerContext;
  */
 public class Dcm4cheeFormController extends Throwaway2
 {
-	public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
+    public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
 				"offline_storage","mwl_console","mpps_console",
 				"gpwl_console","gppps_console","user_admin","audit_repository"};	
 	
@@ -85,7 +85,7 @@ public class Dcm4cheeFormController extends Throwaway2
 	{
 		return this.formBean;
 	}
-
+    
 	/**
 	 * Executes this controller.  Override one of the other perform()
 	 * methods to provide application logic.
@@ -96,25 +96,23 @@ public class Dcm4cheeFormController extends Throwaway2
 		Map modified_parameters = new HashMap();
 		Map parameters = this.getCtx().getRequest().getParameterMap();
 		modified_parameters.putAll(parameters);
-		boolean btnPressed = false;
 		for (Iterator i = parameters.keySet().iterator(); i.hasNext();)
 		{
 			String parameterName = (String)i.next();
 			if (parameterName.endsWith(".x"))
 			{
-				btnPressed = true;
 				String newName =
 					parameterName.substring(0, parameterName.indexOf(".x"));
 				modified_parameters.put(newName, newName);
 			}
 		}
-		// This controller is used in folder main pages, and therefore check new session only if a (img-)button is pressed.(parameterName ends with .x)
-		if ( btnPressed  && this.getCtx().getRequest().getSession().isNew() ) return "sessionChanged";
 
 		BeanUtils.populate(this.formBean, modified_parameters);
 		BeanUtils.populate(this.formBean, this.getCtx().getControllerParams());
 
-		this.getCtx().setModel(this.formBean);
+		getCtx().setModel(this.formBean);
+        String version = Dcm4cheeFormController.class.getPackage().getImplementationVersion();
+        getCtx().setTransformParam("dcm4chee_version", version != null ? version : "");
 
 		applyPermissions(getCtrlName());
 		return this.perform();
