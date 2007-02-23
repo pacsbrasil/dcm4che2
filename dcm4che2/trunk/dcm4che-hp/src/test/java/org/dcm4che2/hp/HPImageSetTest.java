@@ -44,6 +44,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -95,6 +96,43 @@ public class HPImageSetTest extends TestCase {
         assertEquals(true, is1.contains(o, 0));
         assertEquals(false, is2.contains(o, 0));
         assertEquals(false, is3.contains(o, 0));
+    }
+    
+    public void testGetImageSetSelectorSequence() throws Exception {
+        HangingProtocol hp = new HangingProtocol(loadXML("NeurosurgeryPlan.xml"));
+        List list = hp.getImageSets();
+        assertEquals(3, list.size());
+        HPImageSet is1 = (HPImageSet) list.get(0);
+        HPImageSet is2 = (HPImageSet) list.get(1);
+        HPImageSet is3 = (HPImageSet) list.get(2);
+        DicomElement is1selSeq = is1.getImageSetSelectorSequence();
+        assertNotNull(is1selSeq);
+        assertEquals(2, is1selSeq.countItems());
+        DicomElement is2selSeq = is2.getImageSetSelectorSequence();
+        assertNotNull(is2selSeq);
+        assertEquals(2, is2selSeq.countItems());
+        DicomElement is3selSeq = is3.getImageSetSelectorSequence();
+        assertNotNull(is3selSeq);
+        assertEquals(is2selSeq, is3selSeq);
+    }
+    
+    
+    public void testGetTimeBasedImageSetsSequence() throws Exception {
+        HangingProtocol hp = new HangingProtocol(loadXML("NeurosurgeryPlan.xml"));
+        List list = hp.getImageSets();
+        assertEquals(3, list.size());
+        HPImageSet is1 = (HPImageSet) list.get(0);
+        HPImageSet is2 = (HPImageSet) list.get(1);
+        HPImageSet is3 = (HPImageSet) list.get(2);
+        DicomElement tbis1Seq = is1.getTimeBasedImageSetsSequence();
+        assertNotNull(tbis1Seq);
+        assertEquals(1, tbis1Seq.countItems());
+        DicomElement tbis2lSeq = is2.getTimeBasedImageSetsSequence();
+        assertNotNull(tbis2lSeq);
+        assertEquals(2, tbis2lSeq.countItems());
+        DicomElement tbis3Seq = is3.getTimeBasedImageSetsSequence();
+        assertNotNull(tbis3Seq);
+        assertEquals(tbis2lSeq, tbis3Seq);
     }
 
 }
