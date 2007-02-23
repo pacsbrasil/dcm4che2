@@ -523,7 +523,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 				    		BufferedInputStream bis = new BufferedInputStream(dis);
 							fileDS.readFile(bis, null, Tags.PixelData);
 							byte[] buf = getByteBuffer(assoc);
-							while (in.read(buf) != -1);
+							while (bis.read(buf) != -1);
 							md5sum = digest.digest();
 			    		} else {
 				    		BufferedInputStream bis = new BufferedInputStream(fis);
