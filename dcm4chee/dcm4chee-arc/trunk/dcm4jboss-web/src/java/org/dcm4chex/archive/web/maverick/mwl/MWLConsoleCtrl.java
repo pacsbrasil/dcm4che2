@@ -58,7 +58,6 @@ import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 public class MWLConsoleCtrl extends Dcm4cheeFormController {
 
 
-	public static final String ERROR_MWLENTRY_DELETE = "deleteError_mwlEntry";
 	/** the view model. */
 	private MWLModel model;
 	
@@ -82,7 +81,6 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
         try {
             HttpServletRequest request = getCtx().getRequest();
     		model = MWLModel.getModel(request);
-    		model.setErrorCode( MWLModel.NO_ERROR );
     		model.clearPopupMsg();
     		model.setPatMergeAttributes(null);
             if ( request.getParameter("filter.x") != null ) {//action from filter button
@@ -90,7 +88,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 	        		checkFilter( request );
 	            	model.filterWorkList( true );
             	} catch ( ParseException x ) {
-            		model.setErrorCode( ERROR_PARSE_DATETIME );
+            		model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd HH:mm" );
             	}
             } else if ( request.getParameter("nav") != null ) {//action from a nav button. (next or previous)
             	String nav = request.getParameter("nav");
@@ -136,7 +134,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 			if ( delegate.deleteMWLEntry( request.getParameter("spsid") ) ) {
 				model.filterWorkList( false );
 			} else {
-				model.setErrorCode( ERROR_MWLENTRY_DELETE );
+				model.setPopupMsg( "mwl.err_delete_failed", request.getParameter("spsid") );
 			}
 		} else if ("link".equals(action)) {
 			MWLFilter filter = model.getFilter();

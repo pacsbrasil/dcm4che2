@@ -111,7 +111,6 @@ public class MPPSModel extends BasicFormPagingModel {
 		if (model == null) {
 				model = new MPPSModel(request);
 				request.getSession().setAttribute(MPPS_MODEL_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
 		}
 		return model;

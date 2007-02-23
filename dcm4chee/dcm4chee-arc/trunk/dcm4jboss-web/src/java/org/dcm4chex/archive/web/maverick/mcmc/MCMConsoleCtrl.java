@@ -83,7 +83,6 @@ public class MCMConsoleCtrl extends Dcm4cheeFormController {
     			model.setPopupMsg("mcm.access_denied", model.getCurrentUser());
     			return SUCCESS;
     		}
-    		model.setErrorCode( MCMModel.NO_ERROR );
             if ( request.getParameter("checkMCM") != null ) {
     			model.setMcmNotAvail( ! delegate.checkMcmScpAvail() );
     			model.setCheckAvail( true );
@@ -144,11 +143,11 @@ public class MCMConsoleCtrl extends Dcm4cheeFormController {
     			return;
     		}
 			if ( ! delegate.deleteMedia( Integer.parseInt( request.getParameter("mediaPk"))) ) {
-				model.setErrorCode( MCMModel.ERROR_MEDIA_DELETE );
+                model.setPopupMsg( "mcm.err_delete", request.getParameter("mediaPk") );
 			}
 			model.filterMediaList( true );
 		} else {
-			model.setErrorCode( MCMModel.ERROR_UNSUPPORTED_ACTION );
+            model.setPopupMsg( "mcm.err_unknownAction", action );
 		}
 		
 	}

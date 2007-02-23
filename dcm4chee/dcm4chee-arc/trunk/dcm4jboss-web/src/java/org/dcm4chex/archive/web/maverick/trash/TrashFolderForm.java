@@ -80,7 +80,6 @@ public class TrashFolderForm extends BasicFolderForm {
         		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
             }
         }
-        form.setErrorCode( NO_ERROR ); //reset error code
 		form.clearPopupMsg();
         
         return form;

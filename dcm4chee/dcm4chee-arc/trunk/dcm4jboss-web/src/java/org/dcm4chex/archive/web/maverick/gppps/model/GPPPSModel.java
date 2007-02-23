@@ -109,7 +109,6 @@ public class GPPPSModel extends BasicFormPagingModel {
 		if (model == null) {
 				model = new GPPPSModel(request);
 				request.getSession().setAttribute(GPPPS_MODEL_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
 		}
 		return model;

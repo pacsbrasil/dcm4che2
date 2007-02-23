@@ -119,7 +119,6 @@ public class MWLModel extends BasicFormPagingModel {
 		if (model == null) {
 				model = new MWLModel(request);
 				request.getSession().setAttribute(MWLMODEL_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 				model.filterWorkList( true );
 		}
 		return model;

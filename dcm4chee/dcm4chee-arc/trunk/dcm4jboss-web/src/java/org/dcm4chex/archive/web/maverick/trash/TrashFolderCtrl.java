@@ -98,7 +98,6 @@ public class TrashFolderCtrl extends FolderCtrl {
         try {
             TrashFolderForm folderForm = (TrashFolderForm) getForm();
         	if ( getPermissions().getPermissionsForApp("trash") == null ) return FOLDER;
-    		folderForm.setErrorCode( TrashFolderForm.NO_ERROR );//reset error code
     		folderForm.clearPopupMsg();
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");

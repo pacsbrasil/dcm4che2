@@ -76,7 +76,6 @@ public class TFSelectorCtrl extends Dcm4cheeFormController {
         		FolderForm.setExternalPopupMsg(getCtx(),"tf.err_selection", null);
         		return CANCEL;
         	}
-        	model.setErrorCode("OK");
         	model.clearPopupMsg();
         	HttpServletRequest rq = getCtx().getRequest();
         	model.getManifestModel().fillParams(rq);

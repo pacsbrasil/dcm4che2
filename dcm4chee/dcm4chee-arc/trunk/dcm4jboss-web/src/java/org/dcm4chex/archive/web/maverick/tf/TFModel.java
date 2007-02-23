@@ -146,7 +146,6 @@ public class TFModel extends BasicFormModel {
 		if (model == null) {
 				model = new TFModel(request.getUserPrincipal().getName(), request);
 				request.getSession().setAttribute(TF_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
 	}

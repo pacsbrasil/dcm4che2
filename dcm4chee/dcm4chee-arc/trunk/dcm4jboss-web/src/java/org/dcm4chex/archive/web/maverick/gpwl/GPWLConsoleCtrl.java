@@ -86,7 +86,7 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
 	        		checkFilter( request );
 	            	model.filterWorkList( true );
             	} catch ( ParseException x ) {
-            		model.setErrorCode( ERROR_PARSE_DATETIME );
+            		model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd HH:mm" );
             	}
             } else if ( request.getParameter("nav") != null ) {//action from a nav button. (next or previous)
             	String nav = request.getParameter("nav");

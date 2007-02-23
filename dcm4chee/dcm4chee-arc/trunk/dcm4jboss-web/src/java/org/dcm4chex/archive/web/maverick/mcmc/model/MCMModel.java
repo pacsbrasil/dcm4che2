@@ -68,9 +68,6 @@ public class MCMModel extends BasicFormPagingModel {
 	 */
 	public static final String STATI_FOR_QUEUE = String.valueOf( MediaDTO.OPEN );
 	
-    /** Errorcode: unsupported action */
-	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
-	public static String ERROR_MEDIA_DELETE = "MEDIA_DELETE_FAILED";
 
 	/** Holds the current list of media for the view. */
 	private MediaList mediaList;
@@ -120,7 +117,6 @@ public class MCMModel extends BasicFormPagingModel {
 		if (model == null) {
 				model = new MCMModel(request);
 				request.getSession().setAttribute(MCMMODEL_ATTR_NAME, model);
-				model.setErrorCode( NO_ERROR ); //reset error code
 		}
 		return model;
 	}
