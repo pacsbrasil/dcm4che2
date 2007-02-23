@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.data.ElementDictionary
-MAIN_JAR=dcm4che-core-2.0.8.jar
+MAIN_JAR=dcm4che-core-2.0.9-SNAPSHOT.jar
 
 DIRNAME=`dirname $0`
 
