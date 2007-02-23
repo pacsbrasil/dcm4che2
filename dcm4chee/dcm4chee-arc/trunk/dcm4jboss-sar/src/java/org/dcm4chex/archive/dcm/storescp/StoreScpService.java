@@ -170,6 +170,7 @@ public class StoreScpService extends AbstractScpService {
     
     private String timerIDCheckPendingSeriesStored;
 
+
     public final String getCheckPendingSeriesStoredInterval() {
         return RetryIntervalls
                 .formatIntervalZeroAsNever(checkPendingSeriesStoredInterval);
@@ -259,10 +260,26 @@ public class StoreScpService extends AbstractScpService {
 		return scp.getFilePathComponents();
 	}
 
-	public void setFilePathComponents(int filePathComponents) {
+	public final void setFilePathComponents(int filePathComponents) {
         scp.setFilePathComponents(filePathComponents);		
 	}
 
+	public final boolean isReadReferencedFile() {
+		return scp.isReadReferencedFile();
+	}
+
+	public final void setReadReferencedFile(boolean readReferencedFile) {
+		scp.setReadReferencedFile(readReferencedFile);
+	}
+	
+	public final boolean isMd5sumReferencedFile() {
+		return scp.isMd5sumReferencedFile();
+	}
+	
+	public final void setMd5sumReferencedFile(boolean md5ReferencedFile) {
+		scp.setMd5sumReferencedFile(md5ReferencedFile);
+	}
+	
     public final boolean isAcceptMissingPatientID() {
         return scp.isAcceptMissingPatientID();
     }

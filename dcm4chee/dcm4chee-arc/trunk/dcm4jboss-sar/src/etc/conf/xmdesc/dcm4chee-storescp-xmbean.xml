@@ -254,6 +254,36 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isReadReferencedFile"
+      setMethod="setReadReferencedFile">
+      <description><![CDATA[Specifies if the file referenced by (0040,E010) 
+      Retrieve URI is parsed to supplement attributes in the C-STORE RQ with
+      all attributes from the filed DICOM object. Only effective for receiving
+      objects encoded with private Transfer Syntax:
+      1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced.]]>
+      </description>
+      <name>ReadReferencedFile</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMd5sumReferencedFile"
+      setMethod="setMd5sumReferencedFile">
+      <description><![CDATA[Specifies if the MD5 file check sum for 
+      the file referenced by (0040,E010) Retrieve URI is calculated.
+      Only effective for receiving objects encoded with private Transfer Syntax:
+      1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced and with attribute
+      <i>ReadReferencedFile</i> = <code>true</code>.]]>
+      </description>
+      <name>Md5sumReferencedFile</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isMd5sum"
       setMethod="setMd5sum">
       <description><![CDATA[Generates MD5 file check sum during storage and 

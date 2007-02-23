@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm.storescp;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -155,7 +156,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
+    
     private int filePathComponents = 2;
+    private boolean readReferencedFile = true;
+    private boolean md5sumReferencedFile = true;
     
     private PerfMonDelegate perfMon;
 
@@ -334,16 +338,32 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.hourInFilePath = hourInFilePath;
     }
 
-    public int getFilePathComponents() {
+    public final int getFilePathComponents() {
 		return filePathComponents;
 	}
 
-	public void setFilePathComponents(int filePathComponents) {
+	public final void setFilePathComponents(int filePathComponents) {
 		if (filePathComponents < 1) {
 			throw new IllegalArgumentException(
 					"filePathComponents: " + filePathComponents);
 		}
 		this.filePathComponents = filePathComponents;
+	}
+
+	public final boolean isMd5sumReferencedFile() {
+		return md5sumReferencedFile;
+	}
+
+	public final void setMd5sumReferencedFile(boolean md5ReferencedFile) {
+		this.md5sumReferencedFile = md5ReferencedFile;
+	}
+
+	public final boolean isReadReferencedFile() {
+		return readReferencedFile;
+	}
+
+	public final void setReadReferencedFile(boolean readReferencedFile) {
+		this.readReferencedFile = readReferencedFile;
 	}
 
 	public final boolean isStoreDuplicateIfDiffHost() {
@@ -456,9 +476,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 return;
             }
             FileSystemDTO fsDTO;
-            String dirPath = null;
             String filePath;
-            byte[] md5sum;
+            byte[] md5sum = null;
  			if (tianiURIReferenced) {
  				String uri = ds.getString(Tags.RetrieveURI);
 		    	if (uri == null) {
@@ -474,6 +493,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		    				"Illegal (0040,E010) Retrieve URI: " + uri);     		
 		    	}
 		    	StringBuffer sb = new StringBuffer();
+		    	String dirPath = null;
 		    	for (int i = 0; stk.hasMoreTokens(); i++) {
 		    		if (i == dirPathComponents) {		    			
 		    			dirPath = sb.toString();
@@ -485,25 +505,39 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 				}
 		    	filePath = sb.toString();
 		    	file = FileUtils.toFile(dirPath, filePath);
-		    	Dataset fileDS = objFact.newDataset();
-		    	FileInputStream fis = new FileInputStream(file);
-		    	try {
-		    		MessageDigest digest = MessageDigest.getInstance("MD5");
-					DigestInputStream dis = new DigestInputStream(fis, digest);
-					fileDS.readFile(dis, null, Tags.PixelData);
-					byte[] buf = getByteBuffer(assoc);
-					while (in.read(buf) != -1);
-					md5sum = digest.digest();
-		    	} finally {
-		    		fis.close();
+		    	if (!file.isFile()) {
+		    		throw new DcmServiceException(
+		    				Status.ProcessingFailure,
+		    				"File referenced by (0040,E010) Retrieve URI: "
+		    				+ uri + " not found!");     				    		
 		    	}
-		    	fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
-		    	ds = fileDS;
 		    	fsDTO = getFileSystemMgt().getFileSystem(dirPath);
+		    	if (readReferencedFile) {
+		    		log.info("M-READ " + file);
+			    	Dataset fileDS = objFact.newDataset();
+			    	FileInputStream fis = new FileInputStream(file);
+			    	try {			    		
+			    		if (md5sumReferencedFile) {
+				    		MessageDigest digest = MessageDigest.getInstance("MD5");
+				    		DigestInputStream dis = new DigestInputStream(fis, digest);
+				    		BufferedInputStream bis = new BufferedInputStream(dis);
+							fileDS.readFile(bis, null, Tags.PixelData);
+							byte[] buf = getByteBuffer(assoc);
+							while (in.read(buf) != -1);
+							md5sum = digest.digest();
+			    		} else {
+				    		BufferedInputStream bis = new BufferedInputStream(fis);
+							fileDS.readFile(bis, null, Tags.PixelData);			    			
+			    		}
+			    	} finally {
+			    		fis.close();
+			    	}
+			    	fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
+			    	ds = fileDS;
+		    	}
              } else {
 	            fsDTO = service.selectStorageFileSystem();
-	            dirPath = fsDTO.getDirectoryPath();
-				File baseDir = FileUtils.toFile(dirPath);
+				File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
 	            file = makeFile(baseDir, ds);
 	            filePath = file.getPath().substring(
 	            		baseDir.getPath().length() + 1)
