@@ -80,7 +80,7 @@ public abstract class BasicFormModel {
 	
 	public String getModelName() { return "BASIC"; }
 
-    protected String formatMessage(String key, String[] args) {
+    protected String formatMessage(String key, Object[] args) {
         return MessageFormat.format(messages[0].getString(key), args);
     }
 

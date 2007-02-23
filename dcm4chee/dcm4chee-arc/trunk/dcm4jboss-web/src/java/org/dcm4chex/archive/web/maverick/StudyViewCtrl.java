@@ -229,7 +229,7 @@ public class StudyViewCtrl extends Dcm4cheeFormController {
     	return 1;
     }
 
-    private String formatMessage( String msgId, String[] args) {
+    private String formatMessage( String msgId, Object[] args) {
         if ( messages == null) messages = ResourceBundle.getBundle("messages");
         return MessageFormat.format(messages.getString(msgId), args);
     }

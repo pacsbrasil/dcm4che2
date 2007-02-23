@@ -124,7 +124,7 @@ public class KeyObjectViewCtrl extends Dcm4cheeFormController {
         	}
         } catch (Exception x ) {
             popupMsg = MessageFormat.format(ResourceBundle.getBundle("messages")
-                    .getString("koview.err"), new String[]{x.getMessage()});
+                    .getString("koview.err"), new Object[]{x.getMessage()});
         }
         return SUCCESS;
     }
