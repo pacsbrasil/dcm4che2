@@ -15,12 +15,13 @@
 	<xsl:param name="gppps_console" select="'false'" />
 	<xsl:param name="user_admin" select="'true'" />
 	<xsl:param name="audit_repository" select="'true'" />
+	<xsl:param name="request_uri" select="foldersubmit.m" />
 
 	<xsl:template match="/">
 		<html>
 		<head>
 			<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-			<title><xsl:value-of select="$page_title"/></title>
+			<title><xsl:value-of select="$page_title"/> URI:<xsl:value-of select="$request_uri"/></title>
 			<script language = "JavaScript" src= "dcm4che.js"/>
 			<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 		</head>
@@ -28,8 +29,30 @@
 		<table class="dcm4chee_header" width="100%" cellspacing="0">
 	  		<tr valign="middle" style="center">
 	    		<td class="logo" width="50" align="left"> 
-	    			<xsl:attribute name="title"><xsl:value-of select="$dcm4chee_version"/></xsl:attribute>
-	    			<img class="logo" src="images/logo.gif" border="0" />
+	    			<table>
+	    				<tr>
+				    		<td class="logo" width="50" align="left"> 
+				    			<xsl:attribute name="title"><xsl:value-of select="$dcm4chee_version"/></xsl:attribute>
+				    			<img class="logo" src="images/logo.gif" border="0" />
+				    		</td>
+				    	</tr>
+				    	<tr>
+				    		<td align="center" > 
+								<a>
+									<xsl:attribute name="href">
+										<xsl:value-of select="$request_uri"/><xsl:text>?language=en</xsl:text>
+									</xsl:attribute>
+									<img src="images/select_en.gif" alt="English" border="0" title="English"/>		
+								</a>
+								<a>
+									<xsl:attribute name="href">
+										<xsl:value-of select="$request_uri"/><xsl:text>?language=de</xsl:text>
+									</xsl:attribute>
+									<img src="images/select_de.gif" alt="German" border="0" title="German"/>		
+								</a>
+				    		</td>
+				    	</tr>
+				    </table>
 	    		</td>
 	    		<xsl:if test="$folder='true'">
 		    		<td width="100" align="center">

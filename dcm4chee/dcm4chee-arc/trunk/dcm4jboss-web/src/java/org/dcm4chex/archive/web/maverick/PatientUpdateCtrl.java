@@ -98,7 +98,7 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
                     .getPatientID(), pat.getPatientName(), null);
             return SUCCESS;
         } catch (Exception e) {
-        	getCtx().getRequest().getSession().setAttribute("errorMsg", e.getMessage());
+        	form.setExternalPopupMsg("folder.err_createPatient",new String[]{e.getMessage()});
             return ERROR;
         }
     }
@@ -134,7 +134,7 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
             }
             return SUCCESS;
         } catch (Exception e) {
-        	getCtx().getRequest().getSession().setAttribute("errorMsg", e.getMessage());
+            FolderForm.getFolderForm( getCtx() ).setExternalPopupMsg("folder.err_updatePatient",new String[]{e.getMessage()});
             return ERROR;
         }
     }

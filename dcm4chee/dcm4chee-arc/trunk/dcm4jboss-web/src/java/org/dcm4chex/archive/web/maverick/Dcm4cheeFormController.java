@@ -109,6 +109,7 @@ public class Dcm4cheeFormController extends Throwaway2
 		getCtx().setModel(this.formBean);
         String version = Dcm4cheeFormController.class.getPackage().getImplementationVersion();
         getCtx().setTransformParam("dcm4chee_version", version != null ? version : "");
+        getCtx().setTransformParam("request_uri", getCtx().getRequest().getRequestURI());
 
 		applyPermissions(getCtrlName());
 		return this.perform();

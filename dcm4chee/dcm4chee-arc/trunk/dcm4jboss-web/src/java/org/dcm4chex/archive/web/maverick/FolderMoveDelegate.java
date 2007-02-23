@@ -126,10 +126,6 @@ public class FolderMoveDelegate {
 	    		ret = true;
     		} catch ( Exception x ) {
         		folderForm.setPopupMsg("folder.err_move", x.getMessage() );
-    			System.err.println("Exception:"+x);
-    			x.printStackTrace(System.err);
-    			
-    			//ret is ERROR
     		}	finally {
     	            try {
     	            	if ( cm != null )

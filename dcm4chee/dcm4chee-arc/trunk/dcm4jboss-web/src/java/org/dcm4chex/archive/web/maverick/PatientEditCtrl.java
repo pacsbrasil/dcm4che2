@@ -68,7 +68,7 @@ public class PatientEditCtrl extends Dcm4cheeFormController
     }
     
     public String getPopupMsg() {
-    	return (String) getCtx().getRequest().getSession().getAttribute("errorMsg");
+    	return FolderForm.getFolderForm(getCtx()).getPopupMsg();
     }
 
 }

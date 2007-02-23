@@ -72,5 +72,8 @@ public class AEListCtrl extends AEFormCtrl
 		return this.getCtx().getRequest().isUserInRole(DCMUser.WEBADMIN);
 	}
 	
- 
+    public void setLanguage(String arg) {
+        AEModel.getModel(getCtx().getRequest()).setLanguage(arg);
+    }
+
 }

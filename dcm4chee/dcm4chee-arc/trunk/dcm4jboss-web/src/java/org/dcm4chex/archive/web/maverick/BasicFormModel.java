@@ -146,11 +146,8 @@ public abstract class BasicFormModel {
      */
     public void setLanguage(String arg) {
         if ( arg == null || arg.trim().length() < 2) return;
-        Locale l = new Locale(arg);
-        if ( ! l.equals(locale) ) {
-            this.locale = l;
-            Locale.setDefault(locale);
-            messages[0] = ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale);
-        }
+        locale = new Locale(arg);
+        Locale.setDefault(locale);
+        messages[0] = ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale);
     }
 }

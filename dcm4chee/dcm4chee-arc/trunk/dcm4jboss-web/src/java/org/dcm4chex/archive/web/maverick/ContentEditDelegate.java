@@ -84,7 +84,7 @@ public class ContentEditDelegate {
             }
             // char ' in message cause trouble with javascript (popupMsg)!
             String msg = t.getMessage()!=null ? t.getMessage().replace('\'','\"') : t.getClass().getName();
-            throw new IllegalArgumentException("Failed to create patient! Reason:"+msg);
+            throw new IllegalArgumentException(msg);
         }
         return (Dataset) o;
     }
