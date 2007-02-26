@@ -82,6 +82,8 @@ public class TLSConfigService extends ServiceMBeanSupport
 
     private ObjectName auditLogName;
 
+    private Boolean auditLogIHEYr4;
+
     public TLSConfigService() {
         ssl.addHandshakeFailedListener(this);
         ssl.addHandshakeCompletedListener(this);
@@ -92,7 +94,7 @@ public class TLSConfigService extends ServiceMBeanSupport
     }
 
     public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
+        this.auditLogName = auditLogName;       
     }
 
     public String getEnabledProtocols() {
@@ -220,10 +222,28 @@ public class TLSConfigService extends ServiceMBeanSupport
         notif.setUserData(event);
         super.sendNotification(notif);
     }
+  
+    private boolean isAuditLogIHEYr4() {
+        if (auditLogName == null) {
+            return false;
+        }
+        if (auditLogIHEYr4 == null) {
+            try {
+                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                        auditLogName, "IHEYr4");
+            } catch (Exception e) {
+                log.warn("JMX failure: ", e);
+                this.auditLogIHEYr4 = Boolean.FALSE;
+            }
+        }
+        return auditLogIHEYr4.booleanValue();
+    }
     
     private void logSecurityAlert(String alertType, Socket socket, String aet,
             String description) {
-        if (auditLogName == null) return;
+        if (!isAuditLogIHEYr4()) {
+            return;
+        }
         try {
             server.invoke(auditLogName, "logSecurityAlert",
                 new Object[] { alertType, socket, aet, description },

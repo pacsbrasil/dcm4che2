@@ -73,17 +73,7 @@ public class DcmServerService extends ServiceMBeanSupport {
     
     private DcmProtocol protocol = DcmProtocol.DICOM;
 
-    private ObjectName auditLogName;
-
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
-    public ObjectName getAuditLoggerName() {
-        return auditLogName;
-    }
-
-    public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
-    }
 
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();

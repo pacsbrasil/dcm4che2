@@ -97,7 +97,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
@@ -105,7 +104,6 @@ import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.notif.Export;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfig;
 import org.jboss.system.server.ServerConfigLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -134,6 +132,8 @@ public class XDSIService extends ServiceMBeanSupport {
 	
     protected ObjectName auditLogName;
     
+    protected Boolean auditLogIHEYr4;
+
     protected ObjectName ianScuServiceName;
 
     protected ObjectName keyObjectServiceName;
@@ -994,14 +994,25 @@ public class XDSIService extends ServiceMBeanSupport {
 		}
 		return suids;
 	}
-	/**
-	 * @param patId
-	 * @param patName
-	 * @param node Network node
-	 * @param aet Application Entity Title
-	 */
-	private void logExport(String patId, String patName, String node, String aet, Set suids) {
-		if ( this.auditLogName == null ) return;
+        
+        private boolean isAuditLogIHEYr4() {
+            if (auditLogName == null) {
+                return false;
+            }
+            if (auditLogIHEYr4 == null) {
+                try {
+                    this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                            auditLogName, "IHEYr4");
+                } catch (Exception e) {
+                    log.warn("JMX failure: ", e);
+                    this.auditLogIHEYr4 = Boolean.FALSE;
+                }
+            }
+            return auditLogIHEYr4.booleanValue();
+        }
+        
+        private void logExport(String patId, String patName, String node, String aet, Set suids) {
+		if (!isAuditLogIHEYr4()) return;
         try {
     		URL url = new URL(node);
     		InetAddress inet = InetAddress.getByName(url.getHost());
@@ -1287,5 +1298,4 @@ public class XDSIService extends ServiceMBeanSupport {
         }
         return (Dataset) o;
     }
-
 }

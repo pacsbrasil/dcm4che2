@@ -651,8 +651,9 @@ public class StoreScpService extends AbstractScpService {
     }
 
     void logInstancesStored(Socket s, SeriesStored seriesStored) {
-        if (auditLogName == null)
+        if (!isAuditLogIHEYr4()) {
             return;
+        }
         final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
         Dataset ian = seriesStored.getIAN();
         Dataset pps = ian.getItem(Tags.RefPPSSeq);

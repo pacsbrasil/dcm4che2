@@ -144,8 +144,9 @@ public class RIDSupport {
 	private boolean useXSLInstruction;
 	private String wadoURL;
 	
-	private static ObjectName fileSystemMgtName;
-	private static ObjectName auditLogName;
+	private ObjectName fileSystemMgtName;
+	private ObjectName auditLogName;
+        private Boolean auditLogIHEYr4;
 	
 	private ECGSupport ecgSupport = null;
 	
@@ -286,7 +287,7 @@ public class RIDSupport {
 	 * @param fileSystemMgtName The fileSystemMgtName to set.
 	 */
 	public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-		RIDSupport.fileSystemMgtName = fileSystemMgtName;
+		this.fileSystemMgtName = fileSystemMgtName;
 	}
 
 	/**
@@ -646,11 +647,24 @@ public class RIDSupport {
 		}
 	}
 	
-	/**
-	 * @param reqObj
-	 * @param patientInfo
-	 */
-	private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
+        private boolean isAuditLogIHEYr4() {
+            if (auditLogName == null) {
+                return false;
+            }
+            if (auditLogIHEYr4 == null) {
+                try {
+                    this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                            auditLogName, "IHEYr4");
+                } catch (Exception e) {
+                    log.warn("JMX failure: ", e);
+                    this.auditLogIHEYr4 = Boolean.FALSE;
+                }
+            }
+            return auditLogIHEYr4.booleanValue();
+        }
+        
+        private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
+                if (!isAuditLogIHEYr4()) return;
         try {
         	Set suids = new HashSet();
         	suids.add(ds.getString(Tags.StudyInstanceUID));
@@ -1024,5 +1038,4 @@ public class RIDSupport {
 	public void setECGPDFConceptNameCodes(String conceptNames) {
 		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_ECG, conceptNames );
 	}
-	
 }

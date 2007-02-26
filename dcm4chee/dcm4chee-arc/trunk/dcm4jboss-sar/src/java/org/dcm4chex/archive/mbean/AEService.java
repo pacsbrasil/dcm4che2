@@ -63,7 +63,10 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Revision$ $Date$
  */
 public class AEService extends ServiceMBeanSupport {
+
     private ObjectName auditLogName;
+
+    private Boolean auditLogIHEYr4;
 
     private ObjectName echoServiceName;
 
@@ -76,7 +79,7 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
+        this.auditLogName = auditLogName;     
     }
 
     /**
@@ -273,9 +276,25 @@ public class AEService extends ServiceMBeanSupport {
         }
     }
 
+    private boolean isAuditLogIHEYr4() {
+        if (auditLogName == null) {
+            return false;
+        }
+        if (auditLogIHEYr4 == null) {
+            try {
+                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                        auditLogName, "IHEYr4");
+            } catch (Exception e) {
+                log.warn("JMX failure: ", e);
+                this.auditLogIHEYr4 = Boolean.FALSE;
+            }
+        }
+        return auditLogIHEYr4.booleanValue();
+    }
+    
     private void logActorConfig(String desc) {
         log.info(desc);
-        if (auditLogName == null) {
+        if (!isAuditLogIHEYr4()) {
             return;
         }
         try {

@@ -125,9 +125,11 @@ private static Logger log = Logger.getLogger( WADOService.class.getName() );
 private static final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
 private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-private static ObjectName fileSystemMgtName = null;
+private ObjectName fileSystemMgtName = null;
 
-private static ObjectName auditLogName = null;
+private ObjectName auditLogName = null;
+private Boolean auditLogIHEYr4 = null;
+
 /** List of Hosts where audit log is disabled.<p><code>null</code> means ALL; an empty list means NONE */
 private Set disabledAuditLogHosts;
 
@@ -144,7 +146,6 @@ private static MBeanServer server;
 
 private static TagDictionary dict = null;
 
-private static final int BUF_LEN = 65536;
 private String htmlXslURL = "resource:xsl/sr_html.xsl";
 private String xhtmlXslURL = "resource:xsl/sr_html.xsl";
 private String xmlXslURL = "resource:xsl/sr_xml_style.xsl";
@@ -804,7 +805,7 @@ private BufferedImage resize( BufferedImage bi, String rows, String columns ) {
  * @param fileSystemMgtName The fileSystemMgtName to set.
  */
 public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-	WADOSupport.fileSystemMgtName = fileSystemMgtName;
+	this.fileSystemMgtName = fileSystemMgtName;
 }
 
 /**
@@ -826,8 +827,9 @@ public ObjectName getFileSystemMgtName() {
  * @param name The Audit Logger Name to set.
  */
 public void setAuditLoggerName(ObjectName name) {
-	WADOSupport.auditLogName = name;
+	this.auditLogName = name;
 }
+
 /**
  * Get the name of the AuditLogger MBean.
  * <p>
@@ -932,7 +934,24 @@ public void setTextSopCuids(Map sopCuids) {
 	}
 }
 
+private boolean isAuditLogIHEYr4() {
+    if (auditLogName == null) {
+        return false;
+    }
+    if (auditLogIHEYr4 == null) {
+        try {
+            this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                    auditLogName, "IHEYr4");
+        } catch (Exception e) {
+            log.warn("JMX failure: ", e);
+            this.auditLogIHEYr4 = Boolean.FALSE;
+        }
+    }
+    return auditLogIHEYr4.booleanValue();
+}
+
 protected void logInstancesSent(WADORequestObject req, WADOResponseObject resp) {
+    if (!isAuditLogIHEYr4()) return;
     Dataset ds = resp.getPatInfo();
     Patient patient = alf.newPatient(ds.getString(Tags.PatientID),ds.getString(Tags.PatientName) );
     String remoteHost = disableDNS ? req.getRemoteAddr() : req.getRemoteHost();
@@ -1045,7 +1064,6 @@ class ImageCachingException extends IOException {
 	public BufferedImage getImage() {
 		return bi;
 	}
-}
-
+    }
 }
 

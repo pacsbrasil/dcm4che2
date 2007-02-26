@@ -128,7 +128,7 @@ public class GPWLScpService extends AbstractScpService {
     }
 
     void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {
-        if (auditLogName == null) return;
+        if (!isAuditLogIHEYr4()) return;
         try {
             server.invoke(auditLogName,
                     "logDicomQuery",

@@ -52,6 +52,7 @@ import javax.management.MBeanException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.ReflectionException;
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Dataset;
@@ -224,6 +225,9 @@ public class MPPSScpService extends AbstractScpService {
 	}
 
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
+        if (!isAuditLogIHEYr4()) {
+            return;
+        }
     	Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
     	Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
         try {

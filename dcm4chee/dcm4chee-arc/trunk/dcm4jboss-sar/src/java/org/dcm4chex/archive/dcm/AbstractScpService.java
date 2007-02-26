@@ -93,6 +93,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected ObjectName auditLogName;
 
+    protected Boolean auditLogIHEYr4;
+   
     protected DcmHandler dcmHandler;
 
     protected String[] calledAETs;
@@ -228,6 +230,22 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
     }
 
+    protected boolean isAuditLogIHEYr4() {
+        if (auditLogName == null) {
+            return false;
+        }
+        if (auditLogIHEYr4 == null) {
+            try {
+                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                        auditLogName, "IHEYr4");
+            } catch (Exception e) {
+                log.warn("JMX failure: ", e);
+                this.auditLogIHEYr4 = Boolean.FALSE;
+            }
+        }
+        return auditLogIHEYr4.booleanValue();
+    }
+        
     protected boolean enableService() {
         if (dcmHandler == null)
             return false;
@@ -598,5 +616,5 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         notif.setUserData(o);
         super.sendNotification(notif);
     }
-    
+
 }

@@ -681,8 +681,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     void logInstancesSent(RemoteNode node, InstancesAction action) {
-        if (auditLogName == null)
+        if (!isAuditLogIHEYr4()) {
             return;
+        }
         try {
             server.invoke(auditLogName, "logInstancesSent", new Object[] {
                     node, action }, new String[] { RemoteNode.class.getName(),
@@ -693,8 +694,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {
-        if (auditLogName == null)
+        if (!isAuditLogIHEYr4()) {
             return;
+        }
         try {
             server.invoke(auditLogName, "logDicomQuery", new Object[] { keys,
                     node, cuid }, new String[] { Dataset.class.getName(),

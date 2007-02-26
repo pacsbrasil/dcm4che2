@@ -67,19 +67,24 @@ public class AuditLoggerDelegate {
     private static MBeanServer server;
 
     private static ObjectName auditLogName;
+    
+    private static boolean iheYr4;
 
-
-    private static void init(ControllerContext ctx) throws Exception {
-        if (auditLogName != null) return;
-        AuditLoggerDelegate.server = MBeanServerLocator.locate();
-        String s = ctx.getServletConfig().getInitParameter("auditLoggerName");
-        AuditLoggerDelegate.auditLogName = new ObjectName(s);
+    private static boolean init(ControllerContext ctx) throws Exception {
+        if (auditLogName == null) {
+            AuditLoggerDelegate.server = MBeanServerLocator.locate();
+            String s = ctx.getServletConfig().getInitParameter("auditLoggerName");
+            AuditLoggerDelegate.auditLogName = new ObjectName(s);
+            Boolean b = (Boolean) server.getAttribute(auditLogName, "IHEYr4");
+            iheYr4 = b.booleanValue();
+        }
+        return iheYr4;
     }
 
     public static void logActorConfig(ControllerContext ctx, String desc,
             String type) {
         try {
-            init(ctx);
+            if (!init(ctx)) return;
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logActorConfig",
                     new Object[] { desc, type},
@@ -93,7 +98,7 @@ public class AuditLoggerDelegate {
     public static void logStudyDeleted(ControllerContext ctx, String patid,
             String patname, String suid, int numberOfInstances, String desc) {
         try {
-            init(ctx);
+            if (!init(ctx)) return;
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logStudyDeleted",
                     new Object[] { patid, patname, suid,
@@ -109,7 +114,7 @@ public class AuditLoggerDelegate {
     public static void logPatientRecord(ControllerContext ctx, String action,
             String patid, String patname, String desc) {
         try {
-            init(ctx);
+            if (!init(ctx)) return;
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logPatientRecord",
                     new Object[] { action, patid, patname, desc},
@@ -125,7 +130,7 @@ public class AuditLoggerDelegate {
             String patid, String patname, String placerOrderNo,
             String fillerOrderNo, String suid, String accNo, String desc) {
         try {
-            init(ctx);
+            if (!init(ctx)) return;
             AuditLoggerDelegate.server.invoke(auditLogName,
                     "logProcedureRecord",
                     new Object[] { action, patid, patname, placerOrderNo,

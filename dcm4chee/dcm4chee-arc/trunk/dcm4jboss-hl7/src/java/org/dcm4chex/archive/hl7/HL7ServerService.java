@@ -116,8 +116,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
 
-    private ObjectName auditLogName;
-
     private boolean fileReceivedHL7AsXML;
 
     private boolean fileReceivedHL7;
@@ -152,14 +150,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     public final void setLogStylesheetURL(String logStylesheetURL) {
         this.logStylesheetURL = logStylesheetURL;
         reloadStylesheets();
-    }
-
-    public ObjectName getAuditLoggerName() {
-        return auditLogName;
-    }
-
-    public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
     }
 
     public final ObjectName getTLSConfigName() {

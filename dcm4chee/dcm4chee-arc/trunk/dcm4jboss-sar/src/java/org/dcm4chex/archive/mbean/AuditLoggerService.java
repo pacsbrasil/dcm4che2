@@ -77,6 +77,10 @@ public class AuditLoggerService extends ServiceMBeanSupport  {
     
     private ArrayList supressLogForAETs = new ArrayList();
 
+    public final boolean isIHEYr4() {
+        return true;
+    }
+    
     public final boolean isDisableHostLookup() {
         return AuditLoggerFactory.isDisableHostLookup();
     }

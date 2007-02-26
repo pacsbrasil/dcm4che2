@@ -246,7 +246,15 @@
          <value value="true" />
       </descriptors>
    </attribute>
-   &defaultAttributes;
+  <attribute access="read-only" getMethod="isIHEYr4">
+    <description>Used to distinguish this Audit Logger Service, which creates
+    Audit Messages according the Provisional XML Schema definition of the IHE
+    Basic Security Integration Profile, from the succeeding RFC 3881 compliant
+    Audit Logger Service.</description>
+    <name>IHEYr4</name>
+    <type>boolean</type>
+  </attribute>
+     &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

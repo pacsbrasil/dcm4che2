@@ -10,6 +10,5 @@
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/PatientUpdate</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/MWLManager</depends>
     <depends>dcm4chee.archive:service=TLSConfig</depends>
-    <depends>dcm4chee.archive:service=AuditLogger</depends>
   </mbean>
 </server>

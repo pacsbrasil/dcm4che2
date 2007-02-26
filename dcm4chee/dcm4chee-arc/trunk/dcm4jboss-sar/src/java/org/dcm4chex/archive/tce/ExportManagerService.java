@@ -170,6 +170,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private ObjectName auditLogName;
 
+    private Boolean auditLogIHEYr4;
+
     private int exportDelay = 2000;
     
     private ArrayList scheduledList = new ArrayList();
@@ -764,12 +766,28 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         return null;
     }
 
+    private boolean isAuditLogIHEYr4() {
+        if (auditLogName == null) {
+            return false;
+        }
+        if (auditLogIHEYr4 == null) {
+            try {
+                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                        auditLogName, "IHEYr4");
+            } catch (Exception e) {
+                log.warn("JMX failure: ", e);
+                this.auditLogIHEYr4 = Boolean.FALSE;
+            }
+        }
+        return auditLogIHEYr4.booleanValue();
+    }
+    
     private void logExport(String user, Patient pat, String mediaType) {
-        if (auditLogName == null)
+        if (!isAuditLogIHEYr4()) {
             return;
+        }
         try {
-            server
-                    .invoke(auditLogName, "logExport", new Object[] { user,
+            server.invoke(auditLogName, "logExport", new Object[] { user,
                             new Patient[] { pat }, mediaType, null, null },
                             new String[] { String.class.getName(),
                                     Patient[].class.getName(),
@@ -1286,5 +1304,4 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         notif.setUserData(o);
         super.sendNotification(notif);
     }
-    
 }

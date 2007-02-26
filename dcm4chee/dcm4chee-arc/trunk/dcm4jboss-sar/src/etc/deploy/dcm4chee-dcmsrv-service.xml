@@ -8,6 +8,5 @@
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/Storage</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/FileSystemMgt</depends>
     <depends>dcm4chee.archive:service=TLSConfig</depends>
-    <depends>dcm4chee.archive:service=AuditLogger</depends>
   </mbean>
 </server>
