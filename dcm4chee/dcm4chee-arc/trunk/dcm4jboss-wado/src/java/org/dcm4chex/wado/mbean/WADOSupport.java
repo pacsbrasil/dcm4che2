@@ -492,7 +492,7 @@ private WADOResponseObject handleTextTransform( WADORequestObject req, FileDTO f
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
         Dataset ds = dof.newDataset();
         parser.setDcmHandler(ds.getDcmHandler());
-        parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+        parser.parseDcmFile(null, Tags.PixelData);
         Dataset dsCoerce = null;
         if ( !"true".equals(req.getRequest().getParameter("useOrig"))) {
             Dataset keys = dof.newDataset();
