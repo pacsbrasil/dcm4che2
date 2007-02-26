@@ -38,6 +38,9 @@
  
 package org.dcm4che2.audit.message;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * This audit message describes the event of an Application Entity 
  * starting or stopping.
@@ -143,9 +146,24 @@ public class ApplicationActivityMessage extends AuditMessage {
 
     public void validate() {
         super.validate();
-        ActiveParticipant app = getRequestingActiveParticipants();
-        if (app == null || !app.getRoleIDCodeIDs().contains(
+        ActiveParticipant app = null;
+        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
+            ActiveParticipant ap = (ActiveParticipant) iter.next();
+            List roleIDCodeIDs = ap.getRoleIDCodeIDs();
+            if (roleIDCodeIDs.contains(
                 ActiveParticipant.RoleIDCode.APPLICATION)) {
+                if (ap.isUserIsRequestor()) {
+                    throw new IllegalStateException(
+                            "Application is Requesting User");
+                }
+                if (app != null) {
+                    throw new IllegalStateException(
+                            "Multiple Application identification");
+                }
+                app = ap;               
+            }
+        }
+        if (app == null) {
             throw new IllegalStateException("No Application Identification");
         }
     }    

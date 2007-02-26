@@ -64,7 +64,7 @@ public class AuditEvent extends BaseElement {
             throw new NullPointerException();
         }
         this.eventID = eventID;
-        addAttribute("EventActionCode", action);
+        addAttribute("EventActionCode", action, true);
         setEventDateTime(new Date());
         setOutcomeIndicator(OutcomeIndicator.SUCCESS);
     }
@@ -82,10 +82,7 @@ public class AuditEvent extends BaseElement {
     }
 
     public AuditEvent setEventDateTime(Date datetime) {
-        if (datetime == null) {
-            throw new NullPointerException("datetime");
-        }
-        addAttribute("EventDateTime", datetime);
+        addAttribute("EventDateTime", datetime, false);
         return this;
     }
     
@@ -94,10 +91,7 @@ public class AuditEvent extends BaseElement {
     }
     
     public AuditEvent setOutcomeIndicator(OutcomeIndicator outcome) {
-        if (outcome == null) {
-            throw new NullPointerException("outcome");
-        }
-        addAttribute("EventOutcomeIndicator", outcome);
+        addAttribute("EventOutcomeIndicator", outcome, false);
         return this;
     }
     

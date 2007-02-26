@@ -59,7 +59,11 @@ public class AuditSource extends BaseElement {
     
     public AuditSource(String id) {
         super("AuditSourceIdentification");
-        addAttribute("AuditSourceID", id);
+        setAuditSourceID(id);
+    }
+
+    public final void setAuditSourceID(String id) {
+        super.addAttribute("AuditSourceID", id, false);
     }
     
     public final String getAuditSourceID() {
@@ -71,7 +75,7 @@ public class AuditSource extends BaseElement {
     }
     
     public final AuditSource setAuditEnterpriseSiteID(String id) {
-        addAttribute("AuditEnterpriseSiteID", id);
+        addAttribute("AuditEnterpriseSiteID", id, true);
         return this;
     }
 
@@ -85,6 +89,11 @@ public class AuditSource extends BaseElement {
         }
         auditSourceTypeCodes.add(code);
         return this;
+    }
+    
+    public AuditSource clearAuditSourceTypeCodes() {
+        auditSourceTypeCodes.clear();
+        return this;        
     }
 
     protected boolean isEmpty() {
@@ -144,7 +153,7 @@ public class AuditSource extends BaseElement {
  
     public static AuditSource getDefaultAuditSource() {
         if (defAuditSource == null) {
-            defAuditSource = new AuditSource(AuditMessageUtils.getLocalHostName());
+            defAuditSource = new AuditSource(AuditMessage.getLocalHostName());
         }
         return defAuditSource;
     }

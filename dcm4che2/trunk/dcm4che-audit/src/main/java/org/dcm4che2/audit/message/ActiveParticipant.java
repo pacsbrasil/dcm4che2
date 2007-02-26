@@ -91,9 +91,9 @@ public class ActiveParticipant extends BaseElement {
         if (userID.length() == 0) {
             throw new IllegalArgumentException("userID=\"\"");
         }
-        addAttribute("UserID", userID);
+        addAttribute("UserID", userID, false);
         if (!userIsRequestor || encodeUserIsRequestorTrue) {
-            addAttribute("UserIsRequestor", Boolean.valueOf(userIsRequestor));
+            addAttribute("UserIsRequestor", Boolean.valueOf(userIsRequestor), true);
         }
     }
 
@@ -141,7 +141,7 @@ public class ActiveParticipant extends BaseElement {
      */
     public static ActiveParticipant createActiveProcess(String processID,
             String[] aets, String processName, String nodeID, boolean requestor) {
-        return createActivePerson(processID, AuditMessageUtils.aetsToAltUserID(aets), 
+        return createActivePerson(processID, AuditMessage.aetsToAltUserID(aets), 
                 processName, nodeID, requestor) ;
     }
 
@@ -168,7 +168,7 @@ public class ActiveParticipant extends BaseElement {
     }
     
     public ActiveParticipant setAlternativeUserID(String id) {
-        addAttribute("AlternativeUserID", id);
+        addAttribute("AlternativeUserID", id, true);
         return this;
     }
     
@@ -177,7 +177,7 @@ public class ActiveParticipant extends BaseElement {
     }
     
     public ActiveParticipant setUserName(String name) {
-        addAttribute("UserName", name);
+        addAttribute("UserName", name, true);
         return this;
     }
     
@@ -197,22 +197,20 @@ public class ActiveParticipant extends BaseElement {
 
     public ActiveParticipant setNetworkAccessPointID(String id, 
             NetworkAccessPointTypeCode type) {
-        addAttribute("NetworkAccessPointID", id);
-        addAttribute("NetworkAccessPointTypeCode", type);
+        addAttribute("NetworkAccessPointID", id, false);
+        addAttribute("NetworkAccessPointTypeCode", type, false);
         return this;
     }
 
     public ActiveParticipant setNetworkAccessPointID(String id) {
-        if (id != null && id.length() > 0) {
-            addAttribute("NetworkAccessPointID", id);
+            addAttribute("NetworkAccessPointID", id, true);
             addAttribute("NetworkAccessPointTypeCode", 
-                    NetworkAccessPointTypeCode.valueOf(id));
-        }
+                    NetworkAccessPointTypeCode.valueOf(id), true);
         return this;
     }
     
     public void setNetworkAccessPointID(InetAddress ip) {
-        setNetworkAccessPointID(AuditMessageUtils.getHostName(ip));       
+        setNetworkAccessPointID(AuditMessage.getHostName(ip));       
     }
 
     public List getRoleIDCodeIDs() {
@@ -220,7 +218,7 @@ public class ActiveParticipant extends BaseElement {
     }
     
     public ActiveParticipant addRoleIDCode(RoleIDCode code) {
-        if (code != null) {
+        if (code == null) {
             throw new NullPointerException();
         }
         roleIDCodes.add(code);
@@ -285,7 +283,9 @@ public class ActiveParticipant extends BaseElement {
         }
         
         public static NetworkAccessPointTypeCode valueOf(String id) {
-            return isIP(id) ? IP_ADDRESS : isTelNo(id) ? TEL_NR : MACHINE_NAME;
+            return (id == null || id.length() == 0) ? null
+                    : isIP(id) ? IP_ADDRESS 
+                    : isTelNo(id) ? TEL_NR : MACHINE_NAME;
         }
 
         public String toString() {

@@ -49,7 +49,6 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.AuditMessageUtils;
 import org.dcm4che2.audit.message.CodeElement;
 
 /**
@@ -147,7 +146,7 @@ public class AuditMessageFilter extends Filter {
         }
         if (aeTitleToMatch != null && aeTitleToMatch.length() != 0) {
             if (Arrays.asList(
-                    AuditMessageUtils.altUserIDToAETs(
+                    AuditMessage.altUserIDToAETs(
                             participant.getAlternativeUserID()))
                     .indexOf(aeTitleToMatch) == -1) {
                 return false;

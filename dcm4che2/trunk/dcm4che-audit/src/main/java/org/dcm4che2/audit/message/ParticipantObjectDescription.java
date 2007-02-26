@@ -70,7 +70,7 @@ public class ParticipantObjectDescription extends BaseElement {
     }
 
     public final ParticipantObjectDescription setEncrypted(boolean encrypted) {
-        addAttribute("Encrypted", Boolean.valueOf(encrypted));
+        addAttribute("Encrypted", Boolean.valueOf(encrypted), true);
         return this;
     }
 
@@ -80,7 +80,7 @@ public class ParticipantObjectDescription extends BaseElement {
     }
 
     public final ParticipantObjectDescription setAnonymized(boolean anonymized) {
-        addAttribute("Anonymized", Boolean.valueOf(anonymized));
+        addAttribute("Anonymized", Boolean.valueOf(anonymized), true);
         return this;
     }
 
@@ -154,7 +154,7 @@ public class ParticipantObjectDescription extends BaseElement {
             if (n <= 0) {
                 throw new IllegalArgumentException("n: " + n);
             }
-            addAttribute("NumberOfInstances", new Integer(n));
+            addAttribute("NumberOfInstances", new Integer(n), false);
             return this;
         }
 

@@ -62,13 +62,10 @@ public class ParticipantObject extends BaseElement {
     
     public ParticipantObject(String id, IDTypeCode idTypeCode) {
         super("ParticipantObjectIdentification");
-        if (id.length() == 0) {
-            throw new IllegalArgumentException("id=\"\"");
-        }       
         if (idTypeCode == null) {
             throw new NullPointerException("idTypeCode");
         }
-        addAttribute("ParticipantObjectID", id);
+        addAttribute("ParticipantObjectID", id, false);
         this.idTypeCode = idTypeCode;
     }
 
@@ -85,7 +82,7 @@ public class ParticipantObject extends BaseElement {
     }
     
     public final ParticipantObject setParticipantObjectTypeCode(TypeCode code) {
-        addAttribute("ParticipantObjectTypeCode", code);
+        addAttribute("ParticipantObjectTypeCode", code, true);
         return this;
     }
     
@@ -95,7 +92,7 @@ public class ParticipantObject extends BaseElement {
     
     public final ParticipantObject setParticipantObjectTypeCodeRole(
             TypeCodeRole code) {
-        addAttribute("ParticipantObjectTypeCodeRole", code);
+        addAttribute("ParticipantObjectTypeCodeRole", code, true);
         return this;
     }
     
@@ -105,7 +102,7 @@ public class ParticipantObject extends BaseElement {
     
     public final ParticipantObject setParticipantObjectDataLifeCycle(
             DataLifeCycle code) {
-        addAttribute("ParticipantObjectDataLifeCycle", code);
+        addAttribute("ParticipantObjectDataLifeCycle", code, true);
         return this;
     }
     
@@ -115,7 +112,7 @@ public class ParticipantObject extends BaseElement {
     
     public final ParticipantObject setParticipantObjectSensitivity(
             String sensitivity) {
-        addAttribute("ParticipantObjectSensitivity", sensitivity);
+        addAttribute("ParticipantObjectSensitivity", sensitivity, true);
         return this;
     }
 
@@ -446,15 +443,15 @@ public class ParticipantObject extends BaseElement {
 
         public Detail(String type, byte[] value) {
             super("ParticipantObjectDetail");
-            addAttribute("type", type);
-            addAttribute("value", value.clone());        
+            addAttribute("type", type, false);
+            addAttribute("value", value.clone(), false);        
         }
         
         public Detail(String type, String value) {
             super("ParticipantObjectDetail");
-            addAttribute("type", type);
+            addAttribute("type", type, false);
             try {
-                addAttribute("value", value.getBytes("UTF-8"));
+                addAttribute("value", value.getBytes("UTF-8"), false);
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e);
             }        

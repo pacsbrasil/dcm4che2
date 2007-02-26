@@ -59,13 +59,13 @@ public class CodeElement extends BaseElement {
     protected CodeElement(String name, String code, String codeSystemName, 
             String displayName) {
         this(name, code, true);
-        addAttribute("codeSystemName", codeSystemName);
-        addAttribute("displayName", displayName);
+        addAttribute("codeSystemName", codeSystemName, false);
+        addAttribute("displayName", displayName, false);
     }
 
     protected CodeElement(String name, String code, boolean readonly) {
         super(name);
-        addAttribute("code", code);
+        addAttribute("code", code, false);
         this.readonly = readonly;
     }    
     
@@ -90,7 +90,7 @@ public class CodeElement extends BaseElement {
      */
     public final CodeElement setCodeSystem(String codeSystem) {
         checkReadOnly();
-        addAttribute("codeSystem", codeSystem);
+        addAttribute("codeSystem", codeSystem, true);
         return this;
     }
 
@@ -105,7 +105,7 @@ public class CodeElement extends BaseElement {
      */
     public final CodeElement setCodeSystemName(String codeSystemName) {
         checkReadOnly();
-        addAttribute("codeSystemName", codeSystemName);
+        addAttribute("codeSystemName", codeSystemName, true);
         return this;
     }
 
@@ -120,7 +120,7 @@ public class CodeElement extends BaseElement {
      */
     public final CodeElement setDisplayName(String displayName) {
         checkReadOnly();
-        addAttribute("displayName", displayName);
+        addAttribute("displayName", displayName, true);
         return this;
     }
 
@@ -135,7 +135,7 @@ public class CodeElement extends BaseElement {
      */
     public final CodeElement setOriginalText(String originalText) {
         checkReadOnly();
-        addAttribute("originalText", originalText);
+        addAttribute("originalText", originalText, true);
         return this;
     }    
 }
