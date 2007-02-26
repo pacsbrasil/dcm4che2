@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4chee.audit.login;
 
 import java.util.Map;
@@ -51,12 +51,9 @@ import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4che2.audit.message.AuditLog;
+import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditLogUsedMessage;
-import org.dcm4che2.audit.message.NetworkAccessPoint;
 import org.dcm4che2.audit.message.UserAuthenticationMessage;
-import org.dcm4che2.audit.message.UserWithLocation;
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -65,100 +62,90 @@ import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
  */
 public class AuditLoginModule implements LoginModule {
 
-    /** The JACC PolicyContext key for the current Subject */
-    private static final String WEB_REQUEST_KEY = 
-            "javax.servlet.http.HttpServletRequest";
-    
-    private static final Logger auditlog = Logger.getLogger("audit");
+    private static final String WEB_REQUEST_KEY = "javax.servlet.http.HttpServletRequest";
+
+    private static final Logger auditlog = Logger.getLogger("auditlog");
+
     private static final Logger log = Logger.getLogger(AuditLoginModule.class);
-    
+
     private CallbackHandler cbh;
-    private String auditLogURI = null;
-    
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
-     */
+
+    private String auditLogURI;
+
     public void initialize(Subject subject, CallbackHandler cbh,
             Map sharedState, Map options) {
         this.cbh = cbh;
         Object tmp = options.get("auditLogURI");
-        if( tmp != null )
-            auditLogURI = tmp.toString();
+        if (tmp != null)
+            this.auditLogURI = tmp.toString();
     }
 
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#login()
-     */
     public boolean login() throws LoginException {
         return true;
     }
-    
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#commit()
-     */
+
     public boolean commit() throws LoginException {
-        UserWithLocation user = getUserWithLocation();
-        auditlog.info(new UserAuthenticationMessage(
-                new UserAuthenticationMessage.AuditEvent.Login(), user));
-        if (auditLogURI  != null) {
-            auditlog.info(new AuditLogUsedMessage(
-                    new AuditLogUsedMessage.AuditEvent(), user,
-                    new AuditLog(auditLogURI)));            
+        auditUserAuth(UserAuthenticationMessage.LOGIN);
+        if (auditLogURI != null) {
+            auditAuditLogUsed();
         }
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#logout()
-     */
-    public boolean logout() throws LoginException {
-        auditlog.info(new UserAuthenticationMessage(
-                new UserAuthenticationMessage.AuditEvent.Logout(),
-                getUserWithLocation()));
+    public boolean abort() throws LoginException {
+        auditUserAuthFailure(AuditEvent.OutcomeIndicator.MINOR_FAILURE);
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#abort()
-     */
-    public boolean abort() throws LoginException {
-        UserAuthenticationMessage.AuditEvent event = 
-                new UserAuthenticationMessage.AuditEvent.Login();
-        event.setEventOutcomeIndicator(OutcomeIndicator.MINOR_FAILURE);
-        auditlog.warn(
-                new UserAuthenticationMessage(event, getUserWithLocation()));
+    public boolean logout() throws LoginException {
+        auditUserAuth(UserAuthenticationMessage.LOGIN);
         return true;
-    } 
-   
-    private UserWithLocation getUserWithLocation() {
-        return new UserWithLocation(getUserID(), getNetworkAccessPoint());
     }
-    
+
+    private void auditUserAuth(AuditEvent.TypeCode typeCode) {
+        UserAuthenticationMessage userAuth = new UserAuthenticationMessage(
+                typeCode);
+        userAuth.addUserPerson(getUserID(), null, null, getHostname());
+        auditlog.info(userAuth);
+    }
+
+    private void auditUserAuthFailure(AuditEvent.OutcomeIndicator failure) {
+        UserAuthenticationMessage msg = new UserAuthenticationMessage(
+                UserAuthenticationMessage.LOGIN);
+        msg.setOutcomeIndicator(failure);
+        msg.addUserPerson(getUserID(), null, null, getHostname());
+        auditlog.warn(msg);
+    }
+
+    private void auditAuditLogUsed() {
+        AuditLogUsedMessage auditLogUsed = new AuditLogUsedMessage();
+        auditLogUsed.addUserPerson(getUserID(), null, null, getHostname());
+        auditlog.info(auditLogUsed);
+    }
+
     private String getUserID() {
         NameCallback nc = new NameCallback("prompt");
         try {
-            cbh.handle(new Callback[] {nc});
+            cbh.handle(new Callback[] { nc });
         } catch (Exception e) {
-            log.error("Failed to access User ID:", e);
-            return "???";
+            log.error("Failed to identify user:", e);
+            return "UNKOWN_USER";
         }
         return nc.getName();
     }
 
-    private NetworkAccessPoint getNetworkAccessPoint() {
-        HttpServletRequest request;
-        try {
-            request = (HttpServletRequest) 
-                    PolicyContext.getContext(WEB_REQUEST_KEY);
-            String addr = request.getRemoteAddr();
-            String host = request.getRemoteHost();
-            return host.equals(addr) 
-                    ? (NetworkAccessPoint) new NetworkAccessPoint.IPAddress(addr)
-                    : (NetworkAccessPoint) new NetworkAccessPoint.HostName(host);
-        } catch (PolicyContextException e) {
-            log.error("Failed to determine Network Access Point ID:", e);
-            return new NetworkAccessPoint.HostName("???");
-        }
+    private HttpServletRequest getHttpServletRequest()
+            throws PolicyContextException {
+        return (HttpServletRequest) PolicyContext.getContext(WEB_REQUEST_KEY);
+
     }
 
+    private String getHostname() {
+        try {
+            return getHttpServletRequest().getRemoteHost();
+        } catch (PolicyContextException e) {
+            log.warn("Failed to identify user host:", e);
+            return null;
+        }
+    }
 }
