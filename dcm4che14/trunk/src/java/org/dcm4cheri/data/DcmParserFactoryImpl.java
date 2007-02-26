@@ -38,13 +38,10 @@
 
 package org.dcm4cheri.data;
 
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-
-import javax.imageio.stream.ImageInputStream;
-
-import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmParser;
+
+import java.io.InputStream;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  *
@@ -54,58 +51,19 @@ import org.dcm4che.data.DcmParser;
 public final class DcmParserFactoryImpl
         extends org.dcm4che.data.DcmParserFactory {
 
-    private static Logger log = Logger.getLogger(DcmParserFactoryImpl.class);
-    
-    private static final String FILTER_INPUT_STREAM = 
-            "org.dcm4che.data.FilterInputStream";
-    private static final String FILTER_IMAGE_INPUT_STREAM = 
-            "org.dcm4che.data.FilterImageInputStream";
-
-    private final Constructor filterInputStreamConstructor;
-    private final Constructor filterImageInputStreamConstructor;
-    
     /** Creates a new instance of DcmParserFactoryImpl */
     public DcmParserFactoryImpl() {
-        filterInputStreamConstructor = 
-                getConstructor(FILTER_INPUT_STREAM, InputStream.class);
-        filterImageInputStreamConstructor =
-                getConstructor(FILTER_IMAGE_INPUT_STREAM, ImageInputStream.class);
     }
-    
-    private static Constructor getConstructor(String key, Class initParamType) {
-        try {
-            String className = System.getProperty(key);
-            if (className != null) {
-                Class clazz = Class.forName(className);
-                return clazz.getConstructor(new Class[] { initParamType });
-            }
-        } catch (Exception e) {
-            log.warn("Failed to configure input stream filter", e);
-        }
-        return null;
-    }
-
+/*
+    public DcmParser newDcmParser() {
+        return new DcmParserImpl();
+    }    
+*/
     public DcmParser newDcmParser(InputStream in) {
-        if (filterInputStreamConstructor != null) {
-            try {
-                in = (InputStream) filterInputStreamConstructor
-                        .newInstance(new Object[] { in });
-            } catch (Exception e) {
-                log.warn("Failed to initialize input stream filter", e);
-            }
-        }
         return new DcmParserImpl(in);
     }    
 
     public DcmParser newDcmParser(ImageInputStream in) {
-        if (filterImageInputStreamConstructor != null) {
-            try {
-                in = (ImageInputStream) filterImageInputStreamConstructor
-                        .newInstance(new Object[] { in });
-            } catch (Exception e) {
-                log.warn("Failed to initialize input stream filter", e);
-            }
-        }
         return new DcmParserImpl(in);
     }    
 
