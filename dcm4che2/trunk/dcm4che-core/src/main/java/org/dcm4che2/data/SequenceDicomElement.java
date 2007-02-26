@@ -56,12 +56,26 @@ class SequenceDicomElement extends AbstractDicomElement {
     private static final long serialVersionUID = 3690757302122656054L;
 
     private transient List items;
+    private transient DicomObject parent;
 
-    public SequenceDicomElement(int tag, VR vr, boolean bigEndian, List items) {
+    public SequenceDicomElement(int tag, VR vr, boolean bigEndian, List items,
+            DicomObject parent) {
         super(tag, vr, bigEndian);
         if (items == null)
             throw new NullPointerException();
         this.items = items;
+        this.parent = parent;
+    }
+    
+    // used by ElementSerializer 
+    void setParentDicomObject(DicomObject parent) {
+        this.parent = parent;
+        for (int i = 0, n = items.size(); i < n; ++i) {
+            Object item = items.get(i);
+            if (item instanceof DicomObject) {
+                ((DicomObject) item).setParent(parent);
+            }            
+        }
     }
 
     private void writeObject(ObjectOutputStream s) throws IOException {
@@ -241,6 +255,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         if (item == null)
             throw new NullPointerException();
         items.add(item);
+        item.setParent(parent);
         item.setItemPosition(countItems());
         return item;
     }
@@ -251,6 +266,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         if (item == null)
             throw new NullPointerException();
         items.add(index, item);
+        item.setParent(parent);
         updateItemPositions(index);
         return item;
     }
@@ -261,6 +277,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         if (item == null)
             throw new NullPointerException();
         items.set(index, item);
+        item.setParent(parent);
         item.setItemPosition(index + 1);
         return item;
     }
@@ -310,7 +327,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         for (int i = 0; i < count; i++) {
             tmp.add(getDicomObject(i).subSet(filter));
         }
-        return new SequenceDicomElement(tag, vr, bigEndian, tmp);
+        return new SequenceDicomElement(tag, vr, bigEndian, tmp, parent);
     }
 
 }

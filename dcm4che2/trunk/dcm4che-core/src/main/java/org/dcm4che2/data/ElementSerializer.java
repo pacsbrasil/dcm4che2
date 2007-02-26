@@ -91,11 +91,8 @@ class ElementSerializer implements Serializable {
         attrs.setItemOffset(s.readLong());
         DicomElement attr = (DicomElement) s.readObject();
         while (attr.tag() != Tag.ItemDelimitationItem) {
-            if (attr.vr() == VR.SQ && attr.hasItems()) {
-                for (int i = 0, n = attr.countItems(); i < n; ++i) {
-                    ((BasicDicomObject) attr.getDicomObject(i))
-                            .setParent(attrs);
-                }
+            if (attr instanceof SequenceDicomElement) {
+                ((SequenceDicomElement) attr).setParentDicomObject(attrs);                       
             }
             ((BasicDicomObject) attrs).addInternal(attr);
             attr = (DicomElement) s.readObject();

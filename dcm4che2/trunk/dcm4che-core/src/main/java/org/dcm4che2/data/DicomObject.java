@@ -92,6 +92,8 @@ public interface DicomObject extends Serializable {
      */
     DicomObject getParent();
 
+    void setParent(DicomObject parent);
+    
     /**
      * Returns the Specific Character Set defined by Attribute <i>Specific
      * Character Set (0008,0005)</i> of this or the root Data Set, if this is a
