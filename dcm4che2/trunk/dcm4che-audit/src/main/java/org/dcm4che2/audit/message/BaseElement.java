@@ -61,7 +61,7 @@ class BaseElement {
     
     public BaseElement(String name, String attr, String val) {
         this.name = name;
-        addAttribute(attr, val);
+        addAttribute(attr, val, false);
     }
 
     private static class Attr {
@@ -74,23 +74,38 @@ class BaseElement {
         }
     }
 
-    protected void addAttribute(String name, Object val) {
-        if (val == null || val.equals("")) {
-            return;
+    protected void addAttribute(String name, Object val, boolean optional) {
+        boolean remove = val == null || val.equals("");
+        if (remove && !optional) {
+            throw new IllegalArgumentException(name 
+                    + " must have a non empty value.");
         }
         if (firstAttr == null) {
-            firstAttr = new Attr(name, val);
+            if (!remove) {
+                firstAttr = new Attr(name, val);
+            }
             return;
         }
-        Attr prev = firstAttr;
-        while (!name.equals(prev.name)) {
-            if (prev.next == null) {
-                prev.next = new Attr(name, val);
+        Attr cur = firstAttr;
+        Attr prev = null;
+        while (!name.equals(cur.name)) {
+            if (cur.next == null) {
+                if (!remove) {
+                    cur.next = new Attr(name, val);
+                }
                 return;                
             }
-            prev = prev.next;
+            cur = (prev = cur).next;
         }
-        prev.val = val;
+        if (!remove) {
+            cur.val = val;
+        } else {
+            if (prev != null) {
+                prev.next = cur.next;
+            } else {
+                firstAttr = cur.next;
+            }
+        }
     }
     
     protected Object getAttribute(String name) {
@@ -110,7 +125,7 @@ class BaseElement {
                 out.write(' ');
                 out.write(attr.name);
                 out.write('=');
-                outputAttrValue(out, attr.name);
+                outputAttrValue(out, attr.val);
             }
         }
         if (isEmpty()) {
@@ -144,7 +159,7 @@ class BaseElement {
     private void outputAttrValue(Writer out, Object val) throws IOException {
         if (val instanceof Date) {
             out.write('"');
-            out.write(AuditMessageUtils.toDateTimeStr((Date) val));
+            out.write(AuditMessage.toDateTimeStr((Date) val));
             out.write('"');
         } else if (val instanceof byte[]) {
             out.write('"');
