@@ -3,6 +3,10 @@ package org.dcm4che2.hp;
 import java.util.Arrays;
 import java.util.List;
 
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+
 import junit.framework.TestCase;
 
 public class HangingProtocolTest extends TestCase {
@@ -35,5 +39,23 @@ public class HangingProtocolTest extends TestCase {
         List list = Arrays.asList(ss);
         assertEquals(true, list.contains("ALONG_AXIS"));
         assertEquals(true, list.contains("BY_ACQ_TIME"));
+    }
+    
+    public void testAddImageSet() {
+        HangingProtocol hp = new HangingProtocol();
+        HPImageSet is1 = hp.addNewImageSet(null);
+        HPImageSet is2 = hp.addNewImageSet(is1);
+        assertEquals(is1.getImageSetSelectors(), is2.getImageSetSelectors());        
+        assertEquals(is1.getDicomObject().getParent(), is2.getDicomObject().getParent());        
+        List imageSets = hp.getImageSets();
+        assertEquals(2, imageSets.size());
+        DicomObject dcmobj = hp.getDicomObject();
+        DicomElement isseq = dcmobj.get(Tag.ImageSetsSequence);
+        assertNotNull(isseq);
+        assertEquals(1, isseq.countItems());
+        DicomObject is = isseq.getDicomObject();
+        DicomElement tbissq = is.get(Tag.TimeBasedImageSetsSequence);
+        assertNotNull(tbissq);
+        assertEquals(2, tbissq.countItems());        
     }
 }

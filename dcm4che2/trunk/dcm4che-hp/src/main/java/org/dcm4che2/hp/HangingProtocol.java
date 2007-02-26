@@ -254,13 +254,23 @@ public class HangingProtocol {
         return Collections.unmodifiableList(imageSets);
     }
 
-    public void addImageSet(HPImageSet imageSet) {
-        if (imageSet == null)
-            throw new NullPointerException();
-
-        imageSet.setImageSetNumber(imageSets.size() + 1);
-        dcmobj.get(Tag.ImageSetsSequence).addDicomObject(imageSet.getDicomObject());
-        imageSets.add(imageSet);
+    public HPImageSet addNewImageSet(HPImageSet shareSelectors) {
+        HPImageSet is;
+        if (shareSelectors != null) {
+            if (shareSelectors.getDicomObject().getParent().getParent()
+                    != dcmobj) {
+                throw new IllegalArgumentException(
+                        "shareSelectors does not belongs to this HP object");
+            }
+            is = new HPImageSet(shareSelectors);
+        } else {
+            is = new HPImageSet();
+            dcmobj.get(Tag.ImageSetsSequence).addDicomObject(
+                    is.getDicomObject().getParent());
+        }
+        is.setImageSetNumber(imageSets.size() + 1);
+        imageSets.add(is);
+        return is;
     }
 
     public boolean removeImageSet(HPImageSet imageSet) {
@@ -369,6 +379,13 @@ public class HangingProtocol {
 
     public List getDisplaySets() {
         return Collections.unmodifiableList(displaySets);
+    }
+
+    public HPDisplaySet addNewDisplaySet(HPImageSet imageSet) {
+        HPDisplaySet displaySet = new HPDisplaySet();
+        displaySet.setImageSet(imageSet);
+        addDisplaySet(displaySet);
+        return displaySet;
     }
 
     public void addDisplaySet(HPDisplaySet displaySet) {

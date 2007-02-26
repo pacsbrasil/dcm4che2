@@ -60,13 +60,13 @@ public class HPImageSet {
 
     private final List selectors;
 
-    HPImageSet(List selectors, DicomObject dcmobj) {
+    protected HPImageSet(List selectors, DicomObject dcmobj) {
         this.selectors = selectors;
         this.dcmobj = dcmobj;
     }
 
-    public HPImageSet() {
-        this.selectors = new ArrayList();
+    protected HPImageSet() {
+        this.selectors = new ArrayList(4);
         this.dcmobj = new BasicDicomObject();
         DicomObject is = new BasicDicomObject();
         is.putSequence(Tag.ImageSetSelectorSequence);
@@ -74,7 +74,7 @@ public class HPImageSet {
         tbissq.addDicomObject(dcmobj);
     }
 
-    public HPImageSet(HPImageSet shareSelectors) {
+    protected HPImageSet(HPImageSet shareSelectors) {
         this.selectors = shareSelectors.selectors;
         this.dcmobj = new BasicDicomObject();
         DicomElement tbissq = shareSelectors.getTimeBasedImageSetsSequence();

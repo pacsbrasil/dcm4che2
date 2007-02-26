@@ -66,7 +66,7 @@ public class HPDisplaySet {
 
     private final List cmps;
 
-    HPDisplaySet(DicomObject dcmobj, HPImageSet imageSet) {
+    protected HPDisplaySet(DicomObject dcmobj, HPImageSet imageSet) {
         this.imageSet = imageSet;
         this.dcmobj = dcmobj;
         DicomElement imageBoxesSeq = dcmobj.get(Tag.ImageBoxesSequence);
