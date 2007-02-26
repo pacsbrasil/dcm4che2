@@ -638,6 +638,15 @@ public abstract class ContentManagerBean implements SessionBean {
     	return sl.getPatient().getAttributes(false);
     }    
     
+	/**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public boolean isStudyAvailable(long studyPk, int availability) throws FinderException {
+    	StudyLocal sl = studyHome.findByPrimaryKey( new Long( studyPk ) );
+    	return sl.isStudyAvailable(availability);
+    }
+    
 	public class InstanceNumberComparator implements Comparator {
 
 		public InstanceNumberComparator() {

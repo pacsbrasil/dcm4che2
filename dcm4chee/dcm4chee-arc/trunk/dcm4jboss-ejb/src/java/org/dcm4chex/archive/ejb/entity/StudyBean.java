@@ -132,6 +132,8 @@ import org.dcm4chex.archive.util.Convert;
  * 	            query="SELECT MAX(s.availability) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="java.lang.Long ejbSelectStudyFileSize(java.lang.Long studyPk, java.lang.Long fsPk)"
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesForAvailability(java.lang.Long pk, int availability)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileSystem.availability = ?2"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
@@ -568,6 +570,12 @@ public abstract class StudyBean implements EntityBean {
     public abstract int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Long pk, int status)
             throws FinderException;
 
+    /**
+     * @ejb.select query=""
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesForAvailability(java.lang.Long pk, int availability)
+            throws FinderException;
+
     /**    
      * @throws FinderException
      * @ejb.home-method
@@ -753,6 +761,13 @@ public abstract class StudyBean implements EntityBean {
      */
     public boolean isStudyAvailableOnROFs(int validFileStatus) throws FinderException {
         return ( ejbSelectNumberOfStudyRelatedInstancesOnROFS(getPk(), validFileStatus) == getNumberOfStudyRelatedInstances() );
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public boolean isStudyAvailable(int availability) throws FinderException {
+        return ( ejbSelectNumberOfStudyRelatedInstancesForAvailability(getPk(), availability) == getNumberOfStudyRelatedInstances() );
     }
     
     /**
