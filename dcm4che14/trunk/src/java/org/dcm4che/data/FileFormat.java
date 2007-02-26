@@ -48,17 +48,20 @@ public class FileFormat {
     public final boolean hasPreamble;
     
     public final boolean hasFileMetaInfo;
+
+    public final boolean mglib;
     
     public final DcmDecodeParam decodeParam;
     
     private FileFormat(boolean hasPreamble, boolean hasFileMetaInfo,
-            DcmDecodeParam decodeParam) {
+            DcmDecodeParam decodeParam, boolean mglib) {
         if (hasPreamble && !hasFileMetaInfo) {
             throw new IllegalArgumentException("Preamble without FMI");
         }
         this.hasPreamble = hasPreamble;
         this.hasFileMetaInfo = hasFileMetaInfo;
         this.decodeParam = decodeParam;
+        this.mglib = mglib;
     }
     
     public String toString() {
@@ -71,38 +74,41 @@ public class FileFormat {
     }
     
     public static final FileFormat DICOM_FILE =
-            new FileFormat(true, true, DcmDecodeParam.EVR_LE);
+            new FileFormat(true, true, DcmDecodeParam.EVR_LE, false);
 
     public static final FileFormat DICOM_FILE_WO_PREAMBLE =
-            new FileFormat(false, true, DcmDecodeParam.EVR_LE);
+            new FileFormat(false, true, DcmDecodeParam.EVR_LE, false);
 
     public static final FileFormat EVR_LE_STREAM =
-            new FileFormat(false, false, DcmDecodeParam.EVR_LE);
+            new FileFormat(false, false, DcmDecodeParam.EVR_LE, false);
 
     public static final FileFormat EVR_BE_FILE =
-            new FileFormat(true, true, DcmDecodeParam.EVR_BE);
+            new FileFormat(true, true, DcmDecodeParam.EVR_BE, false);
 
     public static final FileFormat EVR_BE_FILE_WO_PREAMBLE =
-            new FileFormat(false, true, DcmDecodeParam.EVR_BE);
+            new FileFormat(false, true, DcmDecodeParam.EVR_BE, false);
 
     public static final FileFormat EVR_BE_STREAM =
-            new FileFormat(false, false, DcmDecodeParam.EVR_BE);
+            new FileFormat(false, false, DcmDecodeParam.EVR_BE, false);
 
     public static final FileFormat IVR_BE_FILE =
-            new FileFormat(true, true, DcmDecodeParam.IVR_BE);
+            new FileFormat(true, true, DcmDecodeParam.IVR_BE, false);
 
     public static final FileFormat IVR_BE_FILE_WO_PREAMBLE =
-            new FileFormat(false, true, DcmDecodeParam.IVR_BE);
+            new FileFormat(false, true, DcmDecodeParam.IVR_BE, false);
 
     public static final FileFormat IVR_BE_STREAM =
-            new FileFormat(false, false, DcmDecodeParam.IVR_BE);
+            new FileFormat(false, false, DcmDecodeParam.IVR_BE, false);
 
     public static final FileFormat IVR_LE_FILE =
-            new FileFormat(true, true, DcmDecodeParam.IVR_LE);
+            new FileFormat(true, true, DcmDecodeParam.IVR_LE, false);
 
     public static final FileFormat IVR_LE_FILE_WO_PREAMBLE =
-            new FileFormat(false, true, DcmDecodeParam.IVR_LE);
+            new FileFormat(false, true, DcmDecodeParam.IVR_LE, false);
 
     public static final FileFormat ACRNEMA_STREAM =
-            new FileFormat(false, false, DcmDecodeParam.IVR_LE);
+            new FileFormat(false, false, DcmDecodeParam.IVR_LE, false);
+
+    public static final FileFormat MGLIB =
+            new FileFormat(false, false, DcmDecodeParam.IVR_LE, true);
 }

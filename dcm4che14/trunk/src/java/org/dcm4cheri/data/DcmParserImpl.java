@@ -38,30 +38,29 @@
 
 package org.dcm4cheri.data;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.zip.InflaterInputStream;
+
+import javax.imageio.stream.ImageInputStream;
+
+import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.data.DcmParseException;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.dict.VRMap;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.EOFException;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.zip.InflaterInputStream;
-import javax.imageio.stream.ImageInputStream;
-
-import org.apache.log4j.Logger;
-
+import org.dcm4che.dict.VRs;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -268,7 +267,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         int tag = bigEndian
             ? (b[0] & 0xff) << 24 | (b[1] & 0xff) << 16 | (b[2] & 0xff) << 8 | (b[3] & 0xff)
             : (b[1] & 0xff) << 24 | (b[0] & 0xff) << 16 | (b[3] & 0xff) << 8 | (b[2] & 0xff);
-
+        if (tag == 1296123721) {
+            return FileFormat.MGLIB;
+        }
         boolean fmi = (tag & 0xffff0000) == 0x00020000;
         int vr = ((b[4] & 0xff) << 8) | (b[5] & 0xff);
         if (VRMap.DEFAULT.lookup(tag) == vr) {
@@ -453,7 +454,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
            handler.startDcmFile();
        DcmDecodeParam param = format.decodeParam;
        rPos = 0L;
-       if (format.hasFileMetaInfo) {
+       if (format.mglib) {
+           skipMglibHeader();
+       } else if (format.hasFileMetaInfo) {
            tsUID = null;
            parseFileMetaInfo(format.hasPreamble, format.decodeParam);
            if (tsUID == null)
@@ -467,6 +470,16 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
        return rPos;
     }
     
+    private void skipMglibHeader() throws IOException {
+        String s;
+        while ((s = in.readLine()) != null) {
+            rPos += s.length() + 1;
+            if  ("ENDINFO".equals(s)) {
+                break;
+            }
+        }
+    }
+
     public long parseItemDataset() throws IOException {
         in.readFully(b12, 0, 8);
         rPos += 8;
