@@ -309,7 +309,17 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
-
+   <operation impact="ACTION">
+      <description>Move instances to trash.
+      </description>
+      <name>moveInstancesToTrash</name>
+      <parameter>
+        <description>Instance UIDs</description>
+        <name>iuids</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>org.dcm4che.data.Dataset</return-type>
+   </operation>
 <!-- undelete (recover from trash) -->
    <operation impact="ACTION">
       <description>Undelete patient.

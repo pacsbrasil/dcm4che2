@@ -428,6 +428,18 @@ public class ContentEditService extends ServiceMBeanSupport {
     	if ( log.isDebugEnabled() ) {log.debug("Instance moved to trash. ds:");log.debug(ds); }
     }
 
+    public Dataset moveInstancesToTrash(String[] iuids) throws Exception{
+    	if ( log.isDebugEnabled() ) log.debug("Move Instances to trash: " + iuids);
+    	Collection dss = lookupPrivateManager().moveInstancesToTrash(iuids, true);
+    	if(dss.size() != 1)
+    		throw new Exception("moveInstancesToTrash failed");
+    	Dataset ds = (Dataset)dss.iterator().next();
+    	if ( log.isDebugEnabled() ) log.debug("sendStudyMgt N-ACTION Instances: " + iuids);
+    	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
+    	if ( log.isDebugEnabled() ) {log.debug("Instances moved to trash. ds:");log.debug(ds); }
+    	return ds;
+    }
+    
     public List undeletePatient(long privPatPk) throws RemoteException, FinderException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("undelete Patient from trash. pk:"+privPatPk);
     	List[] files = lookupContentManager().listPatientFilesToRecover(privPatPk);
