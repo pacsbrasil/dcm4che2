@@ -120,6 +120,7 @@ public class AuditLoginModule implements LoginModule {
     private void auditAuditLogUsed() {
         AuditLogUsedMessage auditLogUsed = new AuditLogUsedMessage();
         auditLogUsed.addUserPerson(getUserID(), null, null, getHostname());
+        auditLogUsed.addSecurityAuditLog(auditLogURI);
         auditlog.info(auditLogUsed);
     }
 
