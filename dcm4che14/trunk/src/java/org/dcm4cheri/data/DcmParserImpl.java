@@ -69,8 +69,10 @@ import org.xml.sax.ContentHandler;
  * @version 1.3.22
  */
 final class DcmParserImpl implements org.dcm4che.data.DcmParser {
+
     private static final Logger log = Logger.getLogger(DcmParserImpl.class);
     
+    private static final int MGLIB_MAGIC = 0x4D414749; // MAGI
     private static final int TS_ID_TAG = 0x00020010;
     private static final int ITEM_TAG = 0xFFFEE000;
     private static final int ITEM_DELIMITATION_ITEM_TAG = 0xFFFEE00D;
@@ -267,7 +269,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         int tag = bigEndian
             ? (b[0] & 0xff) << 24 | (b[1] & 0xff) << 16 | (b[2] & 0xff) << 8 | (b[3] & 0xff)
             : (b[1] & 0xff) << 24 | (b[0] & 0xff) << 16 | (b[3] & 0xff) << 8 | (b[2] & 0xff);
-        if (tag == 1296123721) {
+        if (tag == MGLIB_MAGIC) {
             return FileFormat.MGLIB;
         }
         boolean fmi = (tag & 0xffff0000) == 0x00020000;
