@@ -196,7 +196,6 @@ public class AuditMessage extends BaseElement {
     }    
     
     public void output(Writer out) throws IOException {
-        validate();
         if (incXMLDecl) {
             out.write(XML_VERSION_1_0_ENCODING_UTF_8);
         }
