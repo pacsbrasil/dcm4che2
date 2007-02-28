@@ -411,6 +411,12 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Delete all entries from trash.
+      </description>
+      <name>emptyTrash</name>
+      <return-type>void</return-type>
+   </operation>
 <!-- move -->
    <operation impact="ACTION">
       <description>move study.

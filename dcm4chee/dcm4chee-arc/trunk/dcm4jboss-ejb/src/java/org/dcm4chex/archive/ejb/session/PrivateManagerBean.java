@@ -340,6 +340,25 @@ public abstract class PrivateManagerBean implements SessionBean {
     }
     
     /**
+     * @ejb.interface-method
+     */
+    public void deleteAll(int privateType) throws RemoteException {
+        try {
+            Collection c = privPatHome.findByPrivateType(privateType);
+            for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+                privPatHome.remove( ((PrivatePatientLocal) iter.next()).getPk() );
+            }
+        } catch (EJBException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (RemoveException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (FinderException e) {
+            throw new RemoteException(e.getMessage());
+        }
+    }
+    
+    
+    /**
      * Delete a list of instances, i.e., move them to trash bin
      * 
      * @ejb.interface-method

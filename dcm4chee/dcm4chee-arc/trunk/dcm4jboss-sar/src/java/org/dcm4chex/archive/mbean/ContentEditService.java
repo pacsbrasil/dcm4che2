@@ -77,6 +77,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ContentEditService extends ServiceMBeanSupport {
 
+    private static final int DELETED = 1;
 	private ContentEdit contentEdit;
     private static Logger log = Logger.getLogger( ContentEditService.class.getName() );
 
@@ -530,6 +531,10 @@ public class ContentEditService extends ServiceMBeanSupport {
     public void deleteInstance(long pk) throws RemoteException, HomeFactoryException, CreateException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("delete Instance from trash. pk:"+pk);
     	lookupPrivateManager().deletePrivateInstance( pk );//dont delete files of instance (needed for purge process)
+    }
+    public void emptyTrash() throws RemoteException, HomeFactoryException, CreateException, FinderException {
+        if ( log.isDebugEnabled() ) log.debug("EMPTY TRASH! (delete all entries of 'private' tables of privateType:"+DELETED+")");
+        lookupPrivateManager().deleteAll( DELETED );
     }
     
     public void moveStudies(long[] study_pks, Long patient_pk) throws FinderException, HomeFactoryException, CreateException, RemoteException {
