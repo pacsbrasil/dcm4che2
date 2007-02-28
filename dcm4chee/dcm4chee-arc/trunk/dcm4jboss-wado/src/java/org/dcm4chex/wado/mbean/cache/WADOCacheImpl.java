@@ -167,96 +167,42 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
-	 * 
-	 * @return	The image if in cache or null.
-	 */
-	public BufferedImage getImage(String studyUID, String seriesUID, String instanceUID, String suffix) {
-		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, suffix ) );
-	}
-
-	/**
-	 * Get an image as file from cache.
-	 * <p>
-	 * This method returns the image from the default path of this cache.<br>
-	 * 
-	 * @param studyUID		Unique identifier of the study.
-	 * @param seriesUID		Unique identifier of the series.
-	 * @param instanceUID	Unique identifier of the instance.
-	 * 
-	 * @return	The File of the image if in cache or null.
-	 */
-	public File getImageFile(String studyUID, String seriesUID, String instanceUID, String suffix) {
-		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, suffix, null );
-		if ( file.exists() ) {
-			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
-			return file;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Put an image as BufferedImage to the cache.
-	 * <p>
-	 * Stores the image on the default path of this cache.
-	 * 
-	 * @param image			The image as BufferedImage.
-	 * @param studyUID		Unique identifier of the study.
-	 * @param seriesUID		Unique identifier of the series.
-	 * @param instanceUID	Unique identifier of the instance.
-	 * 
-	 * @return The File object of the image in this cache.
-	 * 
-	 * @throws IOException
-	 */
-	public File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String suffix) throws IOException {
-		File file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, suffix, null );
-		_writeImageFile( image, file);
-		return file;
-	}
-
-	/**
-	 * Get an image of special size from cache.
-	 * <p>
-	 * This method use a image size (rows and columns) to search on a special path of this cache.
-	 * 
-	 * @param studyUID		Unique identifier of the study.
-	 * @param seriesUID		Unique identifier of the series.
-	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Image region defined by two points in opposing corners
 	 * 
 	 * @return				The image if in cache or null.
 	 */
-	public BufferedImage getImage(String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix) {
-		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, rows, columns, suffix ) );
+	public BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix ) {
+		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, rows, columns, region, suffix ) );
 	}
 
 	/**
-	 * Get an image of special size from cache.
+	 * Get a region of an image of special size from cache.
 	 * <p>
-	 * This method use a image size (rows and columns) to search on a special path of this cache.
+	 * This method use a image size (rows and columns) and a region (two points) to search on a special path of this cache.
 	 * 
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Image region defined by two points in opposing corners
 	 * 
 	 * @return				The File object of the image if in cache or null.
 	 */
-	public File getImageFile(String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix ) {
-		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, suffix, null );
+	public File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix ) {
+		File file = this._getImageFile( rows+"-"+columns+"-"+region, studyUID, seriesUID, instanceUID, suffix, null );
 		if ( file.exists() ) {
 			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
 			return file;
 		} else {
 			return null;
-		}
+		}		
 	}
 
 	/**
-	 * Put an image of special size to this cache.
+	 * Put a region of an image of special size to this cache.
 	 * <p>
 	 * Stores the image on a special path of this cache.
 	 * 
@@ -266,17 +212,18 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Image region defined by two points in opposing corners
 	 * 
 	 * @return The File object of the image in this cache.
 	 * @throws IOException
      */
-	public File putImage( BufferedImage image, String studyUID, String seriesUID,
-			String instanceUID, String rows, String columns, String suffix) throws IOException {
-		File file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, suffix, null );
-		_writeImageFile( image, file);
-		return file;
+	public File putImage( BufferedImage image, String studyUID, String seriesUID, 
+		String instanceUID, String rows, String columns, String region, String suffix) throws IOException {
+			File file = this._getImageFile( rows+"-"+columns+"-"+region, studyUID, seriesUID, instanceUID, suffix, null );
+			_writeImageFile( image, file);
+			return file;
 	}
-
+	
 	/**
 	 * Puts a stream to this cache.
 	 * 
@@ -286,18 +233,17 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Rectangular region of the image (defined by two points)
 	 * 
 	 * @return	The stored File object.
 	 * 
 	 * @throws IOException
 	 */
-	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix ) throws IOException {
+	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix ) throws IOException {
 		File file;
-		if ( rows == null && columns == null ) {
-			file = this._getImageFile( defaultSubdir, studyUID, seriesUID, instanceUID, null, null );
-		} else {
-			file = this._getImageFile( rows+"-"+columns, studyUID, seriesUID, instanceUID, suffix, null );
-		}
+		
+		file = this._getImageFile( rows+"-"+columns+"-"+region, studyUID, seriesUID, instanceUID, suffix, null );
+		
 		if ( ! file.getParentFile().exists() ) {
 			file.getParentFile().mkdirs();
 		}

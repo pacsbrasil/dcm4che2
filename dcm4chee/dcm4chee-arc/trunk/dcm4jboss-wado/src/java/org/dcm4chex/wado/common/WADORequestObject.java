@@ -58,6 +58,7 @@ public interface WADORequestObject extends BasicRequestObject {
 	public static final int INVALID_FRAME_NUMBER = -4;
 	public static final int INVALID_CONTENT_TYPE = -5;
 	public static final int INVALID_TRANSFER_SYNTAX = -6;
+	public static final int INVALID_REGION = -7;
 	
 	/**
 	 * Returns the studyUID parameter of the http request.
@@ -114,5 +115,10 @@ public interface WADORequestObject extends BasicRequestObject {
 	 * @return transferSyntax
 	 */
 	String getTransferSyntax();
+	
+	/**
+	 * @return Returns the region.
+	 */
+	String getRegion();
 	
 }

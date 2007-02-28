@@ -61,74 +61,32 @@ public interface WADOCache {
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
-	 * 
-	 * @return	The image if in cache or null.
-	 */
-	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String suffix );
-	
-	/**
-	 * Get an image as file from cache.
-	 * <p>
-	 * This method returns the image from the default path of this cache.<br>
-	 * 
-	 * @param studyUID		Unique identifier of the study.
-	 * @param seriesUID		Unique identifier of the series.
-	 * @param instanceUID	Unique identifier of the instance.
-	 * @param frameNumber
-	 * 
-	 * @return	The File of the image if in cache or null.
-	 */
-	File getImageFile( String studyUID, String seriesUID, String instanceUID, String frameNumber );
-	
-	/**
-	 * Put an image as BufferedImage to the cache.
-	 * <p>
-	 * Stores the image on the default path of this cache.
-	 * 
-	 * @param image			The image.
-	 * @param studyUID		Unique identifier of the study.
-	 * @param seriesUID		Unique identifier of the series.
-	 * @param instanceUID	Unique identifier of the instance.
-	 * @param frameNumber
-	 * 
-	 * @return The File object of the image in this cache.
-	 * 
-	 * @throws IOException
-	 */
-	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String frameNumber ) throws IOException;
-	
-	/**
-	 * Get an image of special size from cache.
-	 * <p>
-	 * This method use a image size (rows and columns) to search on a special path of this cache.
-	 * 
-	 * @param studyUID		Unique identifier of the study.
-	 * @param seriesUID		Unique identifier of the series.
-	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Image region defined by two points in opposing corners
 	 * 
 	 * @return				The image if in cache or null.
 	 */
-	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix );
+	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix );
 
 	/**
 	 * Get an image of special size from cache.
 	 * <p>
-	 * This method use a image size (rows and columns) to search on a special path of this cache.
+	 * This method use a image size (rows and columns) and a region (two points) to search on a special path of this cache.
 	 * 
 	 * @param studyUID		Unique identifier of the study.
 	 * @param seriesUID		Unique identifier of the series.
 	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Image region defined by two points in opposing corners
 	 * 
 	 * @return				The File object of the image if in cache or null.
 	 */
-	File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String suffix );
+	File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix );
 
 	/**
-	 * Put an image of special size to this cache.
+	 * Put a region of an image of special size to this cache.
 	 * <p>
 	 * Stores the image on a special path of this cache.
 	 * 
@@ -138,12 +96,13 @@ public interface WADOCache {
 	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Image region defined by two points in opposing corners
 	 * 
 	 * @return The File object of the image in this cache.
 	 * @throws IOException
      */
-	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String suffix ) throws IOException;
-	
+	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String region, String suffix ) throws IOException;
+		
 	/**
 	 * Puts a stream to this cache.
 	 * 
@@ -158,7 +117,7 @@ public interface WADOCache {
 	 * 
 	 * @throws IOException
 	 */
-	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String suffix ) throws IOException; 
+	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String region, String suffix ) throws IOException; 
 
 	/**
 	 * Return the File object to get or store a file for given arguments.

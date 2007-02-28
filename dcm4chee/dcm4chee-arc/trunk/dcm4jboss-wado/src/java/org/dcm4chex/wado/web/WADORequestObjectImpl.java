@@ -44,6 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Scanner;
+import java.lang.NumberFormatException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -68,6 +70,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	private String columns;
 	private String frameNumber;
 	private String transferSyntax;
+	private String region;
 	
 	private String serviceName;
 	
@@ -91,6 +94,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 		frameNumber = request.getParameter("frameNumber");
 		transferSyntax = request.getParameter("transferSyntax");
 		contentTypes = _string2List( contentType, "," );
+		region = request.getParameter("region");
 	}
 	
 	/**
@@ -180,6 +184,15 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	public String getTransferSyntax() {
 		return transferSyntax;
 	}
+	
+	/**
+	 * @return Returns the value of the region parameter.
+	 */
+	public String getRegion() {
+		return region;
+	}
+
+	
 	/** 
 	 * Checks this request object and returns an error code.
 	 * <p>
@@ -204,7 +217,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			try {
 				Integer.parseInt( rows );
 			} catch ( Exception x ) {
-				setErrorMsg("Error: rows parameter is inavlid! Must be an integer string.");
+				setErrorMsg("Error: rows parameter is invalid! Must be an integer string.");
 				return INVALID_ROWS;
 			}
 		}
@@ -212,7 +225,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			try {
 				Integer.parseInt( columns );
 			} catch ( Exception x ) {
-				setErrorMsg("Error: columns parameter is inavlid! Must be an integer string.");
+				setErrorMsg("Error: columns parameter is invalid! Must be an integer string.");
 				return INVALID_COLUMNS;
 			}
 		}
@@ -220,14 +233,74 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			try {
 				Integer.parseInt( frameNumber );
 			} catch ( Exception x ) {
-				setErrorMsg("Error: frameNumber parameter is inavlid! Must be an integer string.");
+				setErrorMsg("Error: frameNumber parameter is invalid! Must be an integer string.");
 				return INVALID_FRAME_NUMBER;
+			}
+		}
+		if ( region != null ) {
+			try {
+				checkRegion(region);
+			} catch ( Exception x ) {
+				setErrorMsg(x.getMessage());
+				return INVALID_REGION;
 			}
 		}
 		setErrorMsg(null);
 		return OK;
 	}
 
+	/**
+	 * Checks that the region string's value is valid. Throws <code>Exception</code> if it isn't.
+	 * 
+	 * @param region		String representing a rectangular region of an image
+	 * 
+	 * @return 				void
+	 * 
+	 */
+	private void checkRegion(String region) throws Exception {
+		if ( region == null ) throw new Exception("Error: 'region' parameter is invalid! Must specify a value.");
+		
+		Scanner sc = new Scanner(region);
+		sc.useDelimiter(",");
+		
+		int valsLeft = 4;
+		
+		double[] value = new double[4];
+		int curr = 0;
+		double next;
+		while (sc.hasNextDouble()) {
+			try {
+				next = Double.parseDouble(sc.next());
+				if (valsLeft > 0) {
+					value[curr++] = next;
+				}
+			} catch (NumberFormatException x) {
+				throw new Exception("Error: 'region' parameter is invalid! Values must be of type 'double'.");
+			}
+			
+			valsLeft--;
+		}
+		
+		if (valsLeft != 0) throw new Exception("Error: 'region' parameter is invalid! Four values separated by commas (',') must be given.");
+		
+		double topX = value[0];
+		double topY = value[1];
+		double botX = value[2];
+		double botY = value[3];
+		
+		if (topX > 1.0 || topX < 0.0 ||
+			topY > 1.0 || topY < 0.0 || 
+			botX > 1.0 || botX < 0.0 || 
+			botY > 1.0 || botY < 0.0) 
+			throw new Exception("Error: 'region' parameter is invalid! Values must be between 0.0 and 1.0."); 
+		
+		if (topX==botX || topY==botY) throw new Exception("Error: 'region' parameter is invalid! The region must have an area greater than zero.");
+		
+		if (botX == 0.0) throw new Exception("Error: 'region' parameter is invalid! 'x' value for 2nd point cannot be '0.0'.");
+		if (botY == 0.0) throw new Exception("Error: 'region' parameter is invalid! 'y' value for 2nd point cannot be '0.0'.");
+		
+		sc.close();
+	}
 	
 	/**
 	 * Seperate the given String with delim character and return a List of the items.

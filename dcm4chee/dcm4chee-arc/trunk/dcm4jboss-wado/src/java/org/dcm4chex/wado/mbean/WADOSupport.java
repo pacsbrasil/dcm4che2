@@ -42,6 +42,9 @@ package org.dcm4chex.wado.mbean;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.RasterFormatException;
+import java.awt.Rectangle;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -60,9 +63,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageReadParam;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.management.MBeanServer;
@@ -76,6 +81,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.dcm4cheri.imageio.plugins.DcmImageReader;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.Patient;
@@ -378,7 +384,7 @@ protected Dataset getPatientInfo(WADORequestObject req) {
 /**
  * Handles a request for content type image/jpeg.
  * <p>
- * Use this method first if conetnt type jpeg is possible to get advantage of the cache.
+ * Use this method first if content type jpeg is possible to get advantage of the cache.
  * <p>
  * 
  * @param studyUID		The unique id of a study.
@@ -396,9 +402,10 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
 	String rows = req.getRows();
 	String columns = req.getColumns();
 	String frameNumber = req.getFrameNumber();
+	String region = req.getRegion();
 	try {
         boolean[] readDicom = new boolean[]{false};
-		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber, readDicom );
+		File file = getJpg( studyUID, seriesUID, instanceUID, rows, columns, frameNumber, region, readDicom );
 		if ( file != null ) {
             WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null);
             if ( readDicom[0] ) resp.setPatInfo(this.getPatientInfo(req));
@@ -430,6 +437,7 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
  * @param rows
  * @param columns
  * @param frameNumber
+ * @param region		String representing a rectangular region of the image
  * @param readDicom     Used to indicate if the image is read from the dicom file for this request.
  * @return
  * @throws IOException
@@ -438,7 +446,7 @@ public WADOResponseObject handleJpg( WADORequestObject req ){
  * @throws ImageCachingException
  */
 public File getJpg( String studyUID, String seriesUID, String instanceUID, 
-				String rows, String columns, String frameNumber, boolean[] readDicom ) 
+				String rows, String columns, String frameNumber, String region, boolean[] readDicom ) 
 				throws IOException, NeedRedirectionException, NoImageException, ImageCachingException {
 	int frame = 0;
 	String suffix = null;
@@ -449,26 +457,20 @@ public File getJpg( String studyUID, String seriesUID, String instanceUID,
 	WADOCache cache = WADOCacheImpl.getWADOCache();
 	File file;
 	BufferedImage bi = null;
-	if ( rows == null ) {
-		file = cache.getImageFile( studyUID, seriesUID, instanceUID, suffix );
-	} else {
-		file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns, suffix );
-	}
+
+	file = cache.getImageFile( studyUID, seriesUID, instanceUID, rows, columns, region, suffix );
+
 	if ( file == null ) {
 		File dicomFile = getDICOMFile( studyUID, seriesUID, instanceUID );
 		if ( dicomFile != null ) {
             if ( readDicom != null) readDicom[0] = true;
-			bi = getImage( dicomFile, frame, rows, columns );
+			bi = getImage( dicomFile, frame, rows, columns, region );
 		} else {
 			return null;
 		}
 		if ( bi != null ) {
 			try {
-				if ( rows == null ) {
-					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, suffix );
-				} else {
-					file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns, suffix );
-				}
+				file = cache.putImage( bi, studyUID, seriesUID, instanceUID, rows, columns, region, suffix );
 			} catch ( Exception x ) {
 				log.error("Error caching image file! Return image without caching!",x);
 				throw new ImageCachingException(bi);
@@ -712,6 +714,7 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
 													req.getObjectUID(), 
 													req.getRows(), 
 													req.getColumns(),
+													req.getRegion(),
 													suffix);
 			is = new FileInputStream( file );
 		}
@@ -732,14 +735,15 @@ private WADOResponseObject getRemoteDICOMFile(String hostname, WADORequestObject
  * @param frame
  * @param rows			Image height in pixel.
  * @param columns		Image width in pixel.
+ * @param region		String representing a rectangular region of the image
  *
  * @return
  * @throws IOException
  */
-private BufferedImage getImage(File file, int frame, String rows, String columns) throws IOException {
+private BufferedImage getImage(File file, int frame, String rows, String columns, String region) throws IOException {
     Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
     if (!it.hasNext())
-            return null; //TODO more usefull stuff
+            return null; //TODO more useful stuff
     ImageReader reader = (ImageReader) it.next();
     ImageInputStream in = new FileImageInputStream( file );
     reader.setInput( in );
@@ -747,9 +751,18 @@ private BufferedImage getImage(File file, int frame, String rows, String columns
     try {
     	bi = reader.read( frame );
     } catch ( Exception x ) {
-    	log.error("Cant read image:", x);
+    	log.error("Can't read image:", x);
     	return null;
     }
+
+    if ( region != null ) {
+    	try {
+    		bi = subregion( reader, region );
+    	} catch ( Exception x ) {
+    		log.error("Can't grab subregion: ", x);
+    	}
+    }
+
 	if ( rows != null || columns != null ) {
 		bi = resize( bi, rows, columns );
 	}
@@ -794,6 +807,65 @@ private BufferedImage resize( BufferedImage bi, String rows, String columns ) {
     } else {
     	return bi;
     }
+}
+
+/**
+ * Grab a subregion of the image.
+ * 
+ * @param reader	The <code>ImageReader</code> that is reading from the dicom file
+ * @param region	String representing a rectangular region of an image
+ * 
+ * @return 			The subregion of the image defined by the <code>region</code> string.
+ * 
+ */
+private BufferedImage subregion(ImageReader reader, String region) throws RasterFormatException, IOException {
+	int topX, topY, botX, botY;
+	final int pointsLength = 4;
+	double[] points = new double[pointsLength];
+	
+	DcmImageReader dcmReader = (DcmImageReader)reader;
+	ImageReadParam param = dcmReader.getDefaultReadParam();
+	
+	int totWidth = dcmReader.getWidth(0);
+	int totHeight = dcmReader.getHeight(0);
+	
+	Scanner sc = new Scanner(region);
+	sc.useDelimiter(",");
+	int index = 0;
+	while (sc.hasNextDouble()) {
+		points[index++] = Double.parseDouble(sc.next());
+		if (index == pointsLength) break;
+	}
+	
+	// elements of points[] will be numbers from 0.0 to 1.0
+	topX = (int)Math.round(points[0] * totWidth);	// top left X value
+	topY = (int)Math.round(points[1] * totHeight);	// top left Y value
+	botX = (int)Math.round(points[2] * totWidth);	// bottom right X value
+	botY = (int)Math.round(points[3] * totHeight);	// bottom right Y value
+	
+	int tempX, tempY;
+
+	if (topX > botX) {
+		tempX = botX;
+		botX = topX;
+		topX = tempX;
+	}
+
+	if (botY < topY) {
+		tempY = botY;
+		botY = topY;
+		topY = tempY;
+	}
+	
+	int w = botX - topX;
+	int h = botY - topY;
+	
+	sc.close();
+	
+	Rectangle regionRectangle = new Rectangle(topX, topY, w, h);
+	param.setSourceRegion(regionRectangle);
+
+	return dcmReader.read(0, param);
 }
 
 /**
