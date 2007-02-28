@@ -1256,7 +1256,7 @@
     	</td>
 	  	<td title="XML">
 	  		&#160;
-	    	<xsl:if test="position()=1">
+	    	<xsl:if test="position()=1 and ../../availability='ONLINE'">
 				<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;useOrig=true&amp;studyUID=1&amp;seriesUID=1&amp;objectUID={../../sopIUID}" target="_blank" >
 					<img src="images/attrs.gif" alt="XML" border="0" title="Show original DICOM attributes"/>		
 				</a>
