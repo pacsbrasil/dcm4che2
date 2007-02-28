@@ -49,7 +49,6 @@ import java.net.UnknownHostException;
 import java.util.Date;
 
 import javax.jms.BytesMessage;
-import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -78,6 +77,10 @@ public class UDPListener extends ServiceMBeanSupport {
     private static final int MIN_XMLDECL_LEN = 20;
     
     private static final int DEFAULT_PORT = 4000;
+    
+    private static final int JMS_RETRY_COUNT = 6;
+    
+    private static final int JMS_RETRY_INTERVAL = 3000; // milliseconds
     
     private QueueConnectionFactory connFactory;
     private QueueConnection conn;
@@ -170,14 +173,18 @@ public class UDPListener extends ServiceMBeanSupport {
     
     protected synchronized void startService() throws Exception {
         if (conn == null) {
-            conn = connFactory.createQueueConnection();
-            session = conn.createQueueSession(false, 
-                    QueueSession.AUTO_ACKNOWLEDGE);
-            sender = session.createSender(queue);
+            initJMS();
         }
         startServer();
     }
 
+    protected synchronized void initJMS() throws Exception {
+        conn = connFactory.createQueueConnection();
+        session = conn.createQueueSession(false, 
+                QueueSession.AUTO_ACKNOWLEDGE);
+        sender = session.createSender(queue);
+    }
+    
     protected synchronized void stopService() {
         stopServer();
         if (conn != null) {
@@ -264,14 +271,10 @@ public class UDPListener extends ServiceMBeanSupport {
                         + prompt(data));
             return;
         }
-        try {           
-            sendMessage(data, off, end - off, from);
-        } catch (Throwable e) {
-            log.error("Failed to schedule processing message received from " 
-                    + from + " - " +  prompt(data), e);
-        }        
+        
+        sendMessage(data, off, end - off, from);
     }
-
+    
     private static int indexOfXML(byte[] data, int end) {
         int off = -1;
         for (int i = 0, n = end - MIN_MSG_LEN; i < n; ++i) {
@@ -320,15 +323,40 @@ public class UDPListener extends ServiceMBeanSupport {
         }
     }
 
-    private void sendMessage(byte[] data, int off, int length, InetAddress from)
-            throws JMSException {
-        BytesMessage msg = session.createBytesMessage();
-        msg.setStringProperty("sourceHostAddress", from.getHostAddress());
-        if (enableDNSLookups) {
-            msg.setStringProperty("sourceHostName", from.getHostName());
+    private void sendMessage(byte[] data, int off, int length, InetAddress from) {
+        for(int i = 0; i < JMS_RETRY_COUNT; i++) {
+            try {     
+                BytesMessage msg = session.createBytesMessage();
+                msg.setStringProperty("sourceHostAddress", from.getHostAddress());
+                if (enableDNSLookups) {
+                    msg.setStringProperty("sourceHostName", from.getHostName());
+                }
+                msg.writeBytes(data, off, length);
+                sender.send(msg);
+                return;
+            } catch (javax.jms.IllegalStateException e) {
+                // typically caused by "session.createBytesMessage"
+                handleJMSDisconnection();
+                continue;
+            } catch (Exception e) {
+                if( e.getCause() instanceof IllegalStateException ) {
+                    // typically caused by "sender.send"
+                    handleJMSDisconnection();
+                    continue;
+                }
+                log.error("Failed to schedule processing message received from " 
+                        + from + " - " +  prompt(data), e);
+                return;
+            }            
         }
-        msg.writeBytes(data, off, length);
-        sender.send(msg);
     }
 
+    private void handleJMSDisconnection() {
+        try {
+            initJMS();
+            log.info("Reconnected to JMS");
+        } catch(Exception ex) {
+            try { Thread.sleep(JMS_RETRY_INTERVAL);} catch (InterruptedException e1) {}
+        }
+    }
 }
