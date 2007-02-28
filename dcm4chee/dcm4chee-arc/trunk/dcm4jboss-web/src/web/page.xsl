@@ -21,7 +21,7 @@
 		<html>
 		<head>
 			<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-			<title><xsl:value-of select="$page_title"/> URI:<xsl:value-of select="$request_uri"/></title>
+			<title><xsl:value-of select="$page_title"/></title>
 			<script language = "JavaScript" src= "dcm4che.js"/>
 			<link rel="stylesheet" href="stylesheet.css" type="text/css"/>
 		</head>
@@ -188,7 +188,9 @@
 		      	</xsl:if>
 		      	 -->
 		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Logout</a></td>
-				<td width="40%"></td>
+				<td width="40%"></td> 
+		     </tr>
+		     <tr>
 			  	<xsl:apply-templates select="model"/>
 		     </tr>
 	     </table>

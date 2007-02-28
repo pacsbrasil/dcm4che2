@@ -69,17 +69,9 @@ public class TrashFolderForm extends BasicFolderForm {
         if (form == null) {
             form = new TrashFolderForm(request);
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
-            try {
-                int limit = Integer.parseInt( ctx.getServletConfig().getInitParameter("limitNrOfStudies") );
-            	if ( limit > 0 ) {
-            		form.setLimit( limit );
-            	} else {
-            		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be greater 0! Ignored");
-            	}
-            } catch (Exception x) {
-        		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
-            }
+            initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
         }
+        initLimit(request.getParameter("limitNrOfStudies"), form);
 		form.clearPopupMsg();
         
         return form;

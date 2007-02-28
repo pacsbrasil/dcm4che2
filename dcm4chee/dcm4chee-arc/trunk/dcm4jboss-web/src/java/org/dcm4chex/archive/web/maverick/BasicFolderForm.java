@@ -53,6 +53,7 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.infohazard.maverick.flow.ControllerContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -96,6 +97,20 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     public final void setLimit(int limit) {
         this.limit = limit;
+    }
+
+    protected static void initLimit(String limitPara, BasicFolderForm form) {
+        if ( limitPara == null ) return;
+        try {
+            int limit = Integer.parseInt( limitPara );
+            if ( limit > 0 ) {
+                form.setLimit( limit );
+            } else {
+                log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be greater 0! Ignored");
+            }
+        } catch (Exception x) {
+            log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
+        }
     }
 
     public final void setTotal(int total) {

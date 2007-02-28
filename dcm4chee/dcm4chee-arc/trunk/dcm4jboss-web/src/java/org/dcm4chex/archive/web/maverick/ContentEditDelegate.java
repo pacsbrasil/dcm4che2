@@ -198,6 +198,15 @@ public class ContentEditDelegate {
     public void deleteInstance( long pk ) {
     	invokeCmd("deleteInstance", pk);
     }
+    
+    public void emptyTrash() {
+        try {
+            server.invoke(contentEditName,
+                    "emptyTrash", null, null);
+        } catch (Exception e) {
+            log.warn("Failed to invoke command 'emptyTrash'!", e);
+        }
+    }
 
     private void invokeCmd( String cmd, long pk ) {
         try {

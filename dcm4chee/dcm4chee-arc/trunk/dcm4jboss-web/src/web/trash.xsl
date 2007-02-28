@@ -96,6 +96,15 @@
 								</xsl:if>
 							</input>
 						</td>
+						<td class="folder_header" width="40">
+							<input type="image" value="EmptyTrash" name="emptyTrash" src="images/deltrash.gif" alt="emptyTrash" border="0"
+								title="Delete all Entities from trash"
+								onclick="return confirm('Do you really want to empty trash folder?')">
+								<xsl:if test="total &lt;= 0">
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
+								</xsl:if>
+							</input>
+						</td>
 					</xsl:if>
 				</table>
 				<table class="folder_search" border="0" width="100%" cellpadding="0" cellspacing="0">
@@ -289,7 +298,10 @@
 			</td>
 			<td>&#160;</td>
 			<td>&#160;</td>
-			<td>&#160;</td>
+			<td align="right" valign="bottom">&#160;
+				<img src="images/plus.gif" alt="Select all Studies" onclick="selectAll( document.myForm,'stickyStudy', true)" />
+				<img src="images/minus.gif" alt="Deselect all" onclick="selectAll( document.myForm,'sticky', false)" />
+			</td>
 		</tr>
 	</table>
 </table>

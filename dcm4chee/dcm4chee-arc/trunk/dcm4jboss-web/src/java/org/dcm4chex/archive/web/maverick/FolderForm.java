@@ -136,16 +136,7 @@ public class FolderForm extends BasicFolderForm {
 				e.printStackTrace();
 			}
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
-            try {
-                int limit = Integer.parseInt( ctx.getServletConfig().getInitParameter("limitNrOfStudies") );
-            	if ( limit > 0 ) {
-            		form.setLimit( limit );
-            	} else {
-            		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be greater 0! Ignored");
-            	}
-            } catch (Exception x) {
-        		log.warn("Wrong servlet ini parameter 'limitNrOfStudies' ! Must be an integer greater 0! Ignored");
-            }
+            initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
 
             try {
             	ObjectName qrscpServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("qrscpServiceName"));
@@ -158,11 +149,12 @@ public class FolderForm extends BasicFolderForm {
         		form.setNoMatchForNoValue(true);
             }
         }
+        initLimit(request.getParameter("limitNrOfStudies"), form);
 		form.clearPopupMsg();
         
         return form;
     }
-    
+
     /**
 	 * 
 	 */
