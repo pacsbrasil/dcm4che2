@@ -142,7 +142,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
         	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if ( (folderForm.getTotal() < 1 && !"true".equals(getCtx().getServletConfig().getInitParameter("startWithoutQuery" ) ) )
                     || rq.getParameter("filter") != null
-                    || rq.getParameter("filter.x") != null) { return query(true); }
+                    || rq.getParameter("filter.x") != null) { 
+                return query(true); 
+            } else if ( folderForm.getAets() == null ) { 
+                    queryAETList(folderForm);
+            }
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
                     || rq.getParameter("next") != null
@@ -200,19 +204,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
             if (newQuery) {
                 folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies()));
-                List aes;
-                if ( allowedAets == null ) {
-                	aes = getAEDelegate().getAEs();
-                } else {
-                	Object ae;
-                	aes = new ArrayList();
-                	for ( int i = 0 ; i < allowedAets.length ; i++ ) {
-                		ae = getAEDelegate().getAE(allowedAets[i]);
-                		if ( ae != null ) 
-                			aes.add( getAEDelegate().getAE(allowedAets[i]));
-                	}
-                }
-                folderForm.setAets(aes);
+                queryAETList(folderForm);
             }
             List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
 					folderForm.isNoMatchForNoValue(), folderForm.getOffset(), folderForm.getLimit());
@@ -224,6 +216,26 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
         }
         return FOLDER;
+    }
+    /**
+     * @param folderForm
+     * @param allowedAets
+     */
+    private void queryAETList(FolderForm folderForm) throws Exception {
+        String[] allowedAets = getAEFilterPermissions();
+        List aes;
+        if ( allowedAets == null ) {
+        	aes = getAEDelegate().getAEs();
+        } else {
+        	Object ae;
+        	aes = new ArrayList();
+        	for ( int i = 0 ; i < allowedAets.length ; i++ ) {
+        		ae = getAEDelegate().getAE(allowedAets[i]);
+        		if ( ae != null ) 
+        			aes.add( getAEDelegate().getAE(allowedAets[i]));
+        	}
+        }
+        folderForm.setAets(aes);
     }
 
 	private String send() throws Exception {
