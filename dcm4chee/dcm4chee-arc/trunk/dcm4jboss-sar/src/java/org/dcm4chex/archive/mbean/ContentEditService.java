@@ -242,9 +242,15 @@ public class ContentEditService extends ServiceMBeanSupport {
 		this.callingAET = callingAET;
 	}
 	
-    public Dataset createPatient(Dataset ds) throws RemoteException, CreateException, HomeFactoryException {
+    public Dataset createPatient(Dataset ds) throws RemoteException, CreateException, HomeFactoryException, FinderException {
     	if ( log.isDebugEnabled() ) log.debug("create Partient");
-    	Dataset ds1 = lookupContentEdit().createPatient( ds );
+        String pid = ds.getString(Tags.PatientID);
+        String issuer = ds.getString(Tags.IssuerOfPatientID);
+    	Dataset ds1 = lookupContentManager().getPatientByID( pid, issuer );
+        if ( ds1 != null ) {
+            throw new CreateException("Patient with ID(pid:"+pid+" issuer:"+issuer+") already exists!");
+        }
+        ds1 = lookupContentEdit().createPatient( ds );
     	sendHL7PatientXXX( ds, "ADT^A04" );//use update to create patient, msg type is 'Register a patient'
     	return ds1;
     }

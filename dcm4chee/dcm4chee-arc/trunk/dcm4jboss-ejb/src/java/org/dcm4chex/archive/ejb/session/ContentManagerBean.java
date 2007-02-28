@@ -67,6 +67,7 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
@@ -179,6 +180,20 @@ public abstract class ContentManagerBean implements SessionBean {
         privStudyHome = null;
         privSeriesHome = null;
         privInstanceHome = null;
+    }
+
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public Dataset getPatientByID(String pid, String issuer) throws FinderException  {
+        Collection col = patHome.findByPatientIdWithExactIssuer(pid, issuer);
+        if ( col.isEmpty()) {
+            return null;
+        } else if ( col.size() > 1 ) {
+            throw new FinderException("Patient with ID(pid:"+pid+" issuer:"+issuer+") is not unique! Found "+col.size()+" patients!");
+        }
+        return ((PatientLocal) col.iterator().next()).getAttributes(true);
     }
 
     /**
