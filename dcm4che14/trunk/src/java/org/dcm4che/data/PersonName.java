@@ -118,5 +118,10 @@ public interface PersonName {
     public String toComponentGroupString(boolean trim);
     
     public String toComponentGroupMatch();
+    
+    public String format();
+    
+    public String format(int[] fields);
+    
 }
 

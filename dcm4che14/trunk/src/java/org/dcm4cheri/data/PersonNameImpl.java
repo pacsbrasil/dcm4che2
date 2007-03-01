@@ -50,6 +50,9 @@ import java.util.StringTokenizer;
  * @version 1.0.0
  */
 class PersonNameImpl implements org.dcm4che.data.PersonName {
+    private static final int[] FORMAT_ORDER = { 
+        PREFIX, GIVEN, MIDDLE, FAMILY, SUFFIX
+    };
     private static final Logger log = Logger.getLogger(PersonNameImpl.class);
 
     private final String[] components = new String[5];
@@ -202,6 +205,21 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
         return sb.toString();
     }
     
+    public String format() {
+        return format(FORMAT_ORDER);
+    }
+    
+    public String format(int[] fields) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < fields.length; i++) {
+            String s = get(fields[i]);
+            if (s != null && s.length() > 0) {
+                sb.append(s).append(' ');
+            }
+        }
+        return sb.substring(0, Math.max(0, sb.length()-1));
+    }
+
     public boolean equals(Object o) {
         if (!(o instanceof PersonNameImpl)) {
             return false;
