@@ -3,20 +3,23 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
   <property name="version" value="2.10.13"/>
+  <property name="arr-version" value="3.0.1"/>
+  <property name="audit-version" value="3.0.1"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>
   <property name="jboss.server.home" value="${jboss.home}/server/default"/>
-  <!-- Override with your dcm4chee-arr-3.0 location -->
+  <!-- Override with your dcm4chee-arr 3.x location -->
   <property name="dcm4chee-arr.home" value="${user.home}/dcm4chee/dcm4chee-arr"/>
   <property name="dcm4chee-arr.entities" value="${dcm4chee-arr.home}/dcm4chee-arr-entities"/>
   <property name="dcm4chee-arr.ear" value="${dcm4chee-arr.home}/dcm4chee-arr-ear"/>
+  <!-- Override with your dcm4chee-audit 3.x location -->
+  <property name="dcm4chee-audit.home" value="${user.home}/dcm4chee/dcm4chee-audit"/>
+  <property name="dcm4chee-audit.login" value="${dcm4chee-audit.home}/dcm4chee-audit-login"/>
+  <property name="dcm4chee-audit.logger" value="${dcm4chee-audit.home}/dcm4chee-audit-logger"/>
   <!-- Override with your FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
-  <!-- Override with your MAVEN2 repository dist location
-      (only needed for dist-arr target) -->
-  <property name="maven.repo" value="${user.home}/.m2/repository"/>
   <target name="clean">
     <delete dir="${target.dir}"/>
     <ant inheritAll="false" dir="../dcm4che14" target="clean"/>
@@ -149,6 +152,7 @@
         <include name="lib/commons-compress-20050911.jar"/>
         <include name="lib/saaj-api.jar"/>
         <include name="lib/saaj-impl.jar"/>
+        <include name="lib/dcm4che-audit-2.0.9.jar"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
@@ -158,11 +162,13 @@
         <include name="bin/*"/>
       	<exclude name="bin/*.sh"/>
       	<exclude name="bin/uninstall-dcm4chee-arr-old.bat"/>
+      	<exclude name="bin/uninstall-dcm4chee-auditlog-old.bat"/>
         <include name="doc/**"/>
       </zipfileset>
       <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">
         <include name="bin/*.sh"/>
        	<exclude name="bin/uninstall-dcm4chee-arr-old.sh"/>
+       	<exclude name="bin/uninstall-dcm4chee-auditlog-old.sh"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-hl7/target" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
@@ -336,9 +342,8 @@
     </antcall>
   </target>
   <target name="opt-arr" depends="fixcrlf">  	
-    <property name="dist.standalone" value="dcm4chee-standalone-${db.name}-${version}"/>
-    <property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
-    <zip destfile="${target.dir}/upgrade-dcm4chee-arr-${db.name}-${version}.zip">
+    <property name="dist.standalone.config" value="server/${dist.jboss.conf}"/>
+    <zip destfile="${target.dir}/upgrade-dcm4chee-arr-${db.name}-${arr-version}.zip">
 	  <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
 	    <include name="deploy/ejb3.deployer/**"/>
 	  	<include name="deploy/jboss-aop-jdk50.deployer/**"/>
@@ -354,24 +359,72 @@
 	  	<include name="lib/hibernate3.jar"/>
 	  	<include name="lib/javassist.jar"/>
 	  </zipfileset>
-      <zipfileset dir="${maven.repo}/org/slf4j/slf4j-log4j12/1.1.0" prefix="${dist.standalone.config}/lib">
-        <include name="slf4j-log4j12-1.1.0.jar"/>
-      </zipfileset>
-      <zipfileset dir="${maven.repo}/org/slf4j/slf4j-api/1.1.0" prefix="${dist.standalone.config}/lib">
-        <include name="slf4j-api-1.1.0.jar"/>
-      </zipfileset>
       <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.standalone.config}/deploy">
         <include name="dcm4chee-arr-${db.name}-*.ear"/>
       </zipfileset>
-      <zipfileset dir="${dcm4chee-arr.entities}/target/hibernate3/sql" prefix="${dist.standalone}/sql">
+      <zipfileset dir="${dcm4chee-arr.entities}/target/hibernate3/sql" prefix="sql">
         <include name="dcm4chee-arr-${db.name}.ddl"/>
       </zipfileset>      
-      <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">
+      <zipfileset dir="${target.dir}" filemode="755">
     	<include name="bin/uninstall-dcm4chee-arr-old.sh"/>
       </zipfileset>
-      <zipfileset dir="${target.dir}" prefix="${dist.standalone}">
+      <zipfileset dir="${target.dir}">
       	<include name="bin/uninstall-dcm4chee-arr-old.bat"/>
       </zipfileset>
     </zip>  	     
   </target>		
+
+	
+  <target name="dist-auditlog"
+  	depends="opt-auditlog-hsql,opt-auditlog-psql,opt-auditlog-mysql,opt-auditlog-mssql,opt-auditlog-oracle,opt-auditlog-db2"/>
+  <target name="opt-auditlog-hsql">
+    <antcall target="opt-auditlog">
+      <param name="db.name" value="hsql"/>
+    </antcall>
+  </target>
+  <target name="opt-auditlog-mysql">
+    <antcall target="opt-auditlog">
+      <param name="db.name" value="mysql"/>
+    </antcall>
+  </target>
+  <target name="opt-auditlog-mssql">
+    <antcall target="opt-auditlog">
+      <param name="db.name" value="mssql"/>
+    </antcall>
+  </target>
+  <target name="opt-auditlog-psql">
+    <antcall target="opt-auditlog">
+      <param name="db.name" value="psql"/>
+    </antcall>
+  </target>
+  <target name="opt-auditlog-oracle">
+    <antcall target="opt-auditlog">
+      <param name="db.name" value="oracle"/>
+    </antcall>
+  </target>
+  <target name="opt-auditlog-db2">
+    <antcall target="opt-auditlog">
+      <param name="db.name" value="db2"/>
+    </antcall>
+  </target>
+  <target name="opt-auditlog" depends="fixcrlf">  	
+    <property name="dist.standalone.config" value="server/${dist.jboss.conf}"/>
+    <zip destfile="${target.dir}/upgrade-dcm4chee-auditlog-${db.name}-${audit-version}.zip">
+      <zipfileset dir="${dcm4chee-audit.login}/src/main/config/${db.name}" prefix="${dist.standalone.config}">
+        <include name="conf/login-config.xml"/>
+      </zipfileset>
+      <zipfileset dir="${dcm4chee-audit.login}/target" prefix="${dist.standalone.config}/lib">
+        <include name="*.jar"/>
+      </zipfileset>
+      <zipfileset dir="${dcm4chee-audit.logger}/target" prefix="${dist.standalone.config}/deploy">
+        <include name="*.sar"/>
+      </zipfileset>
+      <zipfileset dir="${target.dir}" filemode="755">
+    	<include name="bin/uninstall-dcm4chee-auditlog-old.sh"/>
+      </zipfileset>
+      <zipfileset dir="${target.dir}">
+      	<include name="bin/uninstall-dcm4chee-auditlog-old.bat"/>
+      </zipfileset>
+    </zip>  	     
+  </target>	
 </project>
