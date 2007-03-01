@@ -4,8 +4,7 @@
   <artifactId>dcm4chee-audit</artifactId>
   <version>1</version>
   <packaging>pom</packaging>
-  <name>Audit Record Repository</name>
-  
+  <name>Audit Logger</name>  
   <modules>
     <module>dcm4chee-audit-logger</module>
     <module>dcm4chee-audit-login</module>
