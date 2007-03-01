@@ -70,7 +70,7 @@ public class InstancesTransferredMessage extends TransferMessageSupport {
             AuditEvent.ActionCode.EXECUTE;
 
     public InstancesTransferredMessage(AuditEvent.ActionCode action) {
-        super(AuditEvent.ID.DICOM_INSTANCES_ACCESSED, check(action));
+        super(AuditEvent.ID.DICOM_INSTANCES_TRANSFERRED, check(action));
     }
     
     private static AuditEvent.ActionCode check(AuditEvent.ActionCode action) {
