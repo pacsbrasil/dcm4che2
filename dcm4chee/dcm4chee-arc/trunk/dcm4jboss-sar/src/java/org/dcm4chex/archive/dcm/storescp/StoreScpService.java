@@ -737,6 +737,7 @@ public class StoreScpService extends AbstractScpService {
                     desc.addSOPClass(sopClass);
                 }
                 msg.addStudy(ian.getString(Tags.StudyInstanceUID), desc);
+                msg.validate();
                 Logger.getLogger("auditlog").info(msg);
             }
         } catch (Exception e) {
