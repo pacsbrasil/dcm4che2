@@ -192,19 +192,16 @@ or
 and adjust it according your installation location of the archive and the JDK
 and under which user the archive application shall run.
 
-UPGRADE TO AUDIT RECORD REPOSITORY v3.0-SNAPSHOT:
+UPGRADE TO AUDIT RECORD REPOSITORY v3.0.1:
 ================================================
-WARNING: Audit Record Repository v3.0-SNAPSHOT is only provided as an early
-technical preview. It's NOT SUITABLE for use in production! 
-
-Audit Record Repository v3.0-SNAPSHOT requires JDK 5. Java 1.4.2 is NOT
+ATTENTION: Audit Record Repository v3.0.1 requires JDK 5. Java 1.4.2 is NOT
 sufficient!
 
 Upgrade Procedure:
 
-1. Extract the binary distribution package for the upgrade of the Audit Record
-Repository (upgrade-dcm4chee-arr-<DB>-<vers>.zip) in the installation
-directory of dcm4chee.
+1. Move to the installation directory of dcm4chee (DCM4CHEE_DIST) and extract
+the binary distribution package for the upgrade of the Audit Record
+Repository (upgrade-dcm4chee-arr-<DB>-3.0.1.zip).
 
 2. Move to the DCM4CHEE_DIST/bin directory and execute the
 uninstall-dcm4chee-arr-old.bat or uninstall-dcm4chee-arr-old.sh script.
@@ -213,3 +210,18 @@ You will find a DDL script for extending the DB schema with tables used by
 dcm4chee-arr-3.0-SNAPSHOT at DCM4CHEE_DIST/sql/dcm4chee-arr-DB_NAME.dll. You
 do NOT need to execute that manually. Needed tables will be automatical created
 at first startup of the application with deployed dcm4chee-arr-3.0-SNAPSHOT. 
+
+UPGRADE TO RFC-3881/DICOM Suppl95 AUDIT LOGGER v3.0.1:
+===========================================================
+ATTENTION: Upgrade to RFC-3881/DICOM Suppl95 Audit Logger requires to also
+upgrade the Audit Record Repository to v3.0.1!
+
+Upgrade Procedure:
+
+1. Move to the installation directory of dcm4chee (DCM4CHEE_DIST) and extract
+the binary distribution package for the upgrade of the Audit Logger
+(upgrade-dcm4chee-auditlog-<DB>-3.0.1.zip) in the installation.
+
+2. Move to the DCM4CHEE_DIST/bin directory and execute the
+uninstall-dcm4chee-auditlog-old.bat or uninstall-dcm4chee-auditlog-old.sh
+script.
