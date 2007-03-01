@@ -55,7 +55,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
-import org.dcm4chex.archive.notif.Query;
 import org.jboss.logging.Logger;
 
 /**
@@ -84,9 +83,8 @@ class GPWLFindScp extends DcmServiceBase {
 			log.debug("Identifier:\n");
 			log.debug(rqData);
             Association a = assoc.getAssociation();
-            logDicomQuery(a, rq.getCommand(), rqData);
-            service.sendJMXNotification(new Query(a,
-                    rq.getCommand().getAffectedSOPClassUID(), rqData));
+            service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
+                    rqData);
             queryCmd = new GPWLQueryCmd(rqData);
             queryCmd.execute();
         } catch (Exception e) {
@@ -96,13 +94,6 @@ class GPWLFindScp extends DcmServiceBase {
         return new MultiCFindRsp(queryCmd);
     }
 
-    void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
-        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-        RemoteNode node = alf.newRemoteNode(assoc.getSocket(),
-                        assoc.getCallingAET());
-        service.logDicomQuery(keys, node, cmd.getAffectedSOPClassUID());
-    }
-    
     private class MultiCFindRsp implements MultiDimseRsp {
         private final GPWLQueryCmd queryCmd;
         private boolean canceled = false;

@@ -45,8 +45,6 @@ import java.util.Map;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 
-import org.dcm4che.auditlog.RemoteNode;
-import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -125,18 +123,5 @@ public class GPWLScpService extends AbstractScpService {
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         putPresContexts(policy, valuesToStringArray(cuidMap),
                 enable ? valuesToStringArray(tsuidMap) : null);
-    }
-
-    void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {
-        if (!isAuditLogIHEYr4()) return;
-        try {
-            server.invoke(auditLogName,
-                    "logDicomQuery",
-                    new Object[] { keys, node, cuid},
-                    new String[] { Dataset.class.getName(), 
-                        RemoteNode.class.getName(), String.class.getName()});
-        } catch (Exception e) {
-            log.warn("Audit Log failed:", e);
-        }
     }
 }

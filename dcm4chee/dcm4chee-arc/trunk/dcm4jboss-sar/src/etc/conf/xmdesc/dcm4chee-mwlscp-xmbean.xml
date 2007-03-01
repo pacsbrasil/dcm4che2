@@ -238,10 +238,5 @@
    
    
    <!-- Notifications -->
-   <notification>
-        <description>The notification sent on receive of a query request.</description>
-        <name>javax.management.Notification</name>
-        <notification-type>org.dcm4chex.archive.notif.Query</notification-type>
-   </notification>   
 </mbean>
 

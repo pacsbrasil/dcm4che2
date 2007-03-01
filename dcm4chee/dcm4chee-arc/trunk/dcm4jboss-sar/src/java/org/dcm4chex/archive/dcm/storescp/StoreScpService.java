@@ -45,7 +45,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +70,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4chex.archive.common.SeriesStored;
@@ -693,6 +693,17 @@ public class StoreScpService extends AbstractScpService {
                         new String[] { RemoteNode.class.getName(),
                         InstancesAction.class.getName() });
             } else {
+                InstanceSorter sorter = new InstanceSorter();
+                Dataset ian = seriesStored.getIAN();
+                String suid = ian.getString(Tags.StudyInstanceUID);
+                Dataset series = ian.getItem(Tags.RefSeriesSeq);
+                DcmElement refSops = series.get(Tags.RefSOPSeq);
+                for (int i = 0, n = refSops.countItems(); i < n; i++) {
+                    final Dataset refSop = refSops.getItem(i);
+                    sorter.addInstance(suid, 
+                            refSop.getString(Tags.RefSOPClassUID),
+                            refSop.getString(Tags.RefSOPInstanceUID));
+                }
                 InstancesTransferredMessage msg = 
                         new InstancesTransferredMessage(
                                 InstancesTransferredMessage.CREATE);
@@ -705,20 +716,7 @@ public class StoreScpService extends AbstractScpService {
                         calledAETs, AuditMessage.getProcessName(), 
                         AuditMessage.getLocalHostName(), false);
                 msg.addPatient(seriesStored.getPatientID(),
-                        seriesStored.getPatientName());
-                Dataset ian = seriesStored.getIAN();
-                Dataset series = ian.getItem(Tags.RefSeriesSeq);
-                DcmElement refSops = series.get(Tags.RefSOPSeq);
-                HashMap cuids = new HashMap();
-                for (int i = 0, n = refSops.countItems(); i < n; i++) {
-                    final Dataset refSop = refSops.getItem(i);
-                    final String cuid = refSop.getString(Tags.RefSOPClassUID);
-                    ArrayList iuids = (ArrayList) cuids.get(cuid);
-                    if (iuids == null) {
-                        cuids.put(cuid, iuids = new ArrayList());
-                    }
-                    iuids.add(refSop.getString(Tags.RefSOPInstanceUID));
-                }
+                        formatPN(seriesStored.getPatientName()));
                 String accno = seriesStored.getAccessionNumber();
                 Dataset pps = ian.getItem(Tags.RefPPSSeq);
                 ParticipantObjectDescription desc = new ParticipantObjectDescription();
@@ -728,12 +726,12 @@ public class StoreScpService extends AbstractScpService {
                 if (pps != null) {
                     desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
                 }
-                for (Iterator iter = cuids.entrySet().iterator(); iter.hasNext();) {
-                    Map.Entry el = (Map.Entry) iter.next();
+                for (Iterator iter = sorter.iterateSOPClasses(suid);
+                iter.hasNext();) {
+                    String cuid = (String) iter.next();
                     ParticipantObjectDescription.SOPClass sopClass =
-                            new ParticipantObjectDescription.SOPClass(
-                                    (String) el.getKey());
-                    sopClass.setNumberOfInstances(((ArrayList) el.getValue()).size());
+                            new ParticipantObjectDescription.SOPClass(cuid);
+                    sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
                     desc.addSOPClass(sopClass);
                 }
                 msg.addStudy(ian.getString(Tags.StudyInstanceUID), desc);

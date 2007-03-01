@@ -58,6 +58,8 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
+import org.dcm4che.auditlog.AuditLoggerFactory;
+import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
@@ -72,9 +74,13 @@ import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.util.DTFormat;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.XSLTUtils;
+import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -608,13 +614,49 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
     
-
     public void sendJMXNotification(Object o) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(o.getClass().getName(), this,
                 eventID);
         notif.setUserData(o);
         super.sendNotification(notif);
+    }
+
+    public void logDicomQuery(Association assoc, String cuid, Dataset keys) {
+        try {
+            if (isAuditLogIHEYr4()) {
+                RemoteNode rnode = AuditLoggerFactory.getInstance().newRemoteNode(
+                        assoc.getSocket(), assoc.getCallingAET());
+                server.invoke(auditLogName, "logDicomQuery", 
+                        new Object[] { keys, rnode, cuid },
+                        new String[] { Dataset.class.getName(),
+                            RemoteNode.class.getName(), String.class.getName() });
+            } else {
+                QueryMessage msg = new QueryMessage();
+                msg.addDestinationProcess(AuditMessage.getProcessID(), 
+                        calledAETs, AuditMessage.getProcessName(), 
+                        AuditMessage.getLocalHostName(), false);
+                
+                String srcHost = AuditMessage.getHostName(
+                        assoc.getSocket().getInetAddress());
+                msg.addSourceProcess(srcHost , 
+                        new String[] { assoc.getCallingAET() }, null, 
+                        srcHost, true);
+                byte[] query = DatasetUtils.toByteArray(keys, UIDs.ExplicitVRLittleEndian);
+                msg.addQuerySOPClass(cuid, UIDs.ExplicitVRLittleEndian, query);
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            }
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }
+    }
+
+    public static String formatPN(String pname) {
+        if (pname == null || pname.length() == 0) {
+            return null;
+        }
+        return DcmObjectFactory.getInstance().newPersonName(pname).format();
     }
 
 }

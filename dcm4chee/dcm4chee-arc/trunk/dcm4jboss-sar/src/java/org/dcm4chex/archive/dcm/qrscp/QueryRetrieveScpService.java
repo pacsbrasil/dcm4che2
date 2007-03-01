@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -63,14 +64,20 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.InstanceSorter;
+import org.dcm4che2.audit.message.InstancesTransferredMessage;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
@@ -79,6 +86,7 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -681,31 +689,74 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     void logInstancesSent(RemoteNode node, InstancesAction action) {
-        if (!isAuditLogIHEYr4()) {
+        if (isAuditLogIHEYr4()) {
+            try {
+                server.invoke(auditLogName, "logInstancesSent", new Object[] {
+                        node, action }, new String[] { RemoteNode.class.getName(),
+                        InstancesAction.class.getName() });
+            } catch (Exception e) {
+                log.warn("Audit Log failed:", e);
+            }
+        }
+    }
+
+    void logInstancesSent(Association moveAs, Association storeAs,
+            ArrayList fileInfos) {
+        if (isAuditLogIHEYr4()) {
             return;
         }
         try {
-            server.invoke(auditLogName, "logInstancesSent", new Object[] {
-                    node, action }, new String[] { RemoteNode.class.getName(),
-                    InstancesAction.class.getName() });
+            InstanceSorter sorter = new InstanceSorter();
+             FileInfo fileInfo = null;
+            for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+                fileInfo = (FileInfo) iter.next();
+                sorter.addInstance(fileInfo.studyIUID, fileInfo.sopCUID,
+                        fileInfo.sopIUID);
+            }
+            String destAET = storeAs.getCalledAET();
+            String destHost = AuditMessage.getHostName(
+                    storeAs.getSocket().getInetAddress());
+            String origAET = moveAs.getCallingAET();
+            boolean dstIsRequestor = origAET.equals(destAET);
+            boolean srcIsRequestor = !dstIsRequestor 
+                    && Arrays.asList(calledAETs).contains(origAET);
+            InstancesTransferredMessage msg = 
+                    new InstancesTransferredMessage(
+                            InstancesTransferredMessage.EXECUTE);
+            msg.addSourceProcess(AuditMessage.getProcessID(), 
+                    calledAETs, AuditMessage.getProcessName(), 
+                    AuditMessage.getLocalHostName(), srcIsRequestor);
+            msg.addDestinationProcess(destHost, new String[] { destAET }, null, 
+                    destHost, dstIsRequestor);
+            if (!dstIsRequestor && !srcIsRequestor) {
+                String origHost = AuditMessage.getHostName(
+                        moveAs.getSocket().getInetAddress());
+                msg.addOtherParticipantProcess(origHost,
+                        new String[] { origAET }, null, origHost, true);
+            }
+            msg.addPatient(fileInfo.patID, formatPN(fileInfo.patName));
+            for (Iterator iter = sorter.iterateStudies(); iter.hasNext();) {
+                String suid = (String) iter.next();
+                ParticipantObjectDescription desc = 
+                        new ParticipantObjectDescription();
+                for (Iterator iter2 = sorter.iterateSOPClasses(suid); 
+                        iter2.hasNext();) {
+                    String cuid = (String) iter2.next();
+                    ParticipantObjectDescription.SOPClass sopClass =
+                            new ParticipantObjectDescription.SOPClass(cuid);
+                    sopClass.setNumberOfInstances(
+                            sorter.countInstances(suid, cuid));
+                    desc.addSOPClass(sopClass);
+                }
+                msg.addStudy(suid, desc);
+            }
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
     }
-
-    void logDicomQuery(Dataset keys, RemoteNode node, String cuid) {
-        if (!isAuditLogIHEYr4()) {
-            return;
-        }
-        try {
-            server.invoke(auditLogName, "logDicomQuery", new Object[] { keys,
-                    node, cuid }, new String[] { Dataset.class.getName(),
-                    RemoteNode.class.getName(), String.class.getName() });
-        } catch (Exception e) {
-            log.warn("Audit Log failed:", e);
-        }
-    }
-
+    
     Socket createSocket(AEData aeData) throws IOException {
         return tlsConfig.createSocket(aeData);
     }

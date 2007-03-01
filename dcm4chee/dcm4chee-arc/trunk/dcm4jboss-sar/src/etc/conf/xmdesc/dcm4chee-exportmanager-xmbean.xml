@@ -282,10 +282,5 @@
    </operation>   
    
    <!-- Notifications -->
-   <notification>
-        <description>The notification sent before export of instances.</description>
-        <name>javax.management.Notification</name>
-        <notification-type>org.dcm4chex.archive.notif.BeginTransfering</notification-type>
-   </notification>   
 </mbean>
 

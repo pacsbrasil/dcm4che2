@@ -70,6 +70,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.Destination;
 import org.dcm4che.auditlog.Patient;
@@ -81,6 +82,7 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDDictionary;
@@ -96,6 +98,11 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.BeginTransferringMessage;
+import org.dcm4che2.audit.message.InstanceSorter;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
@@ -109,7 +116,6 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.dcm4chex.archive.notif.BeginTransfering;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
@@ -622,7 +628,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         ActiveAssociation a = openAssociation(fileInfos, pcids, dest,
                 exportManifest != -1, exportInstances, exportMedia);
         if (audit) {
-            notifyBeginTransfering(a, manifest, fileInfos);
+            logBeginTransfering(a.getAssociation(), manifest, fileInfos);
         }
         HashMap iuidMap = new HashMap();
         if (!"NO".equalsIgnoreCase(config.getProperty("remove-delay-reason")))
@@ -1266,13 +1272,10 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         return aa;
     }
     
-    private void notifyBeginTransfering(ActiveAssociation a, Dataset manifest, 
+    private void logBeginTransfering(Association a, Dataset manifest, 
             FileInfo[] fileInfos) {
-        BeginTransfering beginTransfering = new BeginTransfering(
-                a.getAssociation(),
-                manifest.getString(Tags.PatientID),
-                manifest.getString(Tags.PatientName));
-        beginTransfering.addInstance(
+        InstanceSorter sorter = new InstanceSorter();
+        sorter.addInstance(
                 manifest.getString(Tags.StudyInstanceUID), 
                 manifest.getString(Tags.SOPClassUID), 
                 manifest.getString(Tags.SOPInstanceUID));
@@ -1284,24 +1287,43 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                         otherStudyItem.getItem(Tags.RefSeriesSeq);
                 Dataset otherRefSOPItem =
                         otherSeriesItem.getItem(Tags.RefSOPSeq);
-                beginTransfering.addInstance(
+                sorter.addInstance(
                         otherStudyItem.getString(Tags.StudyInstanceUID), 
                         otherRefSOPItem.getString(Tags.RefSOPClassUID), 
                         otherRefSOPItem.getString(Tags.RefSOPInstanceUID));
             }
         }
         for (int i = 0; i < fileInfos.length; i++) {
-            beginTransfering.addInstance(fileInfos[i].studyIUID, 
-                    fileInfos[i].sopCUID, fileInfos[i].sopIUID);                
+            sorter.addInstance(fileInfos[i].studyIUID, fileInfos[i].sopCUID,
+                    fileInfos[i].sopIUID);                
         }           
-        sendJMXNotification(beginTransfering);
+        BeginTransferringMessage msg = new BeginTransferringMessage();
+        msg.addSourceProcess(AuditMessage.getProcessID(), 
+                new String[] { callingAET }, AuditMessage.getProcessName(), 
+                AuditMessage.getLocalHostName(), true);
+        String destHost = AuditMessage.getHostName(a.getSocket().getInetAddress());
+        msg.addDestinationProcess(destHost , new String[] { a.getCalledAET() },
+                null, destHost, false);
+        PersonName pname = manifest.getPersonName(Tags.PatientName);
+        msg.addPatient(manifest.getString(Tags.PatientID),
+                pname != null ? pname.format() : null);
+        for (Iterator iter = sorter.iterateStudies(); iter.hasNext();) {
+            String suid = (String) iter.next();
+            ParticipantObjectDescription desc = 
+                    new ParticipantObjectDescription();
+            for (Iterator iter2 = sorter.iterateSOPClasses(suid);
+                    iter2.hasNext();) {
+                String cuid = (String) iter2.next();
+                SOPClass sopClass = new SOPClass(cuid);
+                sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
+                desc.addSOPClass(sopClass );
+            }
+            msg.addStudy(suid, desc);
+        }
+        msg.validate();
+        Logger.getLogger("auditlog").info(msg);
     }
 
-    private void sendJMXNotification(Object o) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(o.getClass().getName(), this,
-                eventID);
-        notif.setUserData(o);
-        super.sendNotification(notif);
-    }
+
+
 }

@@ -44,7 +44,6 @@ import java.sql.SQLException;
 
 import javax.management.ObjectName;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
@@ -60,7 +59,6 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
-import org.dcm4chex.archive.notif.Query;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -76,8 +74,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
     private static final String RESULT_XML = "-cfindrsp.xml";
-
-    private final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
 
     protected final QueryRetrieveScpService service;
     
@@ -117,9 +113,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             
             Association a = assoc.getAssociation();
             service.logDIMSE(a, QUERY_XML, rqData);
-            logDicomQuery(a, rq.getCommand(), rqData);
-            service.sendJMXNotification(new Query(a,
-                    rq.getCommand().getAffectedSOPClassUID(), rqData));
+            service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
+                    rqData);
             Dataset coerce = 
                 service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
             if (coerce != null) {
@@ -141,12 +136,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 		return new MultiCFindRsp(queryCmd);
 	}
 
-	void logDicomQuery(Association assoc, Command cmd, Dataset keys) {
-        service.logDicomQuery(keys, alf.newRemoteNode(assoc.getSocket(), assoc
-                .getCallingAET()), cmd.getAffectedSOPClassUID());
-    }
-
-    protected Dataset getDataset(QueryCmd queryCmd) throws SQLException, 
+	protected Dataset getDataset(QueryCmd queryCmd) throws SQLException, 
     		DcmServiceException {
 		return queryCmd.getDataset();
 	}
