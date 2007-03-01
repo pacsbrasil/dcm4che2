@@ -150,14 +150,16 @@ public class ParticipantObjectDescription extends BaseElement {
             super("SOPClass", "UID", uid);
         }
 
-        public final SOPClass setNumberOfInstances(int n) {
-            if (n <= 0) {
-                throw new IllegalArgumentException("n: " + n);
-            }
-            addAttribute("NumberOfInstances", new Integer(n), false);
+        public SOPClass setNumberOfInstances(int n) {
+            addAttribute("NumberOfInstances", n > 0 ? new Integer(n) : null, true);
             return this;
         }
 
+        public int getNumberOfInstances() {
+            Integer n = (Integer) getAttribute("NumberOfInstances");
+            return n != null ? n.intValue() : 0;
+        }
+        
         public SOPClass addInstance(String iuid) {
             instances.add(new BaseElement("Instance", "UID", iuid));
             return this;
