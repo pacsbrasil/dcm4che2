@@ -39,12 +39,11 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.RasterFormatException;
-import java.awt.Rectangle;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -63,11 +62,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Scanner;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.management.MBeanServer;
@@ -81,7 +79,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
-import org.dcm4cheri.imageio.plugins.DcmImageReader;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.Patient;
@@ -94,6 +91,8 @@ import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4cheri.imageio.plugins.DcmImageReader;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -749,18 +748,27 @@ private BufferedImage getImage(File file, int frame, String rows, String columns
     reader.setInput( in );
     BufferedImage bi = null;
     try {
-    	bi = reader.read( frame );
+        ImageReadParam param = reader.getDefaultReadParam();
+        if (region != null) {
+            String[] ss = StringUtils.split(region, ',');
+            int totWidth = reader.getWidth(0);
+            int totHeight = reader.getHeight(0);
+        
+            int topX = (int)Math.round(Double.parseDouble(ss[0]) * totWidth);   // top left X value
+            int topY = (int)Math.round(Double.parseDouble(ss[1]) * totHeight);  // top left Y value
+            int botX = (int)Math.round(Double.parseDouble(ss[2]) * totWidth);   // bottom right X value
+            int botY = (int)Math.round(Double.parseDouble(ss[3]) * totHeight);  // bottom right Y value
+            
+            int w = botX - topX;
+            int h = botY - topY;
+            
+            Rectangle regionRectangle = new Rectangle(topX, topY, w, h);
+            param.setSourceRegion(regionRectangle);
+        }
+    	bi = reader.read( frame,  param);
     } catch ( Exception x ) {
     	log.error("Can't read image:", x);
     	return null;
-    }
-
-    if ( region != null ) {
-    	try {
-    		bi = subregion( reader, region );
-    	} catch ( Exception x ) {
-    		log.error("Can't grab subregion: ", x);
-    	}
     }
 
 	if ( rows != null || columns != null ) {
@@ -820,8 +828,7 @@ private BufferedImage resize( BufferedImage bi, String rows, String columns ) {
  */
 private BufferedImage subregion(ImageReader reader, String region) throws RasterFormatException, IOException {
 	int topX, topY, botX, botY;
-	final int pointsLength = 4;
-	double[] points = new double[pointsLength];
+	double[] points = new double[4];
 	
 	DcmImageReader dcmReader = (DcmImageReader)reader;
 	ImageReadParam param = dcmReader.getDefaultReadParam();
@@ -829,13 +836,10 @@ private BufferedImage subregion(ImageReader reader, String region) throws Raster
 	int totWidth = dcmReader.getWidth(0);
 	int totHeight = dcmReader.getHeight(0);
 	
-	Scanner sc = new Scanner(region);
-	sc.useDelimiter(",");
-	int index = 0;
-	while (sc.hasNextDouble()) {
-		points[index++] = Double.parseDouble(sc.next());
-		if (index == pointsLength) break;
-	}
+        String[] ss = StringUtils.split(region, ',');
+        for (int i = 0; i < ss.length; i++) {
+            points[i] = Double.parseDouble(ss[i]);
+        }
 	
 	// elements of points[] will be numbers from 0.0 to 1.0
 	topX = (int)Math.round(points[0] * totWidth);	// top left X value
@@ -843,24 +847,8 @@ private BufferedImage subregion(ImageReader reader, String region) throws Raster
 	botX = (int)Math.round(points[2] * totWidth);	// bottom right X value
 	botY = (int)Math.round(points[3] * totHeight);	// bottom right Y value
 	
-	int tempX, tempY;
-
-	if (topX > botX) {
-		tempX = botX;
-		botX = topX;
-		topX = tempX;
-	}
-
-	if (botY < topY) {
-		tempY = botY;
-		botY = topY;
-		topY = tempY;
-	}
-	
 	int w = botX - topX;
 	int h = botY - topY;
-	
-	sc.close();
 	
 	Rectangle regionRectangle = new Rectangle(topX, topY, w, h);
 	param.setSourceRegion(regionRectangle);

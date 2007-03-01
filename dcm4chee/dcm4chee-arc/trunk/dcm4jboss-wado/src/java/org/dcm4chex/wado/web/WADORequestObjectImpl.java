@@ -44,12 +44,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Scanner;
 import java.lang.NumberFormatException;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.mbean.WADOService;
 
@@ -61,7 +61,17 @@ import org.dcm4chex.wado.mbean.WADOService;
  */
 public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WADORequestObject {
 
-	private static Logger log = Logger.getLogger( WADOService.class.getName() );
+
+    private static final String ERROR_INVALID_REGION_FORMAT = 
+            "Error: region parameter is invalid! Must be a comma separated list of 4 decimal strings.";
+
+    private static final String ERROR_INVALID_REGION_OUT_OF_RANGE =
+            "Error: region parameter is invalid! Coordinates must be in range [0..1].";
+
+    private static final String ERROR_INVALID_REGION_DIMENSION =
+            "Error: region parameter is invalid! Width and height of specified region must be > 0.";
+
+    private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
 	private String studyUID;
 	private String seriesUID;
@@ -238,12 +248,12 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			}
 		}
 		if ( region != null ) {
-			try {
-				checkRegion(region);
-			} catch ( Exception x ) {
-				setErrorMsg(x.getMessage());
-				return INVALID_REGION;
-			}
+                    try {
+			checkRegion(region);
+                    } catch (IllegalArgumentException e) {
+			setErrorMsg(e.getMessage());
+			return INVALID_REGION;
+                    }
 		}
 		setErrorMsg(null);
 		return OK;
@@ -257,49 +267,29 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	 * @return 				void
 	 * 
 	 */
-	private void checkRegion(String region) throws Exception {
-		if ( region == null ) throw new Exception("Error: 'region' parameter is invalid! Must specify a value.");
-		
-		Scanner sc = new Scanner(region);
-		sc.useDelimiter(",");
-		
-		int valsLeft = 4;
-		
-		double[] value = new double[4];
-		int curr = 0;
-		double next;
-		while (sc.hasNextDouble()) {
-			try {
-				next = Double.parseDouble(sc.next());
-				if (valsLeft > 0) {
-					value[curr++] = next;
-				}
-			} catch (NumberFormatException x) {
-				throw new Exception("Error: 'region' parameter is invalid! Values must be of type 'double'.");
-			}
-			
-			valsLeft--;
-		}
-		
-		if (valsLeft != 0) throw new Exception("Error: 'region' parameter is invalid! Four values separated by commas (',') must be given.");
-		
-		double topX = value[0];
-		double topY = value[1];
-		double botX = value[2];
-		double botY = value[3];
-		
-		if (topX > 1.0 || topX < 0.0 ||
-			topY > 1.0 || topY < 0.0 || 
-			botX > 1.0 || botX < 0.0 || 
-			botY > 1.0 || botY < 0.0) 
-			throw new Exception("Error: 'region' parameter is invalid! Values must be between 0.0 and 1.0."); 
-		
-		if (topX==botX || topY==botY) throw new Exception("Error: 'region' parameter is invalid! The region must have an area greater than zero.");
-		
-		if (botX == 0.0) throw new Exception("Error: 'region' parameter is invalid! 'x' value for 2nd point cannot be '0.0'.");
-		if (botY == 0.0) throw new Exception("Error: 'region' parameter is invalid! 'y' value for 2nd point cannot be '0.0'.");
-		
-		sc.close();
+	private void checkRegion(String region) {
+                String[] ss = StringUtils.split(region, ',');
+                if (ss.length != 4) {
+                    throw new IllegalArgumentException(
+                            ERROR_INVALID_REGION_FORMAT);                    
+                }
+                double[] ds = new double[4];
+                for (int i = 0; i < ds.length; i++) {
+                    try {
+                        ds[i] = Double.parseDouble(ss[i]);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException(
+                            ERROR_INVALID_REGION_FORMAT);                    
+                    }
+                    if (ds[i] < 0. || ds[i] > 1.) {
+                        throw new IllegalArgumentException(
+                            ERROR_INVALID_REGION_OUT_OF_RANGE);                    
+                    }
+                }
+                if (!(ds[0] < ds[2] && ds[1] < ds[3])) {
+                    throw new IllegalArgumentException(
+                            ERROR_INVALID_REGION_DIMENSION);                    
+                }
 	}
 	
 	/**
