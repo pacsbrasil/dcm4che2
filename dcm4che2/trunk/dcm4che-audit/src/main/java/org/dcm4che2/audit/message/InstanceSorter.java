@@ -41,7 +41,6 @@ package org.dcm4che2.audit.message;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -50,60 +49,72 @@ import java.util.LinkedHashSet;
  */
 public class InstanceSorter {
     
-    private LinkedHashMap studies = new LinkedHashMap();
+    private LinkedHashMap suids = new LinkedHashMap();
     
     public void clear() {
-        studies.clear();
+        suids.clear();
     }
     
-    public boolean addInstance(String suid, String cuid, String iuid) {
-        LinkedHashMap sopClasses = (LinkedHashMap) studies.get(suid);
-        if (sopClasses == null) {
-            sopClasses = new LinkedHashMap();
-            studies.put(suid, sopClasses);
+    public Object addInstance(String suid, String cuid, String iuid,
+            Object obj) {
+        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        if (cuids == null) {
+            cuids = new LinkedHashMap();
+            suids.put(suid, cuids);
         }
-        LinkedHashSet iuids = (LinkedHashSet) sopClasses.get(cuid);
+        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
         if (iuids == null) {
-            iuids = new LinkedHashSet();
-            sopClasses.put(cuid, iuids);
+            iuids = new LinkedHashMap();
+            cuids.put(cuid, iuids);
         }
-        return iuids.add(iuid);
+        return iuids.put(iuid, obj);
     }
     
-    public Iterator iterateStudies() {
-        return studies.keySet().iterator();
+    public Iterator iterateSUIDs() {
+        return suids.keySet().iterator();
     }    
 
-    public Iterator iterateSOPClasses(String suid) {
-        LinkedHashMap sopClasses = (LinkedHashMap) studies.get(suid);
-        if (sopClasses == null) {
+    public Iterator iterateCUIDs(String suid) {
+        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        if (cuids == null) {
             return Collections.EMPTY_LIST.iterator();
         }
-        return sopClasses.keySet().iterator();
+        return cuids.keySet().iterator();
     }
 
-    public Iterator iterateInstances(String suid, String cuid) {
-        LinkedHashMap sopClasses = (LinkedHashMap) studies.get(suid);
-        if (sopClasses == null) {
+    public Iterator iterateIUIDs(String suid, String cuid) {
+        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        if (cuids == null) {
             return Collections.EMPTY_LIST.iterator();
         }
-        LinkedHashSet iuids = (LinkedHashSet) sopClasses.get(cuid);
+        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
         if (iuids == null) {
             return Collections.EMPTY_LIST.iterator();
         }
-        return iuids.iterator();
+        return iuids.keySet().iterator();
     }
     
     public int countInstances(String suid, String cuid) {
-        LinkedHashMap sopClasses = (LinkedHashMap) studies.get(suid);
-        if (sopClasses == null) {
+        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        if (cuids == null) {
             return 0;
         }
-        LinkedHashSet iuids = (LinkedHashSet) sopClasses.get(cuid);
+        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
         if (iuids == null) {
             return 0;
         }
         return iuids.size();
     }
     
+    public Object getInstance(String suid, String cuid, String iuid) {
+        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        if (cuids == null) {
+            return null;
+        }
+        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
+        if (iuids == null) {
+            return null;
+        }
+        return iuids.get(iuid);       
+    }
 }
