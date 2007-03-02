@@ -702,7 +702,8 @@ public class StoreScpService extends AbstractScpService {
                     final Dataset refSop = refSops.getItem(i);
                     sorter.addInstance(suid, 
                             refSop.getString(Tags.RefSOPClassUID),
-                            refSop.getString(Tags.RefSOPInstanceUID));
+                            refSop.getString(Tags.RefSOPInstanceUID),
+                            null);
                 }
                 InstancesTransferredMessage msg = 
                         new InstancesTransferredMessage(
@@ -726,7 +727,7 @@ public class StoreScpService extends AbstractScpService {
                 if (pps != null) {
                     desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
                 }
-                for (Iterator iter = sorter.iterateSOPClasses(suid);
+                for (Iterator iter = sorter.iterateCUIDs(suid);
                 iter.hasNext();) {
                     String cuid = (String) iter.next();
                     ParticipantObjectDescription.SOPClass sopClass =

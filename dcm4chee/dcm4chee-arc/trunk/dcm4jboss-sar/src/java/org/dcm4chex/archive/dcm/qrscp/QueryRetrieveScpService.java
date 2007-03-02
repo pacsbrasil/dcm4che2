@@ -711,7 +711,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
                 fileInfo = (FileInfo) iter.next();
                 sorter.addInstance(fileInfo.studyIUID, fileInfo.sopCUID,
-                        fileInfo.sopIUID);
+                        fileInfo.sopIUID, null);
             }
             String destAET = storeAs.getCalledAET();
             String destHost = AuditMessage.getHostName(
@@ -735,11 +735,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         new String[] { origAET }, null, origHost, true);
             }
             msg.addPatient(fileInfo.patID, formatPN(fileInfo.patName));
-            for (Iterator iter = sorter.iterateStudies(); iter.hasNext();) {
+            for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
                 String suid = (String) iter.next();
                 ParticipantObjectDescription desc = 
                         new ParticipantObjectDescription();
-                for (Iterator iter2 = sorter.iterateSOPClasses(suid); 
+                for (Iterator iter2 = sorter.iterateCUIDs(suid); 
                         iter2.hasNext();) {
                     String cuid = (String) iter2.next();
                     ParticipantObjectDescription.SOPClass sopClass =

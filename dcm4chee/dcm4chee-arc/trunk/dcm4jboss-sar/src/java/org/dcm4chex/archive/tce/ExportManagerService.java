@@ -1278,7 +1278,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         sorter.addInstance(
                 manifest.getString(Tags.StudyInstanceUID), 
                 manifest.getString(Tags.SOPClassUID), 
-                manifest.getString(Tags.SOPInstanceUID));
+                manifest.getString(Tags.SOPInstanceUID),
+                null);
         DcmElement identicalsq = manifest.get(Tags.IdenticalDocumentsSeq);
         if (identicalsq != null && !identicalsq.isEmpty()) {
             for (int i = 0, n = identicalsq.countItems(); i < n; i++) {
@@ -1290,12 +1291,13 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 sorter.addInstance(
                         otherStudyItem.getString(Tags.StudyInstanceUID), 
                         otherRefSOPItem.getString(Tags.RefSOPClassUID), 
-                        otherRefSOPItem.getString(Tags.RefSOPInstanceUID));
+                        otherRefSOPItem.getString(Tags.RefSOPInstanceUID),
+                        null);
             }
         }
         for (int i = 0; i < fileInfos.length; i++) {
             sorter.addInstance(fileInfos[i].studyIUID, fileInfos[i].sopCUID,
-                    fileInfos[i].sopIUID);                
+                    fileInfos[i].sopIUID, null);                
         }           
         BeginTransferringMessage msg = new BeginTransferringMessage();
         msg.addSourceProcess(AuditMessage.getProcessID(), 
@@ -1307,11 +1309,11 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         PersonName pname = manifest.getPersonName(Tags.PatientName);
         msg.addPatient(manifest.getString(Tags.PatientID),
                 pname != null ? pname.format() : null);
-        for (Iterator iter = sorter.iterateStudies(); iter.hasNext();) {
+        for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
             String suid = (String) iter.next();
             ParticipantObjectDescription desc = 
                     new ParticipantObjectDescription();
-            for (Iterator iter2 = sorter.iterateSOPClasses(suid);
+            for (Iterator iter2 = sorter.iterateCUIDs(suid);
                     iter2.hasNext();) {
                 String cuid = (String) iter2.next();
                 SOPClass sopClass = new SOPClass(cuid);
