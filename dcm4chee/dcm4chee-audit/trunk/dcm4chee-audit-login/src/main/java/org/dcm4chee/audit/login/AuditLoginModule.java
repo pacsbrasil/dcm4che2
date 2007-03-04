@@ -52,7 +52,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
-import org.dcm4che2.audit.message.AuditLogUsedMessage;
 import org.dcm4che2.audit.message.UserAuthenticationMessage;
 
 /**
@@ -70,14 +69,9 @@ public class AuditLoginModule implements LoginModule {
 
     private CallbackHandler cbh;
 
-    private String auditLogURI;
-
     public void initialize(Subject subject, CallbackHandler cbh,
             Map sharedState, Map options) {
         this.cbh = cbh;
-        Object tmp = options.get("auditLogURI");
-        if (tmp != null)
-            this.auditLogURI = tmp.toString();
     }
 
     public boolean login() throws LoginException {
@@ -86,9 +80,6 @@ public class AuditLoginModule implements LoginModule {
 
     public boolean commit() throws LoginException {
         auditUserAuth(UserAuthenticationMessage.LOGIN);
-        if (auditLogURI != null) {
-            auditAuditLogUsed();
-        }
         return true;
     }
 
@@ -115,13 +106,6 @@ public class AuditLoginModule implements LoginModule {
         msg.setOutcomeIndicator(failure);
         msg.addUserPerson(getUserID(), null, null, getHostname());
         auditlog.warn(msg);
-    }
-
-    private void auditAuditLogUsed() {
-        AuditLogUsedMessage auditLogUsed = new AuditLogUsedMessage();
-        auditLogUsed.addUserPerson(getUserID(), null, null, getHostname());
-        auditLogUsed.addSecurityAuditLog(auditLogURI);
-        auditlog.info(auditLogUsed);
     }
 
     private String getUserID() {

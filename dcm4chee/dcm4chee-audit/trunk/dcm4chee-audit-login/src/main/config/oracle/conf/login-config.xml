@@ -143,7 +143,6 @@ The outline of the application-policy is:
           </login-module>
           <login-module code="org.dcm4chee.audit.login.AuditLoginModule"
              flag = "optional" >
-             <module-option name = "auditLogURI">http://localhost:8080/dcm4chee-arr</module-option>           
           </login-module>
        </authentication>
     </application-policy>
