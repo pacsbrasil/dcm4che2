@@ -117,7 +117,7 @@ public class DataExportMessage extends AuditMessage {
                 exporter = ap;               
             } else if (roleIDCodeIDs.contains(
                 ActiveParticipant.RoleIDCode.DESTINATION_MEDIA)) {
-                if (exporter != null) {
+                if (dest != null) {
                     throw new IllegalStateException(
                             "Multiple Destination identification");
                 }
