@@ -112,7 +112,7 @@ public class DataImportMessage extends AuditMessage {
                 importer = ap;               
             } else if (roleIDCodeIDs.contains(
                 ActiveParticipant.RoleIDCode.SOURCE_MEDIA)) {
-                if (importer != null) {
+                if (source != null) {
                     throw new IllegalStateException(
                             "Multiple Source identification");
                 }
