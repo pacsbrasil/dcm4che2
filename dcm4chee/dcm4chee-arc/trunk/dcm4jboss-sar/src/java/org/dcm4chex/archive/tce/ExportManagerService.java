@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +66,7 @@ import javax.ejb.RemoveException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
@@ -100,6 +102,7 @@ import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.BeginTransferringMessage;
+import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
@@ -129,6 +132,8 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ExportManagerService extends ServiceMBeanSupport implements
         NotificationListener, MessageListener, DimseListener {
+
+    private static final String PERSON_OBSERVER_NAME_CODE = "121008";
 
     private static final int PCID = 1;
 
@@ -181,6 +186,12 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private int exportDelay = 2000;
     
     private ArrayList scheduledList = new ArrayList();
+
+    private DecimalFormat filesetIDPattern;
+
+    private int lastFilesetIDSeqno;
+
+    private String mediaIDPrefix;
 
     public final int getBufferSize() {
         return bufferSize;
@@ -235,6 +246,43 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         }
     }
 
+    public final String getFilesetIDPattern() {
+        return filesetIDPattern.toPattern();
+    }
+
+    public final void setFilesetIDPattern(String filesetID) {
+        this.filesetIDPattern = new DecimalFormat(filesetID);
+    }
+
+    public final int getLastFilesetIDSeqno() {
+        return lastFilesetIDSeqno;
+    }
+
+    public final void setLastFilesetIDSeqno(int seqno) {
+        this.lastFilesetIDSeqno = seqno;
+    }
+    
+    public final String getMediaIDPrefix() {
+        return mediaIDPrefix;
+    }
+
+    public final void setMediaIDPrefix(String mediaIDPrefix) {
+        this.mediaIDPrefix = mediaIDPrefix;
+    }
+
+    private synchronized String nextFilesetID() {
+        try {
+            server.setAttribute(serviceName, 
+                    new Attribute("LastFilesetIDSeqno", 
+                            new Integer(lastFilesetIDSeqno+1)) );
+        } catch (Exception e) {
+            log.warn("Failed to store incremented LastFilesetIDSeqno - " +
+                        "will be reset by next reboot! ", e);
+            ++lastFilesetIDSeqno;
+        }
+        return filesetIDPattern.format(lastFilesetIDSeqno);
+    }
+    
     /**
      * @return Returns the exportDelay.
      */
@@ -664,54 +712,55 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     private void sendMediaCreationRequest(ActiveAssociation aa,
             Dataset manifest, Properties config) throws InterruptedException,
             IOException {
-        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-        Patient pat = alf.newPatient(manifest.getString(Tags.PatientID),
-                manifest.getString(Tags.PatientName));
         DcmObjectFactory df = DcmObjectFactory.getInstance();
         Command cmd = df.newCommand();
         Association a = aa.getAssociation();
         PresContext pc = a.getAcceptedPresContext(
                 UIDs.MediaCreationManagementSOPClass,
                 UIDs.ImplicitVRLittleEndian);
-        int pid = pc.pcid();
-        String iuid = uidgen.createUID();
+        int pcid = pc.pcid();
+        String mcrqiuid = uidgen.createUID();
         cmd.initNCreateRQ(a.nextMsgID(), UIDs.MediaCreationManagementSOPClass,
-                iuid);
-        Dataset data = df.newDataset();
+                mcrqiuid);
+        Dataset mcrq = df.newDataset();
+        String fsid = nextFilesetID();
+        String fsuid = uidgen.createUID();
+        mcrq.putSH(Tags.StorageMediaFileSetID, fsid);
+        mcrq.putSH(Tags.StorageMediaFileSetUID, fsuid);
         String s;
         if ((s = config.getProperty("create-media-label-from-instances")) != null) {
-            data.putCS(Tags.LabelUsingInformationExtractedFromInstances, s);
+            mcrq.putCS(Tags.LabelUsingInformationExtractedFromInstances, s);
         }
         if ((s = config.getProperty("create-media-label-text")) != null) {
-            data.putUT(Tags.LabelText, s);
+            mcrq.putUT(Tags.LabelText, s);
         }
         if ((s = config.getProperty("create-media-label-style")) != null) {
-            data.putCS(Tags.LabelStyleSelection, s);
+            mcrq.putCS(Tags.LabelStyleSelection, s);
         }
         if ((s = config.getProperty("create-media-disposition")) != null) {
-            data.putLT(Tags.MediaDisposition, s);
+            mcrq.putLT(Tags.MediaDisposition, s);
         }
         if ((s = config.getProperty("create-media-allow-media-splitting")) != null) {
-            data.putCS(Tags.AllowMediaSplitting, s);
+            mcrq.putCS(Tags.AllowMediaSplitting, s);
         }
         if ((s = config.getProperty("create-media-allow-lossy-compression")) != null) {
-            data.putCS(Tags.AllowLossyCompression, s);
+            mcrq.putCS(Tags.AllowLossyCompression, s);
         }
         if ((s = config.getProperty("create-media-include-non-dicom")) != null) {
-            data.putCS(Tags.IncludeNonDICOMObjects, s);
+            mcrq.putCS(Tags.IncludeNonDICOMObjects, s);
         }
         if ((s = config.getProperty("create-media-include-display-app")) != null) {
-            data.putCS(Tags.IncludeDisplayApplication, s);
+            mcrq.putCS(Tags.IncludeDisplayApplication, s);
         }
-        data.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation, "NO");
+        mcrq.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation, "NO");
         String appProfile = config.getProperty("create-media-app-profile");
-        DcmElement refSOPSeq = data.putSQ(Tags.RefSOPSeq);
+        DcmElement refSOPSeq = mcrq.putSQ(Tags.RefSOPSeq);
         DcmElement sopInstRefSeq = manifest
                 .get(Tags.CurrentRequestedProcedureEvidenceSeq);
+        InstanceSorter sorter = new InstanceSorter();
         for (int i = 0, n = sopInstRefSeq.countItems(); i < n; i++) {
             Dataset refStudyItem = sopInstRefSeq.getItem(i);
-            pat.addStudyInstanceUID(refStudyItem
-                    .getString(Tags.StudyInstanceUID));
+            String suid = refStudyItem.getString(Tags.StudyInstanceUID);
             DcmElement refSerSeq = refStudyItem.get(Tags.RefSeriesSeq);
             for (int j = 0, m = refSerSeq.countItems(); j < m; j++) {
                 Dataset refSer = refSerSeq.getItem(j);
@@ -719,43 +768,43 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                 for (int k = 0, l = srcRefSOPSeq.countItems(); k < l; k++) {
                     Dataset srcRefSOP = srcRefSOPSeq.getItem(k);
                     Dataset refSOP = df.newDataset();
-                    refSOP.putUI(Tags.RefSOPClassUID, srcRefSOP
-                            .getString(Tags.RefSOPClassUID));
-                    refSOP.putUI(Tags.RefSOPInstanceUID, srcRefSOP
-                            .getString(Tags.RefSOPInstanceUID));
+                    String cuid = srcRefSOP.getString(Tags.RefSOPClassUID);
+                    refSOP.putUI(Tags.RefSOPClassUID, cuid);
+                    String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
+                    refSOP.putUI(Tags.RefSOPInstanceUID, iuid);
                     if (appProfile != null) {
                         refSOP.putCS(Tags.RequestedMediaApplicationProfile,
                                 appProfile);
                     }
                     refSOPSeq.addItem(refSOP);
+                    sorter.addInstance(suid, cuid, iuid, null);
                 }
             }
         }
         AssociationFactory af = AssociationFactory.getInstance();
-        Dimse dimse = af.newDimse(pid, cmd, data);
+        Dimse dimse = af.newDimse(pcid, cmd, mcrq);
         Command rsp = aa.invoke(dimse).get().getCommand();
         if (rsp.getStatus() != 0) {
             log.warn("Request Media Creation failed: " + rsp);
             return;
         }
         cmd.clear();
-        data.clear();
+        mcrq.clear();
         cmd.initNActionRQ(a.nextMsgID(), UIDs.MediaCreationManagementSOPClass,
-                iuid, 1);
+                mcrqiuid, 1);
         if ((s = config.getProperty("create-media-copies")) != null) {
-            data.putIS(Tags.NumberOfCopies, s);
+            mcrq.putIS(Tags.NumberOfCopies, s);
         }
         if ((s = config.getProperty("create-media-priority")) != null) {
-            data.putCS(Tags.RequestPriority, s);
+            mcrq.putCS(Tags.RequestPriority, s);
         }
-        dimse = af.newDimse(pid, cmd, data);
+        dimse = af.newDimse(pcid, cmd, mcrq);
         rsp = aa.invoke(dimse).get().getCommand();
         if (rsp.getStatus() != 0) {
             log.warn("Initiate Media Creation failed: " + rsp);
             return;
         }
-        logExport(extractPersonObserverName(manifest), pat, config
-                .getProperty("create-media-type"));
+        logExport(manifest, sorter, fsid, fsuid);
     }
 
     private String extractPersonObserverName(Dataset manifest) {
@@ -763,9 +812,8 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         for (int i = 0, n = contentSeq.countItems(); i < n; i++) {
             Dataset item = contentSeq.getItem(i);
             Dataset conceptName = item.getItem(Tags.ConceptNameCodeSeq);
-            if ("121008".equals(conceptName.getString(Tags.CodeValue))
-                    && "DCM".equals(conceptName
-                            .getString(Tags.CodingSchemeDesignator))) {
+            if (PERSON_OBSERVER_NAME_CODE.equals(conceptName.getString(Tags.CodeValue))
+                    && "DCM".equals(conceptName.getString(Tags.CodingSchemeDesignator))) {
                 return item.getString(Tags.PersonName);
             }
         }
@@ -788,18 +836,54 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         return auditLogIHEYr4.booleanValue();
     }
     
-    private void logExport(String user, Patient pat, String mediaType) {
-        if (!isAuditLogIHEYr4()) {
-            return;
-        }
+    private void logExport(Dataset manifest, InstanceSorter sorter,
+            String fsid, String fsuid) {
         try {
-            server.invoke(auditLogName, "logExport", new Object[] { user,
-                            new Patient[] { pat }, mediaType, null, null },
-                            new String[] { String.class.getName(),
-                                    Patient[].class.getName(),
-                                    String.class.getName(),
-                                    String.class.getName(),
-                                    Destination.class.getName() });
+            String user = extractPersonObserverName(manifest);
+            String pid = manifest.getString(Tags.PatientID);
+            String mediaID = mediaIDPrefix + fsid;
+            PersonName pn = manifest.getPersonName(Tags.PatientName);            
+            String pname = pn != null ? pn.format() : null;
+            if (isAuditLogIHEYr4()) {
+                AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+                Patient pat = alf.newPatient(pid, pname);
+                for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
+                    pat.addStudyInstanceUID((String) iter.next());
+
+                }
+                server.invoke(auditLogName, "logExport", new Object[] { user,
+                        new Patient[] { pat }, null, mediaID, null },
+                        new String[] { String.class.getName(),
+                        Patient[].class.getName(),
+                        String.class.getName(),
+                        String.class.getName(),
+                        Destination.class.getName() });
+            } else {
+                DataExportMessage msg = new DataExportMessage();
+                msg.addExporterProcess(AuditMessage.getProcessID(), 
+                        new String[] { callingAET },
+                        AuditMessage.getProcessName(), user == null,
+                        AuditMessage.getLocalHostName());
+                if (user != null) {
+                    msg.addExporterPerson(user, null, null, true, null);
+                }
+                msg.addDestinationMedia(mediaID, fsuid);
+                msg.addPatient(pid, pname);
+                for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
+                    ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                    String suid = (String) iter.next();
+                    for (Iterator iter2 = sorter.iterateCUIDs(suid);
+                            iter2.hasNext();) {
+                        String cuid = (String) iter2.next();
+                        SOPClass sopClass = new SOPClass(cuid);
+                        sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
+                        desc.addSOPClass(sopClass);
+                    }
+                    msg.addStudy(suid, desc);
+                }
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            }
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
