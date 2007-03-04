@@ -37,6 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.arr.seam.ejb;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,11 +48,23 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
+import javax.faces.context.FacesContext;
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4che2.audit.message.AuditLogUsedMessage;
+import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.arr.entities.AuditRecord;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -60,15 +75,18 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
+import org.jboss.annotation.ejb.cache.simple.CacheConfig;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Destroy;
 import org.jboss.seam.annotations.Factory;
+import org.jboss.seam.annotations.In;
+import org.jboss.seam.annotations.Logger;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.RequestParameter;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
 import org.jboss.seam.annotations.datamodel.DataModelSelectionIndex;
-import org.jboss.annotation.ejb.cache.simple.CacheConfig;
+import org.jboss.seam.log.Log;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -98,7 +116,16 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     private static final int MINUTE = 16;
 
     private static final int SECOND = 19;
+    
+    @Logger
+    private Log log; 
+    
+    @Resource (mappedName="ConnectionFactory")
+    QueueConnectionFactory connFactory;
 
+    @Resource (mappedName="queue/ARRIncoming")
+    Queue queue;
+    
     @PersistenceContext(unitName="dcm4chee-arr",
             type=PersistenceContextType.EXTENDED)
     private Session session;
@@ -111,6 +138,9 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     @RequestParameter
     private Integer page;
+    
+    @In
+    private FacesContext facesContext;
 
     private int curPage = 1;
 
@@ -450,7 +480,67 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     public String find() {
         curPage = 1;
         updateResults();
+        sendAuditLogUsedMessage();
         return ("browse");
+    }
+
+    private void sendAuditLogUsedMessage() {
+        try {
+            QueueConnection conn = connFactory.createQueueConnection();
+            try {
+                QueueSession jmsSession = conn.createQueueSession(false, 
+                        QueueSession.AUTO_ACKNOWLEDGE);
+                QueueSender sender = jmsSession.createSender(queue);
+                final BytesMessage msg = jmsSession.createBytesMessage();
+                msg.setStringProperty("sourceHostAddress", 
+                        AuditMessage.getLocalHost().getHostAddress());
+                msg.setStringProperty("sourceHostName", 
+                        AuditMessage.getLocalHostName());
+                AuditLogUsedMessage auditLogUsed = new AuditLogUsedMessage();
+                HttpServletRequest rq = (HttpServletRequest) 
+                        facesContext.getExternalContext().getRequest();
+                auditLogUsed.addUserPerson(
+                        maskNull(rq.getRemoteUser(), "UNKOWN_USER"), 
+                        null, null, rq.getRemoteHost());
+                StringBuffer url = rq.getRequestURL();
+                auditLogUsed.addSecurityAuditLog(
+                        url.substring(0, url.lastIndexOf("/")));
+                OutputStreamWriter out = new OutputStreamWriter(
+                        new OutputStream() {
+
+                            @Override
+                            public void write(byte[] b, int off, int len)
+                            throws IOException {
+                                try {
+                                    msg.writeBytes(b, off, len);
+                                } catch (JMSException e) {
+                                    throw new IOException(e.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void write(int b) throws IOException {
+                                try {
+                                    msg.writeByte((byte) b);
+                                } catch (JMSException e) {
+                                    throw new IOException(e.getMessage());
+                                }
+                            }
+                        },
+                        "UTF-8");
+                auditLogUsed.output(out);
+                out.flush();
+                sender.send(msg);
+            } finally {
+                conn.close();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to send Audit Log Used message", e);
+        }
+    }
+    
+    private String maskNull(String val, String def) {
+        return val != null ? val : def;
     }
 
     public void selectPage() {
