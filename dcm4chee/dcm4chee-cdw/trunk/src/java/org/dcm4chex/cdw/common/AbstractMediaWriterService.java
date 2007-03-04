@@ -43,7 +43,6 @@ import java.io.IOException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
@@ -124,21 +123,10 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
         } catch (IOException e) {
             // error already logged
         } finally {
-            if (rq.isDone() || rq.isFailed()) {
-                sendJMXNotification(rq);
-            }
             if (cleanup && !keepSpoolFiles) rq.cleanFiles(spoolDir);
         }
     }
 
-    public void sendJMXNotification(Object o) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(o.getClass().getName(), this,
-                eventID);
-        notif.setUserData(o);
-        super.sendNotification(notif);
-    }
-    
     /**
      * @param mcrq Media Creation Request
      * @param attrs Attributes of Media Creation Request
