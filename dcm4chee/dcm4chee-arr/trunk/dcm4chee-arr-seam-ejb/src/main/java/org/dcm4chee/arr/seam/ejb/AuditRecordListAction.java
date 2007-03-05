@@ -118,17 +118,20 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     private static final int SECOND = 19;
     
     @Logger
-    private Log log; 
+    private transient Log log; 
     
     @Resource (mappedName="ConnectionFactory")
-    QueueConnectionFactory connFactory;
+    private transient QueueConnectionFactory connFactory;
 
     @Resource (mappedName="queue/ARRIncoming")
-    Queue queue;
+    private transient Queue queue;
     
     @PersistenceContext(unitName="dcm4chee-arr",
             type=PersistenceContextType.EXTENDED)
-    private Session session;
+    private transient Session session;
+
+    @In
+    private transient FacesContext facesContext;
 
     @DataModel
     private List<AuditRecordEntry> records;
@@ -139,9 +142,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     @RequestParameter
     private Integer page;
     
-    @In
-    private FacesContext facesContext;
-
     private int curPage = 1;
 
     private int pageSize = 20;
