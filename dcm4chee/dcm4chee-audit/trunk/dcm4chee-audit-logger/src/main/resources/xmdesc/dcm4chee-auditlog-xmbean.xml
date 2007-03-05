@@ -136,6 +136,18 @@
       <value value="false"/>
     </descriptors>
   </attribute>
+  <attribute access="read-write" getMethod="getConfigurationURL"
+    setMethod="setConfigurationURL">
+    <description><![CDATA[URL of configuration file, which contains the list of
+    service attributes, for which changes are audited by Security Alert
+    messages.<br/>
+    <b>Default:</b> <code>resource:dcm4chee-audit-logger.xml</code>]]></description>
+    <name>ConfigurationURL</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="resource:dcm4chee-audit-logger.xml"/>
+    </descriptors>
+  </attribute>
   <attribute access="read-only" getMethod="isIHEYr4">
     <description><![CDATA[Used to distinguish this RFC 3881 compliant Audit Logger
     Service from the preceding Audit Logger Service, which creates Audit Messages
