@@ -416,6 +416,9 @@
       <zipfileset dir="${dcm4chee-audit.login}/target" prefix="${dist.standalone.config}/lib">
         <include name="*.jar"/>
       </zipfileset>
+        <zipfileset dir="${dcm4chee-audit.logger}/src/main/config" prefix="${dist.standalone.config}/conf">
+          <include name="conf/dcm4chee-audit.logger.xml"/>
+        </zipfileset>
       <zipfileset dir="${dcm4chee-audit.logger}/target" prefix="${dist.standalone.config}/deploy">
         <include name="*.sar"/>
       </zipfileset>

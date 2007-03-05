@@ -39,9 +39,9 @@
 
 package org.dcm4chex.archive.config;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -68,7 +68,7 @@ public class Condition {
         return s.length() == 1 && DELIM.indexOf(s.charAt(0)) != -1;
     }
 
-	private HashMap map = new HashMap();
+	private LinkedHashMap map = new LinkedHashMap();
 
     public Condition(String spec) {
         if (!spec.startsWith("[") || !spec.endsWith("]") || spec.length() == 2)
@@ -110,9 +110,9 @@ public class Condition {
     }
 
     private void put(String key, String val) {
-        HashSet set = (HashSet) map.get(key);
+        LinkedHashSet set = (LinkedHashSet) map.get(key);
         if (set == null) {
-            set = new HashSet();
+            set = new LinkedHashSet();
             map.put(key, set);
         }
         set.add(val);
@@ -128,15 +128,15 @@ public class Condition {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
             String[] val = (String[]) entry.getValue();
-            HashSet set = (HashSet) map.get(key);
+            LinkedHashSet set = (LinkedHashSet) map.get(key);
             if (set != null && !containsAny(set, val)) return false;
-            HashSet antiset = (HashSet) map.get(key + '!');
+            LinkedHashSet antiset = (LinkedHashSet) map.get(key + '!');
             if (antiset != null && containsAny(antiset, val)) return false;
         }
         return true;
     }
 
-    private boolean containsAny(HashSet set, String[] val) {
+    private boolean containsAny(LinkedHashSet set, String[] val) {
         if (val != null)
 	        for (int i = 0; i < val.length; i++)
 	            if (set.contains(val[i])) return true;
@@ -154,7 +154,7 @@ public class Condition {
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
             sb.append(entry.getKey()).append('=');
-            HashSet set = (HashSet) entry.getValue();
+            LinkedHashSet set = (LinkedHashSet) entry.getValue();
             Iterator values = set.iterator();
             while (values.hasNext())
                 sb.append(values.next()).append('|');
