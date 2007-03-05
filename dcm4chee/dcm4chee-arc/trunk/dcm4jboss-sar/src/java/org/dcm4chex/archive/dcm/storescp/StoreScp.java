@@ -1108,7 +1108,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.getLog().error(
                             "give up update DB Study Record [iuid=" + suid
                             + "]:", e);
-                    ;
+                    return;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
@@ -1142,6 +1142,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.getLog().error(
                             "give up update DB Series Record [iuid=" + seriuid
                             + "]:", e);
+                    return;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
