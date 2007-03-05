@@ -700,7 +700,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-    void logInstancesSent(Association moveAs, Association storeAs,
+    protected void logInstancesSent(Association moveAs, Association storeAs,
             ArrayList fileInfos) {
         if (isAuditLogIHEYr4()) {
             return;
