@@ -552,13 +552,18 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset movePatientToTrash(long pat_pk) throws RemoteException {
+    public Collection movePatientToTrash(long pat_pk) throws RemoteException {
         try {
         	PatientLocal patient = patHome.findByPrimaryKey(new Long(pat_pk));
+            Collection col = patient.getStudies();
+            Collection result = new ArrayList();
+            for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) { 
+                result.add( getStudyMgtDataset((StudyLocal)iter.next(), null) );
+            }
         	Dataset ds = patient.getAttributes(true);
             getPrivatePatient( patient, DELETED, true );
             patient.remove();
-            return ds;
+            return result;
         } catch (CreateException e) {
             throw new RemoteException(e.getMessage());
         } catch (EJBException e) {
@@ -653,6 +658,10 @@ public abstract class PrivateManagerBean implements SessionBean {
     	Dataset ds = dof.newDataset();
     	ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
         ds.putOB( PrivateTags.StudyPk, Convert.toBytes(study.getPk().longValue()));
+        ds.putSH( Tags.AccessionNumber, study.getAccessionNumber());
+        ds.putLO(Tags.PatientID, study.getPatient().getPatientId() );
+        ds.putLO(Tags.IssuerOfPatientID, study.getPatient().getIssuerOfPatientId() );
+        ds.putPN(Tags.PatientName, study.getPatient().getPatientName() );
         
     	log.debug("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
 		DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );

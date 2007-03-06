@@ -404,6 +404,10 @@ public abstract class ContentEditBean implements SessionBean {
     	Dataset ds = dof.newDataset();
     	ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
     	log.debug("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
+        ds.putSH( Tags.AccessionNumber, study.getAccessionNumber());
+        ds.putLO(Tags.PatientID, study.getPatient().getPatientId() );
+        ds.putLO(Tags.IssuerOfPatientID, study.getPatient().getIssuerOfPatientId() );
+        ds.putPN(Tags.PatientName, study.getPatient().getPatientName() );
     	if ( chgMode == CHANGE_MODE_STUDY) ds.putAll( changes );
 		DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
 		Iterator iter = series.iterator();
