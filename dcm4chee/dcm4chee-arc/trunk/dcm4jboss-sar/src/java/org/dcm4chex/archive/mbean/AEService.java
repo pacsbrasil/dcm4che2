@@ -49,6 +49,10 @@ import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 
+import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.AEData;
@@ -62,25 +66,13 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since July 24, 2002
  * @version $Revision$ $Date$
  */
-public class AEService extends ServiceMBeanSupport {
-
-    private ObjectName auditLogName;
-
-    private Boolean auditLogIHEYr4;
+public class AEService extends AbstractAuditSupportService {
 
     private ObjectName echoServiceName;
 
     private boolean dontSaveIP = true;
 
     private int[] portNumbers;
-
-    public ObjectName getAuditLoggerName() {
-        return auditLogName;
-    }
-
-    public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;     
-    }
 
     /**
      * @return Returns the echoServiceName.
@@ -201,7 +193,7 @@ public class AEService extends ServiceMBeanSupport {
                 } else {
                     aeManager.newAE(ae);
                 }
-                logActorConfig("Add new auto-configured AE " + ae);
+                logActorConfig("Add new auto-configured AE " + ae, SecurityAlertMessage.NETWORK_CONFIGURATION);
                 return ae;
             }
         }
@@ -244,7 +236,7 @@ public class AEService extends ServiceMBeanSupport {
             AEData aeNew = new AEData(-1, title, host, port, cipher);
             aeManager.newAE(aeNew);
             logActorConfig("Add AE " + aeNew + " cipher:"
-                    + aeNew.getCipherSuitesAsString());
+                    + aeNew.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
         } else {
             AEData aeOld = aeManager.getAe(pk);
             if (!aeOld.getTitle().equals(title)) {
@@ -256,7 +248,7 @@ public class AEService extends ServiceMBeanSupport {
             }
             AEData aeNew = new AEData(pk, title, host, port, cipher);
             aeManager.updateAE(aeNew);
-            logActorConfig("Modify AE " + aeOld + " -> " + aeNew);
+            logActorConfig("Modify AE " + aeOld + " -> " + aeNew, SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
     }
 
@@ -272,38 +264,34 @@ public class AEService extends ServiceMBeanSupport {
         while (st.hasMoreTokens()) {
             ae = aeManager.getAeByTitle(st.nextToken());
             aeManager.removeAE(ae.getPk());
-            logActorConfig("Remove AE " + ae);
+            logActorConfig("Remove AE " + ae, SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
     }
 
-    private boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
-    }
     
-    private void logActorConfig(String desc) {
+    private void logActorConfig(String desc, AuditEvent.TypeCode eventTypeCode) {
         log.info(desc);
-        if (!isAuditLogIHEYr4()) {
-            return;
-        }
-        try {
-            server.invoke(auditLogName, "logActorConfig", new Object[] { desc,
-                    "NetWorking" }, new String[] { String.class.getName(),
-                    String.class.getName(), });
-        } catch (Exception e) {
-            log.warn("Failed to log ActorConfig:", e);
-        }
+        if (isAuditLogIHEYr4()) {
+            try {
+                server.invoke(getAuditLoggerName(), "logActorConfig", new Object[] { desc,
+                        "NetWorking" }, new String[] { String.class.getName(),
+                        String.class.getName(), });
+            } catch (Exception e) {
+                log.warn("Failed to log ActorConfig:", e);
+            }
+        } else {
+            try {
+                HttpUserInfo userInfo = getHttpUserInfo();
+                SecurityAlertMessage msg = new SecurityAlertMessage(eventTypeCode);
+                msg.addReportingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+                msg.addAlertSubjectWithNodeID(AuditMessage.getLocalHostName(), desc);
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            } catch ( Exception x ) {
+                log.warn("Audit Log 'Security Alert' (eventTypeCode:"+eventTypeCode+
+                        ", desc:"+desc+") failed:", x);
+            }
+        } 
     }
 
     private boolean echo(AEData ae) {

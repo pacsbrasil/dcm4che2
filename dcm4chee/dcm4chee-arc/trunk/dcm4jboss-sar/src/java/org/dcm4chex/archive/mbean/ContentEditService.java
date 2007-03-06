@@ -42,6 +42,7 @@ package org.dcm4chex.archive.mbean;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,12 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.InstancesAccessedMessage;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.PatientRecordMessage;
+import org.dcm4che2.audit.message.StudyDeletedMessage;
+import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -68,16 +75,16 @@ import org.dcm4chex.archive.notif.PatientUpdated;
 import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer@tiani.com
  * @version $Revision$ $Date$
  * @since 17.02.2005
  */
-public class ContentEditService extends ServiceMBeanSupport {
+public class ContentEditService extends AbstractAuditSupportService {
 
     private static final int DELETED = 1;
+    
 	private ContentEdit contentEdit;
     private static Logger log = Logger.getLogger( ContentEditService.class.getName() );
 
@@ -253,6 +260,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
         ds1 = lookupContentEdit().createPatient( ds );
     	sendHL7PatientXXX( ds, "ADT^A04" );//use update to create patient, msg type is 'Register a patient'
+        logPatientRecord(ds, PatientRecordMessage.CREATE);
     	return ds1;
     }
     
@@ -288,6 +296,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
 		String patID = ds.getString(Tags.PatientID);
 		sendJMXNotification( new PatientUpdated(patID, "Patient update", getRetrieveAET()));
+        logPatientRecord(ds, PatientRecordMessage.UPDATE);
     }
     
     public Map linkMppsToMwl(String[] spsIDs, String[] mppsIUIDs) {
@@ -409,8 +418,14 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public void movePatientToTrash(long pk) throws RemoteException, HomeFactoryException, CreateException {
-    	Dataset ds = lookupPrivateManager().movePatientToTrash(pk);
-    	sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
+    	Collection col = lookupPrivateManager().movePatientToTrash(pk);
+        Dataset ds = null;
+        for (Iterator iter = col.iterator() ; iter.hasNext() ; ) {
+           ds = (Dataset) iter.next();
+           logStudyDeleted(ds);  
+        }
+        sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
+        logPatientRecord(ds, PatientRecordMessage.DELETE);
     	if ( log.isDebugEnabled() ) {log.debug("Patient moved to trash. ds:");log.debug(ds); }
     }
     public void moveStudyToTrash(long pk) throws RemoteException, HomeFactoryException, CreateException {
@@ -418,6 +433,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     	Dataset ds = lookupPrivateManager().moveStudyToTrash(pk);
     	if ( log.isDebugEnabled() ) log.debug("sendStudyMgt N-DELETE Study (pk="+pk+").");
     	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_DELETE_RQ, 0, ds);
+        logStudyDeleted(ds);
     	if ( log.isDebugEnabled() ) {log.debug("Study moved to trash. ds:");log.debug(ds); }
     }
     public void moveSeriesToTrash(long pk) throws RemoteException, HomeFactoryException, CreateException {
@@ -425,6 +441,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     	Dataset ds = lookupPrivateManager().moveSeriesToTrash(pk);
     	if ( log.isDebugEnabled() ) log.debug("sendStudyMgt N-ACTION Series (pk="+pk+").");
    		sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 1, ds);
+        Collection c = new ArrayList();
+        c.add(ds);
+        logInstancesAccessed(c, InstancesAccessedMessage.DELETE);
     	if ( log.isDebugEnabled() ) {log.debug("Series moved to trash. ds:");log.debug(ds); }
     }
     public void moveInstanceToTrash(long pk) throws RemoteException, HomeFactoryException, CreateException {
@@ -432,6 +451,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     	Dataset ds = lookupPrivateManager().moveInstanceToTrash(pk);
     	if ( log.isDebugEnabled() ) log.debug("sendStudyMgt N-ACTION Instance (pk="+pk+").");
     	sendStudyMgt( ds.getString( Tags.StudyInstanceUID), Command.N_ACTION_RQ, 2, ds);
+        Collection c = new ArrayList();
+        c.add(ds);
+        logInstancesAccessed(c, InstancesAccessedMessage.DELETE);
     	if ( log.isDebugEnabled() ) {log.debug("Instance moved to trash. ds:");log.debug(ds); }
     }
 
@@ -629,7 +651,94 @@ public class ContentEditService extends ServiceMBeanSupport {
                         String.class.getName(),
             			boolean.class.getName() });
 	}
+
+    private void logPatientRecord( Dataset ds, AuditEvent.ActionCode actionCode ){
+        if ( isAuditLogIHEYr4() ) return;
+        HttpUserInfo userInfo = getHttpUserInfo();
+        log.debug("log Patient Record! actionCode:"+actionCode);
+        try {
+            PatientRecordMessage msg = new PatientRecordMessage(actionCode);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+            msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Audit Log 'Patient Record' (actionCode:"+actionCode+") failed:", x);
+        }
+    }
     
+    private void logInstancesAccessed(Collection studies, AuditEvent.ActionCode actionCode) {
+        if ( isAuditLogIHEYr4() ) return;
+        HttpUserInfo userInfo = getHttpUserInfo();
+        log.debug("log instances Accessed! actionCode:"+actionCode);
+        try {
+            InstancesAccessedMessage msg = new InstancesAccessedMessage(actionCode);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+            Iterator iter = studies.iterator();
+            Dataset studyMgtDs = (Dataset) iter.next();
+            msg.addPatient(studyMgtDs.getString(Tags.PatientID), studyMgtDs.getString(Tags.PatientName));
+            while ( studyMgtDs != null ) {
+                msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID), 
+                        getStudyDescription( studyMgtDs ));
+                studyMgtDs = iter.hasNext() ? (Dataset) iter.next() : null;
+            }
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Audit Log 'Instances Accessed' (actionCode:"+actionCode+") failed:", x);
+        }
+    }
     
+    private void logStudyDeleted(Dataset studyMgtDs) {
+        if ( isAuditLogIHEYr4() ) return;
+        HttpUserInfo userInfo = getHttpUserInfo();
+        try {
+            StudyDeletedMessage msg = new StudyDeletedMessage();
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+            msg.addPatient(studyMgtDs.getString(Tags.PatientID), studyMgtDs.getString(Tags.PatientName));
+            msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID), 
+                    getStudyDescription( studyMgtDs ));
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Audit Log 'Study Deleted' failed:", x);
+        }
+    }
+    
+    private ParticipantObjectDescription getStudyDescription(Dataset studyMgtDs) {
+        ParticipantObjectDescription desc = new ParticipantObjectDescription();
+        String accNr = studyMgtDs.getString(Tags.AccessionNumber);
+        if ( accNr != null ) desc.addAccession(accNr);
+        addSOPClassInfo(desc,studyMgtDs.get(Tags.RefSeriesSeq));
+        return desc;
+    }
+
+    private void addSOPClassInfo(ParticipantObjectDescription desc, DcmElement refSeries) {
+        if ( refSeries == null ) return;
+        Dataset ds;
+        DcmElement refSopSeq;
+        String cuid;
+        HashMap map = new HashMap();
+        int[] noi;
+        for ( int i=0, len=refSeries.countItems() ; i < len ; i++ ) {
+            refSopSeq = refSeries.getItem(i).get(Tags.RefSOPSeq);
+            for ( int j = 0, jlen = refSopSeq.countItems() ; j < jlen ; j++ ) {
+                ds = refSopSeq.getItem(j);
+                cuid = ds.getString(Tags.RefSOPClassUID);
+                noi = (int[]) map.get(cuid);
+                if ( noi == null ) {
+                    map.put(cuid, new int[]{1});
+                } else {
+                    noi[0]++;
+                }
+            }
+        }
+        Map.Entry entry;
+        for ( Iterator iter = map.entrySet().iterator() ; iter.hasNext() ; ) {
+            entry = (Map.Entry) iter.next();
+            desc.addSOPClass( new SOPClass((String)entry.getKey())
+                .setNumberOfInstances(((int[]) entry.getValue())[0]));
+        }
+    }
     
 }
