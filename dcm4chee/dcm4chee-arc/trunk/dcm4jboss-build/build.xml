@@ -417,7 +417,7 @@
         <include name="*.jar"/>
       </zipfileset>
         <zipfileset dir="${dcm4chee-audit.logger}/src/main/config" prefix="${dist.standalone.config}/conf">
-          <include name="dcm4chee-audit-logger.xml"/>
+          <include name="dcm4chee-audit-attribute-change.xml"/>
         </zipfileset>
       <zipfileset dir="${dcm4chee-audit.logger}/target" prefix="${dist.standalone.config}/deploy">
         <include name="*.sar"/>
