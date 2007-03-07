@@ -57,6 +57,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
@@ -75,18 +76,20 @@ import org.dcm4chex.archive.notif.PatientUpdated;
 import org.dcm4chex.archive.notif.SeriesUpdated;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer@tiani.com
  * @version $Revision$ $Date$
  * @since 17.02.2005
  */
-public class ContentEditService extends AbstractAuditSupportService {
+public class ContentEditService extends ServiceMBeanSupport {
 
     private static final int DELETED = 1;
-    
-	private ContentEdit contentEdit;
-    private static Logger log = Logger.getLogger( ContentEditService.class.getName() );
+
+    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
+
+    private ContentEdit contentEdit;
 
     private ObjectName hl7SendServiceName;
 	private String sendingApplication;
@@ -123,6 +126,14 @@ public class ContentEditService extends AbstractAuditSupportService {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
+    public ObjectName getAuditLoggerName() {
+        return auditLogger.getAuditLoggerName();
+    }
+
+    public void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogger.setAuditLoggerName(auditLogName);
+    }
+    
 	/**
 	 * @return Returns the fileSystemMgtName.
 	 */
@@ -135,6 +146,7 @@ public class ContentEditService extends AbstractAuditSupportService {
 	public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
 		this.fileSystemMgtName = fileSystemMgtName;
 	}
+        
     public final ObjectName getHL7SendServiceName() {
         return hl7SendServiceName;
     }
@@ -653,13 +665,15 @@ public class ContentEditService extends AbstractAuditSupportService {
 	}
 
     private void logPatientRecord( Dataset ds, AuditEvent.ActionCode actionCode ){
-        if ( isAuditLogIHEYr4() ) return;
-        HttpUserInfo userInfo = getHttpUserInfo();
+        if ( auditLogger.isAuditLogIHEYr4() ) return;
+        HttpUserInfo userInfo = new HttpUserInfo();
         log.debug("log Patient Record! actionCode:"+actionCode);
         try {
             PatientRecordMessage msg = new PatientRecordMessage(actionCode);
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
-            msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
+            PersonName pn = ds.getPersonName(Tags.PatientName);            
+            String pname = pn != null ? pn.format() : null;
+            msg.addPatient(ds.getString(Tags.PatientID), pname);
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
         } catch (Exception x) {
@@ -668,15 +682,17 @@ public class ContentEditService extends AbstractAuditSupportService {
     }
     
     private void logInstancesAccessed(Collection studies, AuditEvent.ActionCode actionCode) {
-        if ( isAuditLogIHEYr4() ) return;
-        HttpUserInfo userInfo = getHttpUserInfo();
+        if ( auditLogger.isAuditLogIHEYr4() ) return;
+        HttpUserInfo userInfo = new HttpUserInfo();
         log.debug("log instances Accessed! actionCode:"+actionCode);
         try {
             InstancesAccessedMessage msg = new InstancesAccessedMessage(actionCode);
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
             Iterator iter = studies.iterator();
             Dataset studyMgtDs = (Dataset) iter.next();
-            msg.addPatient(studyMgtDs.getString(Tags.PatientID), studyMgtDs.getString(Tags.PatientName));
+            PersonName pn = studyMgtDs.getPersonName(Tags.PatientName);            
+            String pname = pn != null ? pn.format() : null;
+            msg.addPatient(studyMgtDs.getString(Tags.PatientID), pname);
             while ( studyMgtDs != null ) {
                 msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID), 
                         getStudyDescription( studyMgtDs ));
@@ -690,12 +706,14 @@ public class ContentEditService extends AbstractAuditSupportService {
     }
     
     private void logStudyDeleted(Dataset studyMgtDs) {
-        if ( isAuditLogIHEYr4() ) return;
-        HttpUserInfo userInfo = getHttpUserInfo();
+        if ( auditLogger.isAuditLogIHEYr4() ) return;
+        HttpUserInfo userInfo = new HttpUserInfo();
         try {
             StudyDeletedMessage msg = new StudyDeletedMessage();
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
-            msg.addPatient(studyMgtDs.getString(Tags.PatientID), studyMgtDs.getString(Tags.PatientName));
+            PersonName pn = studyMgtDs.getPersonName(Tags.PatientName);            
+            String pname = pn != null ? pn.format() : null;
+            msg.addPatient(studyMgtDs.getString(Tags.PatientID), pname);
             msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID), 
                     getStudyDescription( studyMgtDs ));
             msg.validate();
