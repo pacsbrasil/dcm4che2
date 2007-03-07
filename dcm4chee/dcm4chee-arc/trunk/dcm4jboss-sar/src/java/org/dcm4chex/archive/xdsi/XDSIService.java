@@ -101,6 +101,7 @@ import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.notif.Export;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -130,10 +131,8 @@ public class XDSIService extends ServiceMBeanSupport {
     
     private static final String NONE = "NONE";
 	
-    protected ObjectName auditLogName;
+    protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
     
-    protected Boolean auditLogIHEYr4;
-
     protected ObjectName ianScuServiceName;
 
     protected ObjectName keyObjectServiceName;
@@ -505,11 +504,11 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 
     public final ObjectName getAuditLoggerName() {
-        return auditLogName;
+        return auditLogger.getAuditLoggerName();
     }
 
     public final void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
+        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 	
 	public final ObjectName getPixQueryServiceName() {
@@ -995,28 +994,12 @@ public class XDSIService extends ServiceMBeanSupport {
 		return suids;
 	}
         
-        private boolean isAuditLogIHEYr4() {
-            if (auditLogName == null) {
-                return false;
-            }
-            if (auditLogIHEYr4 == null) {
-                try {
-                    this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                            auditLogName, "IHEYr4");
-                } catch (Exception e) {
-                    log.warn("JMX failure: ", e);
-                    this.auditLogIHEYr4 = Boolean.FALSE;
-                }
-            }
-            return auditLogIHEYr4.booleanValue();
-        }
-        
         private void logExport(String patId, String patName, String node, String aet, Set suids) {
-		if (!isAuditLogIHEYr4()) return;
+		if (!auditLogger.isAuditLogIHEYr4()) return;
         try {
     		URL url = new URL(node);
     		InetAddress inet = InetAddress.getByName(url.getHost());
-            server.invoke(auditLogName,
+            server.invoke(auditLogger.getAuditLoggerName(),
                     "logExport",
                     new Object[] { patId, patName, "XDSI Export", 
             						suids,

@@ -225,13 +225,13 @@ public class MPPSScpService extends AbstractScpService {
 	}
 
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
-        if (!isAuditLogIHEYr4()) {
+        if (!auditLogger.isAuditLogIHEYr4()) {
             return;
         }
     	Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
     	Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
         try {
-            server.invoke(auditLogName,
+            server.invoke(auditLogger.getAuditLoggerName(),
                     "logProcedureRecord",
                     new Object[] { "Modify", 
             		mppsAttrs.getString(Tags.PatientID), 

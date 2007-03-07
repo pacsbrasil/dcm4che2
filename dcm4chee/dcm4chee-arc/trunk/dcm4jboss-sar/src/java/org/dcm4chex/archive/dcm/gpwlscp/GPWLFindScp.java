@@ -42,8 +42,6 @@ package org.dcm4chex.archive.dcm.gpwlscp;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;

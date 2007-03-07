@@ -117,6 +117,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -179,9 +180,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private boolean deleteKeyObjects;
 
-    private ObjectName auditLogName;
-
-    private Boolean auditLogIHEYr4;
+    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private int exportDelay = 2000;
     
@@ -391,11 +390,11 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     public final ObjectName getAuditLoggerName() {
-        return auditLogName;
+        return auditLogger.getAuditLoggerName();
     }
 
     public final void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
+        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
     public final String getQueueName() {
@@ -820,22 +819,6 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         return null;
     }
 
-    private boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
-    }
-    
     private void logExport(Dataset manifest, InstanceSorter sorter,
             String fsid, String fsuid) {
         try {
@@ -844,14 +827,14 @@ public class ExportManagerService extends ServiceMBeanSupport implements
             String mediaID = mediaIDPrefix + fsid;
             PersonName pn = manifest.getPersonName(Tags.PatientName);            
             String pname = pn != null ? pn.format() : null;
-            if (isAuditLogIHEYr4()) {
+            if (auditLogger.isAuditLogIHEYr4()) {
                 AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
                 Patient pat = alf.newPatient(pid, pname);
                 for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
                     pat.addStudyInstanceUID((String) iter.next());
 
                 }
-                server.invoke(auditLogName, "logExport", new Object[] { user,
+                server.invoke(auditLogger.getAuditLoggerName(), "logExport", new Object[] { user,
                         new Patient[] { pat }, null, mediaID, null },
                         new String[] { String.class.getName(),
                         Patient[].class.getName(),
@@ -1387,7 +1370,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         msg.addSourceProcess(AuditMessage.getProcessID(), 
                 new String[] { callingAET }, AuditMessage.getProcessName(), 
                 AuditMessage.getLocalHostName(), true);
-        String destHost = AuditMessage.getHostName(a.getSocket().getInetAddress());
+        String destHost = AuditMessage.hostNameOf(a.getSocket().getInetAddress());
         msg.addDestinationProcess(destHost , new String[] { a.getCalledAET() },
                 null, destHost, false);
         PersonName pname = manifest.getPersonName(Tags.PatientName);

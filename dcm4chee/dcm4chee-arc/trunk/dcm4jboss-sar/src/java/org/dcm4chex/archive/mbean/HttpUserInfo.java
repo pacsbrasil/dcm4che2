@@ -15,13 +15,12 @@
  * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
+ * Agfa-Gevaert Group.
  * Portions created by the Initial Developer are Copyright (C) 2003-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -39,76 +38,37 @@
 
 package org.dcm4chex.archive.mbean;
 
-import javax.management.ObjectName;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.jboss.system.ServiceMBeanSupport;
-
 /**
- * @author franz.willer@tiani.com
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since 17.02.2005
+ * @since Mar 7, 2007
  */
-public abstract class AbstractAuditSupportService extends ServiceMBeanSupport {
+class HttpUserInfo {
+    private static final String WEB_REQUEST_KEY =
+            "javax.servlet.http.HttpServletRequest";
+    private String userId;
+    private String hostName;
 
-    private static final String WEB_REQUEST_KEY = "javax.servlet.http.HttpServletRequest";
-    
-    protected ObjectName auditLogName;
-
-    private Boolean auditLogIHEYr4;
-
-	public AbstractAuditSupportService() {
-    }
-   
-    public final ObjectName getAuditLoggerName() {
-        return auditLogName;
-    }
-
-    public final void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
+    public HttpUserInfo() {
+        try {
+            HttpServletRequest rq = (HttpServletRequest)
+                    PolicyContext.getContext(WEB_REQUEST_KEY);
+            userId = rq.getRemoteUser();
+            hostName = rq.getRemoteHost();
+        } catch (PolicyContextException e) {
+            userId = "UNKOWN_USER";
+        }
     }
     
-    protected boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
-    }
-
-    public HttpUserInfo getHttpUserInfo() {
-        return new HttpUserInfo();
+    public String getUserId() {
+        return userId;
     }
     
-    class HttpUserInfo {
-        private String userId, hostName;
-        
-        HttpUserInfo() {
-            try {
-                HttpServletRequest rq = (HttpServletRequest) PolicyContext.getContext(WEB_REQUEST_KEY);
-                userId = rq.getRemoteUser();
-                hostName = rq.getRemoteHost();
-            } catch (PolicyContextException e) {
-                log.warn("Cant get http request to get User Participiant!",e);
-            }
-        }
-        
-        protected String getUserId() {
-            return userId;
-        }
-        
-        protected String getHostName() {
-            return hostName;
-        }
+    public String getHostName() {
+        return hostName;
     }
 }

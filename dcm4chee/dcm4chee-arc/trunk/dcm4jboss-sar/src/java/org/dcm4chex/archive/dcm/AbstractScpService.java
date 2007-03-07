@@ -78,6 +78,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
@@ -97,10 +98,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected ObjectName dcmServerName;
 
-    protected ObjectName auditLogName;
+    protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
-    protected Boolean auditLogIHEYr4;
-   
     protected DcmHandler dcmHandler;
 
     protected String[] calledAETs;
@@ -168,11 +167,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final ObjectName getAuditLoggerName() {
-        return auditLogName;
+        return auditLogger.getAuditLoggerName();
     }
 
     public final void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;
+        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
     public final String getCalledAETs() {
@@ -234,22 +233,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final void setCoerceConfigDir(String path) {
         this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
-    }
-
-    protected boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
     }
         
     protected boolean enableService() {
@@ -624,10 +607,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public void logDicomQuery(Association assoc, String cuid, Dataset keys) {
         try {
-            if (isAuditLogIHEYr4()) {
+            if (auditLogger.isAuditLogIHEYr4()) {
                 RemoteNode rnode = AuditLoggerFactory.getInstance().newRemoteNode(
                         assoc.getSocket(), assoc.getCallingAET());
-                server.invoke(auditLogName, "logDicomQuery", 
+                server.invoke(auditLogger.getAuditLoggerName(), "logDicomQuery", 
                         new Object[] { keys, rnode, cuid },
                         new String[] { Dataset.class.getName(),
                             RemoteNode.class.getName(), String.class.getName() });
@@ -637,7 +620,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                         calledAETs, AuditMessage.getProcessName(), 
                         AuditMessage.getLocalHostName(), false);
                 
-                String srcHost = AuditMessage.getHostName(
+                String srcHost = AuditMessage.hostNameOf(
                         assoc.getSocket().getInetAddress());
                 msg.addSourceProcess(srcHost , 
                         new String[] { assoc.getCallingAET() }, null, 

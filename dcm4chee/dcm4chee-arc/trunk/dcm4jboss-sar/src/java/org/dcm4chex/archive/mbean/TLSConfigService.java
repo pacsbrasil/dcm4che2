@@ -44,16 +44,20 @@ import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
-import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLSocket;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.util.HandshakeFailedEvent;
 import org.dcm4che.util.HandshakeFailedListener;
 import org.dcm4che.util.SSLContextAdapter;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -80,9 +84,7 @@ public class TLSConfigService extends ServiceMBeanSupport
 
     private KeyStore trustStore;
 
-    private ObjectName auditLogName;
-
-    private Boolean auditLogIHEYr4;
+    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     public TLSConfigService() {
         ssl.addHandshakeFailedListener(this);
@@ -90,11 +92,11 @@ public class TLSConfigService extends ServiceMBeanSupport
     }
     
     public ObjectName getAuditLoggerName() {
-        return auditLogName;
+        return auditLogger.getAuditLoggerName();
     }
 
     public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogName = auditLogName;       
+        this.auditLogger.setAuditLoggerName(auditLogName);       
     }
 
     public String getEnabledProtocols() {
@@ -204,53 +206,58 @@ public class TLSConfigService extends ServiceMBeanSupport
     }
     
     public void handshakeFailed(HandshakeFailedEvent event) {
-       sendNotification(event);
-       logSecurityAlert("NodeAuthentification", 
-                    event.getSocket(), null,
-                    event.getException().getMessage());
-    }
-
-
-    public void handshakeCompleted(HandshakeCompletedEvent event) {
-        sendNotification(event);
-    }
-
-    private void sendNotification(Object event) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(event.getClass().getName(), this, 
-                eventID);
-        notif.setUserData(event);
-        super.sendNotification(notif);
-    }
-  
-    private boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
-    }
-    
-    private void logSecurityAlert(String alertType, Socket socket, String aet,
-            String description) {
-        if (!isAuditLogIHEYr4()) {
-            return;
-        }
         try {
-            server.invoke(auditLogName, "logSecurityAlert",
-                new Object[] { alertType, socket, aet, description },
-                new String[] { String.class.getName(), Socket.class.getName(),
+            SSLSocket sock = event.getSocket();
+            if (auditLogger.isAuditLogIHEYr4()) {
+                server.invoke(auditLogger.getAuditLoggerName(), "logSecurityAlert",
+                        new Object[] { "NodeAuthentification", sock, null, event.getException().getMessage() },
+                        new String[] { String.class.getName(), Socket.class.getName(),
                     String.class.getName(), String.class.getName()});
+            } else {
+                SecurityAlertMessage msg = new SecurityAlertMessage(
+                        SecurityAlertMessage.NODE_AUTHENTICATION);
+                msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+                msg.addReportingProcess(AuditMessage.getProcessID(),
+                        AuditMessage.getLocalAETitles(),
+                        AuditMessage.getProcessName(),
+                        AuditMessage.getLocalHostName());
+                msg.addPerformingNode(
+                        AuditMessage.hostNameOf(sock.getInetAddress()));
+                msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(),
+                        event.getException().getMessage());
+                msg.validate();
+                Logger.getLogger("auditlog").warn(msg);
+            }
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
+    }
+
+    public void handshakeCompleted(HandshakeCompletedEvent hscEvent) {
+        if (auditLogger.isAuditLogIHEYr4()) {
+            return;
+        }
+        try {
+            SSLSocket sock = hscEvent.getSocket();
+            SecurityAlertMessage msg = new SecurityAlertMessage(
+                    SecurityAlertMessage.NODE_AUTHENTICATION);
+            msg.addReportingProcess(AuditMessage.getProcessID(),
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName());
+            msg.addPerformingNode(
+                    AuditMessage.hostNameOf(sock.getInetAddress()));
+            msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(),
+                    toText(hscEvent));
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }
+    }
+
+    private String toText(HandshakeCompletedEvent hscEvent) {
+        return "SSL handshake completed, cipher suite: "
+                + hscEvent.getCipherSuite();
     }
 }

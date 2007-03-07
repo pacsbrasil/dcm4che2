@@ -689,9 +689,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     void logInstancesSent(RemoteNode node, InstancesAction action) {
-        if (isAuditLogIHEYr4()) {
+        if (auditLogger.isAuditLogIHEYr4()) {
             try {
-                server.invoke(auditLogName, "logInstancesSent", new Object[] {
+                server.invoke(auditLogger.getAuditLoggerName(), "logInstancesSent", new Object[] {
                         node, action }, new String[] { RemoteNode.class.getName(),
                         InstancesAction.class.getName() });
             } catch (Exception e) {
@@ -702,7 +702,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     protected void logInstancesSent(Association moveAs, Association storeAs,
             ArrayList fileInfos) {
-        if (isAuditLogIHEYr4()) {
+        if (auditLogger.isAuditLogIHEYr4()) {
             return;
         }
         try {
@@ -714,7 +714,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         fileInfo.sopIUID, null);
             }
             String destAET = storeAs.getCalledAET();
-            String destHost = AuditMessage.getHostName(
+            String destHost = AuditMessage.hostNameOf(
                     storeAs.getSocket().getInetAddress());
             String origAET = moveAs.getCallingAET();
             boolean dstIsRequestor = origAET.equals(destAET);
@@ -729,7 +729,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             msg.addDestinationProcess(destHost, new String[] { destAET }, null, 
                     destHost, dstIsRequestor);
             if (!dstIsRequestor && !srcIsRequestor) {
-                String origHost = AuditMessage.getHostName(
+                String origHost = AuditMessage.hostNameOf(
                         moveAs.getSocket().getInetAddress());
                 msg.addOtherParticipantProcess(origHost,
                         new String[] { origAET }, null, origHost, true);

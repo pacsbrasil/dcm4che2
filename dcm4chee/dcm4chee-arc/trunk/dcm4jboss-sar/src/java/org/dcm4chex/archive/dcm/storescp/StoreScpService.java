@@ -658,7 +658,7 @@ public class StoreScpService extends AbstractScpService {
 
     void logInstancesStored(Socket s, SeriesStored seriesStored) {
         try {
-            if (isAuditLogIHEYr4()) {
+            if (auditLogger.isAuditLogIHEYr4()) {
                 final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
                 Dataset ian = seriesStored.getIAN();
                 Dataset pps = ian.getItem(Tags.RefPPSSeq);
@@ -688,7 +688,7 @@ public class StoreScpService extends AbstractScpService {
                         "LOCAL");
                     }
                 }
-                server.invoke(auditLogName, "logInstancesStored", new Object[] {
+                server.invoke(auditLogger.getAuditLoggerName(), "logInstancesStored", new Object[] {
                         remoteNode, action },
                         new String[] { RemoteNode.class.getName(),
                         InstancesAction.class.getName() });
@@ -710,7 +710,7 @@ public class StoreScpService extends AbstractScpService {
                                 InstancesTransferredMessage.CREATE);
                 String srcAET = seriesStored.getCallingAET();
                 String srcHost = s != null ?
-                        AuditMessage.getHostName(s.getInetAddress()) : null;
+                        AuditMessage.hostNameOf(s.getInetAddress()) : null;
                 String srcID = srcHost != null ? srcHost : srcAET;
                 msg.addSourceProcess(srcID, new String[] { srcAET }, null, srcHost, true);
                 msg.addDestinationProcess(AuditMessage.getProcessID(), 
