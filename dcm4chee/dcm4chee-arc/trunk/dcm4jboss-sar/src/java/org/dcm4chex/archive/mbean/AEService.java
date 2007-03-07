@@ -66,7 +66,9 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since July 24, 2002
  * @version $Revision$ $Date$
  */
-public class AEService extends AbstractAuditSupportService {
+public class AEService extends ServiceMBeanSupport {
+
+    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private ObjectName echoServiceName;
 
@@ -87,6 +89,14 @@ public class AEService extends AbstractAuditSupportService {
      */
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
+    }
+    
+    public ObjectName getAuditLoggerName() {
+        return auditLogger.getAuditLoggerName();
+    }
+
+    public void setAuditLoggerName(ObjectName auditLogName) {
+        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
     /**
@@ -267,31 +277,30 @@ public class AEService extends AbstractAuditSupportService {
             logActorConfig("Remove AE " + ae, SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
     }
-
-    
+   
     private void logActorConfig(String desc, AuditEvent.TypeCode eventTypeCode) {
         log.info(desc);
-        if (isAuditLogIHEYr4()) {
-            try {
-                server.invoke(getAuditLoggerName(), "logActorConfig", new Object[] { desc,
-                        "NetWorking" }, new String[] { String.class.getName(),
-                        String.class.getName(), });
-            } catch (Exception e) {
-                log.warn("Failed to log ActorConfig:", e);
-            }
-        } else {
-            try {
-                HttpUserInfo userInfo = getHttpUserInfo();
+        try {
+            if (auditLogger.isAuditLogIHEYr4()) {
+                server.invoke(auditLogger.getAuditLoggerName(), 
+                        "logActorConfig",
+                        new Object[] { desc, "NetWorking" },
+                        new String[] { String.class.getName(), String.class.getName(), });
+            } else {
+                HttpUserInfo userInfo = new HttpUserInfo();
                 SecurityAlertMessage msg = new SecurityAlertMessage(eventTypeCode);
-                msg.addReportingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
-                msg.addAlertSubjectWithNodeID(AuditMessage.getLocalHostName(), desc);
+                msg.addReportingProcess(AuditMessage.getProcessID(),
+                        AuditMessage.getLocalAETitles(),
+                        AuditMessage.getProcessName(),
+                        AuditMessage.getLocalHostName());
+                msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+                msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
                 msg.validate();
                 Logger.getLogger("auditlog").info(msg);
-            } catch ( Exception x ) {
-                log.warn("Audit Log 'Security Alert' (eventTypeCode:"+eventTypeCode+
-                        ", desc:"+desc+") failed:", x);
             }
-        } 
+        } catch (Exception e) {
+            log.warn("Failed to log ActorConfig:", e);
+        }
     }
 
     private boolean echo(AEData ae) {
