@@ -210,7 +210,7 @@ public class ActiveParticipant extends BaseElement {
     }
     
     public void setNetworkAccessPointID(InetAddress ip) {
-        setNetworkAccessPointID(AuditMessage.getHostName(ip));       
+        setNetworkAccessPointID(AuditMessage.hostNameOf(ip));       
     }
 
     public List getRoleIDCodeIDs() {
@@ -259,11 +259,11 @@ public class ActiveParticipant extends BaseElement {
         }
     }
 
-    static boolean isIP(String id) {
+    public static boolean isIP(String id) {
         return IP4.matcher(id).matches() || IP6.matcher(id).matches();
     }
 
-    static boolean isTelNo(String id) {
+    public static boolean isTelNo(String id) {
         return TEL_NO.matcher(id).matches();
     }
 

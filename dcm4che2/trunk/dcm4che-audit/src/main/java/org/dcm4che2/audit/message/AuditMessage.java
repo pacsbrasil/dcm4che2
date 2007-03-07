@@ -113,6 +113,8 @@ public class AuditMessage extends BaseElement {
             processName = System.getProperty("app.name");
         } catch (Exception e) {}
     }
+    
+    private static String[] localAETitles; 
 
     protected final AuditEvent event;
     protected final ArrayList activeParticipants = new ArrayList(3);
@@ -254,6 +256,16 @@ public class AuditMessage extends BaseElement {
     public static void setProcessName(String processName) {
         AuditMessage.processName = processName;
     }
+
+    public static String[] getLocalAETitles() {
+        return (String[]) 
+                (localAETitles != null ? localAETitles.clone() : null);
+    }
+
+    public static void setLocalAETitles(String[] aets) {
+        AuditMessage.localAETitles = (String[])
+                (aets != null ? aets.clone() : null);
+    }
     
     public static boolean isEnableDNSLookups() {
         return enableDNSLookups;
@@ -263,16 +275,37 @@ public class AuditMessage extends BaseElement {
         AuditMessage.enableDNSLookups = enableDNSLookups;
     }
 
-    public static String getHostName(InetAddress node) {
+    public static String hostNameOf(InetAddress node) {
         return enableDNSLookups ? node.getHostName() : node.getHostAddress();
     }
 
+    public static String nodeIDOf(InetAddress node) {
+        if (!enableDNSLookups) {
+            return node.getHostAddress();
+        }
+        String hname = node.getCanonicalHostName();
+        if (ActiveParticipant.isIP(hname)) {
+            return hname;
+        }
+        int dotPos = hname.indexOf('.');
+        if (dotPos == -1) {
+            return hname;
+        }
+        char[] cs = hname.toCharArray();
+        cs[dotPos] = '@';
+        return new String(cs);
+    }
+    
+    public static InetAddress getLocalHost() {
+        return localHost;
+    }
+    
     public static String getLocalHostName() {
         return getLocalHost().getHostName();
     }
-
-    public static InetAddress getLocalHost() {
-        return localHost;
+    
+    public static String getLocalNodeID() {
+        return nodeIDOf(getLocalHost());
     }
     
     public static String aetToAltUserID(String aet) {
