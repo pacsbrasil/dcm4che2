@@ -28,12 +28,12 @@ type           Event Type Code
 <attribute name="AuditEnterpriseSiteID"/>
 <attribute name="AuditSourceTypeCodes"/>
 <attribute name="ProcessName"/>
-<attribute name="AETitles"/>
+<attribute name="LocalAETitles"/>
 <attribute name="EnableDNSLookups"/>
 <attribute name="IncludeXMLDeclaration"/>
 <attribute name="TimezonedDateTime"/>
 <attribute name="UtcDateTime"/>
-<attribute name="ConfigurationURL"/>
+<attribute name="AttributeChangeConfigurationURL"/>
 </mbean>
 <mbean name="dcm4chee.cdw:service=MediaWriter,name=CDRecord">
 <attribute name="Executable"/>

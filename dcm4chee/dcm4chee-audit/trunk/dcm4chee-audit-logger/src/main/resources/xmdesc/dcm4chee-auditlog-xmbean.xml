@@ -80,12 +80,12 @@
     <name>ProcessName</name>
     <type>java.lang.String</type>
   </attribute>
-  <attribute access="read-write" getMethod="getAETitles"
-    setMethod="setAETitles">
+  <attribute access="read-write" getMethod="getLocalAETitles"
+    setMethod="setLocalAETitles">
     <description><![CDATA[List of AE titles supported by this application,
     separated by \(backslash).<br/>
     <b>Default:</b> <code>DCM4CHEE</code>]]></description>
-    <name>AETitles</name>
+    <name>LocalAETitles</name>
     <type>java.lang.String</type>
     <descriptors>
       <value value="DCM4CHEE"/>
@@ -136,16 +136,16 @@
       <value value="false"/>
     </descriptors>
   </attribute>
-  <attribute access="read-write" getMethod="getConfigurationURL"
-    setMethod="setConfigurationURL">
+  <attribute access="read-write" getMethod="getAttributeChangeConfigurationURL"
+    setMethod="setAttributeChangeConfigurationURL">
     <description><![CDATA[URL of configuration file, which contains the list of
     service attributes, for which changes are audited by Security Alert
     messages.<br/>
-    <b>Default:</b> <code>resource:dcm4chee-audit-logger.xml</code>]]></description>
-    <name>ConfigurationURL</name>
+    <b>Default:</b> <code>resource:dcm4chee-audit-attribute-change.xml</code>]]></description>
+    <name>AttributeChangeConfigurationURL</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="resource:dcm4chee-audit-logger.xml"/>
+      <value value="resource:dcm4chee-audit-attribute-change.xml"/>
     </descriptors>
   </attribute>
   <attribute access="read-only" getMethod="isIHEYr4">

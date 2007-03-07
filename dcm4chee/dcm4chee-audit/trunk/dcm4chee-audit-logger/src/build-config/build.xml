@@ -1,4 +1,4 @@
-<project name="dcm4chee-audit-logger" default="config">
+<project name="dcm4chee-audit-attribute-change" default="config">
   <!-- 
   Allow user to adjust build properties without modifying this build script.
   -->
@@ -360,7 +360,7 @@
       <param name="xmbean.file" value="dcm4chee-cdw-nerocmd-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.cdw:service=MediaWriter,name=NeroCmd"/>
     </antcall>
-    <concat destfile="${target-config.dir}/dcm4chee-audit-logger.xml">
+    <concat destfile="${target-config.dir}/dcm4chee-audit-attribute-change.xml">
       <header><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!--
 List of service attributes, which changes in the JMX console shall trigger the  
@@ -379,7 +379,7 @@ type           Event Type Code
     </concat>
   </target>
   <target name="xslt">
-    <xslt style="dcm4chee-audit-logger.xsl" in="${xmdesc.dir}/${xmbean.file}"
+    <xslt style="dcm4chee-audit-attribute-change.xsl" in="${xmdesc.dir}/${xmbean.file}"
       out="${target-config.dir}/${xmbean.file}">
       <param name="mbean" expression="${mbean}"/>
     </xslt>

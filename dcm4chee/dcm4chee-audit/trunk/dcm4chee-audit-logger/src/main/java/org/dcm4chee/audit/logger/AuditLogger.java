@@ -93,8 +93,7 @@ public class AuditLogger extends ServiceMBeanSupport {
     
 
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
-    private String[] aets;
-    private String configurationURL;
+    private String aclConfURL;
     private HashSet acnSources = new HashSet();
 
     public boolean isIHEYr4() {
@@ -168,7 +167,11 @@ public class AuditLogger extends ServiceMBeanSupport {
         AuditMessage.setProcessName(processName);
     }
     
-    public String getAETitles() {
+    public String getLocalAETitles() {
+        return formatAETs(AuditMessage.getLocalAETitles());
+    }
+
+    private String formatAETs(String[] aets) {
         if (aets == null || aets.length == 0) {
             return "-";
         }
@@ -179,17 +182,24 @@ public class AuditLogger extends ServiceMBeanSupport {
         for (int i = 1; i < aets.length; i++) {
             sb.append('\\').append(aets[i]);
         }
-        return sb.toString();
+        return null;
     }
 
-    public void setAETitles(String aets) {
-        if (aets == null || aets.length() == 0 || "-".equals(aets)) {
-            this.aets = null;
-        } else {
-            this.aets = aets.split("\\\\");
-        }
+    public void setLocalAETitles(String aets) {
+        AuditMessage.setLocalAETitles(splitAETs(aets));
     }
     
+    private String[] splitAETs(String aets) {
+        if (aets == null) {
+            return null;
+        }
+        String trim = aets.trim();
+        if (trim.length() == 0 || "-".equals(trim)) {
+            return null;
+        }
+        return trim.split("\\\\");
+    }
+
     public boolean isEnableDNSLookups() {
         return AuditMessage.isEnableDNSLookups();
     }
@@ -222,23 +232,23 @@ public class AuditLogger extends ServiceMBeanSupport {
         AuditMessage.setUtcDateTime(utcDateTime);
     }    
     
-    public final String getConfigurationURL() {
-        return configurationURL;
+    public final String getAttributeChangeConfigurationURL() {
+        return aclConfURL;
     }
 
-    public final void setConfigurationURL(String configurationURL)
+    public final void setAttributeChangeConfigurationURL(String url)
             throws Exception {
-        parseConfiguration(configurationURL, new RegisterACL(true));
-        this.configurationURL = configurationURL;
+        parseACLConfig(url, new RegisterACL(true));
+        this.aclConfURL = url;
         if (getState() == STARTED) {
             unregisterACL();
-            parseConfiguration(configurationURL, new RegisterACL(false));
+            parseACLConfig(url, new RegisterACL(false));
         }
     }
 
     protected void startService() throws Exception {
         auditApplicationActivity(ApplicationActivityMessage.APPLICATION_START);
-        parseConfiguration(configurationURL, new RegisterACL(false));
+        parseACLConfig(aclConfURL, new RegisterACL(false));
     }
 
     protected void stopService() {
@@ -248,7 +258,8 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     private void auditApplicationActivity(AuditEvent.TypeCode type) {
         ApplicationActivityMessage msg = new ApplicationActivityMessage(type);
-        msg.addApplication(AuditMessage.getProcessID(), aets,
+        msg.addApplication(AuditMessage.getProcessID(),
+                AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
                 AuditMessage.getLocalHostName());
         msg.addApplicationLauncher(getPrincipal(), null, null, null);
@@ -269,7 +280,8 @@ public class AuditLogger extends ServiceMBeanSupport {
             }
             SecurityAlertMessage msg = new SecurityAlertMessage(
                     (AuditEvent.TypeCode) handback);
-            msg.addReportingProcess(AuditMessage.getProcessID(), aets,
+            msg.addReportingProcess(AuditMessage.getProcessID(),
+                    AuditMessage.getLocalAETitles(),
                     AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName());
             msg.addPerformingPerson(getPrincipal(), null, null, getHostname());
@@ -293,7 +305,7 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     }
     
-    private static void parseConfiguration(String uri, DefaultHandler dh)
+    private static void parseACLConfig(String uri, DefaultHandler dh)
             throws Exception {
         SAXParser p = SAXParserFactory.newInstance().newSAXParser();
         p.parse(uri, dh);
