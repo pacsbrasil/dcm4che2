@@ -88,8 +88,8 @@ class FileDataSource implements DataSource {
             } else {
                 service.logDataset("Dataset:\n", ds);
                 ds.writeDataset(out, enc);
-                ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
                 if (len == -1) {
+                            ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
 		            parser.parseHeader();
 		            int itemlen;
 	                while (parser.getReadTag() == Tags.Item) {
@@ -101,6 +101,7 @@ class FileDataSource implements DataSource {
 	                ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
 	                        VRs.NONE, 0);
 	            } else {
+                        ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, len);
 	                copy(fiis, out, len, buffer);
 	            }
             }
