@@ -171,24 +171,25 @@ public class FileDataSource implements DataSource {
 				if ((len&1)!=0)
                     out.write(0);
             } else {
-				log.debug("Dataset:\n");
-				log.debug(ds);
-				write(ds, out, enc);
-                ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
+                log.debug("Dataset:\n");
+                log.debug(ds);
+                write(ds, out, enc);
                 if (len == -1) {
-		            parser.parseHeader();
-		            int itemlen;
-	                while (parser.getReadTag() == Tags.Item) {
-	                    itemlen = parser.getReadLength();
-	                    ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-	                    copy(fiis, out, itemlen, buffer);
-	                    parser.parseHeader();
-	                }
-	                ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
-	                        VRs.NONE, 0);
-	            } else {
-	                copy(fiis, out, len, buffer);
-	            }
+                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
+                    parser.parseHeader();
+                    int itemlen;
+                    while (parser.getReadTag() == Tags.Item) {
+                        itemlen = parser.getReadLength();
+                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+                        copy(fiis, out, itemlen, buffer);
+                        parser.parseHeader();
+                    }
+                    ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
+                            VRs.NONE, 0);
+                } else {
+                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, len);
+                    copy(fiis, out, len, buffer);
+                }
             }
             parser.parseDataset(parser.getDcmDecodeParam(), -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
