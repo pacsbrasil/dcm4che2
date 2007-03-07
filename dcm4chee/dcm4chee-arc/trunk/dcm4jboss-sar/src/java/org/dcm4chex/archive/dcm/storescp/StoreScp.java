@@ -665,21 +665,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (size == 0) {
             return null;
         }
-        if (size > 1) {
-            log.warn("Several (" + size
-                    + ") matching worklist entries found for received Series[ "
-                    + seriuid + "] - Do not coerce series attributes with request information.");
-            return null;
-        }
         Dataset coerce = service.getCoercionAttributesFor(assoc,
                 MWL2STORE_XSL, (Dataset) mwlItems.get(0));
         if (coerce == null) {
             log.error("Failed to find or load stylesheet " + MWL2STORE_XSL
                     + " for " + assoc.getCallingAET()
-                    + ". Cannot coerce series attributes with request information.");
-        } else {
-            service.coerceAttributes(ds, coerce);
+                    + ". Cannot coerce object attributes with request information.");
+            return null;
         }
+        if (size > 1) {
+            DcmElement rqAttrsSq = coerce.get(Tags.RequestAttributesSeq);
+            Dataset coerce0 = coerce.exclude(new int[] { Tags.RequestAttributesSeq });
+            for (int i = 1; i < size; i++) {
+                Dataset coerce1 = service.getCoercionAttributesFor(assoc,
+                        MWL2STORE_XSL, (Dataset) mwlItems.get(i));
+                if (!coerce1.match(coerce0, true, true)) {
+                    log.warn("Several (" + size + ") matching worklist entries "
+                            + "found for received Series[ " + seriuid
+                            + "], which differs also in attributes NOT mapped to the Request Attribute Sequence item "
+                            + "- Do not coerce object attributes with request information.");
+                    return null;                
+                }
+                if (rqAttrsSq != null) {
+                    Dataset item = coerce1.getItem(Tags.RequestAttributesSeq);
+                    if (item != null) {
+                        rqAttrsSq.addItem(item);
+                    }
+                }
+            }
+        }
+        service.coerceAttributes(ds, coerce);
         return coerce;
     }
 
