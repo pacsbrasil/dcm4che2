@@ -275,7 +275,11 @@ public class AuditLogger extends ServiceMBeanSupport {
 
         public void handleNotification(Notification notif, Object handback) {
             AttributeChangeNotification scn = (AttributeChangeNotification) notif;
-            if (scn.getNewValue().equals(scn.getOldValue())) {
+            Object newValue = scn.getNewValue();
+            Object oldValue = scn.getOldValue();
+            if (newValue instanceof String && oldValue instanceof String
+                    ? ((String) newValue).trim().equals(((String) oldValue).trim())
+                    : newValue.equals(oldValue)) {
                 return;
             }
             SecurityAlertMessage msg = new SecurityAlertMessage(
