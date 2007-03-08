@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
+  xmlns:java="http://xml.apache.org/xalan/java" exclude-result-prefixes="java">
   <xsl:template match="AuditMessage">
     <xsl:apply-templates select="*"/>
   </xsl:template>
@@ -25,6 +26,7 @@
   <!-- =========================================== -->
   <xsl:template match="ActiveParticipant">
     <xsl:text>,&#32;</xsl:text>
+    <br/>
     <strong>
       <xsl:if test="@UserIsRequestor!='false'">
         <xsl:text>Req.</xsl:text>
@@ -66,6 +68,7 @@
   <!-- =========================================== -->
   <xsl:template match="AuditSourceIdentification">
     <xsl:text>,&#32;</xsl:text>
+    <br/>
     <strong>Audit&#160;Source:&#160;</strong>
     <xsl:text>ID=</xsl:text>
     <xsl:value-of select="@AuditSourceID"/>
@@ -79,6 +82,7 @@
   <!-- =========================================== -->
   <xsl:template match="ParticipantObjectIdentification">
     <xsl:text>,&#32;</xsl:text>
+    <br/>
     <strong>Object</strong>
     <xsl:choose>
       <xsl:when test="@ParticipantObjectTypeCodeRole=1">(Patient)</xsl:when>
@@ -121,6 +125,8 @@
       <xsl:text>,&#32;Name=</xsl:text>
       <xsl:value-of select="@ParticipantObjectName"/>
     </xsl:if>
+    <xsl:apply-templates
+      select="ParticipantObjectDetail[@type='AlertDescription']"/>
   </xsl:template>
   <xsl:template match="ParticipantObjectIDTypeCode">
     <xsl:choose>
@@ -141,5 +147,9 @@
       <xsl:when test="@code=12">URI</xsl:when>
       <xsl:otherwise>id</xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  <xsl:template match="ParticipantObjectDetail">
+    <xsl:text>,&#32;Description=</xsl:text>
+    <xsl:value-of select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(@value)"/>
   </xsl:template>
 </xsl:stylesheet>
