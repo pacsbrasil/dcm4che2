@@ -64,6 +64,8 @@ public interface DcmParser {
     void setStreamPosition(long pos);
 
     void seek(long pos) throws IOException;
+    
+    void unreadHeader();
 
     void setDcmHandler(DcmHandler handler);
 

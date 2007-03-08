@@ -94,6 +94,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private int rVR = -1;
     private int rLen = -1;
     private long rPos = 0L;
+    private int hLen = -1;
+    private boolean readHeader = true;
     private boolean eof = false;
     private String tsUID = null;
     
@@ -517,6 +519,13 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         return 8 + lread;
     }
     
+    public void unreadHeader() {
+        if (!readHeader || hLen == -1) {
+            throw new IllegalArgumentException();
+        }
+        readHeader = false;
+    }
+    
     private long doParse(int stopTag, int length) throws IOException {
         if (log.isDebugEnabled()) {
             log.debug("rpos:" + rPos
@@ -527,14 +536,19 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (length != 0) {
             long llen = length & 0xffffffffL;
             loop: do {
-                final long rPos0 = rPos;
-                final int hlen = parseHeader();
-                if (hlen == -1) {
-                    if (length != -1)
-                        throw new EOFException();
-                    break loop;
+                long rPos0 = rPos;
+                if (readHeader) {
+                    hLen = parseHeader();
+                    if (hLen == -1) {
+                        if (length != -1)
+                            throw new EOFException();
+                        break loop;
+                    }
+                } else {
+                    rPos0 -= hLen;
+                    readHeader = true;
                 }
-                lread += hlen;
+                lread += hLen;
                 if ((stopTag & 0xffffffffL) <= (rTag & 0xffffffffL)) 
                     break loop;
                 if (handler != null && unBuf == null
