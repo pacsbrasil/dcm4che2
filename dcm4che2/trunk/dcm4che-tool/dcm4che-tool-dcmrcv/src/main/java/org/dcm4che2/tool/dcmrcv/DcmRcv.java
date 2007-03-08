@@ -246,7 +246,8 @@ public class DcmRcv extends StorageService {
         UID.HemodynamicWaveformStorage,
         UID.CardiacElectrophysiologyWaveformStorage,
         UID.BasicVoiceAudioWaveformStorage,
-        UID.HangingProtocolStorage
+        UID.HangingProtocolStorage,
+        UID.SiemensCSANonImageStorage
     };
 
     
