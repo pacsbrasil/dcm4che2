@@ -134,6 +134,10 @@ public class FileDataSource implements DataSource {
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(null, Tags.PixelData);
+            if (!parser.hasSeenEOF() && parser.getReadTag() != Tags.PixelData) {
+                parser.unreadHeader();
+                parser.parseDataset(parser.getDcmDecodeParam(), -1);
+            }
             ds.putAll(mergeAttrs);
             String tsOrig = DecompressCmd.getTransferSyntax(ds);
             if ( writeFile) {
