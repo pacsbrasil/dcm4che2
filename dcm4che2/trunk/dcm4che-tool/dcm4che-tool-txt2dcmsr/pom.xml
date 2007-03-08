@@ -2,19 +2,19 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>dcm4che</groupId>
-    <version>2.0.9</version>
+    <version>2.0.10-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4che-tool-txt2dcmsr</artifactId>
-  <version>2.0.9</version>
+  <version>2.0.10-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>TXT to DICOM SR Converter</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
-      <version>2.0.9</version>
+      <version>2.0.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
