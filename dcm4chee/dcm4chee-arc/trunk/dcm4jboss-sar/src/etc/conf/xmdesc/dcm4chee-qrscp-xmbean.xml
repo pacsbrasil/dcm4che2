@@ -139,6 +139,7 @@ QueryRetrieveScp service.</description>
            StandaloneVOILUTStorage
            StandalonePETCurveStorage
            AgfaAttributePresentationState
+           SiemensCSANonImageStorage
            "/>
       </descriptors>
    </attribute>

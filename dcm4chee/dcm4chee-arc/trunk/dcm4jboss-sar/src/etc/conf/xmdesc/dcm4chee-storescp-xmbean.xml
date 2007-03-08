@@ -699,6 +699,7 @@ StoreSCP service.
            StandaloneVOILUTStorage
            StandalonePETCurveStorage
            AgfaAttributePresentationState
+           SiemensCSANonImageStorage
            "/>
       </descriptors>
    </attribute>
