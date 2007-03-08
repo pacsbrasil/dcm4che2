@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE elements [
+<!ENTITY p07 SYSTEM "../../../target/xml/p7_element/07_07pu.xml">
+<!ENTITY p06 SYSTEM "../../../target/xml/p6_element/07_06pu.xml">
+<!ENTITY sup114 SYSTEM "../../../target/xml/p6_element/sup114_ft.xml">
+<!ENTITY sup116 SYSTEM "../../../target/xml/p6_element/sup116_ft2.xml">
+<!ENTITY cp684 SYSTEM "../../../target/xml/p6_element/cp684_ft.xml">
+<!ENTITY cp692 SYSTEM "../../../target/xml/p6_element/cp692_ft.xml">
+]>
+<elements>
+&p07;
+&p06;
+&sup114;
+&sup116;
+&cp684;
+&cp692;
+</elements>

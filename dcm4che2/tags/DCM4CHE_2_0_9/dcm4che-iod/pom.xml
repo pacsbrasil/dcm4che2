@@ -1,0 +1,25 @@
+<model>
+  <parent>
+    <artifactId>dcm4che</artifactId>
+    <groupId>dcm4che</groupId>
+    <version>2.0.9</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>dcm4che-iod</artifactId>
+  <version>2.0.9</version>
+  <name>DICOM IOD Modules</name>
+  <description>dcm4che-iod is a module that represents DICOM Image Object Definitions.</description>
+  <dependencies>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.2</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+</model>
