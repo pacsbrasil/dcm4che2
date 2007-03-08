@@ -810,4 +810,7 @@ public class UID {
     /** Hanging Protocol Information Model - MOVE - SOP Class */
     public static final String HangingProtocolInformationModelMOVE = "1.2.840.10008.5.1.4.38.3";
 
+    /** Siemens CSA Non-Image Storage - SOP Class */
+    public static final String SiemensCSANonImageStorage = "1.3.12.2.1107.5.9.1";
+
 }
