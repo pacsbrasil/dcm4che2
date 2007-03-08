@@ -2550,6 +2550,7 @@
   <uid value="1.2.40.0.13.1.1.3.10" name="Tiani Study Info SOP Class" key="TianiStudyInfo" />
   <uid value="1.2.40.0.13.1.5.1.4.1.1.104.1" name="Tiani Encapsulated Document Storage" key="TianiEncapsulatedDocumentStorage" />
   <uid value="1.2.124.113532.3500.7" name="Agfa Attribute Presentation State" key="AgfaAttributePresentationState" />
+  <uid value="1.3.12.2.1107.5.9.1" name="Siemens CSA Non-Image Storage" key="SiemensCSANonImageStorage" />
 </uids>
 
 <uids type="MetaSOPClass">
