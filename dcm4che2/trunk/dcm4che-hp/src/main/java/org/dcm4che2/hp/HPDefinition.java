@@ -114,7 +114,7 @@ public class HPDefinition {
     private void addCode(int tag, Code code) {
         DicomElement sq = dcmobj.get(tag);
         if (sq == null)
-            dcmobj.putSequence(tag);
+            sq = dcmobj.putSequence(tag);
 
         sq.addDicomObject(code.getDicomObject());
     }
