@@ -52,7 +52,6 @@ import javax.management.MBeanException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.ReflectionException;
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Dataset;
