@@ -58,4 +58,23 @@ public class HangingProtocolTest extends TestCase {
         assertNotNull(tbissq);
         assertEquals(2, tbissq.countItems());        
     }
+    
+    public void testRemoveImageSet() {
+        HangingProtocol hp = new HangingProtocol();
+        HPImageSet is1 = hp.addNewImageSet(null);
+        HPImageSet is2 = hp.addNewImageSet(is1);
+        assertEquals(true, hp.removeImageSet(is2));
+        DicomObject dcmobj = hp.getDicomObject();
+        DicomElement isseq = dcmobj.get(Tag.ImageSetsSequence);
+        assertNotNull(isseq);
+        assertEquals(1, isseq.countItems());
+        DicomObject is = isseq.getDicomObject();
+        DicomElement tbissq = is.get(Tag.TimeBasedImageSetsSequence);
+        assertNotNull(tbissq);
+        assertEquals(1, tbissq.countItems());               
+        assertEquals(false, hp.removeImageSet(is2));
+        assertEquals(true, hp.removeImageSet(is1));
+        assertEquals(0, isseq.countItems());
+   }
+    
 }
