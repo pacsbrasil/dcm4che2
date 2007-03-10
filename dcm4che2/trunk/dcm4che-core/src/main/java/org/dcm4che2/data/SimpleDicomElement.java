@@ -292,6 +292,10 @@ class SimpleDicomElement extends AbstractDicomElement {
         throw new UnsupportedOperationException();
     }
 
+    public boolean removeDicomObject(DicomObject item) {
+        throw new UnsupportedOperationException();
+    }
+
     public DicomObject addDicomObject(DicomObject item) {
         throw new UnsupportedOperationException();
     }
@@ -309,6 +313,10 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public byte[] removeFragment(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean removeFragment(byte[] b) {
         throw new UnsupportedOperationException();
     }
 

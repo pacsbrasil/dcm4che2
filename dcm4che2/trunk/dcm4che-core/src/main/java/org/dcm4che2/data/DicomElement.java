@@ -72,6 +72,8 @@ public interface DicomElement extends Serializable {
     DicomObject getDicomObject(int index);
 
     DicomObject removeDicomObject(int index);
+    
+    boolean removeDicomObject(DicomObject item);   
 
     DicomObject addDicomObject(DicomObject item);
 
@@ -82,6 +84,8 @@ public interface DicomElement extends Serializable {
     byte[] getFragment(int index);
 
     byte[] removeFragment(int index);
+
+    boolean removeFragment(byte[] b);
 
     byte[] addFragment(byte[] b);
 

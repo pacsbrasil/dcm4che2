@@ -243,6 +243,14 @@ class SequenceDicomElement extends AbstractDicomElement {
         return ret;
     }
 
+    public boolean removeDicomObject(DicomObject item) {
+        if (!items.remove(item)) {
+            return false;
+        }
+        updateItemPositions(item.getItemPosition()-1);
+        return true;
+    }
+
     private void updateItemPositions(int index) {
         for (int i = index, n = countItems(); i < n; ++i) {
             getDicomObject(i).setItemPosition(i + 1);
@@ -288,6 +296,10 @@ class SequenceDicomElement extends AbstractDicomElement {
 
     public byte[] removeFragment(int index) {
         return (byte[]) items.remove(index);
+    }
+
+    public boolean removeFragment(byte[] b) {
+        return items.remove(b);
     }
 
     public byte[] addFragment(byte[] b) {
