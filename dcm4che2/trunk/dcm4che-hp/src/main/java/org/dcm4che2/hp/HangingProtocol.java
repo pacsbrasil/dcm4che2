@@ -287,7 +287,13 @@ public class HangingProtocol {
             removeDisplaySet((HPDisplaySet) iter.next());            
         }
         
-        dcmobj.get(Tag.ImageSetsSequence).removeDicomObject(index);
+        DicomObject tbis = imageSet.getDicomObject();
+        DicomObject is = tbis.getParent();
+        DicomElement tbissq = is.get(Tag.TimeBasedImageSetsSequence);
+        tbissq.removeDicomObject(tbis);
+        if (tbissq.isEmpty()) {
+            dcmobj.get(Tag.ImageSetsSequence).removeDicomObject(is);            
+        }
         imageSets.remove(index);
         
         for (; index < imageSets.size(); ++index) {
