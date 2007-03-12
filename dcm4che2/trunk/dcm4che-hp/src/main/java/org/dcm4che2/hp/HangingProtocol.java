@@ -627,9 +627,9 @@ public class HangingProtocol {
         if (dssq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0200) Display Sets Sequence");
-        if (dssq.isEmpty())
-            throw new IllegalArgumentException(
-                    "Empty (0072,0200) Display Sets Sequence");
+//        if (dssq.isEmpty())
+//            throw new IllegalArgumentException(
+//                    "Empty (0072,0200) Display Sets Sequence");
         int numDisplaySets = dssq.countItems();
         displaySets = new ArrayList(numDisplaySets);
         for (int i = 0; i < numDisplaySets; i++) {
