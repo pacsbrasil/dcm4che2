@@ -81,7 +81,7 @@ public class HPDisplaySet {
         }
         DicomElement filterOpSeq = dcmobj.get(Tag.FilterOperationsSequence);
         if (filterOpSeq == null || filterOpSeq.isEmpty()) {
-            this.filters = Collections.EMPTY_LIST;
+            this.filters = new ArrayList(0);
         } else {
             int n = filterOpSeq.countItems();
             this.filters = new ArrayList(n);
@@ -92,7 +92,7 @@ public class HPDisplaySet {
         }
         DicomElement sortingOpSeq = dcmobj.get(Tag.SortingOperationsSequence);
         if (sortingOpSeq == null || sortingOpSeq.isEmpty()) {
-            this.cmps = Collections.EMPTY_LIST;
+            this.cmps = new ArrayList(0);
         } else {
             int n = sortingOpSeq.countItems();
             this.cmps = new ArrayList();

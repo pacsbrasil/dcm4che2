@@ -49,11 +49,13 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.spi.HPCategorySpi;
 import org.dcm4che2.hp.spi.HPComparatorSpi;
 import org.dcm4che2.hp.spi.HPRegistry;
 import org.dcm4che2.hp.spi.HPSelectorSpi;
+import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -93,8 +95,24 @@ public class HangingProtocol {
         dcmobj.putSequence(Tag.NominalScreenDefinitionSequence);
         dcmobj.putSequence(Tag.ImageSetsSequence);
         dcmobj.putSequence(Tag.DisplaySetsSequence);
-    }
+     }
 
+    public HangingProtocol(HangingProtocol source) {
+        dcmobj = new BasicDicomObject();
+        source.getDicomObject().copyTo(dcmobj);
+        init();
+        String iuid = getSOPInstanceUID();
+        if (iuid != null) {
+            String cuid = getSOPClassUID();           
+            ReferencedSOP refSOP = new ReferencedSOP();
+            refSOP.setReferencedSOPInstanceUID(iuid);
+            refSOP.setReferencedSOPClassUID(cuid != null ? cuid :
+                UID.HangingProtocolStorage);
+            setSourceHangingProtocol(refSOP );
+            setSOPInstanceUID(UIDUtils.createUID());
+        }
+    }
+    
     protected HPImageSet createImageSet(List selectors, DicomObject dcmobj) {
         return new HPImageSet(selectors, dcmobj);
     }
@@ -387,17 +405,40 @@ public class HangingProtocol {
         return Collections.unmodifiableList(displaySets);
     }
 
-    public HPDisplaySet addNewDisplaySet(HPImageSet imageSet) {
-        HPDisplaySet displaySet = new HPDisplaySet();
-        displaySet.setImageSet(imageSet);
-        addDisplaySet(displaySet);
+    public HPDisplaySet addNewDisplaySet(HPImageSet imageSet,
+            HPDisplaySet prototype) {
+        if (imageSet == null) {
+            throw new NullPointerException("imageSet");
+        }
+        if (!imageSets.contains(imageSet)) {
+            throw new IllegalArgumentException(
+                    "imageSet does not belongs to this HP object");
+        }
+        DicomObject dcmobj = new BasicDicomObject();
+        if (prototype != null) {
+            prototype.getDicomObject().copyTo(dcmobj);
+        } else {
+            dcmobj.putSequence(Tag.ImageBoxesSequence);
+            dcmobj.putSequence(Tag.FilterOperationsSequence);
+            dcmobj.putSequence(Tag.SortingOperationsSequence);
+        }
+        dcmobj.putInt(Tag.ImageSetNumber, VR.US, imageSet.getImageSetNumber());
+        HPDisplaySet displaySet = createDisplaySet(dcmobj, imageSet);
+        doAddDisplaySet(displaySet);
         return displaySet;
     }
 
+    /** 
+     * @deprecated use {@link addNewDisplaySet} instead
+     */
     public void addDisplaySet(HPDisplaySet displaySet) {
         if (displaySet == null)
-            throw new NullPointerException();
+            throw new NullPointerException("displaySet");
 
+        doAddDisplaySet(displaySet);
+    }
+
+    protected void doAddDisplaySet(HPDisplaySet displaySet) {
         displaySet.setDisplaySetNumber(displaySets.size() + 1);
         int group = displaySet.getDisplaySetPresentationGroup();
         if (group == 0) {
@@ -622,9 +663,9 @@ public class HangingProtocol {
         if (issq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0020) Image Sets Sequence");
-        if (issq.isEmpty())
-            throw new IllegalArgumentException(
-                    "Empty (0072,0020) Image Sets Sequence");
+//        if (issq.isEmpty())
+//            throw new IllegalArgumentException(
+//                    "Empty (0072,0020) Image Sets Sequence");
         imageSets = new ArrayList();
         for (int i = 0, n = issq.countItems(); i < n; i++) {
             DicomObject is = issq.getDicomObject(i);
@@ -632,9 +673,9 @@ public class HangingProtocol {
             if (isssq == null)
                 throw new IllegalArgumentException(
                         "Missing (0072,0022) Image Set Selector Sequence");
-            if (isssq.isEmpty())
-                throw new IllegalArgumentException(
-                        "Empty (0072,0022) Image Set Selector Sequence");
+//            if (isssq.isEmpty())
+//                throw new IllegalArgumentException(
+//                        "Empty (0072,0022) Image Set Selector Sequence");
             int isssqCount = isssq.countItems();
             List selectors = new ArrayList(isssqCount);
             for (int j = 0; j < isssqCount; j++) {
@@ -645,9 +686,9 @@ public class HangingProtocol {
             if (tbissq == null)
                 throw new IllegalArgumentException(
                         "Missing (0072,0030) Time Based Image Sets Sequence");
-            if (tbissq.isEmpty())
-                throw new IllegalArgumentException(
-                        "Empty (0072,0030) Time Based Image Sets Sequence");
+//            if (tbissq.isEmpty())
+//                throw new IllegalArgumentException(
+//                        "Empty (0072,0030) Time Based Image Sets Sequence");
             for (int j = 0, m = tbissq.countItems(); j < m; j++) {
                 DicomObject timeBasedSelector = tbissq.getDicomObject(j);
                 if (timeBasedSelector.getInt(Tag.ImageSetNumber) != imageSets
@@ -679,9 +720,9 @@ public class HangingProtocol {
         if (defsq == null)
             throw new IllegalArgumentException(
                     "Missing (0072,000C) Hanging Protocol Definition Sequence");
-        if (defsq.isEmpty())
-            throw new IllegalArgumentException(
-                    "Empty (0072,000C) Hanging Protocol Definition Sequence");
+//        if (defsq.isEmpty())
+//            throw new IllegalArgumentException(
+//                    "Empty (0072,000C) Hanging Protocol Definition Sequence");
         int numDefinitions = defsq.countItems();
         definitions = new ArrayList(numDefinitions);
         for (int i = 0; i < numDefinitions; i++) {
@@ -734,6 +775,71 @@ public class HangingProtocol {
             }
         }
         return (String[]) set.toArray(new String[set.size()]);
+    }
+
+    public String getSOPClassUID() {
+        return dcmobj.getString(Tag.SOPClassUID);
+    }
+    
+    public void setSOPClassUID(String uid) {
+        dcmobj.putString(Tag.SOPClassUID, VR.UI, uid);
+    }
+    
+    public String getSOPInstanceUID() {
+        return dcmobj.getString(Tag.SOPInstanceUID);
+    }
+
+    public void setSOPInstanceUID(String uid) {
+        dcmobj.putString(Tag.SOPInstanceUID, VR.UI, uid);
+    }
+
+    public String[] getSpecificCharacterSet() {
+        return dcmobj.getStrings(Tag.SpecificCharacterSet);
+    }
+
+    public void setSpecificCharacterSet(String[] ss) {
+        dcmobj.putStrings(Tag.SpecificCharacterSet, VR.CS, ss);
+    }
+
+    public Date getInstanceCreationDateTime() {
+        return dcmobj.getDate(Tag.InstanceCreationDate, Tag.InstanceCreationTime);
+    }
+    
+    public void setInstanceCreationDateTime(Date d) {
+        dcmobj.putDate(Tag.InstanceCreationDate, VR.DA, d);
+        dcmobj.putDate(Tag.InstanceCreationTime, VR.TM, d);
+    }
+        
+    public String getInstanceCreatorUID() {
+        return dcmobj.getString(Tag.InstanceCreatorUID);
+    }
+    
+    public void setInstanceCreatorUID(String s) {
+        dcmobj.putString(Tag.InstanceCreatorUID, VR.UI, s);
+    }
+   
+    public String getRelatedGeneralSOPClassUID() {
+        return dcmobj.getString(Tag.RelatedGeneralSOPClassUID);
+    }
+    
+    public void setRelatedGeneralSOPClassUID(String s) {
+        dcmobj.putString(Tag.RelatedGeneralSOPClassUID, VR.UI, s);
+    }
+   
+    public String getOriginalSpecializedSOPClassUID() {
+        return dcmobj.getString(Tag.OriginalSpecializedSOPClassUID);
+    }
+    
+    public void setOriginalSpecializedSOPClassUID(String s) {
+        dcmobj.putString(Tag.OriginalSpecializedSOPClassUID, VR.UI, s);
+    }   
+
+    public String getInstanceNumber() {
+        return dcmobj.getString(Tag.InstanceNumber);
+    }
+
+    public void setInstanceNumber(String s) {
+        dcmobj.putString(Tag.InstanceNumber, VR.IS, s);
     }
 
 }

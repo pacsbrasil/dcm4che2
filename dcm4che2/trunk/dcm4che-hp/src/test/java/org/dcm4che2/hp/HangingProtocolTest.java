@@ -76,5 +76,10 @@ public class HangingProtocolTest extends TestCase {
         assertEquals(true, hp.removeImageSet(is1));
         assertEquals(0, isseq.countItems());
    }
-    
+
+    public void testCopy() {
+        HangingProtocol src = new HangingProtocol();
+        HangingProtocol hp = new HangingProtocol(src);
+    }
+
 }
