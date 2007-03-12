@@ -81,21 +81,21 @@ public class KODocumentModule extends Module {
         updateSequence(Tag.ReferencedRequestSequence, refrqs);
     }
 
-    public SOPInstanceReferenceMacro[] getCurrentRequestedProcedureEvidences() {
-        return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
+    public HierachicalSOPInstanceReference[] getCurrentRequestedProcedureEvidences() {
+        return HierachicalSOPInstanceReference.toSOPInstanceReferenceMacros(
         	dcmobj.get(Tag.CurrentRequestedProcedureEvidenceSequence));
     }
 
-    public void setCurrentRequestedProcedureEvidences(SOPInstanceReferenceMacro[] refs) {
+    public void setCurrentRequestedProcedureEvidences(HierachicalSOPInstanceReference[] refs) {
         updateSequence(Tag.CurrentRequestedProcedureEvidenceSequence, refs);
     }
 
-    public SOPInstanceReferenceMacro[] getIdenticalDocuments() {
-        return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
+    public HierachicalSOPInstanceReference[] getIdenticalDocuments() {
+        return HierachicalSOPInstanceReference.toSOPInstanceReferenceMacros(
         	dcmobj.get(Tag.IdenticalDocumentsSequence));
     }
 
-    public void setIdenticalDocuments(SOPInstanceReferenceMacro[] refs) {
+    public void setIdenticalDocuments(HierachicalSOPInstanceReference[] refs) {
         updateSequence(Tag.IdenticalDocumentsSequence, refs);
     }
 }

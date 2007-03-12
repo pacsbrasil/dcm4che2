@@ -50,25 +50,25 @@ import org.dcm4che2.iod.module.Module;
  * @since 05.07.2006
  */
 
-public class SOPInstanceReferenceMacro extends Module {
+public class HierachicalSOPInstanceReference extends Module {
 
-    public SOPInstanceReferenceMacro(DicomObject dcmobj) {
+    public HierachicalSOPInstanceReference(DicomObject dcmobj) {
         super(dcmobj);
     }
 
-    public SOPInstanceReferenceMacro() {
+    public HierachicalSOPInstanceReference() {
         super(new BasicDicomObject());
     }
 
-    public static SOPInstanceReferenceMacro[] toSOPInstanceReferenceMacros(
+    public static HierachicalSOPInstanceReference[] toSOPInstanceReferenceMacros(
             DicomElement sq) {
         if (sq == null || !sq.hasItems()) {
             return null;
         }
-        SOPInstanceReferenceMacro[] a = new SOPInstanceReferenceMacro[sq
+        HierachicalSOPInstanceReference[] a = new HierachicalSOPInstanceReference[sq
                 .countItems()];
         for (int i = 0; i < a.length; i++) {
-            a[i] = new SOPInstanceReferenceMacro(sq.getDicomObject(i));
+            a[i] = new HierachicalSOPInstanceReference(sq.getDicomObject(i));
         }
         return a;
     }

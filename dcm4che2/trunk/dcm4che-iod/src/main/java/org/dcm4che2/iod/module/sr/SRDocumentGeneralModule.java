@@ -115,12 +115,12 @@ public class SRDocumentGeneralModule extends KODocumentModule {
         updateSequence(Tag.CustodialOrganizationSequence, org);
     }    
 
-    public SOPInstanceReferenceMacro[] getPredecessorDocuments() {
-        return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
+    public HierachicalSOPInstanceReference[] getPredecessorDocuments() {
+        return HierachicalSOPInstanceReference.toSOPInstanceReferenceMacros(
         	dcmobj.get(Tag.PredecessorDocumentsSequence));
     }
 
-    public void setPredecessorDocuments(SOPInstanceReferenceMacro[] refs) {
+    public void setPredecessorDocuments(HierachicalSOPInstanceReference[] refs) {
         updateSequence(Tag.PredecessorDocumentsSequence, refs);
     }
     
@@ -132,12 +132,12 @@ public class SRDocumentGeneralModule extends KODocumentModule {
         updateSequence(Tag.PerformedProcedureCodeSequence, codes);
     } 
     
-    public SOPInstanceReferenceMacro[] getPertinentOtherEvidences() {
-        return SOPInstanceReferenceMacro.toSOPInstanceReferenceMacros(
+    public HierachicalSOPInstanceReference[] getPertinentOtherEvidences() {
+        return HierachicalSOPInstanceReference.toSOPInstanceReferenceMacros(
         	dcmobj.get(Tag.PertinentOtherEvidenceSequence));
     }
 
-    public void setPertinentOtherEvidences(SOPInstanceReferenceMacro[] refs) {
+    public void setPertinentOtherEvidences(HierachicalSOPInstanceReference[] refs) {
         updateSequence(Tag.PertinentOtherEvidenceSequence, refs);
     }
 
