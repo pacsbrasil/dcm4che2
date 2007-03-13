@@ -106,10 +106,10 @@ public class SeriesAndInstanceReference extends Module {
 
     public SOPInstanceReferenceAndMAC[] getReferencedInstances() {
         return SOPInstanceReferenceAndMAC.toSOPInstanceReferenceAndMACs(dcmobj
-                .get(Tag.ReferencedInstanceSequence));
+                .get(Tag.ReferencedSOPSequence));
     }
 
     public void setSOPInstanceReference(SOPInstanceReferenceAndMAC[] sops) {
-        updateSequence(Tag.ReferencedInstanceSequence, sops);
+        updateSequence(Tag.ReferencedSOPSequence, sops);
     }
 }
