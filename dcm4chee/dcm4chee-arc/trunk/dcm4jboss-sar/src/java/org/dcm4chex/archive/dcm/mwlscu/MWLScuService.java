@@ -44,7 +44,6 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.ejb.CreateException;
@@ -61,7 +60,7 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.FutureRSP;
+import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
@@ -75,19 +74,27 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
+ * MBean to configure and service modality worklist managment issues.
+ * 
  * @author franz.willer
- * @version $Revision$ $Date$ MBean to configure
- *          and service modality worklist managment issues.
- *          <p>
+ * @version $Revision$ $Date$
  * 
  */
 public class MWLScuService extends ServiceMBeanSupport {
+
+    private static final int PCID = 1;
+
+    private static final int MSG_ID = 1;
+
+    private static final int MIN_MAX_RESULT = 10;
 
     /** Holds the calling AET. */
     private String callingAET;
 
     /** Holds the AET of modality worklist service. */
     private String calledAET;
+    
+    private int maxResults;
 
     /** Holds Association timeout in ms. */
     private int acTimeout;
@@ -179,6 +186,19 @@ public class MWLScuService extends ServiceMBeanSupport {
      */
     public final void setCalledAET(String aet) {
         calledAET = aet;
+    }
+
+    public final int getMaxResults() {
+        return maxResults;
+    }
+
+    public final void setMaxResults(int maxResults) {
+        if (maxResults < MIN_MAX_RESULT) {
+            throw new IllegalArgumentException(
+                    "maxResult: " + maxResults + " lesser than minimal value: "
+                    + MIN_MAX_RESULT);
+        }
+        this.maxResults = maxResults;
     }
 
     public final boolean isLocal() {
@@ -330,16 +350,23 @@ public class MWLScuService extends ServiceMBeanSupport {
             queryCmd = new MWLQueryCmd(searchDS);
             queryCmd.execute();
             while (queryCmd.next()) {
+                if (result.size() >= maxResults) {
+                    log.info("Found more than " + maxResults 
+                            + " matching MWL entries. Skipped!");
+                    break;
+                }
                 Dataset rsp = queryCmd.getDataset();
                 logResponse(rsp);
                 result.add(rsp);
             }
+            return queryCmd.isMatchNotSupported() ? 0xff01 : 0xff00;
         } catch (SQLException x) {
             log.error("Exception in findMWLEntriesLocal! ", x);
+            return Status.ProcessingFailure;
+        } finally {
+            if (queryCmd != null)
+                queryCmd.close();
         }
-        if (queryCmd != null)
-            queryCmd.close();
-        return queryCmd.isMatchNotSupported() ? 0xff01 : 0xff00;
     }
 
     private void logResponse(Dataset rsp) {
@@ -349,9 +376,8 @@ public class MWLScuService extends ServiceMBeanSupport {
         }
     }
 
-    private int findMWLEntriesFromAET(Dataset searchDS, List result) {
+    private int findMWLEntriesFromAET(Dataset searchDS, final List result) {
         ActiveAssociation assoc = null;
-        int pendingStatus = 0xff00;
         try {
             // get association for mwl find.
             AEData aeData = new AECmd(calledAET).getAEData();
@@ -368,27 +394,42 @@ public class MWLScuService extends ServiceMBeanSupport {
             }
             // send mwl cfind request.
             Command cmd = DcmObjectFactory.getInstance().newCommand();
-            cmd.initCFindRQ(1, UIDs.ModalityWorklistInformationModelFIND,
+            cmd.initCFindRQ(MSG_ID, UIDs.ModalityWorklistInformationModelFIND,
                     priority);
-            Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd,
+            Dimse mcRQ = AssociationFactory.getInstance().newDimse(PCID, cmd,
                     searchDS);
-            FutureRSP findRsp = assoc.invoke(mcRQ);
-            Dimse dimse = findRsp.get();
-            List pending = findRsp.listPending();
-            if ( pending.size() > 0 ) {
-                pendingStatus = ((Dimse) pending.get(0)).getCommand().getStatus();
-                Iterator iter = pending.iterator();
-                while (iter.hasNext()) {
-                    Dataset rsp = ((Dimse) iter.next()).getDataset();
-                    logResponse(rsp);
-                    result.add(rsp);
-                }
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Received final C-FIND RSP from " + calledAET + " :"
-                        + dimse);
-                
-            }
+            final int[] pendingStatus = { 0xff00 };
+            assoc.invoke(mcRQ, new DimseListener(){
+
+                public void dimseReceived(Association assoc, Dimse dimse) {
+                    Command rspCmd = dimse.getCommand();
+                    if (rspCmd.isPending()) {
+                        try {
+                            pendingStatus[0] = rspCmd.getStatus();
+                            Dataset rsp = dimse.getDataset();
+                            logResponse(rsp);
+                            if (result.size() < maxResults) {
+                                result.add(rsp);
+                                if (result.size() == maxResults) {
+                                    log.info("Cancel MWL FIND operation after receive of "
+                                            + maxResults + " pending C-FIND RSP.");
+                                    cancelFind(assoc);
+                                }
+                            } else {
+                                log.debug("Ignore pending C-FIND RSP received after cancel of MWL FIND operation");
+                            }
+                        } catch (IOException e) {
+                            pendingStatus[0] = Status.ProcessingFailure;
+                        }
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Received final C-FIND RSP from " 
+                                    + calledAET + " :" + dimse);                            
+                        }                        
+                    }
+                    
+                }});
+            return pendingStatus[0];
         } catch (Exception e) {
             log.error("Cant get working list! Reason: unexpected error", e);
             return Status.ProcessingFailure;
@@ -402,7 +443,17 @@ public class MWLScuService extends ServiceMBeanSupport {
                                     + assoc.getAssociation(), e1);
                 }
         }
-        return pendingStatus;
+    }
+
+    private void cancelFind(Association assoc) {
+        Command cmd = DcmObjectFactory.getInstance().newCommand();
+        cmd.initCCancelRQ(MSG_ID);
+        Dimse dimse = AssociationFactory.getInstance().newDimse(PCID, cmd);
+        try {
+            assoc.write(dimse);
+        } catch (IOException e) {
+            log.warn("Failed to cancel C-FIND:", e);
+        }
     }
 
     /**
@@ -450,7 +501,7 @@ public class MWLScuService extends ServiceMBeanSupport {
         assocRQ.setCalledAET(calledAET);
         assocRQ.setCallingAET(callingAET);
         assocRQ.setMaxPDULength(maxPDUlen);
-        assocRQ.addPresContext(aFact.newPresContext(1,
+        assocRQ.addPresContext(aFact.newPresContext(PCID,
                 UIDs.ModalityWorklistInformationModelFIND, NATIVE_TS));
         return assocRQ;
     }
