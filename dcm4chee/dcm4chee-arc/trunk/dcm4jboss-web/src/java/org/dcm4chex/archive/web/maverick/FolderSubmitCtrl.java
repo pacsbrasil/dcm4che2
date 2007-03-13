@@ -125,9 +125,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
-            if ( rq.getParameter("showWithoutStudies") != null || rq.getParameter("woStudies") != null )
+            if ( "true".equals( rq.getParameter("form")) ) {
                 folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
-            folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
+                folderForm.setNewStudiesOnTop("true".equals( rq.getParameter("newStudiesOnTop")));
+                folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
+            }
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
             	return logout();
             

@@ -22,20 +22,28 @@
 
 <xsl:template match="model">
 	<form action="foldersubmit.m" method="post" name="myForm" accept-charset="UTF-8" > 
-		<table class="folder_header" border="0" cellspacing="0" cellpadding="0" width="100%">
+ 			<input type="hidden" name="form" value="true" />
+ 		  <table class="folder_header" border="0" cellspacing="0" cellpadding="0" width="100%">
 			<td class="folder_header" valign="top">
 				<table class="folder_header" border="0" height="30" cellspacing="0" cellpadding="0" width="100%">
-					<td class="folder_header" width="5">
-						<input type="checkbox" name="showWithoutStudies" value="true" title="Show patients without studies">
-							<xsl:if test="/model/showWithoutStudies = 'true'">
-								<xsl:attribute name="checked"/>
-							</xsl:if>
-						</input>
-						<xsl:if test="/model/showWithoutStudies = 'true'">
-							<input type="hidden" name="woStudies" value="true" />
-						</xsl:if>
+					<td class="folder_header">
+					  <div title="Show patients without studies">
+  						<input type="checkbox" name="showWithoutStudies" value="true">
+  							<xsl:if test="showWithoutStudies = 'true'">
+  								<xsl:attribute name="checked"/>
+  							</xsl:if>
+  						</input>
+ 							<xsl:text>w/o studies</xsl:text>
+						</div>
+					  <div title="List studies of one patient with most recent study on top">
+  						<input type="checkbox" name="newStudiesOnTop" value="true">
+  							<xsl:if test="newStudiesOnTop = 'true'">
+  								<xsl:attribute name="checked"/>
+  							</xsl:if>
+  						</input>
+ 							<xsl:text>new studies on top</xsl:text>
+						</div>
 					</td>
-					<td class="folder_header" width="5" title="Show patients without studies">w/o studies</td>
 					<td class="folder_header" align="center">
 					<xsl:choose>
 						<xsl:when test="total &lt; 1">
@@ -160,7 +168,7 @@
 							<xsl:for-each select="aets/item">
 								<xsl:sort data-type="text" order="ascending" select="title"/>
 								<option>
-									<xsl:if test="/model/destination = title">
+									<xsl:if test="destination = title">
 										<xsl:attribute name="selected"/>
 									</xsl:if>
 									<xsl:value-of select="title"/>
@@ -170,7 +178,7 @@
 					</td>
 					<td class="folder_header" width="5">
 						<input type="checkbox" name="filterAET" value="true" title="Show only studies from selected source AET">
-							<xsl:if test="/model/filterAET = 'true'">
+							<xsl:if test="filterAET = 'true'">
 								<xsl:attribute name="checked"/>
 							</xsl:if>
 						</input>
@@ -575,8 +583,14 @@
 			</td>
 	</table>
 </tr>
+  <xsl:variable name="studyOrder">
+    <xsl:choose>
+      <xsl:when test="/model/newStudiesOnTop = 'true'">descending</xsl:when>
+      <xsl:otherwise>ascending</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
 			<xsl:apply-templates select="studies/item">
-				<xsl:sort data-type="text" order="ascending" select="studyDateTime"/>
+				<xsl:sort data-type="text" order="{$studyOrder}" select="studyDateTime"/>
 			</xsl:apply-templates>
 </xsl:template>
 

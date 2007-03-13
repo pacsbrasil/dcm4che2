@@ -53,7 +53,6 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
-import org.infohazard.maverick.flow.ControllerContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -80,6 +79,8 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     
 	private boolean showWithoutStudies;
 
+        private boolean newStudiesOnTop;
+        
 	protected static Logger log = Logger.getLogger(BasicFolderForm.class);
 	
 	private PatientModel editPat = null;
@@ -171,7 +172,15 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 		this.showWithoutStudies = showWithoutStudies;
 	}
 	
-	public void setEditPatient(PatientModel pat) {
+    public final boolean isNewStudiesOnTop() {
+        return newStudiesOnTop;
+    }
+
+    public final void setNewStudiesOnTop(boolean newStudiesOnTop) {
+        this.newStudiesOnTop = newStudiesOnTop;
+    }
+
+    public void setEditPatient(PatientModel pat) {
 		this.editPat = pat;
 	}
 	
