@@ -232,12 +232,12 @@
 		</init-param>
 		<!-- 
 			Used by MPPS/MWL linking to preset modality search field in MWL console.
-			Value can be either delete, or modality (modality of first selected MPPS).
+			Value can be either delete, or mpps (modality of first selected MPPS).
 			If you uncomment this parameter, the field will be not changed.
 		-->
 		<init-param>
 			<param-name>linkPresetModality</param-name>
-			<param-value>modality</param-value>
+			<param-value>mpps</param-value>
 		</init-param>
 
 		<load-on-startup>2</load-on-startup>
