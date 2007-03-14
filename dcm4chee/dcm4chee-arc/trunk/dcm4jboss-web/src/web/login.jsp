@@ -19,6 +19,7 @@
 </head>
 
 <%
+	String nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
 	String user = null;
 	String passwd = null;
 	if ( request.getParameter("accNr") != null || request.getParameter("studyUID") != null) {
@@ -52,7 +53,7 @@
  </tr>
 </table>
 <center>
-<h1>User Login at <%= InetAddress.getLocalHost().getHostName() %></h1>
+<h1>User Login at <%= nodeInfo %></h1>
 <br>
 
 <form name="login" method="POST" action="j_security_check">
