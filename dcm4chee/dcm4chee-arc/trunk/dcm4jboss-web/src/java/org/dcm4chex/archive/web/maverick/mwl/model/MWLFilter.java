@@ -43,66 +43,74 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.web.maverick.model.BasicFilterModel;
+
 /**
  * @author franz.willer
  *
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class MWLFilter {
-	
-	/** Holds the patient name of this filter. */
-	private String patientName;
-	/** holds the 'left' string value of start time range. */
-	private String startDate = "";
-	/** holds the 'right' string value of start time range. */
-	private String endDate = "";
-	/** holds the 'left' Long value of start time range. (null if string value is empty) */
-	private Long startDateAsLong;
-	/** holds the 'right' Long value of start time range. (null if string value is empty) */
-	private Long endDateAsLong;
-	/** Holds the modality of this filter. */
-	private String modality;
-	/** Holds the station AET of this filter. */
-	private String stationAET;
-	/** Holds the accession number of this filter. */
-	private String accessionNumber;
-	
-	/** The Date/Time formatter to parse input field values. */
-	private static final SimpleDateFormat dFormatter = new SimpleDateFormat("yyyy/MM/dd");
-	/** The Date/Time formatter to parse input field values. */
-	private static final SimpleDateFormat dtFormatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-	
-	
+public class MWLFilter extends BasicFilterModel {
+	private Dataset dsSPS;
+    
+    private String startDate;
+    
 	public MWLFilter() {
-		String d = dFormatter.format( new Date() );//today 00:00:00
-		try {
-			setStartDate( d );
-			setEndDate( d+" 23:59:59" );
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        super();
 	}
-	/**
-	 * returns the patient name filter value.
-	 * 
-	 * @return Filter value of patient name field or null.
-	 */
-	public String getPatientName() {
-		return patientName;
-	}
-	
-	/**
-	 * set the filter patient name.
-	 * @param name
-	 */
-	public void setPatientName( String name ){
-		if ( name == null || name.trim().length() < 1 ) 
-			patientName = null;
-		else
-			patientName = name;
-	}
+    
+    public void init() {
+        //requested procedure
+        ds.putSH( Tags.RequestedProcedureID );
+        ds.putUI( Tags.StudyInstanceUID );
+        //imaging service request
+        ds.putSH( Tags.AccessionNumber );
+        ds.putLT( Tags.ImagingServiceRequestComments );
+        ds.putPN( Tags.RequestingPhysician );
+        ds.putPN( Tags.ReferringPhysicianName );
+        ds.putLO( Tags.PlacerOrderNumber );
+        ds.putLO( Tags.FillerOrderNumber );
+        //Visit Identification
+        ds.putPN( Tags.PatientName );
+        ds.putLO( Tags.AdmissionID );
+        ds.putLO( Tags.PatientID);
+        //Patient demographic
+        ds.putDA( Tags.PatientBirthDate );
+        ds.putCS( Tags.PatientSex );
+        //Sched. procedure step seq
+        dsSPS = ds.putSQ(Tags.SPSSeq).addNewItem();
+        dsSPS.putCS(Tags.SPSStatus);
+        dsSPS.putAE( Tags.ScheduledStationAET );
+        dsSPS.putSH( Tags.SPSID );
+        dsSPS.putCS( Tags.Modality );
+        dsSPS.putPN( Tags.ScheduledPerformingPhysicianName );
+        String d = new SimpleDateFormat(DATE_FORMAT).format(new Date());
+        try {
+            setStartDate( d );
+        } catch (ParseException ignore) {}
+        dsSPS.putSH( Tags.ScheduledStationName );
+        //sched. protocol code seq;
+        DcmElement spcs = dsSPS.putSQ( Tags.ScheduledProtocolCodeSeq );
+        Dataset dsSpcs = spcs.addNewItem();
+        dsSpcs.putSH( Tags.CodeValue );
+        dsSpcs.putLO( Tags.CodeMeaning );
+        dsSpcs.putSH( Tags.CodingSchemeDesignator );
+        // or 
+        dsSPS.putLO( Tags.SPSDescription );
+        
+        //Req. procedure code seq
+        DcmElement rpcs = ds.putSQ( Tags.RequestedProcedureCodeSeq );
+        Dataset dsRpcs = rpcs.addNewItem();
+        dsRpcs.putSH( Tags.CodeValue );
+        dsRpcs.putLO( Tags.CodeMeaning );
+        dsRpcs.putSH( Tags.CodingSchemeDesignator );
+        // or 
+        ds.putLO( Tags.RequestedProcedureDescription );
+    }
 	
 	/**
 	 * @return Returns the startDate.
@@ -120,73 +128,18 @@ public class MWLFilter {
 	 * @throws ParseException
 	 */
 	public void setStartDate(String startDate) throws ParseException {
-		if ( startDate == null || startDate.trim().length() < 1 ) {
-			this.startDateAsLong = null;
-			this.startDate = null;
-		} else {
-			try {
-				this.startDateAsLong = new Long( dtFormatter.parse( startDate ).getTime() ); //try date and time
-			} catch ( Exception x ) {
-				this.startDateAsLong = new Long( dFormatter.parse( startDate ).getTime() ); //ok, only date
-			}
-			//correct display view from inputs like 2005/20/50! 
-			this.startDate = dtFormatter.format( new Date( startDateAsLong.longValue() ) ) ;
-		}
-	
+        this.startDate = startDate;
+        setDateRange(dsSPS, Tags.SPSStartDate, startDate );
 	}
 	
 	
-	/**
-	 * @return Returns the endCreationDate.
-	 */
-	public String getEndDate() {
-		return endDate;
-	}
-	/**
-	 * Set the end start date.
-	 * <p>
-	 * Set both <code>endDate and endDateAsLong</code>.<br>
-	 * If the parameter is null or empty, both values are set to <code>null</code>
-	 * 
-	 * @param endDate The endDate to set.
-	 * 
-	 * @throws ParseException If param is not a date/time string of format specified in formatter.
-	 */
-	public void setEndDate(String endDate) throws ParseException {
-		if ( endDate == null || endDate.trim().length() < 1 ) {
-			this.endDateAsLong = null;
-			this.endDate = null;
-		} else {
-			try {
-				this.endDateAsLong = new Long( dtFormatter.parse( endDate ).getTime() );// try date and time
-			} catch ( Exception x ) {
-				this.endDateAsLong = new Long( dFormatter.parse( endDate ).getTime() );// ok only date
-			}
-			//correct display view from inputs like 2005/20/50! 
-			this.endDate = dtFormatter.format( new Date( endDateAsLong.longValue() ) ) ;
-		}
-	}
-	
-	/**
-	 * @return Returns the endCreationAsLong.
-	 */
-	public Long endDateAsLong() {
-		return endDateAsLong;
-	}
-	/**
-	 * @return Returns the startCreationAsLong.
-	 */
-	public Long startDateAsLong() {
-		return startDateAsLong;
-	}
-
 	/**
 	 * returns the modality filter value.
 	 * 
 	 * @return Filter value of modality field or null.
 	 */
 	public String getModality() {
-		return modality;
+		return dsSPS.getString( Tags.Modality );
 	}
 	
 	/**
@@ -195,41 +148,41 @@ public class MWLFilter {
 	 */
 	public void setModality( String mod ){
 		if ( mod == null || mod.trim().length() < 1 )
-			modality = null;
+            dsSPS.putCS( Tags.Modality );
 		else 
-			modality = mod;
+            dsSPS.putCS( Tags.Modality, mod);
 	}
 	
 	/**
 	 * @return Returns the stationAET.
 	 */
 	public String getStationAET() {
-		return stationAET;
+		return dsSPS.getString( Tags.ScheduledStationAET );
 	}
 	/**
 	 * @param aet The stationAET to set.
 	 */
 	public void setStationAET(String aet) {
 		if ( aet == null || aet.trim().length() < 1 )
-			stationAET = null;
+            dsSPS.putAE( Tags.ScheduledStationAET );
 		else
-			stationAET = aet;
+            dsSPS.putAE( Tags.ScheduledStationAET, aet);
 	}
 
 	/**
 	 * @return Returns the accessionNumber.
 	 */
 	public String getAccessionNumber() {
-		return accessionNumber;
+		return ds.getString( Tags.AccessionNumber );
 	}
 	/**
 	 * @param accessionNumber The accessionNumber to set.
 	 */
 	public void setAccessionNumber(String accessionNumber) {
 		if ( accessionNumber == null || accessionNumber.trim().length() < 1 )
-			this.accessionNumber = null;
+            ds.putSH( Tags.AccessionNumber );
 		else
-			this.accessionNumber = accessionNumber;
+            ds.putSH( Tags.AccessionNumber, accessionNumber);
 	}
 	
 }

@@ -111,7 +111,7 @@ public class GPPPSDelegate {
 			GPPPSQueryCmd cmd = null;
 			try {
 				resp = new ArrayList();
-				cmd = new GPPPSQueryCmd( filter.toSearchDS() );
+				cmd = new GPPPSQueryCmd( filter.toDataset() );
 				cmd.execute();
 				while ( cmd.next() ) {
 					resp.add( cmd.getDataset() );

@@ -84,8 +84,8 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
             	try {
 	        		checkFilter( request );
 	            	model.filterWorkList( true );
-            	} catch ( ParseException x ) {
-            		model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd HH:mm" );
+            	} catch ( Exception x ) {
+            		model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd" );
             	}
             } else if ( request.getParameter("prev.x") != null ) { 
         		model.performPrevious();
@@ -155,7 +155,6 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
 		PPSFilter filter = model.getFilter();
 		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
 		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
-		if ( rq.getParameter("endDate") != null ) filter.setEndDate(rq.getParameter("endDate") );
 		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
 	}
 

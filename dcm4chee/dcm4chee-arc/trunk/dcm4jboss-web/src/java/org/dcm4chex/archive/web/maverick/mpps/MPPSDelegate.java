@@ -105,7 +105,7 @@ public class MPPSDelegate {
 			MPPSQueryCmd cmd = null;
 			try {
 				resp = new ArrayList();
-				cmd = new MPPSQueryCmd( filter.toSearchDS(), filter.isEmptyAccNo() );
+				cmd = new MPPSQueryCmd( filter.toDataset(), filter.isEmptyAccNo() );
 				cmd.execute();
 				while ( cmd.next() ) {
 					resp.add( cmd.getDataset() );

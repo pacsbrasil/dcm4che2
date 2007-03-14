@@ -90,15 +90,10 @@
 								title="Patient name"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd hh:mm">Date: </td>
+						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd">Start&#160;Date: </td>
 						<td bgcolor="eeeeee">
-							<input size="15" name="startDate" type="text" value="{filter/startDate}"
-								title="Query Start date. format:yyyy/mm/dd hh:mm"/>
-						</td>
-						<td bgcolor="eeeeee" title="Query End date. format:yyyy/mm/dd hh:mm">to: </td>
-						<td bgcolor="eeeeee">
-							<input size="15" name="endDate" type="text" value="{filter/endDate}"
-								title="Query End date. format:yyyy/mm/dd hh:mm"/>
+							<input size="20" name="startDate" type="text" value="{filter/startDate}"
+								title="Query Start date. format:yyyy/mm/dd"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Modality: </td>

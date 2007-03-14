@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.web.maverick.gpwl.model;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,7 +50,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
 import org.dcm4chex.archive.web.maverick.gpwl.GPWLConsoleCtrl;
@@ -68,8 +66,6 @@ public class GPWLModel extends BasicFormPagingModel {
 	
     /** Errorcode: unsupported action */
 	public static final String ERROR_UNSUPPORTED_ACTION = "UNSUPPORTED_ACTION";
-	
-	private String[] mppsIDs = null;
 	
 	/** Holds list of GPWLEntries */
 	private Map gpwlEntries = new HashMap();
@@ -163,7 +159,7 @@ public class GPWLModel extends BasicFormPagingModel {
 	public void filterWorkList(boolean newSearch) {
 		
 		if ( newSearch ) setOffset(0);
-		Dataset searchDS = getSearchDS( gpwlFilter );
+		Dataset searchDS = gpwlFilter.toDataset();
 		isLocal = GPWLConsoleCtrl.getGPWLScuDelegate().isLocal();
 		List l = GPWLConsoleCtrl.getGPWLScuDelegate().findGPWLEntries( searchDS );
 		Collections.sort( l, comparator );
@@ -192,110 +188,6 @@ public class GPWLModel extends BasicFormPagingModel {
 			}
 		}
 		setTotal(total - countNull); // the real total (without null entries!)	
-	}
-
-	/**
-	 * Returns the query Dataset with search criteria values from filter argument.
-	 * <p>
-	 * The Dataset contains all fields that should be in the result; 
-	 * the 'merging' fields will be set to the values from the filter.
-	 * 
-	 * @param gpwlFilter2 The filter with search criteria values.
-	 * 
-	 * @return The Dataset that can be used for query.
-	 */
-	private Dataset getSearchDS(GPWLFilter filter) {
-		Dataset ds = DcmObjectFactory.getInstance().newDataset();
-		ds.putUI(Tags.SOPInstanceUID, filter.getIUID());
-		//
-		ds.putCS(Tags.GPSPSStatus, filter.getStatus());
-		ds.putCS(Tags.InputAvailabilityFlag, filter.getInputAvailability());
-		ds.putCS(Tags.GPSPSPriority, filter.getPriority());
-		ds.putCS(Tags.SPSID, gpwlFilter.getSpsID());
-		//workitem code Sequence
-		Dataset workitemDS = ds.putSQ(Tags.ScheduledWorkitemCodeSeq).addNewItem();
-		workitemDS.putSH(Tags.CodeValue, filter.getWorkitemCode());
-		workitemDS.putSH(Tags.CodingSchemeDesignator);
-		workitemDS.putSH(Tags.CodeMeaning);
-		//Scheduled Processing Applications code sequence
-		Dataset appDS = ds.putSQ(Tags.ScheduledProcessingApplicationsCodeSeq).addNewItem();
-		appDS.putSH(Tags.CodeValue);
-		appDS.putSH(Tags.CodingSchemeDesignator);
-		appDS.putSH(Tags.CodeMeaning);
-		//Scheduled station Name code sequence
-		Dataset stationNameCodeDS = ds.putSQ(Tags.ScheduledStationNameCodeSeq).addNewItem();
-		stationNameCodeDS.putSH(Tags.CodeValue, filter.getStationNameCode());
-		stationNameCodeDS.putSH(Tags.CodingSchemeDesignator);
-		stationNameCodeDS.putSH(Tags.CodeMeaning);
-		//Scheduled station Class code sequence
-		Dataset stationClassCodeDS = ds.putSQ(Tags.ScheduledStationClassCodeSeq).addNewItem();
-		stationClassCodeDS.putSH(Tags.CodeValue, filter.getStationClassCode());
-		stationClassCodeDS.putSH(Tags.CodingSchemeDesignator);
-		stationClassCodeDS.putSH(Tags.CodeMeaning);
-		//Scheduled station geographic location code sequence
-		Dataset stationGeoCodeDS = ds.putSQ(Tags.ScheduledStationGeographicLocationCodeSeq).addNewItem();
-		stationGeoCodeDS.putSH(Tags.CodeValue, filter.getStationGeoCode());
-		stationGeoCodeDS.putSH(Tags.CodingSchemeDesignator);
-		stationGeoCodeDS.putSH(Tags.CodeMeaning);
-
-		addDateQueries(ds,filter);
-		
-		//Scheduled human performer code sequence
-		Dataset humanPerformerDS = ds.putSQ(Tags.ScheduledHumanPerformersSeq).addNewItem();
-		Dataset humanCodeDS = ds.putSQ(Tags.HumanPerformerCodeSeq).addNewItem();
-		humanCodeDS.putSH(Tags.CodeValue, filter.getHumanPerformerCode());
-		humanCodeDS.putSH(Tags.CodingSchemeDesignator);
-		humanCodeDS.putSH(Tags.CodeMeaning);
-		
-		Dataset refReqSqItem = ds.putSQ(Tags.RefRequestSeq).addNewItem();
-		refReqSqItem.putUI(Tags.StudyInstanceUID,filter.getStudyIUID());
-		refReqSqItem.putSH( Tags.AccessionNumber, filter.getAccessionNumber() );
-		//Patient Identification
-		String patientName = gpwlFilter.getPatientName();
-    	if ( patientName != null && 
-       		 patientName.length() > 0 && 
-   			 patientName.indexOf('*') == -1 &&
-   			 patientName.indexOf('?') == -1) patientName+="*";
-
-		ds.putPN( Tags.PatientName, patientName );
-		ds.putLO( Tags.PatientID);
-		ds.putLO( Tags.IssuerOfPatientID);
-		//Patient demographic
-		ds.putDA( Tags.PatientBirthDate );
-		ds.putCS( Tags.PatientSex );
-
-		return ds;
-	}
-
-	/**
-	 * @param filter
-	 */
-	private void addDateQueries(Dataset ds, GPWLFilter filter) {
-		try {
-			//SPS Start date and time
-			if ( filter.getSPSStartDate() != null || filter.getSPSEndDate() != null ) {
-				Date startDate = null, endDate = null;
-				if ( filter.getSPSStartDate() != null ) 
-					startDate = filter.spsStartAsDate();
-				if ( filter.getSPSEndDate() != null ) 
-					endDate = filter.spsEndAsDate();
-				ds.putDT( Tags.SPSStartDateAndTime, startDate, endDate );
-			} else {
-				ds.putDT( Tags.SPSStartDateAndTime );
-			}
-			if ( filter.getCompletionStartDate() != null || filter.getCompletionEndDate() != null ) {
-				Date startDate = null, endDate = null;
-				if ( filter.getCompletionStartDate() != null ) 
-					startDate = filter.completionStartAsDate();
-				if ( filter.getCompletionEndDate() != null ) 
-					endDate = filter.completionEndAsDate();
-				ds.putDT( Tags.ExpectedCompletionDateAndTime, startDate, endDate );
-			} else {
-				ds.putDT( Tags.ExpectedCompletionDateAndTime );
-			}
-		} catch (ParseException x) {
-			throw new IllegalArgumentException("Wrong date time format in date query!");
-		}
 	}
 
 	/**

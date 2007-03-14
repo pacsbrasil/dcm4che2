@@ -85,16 +85,11 @@
 							<input size="10" name="patientName" type="text" value="{filter/patientName}"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd hh:mm">Date: </td>
+						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd">Start&#160;Date: </td>
 						<td bgcolor="eeeeee">
-							<input size="14" name="startDate" 
-									title="Query Start date. format:yyyy/mm/dd hh:mm" 
+							<input size="20" name="startDate" 
+									title="Query Start date. format:yyyy/mm/dd" 
 									type="text" value="{filter/startDate}"/>
-						</td>
-						<td bgcolor="eeeeee" title="Query End date. format:yyyy/mm/dd hh:mm">to: </td>
-						<td bgcolor="eeeeee">
-							<input size="14" name="endDate" title="Query End date. format:yyyy/mm/dd hh:mm" 
-									type="text" value="{filter/endDate}"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" >Modality: </td>

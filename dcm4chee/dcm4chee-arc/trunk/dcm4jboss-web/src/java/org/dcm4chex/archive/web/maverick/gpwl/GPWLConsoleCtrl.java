@@ -85,8 +85,8 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
             	try {
 	        		checkFilter( request );
 	            	model.filterWorkList( true );
-            	} catch ( ParseException x ) {
-            		model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd HH:mm" );
+            	} catch ( Exception x ) {
+            		model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd" );
             	}
             } else if ( request.getParameter("nav") != null ) {//action from a nav button. (next or previous)
             	String nav = request.getParameter("nav");
@@ -177,7 +177,6 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
 		filter.setIUID(rq.getParameter("iuid") );
 		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
 		if ( rq.getParameter("SPSStartDate") != null ) filter.setSPSStartDate(rq.getParameter("SPSStartDate") );
-		if ( rq.getParameter("SPSEndDate") != null ) filter.setSPSEndDate(rq.getParameter("SPSEndDate") );
 		if ( rq.getParameter("workitemCode") != null ) filter.setWorkitemCode(rq.getParameter("workitemCode") );
 		if ( rq.getParameter("inputAvail") != null ) filter.setInputAvailability(rq.getParameter("inputAvail") );
 		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );

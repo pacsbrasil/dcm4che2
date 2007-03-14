@@ -150,6 +150,20 @@ public class MWLModel extends BasicFormPagingModel {
 	public MWLEntry getMWLEntry(String spsID) {
 		return (MWLEntry) mwlEntries.get(spsID);
 	}
+    /**
+     * Get a list of Attributes for selected (spsIDs) MWL entries.
+     * 
+     * @param spsIDs List of SPS IDs.
+     * @return List of DICOM Attributes for given spsIDs (same order as in spsIDs)
+     */
+    public Dataset[] getMWLAttributes( String[] spsIDs ) {
+        Dataset[] spsAttrs = new Dataset[ spsIDs.length ];
+        for ( int i = 0 ; i < spsAttrs.length ; i++ ){
+            spsAttrs[i] = ((MWLEntry) mwlEntries.get(spsIDs[i])).toDataset();
+        }
+        return spsAttrs;
+    }
+    
 	/**
 	 * Returns true if the MwlScpAET is 'local'.
 	 * <p>
@@ -242,7 +256,7 @@ public class MWLModel extends BasicFormPagingModel {
 	public void filterWorkList(boolean newSearch) {
 		
 		if ( newSearch ) setOffset(0);
-		Dataset searchDS = getSearchDS( mwlFilter );
+		Dataset searchDS = mwlFilter.toDataset();
 		isLocal = MWLConsoleCtrl.getMwlScuDelegate().isLocal();
 		List l = MWLConsoleCtrl.getMwlScuDelegate().findMWLEntries( searchDS );
 		Collections.sort( l, comparator );
@@ -271,84 +285,6 @@ public class MWLModel extends BasicFormPagingModel {
 			}
 		}
 		setTotal(total - countNull); // the real total (without null entries!)	
-	}
-
-	/**
-	 * Returns the query Dataset with search criteria values from filter argument.
-	 * <p>
-	 * The Dataset contains all fields that should be in the result; 
-	 * the 'merging' fields will be set to the values from the filter.
-	 * 
-	 * @param mwlFilter2 The filter with search criteria values.
-	 * 
-	 * @return The Dataset that can be used for query.
-	 */
-	private Dataset getSearchDS(MWLFilter filter) {
-		Dataset ds = DcmObjectFactory.getInstance().newDataset();
-		//requested procedure
-		ds.putSH( Tags.RequestedProcedureID );
-		ds.putUI( Tags.StudyInstanceUID );
-		//imaging service request
-		ds.putSH( Tags.AccessionNumber, mwlFilter.getAccessionNumber() );
-		ds.putLT( Tags.ImagingServiceRequestComments );
-		ds.putPN( Tags.RequestingPhysician );
-		ds.putPN( Tags.ReferringPhysicianName );
-		ds.putLO( Tags.PlacerOrderNumber );
-		ds.putLO( Tags.FillerOrderNumber );
-		//Visit Identification
-		ds.putLO( Tags.AdmissionID );
-		//Patient Identification
-		String patientName = mwlFilter.getPatientName();
-    	if ( patientName != null && 
-       		 patientName.length() > 0 && 
-   			 patientName.indexOf('*') == -1 &&
-   			 patientName.indexOf('?') == -1) patientName+="*";
-
-		ds.putPN( Tags.PatientName, patientName );
-		ds.putLO( Tags.PatientID);
-		//Patient demographic
-		ds.putDA( Tags.PatientBirthDate );
-		ds.putCS( Tags.PatientSex );
-		//Sched. procedure step seq
-		DcmElement elem = ds.putSQ( Tags.SPSSeq );
-		Dataset ds1 = elem.addNewItem();
-		ds1.putCS(Tags.SPSStatus);
-		ds1.putAE( Tags.ScheduledStationAET, filter.getStationAET() );
-		ds1.putSH( Tags.SPSID );
-		ds1.putCS( Tags.Modality, filter.getModality() );
-		ds1.putPN( Tags.ScheduledPerformingPhysicianName );
-		if ( filter.getStartDate() != null || filter.getEndDate() != null ) {
-			Date startDate = null, endDate = null;
-			if ( filter.startDateAsLong() != null ) 
-				startDate = new Date ( filter.startDateAsLong().longValue() );
-			if ( filter.endDateAsLong() != null ) 
-				endDate = new Date ( filter.endDateAsLong().longValue() );
-			ds1.putDA( Tags.SPSStartDate, startDate, endDate );
-			ds1.putTM( Tags.SPSStartTime, startDate, endDate );
-		} else {
-			ds1.putDA( Tags.SPSStartDate );
-			ds1.putTM( Tags.SPSStartTime );
-		}
-		ds1.putSH( Tags.ScheduledStationName );
-		//sched. protocol code seq;
-		DcmElement spcs = ds1.putSQ( Tags.ScheduledProtocolCodeSeq );
-		Dataset dsSpcs = spcs.addNewItem();
-		dsSpcs.putSH( Tags.CodeValue );
-		dsSpcs.putLO( Tags.CodeMeaning );
-		dsSpcs.putSH( Tags.CodingSchemeDesignator );
-		// or 
-		ds1.putLO( Tags.SPSDescription );
-		
-		//Req. procedure code seq
-		DcmElement rpcs = ds.putSQ( Tags.RequestedProcedureCodeSeq );
-		Dataset dsRpcs = rpcs.addNewItem();
-		dsRpcs.putSH( Tags.CodeValue );
-		dsRpcs.putLO( Tags.CodeMeaning );
-		dsRpcs.putSH( Tags.CodingSchemeDesignator );
-		// or 
-		ds.putLO( Tags.RequestedProcedureDescription );
-
-		return ds;
 	}
 
 	/* (non-Javadoc)

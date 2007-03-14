@@ -124,13 +124,6 @@ public class GPPPSModel extends BasicFormPagingModel {
 	public PPSFilter getFilter() {
 		if ( ppsFilter == null ) {
 			ppsFilter = new PPSFilter();
-			try {
-				String d = dFormatter.format(new Date());
-				ppsFilter.setStartDate( d );
-				ppsFilter.setEndDate(d+" 23:59");
-			} catch ( Exception ignore ) {
-				
-			}
 		}
 		return ppsFilter;
 	}

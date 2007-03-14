@@ -108,11 +108,11 @@ public class StudyFilterModel extends AbstractModel {
     }
 
     public final String getStudyDateRange() {
-        return getDateRange(Tags.StudyDate);
+        return getDateRange(ds, Tags.StudyDate);
     }
 
     public final void setStudyDateRange(String s) {
-        setDateRange(Tags.StudyDate, s);
+        setDateRange(ds, Tags.StudyDate, s);
     }
 
     public final String getStudyDescription() {

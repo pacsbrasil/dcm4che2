@@ -74,15 +74,10 @@
 								title="Patient name"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
-						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd hh:mm">Date: </td>
+						<td bgcolor="eeeeee" colspan="2" title="Query Start date. format:yyyy/mm/dd">Start&#160;Date: </td>
 						<td bgcolor="eeeeee">
-							<input size="15" name="SPSStartDate" type="text" value="{filter/SPSStartDate}"
-								title="Query Start date. format:yyyy/mm/dd hh:mm"/>
-						</td>
-						<td bgcolor="eeeeee" title="Query End date. format:yyyy/mm/dd hh:mm">to: </td>
-						<td bgcolor="eeeeee">
-							<input size="15" name="SPSEndDate" type="text" value="{filter/SPSEndDate}"
-								title="Query End date. format:yyyy/mm/dd hh:mm"/>
+							<input size="20" name="SPSStartDate" type="text" value="{filter/SPSStartDate}"
+								title="Query Start date. format:yyyy/mm/dd"/>
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Workitem: </td>
