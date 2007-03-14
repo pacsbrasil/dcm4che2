@@ -424,7 +424,16 @@ public abstract class MPPSManagerBean implements SessionBean {
     }
     
     private boolean isSamePatient(Dataset mwlPatDs, PatientLocal mppsPat) {
-        if ( ! mppsPat.getPatientId().equals(mwlPatDs.getString(Tags.PatientID) ) )
+        String mppsPatId = mppsPat.getPatientId();
+        if ( mppsPatId == null ) {
+            log.warn("Link MPPS to MWL: MPPS patient without PatientID! try to check via Patient Name");
+            String name = mppsPat.getPatientName();
+            if (name == null) {
+                log.error("Link MPPS to MWL: MPPS patient without Patient Name! Ignore differences to avoid merge!");
+                return true;
+            }
+            return name.equals(mwlPatDs.getString(Tags.PatientName));
+        } else if ( ! mppsPat.getPatientId().equals(mwlPatDs.getString(Tags.PatientID) ) )
             return false;
         String issuer = mppsPat.getIssuerOfPatientId();
         return ( issuer != null ) ? issuer.equals(mwlPatDs.getString(Tags.IssuerOfPatientID)) : true;
