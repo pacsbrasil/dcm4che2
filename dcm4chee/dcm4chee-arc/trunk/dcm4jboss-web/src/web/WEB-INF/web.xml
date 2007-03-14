@@ -64,7 +64,7 @@
 
 		<init-param>
 			<param-name>startWithoutQuery</param-name>
-			<param-value>false</param-value>
+			<param-value>true</param-value>
 		</init-param>
 
 		<!-- 
@@ -212,6 +212,33 @@
 			<param-value>dcm4chee.archive:service=MoveScu</param-value>
 		</init-param>
 		
+		<!-- 
+			Used by MPPS/MWL linking to preset patientName search field in MWL console.
+			Value can be either delete, * (full name), or an int number (first n chars).
+			If you uncomment this parameter, the field will be not changed.
+		-->
+		<init-param>
+			<param-name>linkPresetPatientName</param-name>
+			<param-value>3</param-value>
+		</init-param> 
+		<!-- 
+			Used by MPPS/MWL linking to preset startDate search field in MWL console.
+			Value can be either delete, today, or mpps (StartDate of first selected MPPS).
+			If you uncomment this parameter, the field will be not changed.
+		-->
+		<init-param>
+			<param-name>linkPresetStartDate</param-name>
+			<param-value>mpps</param-value>
+		</init-param>
+		<!-- 
+			Used by MPPS/MWL linking to preset modality search field in MWL console.
+			Value can be either delete, or modality (modality of first selected MPPS).
+			If you uncomment this parameter, the field will be not changed.
+		-->
+		<init-param>
+			<param-name>linkPresetModality</param-name>
+			<param-value>modality</param-value>
+		</init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>
