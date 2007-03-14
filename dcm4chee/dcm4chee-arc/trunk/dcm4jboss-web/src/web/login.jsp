@@ -11,6 +11,7 @@
 	Therefore this user should only have WebUser role.
 --%>
 <%@ page import='org.dcm4che.util.Base64' %>
+<%@ page import='java.net.InetAddress' %>
 <html>
 <head>
   <title>Login</title>
@@ -51,7 +52,7 @@
  </tr>
 </table>
 <center>
-<h1>User Login</h1>
+<h1>User Login at <%= InetAddress.getLocalHost().getHostName() %></h1>
 <br>
 
 <form name="login" method="POST" action="j_security_check">
