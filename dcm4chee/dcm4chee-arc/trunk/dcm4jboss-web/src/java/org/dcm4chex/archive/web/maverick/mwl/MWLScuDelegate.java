@@ -161,11 +161,11 @@ public class MWLScuDelegate {
 		return false;
 	}
 
-	public Map linkMppsToMwl( String[] spsIDs, String[] mppsIUIDs ) {
+	public Map linkMppsToMwl( Object sps, String[] mppsIUIDs ) {
 		try {
 			Map map = (Map) server.invoke(contentEditServiceName, "linkMppsToMwl",
-					new Object[] { spsIDs, mppsIUIDs }, 
-					new String[] { String[].class.getName(), String[].class.getName() });
+					new Object[] { sps, mppsIUIDs }, 
+					new String[] { sps.getClass().getName(), String[].class.getName() });
 			return map;
 		} catch (Exception x) {
 			log.error("Exception occured in linkMppsToMwl: " + x.getMessage(), x);

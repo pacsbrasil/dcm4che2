@@ -126,13 +126,6 @@ public class MPPSModel extends BasicFormPagingModel {
 	public MPPSFilter getFilter() {
 		if ( mppsFilter == null ) {
 			mppsFilter = new MPPSFilter();
-			try {
-				String d = dFormatter.format(new Date());
-				mppsFilter.setStartDate( d );
-				mppsFilter.setEndDate(d+" 23:59");
-			} catch ( ParseException ignore ) {
-				
-			}
 		}
 		return mppsFilter;
 	}
@@ -219,10 +212,39 @@ public class MPPSModel extends BasicFormPagingModel {
 		setTotal(total - countNull); // the real total (without null entries!)
 	}
 	
-	public String getPatientOfSelectedMpps() {
+	public String getPatientOfSelectedMpps(String mppsIUID) {
 	    if ( stickyList.isEmpty() ) return null;
-	    return ((MPPSEntry) stickyList.values().iterator().next()).getPatientName();
+        if ( mppsIUID == null ) {
+            return ((MPPSEntry) stickyList.values().iterator().next()).getPatientName();
+        } else {
+            MPPSEntry entry =(MPPSEntry) stickyList.get(mppsIUID);
+            return entry == null ? null : entry.getPatientName();
+        }
 	}
+    public String getStartDateOfSelectedMpps(String mppsIUID) {
+        if ( stickyList.isEmpty() ) return null;
+        String startDate = null;
+        if ( mppsIUID == null ) {
+            startDate = ((MPPSEntry) stickyList.values().iterator().next()).getPpsStartDateTime();
+        } else {
+            MPPSEntry entry =(MPPSEntry) stickyList.get(mppsIUID);
+            if ( entry != null ) {
+                startDate = entry.getPpsStartDateTime();
+            }
+        }
+        if ( startDate != null && startDate.length() > 10) //shrink to yyyy/mm/dd
+            startDate = startDate.substring(0,10);
+        return startDate;
+    }
+    public String getModalityOfSelectedMpps(String mppsIUID) {
+        if ( stickyList.isEmpty() ) return null;
+        if ( mppsIUID == null ) {
+            return ((MPPSEntry) stickyList.values().iterator().next()).getModality();
+        } else {
+            MPPSEntry entry =(MPPSEntry) stickyList.get(mppsIUID);
+            return entry == null ? null : entry.getModality();
+        }
+    }
 
 	/**
 	 * Inner class that compares two datasets for sorting Performed Procedure Steps 
