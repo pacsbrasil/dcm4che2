@@ -45,9 +45,9 @@
    </attribute>
  
     <attribute access="read-write" getMethod="getMaxResults" setMethod="setMaxResults">
-      <description>Limit number of returned matching MWL items. If an external
-      Modality Worklist SCP is queried, a cancel request will be invoked after
-      receive of the specified number of query responses.  
+      <description>Limit number of returned matching MWL items by operation
+      findMWLEntries. If an external Modality Worklist SCP is queried, a cancel
+      request will be invoked after receive of the specified number of query responses.  
       </description>
       <name>MaxResults</name>
       <type>int</type>
