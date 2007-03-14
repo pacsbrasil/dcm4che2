@@ -8,7 +8,7 @@
 
 <xsl:output method="html" indent="yes" encoding="UTF-8"/>
 <xsl:variable name="page_title">Patient List</xsl:variable>
-<xsl:include href="../page.xsl"/>
+<xsl:include href="page.xsl"/>
 
 <xsl:template match="model">
 	<form action="trashfolder.m" method="post" name="myForm" accept-charset="UTF-8">
