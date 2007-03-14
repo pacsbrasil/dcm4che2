@@ -79,7 +79,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     
 	private boolean showWithoutStudies;
 
-        private boolean newStudiesOnTop;
+        private boolean latestStudiesFirst;
         
 	protected static Logger log = Logger.getLogger(BasicFolderForm.class);
 	
@@ -172,12 +172,12 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 		this.showWithoutStudies = showWithoutStudies;
 	}
 	
-    public final boolean isNewStudiesOnTop() {
-        return newStudiesOnTop;
+    public final boolean isLatestStudiesFirst() {
+        return latestStudiesFirst;
     }
 
-    public final void setNewStudiesOnTop(boolean newStudiesOnTop) {
-        this.newStudiesOnTop = newStudiesOnTop;
+    public final void setLatestStudiesFirst(boolean latestStudiesFirst) {
+        this.latestStudiesFirst = latestStudiesFirst;
     }
 
     public void setEditPatient(PatientModel pat) {

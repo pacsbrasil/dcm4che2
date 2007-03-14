@@ -36,12 +36,12 @@
   						<xsl:text>m/o Studien</xsl:text>
 						</div>
 					  <div title="Listet Studien eines Patienten beginnend mit der jüngsten Studie">
-  						<input type="checkbox" name="newStudiesOnTop" value="true">
-  							<xsl:if test="newStudiesOnTop = 'true'">
+  						<input type="checkbox" name="latestStudiesFirst" value="true">
+  							<xsl:if test="latestStudiesFirst = 'true'">
   								<xsl:attribute name="checked"/>
   							</xsl:if>
   						</input>
- 							<xsl:text>neue Studien oben</xsl:text>
+ 							<xsl:text>letzte Studie zuerst</xsl:text>
 						</div>
 				  </td>
 					<td class="folder_header" align="center">
@@ -585,7 +585,7 @@
 </tr>
   <xsl:variable name="studyOrder">
     <xsl:choose>
-      <xsl:when test="/model/newStudiesOnTop = 'true'">descending</xsl:when>
+      <xsl:when test="/model/latestStudiesFirst = 'true'">descending</xsl:when>
       <xsl:otherwise>ascending</xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
