@@ -312,10 +312,16 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public Map linkMppsToMwl(String[] spsIDs, String[] mppsIUIDs) {
+        return doLinkMppsToMwl(spsIDs, mppsIUIDs);
+    }
+    public Map linkMppsToMwl(Dataset[] spsAttrs, String[] mppsIUIDs) {
+        return doLinkMppsToMwl(spsAttrs, mppsIUIDs);
+    }
+    private Map doLinkMppsToMwl(Object o, String[] mppsIUIDs) {
         try {
             Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
-                    new Object[] { spsIDs, mppsIUIDs }, 
-                    new String[] { String[].class.getName(), String[].class.getName() });
+                    new Object[] { o, mppsIUIDs }, 
+                    new String[] { o.getClass().getName(), String[].class.getName() });
             Dataset dsN = (Dataset) map.get("StudyMgtDS");
             if ( dsN != null ) {
                 sendStudyMgt( dsN.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsN);

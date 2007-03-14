@@ -62,6 +62,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
@@ -230,7 +231,9 @@ public abstract class MPPSManagerBean implements SessionBean {
     
     
     /**
-     * Links a mpps to a mwl entry.
+     * Links a mpps to a mwl entry (LOCAL).
+     * <p>
+     * This method can be used if MWL entry is locally available.
      * <p>
      * Sets SpsID and AccessionNumber from mwl entry.
      * <P>
@@ -244,9 +247,6 @@ public abstract class MPPSManagerBean implements SessionBean {
      * <dt>mppsPat: (Dataset)</dt>
      * <dd>  Patient of MPPS entry.</dd>
      * <dd>  (The merged patient).</dd>
-     * <dt>userAction: (Boolean)</dt>
-     * <dd>  Indicates that a user action is necessary.</dd>
-     * <dd>  (the MPPS patient has more than one Study!)
      * </dl>
      * @param spsID spsID to select MWL entry
      * @param mppsIUID Instance UID of mpps.
@@ -327,7 +327,109 @@ public abstract class MPPSManagerBean implements SessionBean {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
+
+    /**
+     * Links a mpps to a mwl entry (external).
+     * <p>
+     * This Method can be used to link a MPPS entry with an MWL entry from an external Modality Worklist.
+     * <p>
+     * Sets SpsID and AccessionNumber from mwlDs.
+     * <P>
+     * Returns a Map with following key/value pairs.
+     * <dl>
+     * <dt>mppsAttrs: (Dataset)</dt>
+     * <dd>  Attributes of mpps entry. (for notification)</dd>
+     * <dt>mwlPat: (Dataset)</dt>
+     * <dd>  Patient of MWL entry.</dd>
+     * <dd>  (The dominant patient of patient merge).</dd>
+     * <dt>mppsPat: (Dataset)</dt>
+     * <dd>  Patient of MPPS entry.</dd>
+     * <dd>  (The merged patient).</dd>
+     * </dl>
+     * @param mwlDs Datset of MWL entry
+     * @param mppsIUID Instance UID of mpps.
+     * 
+     * @return A map with mpps attributes and patient attributes to merge.
+     * @throws FinderException 
+     * @throws CreateException 
+     * 
+     * @ejb.interface-method
+     */
+    public Map linkMppsToMwl(Dataset mwlAttrs, String mppsIUID) throws DcmServiceException, FinderException, CreateException {
+        String spsID = mwlAttrs.get(Tags.SPSSeq).getItem().getString(Tags.SPSID);
+        log.info("linkMppsToMwl sps:"+spsID+" mpps:"+mppsIUID);
+        MPPSLocal mpps;
+        Map map = new HashMap();
+        mpps = mppsHome.findBySopIuid(mppsIUID);
+        String accNo = mwlAttrs.getString(Tags.AccessionNumber);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
+        Dataset mwlPatDs = filter.filter(mwlAttrs);
+        PatientLocal mppsPat = mpps.getPatient();
+        Dataset mppsAttrs = mpps.getAttributes();
+        Dataset ssa;
+        DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
+        String ssaSpsID, studyIUID = null;
+        boolean spsNotInList = true;
+        for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++ ) {
+            ssa = ssaSQ.getItem(i);
+            if ( ssa != null ) {
+                if ( studyIUID == null ) { 
+                    studyIUID = ssa.getString(Tags.StudyInstanceUID);
+                    if ( !studyIUID.equals( 
+                            mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
+                        log.warn("StudyInstanceUID of external MWL entry can not be corrected! spsID "+spsID);
+                    }
+                }
+                ssaSpsID = ssa.getString(Tags.SPSID);
+                if ( ssaSpsID == null || spsID.equals(ssaSpsID) ) {
+                    ssa.putSH(Tags.AccessionNumber,accNo);
+                    ssa.putSH(Tags.SPSID, spsID);
+                    ssa.putUI(Tags.StudyInstanceUID, studyIUID);
+                    spsNotInList = false;
+                }
+            }
+        }
+        if ( spsNotInList ) {
+            ssa = ssaSQ.addNewItem();
+            Dataset spsDS = mwlAttrs.getItem(Tags.SPSSeq);
+            ssa.putUI(Tags.StudyInstanceUID, studyIUID);
+            ssa.putSH(Tags.SPSID, spsID);
+            ssa.putSH(Tags.AccessionNumber, accNo);
+            ssa.putSQ(Tags.RefStudySeq);
+            ssa.putSH(Tags.RequestedProcedureID, mwlAttrs.getString(Tags.RequestedProcedureID));
+            ssa.putLO(Tags.SPSDescription, spsDS.getString(Tags.SPSDescription));
+            DcmElement mppsSPCSQ = ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
+            DcmElement mwlSPCSQ = spsDS.get(Tags.ScheduledProtocolCodeSeq);
+            if ( mwlSPCSQ != null && mwlSPCSQ.countItems() > 0 ) {
+                for ( int i = 0, len = mwlSPCSQ.countItems() ; i < len ; i++ ) {
+                    mppsSPCSQ.addNewItem().putAll(mwlSPCSQ.getItem(i));
+                }
+            }
+            log.debug("add new scheduledStepAttribute item:");log.info(ssa);
+            log.debug("new mppsAttrs:");log.debug(mppsAttrs);
+        }
+        mpps.setAttributes(mppsAttrs);
+        mppsAttrs.putAll(mppsPat.getAttributes(false));
+        map.put("mppsAttrs",mppsAttrs);
+        map.put("mwlAttrs",mwlAttrs);
+        if ( ! isSamePatient(mwlPatDs,mppsPat) ) {
+            Collection col = patHome.findByPatientIdWithIssuer(mwlPatDs.getString(Tags.PatientID), 
+                    mwlPatDs.getString(Tags.IssuerOfPatientID));
+            PatientLocal mwlPat = col.isEmpty() ? 
+                    patHome.create(mwlPatDs) : (PatientLocal) col.iterator().next();
+            map.put( "mwlPat", mwlPat.getAttributes(true));
+            map.put( "mppsPat",mppsPat.getAttributes(true));
+        }
+        return map;
+    }
     
+    private boolean isSamePatient(Dataset mwlPatDs, PatientLocal mppsPat) {
+        if ( ! mppsPat.getPatientId().equals(mwlPatDs.getString(Tags.PatientID) ) )
+            return false;
+        String issuer = mppsPat.getIssuerOfPatientId();
+        return ( issuer != null ) ? issuer.equals(mwlPatDs.getString(Tags.IssuerOfPatientID)) : true;
+    }
+
     /**
      * @ejb.interface-method
      */

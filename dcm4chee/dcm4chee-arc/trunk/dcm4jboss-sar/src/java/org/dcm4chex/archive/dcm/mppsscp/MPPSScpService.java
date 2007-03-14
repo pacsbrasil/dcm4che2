@@ -121,6 +121,17 @@ public class MPPSScpService extends AbstractScpService {
         super.sendNotification(notif);
     }
     
+    /**
+     * Link MPPS entries to local available MWL entries.
+     * 
+     * @param spsIDs
+     * @param mppsIUIDs
+     * @return
+     * @throws CreateException
+     * @throws HomeFactoryException
+     * @throws RemoteException
+     * @throws DcmServiceException
+     */
     public Map linkMppsToMwl(String[] spsIDs, String[] mppsIUIDs) throws CreateException, HomeFactoryException, RemoteException, DcmServiceException {
         MPPSManager mgr = getMPPSManagerHome().create();
         Map map = null;
@@ -183,6 +194,82 @@ public class MPPSScpService extends AbstractScpService {
         }
 /*_*/        
        	return map;
+    }
+
+    /**
+     * Link MPPS entries to MWL entries from external Modality Worklist.
+     * 
+     * @param spsAttrs  Array of Datasets
+     * @param mppsIUIDs
+     * @return
+     * @throws CreateException
+     * @throws HomeFactoryException
+     * @throws RemoteException
+     * @throws DcmServiceException
+     * @throws FinderException 
+     */
+    public Map linkMppsToMwl(Dataset[] spsAttrs, String[] mppsIUIDs) throws CreateException, HomeFactoryException, RemoteException, DcmServiceException, FinderException {
+        MPPSManager mgr = getMPPSManagerHome().create();
+        Map map = null;
+        Dataset dominant = null, prior;
+        Map mapPrior = new HashMap();
+        for ( int i = spsAttrs.length - 1; i >=0 ; i--) {
+            for ( int j = 0 ; j < mppsIUIDs.length ; j++ ) {
+                map = mgr.linkMppsToMwl(spsAttrs[i], mppsIUIDs[j]);
+                if ( map.containsKey("mwlPat")) { //need patient merge!
+                    if (dominant == null ) {
+                        dominant = (Dataset)map.get("mwlPat");
+                    }
+                    prior = (Dataset) map.get("mppsPat");
+                    mapPrior.put(prior.getString(PrivateTags.PatientPk), prior);
+                }
+                logMppsLinkRecord(map, spsAttrs[i].getString(Tags.SPSID), mppsIUIDs[j]);
+                if ( i == 0 ) {
+                    try {
+                        Dataset coerceWL = getCoercionDS((Dataset) map.get("mwlAttrs"));
+                        if ( log.isDebugEnabled() ) {
+                            log.debug("MWL Attributes:");
+                            log.debug(map.get("mwlAttrs"));
+                            log.debug("Series Attributes from worklist:");
+                            log.debug(coerceWL);
+                        }
+                        if ( coerceWL != null ) {
+                            log.info("Coerce MWL attributes to series/study after manual MWL-MPPS linking!");
+                            Collection seriesDS = mgr.getSeriesAndStudyDS(mppsIUIDs[j]);
+                            Dataset series;
+                            Dataset coerce = DcmObjectFactory.getInstance().newDataset();
+                            for ( Iterator iter = seriesDS.iterator() ; iter.hasNext() ; ) {
+                                coerce.putAll(coerceWL);
+                                series = (Dataset) iter.next();
+                                series.remove(Tags.RequestAttributesSeq);
+                                coerceAttributes(series,coerce);
+                                log.debug("Update series "+series.getString(Tags.SeriesInstanceUID)+" with worklist attributes!");
+                            }
+                            Dataset dsN = mgr.updateSeriesAndStudy(seriesDS);
+                            if ( dsN != null ) {
+                                log.debug("IAN Dataset of coerced study:");
+                                log.debug(dsN);
+                                map.put("StudyMgtDS",dsN);
+                            }
+                        }
+                    } catch ( Exception x ) {
+                        log.error("Cant coerce MWL attributes to series)",x);
+                    }
+                    sendMPPSNotification((Dataset) map.get("mppsAttrs"), MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+                }
+            }
+         }
+        if ( spsAttrs.length > 1 ) {
+            log.warn("MWL-MPPS linking use multible worklist entries! Series are updated only for the first worlist item!");
+        }
+      
+        if ( dominant != null ) {
+            Dataset[] priorPats = (Dataset[])mapPrior.values().toArray(new Dataset[mapPrior.size()]);
+            map.put("dominant", dominant );
+            map.put("priorPats", priorPats);
+        }
+/*_*/        
+        return map;
     }
     
     private Dataset getCoercionDS(Dataset ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
