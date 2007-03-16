@@ -118,7 +118,11 @@ public class TrashFolderCtrl extends FolderCtrl {
                     || rq.getParameter("next") != null
                     || rq.getParameter("next.x") != null) { return query(false); }
             if (rq.getParameter("emptyTrash") != null
-                    || rq.getParameter("emptyTrash.x") != null) { return emptyTrash(); }
+                    || rq.getParameter("emptyTrash.x") != null) { 
+                emptyTrash(); 
+                query(true);
+                return TRASH;
+            }
             if (rq.getParameter("del") != null
                     || rq.getParameter("del.x") != null) { return delete(); }
             if (rq.getParameter("undel") != null
@@ -167,9 +171,8 @@ public class TrashFolderCtrl extends FolderCtrl {
         return TRASH;
     }
 
-    private String emptyTrash() {
+    private void emptyTrash() {
         delegate.emptyTrash();
-        return TRASH;        
     }
     
     private String delete() throws Exception {
