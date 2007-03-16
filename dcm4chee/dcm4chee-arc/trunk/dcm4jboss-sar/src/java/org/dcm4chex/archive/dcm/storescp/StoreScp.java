@@ -114,53 +114,75 @@ import org.jboss.logging.Logger;
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final String STORE_XSL = "cstorerq.xsl";
+
     private static final String STORE_XML = "-cstorerq.xml";
+
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
+
     private static final String STORE2MWL_XSL = "cstorerq2mwl-cfindrq.xsl";
+
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
+
     private static final String SERIES_IUID = "SERIES_IUID";
 
     private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
-        Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
+            Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
 
     final StoreScpService service;
 
     private final Logger log;
 
     private boolean studyDateInFilePath = false;
+
     private boolean yearInFilePath = true;
+
     private boolean monthInFilePath = true;
+
     private boolean dayInFilePath = true;
+
     private boolean hourInFilePath = false;
 
     private boolean acceptMissingPatientID = true;
+
     private boolean acceptMissingPatientName = true;
+
     private Pattern acceptPatientID;
+
     private Pattern ignorePatientID;
+
     private String[] generatePatientID = null;
-    private IssuerOfPatientIDRules issuerOfPatientIDRules = 
-        new IssuerOfPatientIDRules("PACS-:DCM4CHEE");
+
+    private IssuerOfPatientIDRules issuerOfPatientIDRules = new IssuerOfPatientIDRules(
+            "PACS-:DCM4CHEE");
 
     private boolean serializeDBUpdate = false;
+
     private int updateDatabaseMaxRetries = 2;
+
     private int maxCountUpdateDatabaseRetries = 0;
 
     private boolean storeDuplicateIfDiffMD5 = true;
+
     private boolean storeDuplicateIfDiffHost = true;
+
     private long updateDatabaseRetryInterval = 0L;
 
     private CompressionRules compressionRules = new CompressionRules("");
 
     private String[] coerceWarnCallingAETs = {};
+
     private String[] acceptMismatchIUIDCallingAETs = {};
+
     private String[] ignorePatientIDCallingAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
-    
+
     private int filePathComponents = 2;
+
     private boolean readReferencedFile = true;
+
     private boolean md5sumReferencedFile = true;
-    
+
     private PerfMonDelegate perfMon;
 
     public StoreScp(StoreScpService service) {
@@ -170,13 +192,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final ObjectName getPerfMonServiceName() {
-		return perfMon.getPerfMonServiceName();
-	}
+        return perfMon.getPerfMonServiceName();
+    }
 
-	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
-		perfMon.setPerfMonServiceName(perfMonServiceName);
-	}
-	
+    public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+        perfMon.setPerfMonServiceName(perfMonServiceName);
+    }
+
     public final boolean isAcceptMissingPatientID() {
         return acceptMissingPatientID;
     }
@@ -220,18 +242,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         int pl = pattern.indexOf('#');
         int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
         int sl = pattern.indexOf('$');
-        int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;		
+        int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;
         if (pl == -1 && sl == -1) {
             this.generatePatientID = new String[] { pattern };
         } else if (pl != -1 && sl != -1) {
-            this.generatePatientID = pl < sl 
-                    ? split(pattern, pl, pr, sl, sr)
+            this.generatePatientID = pl < sl ? split(pattern, pl, pr, sl, sr)
                     : split(pattern, sl, sr, pl, pr);
 
         } else {
-            this.generatePatientID = pl != -1 
-                    ? split(pattern, pl, pr)
-                    : split(pattern, sl, sr);
+            this.generatePatientID = pl != -1 ? split(pattern, pl, pr) : split(
+                    pattern, sl, sr);
         }
 
     }
@@ -339,34 +359,34 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final int getFilePathComponents() {
-		return filePathComponents;
-	}
+        return filePathComponents;
+    }
 
-	public final void setFilePathComponents(int filePathComponents) {
-		if (filePathComponents < 1) {
-			throw new IllegalArgumentException(
-					"filePathComponents: " + filePathComponents);
-		}
-		this.filePathComponents = filePathComponents;
-	}
+    public final void setFilePathComponents(int filePathComponents) {
+        if (filePathComponents < 1) {
+            throw new IllegalArgumentException("filePathComponents: "
+                    + filePathComponents);
+        }
+        this.filePathComponents = filePathComponents;
+    }
 
-	public final boolean isMd5sumReferencedFile() {
-		return md5sumReferencedFile;
-	}
+    public final boolean isMd5sumReferencedFile() {
+        return md5sumReferencedFile;
+    }
 
-	public final void setMd5sumReferencedFile(boolean md5ReferencedFile) {
-		this.md5sumReferencedFile = md5ReferencedFile;
-	}
+    public final void setMd5sumReferencedFile(boolean md5ReferencedFile) {
+        this.md5sumReferencedFile = md5ReferencedFile;
+    }
 
-	public final boolean isReadReferencedFile() {
-		return readReferencedFile;
-	}
+    public final boolean isReadReferencedFile() {
+        return readReferencedFile;
+    }
 
-	public final void setReadReferencedFile(boolean readReferencedFile) {
-		this.readReferencedFile = readReferencedFile;
-	}
+    public final void setReadReferencedFile(boolean readReferencedFile) {
+        this.readReferencedFile = readReferencedFile;
+    }
 
-	public final boolean isStoreDuplicateIfDiffHost() {
+    public final boolean isStoreDuplicateIfDiffHost() {
         return storeDuplicateIfDiffHost;
     }
 
@@ -422,13 +442,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     /**
-     * @param checkIncorrectWorklistEntry The checkIncorrectWorklistEntry to set.
+     * @param checkIncorrectWorklistEntry
+     *            The checkIncorrectWorklistEntry to set.
      */
     public void setCheckIncorrectWorklistEntry(
             boolean checkIncorrectWorklistEntry) {
         this.checkIncorrectWorklistEntry = checkIncorrectWorklistEntry;
     }
-
 
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
@@ -436,15 +456,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         String iuid = rqCmd.getAffectedSOPInstanceUID();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
-        boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(UIDs.TianiURIReferenced);
+        boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(
+                UIDs.TianiURIReferenced);
         File file = null;
-        try {		
-        	perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN );
-        	perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
-        	
+        try {
+            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
+            perfMon
+                    .setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE,
+                            rq);
+
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
-            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 
-                    || storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
+            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
+                    && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 return;
@@ -461,120 +484,132 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 parser.parseDataset(decParam, -1);
             }
             service.preProcess(ds);
-            
-            if(log.isDebugEnabled()) {
-	            log.debug("Dataset:\n");
-	            log.debug(ds);
+
+            if (log.isDebugEnabled()) {
+                log.debug("Dataset:\n");
+                log.debug(ds);
             }
-            
+
             // Set original dataset
-            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET, ds);
-            
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
+                    ds);
+
             service.logDIMSE(assoc, STORE_XML, ds);
             checkDataset(assoc, rqCmd, ds);
-            iuid = ds.getString(Tags.SOPInstanceUID); // may differ from Affected SOP IUID
-            if ( isCheckIncorrectWorklistEntry() 
-                    && checkIncorrectWorklistEntry(ds) ) {
-                log.info("Received Instance[uid=" + iuid
-                        + "] ignored! Reason: Incorrect Worklist entry selected!");
+            iuid = ds.getString(Tags.SOPInstanceUID); // may differ from
+                                                        // Affected SOP IUID
+            if (isCheckIncorrectWorklistEntry()
+                    && checkIncorrectWorklistEntry(ds)) {
+                log
+                        .info("Received Instance[uid="
+                                + iuid
+                                + "] ignored! Reason: Incorrect Worklist entry selected!");
                 return;
             }
             FileSystemDTO fsDTO;
             String filePath;
             byte[] md5sum = null;
- 			if (tianiURIReferenced) {
- 				String uri = ds.getString(Tags.RetrieveURI);
-		    	if (uri == null) {
-		            throw new DcmServiceException(
-		                    Status.DataSetDoesNotMatchSOPClassError,
-		                    "Missing (0040,E010) Retrieve URI - required for Tiani Retrieve URI Transfer Syntax");            		
-		    	}
-		    	StringTokenizer stk = new StringTokenizer(uri, "/");
-		    	int dirPathComponents = stk.countTokens() - filePathComponents - 1;
-		    	if (dirPathComponents < 1 || !stk.nextToken().equals("file:")) {
-		    		throw new DcmServiceException(
-		    				Status.DataSetDoesNotMatchSOPClassError,
-		    				"Illegal (0040,E010) Retrieve URI: " + uri);     		
-		    	}
-		    	StringBuffer sb = new StringBuffer();
-		    	String dirPath = null;
-		    	for (int i = 0; stk.hasMoreTokens(); i++) {
-		    		if (i == dirPathComponents) {		    			
-		    			dirPath = sb.toString();
-		    			sb.setLength(0);
-		    		} else {
-		    			sb.append('/');
-		    		}
-		    		sb.append(stk.nextToken());
-				}
-		    	filePath = sb.toString();
-		    	file = FileUtils.toFile(dirPath, filePath);
-		    	if (!file.isFile()) {
-		    		throw new DcmServiceException(
-		    				Status.ProcessingFailure,
-		    				"File referenced by (0040,E010) Retrieve URI: "
-		    				+ uri + " not found!");     				    		
-		    	}
-		    	fsDTO = getFileSystemMgt().getFileSystem(dirPath);
-		    	if (readReferencedFile) {
-		    		log.info("M-READ " + file);
-			    	Dataset fileDS = objFact.newDataset();
-			    	FileInputStream fis = new FileInputStream(file);
-			    	try {			    		
-			    		if (md5sumReferencedFile) {
-				    		MessageDigest digest = MessageDigest.getInstance("MD5");
-				    		DigestInputStream dis = new DigestInputStream(fis, digest);
-				    		BufferedInputStream bis = new BufferedInputStream(dis);
-							fileDS.readFile(bis, null, Tags.PixelData);
-							byte[] buf = getByteBuffer(assoc);
-							while (bis.read(buf) != -1);
-							md5sum = digest.digest();
-			    		} else {
-				    		BufferedInputStream bis = new BufferedInputStream(fis);
-							fileDS.readFile(bis, null, Tags.PixelData);			    			
-			    		}
-			    	} finally {
-			    		fis.close();
-			    	}
-			    	fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
-			    	ds = fileDS;
-		    	}
-             } else {
-	            fsDTO = service.selectStorageFileSystem();
-				File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-	            file = makeFile(baseDir, ds);
-	            filePath = file.getPath().substring(
-	            		baseDir.getPath().length() + 1)
-	            		.replace(File.separatorChar, '/');            }
-	            String compressTSUID = (parser.getReadTag() == Tags.PixelData
-	                                && parser.getReadLength() != -1) 
-	                    ? compressionRules.getTransferSyntaxFor(assoc, ds)
-	                    : null;
-	            String tsuid = (compressTSUID != null)
-	                    ? compressTSUID 
-	                    : rq.getTransferSyntaxUID();
-	            ds.setFileMetaInfo(objFact.newFileMetaInfo(
-	                    rqCmd.getAffectedSOPClassUID(),
-	                    rqCmd.getAffectedSOPInstanceUID(), tsuid));
-	
-	            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
-	            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, file);            
-	            md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
-	            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);            
- 			if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
- 				log.info("Received Instance[uid=" + iuid
- 						+ "] already exists - ignored");
- 				if (!tianiURIReferenced) {
- 					deleteFailedStorage(file);
- 				}
- 				return;
- 			}
+            if (tianiURIReferenced) {
+                String uri = ds.getString(Tags.RetrieveURI);
+                if (uri == null) {
+                    throw new DcmServiceException(
+                            Status.DataSetDoesNotMatchSOPClassError,
+                            "Missing (0040,E010) Retrieve URI - required for Tiani Retrieve URI Transfer Syntax");
+                }
+                StringTokenizer stk = new StringTokenizer(uri, "/");
+                int dirPathComponents = stk.countTokens() - filePathComponents
+                        - 1;
+                if (dirPathComponents < 1 || !stk.nextToken().equals("file:")) {
+                    throw new DcmServiceException(
+                            Status.DataSetDoesNotMatchSOPClassError,
+                            "Illegal (0040,E010) Retrieve URI: " + uri);
+                }
+                StringBuffer sb = new StringBuffer();
+                String dirPath = null;
+                for (int i = 0; stk.hasMoreTokens(); i++) {
+                    if (i == dirPathComponents) {
+                        dirPath = sb.toString();
+                        sb.setLength(0);
+                    } else {
+                        sb.append('/');
+                    }
+                    sb.append(stk.nextToken());
+                }
+                filePath = sb.toString();
+                file = FileUtils.toFile(dirPath, filePath);
+                if (!file.isFile()) {
+                    throw new DcmServiceException(Status.ProcessingFailure,
+                            "File referenced by (0040,E010) Retrieve URI: "
+                                    + uri + " not found!");
+                }
+                fsDTO = getFileSystemMgt().getFileSystem(dirPath);
+                if (readReferencedFile) {
+                    log.info("M-READ " + file);
+                    Dataset fileDS = objFact.newDataset();
+                    FileInputStream fis = new FileInputStream(file);
+                    try {
+                        if (md5sumReferencedFile) {
+                            MessageDigest digest = MessageDigest
+                                    .getInstance("MD5");
+                            DigestInputStream dis = new DigestInputStream(fis,
+                                    digest);
+                            BufferedInputStream bis = new BufferedInputStream(
+                                    dis);
+                            fileDS.readFile(bis, null, Tags.PixelData);
+                            byte[] buf = getByteBuffer(assoc);
+                            while (bis.read(buf) != -1)
+                                ;
+                            md5sum = digest.digest();
+                        } else {
+                            BufferedInputStream bis = new BufferedInputStream(
+                                    fis);
+                            fileDS.readFile(bis, null, Tags.PixelData);
+                        }
+                    } finally {
+                        fis.close();
+                    }
+                    fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
+                    ds = fileDS;
+                }
+            } else {
+                fsDTO = service.selectStorageFileSystem();
+                File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
+                file = makeFile(baseDir, ds);
+                filePath = file.getPath().substring(
+                        baseDir.getPath().length() + 1).replace(
+                        File.separatorChar, '/');
+            }
+            String compressTSUID = (parser.getReadTag() == Tags.PixelData && parser
+                    .getReadLength() != -1) ? compressionRules
+                    .getTransferSyntaxFor(assoc, ds) : null;
+            String tsuid = (compressTSUID != null) ? compressTSUID : rq
+                    .getTransferSyntaxUID();
+            ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
+                    .getAffectedSOPClassUID(), rqCmd
+                    .getAffectedSOPInstanceUID(), tsuid));
+
+            perfMon.start(activeAssoc, rq,
+                    PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE,
+                    file);
+            md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+            perfMon
+                    .stop(activeAssoc, rq,
+                            PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+            if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
+                log.info("Received Instance[uid=" + iuid
+                        + "] already exists - ignored");
+                if (!tianiURIReferenced) {
+                    deleteFailedStorage(file);
+                }
+                return;
+            }
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-            Dataset coerced = 
-                service.getCoercionAttributesFor(assoc, STORE_XSL, ds);
+            Dataset coerced = service.getCoercionAttributesFor(assoc,
+                    STORE_XSL, ds);
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
@@ -584,31 +619,36 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (!seriuid.equals(prevseriud)) {
                 assoc.putProperty(SERIES_IUID, seriuid);
                 if (prevseriud != null) {
-                    SeriesStored seriesStored = store.makeSeriesStored(prevseriud);
+                    SeriesStored seriesStored = store
+                            .makeSeriesStored(prevseriud);
                     if (seriesStored != null) {
-                        log.debug("Send SeriesStoredNotification - series changed");
+                        log
+                                .debug("Send SeriesStoredNotification - series changed");
                         Socket sock = assoc.getSocket();
                         seriesStored.setRemoteAddress(sock.getInetAddress());
                         doAfterSeriesIsStored(store, sock, seriesStored);
                         store.commitSeriesStored(seriesStored);
                     }
                 }
-                Dataset mwlFilter = 
-                    service.getCoercionAttributesFor(assoc, STORE2MWL_XSL, ds);
+                Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
+                        STORE2MWL_XSL, ds);
                 if (mwlFilter != null) {
-                    coerced = merge(coerced, 
-                            mergeMatchingMWLItem(assoc, ds, seriuid, mwlFilter));
-                }                
+                    coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
+                            seriuid, mwlFilter));
+                }
             }
-            
-            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
+
+            perfMon.start(activeAssoc, rq,
+                    PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
 
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, file, md5sum);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
-            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET, ds);
-            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
+                    ds);
+            perfMon.stop(activeAssoc, rq,
+                    PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             if (coerced.isEmpty()
                     || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
                 rspCmd.putUS(Tags.Status, Status.Success);
@@ -627,19 +667,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             if (!tianiURIReferenced) {
-            	deleteFailedStorage(file);
+                deleteFailedStorage(file);
             }
             throw e;
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             if (!tianiURIReferenced) {
-            	deleteFailedStorage(file);
+                deleteFailedStorage(file);
             }
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
 
-	private Dataset merge(Dataset ds, Dataset merge) {
+    private Dataset merge(Dataset ds, Dataset merge) {
         if (ds == null) {
             return merge;
         }
@@ -658,8 +698,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         try {
             mwlItems = service.findMWLEntries(mwlFilter);
         } catch (Exception e) {
-            log.error("Query for matching worklist entries for received Series["
-                    + seriuid + "] failed:", e);
+            log.error(
+                    "Query for matching worklist entries for received Series["
+                            + seriuid + "] failed:", e);
             return null;
         }
         int size = mwlItems.size();
@@ -669,26 +710,34 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (size == 0) {
             return null;
         }
-        Dataset coerce = service.getCoercionAttributesFor(assoc,
-                MWL2STORE_XSL, (Dataset) mwlItems.get(0));
+        Dataset coerce = service.getCoercionAttributesFor(assoc, MWL2STORE_XSL,
+                (Dataset) mwlItems.get(0));
         if (coerce == null) {
-            log.error("Failed to find or load stylesheet " + MWL2STORE_XSL
-                    + " for " + assoc.getCallingAET()
-                    + ". Cannot coerce object attributes with request information.");
+            log
+                    .error("Failed to find or load stylesheet "
+                            + MWL2STORE_XSL
+                            + " for "
+                            + assoc.getCallingAET()
+                            + ". Cannot coerce object attributes with request information.");
             return null;
         }
         if (size > 1) {
             DcmElement rqAttrsSq = coerce.get(Tags.RequestAttributesSeq);
-            Dataset coerce0 = coerce.exclude(new int[] { Tags.RequestAttributesSeq });
+            Dataset coerce0 = coerce
+                    .exclude(new int[] { Tags.RequestAttributesSeq });
             for (int i = 1; i < size; i++) {
                 Dataset coerce1 = service.getCoercionAttributesFor(assoc,
                         MWL2STORE_XSL, (Dataset) mwlItems.get(i));
                 if (!coerce1.match(coerce0, true, true)) {
-                    log.warn("Several (" + size + ") matching worklist entries "
-                            + "found for received Series[ " + seriuid
-                            + "], which differs also in attributes NOT mapped to the Request Attribute Sequence item "
-                            + "- Do not coerce object attributes with request information.");
-                    return null;                
+                    log
+                            .warn("Several ("
+                                    + size
+                                    + ") matching worklist entries "
+                                    + "found for received Series[ "
+                                    + seriuid
+                                    + "], which differs also in attributes NOT mapped to the Request Attribute Sequence item "
+                                    + "- Do not coerce object attributes with request information.");
+                    return null;
                 }
                 if (rqAttrsSq != null) {
                     Dataset item = coerce1.getItem(Tags.RequestAttributesSeq);
@@ -708,7 +757,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
-        if ( ppsUID == null ) {
+        if (ppsUID == null) {
             return false;
         }
         Dataset mpps;
@@ -718,21 +767,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-        return item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
-        "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
+        return item != null && "110514".equals(item.getString(Tags.CodeValue))
+                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
     }
 
     private MPPSManager getMPPSManager() throws CreateException,
-			RemoteException, HomeFactoryException {
-		return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-				MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
-	}
+            RemoteException, HomeFactoryException {
+        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
+    }
 
-	private FileSystemMgt getFileSystemMgt() throws RemoteException,
-			CreateException, HomeFactoryException {
-		return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-				FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
-	}    
+    private FileSystemMgt getFileSystemMgt() throws RemoteException,
+            CreateException, HomeFactoryException {
+        return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
+    }
 
     private byte[] getByteBuffer(Association assoc) {
         byte[] buf = (byte[]) assoc.getProperty(RECEIVE_BUFFER);
@@ -787,24 +836,26 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             try {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
-                        return storage.store(ds, fspk, filePath, file.length(), md5);
+                        return storage.store(ds, fspk, filePath, file.length(),
+                                md5);
                     }
                 } else {
-                    return storage.store(ds, fspk, filePath, file.length(), md5);
+                    return storage
+                            .store(ds, fspk, filePath, file.length(), md5);
                 }
             } catch (Exception e) {
                 ++retry;
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "failed to update DB with entries for received "
-                            + file, e);
+                                    + file, e);
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB with entries for received " + file
-                        + " - retry", e);
+                                + " - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
@@ -848,11 +899,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             filePath.append(String.valueOf(date.get(Calendar.HOUR_OF_DAY)));
             filePath.append(File.separatorChar);
         }
-        filePath.append(FileUtils.toHex(ds.getString(Tags.StudyInstanceUID).hashCode()));
+        filePath.append(FileUtils.toHex(ds.getString(Tags.StudyInstanceUID)
+                .hashCode()));
         filePath.append(File.separatorChar);
-        filePath.append(FileUtils.toHex(ds.getString(Tags.SeriesInstanceUID).hashCode()));
+        filePath.append(FileUtils.toHex(ds.getString(Tags.SeriesInstanceUID)
+                .hashCode()));
         File dir = new File(basedir, filePath.toString());
-        return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID).hashCode());
+        return FileUtils.createNewFile(dir, ds.getString(Tags.SOPInstanceUID)
+                .hashCode());
     }
 
     private byte[] storeToFile(DcmParser parser, Dataset ds, File file,
@@ -887,13 +941,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         parser.parseHeader();
                         while (parser.getReadTag() == Tags.Item) {
                             len = parser.getReadLength();
-                            ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE, len);
+                            ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE,
+                                    len);
                             bos.copyFrom(in, len);
                             parser.parseHeader();
                         }
                     } else {
-                        int read = compressCmd.compress(decParam.byteOrder, parser
-                                .getInputStream(), bos);
+                        int read = compressCmd.compress(decParam.byteOrder,
+                                parser.getInputStream(), bos);
                         in.skip(parser.getReadLength() - read);
                     }
                     ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
@@ -907,12 +962,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
         } finally {
-            // We don't want to ignore the IOException since in rare cases the close() may cause
-            // exception due to running out of physical space while the File System still holds
-            // some internally cached data. In this case, we do want to fail this C-STORE.
+            // We don't want to ignore the IOException since in rare cases the
+            // close() may cause
+            // exception due to running out of physical space while the File
+            // System still holds
+            // some internally cached data. In this case, we do want to fail
+            // this C-STORE.
             bos.close();
         }
-        return md != null ? md.digest(): null;
+        return md != null ? md.digest() : null;
     }
 
     private void checkDataset(Association assoc, Command rqCmd, Dataset ds)
@@ -922,14 +980,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 throw new DcmServiceException(
                         Status.DataSetDoesNotMatchSOPClassError,
                         "Missing Type 1 Attribute "
-                        + Tags.toString(TYPE1_ATTR[i]));
+                                + Tags.toString(TYPE1_ATTR[i]));
             }
         }
         String affectedSOPInstanceUID = rqCmd.getAffectedSOPInstanceUID();
         String sopInstanceUID = ds.getString(Tags.SOPInstanceUID);
         if (!affectedSOPInstanceUID.equals(sopInstanceUID)) {
-            String prompt = "SOP Instance UID in Dataset ["
-                    + sopInstanceUID
+            String prompt = "SOP Instance UID in Dataset [" + sopInstanceUID
                     + "] differs from Affected SOP Instance UID["
                     + affectedSOPInstanceUID + "]";
             log.warn(prompt);
@@ -942,26 +999,25 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ds.getString(Tags.SOPClassUID))) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-            "SOP Class UID in Dataset differs from Affected SOP Class UID");
+                    "SOP Class UID in Dataset differs from Affected SOP Class UID");
         }
         String pid = ds.getString(Tags.PatientID);
         String pname = ds.getString(Tags.PatientName);
         if (pid == null && !acceptMissingPatientID) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-            "Acceptance of objects without Patient ID is disabled");			
+                    "Acceptance of objects without Patient ID is disabled");
         }
         if (pname == null && !acceptMissingPatientName) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-            "Acceptance of objects without Patient Name is disabled");			
+                    "Acceptance of objects without Patient Name is disabled");
         }
-        if (pid != null && (
-                contains(ignorePatientIDCallingAETs, assoc.getCallingAET())
-                || !acceptPatientID.matcher(pid).matches()
-                || ignorePatientID.matcher(pid).matches())) {
-            log.info("Ignore Patient ID " + pid 
-                    + " for Patient Name " + pname
+        if (pid != null
+                && (contains(ignorePatientIDCallingAETs, assoc.getCallingAET())
+                        || !acceptPatientID.matcher(pid).matches() || ignorePatientID
+                        .matcher(pid).matches())) {
+            log.info("Ignore Patient ID " + pid + " for Patient Name " + pname
                     + " in object received from " + assoc.getCallingAET());
             pid = null;
             ds.putLO(Tags.PatientID, pid);
@@ -970,7 +1026,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (generatePatientID != null) {
                 pid = generatePatientID(ds);
                 ds.putLO(Tags.PatientID, pid);
-                log.info("Add generated Patient ID " + pid 
+                log.info("Add generated Patient ID " + pid
                         + " for Patient Name " + pname);
             }
         }
@@ -981,11 +1037,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (issuer != null) {
                     ds.putLO(Tags.IssuerOfPatientID, issuer);
                     log.info("Add missing Issuer Of Patient ID " + issuer
-                            + " for Patient ID " + pid 
-                            + " and Patient Name " + pname);					
+                            + " for Patient ID " + pid + " and Patient Name "
+                            + pname);
                 }
             }
-        }		
+        }
     }
 
     private boolean contains(Object[] a, Object e) {
@@ -997,7 +1053,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return false;
     }
 
-
     private String generatePatientID(Dataset ds) {
         if (generatePatientID.length == 1) {
             return generatePatientID[0];
@@ -1006,10 +1061,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         String pname = ds.getString(Tags.PatientName);
         // generate different Patient IDs for different studies
         // if no Patient Name
-        int pnameHash = (pname == null || pname.length() == 0) 
-                ? suidHash
-                :  37 * ds.getString(Tags.PatientName).hashCode()
-                    + ds.getString(Tags.PatientBirthDate, "").hashCode();
+        int pnameHash = (pname == null || pname.length() == 0) ? suidHash : 37
+                * ds.getString(Tags.PatientName).hashCode()
+                + ds.getString(Tags.PatientBirthDate, "").hashCode();
 
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < generatePatientID.length; i++) {
@@ -1027,7 +1081,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             sb.append(s);
             return;
         }
-        String v = Long.toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
+        String v = Long
+                .toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
         for (int i = v.length() - l; i < 0; i++) {
             sb.append('0');
         }
@@ -1037,13 +1092,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     // Implementation of AssociationListener
 
     public void write(Association src, PDU pdu) {
-    	if (pdu instanceof AAssociateAC)
-    		perfMon.assocEstEnd(src, Command.C_STORE_RQ);
+        if (pdu instanceof AAssociateAC)
+            perfMon.assocEstEnd(src, Command.C_STORE_RQ);
     }
 
     public void received(Association src, PDU pdu) {
-    	if(pdu instanceof AAssociateRQ)
-    		perfMon.assocEstStart(src, Command.C_STORE_RQ);
+        if (pdu instanceof AAssociateRQ)
+            perfMon.assocEstStart(src, Command.C_STORE_RQ);
     }
 
     public void write(Association src, Dimse dimse) {
@@ -1056,16 +1111,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void closing(Association assoc) {
-    	if(assoc.getAAssociateAC() != null)
-    		perfMon.assocRelStart(assoc, Command.C_STORE_RQ);
-    	
+        if (assoc.getAAssociateAC() != null)
+            perfMon.assocRelStart(assoc, Command.C_STORE_RQ);
+
         String seriuid = (String) assoc.getProperty(SERIES_IUID);
         if (seriuid != null) {
             try {
                 Storage store = getStorage(assoc);
                 SeriesStored seriesStored = store.makeSeriesStored(seriuid);
                 if (seriesStored != null) {
-                    log.debug("Send SeriesStoredNotification - association closed");
+                    log
+                            .debug("Send SeriesStoredNotification - association closed");
                     Socket sock = assoc.getSocket();
                     seriesStored.setRemoteAddress(sock.getInetAddress());
                     doAfterSeriesIsStored(store, sock, seriesStored);
@@ -1076,16 +1132,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 log.error("Clean up on Association close failed:", e);
             }
         }
-        if ( service.isFreeDiskSpaceOnDemand() ) {
+        if (service.isFreeDiskSpaceOnDemand()) {
             service.callFreeDiskSpace();
         }
     }
 
     public void closed(Association assoc) {
-    	if(assoc.getAAssociateAC() != null)
-    		perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
+        if (assoc.getAAssociateAC() != null)
+            perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
     }
-    
+
     /**
      * Finalize a stored series.
      * <p>
@@ -1096,14 +1152,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
      * <dd>4) send SeriesStored JMX notification</dd>
      * </dl>
      * 
-     * @param s	The Association socket or null if series is stored local (e.g. undelete)
+     * @param s
+     *            The Association socket or null if series is stored local (e.g.
+     *            undelete)
      * @param seriesStored
      */
     protected void doAfterSeriesIsStored(Storage store, Socket s,
             SeriesStored seriesStored) {
-        Dataset ian = seriesStored.getIAN();       
-        updateDBSeries(store, 
-                ian.getItem(Tags.RefSeriesSeq).getString(Tags.SeriesInstanceUID));
+        Dataset ian = seriesStored.getIAN();
+        updateDBSeries(store, ian.getItem(Tags.RefSeriesSeq).getString(
+                Tags.SeriesInstanceUID));
         updateDBStudy(store, ian.getString(Tags.StudyInstanceUID));
         service.logInstancesStored(s, seriesStored);
         service.sendJMXNotification(seriesStored);
@@ -1118,7 +1176,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         store.updateStudy(suid);
                     }
                 } else {
-                    store.updateStudy(suid);					
+                    store.updateStudy(suid);
                 }
                 return;
             } catch (Exception e) {
@@ -1126,14 +1184,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "give up update DB Study Record [iuid=" + suid
-                            + "]:", e);
+                                    + "]:", e);
                     return;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB Study Record [iuid=" + suid
-                        + "] - retry:", e);
+                                + "] - retry:", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
@@ -1152,7 +1210,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         store.updateSeries(seriuid);
                     }
                 } else {
-                    store.updateSeries(seriuid);					
+                    store.updateSeries(seriuid);
                 }
                 return;
             } catch (Exception e) {
@@ -1160,14 +1218,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "give up update DB Series Record [iuid=" + seriuid
-                            + "]:", e);
+                                    + "]:", e);
                     return;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB Series Record [iuid=" + seriuid
-                        + "] - retry", e);
+                                + "] - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
