@@ -746,14 +746,16 @@ public class ContentEditService extends ServiceMBeanSupport {
         int[] noi;
         for ( int i=0, len=refSeries.countItems() ; i < len ; i++ ) {
             refSopSeq = refSeries.getItem(i).get(Tags.RefSOPSeq);
-            for ( int j = 0, jlen = refSopSeq.countItems() ; j < jlen ; j++ ) {
-                ds = refSopSeq.getItem(j);
-                cuid = ds.getString(Tags.RefSOPClassUID);
-                noi = (int[]) map.get(cuid);
-                if ( noi == null ) {
-                    map.put(cuid, new int[]{1});
-                } else {
-                    noi[0]++;
+            if ( refSopSeq != null) {
+                for ( int j = 0, jlen = refSopSeq.countItems() ; j < jlen ; j++ ) {
+                    ds = refSopSeq.getItem(j);
+                    cuid = ds.getString(Tags.RefSOPClassUID);
+                    noi = (int[]) map.get(cuid);
+                    if ( noi == null ) {
+                        map.put(cuid, new int[]{1});
+                    } else {
+                        noi[0]++;
+                    }
                 }
             }
         }
