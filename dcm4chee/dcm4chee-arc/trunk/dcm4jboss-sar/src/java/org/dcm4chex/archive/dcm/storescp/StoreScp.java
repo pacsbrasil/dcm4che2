@@ -125,9 +125,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final String SERIES_IUID = "SERIES_IUID";
 
-    private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
-            Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
-
     final StoreScpService service;
 
     private final Logger log;
@@ -453,9 +450,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Command rqCmd = rq.getCommand();
-        String iuid = rqCmd.getAffectedSOPInstanceUID();
         InputStream in = rq.getDataAsStream();
         Association assoc = activeAssoc.getAssociation();
+        String callingAET = assoc.getCallingAET();
         boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(
                 UIDs.TianiURIReferenced);
         File file = null;
@@ -464,14 +461,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             perfMon
                     .setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE,
                             rq);
-
-            List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
-            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
-                    && !containsLocal(duplicates))) {
-                log.info("Received Instance[uid=" + iuid
-                        + "] already exists - ignored");
-                return;
-            }
 
             DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
                     .getTransferSyntaxUID());
@@ -483,6 +472,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 parser.unreadHeader();
                 parser.parseDataset(decParam, -1);
             }
+            String iuid = checkSOPInstanceUID(rqCmd, ds, callingAET);
+            List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
+            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
+                    && !containsLocal(duplicates))) {
+                log.info("Received Instance[uid=" + iuid
+                        + "] already exists - ignored");
+                return;
+            }
+
             service.preProcess(ds);
 
             if (log.isDebugEnabled()) {
@@ -495,9 +493,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     ds);
 
             service.logDIMSE(assoc, STORE_XML, ds);
-            checkDataset(assoc, rqCmd, ds);
-            iuid = ds.getString(Tags.SOPInstanceUID); // may differ from
-                                                        // Affected SOP IUID
             if (isCheckIncorrectWorklistEntry()
                     && checkIncorrectWorklistEntry(ds)) {
                 log
@@ -605,7 +600,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 return;
             }
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putAE(PrivateTags.CallingAET, assoc.getCallingAET());
+            ds.putAE(PrivateTags.CallingAET, callingAET);
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
             Dataset coerced = service.getCoercionAttributesFor(assoc,
@@ -613,6 +608,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
+            checkPatientIdAndName(ds, callingAET);
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
             Storage store = getStorage(assoc);
             String prevseriud = (String) assoc.getProperty(SERIES_IUID);
@@ -650,7 +646,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             perfMon.stop(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             if (coerced.isEmpty()
-                    || !contains(coerceWarnCallingAETs, assoc.getCallingAET())) {
+                    || !contains(coerceWarnCallingAETs, callingAET)) {
                 rspCmd.putUS(Tags.Status, Status.Success);
             } else {
                 int[] coercedTags = new int[coerced.size()];
@@ -973,34 +969,46 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return md != null ? md.digest() : null;
     }
 
-    private void checkDataset(Association assoc, Command rqCmd, Dataset ds)
+    private String checkSOPInstanceUID(Command rqCmd, Dataset ds, String aet)
             throws DcmServiceException {
-        for (int i = 0; i < TYPE1_ATTR.length; ++i) {
-            if (ds.vm(TYPE1_ATTR[i]) <= 0) {
-                throw new DcmServiceException(
-                        Status.DataSetDoesNotMatchSOPClassError,
-                        "Missing Type 1 Attribute "
-                                + Tags.toString(TYPE1_ATTR[i]));
-            }
-        }
-        String affectedSOPInstanceUID = rqCmd.getAffectedSOPInstanceUID();
-        String sopInstanceUID = ds.getString(Tags.SOPInstanceUID);
-        if (!affectedSOPInstanceUID.equals(sopInstanceUID)) {
-            String prompt = "SOP Instance UID in Dataset [" + sopInstanceUID
-                    + "] differs from Affected SOP Instance UID["
-                    + affectedSOPInstanceUID + "]";
+        String cuid = checkNotNull(ds.getString(Tags.SOPClassUID),
+                "Missing SOP Class UID (0008,0016)");
+        String iuid = checkNotNull(ds.getString(Tags.SOPInstanceUID),
+                "Missing SOP Instance UID (0008,0018)");
+        checkNotNull(ds.getString(Tags.StudyInstanceUID),
+                "Missing Study Instance UID (0020,000D)");
+        checkNotNull(ds.getString(Tags.SeriesInstanceUID),
+                "Missing Series Instance UID (0020,000E)");
+        if (!rqCmd.getAffectedSOPInstanceUID().equals(iuid)) {
+            String prompt = "SOP Instance UID in Dataset [" + iuid
+                    + "] differs from Affected SOP Instance UID[" 
+                    + rqCmd.getAffectedSOPInstanceUID() + "]";
             log.warn(prompt);
-            if (!contains(acceptMismatchIUIDCallingAETs, assoc.getCallingAET())) {
+            if (!contains(acceptMismatchIUIDCallingAETs, aet)) {
                 throw new DcmServiceException(
                         Status.DataSetDoesNotMatchSOPClassError, prompt);
             }
         }
-        if (!rqCmd.getAffectedSOPClassUID().equals(
-                ds.getString(Tags.SOPClassUID))) {
+        if (!rqCmd.getAffectedSOPClassUID().equals(cuid)) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "SOP Class UID in Dataset differs from Affected SOP Class UID");
         }
+        return iuid;
+    }
+
+    
+    private static String checkNotNull(String val, String msg)
+    throws DcmServiceException {
+        if (val == null) {
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError, msg);            
+        }
+        return val;
+    }
+
+    private void checkPatientIdAndName(Dataset ds, String aet)
+            throws DcmServiceException {
         String pid = ds.getString(Tags.PatientID);
         String pname = ds.getString(Tags.PatientName);
         if (pid == null && !acceptMissingPatientID) {
@@ -1014,11 +1022,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     "Acceptance of objects without Patient Name is disabled");
         }
         if (pid != null
-                && (contains(ignorePatientIDCallingAETs, assoc.getCallingAET())
+                && (contains(ignorePatientIDCallingAETs, aet)
                         || !acceptPatientID.matcher(pid).matches() || ignorePatientID
                         .matcher(pid).matches())) {
             log.info("Ignore Patient ID " + pid + " for Patient Name " + pname
-                    + " in object received from " + assoc.getCallingAET());
+                    + " in object received from " + aet);
             pid = null;
             ds.putLO(Tags.PatientID, pid);
         }
