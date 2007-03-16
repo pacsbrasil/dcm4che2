@@ -226,8 +226,12 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 			}
 		}
 		if ( mppsIUIDs != null ) {
-			Map map = delegate.linkMppsToMwl( model.isLocal() ? spsIDs : 
-                model.getMWLAttributes(spsIDs), mppsIUIDs );
+			Map map;
+            if ( model.isLocal() ) {
+                map= delegate.linkMppsToMwl( spsIDs, mppsIUIDs );
+            } else {
+                map= delegate.linkMppsToMwl( model.getMWLAttributes(spsIDs), mppsIUIDs );
+            }
 			if ( map == null ) {
 				MPPSModel.getModel(request).setExternalPopupMsg("mwl.err_link_failed", null);
 			} else if ( map.get("dominant") != null ) {

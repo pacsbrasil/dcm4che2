@@ -161,15 +161,26 @@ public class MWLScuDelegate {
 		return false;
 	}
 
-	public Map linkMppsToMwl( Object sps, String[] mppsIUIDs ) {
-		try {
-			Map map = (Map) server.invoke(contentEditServiceName, "linkMppsToMwl",
-					new Object[] { sps, mppsIUIDs }, 
-					new String[] { sps.getClass().getName(), String[].class.getName() });
-			return map;
-		} catch (Exception x) {
-			log.error("Exception occured in linkMppsToMwl: " + x.getMessage(), x);
-			return null;
-		}
-	}
+    public Map linkMppsToMwl( String[] spsIDs, String[] mppsIUIDs ) {
+        try {
+            Map map = (Map) server.invoke(contentEditServiceName, "linkMppsToMwl",
+                    new Object[] { spsIDs, mppsIUIDs }, 
+                    new String[] { String[].class.getName(), String[].class.getName() });
+            return map;
+        } catch (Exception x) {
+            log.error("Exception occured in linkMppsToMwl: " + x.getMessage(), x);
+            return null;
+        }
+    }
+    public Map linkMppsToMwl( Dataset[] mwlDs, String[] mppsIUIDs ) {
+        try {
+            Map map = (Map) server.invoke(contentEditServiceName, "linkMppsToMwl",
+                    new Object[] { mwlDs, mppsIUIDs }, 
+                    new String[] { Dataset[].class.getName(), String[].class.getName() });
+            return map;
+        } catch (Exception x) {
+            log.error("Exception occured in linkMppsToMwl: " + x.getMessage(), x);
+            return null;
+        }
+    }
 }
