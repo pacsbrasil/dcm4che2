@@ -604,6 +604,3 @@ INSERT INTO ae (aet,hostname,port)
 	VALUES('DCM4CHEE','localhost',11112);
 INSERT INTO ae (aet,hostname,port)
 	VALUES('CDRECORD','localhost',10104);
-
-DROP INDEX code_value;
-CREATE UNIQUE INDEX code_value ON code(code_value,code_designator);
