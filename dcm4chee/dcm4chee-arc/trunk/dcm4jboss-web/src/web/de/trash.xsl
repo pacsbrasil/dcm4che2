@@ -650,7 +650,7 @@
 			<xsl:value-of select="instanceNumber"/>&#160;
     	</td>
     	<td title="Praesentationsbeschreibung" >
-      		<xsl:value-of select="prShow esentationDescription"/>&#160;
+      		<xsl:value-of select="presentationDescription"/>&#160;
 		</td>
 		<td title="Praesentations-Marke" >
     		<xsl:value-of select="presentationLabel"/>&#160;
