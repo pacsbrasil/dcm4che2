@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
@@ -82,14 +84,14 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
  * 
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.MPPSLocal findBySopIuid(java.lang.String uid)"
  *              strategy="on-find" eager-load-group="*"
- * 
+ *              
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  */
 public abstract class MPPSBean implements EntityBean {
 	private static final Logger log = Logger.getLogger(MPPSBean.class);
 
-	private SeriesLocalHome seriesHome;
+        private SeriesLocalHome seriesHome;
 
 	private CodeLocalHome codeHome;
 
@@ -365,4 +367,19 @@ public abstract class MPPSBean implements EntityBean {
 		return drcode != null && "110514".equals(drcode.getCodeValue())
 				&& "DCM".equals(drcode.getCodingSchemeDesignator());
 	}
+
+        /**
+         * @ejb.select query="SELECT DISTINCT mpps.sopIuid FROM MPPS mpps, IN(mpps.series) s WHERE s.study.studyIuid = ?1"
+         */ 
+        public abstract Collection ejbSelectMppsIuidsByStudyIuid(String suid)
+                throws FinderException;
+        
+        
+        /**
+         * @ejb.home-method
+         */
+        public Collection ejbHomeMppsIuidsByStudyIuid(String suid)
+                throws FinderException {
+            return ejbSelectMppsIuidsByStudyIuid(suid);            
+        }
 }
