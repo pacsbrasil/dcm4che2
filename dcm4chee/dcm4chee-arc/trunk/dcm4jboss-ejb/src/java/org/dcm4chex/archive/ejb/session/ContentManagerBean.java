@@ -229,6 +229,14 @@ public abstract class ContentManagerBean implements SessionBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getInstanceByIUID(String sopiuid) throws FinderException {
+        return instanceHome.findBySopIuid(sopiuid).getAttributes(true);
+    }
+    
+    /**
+     * @ejb.interface-method
      */
     public int countStudies(Dataset filter, boolean hideWithoutStudies) {
         try {

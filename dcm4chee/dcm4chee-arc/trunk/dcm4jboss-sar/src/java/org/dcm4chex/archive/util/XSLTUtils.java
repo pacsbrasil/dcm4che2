@@ -67,20 +67,40 @@ import org.dcm4che.util.TMFormat;
  * @since Dec 5, 2005
  */
 public class XSLTUtils {
+    
+    public interface InitTransformer {
+        void init(Transformer t);
+    }
+    
+    private static final InitTransformer NOOP_INIT = new InitTransformer(){
+        public void init(Transformer t) {}
+    };
 
-    public static void xslt(Dataset ds, Templates tpl, Association a,
+    public static void xslt(Dataset ds, Templates tpl, final Association a,
             Dataset out) throws TransformerConfigurationException, IOException {
+        xslt(ds, tpl, new InitTransformer(){
+                    public void init(Transformer t) {
+                        t.setParameter("calling", a.getCallingAET());
+                        t.setParameter("called", a.getCalledAET());
+                    }}, 
+                out);        
+    }
+
+    public static void xslt(Dataset ds, Templates tpl, Dataset out)
+            throws TransformerConfigurationException, IOException {
+        xslt(ds, tpl, NOOP_INIT, out);        
+    }
+    
+    public static void xslt(Dataset ds, Templates tpl, InitTransformer it,
+                Dataset out) throws TransformerConfigurationException, IOException {
         SAXTransformerFactory tf = (SAXTransformerFactory) 
         TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler(tpl);
         Date now = new Date();
         Transformer t = th.getTransformer();
-        if ( a != null ) {
-	        t.setParameter("calling", a.getCallingAET());
-	        t.setParameter("called", a.getCalledAET());
-        }
         t.setParameter("date", new DAFormat().format(now ));
         t.setParameter("time", new TMFormat().format(now));
+        it.init(t);
         th.setResult(new SAXResult(out.getSAXHandler2(null)));
         ds.writeDataset2(th, null, null, 64, null);
     }

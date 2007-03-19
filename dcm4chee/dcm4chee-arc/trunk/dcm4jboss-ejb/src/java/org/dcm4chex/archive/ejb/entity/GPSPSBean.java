@@ -77,6 +77,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.persistence table-name="gpsps"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @ejb.env-entry name="SpsIdPrefix" type="java.lang.String" value=""
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="GPSPSRequest" view-type="local" ref-name="ejb/Request"
  * @ejb.ejb-ref ejb-name="GPSPSPerformer" view-type="local" ref-name="ejb/Performer"
@@ -94,6 +95,7 @@ public abstract class GPSPSBean implements EntityBean {
         return date != null ? new java.sql.Timestamp(date.getTime()) : null;
     }
     
+    private String spsIdPrefix;
     private EntityContext ejbctx;
     private CodeLocalHome codeHome;
     private GPSPSRequestLocalHome rqHome;
@@ -104,6 +106,7 @@ public abstract class GPSPSBean implements EntityBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
+            spsIdPrefix = (String) jndiCtx.lookup("java:comp/env/SpsIdPrefix");
             codeHome = (CodeLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/Code");
             rqHome = (GPSPSRequestLocalHome) 
@@ -139,6 +142,12 @@ public abstract class GPSPSBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient)
     throws CreateException {
+        if (ds.getString(Tags.SPSID) == null) {
+            String id = spsIdPrefix + getPk();
+            ds.putSH(Tags.SPSID, id);
+            setEncodedAttributes(DatasetUtils.toByteArray(ds,
+                    UIDs.DeflatedExplicitVRLittleEndian));
+        }
         setPatient(patient);
         try {
             setScheduledWorkItemCode(CodeBean.valueOf(codeHome,
@@ -438,13 +447,10 @@ public abstract class GPSPSBean implements EntityBean {
         setGpspsPriority(ds.getString(Tags.GPSPSPriority));
         setInputAvailabilityFlag(ds.getString(Tags.InputAvailabilityFlag));
         setSpsStartDateTime(toTimestamp(ds.getDate(Tags.SPSStartDateAndTime)));
-        setExpectedCompletionDateTime(toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
-        byte[] b = DatasetUtils.toByteArray(ds,
-                UIDs.DeflatedExplicitVRLittleEndian);
-        if (log.isDebugEnabled()) {
-            log.debug("setEncodedAttributes(byte[" + b.length + "]");
-        }
-        setEncodedAttributes(b);
+        setExpectedCompletionDateTime(
+                toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
+        setEncodedAttributes(DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian));
     }
 
     /**

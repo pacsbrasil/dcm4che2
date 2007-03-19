@@ -273,15 +273,17 @@ public class MPPSScpService extends AbstractScpService {
     }
     
     private Dataset getCoercionDS(Dataset ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if ( ds == null ) return null;
-        Templates tmpl = this.getCoercionTemplatesFor("",MWL2STORE_XSL);
+        if ( ds == null ) return null;        
+        Dataset sps = ds.getItem(Tags.SPSSeq);
+        String aet = sps != null ? sps.getString(Tags.ScheduledStationAET) : null;
+        Templates tmpl = this.getCoercionTemplatesFor(aet, MWL2STORE_XSL);
         if (tmpl == null) {
             log.warn("Coercion template "+MWL2STORE_XSL+" not found! Can not store MWL attributes to series!");
             return null;
         }
         Dataset out = DcmObjectFactory.getInstance().newDataset();
         try {
-            XSLTUtils.xslt(ds, tmpl, null, out);
+            XSLTUtils.xslt(ds, tmpl, out);
         } catch (Exception e) {
             log.error("Attribute coercion failed:", e);
             return null;

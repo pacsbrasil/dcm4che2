@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<server>
+  <classpath codebase="lib" archives="dcm4chee.jar"/>
+  <mbean code="org.dcm4chex.archive.dcm.gpwlscp.GPWLFeedService2"
+    name="dcm4chee.archive:service=GPWLFeed2"
+    xmbean-dd="xmdesc/dcm4chee-gpwlfeed2-xmbean.xml">
+    <depends>dcm4chee.archive:service=IANScu</depends>
+  </mbean>
+</server>

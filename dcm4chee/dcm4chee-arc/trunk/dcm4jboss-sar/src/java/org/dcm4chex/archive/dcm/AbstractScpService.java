@@ -460,15 +460,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public Templates getCoercionTemplatesFor(String aet, String fname) {
-        // check AET specific attribute coercion configuration
-        File f = FileUtils.resolve(new File(new File(coerceConfigDir, aet),
-                fname));
-        if (!f.exists()) {
-            // check general attribute coercion configuration
-            f = FileUtils.resolve(new File(coerceConfigDir, fname));
-            if (!f.exists()) {
-                return null;
-            }
+        File f = getXSLFile(aet, fname);
+        if (f == null) {
+            return null;
         }
         Templates tpl = (Templates) templates.get(f);
         if (tpl == null) {
@@ -482,6 +476,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             templates.put(f, tpl);
         }
         return tpl;
+    }
+
+    private File getXSLFile(String aet, String fname) {
+        if (aet != null) {
+            File f =  FileUtils.resolve(
+                        new File(new File(coerceConfigDir, aet), fname));
+            if (f.exists()) {
+                return f;
+            }
+        }
+        File f = FileUtils.resolve(new File(coerceConfigDir, fname));
+        return f.exists() ? f : null;
     }
 
     public void reloadStylesheets() {
