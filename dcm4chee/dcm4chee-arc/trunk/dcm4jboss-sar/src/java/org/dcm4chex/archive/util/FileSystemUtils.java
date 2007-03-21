@@ -16,10 +16,14 @@
 package org.dcm4chex.archive.util;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+
+import org.dcm4che.util.Executer;
 
 /**
  * General File System utilities.
@@ -185,22 +189,22 @@ public class FileSystemUtils {
         String[] cmdAttrbs = new String[] {"cmd.exe", "/C", "dir /c " + path};
 
         // read in the output of the command to an ArrayList
-        Process proc = null;
-        String line = null;
-        ArrayList lines = new ArrayList();
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         try {
-        	proc = Runtime.getRuntime().exec(cmdAttrbs);
-        	BufferedReader in = new BufferedReader(
-                new InputStreamReader(proc.getInputStream()));
-            line = in.readLine();
-            while (line != null) {
-                line = line.toLowerCase().trim();
-                lines.add(line);
-                line = in.readLine();
-            }
-        } finally {
-            closeQuietly(proc);
+            new Executer(cmdAttrbs, stdout , null).waitFor();
+        } catch (InterruptedException e) {
+            throw new IOException(e.getMessage());
         }
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(stdout.toByteArray())));
+        ArrayList lines = new ArrayList();
+        String line = in.readLine();
+        while (line != null) {
+            line = line.toLowerCase().trim();
+            lines.add(line);
+            line = in.readLine();
+        }
+  
 
         if (lines.size() == 0) {
             // unknown problem, throw exception
@@ -272,24 +276,25 @@ public class FileSystemUtils {
         if (path.length() == 0) {
             throw new IllegalArgumentException("Path must not be empty");
         }
-//        path = FilenameUtils.normalize(path);
+//      path = FilenameUtils.normalize(path);
 
         // build and run the 'dir' command
         String[] cmdAttribs = new String[] {dfCommand, dfCommandOption, path};
 
         // read the output from the command until we come to the second line
-        Process proc = null;
+
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         try {
-        	proc = Runtime.getRuntime().exec(cmdAttribs);
-        	BufferedReader in = new BufferedReader(
-                new InputStreamReader(proc.getInputStream()));
-            String line1 = in.readLine(); // header line (ignore it)
-            String line2 = in.readLine(); // the line we're interested in
-            String line3 = in.readLine(); // possibly interesting line
-            return parseUnixDF(path, line1, line2, line3);
-        } finally {
-        	closeQuietly(proc);
+            new Executer(cmdAttribs, stdout , null).waitFor();
+        } catch (InterruptedException e) {
+            throw new IOException(e.getMessage());
         }
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(stdout.toByteArray())));
+        String line1 = in.readLine(); // header line (ignore it)
+        String line2 = in.readLine(); // the line we're interested in
+        String line3 = in.readLine(); // possibly interesting line
+        return parseUnixDF(path, line1, line2, line3);
     }
 
     public static long parseDF(String path, String line1, String line2, String line3)
@@ -356,16 +361,5 @@ public class FileSystemUtils {
                     "' did not return numeric data as expected for path '" + 
                     path + "'- check path is valid");
         }
-    }
-
-    /**
-     * Close all associated streams of the process
-     * 
-     * @param proc
-     */
-    void closeQuietly(Process proc) {
-    	try { proc.getInputStream().close(); } catch (Exception ignore) {}
-    	try { proc.getOutputStream().close(); } catch (Exception ignore) {}
-    	try { proc.getErrorStream().close(); } catch (Exception ignore) {}
     }
 }
