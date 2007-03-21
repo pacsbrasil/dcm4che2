@@ -30,21 +30,37 @@
       <name>LogStationAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MOD_AET\MOD_PGP_AET"/>
+         <value value="MESA_MOD\MODALITY1\MR3T"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getPGPStationAETs"
       setMethod="setPGPStationAETs">
-      <description><![CDATA[List of the AE titles for Modalities which supports
-      the Presentation of Grouped Procedures (PGP) Integration Profile defined
-      by the IHE Radiology Technical Framework.
+      <description><![CDATA[List of the AE titles for Modalities which
+      emits MPPS messages according the <i>Presentation of Grouped Procedure (PGP)</i>
+      defined by the <i>IHE Radiology Technical Framework</i>.
       Separate multiple values by \ (backslash).]]>  
       </description>
       <name>PGPStationAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MOD_PGP_AET"/>
+         <value value="MESA_MOD\MODALITY1\MR3T"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAppendCaseStationAETs"
+      setMethod="setAppendCaseStationAETs">
+      <description><![CDATA[List of the AE titles for Modalities which
+      emits MPPS messages according the <i>Append Case</i>, with multiple
+      MPPS objects refering the same Scheduled Procedure Step, 
+      <i>Relationship between Scheduled and Performed Procedure Steps</i>
+      defined by <i>IHE Radiology Technical Framework</i>.
+      Separate multiple values by \ (backslash).]]>  
+      </description>
+      <name>AppendCaseStationAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MESA_MOD\MODALITY1\MR3T"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

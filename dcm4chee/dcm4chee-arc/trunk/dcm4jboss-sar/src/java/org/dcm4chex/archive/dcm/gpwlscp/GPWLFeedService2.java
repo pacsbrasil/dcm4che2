@@ -54,11 +54,9 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -81,6 +79,8 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
     private String[] logAETs = {};
 
     private String[] pgpAETs = {};
+    
+    private String[] appendAETs = {};
     
     private File logDir;
 
@@ -113,6 +113,14 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
         this.configDir = new File(path.replace('/', File.separatorChar));
     }
     
+    public final String getLogStationAETs() {
+        return StringUtils.toString(logAETs, '\\');
+    }
+
+    public final void setLogStationAETs(String aets) {
+        logAETs = StringUtils.split(aets, '\\');
+    }
+
     public final String getPGPStationAETs() {
         return StringUtils.toString(pgpAETs, '\\');
     }
@@ -121,12 +129,12 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
         pgpAETs = StringUtils.split(aets, '\\');
     }
 
-    public final String getLogStationAETs() {
-        return StringUtils.toString(logAETs, '\\');
+    public final String getAppendCaseStationAETs() {
+        return StringUtils.toString(appendAETs, '\\');
     }
 
-    public final void setLogStationAETs(String aets) {
-        logAETs = StringUtils.split(aets, '\\');
+    public final void setAppendCaseStationAETs(String aets) {
+        appendAETs = StringUtils.split(aets, '\\');
     }
 
     public final ObjectName getIANScuServiceName() {
@@ -155,84 +163,37 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
 
     private void onIAN(Dataset mpps) {
         String aet = mpps.getString(Tags.PerformedStationAET);
-        if (contains(logAETs, aet)) {
+        boolean logMPPS = contains(logAETs, aet);
+        if (logMPPS) {
             logMPPS(aet, mpps);
         }
         Templates stylesheet = getStylesheet(aet);
-        if (stylesheet != null) {
-            boolean checkForPGP = contains(pgpAETs, aet);
-            if (checkForPGP && hasSeveralReqProc(mpps)) {
-                log.info("Ignore MPPS related to several requested procedures");
-                return;
-            }
-            try {
-                Dataset wkitem = DcmObjectFactory.getInstance().newDataset();
-                XSLTUtils.xslt(mpps, stylesheet, wkitem);
-                if (wkitem.isEmpty()) {
-                    return;
-                }
-                if (checkForPGP) {
-                    addGSPSRefs(wkitem);
-                }
-                getGPWLManager().addWorklistItem(wkitem);
-            } catch (Exception e) {
-                log.error("Creation of GP Work Item failed:", e);
-            }
-            
+        if (stylesheet == null) {
+            log.info("No mpps2gpwl.xsl found for " + aet);
+            return;
+        }
+        Dataset wkitems = DcmObjectFactory.getInstance().newDataset();
+        try {
+            XSLTUtils.xslt(mpps, stylesheet, wkitems);
+        } catch (Exception e) {
+            log.error("Failed to create work items triggered by MPPS from " + aet, e);
+            return;
+        }
+        DcmElement wkitemSeq = wkitems.get(PrivateTags.WorkItemSeq);
+        log.info("Creating " + wkitemSeq.countItems() + " work item(s) triggered by MPPS from " + aet);
+        try {
+            createWorkItems(wkitemSeq, contains(pgpAETs, aet), contains(appendAETs, aet));
+        } catch (Exception e) {
+            log.error("Failed to create work item triggered by MPPS from " + aet, e);
         }
     }
 
-    private void addGSPSRefs(Dataset wkitem) throws Exception {
-        DcmElement inputInfoSeq = wkitem.get(Tags.InputInformationSeq);
-        DcmElement refSeriesSeq = inputInfoSeq.getItem().get(Tags.RefSeriesSeq);
-        if (refSeriesSeq.countItems() != 1) {
-            return;
+    private synchronized void createWorkItems(DcmElement wkitemSeq, 
+            boolean checkPGP, boolean checkAppend) throws Exception {
+        GPWLManager gpwlmgr = getGPWLManager();
+        for (int i = 0, n = wkitemSeq.countItems(); i < n; i++) {
+            gpwlmgr.addWorklistItem(wkitemSeq.getItem(i), checkPGP, checkAppend);
         }
-        DcmElement refSopSeq = refSeriesSeq.getItem().get(Tags.RefSOPSeq);
-        if (refSopSeq.countItems() != 1) {
-            return;
-        }
-        Dataset refSop = refSopSeq.getItem();
-        if ((!UIDs.GrayscaleSoftcopyPresentationStateStorage.equals(
-                refSop.getString(Tags.RefSOPClassUID)))) {
-            return;
-        }
-        String gspsiuid = refSop.getString(Tags.RefSOPInstanceUID);
-        Dataset gsps = getContentManager().getInstanceByIUID(gspsiuid);
-        DcmElement gspsRefSeriesSeq = gsps.get(Tags.RefSeriesSeq);
-        for (int i = 0, n = gspsRefSeriesSeq.countItems(); i < n; i++) {
-            Dataset gspsRefSeries = gspsRefSeriesSeq.getItem(i);
-            Dataset refSeries = refSeriesSeq.addNewItem();
-            refSeries.putUI(Tags.SeriesInstanceUID, 
-                    gspsRefSeries.getString(Tags.SeriesInstanceUID));
-            DcmElement refSOPSeq = refSeries.putSQ(Tags.RefSOPSeq);
-            DcmElement gspsRefImageSeq = gsps.get(Tags.RefImageSeq);
-            for (int j = 0, m = gspsRefImageSeq.countItems(); j < m; j++) {
-                Dataset gspsRefImage = gspsRefImageSeq.getItem(j);
-                refSop = refSOPSeq.addNewItem();
-                refSop.putUI(Tags.RefSOPClassUID,
-                        gspsRefImage.getString(Tags.RefSOPClassUID));
-                refSop.putUI(Tags.RefSOPInstanceUID,
-                        gspsRefImage.getString(Tags.RefSOPInstanceUID));
-            }
-        }
-    }
-
-    private static boolean hasSeveralReqProc(Dataset mpps) {
-        DcmElement ssaSeq = mpps.get(Tags.ScheduledStepAttributesSeq);
-        if (ssaSeq == null || ssaSeq.countItems() < 2) {
-            return false;
-        }
-        String rqProcId0 = null;        
-        for (int i = 0, n = ssaSeq.countItems(); i < n; i++) {
-            String rqProcId = ssaSeq.getItem(i).getString(Tags.RequestedProcedureID);
-            if (rqProcId0 == null) {
-                rqProcId0 = rqProcId;
-            } else if (rqProcId != null && rqProcId.equals(rqProcId0)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static boolean contains(Object[] a, Object e) {
@@ -249,13 +210,6 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
                 GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME)).create();
     }
 
-    private ContentManager getContentManager() throws Exception {
-        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
-        return home.create();
-    }
-    
     private void logMPPS(String aet, Dataset mpps) {
         File dir = new File(logDir, aet);
         SimpleDateFormat df = new SimpleDateFormat(LOGFILE_PATTERN);

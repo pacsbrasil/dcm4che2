@@ -83,7 +83,10 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.ejb-ref ejb-name="GPSPSPerformer" view-type="local" ref-name="ejb/Performer"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.GPSPSLocal findBySopIuid(java.lang.String uid)"
- *             query="SELECT OBJECT(s) FROM GPSPS AS s WHERE s.sopIuid = ?1"
+ *             query="SELECT OBJECT(gpsps) FROM GPSPS AS gpsps WHERE gpsps.sopIuid = ?1"
+ *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findByReqProcId(int status, java.lang.String codeValue, java.lang.String codingScheme, java.lang.String rpid)"
+ *             query="SELECT OBJECT(gpsps) FROM GPSPS AS gpsps, IN(gpsps.refRequests) AS rq WHERE gpsps.gpspsStatusAsInt = ?1 AND gpsps.scheduledWorkItemCode.codeValue = ?2 AND gpsps.scheduledWorkItemCode.codingSchemeDesignator = ?3 AND rq.requestedProcedureId = ?4"
  *             transaction-type="Supports"
  */
 
@@ -173,6 +176,9 @@ public abstract class GPSPSBean implements EntityBean {
             throw new CreateException(e.getMessage());
         }
         log.info("Created " + prompt());
+        if (log.isDebugEnabled()) {
+            log.debug(ds);
+        }
     }
 
     private void createScheduledHumanPerformers(DcmElement sq)
@@ -426,6 +432,7 @@ public abstract class GPSPSBean implements EntityBean {
     public abstract void setScheduledHumanPerformers(java.util.Collection humanPerformers);
     
     /**
+     * @ejb.interface-method
      * @ejb.relation name="gpsps-request" role-name="gpsps-for-requests"
      */    
     public abstract java.util.Collection getRefRequests();
@@ -465,4 +472,5 @@ public abstract class GPSPSBean implements EntityBean {
                 + ", iuid=" + getSopIuid()
                 + ", pat->" + getPatient() + "]";
     }
+
 }
