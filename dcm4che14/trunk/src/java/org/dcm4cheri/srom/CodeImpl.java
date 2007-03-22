@@ -103,7 +103,7 @@ class CodeImpl implements Code {
     }
         
     public static Code[] newCodes(DcmElement sq) throws DcmValueException {
-        if (sq == null || !sq.isEmpty())
+        if (sq == null || sq.isEmpty())
             return EMPTY_ARRAY;
         Code[] a = new Code[sq.countItems()];
         for (int i = 0; i < a.length; ++i) {
