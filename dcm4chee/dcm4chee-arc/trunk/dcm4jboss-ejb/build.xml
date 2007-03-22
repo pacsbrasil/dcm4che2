@@ -281,6 +281,9 @@
    	<!-- =================================================================== -->
    
    	<target name="compile" depends="ejbdoclet">
+	  <tstamp>
+	    <format property="TODAY" pattern="yyyy-MM-dd"/>
+	  </tstamp>
 		<mkdir dir="${target.dir}/classes"/>
 		<javac
         	destdir="${target.classes}"
@@ -371,7 +374,9 @@
         <jar jarfile="${target.common.bin}/editgpwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditGpwl"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
+				<attribute name="Class-Path"
+				  value="../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar
+				    ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editgpwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
@@ -380,13 +385,16 @@
                 <include name="**/tools/EditGpwl*"/>
             </fileset>
         	<fileset dir="${src.res}">
+        	      <include name="log4j.properties"/>
                 <include name="**/tools/EditGpwl*"/>
             </fileset>
         </jar>
         <jar jarfile="${target.common.bin}/editmwl.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.EditMwl"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
+				<attribute name="Class-Path"
+				  value="../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar
+				    ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="editmwl"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>
@@ -395,13 +403,13 @@
                 <include name="**/tools/EditMwl*"/>
             </fileset>
         	<fileset dir="${src.res}">
+        	      <include name="log4j.properties"/>
                 <include name="**/tools/EditMwl*"/>
             </fileset>
         </jar>
         <jar jarfile="${target.common.bin}/pwd2hash.jar">
          	<manifest>
 				<attribute name="Main-Class" value="org.dcm4chex.archive.tools.Pwd2Hash"/>
-				<attribute name="Class-Path" value="./ ../lib/getopt.jar ../client/jbossall-client.jar ../server/default/lib/dcm4che.jar ../server/default/lib/dcm4chee-ejb-client.jar"/>
 				<attribute name="Implementation-Title" value="pwd2hash"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="Agfa HealthCare"/>

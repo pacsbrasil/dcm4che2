@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.tools;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +50,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
@@ -158,17 +160,27 @@ public final class EditMwl {
     }
 
     private static Dataset loadMWLItem(String fpath) throws SAXException, IOException {
-        InputStream is = fpath == null ? System.in : new FileInputStream(fpath);
-        try {
-            return DatasetUtils.fromXML(is);            
-        } finally {
-            if (fpath != null) {
-                try {
-                    is.close();
-                } catch (IOException ignore) {
+        if (isXML(fpath)) {
+            InputStream is = fpath == null ? System.in : new FileInputStream(fpath);
+            try {
+                return DatasetUtils.fromXML(is); 
+            } finally {
+                if (fpath != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ignore) {
+                    }
                 }
             }
+        } else {
+            Dataset ds = DcmObjectFactory.getInstance().newDataset();
+            ds.readFile(new File(fpath), null, -1);
+            return ds;
         }
+    }
+
+    private static boolean isXML(String fpath) {
+        return fpath == null || fpath.toUpperCase().endsWith(".XML");
     }
 
     private Hashtable makeEnv() {
