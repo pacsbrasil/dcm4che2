@@ -14,6 +14,7 @@
     <module>dcm4che-tool-dcmdir</module>
     <module>dcm4che-tool-dcmecho</module>
     <module>dcm4che-tool-dcmgpwl</module>
+    <module>dcm4che-tool-dcmhpqr</module>
     <module>dcm4che-tool-dcmmwl</module>
     <module>dcm4che-tool-dcmof</module>
     <module>dcm4che-tool-dcmqr</module>

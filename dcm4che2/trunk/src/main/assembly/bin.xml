@@ -18,6 +18,7 @@
         <include>dcm4che:dcm4che-tool-dcmdir</include>
         <include>dcm4che:dcm4che-tool-dcmecho</include>
         <include>dcm4che:dcm4che-tool-dcmgpwl</include>
+        <include>dcm4che:dcm4che-tool-dcmhpqr</include>
         <include>dcm4che:dcm4che-tool-dcmmwl</include>
         <include>dcm4che:dcm4che-tool-dcmof</include>
         <include>dcm4che:dcm4che-tool-dcmqr</include>
@@ -36,7 +37,7 @@
         <includeDependencies>true</includeDependencies>
         <unpack>false</unpack>
         <dependencySets>
-          <dependencySet>
+	  <dependencySet>
             <outputDirectory>lib</outputDirectory>
             <scope>runtime</scope>
             <excludes>
@@ -78,6 +79,13 @@
       <outputDirectory>/etc</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>dcm4che-hp/src/test/resources</directory>
+      <includes>
+        <include>NeurosurgeryPlan.*</include>
+      </includes>
+      <outputDirectory>/etc/hpsamples</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmdir/src/bin</directory>
       <includes>
         <include>*.bat</include>
@@ -155,6 +163,23 @@
     </fileSet>
     <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmgpwl/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcmhpqr/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcmhpqr/src/bin</directory>
       <excludes>
         <exclude>*.bat</exclude>
       </excludes>
