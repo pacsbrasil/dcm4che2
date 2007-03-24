@@ -55,19 +55,18 @@ import org.dcm4che2.hp.spi.HPComparatorSpi;
  * @since Aug 1, 2005
  * 
  */
-public class HPComparatorFactory
-{
+public class HPComparatorFactory {
 
     /**
      * Create HPComparator from Sorting Operations Sequence (0072,0600) item.
      * The created HPComparator is backed by the given item
      * {@link #getDicomObject DicomObject}.
      * 
-     * @param item DicomObject of Sorting Operations Sequence (0072,0600)
+     * @param item
+     *            DicomObject of Sorting Operations Sequence (0072,0600)
      * @return the new HPComparator
      */
-    public static HPComparator createHPComparator(DicomObject sortingOp)
-    {
+    public static HPComparator createHPComparator(DicomObject sortingOp) {
         if (sortingOp.containsValue(Tag.SortbyCategory))
             return HPComparatorFactory.createSortByCategory(sortingOp);
         HPComparator cmp = new SortByAttribute(sortingOp);
@@ -76,9 +75,7 @@ public class HPComparatorFactory
         return cmp;
     }
 
-
-    private static HPComparator createSortByCategory(DicomObject sortingOp)
-    {
+    private static HPComparator createSortByCategory(DicomObject sortingOp) {
         HPComparatorSpi spi = HangingProtocol.getHPComparatorSpi(sortingOp
                 .getString(Tag.SortbyCategory));
         if (spi == null)
@@ -86,61 +83,61 @@ public class HPComparatorFactory
                     + sortingOp.get(Tag.SortbyCategory));
         return spi.createHPComparator(sortingOp);
     }
-    
+
     /**
-     * Create Sort By Attribute Comparator.
-     * A new {@link #getDicomObject DicomObject}, representing the according
-     * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
+     * Create Sort By Attribute Comparator. A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
      * 
-     * @param privateCreator Selector Attribute Private Creator, if Selector
-     *   Attribute is contained by a Private Group, otherwise <code>null</code>.
-     * @param tag Selector Attribute
-     * @param sortingDirection {@link CodeString#INCREASING} or
-     *                         {@link CodeString#DECREASING}
+     * @param privateCreator
+     *            Selector Attribute Private Creator, if Selector Attribute is
+     *            contained by a Private Group, otherwise <code>null</code>.
+     * @param tag
+     *            Selector Attribute
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
      * @return the new Comparator
      */
     public static HPComparator createSortByAttribute(String privateCreator,
-            int tag, int valueNumber, String sortingDirection)
-    {
-        return new SortByAttribute(privateCreator, tag, valueNumber, 
+            int tag, int valueNumber, String sortingDirection) {
+        return new SortByAttribute(privateCreator, tag, valueNumber,
                 sortingDirection);
     }
-    
+
     /**
-     * Create Sort Category Comparator with Sort-by Category ALONG_AXIS.
-     * A new {@link #getDicomObject DicomObject}, representing the according
-     * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
+     * Create Sort Category Comparator with Sort-by Category ALONG_AXIS. A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
      * 
-     * @param sortingDirection {@link CodeString#INCREASING} or
-     *                         {@link CodeString#DECREASING}
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
      * @return the new Comparator
      */
-    public static HPComparator createSortAlongAxis(String sortingDirection)
-    {
+    public static HPComparator createSortAlongAxis(String sortingDirection) {
         return new AlongAxisComparator(sortingDirection);
     }
-    
+
     /**
-     * Create Sort Category Comparator with Sort-by Category BY_ACQ_TIME.
-     * A new {@link #getDicomObject DicomObject}, representing the according
-     * Sorting Operations Sequence (0072,0600) item is allocated and initialized.
+     * Create Sort Category Comparator with Sort-by Category BY_ACQ_TIME. A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
      * 
-     * @param sortingDirection {@link CodeString#INCREASING} or
-     *                         {@link CodeString#DECREASING}
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
      * @return the new Comparator
      */
-    public static HPComparator createSortByAcqTime(String sortingDirection)
-    {
+    public static HPComparator createSortByAcqTime(String sortingDirection) {
         return new ByAcqTimeComparator(sortingDirection);
     }
-    
+
     /**
-     * Decorate Sort By Attribute Comparator with Selector Sequence Pointer, defining 
-     * the Selector Attribute as nested in a Sequence. If the Sequence is itself
-     * nested in a Frunctional Group Sequence, the returned Comparator has to
-     * be additional decorated by {@link #addFunctionalGroupPointer}.
-     * The associated {@link #getDicomObject DicomObject} is updated correspondingly.
-     * If <code>tag = 0</tag>, the given comparator is returned unmodified.
+     * Decorate Sort By Attribute Comparator with Selector Sequence Pointer,
+     * defining the Selector Attribute as nested in a Sequence. If the Sequence
+     * is itself nested in a Frunctional Group Sequence, the returned Comparator
+     * has to be additional decorated by {@link #addFunctionalGroupPointer}.
+     * The associated {@link #getDicomObject DicomObject} is updated
+     * correspondingly. If
+     * <code>tag = 0</tag>, the given comparator is returned unmodified.
      * 
      * @param privateCreator Selector Sequence Pointer Private Creator, if 
      *        Selector Sequence Pointer is contained by a Private Group,
@@ -149,32 +146,34 @@ public class HPComparatorFactory
      * @param comparator to decorate
      * @return the decorated Comparator
      */
-    public static HPComparator addSequencePointer(String privCreator, int tag, 
-            HPComparator comparator)
-    {
+    public static HPComparator addSequencePointer(String privCreator, int tag,
+            HPComparator comparator) {
         if (tag == 0)
             return comparator;
-        
+
         if (comparator.getSelectorSequencePointer() != 0)
             throw new IllegalArgumentException("Sequence Pointer already added");
-        
+
         if (comparator.getFunctionalGroupPointer() != 0)
-            throw new IllegalArgumentException("Functional Group Pointer already added");
-        
-        comparator.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT, tag);
-        if (privCreator != null)
-        {
+            throw new IllegalArgumentException(
+                    "Functional Group Pointer already added");
+
+        comparator.getDicomObject().putInt(Tag.SelectorSequencePointer, VR.AT,
+                tag);
+        if (privCreator != null) {
             comparator.getDicomObject().putString(
-                    Tag.SelectorSequencePointerPrivateCreator, VR.LO, privCreator);
+                    Tag.SelectorSequencePointerPrivateCreator, VR.LO,
+                    privCreator);
         }
         return new Seq(privCreator, tag, comparator);
     }
-    
+
     /**
-     * Decorate Sort By Attribute Comparator with Functional Group Pointer, defining 
-     * the Selector Attribute as nested in a Functional Group Sequence.
-     * The associated {@link #getDicomObject DicomObject} is updated correspondingly.
-     * If <code>tag = 0</tag>, the given comparator is returned unmodified.
+     * Decorate Sort By Attribute Comparator with Functional Group Pointer,
+     * defining the Selector Attribute as nested in a Functional Group Sequence.
+     * The associated {@link #getDicomObject DicomObject} is updated
+     * correspondingly. If
+     * <code>tag = 0</tag>, the given comparator is returned unmodified.
      * 
      * @param privateCreator Functional Group Private Creator, if Functional
      *        Group Pointer is contained by a Private Group,
@@ -184,80 +183,72 @@ public class HPComparatorFactory
      * @return decorated Comparator
      */
     public static HPComparator addFunctionalGroupPointer(String privCreator,
-            int tag, HPComparator comparator)
-    {
+            int tag, HPComparator comparator) {
         if (tag == 0)
             return comparator;
-        
+
         if (comparator.getFunctionalGroupPointer() != 0)
-            throw new IllegalArgumentException("Functional Group Pointer already added");
-        
-        comparator.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT, tag);
-        if (privCreator != null)
-        {
+            throw new IllegalArgumentException(
+                    "Functional Group Pointer already added");
+
+        comparator.getDicomObject().putInt(Tag.FunctionalGroupPointer, VR.AT,
+                tag);
+        if (privCreator != null) {
             comparator.getDicomObject().putString(
                     Tag.FunctionalGroupPrivateCreator, VR.LO, privCreator);
         }
         return new FctGrp(tag, privCreator, comparator);
     }
-    
-    private static HPComparator addSequencePointer(HPComparator cmp)
-    {
+
+    private static HPComparator addSequencePointer(HPComparator cmp) {
         int tag = cmp.getSelectorSequencePointer();
-        if (tag != 0)
-        {
+        if (tag != 0) {
             String privCreator = cmp.getSelectorSequencePointerPrivateCreator();
             cmp = new Seq(privCreator, tag, cmp);
         }
         return cmp;
     }
-    
-    private static HPComparator addFunctionalGroupPointer(HPComparator cmp)
-    {
+
+    private static HPComparator addFunctionalGroupPointer(HPComparator cmp) {
         int tag = cmp.getFunctionalGroupPointer();
-        if (tag != 0)
-        {
+        if (tag != 0) {
             String privCreator = cmp.getFunctionalGroupPrivateCreator();
             cmp = new FctGrp(tag, privCreator, cmp);
         }
         return cmp;
     }
 
-    private static abstract class AttributeComparator
-    extends AbstractHPComparator
-    {
+    private static abstract class AttributeComparator extends
+            AbstractHPComparator {
         protected final int tag;
+
         protected final String privateCreator;
 
-        AttributeComparator(int tag, String privateCreator)
-        {
-            if (tag == 0)
-            {
+        AttributeComparator(int tag, String privateCreator) {
+            if (tag == 0) {
                 throw new IllegalArgumentException("tag: 0");
             }
             this.tag = tag;
             this.privateCreator = privateCreator;
         }
 
-        protected int resolveTag(DicomObject dcmobj)
-        {
+        protected int resolveTag(DicomObject dcmobj) {
             return privateCreator == null ? tag : dcmobj.resolveTag(tag,
                     privateCreator);
         }
     }
 
-
-    private static class SortByAttribute extends AttributeComparator
-    {
+    private static class SortByAttribute extends AttributeComparator {
         private final DicomObject sortingOp;
+
         private final int valueNumber;
+
         private final int sign;
 
         SortByAttribute(String privateCreator, int tag, int valueNumber,
                 String sortingDirection) {
             super(tag, privateCreator);
-            if (valueNumber == 0)
-            {
+            if (valueNumber == 0) {
                 throw new IllegalArgumentException("valueNumber = 0");
             }
             this.valueNumber = valueNumber;
@@ -265,25 +256,23 @@ public class HPComparatorFactory
             sortingOp = new BasicDicomObject();
             sortingOp.putInt(Tag.SelectorAttribute, VR.AT, tag);
             if (privateCreator != null)
-                sortingOp.putString(Tag.SelectorAttributePrivateCreator,
-                        VR.LO, privateCreator);
+                sortingOp.putString(Tag.SelectorAttributePrivateCreator, VR.LO,
+                        privateCreator);
             sortingOp.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
             sortingOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
         }
-        
+
         SortByAttribute(DicomObject sortingOp) {
-            super(getSelectorAttribute(sortingOp),
-                    sortingOp.getString(Tag.SelectorAttributePrivateCreator));
+            super(getSelectorAttribute(sortingOp), sortingOp
+                    .getString(Tag.SelectorAttributePrivateCreator));
             this.valueNumber = sortingOp.getInt(Tag.SelectorValueNumber);
-            if (valueNumber == 0)
-            {
+            if (valueNumber == 0) {
                 throw new IllegalArgumentException(
                         "Missing or invalid (0072,0028) Selector Value Number: "
                                 + sortingOp.get(Tag.SelectorValueNumber));
             }
             String cs = sortingOp.getString(Tag.SortingDirection);
-            if (cs == null)
-            {
+            if (cs == null) {
                 throw new IllegalArgumentException(
                         "Missing (0072,0604) Sorting Direction");
             }
@@ -291,26 +280,21 @@ public class HPComparatorFactory
             this.sortingOp = sortingOp;
         }
 
-        private static int getSelectorAttribute(DicomObject sortingOp)
-        {
+        private static int getSelectorAttribute(DicomObject sortingOp) {
             int tag = sortingOp.getInt(Tag.SelectorAttribute);
-            if (tag == 0)
-            {
+            if (tag == 0) {
                 throw new IllegalArgumentException(
                         "Missing (0072,0026) Selector Attribute");
             }
             return tag;
         }
 
-
-        public DicomObject getDicomObject()
-        {
+        public DicomObject getDicomObject() {
             return sortingOp;
         }
-        
+
         public int compare(DicomObject o1, int frame1, DicomObject o2,
-                int frame2)
-        {
+                int frame2) {
             DicomElement e1 = o1.get(resolveTag(o1));
             if (e1 == null)
                 return 0;
@@ -319,47 +303,45 @@ public class HPComparatorFactory
                 return 0;
             if (e1.vr() != e2.vr())
                 return 0;
-            switch (e1.vr().code())
-            {
-                case 0x4145: // AE
-                case 0x4153: // AS
-                case 0x4353: // CS
-                case 0x4c4f: // LO
-                case 0x4c54: // LT;
-                case 0x504e: // PN;
-                case 0x5348: // SH;
-                case 0x5354: // ST;
-                case 0x5549: // UI;
-                case 0x5554: // UT;
-                    return strcmp(e1.getStrings(o1.getSpecificCharacterSet(),
-                            true), e2.getStrings(o2.getSpecificCharacterSet(),
-                            true));
-                case 0x4154: // AT
-                case 0x554c: // UL;
-                case 0x5553: // US;
-                    return uintcmp(e1.getInts(true), e2.getInts(true));
-                case 0x4441: // DA
-                case 0x4454: // DT
-                case 0x544d: // TM;
-                    return datecmp(e1.getDates(true), e2.getDates(true));
-                case 0x4453: // DS
-                case 0x464c: // FL
-                    return fltcmp(e1.getFloats(true), e2.getFloats(true));
-                case 0x4644: // FD
-                    return dblcmp(e1.getDoubles(true), e2.getDoubles(true));
-                case 0x4953: // IS
-                case 0x534c: // SL;
-                case 0x5353: // SS;
-                    return intcmp(e1.getInts(true), e2.getInts(true));
-                case 0x5351: // SQ;
-                    return codecmp(e1.getDicomObject(), e2.getDicomObject());
+            switch (e1.vr().code()) {
+            case 0x4145: // AE
+            case 0x4153: // AS
+            case 0x4353: // CS
+            case 0x4c4f: // LO
+            case 0x4c54: // LT;
+            case 0x504e: // PN;
+            case 0x5348: // SH;
+            case 0x5354: // ST;
+            case 0x5549: // UI;
+            case 0x5554: // UT;
+                return strcmp(
+                        e1.getStrings(o1.getSpecificCharacterSet(), true), e2
+                                .getStrings(o2.getSpecificCharacterSet(), true));
+            case 0x4154: // AT
+            case 0x554c: // UL;
+            case 0x5553: // US;
+                return uintcmp(e1.getInts(true), e2.getInts(true));
+            case 0x4441: // DA
+            case 0x4454: // DT
+            case 0x544d: // TM;
+                return datecmp(e1.getDates(true), e2.getDates(true));
+            case 0x4453: // DS
+            case 0x464c: // FL
+                return fltcmp(e1.getFloats(true), e2.getFloats(true));
+            case 0x4644: // FD
+                return dblcmp(e1.getDoubles(true), e2.getDoubles(true));
+            case 0x4953: // IS
+            case 0x534c: // SL;
+            case 0x5353: // SS;
+                return intcmp(e1.getInts(true), e2.getInts(true));
+            case 0x5351: // SQ;
+                return codecmp(e1.getDicomObject(), e2.getDicomObject());
             }
             // no sort if VR = OB, OF, OW or UN
             return 0;
         }
 
-        private int codecmp(DicomObject c1, DicomObject c2)
-        {
+        private int codecmp(DicomObject c1, DicomObject c2) {
             if (c1 == null || c2 == null)
                 return 0;
             String v1 = c1.getString(Tag.CodeValue);
@@ -369,8 +351,7 @@ public class HPComparatorFactory
             return v1.compareTo(v2) * sign;
         }
 
-        private int intcmp(int[] v1, int[] v2)
-        {
+        private int intcmp(int[] v1, int[] v2) {
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
@@ -382,8 +363,7 @@ public class HPComparatorFactory
             return 0;
         }
 
-        private int dblcmp(double[] v1, double[] v2)
-        {
+        private int dblcmp(double[] v1, double[] v2) {
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
@@ -394,8 +374,7 @@ public class HPComparatorFactory
             return 0;
         }
 
-        private int fltcmp(float[] v1, float[] v2)
-        {
+        private int fltcmp(float[] v1, float[] v2) {
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
@@ -406,16 +385,14 @@ public class HPComparatorFactory
             return 0;
         }
 
-        private int datecmp(Date[] v1, Date[] v2)
-        {
+        private int datecmp(Date[] v1, Date[] v2) {
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
             return v1[valueNumber - 1].compareTo(v2[valueNumber - 1]) * sign;
         }
 
-        private int uintcmp(int[] v1, int[] v2)
-        {
+        private int uintcmp(int[] v1, int[] v2) {
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
@@ -428,8 +405,7 @@ public class HPComparatorFactory
             return 0;
         }
 
-        private int strcmp(String[] v1, String[] v2)
-        {
+        private int strcmp(String[] v1, String[] v2) {
             if (v1 == null || v2 == null || v1.length < valueNumber
                     || v2.length < valueNumber)
                 return 0;
@@ -437,35 +413,28 @@ public class HPComparatorFactory
         }
     }
 
-    private static abstract class AttributeComparatorDecorator
-    extends AttributeComparator
-    {
+    private static abstract class AttributeComparatorDecorator extends
+            AttributeComparator {
         protected final HPComparator cmp;
 
         AttributeComparatorDecorator(int tag, String privateCreator,
-                HPComparator cmp)
-        {
+                HPComparator cmp) {
             super(tag, privateCreator);
             this.cmp = cmp;
         }
 
-        public DicomObject getDicomObject()
-        {
+        public DicomObject getDicomObject() {
             return cmp.getDicomObject();
         }
     }
-    
-    
-    private static class Seq extends AttributeComparatorDecorator
-    {
-        Seq(String privateCreator, int tag, HPComparator cmp)
-        {
+
+    private static class Seq extends AttributeComparatorDecorator {
+        Seq(String privateCreator, int tag, HPComparator cmp) {
             super(tag, privateCreator, cmp);
         }
 
         public int compare(DicomObject o1, int frame1, DicomObject o2,
-                int frame2)
-        {
+                int frame2) {
             DicomObject v1 = o1.getNestedDicomObject(resolveTag(o1));
             if (v1 == null)
                 return 0;
@@ -476,16 +445,13 @@ public class HPComparatorFactory
         }
     }
 
-    private static class FctGrp extends AttributeComparatorDecorator
-    {
-        FctGrp(int tag, String privateCreator, HPComparator cmp)
-        {
+    private static class FctGrp extends AttributeComparatorDecorator {
+        FctGrp(int tag, String privateCreator, HPComparator cmp) {
             super(tag, privateCreator, cmp);
         }
 
         public int compare(DicomObject o1, int frame1, DicomObject o2,
-                int frame2)
-        {
+                int frame2) {
             DicomObject fg1 = fctGrp(o1, frame1);
             if (fg1 == null)
                 return 0;
@@ -495,18 +461,18 @@ public class HPComparatorFactory
             return cmp.compare(fg1, frame1, fg2, frame2);
         }
 
-        private DicomObject fctGrp(DicomObject o, int frame)
-        {
-            DicomObject sharedFctGrp = o.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
-            if (sharedFctGrp != null)
-            {
-                DicomObject fctGrp = sharedFctGrp.getNestedDicomObject(resolveTag(sharedFctGrp));
-                if (fctGrp != null)
-                {
+        private DicomObject fctGrp(DicomObject o, int frame) {
+            DicomObject sharedFctGrp = o
+                    .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+            if (sharedFctGrp != null) {
+                DicomObject fctGrp = sharedFctGrp
+                        .getNestedDicomObject(resolveTag(sharedFctGrp));
+                if (fctGrp != null) {
                     return fctGrp;
                 }
             }
-            DicomElement frameFctGrpSeq = o.get(Tag.PerframeFunctionalGroupsSequence);
+            DicomElement frameFctGrpSeq = o
+                    .get(Tag.PerframeFunctionalGroupsSequence);
             if (frameFctGrpSeq == null)
                 return null;
             DicomObject frameFctGrp = frameFctGrpSeq.getDicomObject(frame - 1);
