@@ -47,6 +47,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.plugins.AlongAxisComparator;
 import org.dcm4che2.hp.plugins.ByAcqTimeComparator;
+import org.dcm4che2.hp.plugins.NMFrameComparator;
 import org.dcm4che2.hp.spi.HPComparatorSpi;
 
 /**
@@ -128,6 +129,148 @@ public class HPComparatorFactory {
      */
     public static HPComparator createSortByAcqTime(String sortingDirection) {
         return new ByAcqTimeComparator(sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category ENERGY_WINDOW to
+     * sort NM frames according Energy Window Vector (0054,0010). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByEnergyWindowVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.ENERGY_WINDOW,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category DETECTOR to sort
+     * NM frames according Detector Vector (0054,0020). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByDetectorVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.DETECTOR,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category PHASE to sort
+     * NM frames according Phase Vector (0054,0030). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByPhaseVector(String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.PHASE,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category ROTATION to sort
+     * NM frames according Rotation Vector (0054,0050). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByRotationVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.ROTATION,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category RR_INTERVAL to sort
+     * NM frames according R-R Interval Vector (0054,0060). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByRRIntervalVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.RR_INTERVAL,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category TIME_SLOT to sort
+     * NM frames according Time Slot Vector (0054,0070). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByTimeSlotVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.TIME_SLOT,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category ANGULAR_VIEW to
+     * sort NM frames according Angular View Vector (0054,0090). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByAngularViewVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.ANGULAR_VIEW,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category SLICE to sort
+     * NM frames according Slice Vector (0054,0080). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortBySliceVector(String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.SLICE,
+                sortingDirection);
+    }
+
+    /**
+     * Create Sort Category Comparator with Sort-by Category TIME_SLICE to sort
+     * NM frames according Time Slice Vector (0054,0100). A new
+     * {@link #getDicomObject DicomObject}, representing the according Sorting
+     * Operations Sequence (0072,0600) item is allocated and initialized.
+     * 
+     * @param sortingDirection
+     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
+     * @return the new Comparator
+     */
+    public static HPComparator createSortByTimeSliceVector(
+            String sortingDirection) {
+        return new NMFrameComparator(NMFrameComparator.Category.TIME_SLICE,
+                sortingDirection);
     }
 
     /**
