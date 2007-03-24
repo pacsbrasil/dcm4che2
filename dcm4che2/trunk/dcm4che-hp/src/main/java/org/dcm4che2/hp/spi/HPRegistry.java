@@ -46,6 +46,8 @@ import javax.imageio.spi.ServiceRegistry;
 import org.dcm4che2.hp.plugins.AlongAxisComparatorSpi;
 import org.dcm4che2.hp.plugins.ByAcqTimeComparatorSpi;
 import org.dcm4che2.hp.plugins.ImagePlaneSelectorSpi;
+import org.dcm4che2.hp.plugins.NMFrameComparatorSpi;
+import org.dcm4che2.hp.plugins.NMFrameSelectorSpi;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -84,6 +86,8 @@ public class HPRegistry extends ServiceRegistry
         registerServiceProvider(new ImagePlaneSelectorSpi());
         registerServiceProvider(new AlongAxisComparatorSpi());
         registerServiceProvider(new ByAcqTimeComparatorSpi());
+        registerServiceProvider(new NMFrameSelectorSpi());
+        registerServiceProvider(new NMFrameComparatorSpi());
     }
 
     public void registerApplicationClasspathSpis(ClassLoader cl)
