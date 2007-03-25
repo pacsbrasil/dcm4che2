@@ -45,7 +45,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.data.VRMap;
 import org.dcm4che2.hp.plugins.ImagePlaneSelector;
-import org.dcm4che2.hp.plugins.NMFrameSelector;
 import org.dcm4che2.hp.spi.HPSelectorSpi;
 import org.dcm4che2.util.TagUtils;
 
@@ -57,6 +56,13 @@ import org.dcm4che2.util.TagUtils;
  */
 public class HPSelectorFactory {
 
+    /**
+     * Selector Value Number constant for indicating that the frame number
+     * shall be used for indexing the value of the Selector Attribute for
+     * filtering.
+     */
+    public static final int FRAME_INDEX = 0xffff;
+    
     /**
      * Create Image Set Selector from Image Set Selector Sequence (0072,0022)
      * item. The created Image Set Selector is backed by the given item
@@ -263,134 +269,6 @@ public class HPSelectorFactory {
      */
     public static HPSelector createImagePlaneSelector(ImagePlane[] imagePlanes) {
         return new ImagePlaneSelector(imagePlanes);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category ENERGY_WINDOW to select
-     * NM frames with matching Energy Window Vector (0054,0010) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching energy window numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createEnergyWindowVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.ENERGY_WINDOW,
-                values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category DETECTOR to select
-     * NM frames with matching Detector Vector (0054,0020) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching detector numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createDetectorVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.DETECTOR, values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category PHASE to select
-     * NM frames with matching Phase Vector (0054,0030) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching phase numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createPhaseVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.PHASE, values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category ROTATION to select
-     * NM frames with matching Rotation Vector (0054,0050) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching rotation numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createRotationVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.ROTATION, values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category RR_INTERVAL to select
-     * NM frames with matching R-R Interval Vector (0054,0060) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching R-R interval numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createRRIntervalVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.RR_INTERVAL, values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category TIME_SLOT to select
-     * NM frames with matching Time Slot Vector (0054,0070) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching time slot numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createTimeSlotVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.TIME_SLOT, values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category ANGULAR_VIEW to select
-     * NM frames with matching Angular View Vector (0054,0090) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching angular view numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createAngularViewVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.ANGULAR_VIEW,
-                values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category SLICE to select
-     * NM frames with matching Slice Vector (0054,0080) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching slice numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createSliceVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.SLICE, values);
-    }
-
-    /**
-     * Create Display Set Filter with Filter-by Category TIME_SLICE to select
-     * NM frames with matching Time Slice Vector (0054,0100) value. A new
-     * {@link #getDicomObject DicomObject}, representing the according Filter
-     * Operations Sequence (0072,0400) item, is allocated and initialized.
-     * 
-     * @param imagePlanes
-     *            array of matching time slice numbers.
-     * @return new Display Set Filter
-     */
-    public static HPSelector createTimeSliceVectorSelector(int[] values) {
-        return new NMFrameSelector(NMFrameSelector.Category.TIME_SLICE, values);
     }
 
     /**
@@ -949,9 +827,12 @@ public class HPSelectorFactory {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             int[] values = dcmobj.getInts(resolveTag(dcmobj));
-            if (values == null || values.length < Math.max(valueNumber, 1))
+            if (values == null
+                    || values.length < (valueNumber == 0 ? 1
+                            : valueNumber == FRAME_INDEX ? frame : valueNumber))
                 return match;
-            return filterOp.op(values, valueNumber, params);
+            return filterOp.op(values, valueNumber == FRAME_INDEX ? frame
+                    : valueNumber, params);
         }
     }
 
@@ -988,9 +869,12 @@ public class HPSelectorFactory {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             int[] values = dcmobj.getInts(resolveTag(dcmobj));
-            if (values == null || values.length < Math.max(valueNumber, 1))
+            if (values == null
+                    || values.length < (valueNumber == 0 ? 1
+                            : valueNumber == FRAME_INDEX ? frame : valueNumber))
                 return match;
-            return filterOp.op(values, valueNumber, params);
+            return filterOp.op(values, valueNumber == FRAME_INDEX ? frame
+                    : valueNumber, params);
         }
     }
 
@@ -1039,9 +923,12 @@ public class HPSelectorFactory {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             float[] values = dcmobj.getFloats(resolveTag(dcmobj));
-            if (values == null || values.length < Math.max(valueNumber, 1))
+            if (values == null
+                    || values.length < (valueNumber == 0 ? 1
+                            : valueNumber == FRAME_INDEX ? frame : valueNumber))
                 return match;
-            return filterOp.op(values, valueNumber, params);
+            return filterOp.op(values, valueNumber == FRAME_INDEX ? frame
+                    : valueNumber, params);
         }
     }
 
@@ -1077,9 +964,12 @@ public class HPSelectorFactory {
 
         public boolean matches(DicomObject dcmobj, int frame) {
             double[] values = dcmobj.getDoubles(resolveTag(dcmobj));
-            if (values == null || values.length < Math.max(valueNumber, 1))
+            if (values == null
+                    || values.length < (valueNumber == 0 ? 1
+                            : valueNumber == FRAME_INDEX ? frame : valueNumber))
                 return match;
-            return filterOp.op(values, valueNumber, params);
+            return filterOp.op(values, valueNumber == FRAME_INDEX ? frame
+                    : valueNumber, params);
         }
     }
 

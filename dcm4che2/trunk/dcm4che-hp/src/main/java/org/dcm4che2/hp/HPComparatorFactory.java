@@ -47,7 +47,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.hp.plugins.AlongAxisComparator;
 import org.dcm4che2.hp.plugins.ByAcqTimeComparator;
-import org.dcm4che2.hp.plugins.NMFrameComparator;
 import org.dcm4che2.hp.spi.HPComparatorSpi;
 
 /**
@@ -58,6 +57,13 @@ import org.dcm4che2.hp.spi.HPComparatorSpi;
  */
 public class HPComparatorFactory {
 
+    /**
+     * Selector Value Number constant for indicating that the frame number
+     * shall be used for indexing the value of the Selector Attribute for
+     * sorting.
+     */
+    public static final int FRAME_INDEX = 0xffff;
+    
     /**
      * Create HPComparator from Sorting Operations Sequence (0072,0600) item.
      * The created HPComparator is backed by the given item
@@ -129,148 +135,6 @@ public class HPComparatorFactory {
      */
     public static HPComparator createSortByAcqTime(String sortingDirection) {
         return new ByAcqTimeComparator(sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category ENERGY_WINDOW to
-     * sort NM frames according Energy Window Vector (0054,0010). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByEnergyWindowVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.ENERGY_WINDOW,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category DETECTOR to sort
-     * NM frames according Detector Vector (0054,0020). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByDetectorVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.DETECTOR,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category PHASE to sort
-     * NM frames according Phase Vector (0054,0030). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByPhaseVector(String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.PHASE,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category ROTATION to sort
-     * NM frames according Rotation Vector (0054,0050). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByRotationVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.ROTATION,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category RR_INTERVAL to sort
-     * NM frames according R-R Interval Vector (0054,0060). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByRRIntervalVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.RR_INTERVAL,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category TIME_SLOT to sort
-     * NM frames according Time Slot Vector (0054,0070). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByTimeSlotVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.TIME_SLOT,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category ANGULAR_VIEW to
-     * sort NM frames according Angular View Vector (0054,0090). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByAngularViewVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.ANGULAR_VIEW,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category SLICE to sort
-     * NM frames according Slice Vector (0054,0080). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortBySliceVector(String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.SLICE,
-                sortingDirection);
-    }
-
-    /**
-     * Create Sort Category Comparator with Sort-by Category TIME_SLICE to sort
-     * NM frames according Time Slice Vector (0054,0100). A new
-     * {@link #getDicomObject DicomObject}, representing the according Sorting
-     * Operations Sequence (0072,0600) item is allocated and initialized.
-     * 
-     * @param sortingDirection
-     *            {@link CodeString#INCREASING} or {@link CodeString#DECREASING}
-     * @return the new Comparator
-     */
-    public static HPComparator createSortByTimeSliceVector(
-            String sortingDirection) {
-        return new NMFrameComparator(NMFrameComparator.Category.TIME_SLICE,
-                sortingDirection);
     }
 
     /**
@@ -446,6 +310,11 @@ public class HPComparatorFactory {
                 return 0;
             if (e1.vr() != e2.vr())
                 return 0;
+            int i1 = frame1;
+            int i2 = frame2;
+            if (valueNumber != FRAME_INDEX) {
+                i1 = i2 = valueNumber;
+            }
             switch (e1.vr().code()) {
             case 0x4145: // AE
             case 0x4153: // AS
@@ -457,105 +326,85 @@ public class HPComparatorFactory {
             case 0x5354: // ST;
             case 0x5549: // UI;
             case 0x5554: // UT;
-                return strcmp(
-                        e1.getStrings(o1.getSpecificCharacterSet(), true), e2
-                                .getStrings(o2.getSpecificCharacterSet(), true));
+                return sign * strcmp(
+                        e1.getStrings(o1.getSpecificCharacterSet(), true), i1,
+                        e2.getStrings(o2.getSpecificCharacterSet(), true), i2);
             case 0x4154: // AT
             case 0x554c: // UL;
             case 0x5553: // US;
-                return uintcmp(e1.getInts(true), e2.getInts(true));
+                return sign * uintcmp(e1.getInts(true), i1, e2.getInts(true), i2);
             case 0x4441: // DA
             case 0x4454: // DT
             case 0x544d: // TM;
-                return datecmp(e1.getDates(true), e2.getDates(true));
+                return sign * datecmp(e1.getDates(true), i1, e2.getDates(true), i2);
             case 0x4453: // DS
             case 0x464c: // FL
-                return fltcmp(e1.getFloats(true), e2.getFloats(true));
+                return sign * fltcmp(e1.getFloats(true), i1, e2.getFloats(true), i2);
             case 0x4644: // FD
-                return dblcmp(e1.getDoubles(true), e2.getDoubles(true));
+                return sign * dblcmp(e1.getDoubles(true), i1, e2.getDoubles(true), i2);
             case 0x4953: // IS
             case 0x534c: // SL;
             case 0x5353: // SS;
-                return intcmp(e1.getInts(true), e2.getInts(true));
+                return sign * intcmp(e1.getInts(true), i1, e2.getInts(true), i2);
             case 0x5351: // SQ;
-                return codecmp(e1.getDicomObject(), e2.getDicomObject());
+                return sign * codecmp(e1.getDicomObject(), e2.getDicomObject());
             }
             // no sort if VR = OB, OF, OW or UN
             return 0;
         }
 
-        private int codecmp(DicomObject c1, DicomObject c2) {
-            if (c1 == null || c2 == null)
-                return 0;
-            String v1 = c1.getString(Tag.CodeValue);
-            String v2 = c2.getString(Tag.CodeValue);
-            if (v1 == null || v2 == null)
-                return 0;
-            return v1.compareTo(v2) * sign;
-        }
-
-        private int intcmp(int[] v1, int[] v2) {
-            if (v1 == null || v2 == null || v1.length < valueNumber
-                    || v2.length < valueNumber)
-                return 0;
-
-            if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return -sign;
-            if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return sign;
-            return 0;
-        }
-
-        private int dblcmp(double[] v1, double[] v2) {
-            if (v1 == null || v2 == null || v1.length < valueNumber
-                    || v2.length < valueNumber)
-                return 0;
-            if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return -sign;
-            if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return sign;
-            return 0;
-        }
-
-        private int fltcmp(float[] v1, float[] v2) {
-            if (v1 == null || v2 == null || v1.length < valueNumber
-                    || v2.length < valueNumber)
-                return 0;
-            if (v1[valueNumber - 1] < v2[valueNumber - 1])
-                return -sign;
-            if (v1[valueNumber - 1] > v2[valueNumber - 1])
-                return sign;
-            return 0;
-        }
-
-        private int datecmp(Date[] v1, Date[] v2) {
-            if (v1 == null || v2 == null || v1.length < valueNumber
-                    || v2.length < valueNumber)
-                return 0;
-            return v1[valueNumber - 1].compareTo(v2[valueNumber - 1]) * sign;
-        }
-
-        private int uintcmp(int[] v1, int[] v2) {
-            if (v1 == null || v2 == null || v1.length < valueNumber
-                    || v2.length < valueNumber)
-                return 0;
-            long l1 = v1[valueNumber - 1] & 0xffffffffL;
-            long l2 = v2[valueNumber - 1] & 0xffffffffL;
-            if (l1 < l2)
-                return -sign;
-            if (l1 > l2)
-                return sign;
-            return 0;
-        }
-
-        private int strcmp(String[] v1, String[] v2) {
-            if (v1 == null || v2 == null || v1.length < valueNumber
-                    || v2.length < valueNumber)
-                return 0;
-            return v1[valueNumber - 1].compareTo(v2[valueNumber - 1]) * sign;
-        }
     }
 
+    private static int codecmp(DicomObject c1, DicomObject c2) {
+        if (c1 == null || c2 == null)
+            return 0;
+        String v1 = c1.getString(Tag.CodeValue);
+        String v2 = c2.getString(Tag.CodeValue);
+        if (v1 == null || v2 == null)
+            return 0;
+        return v1.compareTo(v2);
+    }
+
+    private static int intcmp(int[] v1, int i1, int[] v2, int i2) {
+        if (v1 == null || v2 == null || v1.length < i1 || v2.length < i2)
+            return 0;
+        return v1[i1 - 1] - v2[i2 - 1];
+    }
+
+    private static int dblcmp(double[] v1, int i1, double[] v2, int i2) {
+        if (v1 == null || v2 == null || v1.length < i1 || v2.length < i2)
+            return 0;
+        double d = v1[i1 - 1] - v2[i2 - 1];
+        return (d < 0) ? -1 : (d > 0) ? 1 : 0;
+    }
+
+    private static int fltcmp(float[] v1, int i1, float[] v2, int i2) {
+        if (v1 == null || v2 == null || v1.length < i1 || v2.length < i2)
+            return 0;
+        float d = v1[i1 - 1] - v2[i2 - 1];
+        return (d < 0) ? -1 : (d > 0) ? 1 : 0;
+    }
+
+    private static int datecmp(Date[] v1, int i1, Date[] v2, int i2) {
+        if (v1 == null || v2 == null || v1.length < i1 || v2.length < i2)
+            return 0;
+        return v1[i1 - 1].compareTo(v2[i2 - 1]);
+    }
+
+    private static int uintcmp(int[] v1, int i1, int[] v2, int i2) {
+        if (v1 == null || v2 == null || v1.length < i1 || v2.length < i2)
+            return 0;
+        long d = (v1[i1 - 1] & 0xffffffffL) - (v2[i2 - 1] & 0xffffffffL);
+        return (d < 0) ? -1 : (d > 0) ? 1 : 0;
+    }
+
+    private static int strcmp(String[] v1, int i1, String[] v2, int i2) {
+        if (v1 == null || v2 == null || v1.length < i1
+                || v2.length < i2)
+            return 0;
+        return v1[i1 - 1].compareTo(v2[i2 - 1]);
+    }
+    
     private static abstract class AttributeComparatorDecorator extends
             AttributeComparator {
         protected final HPComparator cmp;
