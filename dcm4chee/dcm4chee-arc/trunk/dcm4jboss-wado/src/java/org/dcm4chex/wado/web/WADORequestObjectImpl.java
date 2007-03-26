@@ -70,6 +70,21 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 
     private static final String ERROR_INVALID_REGION_DIMENSION =
             "Error: region parameter is invalid! Width and height of specified region must be > 0.";
+    
+    private static final String ERROR_NULL_WINDOW_WIDTH =
+    		"Error: windowWidth parameter is invalid! Must specify a value.";
+        
+    private static final String ERROR_NULL_WINDOW_CENTER = 
+    		"Error: windowCenter parameter is invalid! Must specify a value.";
+    
+    private static final String ERROR_INVALID_WINDOW_WIDTH_TYPE = 
+    		"Error: windowWidth parameter is invalid! Must be a decimal string.";
+    
+    private static final String ERROR_INVALID_WINDOW_CENTER_TYPE = 
+    		"Error: windowCenter parameter is invalid! Must be a decimal string.";
+    
+    private static final String ERROR_INVALID_WINDOW_WIDTH_VALUE = 
+    		"Error: windowWidth parameter is invalid! Width must be > 0.";
 
     private static Logger log = Logger.getLogger( WADOService.class.getName() );
 
@@ -81,6 +96,8 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 	private String frameNumber;
 	private String transferSyntax;
 	private String region;
+	private String windowWidth;
+	private String windowCenter;
 	
 	private String serviceName;
 	
@@ -105,6 +122,8 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 		transferSyntax = request.getParameter("transferSyntax");
 		contentTypes = _string2List( contentType, "," );
 		region = request.getParameter("region");
+		windowWidth = request.getParameter("windowWidth");
+		windowCenter = request.getParameter("windowCenter");
 	}
 	
 	/**
@@ -202,6 +221,19 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 		return region;
 	}
 
+	/**
+	 * @return Returns the value of the windowWidth parameter.
+	 */
+	public String getWindowWidth() {
+		return windowWidth;
+	}
+	
+	/**
+	 * @return Returns the value of the windowCenter parameter.
+	 */
+	public String getWindowCenter() {
+		return windowCenter;
+	}
 	
 	/** 
 	 * Checks this request object and returns an error code.
@@ -255,12 +287,22 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
 			return INVALID_REGION;
                     }
 		}
+		
+		if ( windowWidth != null || windowCenter != null ) {
+			try {
+				checkWindowLevel(windowWidth, windowCenter);
+			} catch ( Exception x ) {
+				setErrorMsg(x.getMessage());
+				return INVALID_WINDOW_LEVEL;
+			}
+		}
+		
 		setErrorMsg(null);
 		return OK;
 	}
 
 	/**
-	 * Checks that the region string's value is valid. Throws <code>Exception</code> if it isn't.
+	 * Checks that the region string's value is valid. Throws <code>IllegalArgumentException</code> if it isn't.
 	 * 
 	 * @param region		String representing a rectangular region of an image
 	 * 
@@ -290,6 +332,45 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements WAD
                     throw new IllegalArgumentException(
                             ERROR_INVALID_REGION_DIMENSION);                    
                 }
+	}
+	
+	/**
+	 * Checks that the windowWidth & windowCenter values are valid. Throws <code>IllegalArgumentException</code> if either isn't.
+	 * 
+	 * @param windowWidth	The value of the windowWidth WADO parameter
+	 * @param windowCenter	The value of the windowCenter WADO parameter
+	 * 
+	 * @return 				void
+	 * 
+	 */
+	private void checkWindowLevel(String windowWidth, String windowCenter ) throws IllegalArgumentException {
+		if ( windowWidth == null )
+			throw new IllegalArgumentException( 
+					ERROR_NULL_WINDOW_WIDTH );
+		
+		if ( windowCenter == null )
+			throw new IllegalArgumentException( 
+					ERROR_NULL_WINDOW_CENTER );
+		
+		double width = -1;
+		
+		try {
+			width = Double.parseDouble( windowWidth );
+		} catch ( NumberFormatException e ) {
+			throw new IllegalArgumentException(
+					ERROR_INVALID_WINDOW_WIDTH_TYPE);
+		}
+		
+		if ( width <= 0 ) 
+			throw new IllegalArgumentException(
+					ERROR_INVALID_WINDOW_WIDTH_VALUE);
+		
+		try {
+			Double.parseDouble( windowCenter );
+		} catch ( NumberFormatException e ) {
+			throw new IllegalArgumentException(
+					ERROR_INVALID_WINDOW_CENTER_TYPE);
+		}
 	}
 	
 	/**

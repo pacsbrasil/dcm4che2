@@ -59,6 +59,7 @@ public interface WADORequestObject extends BasicRequestObject {
 	public static final int INVALID_CONTENT_TYPE = -5;
 	public static final int INVALID_TRANSFER_SYNTAX = -6;
 	public static final int INVALID_REGION = -7;
+	public static final int INVALID_WINDOW_LEVEL = -8;
 	
 	/**
 	 * Returns the studyUID parameter of the http request.
@@ -120,5 +121,15 @@ public interface WADORequestObject extends BasicRequestObject {
 	 * @return Returns the region.
 	 */
 	String getRegion();
+	
+	/**
+	 * @return Returns the value of the windowWidth parameter.
+	 */
+	String getWindowWidth();
+	
+	/**
+	 * @return Returns the value of the windowCenter parameter.
+	 */
+	String getWindowCenter();
 	
 }

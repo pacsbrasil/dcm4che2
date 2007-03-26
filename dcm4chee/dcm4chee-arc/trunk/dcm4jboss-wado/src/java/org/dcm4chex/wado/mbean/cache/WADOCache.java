@@ -64,10 +64,13 @@ public interface WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Image region defined by two points in opposing corners
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return				The image if in cache or null.
 	 */
-	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix );
+	BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, 
+			String region, String windowWidth, String windowCenter, String suffix );
 
 	/**
 	 * Get an image of special size from cache.
@@ -80,10 +83,13 @@ public interface WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Image region defined by two points in opposing corners
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return				The File object of the image if in cache or null.
 	 */
-	File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix );
+	File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, 
+			String region, String windowWidth, String windowCenter, String suffix );
 
 	/**
 	 * Put a region of an image of special size to this cache.
@@ -97,11 +103,14 @@ public interface WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Image region defined by two points in opposing corners
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return The File object of the image in this cache.
 	 * @throws IOException
      */
-	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String region, String suffix ) throws IOException;
+	File putImage( BufferedImage image, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, 
+			String region, String windowWidth, String windowCenter, String suffix ) throws IOException;
 		
 	/**
 	 * Puts a stream to this cache.
@@ -112,12 +121,16 @@ public interface WADOCache {
 	 * @param instanceUID	Unique identifier of the instance.
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
+	 * @param region		Rectangular region of the image (defined by two points)
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return	The stored File object.
 	 * 
 	 * @throws IOException
 	 */
-	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, String region, String suffix ) throws IOException; 
+	File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String pixelRows, String pixelColumns, 
+			String region, String windowWidth, String windowCenter, String suffix ) throws IOException; 
 
 	/**
 	 * Return the File object to get or store a file for given arguments.

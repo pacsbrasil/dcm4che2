@@ -170,11 +170,13 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Image region defined by two points in opposing corners
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return				The image if in cache or null.
 	 */
-	public BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix ) {
-		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, rows, columns, region, suffix ) );
+	public BufferedImage getImage( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String windowWidth, String windowCenter, String suffix ) {
+		return _readJpgFile( getImageFile( studyUID, seriesUID, instanceUID, rows, columns, region, windowWidth, windowCenter, suffix ) );
 	}
 
 	/**
@@ -188,11 +190,13 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Image region defined by two points in opposing corners
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return				The File object of the image if in cache or null.
 	 */
-	public File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix ) {
-		File file = this._getImageFile( rows+"-"+columns+"-"+region, studyUID, seriesUID, instanceUID, suffix, null );
+	public File getImageFile( String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String windowWidth, String windowCenter, String suffix ) {
+		File file = this._getImageFile( rows+"-"+columns+"-"+region+"-"+windowWidth+"-"+windowCenter, studyUID, seriesUID, instanceUID, suffix, null );
 		if ( file.exists() ) {
 			file.setLastModified( System.currentTimeMillis() ); //set last modified because File has only lastModified timestamp visible.
 			return file;
@@ -213,13 +217,16 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Image region defined by two points in opposing corners
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return The File object of the image in this cache.
 	 * @throws IOException
      */
 	public File putImage( BufferedImage image, String studyUID, String seriesUID, 
-		String instanceUID, String rows, String columns, String region, String suffix) throws IOException {
-			File file = this._getImageFile( rows+"-"+columns+"-"+region, studyUID, seriesUID, instanceUID, suffix, null );
+		String instanceUID, String rows, String columns, String region, String windowWidth, 
+		String windowCenter, String suffix) throws IOException {
+			File file = this._getImageFile( rows+"-"+columns+"-"+region+"-"+windowWidth+"-"+windowCenter, studyUID, seriesUID, instanceUID, suffix, null );
 			_writeImageFile( image, file);
 			return file;
 	}
@@ -234,15 +241,18 @@ public class WADOCacheImpl implements WADOCache {
 	 * @param rows			Image height in pixel.
 	 * @param columns		Image width in pixel.
 	 * @param region		Rectangular region of the image (defined by two points)
+	 * @param windowWidth	Decimal string representing the contrast of the image.
+	 * @param windowCenter	Decimal string representing the luminosity of the image.
 	 * 
 	 * @return	The stored File object.
 	 * 
 	 * @throws IOException
 	 */
-	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns, String region, String suffix ) throws IOException {
+	public File putStream( InputStream stream, String studyUID, String seriesUID, String instanceUID, String rows, String columns, 
+			String region, String windowWidth, String windowCenter, String suffix ) throws IOException {
 		File file;
 		
-		file = this._getImageFile( rows+"-"+columns+"-"+region, studyUID, seriesUID, instanceUID, suffix, null );
+		file = this._getImageFile( rows+"-"+columns+"-"+region+"-"+windowWidth+"-"+windowCenter, studyUID, seriesUID, instanceUID, suffix, null );
 		
 		if ( ! file.getParentFile().exists() ) {
 			file.getParentFile().mkdirs();
