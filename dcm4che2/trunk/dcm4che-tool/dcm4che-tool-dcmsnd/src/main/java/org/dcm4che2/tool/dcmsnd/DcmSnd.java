@@ -75,6 +75,7 @@ import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.net.TransferCapability;
+import org.dcm4che2.net.service.StorageCommitmentService;
 import org.dcm4che2.util.StringUtils;
 
 /**
@@ -82,7 +83,7 @@ import org.dcm4che2.util.StringUtils;
  * @version $Revision$ $Date$
  * @since Oct 13, 2005
  */
-public class DcmSnd {
+public class DcmSnd extends StorageCommitmentService {
 
     private static final int KB = 1024;
 
@@ -98,7 +99,12 @@ public class DcmSnd {
       + "to the specified remote Application Entity. If a directory is specified,"
       + "DICOM Object in files under that directory and further sub-directories "
       + "are sent. If <port> is not specified, DICOM default port 104 is assumed. "
-      + "If also no <host> is specified, localhost is assumed.\n"
+      + "If also no <host> is specified, localhost is assumed. Optionally, a "
+      + "Storage Commitment Request for successfully tranferred objects is sent "
+      + "to the remote Application Entity after the storage. The Storage Commitment "
+      + "result is accepted on the same association or - if a local port is "
+      + "specified by option -L - in a separate association initated by the "
+      + "remote Application Entity\n"
       + "Options:";
 
     private static final String EXAMPLE = 
@@ -143,12 +149,14 @@ public class DcmSnd {
     private Association assoc;
 
     private int priority = 0;
-
+    
     private int transcoderBufferSize = 1024;
 
     private int filesSent = 0;
 
     private long totalSize = 0L;
+    
+    private boolean stgcmt = false;
     
     public DcmSnd() {
         remoteAE.setInstalled(true);
@@ -159,6 +167,8 @@ public class DcmSnd {
         device.setNetworkConnection(conn);
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
+        ae.setAssociationAcceptor(true);
+        ae.register(this);
         ae.setAETitle("DCMSND");
     }
 
@@ -166,6 +176,10 @@ public class DcmSnd {
         conn.setHostname(hostname);
     }
 
+    public final void setLocalPort(int port) {
+        conn.setPort(port);
+    }
+    
     public final void setRemoteHost(String hostname) {
         remoteConn.setHostname(hostname);
     }
@@ -173,13 +187,21 @@ public class DcmSnd {
     public final void setRemotePort(int port) {
         remoteConn.setPort(port);
     }
-
+    
     public final void setCalledAET(String called) {
         remoteAE.setAETitle(called);
     }
 
     public final void setCalling(String calling) {
         ae.setAETitle(calling);
+    }
+    
+    public final void setStorageCommitment(boolean stgcmt) {
+        this.stgcmt = stgcmt;
+    }
+
+    public final boolean isStorageCommitment() {
+        return stgcmt;
     }
 
     public final void setConnectTimeout(int connectTimeout) {
@@ -256,14 +278,18 @@ public class DcmSnd {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
-        OptionBuilder.withArgName("aet[@host]");
+        OptionBuilder.withArgName("aet[@host][:port]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "set AET and local address of local Application Entity, use " + 
-                "ANONYMOUS and pick up any valid local address to bind the " +
-                "socket by default");
+                "set AET and local address of local Application Entity. If port " +
+                "is specified, incoming connections on this port will be accepted. " +
+                "Do not accept any connection request, use DCMSND as local AET " +
+                "and pick up any valid local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
+        opts.addOption("stgcmt", false,
+                "request storage commitment of (successfully) sent objects afterwards");
+        
         OptionBuilder.withArgName("maxops");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -388,12 +414,17 @@ public class DcmSnd {
         }
         if (cl.hasOption("L")) {
             String localAE = (String) cl.getOptionValue("L");
-            String[] callingAETHost = split(localAE, '@');
+            String[] localPort = split(localAE, ':');
+            if (localPort[1] != null) {
+                dcmsnd.setLocalPort(toPort(localPort[1]));                
+            }
+            String[] callingAETHost = split(localPort[0], '@');
             dcmsnd.setCalling(callingAETHost[0]);
             if (callingAETHost[1] != null) {
-                dcmsnd.setLocalHost(callingAETHost[1]);
+                dcmsnd.setLocalHost(callingAETHost[0]);
             }
         }
+        dcmsnd.setStorageCommitment(!cl.hasOption("stgcmt"));
         if (cl.hasOption("connectTO"))
             dcmsnd.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
                     "illegal argument of option -connectTO", 1,
@@ -457,6 +488,13 @@ public class DcmSnd {
                 + " files in " + ((t2 - t1) / 1000F) + "s (="
                 + ((t2 - t1) / dcmsnd.getNumberOfFilesToSend()) + "ms/file)");
         dcmsnd.configureTransferCapability();
+        try {
+            dcmsnd.start();
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to start server for receiving " +
+                    "Storage Commitment results:" + e.getMessage());
+            System.exit(2);
+        }
         t1 = System.currentTimeMillis();
         try {
             dcmsnd.open();
@@ -473,6 +511,9 @@ public class DcmSnd {
         dcmsnd.send();
         t2 = System.currentTimeMillis();
         prompt(dcmsnd, (t2 - t1) / 1000F);
+        if (dcmsnd.isStorageCommitment()) {
+            
+        }
         dcmsnd.close();
         System.out.println("Released connection to " + remoteAE);
     }
@@ -589,9 +630,16 @@ public class DcmSnd {
     }
 
     private void configureTransferCapability() {
+        int off = stgcmt ? 1 : 0;
+        TransferCapability[] tc = new TransferCapability[off + as2ts.size()];
+        if (stgcmt) {
+            tc[0] = new TransferCapability(
+                    UID.StorageCommitmentPushModelSOPClass,
+                    IVLE_TS, 
+                    TransferCapability.SCU);
+        }
         Iterator iter = as2ts.entrySet().iterator();
-        TransferCapability[] tc = new TransferCapability[as2ts.size()];
-        for (int i = 0; i < tc.length; i++) {
+        for (int i = off; i < tc.length; i++) {
             Map.Entry e = (Map.Entry) iter.next();
             String cuid = (String) e.getKey();
             HashSet ts = (HashSet) e.getValue();
@@ -602,6 +650,13 @@ public class DcmSnd {
         ae.setTransferCapability(tc);
     }
 
+    public void start() throws IOException { 
+        if (conn.isListening()) {
+            device.startListening(executor );
+            System.out.println("Start Server listening on port " + conn.getPort());
+        }
+    }
+    
     public void open() throws IOException, ConfigurationException,
             InterruptedException {
         assoc = ae.connect(remoteAE, executor);
@@ -701,12 +756,16 @@ public class DcmSnd {
         long fmiEndPos;
 
         long length;
+        
+        int msgid;
+        
+        boolean transferred;
 
         public FileInfo(File f) {
             this.f = f;
             this.length = f.length();
         }
-
+                
     }
 
     private class DataWriter implements org.dcm4che2.net.DataWriter {
