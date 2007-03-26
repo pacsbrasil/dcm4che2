@@ -140,6 +140,12 @@ public class Executer {
                         if (out != null) out.write(buf, 0, len);
                 } catch (IOException e) {
                     log.warn("i/o error reading stdout/stderr of " + cmd, e);
+                } finally {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        log.warn("i/o exception on close of stdout/stderr of " + cmd, e);
+                    }
                 }
             }
         });
