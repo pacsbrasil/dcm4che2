@@ -63,23 +63,35 @@ public class StorageCommitmentService extends DicomService implements
     public void naction(Association as, int pcid, DicomObject rq,
             DicomObject info) throws DicomServiceException, IOException {
         DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
-        doNAction(as, pcid, rq, info, rsp);
+        onNActionRQ(as, pcid, rq, info, rsp);
         as.writeDimseRSP(pcid, rsp);
+        onNActionRSP(as, pcid, rq, info, rsp);
     }
 
-    protected void doNAction(Association as, int pcid, DicomObject rq,
+    protected void onNActionRQ(Association as, int pcid, DicomObject rq,
             DicomObject info, DicomObject rsp) {
         // overwrite by actual StgCmt SCP        
     }
 
+    protected void onNActionRSP(Association as, int pcid, DicomObject rq,
+            DicomObject info, DicomObject rsp) {
+        // overwrite by actual StgCmt SCP        
+    }
+    
     public void neventReport(Association as, int pcid, DicomObject rq,
             DicomObject info) throws DicomServiceException, IOException {
         DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
-        doNEventReport(as, pcid, rq, info, rsp);
+        onNEventReportRQ(as, pcid, rq, info, rsp);
         as.writeDimseRSP(pcid, rsp);
+        onNEventReportRSP(as, pcid, rq, info, rsp);
     }
 
-    protected void doNEventReport(Association as, int pcid, DicomObject rq,
+    protected void onNEventReportRQ(Association as, int pcid, DicomObject rq,
+            DicomObject info, DicomObject rsp) {
+        // overwrite by actual StgCmt SCU        
+    }
+
+    protected void onNEventReportRSP(Association as, int pcid, DicomObject rq,
             DicomObject info, DicomObject rsp) {
         // overwrite by actual StgCmt SCU        
     }

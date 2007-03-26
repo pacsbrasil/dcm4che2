@@ -67,11 +67,30 @@ public class StorageService extends DicomService implements CStoreSCP {
             PDVInputStream dataStream, String tsuid)
             throws DicomServiceException, IOException {
         DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
-        doCStore(as, pcid, rq, dataStream, tsuid, rsp);
+        onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
         as.writeDimseRSP(pcid, rsp);
+        onCStoreRSP(as, pcid, rq, dataStream, tsuid, rsp);
     }
 
+    protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
+            PDVInputStream dataStream, String tsuid, DicomObject rsp)
+            throws DicomServiceException, IOException {
+        //      overwriten by actual Storage SCP                
+        dataStream.skipAll();
+        // to avoid to break existing clients
+        doCStore(as, pcid, rq, dataStream, tsuid, rsp);
+    }
+
+    /** 
+     * @deprecated use/overwrite {@link #onCStoreRQ}
+     */
     protected void doCStore(Association as, int pcid, DicomObject rq,
+            PDVInputStream dataStream, String tsuid, DicomObject rsp)
+            throws DicomServiceException, IOException {
+        // NOOP                
+    }
+
+    protected void onCStoreRSP(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws DicomServiceException, IOException {
         dataStream.skipAll();
