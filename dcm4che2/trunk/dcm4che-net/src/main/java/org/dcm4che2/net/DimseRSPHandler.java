@@ -46,48 +46,41 @@ import org.dcm4che2.data.DicomObject;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
  * @since Dec 1, 2005
- *
+ * 
  */
-public class DimseRSPHandler
-{
+public class DimseRSPHandler {
     private long timeout;
+
     private int msgId;
+
     private int pcid;
 
-    final void setPcid(int pcid)
-    {
+    final void setPcid(int pcid) {
         this.pcid = pcid;
     }
 
-    final void setMsgId(int msgId)
-    {
+    final void setMsgId(int msgId) {
         this.msgId = msgId;
     }
 
-    public void cancel(Association as) throws IOException
-    {
+    public void cancel(Association as) throws IOException {
         as.cancel(pcid, msgId);
     }
-    
-    public void onDimseRSP(Association as, DicomObject cmd, DicomObject data)
-    {
+
+    public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
         // NO OP
     }
 
-    public void onClosed(Association as) 
-    {
+    public void onClosed(Association as) {
         // NO OP
     }
 
-
-    final long getTimeout()
-    {
+    final long getTimeout() {
         return timeout;
     }
 
-    final void setTimeout(long timeout)
-    {
+    final void setTimeout(long timeout) {
         this.timeout = timeout;
     }
-    
+
 }
