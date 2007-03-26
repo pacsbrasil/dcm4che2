@@ -55,10 +55,12 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
@@ -67,6 +69,7 @@ import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.Device;
+import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.NetworkApplicationEntity;
@@ -77,6 +80,7 @@ import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.StorageCommitmentService;
 import org.dcm4che2.util.StringUtils;
+import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -112,6 +116,10 @@ public class DcmSnd extends StorageCommitmentService {
       + "=> Send DICOM object image.dcm to Application Entity STORESCP, "
       + "listening on local port 11112.";
 
+    private static final String[] ONLY_IVLE_TS = { 
+        UID.ImplicitVRLittleEndian
+    };
+
     private static final String[] IVLE_TS = { 
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian, 
@@ -129,6 +137,8 @@ public class DcmSnd extends StorageCommitmentService {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian, 
     };
+
+    private static final int STG_CMT_ACTION_TYPE = 1;
 
     private Executor executor = new NewThreadExecutor("DCMSND");
 
@@ -157,6 +167,8 @@ public class DcmSnd extends StorageCommitmentService {
     private long totalSize = 0L;
     
     private boolean stgcmt = false;
+    
+    private DicomObject stgCmtResult;
     
     public DcmSnd() {
         remoteAE.setInstalled(true);
@@ -512,10 +524,15 @@ public class DcmSnd extends StorageCommitmentService {
         t2 = System.currentTimeMillis();
         prompt(dcmsnd, (t2 - t1) / 1000F);
         if (dcmsnd.isStorageCommitment()) {
-            
-        }
+            promptStgCmtReult(dcmsnd.commit());
+         }
         dcmsnd.close();
         System.out.println("Released connection to " + remoteAE);
+    }
+
+    private static void promptStgCmtReult(DicomObject object) {
+        // TODO Auto-generated method stub
+        
     }
 
     private static void prompt(DcmSnd dcmsnd, float seconds) {
@@ -635,7 +652,7 @@ public class DcmSnd extends StorageCommitmentService {
         if (stgcmt) {
             tc[0] = new TransferCapability(
                     UID.StorageCommitmentPushModelSOPClass,
-                    IVLE_TS, 
+                    ONLY_IVLE_TS, 
                     TransferCapability.SCU);
         }
         Iterator iter = as2ts.entrySet().iterator();
@@ -694,8 +711,8 @@ public class DcmSnd extends StorageCommitmentService {
                     }
                 };
 
-                assoc.cstore(info.cuid, info.iuid, priority, new DataWriter(
-                        info), tsuid, rspHandler);
+                assoc.cstore(info.cuid, info.iuid, priority,
+                        new DataWriter(info), tsuid, rspHandler);
             } catch (NoPresentationContextException e) {
                 System.err.println("WARNING: " + e.getMessage()
                         + " - cannot send " + info.f);
@@ -718,6 +735,50 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
+    public DicomObject commit() {
+        DicomObject actionInfo = new BasicDicomObject();
+        actionInfo.putString(Tag.TransactionUID, VR.UI, UIDUtils.createUID());
+        DicomElement refSOPSq = actionInfo.putSequence(Tag.ReferencedSOPSequence);
+        for (int i = 0, n = files.size(); i < n; ++i) {
+            FileInfo info = (FileInfo) files.get(i);
+            if (info.transferred) {
+                BasicDicomObject refSOP = new BasicDicomObject();
+                refSOP.putString(Tag.ReferencedSOPClassUID, VR.UI, info.cuid);
+                refSOP.putString(Tag.ReferencedSOPInstanceUID, VR.UI, info.iuid);
+            }
+        }
+        try {
+            DimseRSP rsp = assoc.naction(UID.StorageCommitmentPushModelSOPClass,
+                UID.StorageCommitmentPushModelSOPInstance, STG_CMT_ACTION_TYPE,
+                actionInfo, UID.ImplicitVRLittleEndian);
+            DicomObject cmd = rsp.getCommand();
+            int status = cmd.getInt(Tag.Status);
+            if (status != 0) {
+                System.err.println(
+                        "WARNING: Storage Commitment request failed with status: "
+                        + StringUtils.shortToHex(status) + "H");
+                System.err.println(cmd.toString());
+            } else {
+                synchronized (this) {
+                    while (stgCmtResult == null) wait();
+                }
+                return stgCmtResult;
+            }
+        } catch (NoPresentationContextException e) {
+            System.err.println("WARNING: " + e.getMessage()
+                    + " - cannot request Storage Commitment");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println(
+                    "ERROR: Failed to send Storage Commitment request: "
+                    + e.getMessage());
+        } catch (InterruptedException e) {
+            // should not happen
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
     private String selectTransferSyntax(String[] available, String tsuid) {
         if (tsuid.equals(UID.ImplicitVRLittleEndian))
             return selectTransferSyntax(available, IVLE_TS);
@@ -756,8 +817,6 @@ public class DcmSnd extends StorageCommitmentService {
         long fmiEndPos;
 
         long length;
-        
-        int msgid;
         
         boolean transferred;
 
@@ -818,6 +877,7 @@ public class DcmSnd extends StorageCommitmentService {
         FileInfo info = (FileInfo) files.get(msgId - 1);
         switch (status) {
         case 0:
+            info.transferred = true;
             totalSize += info.length;
             ++filesSent;
             System.out.print('.');
@@ -825,6 +885,7 @@ public class DcmSnd extends StorageCommitmentService {
         case 0xB000:
         case 0xB006:
         case 0xB007:
+            info.transferred = true;
             totalSize += info.length;
             ++filesSent;
             promptErrRSP("WARNING: Received RSP with Status ", status, info,
@@ -836,5 +897,10 @@ public class DcmSnd extends StorageCommitmentService {
             System.out.print('F');
         }
     }
-
+    
+    protected synchronized void onNEventReportRSP(Association as, int pcid,
+            DicomObject rq, DicomObject info, DicomObject rsp) {
+        stgCmtResult = info;
+        notifyAll();
+    }
 }
