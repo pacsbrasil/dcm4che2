@@ -1075,7 +1075,7 @@ public class NetworkApplicationEntity {
         RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
         TransferCapability tcscp = findTC(transferCapability, asuid, true);
         TransferCapability tcscu = findTC(transferCapability, asuid, false);
-        if (rqrs != null && ac.getRoleSelectionFor(asuid) != null) {
+        if (rqrs != null && ac.getRoleSelectionFor(asuid) == null) {
             boolean scp = rqrs.isSCP() && tcscu != null;
             boolean scu = rqrs.isSCU() && tcscp != null;
             RoleSelection rs = new RoleSelection(asuid, scu, scp);
