@@ -18,8 +18,10 @@ package org.dcm4chex.archive.util;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -93,7 +95,17 @@ public class FileSystemUtils {
         }
         OS = os;
     }
-
+    
+    /** JDK6 File.getFileSpace(), if available. */
+    private static Method jdk6getFreeSpace;
+    static {
+        try {
+            jdk6getFreeSpace = File.class.getMethod("getFreeSpace", null);
+        } catch (Exception e) {
+            jdk6getFreeSpace = null;
+        }        
+    }
+    
     public static final String getDFCommand() {
         return dfCommand;
     }
@@ -135,6 +147,15 @@ public class FileSystemUtils {
      * @throws IOException if an error occurs when finding the free space
      */
     public static long freeSpace(String path) throws IOException {
+        if (jdk6getFreeSpace != null) {
+            try {
+                Long l = (Long) jdk6getFreeSpace.invoke(new File(path), null);
+                return l.longValue();
+            } catch (Exception e) {
+                // Should not happen
+                e.printStackTrace();
+            }
+        }
         return INSTANCE.freeSpaceOS(path, OS);
     }
 
