@@ -99,7 +99,7 @@ public class DcmSnd extends StorageCommitmentService {
         "dcmsnd [Options] <aet>[@<host>[:<port>]] <file>|<directory>...";
 
     private static final String DESCRIPTION = 
-        "Load composite DICOM Object(s) from specified DICOM file(s) and send it "
+        "\nLoad composite DICOM Object(s) from specified DICOM file(s) and send it "
       + "to the specified remote Application Entity. If a directory is specified,"
       + "DICOM Object in files under that directory and further sub-directories "
       + "are sent. If <port> is not specified, DICOM default port 104 is assumed. "
@@ -107,14 +107,15 @@ public class DcmSnd extends StorageCommitmentService {
       + "Storage Commitment Request for successfully tranferred objects is sent "
       + "to the remote Application Entity after the storage. The Storage Commitment "
       + "result is accepted on the same association or - if a local port is "
-      + "specified by option -L - in a separate association initated by the "
+      + "specified by option -L - in a separate association initiated by the "
       + "remote Application Entity\n"
-      + "Options:";
+      + "OPTIONS:";
 
     private static final String EXAMPLE = 
-        "\nExample: dcmsnd STORESCP@localhost:11112 image.dcm \n"
-      + "=> Send DICOM object image.dcm to Application Entity STORESCP, "
-      + "listening on local port 11112.";
+        "\nExample: dcmsnd -stgcmt -L DCMSND:11113 STORESCP@localhost:11112 image.dcm \n"
+      + "=> Start listening on local port 11113 for receiving Storage Commitment "
+      + "results, send DICOM object image.dcm to Application Entity STORESCP, "
+      + "listening on local port 11112, and request Storage Commitment.";
 
     private static final String[] ONLY_IVLE_TS = { 
         UID.ImplicitVRLittleEndian
@@ -168,6 +169,8 @@ public class DcmSnd extends StorageCommitmentService {
     
     private boolean stgcmt = false;
     
+    private long shutdownDelay = 1000L;
+    
     private DicomObject stgCmtResult;
     
     public DcmSnd() {
@@ -215,6 +218,11 @@ public class DcmSnd extends StorageCommitmentService {
     public final boolean isStorageCommitment() {
         return stgcmt;
     }
+    
+    public final void setShutdownDelay(int shutdownDelay) {
+        this.shutdownDelay = shutdownDelay;
+    }
+    
 
     public final void setConnectTimeout(int connectTimeout) {
         conn.setConnectTimeout(connectTimeout);
@@ -293,10 +301,7 @@ public class DcmSnd extends StorageCommitmentService {
         OptionBuilder.withArgName("aet[@host][:port]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "set AET and local address of local Application Entity. If port " +
-                "is specified, incoming connections on this port will be accepted. " +
-                "Do not accept any connection request, use DCMSND as local AET " +
-                "and pick up any valid local address to bind the socket by default");
+                "set AET, local address and listening port of local Application Entity");
         opts.addOption(OptionBuilder.create("L"));
 
         opts.addOption("stgcmt", false,
@@ -327,6 +332,13 @@ public class DcmSnd extends StorageCommitmentService {
                 "delay in ms for Socket close after sending A-ABORT, " +
                 "50ms by default");
         opts.addOption(OptionBuilder.create("soclosedelay"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "delay in ms for closing the listening socket, " +
+                "1000ms by default");
+        opts.addOption(OptionBuilder.create("shutdowndelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
@@ -436,7 +448,7 @@ public class DcmSnd extends StorageCommitmentService {
                 dcmsnd.setLocalHost(callingAETHost[0]);
             }
         }
-        dcmsnd.setStorageCommitment(!cl.hasOption("stgcmt"));
+        dcmsnd.setStorageCommitment(cl.hasOption("stgcmt"));
         if (cl.hasOption("connectTO"))
             dcmsnd.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
                     "illegal argument of option -connectTO", 1,
@@ -462,6 +474,10 @@ public class DcmSnd extends StorageCommitmentService {
             dcmsnd.setSocketCloseDelay(
                     parseInt(cl.getOptionValue("soclosedelay"),
                     "illegal argument of option -soclosedelay", 1, 10000));
+        if (cl.hasOption("shutdowndelay"))
+            dcmsnd.setShutdownDelay(
+                    parseInt(cl.getOptionValue("shutdowndelay"),
+                    "illegal argument of option -shutdowndelay", 1, 10000));
         if (cl.hasOption("rcvpdulen"))
             dcmsnd.setMaxPDULengthReceive(
                     parseInt(cl.getOptionValue("rcvpdulen"),
@@ -507,32 +523,62 @@ public class DcmSnd extends StorageCommitmentService {
                     "Storage Commitment results:" + e.getMessage());
             System.exit(2);
         }
-        t1 = System.currentTimeMillis();
         try {
-            dcmsnd.open();
-        } catch (Exception e) {
-            System.err.println("ERROR: Failed to establish association:"
-                    + e.getMessage());
-            System.exit(2);
+            t1 = System.currentTimeMillis();
+            try {
+                dcmsnd.open();
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to establish association:"
+                        + e.getMessage());
+                System.exit(2);
+            }
+            t2 = System.currentTimeMillis();
+            System.out.println("Connected to " + remoteAE + " in " 
+                    + ((t2 - t1) / 1000F) + "s");
+    
+            t1 = System.currentTimeMillis();
+            dcmsnd.send();
+            t2 = System.currentTimeMillis();
+            prompt(dcmsnd, (t2 - t1) / 1000F);
+            if (dcmsnd.isStorageCommitment()) {
+                t1 = System.currentTimeMillis();
+                if (dcmsnd.commit()) {
+                    t2 = System.currentTimeMillis();
+                    System.out.println("Request Storage Commitment from " 
+                            + remoteAE + " in " + ((t2 - t1) / 1000F) + "s");
+                    System.out.println("Waiting for Storage Commitment Result..");
+                    try {
+                        DicomObject cmtrslt = dcmsnd.waitForStgCmtResult();
+                        t1 = System.currentTimeMillis();
+                        promptStgCmt(cmtrslt, ((t1 - t2) / 1000F));
+                    } catch (InterruptedException e) {
+                        System.err.println("ERROR:" + e.getMessage());
+                    }
+                }
+             }
+            dcmsnd.close();
+            System.out.println("Released connection to " + remoteAE);
+        } finally {
+            dcmsnd.stop();
         }
-        t2 = System.currentTimeMillis();
-        System.out.println("Connected to " + remoteAE + " in " 
-                + ((t2 - t1) / 1000F) + "s");
-
-        t1 = System.currentTimeMillis();
-        dcmsnd.send();
-        t2 = System.currentTimeMillis();
-        prompt(dcmsnd, (t2 - t1) / 1000F);
-        if (dcmsnd.isStorageCommitment()) {
-            promptStgCmtReult(dcmsnd.commit());
-         }
-        dcmsnd.close();
-        System.out.println("Released connection to " + remoteAE);
     }
 
-    private static void promptStgCmtReult(DicomObject object) {
-        // TODO Auto-generated method stub
-        
+    private static void promptStgCmt(DicomObject cmtrslt, float seconds) {
+        System.out.println("Received Storage Commitment Result after "
+                + seconds + "s:");
+        DicomElement refSOPSq = cmtrslt.get(Tag.ReferencedSOPSequence);
+        System.out.print(refSOPSq.countItems());
+        System.out.println(" successful");
+        DicomElement failedSOPSq = cmtrslt.get(Tag.FailedSOPSequence);
+        if (failedSOPSq != null) {
+            System.out.print(failedSOPSq.countItems());
+            System.out.println(" FAILED!");                       
+        }
+    }
+
+    private synchronized DicomObject waitForStgCmtResult() throws InterruptedException {
+        while (stgCmtResult == null) wait();
+        return stgCmtResult;
     }
 
     private static void prompt(DcmSnd dcmsnd, float seconds) {
@@ -669,8 +715,20 @@ public class DcmSnd extends StorageCommitmentService {
 
     public void start() throws IOException { 
         if (conn.isListening()) {
-            device.startListening(executor );
+            conn.bind(executor );
             System.out.println("Start Server listening on port " + conn.getPort());
+        }
+    }
+
+    public void stop() {
+        if (conn.isListening()) {
+            try {
+                Thread.sleep(shutdownDelay);
+            } catch (InterruptedException e) {
+                // Should not happen
+                e.printStackTrace();                
+            }
+            conn.unbind();
         }
     }
     
@@ -735,7 +793,7 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
-    public DicomObject commit() {
+    public boolean commit() {
         DicomObject actionInfo = new BasicDicomObject();
         actionInfo.putString(Tag.TransactionUID, VR.UI, UIDUtils.createUID());
         DicomElement refSOPSq = actionInfo.putSequence(Tag.ReferencedSOPSequence);
@@ -745,25 +803,23 @@ public class DcmSnd extends StorageCommitmentService {
                 BasicDicomObject refSOP = new BasicDicomObject();
                 refSOP.putString(Tag.ReferencedSOPClassUID, VR.UI, info.cuid);
                 refSOP.putString(Tag.ReferencedSOPInstanceUID, VR.UI, info.iuid);
+                refSOPSq.addDicomObject(refSOP);
             }
         }
         try {
             DimseRSP rsp = assoc.naction(UID.StorageCommitmentPushModelSOPClass,
                 UID.StorageCommitmentPushModelSOPInstance, STG_CMT_ACTION_TYPE,
                 actionInfo, UID.ImplicitVRLittleEndian);
+            rsp.next();
             DicomObject cmd = rsp.getCommand();
             int status = cmd.getInt(Tag.Status);
-            if (status != 0) {
-                System.err.println(
-                        "WARNING: Storage Commitment request failed with status: "
-                        + StringUtils.shortToHex(status) + "H");
-                System.err.println(cmd.toString());
-            } else {
-                synchronized (this) {
-                    while (stgCmtResult == null) wait();
-                }
-                return stgCmtResult;
+            if (status == 0) {
+                return true;
             }
+            System.err.println(
+                    "WARNING: Storage Commitment request failed with status: "
+                    + StringUtils.shortToHex(status) + "H");
+            System.err.println(cmd.toString());
         } catch (NoPresentationContextException e) {
             System.err.println("WARNING: " + e.getMessage()
                     + " - cannot request Storage Commitment");
@@ -776,7 +832,7 @@ public class DcmSnd extends StorageCommitmentService {
             // should not happen
             e.printStackTrace();
         }
-        return null;
+        return false;
     }
     
     private String selectTransferSyntax(String[] available, String tsuid) {
