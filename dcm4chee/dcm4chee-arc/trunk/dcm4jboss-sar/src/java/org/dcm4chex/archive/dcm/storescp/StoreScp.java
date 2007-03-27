@@ -573,24 +573,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 filePath = file.getPath().substring(
                         baseDir.getPath().length() + 1).replace(
                         File.separatorChar, '/');
+                String compressTSUID = (parser.getReadTag() == Tags.PixelData && parser
+                        .getReadLength() != -1) ? compressionRules
+                        .getTransferSyntaxFor(assoc, ds) : null;
+                String tsuid = (compressTSUID != null) ? compressTSUID : rq
+                        .getTransferSyntaxUID();
+                ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
+                        .getAffectedSOPClassUID(), rqCmd
+                        .getAffectedSOPInstanceUID(), tsuid));
+    
+                perfMon.start(activeAssoc, rq,
+                        PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+                perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE,
+                        file);
+                md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+                perfMon
+                        .stop(activeAssoc, rq,
+                                PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
-            String compressTSUID = (parser.getReadTag() == Tags.PixelData && parser
-                    .getReadLength() != -1) ? compressionRules
-                    .getTransferSyntaxFor(assoc, ds) : null;
-            String tsuid = (compressTSUID != null) ? compressTSUID : rq
-                    .getTransferSyntaxUID();
-            ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                    .getAffectedSOPClassUID(), rqCmd
-                    .getAffectedSOPInstanceUID(), tsuid));
-
-            perfMon.start(activeAssoc, rq,
-                    PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
-            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE,
-                    file);
-            md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
-            perfMon
-                    .stop(activeAssoc, rq,
-                            PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
