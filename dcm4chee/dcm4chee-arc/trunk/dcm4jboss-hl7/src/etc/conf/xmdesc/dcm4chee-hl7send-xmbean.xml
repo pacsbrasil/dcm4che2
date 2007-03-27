@@ -55,7 +55,7 @@
       <name>PIXQueryName</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="QRY_PDQ^Query By Name^IHEDEMO" />
+         <value value="QRY_1001^Query for Corresponding Identifiers^IHEDEMO" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
