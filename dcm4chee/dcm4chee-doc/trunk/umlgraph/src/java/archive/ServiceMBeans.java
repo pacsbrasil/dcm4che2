@@ -248,6 +248,20 @@ class GPWLFeed {}
 class gpwlFeed {}
 
 /**
+ * @depend - - - IANScu
+ */
+class GPWLFeed2 {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.GPWLFeed2
+ * @opt !hide
+ */
+class gpwlFeed2 {}
+
+/**
  * @depend - - - DcmServer
  */
 class GPWLScp {}
