@@ -110,12 +110,12 @@ implements NotificationListener {
 
 	protected void startService() throws Exception {
 		server.addNotificationListener(gpwlScpServiceName, this,
-				GPWLScpService.NOTIF_FILTER, null);
+				GPWLScpService.ON_PPS_NOTIF_FILTER, null);
 	}
 
 	protected void stopService() throws Exception {
 		server.removeNotificationListener(gpwlScpServiceName, this,
-                GPWLScpService.NOTIF_FILTER, null);
+                GPWLScpService.ON_PPS_NOTIF_FILTER, null);
 	}
 
 	public void handleNotification(Notification notif, Object handback) {

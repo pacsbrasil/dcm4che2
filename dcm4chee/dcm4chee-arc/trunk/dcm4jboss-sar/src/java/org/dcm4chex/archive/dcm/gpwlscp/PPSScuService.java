@@ -349,12 +349,12 @@ public class PPSScuService extends ServiceMBeanSupport implements
 	protected void startService() throws Exception {
 		jmsDelegate.startListening(queueName, this, concurrency);
 		server.addNotificationListener(gpwlScpServiceName, this,
-				GPWLScpService.NOTIF_FILTER, null);
+				GPWLScpService.ON_SPS_ACTION_NOTIF_FILTER, null);
 	}
 
 	protected void stopService() throws Exception {
 		server.removeNotificationListener(gpwlScpServiceName, this,
-				GPWLScpService.NOTIF_FILTER, null);
+				GPWLScpService.ON_SPS_ACTION_NOTIF_FILTER, null);
 		jmsDelegate.stopListening(queueName);
 	}
 

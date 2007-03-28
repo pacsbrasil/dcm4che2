@@ -45,6 +45,7 @@ import java.util.Map;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -59,17 +60,28 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 
 public class GPWLScpService extends AbstractScpService {
 
-    public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.gpwlscp";
+    public static final String ON_PPS_NOTIF = "org.dcm4chex.archive.dcm.gpwlscp.onpps";
 
-    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+    public static final NotificationFilter ON_PPS_NOTIF_FILTER = new NotificationFilter() {
 
-        private static final long serialVersionUID = 3256720663225120565L;
+        private static final long serialVersionUID = -1969818592538255743L;
 
         public boolean isNotificationEnabled(Notification notif) {
-            return EVENT_TYPE.equals(notif.getType());
+            return ON_PPS_NOTIF.equals(notif.getType());
         }
     };
 
+    public static final String ON_SPS_ACTION_NOTIF = "org.dcm4chex.archive.dcm.gpwlscp.onspsaction";
+
+    public static final NotificationFilter ON_SPS_ACTION_NOTIF_FILTER = new NotificationFilter() {
+
+        private static final long serialVersionUID = 5671824066766098134L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return ON_SPS_ACTION_NOTIF.equals(notif.getType());
+        }
+    };
+    
     /** Map containing accepted SOP Class UIDs.
      * key is name (as in config string), value is real uid) */
     private Map cuidMap = new LinkedHashMap();
@@ -79,8 +91,15 @@ public class GPWLScpService extends AbstractScpService {
 
     void sendActionNotification(String iuid) {
         long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(EVENT_TYPE, this, eventID);
+        Notification notif = new Notification(ON_SPS_ACTION_NOTIF, this, eventID);
         notif.setUserData(iuid);
+        super.sendNotification(notif);
+    }
+ 
+    void sendPPSNotification(Dataset pps) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(ON_PPS_NOTIF, this, eventID);
+        notif.setUserData(pps);
         super.sendNotification(notif);
     }
     

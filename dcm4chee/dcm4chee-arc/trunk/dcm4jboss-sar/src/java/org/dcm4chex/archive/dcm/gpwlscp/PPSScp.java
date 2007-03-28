@@ -117,6 +117,7 @@ class PPSScp extends DcmServiceBase {
         gppps.putUI(Tags.SOPClassUID, cuid);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         createGPPPS(gppps);
+        service.sendPPSNotification(gppps);
         return null;
     }
 
@@ -130,6 +131,7 @@ class PPSScp extends DcmServiceBase {
         checkSetAttributs(gppps);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         updateGPPPS(gppps);
+        service.sendPPSNotification(gppps);
         return null;
     }
 
