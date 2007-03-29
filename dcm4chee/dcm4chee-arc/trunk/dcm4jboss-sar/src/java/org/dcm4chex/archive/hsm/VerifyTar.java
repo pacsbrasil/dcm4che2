@@ -48,11 +48,16 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
+import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -78,7 +83,12 @@ public class VerifyTar {
     }
     
     public static void verify(InputStream in, String tarname, byte[] buf)
-            throws IOException, VerifyTarException {
+    throws IOException, VerifyTarException {
+        verify(in, tarname, buf, null);
+    }
+
+    public static void verify(InputStream in, String tarname, byte[] buf, ArrayList objectNames)
+    throws IOException, VerifyTarException {
         TarInputStream tar = new TarInputStream(in);
         try {
             TarEntry entry = tar.getNextEntry();
@@ -89,6 +99,7 @@ public class VerifyTar {
                 throw new VerifyTarException("Missing MD5SUM entry in "
                         + tarname);
             DataInputStream dis = new DataInputStream(tar);
+            
             HashMap md5sums = new HashMap();
             String line;
             while ((line = dis.readLine()) != null) {
@@ -108,6 +119,9 @@ public class VerifyTar {
             }
             while ((entry = tar.getNextEntry()) != null) {
                 entryName = entry.getName();
+                if(objectNames != null && !objectNames.remove(entryName))
+                    throw new VerifyTarException( "TAR " + tarname + " contains entry: "
+                            + entryName + " not in file list");
                 byte[] md5sum = (byte[]) md5sums.remove(entryName);
                 if (md5sum == null)
                     throw new VerifyTarException("Unexpected TAR entry: "
@@ -119,12 +133,15 @@ public class VerifyTar {
                 if (!Arrays.equals(digest.digest(), md5sum)) {
                     throw new VerifyTarException(
                             "Failed MD5 check of TAR entry: " + entryName
-                                    + " in " + tarname);
+                            + " in " + tarname);
                 }
             }
             if (!md5sums.isEmpty())
                 throw new VerifyTarException("Missing TAR entries: "
                         + md5sums.keySet() + " in " + tarname);
+            if (objectNames != null && !objectNames.isEmpty())
+                throw new VerifyTarException("Missing TAR entries from object list: "
+                        + objectNames.toString() + " in " + tarname);
         } finally {
             tar.close();
         }
