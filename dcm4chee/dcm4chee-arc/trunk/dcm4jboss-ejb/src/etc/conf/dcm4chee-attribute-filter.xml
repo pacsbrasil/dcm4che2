@@ -21,8 +21,6 @@
         <attr tag="00081032"/> <!-- Procedure Code Seq -->
         <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
         <attr tag="00200010"/> <!-- Study ID -->
-        <attr tag="00402016"/> <!-- Placer Order Number -->
-        <attr tag="00402017"/> <!-- Filler Order Number -->
     </study>
     <series>
         <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -30,7 +28,9 @@
         <attr tag="00080031"/> <!-- Series Time -->
         <attr tag="00080060"/> <!-- Modality -->
         <attr tag="00080070"/> <!-- Manufacturer -->
+        <attr tag="00080080"/> <!-- Institution Name -->
         <attr tag="0008103E"/> <!-- Series Description -->
+        <attr tag="00081040"/> <!-- Institutional Department Name -->
         <attr tag="00081090"/> <!-- Manufacturer Model Name -->
         <attr tag="00081111"/> <!-- Referenced Performed Procedure Step Sequence -->
         <attr tag="00180015"/> <!-- Body Part Examined -->

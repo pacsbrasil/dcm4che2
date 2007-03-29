@@ -28,7 +28,9 @@
         <attr tag="00080031"/> <!-- Series Time -->
         <attr tag="00080060"/> <!-- Modality -->
         <attr tag="00080070"/> <!-- Manufacturer -->
+        <attr tag="00080080"/> <!-- Institution Name -->
         <attr tag="0008103E"/> <!-- Series Description -->
+        <attr tag="00081040"/> <!-- Institutional Department Name -->
         <attr tag="00081090"/> <!-- Manufacturer Model Name -->
         <attr tag="00081111"/> <!-- Referenced Performed Procedure Step Sequence -->
         <attr tag="00180015"/> <!-- Body Part Examined -->
