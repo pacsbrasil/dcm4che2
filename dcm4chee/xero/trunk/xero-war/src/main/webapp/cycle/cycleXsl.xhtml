@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?metadata type="xero1.0" path="display" 
+  xsl="imageXsl.xsl" 
+  commands.cine.xsl="cineXsl.xsl"
+  ?>
+
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:x="http://www.dcm4che.org/xero/jsf">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+   xmlns:s="http://www.dcm4chee.org/xero/search/"
+   xmlns="http://www.w3.org/1999/xhtml">
+   
+<!-- Include the various XSL files to build up this file. -->
+<x:includeXsl fromMeta="#{metadata.cycle}" /> 
+
+<!-- Include the search variables -->
+<ui:decorate template="cycleVars.xhtml" />
+
+<!-- Converts the patients name into a link, using (Unknown) if empty. -->
+<xsl:template name="patientsNameConverter">
+  <xsl:param name="row" />
+  <xsl:param name="value" />
+  <a>
+    <xsl:attribute name="href">patient.xml?cid=<xsl:value-of select="$cid" />&amp;PatientIdentifier=<xsl:value-of select="$row/@PatientIdentifier"/></xsl:attribute>
+    <xsl:attribute name="target">patientFrame</xsl:attribute>
+    <xsl:if test="$value=''">
+      (Unknown)
+    </xsl:if>
+    <xsl:call-template name="outputElement">
+      <xsl:with-param name="row" select="$row" />
+      <xsl:with-param name="type" select="'Name'" />
+      <xsl:with-param name="value" select="$value" />
+    </xsl:call-template>
+  </a>
+</xsl:template>
+ 
+<xsl:template match="/">
+<html>
+<head>    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Xero Cycle</title>
+    <!-- <link href="/xero/stylesheet/date.css" rel="stylesheet" type="text/css" /> -->
+</head>
+<body style="border-style: none; margin-width: 0px; ">
+   <xsl:if test="/documents/debug='true'">
+     Debug mode is on:<br />
+     <!-- 
+     cid=<xsl:value-of select="$cid" /> <br />
+     table columns doc=<xsl:value-of select="$tableColumnsDoc"></xsl:value-of><br />
+     Number of table columns items=<xsl:value-of select="count($tableColumns/*)"></xsl:value-of><br />
+     Number of displayed items=<xsl:value-of select="count($displayedColumns)"></xsl:value-of><br />
+     Number of patients=<xsl:value-of select="count($docNode/se:results/se:patient)" /><br />
+     Displayed items:<br />
+     <xsl:for-each select="$displayedColumns">
+        Item: <xsl:value-of select="@label"></xsl:value-of>
+     </xsl:for-each>
+      -->
+   </xsl:if>
+<form method="get" action="cycleFrame.xml" target="mainFrame">
+   <input>
+     <xsl:attribute name="type">hidden</xsl:attribute>
+     <xsl:attribute name="name">cid</xsl:attribute>
+     <xsl:attribute name="value"><xsl:value-of select="$cid" /></xsl:attribute>
+   </input>
+   
+   <x:button value="Remove"><img src="../img/delete.png" alt="Delete"/></x:button>
+   
+   <table style="width:100%;">
+      <xsl:call-template name="renderTableResultsPatient" />
+   </table>
+</form>
+</body>
+</html>
+</xsl:template>
+
+</xsl:stylesheet>
+
+</ui:fragment>

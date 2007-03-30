@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:x="http://www.dcm4che.org/xero/jsf"
+>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+   xmlns:s="http://www.dcm4chee.org/xero/search/"
+   xmlns="http://www.w3.org/1999/xhtml"
+>
+
+<!-- Include the various XSL files to build up this file. -->
+<x:includeXsl fromMeta="#{metadata.search.searchForm}" />
+
+<xsl:template name="generateSearchForm">
+  <div>
+    <xsl:call-template name="inputElementsTable">
+      <xsl:with-param name="inputNodes" select="$searchParameters" />
+    </xsl:call-template>
+  </div>
+</xsl:template>
+
+</xsl:stylesheet>
+
+</ui:fragment>
+      

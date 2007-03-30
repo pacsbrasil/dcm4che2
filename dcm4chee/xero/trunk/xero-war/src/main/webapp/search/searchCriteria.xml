@@ -1,0 +1,6 @@
+<searchCriteria xmlns="http://www.dcm4chee.org/xero/search/">
+  <attribute name="PatientsID" type="string" />
+  <attribute name="PatientsName" type="Name" />
+  <attribute name="ModalitiesInStudy" type="Modality" />
+  <attribute name="StudyInstanceUID" type="UID"/>
+</searchCriteria>

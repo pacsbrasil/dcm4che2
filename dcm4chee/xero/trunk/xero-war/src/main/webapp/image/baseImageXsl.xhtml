@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	 The base image contains the code to generate the current image to display.
+-->
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets" >
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:se="http://www.dcm4chee.org/xero/search/study/" xmlns="http://www.w3.org/1999/xhtml">
+
+<xsl:template name="baseImage">
+  <div xmlns="http://www.w3.org/1999/xhtml" style="position: absolute; top: 50px; left: 50px; height: 512px;">
+     <img>
+        <xsl:attribute name="alt">WADO Image for <xsl:value-of select="$imageNode/@SOPInstanceUID"/></xsl:attribute>
+        <xsl:attribute name="src">/wado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="$imageNode/@SOPInstanceUID"/>&amp;rows=512</xsl:attribute>
+     </img>
+  </div>
+</xsl:template>
+
+</xsl:stylesheet>
+</ui:fragment>

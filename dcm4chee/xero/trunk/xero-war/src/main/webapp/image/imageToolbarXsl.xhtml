@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xsl
+   pageConfig="#{PageConfig.imageToolbar}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/imageToolbar"
+   xmlns:c="http://java.sun.com/jstl/core"
+   m:prev.toolbar="imageToolbarPrevious" m:prev.toolbar.priority="0"
+   m:next.toolbar="imageToolbarNext" m:next.toolbar.priority="1000"
+>
+
+<xsl:template name="imageToolbarPrevious">
+  <xsl:if test="$imagePrevUID!=''">
+  <a>
+    <xsl:attribute name="style">float: left;</xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imagePrevUID" /></xsl:attribute>
+  	&lt;Prev<span> </span>
+  </a>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template name="imageToolbarNext">
+  <xsl:if test="$imageNextUID!=''">
+  <a>
+    <xsl:attribute name="style">float: right;</xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageNextUID" /></xsl:attribute>
+  	&gt;Next
+  </a>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template name="imageToolbar">
+<div style="position: absolute; top:0; left:0; height: 50px;">
+  <span>
+    <c:forEach var="tool" items="#{x:sorted(pageConfig,'toolbar')}">
+      <xsl:call-template name="#{tool.toolbar}" />
+    </c:forEach>
+  </span>
+</div>
+</xsl:template>
+
+</x:xsl>

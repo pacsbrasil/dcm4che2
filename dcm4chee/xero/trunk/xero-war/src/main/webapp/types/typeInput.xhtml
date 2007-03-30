@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:x="http://www.dcm4che.org/xero/jsf"
+>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+   xmlns="http://www.w3.org/1999/xhtml"
+   >
+   
+<x:includeXsl fromMeta="#{metadata.inputs}" />
+
+<!-- The raw converter just allows a raw input text to be provided. -->
+<xsl:template name="rawInput">
+   <xsl:param name="currentValue" />
+   <xsl:param name="fieldName" />
+   <input>
+     <xsl:attribute name="type">text</xsl:attribute>
+     <xsl:attribute name="name"><xsl:value-of select="$fieldName" /></xsl:attribute>
+     <xsl:attribute name="value"><xsl:value-of select="$currentValue" /></xsl:attribute>
+   </input>
+</xsl:template>
+
+<xsl:template name="dateInput">
+  <select name="studyDateTime">
+    <option></option>
+    <option>Last 24 hours</option>
+    <option>Last 48 hours</option>
+    <option>Today</option>
+    <option>Yesterday</option>
+    <option>This week</option>
+    <option>Last week</option>
+    <option>This month</option>
+    <option>Last month</option>
+    <option>This year</option>
+    <option>Last year</option>
+  </select>
+</xsl:template>
+
+<!--  The modalities input allows multiple values to be specified -->
+<xsl:template name="modalityInput">
+   <xsl:param name="currentValue" />
+   <xsl:param name="fieldName" />
+   <select>
+     <xsl:attribute name="name"><xsl:value-of select="$fieldName" /></xsl:attribute>
+     <option value=""></option>
+     <c:forEach var="modality" items="#{metadata.Modality}">
+       <option>
+         <xsl:attribute name="value">#{modality.key}</xsl:attribute>
+         <xsl:if test="$currentValue='#{modality.key}'">
+            <xsl:attribute name="selected">true</xsl:attribute>
+         </xsl:if>
+         #{modality.value}
+       </option>
+     </c:forEach>
+   </select>
+</xsl:template>
+
+<!-- Puts out a single input element for a form, as XSL that generated the HTML
+     values.
+     @param currentValue is the value that this field has right now.
+     @param fieldName is the name of the field.  
+     Some fields may have compound values - if so, the currentValue is a node set
+     and fieldName is the base name.
+ -->
+<xsl:template name="inputElementByType">
+   <xsl:param name="currentValue" />
+   <xsl:param name="fieldName" />
+   <xsl:param name="type" />
+   <xsl:choose>
+      <c:forEach var="inputType" items="#{metadata.inputs}">
+        <c:if test="#{inputType.value.template!=null}">
+          <xsl:when test="$type='#{inputType.key}'">
+            <xsl:call-template name="#{inputType.value.template}">
+              <xsl:with-param name="currentValue" select="$currentValue" />
+              <xsl:with-param name="fieldName" select="$fieldName" />
+            </xsl:call-template>
+          </xsl:when>
+        </c:if>
+      </c:forEach>
+      <xsl:otherwise>
+        <b>Unknown type(<xsl:value-of select="$type" />):
+            <xsl:call-template name="#{metadata.inputs.default.template}">
+              <xsl:with-param name="currentValue" select="$currentValue" />
+              <xsl:with-param name="fieldName" select="$fieldName" />
+            </xsl:call-template>
+        </b>
+      </xsl:otherwise>
+   </xsl:choose>
+</xsl:template>
+
+
+<!-- Puts out the single input element for a form, from the XML definition provided
+     in $inputNode.  Does not display a label or anything like that.
+  -->
+<xsl:template name="inputElement">
+  <xsl:param name="inputNode" />
+  <xsl:call-template name="inputElementByType">
+    <xsl:with-param name="currentValue" select="$inputNode" />
+    <xsl:with-param name="fieldName" select="$inputNode/@name" />
+    <xsl:with-param name="type" select="$inputNode/@type" />
+  </xsl:call-template>
+</xsl:template>
+
+<!-- Put out a set of input elements as a table, one column for the label, and another
+     for the input.
+     @param inputNodes is the set of nodes to use for the input columns.
+  -->
+<xsl:template name="inputElementsTable">
+  <xsl:param name="inputNodes" />
+  <table>
+  <xsl:for-each select="$inputNodes/*">
+    <tr>
+      <td><xsl:call-template name="i18nLabel"><xsl:with-param name="i18n" select="@name" /></xsl:call-template></td>
+      <td><xsl:call-template name="inputElement"><xsl:with-param name="inputNode" select="." /></xsl:call-template></td>
+    </tr>
+  </xsl:for-each>
+  </table>
+</xsl:template>
+
+</xsl:stylesheet>
+
+</ui:fragment>

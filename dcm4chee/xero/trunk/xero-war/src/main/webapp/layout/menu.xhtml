@@ -1,0 +1,27 @@
+<div class="menuButtons" 
+     xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:s="http://jboss.com/products/seam/taglib">
+     <h:form>
+     
+     <s:link view="/study/search.xhtml" value="Home"/>
+     <s:link view="/study/simpleSearch.xhtml" value="Simple" />
+     <s:link view="/example/search.xhtml" value="Example" />
+     <s:link view="/study/table.seam" propagation="none" value="Table" />
+     
+     
+     <h:selectOneMenu value="#{localeSelector.localeString}">
+       <f:selectItems value="#{localeSelector.supportedLocales}"/>
+     </h:selectOneMenu>
+     <h:commandButton action="#{localeSelector.select}" value="#{messages['ChangeLanguage']}"/>
+     
+     <h:selectOneMenu value="#{themeSelector.theme}">
+       <f:selectItems value="#{themeSelector.themes}"/>
+	 </h:selectOneMenu>
+	 <h:commandButton action="#{themeSelector.select}" value="Select Theme"/>
+	 
+	 </h:form>
+	 
+</div>

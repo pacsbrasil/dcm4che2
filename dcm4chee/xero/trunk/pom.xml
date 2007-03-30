@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.dcm4chee.xero</groupId>
+   <artifactId>xero</artifactId>
+   <packaging>pom</packaging>
+   <version>1.0-SNAPSHOT</version>
+   <name>Xero</name>
+   <url>http://www.dcm4che.org/xero</url>
+   <modules>
+      <module>metadata</module>
+      <module>xero-cfind</module>
+      <module>xero-core</module>
+      <module>xero-war</module>
+      <module>xero-ear</module>
+  </modules>
+
+  <dependencies>
+     <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-log4j12</artifactId>
+       <version>1.1.0</version>
+       <type>jar</type>
+     </dependency>
+     <dependency>
+       <groupId>org.jboss.seam</groupId>
+       <artifactId>thirdparty-all</artifactId>
+       <version>1.2.1.GA</version>
+       <scope>test</scope>
+     </dependency>
+     <dependency>
+       <groupId>org.testng</groupId>
+       <artifactId>testng</artifactId>
+       <version>5.1</version>
+       <classifier>jdk15</classifier>
+       <scope>test</scope>
+     </dependency>
+   </dependencies>
+
+   <build>
+     <plugins>
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-ejb-plugin</artifactId>
+         <configuration>
+           <ejbVersion>3.0</ejbVersion>
+         </configuration>
+       </plugin>
+  
+       <plugin>
+         <artifactId>maven-compiler-plugin</artifactId>
+         <configuration>
+           <source>1.5</source>
+           <target>1.5</target>
+         </configuration>
+       </plugin>
+     </plugins>
+   </build>
+
+
+</project>

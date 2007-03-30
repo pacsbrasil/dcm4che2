@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:x="http://www.dcm4che.org/xero/jsf"
+>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+   xmlns:s="http://www.dcm4chee.org/xero/search/"
+   xmlns="http://www.w3.org/1999/xhtml"
+>
+<!-- Handles generic display of a table based on the results $ and 
+     based on the displayed columns $displayedColumns.
+     -->
+
+<xsl:template name="render-table-td">
+  <xsl:param name="row" />
+  <xsl:param name="col" />
+  <xsl:param name="type" />
+  <xsl:param name="value" select="$row/ancestor-or-self::*/@*[local-name()=$col]" />
+  <td>
+    <xsl:call-template name="outputElement">
+      <xsl:with-param name="row" select="$row" />
+      <xsl:with-param name="type" select="$type" />
+      <xsl:with-param name="value" select="$value" />
+    </xsl:call-template>
+  </td>
+</xsl:template>
+
+<xsl:template name="render-table-row">
+  <xsl:param name="row" />
+  <xsl:param name="rowNumber" />
+  <tr>
+    <xsl:if test="($rowNumber mod 2)=0">
+      <xsl:attribute name="class">even</xsl:attribute>
+	</xsl:if>
+   	<xsl:for-each select="$displayedColumns">
+   	  <xsl:call-template name="render-table-td">
+   	     <xsl:with-param name="row" select="$row"/>
+   	     <xsl:with-param name="col" select="@name" />
+   	     <xsl:with-param name="type" select="./@type" />
+   	  </xsl:call-template>
+    </xsl:for-each>
+  </tr>
+</xsl:template>
+
+<!-- Renders a given set of study rows, as defined in $patientNode -->
+<xsl:template name="renderTableResultsPatientsStudies">
+  <xsl:if test="count($patientNode)>0">
+    <xsl:for-each select="$patientNode/se:study">
+      <xsl:call-template name="render-table-row">
+        <xsl:with-param name="row" select="." />
+        <xsl:with-param name="rowNumber" select="position()" />
+      </xsl:call-template>
+  	</xsl:for-each>
+  </xsl:if>
+</xsl:template>
+		 
+   
+<xsl:template name="renderTableResultsStudy">
+  <xsl:if test="count($docNode)>0">
+    <xsl:for-each select="$docNode/se:results/se:patient/se:study">
+      <xsl:call-template name="render-table-row">
+        <xsl:with-param name="row" select="." />
+        <xsl:with-param name="rowNumber" select="position()" />
+      </xsl:call-template>
+  	</xsl:for-each>
+  </xsl:if>
+</xsl:template>
+		 
+<xsl:template name="renderTableResultsPatient">
+  <xsl:if test="count($docNode)>0">
+    <xsl:for-each select="$docNode/se:results/se:patient">
+      <xsl:call-template name="render-table-row">
+        <xsl:with-param name="row" select="." />
+        <xsl:with-param name="rowNumber" select="position()" />
+      </xsl:call-template>
+  	</xsl:for-each>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template name="renderTableResultsHeader">
+  <tr class="header">
+    <xsl:for-each select="$displayedColumns">
+   	  <th><xsl:value-of select="@label"></xsl:value-of></th>
+    </xsl:for-each>
+  </tr>
+</xsl:template>
+
+
+</xsl:stylesheet>
+
+</ui:fragment>

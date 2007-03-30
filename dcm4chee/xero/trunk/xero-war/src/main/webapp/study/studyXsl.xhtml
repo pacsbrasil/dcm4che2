@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+>
+<xsl:variable name="docName" select="/documents/cycle"></xsl:variable>
+<ui:include src="/study/studyVars.xhtml" />
+
+<xsl:template match="/"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Xero Image Frame</title>
+
+</head>
+<body style="background: black; color: white;">
+ <xsl:if test="/documents/debug='true'">
+   Results doc name=<xsl:value-of select="$docName"></xsl:value-of> <br />
+   Patient Ident=<xsl:value-of select="$patientIdent"></xsl:value-of> <br />
+   Study UID=<xsl:value-of select="$studyUID"></xsl:value-of> <br />
+ </xsl:if>
+   
+ <form target="displayFrame" method="GET" action="displayFrame.seam">
+   <input>
+      <xsl:attribute name="type">hidden</xsl:attribute>
+      <xsl:attribute name="name">cid</xsl:attribute>
+      <xsl:attribute name="value"><xsl:value-of select="$cid" /></xsl:attribute>
+   </input>
+   <select style="background: black; color: white;" name="StudyInstanceUID">
+     <xsl:for-each select="$patientNode/se:study">
+	   <option>
+	    <xsl:attribute name="xml:space">preserve</xsl:attribute>
+	    <xsl:attribute name="value"><xsl:value-of select="@StudyInstanceUID"></xsl:value-of></xsl:attribute>
+	   	<xsl:if test="@StudyInstanceUID=$studyUID"><xsl:attribute name="selected">true</xsl:attribute></xsl:if>
+        <xsl:value-of select="@StudyDateTime"></xsl:value-of>
+        <xsl:if test="@AccessionNumber!=''">Acc#<xsl:value-of select="@AccessionNumber"></xsl:value-of></xsl:if>
+        <xsl:value-of select="@ModalitiesInStudy"></xsl:value-of>
+        <xsl:value-of select="@StudyDescription"></xsl:value-of>
+      </option>
+     </xsl:for-each>
+   </select>
+
+   <input type="submit" value="Study" />
+ </form>
+
+</body>
+
+</html>
+</xsl:template>
+
+</xsl:stylesheet>
+</ui:fragment>

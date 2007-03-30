@@ -1,0 +1,11 @@
+<x:source xmlns:x="http://www.dcm4che.org/xero/jsf" pageConfig="#{PageConfig.display}">
+  <!-- Contains the source document references for displaying an image -->
+  <cycle>#{cycleUrl}</cycle>
+  <PatientIdentifier>#{PatientViewed.patientIdentifier}</PatientIdentifier>
+  <StudyInstanceUID>#{PatientViewed.studyInstanceUID}</StudyInstanceUID>
+  <series>../series/series.xml?StudyInstanceUID=#{PatientViewed.studyInstanceUID}</series>
+  <SeriesInstanceUID>#{SeriesViewed.seriesInstanceUID}</SeriesInstanceUID>
+  <images>image.xml?StudyInstanceUID=#{PatientViewed.studyInstanceUID}&amp;SeriesInstanceUID=#{SeriesViewed.seriesInstanceUID}</images>
+  <SOPInstanceUID>#{ImageViewed.sopInstanceUID}</SOPInstanceUID>
+  <cine>#{ImageEvent.cine}</cine>
+</x:source>

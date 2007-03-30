@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:x="http://www.dcm4che.org/xero/jsf"
+>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+   xmlns="http://www.w3.org/1999/xhtml"
+   >
+<!-- Defines all the standard messages and internationalized values.  This file's contents
+changes depending on language (in the generated code version, not the original.) -->
+
+<!-- Converts an i18n label into a human-readable label in the user's current language
+     @param i18n is the name to convert into the label.
+     @todo Improve the implementation by using a select statement and directly reading
+           the messages.  See if this is performant.
+  -->
+<xsl:template name="i18nLabel">
+  <xsl:param name="i18n" />
+  <xsl:choose>
+    <c:forEach var="message" items="#{messages}">
+    <xsl:when test="$i18n='#{message.key}'">#{message.value}</xsl:when>
+    </c:forEach>
+    <xsl:otherwise>
+      <xsl:value-of select="$i18n" />
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+   
+</xsl:stylesheet>
+</ui:fragment>

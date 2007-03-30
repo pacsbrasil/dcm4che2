@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.maven.ide.eclipse.Maven2LaunchConfigurationType">
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:/xero-war}"/>
+<booleanAttribute key="editedByExternalToolsMainTab" value="true"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="full,incremental,"/>
+<booleanAttribute key="org.eclipse.debug.ui.ATTR_LAUNCH_IN_BACKGROUND" value="false"/>
+<booleanAttribute key="org.eclipse.ui.externaltools.ATTR_TRIGGERS_CONFIGURED" value="true"/>
+<listAttribute key="M2_PROPERTIES"/>
+<stringAttribute key="M2_GOALS" value="install"/>
+</launchConfiguration>

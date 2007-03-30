@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema 
+  xmlns="http://www.w3.org/2001/XMLSchema" 
+  xmlns:tns="http://www.dcm4chee.org/xero/search/study/" 
+  xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+  targetNamespace="http://www.dcm4chee.org/xero/search/study/" 
+  jxb:version="2.0"
+>
+    <!-- A studies element is the root for all children, and all children should
+         have information upto the studies level, at least UID's, however many
+         studies will NOT be complete in terms of having all children. -->
+    <element name="results" type="tns:resultsType"/>
+    
+    <element name="patient" type="tns:patientType"/>
+
+    <element name="study" type="tns:studyType"/>
+    
+    <element name="series" type="tns:seriesType"/>
+    
+    <element name="image" type="tns:imageType" />
+    
+    <element name="gsps" type="tns:gspsType" />
+
+    <complexType name="resultsType">
+    	<sequence maxOccurs="unbounded" minOccurs="0">
+    		<element ref="tns:patient"></element>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="patientType">
+         <sequence maxOccurs="unbounded" minOccurs="0">
+            <element ref="tns:study" />
+         </sequence>
+         <attribute name="PatientsSex" type="tns:SexEnum" />
+         <attribute name="PatientID" />
+         <attribute name="PatientsName" />
+         <attribute name="PatientsBirthDate" type="dateTime"/>
+         <attribute name="PatientIdentifier" type="string" />
+    </complexType>
+
+    <complexType name="studyType">
+        <sequence maxOccurs="unbounded" minOccurs="0">
+    		<element ref="tns:series"/>
+    	</sequence>
+    	<attribute name="ModalitiesInStudy" />
+    	<attribute name="StudyInstanceUID" type="tns:UID" />
+    	<attribute name="StudyID" type="string" />
+    	<attribute name="StudyDateTime" type="dateTime" />
+    	<attribute name="StudyStatusID" />
+    	<attribute name="NumberOfStudyRelatedInstances" type="int" />
+    	<attribute name="NumberOfStudyRelatedSeries" type="int" />
+    	<attribute name="InstanceAvailability" />
+    	<attribute name="ReferringPhysiciansName" />
+    	<attribute name="AccessionNumber" />
+    	<attribute name="StudyDescription" />
+    </complexType>
+    
+    <complexType name="seriesType">
+    	<sequence minOccurs="0" maxOccurs="unbounded">
+    		<annotation>
+    		   <appinfo>
+    		      <jxb:property name="DicomObject" />
+    		   </appinfo>
+    		</annotation>
+    		<element ref="tns:image" />
+    		<element ref="tns:gsps" />
+    	</sequence>
+    	<attribute name="SeriesInstanceUID" type="tns:UID" />
+    	<attribute name="SeriesNumber" type="int" />
+    	<!-- A synthetic series is one artifially split out or otherwise modified,
+    		and in this case, it will be identified by a new (unique) series number,
+    		and either the same or a new series instance UID.  If the series UID is new,
+    		then the original series UID must be included in the image. -->
+    	<attribute name="Synthetic" type="boolean" default="false" />
+    	<attribute name="SeriesDescription" type="string" />
+    	<attribute name="Modality" type="string" />
+    	<anyAttribute />
+    </complexType>
+
+    <complexType name="dicomObjectType">
+       <attribute name="SOPInstanceUID" type="tns:UID" />
+       <attribute name="SOPClassUID" type="tns:UID" />
+       <attribute name="InstanceNumber" type="int" />
+	</complexType>
+	    
+	<simpleType name="UID">
+	   <!-- TODO - make it more restricted about the format. -->
+	   <restriction base="string" />
+	</simpleType>
+	
+    <simpleType name="SexEnum">
+       <restriction base="string">
+           <enumeration value="M" />
+           <enumeration value="F" />
+           <enumeration value="O" />
+       </restriction>
+    </simpleType>
+    
+    <complexType name="gspsType">
+       <complexContent>
+          <extension base="tns:dicomObjectType" />
+       </complexContent>
+    </complexType>
+
+    <complexType name="imageType">
+    	<annotation>
+    		<documentation>
+    			Images are viewable image meta-data.
+    		</documentation>
+    	</annotation>
+    	<complexContent>
+    		<extension base="tns:dicomObjectType">
+    			<attribute name="Rows" type="int"></attribute>
+    			<attribute name="Columns" type="int"></attribute>
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+</schema>

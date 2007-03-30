@@ -1,0 +1,5 @@
+<jboss-app>
+   <loader-repository> 
+      seam.jboss.org:loader=xero
+   </loader-repository> 
+</jboss-app> 

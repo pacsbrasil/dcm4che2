@@ -1,0 +1,75 @@
+# Define the meta-data providers for seam, to allow pluging in seam meta-data.
+# Set the priority fairly high so that we can eventually have a JNDI meta-data provider
+# that takes precedence
+metaDataProvider.seam=${org.dcm4chee.xero.metadata.seam.SeamMetaDataProvider}
+metaDataProvider.seam.priority=25
+metaDataProvider.seam.prefixPath=xero
+metaDataProvider.xhtml=${org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.xhtml.priority=35
+metaDataProvider.xhtml.propertyFile=index.html
+metaDataProvider.xhtml.rootXml=http://www.dcm4che.org/xero/metadata
+valueProvider.seam=${org.dcm4chee.xero.metadata.seam.SeamELValueProvider}
+
+# Display level meta-data
+
+display.xsl=imageXsl.xsl
+display.commands=${org.dcm4chee.xero.metadata.list.MetaDataList}
+display.commands.cine.name=Cine
+display.commands.cine.priority=15
+display.commands.cine.icon=/img/cine.png
+display.commands.cine.xsl=cineXsl.xhtml
+
+# Search level
+search.xsl=searchXsl.xsl
+search.typeOutput.includeXsl=../types/typeOutput.xsl
+search.searchForm.includeXsl=../search/searchFormXsl.xsl
+search.searchForm.typeInput.includeXsl=../types/typeInput.xsl
+search.tableLayout.includeXsl=../table/tableXsl.xsl
+
+# Search form
+
+# Tabs 
+tabs.xsl=tabsXsl.xsl
+
+# Cycle 
+cycle.xsl=cycleXsl.xsl
+cycle.tableLayout.includeXsl=../table/tableXsl.xsl
+cycle.typeOutput.includeXsl=../types/typeOutput.xsl
+
+#Cycle Frame
+cycleFrame.xsl=cycleFrameXsl.xsl
+
+# Patient list on list page
+patient.xsl=patientXsl.xsl
+patient.tableLayout.includeXsl=../table/tableXsl.xsl
+patient.typeOutput.includeXsl=../types/typeOutput.xsl
+
+
+# Converters for one type to another
+# At some point, an input converter will be required as well.
+converters.Name.template=rawConverter
+converters.string.template=rawConverter
+converters.UID.template=rawConverter
+converters.Modality.template=rawConverter
+converters.DateTime.template=rawConverter
+converters.StudySelector.template=studyCheckboxConverter
+converters.PatientSelector.template=patientCheckboxConverter
+converters.PatientsName.template=patientsNameConverter
+
+# Input elements for various types
+inputs.default.template=rawInput
+inputs.Name.template=rawInput
+inputs.PatientsName.template=rawInput
+inputs.UID.template=rawInput
+inputs.string.template=rawInput
+inputs.Modality.template=modalityInput
+Modality.CT=CT
+Modality.MR=MR
+Modality.NM=NM
+Modality.SR=Structured Report
+Modality.KO=Key Object
+Modality.PR=GSPS
+Modality.MG=Mammography
+inputs.DateTime.template=rawInput
+inputs.Date.template=rawInput
+inputs.messages.includeXsl=../types/messages.xsl

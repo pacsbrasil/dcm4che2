@@ -1,0 +1,84 @@
+<pages>
+
+  <page view-id="/tabs/tabsFrame.xhtml">
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/tabs/tabs.xhtml">
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/search/search.xhtml" action="#{SearchPageAction.search}">
+    <navigation from-action="#{SearchPageAction.search}">
+      <rule if-outcome="Add">
+         <redirect view-id="/cycle/cycleFrame.xhtml" />
+      </rule>
+      <rule if-outcome="View">
+         <redirect view-id="/study/patientFrame.xhtml">
+           <param name="StudyInstanceUID" value="#{studySelection[0]}" />
+         </redirect>
+      </rule>
+      <rule if-outcome="success">
+         <render view-id="/search/search.xhtml" />
+      </rule>
+    </navigation>
+  </page>
+
+  <page view-id="/cycle/cycleFrame.xhtml" action="#{CyclePageAction.cycle}">
+    <navigation>
+      <rule if-outcome="Remove">
+         <render view-id="/cycle/cycleFrame.xhtml" />
+      </rule>
+      <rule if-outcome="success">
+         <render view-id="/cycle/cycleFrame.xhtml" />
+      </rule>
+    </navigation>
+  </page>
+  
+  <page view-id="/cycle/cycle.xhtml">
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/cycle/patient.xhtml">
+    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/study/patientFrame.xhtml" action="#{CyclePageAction.ensureStudyPresent}">
+    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
+    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
+    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+  </page>
+  
+  <page view-id="/study/displayFrame.xhtml"> 
+    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
+    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
+    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/study/study.xhtml">
+    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
+    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
+    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/series/seriesTray.xhtml">
+    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
+    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/image/image.xhtml">
+    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
+    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
+    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <param name="cine" value="#{ImageEvent.cine}" />
+    <begin-conversation join="true" />
+  </page>
+  
+</pages>

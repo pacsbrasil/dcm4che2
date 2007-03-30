@@ -1,0 +1,22 @@
+<!-- Defines a bunch of search variables for inclusion in XSL files. -->
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:s="http://www.dcm4chee.org/xero/search/"
+>
+  <xsl:variable name="tableColumnsDoc" select="/documents/tableColumns" />
+  <xsl:variable name="tableColumns" select="document($tableColumnsDoc)/s:searchCriteria" />
+  <xsl:variable name="displayedColumns" select="$tableColumns/s:attribute[@column='true']" />
+
+  <xsl:variable name="searchResultsDoc" select="/documents/cycle" />
+  <xsl:variable name="docNode" select="document($searchResultsDoc)" />
+  
+  <!-- To figure out the right patient, use the patient id in sources, or the first one found in the file. -->
+  <xsl:variable name="patientIdent">
+    <xsl:if test="/documents/PatientIdentifier!=''"><xsl:value-of select="/documents/PatientIdentifier[.!='']" /></xsl:if>
+    <xsl:if test="/documents/PatientIdentifier=''"><xsl:value-of select="$docNode/se:results/se:patient[1]/@PatientIdentifier" /></xsl:if>
+  </xsl:variable>
+
+  <xsl:variable name="patientNode" select="$docNode/se:results/se:patient[@PatientIdentifier=$patientIdent]" />
+
+  <xsl:variable name="cid" select="/documents/@conversationId" />
+</ui:component>

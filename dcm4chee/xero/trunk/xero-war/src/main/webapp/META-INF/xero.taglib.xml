@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE facelet-taglib PUBLIC
+  "-//Sun Microsystems, Inc.//DTD Facelet Taglib 1.0//EN"
+  "http://java.sun.com/dtd/facelet-taglib_1_0.dtd">
+  
+<facelet-taglib>
+   <namespace>http://www.dcm4che.org/xero/jsf</namespace>
+
+   <tag>
+     <tag-name>source</tag-name>
+     <source>tags/source.xhtml</source>
+   </tag>
+   
+   <tag>
+     <tag-name>includeXsl</tag-name>
+     <source>tags/includeXsl.xhtml</source>
+   </tag>
+   
+   <tag>
+     <tag-name>callTemplates</tag-name>
+     <source>tags/callTemplates.xhtml</source>
+   </tag>
+   
+   <tag>
+     <tag-name>button</tag-name>
+     <source>tags/button.xhtml</source>
+   </tag>
+
+   <tag>
+     <tag-name>xsl</tag-name>
+     <source>tags/xsl.xhtml</source>
+   </tag>
+  
+   <function>
+     <function-name>sorted</function-name>
+     <function-class>org.dcm4chee.xero.metadata.seam.ELFunctions</function-class>
+     <function-signature>java.util.List sorted(org.dcm4chee.xero.metadata.MetaDataBean, java.lang.String)</function-signature>
+   </function> 
+  
+   <function>
+     <function-name>sortedBy</function-name>
+     <function-class>org.dcm4chee.xero.metadata.seam.ELFunctions</function-class>
+     <function-signature>java.util.List sorted(org.dcm4chee.xero.metadata.MetaDataBean, java.lang.String)</function-signature>
+   </function> 
+  
+</facelet-taglib>

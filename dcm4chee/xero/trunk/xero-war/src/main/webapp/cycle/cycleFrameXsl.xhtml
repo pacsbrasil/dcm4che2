@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+   xmlns="http://www.w3.org/1999/xhtml">
+   
+<xsl:variable name="cid" select="/documents/@conversationId" />
+   
+<xsl:template match="/"><html style=" border-style: none; margin-width: 0px; background=orange; ">
+<head>    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Xero Cycle</title>
+</head>
+<frameset cols="20%,*">
+      <frame>
+        <xsl:attribute name="id">cycleFrame</xsl:attribute>
+        <xsl:attribute name="name">cycleFrame</xsl:attribute>
+        <xsl:attribute name="src">cycle.xml?cid=<xsl:value-of select="$cid" /></xsl:attribute>
+      </frame>
+      <frame>
+        <xsl:attribute name="id">patientFrame</xsl:attribute>
+        <xsl:attribute name="name">patientFrame</xsl:attribute>
+        <xsl:attribute name="src">patient.xml?cid=<xsl:value-of select="$cid" /></xsl:attribute>
+      </frame>
+</frameset> 
+
+</html>
+</xsl:template>
+
+</xsl:stylesheet>
+
+</ui:fragment>

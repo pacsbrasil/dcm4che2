@@ -1,0 +1,23 @@
+  <!-- Includes all XSL files referenced form the fromMeta tag.
+       Metadata of the form NAME.includeXsl=... is included as xsl include,
+       Metadata of the form NAME.includeFacelet=... is included as facelet.
+       Metadata of the form NAME.includeLiteral=... is included as raw text.
+       @param fromMeta is the metadata item to test for includes.
+   -->
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:c="http://java.sun.com/jstl/core"
+>
+   <c:forEach var="includeXslHref" items="#{fromMeta}">
+     <c:if test="#{includeXslHref.value.includeXsl!=null}">
+       <xsl:import href="#{includeXslHref.value.includeXsl}" />
+     </c:if>
+     <c:if test="#{includeXslHref.value.includeFacelet!=null}">
+       <ui:decorate template="#{includeXslHref.value.includeFacelet}" />
+     </c:if>
+     <c:if test="#{includeXslHref.value.includeLiteral!=null}">
+       #{includeXslHref.value.includeLiteral}
+     </c:if>
+   </c:forEach>
+   
+</ui:component>

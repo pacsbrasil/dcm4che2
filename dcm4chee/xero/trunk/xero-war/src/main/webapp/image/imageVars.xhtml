@@ -1,0 +1,16 @@
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+<ui:include src="/series/seriesVars.xhtml" />
+
+<xsl:variable name="imageUIDFromSource"><xsl:value-of select="/documents/SOPInstanceUID"/></xsl:variable>
+<xsl:variable name="imageUID">
+<xsl:if test="count($studyNode/se:series/se:image[@SOPInstanceUID=$imageUIDFromSource])!=0"><xsl:value-of select="$imageUIDFromSource"/></xsl:if>
+<xsl:if test="count($studyNode/se:series/se:image[@SOPInstanceUID=$imageUIDFromSource])=0"><xsl:value-of select="$studyNode/se:series/se:image/@SOPInstanceUID"/></xsl:if>
+</xsl:variable>
+
+<xsl:variable name="imageNode" select="$docNode/se:results/se:patient/se:study/se:series/se:image[@SOPInstanceUID=$imageUID]" />
+<xsl:variable name="imagePrevUID" select="$imageNode/preceding::se:image[1]/@SOPInstanceUID" />
+<xsl:variable name="imageNextUID" select="$imageNode/following::se:image/@SOPInstanceUID" />
+
+</ui:component>
