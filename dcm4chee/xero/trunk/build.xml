@@ -39,6 +39,12 @@
      </copy>
   </target>
 
+  <target name="setupConf">
+     <copy todir="${developmentServer}/server/default/conf">
+        <fileset dir="conf" includes="**/*" />
+     </copy>
+  </target>
+
   <target name="installmvn" description="Install maven pre-requisites locally.">
      <exec executable="${mvn}" dir="${seamDir}">
         <arg line="install:install-file -Dfile=jboss-seam.jar -DartifactId=jboss-seam -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
@@ -69,7 +75,7 @@
      </exec>
   </target>
 
-  <target name="setup" description="Setup the development server from the JBoss base server." depends="deploy, setupLib, setupDeploy">
+  <target name="setup" description="Setup the development server from the JBoss base server." depends="deploy, setupLib, setupDeploy, setupConf">
   </target>
 
   <target name="deploy" depends="build" description="Deploy Xero to the development Dcm4che server.">
