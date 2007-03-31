@@ -41,7 +41,7 @@
       <name>SRStylesheetURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:dcm4chee-hl7/orbis_oru2sr.xsl" />
+         <value value="resource:dcm4chee-hl7/oru2sr.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
