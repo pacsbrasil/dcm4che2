@@ -6,7 +6,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-audit</artifactId>
-  <version>2.0.10-SNAPSHOT</version>
+  <version>2.0.10</version>
   <description>IHE ATNA Audit Message Construction Set</description>
   <dependencies>
     <dependency>
