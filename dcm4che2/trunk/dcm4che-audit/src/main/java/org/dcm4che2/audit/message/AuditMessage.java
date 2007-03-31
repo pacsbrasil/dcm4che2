@@ -350,7 +350,7 @@ public class AuditMessage extends BaseElement {
         }
         StringBuffer sb = new StringBuffer(30);
         sb.append(c.get(Calendar.YEAR));
-        appendNNTo('-', c.get(Calendar.MONTH), sb);
+        appendNNTo('-', c.get(Calendar.MONTH)+1, sb);
         appendNNTo('-', c.get(Calendar.DAY_OF_MONTH), sb);
         appendNNTo('T', c.get(Calendar.HOUR_OF_DAY), sb);
         appendNNTo(':', c.get(Calendar.MINUTE), sb);
