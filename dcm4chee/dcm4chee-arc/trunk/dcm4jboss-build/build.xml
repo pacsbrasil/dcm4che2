@@ -153,7 +153,7 @@
         <include name="lib/commons-compress-20050911.jar"/>
         <include name="lib/saaj-api.jar"/>
         <include name="lib/saaj-impl.jar"/>
-        <include name="lib/dcm4che-audit-2.0.9.jar"/>
+        <include name="lib/dcm4che-audit-2.0.10.jar"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
