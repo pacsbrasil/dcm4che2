@@ -1,19 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"
-"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg 
-  xmlns="http://www.w3.org/2000/svg" 
-  xmlns:xlink="http://www.w3.org/1999/xlink"  
-  width="512" 
-  height="640"
-  onload="init()"
->
-	<script type="text/ecmascript">
-	<![CDATA[
 	    var evtText1;
 	    var windowLevelMatrix, windowLevelFilter, toWindowLevel;
-	    var windowWidth=1.0;
-	    var windowCenter=0.5;
+	    var windowWidth, windowCenter;
 	    var startWindowWidth;
 	    var startWindowCenter;
 	    var startX, startY;
@@ -21,6 +8,8 @@
 	    var sourceStart = 0;
 	    var matrix = new Array(20);
         function init() {
+            windowWidth = 1.0;
+            windowCenter = 0.5;
             evtText1 = document.getElementById("evtText1");
             windowLevelMatrix = document.getElementById("windowLevelMatrix");
             windowLevelFilter = document.getElementById("windowLevelFilter");
@@ -85,22 +74,3 @@
 			startWindowWidth = windowWidth;
 			startWindowCenter = windowCenter;
 		}
-	]]>
-	</script>
-
-    <!-- Window level center is 0.25, width is 0.5 on 0-1 input, 0-1 output  -->
-    <filter id="windowLevelFilter">
-      <feColorMatrix id="windowLevelMatrix" type="matrix" values=
-     "1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0" />
-    </filter>
-    <image style="filter: url(#windowLevelFilter);" id="toWindowLevel" x="0" y="0" width="512" height="512" 
-       xlink:href="image.jpg" 
-       onmousedown="imageMouseDown(evt)"
-       onmouseup="imageMouseUp(evt)"
-       onmousemove="imageMouseMove(evt)"
-    />
-    <g font-size="10px" font-family="Arial">
-       <text x="10" y="522" id="evtText1"> </text>
-    </g>
-    
-</svg>

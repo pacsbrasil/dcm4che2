@@ -1,0 +1,20 @@
+<x:xsl
+   pageConfig="#{PageConfig.imageToolbar.wlSvgTool}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/imageToolbar/wlSvgTool"
+   xmlns:c="http://java.sun.com/jstl/core"
+   m:toolbar="wlSvgTool" m:toolbar.priority="15"
+   m:includeXsl="../wl/wlSvgTool.xsl"
+>
+<!-- This shows a command to display window level. -->
+<xsl:template name="wlSvgTool">
+  <a>
+    <xsl:attribute name="style">float: right;</xsl:attribute>
+  	<xsl:attribute name="href">../wl/dynamicWL.xml?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageUID" /></xsl:attribute>
+    WL-SVG
+  </a>
+</xsl:template>
+
+
+</x:xsl>
