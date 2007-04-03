@@ -75,46 +75,6 @@ import org.dcm4che2.net.service.VerificationService;
  */
 public class DcmRcv extends StorageService {
 
-    private static final String DEST = "dest";
-
-    private static final String DEF_TS = "defts";
-
-    private static final String NATIVE = "native";
-
-    private static final String BIG_ENDIAN = "bigendian";
-
-    private static final String BUFSIZE = "bufsize";
-
-    private static final String PDV1 = "pdv1";
-
-    private static final String ASYNC = "async";
-
-    private static final String REQUEST_TO = "requestTO";
-
-    private static final String RELEASE_TO = "releaseTO";
-
-    private static final String SO_CLOSEDELAY = "soclosedelay";
-
-    private static final String TCP_DELAY = "tcpdelay";
-
-    private static final String SO_RCVBUF = "sorcvbuf";
-
-    private static final String SO_SNDBUF = "sosndbuf";
-
-    private static final String SND_PDULEN = "sndpdulen";
-
-    private static final String RCV_PDULEN = "rcvpdulen";
-
-    private static final String RSP_DELAY = "rspdelay";
-
-    private static final String IDLE_TO = "idleTO";
-
-    private static final String REAPER = "reaper";
-
-    private static final String VERSION = "V";
-
-    private static final String HELP = "h";
-
     private static final int KB = 1024;
 
     private static final String USAGE = "dcmrcv [Options] [<aet>[@<ip>]:]<port>";
@@ -311,12 +271,12 @@ public class DcmRcv extends StorageService {
         OptionBuilder
                 .withDescription("store received objects into files in specified directory <dir>."
                         + " Do not store received objects by default.");
-        opts.addOption(OptionBuilder.create(DEST));
+        opts.addOption(OptionBuilder.create("dest"));
 
-        opts.addOption(DEF_TS, false, "accept only default transfer syntax.");
-        opts.addOption(BIG_ENDIAN, false,
+        opts.addOption("defts", false, "accept only default transfer syntax.");
+        opts.addOption("bigendian", false,
                 "accept also Explict VR Big Endian transfer syntax.");
-        opts.addOption(NATIVE, false,
+        opts.addOption("native", false,
                 "accept only transfer syntax with uncompressed pixel data.");
 
         OptionBuilder.withArgName("maxops");
@@ -324,81 +284,81 @@ public class DcmRcv extends StorageService {
         OptionBuilder
                 .withDescription("maximum number of outstanding operations performed "
                         + "asynchronously, unlimited by default.");
-        opts.addOption(OptionBuilder.create(ASYNC));
+        opts.addOption(OptionBuilder.create("async"));
 
-        opts.addOption(PDV1, false, "send only one PDV in one P-Data-TF PDU, "
+        opts.addOption("pdv1", false, "send only one PDV in one P-Data-TF PDU, "
                 + "pack command and data PDV in one P-DATA-TF PDU by default.");
-        opts.addOption(TCP_DELAY, false,
+        opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("delay in ms for Socket close after sending A-ABORT, 50ms by default");
-        opts.addOption(OptionBuilder.create(SO_CLOSEDELAY));
+        opts.addOption(OptionBuilder.create("soclosedelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("delay in ms for DIMSE-RSP; useful for testing asynchronous mode");
-        opts.addOption(OptionBuilder.create(RSP_DELAY));
+        opts.addOption(OptionBuilder.create("rspdelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("timeout in ms for receiving -ASSOCIATE-RQ, 5s by default");
-        opts.addOption(OptionBuilder.create(REQUEST_TO));
+        opts.addOption(OptionBuilder.create("requestTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("timeout in ms for receiving A-RELEASE-RP, 5s by default");
-        opts.addOption(OptionBuilder.create(RELEASE_TO));
+        opts.addOption(OptionBuilder.create("releaseTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("period in ms to check for outstanding DIMSE-RSP, 10s by default");
-        opts.addOption(OptionBuilder.create(REAPER));
+        opts.addOption(OptionBuilder.create("reaper"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("timeout in ms for receiving DIMSE-RQ, 60s by default");
-        opts.addOption(OptionBuilder.create(IDLE_TO));
+        opts.addOption(OptionBuilder.create("idleTO"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
-        opts.addOption(OptionBuilder.create(RCV_PDULEN));
+        opts.addOption(OptionBuilder.create("rcvpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
-        opts.addOption(OptionBuilder.create(SND_PDULEN));
+        opts.addOption(OptionBuilder.create("sndpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("set SO_RCVBUF socket option to specified value in KB");
-        opts.addOption(OptionBuilder.create(SO_RCVBUF));
+        opts.addOption(OptionBuilder.create("sorcvbuf"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("set SO_SNDBUF socket option to specified value in KB");
-        opts.addOption(OptionBuilder.create(SO_SNDBUF));
+        opts.addOption(OptionBuilder.create("sosndbuf"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("minimal buffer size to write received object to file, 1KB by default");
-        opts.addOption(OptionBuilder.create(BUFSIZE));
+        opts.addOption(OptionBuilder.create("bufsize"));
 
-        opts.addOption(HELP, "help", false, "print this message");
-        opts.addOption(VERSION, "version", false,
+        opts.addOption("h", "help", false, "print this message");
+        opts.addOption("V", "version", false,
                 "print the version information and exit");
         CommandLine cl = null;
         try {
@@ -406,12 +366,12 @@ public class DcmRcv extends StorageService {
         } catch (ParseException e) {
             exit("dcmrcv: " + e.getMessage());
         }
-        if (cl.hasOption(VERSION)) {
+        if (cl.hasOption("V")) {
             Package p = DcmRcv.class.getPackage();
             System.out.println("dcmrcv v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption(HELP) || cl.getArgList().size() == 0) {
+        if (cl.hasOption("h") || cl.getArgList().size() == 0) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
@@ -432,65 +392,65 @@ public class DcmRcv extends StorageService {
             dcmrcv.setHostname(aetHost[1]);
         }
 
-        if (cl.hasOption(DEST))
-            dcmrcv.setDestination(cl.getOptionValue(DEST));
-        if (cl.hasOption(DEF_TS))
+        if (cl.hasOption("dest"))
+            dcmrcv.setDestination(cl.getOptionValue("dest"));
+        if (cl.hasOption("defts"))
             dcmrcv.setTransferSyntax(ONLY_DEF_TS);
-        else if (cl.hasOption(NATIVE))
-            dcmrcv.setTransferSyntax(cl.hasOption(BIG_ENDIAN) ? NATIVE_TS
+        else if (cl.hasOption("native"))
+            dcmrcv.setTransferSyntax(cl.hasOption("bigendian") ? NATIVE_TS
                     : NATIVE_LE_TS);
-        else if (cl.hasOption(BIG_ENDIAN))
+        else if (cl.hasOption("bigendian"))
             dcmrcv.setTransferSyntax(NON_RETIRED_TS);
-        if (cl.hasOption(REAPER))
+        if (cl.hasOption("reaper"))
             dcmrcv.setAssociationReaperPeriod(parseInt(cl
-                            .getOptionValue(REAPER),
+                            .getOptionValue("reaper"),
                             "illegal argument of option -reaper", 1,
                             Integer.MAX_VALUE));
-        if (cl.hasOption(IDLE_TO))
-            dcmrcv.setIdleTimeout(parseInt(cl.getOptionValue(IDLE_TO),
+        if (cl.hasOption("idleTO"))
+            dcmrcv.setIdleTimeout(parseInt(cl.getOptionValue("idleTO"),
                             "illegal argument of option -idleTO", 1,
                             Integer.MAX_VALUE));
-        if (cl.hasOption(REQUEST_TO))
-            dcmrcv.setRequestTimeout(parseInt(cl.getOptionValue(REQUEST_TO),
+        if (cl.hasOption("requestTO"))
+            dcmrcv.setRequestTimeout(parseInt(cl.getOptionValue("requestTO"),
                     "illegal argument of option -requestTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption(RELEASE_TO))
-            dcmrcv.setReleaseTimeout(parseInt(cl.getOptionValue(RELEASE_TO),
+        if (cl.hasOption("releaseTO"))
+            dcmrcv.setReleaseTimeout(parseInt(cl.getOptionValue("releaseTO"),
                     "illegal argument of option -releaseTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption(SO_CLOSEDELAY))
+        if (cl.hasOption("soclosedelay"))
             dcmrcv.setSocketCloseDelay(parseInt(cl
-                    .getOptionValue(SO_CLOSEDELAY),
+                    .getOptionValue("soclosedelay"),
                     "illegal argument of option -soclosedelay", 1, 10000));
-        if (cl.hasOption(RSP_DELAY))
-            dcmrcv.setDimseRspDelay(parseInt(cl.getOptionValue(RSP_DELAY),
+        if (cl.hasOption("rspdelay"))
+            dcmrcv.setDimseRspDelay(parseInt(cl.getOptionValue("rspdelay"),
                     "illegal argument of option -rspdelay", 0, 10000));
-        if (cl.hasOption(RCV_PDULEN))
+        if (cl.hasOption("rcvpdulen"))
             dcmrcv.setMaxPDULengthReceive(parseInt(cl
-                    .getOptionValue(RCV_PDULEN),
+                    .getOptionValue("rcvpdulen"),
                     "illegal argument of option -rcvpdulen", 1, 10000)
                     * KB);
-        if (cl.hasOption(SND_PDULEN))
-            dcmrcv.setMaxPDULengthSend(parseInt(cl.getOptionValue(SND_PDULEN),
+        if (cl.hasOption("sndpdulen"))
+            dcmrcv.setMaxPDULengthSend(parseInt(cl.getOptionValue("sndpdulen"),
                     "illegal argument of option -sndpdulen", 1, 10000)
                     * KB);
-        if (cl.hasOption(SO_SNDBUF))
-            dcmrcv.setSendBufferSize(parseInt(cl.getOptionValue(SO_SNDBUF),
+        if (cl.hasOption("sosndbuf"))
+            dcmrcv.setSendBufferSize(parseInt(cl.getOptionValue("sosndbuf"),
                     "illegal argument of option -sosndbuf", 1, 10000)
                     * KB);
-        if (cl.hasOption(SO_RCVBUF))
-            dcmrcv.setReceiveBufferSize(parseInt(cl.getOptionValue(SO_RCVBUF),
+        if (cl.hasOption("sorcvbuf"))
+            dcmrcv.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000)
                     * KB);
-        if (cl.hasOption(BUFSIZE))
-            dcmrcv.setFileBufferSize(parseInt(cl.getOptionValue(BUFSIZE),
+        if (cl.hasOption("bufsize"))
+            dcmrcv.setFileBufferSize(parseInt(cl.getOptionValue("bufsize"),
                     "illegal argument of option -bufsize", 1, 10000)
                     * KB);
 
-        dcmrcv.setPackPDV(!cl.hasOption(PDV1));
-        dcmrcv.setTcpNoDelay(!cl.hasOption(TCP_DELAY));
-        if (cl.hasOption(ASYNC))
-            dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue(ASYNC),
+        dcmrcv.setPackPDV(!cl.hasOption("pdv1"));
+        dcmrcv.setTcpNoDelay(!cl.hasOption("tcpdelay"));
+        if (cl.hasOption("async"))
+            dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue("async"),
                     "illegal argument of option -async", 0, 0xffff));
         dcmrcv.initTransferCapability();
         try {
