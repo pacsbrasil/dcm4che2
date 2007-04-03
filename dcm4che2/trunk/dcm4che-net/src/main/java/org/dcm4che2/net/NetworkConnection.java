@@ -77,7 +77,20 @@ public class NetworkConnection {
     static Logger log = LoggerFactory.getLogger(NetworkConnection.class);
 
     public static final int DEFAULT = 0;
+    
+    private static final String[] TLS_NULL = { "SSL_RSA_WITH_NULL_SHA" };
+    
+    private static final String[] TLS_3DES_EDE_CBC = { 
+            "SSL_RSA_WITH_3DES_EDE_CBC_SHA" };
+    
+    private static final String[] TLS_AES_128_CBC = { 
+            "TLS_RSA_WITH_AES_128_CBC_SHA",
+            "SSL_RSA_WITH_3DES_EDE_CBC_SHA" };
+    
+    private static String[] TLS_WO_SSLv2 = { "TLSv1", "SSLv3" };
 
+    private static String[] TLS_AND_SSLv2 = { "TLSv1", "SSLv3", "SSLv2Hello" };
+       
     private String commonName;
 
     private String hostname;
@@ -108,9 +121,7 @@ public class NetworkConnection {
 
     private boolean tlsNeedClientAuth = true;
 
-    private String[] tlsProtocol = { "TLSv1", "SSLv3",
-    // "SSLv2Hello"
-    };
+    private String[] tlsProtocol = TLS_AND_SSLv2;
 
     private Device device;
 
@@ -243,7 +254,7 @@ public class NetworkConnection {
      * @return A String array containing the supported cipher suites
      */
     public final String[] getTlsCipherSuite() {
-        return tlsCipherSuite;
+        return (String[]) tlsCipherSuite.clone();
     }
 
     /**
@@ -256,7 +267,7 @@ public class NetworkConnection {
      */
     public final void setTlsCipherSuite(String[] tlsCipherSuite) {
         checkNotNull("tlsCipherSuite", tlsCipherSuite);
-        this.tlsCipherSuite = tlsCipherSuite;
+        this.tlsCipherSuite = (String[]) tlsCipherSuite.clone();
     }
 
     private static void checkNotNull(String name, Object[] a) {
@@ -265,6 +276,18 @@ public class NetworkConnection {
         for (int i = 0; i < a.length; i++)
             if (a[i] == null)
                 throw new NullPointerException(name + '[' + i + ']');
+    }
+    
+    public final void setTlsWithoutEncyrption() {
+        this.tlsCipherSuite = TLS_NULL;
+    }
+
+    public final void setTls3DES_EDE_CBC() {
+        this.tlsCipherSuite = TLS_3DES_EDE_CBC;
+    }
+
+    public final void setTlsAES_128_CBC() {
+        this.tlsCipherSuite = TLS_AES_128_CBC;
     }
 
     /**
@@ -467,13 +490,21 @@ public class NetworkConnection {
     }
 
     public final String[] getTlsProtocol() {
-        return tlsProtocol;
+        return (String[]) tlsProtocol.clone();
     }
 
     public final void setTlsProtocol(String[] tlsProtocol) {
-        this.tlsProtocol = tlsProtocol;
+        this.tlsProtocol = (String[]) tlsProtocol.clone();
+    }
+    
+    public final void enableSSLv2Hello() {
+        this.tlsProtocol = TLS_AND_SSLv2;
     }
 
+    public final void disableSSLv2Hello() {
+        this.tlsProtocol = TLS_WO_SSLv2;
+    }
+    
     private InetSocketAddress getEndPoint() {
         return new InetSocketAddress(addr, port);
     }
