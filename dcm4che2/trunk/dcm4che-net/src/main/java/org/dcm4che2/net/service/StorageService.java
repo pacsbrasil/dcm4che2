@@ -76,7 +76,7 @@ public class StorageService extends DicomService implements CStoreSCP {
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws DicomServiceException, IOException {
         //      overwriten by actual Storage SCP                
-        dataStream.skipAll();
+        
         // to avoid to break existing clients
         doCStore(as, pcid, rq, dataStream, tsuid, rsp);
     }
@@ -87,7 +87,8 @@ public class StorageService extends DicomService implements CStoreSCP {
     protected void doCStore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws DicomServiceException, IOException {
-        // NOOP                
+        dataStream.skipAll();
+        // NOOP           
     }
 
     protected void onCStoreRSP(Association as, int pcid, DicomObject rq,
