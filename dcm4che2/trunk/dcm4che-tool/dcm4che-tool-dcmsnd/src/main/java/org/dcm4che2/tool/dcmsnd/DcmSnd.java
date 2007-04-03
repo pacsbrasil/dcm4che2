@@ -41,6 +41,11 @@ package org.dcm4che2.tool.dcmsnd;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,6 +122,8 @@ public class DcmSnd extends StorageCommitmentService {
       + "results, send DICOM object image.dcm to Application Entity STORESCP, "
       + "listening on local port 11112, and request Storage Commitment.";
 
+    private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
+    
     private static final String[] ONLY_IVLE_TS = { 
         UID.ImplicitVRLittleEndian
     };
@@ -172,6 +179,16 @@ public class DcmSnd extends StorageCommitmentService {
     private long shutdownDelay = 1000L;
     
     private DicomObject stgCmtResult;
+
+    private String keyStoreURL = "resource:tls/test_sys_1.p12";
+    
+    private char[] keyStorePassword = SECRET; 
+
+    private char[] keyPassword; 
+    
+    private String trustStoreURL = "resource:tls/mesa_certs.jks";
+    
+    private char[] trustStorePassword = SECRET; 
     
     public DcmSnd() {
         remoteAE.setInstalled(true);
@@ -203,6 +220,49 @@ public class DcmSnd extends StorageCommitmentService {
         remoteConn.setPort(port);
     }
     
+    public final void setTlsWithoutEncyrption() {
+        conn.setTlsWithoutEncyrption();
+        remoteConn.setTlsWithoutEncyrption();
+    }
+
+    public final void setTls3DES_EDE_CBC() {
+        conn.setTls3DES_EDE_CBC();
+        remoteConn.setTls3DES_EDE_CBC();
+    }
+
+    public final void setTlsAES_128_CBC() {
+        conn.setTlsAES_128_CBC();
+        remoteConn.setTlsAES_128_CBC();
+    }
+    
+    public final void disableSSLv2Hello() {
+        conn.disableSSLv2Hello();
+    }
+    
+    public final void setTlsNeedClientAuth(boolean needClientAuth) {
+        conn.setTlsNeedClientAuth(needClientAuth);
+    }  
+    
+    public final void setKeyStoreURL(String url) {
+        keyStoreURL = url;
+    }
+    
+    public final void setKeyStorePassword(String pw) {
+        keyStorePassword = pw.toCharArray();
+    }
+    
+    public final void setKeyPassword(String pw) {
+        keyPassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStorePassword(String pw) {
+        trustStorePassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStoreURL(String url) {
+        trustStoreURL = url;
+    }
+
     public final void setCalledAET(String called) {
         remoteAE.setAETitle(called);
     }
@@ -304,6 +364,46 @@ public class DcmSnd extends StorageCommitmentService {
                 "set AET, local address and listening port of local Application Entity");
         opts.addOption(OptionBuilder.create("L"));
 
+        
+        OptionBuilder.withArgName("NULL|3DES|AES");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable TLS connection without, 3DES or AES encryption");
+        opts.addOption(OptionBuilder.create("tls"));
+        
+        opts.addOption("nossl2", false, "disable acceptance of SSLv2Hello TLS handshake");
+        opts.addOption("noclientauth", false, "disable client authentification for TLS");        
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of P12 or JKS keystore, resource:tls/test_sys_2.p12 by default");
+        opts.addOption(OptionBuilder.create("keystore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for keystore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("keystorepw"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for accessing the key in the keystore, keystore password by default");
+        opts.addOption(OptionBuilder.create("keypw"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of JKS truststore, resource:tls/mesa_certs.jks by default");
+        opts.addOption(OptionBuilder.create("truststore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for truststore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("truststorepw"));
+        
         opts.addOption("stgcmt", false,
                 "request storage commitment of (successfully) sent objects afterwards");
         
@@ -516,6 +616,48 @@ public class DcmSnd extends StorageCommitmentService {
                 + " files in " + ((t2 - t1) / 1000F) + "s (="
                 + ((t2 - t1) / dcmsnd.getNumberOfFilesToSend()) + "ms/file)");
         dcmsnd.configureTransferCapability();
+        if (cl.hasOption("tls")) {
+            String cipher = (String) cl.getOptionValue("tls");
+            if ("NULL".equalsIgnoreCase(cipher)) {
+                dcmsnd.setTlsWithoutEncyrption();
+            } else if ("3DES".equalsIgnoreCase(cipher)) {
+                dcmsnd.setTls3DES_EDE_CBC();
+            } else if ("AES".equalsIgnoreCase(cipher)) {
+                dcmsnd.setTlsAES_128_CBC();
+            } else {
+                exit("Invalid parameter for option -tls: " + cipher);
+            }
+            if (cl.hasOption("nossl2")) {
+                dcmsnd.disableSSLv2Hello();
+            }
+            dcmsnd.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
+
+            if (cl.hasOption("keystore")) {
+                dcmsnd.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+            }
+            if (cl.hasOption("keystorepw")) {
+                dcmsnd.setKeyStorePassword(
+                        (String) cl.getOptionValue("keystorepw"));
+            }
+            if (cl.hasOption("keypw")) {
+                dcmsnd.setKeyPassword((String) cl.getOptionValue("keypw"));
+            }
+            if (cl.hasOption("truststore")) {
+                dcmsnd.setTrustStoreURL(
+                        (String) cl.getOptionValue("truststore"));
+            }
+            if (cl.hasOption("truststorepw")) {
+                dcmsnd.setTrustStorePassword(
+                        (String) cl.getOptionValue("truststorepw"));
+            }
+            try {
+                dcmsnd.initTLS();
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to initialize TLS context:"
+                        + e.getMessage());
+                System.exit(2);
+            }
+        }        
         try {
             dcmsnd.start();
         } catch (Exception e) {
@@ -958,5 +1100,42 @@ public class DcmSnd extends StorageCommitmentService {
             DicomObject rq, DicomObject info, DicomObject rsp) {
         stgCmtResult = info;
         notifyAll();
+    }
+
+    public void initTLS() throws GeneralSecurityException, IOException {
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword);
+        device.initTLS(keyStore,
+                keyPassword != null ? keyPassword : keyStorePassword,
+                trustStore);
+    }
+    
+    private static KeyStore loadKeyStore(String url, char[] password)
+            throws GeneralSecurityException, IOException {
+        KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
+        InputStream in = openFileOrURL(url);
+        try {
+            key.load(in, password);
+        } finally {
+            in.close();
+        }
+        return key;
+    }
+
+    private static InputStream openFileOrURL(String url) throws IOException {
+        if (url.startsWith("resource:")) {
+            return DcmSnd.class.getClassLoader().getResourceAsStream(
+                    url.substring(9));
+        }
+        try {
+            return new URL(url).openStream();
+        } catch (MalformedURLException e) {
+            return new FileInputStream(url);
+        }
+    }
+
+    private static String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") || fname.endsWith(".P12")
+                 ? "PKCS12" : "JKS";
     }
 }

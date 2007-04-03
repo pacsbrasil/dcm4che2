@@ -40,8 +40,14 @@ package org.dcm4che2.tool.dcmrcv;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -90,6 +96,8 @@ public class DcmRcv extends StorageService {
             + "requests with DCMRCV as called AE title. Received objects "
             + "are stored to /tmp.";
 
+    private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
+    
     private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
 
     private static final String[] NATIVE_TS = { UID.ExplicitVRLittleEndian,
@@ -190,6 +198,16 @@ public class DcmRcv extends StorageService {
 
     private int rspdelay = 0;
 
+    private String keyStoreURL = "resource:tls/test_sys_2.p12";
+    
+    private char[] keyStorePassword = SECRET; 
+
+    private char[] keyPassword; 
+    
+    private String trustStoreURL = "resource:tls/mesa_certs.jks";
+    
+    private char[] trustStorePassword = SECRET; 
+    
     public DcmRcv() {
         super(CUIDS);
         device.setNetworkApplicationEntity(ae);
@@ -212,6 +230,46 @@ public class DcmRcv extends StorageService {
         nc.setPort(port);
     }
 
+    public final void setTlsWithoutEncyrption() {
+        nc.setTlsWithoutEncyrption();
+    }
+
+    public final void setTls3DES_EDE_CBC() {
+        nc.setTls3DES_EDE_CBC();
+    }
+
+    public final void setTlsAES_128_CBC() {
+        nc.setTlsAES_128_CBC();
+    }
+    
+    public final void disableSSLv2Hello() {
+        nc.disableSSLv2Hello();
+    }
+    
+    public final void setTlsNeedClientAuth(boolean needClientAuth) {
+        nc.setTlsNeedClientAuth(needClientAuth);
+    }
+    
+    public final void setKeyStoreURL(String url) {
+        keyStoreURL = url;
+    }
+    
+    public final void setKeyStorePassword(String pw) {
+        keyStorePassword = pw.toCharArray();
+    }
+    
+    public final void setKeyPassword(String pw) {
+        keyPassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStorePassword(String pw) {
+        trustStorePassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStoreURL(String url) {
+        trustStoreURL = url;
+    }
+        
     public final void setPackPDV(boolean packPDV) {
         ae.setPackPDV(packPDV);
     }
@@ -266,10 +324,50 @@ public class DcmRcv extends StorageService {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+        
+        OptionBuilder.withArgName("NULL|3DES|AES");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable TLS connection without, 3DES or AES encryption");
+        opts.addOption(OptionBuilder.create("tls"));
+        
+        opts.addOption("nossl2", false, "disable acceptance of SSLv2Hello TLS handshake");
+        opts.addOption("noclientauth", false, "disable client authentification for TLS");        
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of P12 or JKS keystore, resource:tls/test_sys_2.p12 by default");
+        opts.addOption(OptionBuilder.create("keystore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for keystore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("keystorepw"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for accessing the key in the keystore, keystore password by default");
+        opts.addOption(OptionBuilder.create("keypw"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of JKS truststore, resource:tls/mesa_certs.jks by default");
+        opts.addOption(OptionBuilder.create("truststore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for truststore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("truststorepw"));
+        
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("store received objects into files in specified directory <dir>."
+        OptionBuilder.withDescription(
+                "store received objects into files in specified directory <dir>."
                         + " Do not store received objects by default.");
         opts.addOption(OptionBuilder.create("dest"));
 
@@ -281,8 +379,8 @@ public class DcmRcv extends StorageService {
 
         OptionBuilder.withArgName("maxops");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("maximum number of outstanding operations performed "
+        OptionBuilder.withDescription(
+                "maximum number of outstanding operations performed "
                         + "asynchronously, unlimited by default.");
         opts.addOption(OptionBuilder.create("async"));
 
@@ -293,68 +391,68 @@ public class DcmRcv extends StorageService {
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("delay in ms for Socket close after sending A-ABORT, 50ms by default");
+        OptionBuilder.withDescription(
+                "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         opts.addOption(OptionBuilder.create("soclosedelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("delay in ms for DIMSE-RSP; useful for testing asynchronous mode");
+        OptionBuilder.withDescription(
+                "delay in ms for DIMSE-RSP; useful for testing asynchronous mode");
         opts.addOption(OptionBuilder.create("rspdelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving -ASSOCIATE-RQ, 5s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving -ASSOCIATE-RQ, 5s by default");
         opts.addOption(OptionBuilder.create("requestTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving A-RELEASE-RP, 5s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         opts.addOption(OptionBuilder.create("releaseTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("period in ms to check for outstanding DIMSE-RSP, 10s by default");
+        OptionBuilder.withDescription(
+                "period in ms to check for outstanding DIMSE-RSP, 10s by default");
         opts.addOption(OptionBuilder.create("reaper"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving DIMSE-RQ, 60s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving DIMSE-RQ, 60s by default");
         opts.addOption(OptionBuilder.create("idleTO"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
+        OptionBuilder.withDescription(
+                "maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
         opts.addOption(OptionBuilder.create("rcvpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
+        OptionBuilder.withDescription(
+                "maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
         opts.addOption(OptionBuilder.create("sndpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("set SO_RCVBUF socket option to specified value in KB");
+        OptionBuilder.withDescription(
+                "set SO_RCVBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sorcvbuf"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("set SO_SNDBUF socket option to specified value in KB");
+        OptionBuilder.withDescription(
+                "set SO_SNDBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sosndbuf"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("minimal buffer size to write received object to file, 1KB by default");
+        OptionBuilder.withDescription(
+                "minimal buffer size to write received object to file, 1KB by default");
         opts.addOption(OptionBuilder.create("bufsize"));
 
         opts.addOption("h", "help", false, "print this message");
@@ -453,6 +551,48 @@ public class DcmRcv extends StorageService {
             dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue("async"),
                     "illegal argument of option -async", 0, 0xffff));
         dcmrcv.initTransferCapability();
+        if (cl.hasOption("tls")) {
+            String cipher = (String) cl.getOptionValue("tls");
+            if ("NULL".equalsIgnoreCase(cipher)) {
+                dcmrcv.setTlsWithoutEncyrption();
+            } else if ("3DES".equalsIgnoreCase(cipher)) {
+                dcmrcv.setTls3DES_EDE_CBC();
+            } else if ("AES".equalsIgnoreCase(cipher)) {
+                dcmrcv.setTlsAES_128_CBC();
+            } else {
+                exit("Invalid parameter for option -tls: " + cipher);
+            }
+            if (cl.hasOption("nossl2")) {
+                dcmrcv.disableSSLv2Hello();
+            }
+            dcmrcv.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
+
+            if (cl.hasOption("keystore")) {
+                dcmrcv.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+            }
+            if (cl.hasOption("keystorepw")) {
+                dcmrcv.setKeyStorePassword(
+                        (String) cl.getOptionValue("keystorepw"));
+            }
+            if (cl.hasOption("keypw")) {
+                dcmrcv.setKeyPassword((String) cl.getOptionValue("keypw"));
+            }
+            if (cl.hasOption("truststore")) {
+                dcmrcv.setTrustStoreURL(
+                        (String) cl.getOptionValue("truststore"));
+            }
+            if (cl.hasOption("truststorepw")) {
+                dcmrcv.setTrustStorePassword(
+                        (String) cl.getOptionValue("truststorepw"));
+            }
+            try {
+                dcmrcv.initTLS();
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to initialize TLS context:"
+                        + e.getMessage());
+                System.exit(2);
+            }
+        }        
         try {
             dcmrcv.start();
         } catch (IOException e) {
@@ -489,6 +629,43 @@ public class DcmRcv extends StorageService {
             destination.mkdir();
     }
 
+    public void initTLS() throws GeneralSecurityException, IOException {
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword);
+        device.initTLS(keyStore,
+                keyPassword != null ? keyPassword : keyStorePassword,
+                trustStore);
+    }
+    
+    private static KeyStore loadKeyStore(String url, char[] password)
+            throws GeneralSecurityException, IOException {
+        KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
+        InputStream in = openFileOrURL(url);
+        try {
+            key.load(in, password);
+        } finally {
+            in.close();
+        }
+        return key;
+    }
+
+    private static InputStream openFileOrURL(String url) throws IOException {
+        if (url.startsWith("resource:")) {
+            return DcmRcv.class.getClassLoader().getResourceAsStream(
+                    url.substring(9));
+        }
+        try {
+            return new URL(url).openStream();
+        } catch (MalformedURLException e) {
+            return new FileInputStream(url);
+        }
+    }
+
+    private static String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") || fname.endsWith(".P12")
+                 ? "PKCS12" : "JKS";
+    }
+    
     public void start() throws IOException {
         device.startListening(executor);
         System.out.println("Start Server listening on port " + nc.getPort());
@@ -522,11 +699,11 @@ public class DcmRcv extends StorageService {
         throw new RuntimeException();
     }
 
-    protected void doCStore(Association as, int pcid, DicomObject rq,
+    protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws IOException, DicomServiceException {
         if (destination == null) {
-            super.doCStore(as, pcid, rq, dataStream, tsuid, rsp);
+            super.onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
         } else {
             try {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);

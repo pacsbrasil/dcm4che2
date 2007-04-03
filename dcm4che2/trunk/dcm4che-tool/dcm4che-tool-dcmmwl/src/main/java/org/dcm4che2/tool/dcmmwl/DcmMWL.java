@@ -38,7 +38,13 @@
 
 package org.dcm4che2.tool.dcmmwl;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +89,8 @@ public class DcmMWL {
             "\nExample: dcmmwl MWLSCP@localhost:11112 -mod=CT -date=20060502\n" +
             "=> Query Application Entity MWLSCP listening on local port 11112 for " +
             "CT procedure steps scheduled for May 2, 2006.";
+
+    private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
     private static final int[] RETURN_KEYS = {
         Tag.AccessionNumber,
@@ -144,6 +152,16 @@ public class DcmMWL {
     private int cancelAfter = Integer.MAX_VALUE;
     private final DicomObject keys = new BasicDicomObject();
     private final DicomObject spsKeys = new BasicDicomObject();
+
+    private String keyStoreURL = "resource:tls/test_sys_1.p12";
+    
+    private char[] keyStorePassword = SECRET; 
+
+    private char[] keyPassword; 
+    
+    private String trustStoreURL = "resource:tls/mesa_certs.jks";
+    
+    private char[] trustStorePassword = SECRET; 
     
     public DcmMWL() {
         remoteAE.setInstalled(true);
@@ -178,6 +196,41 @@ public class DcmMWL {
 
     public final void setRemotePort(int port) {
         remoteConn.setPort(port);
+    }
+
+    public final void setTlsWithoutEncyrption() {
+        conn.setTlsWithoutEncyrption();
+        remoteConn.setTlsWithoutEncyrption();
+    }
+
+    public final void setTls3DES_EDE_CBC() {
+        conn.setTls3DES_EDE_CBC();
+        remoteConn.setTls3DES_EDE_CBC();
+    }
+
+    public final void setTlsAES_128_CBC() {
+        conn.setTlsAES_128_CBC();
+        remoteConn.setTlsAES_128_CBC();
+    }
+    
+    public final void setKeyStoreURL(String url) {
+        keyStoreURL = url;
+    }
+    
+    public final void setKeyStorePassword(String pw) {
+        keyStorePassword = pw.toCharArray();
+    }
+    
+    public final void setKeyPassword(String pw) {
+        keyPassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStorePassword(String pw) {
+        trustStorePassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStoreURL(String url) {
+        trustStoreURL = url;
     }
 
     public final void setCalledAET(String called) {
@@ -383,6 +436,50 @@ public class DcmMWL {
         }
 
         dcmmwl.setTransferSyntax(cl.hasOption("ivrle") ? IVRLE_TS : LE_TS);
+        
+
+        if (cl.hasOption("tls")) {
+            String cipher = (String) cl.getOptionValue("tls");
+            if ("NULL".equalsIgnoreCase(cipher)) {
+                dcmmwl.setTlsWithoutEncyrption();
+            } else if ("3DES".equalsIgnoreCase(cipher)) {
+                dcmmwl.setTls3DES_EDE_CBC();
+            } else if ("AES".equalsIgnoreCase(cipher)) {
+                dcmmwl.setTlsAES_128_CBC();
+            } else {
+                exit("Invalid parameter for option -tls: " + cipher);
+            }
+            if (cl.hasOption("keystore")) {
+                dcmmwl.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+            }
+            if (cl.hasOption("keystorepw")) {
+                dcmmwl.setKeyStorePassword(
+                        (String) cl.getOptionValue("keystorepw"));
+            }
+            if (cl.hasOption("keypw")) {
+                dcmmwl.setKeyPassword((String) cl.getOptionValue("keypw"));
+            }
+            if (cl.hasOption("truststore")) {
+                dcmmwl.setTrustStoreURL(
+                        (String) cl.getOptionValue("truststore"));
+            }
+            if (cl.hasOption("truststorepw")) {
+                dcmmwl.setTrustStorePassword(
+                        (String) cl.getOptionValue("truststorepw"));
+            }
+            long t1 = System.currentTimeMillis();
+            try {
+                dcmmwl.initTLS();
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to initialize TLS context:"
+                        + e.getMessage());
+                System.exit(2);
+            }
+            long t2 = System.currentTimeMillis();
+            System.out.println("Initialize TLS context in "
+                    + ((t2 - t1) / 1000F) + "s");
+        }        
+        
         long t1 = System.currentTimeMillis();
         try {
             dcmmwl.open();
@@ -424,6 +521,43 @@ public class DcmMWL {
                 "Application Entity, use ANONYMOUS and pick up any valid\n" +
                 "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
+        
+        OptionBuilder.withArgName("NULL|3DES|AES");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable TLS connection without, 3DES or AES encryption");
+        opts.addOption(OptionBuilder.create("tls"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of P12 or JKS keystore, resource:tls/test_sys_1.p12 by default");
+        opts.addOption(OptionBuilder.create("keystore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for keystore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("keystorepw"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for accessing the key in the keystore, keystore password by default");
+        opts.addOption(OptionBuilder.create("keypw"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of JKS truststore, resource:tls/mesa_certs.jks by default");
+        opts.addOption(OptionBuilder.create("truststore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for truststore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("truststorepw"));
+                
         opts.addOption("ivrle", false,
                 "offer only Implicit VR Little Endian Transfer Syntax.");
         opts.addOption("pdv1", false,
@@ -590,4 +724,40 @@ public class DcmMWL {
         System.exit(1);
     }
 
+    public void initTLS() throws GeneralSecurityException, IOException {
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword);
+        device.initTLS(keyStore,
+                keyPassword != null ? keyPassword : keyStorePassword,
+                trustStore);
+    }
+    
+    private static KeyStore loadKeyStore(String url, char[] password)
+            throws GeneralSecurityException, IOException {
+        KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
+        InputStream in = openFileOrURL(url);
+        try {
+            key.load(in, password);
+        } finally {
+            in.close();
+        }
+        return key;
+    }
+
+    private static InputStream openFileOrURL(String url) throws IOException {
+        if (url.startsWith("resource:")) {
+            return DcmMWL.class.getClassLoader().getResourceAsStream(
+                    url.substring(9));
+        }
+        try {
+            return new URL(url).openStream();
+        } catch (MalformedURLException e) {
+            return new FileInputStream(url);
+        }
+    }
+
+    private static String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") || fname.endsWith(".P12")
+                 ? "PKCS12" : "JKS";
+    }
 }

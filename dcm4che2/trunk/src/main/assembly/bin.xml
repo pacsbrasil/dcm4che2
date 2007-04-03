@@ -86,6 +86,10 @@
       <outputDirectory>/etc/hpsamples</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>dcm4che-tool/src/main/config</directory>
+      <outputDirectory>/etc</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmdir/src/bin</directory>
       <includes>
         <include>*.bat</include>

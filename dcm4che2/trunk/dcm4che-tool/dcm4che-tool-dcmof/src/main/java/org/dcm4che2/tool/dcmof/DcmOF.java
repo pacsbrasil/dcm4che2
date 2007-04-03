@@ -39,8 +39,14 @@
 package org.dcm4che2.tool.dcmof;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,6 +132,8 @@ public class DcmOF {
             + "requests with DCM4CHE_OF as called AE title, storing received messages "
             + "to /tmp.";
 
+    private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
+    
     private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
 
     private static final String[] NATIVE_TS = { UID.ExplicitVRLittleEndian,
@@ -148,6 +156,16 @@ public class DcmOF {
     private boolean indent = false;
     private boolean comments = false;
 
+    private String keyStoreURL = "resource:tls/test_sys_2.p12";
+    
+    private char[] keyStorePassword = SECRET; 
+
+    private char[] keyPassword; 
+    
+    private String trustStoreURL = "resource:tls/mesa_certs.jks";
+    
+    private char[] trustStorePassword = SECRET; 
+    
     public DcmOF() {
         device.setNetworkApplicationEntity(ae);
         device.setNetworkConnection(nc);
@@ -166,6 +184,46 @@ public class DcmOF {
 
     public final void setPort(int port) {
         nc.setPort(port);
+    }
+
+    public final void setTlsWithoutEncyrption() {
+        nc.setTlsWithoutEncyrption();
+    }
+
+    public final void setTls3DES_EDE_CBC() {
+        nc.setTls3DES_EDE_CBC();
+    }
+
+    public final void setTlsAES_128_CBC() {
+        nc.setTlsAES_128_CBC();
+    }
+    
+    public final void disableSSLv2Hello() {
+        nc.disableSSLv2Hello();
+    }
+    
+    public final void setTlsNeedClientAuth(boolean needClientAuth) {
+        nc.setTlsNeedClientAuth(needClientAuth);
+    }
+    
+    public final void setKeyStoreURL(String url) {
+        keyStoreURL = url;
+    }
+    
+    public final void setKeyStorePassword(String pw) {
+        keyStorePassword = pw.toCharArray();
+    }
+    
+    public final void setKeyPassword(String pw) {
+        keyPassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStorePassword(String pw) {
+        trustStorePassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStoreURL(String url) {
+        trustStoreURL = url;
     }
 
     public final void setPackPDV(boolean packPDV) {
@@ -218,7 +276,46 @@ public class DcmOF {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+        
+        OptionBuilder.withArgName("NULL|3DES|AES");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable TLS connection without, 3DES or AES encryption");
+        opts.addOption(OptionBuilder.create("tls"));
+        
+        opts.addOption("nossl2", false, "disable acceptance of SSLv2Hello TLS handshake");
+        opts.addOption("noclientauth", false, "disable client authentification for TLS");        
 
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of P12 or JKS keystore, resource:tls/test_sys_2.p12 by default");
+        opts.addOption(OptionBuilder.create("keystore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for keystore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("keystorepw"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for accessing the key in the keystore, keystore password by default");
+        opts.addOption(OptionBuilder.create("keypw"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of JKS truststore, resource:tls/mesa_certs.jks by default");
+        opts.addOption(OptionBuilder.create("truststore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for truststore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("truststorepw"));
+        
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder
@@ -453,6 +550,48 @@ public class DcmOF {
 
         dcmof.setTransferCapability((TransferCapability[]) tc
                 .toArray(new TransferCapability[tc.size()]));
+        if (cl.hasOption("tls")) {
+            String cipher = (String) cl.getOptionValue("tls");
+            if ("NULL".equalsIgnoreCase(cipher)) {
+                dcmof.setTlsWithoutEncyrption();
+            } else if ("3DES".equalsIgnoreCase(cipher)) {
+                dcmof.setTls3DES_EDE_CBC();
+            } else if ("AES".equalsIgnoreCase(cipher)) {
+                dcmof.setTlsAES_128_CBC();
+            } else {
+                exit("Invalid parameter for option -tls: " + cipher);
+            }
+            if (cl.hasOption("nossl2")) {
+                dcmof.disableSSLv2Hello();
+            }
+            dcmof.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
+
+            if (cl.hasOption("keystore")) {
+                dcmof.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+            }
+            if (cl.hasOption("keystorepw")) {
+                dcmof.setKeyStorePassword(
+                        (String) cl.getOptionValue("keystorepw"));
+            }
+            if (cl.hasOption("keypw")) {
+                dcmof.setKeyPassword((String) cl.getOptionValue("keypw"));
+            }
+            if (cl.hasOption("truststore")) {
+                dcmof.setTrustStoreURL(
+                        (String) cl.getOptionValue("truststore"));
+            }
+            if (cl.hasOption("truststorepw")) {
+                dcmof.setTrustStorePassword(
+                        (String) cl.getOptionValue("truststorepw"));
+            }
+            try {
+                dcmof.initTLS();
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to initialize TLS context:"
+                        + e.getMessage());
+                System.exit(2);
+            }
+        }        
         try {
             dcmof.start();
         } catch (IOException e) {
@@ -611,5 +750,42 @@ public class DcmOF {
         ContentHandlerAdapter ch = new ContentHandlerAdapter(dcmobj);
         p.parse(f, ch);
         return dcmobj;
+    }
+
+    public void initTLS() throws GeneralSecurityException, IOException {
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword);
+        device.initTLS(keyStore,
+                keyPassword != null ? keyPassword : keyStorePassword,
+                trustStore);
+    }
+    
+    private static KeyStore loadKeyStore(String url, char[] password)
+            throws GeneralSecurityException, IOException {
+        KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
+        InputStream in = openFileOrURL(url);
+        try {
+            key.load(in, password);
+        } finally {
+            in.close();
+        }
+        return key;
+    }
+
+    private static InputStream openFileOrURL(String url) throws IOException {
+        if (url.startsWith("resource:")) {
+            return DcmOF.class.getClassLoader().getResourceAsStream(
+                    url.substring(9));
+        }
+        try {
+            return new URL(url).openStream();
+        } catch (MalformedURLException e) {
+            return new FileInputStream(url);
+        }
+    }
+
+    private static String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") || fname.endsWith(".P12")
+                 ? "PKCS12" : "JKS";
     }
 }

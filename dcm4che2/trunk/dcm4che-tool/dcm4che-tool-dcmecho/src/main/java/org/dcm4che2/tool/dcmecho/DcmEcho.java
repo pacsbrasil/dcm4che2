@@ -38,15 +38,21 @@
 
 package org.dcm4che2.tool.dcmecho;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.ConfigurationException;
@@ -75,11 +81,13 @@ public class DcmEcho {
             + "=> Verify connection to Application Entity STORESCP, "
             + "listening on local port 11112.";
 
+    private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
+    
     private static final String[] DEF_TS = { UID.ImplicitVRLittleEndian };
 
     private static final TransferCapability VERIFICATION_SCU = new TransferCapability(
             UID.VerificationSOPClass, DEF_TS, TransferCapability.SCU);
-
+    
     private Executor executor = new NewThreadExecutor("DCMECHO");
 
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -93,6 +101,16 @@ public class DcmEcho {
     private NetworkConnection conn = new NetworkConnection();
 
     private Association assoc;
+    
+    private String keyStoreURL = "resource:tls/test_sys_1.p12";
+    
+    private char[] keyStorePassword = SECRET; 
+
+    private char[] keyPassword; 
+    
+    private String trustStoreURL = "resource:tls/mesa_certs.jks";
+    
+    private char[] trustStorePassword = SECRET; 
 
     public DcmEcho() {
         remoteAE.setInstalled(true);
@@ -119,6 +137,41 @@ public class DcmEcho {
         remoteConn.setPort(port);
     }
 
+    public final void setTlsWithoutEncyrption() {
+        conn.setTlsWithoutEncyrption();
+        remoteConn.setTlsWithoutEncyrption();
+    }
+
+    public final void setTls3DES_EDE_CBC() {
+        conn.setTls3DES_EDE_CBC();
+        remoteConn.setTls3DES_EDE_CBC();
+    }
+
+    public final void setTlsAES_128_CBC() {
+        conn.setTlsAES_128_CBC();
+        remoteConn.setTlsAES_128_CBC();
+    }
+    
+    public final void setKeyStoreURL(String url) {
+        keyStoreURL = url;
+    }
+    
+    public final void setKeyStorePassword(String pw) {
+        keyStorePassword = pw.toCharArray();
+    }
+    
+    public final void setKeyPassword(String pw) {
+        keyPassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStorePassword(String pw) {
+        trustStorePassword = pw.toCharArray();
+    }
+    
+    public final void setTrustStoreURL(String url) {
+        trustStoreURL = url;
+    }
+    
     public final void setCalledAET(String called, boolean reuse) {
         remoteAE.setAETitle(called);
         if (reuse)
@@ -161,52 +214,88 @@ public class DcmEcho {
         Options opts = new Options();
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("set AET and local address of local Application Entity, use "
+        OptionBuilder.withDescription(
+                "set AET and local address of local Application Entity, use "
                         + "ANONYMOUS and pick up any valid local address to bind the "
                         + "socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
+        OptionBuilder.withArgName("NULL|3DES|AES");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable TLS connection without, 3DES or AES encryption");
+        opts.addOption(OptionBuilder.create("tls"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of P12 or JKS keystore, resource:tls/test_sys_1.p12 by default");
+        opts.addOption(OptionBuilder.create("keystore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for keystore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("keystorepw"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for accessing the key in the keystore, keystore password by default");
+        opts.addOption(OptionBuilder.create("keypw"));
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of JKS truststore, resource:tls/mesa_certs.jks by default");
+        opts.addOption(OptionBuilder.create("truststore"));
+
+        OptionBuilder.withArgName("password");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "password for truststore file, 'secret' by default");
+        opts.addOption(OptionBuilder.create("truststorepw"));
+        
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for TCP connect, no timeout by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for TCP connect, no timeout by default");
         opts.addOption(OptionBuilder.create("connectTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("delay in ms for Socket close after sending A-ABORT, 50ms by default");
+        OptionBuilder.withDescription(
+                "delay in ms for Socket close after sending A-ABORT, 50ms by default");
         opts.addOption(OptionBuilder.create("soclosedelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("period in ms to check for outstanding DIMSE-RSP, 10s by default");
+        OptionBuilder.withDescription(
+                "period in ms to check for outstanding DIMSE-RSP, 10s by default");
         opts.addOption(OptionBuilder.create("reaper"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving DIMSE-RSP, 60s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving DIMSE-RSP, 60s by default");
         opts.addOption(OptionBuilder.create("rspTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
         opts.addOption(OptionBuilder.create("acceptTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving A-RELEASE-RP, 5s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         opts.addOption(OptionBuilder.create("releaseTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("timeout in ms for receiving DIMSE-RQ, 10s by default");
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving DIMSE-RQ, 10s by default");
         opts.addOption(OptionBuilder.create("idleTO"));
 
         OptionBuilder.withArgName("num");
@@ -216,8 +305,8 @@ public class DcmEcho {
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder
-                .withDescription("delay in ms between repeated C-FIND RQ, immediately after C-FIND RSP by default");
+        OptionBuilder.withDescription(
+                "delay in ms between repeated C-FIND RQ, immediately after C-FIND RSP by default");
         opts.addOption(OptionBuilder.create("repeatdelay"));
 
         opts.addOption("reuseassoc", false,
@@ -229,7 +318,7 @@ public class DcmEcho {
                 "print the version information and exit");
         CommandLine cl = null;
         try {
-            cl = new PosixParser().parse(opts, args);
+            cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmecho: " + e.getMessage());
         }
@@ -308,6 +397,48 @@ public class DcmEcho {
                 : 0;
         boolean closeAssoc = cl.hasOption("closeassoc");
 
+        if (cl.hasOption("tls")) {
+            String cipher = (String) cl.getOptionValue("tls");
+            if ("NULL".equalsIgnoreCase(cipher)) {
+                dcmecho.setTlsWithoutEncyrption();
+            } else if ("3DES".equalsIgnoreCase(cipher)) {
+                dcmecho.setTls3DES_EDE_CBC();
+            } else if ("AES".equalsIgnoreCase(cipher)) {
+                dcmecho.setTlsAES_128_CBC();
+            } else {
+                exit("Invalid parameter for option -tls: " + cipher);
+            }
+            if (cl.hasOption("keystore")) {
+                dcmecho.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+            }
+            if (cl.hasOption("keystorepw")) {
+                dcmecho.setKeyStorePassword(
+                        (String) cl.getOptionValue("keystorepw"));
+            }
+            if (cl.hasOption("keypw")) {
+                dcmecho.setKeyPassword((String) cl.getOptionValue("keypw"));
+            }
+            if (cl.hasOption("truststore")) {
+                dcmecho.setTrustStoreURL(
+                        (String) cl.getOptionValue("truststore"));
+            }
+            if (cl.hasOption("truststorepw")) {
+                dcmecho.setTrustStorePassword(
+                        (String) cl.getOptionValue("truststorepw"));
+            }
+            long t1 = System.currentTimeMillis();
+            try {
+                dcmecho.initTLS();
+            } catch (Exception e) {
+                System.err.println("ERROR: Failed to initialize TLS context:"
+                        + e.getMessage());
+                System.exit(2);
+            }
+            long t2 = System.currentTimeMillis();
+            System.out.println("Initialize TLS context in "
+                    + ((t2 - t1) / 1000F) + "s");
+        }        
+
         long t1 = System.currentTimeMillis();
         try {
             dcmecho.open();
@@ -383,6 +514,43 @@ public class DcmEcho {
         System.exit(1);
     }
 
+    public void initTLS() throws GeneralSecurityException, IOException {
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword);
+        device.initTLS(keyStore,
+                keyPassword != null ? keyPassword : keyStorePassword,
+                trustStore);
+    }
+    
+    private static KeyStore loadKeyStore(String url, char[] password)
+            throws GeneralSecurityException, IOException {
+        KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
+        InputStream in = openFileOrURL(url);
+        try {
+            key.load(in, password);
+        } finally {
+            in.close();
+        }
+        return key;
+    }
+
+    private static InputStream openFileOrURL(String url) throws IOException {
+        if (url.startsWith("resource:")) {
+            return DcmEcho.class.getClassLoader().getResourceAsStream(
+                    url.substring(9));
+        }
+        try {
+            return new URL(url).openStream();
+        } catch (MalformedURLException e) {
+            return new FileInputStream(url);
+        }
+    }
+
+    private static String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") || fname.endsWith(".P12")
+                 ? "PKCS12" : "JKS";
+    }
+    
     public void open() throws IOException, ConfigurationException,
             InterruptedException {
         assoc = ae.connect(remoteAE, executor);
