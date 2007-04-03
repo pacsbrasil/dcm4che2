@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
@@ -91,6 +92,8 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
     protected RetrieveStudyDatesCmd(String sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+        this.setResultSetType( ResultSet.TYPE_SCROLL_INSENSITIVE );
+
 		execute(sql);
 	}
 
