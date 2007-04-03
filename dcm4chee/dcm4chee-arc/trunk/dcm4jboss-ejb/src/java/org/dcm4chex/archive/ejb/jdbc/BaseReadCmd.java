@@ -52,6 +52,12 @@ import java.sql.SQLException;
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
 
+    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
+            int resultSetType)
+    throws SQLException {
+        super(dsJndiName, transactionIsolationLevel, null, resultSetType);
+    }
+    
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
 			throws SQLException {
 		super(dsJndiName, transactionIsolationLevel, null);

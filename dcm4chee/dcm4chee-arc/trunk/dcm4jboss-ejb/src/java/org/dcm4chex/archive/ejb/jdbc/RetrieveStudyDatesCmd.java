@@ -91,11 +91,9 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
 
     protected RetrieveStudyDatesCmd(String sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-        this.setResultSetType( ResultSet.TYPE_SCROLL_INSENSITIVE );
-
+                transactionIsolationLevel, ResultSet.TYPE_SCROLL_INSENSITIVE);
 		execute(sql);
-	}
+    }
 
     public Date getMostRecentUpdatedTime() throws SQLException {
     	return getBoundary(1, 4, false);//1 index of field patient.updatedTime

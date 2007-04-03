@@ -113,8 +113,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     protected WadoQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
     		throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-        this.setResultSetType( ResultSet.TYPE_SCROLL_INSENSITIVE );
+                transactionIsolationLevel, ResultSet.TYPE_SCROLL_INSENSITIVE);
         this.keys = keys;
         this.filterResult = filterResult;
         this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
