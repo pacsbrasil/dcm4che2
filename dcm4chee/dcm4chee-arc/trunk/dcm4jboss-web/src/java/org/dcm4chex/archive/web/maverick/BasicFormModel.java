@@ -72,7 +72,6 @@ public abstract class BasicFormModel {
     	admin = request.isUserInRole(DCMUser.WEBADMIN);
         messages = (ResourceBundle[]) request.getSession().getAttribute("dcm4chee-web-messages");
         if ( messages == null ) {
-            Locale.setDefault(locale);
             messages = new ResourceBundle[]{ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale)};
             request.getSession().setAttribute("dcm4chee-web-messages", messages);
         }
@@ -147,7 +146,6 @@ public abstract class BasicFormModel {
     public void setLanguage(String arg) {
         if ( arg == null || arg.trim().length() < 2) return;
         locale = new Locale(arg);
-        Locale.setDefault(locale);
         messages[0] = ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale);
     }
 }
