@@ -445,7 +445,7 @@ public class MediaComposerService extends ServiceMBeanSupport {
                         if (!forward(rq1)) return;
                     }
                 } else {
-                    if (logXml) dom.toXML(xmlFile);
+                    if (logXml && dom != null) dom.toXML(xmlFile);
                     finishFileset(builder, dom, rq);
                     if (!forward(rq)) return;
                 }
