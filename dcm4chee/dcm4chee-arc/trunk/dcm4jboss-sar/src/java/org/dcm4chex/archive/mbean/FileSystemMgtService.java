@@ -754,11 +754,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 || checkStorageFileSystem < System.currentTimeMillis();
         if (checkStorageFileSystemStatus || checkDiskSpace) {
             FileSystemMgt fsmgt = newFileSystemMgt();
-            storageFileSystem = fsmgt.getFileSystem(new Long(storageFileSystem.getPk()));
-            if (!checkStorageFileSystemStatus(storageFileSystem)
+            FileSystemDTO fsDTO = fsmgt.getFileSystem(new Long(storageFileSystem.getPk()));
+            if (!checkStorageFileSystemStatus(fsDTO)
                     || checkDiskSpace
-                    && !checkStorageFileSystem(storageFileSystem))
-                if (!switchStorageFileSystem(fsmgt, storageFileSystem))
+                    && !checkStorageFileSystem(fsDTO))
+                if (!switchStorageFileSystem(fsmgt, fsDTO))
                     return null;
         }
         return storageFileSystem;
@@ -767,8 +767,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private synchronized boolean switchStorageFileSystem(FileSystemMgt fsmgt,
             FileSystemDTO fsDTO) throws RemoteException, FinderException,
             IOException {
-        if (storageFileSystem != fsDTO)
+        if (storageFileSystem.getPk() != fsDTO.getPk()) {
+        	log.info("Storage file system has already been switched. Initially was "
+                    + fsDTO.toString() + ", now it is "
+                    + storageFileSystem.toString());
             return true; // already switched by another thread
+        }
         String dirPath, dirPath0 = fsDTO.getDirectoryPath();
         do {
             dirPath = fsDTO.getNext();
@@ -780,7 +784,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             }
             fsDTO = fsmgt.getFileSystem(dirPath);
         } while (!checkStorageFileSystemStatus(fsDTO)
-                || !checkStorageFileSystem(fsDTO));
+                || !checkStorageFileSystem(fsDTO, false));
         storageFileSystem.setStatus(FileSystemStatus.RW);
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
         fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
@@ -827,6 +831,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private boolean checkStorageFileSystem(FileSystemDTO fsDTO)
             throws IOException {
+    	return checkStorageFileSystem(fsDTO, true);
+    }
+    
+    private boolean checkStorageFileSystem(FileSystemDTO fsDTO,
+    		boolean updateCheckTime)
+            throws IOException {
         File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
         if (!dir.exists()) {
             if (!makeStorageDirectory) {
@@ -856,9 +866,13 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     + " - try to switch to next configured storage directory");
             return false;
         }
-        checkStorageFileSystem = (freeSpace > minFreeDiskSpace
+        
+        if (updateCheckTime) {
+            checkStorageFileSystem = (freeSpace > minFreeDiskSpace
                 * checkFreeDiskSpaceThreshold) ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
                 : 0L;
+        }
+        
         return true;
     }
 
