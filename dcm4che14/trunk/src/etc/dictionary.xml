@@ -2498,6 +2498,10 @@
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.1" name="Ophthalmic Photography 8 Bit Image Storage" key="OphthalmicPhotography8BitImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.2" name="Ophthalmic Photography 16 Bit Image Storage" key="OphthalmicPhotography16BitImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.3" name="Stereometric Relationship Storage" key="StereometricRelationshipStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.1" name="Structured Report Text Storage (Retired)" key="StructuredReportTextStorageRetired" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.2" name="Structured Report Audio Storage (Retired)" key=" StructuredReportAudioStorageRetired" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.3" name="Structured Report Detail Storage (Retired)" key="StructuredReportDetailStorageRetired" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.4" name="Structured Report Comprehensive Storage (Retired)" key="StructuredComprehensiveStorageRetired" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.11" name="Basic Text SR" key="BasicTextSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.22" name="Enhanced SR" key="EnhancedSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.33" name="Comprehensive SR" key="ComprehensiveSR" />
