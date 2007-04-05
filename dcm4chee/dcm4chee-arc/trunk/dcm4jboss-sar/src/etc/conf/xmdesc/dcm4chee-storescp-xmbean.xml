@@ -479,6 +479,8 @@ StoreSCP service.
            UltrasoundMultiframeImageStorageRetired
            UltrasoundImageStorageRetired
            XRayAngiographicBiPlaneImageStorageRetired
+           VLImageStorageRetired
+           VLMultiframeImageStorageRetired
            "/>
       </descriptors>
    </attribute>
@@ -580,6 +582,7 @@ StoreSCP service.
            HemodynamicWaveformStorage
            CardiacElectrophysiologyWaveformStorage
            BasicVoiceAudioWaveformStorage
+           StructuredReportAudioStorageRetired
            "/>
       </descriptors>
    </attribute>
@@ -629,6 +632,9 @@ StoreSCP service.
            KeyObjectSelectionDocument
            ChestCADSR
            XRayRadiationDoseSR
+           StructuredReportTextStorageRetired
+           StructuredReportDetailStorageRetired
+           StructuredComprehensiveStorageRetired
            "/>
       </descriptors>
    </attribute>
