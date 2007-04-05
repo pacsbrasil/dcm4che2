@@ -177,7 +177,7 @@
      <param name="Facility" value="AUTHPRIV"/>
      <param name="SyslogHost" value="localhost:4000"/>
      <layout class="org.apache.log4j.PatternLayout">
-       <param name="ConversionPattern" value="dcm4chee:%m"/>
+       <param name="ConversionPattern" value="${app.name}[${app.pid}]: %m"/>
      </layout>
    </appender>
 

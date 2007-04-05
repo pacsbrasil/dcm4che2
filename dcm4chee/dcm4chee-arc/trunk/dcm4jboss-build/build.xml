@@ -232,8 +232,9 @@
       <zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
         <include name="bin/*"/>
         <exclude name="bin/*.sh"/>
-        <exclude name="bin/run.log"/>
+        <exclude name="bin/run.bat"/>
         <exclude name="bin/run.conf"/>
+        <exclude name="bin/run.log"/>
         <include name="lib/**"/>
         <include name="client/getopt.jar"/>
         <include name="client/jbossall-client.jar"/>
