@@ -127,35 +127,43 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getCheckFreeDiskSpaceInterval"
-      setMethod="setCheckFreeDiskSpaceInterval">
-      <description><![CDATA[Interval for checking free available disk
+      getMethod="getCheckFreeDiskSpaceMinimalInterval"
+      setMethod="setCheckFreeDiskSpaceMinimalInterval">
+      <description><![CDATA[Minimal Interval for checking free available disk
       space on current storage file system against minimum value specified by
-      <i>MinimumFreeDiskSpace<i>. Format: ##m (in minutes) | ##s (in seconds).
-      If the free available disk space falls below <i>MinimumFreeDiskSpace<i> x
-      <i>CheckFreeDiskSpaceThreshold<i>, the check is performed for each
-      received object - and is no longer controlled by the configured interval.
+      <b>MinimumFreeDiskSpace</b>. Format: ##m (in minutes) | ##s (in seconds).
+      The current interval (curInterval) is calculated by multiplication of
+      this value (minInterval) with the ratio of the current free available
+      disk space (curFDS) to the configured <b>MinimumFreeDiskSpace</b> (minFDS),
+      but maximal the value specified by <b>CheckFreeDiskSpaceMaximalInterval</b>
+      (maxInterval):
+      <p>
+      <code>curInterval = min(maxInterval, curFDS/minFDS * minInterval)</code>
       ]]>
       </description>
-      <name>CheckFreeDiskSpaceInterval</name>
+      <name>CheckFreeDiskSpaceMinimalInterval</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="60s"/>
+         <value value="10s"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getCheckFreeDiskSpaceThreshold"
-      setMethod="setCheckFreeDiskSpaceThreshold">
-      <description><![CDATA[Defines lower threshold of free disk space for 
-          checking free available disk space. If the free available disk space
-          falls below <i>MinimumFreeDiskSpace<i> x <i>CheckFreeDiskSpaceThreshold<i>,
-          the check is performed for each received object - and is no longer
-          controlled by <i>CheckFreeDiskSpaceInterval<i>.]]>
+      getMethod="getCheckFreeDiskSpaceMaximalInterval"
+      setMethod="setCheckFreeDiskSpaceMaximalInterval">
+      <description><![CDATA[Maximal Interval for checking free available disk
+      space on current storage file system against minimum value specified by
+      <b>MinimumFreeDiskSpace</b>. Format: ##m (in minutes) | ##s (in seconds).
+      Effective as long the current free available disk space is greater than
+      <b>MinimumFreeDiskSpace</b> multiplied by the ratio of this value and
+      the configured <b>CheckFreeDiskSpaceMinimalInterval</b>. Otherwise
+      the interval will be calculated as described above for attribute
+      <b>CheckFreeDiskSpaceMinimalInterval</b>.     
+      ]]>
       </description>
-      <name>CheckFreeDiskSpaceThreshold</name>
-      <type>float</type>
+      <name>CheckFreeDiskSpaceMaximalInterval</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="5."/>
+         <value value="60s"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

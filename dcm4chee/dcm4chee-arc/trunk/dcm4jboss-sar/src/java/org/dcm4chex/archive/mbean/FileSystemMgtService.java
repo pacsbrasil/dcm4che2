@@ -129,10 +129,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
-    private long checkFreeDiskSpaceInterval = 60000L;
-
-    private float checkFreeDiskSpaceThreshold = 5f;
-
     private boolean checkStorageFileSystemStatus = true;
 
     private String retrieveAET = "DCM4CHEE";
@@ -177,6 +173,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private boolean makeStorageDirectory = true;
 
     private FileSystemDTO storageFileSystem;
+
+    private long checkFreeDiskSpaceMinInterval;
+
+    private long checkFreeDiskSpaceMaxInterval;
 
     private long checkStorageFileSystem = 0L;
 
@@ -320,24 +320,22 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         FileSystemUtils.setDFCommandOption(dfCommandOption);
     }    
 
-    public final String getCheckFreeDiskSpaceInterval() {
-        return RetryIntervalls.formatInterval(checkFreeDiskSpaceInterval);
+    public final String getCheckFreeDiskSpaceMinimalInterval() {
+        return RetryIntervalls.formatInterval(checkFreeDiskSpaceMinInterval);
     }
 
-    public final void setCheckFreeDiskSpaceInterval(String s) {
-        this.checkFreeDiskSpaceInterval = RetryIntervalls.parseInterval(s);
+    public final void setCheckFreeDiskSpaceMinimalInterval(String s) {
+        this.checkFreeDiskSpaceMinInterval = RetryIntervalls.parseInterval(s);
     }
 
-    public final float getCheckFreeDiskSpaceThreshold() {
-        return checkFreeDiskSpaceThreshold;
+    public final String getCheckFreeDiskSpaceMaximalInterval() {
+        return RetryIntervalls.formatInterval(checkFreeDiskSpaceMaxInterval);
     }
 
-    public final void setCheckFreeDiskSpaceThreshold(float threshold) {
-        if (threshold < 1.0f)
-            throw new IllegalArgumentException(
-                    "CheckFreeDiskSpaceThreshold must NOT be smaller than 1!");
-        this.checkFreeDiskSpaceThreshold = threshold;
+    public final void setCheckFreeDiskSpaceMaximalInterval(String s) {
+        this.checkFreeDiskSpaceMaxInterval = RetryIntervalls.parseInterval(s);
     }
+
 
     public final boolean isCheckStorageFileSystemStatus() {
         return checkStorageFileSystemStatus;
@@ -868,9 +866,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         }
         
         if (updateCheckTime) {
-            checkStorageFileSystem = (freeSpace > minFreeDiskSpace
-                * checkFreeDiskSpaceThreshold) ? (System.currentTimeMillis() + checkFreeDiskSpaceInterval)
-                : 0L;
+            checkStorageFileSystem = System.currentTimeMillis() + Math.min(
+                    freeSpace * checkFreeDiskSpaceMinInterval / minFreeDiskSpace,
+                    checkFreeDiskSpaceMaxInterval);
         }
         
         return true;
