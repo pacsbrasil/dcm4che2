@@ -32,6 +32,12 @@
         If an external command is used for the copy of tarballs to the destination,
         the destination name (after the "tar:" prefix) need not follow the syntax
         of a directory path (e.g.: tar:ftp://user@pass/service).
+        <p><b>Attention:</b> The file system must have already been configured
+        by invoking operation <code>File System Management
+        Service#addNearlineFileSystem()</code>. Otherwise the copy task will
+        fail! If you configured a tar URI as destination file system, the name
+        of the configured file system has to match that URI, and not only the
+        <Directory/Mount Point> part!
         ]]>
       </description>
       <name>DestinationFileSystem</name>
