@@ -299,12 +299,14 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updateFileSystemStatus(String dirPath, int status) throws FinderException {
+    public boolean updateFileSystemStatus(String dirPath, int status) throws FinderException {
     	FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
-    	
+    	if (fs.getStatus() == status) {
+    	    return false;   
+        }
     	fs.setStatus(status);
+        return true;
     }
-
     
     /**
      * @ejb.interface-method
