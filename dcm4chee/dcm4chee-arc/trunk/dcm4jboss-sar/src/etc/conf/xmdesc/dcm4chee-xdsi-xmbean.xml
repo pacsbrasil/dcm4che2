@@ -459,6 +459,17 @@
      </parameter>
      <return-type>boolean</return-type>
 	</operation>
+
+   <operation impact="ACTION">
+     <description>Create a new XDS Folder.</description>
+     <name>createFolder</name>
+     <parameter>
+       <description>Metadata properties</description>
+       <name>mdProps</name>
+       <type>java.util.Properties</type>
+     </parameter>
+     <return-type>boolean</return-type>
+	</operation>
 	
    <operation impact="INFO">
      <description>Get the authorPerson for a user.</description>

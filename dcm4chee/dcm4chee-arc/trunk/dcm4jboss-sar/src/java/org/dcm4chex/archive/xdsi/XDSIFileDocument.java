@@ -43,24 +43,22 @@ import java.io.File;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
+import org.dcm4che.util.UIDGenerator;
+
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision$ $Date$
  * @since Feb 15, 2006
  */
-public class XDSIFileDocument implements XDSIDocument {
+public class XDSIFileDocument extends XDSIDocument {
 
-	private String mimeType;
-	private String uid;
+    private String uid;
 	private File docFile;
 	
-	public XDSIFileDocument( File docFile, String mimeType, String uid ) {
+	public XDSIFileDocument( File docFile, String mimeType,String docID, String uid ) {
+        super(docID, mimeType);
 		this.docFile = docFile;
-		if ( uid.charAt(0) != '<' ) {//Wrap with < >
-			uid = "<"+uid+">";
-		}
-		this.uid = uid;
-		this.mimeType = mimeType;
+         this.uid = uid;
 	}
 	
 	/**
@@ -74,27 +72,22 @@ public class XDSIFileDocument implements XDSIDocument {
 		return new DataHandler(new FileDataSource(getDocFile()));
 	}
 	/**
-	 * @return Returns the mimeType.
-	 */
-	public String getMimeType() {
-		return mimeType;
-	}
-	/**
-	 * @return Returns the uid.
-	 */
-	public String getDocumentID() {
-		return uid;
-	}
-	public String toString() {
-		return docFile+"|"+mimeType+"|"+uid;
+     * @return the uid
+     */
+    public String getUniqueID() {
+        return uid;
+    }
+
+    public String toString() {
+		return docFile+"|"+getMimeType()+"|"+getDocumentID();
 	}
 	
 	public static XDSIFileDocument valueOf( String s ) {
 		int pos1 = s.indexOf('|');
 		int pos2;
-		if ( pos1 == -1 || (pos2 = s.indexOf('|', pos1+1)) == -1 ) throw new IllegalArgumentException("XDSIFileDocument String must be <filename>|<mimeType>|<docUID>");
+		if ( pos1 == -1 || (pos2 = s.indexOf('|', pos1+1)) == -1 ) throw new IllegalArgumentException("XDSIFileDocument String must be <filename>|<mimeType>|<docID>");
 		return new XDSIFileDocument( new File(s.substring(0,pos1)), 
 								 s.substring(pos1+1,pos2), 
-								 s.substring(pos2+1) );
+								 s.substring(pos2+1), UIDGenerator.getInstance().createUID() );
 	}
 }

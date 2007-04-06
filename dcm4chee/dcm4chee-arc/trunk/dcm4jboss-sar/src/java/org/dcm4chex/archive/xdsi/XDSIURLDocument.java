@@ -47,19 +47,15 @@ import javax.activation.DataHandler;
  * @version $Revision$ $Date$
  * @since Feb 15, 2006
  */
-public class XDSIURLDocument implements XDSIDocument {
+public class XDSIURLDocument extends XDSIDocument {
 
-	private String mimeType;
-	private String uid;
+    private String uid;
 	private URL url;
 	
-	public XDSIURLDocument( URL url, String mimeType, String uid ) {
+	public XDSIURLDocument( URL url, String mimeType, String docID, String uid ) {
+        super(docID, mimeType);
 		this.url = url;
-		if ( uid.charAt(0) != '<' ) {//Wrap with < >
-			uid = "<"+uid+">";
-		}
-		this.uid = uid;
-		this.mimeType = mimeType;
+        this.uid = uid;
 	}
 	
 	/**
@@ -72,20 +68,12 @@ public class XDSIURLDocument implements XDSIDocument {
 	public DataHandler getDataHandler() {
 		return new DataHandler(url);
 	}
-	/**
-	 * @return Returns the mimeType.
-	 */
-	public String getMimeType() {
-		return mimeType;
-	}
-	/**
-	 * @return Returns the uid.
-	 */
-	public String getDocumentID() {
-		return uid;
-	}
+    public String getUniqueID() {
+        return uid;
+    }
+    
 	public String toString() {
-		return url+"|"+mimeType+"|"+uid;
+		return url+"|"+getMimeType()+"|"+getDocumentID();
 	}
 	
 }

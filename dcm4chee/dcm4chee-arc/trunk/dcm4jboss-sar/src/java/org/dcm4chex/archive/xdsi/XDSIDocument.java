@@ -38,6 +38,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.xdsi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.activation.DataHandler;
 
 /**
@@ -45,16 +48,69 @@ import javax.activation.DataHandler;
  * @version $Revision$ $Date$
  * @since Feb 15, 2006
  */
-public interface XDSIDocument {
-	public abstract DataHandler getDataHandler();
+public abstract class XDSIDocument {
+    private String mimeType;
+    private String docID;
+    private List assocs = null;
+    
+	public XDSIDocument(String docID, String mimeType) {
+        this.docID = docID;
+        this.mimeType = mimeType;
+    }
 
-	/**
-	 * @return Returns the mimeType.
-	 */
-	public abstract String getMimeType();
+    public abstract DataHandler getDataHandler();
 
-	/**
-	 * @return Returns the unique document id.
-	 */
-	public abstract String getDocumentID();
+    /**
+     * @return Returns the mimeType.
+     */
+    public String getMimeType() {
+        return mimeType;
+    }
+    /**
+     * @return Returns the uid.
+     */
+    public String getDocumentID() {
+        return docID;
+    }
+    
+    public abstract String getUniqueID();
+    
+    
+    public List addAssociation(String uuid, String type, String status) {
+        if ( assocs == null ) {
+            assocs = new ArrayList();
+        }
+        assocs.add( new Association(uuid, type, status) );
+        return assocs;
+    }
+    public List getAssociations() {
+        return assocs;
+    }
+    
+    
+    public class Association {
+        private String uuid;
+        private String type;
+        private String status;
+        
+        public Association( String uuid, String type, String status ) {
+            this.uuid = uuid;
+            this.type = type;
+            this.status = status;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getUUID() {
+            return uuid;
+        }
+        
+    }
+    
 }

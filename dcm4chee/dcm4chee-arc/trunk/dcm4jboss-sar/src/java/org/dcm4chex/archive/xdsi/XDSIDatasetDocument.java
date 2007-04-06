@@ -45,6 +45,7 @@ import javax.activation.DataHandler;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 
 /**
@@ -52,19 +53,15 @@ import org.dcm4che.dict.UIDs;
  * @version $Revision$ $Date$
  * @since Feb 15, 2006
  */
-public class XDSIDatasetDocument implements XDSIDocument {
+public class XDSIDatasetDocument extends XDSIDocument {
 
-	private String mimeType;
-	private String uid;
 	private Dataset ds;
+    private DataHandler dh;
 	
-	public XDSIDatasetDocument( Dataset ds, String mimeType, String uid ) {
+	public XDSIDatasetDocument( Dataset ds, String mimeType, String docID ) {
+        super(docID, mimeType);
 		this.ds = ds;
-		if ( uid.charAt(0) != '<' ) {//Wrap with < >
-			uid = "<"+uid+">";
-		}
-		this.uid = uid;
-		this.mimeType = mimeType;
+        dh = new DatasetDataHandler(ds);
 	}
 	
 	/**
@@ -75,22 +72,16 @@ public class XDSIDatasetDocument implements XDSIDocument {
 	}
 	
 	public DataHandler getDataHandler() {
-		return new DatasetDataHandler(ds);
+		return dh;
 	}
-	/**
-	 * @return Returns the mimeType.
-	 */
-	public String getMimeType() {
-		return mimeType;
-	}
-	/**
-	 * @return Returns the uid.
-	 */
-	public String getDocumentID() {
-		return uid;
-	}
+    /**
+     * @return Returns the uid.
+     */
+    public String getUniqueID() {
+        return ds.getString(Tags.SOPInstanceUID);
+    }
 	public String toString() {
-		return ds+"|"+mimeType+"|"+uid;
+		return ds+"|"+getMimeType()+"|"+getDocumentID();
 	}
 	
 	

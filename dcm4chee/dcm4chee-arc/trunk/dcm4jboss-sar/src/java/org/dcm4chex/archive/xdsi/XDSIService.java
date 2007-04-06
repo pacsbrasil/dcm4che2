@@ -120,7 +120,8 @@ import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
  */
 public class XDSIService extends ServiceMBeanSupport {
 
-	public static final String DOCUMENT_ID = "doc_1";
+    public static final String DOCUMENT_ID = "doc_1";
+    public static final String PDF_DOCUMENT_ID = "pdf_doc_1";
 	public static final String AUTHOR_SPECIALITY = "authorSpeciality";
 	public static final String AUTHOR_PERSON = "authorPerson";
 	public static final String AUTHOR_ROLE = "authorRole";
@@ -845,7 +846,12 @@ public class XDSIService extends ServiceMBeanSupport {
 		   			DataHandler dhAttachment = docs[i].getDataHandler();
 		   			AttachmentPart part = message.createAttachmentPart(dhAttachment);
 		   			part.setMimeHeader("Content-Type", docs[i].getMimeType());
-		   			part.setContentId(docs[i].getDocumentID());
+                    String docId = docs[i].getDocumentID();
+                    if ( docId.charAt(0) != '<' ) {//Wrap with < >
+                        docId = "<"+docId+">";
+                    }
+
+		   			part.setContentId(docId);
 		   			if ( log.isDebugEnabled()){
 		   				log.debug("Add Attachment Part ("+(i+1)+"/"+docs.length+")! Document ID:"+part.getContentId()+" mime:"+docs[i].getMimeType());
 		   			}
@@ -889,16 +895,17 @@ public class XDSIService extends ServiceMBeanSupport {
 		Dataset kos = queryInstance( kosIuid, UIDs.KeyObjectSelectionDocument );
 		if ( kos == null ) return false;
 		if ( mdProps == null ) mdProps = this.metadataProps;
-		XDSMetadata md = new XDSMetadata(kos, mdProps);
-		Document metadata = md.getMetadata();
         List files = new QueryFilesCmd(kosIuid).getFileDTOs();
         if ( files == null || files.size() == 0 ) {
         	
         }
         FileDTO fileDTO = (FileDTO) files.iterator().next();
 		File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
-		XDSIDocument doc = new XDSIFileDocument(file,"application/dicom",DOCUMENT_ID);
-		return sendSOAP(metadata,new XDSIDocument[]{doc} , null);
+		XDSIDocument[] docs = new XDSIFileDocument[]
+                    {new XDSIFileDocument(file,"application/dicom",DOCUMENT_ID,kosIuid)};
+        XDSMetadata md = new XDSMetadata(kos, mdProps, docs);
+        Document metadata = md.getMetadata();
+		return sendSOAP(metadata, docs, null);
 	}
 	
 	
@@ -933,10 +940,25 @@ public class XDSIService extends ServiceMBeanSupport {
 		if ( mdProps == null ) mdProps = this.metadataProps;
         String user = mdProps.getProperty("user");
 		mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(kos));
-		XDSMetadata md = new XDSMetadata(kos, mdProps);
-		Document metadata = md.getMetadata();
-		XDSIDocument doc = new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID);
-		boolean b = sendSOAP(metadata,new XDSIDocument[]{doc} , null);
+		XDSIDocument[] docs;
+        String pdfIUID = mdProps.getProperty("pdf_iuid");
+        if ( pdfIUID == null || !UIDs.isValid(pdfIUID) ) {
+            docs = new XDSIDocument[]{ new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID)};
+        } else {
+            String pdfUID = UIDGenerator.getInstance().createUID();
+            log.info("Add PDF document with IUID "+pdfIUID+" to this submission set!");
+            try {
+                docs = new XDSIDocument[]{ new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID),
+                        new XDSIURLDocument(new URL(ridURL+pdfIUID),"application/pdf",PDF_DOCUMENT_ID,pdfUID)};
+            } catch (Exception x) {
+                log.error("Cant attach PDF document! :"+x.getMessage(), x);
+                return false;
+            }
+        }
+        addAssociations(docs, mdProps);
+        XDSMetadata md = new XDSMetadata(kos, mdProps, docs);
+        Document metadata = md.getMetadata();
+		boolean b = sendSOAP(metadata, docs , null);
         sendExportNotification(kos, user, b);
 		if ( b ) {
             logExport( kos.getString(Tags.PatientID), 
@@ -948,7 +970,24 @@ public class XDSIService extends ServiceMBeanSupport {
 		return b;
 	}
 
-	public boolean exportPDF(String iuid) throws SQLException, MalformedURLException {
+	private void addAssociations(XDSIDocument[] docs, Properties mdProps) {
+        if ( mdProps.getProperty("nrOfAssociations") == null) return; 
+        int len = Integer.parseInt(mdProps.getProperty("nrOfAssociations"));
+        String assoc, uuid, type, status;
+        StringTokenizer st;
+        for ( int i=0; i < len ; i++ ) {
+            assoc = mdProps.getProperty("association_"+i);
+            st = new StringTokenizer(assoc,"|");
+            uuid = st.nextToken();
+            type = st.nextToken();
+            status = st.nextToken();
+            for ( int j = 0 ; j < docs.length ; j++) {
+                docs[j].addAssociation(uuid, type, status);
+            }
+        }
+        
+    }
+    public boolean exportPDF(String iuid) throws SQLException, MalformedURLException {
 		return exportPDF(iuid,null);
 	}
 	public boolean exportPDF(String iuid, Properties mdProps) throws SQLException, MalformedURLException {
@@ -962,11 +1001,12 @@ public class XDSIService extends ServiceMBeanSupport {
         String user = mdProps.getProperty("user");
 		mdProps.setProperty("mimetype", "application/pdf");
 		mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
-		XDSMetadata md = new XDSMetadata(ds, mdProps);
-		Document metadata = md.getMetadata();
-		XDSIDocument doc = new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",DOCUMENT_ID);
-		//XDSIDocument doc = new XDSIFileDocument(new File("C:/xdstest.pdf"), "application/pdf",DOCUMENT_ID);
-		boolean b = sendSOAP(metadata,new XDSIDocument[]{doc} , null);
+		XDSIDocument[] docs = new XDSIURLDocument[]
+                   {new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",PDF_DOCUMENT_ID,pdfUID)};
+        addAssociations(docs, mdProps);
+        XDSMetadata md = new XDSMetadata(ds, mdProps, docs);
+        Document metadata = md.getMetadata();
+		boolean b = sendSOAP(metadata,docs , null);
         sendExportNotification(ds, user, b);
 		if ( b ) {
             logExport( ds.getString(Tags.PatientID), 
@@ -977,6 +1017,18 @@ public class XDSIService extends ServiceMBeanSupport {
         }
 		return b;
 	}
+    
+    public boolean createFolder( Properties mdProps ) {
+        String patDsIUID = mdProps.getProperty("folder.patDatasetIUID");
+        Dataset ds = queryInstance(patDsIUID,null);
+        log.info("create XDS Folder for patient:"+ds.getString(Tags.PatientID));
+        mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
+        log.info("XAD patient:"+mdProps.getProperty("xadPatientID"));
+        XDSMetadata md = new XDSMetadata(null, mdProps, null);
+        Document metadata = md.getMetadata();
+        boolean b = sendSOAP(metadata, null , null);
+        return b;
+    }
 	
     /**
 	 * @param kos

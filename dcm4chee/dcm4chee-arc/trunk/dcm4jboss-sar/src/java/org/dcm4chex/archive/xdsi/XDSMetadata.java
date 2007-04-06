@@ -42,7 +42,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -112,12 +116,17 @@ public class XDSMetadata {
 	
 	private Dataset dsKO;
 	private Properties mdValues;
+    XDSIDocument[] docs;
 	private URL xslt;
+    
+    private boolean newFolder = false;
 
-	public XDSMetadata( Dataset ds, Properties props ) {
+	public XDSMetadata( Dataset ds, Properties props, XDSIDocument[] docs ) {
 		dsKO = ds;
+        this.docs = docs;
 		this.mdValues = props != null ? props : new Properties();
-		initProperties(props);
+		initProperties(props);            
+        newFolder = mdValues.getProperty("folder.uniqueId") != null;
 	}
 	/**
 	 * 
@@ -208,27 +217,92 @@ public class XDSMetadata {
     	addObjectRef(UUID.XDSDocumentEntry_eventCodeList); 
     	addObjectRef(UUID.XDSDocumentEntry_healthCareFacilityTypeCode); 
     	addObjectRef(UUID.XDSDocumentEntry_practiceSettingCode); 
-    	addObjectRef(UUID.XDSDocumentEntry_typeCode); 
+        addObjectRef(UUID.XDSDocumentEntry_typeCode); 
     	addClassification("SubmissionSet", UUID.XDSSubmissionSet);
-    	addExtrinsicObject();
-    	addRegistryPackage();
-    	addAssociation(XDSIService.DOCUMENT_ID,"Original");
+        if ( newFolder ) {
+            addObjectRef(UUID.XDSFolder); 
+            addObjectRef(UUID.XDSFolder_uniqueId); 
+            addObjectRef(UUID.XDSFolder_patientId); 
+            addClassification("Folder", UUID.XDSFolder);
+        }
+        String title;
+        if ( this.dsKO != null ) {
+            for ( int i = 0 ; i < docs.length ; i++ ) {
+                addExtrinsicObject(docs[i]);
+            }
+            Dataset cnDS = dsKO.getItem(Tags.ConceptNameCodeSeq);
+            title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
+        } else {
+            title = mdValues.getProperty("submissionSetTitle","TITLE");
+        }
+        addSubmissionRegistryPackage("SubmissionSet", title);
+        if ( newFolder ) {
+            addFolderRegistryPackage("Folder", mdValues.getProperty("folder.name","FOLDER"));
+            addAssociation("SubmissionSet","Folder", "HasMember", null);
+            if ( docs != null ) {
+            for ( int i = 0 ; i < docs.length ; i++ ) {
+                addAssociation("Folder", docs[i].getDocumentID(),"HasMember", null);
+            }
+        }
+        }
+        if ( docs != null ) {
+            for ( int i = 0 ; i < docs.length ; i++ ) {
+                addAssociation("SubmissionSet",docs[i].getDocumentID(), "HasMember", "Original");
+            }
+
+            String folders = mdValues.getProperty("folder_assoc.uniqueId");
+            if ( folders != null) {
+                StringTokenizer st = new StringTokenizer(folders, "|");
+                String uuid;
+                while ( st.hasMoreTokens() ) {
+                    uuid = st.nextToken();
+                    for ( int i = 0 ; i < docs.length ; i++ ) {
+                        addAssociation(uuid,docs[i].getDocumentID(), "HasMember", null);
+                    }
+                    addObjectRef(uuid);
+                }
+            }
+        }
+        addDocRefs();
     	th.endElement(URN_RIM, TAG_LEAFREGISTRYOBJECTLIST, TAG_LEAFREGISTRYOBJECTLIST );
 		
 	}
 	
-	/**
-	 * @param documentID
+	private void addDocRefs() throws SAXException {
+        if ( docs != null ) {
+            XDSIDocument doc;
+            List assocs;
+            XDSIDocument.Association assoc;
+            String uuid;
+            List objectRefs = new ArrayList();
+            for ( int i = 0 ; i < docs.length ; i++ ) {
+                assocs = docs[i].getAssociations();
+                if ( assocs != null ) {
+                    for ( Iterator iter = assocs.iterator() ; iter.hasNext() ; ) {
+                        assoc = (XDSIDocument.Association) iter.next();
+                        uuid = assoc.getUUID();
+                        addAssociation(docs[i].getDocumentID(),uuid, assoc.getType(), assoc.getStatus());
+                        if ( !objectRefs.contains(uuid)){
+                            addObjectRef(uuid);
+                            objectRefs.add(uuid);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+	 * @param targetObject
 	 * @param status
 	 * @throws SAXException
 	 */
-	private void addAssociation(String documentID, String status) throws SAXException {
+	private void addAssociation(String sourceObject, String targetObject, String type, String status) throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		attr.addAttribute("", "associationType", "associationType", "", "HasMember");		
-		attr.addAttribute("", "sourceObject", "sourceObject", "", "SubmissionSet");		
-		attr.addAttribute("", "targetObject", "targetObject", "", documentID);		
+		attr.addAttribute("", "associationType", "associationType", "", type);		
+		attr.addAttribute("", "sourceObject", "sourceObject", "", sourceObject);		
+		attr.addAttribute("", "targetObject", "targetObject", "", targetObject);		
     	th.startElement("", TAG_ASSOCIATION, TAG_ASSOCIATION, attr );
-    	addSlot("SubmissionSetStatus", status);
+    	if ( status != null ) addSlot("SubmissionSetStatus", status);
     	th.endElement("", TAG_ASSOCIATION, TAG_ASSOCIATION );
 		
 	}
@@ -267,13 +341,15 @@ public class XDSMetadata {
 
 	
 	/**
+	 * @param doc 
 	 * @throws SAXException
 	 * 
 	 */
-	private void addExtrinsicObject() throws SAXException {
+	private void addExtrinsicObject(XDSIDocument doc) throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		attr.addAttribute("", "id", "id", "", XDSIService.DOCUMENT_ID);
-		String mime = mdValues.getProperty("mimetype","application/dicom");
+		attr.addAttribute("", "id", "id", "", doc.getDocumentID());
+        //String mime = mdValues.getProperty("mimetype","application/dicom");
+        String mime = doc.getMimeType();
 		attr.addAttribute("", ATTR_MIMETYPE, ATTR_MIMETYPE, "", mime);		
 		attr.addAttribute("", ATTR_OBJECTTYPE, ATTR_OBJECTTYPE, "", UUID.XDSDocumentEntry);		
     	th.startElement("", TAG_EXTRINSICOBJECT, TAG_EXTRINSICOBJECT, attr );
@@ -281,14 +357,14 @@ public class XDSMetadata {
     	String title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
     	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
     	addLocalized("Description", EMPTY_ATTRIBUTES, mdValues.getProperty("description",null));
-    	addExtrinsicEntries();
+    	addExtrinsicEntries(doc);
     	th.endElement("", TAG_EXTRINSICOBJECT, TAG_EXTRINSICOBJECT );
 	}
 	/**
 	 * @throws SAXException
 	 * 
 	 */
-	private void addExtrinsicEntries() throws SAXException {
+	private void addExtrinsicEntries(XDSIDocument doc) throws SAXException {
 		addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
 		addSlot( "authorInstitution", mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
 		addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
@@ -300,45 +376,45 @@ public class XDSMetadata {
 		addSlot( "sourcePatientId", getPatID(dsKO.getString(Tags.PatientID), dsKO.getString(Tags.IssuerOfPatientID)));
 		addSlot( "sourcePatientInfo", getPatientInfo());
 
-		addClassification(UUID.XDSDocumentEntry_classCode, XDSIService.DOCUMENT_ID, 
+		addClassification(UUID.XDSDocumentEntry_classCode, doc.getDocumentID(), 
 				mdValues.getProperty("classCode","Education"),
 				mdValues.getProperty("classCodeDisplayName","Education"), 
 				mdValues.getProperty("classCodeCodingSchemeOID","Connect-a-thon classCodes"));		
-		addClassification(UUID.XDSDocumentEntry_confidentialityCode, XDSIService.DOCUMENT_ID, 
+		addClassification(UUID.XDSDocumentEntry_confidentialityCode, doc.getDocumentID(), 
 				mdValues.getProperty("confidentialityCode","C"),
 				mdValues.getProperty("confidentialityCodeDN","Celebrity"),
 				mdValues.getProperty("confidentialityCodeCodingSchemeOID","Connect-a-thon confidentialityCodes"));
 
-		addEventCodeList();
+		addEventCodeList(doc);
 		String mime = mdValues.getProperty("mimetype","application/dicom");
 		if ( "application/dicom".equals(mime)) {
-			addClassification(UUID.XDSDocumentEntry_formatCode, XDSIService.DOCUMENT_ID, 
+			addClassification(UUID.XDSDocumentEntry_formatCode, doc.getDocumentID(), 
 					UIDs.KeyObjectSelectionDocument,
 					"Key Object Selection Document", 
 					"1.2.840.10008.2.6.1" );
 		} else {
-			addClassification(UUID.XDSDocumentEntry_formatCode, XDSIService.DOCUMENT_ID, 
+			addClassification(UUID.XDSDocumentEntry_formatCode, doc.getDocumentID(), 
 					mdValues.getProperty("formatCode."+mime,"PDF"),
 					mdValues.getProperty("formatCodeDN."+mime,"PDF Document"), 
 					mdValues.getProperty("formatCodeCodingSchemeOID."+mime,"Connect-a-thon formatCodes") );
 		}
-		addClassification(UUID.XDSDocumentEntry_healthCareFacilityTypeCode, XDSIService.DOCUMENT_ID, 
+		addClassification(UUID.XDSDocumentEntry_healthCareFacilityTypeCode, doc.getDocumentID(), 
 				mdValues.getProperty("healthCareFacilityTypeCode","Assisted Living"),
 				mdValues.getProperty("healthCareFacilityTypeCodeDN","Assisted Living"),
 				mdValues.getProperty("healthCareFacilityTypeCodeCodingSchemeOID","Connect-a-thon healthcareFacilityTypeCodes"));
 		//TODO parentDocumentRelationship
 		
-		addClassification(UUID.XDSDocumentEntry_practiceSettingCode, XDSIService.DOCUMENT_ID, 
+		addClassification(UUID.XDSDocumentEntry_practiceSettingCode, doc.getDocumentID(), 
 				mdValues.getProperty("practiceSettingCode","Cardiology"),
 				mdValues.getProperty("practiceSettingCodeDN","Cardiology"),
 				mdValues.getProperty("practiceSettingCodeCodingSchemeOID","Connect-a-thon practiceSettingCodes"));		
 		//TODO Optional title
-		addClassification(UUID.XDSDocumentEntry_typeCode, XDSIService.DOCUMENT_ID, 
+		addClassification(UUID.XDSDocumentEntry_typeCode, doc.getDocumentID(), 
 				mdValues.getProperty("typeCode","34098-4"),
 				mdValues.getProperty("typeCodeDN","Conference Evaluation Note"),
 				mdValues.getProperty("typeCodeCodingSchemeOID","LOINC"));		
 		
-		addExternalIdentifier(UUID.XDSDocumentEntry_uniqueId,"XDSDocumentEntry.uniqueId", dsKO.getString(Tags.SOPInstanceUID));
+		addExternalIdentifier(UUID.XDSDocumentEntry_uniqueId,"XDSDocumentEntry.uniqueId", doc.getUniqueID());
 		addExternalIdentifier(UUID.XDSDocumentEntry_patientId,"XDSDocumentEntry.patientId", 
 				mdValues.getProperty("xadPatientID"));
 	}
@@ -347,7 +423,7 @@ public class XDSMetadata {
 	 * @throws SAXException
 	 * 
 	 */
-	private void addEventCodeList() throws SAXException {
+	private void addEventCodeList(XDSIDocument doc) throws SAXException {
 		String eventCodeList = mdValues.getProperty("eventCodeList");
 		if ( eventCodeList == null || eventCodeList.trim().length() < 1 ) return;
 		
@@ -356,7 +432,7 @@ public class XDSMetadata {
 		int pos;
 		while ( st.hasMoreTokens() ) {
 			code = StringUtils.split(st.nextToken(), '^');
-			addClassification(UUID.XDSDocumentEntry_eventCodeList, XDSIService.DOCUMENT_ID, 
+			addClassification(UUID.XDSDocumentEntry_eventCodeList, doc.getDocumentID(), 
 					code[0],
 					code.length > 1 ? code[1] : code[0],
 					code.length > 2 ? code[2] : mdValues.getProperty("eventCodeListCodingSchemeOID","Connect-a-thon confidentialityCodes"));
@@ -451,43 +527,64 @@ public class XDSMetadata {
 	 * @throws SAXException
 	 * 
 	 */
-	private void addRegistryPackage() throws SAXException {
+	private void addSubmissionRegistryPackage(String id, String title) throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		attr.addAttribute("", "id", "id", "", "SubmissionSet");		
+		attr.addAttribute("", "id", "id", "", id);		
     	th.startElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE, attr );
-      	Dataset cnDS = dsKO.getItem(Tags.ConceptNameCodeSeq);
-    	String title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
     	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
     	addLocalized(TAG_DESCRIPTION, EMPTY_ATTRIBUTES, mdValues.getProperty("comments",null));
     	addRegistryEntries();
     	th.endElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE );
 	}
-	
+    /**
+     * @throws SAXException
+     * 
+     */
+    private void addRegistryEntries() throws SAXException {
+        addSlot( "authorDepartment", mdValues.getProperty("authorDepartment", null));
+        addSlot( XDSIService.AUTHOR_INSTITUTION, mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
+        addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
+        
+        String time = mdValues.getProperty("submissionTime");
+        if ( time == null ) time = formatter.format(new Date());
+        addSlot( "submissionTime", time);
+        
+        addClassification(UUID.XDSSubmissionSet_contentTypeCode, "SubmissionSet", 
+                mdValues.getProperty("contentTypeCode","Group counseling"),
+                mdValues.getProperty("contentTypeCodeDN","Group counseling"),
+                mdValues.getProperty("contentTypeCodeCodingSchemeOID","Connect-a-thon contentTypeCodes"));
+
+        String uniqueId = mdValues.getProperty("uniqueId");
+        if ( uniqueId == null ) {
+            uniqueId = UIDGeneratorImpl.getInstance().createUID();
+        }
+        addExternalIdentifier(UUID.XDSSubmissionSet_uniqueId,"XDSSubmissionSet.uniqueId", uniqueId);
+        addExternalIdentifier(UUID.XDSSubmissionSet_sourceId,"XDSSubmissionSet.sourceId", mdValues.getProperty("sourceId", uniqueId));
+        addExternalIdentifier(UUID.XDSSubmissionSet_patientId,"XDSSubmissionSet.patientId", 
+                mdValues.getProperty("xadPatientID"));
+    }
+
+    private void addFolderRegistryPackage(String id, String title) throws SAXException {
+        AttributesImpl attr = new AttributesImpl();
+        attr.addAttribute("", "id", "id", "", id);      
+        th.startElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE, attr );
+        addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
+        addLocalized(TAG_DESCRIPTION, EMPTY_ATTRIBUTES, mdValues.getProperty("folder.comments",null));
+        addFolderEntries();
+        th.endElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE );
+    }
+    
 	/**
 	 * @throws SAXException
 	 * 
 	 */
-	private void addRegistryEntries() throws SAXException {
-		addSlot( "authorDepartment", mdValues.getProperty("authorDepartment", null));
-		addSlot( XDSIService.AUTHOR_INSTITUTION, mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
-		addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
-		
-		String time = mdValues.getProperty("submissionTime");
-		if ( time == null ) time = formatter.format(new Date());
-		addSlot( "submissionTime", time);
-		
-		addClassification(UUID.XDSSubmissionSet_contentTypeCode, "SubmissionSet", 
-				mdValues.getProperty("contentTypeCode","Group counseling"),
-				mdValues.getProperty("contentTypeCodeDN","Group counseling"),
-				mdValues.getProperty("contentTypeCodeCodingSchemeOID","Connect-a-thon contentTypeCodes"));
-
-		String uniqueId = mdValues.getProperty("uniqueId");
+	private void addFolderEntries() throws SAXException {
+		String uniqueId = mdValues.getProperty("xdsfolder.uniqueId");
 		if ( uniqueId == null ) {
 			uniqueId = UIDGeneratorImpl.getInstance().createUID();
 		}
-		addExternalIdentifier(UUID.XDSSubmissionSet_uniqueId,"XDSSubmissionSet.uniqueId", uniqueId);
-		addExternalIdentifier(UUID.XDSSubmissionSet_sourceId,"XDSSubmissionSet.sourceId", mdValues.getProperty("sourceId", uniqueId));
-		addExternalIdentifier(UUID.XDSSubmissionSet_patientId,"XDSSubmissionSet.patientId", 
+		addExternalIdentifier(UUID.XDSFolder_uniqueId,"XDSFolder.uniqueId", uniqueId);
+		addExternalIdentifier(UUID.XDSFolder_patientId,"XDSFolder.patientId", 
 				mdValues.getProperty("xadPatientID"));
 	}
 	/**
