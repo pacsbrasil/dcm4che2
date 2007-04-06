@@ -91,52 +91,52 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 
 public class PPSScuService extends ServiceMBeanSupport implements
-		MessageListener, NotificationListener {
+        MessageListener, NotificationListener {
 
-	private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-			UIDs.ImplicitVRLittleEndian };
+    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
+            UIDs.ImplicitVRLittleEndian };
 
-	private static final int ERR_GPPPS_RJ = -2;
+    private static final int ERR_GPPPS_RJ = -2;
 
-	private static final int ERR_ASSOC_RJ = -1;
+    private static final int ERR_ASSOC_RJ = -1;
 
-	private static final int PCID_GPPPS = 1;
+    private static final int PCID_GPPPS = 1;
 
-	private static final String NONE = "NONE";
+    private static final String NONE = "NONE";
 
-	private static final String[] EMPTY = {};
+    private static final String[] EMPTY = {};
 
     private static final int[] SOP_IUID = { Tags.SOPInstanceUID };
 
-    private static final int[] N_CREATE_SPS_ATTRS = { Tags.SpecificCharacterSet,
-        Tags.PatientName, Tags.PatientID, Tags.PatientBirthDate, 
-        Tags.PatientSex, Tags.ActualHumanPerformersSeq, Tags.RefRequestSeq};
+    private static final int[] N_CREATE_SPS_ATTRS = {
+            Tags.SpecificCharacterSet, Tags.PatientName, Tags.PatientID,
+            Tags.PatientBirthDate, Tags.PatientSex,
+            Tags.ActualHumanPerformersSeq, Tags.RefRequestSeq };
 
-    private static final int[] N_CREATE_TYPE2_ATTRS = { 
-        Tags.RefRequestSeq, Tags.ActualHumanPerformersSeq,
-        Tags.ActualHumanPerformersSeq,
-        Tags.RequestedSubsequentWorkitemCodeSeq,
-        Tags.NonDICOMOutputCodeSeq, Tags.OutputInformationSeq };
-    
-	private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-        
-	private RetryIntervalls retryIntervalls = new RetryIntervalls();
+    private static final int[] N_CREATE_TYPE2_ATTRS = { Tags.RefRequestSeq,
+            Tags.ActualHumanPerformersSeq, Tags.ActualHumanPerformersSeq,
+            Tags.RequestedSubsequentWorkitemCodeSeq,
+            Tags.NonDICOMOutputCodeSeq, Tags.OutputInformationSeq };
 
-	private String callingAET;
+    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
-	private String[] destAETs = EMPTY;
+    private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
-	private ObjectName gpwlScpServiceName;
+    private String callingAET;
 
-	private String queueName;
+    private String[] destAETs = EMPTY;
 
-	private int acTimeout;
+    private ObjectName gpwlScpServiceName;
 
-	private int dimseTimeout;
+    private String queueName;
 
-	private int soCloseDelay;
+    private int acTimeout;
 
-	private int concurrency = 1;
+    private int dimseTimeout;
+
+    private int soCloseDelay;
+
+    private int concurrency = 1;
 
     private String ppsuidSuffix = ".1";
 
@@ -149,7 +149,7 @@ public class PPSScuService extends ServiceMBeanSupport implements
     private boolean copyStationClassCode = true;
 
     private boolean copyStationNameCode = true;
-    
+
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
     public final ObjectName getJmsServiceName() {
@@ -158,9 +158,9 @@ public class PPSScuService extends ServiceMBeanSupport implements
 
     public final void setJmsServiceName(ObjectName jmsServiceName) {
         jmsDelegate.setJmsServiceName(jmsServiceName);
-    }    
+    }
 
-	public final boolean isCopyProcessingApplicationsCode() {
+    public final boolean isCopyProcessingApplicationsCode() {
         return copyProcessingApplicationsCode;
     }
 
@@ -211,109 +211,108 @@ public class PPSScuService extends ServiceMBeanSupport implements
     }
 
     public final int getConcurrency() {
-		return concurrency;
-	}
+        return concurrency;
+    }
 
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
-    }        
+    }
 
     public void setEjbProviderURL(String ejbProviderURL) {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
-    
-    private GPWLManager getGPWLManager()
-    throws HomeFactoryException, RemoteException, CreateException {
+
+    private GPWLManager getGPWLManager() throws HomeFactoryException,
+            RemoteException, CreateException {
         return ((GPWLManagerHome) EJBHomeFactory.getFactory().lookup(
                 GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME)).create();
     }
-    
-    private GPPPSManager getGPPPSManager() 
-    throws HomeFactoryException, RemoteException, CreateException {
+
+    private GPPPSManager getGPPPSManager() throws HomeFactoryException,
+            RemoteException, CreateException {
         return ((GPPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 GPPPSManagerHome.class, GPPPSManagerHome.JNDI_NAME)).create();
     }
-    
-    
-	public final void setConcurrency(int concurrency) throws Exception {
-		if (concurrency <= 0)
-			throw new IllegalArgumentException("Concurrency: " + concurrency);
-		if (this.concurrency != concurrency) {
-			final boolean restart = getState() == STARTED;
-			if (restart)
-				stop();
-			this.concurrency = concurrency;
-			if (restart)
-				start();
-		}
-	}
 
-	public final int getAcTimeout() {
-		return acTimeout;
-	}
+    public final void setConcurrency(int concurrency) throws Exception {
+        if (concurrency <= 0)
+            throw new IllegalArgumentException("Concurrency: " + concurrency);
+        if (this.concurrency != concurrency) {
+            final boolean restart = getState() == STARTED;
+            if (restart)
+                stop();
+            this.concurrency = concurrency;
+            if (restart)
+                start();
+        }
+    }
 
-	public final void setAcTimeout(int acTimeout) {
-		this.acTimeout = acTimeout;
-	}
+    public final int getAcTimeout() {
+        return acTimeout;
+    }
 
-	public final int getDimseTimeout() {
-		return dimseTimeout;
-	}
+    public final void setAcTimeout(int acTimeout) {
+        this.acTimeout = acTimeout;
+    }
 
-	public final void setDimseTimeout(int dimseTimeout) {
-		this.dimseTimeout = dimseTimeout;
-	}
+    public final int getDimseTimeout() {
+        return dimseTimeout;
+    }
 
-	public final int getSoCloseDelay() {
-		return soCloseDelay;
-	}
+    public final void setDimseTimeout(int dimseTimeout) {
+        this.dimseTimeout = dimseTimeout;
+    }
 
-	public final void setSoCloseDelay(int soCloseDelay) {
-		this.soCloseDelay = soCloseDelay;
-	}
+    public final int getSoCloseDelay() {
+        return soCloseDelay;
+    }
 
-	public final String getDestAETs() {
-		return destAETs.length > 0 ? StringUtils.toString(destAETs, '\\')
-				: NONE;
-	}
+    public final void setSoCloseDelay(int soCloseDelay) {
+        this.soCloseDelay = soCloseDelay;
+    }
 
-	public final void setDestAETs(String forwardAETs) {
-		this.destAETs = NONE.equalsIgnoreCase(forwardAETs) ? EMPTY
-				: StringUtils.split(forwardAETs, '\\');
-	}
+    public final String getDestAETs() {
+        return destAETs.length > 0 ? StringUtils.toString(destAETs, '\\')
+                : NONE;
+    }
 
-	public final ObjectName getGpwlScpServiceName() {
-		return gpwlScpServiceName;
-	}
+    public final void setDestAETs(String forwardAETs) {
+        this.destAETs = NONE.equalsIgnoreCase(forwardAETs) ? EMPTY
+                : StringUtils.split(forwardAETs, '\\');
+    }
 
-	public final void setGpwlScpServiceName(ObjectName serviceName) {
-		this.gpwlScpServiceName = serviceName;
-	}
+    public final ObjectName getGpwlScpServiceName() {
+        return gpwlScpServiceName;
+    }
 
-	public final ObjectName getTLSConfigName() {
-		return tlsConfig.getTLSConfigName();
-	}
+    public final void setGpwlScpServiceName(ObjectName serviceName) {
+        this.gpwlScpServiceName = serviceName;
+    }
 
-	public final void setTLSConfigName(ObjectName tlsConfigName) {
-		tlsConfig.setTLSConfigName(tlsConfigName);
-	}
+    public final ObjectName getTLSConfigName() {
+        return tlsConfig.getTLSConfigName();
+    }
+
+    public final void setTLSConfigName(ObjectName tlsConfigName) {
+        tlsConfig.setTLSConfigName(tlsConfigName);
+    }
 
     public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();        
+        return tlsConfig.getReceiveBufferSize();
     }
-    
+
     public final void setReceiveBufferSize(int size) {
         tlsConfig.setReceiveBufferSize(size);
     }
 
     public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();        
+        return tlsConfig.getSendBufferSize();
     }
-    
+
     public final void setSendBufferSize(int size) {
         tlsConfig.setSendBufferSize(size);
     }
-        
+
     public final boolean isTcpNoDelay() {
         return tlsConfig.isTcpNoDelay();
     }
@@ -321,46 +320,46 @@ public class PPSScuService extends ServiceMBeanSupport implements
     public final void setTcpNoDelay(boolean on) {
         tlsConfig.setTcpNoDelay(on);
     }
-        
-	public final String getQueueName() {
-		return queueName;
-	}
 
-	public final void setQueueName(String queueName) {
-		this.queueName = queueName;
-	}
+    public final String getQueueName() {
+        return queueName;
+    }
 
-	public final String getCallingAET() {
-		return callingAET;
-	}
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-	public final void setCallingAET(String callingAET) {
-		this.callingAET = callingAET;
-	}
+    public final String getCallingAET() {
+        return callingAET;
+    }
 
-	public String getRetryIntervalls() {
-		return retryIntervalls.toString();
-	}
+    public final void setCallingAET(String callingAET) {
+        this.callingAET = callingAET;
+    }
 
-	public void setRetryIntervalls(String text) {
-		retryIntervalls = new RetryIntervalls(text);
-	}
+    public String getRetryIntervalls() {
+        return retryIntervalls.toString();
+    }
 
-	protected void startService() throws Exception {
-		jmsDelegate.startListening(queueName, this, concurrency);
-		server.addNotificationListener(gpwlScpServiceName, this,
-				GPWLScpService.ON_SPS_ACTION_NOTIF_FILTER, null);
-	}
+    public void setRetryIntervalls(String text) {
+        retryIntervalls = new RetryIntervalls(text);
+    }
 
-	protected void stopService() throws Exception {
-		server.removeNotificationListener(gpwlScpServiceName, this,
-				GPWLScpService.ON_SPS_ACTION_NOTIF_FILTER, null);
-		jmsDelegate.stopListening(queueName);
-	}
+    protected void startService() throws Exception {
+        jmsDelegate.startListening(queueName, this, concurrency);
+        server.addNotificationListener(gpwlScpServiceName, this,
+                GPWLScpService.ON_SPS_ACTION_NOTIF_FILTER, null);
+    }
 
-	public void handleNotification(Notification notif, Object handback) {
-		String spsuid = (String) notif.getUserData();
-		Dataset pps = DcmObjectFactory.getInstance().newDataset();
+    protected void stopService() throws Exception {
+        server.removeNotificationListener(gpwlScpServiceName, this,
+                GPWLScpService.ON_SPS_ACTION_NOTIF_FILTER, null);
+        jmsDelegate.stopListening(queueName);
+    }
+
+    public void handleNotification(Notification notif, Object handback) {
+        String spsuid = (String) notif.getUserData();
+        Dataset pps = DcmObjectFactory.getInstance().newDataset();
         try {
             Dataset sps;
             GPWLManager gpwlmgr = getGPWLManager();
@@ -374,30 +373,34 @@ public class PPSScuService extends ServiceMBeanSupport implements
                 try {
                     getGPPPSManager().getGPPPS(ppsiuid);
                     return; // avoid duplicate N_CREATE
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
                 pps.putSH(Tags.PPSID, "PPS" + ppsiuid.hashCode());
                 pps.putDA(Tags.PPSStartDate, now);
                 pps.putTM(Tags.PPSStartTime, now);
                 pps.putDA(Tags.PPSEndDate);
                 pps.putTM(Tags.PPSEndTime);
                 for (int i = 0; i < N_CREATE_TYPE2_ATTRS.length; i++) {
-                    pps.putXX(N_CREATE_TYPE2_ATTRS[i]);                    
+                    pps.putXX(N_CREATE_TYPE2_ATTRS[i]);
                 }
                 pps.putAll(sps.subSet(N_CREATE_SPS_ATTRS));
-                copyCode(copyWorkitemCode,
-                        sps.getItem(Tags.ScheduledWorkitemCodeSeq),
-                        pps.putSQ(Tags.PerformedWorkitemCodeSeq));
-                copyCode(copyStationNameCode,
-                        sps.getItem(Tags.ScheduledStationNameCodeSeq),
-                        pps.putSQ(Tags.PerformedStationNameCodeSeq));
-                copyCode(copyStationClassCode,
-                        sps.getItem(Tags.ScheduledStationClassCodeSeq),
-                        pps.putSQ(Tags.PerformedStationClassCodeSeq));
-                copyCode(copyStationGeographicLocationCode,
-                        sps.getItem(Tags.ScheduledStationGeographicLocationCodeSeq),
-                        pps.putSQ(Tags.PerformedStationGeographicLocationCodeSeq));
-                copyCode(copyProcessingApplicationsCode,
-                        sps.getItem(Tags.ScheduledProcessingApplicationsCodeSeq),
+                copyCode(copyWorkitemCode, sps
+                        .getItem(Tags.ScheduledWorkitemCodeSeq), pps
+                        .putSQ(Tags.PerformedWorkitemCodeSeq));
+                copyCode(copyStationNameCode, sps
+                        .getItem(Tags.ScheduledStationNameCodeSeq), pps
+                        .putSQ(Tags.PerformedStationNameCodeSeq));
+                copyCode(copyStationClassCode, sps
+                        .getItem(Tags.ScheduledStationClassCodeSeq), pps
+                        .putSQ(Tags.PerformedStationClassCodeSeq));
+                copyCode(
+                        copyStationGeographicLocationCode,
+                        sps
+                                .getItem(Tags.ScheduledStationGeographicLocationCodeSeq),
+                        pps
+                                .putSQ(Tags.PerformedStationGeographicLocationCodeSeq));
+                copyCode(copyProcessingApplicationsCode, sps
+                        .getItem(Tags.ScheduledProcessingApplicationsCodeSeq),
                         pps.putSQ(Tags.PerformedProcessingApplicationsCodeSeq));
             } else if ("COMPLETED".equals(status)
                     || "DISCONTINUED".equals(status)) {
@@ -411,18 +414,18 @@ public class PPSScuService extends ServiceMBeanSupport implements
             log.error("Failed to access GP-SPS[" + spsuid + "]", e);
             return;
         }
-		for (int i = 0; i < destAETs.length; i++) {
-			PPSOrder order = new PPSOrder(pps, destAETs[i]);
-			try {
-				log.info("Scheduling " + order);
-				jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
-						0L);
-			} catch (Exception e) {
-				log.error("Failed to schedule " + order, e);
-			}
-		}
+        for (int i = 0; i < destAETs.length; i++) {
+            PPSOrder order = new PPSOrder(pps, destAETs[i]);
+            try {
+                log.info("Scheduling " + order);
+                jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+                        0L);
+            } catch (Exception e) {
+                log.error("Failed to schedule " + order, e);
+            }
+        }
 
-	}
+    }
 
     private void copyCode(boolean copy, Dataset code, DcmElement sq) {
         if (copy && code != null) {
@@ -431,27 +434,28 @@ public class PPSScuService extends ServiceMBeanSupport implements
     }
 
     public void onMessage(Message message) {
-		ObjectMessage om = (ObjectMessage) message;
-		try {
-			PPSOrder order = (PPSOrder) om.getObject();
+        ObjectMessage om = (ObjectMessage) message;
+        try {
+            PPSOrder order = (PPSOrder) om.getObject();
             log.info("Start processing " + order);
-			try {
-	            sendPPS(order.isCreate(), order.getDataset(), order.getDestination());
-	            log.info("Finished processing " + order);
-			} catch (Exception e) {
-				final int failureCount = order.getFailureCount() + 1;
-				order.setFailureCount(failureCount);
-				final long delay = retryIntervalls.getIntervall(failureCount);
-				if (delay == -1L) {
-					log.error("Give up to process " + order, e);
-				} else {
-					log.warn("Failed to process " + order
-							+ ". Scheduling retry.", e);
-					jmsDelegate.queue(queueName, order, 0, System
-							.currentTimeMillis()
-							+ delay);
-				}
-			}
+            try {
+                sendPPS(order.isCreate(), order.getDataset(), order
+                        .getDestination());
+                log.info("Finished processing " + order);
+            } catch (Exception e) {
+                final int failureCount = order.getFailureCount() + 1;
+                order.setFailureCount(failureCount);
+                final long delay = retryIntervalls.getIntervall(failureCount);
+                if (delay == -1L) {
+                    log.error("Give up to process " + order, e);
+                } else {
+                    log.warn("Failed to process " + order
+                            + ". Scheduling retry.", e);
+                    jmsDelegate.queue(queueName, order, 0, System
+                            .currentTimeMillis()
+                            + delay);
+                }
+            }
         } catch (JMSException e) {
             log.error("jms error during processing message: " + message, e);
         } catch (Throwable e) {
@@ -460,75 +464,79 @@ public class PPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-	void sendPPS(boolean create, Dataset pps, String aet)
-			throws InterruptedException, IOException, UnkownAETException,
-			SQLException, DcmServiceException {
-		AEData aeData = new AECmd(aet).getAEData();
-		if (aeData == null) {
-			throw new UnkownAETException("Unkown Destination AET: "
-					+ aet);
-		}
-		AssociationFactory af = AssociationFactory.getInstance();
-		Association a = af.newRequestor(createSocket(aeData));
-		a.setAcTimeout(acTimeout);
-		a.setDimseTimeout(dimseTimeout);
-		a.setSoCloseDelay(soCloseDelay);
-		AAssociateRQ rq = af.newAAssociateRQ();
-		rq.setCalledAET(aet);
-		rq.setCallingAET(callingAET);
-		rq.addPresContext(af.newPresContext(PCID_GPPPS,
-				UIDs.GeneralPurposePerformedProcedureStepSOPClass, NATIVE_TS));
-		PDU ac = a.connect(rq);
-		if (!(ac instanceof AAssociateAC)) {
-			throw new DcmServiceException(ERR_ASSOC_RJ,
-					"Association not accepted by " + aet + ": " + ac);
-		}
-		ActiveAssociation aa = af.newActiveAssociation(a, null);
-		try {
-			aa.start();
-			if (a.getAcceptedTransferSyntaxUID(PCID_GPPPS) == null) {
-				throw new DcmServiceException(ERR_GPPPS_RJ,
-						"GP-PPS not supported by remote AE: " + aet);
-			}
-			DcmObjectFactory dof = DcmObjectFactory.getInstance();
-			Command cmdRq = dof.newCommand();
-			final String iuid = pps.getString(Tags.SOPInstanceUID);
+    void sendPPS(boolean create, Dataset pps, String aet)
+            throws InterruptedException, IOException, UnkownAETException,
+            SQLException, DcmServiceException {
+        AEData aeData = new AECmd(aet).getAEData();
+        if (aeData == null) {
+            throw new UnkownAETException("Unkown Destination AET: " + aet);
+        }
+        AssociationFactory af = AssociationFactory.getInstance();
+        Association a = af.newRequestor(createSocket(aeData));
+        a.setAcTimeout(acTimeout);
+        a.setDimseTimeout(dimseTimeout);
+        a.setSoCloseDelay(soCloseDelay);
+        AAssociateRQ rq = af.newAAssociateRQ();
+        rq.setCalledAET(aet);
+        rq.setCallingAET(callingAET);
+        rq.addPresContext(af.newPresContext(PCID_GPPPS,
+                UIDs.GeneralPurposePerformedProcedureStepSOPClass, NATIVE_TS));
+        PDU ac = a.connect(rq);
+        if (!(ac instanceof AAssociateAC)) {
+            throw new DcmServiceException(ERR_ASSOC_RJ,
+                    "Association not accepted by " + aet + ": " + ac);
+        }
+        ActiveAssociation aa = af.newActiveAssociation(a, null);
+        try {
+            aa.start();
+            if (a.getAcceptedTransferSyntaxUID(PCID_GPPPS) == null) {
+                throw new DcmServiceException(ERR_GPPPS_RJ,
+                        "GP-PPS not supported by remote AE: " + aet);
+            }
+            DcmObjectFactory dof = DcmObjectFactory.getInstance();
+            Command cmdRq = dof.newCommand();
+            final String iuid = pps.getString(Tags.SOPInstanceUID);
             if (create) {
-				cmdRq.initNCreateRQ(a.nextMsgID(),
-						UIDs.GeneralPurposePerformedProcedureStepSOPClass, iuid);
-			} else {
-				cmdRq.initNSetRQ(a.nextMsgID(),
-						UIDs.GeneralPurposePerformedProcedureStepSOPClass, iuid);
-			}
-			Dimse dimseRq = af.newDimse(PCID_GPPPS, cmdRq, pps.exclude(SOP_IUID));
+                cmdRq.initNCreateRQ(
+                                a.nextMsgID(),
+                                UIDs.GeneralPurposePerformedProcedureStepSOPClass,
+                                iuid);
+            } else {
+                cmdRq.initNSetRQ(
+                                a.nextMsgID(),
+                                UIDs.GeneralPurposePerformedProcedureStepSOPClass,
+                                iuid);
+            }
+            Dimse dimseRq = af.newDimse(PCID_GPPPS, cmdRq, pps
+                    .exclude(SOP_IUID));
             if (log.isDebugEnabled()) {
                 log.debug("GP-PPS Attributes:");
                 log.debug(pps);
             }
-			final Dimse dimseRsp = aa.invoke(dimseRq).get();
-			final Command cmdRsp = dimseRsp.getCommand();
-			final int status = cmdRsp.getStatus();
-			switch (status) {
-			case 0x0000:
-				break;
-			case 0x0116:
-				log.warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
-								+ aet);
-				break;
-			default:
-				throw new DcmServiceException(status,
-                        cmdRsp.getString(Tags.ErrorComment));
-			}
-		} finally {
-			try {
-				aa.release(true);
-			} catch (Exception e) {
-				log.warn("Failed to release " + aa.getAssociation());
-			}
-		}
-	}
+            final Dimse dimseRsp = aa.invoke(dimseRq).get();
+            final Command cmdRsp = dimseRsp.getCommand();
+            final int status = cmdRsp.getStatus();
+            switch (status) {
+            case 0x0000:
+                break;
+            case 0x0116:
+                log.warn("Received Warning Status 116H (=Attribute Value Out of Range) from remote AE "
+                                + aet);
+                break;
+            default:
+                throw new DcmServiceException(status, cmdRsp
+                        .getString(Tags.ErrorComment));
+            }
+        } finally {
+            try {
+                aa.release(true);
+            } catch (Exception e) {
+                log.warn("Failed to release " + aa.getAssociation());
+            }
+        }
+    }
 
-	Socket createSocket(AEData aeData) throws IOException {
-		return tlsConfig.createSocket(aeData);
-	}
+    Socket createSocket(AEData aeData) throws IOException {
+        return tlsConfig.createSocket(aeData);
+    }
 }
