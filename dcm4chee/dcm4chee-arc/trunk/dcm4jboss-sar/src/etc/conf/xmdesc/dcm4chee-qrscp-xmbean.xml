@@ -140,6 +140,10 @@ QueryRetrieveScp service.</description>
            StandalonePETCurveStorage
            AgfaAttributePresentationState
            SiemensCSANonImageStorage
+           StructuredReportTextStorageRetired
+           StructuredReportAudioStorageRetired
+           StructuredReportDetailStorageRetired
+           StructuredComprehensiveStorageRetired           
            "/>
       </descriptors>
    </attribute>
