@@ -1445,6 +1445,16 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         checkStorageFileSystem();
     }
 
+    public boolean updateFileSystemStatus(String dirPath, String status)
+            throws RemoteException, FinderException {
+        if (!newFileSystemMgt().updateFileSystemStatus(dirPath, 
+                FileSystemStatus.toInt(status))) {
+            return false;
+        }
+        checkStorageFileSystem();
+        return true;
+    }
+    
     public void checkStorageFileSystem() {
         checkStorageFileSystem = 0;
     }
