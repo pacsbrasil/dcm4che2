@@ -72,36 +72,54 @@ class HPMoveTask implements Runnable {
 
     private static final int STORE_PCID = 1;
 
-	private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
-        UIDs.ImplicitVRLittleEndian,};
-	
-	private final HPScpService service;
-	private final List hpList;
-	private Logger log;
-	private ActiveAssociation moveAssoc;
-	private int movePcid;
-	private Command moveRqCmd;
-	private Dataset moveRqData;
-	private AEData aeData;
-	private String moveDest;
-	private String moveOriginatorAET;
-	private String moveCalledAET;
-	private int priority;
-	private int msgID;
+    private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
+            UIDs.ImplicitVRLittleEndian, };
+
+    private final HPScpService service;
+
+    private final List hpList;
+
+    private Logger log;
+
+    private ActiveAssociation moveAssoc;
+
+    private int movePcid;
+
+    private Command moveRqCmd;
+
+    private Dataset moveRqData;
+
+    private AEData aeData;
+
+    private String moveDest;
+
+    private String moveOriginatorAET;
+
+    private String moveCalledAET;
+
+    private int priority;
+
+    private int msgID;
+
     private int failed = 0;
+
     private int warnings = 0;
+
     private int completed = 0;
+
     private int remaining = 0;
+
     private boolean canceled = false;
+
     private ActiveAssociation storeAssoc;
+
     private final ArrayList failedIUIDs = new ArrayList();
 
-	public HPMoveTask(HPScpService service, ActiveAssociation moveAssoc,
-			int movePcid, Command moveRqCmd, Dataset moveRqData,
-			List hpList, AEData aeData, String moveDest)
-			throws DcmServiceException {
-		this.service = service;
-		this.hpList = hpList;
+    public HPMoveTask(HPScpService service, ActiveAssociation moveAssoc,
+            int movePcid, Command moveRqCmd, Dataset moveRqData, List hpList,
+            AEData aeData, String moveDest) throws DcmServiceException {
+        this.service = service;
+        this.hpList = hpList;
         this.log = service.getLog();
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
@@ -114,17 +132,16 @@ class HPMoveTask implements Runnable {
         this.priority = moveRqCmd.getInt(Tags.Priority, Command.MEDIUM);
         this.msgID = moveRqCmd.getMessageID();
         if (hpList.isEmpty())
-			return;
+            return;
         openAssociation();
-        moveAssoc.addCancelListener(msgID, 
-				new DimseListener() {
-	        		public void dimseReceived(Association assoc, Dimse dimse) {
-						canceled = true;
-					}
-        		});
-	}
+        moveAssoc.addCancelListener(msgID, new DimseListener() {
+            public void dimseReceived(Association assoc, Dimse dimse) {
+                canceled = true;
+            }
+        });
+    }
 
-	private void openAssociation() throws DcmServiceException {
+    private void openAssociation() throws DcmServiceException {
         PDU ac = null;
         Association a = null;
         AssociationFactory asf = AssociationFactory.getInstance();
@@ -135,8 +152,7 @@ class HPMoveTask implements Runnable {
             rq.setCalledAET(moveDest);
             rq.setCallingAET(moveCalledAET);
             rq.addPresContext(asf.newPresContext(STORE_PCID,
-					UIDs.HangingProtocolStorage, 
-					NATIVE_LE_TS));
+                    UIDs.HangingProtocolStorage, NATIVE_LE_TS));
             ac = a.connect(rq);
         } catch (IOException e) {
             final String prompt = "Failed to connect " + moveDest;
@@ -153,24 +169,23 @@ class HPMoveTask implements Runnable {
         }
         storeAssoc = asf.newActiveAssociation(a, null);
         storeAssoc.start();
-	    if (a.listAcceptedPresContext(UIDs.HangingProtocolStorage).isEmpty()) {			
-            final String prompt = "No Presentation Context for Hanging Protocol Storage not negotiated by " + moveDest;
-		    log.error(prompt);
-		    throw new DcmServiceException(Status.UnableToPerformSuboperations,
-		            prompt);
-			
-	    }
-	}
+        if (a.listAcceptedPresContext(UIDs.HangingProtocolStorage).isEmpty()) {
+            final String prompt = "No Presentation Context for Hanging Protocol Storage not negotiated by "
+                    + moveDest;
+            log.error(prompt);
+            throw new DcmServiceException(Status.UnableToPerformSuboperations,
+                    prompt);
 
-	public void run() {
+        }
+    }
+
+    public void run() {
         Association a = storeAssoc.getAssociation();
-        for (int i = 0, n = hpList.size(); i < n 
-				&& a.getState() == Association.ASSOCIATION_ESTABLISHED 
-				&& !canceled;
-			++i)
-		{
-			Dataset hp = (Dataset) hpList.get(i);
-			final String iuid = hp.getString(Tags.SOPInstanceUID);
+        for (int i = 0, n = hpList.size(); i < n
+                && a.getState() == Association.ASSOCIATION_ESTABLISHED
+                && !canceled; ++i) {
+            Dataset hp = (Dataset) hpList.get(i);
+            final String iuid = hp.getString(Tags.SOPInstanceUID);
             DimseListener storeScpListener = new DimseListener() {
 
                 public void dimseReceived(Association assoc, Dimse dimse) {
@@ -194,8 +209,7 @@ class HPMoveTask implements Runnable {
                 }
             };
             try {
-                storeAssoc.invoke(makeCStoreRQ(hp),
-                        storeScpListener);
+                storeAssoc.invoke(makeCStoreRQ(hp), storeScpListener);
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
@@ -217,31 +231,29 @@ class HPMoveTask implements Runnable {
             }
         }
         if (!canceled) {
-			for (int i = completed + warnings + failed, n = hpList.size(); 
-				i < n; ++i) {
-				Dataset hp = (Dataset) hpList.get(i);
-				failedIUIDs.add(hp.getString(Tags.SOPInstanceUID));				
-			}
-			remaining = 0;
-			failed = failedIUIDs.size();
+            for (int i = completed + warnings + failed, n = hpList.size(); i < n; ++i) {
+                Dataset hp = (Dataset) hpList.get(i);
+                failedIUIDs.add(hp.getString(Tags.SOPInstanceUID));
+            }
+            remaining = 0;
+            failed = failedIUIDs.size();
         }
-	    notifyMoveFinished();
-	}
+        notifyMoveFinished();
+    }
 
     private Dimse makeCStoreRQ(Dataset hp) throws NoPresContextException {
-		Association assoc = storeAssoc.getAssociation();
-		Command storeRqCmd = DcmObjectFactory.getInstance().newCommand();
-		storeRqCmd.initCStoreRQ(assoc.nextMsgID(),
-				hp.getString(Tags.SOPClassUID),
-				hp.getString(Tags.SOPInstanceUID),
-				priority);
-		storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
-		storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-		return AssociationFactory.getInstance().newDimse(STORE_PCID,
-				storeRqCmd, hp);
-	}
+        Association assoc = storeAssoc.getAssociation();
+        Command storeRqCmd = DcmObjectFactory.getInstance().newCommand();
+        storeRqCmd.initCStoreRQ(assoc.nextMsgID(), hp
+                .getString(Tags.SOPClassUID),
+                hp.getString(Tags.SOPInstanceUID), priority);
+        storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
+        storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
+        return AssociationFactory.getInstance().newDimse(STORE_PCID,
+                storeRqCmd, hp);
+    }
 
-	private void notifyMovePending() {
+    private void notifyMovePending() {
         if (service.isSendPendingMoveRSP()) {
             notifyMoveSCU(Status.Pending, null);
         }
@@ -254,17 +266,18 @@ class HPMoveTask implements Runnable {
     }
 
     private void notifyMoveSCU(int status, Dataset ds) {
-        if (moveAssoc == null) return;
+        if (moveAssoc == null)
+            return;
         try {
             moveAssoc.getAssociation().write(
                     AssociationFactory.getInstance().newDimse(movePcid,
-							makeMoveRsp(status), ds));
+                            makeMoveRsp(status), ds));
         } catch (Exception e) {
             log.info("Failed to send Move RSP to Move Originator:", e);
             moveAssoc = null;
         }
     }
-	
+
     private Dataset makeMoveRspIdentifier() {
         if (failed == 0)
             return null;
@@ -276,13 +289,13 @@ class HPMoveTask implements Runnable {
             // check if 64k limit for UI attribute is reached
             if (ds.get(Tags.FailedSOPInstanceUIDList).length() < 0x10000)
                 return ds;
-            log.warn("Failed SOP InstanceUID List exceeds 64KB limit " +
-            		"- send empty attribute instead");
+            log.warn("Failed SOP InstanceUID List exceeds 64KB limit "
+                    + "- send empty attribute instead");
         }
         ds.putUI(Tags.FailedSOPInstanceUIDList);
         return ds;
     }
-	
+
     private Command makeMoveRsp(int status) {
         Command rspCmd = DcmObjectFactory.getInstance().newCommand();
         rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd

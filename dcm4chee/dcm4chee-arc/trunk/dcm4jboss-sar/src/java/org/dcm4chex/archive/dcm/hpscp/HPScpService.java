@@ -62,19 +62,25 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  * @since Aug 17, 2005
  */
 public class HPScpService extends AbstractScpService {
-    
+
     private final HPStoreScp hpStoreScp = new HPStoreScp(this);
+
     private final HPFindScp hpFindScp = new HPFindScp(this);
+
     private final HPMoveScp hpMoveScp = new HPMoveScp(this);
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-	private ObjectName aeServiceName;
-    
+
+    private ObjectName aeServiceName;
+
     private boolean sendPendingMoveRSP = true;
+
     private int acTimeout = 5000;
+
     private int dimseTimeout = 0;
+
     private int soCloseDelay = 500;
-	
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -92,21 +98,21 @@ public class HPScpService extends AbstractScpService {
     }
 
     public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();        
+        return tlsConfig.getReceiveBufferSize();
     }
-    
+
     public final void setReceiveBufferSize(int size) {
         tlsConfig.setReceiveBufferSize(size);
     }
 
     public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();        
+        return tlsConfig.getSendBufferSize();
     }
-    
+
     public final void setSendBufferSize(int size) {
         tlsConfig.setSendBufferSize(size);
     }
-        
+
     public final boolean isTcpNoDelay() {
         return tlsConfig.isTcpNoDelay();
     }
@@ -114,21 +120,23 @@ public class HPScpService extends AbstractScpService {
     public final void setTcpNoDelay(boolean on) {
         tlsConfig.setTcpNoDelay(on);
     }
-        
-	/**
-	 * @return Returns the aeService.
-	 */
-	public ObjectName getAEServiceName() {
-		return aeServiceName;
-	}
-	/**
-	 * @param aeService The aeService to set.
-	 */
-	public void setAEServiceName(ObjectName aeServiceName) {
-		this.aeServiceName = aeServiceName;
-	}
-    
-	public final int getAcTimeout() {
+
+    /**
+     * @return Returns the aeService.
+     */
+    public ObjectName getAEServiceName() {
+        return aeServiceName;
+    }
+
+    /**
+     * @param aeService
+     *            The aeService to set.
+     */
+    public void setAEServiceName(ObjectName aeServiceName) {
+        this.aeServiceName = aeServiceName;
+    }
+
+    public final int getAcTimeout() {
         return acTimeout;
     }
 
@@ -159,26 +167,28 @@ public class HPScpService extends AbstractScpService {
     public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
-    
-	public AEData queryAEData(String aet, InetAddress addr) throws DcmServiceException {
-		try {
-			Object o = server.invoke(aeServiceName, "getAE", 
-					new Object[] {aet, addr}, 
-					new String[] {String.class.getName(), InetAddress.class.getName()});
-			if (o == null) {
-				throw new DcmServiceException(Status.MoveDestinationUnknown,aet);
-			}
-			return (AEData) o;
-		} catch (JMException e) {
-			log.error("Failed to query AEData", e);
-			throw new DcmServiceException(Status.ProcessingFailure, e);
-		}
-	}
 
-	Socket createSocket(AEData aeData) throws IOException {
+    public AEData queryAEData(String aet, InetAddress addr)
+            throws DcmServiceException {
+        try {
+            Object o = server.invoke(aeServiceName, "getAE", new Object[] {
+                    aet, addr }, new String[] { String.class.getName(),
+                    InetAddress.class.getName() });
+            if (o == null) {
+                throw new DcmServiceException(Status.MoveDestinationUnknown,
+                        aet);
+            }
+            return (AEData) o;
+        } catch (JMException e) {
+            log.error("Failed to query AEData", e);
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+    }
+
+    Socket createSocket(AEData aeData) throws IOException {
         return tlsConfig.createSocket(aeData);
     }
-	
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.HangingProtocolStorage, hpStoreScp);
         services.bind(UIDs.HangingProtocolInformationModelFIND, hpFindScp);
@@ -193,9 +203,9 @@ public class HPScpService extends AbstractScpService {
 
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         String[] tsuids = enable ? valuesToStringArray(tsuidMap) : null;
-        policy.putPresContext(UIDs.HangingProtocolStorage, tsuids );
-        policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, tsuids );
-        policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, tsuids );
+        policy.putPresContext(UIDs.HangingProtocolStorage, tsuids);
+        policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, tsuids);
+        policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, tsuids);
     }
 
 }
