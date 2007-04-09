@@ -46,68 +46,53 @@ import org.apache.log4j.Logger;
 
 /**
  * Application Entity bean.
- *
+ * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * 
- * @ejb.bean
- *  name="AE"
- *  type="CMP"
- *  view-type="local"
- *  primkey-field="pk"
- *  local-jndi-name="ejb/AE"
+ * @ejb.bean name="AE" type="CMP" view-type="local" primkey-field="pk"
+ *           local-jndi-name="ejb/AE"
  * 
- * @ejb.transaction 
- *  type="Required"
+ * @ejb.transaction type="Required"
  * 
- * @ejb.persistence
- *  table-name="ae"
+ * @ejb.persistence table-name="ae"
  * 
- * @jboss.entity-command
- *  name="hsqldb-fetch-key"
+ * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.finder
- *  signature="Collection findAll()"
- *  query="SELECT OBJECT(a) FROM AE AS a"
- *  transaction-type="Supports"
- * @jboss.query
- *  signature="Collection findAll()"
- *  strategy="on-find"
- *  eager-load-group="*"
-*
- * @ejb.finder
- *  signature="org.dcm4chex.archive.ejb.interfaces.AELocal findByAET(java.lang.String aet)"
- *  query="SELECT OBJECT(a) FROM AE AS a WHERE a.title = ?1"
- *  transaction-type="Supports"
+ * @ejb.finder signature="Collection findAll()" query="SELECT OBJECT(a) FROM AE
+ *             AS a" transaction-type="Supports"
+ * @jboss.query signature="Collection findAll()" strategy="on-find"
+ *              eager-load-group="*"
+ * 
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.AELocal
+ *             findByAET(java.lang.String aet)" query="SELECT OBJECT(a) FROM AE
+ *             AS a WHERE a.title = ?1" transaction-type="Supports"
  * 
  */
-public abstract class AEBean implements EntityBean
-{
+public abstract class AEBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(AEBean.class);
 
     /**
      * Auto-generated Primary Key
-     *
+     * 
      * @ejb.interface-method
      * @ejb.pk-field
-     * @ejb.persistence
-     *  column-name="pk"
-     * @jboss.persistence
-     *  auto-increment="true"
-     *
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
+     * 
      */
     public abstract Long getPk();
+
     public abstract void getPk(Long pk);
 
     /**
      * Application Entity Title
-     *
+     * 
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="aet"
+     * @ejb.persistence column-name="aet"
      */
     public abstract String getTitle();
-    
+
     /**
      * @ejb.interface-method
      */
@@ -115,11 +100,10 @@ public abstract class AEBean implements EntityBean
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="hostname"
+     * @ejb.persistence column-name="hostname"
      */
     public abstract String getHostName();
-    
+
     /**
      * @ejb.interface-method
      */
@@ -127,11 +111,10 @@ public abstract class AEBean implements EntityBean
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="port"
+     * @ejb.persistence column-name="port"
      */
     public abstract int getPort();
-    
+
     /**
      * @ejb.interface-method
      */
@@ -139,8 +122,7 @@ public abstract class AEBean implements EntityBean
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="cipher_suites"
+     * @ejb.persistence column-name="cipher_suites"
      */
     public abstract String getCipherSuites();
 
@@ -152,15 +134,9 @@ public abstract class AEBean implements EntityBean
     /**
      * @ejb.create-method
      */
-    public Long ejbCreate(
-        String title,
-        String hostname,
-        int port,
-        String cipherSuites)
-        throws CreateException
-    {
-        if (log.isDebugEnabled())
-        {
+    public Long ejbCreate(String title, String hostname, int port,
+            String cipherSuites) throws CreateException {
+        if (log.isDebugEnabled()) {
             log.debug("create AEBean(" + title + ")");
         }
         setTitle(title);
@@ -170,23 +146,17 @@ public abstract class AEBean implements EntityBean
         return null;
     }
 
-    public void ejbPostCreate(
-        String title,
-        String host,
-        int port,
-        String cipherSuites)
-        throws CreateException
-    {}
+    public void ejbPostCreate(String title, String host, int port,
+            String cipherSuites) throws CreateException {
+    }
 
     /**
      * @ejb.interface-method
      */
-    public String asString()
-    {
+    public String asString() {
         StringBuffer sb = new StringBuffer(64);
-        sb.append(getProtocol()).append("://")
-          .append(getTitle()).append('@')
-          .append(getHostName()).append(':').append(getPort());
+        sb.append(getProtocol()).append("://").append(getTitle()).append('@')
+                .append(getHostName()).append(':').append(getPort());
         return sb.toString();
     }
 
@@ -201,7 +171,8 @@ public abstract class AEBean implements EntityBean
         if ("SSL_RSA_WITH_3DES_EDE_CBC_SHA".equals(cipherSuites)) {
             return "dicom-tls.3des";
         }
-        if ("TLS_RSA_WITH_AES_128_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA".equals(cipherSuites)) {
+        if ("TLS_RSA_WITH_AES_128_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+                .equals(cipherSuites)) {
             return "dicom-tls.aes";
         }
         return "dicom-tls";
