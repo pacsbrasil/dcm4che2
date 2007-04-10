@@ -29,6 +29,26 @@
          <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/test?testid=11731"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getXDSQueryURI" setMethod="setXDSQueryURI">
+      <description>XDS Query URI.
+      </description>
+      <name>XDSQueryURI</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/portals/query"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isForceSQLQuery"
+      setMethod="setForceSQLQuery">
+      <description>Force 'older' SQL Query! (Default is Stored Query).
+      </description>
+      <name>ForceSQLQuery</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
       <description>Proxy host if http access use http proxy. NONE = no proxy.
       </description>
@@ -242,7 +262,7 @@
       <description><![CDATA[ Perform a simple test by sending a SOAP message to the configured registry.<br/>
       			The SOAP message is build with a SOAPBody stored in the given file.<br/>
       		]]> </description>
-      <name>soapTest</name>
+      <name>soapRegistryTest</name>
       <parameter>
         <description>XML File containing SOAP Body.</description>
         <name>xmlFile</name>
@@ -250,6 +270,91 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a simple test by sending a SOAP message to the configured (query)registry.<br/>
+      			The SOAP message is build with a SOAPBody stored in the given file.<br/>
+      		]]> </description>
+      <name>soapQueryTest</name>
+      <parameter>
+        <description>XML File containing SOAP Body.</description>
+        <name>xmlFile</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a simple test by sending a SOAP message to the URI.<br/>
+      			The SOAP message is build with a SOAPBody stored in the given file.<br/>
+      		]]> </description>
+      <name>soapRegistryTest</name>
+      <parameter>
+        <description>XML File containing SOAP Body.</description>
+        <name>xmlFile</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>URI of the receiver</description>
+        <name>uri</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a SQL based registry query.<br/>
+      		]]> </description>
+      <name>sqlQuery</name>
+      <parameter>
+        <description>SQL String.</description>
+        <name>sql</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a SQL based registry query.<br/>
+      		]]> </description>
+      <name>findDocuments</name>
+      <parameter>
+        <description>Patient ID.</description>
+        <name>patId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a SQL based registry query.<br/>
+      		]]> </description>
+      <name>findDocuments</name>
+      <parameter>
+        <description>Patient ID.</description>
+        <name>patId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a SQL based registry query.<br/>
+      		]]> </description>
+      <name>getDocuments</name>
+      <parameter>
+        <description>Document UUIDs separated with '|'.</description>
+        <name>uuids</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform a SQL based registry query.<br/>
+      		]]> </description>
+      <name>getDocuments</name>
+      <parameter>
+        <description>Document UUIDs.</description>
+        <name>uuids</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   
    <operation impact="ACTION">
       <description><![CDATA[ Fetch a new PatientID for NIST Test.<br/>
       		]]> </description>

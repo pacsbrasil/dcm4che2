@@ -42,7 +42,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,17 +69,19 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.dcm4cheri.util.UIDGeneratorImpl;
 import org.dcm4chex.xds.XDSDocumentMetadata;
+import org.dcm4chex.xds.common.SoapBodyProvider;
 import org.dcm4chex.xds.common.XDSResponseObject;
 import org.dcm4chex.xds.mbean.store.RIDStorageImpl;
 import org.dcm4chex.xds.mbean.store.XDSFile;
+import org.dcm4chex.xds.query.SQLQueryObject;
+import org.dcm4chex.xds.query.XDSQueryObject;
+import org.dcm4chex.xds.query.XDSQueryObjectFatory;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfig;
 import org.jboss.system.server.ServerConfigLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -133,6 +134,9 @@ public class XDSService extends ServiceMBeanSupport {
 	private boolean shortContentType = false;
 	private boolean logSOAPMessage = true;
 
+    private String xdsQueryURI;
+    private boolean forceSQLQuery = false;
+    
 	public XDSService() {
         dbFactory = DocumentBuilderFactory.newInstance();
         dbFactory.setNamespaceAware(true);
@@ -152,6 +156,30 @@ public class XDSService extends ServiceMBeanSupport {
 	}
 
 	/**
+     * @return the xdsQueryURI
+     */
+    public String getXDSQueryURI() {
+        return xdsQueryURI;
+    }
+    /**
+     * @param xdsQueryURI the xdsQueryURI to set
+     */
+    public void setXDSQueryURI(String xdsQueryURI) {
+        this.xdsQueryURI = xdsQueryURI;
+    }
+    /**
+     * @return the forceSQLQuery
+     */
+    public boolean isForceSQLQuery() {
+        return forceSQLQuery;
+    }
+    /**
+     * @param forceSQLQuery the forceSQLQuery to set
+     */
+    public void setForceSQLQuery(boolean forceSQLQuery) {
+        this.forceSQLQuery = forceSQLQuery;
+    }
+    /**
 	 * @return Returns the proxyHost.
 	 */
 	public String getProxyHost() {
@@ -183,6 +211,7 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @param keyStorePassword The keyStorePassword to set.
 	 */
 	public void setKeystorePassword(String keyStorePassword) {
+        if ( "NONE".equals(keyStorePassword)) keyStorePassword = null;
 		this.keystorePassword = keyStorePassword;
 	}
 	/**
@@ -217,6 +246,7 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @param trustStorePassword The trustStorePassword to set.
 	 */
 	public void setTrustStorePassword(String trustStorePassword) {
+        if ( "NONE".equals(trustStorePassword)) trustStorePassword = null;
 		this.trustStorePassword = trustStorePassword;
 	}
 	/**
@@ -397,9 +427,17 @@ public class XDSService extends ServiceMBeanSupport {
 			Document d = getDocumentFromMessage(message);
 			NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
 	        if(nl.getLength() < 1 ) {
+                if ( attachments.isEmpty() ) {
+                    log.debug("No ExtrinsicObject found! But we have nothing to store (no Attachment) -> forward message to registry!");
+                    return new SOAPMessageResponse( sendSOAP(message, getXDSRegistryURI()));
+                }
 	        	log.error("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
 	            throw new Exception("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
 	        }
+            if ( attachments.isEmpty() ) {
+                log.debug("No Attachments found -> forward message to registry!");
+                return new SOAPMessageResponse( sendSOAP(message, getXDSRegistryURI()));
+            }
 	        XDSDocumentMetadata metadata;
 	        for(int i = 0, len = nl.getLength(); i < len; i++) {
 	        	metadata = new XDSDocumentMetadata((Element)nl.item(i));
@@ -429,8 +467,8 @@ public class XDSService extends ServiceMBeanSupport {
 		    SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName("SubmitObjectsRequest","rs","urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1"));
 			Node leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
 			bodyElement.appendChild(bodyElement.getOwnerDocument().importNode(leafRegistryObjectList,true));
-			SOAPMessage response = sendSOAP(msg);
-            if ( ! checkResponse( response ) ) {
+			SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
+            if ( ! checkResponse( response, "RegistryResponse" ) ) {
             	deleteFiles(storedFiles);
             	log.error("Export document(s) failed! see prior messages for reason. SubmissionSet uid:"+submissionUID);
             	return new SOAPMessageResponse(response);
@@ -444,7 +482,49 @@ public class XDSService extends ServiceMBeanSupport {
 		}
 		
 	}
-	
+    
+    public List xdsQuery(XDSQueryObject query) throws SOAPException {
+        SOAPMessage response = sendSOAP(getSOAPMessage(query), this.xdsQueryURI);
+        if ( !checkResponse( response, query.getResponseTag() ) ) return null;
+        return getRegistryObjects(response, query.getResponseTag() );
+    }
+
+    private SOAPMessage getSOAPMessage(SoapBodyProvider docProvider) throws SOAPException {
+        MessageFactory messageFactory = MessageFactory.newInstance();
+        SOAPMessage msg = messageFactory.createMessage();
+        SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
+        SOAPBody soapBody = envelope.getBody();
+        soapBody.addDocument(docProvider.getDocument());
+        return msg;
+    }
+    
+    public List sqlQuery(String sql) throws SOAPException {
+        log.info("make SQL Query:"+sql);
+        SQLQueryObject qry = new SQLQueryObject(sql,SQLQueryObject.RETURN_TYPE_LEAF,true);
+        return xdsQuery(new SQLQueryObject(sql));
+    }
+    
+    public List findDocuments(String patId) throws SOAPException {
+        if ( patId == null || patId.trim().length() < 1 ) patId = this.testPatient;
+        XDSQueryObject query = XDSQueryObjectFatory.getInstance( forceSQLQuery ).newFindDocumentQuery(patId, null);
+        log.info("findDocument Stored Query:"+query);
+        return xdsQuery(query);
+    }
+
+    public List getDocuments(String uuids) throws SOAPException {
+        StringTokenizer st = new StringTokenizer(uuids,"|");
+        String[] sa = new String[st.countTokens()];
+        for ( int i = 0 ; i < sa.length ; i++) {
+            sa[i] = st.nextToken();
+        }
+        return getDocuments(sa);
+    }
+    public List getDocuments(String[] uuids) throws SOAPException {
+        XDSQueryObject query = XDSQueryObjectFatory.getInstance( forceSQLQuery ).newGetDocumentQuery(uuids);
+        log.info("getDocument Stored Query:"+query);
+        return xdsQuery(query);
+    }
+    
 	/**
 	 * @param metadata
 	 */
@@ -560,11 +640,10 @@ public class XDSService extends ServiceMBeanSupport {
 	}
 	
 	
-	public SOAPMessage sendSOAP( SOAPMessage message  ) {
+	public SOAPMessage sendSOAP( SOAPMessage message, String url ) {
 		SOAPConnection conn = null;
 		try {
-			String url = this.getXDSRegistryURI();
-	        log.debug("Send registry request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
+	        log.debug("Send request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
 			configProxyAndTLS(url);
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
             
@@ -589,8 +668,13 @@ public class XDSService extends ServiceMBeanSupport {
 		}
 		
 	}
-	
-	public boolean soapTest( String xmlFileName ) throws SOAPException {
+    public boolean soapQueryTest( String xmlFileName ) throws SOAPException {
+        return soapTest(xmlFileName, this.xdsQueryURI);
+    }
+    public boolean soapRegistryTest( String xmlFileName ) throws SOAPException {
+        return soapTest(xmlFileName, this.xdsRegistryURI);
+    }
+	public boolean soapTest( String xmlFileName, String soapURL ) throws SOAPException {
 		log.info("\n\nPerform SOAP Test with SOAP Body from file:"+xmlFileName);
         File xmlFile = new File( xmlFileName );
         if ( !xmlFile.exists() ) {
@@ -603,8 +687,8 @@ public class XDSService extends ServiceMBeanSupport {
 	    SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 	    SOAPBody soapBody = envelope.getBody();
 	    soapBody.addDocument(sb);
-	    this.sendSOAP(message);
-		return true;
+        SOAPMessage response = sendSOAP(message, soapURL);
+		return checkResponse(response, "RegistryResponse");
 	}
 	
 	private Document readXMLFile(File xmlFile){
@@ -626,17 +710,17 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @return
      * @throws SOAPException
 	 */
-	private boolean checkResponse(SOAPMessage response) throws SOAPException {
-		log.info("checkResponse:"+response);
+	private boolean checkResponse(SOAPMessage response, String responseTag) throws SOAPException {
+		log.info("check RegistryResponse:"+response);
 		try {
 			NodeList nl;
 	        Document d = getDocumentFromMessage( response );
-			nl = d.getElementsByTagName("RegistryResponse");
+			nl = d.getElementsByTagName(responseTag);
 			log.debug("RegistryResponse NodeList:"+nl);
 			if ( nl.getLength() != 0  ) {
 				Node n = nl.item(0);
 				String status = n.getAttributes().getNamedItem("status").getNodeValue();
-				log.info("XDS: SOAP response status."+status);
+				log.info("XDS: SOAP response status:"+status);
 				if ( "Failure".equals(status) ) {
 					NodeList errors = d.getElementsByTagName("RegistryError");
 					StringBuffer sb = new StringBuffer();
@@ -728,10 +812,12 @@ public class XDSService extends ServiceMBeanSupport {
 			String keyStorePath = resolvePath(keystoreURL);
 			String trustStorePath = resolvePath(trustStoreURL);
 			System.setProperty("javax.net.ssl.keyStore", keyStorePath);
-			System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
+			if ( keystorePassword != null ) 
+                System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
 			System.setProperty("javax.net.ssl.keyStoreType","PKCS12");
 			System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-			System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+			if ( trustStorePassword != null )
+                System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
 			if ( origHostnameVerifier == null) {
 				origHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
 				HostnameVerifier hv = new HostnameVerifier() {
@@ -756,8 +842,6 @@ public class XDSService extends ServiceMBeanSupport {
 				 
 				HttpsURLConnection.setDefaultHostnameVerifier(hv);
 			}
-
-			
 		}			
 		
 	}
@@ -767,5 +851,31 @@ public class XDSService extends ServiceMBeanSupport {
         File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
-	
+
+    public List getRegistryObjects(SOAPMessage response, String responseTag) {
+        ArrayList l = new ArrayList();
+        try {
+            NodeList nl;
+            Document d = getDocumentFromMessage( response );
+            nl = d.getElementsByTagName(responseTag);
+            if ( nl.getLength() != 0  ) {
+                Element e = (Element) nl.item(0);
+                NodeList nlChilds = e.getElementsByTagName("ExtrinsicObject");
+                log.info("ExtrtinsicObjects:"+nlChilds);
+                if ( nlChilds.getLength() < 1 ) {
+                    nlChilds = e.getElementsByTagName("ObjectRef");
+                    for ( int i = 0, len=nlChilds.getLength() ; i < len ; i++) {
+                        String id = nlChilds.item(i).getAttributes().getNamedItem("id").getNodeValue();
+                        l.add( id );
+                    }
+                }
+            }
+        } catch ( Exception x ) {
+            log.error("Cant get RegistryObjects from response!", x);
+            return null;
+        }
+        log.info("return RegistryObjects:"+l);
+        return l;
+    }
+	/*_*/
 }
