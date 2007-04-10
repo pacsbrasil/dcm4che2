@@ -40,8 +40,11 @@
 package org.dcm4chex.archive.mbean;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -52,7 +55,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.HandshakeCompletedListener;
 
 import org.dcm4che.util.HandshakeFailedListener;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -162,21 +165,39 @@ public final class TLSConfigDelegate {
         }
     }
 
-    public Socket createSocket(AEData aeData) throws IOException {
-        String[] cipherSuites = aeData.getCipherSuites();
-        Socket s;
-        if (cipherSuites == null || cipherSuites.length == 0) {
-            s = new Socket(aeData.getHostName(), aeData.getPort());
-        } else {
-            s = socketFactory(cipherSuites).createSocket(
-                    aeData.getHostName(), aeData.getPort());
-        }
+    public Socket createSocket(AEDTO localAE, AEDTO remoteAE)
+            throws IOException {
+        String[] cipherSuites = remoteAE.getCipherSuites();
+        Socket s = (cipherSuites == null || cipherSuites.length == 0) 
+                ? socketFactory(cipherSuites).createSocket()
+                : new Socket();
+        s.bind(toBindPoint(localAE));
+        s.connect(toEndPoint(remoteAE));
         initSendBufferSize(s);
         initReceiveBufferSize(s);
         if (s.getTcpNoDelay() != tcpNoDelay) {
             s.setTcpNoDelay(tcpNoDelay );
         }
         return s;
+    }
+
+    private InetSocketAddress toEndPoint(AEDTO remoteAE)
+            throws UnknownHostException {
+        InetAddress addr = InetAddress.getByName(remoteAE.getHostName());
+        return new InetSocketAddress(addr, remoteAE.getPort());
+    }
+
+    private InetSocketAddress toBindPoint(AEDTO localAE) {
+        try {
+            InetAddress addr = InetAddress.getByName(localAE.getHostName());
+            if (!addr.isLoopbackAddress()) {
+                return new InetSocketAddress(addr, 0);
+            }
+        } catch (UnknownHostException e) {
+            service.getLog().warn("Unkown Host " + localAE.getHostName()
+                    + " - bind socket to a valid local address picked up by the OS");
+        }
+        return null;
     }
 
     private void initSendBufferSize(Socket s) throws SocketException {
