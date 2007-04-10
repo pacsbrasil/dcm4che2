@@ -3,7 +3,7 @@ setlocal
 rem Set maximum size of the memory allocation pool
 rem default value of 64MB may not be sufficient for dcm4chee-cdw
 set JAVA_OPTS=-Xmx100m
-set DIRNAME=%~dp0%
+set DIRNAME=.
 set RUNJAR=%DIRNAME%run.jar
 if exist "%RUNJAR%" goto found_runjar
 echo Could not locate %RUNJAR%. Please check that you are in the
