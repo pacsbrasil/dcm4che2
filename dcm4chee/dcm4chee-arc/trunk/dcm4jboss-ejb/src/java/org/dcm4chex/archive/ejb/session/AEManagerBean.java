@@ -47,6 +47,7 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -54,9 +55,10 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AELocal;
 import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.exceptions.UnkownAETException;
 
 /**
  * 
@@ -104,56 +106,47 @@ public abstract class AEManagerBean implements SessionBean {
     }
 
     /**
+     * @throws FinderException 
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
-    public AEData getAe(long aePk) throws EJBException {
+    public AEDTO findByPrimaryKey(long aePk)
+            throws FinderException {
+        return aeHome.findByPrimaryKey(new Long(aePk)).toDTO();
+    }
+
+    /**
+     * @throws FinderException 
+     * @throws UnkownAETException 
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public AEDTO findByAET(String aet)
+            throws FinderException, UnkownAETException {
         try {
-            AELocal ae = aeHome.findByPrimaryKey(new Long(aePk));
-            AEData aeDTO = new AEData(ae.getPk().longValue(), ae.getTitle(), ae
-                    .getHostName(), ae.getPort(), ae.getCipherSuites());
-            return aeDTO;
-        } catch (FinderException e) {
-            throw new EJBException(e);
+            return aeHome.findByAET(aet).toDTO();
+        } catch (ObjectNotFoundException e) {
+            throw new UnkownAETException(aet);
         }
+    }
+
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public List findAll() throws FinderException {
+        ArrayList ret = new ArrayList();
+        for (Iterator i = aeHome.findAll().iterator(); i.hasNext();) {
+            ret.add(((AELocal) i.next()).toDTO());
+        }
+        return ret;
     }
 
     /**
      * @ejb.interface-method
      */
-    public AEData getAeByTitle(String aet) {
-        try {
-            AELocal ae = aeHome.findByAET(aet);
-            AEData aeDTO = new AEData(ae.getPk().longValue(), ae.getTitle(), ae
-                    .getHostName(), ae.getPort(), ae.getCipherSuites());
-            return aeDTO;
-        } catch (FinderException e) {
-            return null;
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public List getAes() throws EJBException {
-        try {
-            ArrayList ret = new ArrayList();
-            for (Iterator i = aeHome.findAll().iterator(); i.hasNext();) {
-                AELocal ae = (AELocal) i.next();
-                AEData aeDTO = new AEData(ae.getPk().longValue(),
-                        ae.getTitle(), ae.getHostName(), ae.getPort(), ae
-                                .getCipherSuites());
-                ret.add(aeDTO);
-            }
-            return ret;
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void updateAE(AEData modAE) throws FinderException {
+    public void updateAE(AEDTO modAE) throws FinderException {
         try {
             AELocal ae = aeHome.findByPrimaryKey(new Long(modAE.getPk()));
             ae.setTitle(modAE.getTitle());
@@ -169,7 +162,7 @@ public abstract class AEManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void newAE(AEData newAE) throws CreateException {
+    public void newAE(AEDTO newAE) throws CreateException {
         aeHome.create(newAE.getTitle(), newAE.getHostName(), newAE.getPort(),
                 newAE.getCipherSuitesAsString());
     }

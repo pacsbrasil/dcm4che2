@@ -37,7 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.ejb.jdbc;
+package org.dcm4chex.archive.ejb.interfaces;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
@@ -58,7 +58,7 @@ import java.util.StringTokenizer;
  *            beyond the cvs commit message
  * </ul>
  */
-public class AEData implements Serializable {
+public class AEDTO implements Serializable {
 
     // Constants -----------------------------------------------------
     static final long serialVersionUID = 9128665077590256461L;
@@ -73,7 +73,7 @@ public class AEData implements Serializable {
     private final String cipherSuites;
 
     // Constructors --------------------------------------------------
-    public AEData(
+    public AEDTO(
         long pk,
         String title,
         String hostname,

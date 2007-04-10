@@ -43,6 +43,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 
 /**
  * Application Entity bean.
@@ -58,14 +59,23 @@ import org.apache.log4j.Logger;
  * 
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.finder signature="Collection findAll()" query="SELECT OBJECT(a) FROM AE
- *             AS a" transaction-type="Supports"
- * @jboss.query signature="Collection findAll()" strategy="on-find"
- *              eager-load-group="*"
+ * @ejb.finder 
+ *      signature="Collection findAll()"
+ *      query="SELECT OBJECT(a) FROM AE AS a" transaction-type="Supports"
+ * @jboss.query
+ *      signature="Collection findAll()"
+ *      strategy="on-find"
+ *      eager-load-group="*"
  * 
- * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.AELocal
- *             findByAET(java.lang.String aet)" query="SELECT OBJECT(a) FROM AE
- *             AS a WHERE a.title = ?1" transaction-type="Supports"
+ * @ejb.finder
+ *      signature="org.dcm4chex.archive.ejb.interfaces.AELocal findByAET(java.lang.String aet)"
+ *      query="SELECT OBJECT(a) FROM AE AS a WHERE a.title = ?1"
+ *      transaction-type="Supports"
+ * @jboss.query
+ *      signature="org.dcm4chex.archive.ejb.interfaces.AELocal findByAET(java.lang.String aet)"
+ *      strategy="on-find"
+ *      eager-load-group="*"
+ *             
  * 
  */
 public abstract class AEBean implements EntityBean {
@@ -152,6 +162,16 @@ public abstract class AEBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public AEDTO toDTO() {
+        return new AEDTO(getPk().longValue(), getTitle(), getHostName(),
+                getPort(), getCipherSuites());
+    }
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
      */
     public String asString() {
         StringBuffer sb = new StringBuffer(64);
@@ -177,4 +197,6 @@ public abstract class AEBean implements EntityBean {
         }
         return "dicom-tls";
     }
+    
+    
 }
