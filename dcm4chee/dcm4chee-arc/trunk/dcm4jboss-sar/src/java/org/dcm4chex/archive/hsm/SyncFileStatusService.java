@@ -76,7 +76,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     private Pattern pattern;
 
     private Integer listenerID;
-    
+
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             Calendar cal = Calendar.getInstance();
@@ -104,7 +104,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     public void setSchedulerServiceName(ObjectName schedulerServiceName) {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
-    
+
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
     }
@@ -118,7 +118,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     public final void setFileSystem(String fileSystem) {
-        this.fileSystem =  (NONE.equalsIgnoreCase(fileSystem)) ? null : fileSystem;
+        this.fileSystem = (NONE.equalsIgnoreCase(fileSystem)) ? null
+                : fileSystem;
     }
 
     public final String getCheckFileStatus() {
@@ -173,7 +174,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             String infoParam) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < command.length; i++) {
-            sb.append(command[i] == DIR_PARAM ? dirParam
+            sb
+                    .append(command[i] == DIR_PARAM ? dirParam
                             : command[i] == FILE_PARAM ? fileParam
                                     : command[i] == INFO_PARAM ? infoParam
                                             : command[i]);
@@ -226,9 +228,10 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler(timerIDCheckSyncFileStatus, listenerID, timerListener);
-            listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus, taskInterval,
+            scheduler.stopScheduler(timerIDCheckSyncFileStatus, listenerID,
                     timerListener);
+            listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus,
+                    taskInterval, timerListener);
         }
     }
 
@@ -257,12 +260,13 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus, taskInterval, 
-                timerListener);
+        listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus,
+                taskInterval, timerListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(timerIDCheckSyncFileStatus, listenerID, timerListener);
+        scheduler.stopScheduler(timerIDCheckSyncFileStatus, listenerID,
+                timerListener);
         super.stopService();
     }
 
@@ -272,9 +276,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         }
         FileSystemMgt fsmgt = newFileSystemMgt();
         FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem,
-                checkFileStatus, 
-                new Timestamp(System.currentTimeMillis() - minFileAge),
-                limitNumberOfFilesPerTask);
+                checkFileStatus, new Timestamp(System.currentTimeMillis()
+                        - minFileAge), limitNumberOfFilesPerTask);
         if (c.length == 0) {
             return 0;
         }
@@ -287,7 +290,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return count;
     }
 
-    private boolean check(FileSystemMgt fsmgt, FileDTO fileDTO, HashMap checkedTars) {
+    private boolean check(FileSystemMgt fsmgt, FileDTO fileDTO,
+            HashMap checkedTars) {
         String dirpath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         String tarPath = null;
@@ -297,7 +301,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             tarPath = dirpath + '/' + filePath;
             Integer status = (Integer) checkedTars.get(tarPath);
             if (status != null) {
-                return updateFileStatus(fsmgt, fileDTO, status.intValue());                
+                return updateFileStatus(fsmgt, fileDTO, status.intValue());
             }
         }
         int status = queryHSM(dirpath, filePath, fileDTO);
@@ -307,7 +311,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return updateFileStatus(fsmgt, fileDTO, status);
     }
 
-    private boolean updateFileStatus(FileSystemMgt fsmgt, FileDTO fileDTO, int status) {
+    private boolean updateFileStatus(FileSystemMgt fsmgt, FileDTO fileDTO,
+            int status) {
         if (fileDTO.getFileStatus() != status) {
             log.info("Change status of " + fileDTO + " to " + status);
             try {
@@ -353,11 +358,11 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         }
     }
 
-	public String getTimerIDCheckSyncFileStatus() {
-		return timerIDCheckSyncFileStatus;
-	}
+    public String getTimerIDCheckSyncFileStatus() {
+        return timerIDCheckSyncFileStatus;
+    }
 
-	public void setTimerIDCheckSyncFileStatus(String timerIDCheckSyncFileStatus) {
-		this.timerIDCheckSyncFileStatus = timerIDCheckSyncFileStatus;
-	}
+    public void setTimerIDCheckSyncFileStatus(String timerIDCheckSyncFileStatus) {
+        this.timerIDCheckSyncFileStatus = timerIDCheckSyncFileStatus;
+    }
 }
