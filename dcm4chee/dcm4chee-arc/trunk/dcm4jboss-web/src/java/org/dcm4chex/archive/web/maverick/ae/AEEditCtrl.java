@@ -39,7 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 
 
 /**
@@ -53,7 +53,7 @@ public class AEEditCtrl extends AEFormCtrl
 		AEModel model = AEModel.getModel(getCtx().getRequest());
 		try
 		{
-			AEData ae = model.getAE();
+			AEDTO ae = model.getAE();
 			if (ae.getPort() < 0) { //AE not loaded!
 				model.setAE( lookupAEDelegate().getAE(ae.getTitle()) );
 			}

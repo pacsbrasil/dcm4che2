@@ -42,7 +42,7 @@ package org.dcm4chex.archive.web.maverick.ae;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -56,7 +56,7 @@ public class AENewSubmitCtrl extends AEFormCtrl
 		HttpServletRequest request = getCtx().getRequest();
 		AEModel model = AEModel.getModel(request);
         model.clearPopupMsg();
-		AEData ae = model.getAE();
+		AEDTO ae = model.getAE();
 		if (request.getParameter("new") != null )
 		{
 			try

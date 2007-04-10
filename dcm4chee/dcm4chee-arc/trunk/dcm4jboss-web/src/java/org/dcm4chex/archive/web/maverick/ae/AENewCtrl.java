@@ -39,7 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick.ae;
 
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -51,7 +51,7 @@ public class AENewCtrl extends AEFormCtrl
 	protected String perform() throws Exception 
 	{
 		AEModel model = AEModel.getModel(getCtx().getRequest());
-		model.setAE( new AEData(-1,null,null,-1,null));
+		model.setAE( new AEDTO(-1,null,null,-1,null));
 		return SUCCESS;
 	}
 

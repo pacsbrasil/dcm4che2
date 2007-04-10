@@ -41,7 +41,7 @@ package org.dcm4chex.archive.web.maverick.ae;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 
 /**
  * @author umberto.cappellini@tiani.com
@@ -59,7 +59,7 @@ public class AEEditSubmitCtrl extends AEFormCtrl
 		AEDelegate delegate = lookupAEDelegate();
 		if (request.getParameter("update") != null)
 		{
-			AEData newAE = model.getAE();
+			AEDTO newAE = model.getAE();
 			try
 			{
 				lookupAEDelegate().updateAE( newAE, model.isCheckHost());

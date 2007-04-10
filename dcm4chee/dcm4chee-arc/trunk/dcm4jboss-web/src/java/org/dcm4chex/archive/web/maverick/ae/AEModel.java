@@ -42,7 +42,7 @@ package org.dcm4chex.archive.web.maverick.ae;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
 /**
@@ -131,7 +131,7 @@ public class AEModel extends BasicFormModel {
 		cipherSuites = null;
 	}
 	
-	public AEData getAE()
+	public AEDTO getAE()
 	{
 		if (cipherSuites == null || cipherSuites.length() < 1 ) {
 			StringBuffer sb = new StringBuffer();
@@ -140,7 +140,7 @@ public class AEModel extends BasicFormModel {
 			if ( cipher3 != null && cipher3.length() > 0 ) sb.append(",").append( cipher3 );
 			cipherSuites = sb.toString();
 		}
-		return new AEData(
+		return new AEDTO(
 			pk,
 			this.title,
 			this.hostName,
@@ -148,7 +148,7 @@ public class AEModel extends BasicFormModel {
 			this.cipherSuites);
 	}
 	
-	public void setAE( AEData ae ) {
+	public void setAE( AEDTO ae ) {
 		pk = ae.getPk();
 		title = ae.getTitle();
 		hostName = ae.getHostName();

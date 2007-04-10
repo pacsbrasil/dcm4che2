@@ -32,7 +32,7 @@
 
 </xsl:template>
 
-	<xsl:template match="item[@type='org.dcm4chex.archive.ejb.jdbc.AEData']">
+	<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.AEDTO']">
 		<tr>
 	        <td title="AE Title" valign="top" >
 				<xsl:value-of select="title"/>

@@ -11,7 +11,7 @@ import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -56,14 +56,14 @@ public class EchoDelegate {
 		 * 
 		 * @return An info string for status of echo.
 		 */
-		public String echo( AEData aeData, int nrOfTests ) {
+		public String echo( AEDTO aeData, int nrOfTests ) {
 			if ( log.isDebugEnabled() ) log.debug("Send echo to "+aeData);
 			String resp = null;
 			try {
 		        Object o = server.invoke(echoServiceName,
 		                "echo",
 		                new Object[]{ aeData, new Integer( nrOfTests ) },
-		                new String[]{ AEData.class.getName(), Integer.class.getName() } );
+		                new String[]{ AEDTO.class.getName(), Integer.class.getName() } );
 		        resp = (String) o;
 			} catch ( Exception x ) {
 				log.error( "Exception occured in echoAE: "+x.getMessage(), x );
@@ -98,7 +98,7 @@ public class EchoDelegate {
 		 * 
 		 * @return An info string for status of echo.
 		 */
-		public String[] echoAll( AEData aeData ) {
+		public String[] echoAll( AEDTO aeData ) {
 			String[] resp = null;
 			try {
 		        Object o = server.invoke(echoServiceName,
