@@ -86,6 +86,17 @@ default-transform-type="xslt">
 	  <view name="success" type="redirect" path="folder.m"/>
     </command>
 
+    <command name="expandXDS">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.xdsi.ExpandXDSCtrl" />
+	  <view name="success" type="redirect" path="folder.m"/>
+    </command>
+    <command name="xdsQuery">
+      <controller
+      class="org.dcm4chex.archive.web.maverick.xdsi.XDSQueryCtrl" />
+	  <view name="success" type="redirect" path="folder.m"/>
+    </command>
+
     <command name="patientEdit">
         <controller class="org.dcm4chex.archive.web.maverick.PatientEditCtrl" />    
 	    <view name="success">
@@ -394,6 +405,13 @@ default-transform-type="xslt">
 	    </view>
 	    <view name="success" type="redirect" path="foldersubmit.m?popupMsg=XDS-I Export done!&amp;filter.x=1" />        
 	    <view name="cancel" type="redirect" path="folder.m" />        
+     </command>
+    <command name="showManifest">
+        <controller class="org.dcm4chex.archive.web.maverick.xdsi.ShowManifestCtrl" />    
+	    <view name="success">
+    	  <transform path="xdsi/xdsi_showmanifest.xsl" />
+	    </view>
+	    <view name="error" type="redirect" path="folder.m" />        
      </command>
      
      <!-- ******* ARR comands ******* -->

@@ -14,6 +14,7 @@
  -->
 <xsl:param name="folder.export_tf" select="'false'"/>
 <xsl:param name="folder.export_xds" select="'false'"/>
+<xsl:param name="folder.xds_consumer" select="'false'"/>
 <xsl:param name="folder.send" select="'false'"/>
 <xsl:param name="folder.delete" select="'false'"/>
 <xsl:param name="folder.edit" select="'false'"/>
@@ -516,21 +517,27 @@
 			<col width="1%"/>
 			<col width="26%"/>
 			<col width="10%"/>
-			<col width="12%"/>
+			<xsl:if test="$folder.xds_consumer='false'">
+				<col width="17%"/>
+			</xsl:if>
+			<xsl:if test="$folder.xds_consumer='true'">
+				<col width="12%"/>
+				<col width="5%"/>
+			</xsl:if>
 		    <xsl:if test="$folder.edit='true'">
-			    <col width="45%"/>
+			    <col width="40%"/>
 			    <col width="2%"/>
 			    <col width="2%"/>
 		    </xsl:if>
 		    <xsl:if test="$folder.edit!='true'">
-            	<col width="49%"/>
+            	<col width="44%"/>
 		    </xsl:if>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 			<td class="patient_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
-					<xsl:when test="$rowspan=1">
+					<xsl:when test="showStudies='false'">
 						<a title="Show Studies" href="expandPat.m?patPk={pk}&amp;expand=true">
 						<img src="images/plus.gif" border="0" alt="+"/>
               </a>				
@@ -542,26 +549,43 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
-      <td title="Patient Name">
+      		<td title="Patient Name">
 				<strong>
-            <xsl:value-of select="patientName"/>&#160;
+            		<xsl:value-of select="patientName"/>&#160;
 				</strong>
-      </td>
-      <td title="Patient ID">
+      		</td>
+      		<td title="Patient ID">
 				<strong>
-            <xsl:value-of select="patientID"/>&#160;
+            		<xsl:value-of select="patientID"/>&#160;
 				</strong>
 			</td>
-      <td title="Birth Date">
+      		<td title="Birth Date">
 				<strong>
-            <xsl:value-of select="patientBirthDate"/>&#160;
+            		<xsl:value-of select="patientBirthDate"/>&#160;
 				</strong>
-      </td>
-      <td title="Patient Sex">
+      		</td>
+      		<td title="Patient Sex">
 				<strong>
-            <xsl:value-of select="patientSex"/>&#160;
+            		<xsl:value-of select="patientSex"/>&#160;
 				</strong>
-      </td>
+      		</td>
+      		<xsl:if test="$folder.xds_consumer='true'">
+				<td class="patient_mark" align="right" >
+					<xsl:text>XDS</xsl:text>
+					<xsl:choose>
+						<xsl:when test="showXDS='false'">
+							<a title="Show XDS Documents" href="expandXDS.m?patPk={pk}&amp;expand=true">
+								<img src="images/plus.gif" border="0" alt="+"/>
+	              			</a>				
+						</xsl:when>
+						<xsl:otherwise>
+							<a title="Hide XDS Documents" href="expandXDS.m?patPk={pk}&amp;expand=false">
+								<img src="images/minus.gif" border="0" alt="+"/>
+	              			</a>				
+						</xsl:otherwise>
+					</xsl:choose>
+				</td>
+			</xsl:if>
 		    <xsl:if test="$folder.edit='true'">
 			    <td class="study_mark" align="right">
 					<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
@@ -581,8 +605,11 @@
 					</xsl:if>
 				</input>
 			</td>
-	</table>
-</tr>
+	  </table>
+  </tr>
+  <xsl:if test="showXDS='true'">
+  	<xsl:call-template name="xds_documents"/>
+  </xsl:if>	
   <xsl:variable name="studyOrder">
     <xsl:choose>
       <xsl:when test="/model/latestStudiesFirst = 'true'">descending</xsl:when>
@@ -1240,7 +1267,6 @@
 			<col width="35%"/>
 			<col width="20%"/>
 		</colgroup>
-                             <td>&#160;</td>
 		<td title="fileTSUID">
 			<xsl:value-of select="fileTsuid"/>&#160;
 		</td>
@@ -1277,6 +1303,104 @@
 			</xsl:if>
 		</td>
       </table>
+	</tr>
+</xsl:template>
+
+
+<xsl:template name="xds_documents">
+	<tr>
+		<table class="xds_docs" width="100%">
+			<colgroup>
+				<col width="2%"/>
+				<col width="30%"/>
+				<col width="10%"/>
+				<col width="10%"/>
+				<col width="13%"/>
+				<col width="40%"/>
+				<col width="5%"/>
+			</colgroup>
+			<tr>
+		  		<td class="xds_docs_nav" title="XDS Document Navigation" colspan="7">
+		  			XDS Documents:&#160;&#160;
+					<a href="xdsQuery.m?queryType=findDocuments&amp;patId={patientID}" >
+						<img src="images/search.gif" alt="XML" border="0" title="Query for XDS documents"/>		
+					</a>
+	    		</td>
+	    	</tr>
+			<tr>
+		  		<td class="xds_doc_header" title="">
+		  			&#160;
+	    		</td>
+		  		<td class="xds_doc_header" title="Document Title">
+		  			Title&#160;
+	    		</td>
+		  		<td class="xds_doc_header" title="Document Creation Time">
+		  			Creation Time&#160;
+	    		</td>
+		  		<td class="xds_doc_header" title="Document Status">
+		  			Status&#160;
+	    		</td>
+		  		<td class="xds_doc_header" title="Mime Type">
+		  			MimeType&#160;
+	    		</td>
+		  		<td class="xds_doc_header" title="Document ID">
+		  			Document ID&#160;
+	    		</td>
+		  		<td class="xds_doc_header" title="">
+		  			&#160;
+	    		</td>
+	    	</tr>
+			<xsl:apply-templates select="XDSDocuments/item" mode="xds"/>
+	    </table>
+	</tr>
+</xsl:template>
+  
+<xsl:template match="item[@type='java.lang.String']" mode="xds">
+	<tr>
+	  	<td title="XDS Document">
+			<xsl:value-of select="." />
+    	</td>
+	</tr>
+</xsl:template>
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.xdsi.XDSDocumentObject']" mode="xds">
+	<tr>
+	  	<td title="">
+			&#160;
+    	</td>
+	  	<td title="Document Title">
+			<xsl:value-of select="name" />
+    	</td>
+	  	<td title="Created">
+			<xsl:value-of select="creationTime" />
+    	</td>
+	  	<td title="Document Status">
+			<xsl:value-of select="statusAsString" />
+    	</td>
+	  	<td title="Document MimeType">
+			<xsl:value-of select="mimeType" />
+    	</td>
+	  	<td title="Document ID">
+			<xsl:value-of select="id" />
+    	</td>
+    	<td>
+    		<xsl:choose>
+    			<xsl:when test="mimeType='application/dicom'">
+    				<a href="showManifest.m?url={URL}&amp;documentID={id}" target="xdsManifest" >
+						<img src="images/image.gif" alt="XML" border="0" title="Open XDSI Manifest"/>		
+					</a>
+    			</xsl:when>
+    			<xsl:when test="mimeType='application/pdf'">
+    				<a href="{URL}" target="xdsdoc" >
+						<img src="images/sr_pdf.gif" alt="XML" border="0" title="Open PDF Document"/>		
+					</a>
+    			</xsl:when>
+    			<xsl:otherwise>
+    				<a href="{URL}" target="xdsdoc" >
+						<img src="images/sr.gif" alt="XML" border="0" title="Open XDS Document"/>		
+					</a>
+    			</xsl:otherwise>
+    		</xsl:choose>
+    	</td>
 	</tr>
 </xsl:template>
     

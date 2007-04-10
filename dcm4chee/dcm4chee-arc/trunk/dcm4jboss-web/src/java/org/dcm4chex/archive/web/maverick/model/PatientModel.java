@@ -46,6 +46,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.util.Convert;
+import org.dcm4chex.archive.web.maverick.xdsi.XDSConsumerModel;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -56,6 +57,9 @@ import org.dcm4chex.archive.util.Convert;
 public class PatientModel extends AbstractModel {
 
     private long pk = -1l;
+    private boolean showXDS = false;
+    
+    private static XDSConsumerModel consumerModel;
 
     public PatientModel() {
     }
@@ -148,6 +152,32 @@ public class PatientModel extends AbstractModel {
      */
     public final void setStudies(List studies) {
         setChilds( studies );
+    }
+    
+    public boolean isShowStudies() {
+        return listOfChilds().size() > 0;
+    }
+    
+    public static void setConsumerModel(XDSConsumerModel m) {
+        consumerModel = m;
+    }
+
+    /**
+     * @return the showXDS
+     */
+    public boolean isShowXDS() {
+        return showXDS;
+    }
+
+    /**
+     * @param showXDS the showXDS to set
+     */
+    public void setShowXDS(boolean showXDS) {
+        this.showXDS = showXDS;
+    }
+    
+    public List getXDSDocuments() {
+        return showXDS ? consumerModel.getDocuments(getPatientID()) : null;
     }
     
 }

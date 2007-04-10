@@ -180,6 +180,10 @@
 			<param-name>xdsiServiceName</param-name>
 			<param-value>dcm4chee.archive:service=XDS-I</param-value>
 		</init-param>
+		<init-param>
+			<param-name>xdsQueryServiceName</param-name>
+			<param-value>dcm4chee.archive:service=XDSQueryService</param-value>
+		</init-param>
 
 		<!-- 
 			Used by dcm4chee-web application to find GPWLScuService MBean.

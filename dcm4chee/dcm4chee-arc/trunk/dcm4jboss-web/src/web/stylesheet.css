@@ -84,6 +84,49 @@ table.error_line {
 	color : #000000;
 } 
 
+table.xds_docs {
+	background : #eeeeee;
+	color : #000000;
+} 
+table.xds_show {
+	background : #eeeeee;
+	color : #000000;
+	border-style: inset;
+	border-color: #aaaaaa;
+} 
+
+td.xds_docs_nav {
+	color : #000000;
+	background : #bbbbbb;
+	border-style: inset;
+	border-color: #aaaaaa;
+	vertical-align: middle;
+	text-align: left;
+}
+td.xds_show_header {
+	color : #000000;
+	padding: 6;
+	background : #cccccc;
+	border-style: inset;
+	border-color: #aaaaaa;
+	vertical-align: middle;
+	text-align: center;
+}
+td.xds_show_title {
+	color : #000000;
+	background : #cccccc;
+	border-style: inset;
+	border-color: #aaaaaa;
+	vertical-align: middle;
+	text-align: left;
+}
+td.xds_show_line {
+	color : #000000;
+	background : #cccccc;
+	vertical-align: middle;
+	text-align: left;
+}
+
 td.tab {
 	background : #cccccc;
 	border-style: none none outset none;
@@ -122,6 +165,10 @@ td.mppsLinkMode {
 	border-color: #ff0000;
 	vertical-align: middle;
 	text-align: center;
+}
+
+td.xds_doc_header {
+	vertical-align: middle;
 }
 
 a.tab {

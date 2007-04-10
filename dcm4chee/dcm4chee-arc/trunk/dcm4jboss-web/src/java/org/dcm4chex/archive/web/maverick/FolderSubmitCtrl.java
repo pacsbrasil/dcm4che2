@@ -60,6 +60,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyFilterModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 import org.dcm4chex.archive.web.maverick.tf.TFModel;
 import org.dcm4chex.archive.web.maverick.tf.TeachingFileDelegate;
+import org.dcm4chex.archive.web.maverick.xdsi.XDSConsumerModel;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIExportDelegate;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIModel;
 import org.infohazard.maverick.flow.ControllerContext;
@@ -99,6 +100,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         		log.error("Cant make form bean!", x );
         	}
         	StudyModel.setHttpRoot(ctx.getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
+            PatientModel.setConsumerModel(XDSConsumerModel.getModel(ctx.getRequest()));
         }
     	return delegate;
     }
@@ -179,6 +181,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
             
+            if (rq.getParameter("addWorklist") != null ) return "worklist";
 
             return FOLDER;
         } catch (Exception e) {
@@ -523,18 +526,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private String exportXDSI() {
 		FolderForm folderForm = (FolderForm) getForm();
     	try {
-    		if ( xdsiDelegate == null ) {
-    			xdsiDelegate = new XDSIExportDelegate();
-    			xdsiDelegate.init(getCtx());
-    			getCtx().getRequest().getSession().setAttribute(XDSIExportDelegate.XDSI_ATTRNAME, xdsiDelegate);
-    		}
+    		xdsiDelegate = XDSIExportDelegate.getInstance(getCtx());
         	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
 					 folderForm.getStickyStudies(),
 					 folderForm.getStickySeries(),
 					 folderForm.getStickyInstances());
         	if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
-
-    		XDSIModel.getModel( getCtx().getRequest() ).setInstances(instances); 
+            XDSIModel xdsiModel = XDSIModel.getModel( getCtx().getRequest() );
+            xdsiModel.setInstances(instances);
+            xdsiModel.setSourcePatient( FolderUtil.getInstanceInfo((String)instances.iterator().next()));
     	} catch ( Exception x ) {
     		log.error("Error in XDSI export! :", x);
     		folderForm.setPopupMsg("folder.err_xdsi",x.getMessage());

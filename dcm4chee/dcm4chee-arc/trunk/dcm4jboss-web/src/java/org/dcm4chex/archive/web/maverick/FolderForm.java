@@ -100,7 +100,7 @@ public class FolderForm extends BasicFolderForm {
 	
 	protected static Logger log = Logger.getLogger(FolderForm.class);
     
-    static FolderForm getFolderForm(ControllerContext ctx) {
+    public static FolderForm getFolderForm(ControllerContext ctx) {
     	HttpServletRequest request = ctx.getRequest();
         FolderForm form = (FolderForm) request.getSession()
                 .getAttribute(FOLDER_ATTRNAME);

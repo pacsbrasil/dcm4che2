@@ -47,6 +47,7 @@ import java.util.Properties;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.RuntimeMBeanException;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -66,7 +67,7 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class XDSIExportDelegate {
 
-	public static final String XDSI_ATTRNAME = "xdsiExport";
+    private static final String XDSI_DELEGATE_ATTR_NAME = "xdsiDelegate";
 	
     private static MBeanServer server;
 	private static ObjectName keyObjectServiceName;
@@ -80,6 +81,21 @@ public class XDSIExportDelegate {
 	
 	public XDSIExportDelegate() {
 	}
+    
+    public static final XDSIExportDelegate getInstance( ControllerContext ctx ) {
+        HttpSession session = ctx.getRequest().getSession();
+        XDSIExportDelegate delegate = (XDSIExportDelegate) session.getAttribute(XDSI_DELEGATE_ATTR_NAME);
+        if ( delegate == null ) {
+            delegate = new XDSIExportDelegate();
+            try {
+                delegate.init(ctx);
+            } catch (Exception e) {
+                throw new NullPointerException("Cant initialize XDSIExportDelegate!");
+            }
+            session.setAttribute(XDSI_DELEGATE_ATTR_NAME, delegate);
+        }
+        return delegate;
+    }
 	
     public void init(ControllerContext ctx) throws Exception {
         if (keyObjectServiceName != null) return;
@@ -140,6 +156,19 @@ public class XDSIExportDelegate {
             throw e;
         }
     }
+
+     public boolean createFolder(XDSIModel model) throws Exception{
+         try {
+             Boolean b = (Boolean) server.invoke(xdsiServiceName,
+                     "createFolder",
+                     new Object[] { model.listMetadataProperties() },
+                     new String[] { Properties.class.getName() });
+             return b.booleanValue();
+         } catch (Exception e) {
+             log.warn("Failed to create Folder:", e);
+             throw e;
+         }
+     }
      
 	private Collection getObserverContextItems(String personName) {
 		Dataset ds = dof.newDataset();

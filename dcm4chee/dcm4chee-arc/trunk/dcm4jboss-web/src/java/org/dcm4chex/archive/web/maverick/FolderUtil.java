@@ -39,12 +39,15 @@
 package org.dcm4chex.archive.web.maverick;
 
 import java.nio.ByteBuffer;
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -65,6 +68,10 @@ public class FolderUtil {
 	
     private static Logger log = Logger.getLogger( FolderUtil.class.getName() );
 
+    public static Dataset getInstanceInfo(String iuid) throws RemoteException, FinderException, Exception {
+        return lookupContentManager().getInstanceInfo(iuid, true);
+    }
+    
     /**
 	 * @param stickyPatients
 	 * @param stickyStudies
@@ -180,7 +187,7 @@ public class FolderUtil {
 			}
 		}
 	}
-
+    
 	private static ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
                 .getFactory().lookup(ContentManagerHome.class,

@@ -39,12 +39,32 @@
 
 package org.dcm4chex.archive.web.maverick.xdsi;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.registry.JAXRException;
 
+import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.FileFormat;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
+import org.dcm4cheri.util.UIDGeneratorImpl;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.FolderForm;
 
@@ -55,23 +75,21 @@ import org.dcm4chex.archive.web.maverick.FolderForm;
 public class XDSIExportCtrl extends Dcm4cheeFormController {
 
     private XDSIExportDelegate delegate = null;
+    private XDSQueryDelegate qryDelegate = null;
+    
+    private static final String XDSI_EXPORT = "xdsi_export";
 	private static final String CANCEL = "cancel";
-	private static final String XDSI_EXPORT = "xdsi_export";
-	private static final String XDSI_DELEGATE_ATTR_NAME = "xdsiDelegate";
+    
+    private static final Logger log = Logger.getLogger( XDSIExportCtrl.class.getName() );
+
     protected Object makeFormBean() {
     	HttpServletRequest rq = getCtx().getRequest();
     	XDSIModel model = XDSIModel.getModel(rq);
-    	delegate = (XDSIExportDelegate) rq.getSession().getAttribute(XDSI_DELEGATE_ATTR_NAME);
-    	if ( delegate == null) { 
-    		delegate = new XDSIExportDelegate();
-    		try {
-	    		delegate.init(getCtx());
-	    		rq.getSession().setAttribute(XDSI_DELEGATE_ATTR_NAME,delegate);
-	    		clear(model, true);
-    		} catch ( Exception x) {
-    			throw new NullPointerException("Cant create XDSIModel or XDSIExport delegate!");
-    		}
-    	}
+        model.setConsumerModel( XDSConsumerModel.getModel(rq));
+    	delegate = XDSIExportDelegate.getInstance(getCtx());
+        qryDelegate = XDSQueryDelegate.getInstance(getCtx());
+        if ( model.getAuthorRoles() == null ) 
+            this.clear(model, true);
     	return model;
     }
     protected String perform() {
@@ -98,7 +116,7 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
         		clear(model, true);
         		return XDSI_EXPORT;
         	}
-        	if ( rq.getParameter("addEventCode") != null || rq.getParameter("redraw.x") != null ) {
+        	if ( rq.getParameter("addEventCode") != null || rq.getParameter("addEventCode.x") != null ) {
         		model.addSelectedEventCode();
         		return XDSI_EXPORT;
         	}
@@ -112,19 +130,121 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
         	}
 
             if ( rq.getParameter("export") != null || rq.getParameter("export.x") != null ) {
-	        	if ( ! delegate.exportXDSI(model) ) {
-	        		model.setPopupMsg("xdsi.err_failed","");
-	        		return XDSI_EXPORT;
-	        	}
-	    		clear(model, false);
-	    		FolderForm.setExternalPopupMsg(getCtx(), "xdsi.done", null);
-	        	return SUCCESS;//export done
+                return export(model);
         	}
+
+            if ( rq.getParameter("query") != null || rq.getParameter("query.x") != null ) {
+                qryDelegate.findDocuments(model);
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("queryFolder") != null || rq.getParameter("queryFolder.x") != null ) {
+                qryDelegate.findFolders(model);
+                return XDSI_EXPORT;
+            }
+            
+            if ( rq.getParameter("addAssociation") != null || rq.getParameter("addAssociation.x") != null ) {
+                model.addAssociation( null, model.getDocument( Integer.parseInt(rq.getParameter("selectedDocument"))), 
+                        rq.getParameter("assocType"), rq.getParameter("assocStatus"));
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("delAssociation") != null || rq.getParameter("addAssociation.x") != null ) {
+                model.getAssociations().remove(Integer.parseInt(rq.getParameter("selectedAssociation")));
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("deselectAllAssociations") != null || rq.getParameter("deselectAllAssociations.x") != null ) {
+                model.clearAssociations();
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("addFolder") != null || rq.getParameter("addFolder.x") != null ) {
+                model.addLinkFolder( 
+                        model.getFolder( Integer.parseInt(rq.getParameter("selectedFolder"))));
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("delFolder") != null || rq.getParameter("delFolder.x") != null ) {
+                model.getLinkFolders().remove(Integer.parseInt(rq.getParameter("selectedLinkFolder")));
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("deselectAllFolders") != null || rq.getParameter("deselectAllFolders.x") != null ) {
+                model.getLinkFolders().clear();
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("createFolder") != null || rq.getParameter("createFolder.x") != null ) {
+                return createFolder(rq, model);
+            }
+            if ( rq.getParameter("submitAndCreateFolder") != null || rq.getParameter("submitAndCreateFolder.x") != null ) {
+                return submitAndCreateFolder(rq, model);
+            }
+             
             return XDSI_EXPORT;//Show selection page for authorRole, ... selection
         } catch (Exception x) {
         	model.setPopupMsg("xdsi.err",x.getMessage());
         	return ERROR;
         }
+    }
+    
+    private String submitAndCreateFolder(HttpServletRequest rq, XDSIModel model) throws Exception {
+        Properties props = model.listMetadataProperties();
+        try {
+            props.setProperty("folder.uniqueId", UIDGeneratorImpl.getInstance().createUID() );
+            String folderName = rq.getParameter("folderName");
+            String folderComment = rq.getParameter("folderComment");
+            if ( folderName != null ) props.setProperty("folder.name", folderName);
+            if ( folderComment != null ) props.setProperty("folder.comment", folderComment);
+            return export( model );
+        } finally {
+            props.remove("folder.uniqueId");
+            props.remove("folderName");
+            props.remove("folderComment");
+            props.remove("folder.name");
+            props.remove("folder.comment");
+        }
+    }
+    
+    private String export(XDSIModel model) throws Exception {
+        if ( !model.getLinkFolders().isEmpty() ) {
+            Iterator iter = model.getLinkFolders().iterator();
+            StringBuffer sb = new StringBuffer().append(((XDSFolderObject)iter.next()).getId()); 
+            for ( ; iter.hasNext() ;) {
+                sb.append('|').append( ((XDSFolderObject)iter.next()).getId() );
+            }
+            model.listMetadataProperties().setProperty("folder_assoc.uniqueId", sb.toString());
+            log.debug("folder_assoc.uniqueId:"+sb);
+        } else {
+            model.listMetadataProperties().remove("folder_assoc.uniqueId");
+        }
+        if ( ! delegate.exportXDSI(model) ) {
+        	model.setPopupMsg("xdsi.err_failed","");
+        	return XDSI_EXPORT;
+        }
+        clear(model, false);
+        FolderForm.setExternalPopupMsg(getCtx(), "xdsi.done", null);
+        return SUCCESS;//export done
+    }
+    
+    private String createFolder(HttpServletRequest rq, XDSIModel model) throws JAXRException {
+        Properties props = model.listMetadataProperties();
+        try {
+            String folderName = rq.getParameter("folderName");
+            String folderComment = rq.getParameter("folderComment");
+            props.setProperty("folder.patDatasetIUID", (String) model.getInstances().iterator().next() );
+            props.setProperty("folder.uniqueId", UIDGeneratorImpl.getInstance().createUID() );
+            if ( folderName != null ) props.setProperty("folder.name", folderName);
+            if ( folderComment != null ) props.setProperty("folder.comment", folderComment);
+            if ( ! delegate.createFolder(model) ) {
+                model.setPopupMsg("xdsi.err_failed","");
+            } else {
+                
+            }
+        } catch (Exception x) {
+            model.setPopupMsg("xdsi.err",x.getMessage());
+            return ERROR;
+        } finally {
+            props.remove("folder.patDatasetIUID");
+            props.remove("folder.uniqueId");
+            props.remove("folder.name");
+            props.remove("folder.comment");
+        }
+        return XDSI_EXPORT;
     }
     
     private void clear(XDSIModel model, boolean reload) {
@@ -139,5 +259,6 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
 			model.setHealthCareFacilityTypeCodes( delegate.getConfiguredHealthCareFacilityTypeCodes());
 		}    	
     }
+
 
 }

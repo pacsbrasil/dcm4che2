@@ -46,8 +46,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.registry.BulkResponse;
+import javax.xml.registry.JAXRException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 import org.dcm4chex.archive.web.maverick.util.CodeItem;
 import org.dcm4chex.archive.xdsi.XDSIService;
@@ -66,6 +70,9 @@ public class XDSIModel extends BasicFormModel {
 	
     private static Logger log = Logger.getLogger( XDSIModel.class.getName() );
 
+    private String sourcePatId;
+    private String sourcePatIdIssuer;
+    private String sourcePatName;
 	private Set instances;
 	
 	private boolean exportPDF;
@@ -73,6 +80,9 @@ public class XDSIModel extends BasicFormModel {
 	private int selectedTitle, selectedEventCode, removeEventCode, selectedClassCode, selectedAuthorRole,
 				selectedContentTypeCode, selectedHealthCareTypeCode;
 
+    private int selectedDocument, selectedAssociation;
+    
+    private String pdfIUID = null;
 	private CodeItem[] docTitleCodes;
 	private CodeItem[] classCodes;
 	private CodeItem[] eventCodes;
@@ -81,12 +91,17 @@ public class XDSIModel extends BasicFormModel {
 	private CodeItem[] contentTypeCodes;
 	private CodeItem[] healthCareFacilityTypeCodes;
 	
-	private List selectedEventCodes = new ArrayList();
+    private List selectedEventCodes = new ArrayList();
+    private List associations = new ArrayList();
+    private List linkFolders = new ArrayList();
+    private List wadoUrls = new ArrayList();
 	
 	private Properties props = new Properties();
 
 	private XDSIExportDelegate delegate;
 
+    private XDSConsumerModel consumerModel;
+    
 	/**
 	 * Creates the model.
 	 * <p>
@@ -103,8 +118,9 @@ public class XDSIModel extends BasicFormModel {
 	
 	/**
 	 * @return Returns the props.
+	 * @throws JAXRException 
 	 */
-	public Properties listMetadataProperties() {
+	public Properties listMetadataProperties() throws JAXRException {
 		return props;
 	}
 	
@@ -128,8 +144,8 @@ public class XDSIModel extends BasicFormModel {
 	public static final XDSIModel getModel( HttpServletRequest request ) {
 		XDSIModel model = (XDSIModel) request.getSession().getAttribute(XDSI_ATTR_NAME);
 		if (model == null) {
-				model = new XDSIModel(request.getUserPrincipal().getName(), request);
-				request.getSession().setAttribute(XDSI_ATTR_NAME, model);
+			model = new XDSIModel(request.getUserPrincipal().getName(), request);
+			request.getSession().setAttribute(XDSI_ATTR_NAME, model);
 		}
 		return model;
 	}
@@ -247,7 +263,35 @@ public class XDSIModel extends BasicFormModel {
 		selectedEventCodes.add(ci);
 		props.setProperty("eventCodeList", getEventCodeListString());
 	}
-	private String getEventCodeListString() {
+	/**
+     * @return the selectedAssociation
+     */
+    public int getSelectedAssociation() {
+        return selectedAssociation;
+    }
+
+    /**
+     * @param selectedAssociation the selectedAssociation to set
+     */
+    public void setSelectedAssociation(int selectedAssociation) {
+        this.selectedAssociation = selectedAssociation;
+    }
+
+    /**
+     * @return the selectedDocument
+     */
+    public int getSelectedDocument() {
+        return selectedDocument;
+    }
+
+    /**
+     * @param selectedDocument the selectedDocument to set
+     */
+    public void setSelectedDocument(int selectedDocument) {
+        this.selectedDocument = selectedDocument;
+    }
+
+    private String getEventCodeListString() {
 		StringBuffer sb = new StringBuffer();
 		for( Iterator iter = selectedEventCodes.iterator() ; iter.hasNext() ; ) {
 			sb.append(iter.next()).append("|");
@@ -388,4 +432,147 @@ public class XDSIModel extends BasicFormModel {
         this.exportPDF=false;
 	}
 
+    /**
+     * Return a list of (queried) Documents for current source Patient.
+     * @return List of Documents
+     */
+    public List getDocuments() {
+        return consumerModel.getDocuments(sourcePatId);
+    }
+    public void setDocuments( List docs ) {
+        consumerModel.addDocuments(sourcePatId, docs);
+        log.info("consumerModel after setDiocuments:"+consumerModel);
+    }
+    public XDSDocumentObject getDocument( int idx ) {
+        int len = getDocuments().size();
+        if ( idx < 0 || idx > --len ) {
+            throw new IllegalArgumentException("Cant get Document at index "+idx+"! Valid index range:(0-"+len+")!");
+        }
+        return (XDSDocumentObject) getDocuments().get(idx);
+    }
+    public String getDocumentUUID(int idx) throws JAXRException {
+        return getUuidOfListEntry(getDocuments(), idx);
+    }
+
+    /**
+     * @return the queryModel
+     */
+    public List getFolders() {
+        return consumerModel.getFolders(sourcePatId);
+    }
+    public void setFolders( List folders ) {
+        consumerModel.addFolders(sourcePatId, folders);
+        log.info("consumerModel after setDiocuments:"+consumerModel);
+    }
+    public XDSFolderObject getFolder( int idx ) {
+        int len = getFolders().size();
+        if ( idx < 0 || idx > --len ) {
+            throw new IllegalArgumentException("Cant get Folder at index "+idx+"! Valid index range:(0-"+len+")!");
+        }
+        return (XDSFolderObject) getFolders().get(idx);
+    }
+    public String getFolderUUID(int idx) throws JAXRException {
+        return getUuidOfListEntry(getFolders(), idx);
+    }
+
+    private String getUuidOfListEntry(List l, int idx) throws JAXRException {
+        if ( l == null ) return null;
+        if ( idx < 0 || idx >= l.size() ) {
+            log.error("get UUID for idx="+idx+" failed! valid range:0-"+(l.size()-1));
+            return null;
+        }
+        Object o = l.get(idx);
+        if ( o == null ) return null;
+        if ( o instanceof String ) {
+            return o.toString();
+        } else if (o instanceof XDSDocumentObject ) {
+            return ((XDSDocumentObject) o).getId();
+        } else if (o instanceof XDSFolderObject ) {
+            return ((XDSFolderObject) o).getId();
+        }
+        throw new IllegalArgumentException("Cant get UUID of List Entry ("+o.getClass().getName()+")!"+
+                " Must be a XDSDocumentObject, XDSFolderObject or String!");
+    }
+
+    public void addAssociation(XDSRegistryObject src, XDSRegistryObject target, String type, String status) throws JAXRException{
+        props.setProperty("association_"+associations.size(), target.getId()+"|"+type+"|"+status );
+        associations.add(new XDSAssociation(src,target,type,XDSStatus.toStatus(status)));
+        props.setProperty("nrOfAssociations", String.valueOf(associations.size()) );
+    }
+    
+    public void clearAssociations() {
+        for ( int i = 0, len = associations.size() ; i < len; i++) {
+            props.remove("association_"+i);
+        }
+        props.remove("nrOfAssociations");
+        associations.clear();
+    }
+    
+    public List getAssociations() {
+        return associations;
+    }
+
+    public void addLinkFolder(XDSFolderObject folder) {
+        linkFolders.add(folder);
+    }
+
+    /**
+     * @return the linkFolders
+     */
+    public List getLinkFolders() {
+        return linkFolders;
+    }
+    
+    public void setWadoUrls(List wadoUrls) {
+        this.wadoUrls = wadoUrls;
+    }
+    public List getWadoUrls() {
+        return wadoUrls;
+    }
+
+    /**
+     * @return the pdfIUID
+     */
+    public String getPdfIUID() {
+        return props.getProperty("pdf_iuid");
+    }
+
+    /**
+     * @param pdfIUID the pdfIUID to set
+     */
+    public void setPdfIUID(String pdfIUID) {
+        props.setProperty("pdf_iuid", pdfIUID);
+    }
+
+    public void setSourcePatient(Dataset patDS) {
+        String sourcePatId = patDS.getString(Tags.PatientID);
+        if ( sourcePatId.equals(this.sourcePatId) ) return;
+        this.sourcePatId = sourcePatId;
+        sourcePatIdIssuer = patDS.getString(Tags.IssuerOfPatientID);
+        sourcePatName = patDS.getString(Tags.PatientName);
+        associations.clear();
+        linkFolders.clear();
+    }
+    
+    public String getSourcePatientId() {
+        return sourcePatId;
+    }
+    public String getSourcePatientIdIssuer() {
+        return sourcePatIdIssuer;
+    }
+
+    /**
+     * @return the sourcePatName
+     */
+    public String getSourcePatName() {
+        return sourcePatName;
+    }
+
+    /**
+     * @param consumerModel the consumerModel to set
+     */
+    public void setConsumerModel(XDSConsumerModel consumerModel) {
+        this.consumerModel = consumerModel;
+    }
+    
 }
