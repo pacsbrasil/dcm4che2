@@ -18,7 +18,7 @@ public class StoredQueryObjectFactory extends XDSQueryObjectFatory {
     public static final String STORED_QUERY_GET_FOLDERS = "urn:uuid:5737b14c-8a1a-4539-b659-e03a34a5e1e4";
     public static final String STORED_QUERY_GET_SUBMISSIONSETS = "urn:uuid:51224314-5390-4169-9b91-b1980040715a";
 
-    public StoredQueryObject newFindDocumentQuery(String patId, String status) {
+    public XDSQueryObject newFindDocumentQuery(String patId, String status) {
         StoredQueryObject sqo = new StoredQueryObject(STORED_QUERY_FIND_DOCUMENTS);
         sqo.addQueryParameter("$XDSDocumentEntryPatientId", patId);
         ArrayList l = new ArrayList();
@@ -35,10 +35,10 @@ public class StoredQueryObjectFactory extends XDSQueryObjectFatory {
         sqo.addQueryParameter("$XDSDocumentEntryStatus", l);
         return sqo;
     }
-    public StoredQueryObject newFindDocumentQuery(String patId, String status, 
+    public XDSQueryObject newFindDocumentQuery(String patId, String status, 
                     String dateTimeAtt, String dateTimeFrom, String dateTimeTo, 
                     List classCodes, List psCodes, List hcftCodes, List evCodes) {
-        StoredQueryObject sqo = newFindDocumentQuery(patId, status);
+        StoredQueryObject sqo = (StoredQueryObject) newFindDocumentQuery(patId, status);
         if ( dateTimeAtt != null ) sqo.addQueryParameter("$XDSDocumentEntryCreationTimeFrom", dateTimeAtt);
         if ( classCodes != null ) sqo.addQueryParameter("$XDSDocumentEntryClassCode", classCodes);
         if ( psCodes != null ) sqo.addQueryParameter("$XDSDocumentEntryPracticeSettingCode", psCodes);

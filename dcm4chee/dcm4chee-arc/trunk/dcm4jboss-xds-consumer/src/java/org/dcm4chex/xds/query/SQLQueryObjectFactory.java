@@ -12,13 +12,13 @@ public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
     /* (non-Javadoc)
      * @see org.dcm4chex.xds.query.XDSQueryObjectFatory#newFindDocumentQuery(java.lang.String, java.lang.String)
      */
-    public SQLQueryObject newFindDocumentQuery(String patId, String status) {
+    public XDSQueryObject newFindDocumentQuery(String patId, String status) {
         return newFindDocumentQuery(patId, status, null, null, null, null, null, null ,null);
     }
     /* (non-Javadoc)
      * @see org.dcm4chex.xds.query.XDSQueryObjectFatory#newFindDocumentQuery(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.List, java.util.List, java.util.List, java.util.List)
      */
-    public SQLQueryObject newFindDocumentQuery(String patId, String status, 
+    public XDSQueryObject newFindDocumentQuery(String patId, String status, 
                     String dateTimeAtt, String dateTimeFrom, String dateTimeTo, 
                     List classCodes, List psCodes, List hcftCodes, List evCodes) {
         StringBuffer sbSelect = new StringBuffer();
@@ -38,7 +38,7 @@ public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
        return new SQLQueryObject(sbSelect.toString());
     }
     
-    public SQLQueryObject newGetDocumentQuery( String[] uuids ) {
+    public XDSQueryObject newGetDocumentQuery( String[] uuids ) {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT doc.id FROM ExtrinsicObject doc WHERE doc.id IN ( ");
         addListString(sb, uuids);
