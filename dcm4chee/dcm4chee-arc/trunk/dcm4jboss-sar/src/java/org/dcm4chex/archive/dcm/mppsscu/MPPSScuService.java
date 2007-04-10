@@ -39,9 +39,6 @@
 
 package org.dcm4chex.archive.dcm.mppsscu;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -55,23 +52,16 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.PDU;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -79,15 +69,8 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 15.11.2004
  * 
  */
-public class MPPSScuService extends ServiceMBeanSupport implements
+public class MPPSScuService extends AbstractScuService implements
         MessageListener, NotificationListener {
-
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian };
-
-    private static final int ERR_MPPS_RJ = -2;
-
-    private static final int ERR_ASSOC_RJ = -1;
 
     private static final int PCID_MPPS = 1;
 
@@ -98,23 +81,13 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID,
             Tags.SOPInstanceUID };
 
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
-
-    private String callingAET;
 
     private String[] forwardAETs = EMPTY;
 
     private ObjectName mppsScpServiceName;
 
     private String queueName;
-
-    private int acTimeout;
-
-    private int dimseTimeout;
-
-    private int soCloseDelay;
 
     private int concurrency = 1;
 
@@ -145,30 +118,6 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         }
     }
 
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
-    }
-
     public final String getForwardAETs() {
         return forwardAETs.length > 0 ? StringUtils.toString(forwardAETs, '\\')
                 : NONE;
@@ -187,52 +136,12 @@ public class MPPSScuService extends ServiceMBeanSupport implements
         this.mppsScpServiceName = mppsScpServiceName;
     }
 
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
-    public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();
-    }
-
-    public final void setReceiveBufferSize(int size) {
-        tlsConfig.setReceiveBufferSize(size);
-    }
-
-    public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();
-    }
-
-    public final void setSendBufferSize(int size) {
-        tlsConfig.setSendBufferSize(size);
-    }
-
-    public final boolean isTcpNoDelay() {
-        return tlsConfig.isTcpNoDelay();
-    }
-
-    public final void setTcpNoDelay(boolean on) {
-        tlsConfig.setTcpNoDelay(on);
-    }
-
     public final String getQueueName() {
         return queueName;
     }
 
     public final void setQueueName(String queueName) {
         this.queueName = queueName;
-    }
-
-    public final String getCallingAET() {
-        return callingAET;
-    }
-
-    public final void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
     }
 
     public String getRetryIntervalls() {
@@ -302,34 +211,11 @@ public class MPPSScuService extends ServiceMBeanSupport implements
     }
 
     public void sendMPPS(boolean create, Dataset mpps, String aet)
-            throws DcmServiceException, InterruptedException, IOException,
-            UnkownAETException, SQLException {
-        AEData aeData = new AECmd(aet).getAEData();
-        if (aeData == null) {
-            throw new UnkownAETException("Unkown Destination AET: " + aet);
-        }
-        AssociationFactory af = AssociationFactory.getInstance();
-        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
-        a.setAcTimeout(acTimeout);
-        a.setDimseTimeout(dimseTimeout);
-        a.setSoCloseDelay(soCloseDelay);
-        AAssociateRQ rq = af.newAAssociateRQ();
-        rq.setCalledAET(aet);
-        rq.setCallingAET(callingAET);
-        rq.addPresContext(af.newPresContext(PCID_MPPS,
-                UIDs.ModalityPerformedProcedureStep, NATIVE_TS));
-        PDU ac = a.connect(rq);
-        if (!(ac instanceof AAssociateAC)) {
-            throw new DcmServiceException(ERR_ASSOC_RJ,
-                    "Association not accepted by " + aet + ": " + ac);
-        }
-        ActiveAssociation aa = af.newActiveAssociation(a, null);
+            throws Exception {
+        ActiveAssociation aa = openAssociation(aet,
+                UIDs.ModalityPerformedProcedureStep);
+        Association a = aa.getAssociation();
         try {
-            aa.start();
-            if (a.getAcceptedTransferSyntaxUID(PCID_MPPS) == null) {
-                throw new DcmServiceException(ERR_MPPS_RJ,
-                        "MPPS not supported by remote AE: " + aet);
-            }
             DcmObjectFactory dof = DcmObjectFactory.getInstance();
             Command cmdRq = dof.newCommand();
             if (create) {
@@ -341,8 +227,8 @@ public class MPPSScuService extends ServiceMBeanSupport implements
                         UIDs.ModalityPerformedProcedureStep, mpps
                                 .getString(Tags.SOPInstanceUID));
             }
-            Dimse dimseRq = af.newDimse(PCID_MPPS, cmdRq, mpps
-                    .exclude(EXCLUDE_TAGS));            
+            Dimse dimseRq = AssociationFactory.getInstance()
+                    .newDimse(PCID_MPPS, cmdRq, mpps.exclude(EXCLUDE_TAGS));            
             final Dimse dimseRsp = aa.invoke(dimseRq).get();
             final Command cmdRsp = dimseRsp.getCommand();
             final int status = cmdRsp.getStatus();
@@ -369,4 +255,5 @@ public class MPPSScuService extends ServiceMBeanSupport implements
             }
         }
     }
+    
 }

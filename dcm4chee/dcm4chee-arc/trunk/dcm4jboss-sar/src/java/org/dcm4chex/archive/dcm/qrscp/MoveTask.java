@@ -77,7 +77,7 @@ import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
@@ -116,7 +116,7 @@ public class MoveTask implements Runnable {
 
     private final String moveDest;
 
-    private final AEData aeData;
+    private final AEDTO aeData;
 
     private final int movePcid;
 
@@ -200,7 +200,7 @@ public class MoveTask implements Runnable {
 
     public MoveTask(QueryRetrieveScpService service,
             ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
-            Dataset moveRqData, FileInfo[][] fileInfo, AEData aeData,
+            Dataset moveRqData, FileInfo[][] fileInfo, AEDTO aeData,
             String moveDest) throws DcmServiceException {
         this.service = service;
         this.log = service.getLog();
@@ -232,7 +232,7 @@ public class MoveTask implements Runnable {
         Association a = null;
         AssociationFactory asf = AssociationFactory.getInstance();
         try {
-            a = asf.newRequestor(service.createSocket(aeData));
+            a = asf.newRequestor(service.createSocket(moveCalledAET, aeData));
             a.setAcTimeout(service.getAcTimeout());
             a.setDimseTimeout(service.getDimseTimeout());
             a.setSoCloseDelay(service.getSoCloseDelay());
@@ -252,7 +252,7 @@ public class MoveTask implements Runnable {
             ac = a.connect(rq);
 
             perfMon.assocEstEnd(a, Command.C_STORE_RQ);
-        } catch (IOException e) {
+        } catch (Exception e) {
             final String prompt = "Failed to connect " + moveDest;
             log.error(prompt, e);
             throw new DcmServiceException(Status.UnableToPerformSuboperations,
@@ -368,10 +368,10 @@ public class MoveTask implements Runnable {
         final boolean[] receivedFinalRsp = { false };
         try {
             final AssociationFactory asf = AssociationFactory.getInstance();
-            final AEData retrieveAEData = service
+            final AEDTO retrieveAEData = service
                     .queryAEData(retrieveAET, null);
             Association a = asf.newRequestor(service
-                    .createSocket(retrieveAEData));
+                    .createSocket(moveCalledAET, retrieveAEData));
             a.setAcTimeout(service.getAcTimeout());
             a.setDimseTimeout(service.getDimseTimeout());
             a.setSoCloseDelay(service.getSoCloseDelay());

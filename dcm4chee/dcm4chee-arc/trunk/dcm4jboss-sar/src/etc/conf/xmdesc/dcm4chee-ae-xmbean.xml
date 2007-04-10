@@ -98,7 +98,7 @@
        <name>title</name>
        <type>java.lang.String</type>
      </parameter>
-     <return-type>org.dcm4chex.archive.ejb.jdbc.AEData</return-type>
+     <return-type>org.dcm4chex.archive.ejb.interfaces.AEDTO</return-type>
 	</operation>
     <operation impact="ACTION">
      <description>Get AE Configuration</description>
@@ -113,7 +113,7 @@
        <name>host</name>
        <type>java.lang.String</type>
      </parameter>
-     <return-type>org.dcm4chex.archive.ejb.jdbc.AEData</return-type>
+     <return-type>org.dcm4chex.archive.ejb.interfaces.AEDTO</return-type>
 	</operation>
     <operation impact="ACTION">
      <description>Get AE Configuration</description>
@@ -128,7 +128,7 @@
        <name>addr</name>
        <type>java.net.InetAddress</type>
      </parameter>
-     <return-type>org.dcm4chex.archive.ejb.jdbc.AEData</return-type>
+     <return-type>org.dcm4chex.archive.ejb.interfaces.AEDTO</return-type>
 	</operation>
    
    <operation impact="ACTION">

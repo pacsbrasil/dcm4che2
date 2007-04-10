@@ -39,27 +39,15 @@
 
 package org.dcm4chex.archive.mbean;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
 import java.util.List;
-
-import javax.management.ObjectName;
-import javax.net.ssl.SSLException;
 
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
-import org.dcm4che.net.PDU;
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.jboss.system.ServiceMBeanSupport;
+import org.dcm4chex.archive.dcm.AbstractScuService;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 
 /**
  * <description>
@@ -68,194 +56,75 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since March 24, 2005
  * @version $Revision$ $Date$
  */
-public class EchoService extends ServiceMBeanSupport {
-    private static final AssociationFactory aFact = AssociationFactory
-            .getInstance();
-
-    private static final DcmObjectFactory oFact = DcmObjectFactory
-            .getInstance();
-
-    private int acTimeout = 5000;
-
-    private int dimseTimeout = 0;
-
-    private int soCloseDelay = 500;
-
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
-    private String callingAET;
+public class EchoService extends AbstractScuService {
 
     private static final int PCID_ECHO = 1;
 
-    private static final String[] DEF_TS = { UIDs.ImplicitVRLittleEndian };
-
-    /**
-     * @return Returns the callingAET.
-     */
-    public String getCallingAET() {
-        return callingAET;
-    }
-
-    /**
-     * @param callingAET
-     *            The callingAET to set.
-     */
-    public void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
-    }
-
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
-    public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();
-    }
-
-    public final void setReceiveBufferSize(int size) {
-        tlsConfig.setReceiveBufferSize(size);
-    }
-
-    public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();
-    }
-
-    public final void setSendBufferSize(int size) {
-        tlsConfig.setSendBufferSize(size);
-    }
-
-    public final boolean isTcpNoDelay() {
-        return tlsConfig.isTcpNoDelay();
-    }
-
-    public final void setTcpNoDelay(boolean on) {
-        tlsConfig.setTcpNoDelay(on);
-    }
-
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
-    }
 
     public String[] echoAll() throws RemoteException, Exception {
-        List l = lookupAEManager().getAes();
+        List l = aeMgt().findAll();
         String[] sa = new String[l.size()];
-        AEData aeData;
+        AEDTO remoteAE;
         for (int i = 0, len = sa.length; i < len; i++) {
-            aeData = (AEData) l.get(i);
+            remoteAE = (AEDTO) l.get(i);
             try {
-                sa[i] = aeData + " : " + echo(aeData, new Integer(3));
+                sa[i] = remoteAE + " : " + echo(remoteAE, new Integer(3));
             } catch (Exception x) {
-                sa[i] = aeData + " failed:" + x.getMessage();
+                sa[i] = remoteAE + " failed:" + x.getMessage();
             }
         }
         return sa;
     }
 
     public String echo(String aet, Integer nrOfTests) throws Exception {
-        return echo(lookupAEManager().getAeByTitle(aet), nrOfTests);
+        return echo(aeMgt().findByAET(aet), nrOfTests);
     }
 
-    public String echo(AEData aeData, Integer nrOfTests)
-            throws InterruptedException, IOException, GeneralSecurityException {
-        int count = 0;
-        int len = nrOfTests.intValue();
-        ActiveAssociation active = null;
+    public String echo(AEDTO aeData, Integer nrOfTests) throws Exception {
         try {
-            active = openAssoc(aeData);
-        } catch (Throwable t) {
-            log.error("Echo " + aeData + " failed!", t);
-            return "Echo failed (" + aeData
-                    + ")! Reason: unexpected Exception:" + t;
-        }
-        if (active != null) {
-            if (active.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO) == null) {
-                return "Echo (" + aeData + ") not accepted!";
-            } else
+            ActiveAssociation aa = openAssociation(aeData, UIDs.Verification);
+            try {
+                echo(aa, nrOfTests.intValue());
+                return "Echo " + aeData + " successfully!";
+            } finally {
                 try {
-                    for (int j = 0; j < len; ++j, ++count) {
-                        active.invoke(aFact.newDimse(PCID_ECHO, oFact
-                                .newCommand().initCEchoRQ(j)), null);
-                    }
-                } catch (SSLException x) {
-                    return "Echo failed: " + x.getMessage();
+                    aa.release(true);
+                } catch (Exception e) {
+                    log.warn("Failed to release " + aa.getAssociation());
                 }
-            active.release(true);
-        }
-        return "Echo (" + aeData + ") done! " + count + " of " + nrOfTests
-                + " successfully completed.";
-    }
-
-    public boolean checkEcho(AEData aeData) {
-        ActiveAssociation active = null;
-        try {
-            active = openAssoc(aeData);
-            if (active != null
-                    && active.getAssociation().getAcceptedTransferSyntaxUID(
-                            PCID_ECHO) != null) {
-                active.invoke(aFact.newDimse(PCID_ECHO, oFact.newCommand()
-                        .initCEchoRQ(0)), null);
-                return true;
             }
-        } catch (Throwable ignore) {
-        } finally {
-            if (active != null)
+        } catch (Exception e) {
+            log.error("Echo" + aeData + " failed", e);
+            return "Echo" + aeData + " failed: " + e;        
+        }
+    }
+    
+    private void echo(ActiveAssociation aa, int nrOfTests)
+            throws Exception {
+        AssociationFactory aFact = AssociationFactory.getInstance();
+        DcmObjectFactory oFact = DcmObjectFactory.getInstance();
+        for (int i = 0; i < nrOfTests; i++) {
+            aa.invoke(aFact.newDimse(PCID_ECHO, 
+                    oFact.newCommand().initCEchoRQ(i)), null);
+        }
+    }
+
+    public boolean checkEcho(AEDTO aeData) {
+        try {
+            ActiveAssociation aa = openAssociation(aeData, UIDs.Verification);
+            try {
+                echo(aa, 1);
+                return true;
+            } finally {
                 try {
-                    active.release(true);
-                } catch (Exception ignoreit) {
+                    aa.release(true);
+                } catch (Exception e) {
+                    log.warn("Failed to release " + aa.getAssociation());
                 }
+            }
+        } catch (Exception e) {
+            log.error("Echo" + aeData + " failed", e);
+            return false;        
         }
-        return false;
     }
-
-    private ActiveAssociation openAssoc(AEData aeData) throws IOException,
-            GeneralSecurityException {
-        Association assoc = aFact.newRequestor(tlsConfig.createSocket(aeData));
-
-        assoc.setAcTimeout(acTimeout);
-        assoc.setDimseTimeout(dimseTimeout);
-        assoc.setSoCloseDelay(soCloseDelay);
-        AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-        assocRQ.setCallingAET(this.callingAET);
-        assocRQ.setCalledAET(aeData.getTitle());
-        assocRQ.addPresContext(aFact.newPresContext(PCID_ECHO,
-                UIDs.Verification, DEF_TS));
-        PDU assocAC = assoc.connect(assocRQ);
-        if (!(assocAC instanceof AAssociateAC)) {
-            return null;
-        }
-        ActiveAssociation retval = aFact.newActiveAssociation(assoc, null);
-        retval.start();
-        return retval;
-    }
-
-    protected AEManager lookupAEManager() throws Exception {
-        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
-        return home.create();
-    }
-
 }

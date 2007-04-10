@@ -53,7 +53,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.HPRetrieveCmd;
 import org.jboss.logging.Logger;
 
@@ -82,10 +82,10 @@ public class HPMoveScp extends DcmServiceBase {
 			checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
 			String dest = rqCmd.getString(Tags.MoveDestination);
 			InetAddress host = dest.equals( assoc.getAssociation().getCallingAET()) ? assoc.getAssociation().getSocket().getInetAddress() : null;
-			AEData aeData = service.queryAEData(dest, host);
+			AEDTO destAE = service.queryAEData(dest, host);
 			List hpList = queryHPList(rqData);
 			new Thread(new HPMoveTask(service, assoc, rq.pcid(), rqCmd, rqData,
-					hpList, aeData, dest)).start();
+					hpList, destAE, dest)).start();
 		} catch (DcmServiceException e) {
 			Command rspCmd = objFact.newCommand();
 			rspCmd.initCMoveRSP(rqCmd.getMessageID(), rqCmd

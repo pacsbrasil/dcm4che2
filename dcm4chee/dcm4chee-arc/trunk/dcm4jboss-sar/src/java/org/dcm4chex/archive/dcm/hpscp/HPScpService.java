@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.dcm.hpscp;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -52,7 +51,9 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
@@ -168,7 +169,7 @@ public class HPScpService extends AbstractScpService {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
 
-    public AEData queryAEData(String aet, InetAddress addr)
+    public AEDTO queryAEData(String aet, InetAddress addr)
             throws DcmServiceException {
         try {
             Object o = server.invoke(aeServiceName, "getAE", new Object[] {
@@ -178,17 +179,24 @@ public class HPScpService extends AbstractScpService {
                 throw new DcmServiceException(Status.MoveDestinationUnknown,
                         aet);
             }
-            return (AEData) o;
+            return (AEDTO) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
 
-    Socket createSocket(AEData aeData) throws IOException {
-        return tlsConfig.createSocket(aeData);
+    Socket createSocket(String moveCalledAET, AEDTO destAE) throws Exception {
+        return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
 
+
+    private AEManager aeMgr() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
+    
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.HangingProtocolStorage, hpStoreScp);
         services.bind(UIDs.HangingProtocolInformationModelFIND, hpFindScp);
@@ -207,5 +215,4 @@ public class HPScpService extends AbstractScpService {
         policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, tsuids);
         policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, tsuids);
     }
-
 }

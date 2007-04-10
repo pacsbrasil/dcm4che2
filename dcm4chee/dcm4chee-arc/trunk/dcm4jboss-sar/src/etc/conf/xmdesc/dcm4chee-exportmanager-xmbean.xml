@@ -170,20 +170,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getAcTimeout"
-      setMethod="setAcTimeout">
-      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
-      </description>
+     getMethod="getAcTimeout"
+     setMethod="setAcTimeout">
+      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.</description>
       <name>AcceptTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="10000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getDimseTimeout"
-      setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in milliseconds. 0 = no timeout.
+   
+   <attribute access="read-write" 
+     getMethod="getDimseTimeout"
+     setMethod="setDimseTimeout">
+      <description>DIMSE message timeout in ms. 0 = no timeout.
       </description>
       <name>DIMSETimeout</name>
       <type>int</type>
@@ -191,9 +191,10 @@
          <value value="60000"/>
       </descriptors>
    </attribute>
+   
    <attribute access="read-write"
-      getMethod="getSoCloseDelay"
-      setMethod="setSoCloseDelay">
+     getMethod="getSoCloseDelay"
+     setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after an A-Release response.
       </description>
       <name>SocketCloseDelay</name>
@@ -202,17 +203,55 @@
          <value value="50"/>
       </descriptors>
    </attribute>
+   
    <attribute access="read-write"
-      getMethod="getBufferSize"
-      setMethod="setBufferSize">
-      <description>Size of byte buffer used for copying data from TCP channel to file.
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
       </description>
-      <name>BufferSize</name>
+      <name>MaximumPDULength</name>
       <type>int</type>
       <descriptors>
-         <value value="8192"/>
+         <value value="16352"/>
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="isTcpNoDelay"
+      setMethod="setTcpNoDelay">
+      <description>Send packets as quickly as possible (Disable Nagle's algorithmn).
+      </description>
+      <name>TcpNoDelay</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getSendBufferSize"
+      setMethod="setSendBufferSize">
+      <description>Buffer size used for socket output. 0 = use platform default.
+      </description>
+      <name>SendBufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getReceiveBufferSize"
+      setMethod="setReceiveBufferSize">
+      <description>Buffer size used for socket input. 0 = use platform default.
+      </description>
+      <name>ReceiveBufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write"
       getMethod="getConcurrency"
       setMethod="setConcurrency">
@@ -267,6 +306,15 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>TLSConfigName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=TLSConfig"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

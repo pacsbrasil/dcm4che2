@@ -109,9 +109,10 @@ import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.dcm.AbstractScuService;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -119,19 +120,17 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since Dec 19, 2005
  */
-public class ExportManagerService extends ServiceMBeanSupport implements
+public class ExportManagerService extends AbstractScuService implements
         NotificationListener, MessageListener, DimseListener {
 
     private static final String PERSON_OBSERVER_NAME_CODE = "121008";
@@ -164,17 +163,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private Hashtable configs = new Hashtable();
 
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
-    
-    private String callingAET;
-
-    private int acTimeout;
-
-    private int dimseTimeout;
-
-    private int soCloseDelay;
 
     private int bufferSize;
 
@@ -334,14 +323,6 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         this.dispConfigFile = new File(path.replace('/', File.separatorChar));
     }
 
-    public String getCallingAET() {
-        return callingAET;
-    }
-
-    public void setCallingAET(String aet) {
-        this.callingAET = aet;
-    }
-
     /**
      * @return Returns the deleteKeyObjects.
      */
@@ -355,30 +336,6 @@ public class ExportManagerService extends ServiceMBeanSupport implements
      */
     public void setDeleteKeyObjects(boolean deleteKeyObjects) {
         this.deleteKeyObjects = deleteKeyObjects;
-    }
-
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
     }
 
     public final ObjectName getStoreScpServiceName() {
@@ -422,44 +379,12 @@ public class ExportManagerService extends ServiceMBeanSupport implements
         }
     }
 
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
 
     public final void setJmsServiceName(ObjectName jmsServiceName) {
         jmsDelegate.setJmsServiceName(jmsServiceName);
-    }
-
-    public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();
-    }
-
-    public final void setReceiveBufferSize(int size) {
-        tlsConfig.setReceiveBufferSize(size);
-    }
-
-    public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();
-    }
-
-    public final void setSendBufferSize(int size) {
-        tlsConfig.setSendBufferSize(size);
-    }
-
-    public final boolean isTcpNoDelay() {
-        return tlsConfig.isTcpNoDelay();
-    }
-
-    public final void setTcpNoDelay(boolean on) {
-        tlsConfig.setTcpNoDelay(on);
     }
 
     protected void startService() throws Exception {
@@ -988,14 +913,12 @@ public class ExportManagerService extends ServiceMBeanSupport implements
 
     private ActiveAssociation openAssociation(FileInfo[] fileInfos,
             int[] pcids, String dest, boolean exportManifest,
-            boolean exportInstances, boolean exportMedia) throws SQLException,
-            UnkownAETException, IOException, InterruptedException {
-        AEData aeData = new AECmd(dest).getAEData();
-        if (aeData == null) {
-            throw new UnkownAETException("Unkown Destination AET: " + dest);
-        }
-        AssociationFactory af = AssociationFactory.getInstance();
+            boolean exportInstances, boolean exportMedia) throws Exception {
+        AEManager aeMgt = aeMgt();
+        AEDTO localAE = aeMgt.findByAET(callingAET);
+        AEDTO remoteAE = aeMgt.findByAET(dest);
 
+        AssociationFactory af = AssociationFactory.getInstance();
         AAssociateRQ rq = af.newAAssociateRQ();
         rq.setCallingAET(callingAET);
         rq.setCalledAET(dest);
@@ -1027,7 +950,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                     UIDs.ImplicitVRLittleEndian);
             rq.addPresContext(pc);
         }
-        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
+        Association a = af.newRequestor(tlsConfig.createSocket(localAE, remoteAE));
         a.setAcTimeout(acTimeout);
         a.setDimseTimeout(dimseTimeout);
         a.setSoCloseDelay(soCloseDelay);
@@ -1288,8 +1211,7 @@ public class ExportManagerService extends ServiceMBeanSupport implements
     }
 
     public void storeExportSelection(Dataset manifest, int prior)
-            throws SQLException, UnkownAETException, IOException,
-            InterruptedException {
+            throws Exception {
         String dest;
         try {
             String calledAETs = (String) server.getAttribute(
@@ -1302,41 +1224,10 @@ public class ExportManagerService extends ServiceMBeanSupport implements
                     "Cant get a CalledAET from StoreSCP service! Reason:"
                             + x.getMessage());
         }
-        ActiveAssociation aa = openAssociation(manifest
-                .getString(Tags.SOPClassUID), dest);
+        ActiveAssociation aa = openAssociation(dest,
+                manifest.getString(Tags.SOPClassUID));
         sendManifests(aa, PCID, manifest, prior);
         aa.release(true);
-    }
-
-    private ActiveAssociation openAssociation(String cuid, String dest)
-            throws SQLException, UnkownAETException, IOException,
-            InterruptedException {
-        AEData aeData = new AECmd(dest).getAEData();
-        if (aeData == null) {
-            throw new UnkownAETException("Unkown Destination AET: " + dest);
-        }
-        AssociationFactory af = AssociationFactory.getInstance();
-
-        AAssociateRQ rq = af.newAAssociateRQ();
-        rq.setCallingAET(callingAET);
-        rq.setCalledAET(dest);
-        PresContext pc = af.newPresContext(PCID, cuid,
-                UIDs.ImplicitVRLittleEndian);
-        rq.addPresContext(pc);
-        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
-        a.setAcTimeout(acTimeout);
-        a.setDimseTimeout(dimseTimeout);
-        a.setSoCloseDelay(soCloseDelay);
-        PDU ac = a.connect(rq);
-        if (!(ac instanceof AAssociateAC)) {
-            throw new IOException("Association not accepted by " + dest + ": "
-                    + ac);
-        }
-        ActiveAssociation aa = af.newActiveAssociation(a, null);
-        aa.start();
-        if (((AAssociateAC) ac).getPresContext(PCID).result() != PresContext.ACCEPTANCE)
-            throwStorageNotSupported(aa, cuid, dest);
-        return aa;
     }
     
     private void logBeginTransfering(Association a, Dataset manifest, 

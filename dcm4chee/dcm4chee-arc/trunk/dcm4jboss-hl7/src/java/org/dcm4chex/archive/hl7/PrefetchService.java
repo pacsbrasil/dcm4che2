@@ -41,8 +41,6 @@ package org.dcm4chex.archive.hl7;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.Socket;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,25 +65,18 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
-import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
-import org.jboss.system.ServiceMBeanSupport;
 import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.xml.sax.InputSource;
@@ -96,13 +87,12 @@ import org.xml.sax.SAXException;
  * @version $Revision$ $Date$
  * @since Nov 30, 2006
  */
-public class PrefetchService extends ServiceMBeanSupport implements
+public class PrefetchService extends AbstractScuService implements
         NotificationListener, MessageListener {
 
     private String prefetchSourceAET;
     private String destinationQueryAET;
     private String destinationStorageAET;
-    private String callingAET = "DCM4CHEE";
     private String stylesheetURL = "resource:dcm4chee-hl7/orm2prefetch.xsl";
     private ObjectName hl7ServerName;
     private ObjectName moveScuServiceName;
@@ -111,16 +101,10 @@ public class PrefetchService extends ServiceMBeanSupport implements
     private int sourceQueryPriority = 0;
     private int destinationQueryPriority = 0;
     private int retrievePriority = 0;
-
-    private int acTimeout;
-    private int dimseTimeout;
-    private int maxPDUlen = 16352;
-    private int soCloseDelay;
     
     private int concurrency = 1;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
     private static final String ONLINE = "ONLINE";
 
@@ -171,28 +155,6 @@ public class PrefetchService extends ServiceMBeanSupport implements
     public final void setRetrievePriority(String retrievePriority) {
         this.retrievePriority = DicomPriority.toCode(retrievePriority);
     }
-    
-    /**
-     * @return the callingAET
-     */
-    public String getCallingAET() {
-        return callingAET;
-    }
-
-    /**
-     * @param callingAET the callingAET to set
-     */
-    public void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
-    }
-
-    public final int getMaxPDUlen() {
-        return maxPDUlen;
-    }
-    public final void setMaxPDUlen(int maxPDUlen) {
-        this.maxPDUlen = maxPDUlen;
-    }
-    
     
     public String getStylesheetURL() {
         return stylesheetURL;
@@ -252,14 +214,6 @@ public class PrefetchService extends ServiceMBeanSupport implements
         this.hl7ServerName = hl7ServerName;
     } 
 
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-    
     public final ObjectName getMoveScuServiceName() {
             return moveScuServiceName;
     }
@@ -268,48 +222,6 @@ public class PrefetchService extends ServiceMBeanSupport implements
             this.moveScuServiceName = moveScuServiceName;
     }
     
-    /**
-     * @return the acTimeout
-     */
-    public int getAcTimeout() {
-        return acTimeout;
-    }
-
-    /**
-     * @param acTimeout the acTimeout to set
-     */
-    public void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    /**
-     * @return the dimseTimeout
-     */
-    public int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    /**
-     * @param dimseTimeout the dimseTimeout to set
-     */
-    public void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    /**
-     * @return the soCloseDelay
-     */
-    public int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    /**
-     * @param soCloseDelay the soCloseDelay to set
-     */
-    public void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
-    }
-
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(hl7ServerName, this,
@@ -413,8 +325,8 @@ public class PrefetchService extends ServiceMBeanSupport implements
     private void process(PrefetchOrder order) throws Exception {
         Dataset keys = order.getDataset();
         log.debug("SearchDS from order:");log.debug(keys);
-        Map srcList = doCFIND(prefetchSourceAET, callingAET, keys, sourceQueryPriority);
-        Map destList = doCFIND(destinationQueryAET, callingAET, keys, destinationQueryPriority);
+        Map srcList = doCFIND(prefetchSourceAET, keys, sourceQueryPriority);
+        Map destList = doCFIND(destinationQueryAET, keys, destinationQueryPriority);
         List notAvail = this.getListOfNotAvail(srcList, destList);
         if (notAvail.size() > 0 ) {
             log.debug("notAvail:"+notAvail);
@@ -442,21 +354,11 @@ public class PrefetchService extends ServiceMBeanSupport implements
         keys.putCS(Tags.InstanceAvailability);
     }
     
-    private Map doCFIND(String calledAET, String callingAET, Dataset keys, int priority ) throws Exception {
-        ActiveAssociation assoc = null;
+    private Map doCFIND(String calledAET, Dataset keys, int priority )
+            throws Exception {
+        ActiveAssociation assoc = openAssociation(calledAET,
+                UIDs.StudyRootQueryRetrieveInformationModelFIND);
         try {
-            AEData aeData = new AECmd(calledAET).getAEData();
-            assoc = openAssoc(tlsConfig.createSocket(aeData),
-                    getCFINDAssocReq(calledAET, callingAET));
-            if (assoc == null) {
-                log.error("Couldnt open association to " + aeData);
-                return null;
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                log.error(calledAET + " doesnt support CFIND request!", null);
-                return null;
-            }
             Map result = new HashMap();
             // send cfind request.
             Command cmd = DcmObjectFactory.getInstance().newCommand();
@@ -490,43 +392,7 @@ public class PrefetchService extends ServiceMBeanSupport implements
                 }
         }
     }
-    
-    /**
-     * Return the association request for modality worklist C-FIND.
-     * <p>
-     * This association is used for sending modality worklist C-FIND request and action
-     * command.
-     * 
-     * @return Association for media creation.
-     */
-    private AAssociateRQ getCFINDAssocReq(String calledAET, String callingAET) {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-        assocRQ.setCalledAET(calledAET);
-        assocRQ.setCallingAET(callingAET);
-        assocRQ.setMaxPDULength(maxPDUlen);
-        assocRQ.addPresContext(aFact.newPresContext(1,
-                UIDs.StudyRootQueryRetrieveInformationModelFIND, new String[]{ UIDs.ExplicitVRLittleEndian,
-                    UIDs.ImplicitVRLittleEndian }));
-        return assocRQ;
-    }
-    
-    private ActiveAssociation openAssoc(Socket sock, AAssociateRQ assocRQ)
-        throws IOException, GeneralSecurityException {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        Association assoc = aFact.newRequestor(sock);
-        assoc.setAcTimeout(acTimeout);
-        assoc.setDimseTimeout(dimseTimeout);
-        assoc.setSoCloseDelay(soCloseDelay);
-        PDU assocAC = assoc.connect(assocRQ);
-        if (!(assocAC instanceof AAssociateAC)) {
-            return null;
-        }
-        ActiveAssociation retval = aFact.newActiveAssociation(assoc, null);
-        retval.start();
-        return retval;
-    }
-    
+        
     private List getListOfNotAvail(Map all, Map map ) {
         ArrayList l = new ArrayList();
         Dataset ds, dsAll;

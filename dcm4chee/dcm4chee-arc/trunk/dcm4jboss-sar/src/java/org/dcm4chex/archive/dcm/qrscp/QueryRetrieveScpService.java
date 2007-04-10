@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Connection;
@@ -74,9 +73,11 @@ import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -633,7 +634,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-    public AEData queryAEData(String aet, InetAddress address)
+    public AEDTO queryAEData(String aet, InetAddress address)
             throws DcmServiceException, UnkownAETException {
         // String host = address != null ? address.getCanonicalHostName() :
         // null;
@@ -643,7 +644,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                     InetAddress.class.getName() });
             if (o == null)
                 throw new UnkownAETException("Unkown AET: " + aet);
-            return (AEData) o;
+            return (AEDTO) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
@@ -757,9 +758,17 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
     
-    Socket createSocket(AEData aeData) throws IOException {
-        return tlsConfig.createSocket(aeData);
+    Socket createSocket(String moveCalledAET, AEDTO destAE) throws Exception {
+        return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
+
+
+    private AEManager aeMgr() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
+
 
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo) {

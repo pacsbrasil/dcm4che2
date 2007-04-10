@@ -40,38 +40,25 @@
 package org.dcm4chex.archive.dcm.mwlscu;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.List;
-
-import javax.ejb.CreateException;
-import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
-import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * MBean to configure and service modality worklist managment issues.
@@ -80,7 +67,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @version $Revision$ $Date$
  * 
  */
-public class MWLScuService extends ServiceMBeanSupport {
+public class MWLScuService extends AbstractScuService {
 
     private static final int PCID = 1;
 
@@ -88,86 +75,13 @@ public class MWLScuService extends ServiceMBeanSupport {
 
     private static final int MIN_MAX_RESULT = 10;
 
-    /** Holds the calling AET. */
-    private String callingAET;
-
     /** Holds the AET of modality worklist service. */
     private String calledAET;
     
     private int maxResults;
 
-    /** Holds Association timeout in ms. */
-    private int acTimeout;
-
-    /** Holds DICOM message timeout in ms. */
-    private int dimseTimeout;
-
-    /** Holds max PDU length in bytes. */
-    private int maxPDUlen = 16352;
-
-    /** Holds socket close delay in ms. */
-    private int soCloseDelay;
-
     /** DICOM priority. Used for move and media creation action. */
     private int priority = 0;
-
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian };
-
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
-    private MWLManager mwlManager;
-
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
-    public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();
-    }
-
-    public final void setReceiveBufferSize(int size) {
-        tlsConfig.setReceiveBufferSize(size);
-    }
-
-    public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();
-    }
-
-    public final void setSendBufferSize(int size) {
-        tlsConfig.setSendBufferSize(size);
-    }
-
-    public final boolean isTcpNoDelay() {
-        return tlsConfig.isTcpNoDelay();
-    }
-
-    public final void setTcpNoDelay(boolean on) {
-        tlsConfig.setTcpNoDelay(on);
-    }
-
-    /**
-     * Returns the calling AET defined in this MBean.
-     * 
-     * @return The calling AET.
-     */
-    public final String getCallingAET() {
-        return callingAET;
-    }
-
-    /**
-     * Set the calling AET.
-     * 
-     * @param aet
-     *            The calling AET to set.
-     */
-    public final void setCallingAET(String aet) {
-        callingAET = aet;
-    }
 
     /**
      * Returns the AET that holds the work list (Modality Work List SCP).
@@ -203,82 +117,6 @@ public class MWLScuService extends ServiceMBeanSupport {
 
     public final boolean isLocal() {
         return "LOCAL".equalsIgnoreCase(calledAET);
-    }
-
-    /**
-     * Returns the Association timeout in ms.
-     * 
-     * @return Returns the acTimeout.
-     */
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    /**
-     * Set the association timeout.
-     * 
-     * @param acTimeout
-     *            The acTimeout in ms.
-     */
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    /**
-     * Returns the DICOM message timeout in ms.
-     * 
-     * @return Returns the dimseTimeout.
-     */
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    /**
-     * Set the DICOM message timeout.
-     * 
-     * @param dimseTimeout
-     *            The dimseTimeout in ms.
-     */
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    /**
-     * Returns the socket close delay in ms.
-     * 
-     * @return Returns the soCloseDelay.
-     */
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    /**
-     * Set the socket close delay.
-     * 
-     * @param delay
-     *            Socket close delay in ms.
-     */
-    public final void setSoCloseDelay(int delay) {
-        soCloseDelay = delay;
-    }
-
-    /**
-     * returns the max PDU length in bytes.
-     * 
-     * @return Returns the maxPDUlen.
-     */
-    public final int getMaxPDUlen() {
-        return maxPDUlen;
-    }
-
-    /**
-     * Set the max PDU length.
-     * 
-     * @param maxPDUlen
-     *            The maxPDUlen in bytes.
-     */
-    public final void setMaxPDUlen(int maxPDUlen) {
-        this.maxPDUlen = maxPDUlen;
     }
 
     /**
@@ -318,7 +156,7 @@ public class MWLScuService extends ServiceMBeanSupport {
 
     public boolean deleteMWLEntry(String spsID) {
         try {
-            lookupMWLManager().removeWorklistItem(spsID);
+            mwlMgt().removeWorklistItem(spsID);
             log.info("MWL entry with id " + spsID + " removed!");
             return true;
         } catch (Exception x) {
@@ -377,71 +215,57 @@ public class MWLScuService extends ServiceMBeanSupport {
     }
 
     private int findMWLEntriesFromAET(Dataset searchDS, final List result) {
-        ActiveAssociation assoc = null;
         try {
-            // get association for mwl find.
-            AEData aeData = new AECmd(calledAET).getAEData();
-            assoc = openAssoc(tlsConfig.createSocket(aeData),
-                    getCFINDAssocReq());
-            if (assoc == null) {
-                log.error("Couldnt open association to " + aeData);
-                return Status.ProcessingFailure;
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                log.error(calledAET + " doesnt support CFIND request!", null);
-                return Status.ProcessingFailure;
-            }
-            // send mwl cfind request.
-            Command cmd = DcmObjectFactory.getInstance().newCommand();
-            cmd.initCFindRQ(MSG_ID, UIDs.ModalityWorklistInformationModelFIND,
-                    priority);
-            Dimse mcRQ = AssociationFactory.getInstance().newDimse(PCID, cmd,
-                    searchDS);
-            final int[] pendingStatus = { 0xff00 };
-            assoc.invoke(mcRQ, new DimseListener(){
+            ActiveAssociation aa = openAssociation(calledAET,
+                    UIDs.ModalityWorklistInformationModelFIND);
+            try {
+                Command cmd = DcmObjectFactory.getInstance().newCommand();
+                cmd.initCFindRQ(MSG_ID, UIDs.ModalityWorklistInformationModelFIND,
+                        priority);
+                Dimse mcRQ = AssociationFactory.getInstance().newDimse(PCID, cmd,
+                        searchDS);
+                final int[] pendingStatus = { 0xff00 };
+                aa.invoke(mcRQ, new DimseListener(){
 
-                public void dimseReceived(Association assoc, Dimse dimse) {
-                    Command rspCmd = dimse.getCommand();
-                    if (rspCmd.isPending()) {
-                        try {
-                            pendingStatus[0] = rspCmd.getStatus();
-                            Dataset rsp = dimse.getDataset();
-                            logResponse(rsp);
-                            if (result.size() < maxResults) {
-                                result.add(rsp);
-                                if (result.size() == maxResults) {
-                                    log.info("Cancel MWL FIND operation after receive of "
-                                            + maxResults + " pending C-FIND RSP.");
-                                    cancelFind(assoc);
+                    public void dimseReceived(Association assoc, Dimse dimse) {
+                        Command rspCmd = dimse.getCommand();
+                        if (rspCmd.isPending()) {
+                            try {
+                                pendingStatus[0] = rspCmd.getStatus();
+                                Dataset rsp = dimse.getDataset();
+                                logResponse(rsp);
+                                if (result.size() < maxResults) {
+                                    result.add(rsp);
+                                    if (result.size() == maxResults) {
+                                        log.info("Cancel MWL FIND operation after receive of "
+                                                + maxResults + " pending C-FIND RSP.");
+                                        cancelFind(assoc);
+                                    }
+                                } else {
+                                    log.debug("Ignore pending C-FIND RSP received after cancel of MWL FIND operation");
                                 }
-                            } else {
-                                log.debug("Ignore pending C-FIND RSP received after cancel of MWL FIND operation");
+                            } catch (IOException e) {
+                                pendingStatus[0] = Status.ProcessingFailure;
                             }
-                        } catch (IOException e) {
-                            pendingStatus[0] = Status.ProcessingFailure;
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Received final C-FIND RSP from " 
+                                        + calledAET + " :" + dimse);                            
+                            }                        
                         }
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Received final C-FIND RSP from " 
-                                    + calledAET + " :" + dimse);                            
-                        }                        
-                    }
-                    
-                }});
-            return pendingStatus[0];
-        } catch (Exception e) {
-            log.error("Cant get working list! Reason: unexpected error", e);
-            return Status.ProcessingFailure;
-        } finally {
-            if (assoc != null)
+                        
+                    }});
+                return pendingStatus[0];
+           } finally {
                 try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    log.error(
-                            "Cant release association for CFIND modality working list"
-                                    + assoc.getAssociation(), e1);
+                    aa.release(true);
+                } catch (Exception e) {
+                    log.warn("Failed to release " + aa.getAssociation());
                 }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Status.ProcessingFailure;
         }
     }
 
@@ -455,74 +279,11 @@ public class MWLScuService extends ServiceMBeanSupport {
             log.warn("Failed to cancel C-FIND:", e);
         }
     }
-
-    /**
-     * Open a DICOM association for given host, port and assocition request.
-     * 
-     * @param host
-     *            Host to create the association.
-     * @param port
-     *            Port number to create the association.
-     * @param assocRQ
-     *            The association request object.
-     * 
-     * @return The Active association object.
-     * 
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    private ActiveAssociation openAssoc(Socket sock, AAssociateRQ assocRQ)
-            throws IOException, GeneralSecurityException {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        Association assoc = aFact.newRequestor(sock);
-        assoc.setAcTimeout(acTimeout);
-        assoc.setDimseTimeout(dimseTimeout);
-        assoc.setSoCloseDelay(soCloseDelay);
-        PDU assocAC = assoc.connect(assocRQ);
-        if (!(assocAC instanceof AAssociateAC)) {
-            return null;
-        }
-        ActiveAssociation retval = aFact.newActiveAssociation(assoc, null);
-        retval.start();
-        return retval;
-    }
-
-    /**
-     * Return the association request for modality worklist C-FIND.
-     * <p>
-     * This association is used for sending modality worklist C-FIND request and action
-     * command.
-     * 
-     * @return Association for media creation.
-     */
-    private AAssociateRQ getCFINDAssocReq() {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-        assocRQ.setCalledAET(calledAET);
-        assocRQ.setCallingAET(callingAET);
-        assocRQ.setMaxPDULength(maxPDUlen);
-        assocRQ.addPresContext(aFact.newPresContext(PCID,
-                UIDs.ModalityWorklistInformationModelFIND, NATIVE_TS));
-        return assocRQ;
-    }
-
-    /**
-     * Returns the MWLManager session bean.
-     * 
-     * @return The MWLManager.
-     * 
-     * @throws HomeFactoryException
-     * @throws RemoteException
-     * @throws CreateException
-     */
-    private MWLManager lookupMWLManager() throws HomeFactoryException,
-            RemoteException, CreateException {
-        if (mwlManager == null) {
-            MWLManagerHome home = (MWLManagerHome) EJBHomeFactory.getFactory()
-                    .lookup(MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
-            mwlManager = home.create();
-        }
-        return mwlManager;
+    
+    private MWLManager mwlMgt() throws Exception {
+        MWLManagerHome home = (MWLManagerHome) EJBHomeFactory.getFactory()
+                .lookup(MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
+        return home.create();
     }
 
 }

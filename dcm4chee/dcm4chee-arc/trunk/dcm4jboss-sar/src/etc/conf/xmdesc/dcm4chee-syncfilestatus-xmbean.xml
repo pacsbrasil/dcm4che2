@@ -202,5 +202,15 @@
       <return-type>int</return-type>
    </operation>
 
+   <operation impact="INFO">
+      <description>Apply pattern to given string</description>
+      <name>applyPattern</name>
+      <parameter>
+        <name>string</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+
 </mbean>
     

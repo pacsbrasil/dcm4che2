@@ -40,9 +40,6 @@
 package org.dcm4chex.archive.dcm.stgcmt;
 
 import java.io.IOException;
-import java.sql.SQLException;
-
-import javax.jms.JMSException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -55,8 +52,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.jboss.logging.Logger;
 
@@ -102,7 +98,7 @@ class StgCmtScuScp extends DcmServiceBase {
         final Association a = assoc.getAssociation();
         final String aet = a.getCallingAET();
         try {
-            AEData aeData = service.queryAEData(aet, a.getSocket().getInetAddress());
+            AEDTO aeData = service.queryAEData(aet, a.getSocket().getInetAddress());
             service.queueStgCmtOrder(a.getCalledAET(), aet, data, true);
         } catch (UnkownAETException e) {
             throw new DcmServiceException(Status.MoveDestinationUnknown, aet);

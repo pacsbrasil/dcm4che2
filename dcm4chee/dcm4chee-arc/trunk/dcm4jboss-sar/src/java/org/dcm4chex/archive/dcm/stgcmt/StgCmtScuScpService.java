@@ -46,7 +46,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -88,11 +87,12 @@ import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
@@ -310,9 +310,12 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
-    Socket createSocket(AEData aeData) throws IOException {
-        return tlsConfig.createSocket(aeData);
+    private AEManager aeMgr() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
     }
+    
 
     boolean isLocalRetrieveAET(String aet) {
         try {
@@ -341,7 +344,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         super.stopService();
     }
 
-    public AEData queryAEData(String aet, InetAddress addr)
+    public AEDTO queryAEData(String aet, InetAddress addr)
             throws DcmServiceException, UnkownAETException {
         try {
             Object o = server.invoke(aeServiceName, "getAE", new Object[] {
@@ -349,7 +352,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                     InetAddress.class.getName() });
             if (o == null)
                 throw new UnkownAETException("Unkown AET: " + aet);
-            return (AEData) o;
+            return (AEDTO) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
@@ -435,24 +438,21 @@ public class StgCmtScuScpService extends AbstractScpService implements
         return eventInfo;
     }
 
-    private void process(StgCmtOrder order) throws InterruptedException,
-            DcmServiceException, IOException, UnkownAETException, SQLException {
-        final String aet = order.getCalledAET();
-        AEData aeData = new AECmd(aet).getAEData();
-        if (aeData == null) {
-            throw new UnkownAETException("Unkown Retrieve AET: " + aet);
-        }
+    private void process(StgCmtOrder order) throws Exception {
+        AEManager aeMgr = aeMgr();
+        String aet = order.getCalledAET();
+        AEDTO localAE = aeMgr.findByAET(order.getCallingAET());
+        AEDTO remoteAE = aeMgr.findByAET(aet);
         Dataset ds = order.isScpRole() ? commit(order) : order.getActionInfo();
         AssociationFactory af = AssociationFactory.getInstance();
-        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
+        Association a = af.newRequestor(tlsConfig.createSocket(localAE, remoteAE));
         a.setAcTimeout(acTimeout);
         a.setDimseTimeout(dimseTimeout);
         a.setSoCloseDelay(soCloseDelay);
         AAssociateRQ rq = af.newAAssociateRQ();
         rq.setCalledAET(aet);
         rq.setCallingAET(order.getCallingAET());
-        rq
-                .addPresContext(af.newPresContext(PCID_STGCMT,
+        rq.addPresContext(af.newPresContext(PCID_STGCMT,
                         UIDs.StorageCommitmentPushModel,
                         valuesToStringArray(tsuidMap)));
         if (order.isScpRole()) {
@@ -475,20 +475,18 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 RoleSelection rs = ((AAssociateAC) ac)
                         .getRoleSelection(UIDs.StorageCommitmentPushModel);
                 if (rs == null || !rs.scp()) {
-                    log
-                            .warn("SCU Role of Storage Commitment Service rejected by "
-                                    + aet
-                                    + " - try to send N_EVENT_REPORT anyway");
+                    log.warn("SCU Role of Storage Commitment Service rejected by "
+                                    + aet + " - try to send N_EVENT_REPORT anyway");
                 }
                 cmd.initNEventReportRQ(1, UIDs.StorageCommitmentPushModel,
-                        UIDs.StorageCommitmentPushModelSOPInstance, ds
-                                .contains(Tags.FailedSOPSeq) ? 2 : 1);
+                        UIDs.StorageCommitmentPushModelSOPInstance,
+                        ds.contains(Tags.FailedSOPSeq) ? 2 : 1);
                 invokeDimse(aa, cmd, ds, "StgCmt Result:\n");
             } else {
                 cmd.initNActionRQ(MSG_ID, UIDs.StorageCommitmentPushModel,
                         UIDs.StorageCommitmentPushModelSOPInstance, 1);
-                ds.putUI(Tags.TransactionUID, UIDGenerator.getInstance()
-                        .createUID());
+                ds.putUI(Tags.TransactionUID,
+                        UIDGenerator.getInstance().createUID());
                 invokeDimse(aa, cmd, ds, "StgCmt Request:\n");
                 Thread.sleep(receiveResultInSameAssocTimeout);
             }

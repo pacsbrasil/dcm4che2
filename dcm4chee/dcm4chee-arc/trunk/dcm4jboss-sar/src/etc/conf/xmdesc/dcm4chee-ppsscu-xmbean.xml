@@ -137,76 +137,20 @@
          <value value="5x1m,12x5m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
-      <description>A-Associate accept timeout in milliseconds. 0 = no timeout.
-      
-      </description>
-      <name>AcceptTimeout</name>
-      <type>int</type>
-      <descriptors>
-         <value value="10000"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
-      <description>DIMSE message timeout in ms. 0 = no timeout.
-      </description>
-      <name>DIMSETimeout</name>
-      <type>int</type>
-      <descriptors>
-         <value value="60000"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
-      <description>Socket close delay in milliseconds after an A-Release response.</description>
-      <name>SocketCloseDelay</name>
-      <type>int</type>
-      <descriptors>
-         <value value="50"/>
-      </descriptors>
-   </attribute>
+   
    <attribute access="read-write"
-      getMethod="isTcpNoDelay"
-      setMethod="setTcpNoDelay">
-      <description>Send packets as quickly as possible (Disable Nagle's algorithmn).
-      </description>
-      <name>TcpNoDelay</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSendBufferSize"
-      setMethod="setSendBufferSize">
-      <description>Buffer size used for socket output. 0 = use platform default.
-      </description>
-      <name>SendBufferSize</name>
-      <type>int</type>
-      <descriptors>
-         <value value="0" />
-      </descriptors>
-   </attribute>   
-   <attribute access="read-write"
-      getMethod="getReceiveBufferSize"
-      setMethod="setReceiveBufferSize">
-      <description>Buffer size used for socket input. 0 = use platform default.
-      </description>
-      <name>ReceiveBufferSize</name>
-      <type>int</type>
-      <descriptors>
-         <value value="0" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
-      "LOCAL", if EJBs are deployed in same JBoss instance.
+      Use LOCAL if EJBs are deployed in same JBoss instance.
       </description>
-      <name>EjbProviderURL</name>
+      <name>EJBProviderURL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
+
    <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
       <description>Used internally. Do not modify.
       </description>

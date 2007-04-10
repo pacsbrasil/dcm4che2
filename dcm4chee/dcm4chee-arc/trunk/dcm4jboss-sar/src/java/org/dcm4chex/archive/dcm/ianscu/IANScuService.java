@@ -40,8 +40,8 @@
 package org.dcm4chex.archive.dcm.ianscu;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.jms.JMSException;
@@ -60,40 +60,34 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.PDU;
+import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 27.08.2004
  */
-public class IANScuService extends ServiceMBeanSupport implements
+public class IANScuService extends AbstractScuService implements
         MessageListener {
 
     public static final String EVENT_TYPE = "org.dcm4chex.archive.dcm.ianscu";
@@ -110,20 +104,12 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private static final String[] EMPTY = {};
 
+    private static final String[] IAN_ONLY = { UIDs.InstanceAvailabilityNotificationSOPClass };
+
+    private static final String[] IAN_AND_SCN = { UIDs.InstanceAvailabilityNotificationSOPClass,
+            UIDs.BasicStudyContentNotification };
+    
     private static final UIDGenerator uidGen = UIDGenerator.getInstance();
-
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian };
-
-    private static final int ERR_SOP_RJ = -2;
-
-    private static final int ERR_ASSOC_RJ = -1;
-
-    private static final int PCID_IAN = 1;
-
-    private static final int PCID_SCN = 3;
-
-    private static final String DEFAULT_CALLING_AET = "IAN_SCU";
 
     private static final NotificationFilterSupport seriesStoredFilter = 
         new NotificationFilterSupport();
@@ -157,8 +143,6 @@ public class IANScuService extends ServiceMBeanSupport implements
             }
         };
 
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
     private ObjectName storeScpServiceName;
 
     private ObjectName mppsScpServiceName;
@@ -167,19 +151,9 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     private String queueName;
 
-    private String callingAET = DEFAULT_CALLING_AET;
-
-    private int acTimeout;
-
-    private int dimseTimeout;
-
-    private int soCloseDelay;
-
     private boolean preferInstanceAvailableNotification = true;
 
-    private boolean offerInstanceAvailableNotification = true;
-
-    private boolean offerStudyContentNotification = true;
+    private String[] offeredSOPClasses = IAN_AND_SCN;
 
     private int scnPriority = 0;
 
@@ -249,44 +223,12 @@ public class IANScuService extends ServiceMBeanSupport implements
         this.onStudyDeleted = onStudyDeleted;
     }
 
-    public final String getCallingAET() {
-        return callingAET;
-    }
-
     public final boolean isSendOneIANforEachMPPS() {
         return sendOneIANforEachMPPS;
     }
 
     public final void setSendOneIANforEachMPPS(boolean sendOneIANforEachMPPS) {
         this.sendOneIANforEachMPPS = sendOneIANforEachMPPS;
-    }
-
-    public final void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
-    }
-
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
     }
 
     public final String getRetryIntervalls() {
@@ -297,20 +239,12 @@ public class IANScuService extends ServiceMBeanSupport implements
         this.retryIntervalls = new RetryIntervalls(s);
     }
 
-    public final boolean isOfferInstanceAvailableNotification() {
-        return offerInstanceAvailableNotification;
-    }
-
-    public final void setOfferInstanceAvailableNotification(boolean offerIAN) {
-        this.offerInstanceAvailableNotification = offerIAN;
-    }
-
     public final boolean isOfferStudyContentNotification() {
-        return offerStudyContentNotification;
+        return offeredSOPClasses == IAN_AND_SCN;
     }
 
     public final void setOfferStudyContentNotification(boolean offerSCN) {
-        this.offerStudyContentNotification = offerSCN;
+        this.offeredSOPClasses = offerSCN ? IAN_AND_SCN : IAN_ONLY;
     }
 
     public final boolean isPreferInstanceAvailableNotification() {
@@ -351,38 +285,6 @@ public class IANScuService extends ServiceMBeanSupport implements
 
     public void setFileSystemMgtServiceName(ObjectName fileSystemMgtServiceName) {
         this.fileSystemMgtServiceName = fileSystemMgtServiceName;
-    }
-
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
-    public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();
-    }
-
-    public final void setReceiveBufferSize(int size) {
-        tlsConfig.setReceiveBufferSize(size);
-    }
-
-    public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();
-    }
-
-    public final void setSendBufferSize(int size) {
-        tlsConfig.setSendBufferSize(size);
-    }
-
-    public final boolean isTcpNoDelay() {
-        return tlsConfig.isTcpNoDelay();
-    }
-
-    public final void setTcpNoDelay(boolean on) {
-        tlsConfig.setTcpNoDelay(on);
     }
 
     public final String getQueueName() {
@@ -615,35 +517,9 @@ public class IANScuService extends ServiceMBeanSupport implements
         }
     }
 
-    private void process(IANOrder order) throws SQLException,
-            UnkownAETException, IOException, DcmServiceException,
-            InterruptedException {
-        final String aet = order.getDestination();
-        AEData aeData = new AECmd(aet).getAEData();
-        if (aeData == null) {
-            throw new UnkownAETException("Unkown Destination AET: " + aet);
-        }
-        AssociationFactory af = AssociationFactory.getInstance();
-        Association a = af.newRequestor(createSocket(aeData));
-        a.setAcTimeout(acTimeout);
-        a.setDimseTimeout(dimseTimeout);
-        a.setSoCloseDelay(soCloseDelay);
-        AAssociateRQ rq = af.newAAssociateRQ();
-        rq.setCalledAET(aet);
-        rq.setCallingAET(callingAET);
-        if (offerInstanceAvailableNotification)
-            rq.addPresContext(af.newPresContext(PCID_IAN,
-                    UIDs.InstanceAvailabilityNotificationSOPClass, NATIVE_TS));
-        if (offerStudyContentNotification)
-            rq.addPresContext(af.newPresContext(PCID_SCN,
-                    UIDs.BasicStudyContentNotification, NATIVE_TS));
-        PDU ac = a.connect(rq);
-        if (!(ac instanceof AAssociateAC)) {
-            throw new DcmServiceException(ERR_ASSOC_RJ,
-                    "Association not accepted by " + aet + ": " + ac);
-        }
-        ActiveAssociation aa = af.newActiveAssociation(a, null);
-        aa.start();
+    private void process(IANOrder order) throws Exception {
+        ActiveAssociation aa = openAssociation(order.getDestination(),
+                offeredSOPClasses);
         try {
             invokeDimse(aa, order);
         } finally {
@@ -660,13 +536,12 @@ public class IANScuService extends ServiceMBeanSupport implements
     private void invokeDimse(ActiveAssociation aa, IANOrder order)
             throws DcmServiceException, IOException, InterruptedException {
         Association a = aa.getAssociation();
-        final boolean ianAccepted = a.getAcceptedTransferSyntaxUID(PCID_IAN) != null;
-        final boolean scnAccepted = a.getAcceptedTransferSyntaxUID(PCID_SCN) != null;
-        if (!ianAccepted && !scnAccepted) {
-            throw new DcmServiceException(ERR_SOP_RJ,
-                    "Notification Service not supported by remote AE: "
-                            + order.getDestination());
-        }
+        List ianPC = a.listAcceptedPresContext(
+                UIDs.InstanceAvailabilityNotificationSOPClass);
+        boolean ianAccepted = !ianPC.isEmpty();
+        List scnPC = a.listAcceptedPresContext(
+                UIDs.BasicStudyContentNotification);
+        boolean scnAccepted = !scnPC.isEmpty();
         AssociationFactory af = AssociationFactory.getInstance();
         Command cmdRq = DcmObjectFactory.getInstance().newCommand();
         final Dimse dimseRq;
@@ -675,12 +550,14 @@ public class IANScuService extends ServiceMBeanSupport implements
             cmdRq.initNCreateRQ(a.nextMsgID(),
                     UIDs.InstanceAvailabilityNotificationSOPClass, uidGen
                             .createUID());
-            dimseRq = af.newDimse(PCID_IAN, cmdRq, order.getDataset());
+            dimseRq = af.newDimse(((PresContext) ianPC.get(0)).pcid(), cmdRq,
+                    order.getDataset());
         } else {
             cmdRq.initCStoreRQ(a.nextMsgID(),
                     UIDs.BasicStudyContentNotification, uidGen.createUID(),
                     scnPriority);
-            dimseRq = af.newDimse(PCID_SCN, cmdRq, toSCN(order.getDataset()));
+            dimseRq = af.newDimse(((PresContext) scnPC.get(0)).pcid(), cmdRq,
+                    toSCN(order.getDataset()));
         }
         log.debug("Dataset:\n");
         log.debug(dimseRq.getDataset());
@@ -725,9 +602,5 @@ public class IANScuService extends ServiceMBeanSupport implements
         }
         return scn;
     }
-
-    Socket createSocket(AEData aeData) throws IOException {
-        return tlsConfig.createSocket(aeData);
-    }
-
+    
 }

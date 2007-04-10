@@ -92,19 +92,9 @@
          <value value="5x1m,12x5m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="isOfferInstanceAvailableNotification" setMethod="setOfferInstanceAvailableNotification">
-      <description>Enable the Offer Instance Available Notification Service in 
-      the Association Request.
-      </description>
-      <name>OfferInstanceAvailableNotification</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" getMethod="isOfferStudyContentNotification" setMethod="setOfferStudyContentNotification">
-      <description>Enable the Offer Basic Study Content Notification Service in 
-      the Association Request.
+      <description>Offer Basic Study Content Notification Service - additionally 
+      to the Instance Available Notification Service - in the Association Request.
       </description>
       <name>OfferStudyContentNotification</name>
       <type>boolean</type>
@@ -142,7 +132,10 @@
          <value value="MEDIUM"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAcTimeout" setMethod="setAcTimeout">
+   
+   <attribute access="read-write"
+     getMethod="getAcTimeout"
+     setMethod="setAcTimeout">
       <description>A-Associate accept timeout in milliseconds. 0 = no timeout.</description>
       <name>AcceptTimeout</name>
       <type>int</type>
@@ -150,7 +143,10 @@
          <value value="10000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDimseTimeout" setMethod="setDimseTimeout">
+   
+   <attribute access="read-write" 
+     getMethod="getDimseTimeout"
+     setMethod="setDimseTimeout">
       <description>DIMSE message timeout in ms. 0 = no timeout.
       </description>
       <name>DIMSETimeout</name>
@@ -159,7 +155,10 @@
          <value value="60000"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getSoCloseDelay" setMethod="setSoCloseDelay">
+   
+   <attribute access="read-write"
+     getMethod="getSoCloseDelay"
+     setMethod="setSoCloseDelay">
       <description>Socket close delay in milliseconds after an A-Release response.
       </description>
       <name>SocketCloseDelay</name>
@@ -168,6 +167,19 @@
          <value value="50"/>
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getMaxPDULength"
+      setMethod="setMaxPDULength">
+      <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
+      </description>
+      <name>MaximumPDULength</name>
+      <type>int</type>
+      <descriptors>
+         <value value="16352"/>
+      </descriptors>
+   </attribute>
+   
    <attribute access="read-write"
       getMethod="isTcpNoDelay"
       setMethod="setTcpNoDelay">
@@ -179,6 +191,7 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   
    <attribute access="read-write"
       getMethod="getSendBufferSize"
       setMethod="setSendBufferSize">
@@ -189,7 +202,8 @@
       <descriptors>
          <value value="0" />
       </descriptors>
-   </attribute>   
+   </attribute>
+   
    <attribute access="read-write"
       getMethod="getReceiveBufferSize"
       setMethod="setReceiveBufferSize">
@@ -201,10 +215,24 @@
          <value value="0" />
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getQueueName" setMethod="setQueueName">
-      <description>Used internally. Do not modify.
-      
+
+   <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
+      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+      Use LOCAL if EJBs are deployed in same JBoss instance.
       </description>
+      <name>EJBProviderURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LOCAL"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" 
+     getMethod="getQueueName"
+     setMethod="setQueueName">
+      <description>Used internally. Do not modify.</description>
       <name>QueueName</name>
       <type>java.lang.String</type>
       <descriptors>

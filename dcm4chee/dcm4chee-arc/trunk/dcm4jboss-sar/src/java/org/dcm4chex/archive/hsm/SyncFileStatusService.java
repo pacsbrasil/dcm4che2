@@ -365,4 +365,9 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     public void setTimerIDCheckSyncFileStatus(String timerIDCheckSyncFileStatus) {
         this.timerIDCheckSyncFileStatus = timerIDCheckSyncFileStatus;
     }
+    
+    public boolean applyPattern(String s) {
+        return pattern.matcher(s).matches();
+    }
+
 }

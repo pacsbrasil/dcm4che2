@@ -39,8 +39,6 @@
 
 package org.dcm4chex.archive.dcm.stymgt;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,22 +56,14 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.TLSConfigDelegate;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -81,37 +71,20 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 15.11.2004
  * 
  */
-public class StudyMgtScuService extends ServiceMBeanSupport implements
+public class StudyMgtScuService extends AbstractScuService implements
         MessageListener, NotificationListener {
-
-    private static final int ERR_STYMGT_RJ = -2;
-
-    private static final int ERR_ASSOC_RJ = -1;
 
     private static final int MSG_ID = 1;
 
     private static final int PCID_STYMGT = 1;
 
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian };
-
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
-
-    private String callingAET;
 
     private ForwardingRules forwardingRules = new ForwardingRules("");
 
     private ObjectName scpServiceName;
 
     private String queueName;
-
-    private int acTimeout;
-
-    private int dimseTimeout;
-
-    private int soCloseDelay;
 
     private boolean retryIfNoSuchSOPInstance = false;
 
@@ -144,30 +117,6 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
         }
     }
 
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
-    }
-
     public final String getForwardingRules() {
         return forwardingRules.toString();
     }
@@ -192,52 +141,12 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
         this.scpServiceName = scpServiceName;
     }
 
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
-    public final int getReceiveBufferSize() {
-        return tlsConfig.getReceiveBufferSize();
-    }
-
-    public final void setReceiveBufferSize(int size) {
-        tlsConfig.setReceiveBufferSize(size);
-    }
-
-    public final int getSendBufferSize() {
-        return tlsConfig.getSendBufferSize();
-    }
-
-    public final void setSendBufferSize(int size) {
-        tlsConfig.setSendBufferSize(size);
-    }
-
-    public final boolean isTcpNoDelay() {
-        return tlsConfig.isTcpNoDelay();
-    }
-
-    public final void setTcpNoDelay(boolean on) {
-        tlsConfig.setTcpNoDelay(on);
-    }
-
     public final String getQueueName() {
         return queueName;
     }
 
     public final void setQueueName(String queueName) {
         this.queueName = queueName;
-    }
-
-    public final String getCallingAET() {
-        return callingAET;
-    }
-
-    public final void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
     }
 
     public String getRetryIntervalls() {
@@ -348,24 +257,20 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
     }
 
     public void ncreate(String aet, String iuid, Dataset ds)
-            throws DcmServiceException, UnkownAETException, IOException,
-            SQLException, InterruptedException {
+            throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initNCreateRQ(MSG_ID, UIDs.TianiStudyManagement, iuid);
         checkStatus(invoke(aet, cmd, ds).getCommand());
     }
 
-    public void nset(String aet, String iuid, Dataset ds)
-            throws DcmServiceException, UnkownAETException, IOException,
-            SQLException, InterruptedException {
+    public void nset(String aet, String iuid, Dataset ds) throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initNSetRQ(MSG_ID, UIDs.TianiStudyManagement, iuid);
         checkStatus(invoke(aet, cmd, ds).getCommand());
     }
 
     public void naction(String aet, String iuid, int actionTypeID, Dataset ds)
-            throws DcmServiceException, UnkownAETException, IOException,
-            SQLException, InterruptedException {
+            throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd
                 .initNActionRQ(MSG_ID, UIDs.TianiStudyManagement, iuid,
@@ -373,49 +278,24 @@ public class StudyMgtScuService extends ServiceMBeanSupport implements
         checkStatus(invoke(aet, cmd, ds).getCommand());
     }
 
-    public void ndelete(String aet, String iuid) throws DcmServiceException,
-            UnkownAETException, IOException, SQLException, InterruptedException {
+    public void ndelete(String aet, String iuid) throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initNDeleteRQ(MSG_ID, UIDs.TianiStudyManagement, iuid);
         checkStatus(invoke(aet, cmd, null).getCommand());
     }
 
     private Dimse invoke(String aet, Command cmd, Dataset ds)
-            throws DcmServiceException, UnkownAETException, IOException,
-            SQLException, InterruptedException {
-        AEData aeData = new AECmd(aet).getAEData();
-        if (aeData == null) {
-            throw new UnkownAETException("Unkown Destination AET: " + aet);
-        }
-        AssociationFactory af = AssociationFactory.getInstance();
-        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
-        a.setAcTimeout(acTimeout);
-        a.setDimseTimeout(dimseTimeout);
-        a.setSoCloseDelay(soCloseDelay);
-        AAssociateRQ rq = af.newAAssociateRQ();
-        rq.setCalledAET(aet);
-        rq.setCallingAET(callingAET);
-        rq.addPresContext(af.newPresContext(PCID_STYMGT,
-                UIDs.TianiStudyManagement, NATIVE_TS));
-        PDU ac = a.connect(rq);
-        if (!(ac instanceof AAssociateAC)) {
-            throw new DcmServiceException(ERR_ASSOC_RJ,
-                    "Association not accepted by " + aet + ": " + ac);
-        }
-        ActiveAssociation aa = af.newActiveAssociation(a, null);
-        aa.start();
+            throws Exception {
+        ActiveAssociation aa = openAssociation(aet,
+                    UIDs.TianiStudyManagement);
         try {
-            if (a.getAcceptedTransferSyntaxUID(PCID_STYMGT) == null)
-                throw new DcmServiceException(ERR_STYMGT_RJ,
-                        "Tiani Study Mgt Service not supported by remote AE: "
-                                + aet);
-            return aa.invoke(af.newDimse(PCID_STYMGT, cmd, ds)).get();
+            return aa.invoke(AssociationFactory.getInstance()
+                    .newDimse(PCID_STYMGT, cmd, ds)).get();
         } finally {
             try {
                 aa.release(true);
             } catch (Exception e) {
-                log.warn(
-                        "Failed to release association " + aa.getAssociation(),
+                log.warn("Failed to release association " + aa.getAssociation(),
                         e);
             }
         }

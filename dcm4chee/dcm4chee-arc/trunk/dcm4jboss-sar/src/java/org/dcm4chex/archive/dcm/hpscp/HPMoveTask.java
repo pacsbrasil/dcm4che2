@@ -59,7 +59,7 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
 import org.jboss.logging.Logger;
 
@@ -89,7 +89,7 @@ class HPMoveTask implements Runnable {
 
     private Dataset moveRqData;
 
-    private AEData aeData;
+    private AEDTO aeData;
 
     private String moveDest;
 
@@ -117,7 +117,7 @@ class HPMoveTask implements Runnable {
 
     public HPMoveTask(HPScpService service, ActiveAssociation moveAssoc,
             int movePcid, Command moveRqCmd, Dataset moveRqData, List hpList,
-            AEData aeData, String moveDest) throws DcmServiceException {
+            AEDTO aeData, String moveDest) throws DcmServiceException {
         this.service = service;
         this.hpList = hpList;
         this.log = service.getLog();
@@ -146,7 +146,7 @@ class HPMoveTask implements Runnable {
         Association a = null;
         AssociationFactory asf = AssociationFactory.getInstance();
         try {
-            a = asf.newRequestor(service.createSocket(aeData));
+            a = asf.newRequestor(service.createSocket(moveCalledAET, aeData));
             a.setAcTimeout(service.getAcTimeout());
             AAssociateRQ rq = asf.newAAssociateRQ();
             rq.setCalledAET(moveDest);
@@ -154,7 +154,7 @@ class HPMoveTask implements Runnable {
             rq.addPresContext(asf.newPresContext(STORE_PCID,
                     UIDs.HangingProtocolStorage, NATIVE_LE_TS));
             ac = a.connect(rq);
-        } catch (IOException e) {
+        } catch (Exception e) {
             final String prompt = "Failed to connect " + moveDest;
             log.error(prompt, e);
             throw new DcmServiceException(Status.UnableToPerformSuboperations,

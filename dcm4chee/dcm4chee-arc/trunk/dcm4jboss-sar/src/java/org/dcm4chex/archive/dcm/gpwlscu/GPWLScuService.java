@@ -39,38 +39,26 @@
 
 package org.dcm4chex.archive.dcm.gpwlscu;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.ejb.CreateException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
-import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer
@@ -79,68 +67,20 @@ import org.jboss.system.ServiceMBeanSupport;
  *          <p>
  * 
  */
-public class GPWLScuService extends ServiceMBeanSupport {
+public class GPWLScuService extends AbstractScuService {
 
-    /** Holds the calling AET. */
-    private String callingAET;
-
+    private static final int PCID_GPWL = 1;
+    
     /** Holds the AET of general purpos worklist service. */
     private String calledAET;
-
-    /** Holds Association timeout in ms. */
-    private int acTimeout;
-
-    /** Holds DICOM message timeout in ms. */
-    private int dimseTimeout;
-
-    /** Holds max PDU length in bytes. */
-    private int maxPDUlen = 16352;
-
-    /** Holds socket close delay in ms. */
-    private int soCloseDelay;
 
     /** DICOM priority. Used for move and media creation action. */
     private int priority = 0;
 
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian };
-
-    private GPWLManager gpwlManager;
-
-    /**
-     * Returns the calling AET defined in this MBean.
-     * 
-     * @return The calling AET.
-     */
-    public final String getCallingAET() {
-        return callingAET;
-    }
-
-    /**
-     * Set the calling AET.
-     * 
-     * @param aet
-     *            The calling AET to set.
-     */
-    public final void setCallingAET(String aet) {
-        callingAET = aet;
-    }
-
-    /**
-     * Returns the AET that holds the work list (General Purpose Work List SCP).
-     * 
-     * @return The retrieve AET.
-     */
     public final String getCalledAET() {
         return calledAET;
     }
 
-    /**
-     * Set the retrieve AET.
-     * 
-     * @param aet
-     *            The retrieve AET to set.
-     */
     public final void setCalledAET(String aet) {
         calledAET = aet;
     }
@@ -149,120 +89,17 @@ public class GPWLScuService extends ServiceMBeanSupport {
         return "LOCAL".equalsIgnoreCase(calledAET);
     }
 
-    /**
-     * Returns the Association timeout in ms.
-     * 
-     * @return Returns the acTimeout.
-     */
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    /**
-     * Set the association timeout.
-     * 
-     * @param acTimeout
-     *            The acTimeout in ms.
-     */
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    /**
-     * Returns the DICOM message timeout in ms.
-     * 
-     * @return Returns the dimseTimeout.
-     */
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    /**
-     * Set the DICOM message timeout.
-     * 
-     * @param dimseTimeout
-     *            The dimseTimeout in ms.
-     */
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    /**
-     * Returns the socket close delay in ms.
-     * 
-     * @return Returns the soCloseDelay.
-     */
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    /**
-     * Set the socket close delay.
-     * 
-     * @param delay
-     *            Socket close delay in ms.
-     */
-    public final void setSoCloseDelay(int delay) {
-        soCloseDelay = delay;
-    }
-
-    /**
-     * returns the max PDU length in bytes.
-     * 
-     * @return Returns the maxPDUlen.
-     */
-    public final int getMaxPDUlen() {
-        return maxPDUlen;
-    }
-
-    /**
-     * Set the max PDU length.
-     * 
-     * @param maxPDUlen
-     *            The maxPDUlen in bytes.
-     */
-    public final void setMaxPDUlen(int maxPDUlen) {
-        this.maxPDUlen = maxPDUlen;
-    }
-
-    /**
-     * Returns the DICOM priority as int value.
-     * <p>
-     * This value is used for CFIND. 0..MED, 1..HIGH, 2..LOW
-     * 
-     * @return Returns the priority.
-     */
     public final String getPriority() {
         return DicomPriority.toString(priority);
     }
 
-    /**
-     * Set the DICOM priority.
-     * 
-     * @param priority
-     *            The priority to set.
-     */
     public final void setPriority(String priority) {
         this.priority = DicomPriority.toCode(priority);
     }
 
-    /**
-     * 
-     */
-    protected void startService() throws Exception {
-        super.startService();
-    }
-
-    /**
-     * 
-     */
-    protected void stopService() throws Exception {
-        super.stopService();
-    }
-
     public boolean deleteGPWLEntry(String spsID) {
         try {
-            lookupGPWLManager().removeWorklistItem(spsID);
+            gpwlMgt().removeWorklistItem(spsID);
             log.info("GPWL entry with id " + spsID + " removed!");
             return true;
         } catch (Exception x) {
@@ -304,126 +141,47 @@ public class GPWLScuService extends ServiceMBeanSupport {
     }
 
     private List findGPWLEntriesFromAET(Dataset searchDS) {
-        ActiveAssociation assoc = null;
-        String iuid = null;
-        List list = new ArrayList();
         try {
-            // get association for GPWL find.
-            AEData aeData = new AECmd(calledAET).getAEData();
-            assoc = openAssoc(aeData.getHostName(), aeData.getPort(),
-                    getCFINDAssocReq());
-            if (assoc == null) {
-                log.error("Couldnt open association to " + aeData);
+            ActiveAssociation aa = openAssociation(calledAET,
+                    UIDs.GeneralPurposeWorklistInformationModelFIND);
+            try {
+                ArrayList list = new ArrayList();
+                Command cmd = DcmObjectFactory.getInstance().newCommand();
+                cmd.initCFindRQ(PCID_GPWL,
+                        UIDs.GeneralPurposeWorklistInformationModelFIND,
+                        priority);
+                Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd,
+                        searchDS);
+                if (log.isDebugEnabled())
+                    log.debug("make CFIND req:" + mcRQ);
+                FutureRSP rsp = aa.invoke(mcRQ);
+                Dimse dimse = rsp.get();
+                if (log.isDebugEnabled())
+                    log.debug("CFIND resp:" + dimse);
+                List pending = rsp.listPending();
+                if (log.isDebugEnabled())
+                    log.debug("CFIND pending:" + pending);
+                Iterator iter = pending.iterator();
+                while (iter.hasNext()) {
+                    list.add(((Dimse) iter.next()).getDataset());
+                }
                 return list;
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                log.error(calledAET + " doesnt support CFIND request!", null);
-                return list;
-            }
-            // send GPWL cfind request.
-            Command cmd = DcmObjectFactory.getInstance().newCommand();
-            cmd.initCFindRQ(1, UIDs.GeneralPurposeWorklistInformationModelFIND,
-                    priority);
-            Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd,
-                    searchDS);
-            if (log.isDebugEnabled())
-                log.debug("make CFIND req:" + mcRQ);
-            FutureRSP rsp = assoc.invoke(mcRQ);
-            Dimse dimse = rsp.get();
-            if (log.isDebugEnabled())
-                log.debug("CFIND resp:" + dimse);
-            List pending = rsp.listPending();
-            if (log.isDebugEnabled())
-                log.debug("CFIND pending:" + pending);
-            Iterator iter = pending.iterator();
-            while (iter.hasNext()) {
-                list.add(((Dimse) iter.next()).getDataset());
+            } finally {
+                try {
+                    aa.release(true);
+                } catch (Exception e) {
+                    log.warn("Failed to release " + aa.getAssociation());
+                }
             }
         } catch (Exception e) {
-            log.error("Cant get working list! Reason: unexpected error", e);
-            return list;
-        } finally {
-            if (assoc != null)
-                try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    log.error(
-                            "Cant release association for CFIND general purpose working list"
-                                    + assoc.getAssociation(), e1);
-                }
+            log.error(e.getMessage());
+            return Collections.EMPTY_LIST;
         }
-        return list;
     }
 
-    /**
-     * Open a DICOM association for given host, port and assocition request.
-     * 
-     * @param host
-     *            Host to create the association.
-     * @param port
-     *            Port number to create the association.
-     * @param assocRQ
-     *            The association request object.
-     * 
-     * @return The Active association object.
-     * 
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    private ActiveAssociation openAssoc(String host, int port,
-            AAssociateRQ assocRQ) throws IOException, GeneralSecurityException {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        Association assoc = aFact.newRequestor(new Socket(host, port));
-        assoc.setAcTimeout(acTimeout);
-        assoc.setDimseTimeout(dimseTimeout);
-        assoc.setSoCloseDelay(soCloseDelay);
-        PDU assocAC = assoc.connect(assocRQ);
-        if (!(assocAC instanceof AAssociateAC)) {
-            return null;
-        }
-        ActiveAssociation retval = aFact.newActiveAssociation(assoc, null);
-        retval.start();
-        return retval;
+    private GPWLManager gpwlMgt() throws Exception {
+        GPWLManagerHome home = (GPWLManagerHome) EJBHomeFactory.getFactory()
+                .lookup(GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME);
+        return home.create();
     }
-
-    /**
-     * Return the association request for general purpose worklist query.
-     * <p>
-     * This association is used for sending media creation request and action
-     * command.
-     * 
-     * @return Association for media creation.
-     */
-    private AAssociateRQ getCFINDAssocReq() {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-        assocRQ.setCalledAET(calledAET);
-        assocRQ.setCallingAET(callingAET);
-        assocRQ.setMaxPDULength(maxPDUlen);
-        assocRQ.addPresContext(aFact.newPresContext(1,
-                UIDs.GeneralPurposeWorklistInformationModelFIND, NATIVE_TS));
-        return assocRQ;
-    }
-
-    /**
-     * Returns the GPWLManager session bean.
-     * 
-     * @return The GPWLManager.
-     * 
-     * @throws HomeFactoryException
-     * @throws RemoteException
-     * @throws CreateException
-     */
-    private GPWLManager lookupGPWLManager() throws HomeFactoryException,
-            RemoteException, CreateException {
-        if (gpwlManager == null) {
-            GPWLManagerHome home = (GPWLManagerHome) EJBHomeFactory
-                    .getFactory().lookup(GPWLManagerHome.class,
-                            GPWLManagerHome.JNDI_NAME);
-            gpwlManager = home.create();
-        }
-        return gpwlManager;
-    }
-
 }

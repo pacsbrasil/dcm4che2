@@ -85,14 +85,15 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -1010,7 +1011,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         return true;
     }
 
-    public Object locateInstance(String iuid) throws SQLException {
+    public Object locateInstance(String iuid) throws Exception {
         List list = new QueryFilesCmd(iuid).getFileDTOs();
         if (list.isEmpty())
             return null;
@@ -1021,10 +1022,16 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                         .getFilePath());
         }
         FileDTO dto = (FileDTO) list.get(0);
-        AEData aeData = new AECmd(dto.getRetrieveAET()).getAEData();
+        AEDTO aeData = aeMgt().findByAET(dto.getRetrieveAET());
         return aeData.getHostName();
     }
 
+    private AEManager aeMgt() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
+    
     public DataSource getDatasourceOfInstance(String iuid) throws SQLException {
         Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
         dsQ.putUI(Tags.SOPInstanceUID, iuid);

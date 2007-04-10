@@ -60,7 +60,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnkownAETException;
@@ -96,7 +96,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
             
             checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
-            AEData aeData = null;
+            AEDTO aeData = null;
             FileInfo[][] fileInfos = null;
             try {
                	perfMon.start(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
@@ -141,7 +141,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
     
     protected MoveTask createMoveTask( QueryRetrieveScpService service,
 	    ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
-	    Dataset moveRqData, FileInfo[][] fileInfo, AEData aeData,
+	    Dataset moveRqData, FileInfo[][] fileInfo, AEDTO aeData,
 	    String moveDest) throws DcmServiceException {
     	return new MoveTask(
                 service,

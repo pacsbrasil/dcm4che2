@@ -47,15 +47,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -147,11 +148,11 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public String getAEs() throws Exception {
-        Collection c = lookupAEManager().getAes();
+        Collection c = aeMgr().findAll();
         StringBuffer sb = new StringBuffer();
-        AEData ae;
+        AEDTO ae;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
-            ae = (AEData) iter.next();
+            ae = (AEDTO) iter.next();
             sb.append(ae.toString()).append(" cipher:").append(
                     ae.getCipherSuitesAsString()).append("\r\n");
         }
@@ -159,11 +160,11 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public List listAEs() throws Exception {
-        return lookupAEManager().getAes();
+        return aeMgr().findAll();
     }
 
-    public AEData getAE(String title) throws Exception {
-        return lookupAEManager().getAeByTitle(title);
+    public AEDTO getAE(String title) throws Exception {
+        return aeMgr().findByAET(title);
     }
 
     public boolean updateAETitle(String prevAET, String newAET)
@@ -171,8 +172,8 @@ public class AEService extends ServiceMBeanSupport {
         if (prevAET.equals(newAET)) {
             return false;
         }
-        AEManager aeManager = lookupAEManager();
-        AEData aeData = aeManager.getAeByTitle(prevAET);
+        AEManager aeManager = aeMgr();
+        AEDTO aeData = aeManager.findByAET(prevAET);
         if (aeData == null) {
             return false;
         }
@@ -181,29 +182,37 @@ public class AEService extends ServiceMBeanSupport {
         return true;
     }
     
-    public AEData getAE(String title, String host) throws RemoteException,
+    public AEDTO getAE(String title, String host) throws RemoteException,
             Exception {
         return getAE(title, host == null ? null : InetAddress.getByName(host));
     }
 
-    public AEData getAE(String title, InetAddress addr) throws RemoteException,
-            Exception {
-        AEManager aeManager = lookupAEManager();
-        AEData ae = aeManager.getAeByTitle(title);
-        if (ae != null || portNumbers == null || addr == null)
-            return ae;
+    public AEDTO getAE(String aet, InetAddress addr) throws Exception {
+        AEManager aetMgr = aeMgr();
+        try {
+            return aetMgr.findByAET(aet);
+        } catch (ObjectNotFoundException e) {
+            return autoConfigAE(aet, addr, aetMgr);
+        }
+    }
 
+    private AEDTO autoConfigAE(String aet, InetAddress addr, AEManager aetMgr) 
+            throws Exception {
+        if (portNumbers == null || addr == null) {
+            return null;
+        }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            ae = new AEData(-1, title, aeHost, portNumbers[i], null);
+            AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
-                        aeManager.newAE(ae);
+                        aetMgr.newAE(ae);
                 } else {
-                    aeManager.newAE(ae);
+                    aetMgr.newAE(ae);
                 }
-                logActorConfig("Add new auto-configured AE " + ae, SecurityAlertMessage.NETWORK_CONFIGURATION);
+                logActorConfig("Add new auto-configured AE " + ae, 
+                        SecurityAlertMessage.NETWORK_CONFIGURATION);
                 return ae;
             }
         }
@@ -241,22 +250,22 @@ public class AEService extends ServiceMBeanSupport {
             }
         }
 
-        AEManager aeManager = lookupAEManager();
+        AEManager aeManager = aeMgr();
         if (pk == -1) {
-            AEData aeNew = new AEData(-1, title, host, port, cipher);
+            AEDTO aeNew = new AEDTO(-1, title, host, port, cipher);
             aeManager.newAE(aeNew);
             logActorConfig("Add AE " + aeNew + " cipher:"
                     + aeNew.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
         } else {
-            AEData aeOld = aeManager.getAe(pk);
+            AEDTO aeOld = aeManager.findByPrimaryKey(pk);
             if (!aeOld.getTitle().equals(title)) {
-                AEData aeOldByTitle = aeManager.getAeByTitle(title);
+                AEDTO aeOldByTitle = aeManager.findByAET(title);
                 if (aeOldByTitle != null) {
                     throw new IllegalArgumentException("AE Title " + title
                             + " already exists!:" + aeOldByTitle);
                 }
             }
-            AEData aeNew = new AEData(pk, title, host, port, cipher);
+            AEDTO aeNew = new AEDTO(pk, title, host, port, cipher);
             aeManager.updateAE(aeNew);
             logActorConfig("Modify AE " + aeOld + " -> " + aeNew, SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
@@ -269,10 +278,10 @@ public class AEService extends ServiceMBeanSupport {
 
     public void removeAE(String titles) throws Exception {
         StringTokenizer st = new StringTokenizer(titles, " ,;\t\r\n");
-        AEData ae;
-        AEManager aeManager = lookupAEManager();
+        AEDTO ae;
+        AEManager aeManager = aeMgr();
         while (st.hasMoreTokens()) {
-            ae = aeManager.getAeByTitle(st.nextToken());
+            ae = aeManager.findByAET(st.nextToken());
             aeManager.removeAE(ae.getPk());
             logActorConfig("Remove AE " + ae, SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
@@ -303,11 +312,11 @@ public class AEService extends ServiceMBeanSupport {
         }
     }
 
-    private boolean echo(AEData ae) {
+    private boolean echo(AEDTO ae) {
         try {
             Boolean result = (Boolean) server.invoke(this.echoServiceName,
                     "checkEcho", new Object[] { ae },
-                    new String[] { AEData.class.getName() });
+                    new String[] { AEDTO.class.getName() });
             return result.booleanValue();
         } catch (Exception e) {
             log.warn("Failed to use echo service:", e);
@@ -316,7 +325,7 @@ public class AEService extends ServiceMBeanSupport {
 
     }
 
-    protected AEManager lookupAEManager() throws Exception {
+    protected AEManager aeMgr() throws Exception {
         AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();

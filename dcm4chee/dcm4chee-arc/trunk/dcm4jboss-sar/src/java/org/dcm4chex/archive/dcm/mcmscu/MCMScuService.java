@@ -40,9 +40,7 @@
 package org.dcm4chex.archive.dcm.mcmscu;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -66,28 +64,23 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
-import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposer;
 import org.dcm4chex.archive.ejb.interfaces.MediaComposerHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer
@@ -101,7 +94,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * request and action to media creation managment AET)
  * 
  */
-public class MCMScuService extends ServiceMBeanSupport implements
+public class MCMScuService extends AbstractScuService implements
         MessageListener {
 
     private static final Logger log = Logger.getLogger(MCMScuService.class);
@@ -120,9 +113,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
      */
     private static final String[] prioStrings = new String[] { "MED", "HIGH",
             "LOW" };
-
-    private static final String[] NATIVE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian };
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
@@ -169,9 +159,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
     /** Holds the prefix that is used to generate the fileset id. */
     private String fileSetIdPrefix;
 
-    /** Holds the calling AET. */
-    private String callingAET;
-
     /** Holds the retrieve AET. (AET that perform the move). */
     private String retrieveAET;
 
@@ -183,18 +170,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
 
     /** Holds the media creation managment AET. (AET perform media creation) */
     private String mcmScpAET;
-
-    /** Holds Association timeout in ms. */
-    private int acTimeout;
-
-    /** Holds DICOM message timeout in ms. */
-    private int dimseTimeout;
-
-    /** Holds max PDU length in bytes. */
-    private int maxPDUlen = 16352;
-
-    /** Holds socket close delay in ms. */
-    private int soCloseDelay;
 
     /** Flag if media creation should use information extracted from instance. */
     private boolean useInstanceInfo = false;
@@ -491,25 +466,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
     }
 
     /**
-     * Returns the calling AET defined in this MBean.
-     * 
-     * @return The calling AET.
-     */
-    public String getCallingAET() {
-        return callingAET;
-    }
-
-    /**
-     * Set the calling AET.
-     * 
-     * @param aet
-     *            The calling AET to set.
-     */
-    public void setCallingAET(String aet) {
-        callingAET = aet;
-    }
-
-    /**
      * Returns the retrieve AET defined in this MBean.
      * <p>
      * This AET performs the move operation.
@@ -577,63 +533,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
     }
 
     /**
-     * Returns the Association timeout in ms.
-     * 
-     * @return Returns the acTimeout.
-     */
-    public int getAcTimeout() {
-        return acTimeout;
-    }
-
-    /**
-     * Set the association timeout.
-     * 
-     * @param acTimeout
-     *            The acTimeout in ms.
-     */
-    public void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    /**
-     * Returns the DICOM message timeout in ms.
-     * 
-     * @return Returns the dimseTimeout.
-     */
-    public int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    /**
-     * Set the DICOM message timeout.
-     * 
-     * @param dimseTimeout
-     *            The dimseTimeout in ms.
-     */
-    public void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    /**
-     * Returns the socket close delay in ms.
-     * 
-     * @return Returns the soCloseDelay.
-     */
-    public int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    /**
-     * Set the socket close delay.
-     * 
-     * @param delay
-     *            Socket close delay in ms.
-     */
-    public void setSoCloseDelay(int delay) {
-        soCloseDelay = delay;
-    }
-
-    /**
      * Returns the DICOM priority as int value.
      * <p>
      * This value is used for Move and media creation action (N-Action). 0..MED,
@@ -653,25 +552,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
      */
     public void setPriority(String priority) {
         this.priority = DicomPriority.toCode(priority);
-    }
-
-    /**
-     * returns the max PDU length in bytes.
-     * 
-     * @return Returns the maxPDUlen.
-     */
-    public int getMaxPDUlen() {
-        return maxPDUlen;
-    }
-
-    /**
-     * Set the max PDU length.
-     * 
-     * @param maxPDUlen
-     *            The maxPDUlen in bytes.
-     */
-    public void setMaxPDUlen(int maxPDUlen) {
-        this.maxPDUlen = maxPDUlen;
     }
 
     /**
@@ -890,26 +770,17 @@ public class MCMScuService extends ServiceMBeanSupport implements
      * @return true if move was sucessful, false if move failed.
      */
     private boolean processMove(MediaDTO mediaDTO) {
-        ActiveAssociation assoc = null;
+        ActiveAssociation aa;
         try {
-            AEDTO aeData = new AECmd(retrieveAET).toDTO();
-            assoc = openAssoc(aeData.getHostName(), aeData.getPort(),
-                    getAssocReq(retrieveAET,
-                            UIDs.StudyRootQueryRetrieveInformationModelMOVE));
-            if (assoc == null) {
+            aa = openAssociation(retrieveAET,
+                            UIDs.StudyRootQueryRetrieveInformationModelMOVE);
+        } catch (Exception e) {
                 handleError(mediaDTO, "processMove failed for "
-                        + mediaDTO.getFilesetId()
-                        + "! Reason: couldnt open association!", null);
-                return false;
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                handleError(mediaDTO,
-                        "processMove failed for " + mediaDTO.getFilesetId()
-                                + " Reason: " + getRetrieveAET()
-                                + " doesnt support Study root move!", null);
-                return false;
-            }
+                        + mediaDTO.getFilesetId(), e);
+                return false;       
+        }
+        try {
+            Association as = aa.getAssociation();
             DcmObjectFactory oFact = DcmObjectFactory.getInstance();
             Command cmd = oFact.newCommand();
             String[] studyUIDs = getStudyUids(mediaDTO);
@@ -923,7 +794,7 @@ public class MCMScuService extends ServiceMBeanSupport implements
                 ds.putUI(Tags.StudyInstanceUID, studyUIDs[i]);
                 Dimse moveRQ = AssociationFactory.getInstance().newDimse(1,
                         cmd, ds);
-                FutureRSP rsp = assoc.invoke(moveRQ);
+                FutureRSP rsp = aa.invoke(moveRQ);
                 Dimse dimse = rsp.get();
                 if (!checkResponse(dimse, mediaDTO, "for study:" + studyUIDs[i])) {
                     return false;
@@ -934,13 +805,12 @@ public class MCMScuService extends ServiceMBeanSupport implements
                     + mediaDTO.getFilesetId() + "! Reason: unexpected error", e);
             return false;
         } finally {
-            if (assoc != null)
-                try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    log.error("Cant release association for move "
-                            + assoc.getAssociation(), e1);
-                }
+            try {
+                aa.release(true);
+            } catch (Exception e) {
+                log.warn("Failed to release association " + aa.getAssociation(),
+                        e);
+            }
         }
         return true;
     }
@@ -958,48 +828,32 @@ public class MCMScuService extends ServiceMBeanSupport implements
      *            The MediaDTO object to process.
      */
     private boolean processMediaCreation(MediaDTO mediaDTO) {
-        ActiveAssociation assoc = null;
-        String iuid = null;
+        ActiveAssociation aa;
         try {
-            // get association for media creation request and action.
-            AEDTO aeData = new AECmd(mcmScpAET).toDTO();
-            assoc = openAssoc(
-                    aeData.getHostName(),
-                    aeData.getPort(),
-                    getAssocReq(mcmScpAET, UIDs.MediaCreationManagementSOPClass));
-            if (assoc == null) {
-                handleError(mediaDTO, "processMediaCreation failed for "
-                        + mediaDTO.getFilesetId()
-                        + "! Reason: couldnt open association!", null);
-                return false;
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                handleError(mediaDTO, "processMediaCreation failed for "
-                        + mediaDTO.getFilesetId() + " Reason: "
-                        + getMcmScpAET()
-                        + " doesnt support media creation request!", null);
-                return false;
-            }
-            // send media creation request.
+            aa = openAssociation(mcmScpAET,
+                            UIDs.MediaCreationManagementSOPClass);
+        } catch (Exception e) {
+                handleError(mediaDTO, "processMove failed for "
+                        + mediaDTO.getFilesetId(), e);
+                return false;       
+        }
+        try {
             DcmObjectFactory oFact = DcmObjectFactory.getInstance();
             Command cmd = oFact.newCommand();
             cmd.initNCreateRQ(1, UIDs.MediaCreationManagementSOPClass, null);
             Dataset ds = getMediaCreationReqDS(mediaDTO);
             Dimse mcRQ = AssociationFactory.getInstance().newDimse(1, cmd, ds);
-            FutureRSP rsp = assoc.invoke(mcRQ);
+            FutureRSP rsp = aa.invoke(mcRQ);
             Dimse dimse = rsp.get();
             if (!checkResponse(dimse, mediaDTO, "")) {
                 return false;
             }
-            iuid = dimse.getCommand().getAffectedSOPInstanceUID();
+            String iuid = dimse.getCommand().getAffectedSOPInstanceUID();
             Command cmdRsp = dimse.getCommand();
             Dataset dataRsp = dimse.getDataset();
             // send action
-            FutureRSP futureRsp = assoc.invoke(AssociationFactory.getInstance()
-                    .newDimse(
-                            1,
-                            oFact.newCommand().initNActionRQ(3,
+            FutureRSP futureRsp = aa.invoke(AssociationFactory.getInstance()
+                    .newDimse(1, oFact.newCommand().initNActionRQ(3,
                                     UIDs.MediaCreationManagementSOPClass, iuid,
                                     INITIATE_MEDIA_CREATION),
                             getMediaCreationActionDS()));
@@ -1015,14 +869,12 @@ public class MCMScuService extends ServiceMBeanSupport implements
                     + mediaDTO.getFilesetId() + "! Reason: unexpected error", e);
             return false;
         } finally {
-            if (assoc != null)
-                try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    log.error(
-                            "Cant release association for media creation request"
-                                    + assoc.getAssociation(), e1);
-                }
+            try {
+                aa.release(true);
+            } catch (Exception e) {
+                log.warn("Failed to release association " + aa.getAssociation(),
+                        e);
+            }
         }
         return true;
     }
@@ -1160,81 +1012,27 @@ public class MCMScuService extends ServiceMBeanSupport implements
         return (String[]) c.toArray(new String[c.size()]);
     }
 
-    /**
-     * Open a DICOM association for given host, port and assocition request.
-     * 
-     * @param host
-     *            Host to create the association.
-     * @param port
-     *            Port number to create the association.
-     * @param assocRQ
-     *            The association request object.
-     * 
-     * @return The Active association object.
-     * 
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    private ActiveAssociation openAssoc(String host, int port,
-            AAssociateRQ assocRQ) throws IOException, GeneralSecurityException {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        Association assoc = aFact.newRequestor(new Socket(host, port));
-        assoc.setAcTimeout(acTimeout);
-        assoc.setDimseTimeout(dimseTimeout);
-        assoc.setSoCloseDelay(soCloseDelay);
-        PDU assocAC = assoc.connect(assocRQ);
-        if (!(assocAC instanceof AAssociateAC)) {
-            return null;
-        }
-        ActiveAssociation retval = aFact.newActiveAssociation(assoc, null);
-        retval.start();
-        return retval;
-    }
-
-    private AAssociateRQ getAssocReq(String calledAET, String cuid) {
-        AssociationFactory aFact = AssociationFactory.getInstance();
-        AAssociateRQ assocRQ = aFact.newAAssociateRQ();
-        assocRQ.setCalledAET(calledAET);
-        assocRQ.setCallingAET(getCallingAET());
-        assocRQ.setMaxPDULength(maxPDUlen);
-        assocRQ.addPresContext(aFact.newPresContext(1, cuid, NATIVE_TS));
-        return assocRQ;
-    }
-
     public String updateMediaStatus() {
-        ActiveAssociation assoc = null;
+        List procList;
         try {
-            // get all media of status PROCESSING.
-            List procList = this.lookupMediaComposer().getWithStatus(
+            procList = this.lookupMediaComposer().getWithStatus(
                     MediaDTO.BURNING);
             if (procList.isEmpty())
                 return "No Media in processing status.";
-
-            // get association for media creation request and action.
-            AEDTO aeData = new AECmd(this.getMcmScpAET()).toDTO();
-            if (aeData == null) {
-                log
-                        .error("Cant get media creation status! Reason: Unknown AET:"
-                                + getMcmScpAET());
-                return "Error: Unknown AET:" + getMcmScpAET();
-            }
-            assoc = openAssoc(
-                    aeData.getHostName(),
-                    aeData.getPort(),
-                    getAssocReq(mcmScpAET, UIDs.MediaCreationManagementSOPClass));
-            if (assoc == null) {
-                log
-                        .error("Cant get media creation status! Reason: couldnt open association!");
-                return "Error: could not open association!";
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                log.error("Cant get media creation status! Reason: "
-                        + getMcmScpAET()
-                        + " doesnt support media creation managment!", null);
-                return "Error: " + getMcmScpAET()
-                        + " doesnt support media creation managment!";
-            }
+        } catch (Exception e) {
+            log.error("Check for pending media creation processes fails!", e);
+            return "Error: Check for pending media creation processes fails!";
+        }
+        ActiveAssociation aa;
+        try {
+            aa = openAssociation(mcmScpAET,
+                            UIDs.MediaCreationManagementSOPClass);
+        } catch (Exception e) {
+            log.error("Cant get media creation status!", e);
+            return "Error: could not open association!";
+        }
+        try {
+            Association as = aa.getAssociation();
             String iuid = null;
             MediaDTO mediaDTO = null;
             int[] getAttrs = new int[] { Tags.ExecutionStatus,
@@ -1243,7 +1041,6 @@ public class MCMScuService extends ServiceMBeanSupport implements
             int mediaWithAction = 0;
             int mediaDone = 0;
             int mediaFailed = 0;
-            String statusString;
             for (Iterator iter = procList.iterator(); iter.hasNext();) {
                 mediaDTO = (MediaDTO) iter.next();
                 iuid = mediaDTO.getMediaCreationRequestIuid();
@@ -1254,7 +1051,7 @@ public class MCMScuService extends ServiceMBeanSupport implements
                     cmdRq.initNGetRQ(as.nextMsgID(),
                             UIDs.MediaCreationManagementSOPClass, iuid,
                             getAttrs);
-                    FutureRSP futureRsp = assoc.invoke(AssociationFactory
+                    FutureRSP futureRsp = aa.invoke(AssociationFactory
                             .getInstance().newDimse(1, cmdRq));
                     Dimse rsp = futureRsp.get();
                     Command cmdRsp = rsp.getCommand();
@@ -1308,21 +1105,17 @@ public class MCMScuService extends ServiceMBeanSupport implements
                     + " media processing / " + mediaWithAction
                     + " with N-ACTION";
         } catch (Exception x) {
-            log
-                    .error(
-                            "Cant get media creation status! Reason: unexpected error.",
+            log.error("Cant get media creation status! Reason: unexpected error.",
                             x);
             return "Cant get media create status: Unexpected error"
                     + x.getMessage();
         } finally {
-            if (assoc != null)
-                try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    log.error(
-                            "Cant release association for media creation status request"
-                                    + assoc.getAssociation(), e1);
-                }
+            try {
+                aa.release(true);
+            } catch (Exception e) {
+                log.warn("Failed to release association " + aa.getAssociation(),
+                        e);
+            }
         }
     }
 
@@ -1406,92 +1199,33 @@ public class MCMScuService extends ServiceMBeanSupport implements
      * @return Returns OK, MOVE_DEST_UNAVAIL or MCM_SCP_UNAVAIL
      */
     public String checkMcmScpAvail() {
-        ActiveAssociation assoc = null;
-        AEDTO aeData;
-        // check move dest.
+        ActiveAssociation aa;
         try {
-            aeData = new AECmd(this.getMoveDestinationAET()).toDTO();
-            assoc = openAssoc(aeData.getHostName(), aeData.getPort(),
-                    getAssocReq(destAET, UIDs.SecondaryCaptureImageStorage));
-            if (assoc == null) {
-                if (log.isDebugEnabled())
-                    log
-                            .debug("Move destination ("
-                                    + destAET
-                                    + ") is not available! Reason: couldnt open association:");
-                return "MOVE_DEST_UNAVAIL";
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                if (log.isDebugEnabled())
-                    log
-                            .debug(
-                                    "Move destination ("
-                                            + destAET
-                                            + ") is not available! Reason: doesnt support media creation managment!",
-                                    null);
-                return "MOVE_DEST_UNAVAIL";
-            }
-        } catch (Exception x) {
-            if (log.isDebugEnabled())
-                log.debug("Move destination (" + destAET
-                        + ") is not available! Reason: Exception:", x);
+            aa = openAssociation(destAET,
+                            UIDs.SecondaryCaptureImageStorage);
+        } catch (Exception e) {
+            log.info("Move destination (" + destAET + ") is not available!", e);
             return "MOVE_DEST_UNAVAIL";
-        } finally {
-            if (assoc != null)
-                try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    if (log.isDebugEnabled())
-                        log.debug(
-                                "Cant release association for checkMcmScpAvail: MOVE_DEST"
-                                        + assoc.getAssociation(), e1);
-                }
         }
-
-        // check mcm scp.
         try {
-            aeData = new AECmd(this.getMcmScpAET()).toDTO();
-            assoc = openAssoc(
-                    aeData.getHostName(),
-                    aeData.getPort(),
-                    getAssocReq(mcmScpAET, UIDs.MediaCreationManagementSOPClass));
-            if (assoc == null) {
-                if (log.isDebugEnabled())
-                    log
-                            .debug("MCM SCP ("
-                                    + mcmScpAET
-                                    + ") is not available! Reason: couldnt open association:");
-                return "MCM_SCP_UNAVAIL";
-            }
-            Association as = assoc.getAssociation();
-            if (as.getAcceptedTransferSyntaxUID(1) == null) {
-                if (log.isDebugEnabled())
-                    log
-                            .debug(
-                                    "MCM SCP ("
-                                            + mcmScpAET
-                                            + ") is not available! Reason: doesnt support media creation managment!",
-                                    null);
-                return "MCM_SCP_UNAVAIL";
-            }
-        } catch (Exception x) {
-            if (log.isDebugEnabled())
-                log.debug("MCM SCP (" + mcmScpAET
-                        + ") is not available! Reason: Exception:", x);
-            return "MCM_SCP_UNAVAIL";
-        } finally {
-            if (assoc != null)
-                try {
-                    assoc.release(true);
-                } catch (Exception e1) {
-                    if (log.isDebugEnabled())
-                        log.debug(
-                                "Cant release association for checkMcmScpAvail: MCM_SCP"
-                                        + assoc.getAssociation(), e1);
-                }
+            aa.release(true);
+        } catch (Exception e) {
+            log.info("Failed to release association " + aa.getAssociation(),
+                    e);
         }
-
+        try {
+            aa = openAssociation(mcmScpAET,
+                            UIDs.MediaCreationManagementSOPClass);
+        } catch (Exception e) {
+            log.info("MCM SCP (" + mcmScpAET + ") is not available!", e);
+            return "MCM_SCP_UNAVAIL";
+        }
+        try {
+            aa.release(true);
+        } catch (Exception e) {
+            log.info("Failed to release association " + aa.getAssociation(),
+                    e);
+        }
         return "OK";
     }
 
@@ -1575,5 +1309,4 @@ public class MCMScuService extends ServiceMBeanSupport implements
     public void setTimerIDCheckMediaStatus(String timerIDCheckMediaStatus) {
         this.timerIDCheckMediaStatus = timerIDCheckMediaStatus;
     }
-
 }

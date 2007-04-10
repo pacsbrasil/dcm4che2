@@ -41,7 +41,6 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -62,24 +61,17 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.AAssociateAC;
-import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
-import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.StudyReconciliation;
 import org.dcm4chex.archive.ejb.interfaces.StudyReconciliationHome;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -87,7 +79,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Juli 2006
  * 
  */
-public class StudyReconciliationService extends ServiceMBeanSupport {
+public class StudyReconciliationService extends AbstractScuService {
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
@@ -109,8 +101,6 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 
     private String calledAET = "TIANI_ARCHIVE";
 
-    private String callingAET = "DCM4CHEE";
-
     private Integer listenerID;
 
     private final static AssociationFactory af = AssociationFactory
@@ -120,22 +110,7 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 
     private final static int PCID_FIND = 1;
 
-    private final static String[] TS = new String[] {
-            UIDs.ExplicitVRLittleEndian, UIDs.ImplicitVRLittleEndian };
-
     private int priority = Command.MEDIUM;
-
-    private int acTimeout = 5000;
-
-    private int dimseTimeout = 0;
-
-    private int soCloseDelay = 500;
-
-    private boolean packPDVs = false;
-
-    private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
-
-    private String[] cipherSuites = null;
 
     private String timerIDCheckStudyReconciliation = "CheckStudyReconciliation";
 
@@ -183,14 +158,6 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
 
     public void setCalledAET(String calledAET) {
         this.calledAET = calledAET;
-    }
-
-    public String getCallingAET() {
-        return callingAET;
-    }
-
-    public void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
     }
 
     public final String getTaskInterval() {
@@ -279,9 +246,7 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
         this.failureStatus = failureStatus;
     }
 
-    public String check() throws FinderException, InterruptedException,
-            IOException, GeneralSecurityException, DcmServiceException,
-            SQLException, UnkownAETException {
+    public String check() throws Exception {
         long start = System.currentTimeMillis();
         StudyReconciliation studyReconciliation = newStudyReconciliation();
         Timestamp createdBefore = new Timestamp(System.currentTimeMillis()
@@ -299,57 +264,52 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
         Map archiveStudy;
         Dataset qrSeriesDS = getSeriesQueryDS();
         Dataset qrInstanceDS = getInstanceQueryDS();
-        ActiveAssociation aa = null;
-        ;
+        ActiveAssociation aa = openAssociation(calledAET, 
+                UIDs.StudyRootQueryRetrieveInformationModelFIND);        
         int numPatUpdt = 0, numPatMerge = 0, numFailures = 0;
         try {
-            aa = openAssoc();
-            if (aa != null) {
-                String studyIuid;
-                for (Iterator iter = col.iterator(); iter.hasNext();) {
-                    studyIuid = (String) iter.next();
-                    qrSeriesDS.putUI(Tags.StudyInstanceUID, studyIuid);
-                    archiveStudy = query(aa, qrSeriesDS, Tags.SeriesInstanceUID);
-                    Dataset patDS = checkStudy(qrSeriesDS, qrInstanceDS,
-                            archiveStudy, aa);
-                    if (patDS != null) {
-                        log.debug("check Patient info of study " + studyIuid);
-                        Dataset origPatDS = (Dataset) archiveStudy.values()
-                                .iterator().next();
-                        if (compare(patDS, origPatDS, Tags.PatientID)
-                                && compare(patDS, origPatDS,
-                                        Tags.IssuerOfPatientID)) {
-                            if (!compare(patDS, origPatDS, Tags.PatientName)
-                                    || !compare(patDS, origPatDS,
-                                            Tags.PatientBirthDate)
-                                    || !compare(patDS, origPatDS,
-                                            Tags.PatientSex)) {
-                                log.info("UPDATE patient: "
-                                        + origPatDS.getString(Tags.PatientID));
-                                studyReconciliation.updatePatient(origPatDS);
-                                numPatUpdt++;
-                            }
-                        } else {
-                            log.info("MERGE patient: "
-                                    + patDS.getString(Tags.PatientID)
-                                    + " with "
+            String studyIuid;
+            for (Iterator iter = col.iterator(); iter.hasNext();) {
+                studyIuid = (String) iter.next();
+                qrSeriesDS.putUI(Tags.StudyInstanceUID, studyIuid);
+                archiveStudy = query(aa, qrSeriesDS, Tags.SeriesInstanceUID);
+                Dataset patDS = checkStudy(qrSeriesDS, qrInstanceDS,
+                        archiveStudy, aa);
+                if (patDS != null) {
+                    log.debug("check Patient info of study " + studyIuid);
+                    Dataset origPatDS = (Dataset) archiveStudy.values().iterator().next();
+                    if (compare(patDS, origPatDS, Tags.PatientID)
+                            && compare(patDS, origPatDS,
+                                    Tags.IssuerOfPatientID)) {
+                        if (!compare(patDS, origPatDS, Tags.PatientName)
+                                || !compare(patDS, origPatDS,
+                                        Tags.PatientBirthDate)
+                                        || !compare(patDS, origPatDS,
+                                                Tags.PatientSex)) {
+                            log.info("UPDATE patient: "
                                     + origPatDS.getString(Tags.PatientID));
-                            studyReconciliation.mergePatient(origPatDS, patDS);
-                            numPatMerge++;
+                            studyReconciliation.updatePatient(origPatDS);
+                            numPatUpdt++;
                         }
-                        studyReconciliation.updateStudyAndSeries(studyIuid,
-                                successStatus, archiveStudy);
                     } else {
-                        numFailures++;
-                        studyReconciliation.updateStatus(studyIuid,
-                                failureStatus);
+                        log.info("MERGE patient: "
+                                + patDS.getString(Tags.PatientID)
+                                + " with "
+                                + origPatDS.getString(Tags.PatientID));
+                        studyReconciliation.mergePatient(origPatDS, patDS);
+                        numPatMerge++;
                     }
+                    studyReconciliation.updateStudyAndSeries(studyIuid,
+                            successStatus, archiveStudy);
+                } else {
+                    numFailures++;
+                    studyReconciliation.updateStatus(studyIuid,
+                            failureStatus);
                 }
             }
         } finally {
             try {
-                if (aa != null)
-                    aa.release(true);
+                aa.release(true);
             } catch (Exception e) {
                 log.warn(
                         "Failed to release association " + aa.getAssociation(),
@@ -405,37 +365,6 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
         qrDS.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         qrDS.putUI(Tags.SOPInstanceUID);
         return qrDS;
-    }
-
-    private ActiveAssociation openAssoc() throws IOException,
-            DcmServiceException, SQLException, UnkownAETException {
-        AEDTO aeData = new AECmd(this.calledAET).toDTO();
-        if (aeData == null) {
-            log.error("Unkown Retrieve AET: " + calledAET);
-            return null;
-        }
-        AssociationFactory af = AssociationFactory.getInstance();
-        Association a = af.newRequestor(tlsConfig.createSocket(aeData));
-        a.setAcTimeout(acTimeout);
-        a.setDimseTimeout(dimseTimeout);
-        a.setSoCloseDelay(soCloseDelay);
-        AAssociateRQ rq = af.newAAssociateRQ();
-        rq.setCalledAET(this.calledAET);
-        rq.setCallingAET(this.callingAET);
-        rq.addPresContext(af.newPresContext(PCID_FIND,
-                UIDs.StudyRootQueryRetrieveInformationModelFIND, TS));
-        PDU ac = a.connect(rq);
-        if (!(ac instanceof AAssociateAC)) {
-            log.warn("Association not accepted by " + calledAET + ": " + ac);
-            return null;
-        }
-        ActiveAssociation aa = af.newActiveAssociation(a, null);
-        aa.start();
-        if (a.getAcceptedTransferSyntaxUID(PCID_FIND) == null) {
-            log.warn("C-FIND not supported by remote AE: " + calledAET);
-            return null;
-        }
-        return aa;
     }
 
     /**
@@ -632,39 +561,6 @@ public class StudyReconciliationService extends ServiceMBeanSupport {
         }
         return total + " studies rescheduled for Reconciliation!";
     }
-
-    public final int getAcTimeout() {
-        return acTimeout;
-    }
-
-    public final void setAcTimeout(int acTimeout) {
-        this.acTimeout = acTimeout;
-    }
-
-    public final int getDimseTimeout() {
-        return dimseTimeout;
-    }
-
-    public final void setDimseTimeout(int dimseTimeout) {
-        this.dimseTimeout = dimseTimeout;
-    }
-
-    public final int getSoCloseDelay() {
-        return soCloseDelay;
-    }
-
-    public final void setSoCloseDelay(int soCloseDelay) {
-        this.soCloseDelay = soCloseDelay;
-    }
-
-    public final ObjectName getTLSConfigName() {
-        return tlsConfig.getTLSConfigName();
-    }
-
-    public final void setTLSConfigName(ObjectName tlsConfigName) {
-        tlsConfig.setTLSConfigName(tlsConfigName);
-    }
-
     private boolean isDisabled(int hour) {
         if (disabledEndHour == -1)
             return false;

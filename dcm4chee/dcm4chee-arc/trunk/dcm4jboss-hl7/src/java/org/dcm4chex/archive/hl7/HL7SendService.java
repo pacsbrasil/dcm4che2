@@ -46,7 +46,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,17 +60,17 @@ import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.xml.transform.TransformerException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.jdbc.AECmd;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dom4j.Document;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
@@ -324,21 +323,12 @@ public class HL7SendService extends ServiceMBeanSupport implements
         }
     }
 
-    public Document invoke(byte[] message, String receiver)
-            throws UnkownAETException, IOException, SQLException, SAXException {
-        AEData aeData;
-        if (LOCAL_HL7_AET.equals(receiver)) {
-            aeData = new AEData(-1, receiver, "localhost", getLocalHL7Port(),
-                    null);
-
-        } else {
-            aeData = new AECmd(receiver).getAEData();
-            if (aeData == null) {
-                throw new UnkownAETException("Unkown HL7 receiver application "
-                        + receiver);
-            }
-        }
-        Socket s = tlsConfig.createSocket(aeData);
+    public Document invoke(byte[] message, String receiver) throws Exception {
+        AEDTO localAE = new AEDTO(-1, receiver, "127.0.0.1", getLocalHL7Port(),
+                null);
+        AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
+                ? localAE : aeMgt().findByAET(receiver);
+        Socket s = tlsConfig.createSocket(localAE, remoteAE);
         try {
             MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
                     .getOutputStream(), true);
@@ -358,9 +348,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         }
     }
 
-    public void sendTo(byte[] message, String receiver) throws SQLException,
-            IOException, UnkownAETException, TransformerException,
-            SAXException, HL7Exception {
+    public void sendTo(byte[] message, String receiver) throws Exception {
         Document rsp = invoke(message, receiver);
         MSH msh = new MSH(rsp);
         if ("ACK".equals(msh.messageType)) {
@@ -435,19 +423,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
         out.write(message, right - 1, message.length - right + 1);
     }
 
-    /**
-     * @param ds
-     * @throws HL7Exception
-     * @throws SAXException
-     * @throws TransformerException
-     * @throws UnkownAETException
-     * @throws IOException
-     * @throws SQLException
-     */
     public void sendHL7PatientXXX(Dataset ds, String msgType, String sending,
-            String receiving, boolean useForward) throws SQLException,
-            IOException, UnkownAETException, TransformerException,
-            SAXException, HL7Exception {
+            String receiving, boolean useForward) throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, msgType, sending, receiving,
@@ -466,8 +443,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public void sendHL7PatientMerge(Dataset dsDominant, Dataset[] priorPats,
             String sending, String receiving, boolean useForward)
-            throws SQLException, IOException, UnkownAETException,
-            TransformerException, SAXException, HL7Exception {
+            throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, "ADT^A40", sending, receiving,
@@ -656,4 +632,9 @@ public class HL7SendService extends ServiceMBeanSupport implements
         return queryTag++;
     }
 
+    private AEManager aeMgt() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
 }
