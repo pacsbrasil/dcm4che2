@@ -4,7 +4,7 @@
   <property file="../build.properties"/>
   <property name="version" value="2.10.14"/>
   <property name="arr-version" value="3.0.1"/>
-  <property name="audit-version" value="3.0.1"/>
+  <property name="audit-version" value="3.0.2"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
