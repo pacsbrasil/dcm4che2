@@ -361,7 +361,8 @@ public class AuditLogger extends ServiceMBeanSupport {
                                 acnSources.add(source);
                             } catch (Exception e) {
                                 log.error(FAILED_TO_REGISTER_ACNL + source, e);
-                            }                        
+                            }
+                            acnf[i] = null;
                         }
                     }
                     source = null;
