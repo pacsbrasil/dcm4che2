@@ -3,6 +3,8 @@
   Allow user to adjust build properties without modifying this build script.
   -->
   <property file="build.properties"/>
+  <property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>
+  <property name="jboss.dtd" value="${jboss.home}/docs/dtd"/>
   <property name="target-config.dir" value="../../target/config"/>
   <property name="dcm4chee-arr.home" value="../../../../dcm4chee-arr"/>
   <property name="dcm4chee-arr-listeners-udp.xmdesc"
@@ -99,6 +101,11 @@
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-gpwlfeed-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=GPWLFeed"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-gpwlfeed2-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=GPWLFeed2"/>
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
@@ -381,6 +388,11 @@ type           Event Type Code
   <target name="xslt">
     <xslt style="dcm4chee-audit-attribute-change.xsl" in="${xmdesc.dir}/${xmbean.file}"
       out="${target-config.dir}/${xmbean.file}">
+      <xmlcatalog>
+       <dtd
+         publicId="-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+         location="${jboss.dtd}/jboss_xmbean_1_1.dtd"/>
+      </xmlcatalog>
       <param name="mbean" expression="${mbean}"/>
     </xslt>
   </target>
