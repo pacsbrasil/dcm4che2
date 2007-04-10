@@ -11,10 +11,10 @@ type           Event Type Code
 -->
 <mbeans>
 <mbean name="dcm4chee.archive:service=AE">
-<attribute name="AuditLoggerName"/>
-<attribute name="EchoServiceName"/>
 <attribute name="PortNumbers" type="Network"/>
 <attribute name="DontSaveIP"/>
+<attribute name="AuditLoggerName"/>
+<attribute name="EchoServiceName"/>
 </mbean>
 <mbean name="dcm4chee.arr:service=UDPListener">
 <attribute name="Port" type="Network"/>
@@ -160,7 +160,7 @@ type           Event Type Code
 <attribute name="LogEnabled"/>
 <attribute name="SpoolDirName"/>
 </mbean>
-<!--mbean name="dcm4chee.cdw:service=Scheduler"/-->
+<mbean name="dcm4chee.cdw:service=Scheduler"/>
 <mbean name="dcm4chee.cdw:service=SpoolDir">
 <attribute name="ArchiveDirPath"/>
 <attribute name="NumberOfArchiveBuckets"/>
@@ -242,6 +242,7 @@ type           Event Type Code
 <attribute name="StudyMgtScuServiceName"/>
 <attribute name="StoreScpServiceName"/>
 <attribute name="MppsScpServiceName"/>
+<attribute name="AuditLoggerName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=DcmServer">
 <attribute name="TCPPort" type="Network"/>
@@ -258,15 +259,17 @@ type           Event Type Code
 <attribute name="MaximumIdleThreads"/>
 <attribute name="TLSConfigName"/>
 </mbean>
-<!--mbean name="dcm4chee.archive:service=DeviceService"/-->
+<mbean name="dcm4chee.archive:service=DeviceService"/>
 <mbean name="dcm4chee.archive:service=ECHOService">
 <attribute name="CallingAETitle"/>
 <attribute name="AcceptTimeout"/>
 <attribute name="DIMSETimeout"/>
 <attribute name="SocketCloseDelay"/>
+<attribute name="MaximumPDULength"/>
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=ExportManager">
@@ -283,12 +286,16 @@ type           Event Type Code
 <attribute name="AcceptTimeout"/>
 <attribute name="DIMSETimeout"/>
 <attribute name="SocketCloseDelay"/>
-<attribute name="BufferSize"/>
+<attribute name="MaximumPDULength"/>
+<attribute name="TcpNoDelay"/>
+<attribute name="SendBufferSize"/>
+<attribute name="ReceiveBufferSize"/>
 <attribute name="Concurrency"/>
 <attribute name="StoreScpServiceName"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="TLSConfigName"/>
 <attribute name="AuditLoggerName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=FileCopy">
@@ -326,8 +333,8 @@ type           Event Type Code
 <attribute name="MinimumFreeDiskSpace"/>
 <attribute name="DFCommand"/>
 <attribute name="DFCommandOption"/>
-<attribute name="CheckFreeDiskSpaceInterval"/>
-<attribute name="CheckFreeDiskSpaceThreshold"/>
+<attribute name="CheckFreeDiskSpaceMinimalInterval"/>
+<attribute name="CheckFreeDiskSpaceMaximalInterval"/>
 <attribute name="DeleterThresholds"/>
 <attribute name="ExpectedDataVolumePerDay"/>
 <attribute name="AdjustExpectedDataVolumePerDay"/>
@@ -364,6 +371,14 @@ type           Event Type Code
 <attribute name="TemplatePath"/>
 <attribute name="HumanPerformerList"/>
 </mbean>
+<mbean name="dcm4chee.archive:service=GPWLFeed2">
+<attribute name="LogStationAETitles"/>
+<attribute name="PGPStationAETitles"/>
+<attribute name="AppendCaseStationAETitles"/>
+<attribute name="WorkItemConfigDirectory"/>
+<attribute name="EjbProviderURL"/>
+<attribute name="IANScuServiceName"/>
+</mbean>
 <mbean name="dcm4chee.archive:service=GPWLScp">
 <attribute name="CalledAETitles"/>
 <attribute name="CallingAETitles"/>
@@ -383,7 +398,12 @@ type           Event Type Code
 <attribute name="DIMSETimeout"/>
 <attribute name="SocketCloseDelay"/>
 <attribute name="MaximumPDULength"/>
+<attribute name="TcpNoDelay"/>
+<attribute name="SendBufferSize"/>
+<attribute name="ReceiveBufferSize"/>
 <attribute name="Priority"/>
+<attribute name="EJBProviderURL"/>
+<attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Service,type=ADT">
 <attribute name="MessageTypes"/>
@@ -466,7 +486,6 @@ type           Event Type Code
 <attribute name="OnStudyDeleted"/>
 <attribute name="CallingAETitle"/>
 <attribute name="RetryIntervals"/>
-<attribute name="OfferInstanceAvailableNotification"/>
 <attribute name="OfferStudyContentNotification"/>
 <attribute name="PreferInstanceAvailableNotification"/>
 <attribute name="Concurrency"/>
@@ -474,9 +493,11 @@ type           Event Type Code
 <attribute name="AcceptTimeout"/>
 <attribute name="DIMSETimeout"/>
 <attribute name="SocketCloseDelay"/>
+<attribute name="MaximumPDULength"/>
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="StoreScpServiceName"/>
@@ -484,7 +505,7 @@ type           Event Type Code
 <attribute name="FileSystemMgtServiceName"/>
 <attribute name="TLSConfigName"/>
 </mbean>
-<!--mbean name="dcm4chee.archive:service=JMS"/-->
+<mbean name="dcm4chee.archive:service=JMS"/>
 <mbean name="dcm4chee.archive:service=KeyObjectService">
 <attribute name="CompositeSopClassUIDs"/>
 <attribute name="WaveformSopClassUIDs"/>
@@ -506,10 +527,8 @@ type           Event Type Code
 <attribute name="AutomaticMediaCreation"/>
 <attribute name="NotifyBurnMediaEmailTo"/>
 <attribute name="NotifyBurnMediaEmailFrom"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
-<attribute name="MaximumPDULength"/>
+<attribute name="EJBProviderURL"/>
+<attribute name="TLSConfigName"/>
 <attribute name="Priority"/>
 <attribute name="IncludeNonDicomObj"/>
 <attribute name="UseInstanceInfo"/>
@@ -537,9 +556,11 @@ type           Event Type Code
 <attribute name="AcceptTimeout"/>
 <attribute name="DIMSETimeout"/>
 <attribute name="SocketCloseDelay"/>
+<attribute name="MaximumPDULength"/>
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="TLSConfigName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="QueueName"/>
@@ -584,12 +605,7 @@ type           Event Type Code
 <attribute name="CallingAETitle"/>
 <attribute name="Concurrency"/>
 <attribute name="RetryIntervals"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
-<attribute name="TcpNoDelay"/>
-<attribute name="SendBufferSize"/>
-<attribute name="ReceiveBufferSize"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="MppsScpServiceName"/>
@@ -615,14 +631,9 @@ type           Event Type Code
 <mbean name="dcm4chee.archive:service=MWLScu">
 <attribute name="CallingAETitle"/>
 <attribute name="CalledAETitle"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
-<attribute name="MaximumPDULength"/>
+<attribute name="MaxResults"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="Priority"/>
-<attribute name="TcpNoDelay"/>
-<attribute name="SendBufferSize"/>
-<attribute name="ReceiveBufferSize"/>
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=PPSExceptionMgtService">
@@ -642,13 +653,7 @@ type           Event Type Code
 <attribute name="CopyProcessingApplicationsCode"/>
 <attribute name="Concurrency"/>
 <attribute name="RetryIntervals"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
-<attribute name="TcpNoDelay"/>
-<attribute name="SendBufferSize"/>
-<attribute name="ReceiveBufferSize"/>
-<attribute name="EjbProviderURL"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="GpwlScpServiceName"/>
@@ -665,14 +670,19 @@ type           Event Type Code
 <attribute name="RetrievePriority"/>
 <attribute name="RetryIntervalls"/>
 <attribute name="Concurrency"/>
+<attribute name="AcceptTimeout"/>
+<attribute name="DIMSETimeout"/>
+<attribute name="SocketCloseDelay"/>
+<attribute name="MaximumPDULength"/>
+<attribute name="TcpNoDelay"/>
+<attribute name="SendBufferSize"/>
+<attribute name="ReceiveBufferSize"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="MoveScuServiceName"/>
 <attribute name="HL7ServerName"/>
 <attribute name="TLSConfigName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="QueueName"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=QueryRetrieveScp">
 <attribute name="CalledAETitles"/>
@@ -750,7 +760,7 @@ type           Event Type Code
 <attribute name="GpwlScpServiceName"/>
 <attribute name="MoveScuServiceName"/>
 </mbean>
-<!--mbean name="dcm4chee.archive:service=Scheduler"/-->
+<mbean name="dcm4chee.archive:service=Scheduler"/>
 <mbean name="dcm4chee.archive:service=Sendmail">
 <attribute name="SmtpHost" type="Network"/>
 <attribute name="SmtpPort" type="Network"/>
@@ -853,9 +863,7 @@ type           Event Type Code
 <attribute name="ScheduledStatus"/>
 <attribute name="SuccessStatus"/>
 <attribute name="FailureStatus"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="TLSConfigName"/>
 <attribute name="SchedulerServiceName"/>
 <attribute name="TimerIDCheckStudyReconciliation"/>
@@ -882,12 +890,7 @@ type           Event Type Code
 <attribute name="CallingAETitle"/>
 <attribute name="RetryIntervals"/>
 <attribute name="Concurrency"/>
-<attribute name="AcceptTimeout"/>
-<attribute name="DIMSETimeout"/>
-<attribute name="SocketCloseDelay"/>
-<attribute name="TcpNoDelay"/>
-<attribute name="SendBufferSize"/>
-<attribute name="ReceiveBufferSize"/>
+<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="StudyMgtScpServiceName"/>
