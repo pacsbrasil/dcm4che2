@@ -72,7 +72,7 @@
 			</fileset>
 			
 			<classes dir="${classes.dir}">
-				<include name="org/dcm4chex/xds/repository/web/*.class" />
+				<include name="org/dcm4chex/xds/repository/**" />
 			</classes>
 		</war>
 	</target>
@@ -83,13 +83,11 @@
 	     	<manifest>
 					<attribute name="Implementation-Title" value="dcm4chee-xds"/>
 					<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-					<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+					<attribute name="Implementation-Vendor" value="Agfa Healthcare"/>
 	     	</manifest>
 	     	<fileset dir="${classes.dir}">
-	     		<include name="**/xds/*.class" />
-	     		<include name="**/mbean/**" />
-	     		<include name="**/common/**" />
-	        </fileset>
+				  <exclude name="org/dcm4chex/xds/repository/**" />
+	      </fileset>
 	     </jar>
 	</target>
 
