@@ -26,7 +26,7 @@
       <name>XDSRegistryURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/test?testid=11731"/>
+         <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/portals/yr3a/registry"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getXDSQueryURI" setMethod="setXDSQueryURI">
