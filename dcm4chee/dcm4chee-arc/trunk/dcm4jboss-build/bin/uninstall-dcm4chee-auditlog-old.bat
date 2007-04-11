@@ -5,4 +5,4 @@ rem -------------------------------------------------------------------------
 
 mkdir ..\dcm4chee-auditlog.old
 mkdir ..\dcm4chee-auditlog.old\deploy
-move ..\server\default\deploy\dcm4chee-auditlog-service.xml  ..\dcm4chee-auditlog.old\deploy\mkdir ..\dcm4chee-arr.old
+move ..\server\default\deploy\dcm4chee-auditlog-service.xml  ..\dcm4chee-auditlog.old\deploy\
