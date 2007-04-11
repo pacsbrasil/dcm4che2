@@ -965,6 +965,9 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
 						<img src="images/image.gif" alt="View image" border="0" title="Anzeige Bild"/>		
 					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
+					</a>
 				</xsl:when>
 				<xsl:otherwise>
 					<img src="images/invalid.gif" alt="Image not online" border="0" title="Bild n. verfuegbar"/>		
@@ -997,7 +1000,8 @@
 			<col width="5%"/>
 			<col width="5%"/>
 			<col width="13%"/>
-			<col width="25%"/>
+			<col width="23%"/>
+			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
@@ -1039,6 +1043,18 @@
 	  	<td title="SopIUID" >
 			<xsl:value-of select="sopIUID"/>&#160;
     	</td>
+		<td class="instance_mark" align="right">
+			<xsl:choose>
+				<xsl:when test="availability='ONLINE'" >			
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen" />		
+					</a>
+				</xsl:when>
+				<xsl:otherwise>
+					<img src="images/invalid.gif" alt="Not online" border="0" title="Nicht verfuegbar!"/>		
+				</xsl:otherwise>
+			</xsl:choose>
+		</td>
 		<td class="instance_mark" align="right">
 			<input type="checkbox" name="stickyInst" value="{pk}">
 				<xsl:if test="/model/stickyInstances/item = pk">
@@ -1131,6 +1147,9 @@
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF nach XDS Repository"/>		
 					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
+					</a>
 				</td>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1206,6 +1225,9 @@
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
 						<img src="images/waveform.gif" alt="View waveform" border="0" title="Anzeige waveform"/>		
 					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attributes anzeigen"/>		
+					</a>
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF nach XDS Repository"/>		
 					</a>
@@ -1274,7 +1296,15 @@
 		</td>
 	  	<td title="MD5">
 			<xsl:value-of select="md5String"/>
-    	                </td>
+    	</td>
+	  	<td title="XML">
+	  		&#160;
+	    	<xsl:if test="position()=1 and ../../availability='ONLINE'">
+				<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;useOrig=true&amp;studyUID=1&amp;seriesUID=1&amp;objectUID={../../sopIUID}" target="_blank" >
+					<img src="images/attrs.gif" alt="XML" border="0" title="Original DICOM Attribute anzeigen"/>		
+				</a>
+			</xsl:if>
+		</td>
       </table>
 	</tr>
 </xsl:template>
