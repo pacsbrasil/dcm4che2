@@ -67,6 +67,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Attribute;
+import javax.management.AttributeNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -1521,11 +1522,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             if (modified) {
                 server.setAttribute(name, 
                         new Attribute(attr, StringUtils.toString(aets, '\\')));
+                log.info("Update AETitle in attribute: " + name + "#" + attr);
             }
             return modified;
-        } catch (Exception e) {
-            throw new ConfigurationException("Failed to modify " 
-                    + name + "#" + attr);
+        } catch (AttributeNotFoundException e) {
+            log.info("No such attribute: " + name + "#" + attr);
+            return false;
         }
     }
 
