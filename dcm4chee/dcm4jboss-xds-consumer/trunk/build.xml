@@ -3,7 +3,7 @@
   <property file="../build.properties"/>
 	<property file="build.properties"/>
 
-	<property name="version" value="2.10.14"/>
+	<property name="version" value="2.10.15"/>
 	<!-- Override with your JBoss dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA" />
 	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
