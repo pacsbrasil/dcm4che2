@@ -57,6 +57,7 @@ import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.exceptions.UnkownAETException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -173,13 +174,14 @@ public class AEService extends ServiceMBeanSupport {
             return false;
         }
         AEManager aeManager = aeMgr();
-        AEDTO aeData = aeManager.findByAET(prevAET);
-        if (aeData == null) {
+        try {
+            AEDTO aeData = aeManager.findByAET(prevAET);
+            aeData.setTitle(newAET);
+            aeManager.updateAE(aeData);
+            return true;
+        } catch (UnkownAETException e) {
             return false;
         }
-        aeData.setTitle(newAET);
-        aeManager.updateAE(aeData);
-        return true;
     }
     
     public AEDTO getAE(String title, String host) throws RemoteException,
@@ -259,11 +261,11 @@ public class AEService extends ServiceMBeanSupport {
         } else {
             AEDTO aeOld = aeManager.findByPrimaryKey(pk);
             if (!aeOld.getTitle().equals(title)) {
-                AEDTO aeOldByTitle = aeManager.findByAET(title);
-                if (aeOldByTitle != null) {
+                try {
+                    AEDTO aeOldByTitle = aeManager.findByAET(title);
                     throw new IllegalArgumentException("AE Title " + title
                             + " already exists!:" + aeOldByTitle);
-                }
+                } catch (UnkownAETException e) {}
             }
             AEDTO aeNew = new AEDTO(pk, title, host, port, cipher);
             aeManager.updateAE(aeNew);
