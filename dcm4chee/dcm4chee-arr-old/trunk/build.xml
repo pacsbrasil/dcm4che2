@@ -6,7 +6,7 @@
 	<property file="build.properties"/>
 	<property file="../build.properties"/>
 
-	<property name="version" value="2.10.14"/>
+	<property name="version" value="2.10.15"/>
 	<property name="javac.debug" value="on"/>	
 	<property name="javac.deprecation" value="off"/>	
 	<property name="javac.optimize" value="off"/>	
