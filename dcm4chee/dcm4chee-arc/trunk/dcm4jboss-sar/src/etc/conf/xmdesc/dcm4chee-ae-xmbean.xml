@@ -29,24 +29,6 @@
       <name>AEConfiguration</name>
       <type>java.lang.String</type>
    </attribute>
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>EchoServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=ECHOService"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" getMethod="getPortNumbers" setMethod="setPortNumbers">
       <description>Port numbers for AE auto configuration.&lt;br&gt;
       			   The method getAE(title, hostname) use this list to find a DICOM service hosted by hostname.&lt;br&gt;
@@ -79,6 +61,15 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4chee.archive:service=AuditLogger"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>EchoServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=ECHOService"/>
       </descriptors>
    </attribute>
    
