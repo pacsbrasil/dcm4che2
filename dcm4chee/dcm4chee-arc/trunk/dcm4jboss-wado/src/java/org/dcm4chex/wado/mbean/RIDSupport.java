@@ -171,6 +171,7 @@ public class RIDSupport {
 	protected WADOSupport getWADOSupport() {
 		if ( wadoSupport == null ) {
 			wadoSupport = new WADOSupport(RIDSupport.server);
+            wadoSupport.setFileSystemMgtName(fileSystemMgtName);
 		}
 		return wadoSupport;
 	}
