@@ -308,8 +308,7 @@
             </h:panelGroup>
           </h:panelGroup>
         </div>
-        <h:dataTable border="1" value="#{records}" var="rec"
-          rowClasses="#{auditRecordList.rowClasses}">
+        <h:dataTable border="1" value="#{records}" var="rec">
           <h:column>
             <f:facet name="header">
               <h:outputText value="O"  title="Event Outcome"/>
@@ -346,32 +345,18 @@
             <f:facet name="header">Summary</f:facet>
             <h:outputText escape="false" value="#{rec.summary}"/>
             <f:verbatim><br/></f:verbatim>
-            <s:link value="Details" action="#{auditRecordList.showDetails}"/>
+            <h:outputLink value="htmlview">
+               <f:param name="pk" value="#{rec.pk}"/>
+               <h:outputText value="Details"/>
+            </h:outputLink>
             <f:verbatim> | </f:verbatim>
-            <s:link value="XML" action="#{auditRecordList.showXml}"/>
+            <h:outputLink value="xmlview">
+               <f:param name="pk" value="#{rec.pk}"/>
+               <h:outputText value="XML"/>
+            </h:outputLink>
           </h:column>
         </h:dataTable>
       </h:panelGroup>
-    </div>
-    <div id="info">
-      <c:if test="#{!auditRecordList.showXml}">
-        <div>
-          <f:verbatim><strong>Details</strong> | </f:verbatim>
-          <s:link value="XML" action="#{auditRecordList.showXml}"/>
-        </div>
-        <div id="details">
-          <f:verbatim>#{auditRecordList.details}</f:verbatim>
-        </div>
-      </c:if>
-      <c:if test="#{auditRecordList.showXml}">
-        <div>
-          <s:link value="Details" action="#{auditRecordList.showDetails}"/>
-          <f:verbatim> | <strong>XML</strong></f:verbatim>
-         </div>
-        <div id="xml">
-          <f:verbatim>#{auditRecordList.xml}</f:verbatim>
-        </div>
-      </c:if>
     </div>
   </body>
 </html>
