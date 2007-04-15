@@ -58,9 +58,7 @@ import javax.xml.transform.stream.StreamSource;
 public class XSLTUtils {
 
     private static final String SUMMARY_XSL = "arr-summary.xsl";
-    private static final String DETAILS_XSL = "arr-details.xsl";
     private static Templates summaryTpl;
-    private static Templates detailsTpl;
     private static SAXTransformerFactory tf;
 
     private static SAXTransformerFactory transfomerFactory() {
@@ -70,46 +68,12 @@ public class XSLTUtils {
 	return tf;
     }
 
-    public static String toXML(byte[] xmldata) {
-        try {
-            InputStreamReader r = new InputStreamReader(
-                    new ByteArrayInputStream(xmldata), "UTF-8");
-            StringBuffer sb = new StringBuffer(xmldata.length * 5 / 4);
-            sb.append("<pre>");
-            int prev = '\n', c;
-            while ((c = r.read()) != -1) {
-                if (c == '<') {
-                    sb.append(prev == '\n' ? "&lt;" : "\n&lt;");
-                } else {
-                    sb.append((char)c);
-                }
-                if (c != ' ') {
-                    prev = c;
-                }
-            }
-            return sb.toString();
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
     public static String toSummary(byte[] xmldata) {
 	try {
 	    if (summaryTpl == null) {
 		summaryTpl = loadTemplates(SUMMARY_XSL);
 	    }
 	    return transform(summaryTpl.newTransformer(), xmldata);
-	} catch (Exception e) {
-	    return e.getMessage();
-	}
-    }
-
-    public static String toDetails(byte[] xmldata) {
-	try {
-	    if (detailsTpl == null) {
-		detailsTpl = loadTemplates(DETAILS_XSL);
-	    }
-	    return transform(detailsTpl.newTransformer(), xmldata);
 	} catch (Exception e) {
 	    return e.getMessage();
 	}

@@ -85,7 +85,6 @@ import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.RequestParameter;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
-import org.jboss.seam.annotations.datamodel.DataModelSelectionIndex;
 import org.jboss.seam.log.Log;
 
 /**
@@ -136,9 +135,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     @DataModel
     private List<AuditRecordEntry> records;
 
-    @DataModelSelectionIndex
-    private int selectedIndex = -1;
-
     @RequestParameter
     private Integer page;
     
@@ -148,8 +144,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     private int count = 0;
     
-    private boolean showXml = false;   
-
     private boolean orderByEventDateTime = false;
 
     private String dateTimeRange = today();
@@ -573,7 +567,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         for (AuditRecord record : result) {
             records.add(new AuditRecordEntry(record));
         }
-        selectedIndex = -1;
     }
 
     private Criteria buildCriteria(Criteria criteria) {
@@ -902,48 +895,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
         }
         dtRange[1] = cal.getTime();
         return dtRange;
-    }
-
-    public boolean isShowXml() {
-        return showXml;
-    }
-
-    public void showXml() {
-        showXml = true;
-    }
-
-    public void showDetails() {
-        showXml = false;
-    }
-    
-    public String getXml() {
-        if (selectedIndex == -1) {
-            return "No Record selected";
-        }
-        return XSLTUtils.toXML(records.get(selectedIndex).getXmldata());
-    }
-    
-    public String getDetails() {
-        if (selectedIndex == -1) {
-            return "No Record selected";
-        }
-        return XSLTUtils.toDetails(records.get(selectedIndex).getXmldata());
-    }
-    
-    public String getRowClasses() {
-        int n = records.size();
-        if (n == 0) {
-            return "";
-        }
-        StringBuffer sb = new StringBuffer((n + 3) / 2 * 9);
-        for (int i = 0; i < n; i++) {
-            sb.append((i & 1) == 0 ? "odd" : "even");
-            if (i == selectedIndex) {
-                sb.append(" selected");
-            }
-            sb.append(',');
-        }
-        return sb.substring(0, sb.length() - 1);
     }
 
     @Destroy
