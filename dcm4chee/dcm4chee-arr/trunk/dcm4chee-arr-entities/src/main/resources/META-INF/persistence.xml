@@ -8,6 +8,8 @@
       <property name="hibernate.jdbc.use_get_generated_keys"
         value="@use_get_generated_keys@"/>
       <property name="hibernate.show_sql" value="@hibernate.show_sql@"/>
+      <property name="jboss.entity.manager.factory.jndi.name"
+        value="java:/EntityManagerFactories/dcm4chee-arr"/>
     </properties>
   </persistence-unit>
 </persistence>
