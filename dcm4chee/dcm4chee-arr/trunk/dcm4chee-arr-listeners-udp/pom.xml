@@ -9,7 +9,7 @@
   <name>UDP Listener of ARR</name>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-listeners-udp</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.2</version>
   <packaging>sar</packaging>
   <dependencies>
     <dependency>

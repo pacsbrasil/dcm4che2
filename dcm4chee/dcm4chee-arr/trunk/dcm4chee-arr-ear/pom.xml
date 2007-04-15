@@ -8,38 +8,38 @@
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-${db}</artifactId>
   <packaging>ear</packaging>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.2</version>
   <name>Assemble EAR for ARR</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-entities-${db}</artifactId>
       <type>ejb</type>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.0.2</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-listeners-mdb</artifactId>
       <type>ejb</type>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.0.2</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-listeners-udp</artifactId>
       <type>sar</type>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.0.2</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-seam-ejb</artifactId>
       <type>ejb</type>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.0.2</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-seam-web-${db}</artifactId>
       <type>war</type>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.0.2</version>
     </dependency>
   </dependencies>
   <build>
