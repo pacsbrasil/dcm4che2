@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.tool.jpg2dcm.Jpg2Dcm
-MAIN_JAR=dcm4che-tool-jpg2dcm-2.0.10-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-jpg2dcm-2.0.10.jar
 
 DIRNAME=`dirname $0`
 
@@ -43,7 +43,7 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.10-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.10.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.2.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.2.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.13.jar"

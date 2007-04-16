@@ -2,9 +2,9 @@
   <parent>
     <artifactId>dcm4che</artifactId>
     <groupId>dcm4che</groupId>
-    <version>2.0.10-SNAPSHOT</version>
+    <version>2.0.10</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-core-test-dictionary</artifactId>
-  <version>2.0.10-SNAPSHOT</version>
+  <version>2.0.10</version>
 </model>
