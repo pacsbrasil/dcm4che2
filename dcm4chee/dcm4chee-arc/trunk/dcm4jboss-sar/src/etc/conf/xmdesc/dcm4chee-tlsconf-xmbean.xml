@@ -123,7 +123,7 @@
       <name>handshakeCompletedListener</name>
       <return-type>javax.net.ssl.HandshakeCompletedListener</return-type>
    </operation>
-   <operation impact="INFO">
+   <operation impact="ACTION">
       <description>Used internally</description>
       <name>serverSocketFactory</name>
       <parameter>
@@ -132,7 +132,7 @@
       </parameter>
       <return-type>javax.net.ServerSocketFactory</return-type>
    </operation>
-   <operation impact="INFO">
+   <operation impact="ACTION">
       <description>Used internally</description>
       <name>socketFactory</name>
       <parameter>
@@ -140,6 +140,15 @@
         <type>[Ljava.lang.String;</type>
       </parameter>
       <return-type>javax.net.SocketFactory</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Used internally</description>
+      <name>startHandshake</name>
+      <parameter>
+        <name>sock</name>
+        <type>java.net.Socket</type>
+      </parameter>
+      <return-type>void</return-type>
    </operation>
    
    <!-- Notifications -->

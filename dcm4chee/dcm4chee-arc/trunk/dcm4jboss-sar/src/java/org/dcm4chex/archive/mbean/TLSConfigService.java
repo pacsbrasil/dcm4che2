@@ -173,8 +173,8 @@ public class TLSConfigService extends ServiceMBeanSupport
     }
 
     public SocketFactory socketFactory(String[] cipherSuites) {
-        if (cipherSuites == null || cipherSuites.length == 0) { return SocketFactory
-                .getDefault(); }
+        if (cipherSuites == null || cipherSuites.length == 0) {
+            return SocketFactory.getDefault(); }
         try {
             initTLSConf();
             return ssl.getSocketFactory(cipherSuites);
@@ -182,6 +182,12 @@ public class TLSConfigService extends ServiceMBeanSupport
             throw new ConfigurationException(e);
         } catch (IOException e) {
             throw new ConfigurationException(e);
+        }
+    }
+
+    public void startHandshake(Socket s) throws IOException {
+        if (s instanceof SSLSocket) {
+            ssl.startHandshake((SSLSocket) s);
         }
     }
     

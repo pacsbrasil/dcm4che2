@@ -165,14 +165,27 @@ public final class TLSConfigDelegate {
         }
     }
 
+    public void startHandshake(Socket s) throws IOException {
+        try {
+            service.getServer().invoke(tlsConfigName,
+                    "startHandshake", new Object[] { s },
+                    new String[] { Socket.class.getName(),});
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;                
+            }
+            throw new ConfigurationException(e);
+        }
+    }
+
     public Socket createSocket(AEDTO localAE, AEDTO remoteAE)
             throws IOException {
         String[] cipherSuites = remoteAE.getCipherSuites();
-        Socket s = (cipherSuites == null || cipherSuites.length == 0) 
-                ? socketFactory(cipherSuites).createSocket()
-                : new Socket();
+        Socket s = socketFactory(cipherSuites).createSocket();
         s.bind(toBindPoint(localAE));
         s.connect(toEndPoint(remoteAE));
+        startHandshake(s);
         initSendBufferSize(s);
         initReceiveBufferSize(s);
         if (s.getTcpNoDelay() != tcpNoDelay) {
