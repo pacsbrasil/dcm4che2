@@ -49,6 +49,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 
 import org.dcm4che.Implementation;
@@ -300,5 +301,8 @@ public abstract class SSLContextAdapter
      */
     public abstract ServerSocketFactory getServerSocketFactory(String[] cipherSuites)
         throws GeneralSecurityException;
+    
+    public abstract void startHandshake(SSLSocket s) throws IOException;
+
 }
 

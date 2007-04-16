@@ -655,6 +655,21 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
         }
 
 
+        public Socket createSocket() throws IOException {
+            SSLSocket s = (SSLSocket) sf.createSocket();
+            if (cipherSuites != null) {
+                s.setEnabledCipherSuites(cipherSuites);
+            }
+            s.setEnabledProtocols(getEnabledProtocols());
+            if (hcl != null) {
+                for (int i = 0, n = hcl.size(); i < n; ++i) {
+                    s.addHandshakeCompletedListener(
+                            (HandshakeCompletedListener) hcl.get(i));
+                }
+            }
+            return s;
+        }
+
         /**
          *  Description of the Method
          *
@@ -736,35 +751,10 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
                             (HandshakeCompletedListener) hcl.get(i));
                 }
             }
-            InetAddress remoteAddr = s.getInetAddress();
-            try {
-                s.startHandshake();
-                if (log.isInfoEnabled()) {
-                    SSLSession se = s.getSession();
-                    try {
-                        X509Certificate cert = (X509Certificate)
-                                se.getPeerCertificates()[0];
-                        cert.checkValidity();
-                        log.info(s.getInetAddress().toString() +
-                                ": accept " + se.getCipherSuite() + " with "
-                                 + cert.getSubjectDN()+" valid from "+cert.getNotBefore()+" to "+cert.getNotAfter());
-                    } catch (SSLPeerUnverifiedException e) {
-                        log.error("SSL peer not verified:", e);
-                    } catch ( CertificateException ce ) {
-                    	throw new IOException(ce.getMessage());
-                    }
-                }
-            } catch (IOException e) {
-                if (hfl != null) {
-                    HandshakeFailedEvent event = new HandshakeFailedEvent(s, remoteAddr, e);
-                    for (int i = 0, n = hfl.size(); i < n; ++i) {
-                        ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
-                    }
-                }
-                throw e;
-            }
+            startHandshake(s);
             return s;
         }
+
     }
 
 
@@ -810,6 +800,36 @@ public class SSLContextAdapterImpl extends SSLContextAdapter
 	    }
 	}
 	return false;
+    }
+
+    public void startHandshake(SSLSocket s) throws IOException {
+        InetAddress remoteAddr = s.getInetAddress();
+        try {
+            s.startHandshake();
+            if (log.isInfoEnabled()) {
+                SSLSession se = s.getSession();
+                try {
+                    X509Certificate cert = (X509Certificate)
+                            se.getPeerCertificates()[0];
+                    cert.checkValidity();
+                    log.info(s.getInetAddress().toString() +
+                            ": accept " + se.getCipherSuite() + " with "
+                             + cert.getSubjectDN()+" valid from "+cert.getNotBefore()+" to "+cert.getNotAfter());
+                } catch (SSLPeerUnverifiedException e) {
+                    log.error("SSL peer not verified:", e);
+                } catch ( CertificateException ce ) {
+                        throw new IOException(ce.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            if (hfl != null) {
+                HandshakeFailedEvent event = new HandshakeFailedEvent(s, remoteAddr, e);
+                for (int i = 0, n = hfl.size(); i < n; ++i) {
+                    ((HandshakeFailedListener) hfl.get(i)).handshakeFailed(event);
+                }
+            }
+            throw e;
+        }
     }
 }
 
