@@ -349,6 +349,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setRetrieveTransactionIsolationLevel(String level) {
         RetrieveCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
     }
+    
+    public final boolean isRetrieveWithoutLeftJoins() {
+        return RetrieveCmd.isNoLeftJoin();
+    }
+
+    public final void setRetrieveWithoutLeftJoins(boolean noLeftJoin) {
+        RetrieveCmd.setNoLeftJoin(noLeftJoin);
+    }    
 
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;

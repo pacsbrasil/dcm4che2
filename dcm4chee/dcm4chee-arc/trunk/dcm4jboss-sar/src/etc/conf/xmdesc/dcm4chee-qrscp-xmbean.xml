@@ -564,6 +564,21 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isRetrieveWithoutLeftJoins"
+      setMethod="setRetrieveWithoutLeftJoins">
+      <description><![CDATA[Controls usage of LEFT JOINS in executed SQL
+        statement triggered by retrieve requests. <b>Attention:</b> Must be
+        set to <code>false</code>, if the archive is configured as short-term
+        cache, which delegates long-term storage to an external DICOM archive
+        and therefore does not hold file records for each stored instance!]]>
+      </description>
+      <name>RetrieveWithoutLeftJoins</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getQueryTransactionIsolationLevel"
       setMethod="setQueryTransactionIsolationLevel">
       <description>Transaction isolation level for queries. Values can be one of: 

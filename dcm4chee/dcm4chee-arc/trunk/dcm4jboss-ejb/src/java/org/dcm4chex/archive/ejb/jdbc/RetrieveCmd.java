@@ -79,6 +79,9 @@ public class RetrieveCmd extends BaseReadCmd {
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance" };
 
+    private static final String[] ENTITY_NO_LEFT_JOIN = { "Patient", "Study",
+            "Series", "Instance", "File", "FileSystem" };
+    
     private static final String[] LEFT_JOIN = { "File", null, "Instance.pk",
             "File.instance_fk", "FileSystem", null, "File.filesystem_fk",
             "FileSystem.pk" };
@@ -86,6 +89,11 @@ public class RetrieveCmd extends BaseReadCmd {
     private static final String[] RELATIONS = { "Patient.pk",
             "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",
             "Instance.series_fk" };
+
+    private static final String[] RELATIONS_NO_LEFT_JOIN = { "Patient.pk",
+            "Study.patient_fk", "Study.pk", "Series.study_fk", "Series.pk",
+            "Instance.series_fk", "Instance.pk", "File.instance_fk",
+            "File.filesystem_fk", "FileSystem.pk" };
 
     private static final Comparator DESC_FILE_PK = new Comparator() {
 
@@ -100,8 +108,28 @@ public class RetrieveCmd extends BaseReadCmd {
                     : fi2.pk < fi1.pk ? -1 : 1;
         }
     };
+    
+    private static String[] entity = ENTITY;
+    private static String[] leftJoin = LEFT_JOIN;
+    private static String[] relations = RELATIONS;
 
     private Sql sqlCmd;
+    
+    public static boolean isNoLeftJoin() {
+        return leftJoin == null;
+    }
+
+    public static void setNoLeftJoin(boolean noleftJoin) {
+        if (noleftJoin) {
+            entity = ENTITY_NO_LEFT_JOIN;
+            leftJoin = null;
+            relations = RELATIONS_NO_LEFT_JOIN;
+        } else {
+            entity = ENTITY;
+            leftJoin = LEFT_JOIN;
+            relations = RELATIONS;         
+        }
+    }
 
     public static RetrieveCmd create(Dataset keys) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
@@ -266,9 +294,9 @@ public class RetrieveCmd extends BaseReadCmd {
 
         Sql() {
             sqlBuilder.setSelect(SELECT_ATTRIBUTE);
-            sqlBuilder.setFrom(ENTITY);
-            sqlBuilder.setLeftJoin(LEFT_JOIN);
-            sqlBuilder.setRelations(RELATIONS);
+            sqlBuilder.setFrom(RetrieveCmd.entity);
+            sqlBuilder.setLeftJoin(RetrieveCmd.leftJoin);
+            sqlBuilder.setRelations(RetrieveCmd.relations);
         }
 
         public final String getSql() {
