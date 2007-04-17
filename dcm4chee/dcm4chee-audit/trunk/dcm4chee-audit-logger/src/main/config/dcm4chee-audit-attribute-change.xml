@@ -719,6 +719,7 @@ type           Event Type Code
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
 <attribute name="BufferSize"/>
+<attribute name="RetrieveWithoutLeftJoins"/>
 <attribute name="QueryTransactionIsolationLevel"/>
 <attribute name="RetrieveTransactionIsolationLevel"/>
 <attribute name="EJBProviderURL"/>
