@@ -1184,27 +1184,22 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             log.debug(" deleteStudyBatchSize: " + deleteStudiesLimit);
         }
 
-        // Studies that can't be deleted because they dont' meet criteria
-        int notDeleted = 0;
+        // Latest StudyOnFs record ineligible for deletion
+        Timestamp tsAfter = new Timestamp(0);
+
         // Total file size that has been deleted
         long sizeDeleted = 0L;
         for (; sizeDeleted < maxSizeToDel;) {
-            // For those studies that can't be deleted, unfortunately they get
-            // selected again for subsequent
-            // batch, therefore, in order to retrieve more studies to delete, we
-            // have to increase the batch size
-            int thisBatchSize = deleteStudiesLimit + notDeleted;
 
-            Collection c = newFileSystemMgt().getOldestStudiesOnFs(retrieveAET,
-                    thisBatchSize);
-            if (c.size() == notDeleted)
+            Collection c = newFileSystemMgt().getStudiesOnFsAfterAccessTime(retrieveAET,
+                    tsAfter, deleteStudiesLimit );
+            if (c.size() == 0)
                 break;
 
-            if (log.isDebugEnabled())
-                log.debug("Retrieved the oldest studies on filesystem(s): "
-                        + c.size());
+            if ( log.isDebugEnabled())
+                log.debug("Evaluating batch of " + c.size()
+                        + " studies with accessTime later than " + tsAfter);
 
-            notDeleted = 0;
             for (Iterator iter = c.iterator(); iter.hasNext()
                     && sizeDeleted < maxSizeToDel;) {
                 StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
@@ -1214,7 +1209,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 if (size != 0)
                     sizeDeleted += size;
                 else
-                    notDeleted++;
+                    tsAfter = studyOnFs.getAccessTime();
             }
         }
         log.info("Released " + (sizeDeleted / 1000000.f) + "MB of DiskSpace");

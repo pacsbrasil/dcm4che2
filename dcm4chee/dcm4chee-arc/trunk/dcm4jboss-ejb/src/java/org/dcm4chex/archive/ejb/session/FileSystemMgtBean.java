@@ -706,9 +706,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Collection getOldestStudiesOnFs(String retrieveAET, int thisBatchSize) throws FinderException 
+    public Collection getStudiesOnFsAfterAccessTime(String retrieveAET, java.sql.Timestamp tsAfter, int thisBatchSize) throws FinderException 
     {
-    	return sofHome.findByRetrieveAETAndOldest(retrieveAET, thisBatchSize);
+    	return sofHome.findByRetrieveAETAndAccessAfter(retrieveAET, tsAfter, thisBatchSize);
     }
     
     
