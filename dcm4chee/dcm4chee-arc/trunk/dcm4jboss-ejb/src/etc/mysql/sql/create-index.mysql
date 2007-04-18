@@ -36,7 +36,7 @@ CREATE INDEX ext_retr_aet ON instance(ext_retr_aet(16));
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath(64));
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet(16));
 CREATE INDEX file_tsuid ON files(file_tsuid(64));
-CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16));
+CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet(16));
 CREATE INDEX mwl_modality ON mwl_item(modality(16));
 CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician(64));

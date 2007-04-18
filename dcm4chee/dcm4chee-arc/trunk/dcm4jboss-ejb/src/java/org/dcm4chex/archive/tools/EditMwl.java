@@ -51,6 +51,8 @@ import javax.naming.InitialContext;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
@@ -84,7 +86,7 @@ public final class EditMwl {
         EditMwl mwl = new EditMwl();
         int c;
         int cmd = 0;
-        String spsId = null;
+        String[] rpIdspsId = null;
         String fpath = null;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -93,7 +95,10 @@ public final class EditMwl {
                     break;
                 case 'r' :
                     cmd = c;
-                    spsId = g.getOptarg();
+                    rpIdspsId = StringUtils.split(g.getOptarg(), '/');
+                    if (rpIdspsId.length != 2) {
+                        exit(messages.getString("rqidspsid"), true);                        
+                    }
                     break;
                 case 'f' :
                     fpath = g.getOptarg();
@@ -116,11 +121,15 @@ public final class EditMwl {
         try {
             switch (cmd) {
                 case 'a' :
-                    spsId = mwl.add(loadMWLItem(fpath));
-                    System.out.println(spsId);
+                {
+                    Dataset ds = mwl.add(loadMWLItem(fpath));
+                    Dataset spsitem = ds.getItem(Tags.SPSSeq);
+                    System.out.println(ds.getString(Tags.RequestedProcedureID)
+                            + '/' + spsitem.getString(Tags.SPSID));
                     break;
+                }
                 case 'r' :
-                    mwl.remove(spsId);
+                    mwl.remove(rpIdspsId[0], rpIdspsId[1]);
                     }
         } catch (Throwable t) {
             t.printStackTrace();
@@ -132,31 +141,15 @@ public final class EditMwl {
      * @param dataset
      * @return
      */
-    private String add(Dataset ds) throws Exception {
-        MWLManager mm = getMWLManager();
-        try {
-            return mm.addWorklistItem(ds);
-        } finally {
-            try {
-                mm.remove();
-            } catch (Exception ignore) {
-            }
-        }
+    private Dataset add(Dataset ds) throws Exception {
+        return getMWLManager().addWorklistItem(ds);
     }
 
     /**
      * @param arg
      */
-    private Dataset remove(String spsid) throws Exception {
-        MWLManager mm = getMWLManager();
-        try {
-            return mm.removeWorklistItem(spsid);
-        } finally {
-            try {
-                mm.remove();
-            } catch (Exception ignore) {
-            }
-        }
+    private Dataset remove(String rqpid, String spsid) throws Exception {
+        return getMWLManager().removeWorklistItem(rqpid, spsid);
     }
 
     private static Dataset loadMWLItem(String fpath) throws SAXException, IOException {

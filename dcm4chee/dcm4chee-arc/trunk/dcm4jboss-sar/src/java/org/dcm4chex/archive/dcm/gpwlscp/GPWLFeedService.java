@@ -411,12 +411,13 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
         DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
         for (int i = 0, n = ssaSq.countItems(); i < n; ++i) {
             Dataset ssa = ssaSq.getItem(i);
+            String rpid = ssa.getString(Tags.RequestedProcedureID);
             String spsid = ssa.getString(Tags.SPSID);
             if (spsid != null) {
                 Dataset refRq = dof.newDataset();
                 refRq.putAll(ssa.subSet(REF_RQ_TAGS_FROM_MPPS_SSA));
                 try {
-                    Dataset mwlItem = getMWLManager().getWorklistItem(spsid);
+                    Dataset mwlItem = getMWLManager().getWorklistItem(rpid, spsid);
                     if (mwlItem == null) {
                         log.warn("No such MWL item[spsid=" + spsid
                                 + "] -> use request info available in MPPS");

@@ -279,7 +279,7 @@ public class MWLModel extends BasicFormPagingModel {
 			ds = (Dataset) l.get( i );
 			if ( ds != null ) {
 				entry = new MWLEntry( ds );
-				mwlEntries.put( entry.getSpsID(), entry );
+				mwlEntries.put( entry.getRqSpsID(), entry );
 			} else {
 				countNull++;
 			}

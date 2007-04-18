@@ -255,21 +255,21 @@
 			<td title="Function" align="center" valign="bottom">
 				<xsl:if test="/model/linkMode > 0">
 					&#160;
-					<a href="mwl_console.m?action=doLink&amp;spsID={spsID}&amp;mppsIUID={/model/mppsIUID}">
+					<a href="mwl_console.m?action=doLink&amp;spsID={rqSpsID}&amp;mppsIUID={/model/mppsIUID}">
 						<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsIUID"/> ?')</xsl:attribute>
 						<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
 					</a>
 				</xsl:if>
 			</td>	
 			<td title="Function">
-				<a href="mwl_console.m?action=inspect&amp;spsID={spsID}" target="_blank">
+				<a href="mwl_console.m?action=inspect&amp;spsID={rqSpsID}" target="_blank">
 					<img src="images/attrs.gif" alt="attrs" border="0" title="Show MWL item attributes"/>		
 				</a>
 			</td>
 			<td title="Function" align="center" valign="bottom">
 				&#160;
 				<xsl:if test="/model/linkMode > 0 or /model/local = 'true'">
-					<input type="checkbox" name="sticky" value="{spsID}" />
+					<input type="checkbox" name="sticky" value="{rqSpsID}" />
 				</xsl:if>
 			</td>	
 		</tr>

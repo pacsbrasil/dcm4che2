@@ -114,9 +114,9 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getWorklistItem(String spsid) throws FinderException {
+    public Dataset getWorklistItem(String rpid, String spsid) throws FinderException {
         try {
-            return getWorklistItem(spsid, false);
+            return getWorklistItem(rpid, spsid, false);
         } catch (RemoveException e) {
             throw new EJBException(e);
         }
@@ -125,16 +125,16 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset removeWorklistItem(String spsid) throws EJBException,
+    public Dataset removeWorklistItem(String rpid, String spsid) throws EJBException,
             RemoveException, FinderException {
-        return getWorklistItem(spsid, true);
+        return getWorklistItem(rpid, spsid, true);
     }
 
-    private Dataset getWorklistItem(String spsid, boolean remove)
+    private Dataset getWorklistItem(String rpid, String spsid, boolean remove)
             throws RemoveException, FinderException {
         MWLItemLocal mwlItem;
         try {
-            mwlItem = mwlItemHome.findBySpsId(spsid);
+            mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
         } catch (ObjectNotFoundException onf) {
             return null;
         }
@@ -152,10 +152,10 @@ public abstract class MWLManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public boolean updateSPSStatus(String spsid, String status)
+    public boolean updateSPSStatus(String rpid, String spsid, String status)
             throws FinderException {
         try {
-            MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsid);
+            MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
             Dataset ds = mwlItem.getAttributes();
             ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
             mwlItem.setAttributes(ds);
@@ -194,11 +194,11 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public String addWorklistItem(Dataset ds) {
+    public Dataset addWorklistItem(Dataset ds) {
         try {
             MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(PATIENT_ATTRS,
                     true, true), getPatient(ds));
-            return mwlItem.getSpsId();
+            return mwlItem.getAttributes();
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -212,8 +212,9 @@ public abstract class MWLManagerBean implements SessionBean {
             final Dataset woPatAttrs = ds.subSet(PATIENT_ATTRS, true, true);
             try {
                 Dataset sps = ds.getItem(Tags.SPSSeq);
-                MWLItemLocal mwlItem = mwlItemHome.findBySpsId(sps
-                        .getString(Tags.SPSID));
+                MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(
+                        sps.getString(Tags.RequestedProcedureID),
+                        sps.getString(Tags.SPSID));
                 Dataset attrs = mwlItem.getAttributes();
                 attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
                 mwlItem.setAttributes(attrs);

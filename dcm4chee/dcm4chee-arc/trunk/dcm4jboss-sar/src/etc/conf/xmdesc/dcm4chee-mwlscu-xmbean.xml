@@ -138,8 +138,8 @@
       </description>
       <name>deleteMWLEntry</name>
       <parameter>
-        <description>ID of modality worklist entry (Scheduled Procedure Step ID)</description>
-        <name>spsID</name>
+        <description>Requested Procedure ID \ Scheduled Procedure Step ID</description>
+        <name>rqIDspsID</name>
         <type>java.lang.String</type>
       </parameter>
       <return-type>boolean</return-type>

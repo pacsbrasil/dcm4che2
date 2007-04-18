@@ -69,14 +69,15 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
- * @ejb.env-entry name="SpsIdPrefix" type="java.lang.String" value="" 
+ * @ejb.env-entry name="SpsIdPrefix" type="java.lang.String" value="S" 
+ * @ejb.env-entry name="RpIdPrefix" type="java.lang.String" value="P" 
  *
  * @ejb.finder signature="Collection findAll()"
  *  query="SELECT OBJECT(a) FROM MWLItem AS a"
  *  transaction-type="Supports"
  * 
- * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.MWLItemLocal findBySpsId(java.lang.String id)"
- *  query="SELECT OBJECT(a) FROM MWLItem AS a WHERE a.spsId = ?1"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.MWLItemLocal findByRpIdAndSpsId(java.lang.String rpid, java.lang.String spsid)"
+ *  query="SELECT OBJECT(a) FROM MWLItem AS a WHERE a.requestedProcedureId = ?1 AND a.spsId = ?2"
  *  transaction-type="Supports"
  *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -86,6 +87,7 @@ public abstract class MWLItemBean implements EntityBean {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private static final Logger log = Logger.getLogger(MWLItemBean.class);
     private String spsIdPrefix;
+    private String rpIdPrefix;
 
     public void setEntityContext(EntityContext arg0)
         throws EJBException, RemoteException {
@@ -93,6 +95,7 @@ public abstract class MWLItemBean implements EntityBean {
         try {
             jndiCtx = new InitialContext();
             spsIdPrefix = (String) jndiCtx.lookup("java:comp/env/SpsIdPrefix");
+            rpIdPrefix = (String) jndiCtx.lookup("java:comp/env/RpIdPrefix");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -277,13 +280,24 @@ public abstract class MWLItemBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, PatientLocal patient) throws CreateException {
         setPatient(patient);
+        addMissingIds(ds);
+        log.info("Created " + prompt());
+    }
+
+    private void addMissingIds(Dataset ds) {
+        boolean dirty = false;
+        if (ds.getString(Tags.RequestedProcedureID) == null) {
+            ds.putSH(Tags.RequestedProcedureID, rpIdPrefix + getPk());
+            dirty = true;
+        }
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         if (spsItem.getString(Tags.SPSID) == null) {
-            String id = spsIdPrefix + getPk();
-            spsItem.putSH(Tags.SPSID, id);
-            setAttributes(ds);
+            spsItem.putSH(Tags.SPSID, spsIdPrefix + getPk());
+            dirty = true;
         }
-        log.info("Created " + prompt());
+        if (dirty) {
+            setAttributes(ds);            
+        }
     }
 
     public void ejbRemove() throws RemoveException {

@@ -248,20 +248,20 @@ public abstract class MPPSManagerBean implements SessionBean {
      * <dd>  Patient of MPPS entry.</dd>
      * <dd>  (The merged patient).</dd>
      * </dl>
-     * @param spsID spsID to select MWL entry
+     * @param mwlPk pk to select MWL entry
      * @param mppsIUID Instance UID of mpps.
      * 
      * @return A map with mpps attributes and patient attributes to merge.
      * 
      * @ejb.interface-method
      */
-    public Map linkMppsToMwl(String spsID, String mppsIUID) throws DcmServiceException {
-    	log.info("linkMppsToMwl sps:"+spsID+" mpps:"+mppsIUID);
+    public Map linkMppsToMwl(String rpid, String spsid, String mppsIUID) throws DcmServiceException {
+    	log.info("linkMppsToMwl spsId:"+spsid+" mpps:"+mppsIUID);
 		MWLItemLocal mwlItem;
         MPPSLocal mpps;
         Map map = new HashMap();
         try {
-			mwlItem = mwlItemHome.findBySpsId(spsID);
+            mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
             mpps = mppsHome.findBySopIuid(mppsIUID);
             String accNo = mwlItem.getAccessionNumber();
             PatientLocal mwlPat = mwlItem.getPatient();
@@ -279,15 +279,16 @@ public abstract class MPPSManagerBean implements SessionBean {
     					studyIUID = ssa.getString(Tags.StudyInstanceUID);
 			    		if ( !studyIUID.equals( 
 			    				mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
-			    			log.info("StudyInstanceUID corrected for spsID "+spsID);
+			    			log.info("StudyInstanceUID corrected for spsID "+spsid);
 			    			mwlAttrs.putUI(Tags.StudyInstanceUID, ssa.getString(Tags.StudyInstanceUID) );
 			    			mwlItem.setAttributes( mwlAttrs );
 			    		}
     				}
     				ssaSpsID = ssa.getString(Tags.SPSID);
-	    			if ( ssaSpsID == null || spsID.equals(ssaSpsID) ) {
+	    			if ( ssaSpsID == null || spsid.equals(ssaSpsID) ) {
 	    				ssa.putSH(Tags.AccessionNumber,accNo);
-	    				ssa.putSH(Tags.SPSID, spsID);
+	    				ssa.putSH(Tags.SPSID, spsid);
+                                        ssa.putSH(Tags.RequestedProcedureID, rpid);
 	    				ssa.putUI(Tags.StudyInstanceUID, studyIUID);
 	    				spsNotInList = false;
 	    			}
@@ -297,8 +298,9 @@ public abstract class MPPSManagerBean implements SessionBean {
     			ssa = ssaSQ.addNewItem();
     			Dataset spsDS = mwlAttrs.getItem(Tags.SPSSeq);
     			ssa.putUI(Tags.StudyInstanceUID, studyIUID);
-    			ssa.putSH(Tags.SPSID, spsID);
-    			ssa.putSH(Tags.AccessionNumber, accNo);
+    			ssa.putSH(Tags.SPSID, spsid);
+                        ssa.putSH(Tags.RequestedProcedureID, rpid);
+                   	ssa.putSH(Tags.AccessionNumber, accNo);
     			ssa.putSQ(Tags.RefStudySeq);
     			ssa.putSH(Tags.RequestedProcedureID, mwlAttrs.getString(Tags.RequestedProcedureID));
     			ssa.putLO(Tags.SPSDescription, spsDS.getString(Tags.SPSDescription));
@@ -447,13 +449,14 @@ public abstract class MPPSManagerBean implements SessionBean {
     	Dataset mppsAttrs = mpps.getAttributes();
 		DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
 		Dataset ds = null;
-		String spsID;
+		String rpID, spsID;
 		for ( int i = ssaSQ.countItems()-1 ; i >= 0 ; i-- ) {
 			ds = ssaSQ.getItem(i);
+                        rpID = ds.getString(Tags.RequestedProcedureID);
 			spsID = ds.getString(Tags.SPSID);
 			if ( spsID != null ) {
 				try {
-					MWLItemLocal mwlItem = mwlItemHome.findBySpsId(spsID);
+					MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(rpID, spsID);
 					Dataset mwlDS = mwlItem.getAttributes();
 					mwlDS.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, "SCHEDULED");
 					mwlItem.setAttributes(mwlDS);

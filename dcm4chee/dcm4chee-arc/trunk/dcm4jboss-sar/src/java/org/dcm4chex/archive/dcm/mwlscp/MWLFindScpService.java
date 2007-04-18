@@ -228,9 +228,10 @@ public class MWLFindScpService extends AbstractScpService implements
             for (int i = 0, n = sq.countItems(); i < n; ++i) {
                 Dataset item = sq.getItem(i);
                 String spsid = item.getString(Tags.SPSID);
+                String rpid = item.getString(Tags.RequestedProcedureID);
                 if (spsid != null) {
                     try {
-                        if (mgr.updateSPSStatus(spsid, spsStatus)) {
+                        if (mgr.updateSPSStatus(rpid, spsid, spsStatus)) {
                             log.info("Update MWL item[spsid=" + spsid
                                     + ", status=" + spsStatus + "]");
                         } else {

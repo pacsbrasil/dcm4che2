@@ -103,19 +103,23 @@ public class MWLManagerBeanTest extends TestCase
         Dataset ds = loadMWLItemFromFile();
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         String spsId1ds = spsItem.getString(Tags.SPSID);
-        // insert first entry with sps-id -> returns contained sps-id
-        String spsId1ret = mwlManager.addWorklistItem(ds);
+        // insert first entry with sps-id
+        Dataset mwlItem1 = mwlManager.addWorklistItem(ds);
+        String rpId1ret = mwlItem1.getString(Tags.RequestedProcedureID);
+        String spsId1ret = mwlItem1.getItem(Tags.SPSSeq).getString(Tags.SPSID);
         assertEquals(spsId1ds, spsId1ret);        
 
-        // insert second entry without sps-id -> returns new generated sps-id
+        // insert second entry without sps-id -> returns mwl item with new generated sps-id
         spsItem.remove(Tags.SPSID);
-        String spsId2ret = mwlManager.addWorklistItem(ds);
+        Dataset mwlItem2 = mwlManager.addWorklistItem(ds);
+        String rpId2ret = mwlItem2.getString(Tags.RequestedProcedureID);
+        String spsId2ret = mwlItem2.getItem(Tags.SPSSeq).getString(Tags.SPSID);
         
         // remove first entry
-        mwlManager.removeWorklistItem(spsId1ret);
+        mwlManager.removeWorklistItem(rpId1ret, spsId1ret);
 
         // remove second entry -> returned entry contains generated sps-id
-        Dataset dsRet = mwlManager.removeWorklistItem(spsId2ret);                
+        Dataset dsRet = mwlManager.removeWorklistItem(rpId2ret, spsId2ret);                
         Dataset spsItemRet = dsRet.getItem(Tags.SPSSeq);
         String spsId2ds = spsItemRet.getString(Tags.SPSID);
         assertEquals(spsId2ret, spsId2ds);

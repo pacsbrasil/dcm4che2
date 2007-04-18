@@ -61,6 +61,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
@@ -132,14 +133,15 @@ public class MPPSScpService extends AbstractScpService {
      * @throws RemoteException
      * @throws DcmServiceException
      */
-    public Map linkMppsToMwl(String[] spsIDs, String[] mppsIUIDs) throws CreateException, HomeFactoryException, RemoteException, DcmServiceException {
+    public Map linkMppsToMwl(String[] rpspsIDs, String[] mppsIUIDs) throws CreateException, HomeFactoryException, RemoteException, DcmServiceException {
         MPPSManager mgr = getMPPSManagerHome().create();
         Map map = null;
         Dataset dominant = null, prior;
         Map mapPrior = new HashMap();
-        for ( int i = spsIDs.length - 1; i >=0 ; i--) {
+        for ( int i = rpspsIDs.length - 1; i >=0 ; i--) {
         	for ( int j = 0 ; j < mppsIUIDs.length ; j++ ) {
-		       	map = mgr.linkMppsToMwl(spsIDs[i], mppsIUIDs[j]);
+                    String[] rpIDspsID = StringUtils.split(rpspsIDs[i], '\\');
+		       	map = mgr.linkMppsToMwl(rpIDspsID[0], rpIDspsID[1], mppsIUIDs[j]);
 		       	if ( map.containsKey("mwlPat")) { //need patient merge!
 		       		if (dominant == null ) {
 		       			dominant = (Dataset)map.get("mwlPat");
@@ -147,7 +149,7 @@ public class MPPSScpService extends AbstractScpService {
 		       		prior = (Dataset) map.get("mppsPat");
 		       		mapPrior.put(prior.getString(PrivateTags.PatientPk), prior);
 		       	}
-		       	logMppsLinkRecord(map, spsIDs[i], mppsIUIDs[j]);
+		       	logMppsLinkRecord(map, rpIDspsID[1], mppsIUIDs[j]);
 	           	if ( i == 0 ) {
 	               	try {
 	            	    Dataset coerceWL = getCoercionDS((Dataset) map.get("mwlAttrs"));
@@ -183,7 +185,7 @@ public class MPPSScpService extends AbstractScpService {
 	           	}
         	}
          }
-        if ( spsIDs.length > 1 ) {
+        if ( rpspsIDs.length > 1 ) {
             log.warn("MWL-MPPS linking use multible worklist entries! Series are updated only for the first worlist item!");
         }
       

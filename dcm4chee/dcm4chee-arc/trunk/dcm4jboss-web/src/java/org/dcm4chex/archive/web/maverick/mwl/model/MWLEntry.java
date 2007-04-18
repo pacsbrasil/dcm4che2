@@ -96,6 +96,11 @@ public class MWLEntry {
 	public String getReqProcedureID() {
 		return ds.getString( Tags.RequestedProcedureID );
 	}
+        
+
+        public String getRqSpsID() {
+            return getReqProcedureID() + '\\' + getSpsID();
+        }
 
 	/**
 	 * @return Returns the spsStartDateTime.
@@ -206,4 +211,5 @@ public class MWLEntry {
 	public String getSpsStatus() {
 	    return spsItem.getString(Tags.SPSStatus);
 	}
+
 }

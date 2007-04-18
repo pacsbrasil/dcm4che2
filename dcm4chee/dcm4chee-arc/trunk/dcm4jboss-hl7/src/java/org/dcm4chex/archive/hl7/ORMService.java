@@ -197,6 +197,7 @@ public class ORMService extends AbstractHL7Service {
             DcmElement spsSq = ds.remove(Tags.SPSSeq);
             Dataset sps;
             String spsid;
+            String rpid = ds.getString(Tags.RequestedProcedureID);
             for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
                 sps = spsSq.getItem(i);
                 spsid = sps.getString(Tags.SPSID);
@@ -223,19 +224,19 @@ public class ORMService extends AbstractHL7Service {
                     break;
                 case CA:
                     log("Cancel", ds);
-                    mwlManager.removeWorklistItem(spsid);
+                    mwlManager.removeWorklistItem(rpid, spsid);
                     break;
                 case SC_IP:
                     log("Change SPS status to IN PROGRESS", ds);
-                    mwlManager.updateSPSStatus(spsid, "IN PROGRESS");
+                    mwlManager.updateSPSStatus(rpid, spsid, "IN PROGRESS");
                     break;
                 case SC_CM:
                     log("Change SPS status to COMPLETED", ds);
-                    mwlManager.updateSPSStatus(spsid, "COMPLETED");
+                    mwlManager.updateSPSStatus(rpid, spsid, "COMPLETED");
                     break;
                 case SC_DC:
                     log("Change SPS status to DISCONTINUED", ds);
-                    mwlManager.updateSPSStatus(spsid, "DISCONTINUED");
+                    mwlManager.updateSPSStatus(rpid, spsid, "DISCONTINUED");
                     break;
                 case NOOP:
                     log("NOOP", ds);

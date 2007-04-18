@@ -53,6 +53,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
@@ -154,13 +155,14 @@ public class MWLScuService extends AbstractScuService {
         super.stopService();
     }
 
-    public boolean deleteMWLEntry(String spsID) {
+    public boolean deleteMWLEntry(String rqIDspsID) {
+        String[] s2 = StringUtils.split(rqIDspsID, '\\');
         try {
-            mwlMgt().removeWorklistItem(spsID);
-            log.info("MWL entry with id " + spsID + " removed!");
+            mwlMgt().removeWorklistItem(s2[0], s2[1]);
+            log.info("MWL entry with id " + s2[1] + " removed!");
             return true;
         } catch (Exception x) {
-            log.error("Can't delete MWLEntry with id:" + spsID, x);
+            log.error("Can't delete MWLEntry with id:" + s2[1], x);
             return false;
         }
     }
