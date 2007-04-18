@@ -1,7 +1,7 @@
 <project name="dcm4che-xero" default="deploy">
   <!-- Include build.properties first as it over-rides default.properties -->
   <property file="build.properties" />
-  <property file="default.properties" />
+  <property file="build.properties.default" />
 
   <target name="build" description="Deploy Xero to the development Dcm4che server.">
      <exec executable="${mvn}">
@@ -88,7 +88,29 @@
   </target> 
 
   <target name="stable" depends="build" description="Deploy Xero to the development Dcm4che server.">
-     <copy file="xero-ear/target/xero.ear" todir="${stableServer}/server/default/deploy/xero.ear" preservelastmodified="true"/>
+     <copy file="xero-ear/target/xero.ear" todir="${stableServer}/server/default/deploy" preservelastmodified="true"/>
+     <copy todir="${stableServer}/server/default/conf">
+        <fileset dir="conf" includes="**/*" />
+     </copy>
+     <copy todir="${stableServer}/server/default/lib">
+        <fileset dir="${jbossSeamDir}/server/default/lib">
+           <include name="javassist.jar" />
+           <include name="*hibernate*.jar" />
+           <include name="ejb3-persistence.jar" />
+           <include name="cglib.jar" />
+        </fileset>
+        <fileset dir="xero-ear/target/xero" includes="el-*.jar" />
+     </copy>
+     <copy todir="${stableServer}/server/default/deploy">
+       <fileset dir="${jbossSeamDir}/server/default/deploy">
+          <include name="ejb3.deployer/**" />
+          <include name="jboss-aop-jdk50.deployer/**" />
+          <include name="jboss-bean.deployer/**" />
+          <include name="ear-deployer.xml" />
+          <include name="ejb3-interceptors-aop.xml" />
+       </fileset>
+       <fileset dir="." includes="xero-ds.xml" /> 
+     </copy>
   </target> 
 
 </project>
