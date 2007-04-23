@@ -152,6 +152,8 @@ public class MoveTask implements Runnable {
 
     private boolean canceled = false;
 
+    private boolean moveAssocClosed = false;
+    
     private ArrayList successfulTransferred = new ArrayList();
     
     private ActiveAssociation storeAssoc;
@@ -677,7 +679,7 @@ public class MoveTask implements Runnable {
     }
 
     private void notifyMoveSCU(int status, Dataset ds, Command fwdMoveRspCmd) {
-        if (moveAssoc != null) {
+        if (!moveAssocClosed) {
             Command cmd = fwdMoveRspCmd != null ? makeMoveRsp(fwdMoveRspCmd)
                     : makeMoveRsp(status);
             try {
@@ -686,7 +688,7 @@ public class MoveTask implements Runnable {
                                 cmd, ds));
             } catch (Exception e) {
                 log.info("Failed to send Move RSP to Move Originator:", e);
-                moveAssoc = null;
+                moveAssocClosed  = true;
             }
         }
     }
