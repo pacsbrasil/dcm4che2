@@ -1322,7 +1322,7 @@
 			<tr>
 		  		<td class="xds_docs_nav" title="XDS Document Navigation" colspan="7">
 		  			XDS Documents:&#160;&#160;
-					<a href="xdsQuery.m?queryType=findDocuments&amp;patId={patientID}" >
+					<a href="xdsQuery.m?queryType=findDocuments&amp;patPk={pk}" >
 						<img src="images/search.gif" alt="XML" border="0" title="Query for XDS documents"/>		
 					</a>
 	    		</td>
@@ -1390,12 +1390,12 @@
 					</a>
     			</xsl:when>
     			<xsl:when test="mimeType='application/pdf'">
-    				<a href="{URL}" target="xdsdoc" >
+    				<a href="{URI}" target="xdsdoc" >
 						<img src="images/sr_pdf.gif" alt="XML" border="0" title="Open PDF Document"/>		
 					</a>
     			</xsl:when>
     			<xsl:otherwise>
-    				<a href="{URL}" target="xdsdoc" >
+    				<a href="{URI}" target="xdsdoc" >
 						<img src="images/sr.gif" alt="XML" border="0" title="Open XDS Document"/>		
 					</a>
     			</xsl:otherwise>
