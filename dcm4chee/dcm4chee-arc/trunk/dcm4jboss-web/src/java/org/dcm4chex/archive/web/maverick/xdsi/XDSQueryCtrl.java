@@ -47,6 +47,8 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.dcm4chex.archive.web.maverick.FolderForm;
+import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
@@ -57,13 +59,13 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  */
 public class XDSQueryCtrl extends Dcm4cheeFormController {
 
-    private String patId;
+    private String patPk;
     private String type;
 
     private static Logger log = Logger.getLogger( XDSQueryCtrl.class.getName() );
     
-    public final void setPatId(String patId) {
-        this.patId = patId;
+    public final void setPatPk(String patPk) {
+        this.patPk = patPk;
     }
     
     public final void setQueryType( String type ) {
@@ -71,17 +73,28 @@ public class XDSQueryCtrl extends Dcm4cheeFormController {
     }
 
     protected String perform() throws Exception {
-        if (type == null) {
+    	FolderForm folderForm = FolderForm.getFolderForm(getCtx());
+    	PatientModel pat = folderForm.getPatientByPk(Integer.parseInt(patPk));
+    	String patId = pat.getPatientID();
+    	String issuer = pat.getIssuerOfPatientID();
+    	if (type == null) {
             log.warn("No Query type specified! e.g. queryType=findDocuments");
             return SUCCESS;
         }
+        log.info("issuer:"+issuer);
         XDSQueryDelegate delegate = XDSQueryDelegate.getInstance(getCtx());
+        if ( getCtx().getRequest().getParameter("useRefs") != null ) 
+        	delegate.setUseLeafFind(false);
         XDSConsumerModel model = XDSConsumerModel.getModel(getCtx().getRequest());
-        if ( "findDocuments".equals(type)) {
-            delegate.findDocuments(patId, model);
-            log.info("ConsumerModel after findDiocuments:"+model);
-        } else {
-            log.warn("Query type "+type+" not supported!");
+        try {
+	        if ( "findDocuments".equals(type)) {
+	            delegate.findDocuments(patId, issuer, model);
+	            log.info("ConsumerModel after findDocuments:"+model);
+	        } else {
+	            log.warn("Query type "+type+" not supported!");
+	        }
+        } catch ( Exception x ) {
+        	model.setPopupMsg("xdsi.err",x.getMessage());
         }
         return SUCCESS;
     }

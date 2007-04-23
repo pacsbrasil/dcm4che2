@@ -76,6 +76,7 @@ public class XDSQueryDelegate {
 
     private static final String XDS_QUERY_DELEGATE_ATTR_NAME = "xdsQueryDelegate";
     
+	private boolean useLeafFind = true;
 	
 	public XDSQueryDelegate() {
 	}
@@ -100,18 +101,24 @@ public class XDSQueryDelegate {
         xdsQueryServiceName = new ObjectName(s);
     }
 	
-    public void findDocuments(String patId, XDSConsumerModel consumerModel) throws Exception {
-        BulkResponse resp = performFindXXX(patId, "findDocuments");
-        List docs = ensureLeafResult(resp, "getDocuments");
+    public void findDocuments(String patId, String issuer, XDSConsumerModel consumerModel) throws Exception {
+    	String patWithIssuer;
+    	if (issuer != null && issuer.length() > 0){
+    		patWithIssuer=patId+"^^^"+issuer;
+        } else {
+        	patWithIssuer = patId;
+        }
 
+    	BulkResponse resp = performFindXXX(patWithIssuer, "findDocuments", useLeafFind);
+        List docs = useLeafFind ? buildList(resp) : ensureLeafResult(resp, "getDocuments");
         consumerModel.addDocuments(patId,docs);
     }
 
     public void findDocuments(XDSIModel model) throws Exception {
         String patId = model.getSourcePatientId();
         try {
-            BulkResponse resp = performFindXXX(patId, "findDocuments");
-            List docs = ensureLeafResult(resp, "getDocuments");
+            BulkResponse resp = performFindXXX(patId, "findDocuments", useLeafFind);
+            List docs = useLeafFind ? buildList(resp) : ensureLeafResult(resp, "getDocuments");
             model.setDocuments(docs);
         } catch (Exception e) {
             log.warn("Failed to find documents for:"+patId, e);
@@ -120,14 +127,14 @@ public class XDSQueryDelegate {
     }
 
     public void findFolders(String patId, XDSConsumerModel consumerModel) throws Exception {
-         BulkResponse resp = performFindXXX(patId, "findFolders");
+         BulkResponse resp = performFindXXX(patId, "findFolders", false);
          List folders = ensureLeafResult(resp, "getFolders");
          consumerModel.addFolders(patId,folders);
     }
     public void findFolders(XDSIModel model) throws Exception{
          String patId = model.getSourcePatientId();
          try {
-             BulkResponse resp = performFindXXX(patId, "findFolders");
+             BulkResponse resp = performFindXXX(patId, "findFolders",false);
              List folders = ensureLeafResult(resp, "getFolders");
              model.setFolders( folders );
          } catch (Exception e) {
@@ -136,11 +143,10 @@ public class XDSQueryDelegate {
          }
     }
 
-    private BulkResponse performFindXXX(String patId, String type) throws InstanceNotFoundException, MBeanException, ReflectionException, JAXRException {
-        patId = null; //TODO
+    private BulkResponse performFindXXX(String patId, String type, boolean useLeaf ) throws InstanceNotFoundException, MBeanException, ReflectionException, JAXRException {
         log.info("Perform (Find) Query "+type+" with patId:"+patId);
         BulkResponse resp = (BulkResponse) server.invoke(xdsQueryServiceName, type,
-                    new Object[] { patId, null, Boolean.FALSE },
+                    new Object[] { patId, null, new Boolean(useLeaf) },
                     new String[] { String.class.getName(), String.class.getName(), boolean.class.getName() });
         log.info("Query response:"+resp);
         if ( resp != null ) {
@@ -188,10 +194,13 @@ public class XDSQueryDelegate {
             } else if ( o instanceof RegistryPackage ) {
                 uuids.add(new XDSFolderObject((RegistryPackage)o));
             } else {
+            	log.error("Unexpected result type found ("+
+                        o.getClass().getName()+")! (should be String (ObjectRef) or ExtrinsicObject (LeafClass))");
                 throw new IllegalArgumentException("Unexpected result type found ("+
                         o.getClass().getName()+")! (should be String (ObjectRef) or ExtrinsicObject (LeafClass))");
             }
         }
+        log.info("return uuids: "+uuids);
         return uuids;
     }
 
@@ -219,4 +228,7 @@ public class XDSQueryDelegate {
         }
     }
 
+	public void setUseLeafFind(boolean b) {
+		this.useLeafFind = b;
+	}
 }
