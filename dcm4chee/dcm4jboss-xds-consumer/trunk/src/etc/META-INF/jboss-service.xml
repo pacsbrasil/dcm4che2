@@ -94,27 +94,31 @@
          <value value="secret" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getAllowedUrlHost"
+      setMethod="setAllowedUrlHost">
+      <description>URL Hostname for HTTPS Hostname checking. CERT (from Certificate (standard)), 
+      		* (no Check), hostname (only this URL Hostname).
+      </description>
+      <name>AllowedUrlHost</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CERT" />
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write" getMethod="getAffinityDomain" setMethod="setAffinityDomain">
       <description><![CDATA[XDS Affinity Domain (Authority)<br/>
       		This name is used in PIX Query Service to get patient id of affinity domain.<br/>
-      		You can disable PIX Query by setting testPatient to a Affinity Patient ID. 
+      		You can disable PIX Query by setting this value with '=' as first character.<br/>
+      		'=' : use the source patient ID and issuer.<br/>
+      		'=?&lt;Domain&gt;' : use patientID from source and &lt;Domain&gt; as issuer. <br/>
+      		'=&lt;patient&gt;' : use &lt;patient&gt; for patientID and issuer (patid&#94;&#94;&#94;issuer). 
       ]]></description>
       <name>AffinityDomain</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="&amp;1.3.6.1.4.1.21367.2005.3.7&amp;ISO"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getTestPatient"
-      setMethod="setTestPatient">
-      <description>Patient ID for Test (disables PixQuery!) or NONE.
-      </description>
-      <name>TestPatient</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getPixQueryServiceName" setMethod="setPixQueryServiceName">

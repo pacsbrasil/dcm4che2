@@ -52,7 +52,6 @@ import javax.xml.registry.BulkResponse;
 import javax.xml.soap.SOAPException;
 
 import org.apache.log4j.Logger;
-import org.freebxml.omar.common.BindingUtility;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -77,8 +76,6 @@ public class XDSQueryService extends ServiceMBeanSupport {
 	private String trustStorePassword;
 	private HostnameVerifier origHostnameVerifier = null;
 	private String allowedUrlHost = null;
-
-	private String testPatient;
 
     private String xdsQueryURI;
 
@@ -183,20 +180,6 @@ public class XDSQueryService extends ServiceMBeanSupport {
 		this.allowedUrlHost = "CERT".equals(allowedUrlHost) ? null : allowedUrlHost;
 	}
 	
-	/**
-	 * @return Returns the testPatient.
-	 */
-	public String getTestPatient() {
-		return testPatient == null ? "NONE":testPatient;
-	}
-	/**
-	 * @param testPatient The testPatient to set.
-	 */
-	public void setTestPatient(String testPatient) {
-		testPatient = replace(testPatient, "&amp;","&");
-		this.testPatient = testPatient.equalsIgnoreCase("none") ? null : testPatient;
-	}
-    
     public String getAffinityDomain() {
         return affinityDomain;
     }
@@ -303,10 +286,21 @@ public class XDSQueryService extends ServiceMBeanSupport {
     }
  
     protected String getAffinityDomainPatientID(String patId) {
-        if ( testPatient != null) {
-            log.info("PIX Query disabled: use testPatient: "+testPatient);
-            return this.testPatient;
-        }
+		if ( affinityDomain.charAt(0) == '=') {
+			if ( affinityDomain.length() == 1 ) {
+				log.info("PIX Query disabled: use patId: "+patId);
+				return patId;
+			} else if (affinityDomain.charAt(1)=='?') {
+				log.info("PIX Query disabled: replace issuer with affinity domain! orig PatId:"+patId);
+				int pos = patId.indexOf("^^^");
+				if ( pos != -1 ) patId = patId.substring(0,pos);
+				log.debug("patID changed! new patId:"+patId+"^^^"+affinityDomain.substring(2)+")");
+				return patId+"^^^"+affinityDomain.substring(2);
+			} else {
+				log.info("PIX Query disabled: replace configured patient ID! :"+affinityDomain.substring(1));
+				return affinityDomain.substring(1);
+			}
+		}
         if ( this.pixQueryServiceName == null ) {
             log.info("PIX Query disabled: use source patient ID!");
             return patId+"^^^"+affinityDomain;
