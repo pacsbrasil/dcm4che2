@@ -119,9 +119,8 @@ public class XDSDocumentMetadata {
 	/**
 	 * @param hash
 	 */
-	public void setURI(String uri) {
-		setSlot("URI", uri);
-		
+	public void setURI(String[] uri) {
+		setSlot( "URI", uri);
 	}
 	/**
 	 * @param hash
@@ -137,23 +136,22 @@ public class XDSDocumentMetadata {
 		setSlot("size", String.valueOf(fileSize));
 	}
 
-	/**
-	 * @param string
-	 * @param fileSize
-	 */
 	private void setSlot(String name, String value) {
+		setSlot(name, new String[]{value});
+	}
+	private void setSlot(String name, String[] values) {
 		Element slot = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot");
 		Element valueList = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ValueList");
-		Element valueElement = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Value");
-		Text valueElementText = doc.createTextNode(value);
-		valueList.appendChild(valueElement);
-		valueElement.appendChild(valueElementText);
+		for ( int i = 0 ; i < values.length ; i++ ) {
+			Element valueElement = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Value");
+			Text valueElementText = doc.createTextNode(values[i]);
+			valueList.appendChild(valueElement);
+			valueElement.appendChild(valueElementText);
+		}
 		slot.setAttribute("name", name);
 		slot.appendChild(valueList);
 		metadata.insertBefore(slot, firstSlot);
-		
 	}
-
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("XDSDocumentMetadata: id:").append(getContentID()).append(" patientID:").append(getPatientID()).append(" uuid:").append(getUniqueID());

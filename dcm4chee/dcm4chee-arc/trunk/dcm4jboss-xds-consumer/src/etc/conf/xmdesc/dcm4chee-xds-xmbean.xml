@@ -127,24 +127,14 @@
    </attribute>
  
    <attribute access="read-write" getMethod="getRetrieveURI" setMethod="setRetrieveURI">
-      <description>Base URL to build Retrieve URL for a document.
+      <description>Base URL to build Retrieve URL for a document (without query part).
       </description>
       <name>RetrieveURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://127.0.0.1:8080/IHERetrieveDocument?RT=DOCUMENT&amp;UID="/>
+         <value value="http://127.0.0.1:8080/IHERetrieveDocument"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getContentTypeURIpart" setMethod="setContentTypeURIpart">
-      <description>Part of Retrieve URL to submit contentType (NONE to omit contentType).
-      </description>
-      <name>ContentTypeURIpart</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="&amp;PCT="/>
-      </descriptors>
-   </attribute>
-
    
    <attribute access="read-write"
       getMethod="isReassignDocumentUID"
@@ -169,12 +159,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isShortContentTypeEnabled"
-      setMethod="setShortContentTypeEnabled">
-      <description>Enable/Disable the option to use short content type (pdf=application/pdf ; xml=text/xml ; dcm=application/dicom).
-      		This option may be necessary because of the URI restriction of xml registry! (LongName=128 chars).
+      getMethod="isUseLongURI"
+      setMethod="setUseLongURI">
+      <description><![CDATA[Enable/Disable the use of splitting long retrieveURI (see change proposal Xds_144).<br/>
+      		If enabled and URI fits not in 128 bytes it will be splitted in multible values in a LONG-URI slot.<br/>
+      		Disabling this feature means always use a 'short' RID URL (?RT=DOCUMENT&amp;UID=..)
+      		]]>
       </description>
-      <name>ShortContentTypeEnabled</name>
+      <name>UseLongURI</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />

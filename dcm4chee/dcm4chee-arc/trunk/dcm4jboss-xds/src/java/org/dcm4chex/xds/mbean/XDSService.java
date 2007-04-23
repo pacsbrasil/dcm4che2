@@ -125,13 +125,12 @@ public class XDSService extends ServiceMBeanSupport {
 	private RIDStorageImpl store = RIDStorageImpl.getInstance();
 
 	private String retrieveURI;
-	private String contentTypeURIpart;
 
 	private String testPatient;
 
     private List filteredSlots;
     
-	private boolean shortContentType = false;
+	private boolean useLongURI = false;
 	private boolean logSOAPMessage = true;
 
     private String xdsQueryURI;
@@ -289,16 +288,16 @@ public class XDSService extends ServiceMBeanSupport {
 	}
 	
 	/**
-	 * @return Returns the contentTypeURIpart.
+	 * @return Returns the useLongURI.
 	 */
-	public String getContentTypeURIpart() {
-		return contentTypeURIpart == null ? "NONE" : contentTypeURIpart;
+	public boolean isUseLongURI() {
+		return useLongURI;
 	}
 	/**
-	 * @param contentTypeURIpart The contentTypeURIpart to set.
+	 * @param useLongURI The useLongURI to set.
 	 */
-	public void setContentTypeURIpart(String contentTypeURIpart) {
-		this.contentTypeURIpart = "NONE".equals(contentTypeURIpart) ? null : contentTypeURIpart;
+	public void setUseLongURI(boolean useLongURI) {
+		this.useLongURI = useLongURI;
 	}
 	/**
 	 * @return Returns the reassignUID.
@@ -336,18 +335,6 @@ public class XDSService extends ServiceMBeanSupport {
     public void setLogSOAPMessage(boolean logSOAPMessage) {
         this.logSOAPMessage = logSOAPMessage;
     }
-	/**
-	 * @return Returns the shortContentType.
-	 */
-	public boolean isShortContentTypeEnabled() {
-		return shortContentType;
-	}
-	/**
-	 * @param shortContentType The shortContentType to set.
-	 */
-	public void setShortContentTypeEnabled(boolean shortContentType) {
-		this.shortContentType = shortContentType;
-	}
 	/**
 	 * @return Returns the testPatient.
 	 */
@@ -556,12 +543,22 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @param contentType
 	 * @return
 	 */
-	private String getDocumentURI(String uuid, String contentType) {
-		String s = getRetrieveURI()+uuid;
-		if ( contentTypeURIpart != null ) {
-			s += contentTypeURIpart+getShortContentType(contentType);
+	private String[] getDocumentURI(String uuid, String contentType) {
+		if ( useLongURI ) {
+			String uidPart = "?requestType=DOCUMENT&documentUID="+uuid;
+			String pctPart = "&preferredContentType="+contentType;
+			int len = retrieveURI.length()+uidPart.length()+pctPart.length(); 
+			if ( len < 129 ) { 
+				return new String[]{retrieveURI+uidPart+pctPart};
+			} else if ( uidPart.length()+pctPart.length() < 127) {//Slot max len = 128, we need 2 for <idx>|
+				return new String[]{"1|"+retrieveURI, "2|"+uidPart+pctPart};
+			} else {
+				return new String[]{"1|"+retrieveURI, "2|"+uidPart, "3|"+pctPart};
+			}
+		} else {
+			String s = retrieveURI+"?RT=DOCUMENT&UID="+uuid+"&PCT="+getShortContentType(contentType);
+			return new String[]{s};
 		}
-		return s;
 	}
 	
 	/**
@@ -569,11 +566,9 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @return
 	 */
 	private String getShortContentType(String contentType) {
-		if ( isShortContentTypeEnabled() ) {
-			if ( "application/pdf".equals(contentType) ) return "pdf";
-			if ( "text/xml".equals(contentType) ) return "xml";
-			if ( "application/dicom".equals(contentType) ) return "dcm";
-		}
+		if ( "application/pdf".equals(contentType) ) return "pdf";
+		if ( "text/xml".equals(contentType) ) return "xml";
+		if ( "application/dicom".equals(contentType) ) return "dcm";
 		return contentType;
 	}
 	private Map getAttachments(SOAPMessage message) {
