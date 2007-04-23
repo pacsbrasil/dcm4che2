@@ -3,6 +3,7 @@ package org.dcm4chex.archive.web.maverick.xdsi;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.registry.infomodel.Classification;
@@ -22,7 +23,7 @@ public class XDSDocumentObject implements XDSRegistryObject {
     }
     
     private void init() throws JAXRException {
-        uri = getSlotValue("URI","");
+       	uri = getLongURI();
         try {
             url = URLEncoder.encode(uri, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -32,7 +33,37 @@ public class XDSDocumentObject implements XDSRegistryObject {
         creationTime = getSlotValue("creationTime", null);
     }
 
-    public String getId() throws JAXRException {
+    /**
+	 * @return
+     * @throws JAXRException
+	 */
+	private String getLongURI() throws JAXRException {
+		Collection c = getSlotValues("URI");
+		String s=null;
+		if (c.size() == 1 ) {
+			s = (String) c.iterator().next();
+			if (Character.isDigit(s.charAt(0)) ) {
+				s = s.substring(2);
+			}
+			return s;
+		}
+		String[] sa = new String[c.size()];
+		StringBuffer sb = new StringBuffer();
+		try {
+			for ( Iterator iter = c.iterator() ; iter .hasNext() ; ) {
+				s = (String) iter.next();
+				sa[(int) s.charAt(0)-0x31] = s.substring(2);
+			}
+			for ( int i = 0 ; i < sa.length ; i++) {
+				sb.append(sa[i]);
+			}
+		} catch ( Exception x) {
+			throw new IllegalArgumentException("LONG URI contains Invalid Value:'"+s+"' all values:"+c);
+		}
+		return sb.toString();
+	}
+
+	public String getId() throws JAXRException {
         return eo.getKey().getId();
     }
     /**
@@ -126,6 +157,11 @@ public class XDSDocumentObject implements XDSRegistryObject {
             }
         }
         return def;
+    }
+    private Collection getSlotValues(String name) throws JAXRException {
+        Collection col;
+        Slot sl = eo.getSlot(name);
+        return sl == null ? null : sl.getValues();
     }
     
 }
