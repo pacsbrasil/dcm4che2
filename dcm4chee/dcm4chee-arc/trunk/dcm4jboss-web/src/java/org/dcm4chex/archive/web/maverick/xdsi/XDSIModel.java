@@ -319,6 +319,10 @@ public class XDSIModel extends BasicFormModel {
 		props.setProperty("eventCodeList", getEventCodeListString());
 	}
 	
+	public void setPdfUID(String uid) {
+		props.setProperty("pdf_iuid", uid);
+	}
+	
 /*************************************************************************
  * 
  */	
@@ -441,7 +445,7 @@ public class XDSIModel extends BasicFormModel {
     }
     public void setDocuments( List docs ) {
         consumerModel.addDocuments(sourcePatId, docs);
-        log.info("consumerModel after setDiocuments:"+consumerModel);
+        log.debug("consumerModel after setDocuments:"+consumerModel);
     }
     public XDSDocumentObject getDocument( int idx ) {
         int len = getDocuments().size();

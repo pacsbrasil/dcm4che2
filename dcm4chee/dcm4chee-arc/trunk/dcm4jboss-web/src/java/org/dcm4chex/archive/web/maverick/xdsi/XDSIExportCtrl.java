@@ -102,6 +102,12 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
     			model.setInstances(set);
     			model.setPdfExport(true);
             } else if (rq.getParameter("export") == null) {
+            	if ( rq.getParameter("pdfUID") != null ) {
+        			Set set = new HashSet();
+        			set.add(rq.getParameter("docUID"));
+        			model.setPdfUID(rq.getParameter("pdfUID"));
+        			model.setPdfExport(false);
+                }
                 model.setPdfExport(false);
             }
         	if ( model.getNumberOfInstances() < 1) {
