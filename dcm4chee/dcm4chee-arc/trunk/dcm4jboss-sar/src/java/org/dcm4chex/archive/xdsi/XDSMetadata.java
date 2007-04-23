@@ -205,10 +205,12 @@ public class XDSMetadata {
 	private void addLeafRegistryObjectList() throws SAXException {
     	th.startElement(URN_RIM, TAG_LEAFREGISTRYOBJECTLIST, TAG_LEAFREGISTRYOBJECTLIST, EMPTY_ATTRIBUTES );
     	addObjectRef(UUID.XDSSubmissionSet);
+    	addObjectRef(UUID.XDSSubmissionSet_authorPerson);
     	addObjectRef(UUID.XDSSubmissionSet_uniqueId);
     	addObjectRef(UUID.XDSSubmissionSet_sourceId);
     	addObjectRef(UUID.XDSSubmissionSet_patientId); 
     	addObjectRef(UUID.XDSSubmissionSet_contentTypeCode); 
+    	addObjectRef(UUID.XDSDocumentEntry_authorPerson);
     	addObjectRef(UUID.XDSDocumentEntry_uniqueId);
     	addObjectRef(UUID.XDSDocumentEntry_patientId); 
     	addObjectRef(UUID.XDSDocumentEntry_classCode); 
@@ -339,6 +341,23 @@ public class XDSMetadata {
 		
 	}
 
+	private void addAuthor(String scheme, String object, String node, String authorPerson, String authorInstitution,
+			String authorRole, String authorSpecialty) throws SAXException {
+		AttributesImpl attr = new AttributesImpl();
+		attr.addAttribute("", ATTR_CLASSIFIED_OBJECT, ATTR_CLASSIFIED_OBJECT, "", object);		
+		attr.addAttribute("", ATTR_CLASSIFICATION_SCHEME, ATTR_CLASSIFICATION_SCHEME, "", scheme);
+		attr.addAttribute("", ATTR_NODE_REPRESENTATION, ATTR_NODE_REPRESENTATION, "", node);		
+    	th.startElement("", TAG_CLASSIFICATION, TAG_CLASSIFICATION, attr );
+    	addSlot("authorPerson",new String[]{authorPerson});
+    	if ( authorInstitution != null ) 
+    		addSlot("authorInstitution",new String[]{authorInstitution});
+    	if ( authorRole != null ) 
+    		addSlot("authorRole", new String[]{authorRole});
+    	if ( authorSpecialty != null ) 
+    	addSlot("authorSpecialty", new String[]{authorSpecialty});
+    	th.endElement("", TAG_CLASSIFICATION, TAG_CLASSIFICATION );
+		
+	}
 	
 	/**
 	 * @param doc 
@@ -365,16 +384,25 @@ public class XDSMetadata {
 	 * 
 	 */
 	private void addExtrinsicEntries(XDSIDocument doc) throws SAXException {
-		addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
-		addSlot( "authorInstitution", mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
-		addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
-		addSlot( XDSIService.AUTHOR_ROLE, mdValues.getProperty(XDSIService.AUTHOR_ROLE, null));
-		addSlot( XDSIService.AUTHOR_ROLE_DISPLAYNAME, mdValues.getProperty(XDSIService.AUTHOR_ROLE_DISPLAYNAME, null));
+		//addSlot("test", "tval");
 		addSlot( "creationTime", getTime(Tags.InstanceCreationDate,Tags.InstanceCreationTime, Tags.ContentDate, Tags.ContentTime));
 		addSlot( "languageCode", mdValues.getProperty("languageCode", "en-us"));
 		addSlot( "serviceStartTime", getTime(Tags.StudyDate,Tags.StudyTime, -1,-1));
 		addSlot( "sourcePatientId", getPatID(dsKO.getString(Tags.PatientID), dsKO.getString(Tags.IssuerOfPatientID)));
 		addSlot( "sourcePatientInfo", getPatientInfo());
+		if( "true".equals( mdValues.getProperty("useOldAuthorSlot") ) ) {
+			addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
+			addSlot( "authorInstitution", mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
+			addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
+			addSlot( XDSIService.AUTHOR_ROLE, mdValues.getProperty(XDSIService.AUTHOR_ROLE, null));
+			addSlot( XDSIService.AUTHOR_ROLE_DISPLAYNAME, mdValues.getProperty(XDSIService.AUTHOR_ROLE_DISPLAYNAME, null));
+		} else {
+			addAuthor( UUID.XDSDocumentEntry_authorPerson, doc.getDocumentID(), "",
+				mdValues.getProperty(XDSIService.AUTHOR_PERSON, null),
+				mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null),
+				mdValues.getProperty(XDSIService.AUTHOR_ROLE, null),
+				mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
+		}
 
 		addClassification(UUID.XDSDocumentEntry_classCode, doc.getDocumentID(), 
 				mdValues.getProperty("classCode","Education"),
@@ -386,7 +414,7 @@ public class XDSMetadata {
 				mdValues.getProperty("confidentialityCodeCodingSchemeOID","Connect-a-thon confidentialityCodes"));
 
 		addEventCodeList(doc);
-		String mime = mdValues.getProperty("mimetype","application/dicom");
+		String mime = doc.getMimeType();
 		if ( "application/dicom".equals(mime)) {
 			addClassification(UUID.XDSDocumentEntry_formatCode, doc.getDocumentID(), 
 					UIDs.KeyObjectSelectionDocument,
@@ -533,21 +561,29 @@ public class XDSMetadata {
     	th.startElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE, attr );
     	addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
     	addLocalized(TAG_DESCRIPTION, EMPTY_ATTRIBUTES, mdValues.getProperty("comments",null));
-    	addRegistryEntries();
+    	addRegistryEntries(id);
     	th.endElement("", TAG_REGISTRYPACKAGE, TAG_REGISTRYPACKAGE );
 	}
     /**
      * @throws SAXException
      * 
      */
-    private void addRegistryEntries() throws SAXException {
-        addSlot( "authorDepartment", mdValues.getProperty("authorDepartment", null));
-        addSlot( XDSIService.AUTHOR_INSTITUTION, mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
-        addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
-        
+    private void addRegistryEntries(String id) throws SAXException {
         String time = mdValues.getProperty("submissionTime");
         if ( time == null ) time = formatter.format(new Date());
         addSlot( "submissionTime", time);
+        
+		if( "true".equals( mdValues.getProperty("useOldAuthorSlot") ) ) {
+	        addSlot( "authorDepartment", mdValues.getProperty("authorDepartment", null));
+	        addSlot( XDSIService.AUTHOR_INSTITUTION, mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
+	        addSlot( XDSIService.AUTHOR_PERSON, mdValues.getProperty(XDSIService.AUTHOR_PERSON, null));
+		} else {
+			addAuthor( UUID.XDSSubmissionSet_authorPerson, id, "",
+				mdValues.getProperty(XDSIService.AUTHOR_PERSON, null),
+				mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null),
+				mdValues.getProperty(XDSIService.AUTHOR_ROLE, null),
+				mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
+		}
         
         addClassification(UUID.XDSSubmissionSet_contentTypeCode, "SubmissionSet", 
                 mdValues.getProperty("contentTypeCode","Group counseling"),

@@ -72,6 +72,9 @@ import javax.management.RuntimeMBeanException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -96,6 +99,12 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.DataExportMessage;
+import org.dcm4che2.audit.message.InstanceSorter;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -119,6 +128,8 @@ import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
  * @since Feb 15, 2006
  */
 public class XDSIService extends ServiceMBeanSupport {
+
+    private static final String WEB_REQUEST_KEY = "javax.servlet.http.HttpServletRequest";
 
     public static final String DOCUMENT_ID = "doc_1";
     public static final String PDF_DOCUMENT_ID = "pdf_doc_1";
@@ -861,16 +872,14 @@ public class XDSIService extends ServiceMBeanSupport {
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
            
             conn = connFactory.createConnection();
-    		if ( log.isDebugEnabled()){
-	            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-	            log.debug("send request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
-	            log.debug("-------------------------------- request  ----------------------------------");
-	            dumpSOAPMessage(message);
-    		}           
+            log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            log.info("send request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
+            if ( logSOAPMessage ) log.info("-------------------------------- request  ----------------------------------");
+            dumpSOAPMessage(message);
             SOAPMessage response = conn.call(message, url);
-            log.debug("-------------------------------- response ----------------------------------");
-            dumpSOAPMessage(response);//we always want to see the response msg in log!
-            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            if ( ! logSOAPMessage ) log.info("-------------------------------- response ----------------------------------");
+            dumpSOAPMessage(response);
+            if ( logSOAPMessage ) log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             return checkResponse( response );
 		} catch ( Throwable x ) {
 			log.error("Cant send SOAP message! Reason:", x);
@@ -959,7 +968,8 @@ public class XDSIService extends ServiceMBeanSupport {
         XDSMetadata md = new XDSMetadata(kos, mdProps, docs);
         Document metadata = md.getMetadata();
 		boolean b = sendSOAP(metadata, docs , null);
-        sendExportNotification(kos, user, b);
+		log.info("############################################### log export success:"+b);
+        logExport(kos, user, b);
 		if ( b ) {
             logExport( kos.getString(Tags.PatientID), 
 							kos.getString(Tags.PatientName),
@@ -1007,7 +1017,7 @@ public class XDSIService extends ServiceMBeanSupport {
         XDSMetadata md = new XDSMetadata(ds, mdProps, docs);
         Document metadata = md.getMetadata();
 		boolean b = sendSOAP(metadata,docs , null);
-        sendExportNotification(ds, user, b);
+        logExport(ds, user, b);
 		if ( b ) {
             logExport( ds.getString(Tags.PatientID), 
 							ds.getString(Tags.PatientName),
@@ -1059,31 +1069,76 @@ public class XDSIService extends ServiceMBeanSupport {
                     new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
             						Set.class.getName(),
 									String.class.getName(), String.class.getName(), String.class.getName()});
+									/*_*/
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }		
 	}
-	private void sendExportNotification(Dataset dsKos, String user, boolean success) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        String destHost = null;
+	private void logExport(Dataset dsKos, String user, boolean success) {
+
+    	String hostName;
         try {
-            destHost = new URL(docRepositoryURI).getHost();
-        } catch (MalformedURLException e) {
-            log.warn("Document Repository URL is not valid! Cant get host for audit log!");
+            HttpServletRequest rq = (HttpServletRequest)
+                    PolicyContext.getContext(WEB_REQUEST_KEY);
+            user = rq.getRemoteUser();
+            hostName = rq.getRemoteHost();
+        } catch (PolicyContextException e) {
         }
-        String srcId = getSourceID();
-        String srcHost = null;
-        try {
-            srcHost = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException ignore) {
+        DataExportMessage msg = new DataExportMessage();
+        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+        msg.addExporterProcess(AuditMessage.getProcessID(), 
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(), user == null,
+                AuditMessage.getLocalHostName());
+        if (user != null) {
+            msg.addExporterPerson(user, null, null, true, null);
         }
-        Export export = new Export(dsKos, user, srcId,
-                srcHost, 
-                docRepositoryURI, destHost);
-        Notification notif = new Notification(Export.class.getName(), this, eventID);
-        notif.setUserData(export);
-        super.sendNotification(notif);
-    }
+        msg.addDataRepository(docRepositoryURI);
+        msg.addPatient(dsKos.getString(Tags.PatientID), dsKos.getString(Tags.PatientName));
+        InstanceSorter sorter = getInstanceSorter(dsKos);
+        for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
+            ParticipantObjectDescription desc = new ParticipantObjectDescription();
+            String suid = (String) iter.next();
+            for (Iterator iter2 = sorter.iterateCUIDs(suid);
+                    iter2.hasNext();) {
+                String cuid = (String) iter2.next();
+                SOPClass sopClass = new SOPClass(cuid);
+                sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
+                desc.addSOPClass(sopClass);
+            }
+            msg.addStudy(suid, desc);
+        }
+        //TODO: need check that dataRepository is also Destination! msg.validate();
+        Logger.getLogger("auditlog").info(msg);
+    	
+	
+	}
+	
+	private InstanceSorter getInstanceSorter(Dataset dsKos) {
+        InstanceSorter sorter = new InstanceSorter();
+        DcmObjectFactory df = DcmObjectFactory.getInstance();
+        DcmElement sq = dsKos.get(Tags.CurrentRequestedProcedureEvidenceSeq);
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
+            Dataset refStudyItem = sq.getItem(i);
+            String suid = refStudyItem.getString(Tags.StudyInstanceUID);
+            DcmElement refSerSeq = refStudyItem.get(Tags.RefSeriesSeq);
+            for (int j = 0, m = refSerSeq.countItems(); j < m; j++) {
+                Dataset refSer = refSerSeq.getItem(j);
+                DcmElement srcRefSOPSeq = refSer.get(Tags.RefSOPSeq);
+                for (int k = 0, l = srcRefSOPSeq.countItems(); k < l; k++) {
+                    Dataset srcRefSOP = srcRefSOPSeq.getItem(k);
+                    Dataset refSOP = df.newDataset();
+                    String cuid = srcRefSOP.getString(Tags.RefSOPClassUID);
+                    refSOP.putUI(Tags.RefSOPClassUID, cuid);
+                    String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
+                    refSOP.putUI(Tags.RefSOPInstanceUID, iuid);
+                    sorter.addInstance(suid, cuid, iuid, null);
+                }
+            }
+        }
+		return sorter;
+	}
+	
     /**
 	 * @param kos
 	 * @return
@@ -1221,7 +1276,7 @@ public class XDSIService extends ServiceMBeanSupport {
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();
             t.transform(s, new StreamResult(out));
-            log.debug(out.toString());
+            log.info(out.toString());
         } catch (Exception e) {
             log.warn("Failed to log SOAP message", e);
         }

@@ -50,7 +50,8 @@ public class UUID {
 	public static final String XDSSubmissionSet_sourceId = "urn:uuid:554ac39e-e3fe-47fe-b233-965d2a147832";  
 	public static final String XDSSubmissionSet_uniqueId = "urn:uuid:96fdda7c-d067-4183-912e-bf5ee74998a8"; 
 	public static final String XDSSubmissionSet_patientId = "urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446";  
-	
+	public static final String XDSSubmissionSet_authorPerson = "urn:uuid:a7058bb9-b4e4-4307-ba5b-e3f0ab85e12d";  
+
 	public static final String XDSDocumentEntry = "urn:uuid:7edca82f-054d-47f2-a032-9b2a5b5186c1";
 	public static final String XDSDocumentEntry_classCode = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
 	public static final String XDSDocumentEntry_confidentialityCode = "urn:uuid:f4f85eac-e6cb-4883-b524-f2705394840f";
@@ -61,6 +62,7 @@ public class UUID {
 	public static final String XDSDocumentEntry_typeCode = "urn:uuid:f0306f51-975f-434e-a61c-c59651d33983";
 	public static final String XDSDocumentEntry_uniqueId = "urn:uuid:2e82c1f6-a085-4c72-9da3-8640a32e42ab";
 	public static final String XDSDocumentEntry_patientId = "urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427";
+	public static final String XDSDocumentEntry_authorPerson = "urn:uuid:93606bcf-9494-43ec-9b4e-a7748d1a838d";  
 
     public static final String XDSFolder = "urn:uuid:d9d542f3-6cc4-48b6-8870-ea235fbc94c2";
     public static final String XDSFolder_uniqueId = "urn:uuid:75df8f67-9973-4fbe-a900-df66cefecc5a";
