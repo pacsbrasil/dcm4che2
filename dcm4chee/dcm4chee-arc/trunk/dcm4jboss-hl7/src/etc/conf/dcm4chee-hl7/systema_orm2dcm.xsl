@@ -274,7 +274,7 @@
         <!-- Use ORB-4.1-3 as Requested Procedure Code Sequence on SPS Level-->
         <xsl:call-template name="codeItem">
             <xsl:with-param name="sqtag" select="'00321064'"/>
-            <xsl:with-param name="code" select="string(field[4]/text()"/>
+            <xsl:with-param name="code" select="string(field[4]/text())"/>
             <xsl:with-param name="scheme" select="string(field[4]/component[2]/text())"/>
             <xsl:with-param name="meaning" select="string(field[4]/component[1]/text())"/>
         </xsl:call-template>
