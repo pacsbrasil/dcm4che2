@@ -86,7 +86,14 @@ public class VRTest extends TestCase {
 	private static final byte[] TIME_103845_234 = {
 		'1', '0', '3', '8', '4', '5', '.', '2', '3', '4'};
 	private static final byte[] DATETIME_20030515_103845_234 = {
-		'2', '0', '0', '3', '0', '5', '1', '5', '1', '0', '3', '8', '4', '5', '.', '2', '3', '4' };
+		'2', '0', '0', '3', '0', '5', '1', '5',
+                '1', '0', '3', '8', '4', '5', '.', '2', '3', '4' };
+        private static final byte[] DS_MAX_DOUBLE = {
+                '1', '.', '7', '9', '7', '6', '9', '3',
+                '1', '3', '4', '8', 'E', '3', '0', '8' };
+        private static final byte[] DS_SQRT_2 = {
+                '1', '.', '4', '1', '4', '2', '1', '3',
+                '5', '6', '2', '3', '7', '3', '0', '9' };
 
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(VRTest.class);
@@ -295,4 +302,11 @@ public class VRTest extends TestCase {
 		assertEquals(SHORT_MINUS_4095_BE, VR.US.toBytes("61441", true, null));
 		assertEquals(SHORT_4095_MINUS_4095_BE, VR.SS.toBytes(ss, true, null));
 	}
+        
+
+        public final void testVR_DS() {
+                assertEquals(DS_MAX_DOUBLE, VR.DS.toBytes(Double.MAX_VALUE, false));
+                assertEquals(DS_SQRT_2, VR.DS.toBytes(Math.sqrt(2), false));            
+        }
+     
 }

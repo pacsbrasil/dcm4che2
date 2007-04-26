@@ -790,7 +790,23 @@ public abstract class VR
 
         public byte[] toBytes(float val, boolean bigEndian)
         {
-            return toBytes(Float.toString(val), bigEndian, null);
+            return toBytes(toDS(val), bigEndian, null);
+        }
+
+        public byte[] toBytes(double val, boolean bigEndian)
+        {
+            return toBytes(toDS(val), bigEndian, null);
+        }
+        
+        private String toDS(double val) {
+            String s = Double.toString(val);
+            int skip = s.length() - 16;
+            if (skip > 0) {
+                int e = s.lastIndexOf('E');
+                return e < 0 ? s.substring(0, 16) : 
+                    s.substring(0, e - skip) + s.substring(e);
+            }
+            return s;
         }
 
         public byte[] toBytes(float[] val, boolean bigEndian)
@@ -799,7 +815,17 @@ public abstract class VR
                 return null;
             String[] ss = new String[val.length];
             for (int i = 0; i < ss.length; i++)
-                ss[i] = Float.toString(val[i]);
+                ss[i] = toDS(val[i]);
+            return toBytes(ss, bigEndian, null);
+        }
+
+        public byte[] toBytes(double[] val, boolean bigEndian)
+        {
+            if (val == null)
+                return null;
+            String[] ss = new String[val.length];
+            for (int i = 0; i < ss.length; i++)
+                ss[i] = toDS(val[i]);
             return toBytes(ss, bigEndian, null);
         }
 
