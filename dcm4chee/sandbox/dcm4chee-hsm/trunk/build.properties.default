@@ -1,0 +1,8 @@
+dcm4che.jar = ../dcm4che14/build/lib/dcm4che.jar
+dcm4che.version = 1.4.10
+
+dcm4chee.jar = ../dcm4jboss-sar/target/lib/dcm4chee.jar
+dcm4chee.version = 2.10.15
+
+dcm4chee-jdbc.jar = ../dcm4jboss-ejb/target/hsql/lib/dcm4chee-jdbc-hsql.jar
+dcm4chee-ejb-client.jar = ../dcm4jboss-ejb/target/common/lib/dcm4chee-ejb-client.jar

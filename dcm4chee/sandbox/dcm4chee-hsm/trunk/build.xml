@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="dcm4chee-hsm" default="install-dcm2chee-dependency-jars">
+
+    <property file="build.properties.default" />
+    <property file="build.properties" />
+
+    <target name="install-dcm2chee-dependency-jars">
+        <exec executable="mvn">
+            <arg line="install:install-file -Dfile=${dcm4che.jar} -DartifactId=dcm4che -DgroupId=dcm4che -Dversion=${dcm4che.version} -DgeneratePom=true -Dpackaging=jar" />
+        </exec>
+        <exec executable="mvn">
+            <arg line="install:install-file -Dfile=${dcm4chee.jar} -DartifactId=dcm4chee -DgroupId=dcm4chee -Dversion=${dcm4chee.version} -DgeneratePom=true -Dpackaging=jar" />
+        </exec>
+        <exec executable="mvn">
+            <arg line="install:install-file -Dfile=${dcm4chee-jdbc.jar} -DartifactId=dcm4chee-jdbc -DgroupId=dcm4chee -Dversion=${dcm4chee.version} -DgeneratePom=true -Dpackaging=jar" />
+        </exec>
+        <exec executable="mvn">
+            <arg line="install:install-file -Dfile=${dcm4chee-ejb-client.jar} -DartifactId=dcm4chee-ejb-client -DgroupId=dcm4chee -Dversion=${dcm4chee.version} -DgeneratePom=true -Dpackaging=jar" />
+        </exec>
+    </target>
+</project>
