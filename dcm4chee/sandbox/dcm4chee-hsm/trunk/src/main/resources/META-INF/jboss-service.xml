@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server>
+    <mbean code="org.dcm4chex.archive.hsm.spi.HsmAwareQueryRetrieveScpService"
+           name="dcm4chee.archive:service=QueryRetrieveScp"
+           xmbean-dd="resource:META-INF/HsmAwareQueryRetrieveScpService.xml">
+        <depends>dcm4chee.archive:service=AE</depends>
+        <depends>dcm4chee.archive:service=AuditLogger</depends>
+        <depends>dcm4chee.archive:service=TLSConfig</depends>
+        <depends>dcm4chee.archive:service=DcmServer</depends>
+        <depends>dcm4chee.archive:service=FileSystemMgt</depends>
+        <depends>dcm4chee.archive:service=StgCmtScuScp</depends>
+        <depends>dcm4chee.archive:service=JMS</depends>
+    </mbean>
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+           name="dcm4chee.archive:service=Queue,name=HsmRetrieve">
+        <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+    <mbean code="org.dcm4chex.archive.hsm.spi.HsmRetrieveService"
+           name="dcm4chee.archive:service=HsmRetrieveService"
+           xmbean-dd="resource:META-INF/HsmRetrieveService.xml">
+        <depends>dcm4chee.archive:service=HsmClient</depends>
+        <depends>dcm4chee.archive:service=TarService</depends>
+        <depends>dcm4chee.archive:service=Queue,name=HsmRetrieve</depends>
+        <depends>dcm4chee.archive:service=JMS</depends>
+        <depends>jboss.j2ee:jndiName=ejb/Storage,service=EJB</depends>
+    </mbean>
+    <mbean code="org.dcm4chex.archive.hsm.spi.TarService"
+           name="dcm4chee.archive:service=TarService"
+           xmbean-dd="resource:META-INF/TarService.xml">
+    </mbean>
+    <mbean code="org.jboss.mq.server.jmx.Queue"
+           name="dcm4chee.archive:service=Queue,name=FileCopy">
+        <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    </mbean>
+    <mbean code="org.dcm4chex.archive.hsm.spi.HsmCopyService"
+           name="dcm4chee.archive:service=HsmCopyService"
+           xmbean-dd="resource:META-INF/HsmCopyService.xml">
+        <depends>dcm4chee.archive:service=HsmClient</depends>
+        <depends>dcm4chee.archive:service=TarService</depends>
+        <depends>dcm4chee.archive:service=FileSystemMgt</depends>
+        <depends>dcm4chee.archive:service=StoreScp</depends>
+        <depends>dcm4chee.archive:service=Queue,name=FileCopy</depends>
+        <depends>dcm4chee.archive:service=JMS</depends>
+    </mbean>
+
+</server>

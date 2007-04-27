@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+  <description>Tar Service</description>
+
+  <descriptors>
+    <persistence persistPolicy="OnUpdate"/>
+    <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
+  </descriptors>
+
+  <class>org.dcm4chex.archive.hsm.spi.TarService</class>
+
+  <constructor>
+    <description>The default constructor</description>
+    <name>TarService</name>
+  </constructor>
+
+  <!-- Attributes -->
+  <attribute access="read-write"
+             getMethod="isCheckMd5"
+             setMethod="setCheckMd5">
+    <description><![CDATA[Boolean flag showing if MD5 sums must be checked for unpacked files.]]>
+    </description>
+    <name>CheckMd5</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write"
+             getMethod="getBufferSize"
+             setMethod="setBufferSize">
+    <description><![CDATA[Internal buffer size to read from and write to streams.]]>
+    </description>
+    <name>BufferSize</name>
+    <type>int</type>
+    <descriptors>
+      <value value="8192"/>
+    </descriptors>
+  </attribute>
+  &defaultAttributes;
+
+  <!-- Operations -->
+  &defaultOperations;
+  <operation impact="ACTION">
+     <description>Unpack tar file.</description>
+     <name>unpack</name>
+     <parameter>
+       <description>File to be unpacked</description>
+       <name>tarFile</name>
+       <type>java.io.File</type>
+     </parameter>
+     <parameter>
+       <description>Destination directory</description>
+       <name>destinationDir</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <return-type>void</return-type>
+  </operation>
+  <operation impact="ACTION">
+     <description>Pack files into a tar file.</description>
+     <name>pack</name>
+     <parameter>
+       <description>Base directory to write created tar file to.</description>
+       <name>baseDir</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>List of files to be packed in to a tar file.</description>
+       <name>files</name>
+       <type>java.util.List</type>
+     </parameter>
+     <return-type>java.io.File</return-type>
+  </operation>
+
+
+</mbean>
+

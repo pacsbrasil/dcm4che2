@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+    <description>HSM Retrieve Service.</description>
+
+    <descriptors>
+        <persistence persistPolicy="OnUpdate"/>
+        <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
+    </descriptors>
+
+    <class>org.dcm4chex.archive.hsm.spi.HsmRetrieveService</class>
+
+    <constructor>
+        <description>The default constructor</description>
+        <name>HsmRetrieveService</name>
+    </constructor>
+
+    <!-- Attributes -->
+    <attribute access="read-write"
+               getMethod="getMoveScuQueueName"
+               setMethod="setMoveScuQueueName">
+        <description><![CDATA[MoveScu queue name]]>
+        </description>
+        <name>MoveScuQueueName</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value value="MoveScu"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getHsmRetrieveQueueName"
+               setMethod="setHsmRetrieveQueueName">
+        <description><![CDATA[HSM retrieve queue name]]>
+        </description>
+        <name>HsmRetrieveQueueName</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value value="HsmRetrieve"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getRetryIntervalls"
+               setMethod="setRetryIntervalls">
+        <description><![CDATA[Number and interval of retries made for
+     failed Copy Requests.
+     <br>Format:
+     <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+     <br>The interval can be specified in seconds (##s),
+     minutes (##m), hours (##h) or days (##d).
+     <br>Example:
+     <br>5x1m,10x10m means retry a total of 5 times, one minute
+     apart for each retry; then retry a total of 10 times, 10 minutes
+     apart for each retry.]]>
+        </description>
+        <name>RetryIntervalls</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value value="5x1m,12x5m,24x1h,7x1d" />
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getConcurrency"
+               setMethod="setConcurrency">
+        <description>Maximum number of concurrent invoked Copy Requests.
+        </description>
+        <name>Concurrency</name>
+        <type>int</type>
+        <descriptors>
+            <value value="1" />
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getHsmClientName"
+               setMethod="setHsmClientName">
+        <description>Used internally. Do NOT modify.
+        </description>
+        <name>HsmClientName</name>
+        <type>javax.management.ObjectName</type>
+        <descriptors>
+            <value value="dcm4chee.archive:service=HsmClient"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getTarServiceName"
+               setMethod="setTarServiceName">
+        <description>Used internally. Do NOT modify.
+        </description>
+        <name>TarServiceName</name>
+        <type>javax.management.ObjectName</type>
+        <descriptors>
+            <value value="dcm4chee.archive:service=TarService"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getFileSystemMgtName"
+               setMethod="setFileSystemMgtName">
+        <description>Used internally. Do NOT modify.
+        </description>
+        <name>FileSystemMgtName</name>
+        <type>javax.management.ObjectName</type>
+        <descriptors>
+            <value value="dcm4chee.archive:service=FileSystemMgt"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getTempDir"
+               setMethod="setTempDir">
+        <description><![CDATA[A temporary directory to retrieve files from HSM.]]>
+        </description>
+        <name>TempDir</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value value="hsm-incoming"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
+               getMethod="getJmsServiceName"
+               setMethod="setJmsServiceName">
+        <description>Used internally. Do NOT modify.
+        </description>
+        <name>JMSServiceName</name>
+        <type>javax.management.ObjectName</type>
+        <descriptors>
+            <value value="dcm4chee.archive:service=JMS"/>
+        </descriptors>
+    </attribute>
+    &defaultAttributes;
+
+    <!-- Operations -->
+    &defaultOperations;
+</mbean>
+
