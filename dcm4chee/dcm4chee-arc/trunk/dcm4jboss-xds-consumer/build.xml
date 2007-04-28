@@ -1,5 +1,5 @@
 <project name="dcm4chee-xds" default="war">
-
+    <property file="build.properties"/>
         <property file="../build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
