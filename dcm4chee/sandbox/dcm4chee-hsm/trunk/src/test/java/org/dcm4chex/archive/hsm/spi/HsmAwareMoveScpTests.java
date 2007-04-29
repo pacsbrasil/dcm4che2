@@ -61,7 +61,6 @@ import java.io.Serializable;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 9, 2007
  */
 public class HsmAwareMoveScpTests {

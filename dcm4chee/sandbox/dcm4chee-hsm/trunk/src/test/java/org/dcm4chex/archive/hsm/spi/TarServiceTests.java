@@ -60,7 +60,6 @@ import java.text.MessageFormat;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 19, 2007
  */
 public class TarServiceTests {

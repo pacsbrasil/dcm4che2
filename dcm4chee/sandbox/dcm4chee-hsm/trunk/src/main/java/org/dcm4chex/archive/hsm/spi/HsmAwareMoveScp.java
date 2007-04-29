@@ -54,8 +54,21 @@ import java.util.*;
 import java.text.MessageFormat;
 
 /**
+ * This class extends the original <code>MoveScp</code> class to filter out
+ * files marked as <code>ARCHIVED</code>. For the archived files it queues
+ * an HSM retrieve order with a deferred <code>C-MOVE</code> task.
+ * In case if all requested files were archived, an empty <code>MoveTask</code>
+ * is created to release the association with the requesting modality.
+ * <p>
+ * <b>Note:</b> In case if files were packed into a TAR archive, the
+ * granularity of the deferred <code>C-MOVE</code> tasks will be a single series.
+ *
+ * @see MoveScp
+ * @see HsmAwareQueryRetrieveScpService
+ * @see MoveTask
+ * @see #createMoveTask
+ * @see HsmRetrieveOrder
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 5, 2007
  */
 public class HsmAwareMoveScp extends MoveScp {
@@ -66,6 +79,21 @@ public class HsmAwareMoveScp extends MoveScp {
         super(service);
     }
 
+    /**
+     * Creates new <code>MoveTask</code> to send the requested files to the requesting modality.
+     * This method will filter all files marked as <code>ARCHIVED</code> and will queue for them
+     * an HSM retrieve call with a following deferred <code>C-MOVE</code> task.
+     * @param service will be used for an HSM retrieve call and a deferred <code>C-MOVE</code> task
+     * @param moveAssoc
+     * @param movePcid
+     * @param moveRqCmd
+     * @param moveRqData
+     * @param fileInfo files to be sent
+     * @param aeData
+     * @param moveDest destination AE title
+     * @return a new MoveTask
+     * @throws DcmServiceException - in case of errors 
+     */
     protected MoveTask createMoveTask(QueryRetrieveScpService service,
                                       ActiveAssociation moveAssoc,
                                       int movePcid,
@@ -90,6 +118,7 @@ public class HsmAwareMoveScp extends MoveScp {
                                  Dataset moveRqData,
                                  AEDTO aeData,
                                  String moveDest) throws DcmServiceException {
+        
         FileInfo[][] fileInfos = localAndArchived.get(LOCAL_FILES);
         if (fileInfos != null && (fileInfos.length > 0)) {
             return super.createMoveTask(service,
@@ -106,8 +135,6 @@ public class HsmAwareMoveScp extends MoveScp {
     }
 
     private void addNewDelayedCMoveTask(QueryRetrieveScpService service, FileInfo[][] archivedFiles, String moveDest) {
-        if (!(service instanceof HsmAwareQueryRetrieveScpService))
-            throw new IllegalArgumentException("Wrong service class. This class was designed to be used with " + HsmAwareQueryRetrieveScpService.class.getName());
         ((HsmAwareQueryRetrieveScpService) service).retriveAndSend(archivedFiles, moveDest);
     }
 

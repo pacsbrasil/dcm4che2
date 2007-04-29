@@ -54,8 +54,20 @@ import java.text.MessageFormat;
 import java.io.File;
 
 /**
+ * A file copy service aware of HSM.
+ *
+ * In a standard use case this MBean copies files to the destination filesystem and
+ * delegates to the configured implementation of <code>HsmClient</code> to archive
+ * files invoking {@link HsmClient#archive(String, java.io.File)} method. After files
+ * were archived it adds duplicated database entries for those files, changing their
+ * file path, file system and file status (<code>TO_ARCHIVE</code> or <code>ARCHIVED</code>).
+ * <p>
+ * <b>Note:</b> at the moment this implementation will always pack files into a TAR archive
+ * before copying. This feature will be extracted as a configuration option soon. 
+ *
+ * @see org.dcm4chex.archive.hsm.spi.HsmClient
+ * @see org.dcm4chex.archive.hsm.spi.TarService
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Nov 28, 2006
  */
 public class HsmCopyService extends AbstractFileCopyService {
@@ -83,6 +95,12 @@ public class HsmCopyService extends AbstractFileCopyService {
         this.storage = getStorageHome().create();
     }
 
+    /**
+     * Overrides {@link org.dcm4chex.archive.hsm.AbstractFileCopyService#process(org.dcm4chex.archive.common.BaseJmsOrder)}
+     * to copy-archive files and to insert new file descriptors into the DB.
+     * @param order <code>FileCopyOrder</code> to process
+     * @throws Exception in case of error during processing the file copy order
+     */
     protected void process(BaseJmsOrder order) throws Exception {
         logger.debug(ABOUT_TO_PROCESS_A_FILE_COPY_ORDER);
         doProcess(order);
@@ -138,13 +156,12 @@ public class HsmCopyService extends AbstractFileCopyService {
                                    String tarFileLocInFilespace) throws Exception {
         for (Object fileInfo : fileInfos) {
             FileInfo finfo = (FileInfo) fileInfo;
-            //finfo.status = fileStatus;
             finfo.fileID = mkTarEntryPath(tarFileLocInFilespace, finfo.fileID);
         }
         storage.storeFiles(fileInfos, destPath, fileStatus);
     }
 
-    public String mkTarEntryPath(String tarFileLocation, String filePath) {
+    private String mkTarEntryPath(String tarFileLocation, String filePath) {
         return tarFileLocation + "!" + filePath;
     }
 

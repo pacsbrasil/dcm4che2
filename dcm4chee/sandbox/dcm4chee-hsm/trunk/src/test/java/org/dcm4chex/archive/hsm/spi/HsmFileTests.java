@@ -44,7 +44,6 @@ import static org.testng.Assert.*;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 15, 2007
  */
 public class HsmFileTests {

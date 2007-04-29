@@ -47,7 +47,6 @@ import java.util.Map;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 15, 2007
  */
 public class HsmRetrieveOrderTests {

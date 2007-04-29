@@ -58,8 +58,13 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
+ * <code>TarService</code> is an MBean implementation of {@link org.dcm4chex.archive.hsm.spi.TarArchiver}.
+ * <br>
+ * On top of the contract of <code>TarArchiver</code>, this implementation provides mechanism to check MD5 sums
+ * of packed and unpacked files.
+ *
+ * @see #setCheckMd5(boolean) 
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 19, 2007
  */
 public class TarService extends ServiceMBeanSupport implements TarArchiver {
@@ -83,14 +88,50 @@ public class TarService extends ServiceMBeanSupport implements TarArchiver {
     private boolean checkMd5 = true;
     private int bufferSize = 8192;
 
+    /**
+     * Unpacks a TAR file specified by <code>tarFilePath</code> into <code>destinationDir</code>.
+     * <code>tarFilePath</code> is expected to be a full file path in an OS dependent format.
+     * <p>
+     * <b>Note:</b> Unpacked files will replace files with same name.
+     * @see #unpack(java.io.File, String)
+     * @param tarFilePath OS dependent full file path of an archive to unpack
+     * @param destinationDir destination directory to unpack files to
+     * @throws Exception in case of errors
+     */
     public void unpack(String tarFilePath, String destinationDir) throws Exception {
         unpack(new File(tarFilePath), destinationDir);
     }
 
+    /**
+     * Unpacks <code>tarFile</code> into <code>destinationDir</code>.
+     * <p>
+     * <b>Note:</b> Unpacked files will replace files with same name.
+     * @see #unpack(String, String)
+     * @param tarFile TAR archive to unpack
+     * @param destinationDir destination directory to unpack files to
+     * @throws Exception in case of errors
+     */
     public void unpack(File tarFile, String destinationDir) throws Exception {
         new TarExtractor(tarFile, destinationDir, bufferSize, checkMd5).extractEntries();
     }
 
+    /**
+     * Packs given files into a TAR archive and returns the TAR archive file. Uses <code>baseDir</code> to create
+     * the TAR file in. The name of the created TAR file depends on DCM4CHEE's file path naming convention and will
+     * be as the filepath of the first file in the list with the last "/" (slash) replaced with a "-" (dash) and with an
+     * added ".tar" extension. TAR entries will have the same relative path as the files had on the original file
+     * system, e.g. if a file had a relative path to it's parent file system as <code>A/B/C/D</code>, the same relative
+     * path will be used for the corresponding TAR entry in the archive.
+     * <br>
+     * The first entry in the created TAR archive will be an entry containing MD5 sums of all files in this archive.
+     * <p>
+     * <b>Note:</b> If there already is a file with the same name as the created TAR file, it will be replaced.
+     * 
+     * @param baseDir a directory to create the TAR file in
+     * @param files list of files to be packed into an archive
+     * @return created TAR archive file
+     * @throws Exception in case of errors
+     */
     public File pack(String baseDir, List<FileInfo> files) throws Exception {
         if(files != null && !files.isEmpty()){
             File tar = newTarFile(baseDir, files.get(0).fileID);
@@ -210,6 +251,10 @@ public class TarService extends ServiceMBeanSupport implements TarArchiver {
         return bufferSize;
     }
 
+    /**
+     * Sets a buffer size used during pack and unpack operations.
+     * @param bufferSize the bufferSize to use
+     */
     public void setBufferSize(int bufferSize) {
         if (bufferSize <= 0) throw new IllegalArgumentException(MessageFormat.format(WRONG_BUFFER_SIZE, bufferSize));
         this.bufferSize = bufferSize;
@@ -219,6 +264,13 @@ public class TarService extends ServiceMBeanSupport implements TarArchiver {
         return checkMd5;
     }
 
+    /**
+     * Sets if an MD5 digest check is needed on a TAR file unpack. If it is set to <code>true</code>, then the first
+     * entry in the archive is expected to be named as "MD5SUM" and containing MD5 sums of all files in the archive.
+     * If TAR files don't contain MD5 sums entries, then set this parameter to <code>false</code>. Othervise all
+     * unpack operations will fail.
+     * @param checkMd5 a flag indicating if an MD5 digest check is needed on a TAR file unpack
+     */
     public void setCheckMd5(boolean checkMd5) {
         this.checkMd5 = checkMd5;
     }

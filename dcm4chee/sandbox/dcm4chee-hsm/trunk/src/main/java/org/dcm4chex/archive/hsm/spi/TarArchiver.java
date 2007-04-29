@@ -44,15 +44,37 @@ import java.util.Map;
 import java.util.List;
 
 /**
+ * <code>TarArchiver</code> is used to pack files into a TAR archive and unpack them on demand.
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 19, 2007
  */
 public interface TarArchiver {
+    /**
+     * Unpacks a TAR file specified by <code>tarFilePath</code> into <code>destinationDir</code>.
+     * <code>tarFilePath</code> is expected to be a full file path in an OS dependent format.
+     * @see #unpack(java.io.File, String) 
+     * @param tarFilePath OS dependent full file path of an archive to unpack
+     * @param destinationDir destination directory to unpack files to
+     * @throws Exception in case of errors
+     */
     void unpack(String tarFilePath, String destinationDir) throws Exception;
 
+    /**
+     * Unpacks <code>tarFile</code> into <code>destinationDir</code>.
+     * @see #unpack(String, String)
+     * @param tarFile TAR archive to unpack
+     * @param destinationDir destination directory to unpack files to
+     * @throws Exception in case of errors
+     */
     void unpack(File tarFile, String destinationDir) throws Exception;
 
+    /**
+     * Packs given files into a TAR archive and returns the TAR archive file. Uses <code>baseDir</code> to create
+     * the TAR file in.
+     * @param baseDir a directory to create the TAR file in
+     * @param files list of files to be packed into an archive
+     * @return created TAR archive file
+     * @throws Exception in case of errors
+     */
     File pack(String baseDir, List<FileInfo> files) throws Exception;
-
 }

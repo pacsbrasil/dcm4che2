@@ -41,29 +41,41 @@ import java.util.List;
 import java.io.File;
 
 /**
+ * This interface represents a gateway to various HSM systems. Used by
+ * <code>HsmCopyService</code> and <code>HsmRetrieveService</code> to
+ * archive and retrieve files.
+ * <p>
+ * Implementations of this interface can be as easy as a class delegating
+ * everything to underlying OS level virtual HSM filesystem, as well as
+ * a more sophisticated implementations using the API of the HSM tools. 
+ *
+ * @see org.dcm4chex.archive.hsm.spi.HsmCopyService
+ * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveService
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 9, 2007
  */
 public interface HsmClient {
 
     /**
-     *
-     * @param filespace - file space name to retrieve files from.
+     * Retieves files from the HSM archive. 
+     * @param filespace file space name to retrieve files from.
      * Must be in a system dependent format.
-     * @param filePath - full file path in a system depending format.
-     * Will also include the file space name. 
-     * @param destination - The destination directory for retrieved files. 
-     * @throws Exception
+     * @param filePath full file path in a system depending format.
+     * Must also include the file space name. 
+     * @param destination the destination directory for retrieved files.
+     * @throws Exception in case of retrieve errors
+     * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveService
      */
     public void retrieve(String filespace, String filePath, File destination) throws Exception;
 
     /**
+     * Archives the passed in file to the HSM archive.
      *
-     * @param filespace - file space name to be used as archive destination.
+     * @param filespace file space name to be used as archive destination.
      * Must be in a system dependent format.
-     * @param file - file to be archived
-     * @throws Exception
+     * @param file file to be archived
+     * @throws Exception in case of archive errors
+     * @see org.dcm4chex.archive.hsm.spi.HsmCopyService
      */
     public void archive(String filespace, File file) throws Exception;
 }

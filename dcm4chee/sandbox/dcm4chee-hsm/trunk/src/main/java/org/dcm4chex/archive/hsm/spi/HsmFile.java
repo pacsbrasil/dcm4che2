@@ -39,34 +39,47 @@ package org.dcm4chex.archive.hsm.spi;
 
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.hsm.spi.utils.Assert;
-import org.dcm4chex.archive.util.FileUtils;
 
 import java.io.Serializable;
-import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.text.MessageFormat;
 
 /**
+ * A value object representing a single HSM entry. Can be a TAR archive containing many
+ * files, as well as a single file.
+ *
+ * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveOrder
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 15, 2007
  */
 public class HsmFile implements Serializable {
-    private final String tarPath;
+    private final String filePath;
     private final String fileSpaceName;
     private final List<FileInfo> entries = new ArrayList<FileInfo>();
 
     private static final String ILLEGAL_TAR_PATH = "Illegal TAR path: [{0}]. Must contain [!]"; // NON-NLS
     private static final String TAR_SEPARATOR = "!"; // NON-NLS
 
-    public HsmFile(String tarPath, String baseDir) {
-        Assert.hasText(tarPath, "tarPath"); // NON-NLS
-        Assert.hasText(baseDir, "fileSpaceName"); // NON-NLS
-        this.tarPath = tarPath;
-        this.fileSpaceName = baseDir;
+    /**
+     * Constructs an <code>HsmFile</code> instance using the specified file path and file space name. 
+     * @param filePath full, OS dependent, file path
+     * @param fileSpaceName destination HSM file space name. Must be in an OS dependent format. 
+     */
+    public HsmFile(String filePath, String fileSpaceName) {
+        Assert.hasText(filePath, "filePath"); // NON-NLS
+        Assert.hasText(fileSpaceName, "fileSpaceName"); // NON-NLS
+        this.filePath = filePath;
+        this.fileSpaceName = fileSpaceName;
     }
 
+    /**
+     * Instance of this class is equal to other only if <code>this.filePath.equals(o.filePath)</code> and
+     * <code>this.fileSpaceName.equals(o.fileSpaceName)</code>.
+     * @param o other object to check equality with
+     * @return <code>true</code> or <code>false</code> based on the check described above
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -74,48 +87,72 @@ public class HsmFile implements Serializable {
 
         final HsmFile that = (HsmFile) o;
 
-        return tarPath.equals(that.tarPath) && fileSpaceName.equals(that.fileSpaceName);
+        return filePath.equals(that.filePath) && fileSpaceName.equals(that.fileSpaceName);
 
     }
 
+    /**
+     * Computes the hash code based on <code>this.filePath</code> and <code>this.fileSpaceName</code> hash codes.
+     * @return the computed hash code
+     */
     @Override
     public int hashCode() {
         int result;
-        result = tarPath.hashCode();
+        result = filePath.hashCode();
         result = 29 * result + fileSpaceName.hashCode();
         return result;
     }
 
+    /**
+     * Extracts the TAR archive file path from the specified file path, the part of the path before <code>!</code> in
+     * <code>SOME_PATH_HERE.tar!FILE_PATH_IN_THE_ARCHIVE</code> 
+     * @param path full file path in the TAR archive
+     * @return extracted TAR file path
+     */
     public static String extractTarPath(String path) {
-        if(!path.contains(HsmFile.TAR_SEPARATOR)) throw new IllegalArgumentException(MessageFormat.format(HsmFile.ILLEGAL_TAR_PATH, path));
-        return path.substring(0, path.indexOf(HsmFile.TAR_SEPARATOR));
+        if(!path.contains(TAR_SEPARATOR)) throw new IllegalArgumentException(MessageFormat.format(ILLEGAL_TAR_PATH, path));
+        return path.substring(0, path.indexOf(TAR_SEPARATOR));
     }
 
+    /**
+     * Extracts the file path from the specified full file path in the TAR archive, the part of the path after
+     * <code>!</code> in <code>SOME_PATH_HERE.tar!FILE_PATH_IN_THE_ARCHIVE</code> 
+     * @param path full file path in the TAR archive
+     * @return extracted file path
+     */
     public static String extractFilePath(String path) {
-        if(!path.contains(HsmFile.TAR_SEPARATOR)) throw new IllegalArgumentException(MessageFormat.format(HsmFile.ILLEGAL_TAR_PATH, path));
-        return path.substring(path.indexOf(HsmFile.TAR_SEPARATOR) + 1);
+        if(!path.contains(TAR_SEPARATOR)) throw new IllegalArgumentException(MessageFormat.format(ILLEGAL_TAR_PATH, path));
+        return path.substring(path.indexOf(TAR_SEPARATOR) + 1);
     }
 
     public String toString() {
         return new StringBuffer().append("[")
-                .append(tarPath)
+                .append(filePath)
                 .append(", ")
                 .append(fileSpaceName)
                 .append("]").toString();
     }
 
-    public String getTarPath() {
-        return tarPath;
+    public String getFilePath() {
+        return filePath;
     }
 
     public String getFileSpaceName() {
         return fileSpaceName;
     }
 
+    /**
+     * Returns an unmodifiable copy of entries of this HSM object
+     * @return entries of this HSM object
+     */
     public List<FileInfo> getEntries() {
-        return entries;
+        return Collections.unmodifiableList(entries);
     }
 
+    /**
+     * Adds a copy of the spesified <code>FileInfo</code> as an entry of this HSM object.
+     * @param finfo <code>FileInfo</code> to add
+     */
     public void addEntry(FileInfo finfo) {
         FileInfo newFinfo = new FileInfo(finfo.pk,
                 finfo.patID,
@@ -132,7 +169,7 @@ public class HsmFile implements Serializable {
                 finfo.fileRetrieveAET,
                 finfo.availability,
                 finfo.basedir,
-                HsmFile.extractFilePath(finfo.fileID),
+                extractFilePath(finfo.fileID),
                 finfo.tsUID,
                 finfo.md5,
                 finfo.size,

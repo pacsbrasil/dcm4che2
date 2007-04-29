@@ -38,23 +38,42 @@
 package org.dcm4chex.archive.hsm.spi;
 
 /**
+ * This exception is thrown to indicate a digest check failure during various
+ * file copy or archive pack tasks.
+ *
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 20, 2007
  */
 public class FailedDigestCheckException extends RuntimeException {
-  public FailedDigestCheckException() {
-  }
 
-  public FailedDigestCheckException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs an instance <code>FailedDigestCheckException</code>.
+     */
+    public FailedDigestCheckException() {
+    }
 
-  public FailedDigestCheckException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Constructs an instance <code>FailedDigestCheckException</code> with the specified message.
+     * @param message describes the reason of this exception
+     */
+    public FailedDigestCheckException(String message) {
+        super(message);
+    }
 
-  public FailedDigestCheckException(Throwable cause) {
-    super(cause);
-  }
+    /**
+     * Constructs an instance <code>FailedDigestCheckException</code> with the specified message and cause.
+     * @param message describes the reason of this exception
+     * @param cause original cause of this exception
+     */
+    public FailedDigestCheckException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Constructs an instance <code>FailedDigestCheckException</code> with the specified cause.
+     * @param cause original cause of this exception
+     */
+    public FailedDigestCheckException(Throwable cause) {
+        super(cause);
+    }
 }

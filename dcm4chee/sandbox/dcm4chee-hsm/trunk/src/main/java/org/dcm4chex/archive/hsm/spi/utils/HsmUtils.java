@@ -52,7 +52,6 @@ import java.net.URL;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Mar 29, 2007
  */
 public abstract class HsmUtils extends FileUtils {

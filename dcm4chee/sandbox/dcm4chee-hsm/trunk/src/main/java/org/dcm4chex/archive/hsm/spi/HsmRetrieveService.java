@@ -38,7 +38,6 @@
 package org.dcm4chex.archive.hsm.spi;
 
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.FileSystemMgtService;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.movescu.MoveOrder;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -67,8 +66,18 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * HsmRetrieveService takes care of retrieving files from the HSM archive, unpacking if necessary
+ * and populating the database with the retrieved files entries.
+ * <br>
+ * This class is not tied into any specific HSM implementation. For HSM calls it delegates to
+ * a configured <code>HsmClient</code> implementation.
+ *
+ * @see org.dcm4chex.archive.hsm.spi.HsmClient
+ * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveOrder
+ * @see #setHsmClientName(javax.management.ObjectName) 
+ * @see org.dcm4chex.archive.hsm.spi.TarService
+ *
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 14, 2007
  */
 public class HsmRetrieveService extends ServiceMBeanSupport implements MessageListener {
@@ -106,7 +115,10 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
 
     private File tempDir;
 
-
+    /**
+     * @param message must be an instance of <code>HsmRetrieveOrder</code>, otherwise a <code>ClassCastException</code>
+     * will be thrown
+     */
     public void onMessage(Message message) {
         logger.info(MessageFormat.format(START_PROCESSING, message));
         try {
@@ -140,7 +152,7 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
                 String destination = getCurrentStorageDirPath();
                 for (HsmFile hsmFile : files) {
                     retrieve(hsmFile);
-                    File tarFile = new File(tempDir, hsmFile.getTarPath().replaceAll("/", File.separator));
+                    File tarFile = new File(tempDir, hsmFile.getFilePath().replaceAll("/", File.separator));
                     unpack(tarFile, destination);
                     storage.storeFiles(hsmFile.getEntries(), destination, FileStatus.DEFAULT);
                 }
@@ -156,7 +168,7 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
 
     private void retrieve(HsmFile file) throws Exception {
         String fsName = HsmUtils.resolveFileSpacePath(file.getFileSpaceName());
-        String filePath = fullPath(fsName, file.getTarPath());
+        String filePath = fullPath(fsName, file.getFilePath());
         server.invoke(hsmClientName,
                 RETRIEVE,
                 new Object[]{fsName, filePath, tempDir},
@@ -262,6 +274,10 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
         }
     }
 
+    /**
+     * Sets the JMX object name of the <code>HsmClient</code> to use for HSM calls
+     * @param hsmClientName JMX object name of the <code>HsmClient</code>
+     */
     public void setHsmClientName(ObjectName hsmClientName) {
         this.hsmClientName = hsmClientName;
     }
@@ -290,6 +306,11 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
         return tarServiceName;
     }
 
+    /**
+     * Sets the JMX object name of the <code>TarService</code> to use for packing files into and unpacking
+     * from a TAR archive.
+     * @param tarServiceName JMX object name of the <code>TarService</code>
+     */
     public void setTarServiceName(ObjectName tarServiceName) {
         this.tarServiceName = tarServiceName;
     }
@@ -302,6 +323,13 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
         this.fileSystemMgtName = fileSystemMgtName;
     }
 
+    /**
+     * Sets the temporary directory to retrieve files to. The directory will be created if it doesn't exist.
+     * <p>
+     * <b>Note:</b> Relative file path will be resolved relatively to to archive-install-directory/server/default/
+     * @param tempDir path to the temporary directory
+     * @throws IOException if the directory can't be created 
+     */
     public void setTempDir(String tempDir) throws IOException {
         if (!StringUtils.hasText(tempDir))
             throw new IllegalArgumentException("tempDir must be not null and not blank, but was <" + tempDir + ">");

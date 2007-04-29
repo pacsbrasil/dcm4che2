@@ -46,7 +46,6 @@ import java.io.File;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Apr 8, 2007
  */
 public class TestUtils {

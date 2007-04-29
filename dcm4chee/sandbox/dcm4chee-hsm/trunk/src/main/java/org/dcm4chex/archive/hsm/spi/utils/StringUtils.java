@@ -39,7 +39,6 @@ package org.dcm4chex.archive.hsm.spi.utils;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Sep 15, 2006
  */
 public abstract class StringUtils {

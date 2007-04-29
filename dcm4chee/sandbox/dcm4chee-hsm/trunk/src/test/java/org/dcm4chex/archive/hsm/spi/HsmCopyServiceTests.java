@@ -56,7 +56,6 @@ import java.util.ArrayList;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Jan 18, 2007
  */
 public class HsmCopyServiceTests {

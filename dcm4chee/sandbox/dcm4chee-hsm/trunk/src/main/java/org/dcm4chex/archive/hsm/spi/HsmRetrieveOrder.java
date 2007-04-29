@@ -44,8 +44,16 @@ import org.dcm4chex.archive.hsm.spi.utils.Assert;
 import java.util.*;
 
 /**
+ * Used for asynchronous HSM retrieve calls. This is a very fat message, it contains all data necessary
+ * for an HSM retrieve without hitting the DB (except DB updates afterwards).
+ * <p>
+ * <b>Note:</b> If files were packed into a TAR file before archiving, <code>HsmRetrieveOrder</code>
+ * will group them by series IUID and as soon as a complete series is retrieved from the HSM archive
+ * it will be sent to the requesting modality.
+ *
+ * @see org.dcm4chex.archive.hsm.spi.HsmFile
+ * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveService
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Feb 14, 2007
  */
 public class HsmRetrieveOrder extends BaseJmsOrder {
@@ -53,6 +61,13 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
     private final String destination;
     private static final long serialVersionUID = 5152979080490966440L;
 
+    /**
+     * Constructs a new instance of <code>HsmRetrieveOrder</code> with the specified array of archived files
+     * and destination AE title of the requesting modality.
+     *
+     * @param archivedFiles array of files to be retrieved from the HSM archive
+     * @param destination destination AE title of the modality to send images afterwards
+     */
     public HsmRetrieveOrder(FileInfo[][] archivedFiles, String destination) {
         this(new HashMap<String, List<HsmFile>>(), destination);
         Assert.notNull(archivedFiles, "archivedFiles"); // NON-NLS
@@ -76,6 +91,16 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
         }
     }
 
+    /**
+     * Constructs a new instance of <code>HsmRetrieveOrder</code> using the specified map of series IUID =>
+     * list of HSM objects and destination AE title of the requesting modality.
+     * <br>
+     * Useful for cases when files to be retrieved were already grouped into HSM objects, e.g. if an HSM retrieve call
+     * failed and it has to be rescheduled.
+     *
+     * @param hsmFiles map of series IUID => list of HSM objects to retrieve
+     * @param destination destination AE title of the modality to send images afterwards
+     */
     public HsmRetrieveOrder(Map<String, List<HsmFile>> hsmFiles, String destination) {
         Assert.hasText(destination, "destination"); // NON-NLS
         Assert.notNull(hsmFiles, "hsmFiles"); // NON-NLS
@@ -92,6 +117,12 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
         return Collections.unmodifiableMap(hsmFiles);
     }
 
+    /**
+     * Instance of this class is equal to other only if they contain an equal collections of HSM files to retrieve
+     * and the same destination AE title.
+     * @param o other object to check equality with
+     * @return <code>true</code> or <code>false</code> based on the check described above
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,6 +134,11 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
 
     }
 
+    /**
+     * Computes the hash code based on the hash codes of the destination AE title and the collection of
+     * HSM files to retrieve.
+     * @return computed hash code
+     */
     @Override
     public int hashCode() {
         int result;

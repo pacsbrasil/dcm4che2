@@ -49,8 +49,18 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 
 /**
+ * This class extends <code>QueryRetrieveScpService</code> to create an instance
+ * of <code>HsmAwareMoveScp</code> class instead of <code>MoveScp</code> to filter out archived
+ * files and retrieve them from the HSM archive.
+ *
+ * HSM retrieve is done asynchronously, posting an <code>HsmRetrieveOrder</code> to the
+ * <code>HsmRetrieve</code> JMS queue.
+ *
+ * @see HsmAwareMoveScp
+ * @see QueryRetrieveScpService
+ * @see #createMoveScp
+ * @see  #retriveAndSend
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Nov 29, 2006
  */
 public class HsmAwareQueryRetrieveScpService extends QueryRetrieveScpService {
@@ -66,10 +76,26 @@ public class HsmAwareQueryRetrieveScpService extends QueryRetrieveScpService {
 
     private static final Log logger = LogFactory.getLog(HsmAwareQueryRetrieveScpService.class);
 
+    /**
+     * Creates a new instance of <code>HsmAwareMoveScp</code>.
+     * @return a new instance of <code>HsmAwareMoveScp</code>
+     */
     protected MoveScp createMoveScp() {
         return new HsmAwareMoveScp(this);
     }
 
+    /**
+     * Invokes an asynchronous HSM retrieval of archived files. Invoked <code>HsmRetrieveOrder</code>
+     * contains the destination AE title for a deferred <code>C-MOVE</code> task invocation.
+     * <p>
+     * <b>Note:</b> In case if files were packed into a TAR archive, the
+     * granularity of the deferred <code>C-MOVE</code> tasks will be a single series.
+     *
+     * @param archivedFiles an array of files to be retrieved
+     * @param destination destination AE title for the <code>C-MOVE</code> task
+     * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveOrder
+     * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveService
+     */
     public void retriveAndSend(FileInfo[][] archivedFiles, String destination) {
         HsmRetrieveOrder order = new HsmRetrieveOrder(archivedFiles, destination);
         try {
@@ -79,10 +105,10 @@ public class HsmAwareQueryRetrieveScpService extends QueryRetrieveScpService {
                     new String[]{String.class.getName(), Serializable.class.getName(), int.class.getName(), long.class.getName()});
         } catch (Exception e) {
             logger.error(MessageFormat.format(ERROR_FAILED_TO_QUEUE_HSM_RETRIEVE_ORDER, order), e);
-            // TODO - ignored exception
         }
     }
 
+    // Hook for tests to substitute the call to System.currentTimeMillis()
     private long now() {
         return timeProvider == null ? System.currentTimeMillis() : timeProvider.now();
     }

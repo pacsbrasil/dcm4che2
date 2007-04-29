@@ -51,7 +51,6 @@ import java.io.IOException;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Dec 1, 2006
  */
 public class HsmUtilsTests {

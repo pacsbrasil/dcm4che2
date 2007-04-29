@@ -41,7 +41,6 @@ import java.text.MessageFormat;
 
 /**
  * @author Fuad Ibrahimov
- * @version $Id$
  * @since Mar 28, 2007
  */
 public abstract class Assert {
