@@ -48,8 +48,6 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
@@ -86,12 +84,11 @@ public class ForwardService extends ServiceMBeanSupport {
                 final String destAET = ForwardingRules.toAET(destAETs[i]);
                 final long scheduledTime = ForwardingRules
                         .toScheduledTime(destAETs[i]);
-                Dataset ian = seriesStored.getIAN();
                 scheduleMove(seriesStored.getRetrieveAET(), destAET,
-                        forwardPriority, seriesStored.getPatientID(), ian
-                                .getString(Tags.StudyInstanceUID), ian.getItem(
-                                Tags.RefSeriesSeq).getString(
-                                Tags.SeriesInstanceUID), scheduledTime);
+                        forwardPriority, null,
+                        seriesStored.getStudyInstanceUID(),
+                        seriesStored.getSeriesInstanceUID(),
+                        scheduledTime);
             }
         }
     };

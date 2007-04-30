@@ -113,12 +113,14 @@ public class ForwardingRules {
 
     public static long toScheduledTime(String s) {
         int delim = s.lastIndexOf('!');
-        if (delim == -1)
-            return 0L;
-        int hypen = s.lastIndexOf('-');
-        int notAfterHour = Integer.parseInt(s.substring(delim+1, hypen));
-        int notBeforeHour = Integer.parseInt(s.substring(hypen+1));
-        Calendar cal = Calendar.getInstance();
+        return (delim == -1) ? 0L : afterBusinessHours(
+                Calendar.getInstance(), s.substring(delim+1));
+    }
+
+    public static long afterBusinessHours(Calendar cal, String businessHours) {
+        int hypen = businessHours.lastIndexOf('-');
+        int notAfterHour = Integer.parseInt(businessHours.substring(0, hypen));
+        int notBeforeHour = Integer.parseInt(businessHours.substring(hypen+1));
         int hour = cal.get(Calendar.HOUR_OF_DAY);
         boolean sameDay = notAfterHour <= notBeforeHour;
         boolean delay = sameDay 
@@ -132,7 +134,7 @@ public class ForwardingRules {
         cal.set(Calendar.HOUR_OF_DAY, notBeforeHour);
         if (!sameDay && hour >= notAfterHour)
             cal.add(Calendar.DAY_OF_MONTH, 1);
-        return cal.getTimeInMillis();
+        return cal.getTimeInMillis();        
     }
     
     public String[] getForwardDestinationsFor(Map param) {

@@ -182,6 +182,7 @@ public class MoveScuService extends AbstractScuService implements
 
     private void scheduleMoveOrder(MoveOrder order, long scheduledTime) {
         try {
+            log.info("Schedule order: " + order);            
             jmsDelegate.queue(queueName, order, JMSDelegate.toJMSPriority(order
                     .getPriority()), scheduledTime);
         } catch (Exception e) {
