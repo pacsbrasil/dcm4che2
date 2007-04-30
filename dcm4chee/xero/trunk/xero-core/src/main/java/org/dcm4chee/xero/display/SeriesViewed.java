@@ -54,16 +54,16 @@ import org.jboss.seam.ScopeType;
 public class SeriesViewed {
 	@Logger static Log log;
 
-	String seriesInstanceUID;
+	String seriesUID;
 	
-	public String getSeriesInstanceUID() {
-		return seriesInstanceUID;
+	public String getSeriesUID() {
+		return seriesUID;
 	}
 	
-	public void setSeriesInstanceUID(String uid) {
+	public void setSeriesUID(String uid) {
 		if( uid==null || uid.length()==0 ) return;
 		log.info("Series viewed set to #0", uid);
-		this.seriesInstanceUID = uid;
+		this.seriesUID = uid;
 	}
 	
 }

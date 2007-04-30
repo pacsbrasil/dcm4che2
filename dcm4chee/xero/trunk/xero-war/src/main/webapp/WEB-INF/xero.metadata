@@ -10,14 +10,6 @@ metaDataProvider.xhtml.propertyFile=index.html
 metaDataProvider.xhtml.rootXml=http://www.dcm4che.org/xero/metadata
 valueProvider.seam=${org.dcm4chee.xero.metadata.seam.SeamELValueProvider}
 
-# Display level meta-data
-
-display.xsl=imageXsl.xsl
-display.commands=${org.dcm4chee.xero.metadata.list.MetaDataList}
-display.commands.cine.name=Cine
-display.commands.cine.priority=15
-display.commands.cine.icon=/img/cine.png
-display.commands.cine.xsl=cineXsl.xhtml
 
 # Search level
 search.xsl=searchXsl.xsl
@@ -54,16 +46,17 @@ converters.Modality.template=rawConverter
 converters.DateTime.template=rawConverter
 converters.StudySelector.template=studyCheckboxConverter
 converters.PatientSelector.template=patientCheckboxConverter
-converters.PatientsName.template=patientsNameConverter
+converters.PatientName.template=patientNameConverter
 
 # Input elements for various types
 inputs.default.template=rawInput
 inputs.Name.template=rawInput
-inputs.PatientsName.template=rawInput
+inputs.PatientName.template=rawInput
 inputs.UID.template=rawInput
 inputs.string.template=rawInput
 inputs.Modality.template=modalityInput
 Modality.CT=CT
+Modality.CR=CR
 Modality.MR=MR
 Modality.NM=NM
 Modality.SR=Structured Report

@@ -56,7 +56,7 @@ public class SeriesSearch extends DicomCFindFilter{
         Tag.Modality,
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
-        Tag.NumberofSeriesRelatedInstances };
+        Tag.NumberOfSeriesRelatedInstances };
 
 	@Override
 	protected String[] getCuids() {

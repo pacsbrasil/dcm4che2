@@ -72,10 +72,10 @@ public class StudyBean extends StudyType implements Study
 	protected void initAttributes(DicomObject data) {
 		setAccessionNumber(data.getString(Tag.AccessionNumber));
 		setInstanceAvailability(data.getString(Tag.InstanceAvailability));
-		setModalitiesInStudy(data.getString(Tag.ModalitiesinStudy));
-		setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberofStudyRelatedInstances));
-		setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberofStudyRelatedSeries));
-		setReferringPhysiciansName(data.getString(Tag.ReferringPhysiciansName));
+		setModalitiesInStudy(data.getString(Tag.ModalitiesInStudy));
+		setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
+		setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
+		setReferringPhysicianName(data.getString(Tag.ReferringPhysicianName));
 				
 		Date date = data.getDate(Tag.StudyDate, Tag.StudyTime);
 		if( date!=null ) {

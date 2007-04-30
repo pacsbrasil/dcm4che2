@@ -35,19 +35,38 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.filter;
+package org.dcm4chee.xero.wado;
 
-import java.util.Map;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 
-/** 
- * A filter-bean is an implementation of a filter that calls a filter-instance.  It is
- * intended to be created once for each location in the meta-data, and it remembers/optimizes
- * the set of required filters for this filter. 
- * @author bwallace
- */
-public abstract class FilterBean<T> implements Filter<T>
-{
+import org.dcm4chee.xero.metadata.filter.FixedItem;
 
-	abstract public T filter(FilterItem nextFilter, Map<String, ?> params);
+/** This class is a filter that provides a graded WADO image used for filter tests. */
+public class GradedWadoImage extends FixedItem<WadoImage> {
+
+	public GradedWadoImage() {
+		super(createImage());
+	}
+	
+	/** Create a 16 bit WadoImage that has increase high-byte equal to y, and
+	 * low-byte equal to x, as a 256x256 image.
+	 * @return WadoImage containing the specified image, on -1..1
+	 */
+	static WadoImage createImage() {
+		BufferedImage bi = new BufferedImage(256, 256, BufferedImage.TYPE_USHORT_GRAY);
+		WritableRaster wr = bi.getRaster();
+		int[] iArray = new int[1];
+		for(int i=0; i<256; i++ ) {
+			for(int j=0; j<256; j++ ) {
+				iArray[0] = (j << 8) + i;
+				wr.setPixel(i,j, iArray);
+			}
+		}
+		WadoImage wi = new WadoImage(bi, "BILEVEL", "-1.0", "1.0f");
+		wi.setParameter(WadoImage.WINDOW_CENTER, 0.5d);
+		wi.setParameter(WadoImage.WINDOW_WIDTH, 1.0d);
+		return wi;
+	}
 
 }

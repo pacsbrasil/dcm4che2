@@ -113,7 +113,7 @@ public class SearchConditionParser implements Filter<SearchCriteria> {
 		return ret;
 	}
 
-	public SearchCriteria filter(FilterItem filterItem, Map<String, ?> params) {
+	public SearchCriteria filter(FilterItem filterItem, Map<String, Object> params) {
 		return parseFromMap(params);
 	}
 

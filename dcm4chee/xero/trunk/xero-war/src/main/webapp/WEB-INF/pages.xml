@@ -15,7 +15,7 @@
       </rule>
       <rule if-outcome="View">
          <redirect view-id="/study/patientFrame.xhtml">
-           <param name="StudyInstanceUID" value="#{studySelection[0]}" />
+           <param name="StudyUID" value="#{studySelection[0]}" />
          </redirect>
       </rule>
       <rule if-outcome="success">
@@ -46,37 +46,45 @@
   
   <page view-id="/study/patientFrame.xhtml" action="#{CyclePageAction.ensureStudyPresent}">
     <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
-    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
-    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="objectUID" value="#{ImageViewed.objectUID}" />
   </page>
   
   <page view-id="/study/displayFrame.xhtml"> 
     <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
-    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
-    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="objectUID" value="#{ImageViewed.objectUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/study/study.xhtml">
     <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
-    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
-    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="SeriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="objectUID" value="#{ImageViewed.objectUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/series/seriesTray.xhtml">
-    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
-    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/image/image.xhtml">
-    <param name="StudyInstanceUID" value="#{PatientViewed.studyInstanceUID}" />
-    <param name="SeriesInstanceUID" value="#{SeriesViewed.seriesInstanceUID}" />
-    <param name="SOPInstanceUID" value="#{ImageViewed.sopInstanceUID}" />
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="objectUID" value="#{ImageViewed.objectUID}" />
+    <param name="cine" value="#{ImageEvent.cine}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/wl/dynamicWL.xhtml">
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="objectUID" value="#{ImageViewed.objectUID}" />
     <param name="cine" value="#{ImageEvent.cine}" />
     <begin-conversation join="true" />
   </page>

@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <x:xsl
-   pageConfig="#{PageConfig.imageToolbar}"
+   pageConfig="#{PageConfig.display.toolbar}"
    xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/metadata/imageToolbar"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/display/toolbar"
+   xmlns:md="http://www.dcm4che.org/xero/metadata/display"
+   m:includeXsl="../image/imageToolbarXsl.xsl"
+   m:body="imageToolbar"
    xmlns:c="http://java.sun.com/jstl/core"
-   m:prev.toolbar="imageToolbarPrevious" m:prev.toolbar.priority="0"
-   m:next.toolbar="imageToolbarNext" m:next.toolbar.priority="1000"
+   md:prev.toolbar="imageToolbarPrevious" md:prev.toolbar.priority="0"
+   md:next.toolbar="imageToolbarNext" md:next.toolbar.priority="1000"
 >
 
 <xsl:template name="imageToolbarPrevious">
   <xsl:if test="$imagePrevUID!=''">
   <a>
     <xsl:attribute name="style">float: left;</xsl:attribute>
-  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imagePrevUID" /></xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imagePrevUID" /></xsl:attribute>
   	&lt;Prev<span> </span>
   </a>
   </xsl:if>
@@ -23,7 +26,7 @@
   <xsl:if test="$imageNextUID!=''">
   <a>
     <xsl:attribute name="style">float: right;</xsl:attribute>
-  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageNextUID" /></xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imageNextUID" /></xsl:attribute>
   	&gt;Next
   </a>
   </xsl:if>
@@ -32,8 +35,10 @@
 <xsl:template name="imageToolbar">
 <div style="position: absolute; top:0; left:0; height: 50px;">
   <span>
-    <c:forEach var="tool" items="#{x:sorted(pageConfig,'toolbar')}">
+    <c:forEach var="tool" items="#{x:sorted(PageConfig.display,'toolbar')}">
+      <c:if test="#{tool.toolbar!=null}">
       <xsl:call-template name="#{tool.toolbar}" />
+      </c:if>
     </c:forEach>
   </span>
 </div>

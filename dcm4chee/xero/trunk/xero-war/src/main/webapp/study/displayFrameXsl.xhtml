@@ -21,13 +21,13 @@
         <xsl:attribute name="id">seriesTrayFrame</xsl:attribute>
         <xsl:attribute name="studyUID"><xsl:value-of select="$studyUID" /></xsl:attribute>
         <xsl:if test="$studyUID!=''">
-		    <xsl:attribute name="src">../series/seriesTray.seam?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
+		    <xsl:attribute name="src">../series/seriesTray.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
 		</xsl:if>
 	  </frame>
       <frame>
         <xsl:attribute name="name">imageFrame</xsl:attribute>
         <xsl:attribute name="id">imageFrame</xsl:attribute>
-        <xsl:attribute name="src">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;StudyInstanceUID=<xsl:value-of select="$studyUID" />&amp;SeriesInstanceUID=<xsl:value-of select="$seriesUID" /></xsl:attribute>
+        <xsl:attribute name="src">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" /></xsl:attribute>
 	  </frame>        
    </frameset>
    <noframe>

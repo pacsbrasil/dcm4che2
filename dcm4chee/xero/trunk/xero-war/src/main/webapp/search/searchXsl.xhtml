@@ -15,12 +15,12 @@
 <!-- Include the search variables -->
 <ui:decorate template="searchVars.xhtml" />
 
-<!-- Converts the patients name into a link, using (Unknown) if empty. -->
-<xsl:template name="patientsNameConverter">
+<!-- Converts the patient name into a link, using (Unknown) if empty. -->
+<xsl:template name="patientNameConverter">
   <xsl:param name="row" />
   <xsl:param name="value" />
   <a>
-    <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;PatientIdentifier=<xsl:value-of select="$row/parent::*/@PatientIdentifier"/>&amp;StudyInstanceUID=<xsl:value-of select="$row/@StudyInstanceUID" /></xsl:attribute>
+    <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;PatientIdentifier=<xsl:value-of select="$row/parent::*/@PatientIdentifier"/>&amp;studyUID=<xsl:value-of select="$row/@StudyInstanceUID" /></xsl:attribute>
     <xsl:attribute name="target">mainFrame</xsl:attribute>
     <xsl:if test="$value=''">
       (Unknown)

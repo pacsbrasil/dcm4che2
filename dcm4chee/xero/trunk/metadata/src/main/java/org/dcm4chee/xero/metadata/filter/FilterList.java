@@ -43,7 +43,11 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.PreConfigMetaData;
 
 /**
- * A filter list is a filter that is just a collection of child filters.  
+ * A filter list is a filter that is just a collection of child filters. 
+ * This can be used to combine filters in standard ways, such as an IMAGE based
+ * WADO filter, or to be a top-level filter by itself, for instance the final
+ * WADO filter that uses an IMAGE filter list, a report filter list etc.
+ * Does NOT implement java.util.List. 
  * 
  * @author bwallace
  *
@@ -55,11 +59,11 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	 * 
 	 * @param configData contains the pre-computed configuration data.  This data is figured
 	 * out from the meta-data typically, and is used to optimize the filter performance.
-	 * @param params
-	 * @return
+	 * @param params to use to retrieve the data.
+	 * @return The filtered item, or null if not applicable.
 	 */
 	@SuppressWarnings("unchecked")
-	public T filter(FilterItem filterItem, Map<String, ?> params) {
+	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
 		FilterItem firstFilter = filterListConfig.getFirstFilter();
 		if( firstFilter!=null ) {
@@ -69,6 +73,13 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 		return (T) filterItem.callNextFilter(params);
 	}
 
+	/** Retrieve any pre-computed list of child elements for this filter list,
+	 * based on the given position in the meta-data - that allows a single
+	 * instance of a filter list to have different contents based on where
+	 * it is in the tree.
+	 * @param mdb to get the configuration data from.  
+	 * @return The filter config to use for the particular meta data bean.
+	 */
 	public FilterListConfig getConfigMetaData(MetaDataBean mdb) {
 		return new FilterListConfig(mdb);
 	}

@@ -294,7 +294,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		}
 	}
 
-	public ResultFromDicom filter(FilterItem filterItem, Map<String, ?> params) {
+	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
 		ResultsBean resultFromDicom = new ResultsBean();
 		SearchCriteria searchCondition = (SearchCriteria) 
 			filterItem.callNamedFilter("searchCondition", params);

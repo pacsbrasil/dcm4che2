@@ -31,10 +31,10 @@
          <sequence maxOccurs="unbounded" minOccurs="0">
             <element ref="tns:study" />
          </sequence>
-         <attribute name="PatientsSex" type="tns:SexEnum" />
+         <attribute name="PatientSex" type="tns:SexEnum" />
          <attribute name="PatientID" />
-         <attribute name="PatientsName" />
-         <attribute name="PatientsBirthDate" type="dateTime"/>
+         <attribute name="PatientName" />
+         <attribute name="PatientBirthDate" type="dateTime"/>
          <attribute name="PatientIdentifier" type="string" />
     </complexType>
 
@@ -50,7 +50,7 @@
     	<attribute name="NumberOfStudyRelatedInstances" type="int" />
     	<attribute name="NumberOfStudyRelatedSeries" type="int" />
     	<attribute name="InstanceAvailability" />
-    	<attribute name="ReferringPhysiciansName" />
+    	<attribute name="ReferringPhysicianName" />
     	<attribute name="AccessionNumber" />
     	<attribute name="StudyDescription" />
     </complexType>

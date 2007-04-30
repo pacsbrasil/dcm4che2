@@ -1,0 +1,9 @@
+wado=${org.dcm4chee.xero.metadata.filter.FilterList}
+wado.encode=${org.dcm4chee.xero.wado.EncodeImage}
+wado.encode.priority=10000
+wado.memcache=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+wado.memcache.priority=5000
+wado.wl=${org.dcm4chee.xero.wado.WLFilter}
+wado.wl.priority=6000
+wado.src=${org.dcm4chee.xero.wado.WadoSource}
+wado.src.priority=0

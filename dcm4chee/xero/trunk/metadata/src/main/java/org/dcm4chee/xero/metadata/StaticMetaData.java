@@ -44,6 +44,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class knows how to provide static meta-data information. This meta-data
  * typically comes from something such as: 1. Seam Theme 2. Static property file
@@ -53,6 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  */
 public class StaticMetaData {
+	private static Logger log = LoggerFactory.getLogger(StaticMetaData.class);
 
 	static Map<URL, MetaDataBean> metaDataByUrl = new ConcurrentHashMap<URL, MetaDataBean>();
 
@@ -65,18 +69,18 @@ public class StaticMetaData {
 	 * the same content, but they will be distinct in terms of the actual
 	 * objects.
 	 * 
-	 * @param name
-	 * @param loader
-	 * @return
+	 * @param url is the url to load as a property file into a meta-data object.
+	 * @return A cached or new meta-data object for the given location.
 	 */
 	@SuppressWarnings("unchecked")
 	public static MetaDataBean getMetaDataByUrl(URL url) {
 		if (url == null)
-			throw new NullPointerException(
+			throw new IllegalArgumentException(
 					"Properties url for meta data is null");
 		MetaDataBean mdb = metaDataByUrl.get(url);
 		if (mdb != null)
 			return mdb;
+		log.info("Loading metadata "+url);
 		Properties properties = new Properties();
 		try {
 			properties.load(url.openStream());
@@ -91,12 +95,14 @@ public class StaticMetaData {
 	}
 
 	/**
-	 * Get the value form the curren thread class loader as a string name.
+	 * Get the value form the current thread class loader as a string name.
 	 * 
-	 * @param surl
-	 * @return
+	 * @param surl is a string based URL - this will be converted into a URL based version using the class/thread resources.
+	 * @return A cached or new meta data bean containing the meta-data.
+	 * @throws IllegalArgumentException if surl is null, or if no resources is found by that name.
 	 */
 	public static MetaDataBean getMetaData(String surl) {
+		if( surl==null ) throw new IllegalArgumentException("Null string provided for meta-data name.");
 		MetaDataBean mdb;
 		if (surl.indexOf(":") >= 0) {
 			try {
@@ -107,6 +113,11 @@ public class StaticMetaData {
 		} else {
 			ClassLoader cl = Thread.currentThread().getContextClassLoader();
 			URL url = cl.getResource(surl);
+			if( url==null ) {
+				log.debug("Trying static class getReource for "+surl);
+				url = StaticMetaData.class.getResource(surl);
+			}
+			if( url==null ) throw new IllegalArgumentException("URL for meta-data name "+surl+" is null.");
 			mdb = getMetaDataByUrl(url);
 			mdb.instanceValue = surl;
 		}

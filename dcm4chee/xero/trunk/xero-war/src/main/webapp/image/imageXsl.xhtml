@@ -1,59 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
-  xmlns:m="http://www.dcm4chee.org/xero/metadata/display"
-  m:xsl="imageXsl.xsl"
+<x:xsl
+   pageConfig="#{PageConfig.display}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/display"
+   m:xsl="imageXsl.xsl"
+   m:docName="/documents/images"
+   m:Display.script="ImageEvent.js"
+   m:Display.script.priority="100"
+   m:WL.script="windowLevel.js"
 >
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
-   xmlns="http://www.w3.org/1999/xhtml">
-   
-<xsl:variable name="docName" select="/documents/images" />
-
-<ui:include src="imageVars.xhtml" />
-
-<xsl:include href="imageToolbarXsl.xsl" />
-
-<xsl:include href="baseImageXsl.xsl" />
 
 <ui:fragment>
-<xsl:template name="contentTypeMeta">
+<x:template name="contentTypeMeta" m:Display.meta="contentTypeMeta" m:Display.meta.priority="25">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" xmlns="http://www.w3.org/1999/xhtml"/>
-</xsl:template>
+</x:template>
 </ui:fragment>
 
-<xsl:template match="/"><html style="background: black; color: white; ">
-  <head>
-    <xsl:call-template name="contentTypeMeta" />
-    <xsl:call-template name="cineMeta" />
-    <title>Xero Image Frame</title>
-  </head>
-<body style="background: black; color: white;">
+<x:template name="display.debug" m:Debug.body="display.debug" m:Debug.body.priority="100">
   <xsl:if test="/documents/debug='true'">
      docName=<xsl:value-of select="$docName" /><br />
      imageUID=<xsl:value-of select="$imageUID" /> <br />
      imagePrevUID=<xsl:value-of select="$imagePrevUID" /><br />
      imageNextUID=<xsl:value-of select="$imageNextUID" /><br />
   </xsl:if>
+</x:template>
 
-  <xsl:call-template name="baseImage" />
-  <xsl:call-template name="imageToolbar" />
+<x:template name="displayScriptVars" m:scriptVars.script="displayScriptVars" m:scriptVars.script.priority="110">
+    <xsl:element name="script">
+      <xsl:attribute name="type">text/ecmascript</xsl:attribute>
+var studyUID="<xsl:value-of select="$studyUID" />";
+var seriesUID="<xsl:value-of select="$seriesUID" />";
+var imageUID="<xsl:value-of select="$imageUID" />";
+    </xsl:element>
+</x:template>
   
-  <xsl:call-template name="cinePrefetch" />
-  
-  <link>
-     <xsl:attribute name="rel">prefetch</xsl:attribute>
-     <xsl:attribute name="href">/wado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imageNextUID"/>&amp;rows=512</xsl:attribute>
-  </link>
-  <link>
-     <xsl:attribute name="rel">prefetch</xsl:attribute>
-     <xsl:attribute name="href">/wado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imagePrevUID"/>&amp;rows=512</xsl:attribute>
-  </link>
-  
-</body>
-
+<x:template name="displayHtml" match="/"><html style="background: black; color: white; ">
+  <head>
+    <x:callTemplates from="#{pageConfig}" mode="meta" />
+    <title>Xero Image Frame</title>
+    <x:callTemplates from="#{pageConfig}" mode="script" />
+  </head>
+  <body id="body" style="background: black; color: white;" onload="init()"
+        onmouseup="imageHandler.mouseUp(event)"
+        onmouseout="imageHandler.mouseUp(event)"
+        onmousemove="imageHandler.mouseMove(event)"
+  >
+    <x:callTemplates from="#{pageConfig}" mode="body" />
+  </body>
 </html>
-</xsl:template>
+</x:template>
 
-</xsl:stylesheet>
-
-</ui:fragment>
+</x:xsl>

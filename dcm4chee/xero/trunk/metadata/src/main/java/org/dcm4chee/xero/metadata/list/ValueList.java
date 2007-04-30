@@ -51,6 +51,7 @@ import org.dcm4chee.xero.metadata.MetaDataUser;
  * 
  * @author bwallace
  */
+@SuppressWarnings("serial")
 public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 
 	/**

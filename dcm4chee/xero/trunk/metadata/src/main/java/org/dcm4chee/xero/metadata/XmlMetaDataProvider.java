@@ -82,6 +82,23 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	DefaultHandler defaultHandler = new DefaultHandler() {
 		Map<String, String> prefixToNode = new HashMap<String, String>();
 
+		/**
+		 * Read the attributes from the given element, using their namespace
+		 * as a parent meta-data location name, and their localName to extend the
+		 * location under the parent meta-data.
+		 * An example would be:<br />
+		 * Attribute namespace: <code>http://metadata/a/b</code> <br />
+		 * where the rootXml is http://metadata would provide a base name of
+		 * <code>a.b</code>  Then, if the localname was c.d, with value 'v'
+		 * then the final meta-data from this object would be:
+		 * a.b.c.d=v
+		 * This is added to the metaData variable.
+		 * @param uri unused.
+		 * @param localName unused
+		 * @param qName unused
+		 * @param attributes that are in the meta-data namespace are parsed
+		 * and the localName is added to that to form a full name.
+		 */
 		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
@@ -103,14 +120,19 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 					log.info("Found an attribute to include: " + key + "="
 							+ attributes.getValue(i));
 					metaData.put(key, attributes.getValue(i));
-				} else {
-					log.debug("URI doesn't match:" + uriAt);
 				}
 			}
 		}
 
 	};
 
+	/**
+	 * Gets the meta-data for the given path - in fact, returns all
+	 * XML provided meta-data.
+	 * @param path unused
+	 * @param existingMetaData unused
+	 * @return A map containing all the XML based meta-data from this given rootXml.
+	 */
 	public Map<String, ?> getMetaData(String path, MetaDataBean existingMetaData) {
 		log.debug("Getting meta-data information from XML files for path "
 				+ path + " existing meta-data path="
@@ -123,7 +145,8 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	 * Returns a File reference to the directory containing the propertyFile
 	 * resource.
 	 * 
-	 * @param propertyFile
+	 * @param propertyFile is the propertyFile to return the parent directory for.
+	 * @return File contianing propertyFile.
 	 */
 	static public File getFileContaining(String propertyFile) {
 		ClassLoader classLoader = Thread.currentThread()
@@ -151,9 +174,9 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	 * Recursively search through all directories, returning all elements
 	 * matching fileFilter.
 	 * 
-	 * @param dir
-	 * @param fileFilter
-	 * @return
+	 * @param dir to start from.
+	 * @param fileFilter to match items from dir
+	 * @param files to add to all matching files to.
 	 */
 	static public void recursiveListFiles(File dir, FileFilter fileFilter,
 			List<File> files) {
@@ -172,6 +195,7 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	/**
 	 * Scans the XML file for properties. Uses the SAX parser to efficiently
 	 * scan for properties.
+	 * @param file to scan for matching XML meta-data.
 	 */
 	protected void scanFile(File f) {
 		try {
@@ -195,7 +219,9 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 
 	/**
 	 * Uses the meta-data to figure out what directory to scan, based on the
-	 * directory containin the meta-data property file.
+	 * directory containin the meta-data property file
+	 * @param metaDataBean contains information about what namespaces
+	 * to search for xml files for, and what suffixes to use for them.
 	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		if (rootXml != null)

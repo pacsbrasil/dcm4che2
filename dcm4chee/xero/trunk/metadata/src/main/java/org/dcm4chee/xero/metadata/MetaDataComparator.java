@@ -49,21 +49,43 @@ public class MetaDataComparator implements Comparator<MetaDataBean>{
 	int defaultValue;
 	String sortKey;
 	
+	/**
+	 * Comapre meta-data nodes on "priority" and 0 as the sort key and
+	 * default value.
+	 *
+	 */
 	public MetaDataComparator()
 	{
 		this(MetaDataBean.DEFAULT_SORT_KEY);
 	}
 	
+	/**
+	 * Compare meta-data nodes for ordering, based on the child sortKey,
+	 * with values missing sortKey have value defaultValue.
+	 * @param sortKey is the child key to use for the priority/sort value.
+	 * @param defaultValue is the value to use for sorting if no child key is found.
+	 */
 	public MetaDataComparator(String sortKey, int defaultValue)
 	{
 		this.sortKey = sortKey;
 		this.defaultValue = defaultValue;
 	}
 	
+	/**
+	 * Compare meta-data nodes on the given sortKey, with 0 as the default value. 
+	 * @param sortKey is the child key to use for the priority/sort value.
+	 */
 	public MetaDataComparator(String sortKey) {
 		this(sortKey,0);
 	}
 
+	/**
+	 * Compare two meta-data beans, by the value of the sortKey child.
+	 * This will default to a biggest to smallest ordering.
+	 * @param o1 is the first meta-data bean to compare.
+	 * @param o2 is the second meta-data bean to compare.
+	 * @return positive if o2 is bigger than o1 (that is, if the sortKey value is bigger), zero if they are the same, and negative otherwise.
+	 */
 	public int compare(MetaDataBean o1, MetaDataBean o2) {
 		String o1SortStr = (String) o1.getValue(sortKey);
 		String o2SortStr = (String) o2.getValue(sortKey);
@@ -71,7 +93,6 @@ public class MetaDataComparator implements Comparator<MetaDataBean>{
 		int o2Sort = defaultValue;
 		if( o1SortStr!=null ) o1Sort = Integer.parseInt(o1SortStr);
 		if( o2SortStr!=null ) o2Sort = Integer.parseInt(o2SortStr);
-		System.out.println("Comparing "+o1Sort+" to " + o2Sort + " in "+o1.getPath() + " and "+ o2.getPath());
 		int ret = o2Sort - o1Sort;
 		return ret; 
 	}

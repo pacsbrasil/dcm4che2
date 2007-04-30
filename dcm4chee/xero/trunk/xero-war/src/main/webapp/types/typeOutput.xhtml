@@ -10,8 +10,6 @@
    
 <x:includeXsl fromMeta="#{metadata.converters}" />
 
-<xsl:variable name="selectedStudies" select="/documents/study" />
-
 <!-- The raw converter just prints out the raw value, unchanged. -->
 <xsl:template name="rawConverter">
    <xsl:param name="value" />
@@ -33,8 +31,8 @@
   </input>
 </xsl:template>
 
-<!-- Default patients name converter. -->
-<xsl:template name="patientsNameConverter">
+<!-- Default patient name converter. -->
+<xsl:template name="patientNameConverter">
    <xsl:param name="value" />
    <xsl:value-of select="$value" />
 </xsl:template>

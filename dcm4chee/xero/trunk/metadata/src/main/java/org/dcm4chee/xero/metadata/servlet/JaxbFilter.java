@@ -49,7 +49,7 @@ import javax.xml.bind.Marshaller;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
-import org.dcm4chee.xero.metadata.filter.FilterBean;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 
 /** This class knows how to encode a single item as XML, based on the pre-condition
@@ -61,21 +61,32 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
  * @author bwallace
  *
  */
-public class JaxbFilter extends FilterBean<ServletResponseItem> implements MetaDataUser
+public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 {
 	JAXBContext context;
 	static Logger log = Logger.getLogger(JaxbFilter.class.getName());
 	
+	/**
+	 * This class holds the filtered response item until it is time to be serialized
+	 * 
+	 * @author bwallace
+	 *
+	 */
 	static class JaxbServletResponseItem implements ServletResponseItem {
 		Object data;
 		JAXBContext context;
 		
+		/** Hold the given data item, and JAXB context until serialization occurs. */
 		JaxbServletResponseItem(Object data, JAXBContext context)
 		{
 			this.data = data;
 			this.context = context;
 		}
 
+		/** Actually write the XML out to the response.
+		 * @param response to write teh XML to.
+		 * @param request is ignored.
+		 */
 		public void writeResponse(HttpServletRequest request, HttpServletResponse response) {
 			try {
 				if( context==null ) {
@@ -92,14 +103,20 @@ public class JaxbFilter extends FilterBean<ServletResponseItem> implements MetaD
 		}
 	}
 
-	@Override
-	public ServletResponseItem filter(FilterItem nextFilter, Map<String, ?> params) {
+	/** Convert the object (if any) into a servlet response item that serializes it as XML
+	 * @param nextFilter is called to get the item to convert to XML.
+	 * @param params are just passed down the filter chain.
+	 * @return a servlet response that can be used to actually write the XML data.
+	 */
+	public ServletResponseItem filter(FilterItem nextFilter, Map<String, Object> params) {
 		Object data = nextFilter.callNextFilter(params);
 		if( data==null ) return null;
 		return new JaxbServletResponseItem(data,context);
 	}
 
-	/** Read the context path from the meta-data */
+	/** Read the context path from the meta-data.
+	 * @param metadatabean to read the JAXBContext name from.
+	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		String contextPath = (String) metaDataBean.getValue("contextPath");
 		log.warning("Found contextPath="+contextPath);

@@ -103,7 +103,7 @@ public class SearchPageAction  extends CyclePageAction {
 	}
 
 	/** Parses the search criteria from the map */
-	void parseSearchCriteria(String submit, Map<String,String[]> map) {
+	void parseSearchCriteria(String submit, Map<String,?> map) {
 		if( submit!=null ) {
 			log.debug("Parsing criteria from provided values.");
 			criteria = parser.parseFromMap(map);

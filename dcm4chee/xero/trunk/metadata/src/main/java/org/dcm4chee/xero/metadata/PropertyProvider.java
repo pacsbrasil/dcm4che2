@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class provides meta-data from a given string-string map.
  * 
@@ -52,19 +55,24 @@ import java.util.Properties;
  * 
  */
 public class PropertyProvider implements MetaDataProvider, MetaDataUser {
-	Map<String, ?> properties;
+	private static Logger log = LoggerFactory.getLogger(PropertyProvider.class);
+	Map<String, Object> properties;
 
 	/**
 	 * This constructor is used outside of the MetaDataBean to create the
 	 * initial property provider values.
 	 * 
-	 * @param properties
+	 * @param properties contains the meta data to use.
 	 */
 	public PropertyProvider(Map<String, ?> properties) {
 		this.properties = new HashMap<String, Object>(properties);
 	}
 
-	/** Returns the meta-data information available from the properties file */
+	/** Returns the meta-data information available from the properties file
+	 * @param path is the location to get meta data for
+	 * @param existingMetaData is the meta data already found at that location.
+	 * @return map of a String to meta-data values.
+	 * */
 	public Map<String, ?> getMetaData(String path, MetaDataBean existingMetaData) {
 		// This is more than is needed, as we really only need properties
 		// starting with
@@ -74,11 +82,13 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 		return properties;
 	}
 
-	/** Read all the listed property files and combine them. */
+	/** Read all the listed property files and combine them.
+	 * @param metaDataBean contains resource names containing
+	 * property files.  Add these to any existing meta-data provided in the 
+	 * initial constructor.
+	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		List<MetaDataBean> children = metaDataBean.sorted();
-		Map<String, String> combined = new HashMap<String, String>();
-		properties = combined;
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		// Reverse in-place so as to add least-relevent items first, and
 		// override them later.
@@ -88,9 +98,15 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 				InputStream is = cl.getResourceAsStream((String) child
 						.getValue());
 				Properties props = new Properties();
+				if( is==null ) {
+					// This happens when the PropertyProvider is sub-classed with a direct map object.
+					log.debug("Child of "+metaDataBean.path + " has null resource stream "+child.path);
+					continue;
+				}
+				assert is!=null;
 				props.load(is);
 				for (Map.Entry me : props.entrySet()) {
-					combined.put((String) me.getKey(), (String) me.getValue());
+					properties.put((String) me.getKey(), (String) me.getValue());
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);

@@ -51,16 +51,17 @@ import org.jboss.seam.ScopeType;
 @Scope(ScopeType.CONVERSATION)
 public class ImageViewed {
 
-	String sopInstanceUID;
+	String objectUID;
 	
 	/** Get the sop instance uid being viewed. */
-	public String getSopInstanceUID() {
-		return sopInstanceUID;
+	public String getObjectUID() {
+		return objectUID;
 	}
 	
-	public void setSopInstanceUID(String uid) {
+	public void setObjectUID(String uid) {
 		if( uid==null || uid.length()==0 ) return;
-		this.sopInstanceUID = uid;
+		System.out.println("Set object UID to "+uid);
+		this.objectUID = uid;
 	}
 	
 }

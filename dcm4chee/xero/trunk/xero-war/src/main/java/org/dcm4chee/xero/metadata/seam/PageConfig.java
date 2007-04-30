@@ -102,6 +102,6 @@ public class PageConfig extends AbstractMap<String,MetaDataBean>
 
 	@Override
 	public Set<java.util.Map.Entry<String, MetaDataBean>> entrySet() {
-		throw new UnsupportedOperationException("Only get is supported");
+		return metadata.entrySet();
 	}
 }

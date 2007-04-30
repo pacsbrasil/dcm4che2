@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,9 @@ public class ContentTypeFilter  implements Filter{
 		HttpServletRequest hsr = (HttpServletRequest) request;
 		String specificContent = request.getParameter("contentType");
 		if( specificContent==null ) specificContent = contentType;
-		log.debug("Setting content type to "+specificContent+" for url "+hsr.getRequestURI());
+		log.info("Setting content type to "+specificContent+" for url "+hsr.getRequestURI());
 		response.setContentType(specificContent);
-		chain.doFilter(request,response);
+		chain.doFilter(request,new NoContentTypeResponse((HttpServletResponse) response));
 	}
 
 	public void init(FilterConfig config) throws ServletException {
@@ -36,5 +37,18 @@ public class ContentTypeFilter  implements Filter{
 		  contentType = config.getInitParameter("contentType");
 		}
 	}
+}
 
+class NoContentTypeResponse extends javax.servlet.http.HttpServletResponseWrapper
+{
+	static private Logger log = LoggerFactory.getLogger(NoContentTypeResponse.class);
+	public NoContentTypeResponse(HttpServletResponse response) {
+		super(response);
+	}
+
+	@Override
+	public void setContentType(String contentType) {
+		log.info("ContentTypeFilter over-riding content type of "+contentType);
+	}
+	
 }

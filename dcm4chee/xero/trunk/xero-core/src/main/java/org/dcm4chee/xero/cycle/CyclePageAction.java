@@ -122,7 +122,7 @@ public class CyclePageAction {
 	@Begin(join=true)
 	public String ensureStudyPresent() {
 		Map<String,String[]> map = facesContext.getExternalContext().getRequestParameterValuesMap();
-		String[] studyUids = map.get("StudyInstanceUID");
+		String[] studyUids = map.get("studyUID");
 		if( studyUids!=null ) {
 			addCycle(Arrays.asList(studyUids));
 		}

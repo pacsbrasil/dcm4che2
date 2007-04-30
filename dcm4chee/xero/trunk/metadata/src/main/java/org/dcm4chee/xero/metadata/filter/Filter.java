@@ -53,8 +53,9 @@ public interface Filter<T> {
 	/** Filters out a result, from one or more inputs.  The result maybe a stream
 	 * based result, in which case the class will continue to be used in an ongoing
 	 * basis until it is completed.
-	 * @param params
-	 * @return
+	 * @param params are the values to use to figure out the return value.  Modifiable by the callee
+	 * @param filterItem contains information about the available named filters, and the next filter item.
+	 * @return A created or modified value based on params.
 	 */
-    T filter(FilterItem filterItem, Map<String,?> params);    
+    T filter(FilterItem filterItem, Map<String,Object> params);    
 }

@@ -2,11 +2,14 @@
 <ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:s="http://www.dcm4chee.org/xero/search/"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/patient/cycleVars"
+   m:includeXsl="/cycle/cycleVars.xhtml"
+   m:includeXsl.priority="-5"
 >
   <xsl:variable name="tableColumnsDoc" select="/documents/tableColumns" />
   <xsl:variable name="tableColumns" select="document($tableColumnsDoc)/s:searchCriteria" />
   <xsl:variable name="displayedColumns" select="$tableColumns/s:attribute[@column='true']" />
-
+  <xsl:variable name="selectedStudies" select="/documents/selectedStudies" />
   <xsl:variable name="searchResultsDoc" select="/documents/cycle" />
   <xsl:variable name="docNode" select="document($searchResultsDoc)" />
   

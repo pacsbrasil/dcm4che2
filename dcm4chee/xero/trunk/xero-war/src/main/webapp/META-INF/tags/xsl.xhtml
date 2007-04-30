@@ -1,17 +1,27 @@
 <ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:x="http://www.dcm4che.org/xero/jsf"   
+   xmlns:c="http://java.sun.com/jstl/core"
 >
+<c:choose>
+<c:when test="#{_X_XSL_IS_DEFINED}">
+  <x:includeXsl fromMeta="#{pageConfig}" />  
+  <ui:insert />
+</c:when>
+<c:otherwise>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:se="http://www.dcm4chee.org/xero/search/study/"
    xmlns:m="http://www.dcm4chee.org/xero/metadata"
+   xmlns:s="http://www.dcm4chee.org/xero/search/"
    xmlns="http://www.w3.org/1999/xhtml">
+  <c:set var="_X_XSL_IS_DEFINED" value="true" />
   <!-- Include variables -->
-
   <x:includeXsl fromMeta="#{pageConfig}" />  
   
   <!-- Main body -->
   <ui:insert />
 </xsl:stylesheet>
+</c:otherwise>
+</c:choose>
 </ui:component>
 

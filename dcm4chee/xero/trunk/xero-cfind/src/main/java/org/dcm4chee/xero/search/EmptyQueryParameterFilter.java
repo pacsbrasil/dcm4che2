@@ -49,7 +49,7 @@ public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
     	System.err.println("Instantiated an empty query parameter filter.");
     }
 	/** Checks the search conditions to ensure there is something present. */
-	public ResultFromDicom filter(FilterItem filterItem, Map<String, ?> params) {
+	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
 		System.out.println("Filtering on empty query parameters.");
 		ResultsBean resultFromDicom = new ResultsBean();
 		SearchCriteria searchCriteria = (SearchCriteria) 

@@ -40,37 +40,36 @@ package org.dcm4chee.xero.display;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.dcm4chee.xero.metadata.filter.FilterBean;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.jboss.seam.annotations.Name;
 
 /**
- * This is a class that is a single image per series filter so that only 1 image gets downloaded
- * on every series lookup rather than searching for all images.
+ * Modify the query parameters on series searches so that image data for 1 image
+ * is returned on every query - this allows a thumbnail to be shown for that
+ * single image.
  * @author bwallace
  *
  */
 @Name("metadata.seriesFilter.singleImagePerSeriesFilter")
-public class SingleImagePerSeriesFilter extends FilterBean<Object>{
+public class SingleImagePerSeriesFilter implements Filter<Object>{
 	private static Logger log = Logger.getLogger(SingleImagePerSeriesFilter.class.getName());
 
 	private static final String INSTANCE_NUMBER = "InstanceNumber";
 
 	/** Adds an InstanceNumber search criteria */
-	@SuppressWarnings("unchecked")
-	@Override
-	public Object filter(FilterItem filterItem, Map<String, ?> params) {
+	public Object filter(FilterItem filterItem, Map<String, Object> params) {
 		if( params.containsKey(INSTANCE_NUMBER) ) {
 			log.warning("Search already has instance number, not filtering series.");
 			return filterItem.callNextFilter(params);
 		}
-		// Not strictly safe, but in this case it is easier to manage this than to force a particular type
-		// on the params overall.
+		// TODO This needs to be changed to ensure all series are correctly
+		// retrieved.  It is a useful/fast initial approximation.
 		log.warning("Filtering by adding an instance number=1");
-		((Map) params).put(INSTANCE_NUMBER, "1");
+		params.put(INSTANCE_NUMBER, "1");
 		Object ret = filterItem.callNextFilter(params);
-		((Map) params).remove(INSTANCE_NUMBER);
+		params.remove(INSTANCE_NUMBER);
 		return ret;
 	}
 

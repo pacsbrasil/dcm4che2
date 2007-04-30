@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:x="http://www.dcm4che.org/xero/jsf"
->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
-   xmlns:s="http://www.dcm4chee.org/xero/search/"
+<x:xsl
+   pageConfig="#{PageConfig.patient}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/patient"
    xmlns="http://www.w3.org/1999/xhtml"
 >
-
-<!-- Include the various XSL files to build up this file. -->
-<x:includeXsl fromMeta="#{metadata.patient}" />
-
-<!-- Include the search variables -->
-<ui:decorate template="cycleVars.xhtml" />
 
 <!-- Display the general information about this patient.  
      TODO: switch to using the converters to display things cleanly.
@@ -24,7 +18,7 @@
 </xsl:template>
 
 <xsl:template name="patientHeader">
-  <h1><xsl:value-of select="$patientNode/@PatientsName" /></h1>
+  <h1><xsl:value-of select="$patientNode/@PatientName" /></h1>
 </xsl:template>
 
 <xsl:template name="patientTable">
@@ -74,6 +68,4 @@
 </html>
 </xsl:template>
 
-</xsl:stylesheet>
-
-</ui:fragment>
+</x:xsl>

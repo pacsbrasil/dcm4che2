@@ -6,17 +6,16 @@
    -->
 <ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:c="http://java.sun.com/jstl/core"
+   xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 >
-   <c:forEach var="includeXslHref" items="#{fromMeta}">
-     <c:if test="#{includeXslHref.value.includeXsl!=null}">
-       <xsl:import href="#{includeXslHref.value.includeXsl}" />
+   <c:forEach var="includeXslHref" items="#{x:sorted(fromMeta,'includeXsl')}">
+     <c:if test="#{fn:endsWith(includeXslHref.includeXsl,'.xsl')}">
+       <xsl:import href="#{includeXslHref.includeXsl}" />
      </c:if>
-     <c:if test="#{includeXslHref.value.includeFacelet!=null}">
-       <ui:decorate template="#{includeXslHref.value.includeFacelet}" />
-     </c:if>
-     <c:if test="#{includeXslHref.value.includeLiteral!=null}">
-       #{includeXslHref.value.includeLiteral}
+     <c:if test="#{fn:endsWith(includeXslHref.includeXsl,'.xhtml')}">
+       <ui:include src="#{includeXslHref.includeXsl}" />
      </c:if>
    </c:forEach>
    

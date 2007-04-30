@@ -39,10 +39,8 @@ package org.dcm4chee.xero.metadata.servlet;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -53,6 +51,8 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This servlet uses either JndiMetaData or SeamMetaData to get a list of
@@ -66,8 +66,11 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
  * should be a parameter to this servlet and understood by the underlying
  * filters.
  */
+@SuppressWarnings("serial")
 public class MetaDataServlet extends HttpServlet {
-	private static Logger log = Logger.getLogger(MetaDataServlet.class.getName());
+	private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class
+			.getName());
+
 	/** The meta data needs to be read from the appropriate location. */
 	MetaDataBean metaData, metaDataForThis;
 
@@ -83,20 +86,29 @@ public class MetaDataServlet extends HttpServlet {
 	 */
 	Filter<ServletResponseItem> filter;
 
-	private long modifiedTimeAllowed = 60 * 60 * 1000; // 1 hour default.  Refresh screen refreshes list.
+	/**
+	 * The time between refreshes of filtered response - this is set to an hour
+	 * as it isn't expected that new data arrives all that often.
+	 * This does NOT affect a user hitting refresh in the browser - that will
+	 * directly reload the data.
+	 */
+	private long modifiedTimeAllowed = 60 * 60 * 1000; // 1 hour default.
+														// Refresh screen
+														// refreshes list.
 
-	/** Filter the items to get a return response by calling the first filter in the list.
+	/**
+	 * Filter the items to get a return response by calling the first filter in
+	 * the list.
 	 * 
-	 * @param request
-	 * @param response
+	 * @param request used to determine the parameters for the filter
+	 * @param response used to write the filtered data.
 	 * @throws ServletException
 	 * @throws IOException
+	 * Sets SC_NO_CONTENT on a null return element.
 	 */
-	@SuppressWarnings("unchecked")
 	protected void doFilter(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		Map<String, Object> params = new HashMap<String, Object>(request
-				.getParameterMap());
+		Map<String, Object> params = computeParameterMap(request);
 		ServletResponseItem sri = filter.filter(filterItem, params);
 		response.setCharacterEncoding("UTF-8");
 		if (sri == null) {
@@ -105,6 +117,31 @@ public class MetaDataServlet extends HttpServlet {
 			return;
 		}
 		sri.writeResponse(request, response);
+	}
+
+	/**
+	 * Computes a parameter map that maps single valued items to Strings and
+	 * multi-valued items to String[]. This is handy for the normal case where
+	 * only a single item is expected - if the type is wrong, then it is usually
+	 * an error, so it is ok to just throw an exception.
+	 * 
+	 * @param request contains the parameter map to convert to a simple map.
+	 * @return A Map to String where only 1 value is present, and to String[] for multiple values.
+	 * This break down makes the most sense in the usual case where there is only 1 possible value.
+	 */
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> computeParameterMap(HttpServletRequest request) {
+		Map<String, String[]> parameters = request.getParameterMap();
+		Map<String, Object> ret = new HashMap<String, Object>();
+		for (Map.Entry<String, String[]> me : parameters.entrySet()) {
+			if (me.getValue().length == 0)
+				continue;
+			if (me.getValue().length == 1)
+				ret.put(me.getKey(), me.getValue()[0]);
+			else
+				ret.put(me.getKey(), me.getValue());
+		}
+		return ret;
 	}
 
 	/**
@@ -119,33 +156,28 @@ public class MetaDataServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		String name = this.getInitParameter("metaData");
-		try {
-			URL url = this.getServletContext().getResource(name);
-			if (url == null) {
-				log.fine("URL for metadata resource "+name+" from servlet context was nullm trying class resource.");
-				url = getClass().getResource(name);
-				if( url==null ) {
-					log.warning("URL from class is still null - missing resource:"+name);
-				}
-			}
-			log.fine("Using url " + url + " on name " + name);
-			MetaDataBean root = StaticMetaData.getMetaDataByUrl(url);
-			String filterName = getInitParameter("filter");
-			if( filterName==null ) throw new NullPointerException("Filter name not provided to meta-data servlet.");
-			metaData = root.getForPath(filterName);
-			if( metaData==null ) throw new NullPointerException("Filter/meta-data information not found for "+filterName);
-			filter = (Filter<ServletResponseItem>) metaData.getValue();
-			filterItem = new FilterItem(metaData);
-		} catch (MalformedURLException e) {
-			throw new ServletException(e);
-		}
+		log.debug("Loading meta-data from "+name+" for servlet.");
+		MetaDataBean root = StaticMetaData.getMetaData(name);
+		String filterName = getInitParameter("filter");
+		if (filterName == null)
+			throw new IllegalArgumentException(
+					"Filter name not provided to meta-data servlet.");
+		metaData = root.getForPath(filterName);
+		if (metaData == null)
+			throw new IllegalArgumentException(
+					"Filter/meta-data information not found for " + filterName);
+		filter = (Filter<ServletResponseItem>) metaData.getValue();
+		filterItem = new FilterItem(metaData);
 	}
 
-	/** Get requests can return last modified information */
+	/** Get requests can return last modified information.
+	 * so add the cache control headings and then proceed with a doFilter.
+	 */
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		resp.addHeader("Cache-Control", "max-age="+Long.toString(getModifiedTimeAllowed()/1000));
+		resp.addHeader("Cache-Control", "max-age="
+				+ Long.toString(getModifiedTimeAllowed() / 1000));
 		resp.addHeader("Cache-Control", "private");
 		doFilter(req, resp);
 	}
@@ -155,7 +187,8 @@ public class MetaDataServlet extends HttpServlet {
 		return modifiedTimeAllowed;
 	}
 
-	/** Post responses always return new data */
+	/** Post responses always return new data - so just call doFilter directly.
+	 */
 	@Override
 	protected void doPost(HttpServletRequest arg0, HttpServletResponse arg1)
 			throws ServletException, IOException {

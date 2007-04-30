@@ -1,17 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
-  xmlns:m="http://www.dcm4che.org/xero/metadata/imageToolbar/cine"
+<x:xsl
+  pageConfig="#{PageConfig.display.cine}"
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:ui="http://java.sun.com/jsf/facelets"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/display/cine"
   m:toolbar="cineIcon"
   m:toolbar.priority="15"
-  m:includeXsl="cineXsl.xsl"
-  m:metaEquiv="cineMeta"
-  m:prefetch="cinePrefetch"
+  m:includeXsl="/image/cineXsl.xhtml"
+  m:includeXsl.priority="-25"
+  m:meta="cineMeta"
 >
-<xsl:stylesheet version="1.0" 
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-  xmlns:se="http://www.dcm4chee.org/xero/search/study/" 
-  xmlns="http://www.w3.org/1999/xhtml"
-  >
 <!-- 
 	 The CINE XSL stylesheet defines the options required for adding CINE playback
      and controls to the images.
@@ -22,7 +20,7 @@
     <xsl:if test="/documents/cine!='' and $imageNextUID!=''">
       <meta>
         <xsl:attribute name="http-equiv">refresh</xsl:attribute>
-        <xsl:attribute name="content"><xsl:value-of select="/documents/cine" />; URL=image.seam?cid=<xsl:value-of select="$cid" />&amp;StudyInstanceUID=<xsl:value-of select="$studyUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$seriesUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageNextUID" />&amp;cine=<xsl:value-of select="/documents/cine" /></xsl:attribute>
+        <xsl:attribute name="content"><xsl:value-of select="/documents/cine" />; URL=image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;objectUID=<xsl:value-of select="$imageNextUID" />&amp;cine=<xsl:value-of select="/documents/cine" /></xsl:attribute>
       </meta>
     </xsl:if>
 </xsl:template>
@@ -32,28 +30,17 @@
     <xsl:if test="$imageNextUID!=''">
        <xsl:if test="/documents/cine!=''">
          <a>
-           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;StudyInstanceUID=<xsl:value-of select="$studyUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$seriesUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageUID" /></xsl:attribute>
+           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;objectUID=<xsl:value-of select="$imageUID" /></xsl:attribute>
            CINE Off
          </a>
        </xsl:if>
        <xsl:if test="/documents/cine=''">
          <a>
-           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;StudyInstanceUID=<xsl:value-of select="$studyUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$seriesUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageUID" />&amp;cine=0.5</xsl:attribute>           
+           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;objectUID=<xsl:value-of select="$imageUID" />&amp;cine=0.5</xsl:attribute>           
          CINE
          </a>
        </xsl:if>
     </xsl:if>
 </xsl:template>
 
-<!-- Generate the link pre-fetch conditions -->
-<xsl:template name="cinePrefetch">
-  <xsl:if test="/documents/cine!='' and $imageNextUID!=''">
-    <link>
-      <xsl:attribute name="rel">prefetch</xsl:attribute>
-      <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;StudyInstanceUID=<xsl:value-of select="$studyUID"/>&amp;SeriesInstanceUID=<xsl:value-of select="$seriesUID"/>&amp;SOPInstanceUID=<xsl:value-of select="$imageNextUID" />&amp;cine=<xsl:value-of select="/documents/cine" /></xsl:attribute>
-    </link>
-  </xsl:if>
-</xsl:template>
-
-</xsl:stylesheet>
-</ui:fragment>
+</x:xsl>

@@ -82,16 +82,16 @@ public class PatientBean extends PatientType implements Patient, ResultFromDicom
 	/** Initialize the primary attributes of this object */
 	protected void initAttributes(DicomObject cmd) {	
 		setPatientID(cmd.getString(Tag.PatientID));
-		setPatientsName(excludeZeroEnd(cmd.getString(Tag.PatientsName)));
-		String strSex = cmd.getString(Tag.PatientsSex);
+		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
+		String strSex = cmd.getString(Tag.PatientSex);
 		if(strSex!=null ) {
-			setPatientsSex( SexEnum.fromValue(strSex));
+			setPatientSex( SexEnum.fromValue(strSex));
 		}
-		Date date = cmd.getDate(Tag.PatientsBirthDate);
+		Date date = cmd.getDate(Tag.PatientBirthDate);
 		if( date!=null ) {
 			GregorianCalendar cal = new GregorianCalendar();
 			cal.setTime(date);
-			setPatientsBirthDate(datatypeFactory.newXMLGregorianCalendar(cal));
+			setPatientBirthDate(datatypeFactory.newXMLGregorianCalendar(cal));
 		}
 	}
 

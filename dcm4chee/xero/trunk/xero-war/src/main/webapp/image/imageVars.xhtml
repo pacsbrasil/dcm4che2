@@ -1,6 +1,10 @@
 <ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/display/vars"
+   m:includeXsl="/image/imageVars.xhtml"
+   m:includeXsl.priority="-5"
 >
+<xsl:variable name="docName" select="#{pageConfig.docName}" />
 <ui:include src="/series/seriesVars.xhtml" />
 
 <xsl:variable name="imageUIDFromSource"><xsl:value-of select="/documents/SOPInstanceUID"/></xsl:variable>

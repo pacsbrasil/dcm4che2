@@ -48,24 +48,30 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
  */
 public class FilterItem implements Comparable<FilterItem> {
 	String name;
-	public Filter filter;
+	public Filter<?> filter;
 	private int priority;
 	MetaDataBean metaData;
 	Object config;
 	FilterItem nextFilterItem;
 	static Logger log = Logger.getLogger(FilterItem.class.getName());
 	
+	/**
+	 * Create a filter item based on the given meta-data node.
+	 * @param mdb to get information such as priority.
+	 */
 	public FilterItem(MetaDataBean mdb)
 	{
 		this.name = mdb.getChildName();
-		this.filter = (Filter) mdb.getValue();
+		this.filter = (Filter<?>) mdb.getValue();
 		String strPriority = (String) mdb.getValue("priority");
 		if( strPriority ==null ) strPriority = "50";
 		priority = Integer.parseInt(strPriority);
 		metaData = mdb;
 	}
-
-	/** Compare two filter items first by priority and then by name */
+	
+	/** Compare this filter item to another filter item.
+	 * @return int comparison value +ve/0/-ve for <, = and >
+	 */
 	public int compareTo(FilterItem o) {
 		int ret = o.priority - this.priority;
 		if( ret!=0 ) return ret;
@@ -74,23 +80,26 @@ public class FilterItem implements Comparable<FilterItem> {
 		return 0;
 	}
 	
+	/**
+	 * Return the configuration information for this filter item - if any.
+	 * @return
+	 */
 	public Object getConfig()
 	{
 		if( config==null && metaData!=null ) {
 			config = metaData.getValueConfig();
-			metaData = null;
 		}
 		return config;
 	}
 	
 	/** Calls the next filter item in the chain.
-	 * @param params
-	 * @return
+	 * @param params to pass to the next filter
+	 * @return The filtered return value.
 	 */
-	@SuppressWarnings("unchecked")
-	public Object callNextFilter(Map<String,?> params)
+	public Object callNextFilter(Map<String,Object> params)
 	{
 		if( nextFilterItem==null ) return null;
+		if( nextFilterItem.priority < 0 ) return null;
 		return nextFilterItem.filter.filter(nextFilterItem, params);
 	}
 	
@@ -99,8 +108,7 @@ public class FilterItem implements Comparable<FilterItem> {
 	 * @param params are the parameters to pass.
 	 * @return value from the filter.
 	 */
-	@SuppressWarnings("unchecked")
-	public Object callNamedFilter(String filterName, Map<String,?> params)
+	public Object callNamedFilter(String filterName, Map<String,Object> params)
 	 {
 		 FilterListConfig fl = (FilterListConfig) metaData.getParent().getValueConfig();
 		 if( fl==null ) {
@@ -114,4 +122,16 @@ public class FilterItem implements Comparable<FilterItem> {
 		 }
 		 return namedFilter.filter.filter(namedFilter, params);
 	 }
+
+	/** Return the next filters name/metadata path, if any */
+	public String getNextFilterName() {
+		if( nextFilterItem==null ) return null;
+		return nextFilterItem.getName();
+	}
+	
+	/** Returns the filter name - that is, the path, for the filter */
+	public String getName() {
+		if( metaData==null ) return null;
+		return metaData.getPath();
+	}
 }

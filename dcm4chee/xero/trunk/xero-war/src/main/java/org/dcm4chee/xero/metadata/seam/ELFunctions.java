@@ -56,4 +56,13 @@ public class ELFunctions {
    {
 	   return parent.sorted(null,key,0);
    }
+   
+   /** Figure out what type an object is.
+    * @param obj to get the type of
+    * @return A string name containing the type of obj - useable as a static function.
+    */
+   public static String typeof(Object obj) {
+	   if( obj==null ) return "null";
+	   return obj.getClass().getName();
+   }
 }

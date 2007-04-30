@@ -57,8 +57,8 @@ public class StudySearch extends DicomCFindFilter {
         Tag.AccessionNumber,
         Tag.StudyID,
         Tag.StudyInstanceUID,
-        Tag.NumberofStudyRelatedInstances,
-        Tag.NumberofStudyRelatedSeries,
+        Tag.NumberOfStudyRelatedInstances,
+        Tag.NumberOfStudyRelatedSeries,
      };
  
 

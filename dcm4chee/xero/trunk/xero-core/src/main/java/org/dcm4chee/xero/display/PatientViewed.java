@@ -56,16 +56,16 @@ public class PatientViewed {
 	@Logger static Log log;
 
 	String patientIdentifier;
-	String studyInstanceUID;
+	String studyUID;
 	
-	public String getStudyInstanceUID() {
-		return studyInstanceUID;
+	public String getStudyUID() {
+		return studyUID;
 	}
 	
-	public void setStudyInstanceUID(String uid) {
+	public void setStudyUID(String uid) {
 		if( uid==null || uid.length()==0 ) return;
 		log.info("Study instance UID set to #0",uid);
-		this.studyInstanceUID = uid;
+		this.studyUID = uid;
 	}
 	
 	public String getPatientIdentifier() { 
@@ -75,7 +75,7 @@ public class PatientViewed {
 	/** Sets the patient identifier - this clears the study UID if the PID changes. */
 	public void setPatientIdentifier(String pid) {
 		if( pid==null || pid.length()==0 ) return;
-		if( patientIdentifier!=null && !patientIdentifier.equals(pid) ) studyInstanceUID=null;
+		if( patientIdentifier!=null && !patientIdentifier.equals(pid) ) studyUID=null;
 		this.patientIdentifier = pid;
 		log.info("The patient identifier is "+patientIdentifier);
 	}

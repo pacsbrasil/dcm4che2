@@ -44,15 +44,15 @@ import org.dcm4chee.xero.search.Column;
 public interface Patient {
 
 	@Column(searchable=true,type="PatientName")
-	String getPatientsName();
+	String getPatientName();
 
 	@Column(searchable=true,type="string")
 	String getPatientID();
 
 	@Column(searchable=true,type="Date")
-	XMLGregorianCalendar getPatientsBirthDate();
+	XMLGregorianCalendar getPatientBirthDate();
 
 	@Column(searchable=true,type="Sex")
-	SexEnum getPatientsSex();
+	SexEnum getPatientSex();
 
 }

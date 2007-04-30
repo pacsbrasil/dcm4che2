@@ -20,10 +20,7 @@
         </fileset>
         <fileset dir="xero-ear/target/xero" includes="el-*.jar" />
      </copy>
-     <copy tofile="${developmentServer}/server/default/lib/log4j.jar">
-        <fileset dir="xero-ear/target/xero" includes="log4j*.jar" />
-     </copy>
-  </target>
+     </target>
 
   <!-- Sets up the deploy directory -->
   <target name="setupDeploy">

@@ -54,7 +54,7 @@ public interface Study {
 	public String getModalitiesInStudy();
 
 	@Column(searchable=true,type="Name")
-	public String getReferringPhysiciansName();
+	public String getReferringPhysicianName();
 
 	@Column(searchable=true,type="string")
 	public String getStudyDescription();

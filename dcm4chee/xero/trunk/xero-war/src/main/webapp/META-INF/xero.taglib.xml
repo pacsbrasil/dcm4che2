@@ -22,6 +22,11 @@
    </tag>
    
    <tag>
+     <tag-name>template</tag-name>
+     <source>tags/template.xhtml</source>
+   </tag>
+   
+   <tag>
      <tag-name>button</tag-name>
      <source>tags/button.xhtml</source>
    </tag>
@@ -41,6 +46,12 @@
      <function-name>sortedBy</function-name>
      <function-class>org.dcm4chee.xero.metadata.seam.ELFunctions</function-class>
      <function-signature>java.util.List sorted(org.dcm4chee.xero.metadata.MetaDataBean, java.lang.String)</function-signature>
+   </function> 
+  
+   <function>
+     <function-name>typeof</function-name>
+     <function-class>org.dcm4chee.xero.metadata.seam.ELFunctions</function-class>
+     <function-signature>java.util.String typeof(java.lang.Object)</function-signature>
    </function> 
   
 </facelet-taglib>

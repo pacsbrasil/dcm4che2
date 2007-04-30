@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata.servlet;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,5 +48,12 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public interface ServletResponseItem {
-	void writeResponse(HttpServletRequest request, HttpServletResponse response);
+	/**
+	 * Write the filtered data to the response.  This usually won't need
+	 * the request, but it may need it sometimes for cache control.
+	 * @param request
+	 * @param response to write the filtered data to.
+	 * @throws IOException
+	 */
+	void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException;
 };

@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.filter.FilterBean;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterList;
 import org.testng.annotations.Test;
@@ -78,12 +78,11 @@ import org.testng.annotations.Test;
  *
  */
 public class FilterMetaDataTest {
-	static class AddFilter extends FilterBean<Integer>
+	static class AddFilter implements Filter<Integer>
 	{
 
 		@SuppressWarnings("unchecked")
-		@Override
-		public Integer filter(FilterItem filterItem, Map<String,?> params) {
+		public Integer filter(FilterItem filterItem, Map<String,Object> params) {
 			Integer value = (Integer) filterItem.callNextFilter(params);
 			if( value==null ) return null;
 			Integer paramValue = (Integer) params.get("add");
@@ -94,7 +93,7 @@ public class FilterMetaDataTest {
 
 	}
 	
-	static class SourceFilter<T> extends FilterBean<T>
+	static class SourceFilter<T> implements Filter<T>
 	{
 		Class<T> clazz;
 		
@@ -103,15 +102,20 @@ public class FilterMetaDataTest {
 			this.clazz = clazz;
 		}
 
-		@SuppressWarnings("unchecked")
-		public T filter(FilterItem filterItem, Map<String, ?> params) {
+		public T filter(FilterItem filterItem, Map<String, Object> params) {
 			Object value = params.get("src");
-			if ( clazz.isInstance(value) ) return (T) value;
-			return (T) filterItem.callNextFilter(params);
+			if ( clazz.isInstance(value) ) return clazz.cast(value);
+			Object nextValue = filterItem.callNextFilter(params);
+			if( nextValue==null ) return null;
+			if( ! clazz.isInstance(nextValue) ) {
+				System.out.println("Wrong value type found:"+nextValue+" of type "+nextValue.getClass().getName()
+						+ " from "+filterItem.getNextFilterName());
+			}
+			return clazz.cast(nextValue);
 		}		
 	}
 	
-	static class ConvertFilter extends FilterBean<String>
+	static class ConvertFilter implements Filter<String>
 	{
 		String subFilter;
 		public ConvertFilter(String subFilter)
@@ -120,12 +124,12 @@ public class FilterMetaDataTest {
 		}
 		
 		/** Convert the object into a string */
-		@SuppressWarnings("unchecked")
-		@Override
-		public String filter(FilterItem filterItem, Map<String,?> params) {
+		public String filter(FilterItem filterItem, Map<String,Object> params) {
 			Object ret = filterItem.callNextFilter(params);
-			if ( ret==null ) return null;
-			return ret.toString();
+			if ( ret!=null ) return ret.toString();
+			ret = filterItem.callNamedFilter(subFilter,params);
+			if( ret!=null ) return ret.toString();
+			return null;
 		}
 
 	}
@@ -139,7 +143,7 @@ public class FilterMetaDataTest {
 		properties.put("str.convert",new ConvertFilter("int"));
 		properties.put("str.convert.priority", "20");
 		properties.put("str.source", new SourceFilter<String>(String.class));
-		properties.put("str.source.priority", "0");
+		properties.put("str.source.priority", "10");
 		// An int filter
 		properties.put("int",new FilterList());
 		// A -1 priority means don't use this filter unless explicitly requested.
@@ -148,11 +152,11 @@ public class FilterMetaDataTest {
 		// TODO modify this to use meta-data to retrieve the filter priority. 
 		properties.put("int.baseItem.priority","5");
 		properties.put("int.addFilter", new AddFilter());
+		properties.put("int.addFilter.priority", "10");
 	}
 	
 	MetaDataBean mdb = new MetaDataBean(properties);
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void singleIntFilterTest()
 	{
@@ -161,31 +165,32 @@ public class FilterMetaDataTest {
 		// This retrieves an int filter - this is the overall filter for this level, 
 		// not a filter instance object.
 		MetaDataBean mdbInt = mdb.get("int");
-		FilterList<Integer> filter = (FilterList<Integer>) mdbInt.getValue();
+		FilterList<?> filter = (FilterList<?>) mdbInt.getValue();
 		FilterItem fi = new FilterItem(mdbInt);
 		assert filter!=null;
 		params.put("src", new Integer(13));
 		params.put("add", new Integer(7));
-		assert filter.filter(fi, params)==20;
+		assert ((Integer) filter.filter(fi, params))==20;
 		params.put("src", "fred");
 		assert filter.filter(fi, params)==null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void multipleFilterTest()
 	{
 		Map<String,Object> params = new HashMap<String,Object>();
 		
 		MetaDataBean mdbStr = mdb.get("str");
-		FilterList<String> filter = (FilterList<String>) mdbStr.getValue();
+		FilterList<?> filter = (FilterList<?>) mdbStr.getValue();
 		FilterItem fi = new FilterItem(mdbStr);
 		assert filter!=null;
 		params.put("src", new Integer(5));
 		// Going throught the src filter.
-		assert "5".equals(filter.filter(fi, params));
+		String str = (String) filter.filter(fi, params);
+		assert "5".equals(str);
 		params.put("add", new Integer(-3));
-		assert "2".equals(filter.filter(fi, params));
+		str = (String) filter.filter(fi, params);
+		assert "2".equals(str);
 		params.put("src", "14");
 		assert "14".equals(filter.filter(fi, params));
 	}

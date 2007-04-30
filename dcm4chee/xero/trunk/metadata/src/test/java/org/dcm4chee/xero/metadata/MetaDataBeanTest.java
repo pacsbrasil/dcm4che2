@@ -40,11 +40,9 @@ package org.dcm4chee.xero.metadata;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.testng.annotations.Test;
 
-public class MetaDataBeanTest extends TestCase {
+public class MetaDataBeanTest {
 
 	Map<String, String> getTheme() {
 		Map<String, String> ret = new HashMap<String, String>();

@@ -47,7 +47,6 @@ import javax.naming.NamingEnumeration;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.jboss.ejb3.embedded.EJB3StandaloneBootstrap;
 import org.jboss.ejb3.embedded.EJB3StandaloneDeployer;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 /** This class tests jndi meta-data information lookup.  
@@ -67,14 +66,11 @@ public class JndiMetaDataTest {
 		prop.put("testjndi", "jndi://metadata/TestBean/Local");
 	}
 
-	@BeforeSuite
+	//@BeforeSuite
 	public void startup() throws Exception {
-		EJB3StandaloneBootstrap.boot(null);
+	 	EJB3StandaloneBootstrap.boot(null);
 		EJB3StandaloneBootstrap.scanClasspath();
-		System.err.println("...... embedded-jboss-beans deployed....");
 		EJB3StandaloneDeployer deployer = new EJB3StandaloneDeployer();
-		System.err.println("...... deploying MM ejb3.....");
-		System.err.println("...... ejb3 deployed....");
 		deployer.setKernel(EJB3StandaloneBootstrap.getKernel());
 		deployer.create();
 		
@@ -92,7 +88,7 @@ public class JndiMetaDataTest {
 	/** This tests to ensure that JNDI objects can be correctly looked up, both
 	 * as direct values, and as values from a value-provider.
 	 */
-	@Test
+	@Test(enabled=false)
 	public void testJndiLookup() {
 		if (mdb == null)
 			mdb = new MetaDataBean(prop);
@@ -103,10 +99,13 @@ public class JndiMetaDataTest {
 	}
 
 	/** This tests that JNDI objects can correctly contribute to the meta-data */
-	@Test
+	@Test(enabled=false)
 	public void testJndiMetaDataProvider() {
 		if (mdb == null)
 			mdb = new MetaDataBean(prop);
+		assert mdb.get("TestBean")!=null;
+		assert mdb.getValue("TestBean")!=null;
+		assert mdb.get("TestBean").get("jndiValue")!=null;
 		assert mdb.getValue("TestBean.jndiValue")!=null;
 		// This isn't get a property of the bean, but is rather getting
 		// the meta-data associated with the bean - these don't have to agree,
