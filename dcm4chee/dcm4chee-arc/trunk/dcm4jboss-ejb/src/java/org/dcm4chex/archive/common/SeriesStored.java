@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.common;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
@@ -52,24 +51,48 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 
-    private static final long serialVersionUID = 3482736440136478280L;
-    private InetAddress remoteAddress;
-    private String callingAET;
+    private static final long serialVersionUID = -8664338212703072265L;
 
-    private String patientID;
-    private String patientName;
-    private String retrieveAET;
-    private String accessionNumber;
+    private final Dataset patAttrs;
+    private final Dataset studyAttrs;
+    private final Dataset seriesAttrs;
     private final Dataset ian;
 
-    public SeriesStored(Dataset ian) {
+    public SeriesStored(Dataset patient, Dataset study, Dataset series,
+            Dataset ian) {
+        if (patient == null) {
+            throw new NullPointerException("patient");
+        }
+        if (study == null) {
+            throw new NullPointerException("study");
+        }
+        if (series == null) {
+            throw new NullPointerException("series");
+        }
+        if (ian == null) {
+            throw new NullPointerException("ian");
+        }
+        this.patAttrs = patient;
+        this.studyAttrs = study;
+        this.seriesAttrs = series;
         this.ian = ian;
     }
 
     public String toString() {
-        return "SeriesStored[calling=" + callingAET + ", suid="
-                + (ian != null ? ian.getString(Tags.StudyInstanceUID) : null)
-                + "]";
+        return "SeriesStored[calling=" + getCallingAET() + ", suid="
+                + getStudyInstanceUID() + "]";
+    }
+
+    public final Dataset getPatientAttrs() {
+        return patAttrs;
+    }
+
+    public final Dataset getStudyAttrs() {
+        return studyAttrs;
+    }
+
+    public final Dataset getSeriesAttrs() {
+        return seriesAttrs;
     }
 
     public final Dataset getIAN() {
@@ -77,51 +100,32 @@ public class SeriesStored implements Serializable {
     }
 
     public final String getCallingAET() {
-        return callingAET;
+        seriesAttrs.setPrivateCreatorID(PrivateTags.CreatorID);
+        return seriesAttrs.getString(PrivateTags.CallingAET);
     }
 
-    public final void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
+    public String getRetrieveAET() {
+        return seriesAttrs.getString(Tags.RetrieveAET);
     }
 
-    public final String getRetrieveAET() {
-        return retrieveAET;
+    public String getPatientID() {
+        return patAttrs.getString(Tags.PatientID);
     }
 
-    public final void setRetrieveAET(String retrieveAET) {
-        this.retrieveAET = retrieveAET;
+    public String getPatientName() {
+        return patAttrs.getString(Tags.PatientName);
     }
 
-    public final String getPatientID() {
-        return patientID;
+    public String getStudyInstanceUID() {
+        return studyAttrs.getString(Tags.StudyInstanceUID);
     }
 
-    public final void setPatientID(String patientID) {
-        this.patientID = patientID;
+    public String getAccessionNumber() {
+        return studyAttrs.getString(Tags.AccessionNumber);
     }
 
-    public final String getPatientName() {
-        return patientName;
-    }
-
-    public final void setPatientName(String patientName) {
-        this.patientName = patientName;
-    }
-
-    public final String getAccessionNumber() {
-        return accessionNumber;
-    }
-
-    public final void setAccessionNumber(String accessionNumber) {
-        this.accessionNumber = accessionNumber;
-    }
-
-    public final InetAddress getRemoteAddress() {
-        return remoteAddress;
-    }
-
-    public final void setRemoteAddress(InetAddress remoteAddress) {
-        this.remoteAddress = remoteAddress;
+    public String getSeriesInstanceUID() {
+        return seriesAttrs.getString(Tags.SeriesInstanceUID);
     }
 
 }
