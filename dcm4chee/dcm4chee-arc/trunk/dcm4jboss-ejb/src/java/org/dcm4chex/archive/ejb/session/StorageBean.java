@@ -281,11 +281,13 @@ public abstract class StorageBean implements SessionBean {
     private SeriesStored makeSeriesStored(SeriesLocal series) {
         StudyLocal study = series.getStudy();
         PatientLocal pat = study.getPatient();
+        Dataset seriesAttrs = series.getAttributes(true);
+        Dataset studyAttrs = study.getAttributes(true);
+        Dataset patAttrs = pat.getAttributes(true);
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
         DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
-        Dataset serAttrs = series.getAttributes(false);
-        Dataset pps = serAttrs.getItem(Tags.RefPPSSeq);
+        Dataset pps = seriesAttrs.getItem(Tags.RefPPSSeq);
         if (pps != null) {
             if (!pps.contains(Tags.PerformedWorkitemCodeSeq)) {
                 pps.putSQ(Tags.PerformedWorkitemCodeSeq);
@@ -311,11 +313,8 @@ public abstract class StorageBean implements SessionBean {
         if (refSOPs.countItems() == 0) {
             return null;
         }
-        SeriesStored seriesStored = new SeriesStored(ian);
-        seriesStored.setAccessionNumber(study.getAccessionNumber());
-        seriesStored.setCallingAET(series.getSourceAET());
-        seriesStored.setPatientID(pat.getPatientId());
-        seriesStored.setPatientName(pat.getPatientName());
+        SeriesStored seriesStored = new SeriesStored(patAttrs, studyAttrs,
+                seriesAttrs, ian);
         return seriesStored;
     }
     

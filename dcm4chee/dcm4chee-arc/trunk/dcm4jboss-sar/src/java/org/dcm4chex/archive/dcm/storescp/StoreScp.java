@@ -618,10 +618,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     SeriesStored seriesStored = store
                             .makeSeriesStored(prevseriud);
                     if (seriesStored != null) {
-                        log
-                                .debug("Send SeriesStoredNotification - series changed");
+                        log.debug("Send SeriesStoredNotification - series changed");
                         Socket sock = assoc.getSocket();
-                        seriesStored.setRemoteAddress(sock.getInetAddress());
                         doAfterSeriesIsStored(store, sock, seriesStored);
                         store.commitSeriesStored(seriesStored);
                     }
@@ -1131,7 +1129,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     log
                             .debug("Send SeriesStoredNotification - association closed");
                     Socket sock = assoc.getSocket();
-                    seriesStored.setRemoteAddress(sock.getInetAddress());
                     doAfterSeriesIsStored(store, sock, seriesStored);
                     store.commitSeriesStored(seriesStored);
                 }
