@@ -48,6 +48,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
@@ -139,8 +140,9 @@ public class ForwardService2 extends ServiceMBeanSupport {
             ds.putAll(stored.getPatientAttrs());
             ds.putAll(stored.getStudyAttrs());
             ds.putAll(stored.getSeriesAttrs());
+            final Calendar cal = Calendar.getInstance();
             try {
-                xslt(ds, tpl, new DefaultHandler(){
+                xslt(cal, ds, tpl, new DefaultHandler(){
 
                     public void startElement(String uri, String localName,
                             String qName, Attributes attrs) {
@@ -151,7 +153,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
                                     null,
                                     stored.getStudyInstanceUID(),
                                     stored.getSeriesInstanceUID(),
-                                    toScheduledTime(attrs.getValue("delay")));
+                                    toScheduledTime(cal, attrs.getValue("delay")));
                         }
                     }});
             } catch (Exception e) {
@@ -164,16 +166,14 @@ public class ForwardService2 extends ServiceMBeanSupport {
         return s != null ? DicomPriority.toCode(s) : 0;
     }
 
-    private long toScheduledTime(String s) {
+    private long toScheduledTime(Calendar cal, String s) {
         if (s == null || s.length() == 0) {
             return 0;
         }
         int index = s.indexOf('!');
         if (index == -1) {
-            return System.currentTimeMillis()
-                    + RetryIntervalls.parseInterval(s); 
+            return cal.getTimeInMillis() + RetryIntervalls.parseInterval(s); 
         }
-        Calendar cal = Calendar.getInstance();
         if (index != 0) {
             cal.setTimeInMillis(cal.getTimeInMillis()
                     + RetryIntervalls.parseInterval(s.substring(0, index)));
@@ -181,11 +181,17 @@ public class ForwardService2 extends ServiceMBeanSupport {
         return ForwardingRules.afterBusinessHours(cal, s.substring(index+1));
     }
     
-    private static void xslt(Dataset ds, Templates tpl, ContentHandler ch)
+    private static void xslt(Calendar cal, Dataset ds, Templates tpl, ContentHandler ch)
             throws TransformerConfigurationException, IOException {
         SAXTransformerFactory tf = (SAXTransformerFactory)
             TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler(tpl);
+        Transformer t = th.getTransformer();
+        t.setParameter("year", Integer.valueOf(cal.get(Calendar.YEAR)));
+        t.setParameter("month", Integer.valueOf(cal.get(Calendar.MONTH)+1));
+        t.setParameter("date", Integer.valueOf(cal.get(Calendar.DAY_OF_MONTH)));
+        t.setParameter("day", Integer.valueOf(cal.get(Calendar.DAY_OF_WEEK)-1));
+        t.setParameter("hour", Integer.valueOf(cal.get(Calendar.HOUR_OF_DAY)));
         th.setResult(new SAXResult(ch));
         ds.writeDataset2(th, null, null, 64, null);
     }
