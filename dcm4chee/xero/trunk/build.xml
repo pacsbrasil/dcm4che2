@@ -18,7 +18,6 @@
            <include name="ejb3-persistence.jar" />
            <include name="cglib.jar" />
         </fileset>
-        <fileset dir="xero-ear/target/xero" includes="el-*.jar" />
      </copy>
      </target>
 
