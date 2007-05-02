@@ -187,11 +187,11 @@ public class ForwardService2 extends ServiceMBeanSupport {
             TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler(tpl);
         Transformer t = th.getTransformer();
-        t.setParameter("year", Integer.valueOf(cal.get(Calendar.YEAR)));
-        t.setParameter("month", Integer.valueOf(cal.get(Calendar.MONTH)+1));
-        t.setParameter("date", Integer.valueOf(cal.get(Calendar.DAY_OF_MONTH)));
-        t.setParameter("day", Integer.valueOf(cal.get(Calendar.DAY_OF_WEEK)-1));
-        t.setParameter("hour", Integer.valueOf(cal.get(Calendar.HOUR_OF_DAY)));
+        t.setParameter("year", new Integer(cal.get(Calendar.YEAR)));
+        t.setParameter("month", new Integer(cal.get(Calendar.MONTH)+1));
+        t.setParameter("date", new Integer(cal.get(Calendar.DAY_OF_MONTH)));
+        t.setParameter("day", new Integer(cal.get(Calendar.DAY_OF_WEEK)-1));
+        t.setParameter("hour", new Integer(cal.get(Calendar.HOUR_OF_DAY)));
         th.setResult(new SAXResult(ch));
         ds.writeDataset2(th, null, null, 64, null);
     }
