@@ -149,6 +149,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
+                type2,
                 keys.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate",
                 type2,
@@ -176,6 +177,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 "Study.referringPhysicianName",
                 "Study.referringPhysicianIdeographicName",
                 "Study.referringPhysicianPhoneticName"},
+                type2,
                 keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
                 keys.getString(Tags.ModalitiesInStudy));

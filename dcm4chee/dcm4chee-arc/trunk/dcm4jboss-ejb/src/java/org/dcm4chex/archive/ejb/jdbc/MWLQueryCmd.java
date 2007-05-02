@@ -117,6 +117,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                     "MWLItem.performingPhysicianName",
                     "MWLItem.performingPhysicianIdeographicName",
                     "MWLItem.performingPhysicianPhoneticName"},
+                    SqlBuilder.TYPE2,
                     spsItem.getString(Tags.PerformingPhysicianName));
         }
         sqlBuilder.addListOfStringMatch(null, "MWLItem.requestedProcedureId",
@@ -137,6 +138,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
+                SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientName));
         
         matchingKeys.add(MATCHING_KEYS);

@@ -122,6 +122,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
+                type2,
                 filter.getString(Tags.PatientName));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
                 filter.getStrings(Tags.StudyID));

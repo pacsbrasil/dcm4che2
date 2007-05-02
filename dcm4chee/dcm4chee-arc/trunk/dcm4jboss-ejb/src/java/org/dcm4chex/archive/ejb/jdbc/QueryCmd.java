@@ -245,6 +245,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         "Patient.patientName",
                         "Patient.patientIdeographicName",
                         "Patient.patientPhoneticName" },
+                type2,
                 keys.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
                 keys.getDateTimeRange(Tags.PatientBirthDate, Tags.PatientBirthTime));
@@ -321,6 +322,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         "Study.referringPhysicianName",
                         "Study.referringPhysicianIdeographicName",
                         "Study.referringPhysicianPhoneticName" },
+                type2,
                 keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
                 SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
@@ -372,7 +374,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "SeriesRequest.requestingPhysician",
                             "SeriesRequest.requestingPhysicianIdeographicName",
                             "SeriesRequest.requestingPhysicianPhoneticName" },
-                            rqAttrs.getString(Tags.RequestingPhysician));
+                    type2,
+                    rqAttrs.getString(Tags.RequestingPhysician));
         }
 
         matchingKeys.add(MATCHING_SERIES_KEYS);

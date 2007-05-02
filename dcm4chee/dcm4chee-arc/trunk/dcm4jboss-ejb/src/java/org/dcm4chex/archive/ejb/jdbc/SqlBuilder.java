@@ -283,7 +283,7 @@ class SqlBuilder {
         return false;
     }
 
-    public void addPNMatch(String[] nameFields, String val) {
+    public void addPNMatch(String[] nameFields, boolean type2, String val) {
         if (val == null || val.length() == 0 || val.equals("*"))
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
@@ -294,15 +294,15 @@ class SqlBuilder {
             } else {
                 matchString = pn.toComponentGroupString(true);
             }
-            addWildCardMatch(null, nameFields[0], true, toUpperCase(matchString));
+            addWildCardMatch(null, nameFields[0], type2, toUpperCase(matchString));
         }
         PersonName ipn = pn.getIdeographic();
         if (ipn != null) {
-        	addWildCardMatch(null, nameFields[1], true, ipn.toComponentGroupMatch());
+        	addWildCardMatch(null, nameFields[1], type2, ipn.toComponentGroupMatch());
         }
         PersonName ppn = pn.getPhonetic();
         if (ppn != null) {
-        	addWildCardMatch(null, nameFields[2], true, ppn.toComponentGroupMatch());
+        	addWildCardMatch(null, nameFields[2], type2, ppn.toComponentGroupMatch());
         }
     }   
 

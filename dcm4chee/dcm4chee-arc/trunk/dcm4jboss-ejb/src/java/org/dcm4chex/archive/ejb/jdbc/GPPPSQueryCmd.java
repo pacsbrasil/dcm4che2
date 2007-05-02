@@ -86,6 +86,7 @@ public class GPPPSQueryCmd extends BaseReadCmd {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
+                SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "GPPPS.ppsStartDateTime",
                 SqlBuilder.TYPE1,

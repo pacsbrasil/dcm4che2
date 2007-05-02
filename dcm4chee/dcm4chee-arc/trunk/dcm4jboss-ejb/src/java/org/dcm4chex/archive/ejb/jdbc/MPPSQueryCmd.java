@@ -93,6 +93,7 @@ public class MPPSQueryCmd extends BaseReadCmd {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
+                SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientName));
         sqlBuilder.addListOfStringMatch(null, "MPPS.modality",
                 SqlBuilder.TYPE1,

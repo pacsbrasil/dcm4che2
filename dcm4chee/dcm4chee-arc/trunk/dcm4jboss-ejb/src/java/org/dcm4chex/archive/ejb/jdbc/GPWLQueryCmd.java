@@ -128,6 +128,7 @@ public class GPWLQueryCmd extends BaseReadCmd {
                     "GPSPSPerformer.humanPerformerName",
                     "GPSPSPerformer.humanPerformerIdeographicName",
                     "GPSPSPerformer.humanPerformerPhoneticName"},
+                    SqlBuilder.TYPE2,
                     item.getString(Tags.HumanPerformerName));
             addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
         }
@@ -149,6 +150,7 @@ public class GPWLQueryCmd extends BaseReadCmd {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
+                SqlBuilder.TYPE2,
                 keys.getString(Tags.PatientName));
     }
 
