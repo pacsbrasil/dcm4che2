@@ -233,6 +233,21 @@ class Forward {}
 class forward {}
 
 /**
+ * @depend - - - StoreScp
+ * @depend - - - MoveScu
+ */
+class Forward2 {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.Forward2
+ * @opt !hide
+ */
+class forward2 {}
+
+/**
  * @depend - - - AuditLogger
  * @depend - - - MPPSScp
  */
