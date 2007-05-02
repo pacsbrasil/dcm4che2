@@ -94,6 +94,11 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-forward2-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=Forward2"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-fsmgt-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=FileSystemMgt"/>
     </antcall>
