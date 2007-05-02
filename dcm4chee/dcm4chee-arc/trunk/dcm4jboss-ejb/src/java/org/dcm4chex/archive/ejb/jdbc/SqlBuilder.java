@@ -288,8 +288,13 @@ class SqlBuilder {
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
         if (pn != null) {
-            addWildCardMatch(null, nameFields[0], true, 
-                    toUpperCase(pn.toComponentGroupMatch()));
+            String matchString = null;
+            if (val.indexOf('^') != -1 ) {
+                matchString = pn.toComponentGroupMatch();
+            } else {
+                matchString = pn.toComponentGroupString(true);
+            }
+            addWildCardMatch(null, nameFields[0], true, toUpperCase(matchString));
         }
         PersonName ipn = pn.getIdeographic();
         if (ipn != null) {
