@@ -74,6 +74,8 @@ public class VRMapTest extends TestCase {
 		assertEquals(VR.LO, vrMap.vrOf(0x00990010));
 		assertEquals(VR.LO, vrMap.vrOf(0x00990011));
 		assertEquals(VR.LO, vrMap.vrOf(0x009900E0));
+        assertEquals(VR.US, vrMap.vrOf(0x00991000));
+        assertEquals(VR.US, vrMap.vrOf(0x00991100));
 		assertEquals(VR.UL, vrMap.vrOf(0x00991010));
 		assertEquals(VR.UL, vrMap.vrOf(0x00991110));
 		assertEquals(VR.OB, vrMap.vrOf(0x009910E0));

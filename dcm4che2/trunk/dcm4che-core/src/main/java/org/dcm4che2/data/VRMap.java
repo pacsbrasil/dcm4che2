@@ -287,8 +287,7 @@ public class VRMap implements Serializable {
 				int tag = (int) Long.parseLong(attributes.getValue("tag")
 						.replace('x', '0'), 16);
 				String vrstr = attributes.getValue("vr");
-				if ((tag & 0x0000ffff) != 0 && (tag & 0xffff0000) != 0
-						&& vrstr != null && vrstr.length() != 0) {
+				if (vrstr != null && vrstr.length() != 0) {
 					VR vr = VR.valueOf(vrstr.charAt(0) << 8 | vrstr.charAt(1));
 					table.put(tag, vr);
 				}

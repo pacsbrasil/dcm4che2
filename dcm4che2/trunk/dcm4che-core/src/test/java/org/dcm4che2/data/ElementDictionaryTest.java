@@ -72,6 +72,8 @@ public class ElementDictionaryTest extends TestCase {
 		assertEquals(ElementDictionary.PRIVATE_CREATOR, dict.nameOf(0x00990010));
 		assertEquals(ElementDictionary.PRIVATE_CREATOR, dict.nameOf(0x00990011));
 		assertEquals(ElementDictionary.PRIVATE_CREATOR, dict.nameOf(0x009900E0));
+        assertEquals("Private US", dict.nameOf(0x00991000));
+        assertEquals("Private US", dict.nameOf(0x00991100));
 		assertEquals("Private UL", dict.nameOf(0x00991010));
 		assertEquals("Private UL", dict.nameOf(0x00991110));
 		assertEquals("Private OB", dict.nameOf(0x009910E0));
