@@ -167,20 +167,15 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
     }
     
     private String trimMatch(String val) {
-        int wcpos = val.indexOf("*");
-        if (wcpos == -1) {
+        char[] a = val.toCharArray();
+        int len = a.length;
+        if (len < 3 || a[len-3] != '*' || a[len-2] != '^' || a[len-1] != '*') {
             return val;
-        }        
-        int end = wcpos + 1;
-        int len = val.length();
-        char ch;
-        for (int i = end; i < len; i++) {
-            ch = val.charAt(i);
-            if (ch != '^' && ch != '*' && ch != '?') {
-                return val;
-            }
         }
-        return val.substring(0, end);
+        do {
+            len -= 2;
+        } while (len >= 3 && a[len-3] == '*' && a[len-2] == '^' );     
+        return val.substring(0, len);
     }
 
     private String toComponentGroupString(String nullMask, boolean trim) {

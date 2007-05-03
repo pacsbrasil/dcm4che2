@@ -62,6 +62,7 @@ public class PackageTest extends Object {
         suite.addTest(DcmParserTest.suite());
         suite.addTest(DatasetTest.suite());
         suite.addTest(DatasetSerializerTest.suite());
+        suite.addTest(PersonNameTest.suite());
         return suite;
     }
 }

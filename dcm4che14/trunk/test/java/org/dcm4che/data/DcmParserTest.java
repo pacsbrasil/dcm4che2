@@ -38,14 +38,13 @@
 
 package org.dcm4che.data;
 
-import org.dcm4che.data.DcmEncodeParam;
-import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmHandler;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 
-import java.io.*;
-
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  *
