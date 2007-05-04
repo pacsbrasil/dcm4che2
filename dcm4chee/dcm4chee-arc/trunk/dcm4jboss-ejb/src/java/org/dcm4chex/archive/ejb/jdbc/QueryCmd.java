@@ -360,22 +360,30 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2,
                 keys.getStrings(PrivateTags.CallingAET));
-        Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
-        if (rqAttrs != null) {
-            sqlBuilder.addWildCardMatch(null,
+        if ( this.isMatchRequestAttributes()) {
+            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
+            
+            SqlBuilder subQuery = new SqlBuilder();
+            subQuery.setSelect(new String[]{"SeriesRequest.pk"});
+            subQuery.setFrom(new String[]{"SeriesRequest"});
+            subQuery.addFieldValueMatch(null, "Series.pk", type2, null, "SeriesRequest.series_fk");
+            subQuery.addWildCardMatch(null,
                     "SeriesRequest.requestedProcedureId", type2,
                     rqAttrs.getStrings(Tags.RequestedProcedureID));
-            sqlBuilder.addWildCardMatch(null, "SeriesRequest.spsId", type2,
+            subQuery.addWildCardMatch(null, "SeriesRequest.spsId", type2,
                     rqAttrs.getStrings(Tags.SPSID));
-            sqlBuilder.addWildCardMatch(null, "SeriesRequest.requestingService",
+            subQuery.addWildCardMatch(null, "SeriesRequest.requestingService",
                     type2, rqAttrs.getStrings(Tags.RequestingService));
-            sqlBuilder.addPNMatch(
+            subQuery.addPNMatch(
                     new String[] { 
                             "SeriesRequest.requestingPhysician",
                             "SeriesRequest.requestingPhysicianIdeographicName",
                             "SeriesRequest.requestingPhysicianPhoneticName" },
                     type2,
                     rqAttrs.getString(Tags.RequestingPhysician));
+            
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR",false);
+            node0.addMatch( new Match.Subquery(subQuery, null, null));
         }
 
         matchingKeys.add(MATCHING_SERIES_KEYS);
@@ -626,10 +634,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getLeftJoin() {
-            if (!isMatchRequestAttributes())
-                return null;
-            sqlBuilder.setDistinct(true);
-            return SERIES_REQUEST_LEFT_JOIN;
+            return null;
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -684,13 +689,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
         protected String[] getLeftJoin() {
             ArrayList list = new ArrayList(12);
-            if (isMatchRequestAttributes()) {
-                sqlBuilder.setDistinct(true);
-                list.add("SeriesRequest");
-                list.add(null);
-                list.add("Series.pk");
-                list.add("SeriesRequest.series_fk");
-            }
             if (isMatchSrCode()) {
                 list.add("Code");
                 list.add(SR_CODE);
