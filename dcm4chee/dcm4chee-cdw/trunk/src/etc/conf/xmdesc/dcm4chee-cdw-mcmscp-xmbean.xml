@@ -23,28 +23,6 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getDcmServerName"
-      setMethod="setDcmServerName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>DcmServerName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=DcmServer" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSpoolDirName"
-      setMethod="setSpoolDirName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>SpoolDirName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=SpoolDir" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isKeepSpoolFiles"
       setMethod="setKeepSpoolFiles">
       <description>Keep spool files (for debugging) in failure case.
@@ -271,6 +249,22 @@
          <value value="500" />
       </descriptors>
    </attribute>   
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>DcmServerName</name>
+      <type>javax.management.ObjectName</type>      
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>      
+   </attribute>
    &defaultAttributes;
    
    <!-- Operations -->

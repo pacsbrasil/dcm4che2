@@ -140,10 +140,7 @@
       <description>Used internally - do NOT modify.
       </description>
       <name>SpoolDirName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=SpoolDir" />
-      </descriptors>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
    

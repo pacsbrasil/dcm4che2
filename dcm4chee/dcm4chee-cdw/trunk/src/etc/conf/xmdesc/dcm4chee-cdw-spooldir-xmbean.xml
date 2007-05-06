@@ -258,9 +258,6 @@
       </description>
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.cdw:service=Scheduler"/>
-      </descriptors>
    </attribute>  
    &defaultAttributes;
    

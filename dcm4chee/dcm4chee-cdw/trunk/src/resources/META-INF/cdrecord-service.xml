@@ -15,9 +15,11 @@
   <mbean code="org.dcm4chex.cdw.cdrecord.CDRecordService"
     name="dcm4chee.cdw:service=MediaWriter,name=CDRecord"
     xmbean-dd="xmdesc/dcm4chee-cdw-cdrecord-xmbean.xml">
-    <depends>dcm4chee.cdw:service=SpoolDir</depends>
-    <depends>dcm4chee.cdw:service=LabelPrint</depends>
-    <depends>dcm4chee.cdw:service=Queue,name=CDRecord</depends>
     <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+    <depends>dcm4chee.cdw:service=Queue,name=CDRecord</depends>
+    <depends optional-attribute-name="LabelPrintName"
+      >dcm4chee.cdw:service=LabelPrint</depends>
+    <depends optional-attribute-name="SpoolDirName"
+      >dcm4chee.cdw:service=SpoolDir</depends>
   </mbean>
 </server>

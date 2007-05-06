@@ -197,17 +197,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getLabelPrintName"
-      setMethod="setLabelPrintName">
-      <description>Reference to Label Print Service - do NOT modify.
-      </description>
-      <name>LabelPrintName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=LabelPrint" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getKeepLabelFiles"
       setMethod="setKeepLabelFiles">
       <description>Controls persistence of created Label files.
@@ -242,15 +231,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLabelPrintName"
+      setMethod="setLabelPrintName">
+      <description>Reference to Label Print Service - do NOT modify.
+      </description>
+      <name>LabelPrintName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getSpoolDirName"
       setMethod="setSpoolDirName">
       <description>Used internally - do NOT modify.
       </description>
       <name>SpoolDirName</name>
-      <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=SpoolDir" />
-      </descriptors>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
    

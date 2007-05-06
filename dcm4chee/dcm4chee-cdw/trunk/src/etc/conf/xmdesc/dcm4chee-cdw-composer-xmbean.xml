@@ -263,9 +263,6 @@
       </description>
       <name>MakeIsoImageServiceName</name>
       <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=MakeIsoImage" />
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getSpoolDirName"
@@ -274,9 +271,6 @@
       </description>
       <name>SpoolDirName</name>
       <type>javax.management.ObjectName</type>      
-      <descriptors>
-         <value value="dcm4chee.cdw:service=SpoolDir" />
-      </descriptors>
    </attribute>
 	&defaultAttributes;
    
