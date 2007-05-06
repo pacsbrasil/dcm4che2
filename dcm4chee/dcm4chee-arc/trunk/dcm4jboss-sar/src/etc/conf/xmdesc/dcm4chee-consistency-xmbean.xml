@@ -77,9 +77,6 @@
       </description>
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
    </attribute>  
    <attribute access="read-write"
       getMethod="getTimerIDCheckStudyConsistency"

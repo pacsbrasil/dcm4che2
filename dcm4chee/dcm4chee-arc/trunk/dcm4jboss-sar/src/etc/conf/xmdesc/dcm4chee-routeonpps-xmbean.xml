@@ -47,23 +47,21 @@
          <value value="MEDIUM"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getGpwlScpServiceName" setMethod="setGpwlScpServiceName">
+   <attribute access="read-write"
+      getMethod="getGpwlScpServiceName"
+      setMethod="setGpwlScpServiceName">
       <description>Used internally. Do not modify.
       </description>
       <name>GpwlScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=GPWLScp"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMoveScuServiceName" setMethod="setMoveScuServiceName">
+   <attribute access="read-write"
+      getMethod="getMoveScuServiceName"
+      setMethod="setMoveScuServiceName">
       <description>Used internally. Do not modify.
       </description>
       <name>MoveScuServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MoveScu"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

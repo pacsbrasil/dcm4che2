@@ -5,8 +5,10 @@
   <mbean code="org.dcm4chex.archive.mbean.StudyReconciliationService"
     name="dcm4chee.archive:service=StudyReconciliation"
     xmbean-dd="xmdesc/dcm4chee-studyreconciliation-xmbean.xml">
-    <depends>dcm4chee.archive:service=Scheduler</depends>
-    <depends>dcm4chee.archive:service=TLSConfig</depends>
     <depends>jboss.j2ee:jndiName=ejb/StudyReconciliation,service=EJB</depends>
+    <depends optional-attribute-name="SchedulerServiceName"
+      >dcm4chee.archive:service=Scheduler</depends>
+    <depends optional-attribute-name="TLSConfigName"
+      >dcm4chee.archive:service=TLSConfig</depends>
   </mbean>
 </server>

@@ -137,24 +137,21 @@
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDcmServerName" setMethod="setDcmServerName">
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
       <description>Used internally. Do not modify.
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=DcmServer"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
-      <description>Used internally. Do not modify.
-      
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>Used internally. Do not modify.      
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

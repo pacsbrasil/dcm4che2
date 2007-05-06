@@ -5,9 +5,15 @@
   <mbean code="org.dcm4chex.archive.dcm.mwlscp.MWLFindScpService"
     name="dcm4chee.archive:service=MWLFindScp"
     xmbean-dd="xmdesc/dcm4chee-mwlscp-xmbean.xml">
-    <depends>dcm4chee.archive:service=AuditLogger</depends>
-    <depends>dcm4chee.archive:service=DcmServer</depends>
-    <depends>dcm4chee.archive:service=MPPSScp</depends>
-    <depends>dcm4chee.archive:service=MWLScu</depends>
+    <depends optional-attribute-name="AuditLoggerName"
+      >dcm4chee.archive:service=AuditLogger</depends>
+    <depends optional-attribute-name="DcmServerName"
+      >dcm4chee.archive:service=DcmServer</depends>
+    <depends optional-attribute-name="MppsScpServiceName"
+      >dcm4chee.archive:service=MPPSScp</depends>
+    <depends optional-attribute-name="MwlScuServiceName"
+      >dcm4chee.archive:service=MWLScu</depends>
+    <depends optional-attribute-name="TemplatesServiceName"
+      >dcm4chee.archive:service=Templates</depends>
   </mbean>
 </server>

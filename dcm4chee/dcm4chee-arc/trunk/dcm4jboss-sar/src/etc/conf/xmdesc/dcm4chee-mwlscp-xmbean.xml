@@ -189,9 +189,6 @@
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=DcmServer"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getMppsScpServiceName"
@@ -200,9 +197,6 @@
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MPPSScp"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" 
       getMethod="getMwlScuServiceName"
@@ -211,9 +205,6 @@
       </description>
       <name>MwlScuServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MWLScu"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getAuditLoggerName"
@@ -222,20 +213,19 @@
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
-   &defaultOperations;
-   <operation impact="ACTION">
-      <description>Reload Stylesheets</description>
-      <name>reloadStylesheets</name>
-      <return-type>void</return-type>
-   </operation>
-   
+   &defaultOperations;  
    
    <!-- Notifications -->
 </mbean>

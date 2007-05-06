@@ -246,46 +246,38 @@
       </description>
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getStoreScpServiceName" setMethod="setStoreScpServiceName">
+   <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
       <description>Used internally. Do not modify.
       </description>
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StoreScp"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
-      <description>Used internally. Do not modify.
-      
+   <attribute access="read-write"
+      getMethod="getMppsScpServiceName"
+      setMethod="setMppsScpServiceName">
+      <description>Used internally. Do not modify.     
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MPPSScp"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getFileSystemMgtServiceName" setMethod="setFileSystemMgtServiceName">
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
       <description>Used internally. Do not modify.
       </description>
-      <name>FileSystemMgtServiceName</name>
+      <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+   <attribute access="read-write" 
+      getMethod="getTLSConfigName"
+      setMethod="setTLSConfigName">
       <description>Used internally - do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

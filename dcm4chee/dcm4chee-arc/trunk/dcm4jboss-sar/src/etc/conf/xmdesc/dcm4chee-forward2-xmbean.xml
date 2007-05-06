@@ -47,9 +47,6 @@
       </description>
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StoreScp"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" 
       getMethod="getMoveScuServiceName"
@@ -58,18 +55,18 @@
       </description>
       <name>MoveScuServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MoveScu"/>
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Reload Stylesheets</description>
-      <name>reloadStylesheets</name>
-      <return-type>void</return-type>
-   </operation>
 </mbean>
 

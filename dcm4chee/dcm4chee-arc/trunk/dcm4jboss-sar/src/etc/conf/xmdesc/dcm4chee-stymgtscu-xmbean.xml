@@ -115,26 +115,17 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
       </description>
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
    </attribute>   
    <attribute access="read-write" getMethod="getStudyMgtScpServiceName" setMethod="setStudyMgtScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>StudyMgtScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StudyMgtScp"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.</description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

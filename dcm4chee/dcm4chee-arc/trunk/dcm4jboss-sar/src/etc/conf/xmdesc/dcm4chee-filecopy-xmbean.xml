@@ -142,28 +142,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStoreScpServiceName"
-      setMethod="setStoreScpServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>StoreScpServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StoreScp"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getJmsServiceName"
-      setMethod="setJmsServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>JMSServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
-   </attribute>   
-   <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
       <description>Used internally. Do NOT modify.
@@ -187,15 +165,28 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

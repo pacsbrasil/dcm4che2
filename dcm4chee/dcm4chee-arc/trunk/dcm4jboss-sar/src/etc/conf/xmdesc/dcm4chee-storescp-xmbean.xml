@@ -847,62 +847,6 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getSchedulerServiceName"
-      setMethod="setSchedulerServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>SchedulerServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" 
-      getMethod="getMwlScuServiceName"
-      setMethod="setMwlScuServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>MwlScuServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MWLScu"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getDcmServerName"
-      setMethod="setDcmServerName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>DcmServerName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=DcmServer"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
-   </attribute>
-   
-   <attribute access="read-write"
       getMethod="getTimerIDCheckPendingSeriesStored"
       setMethod="setTimerIDCheckPendingSeriesStored">
       <description>The timer ID for scheduler of checking pending series stored.
@@ -914,15 +858,60 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getMwlScuServiceName"
+      setMethod="setMwlScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>MwlScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDcmServerName"
+      setMethod="setDcmServerName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>DcmServerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getPerfMonServiceName"
       setMethod="setPerfMonServiceName">
       <description>Used internally. Do NOT modify.
       </description>
       <name>PerfMonServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value=""/>
-      </descriptors>
    </attribute>
 
    &defaultAttributes;
@@ -933,11 +922,6 @@ StoreSCP service.
      <description>Reset Update Database - Performed Retries to 0.</description>
      <name>resetMaxCountUpdateDatabaseRetries</name>
      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Reload Stylesheets</description>
-      <name>reloadStylesheets</name>
-      <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Import a DICOM file (internal use only)</description>

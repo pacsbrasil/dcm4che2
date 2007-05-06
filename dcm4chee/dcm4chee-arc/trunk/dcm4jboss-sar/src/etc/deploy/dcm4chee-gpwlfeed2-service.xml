@@ -5,6 +5,9 @@
   <mbean code="org.dcm4chex.archive.dcm.gpwlscp.GPWLFeedService2"
     name="dcm4chee.archive:service=GPWLFeed2"
     xmbean-dd="xmdesc/dcm4chee-gpwlfeed2-xmbean.xml">
-    <depends>dcm4chee.archive:service=IANScu</depends>
+    <depends optional-attribute-name="IANScuServiceName"
+      >dcm4chee.archive:service=IANScu</depends>
+    <depends optional-attribute-name="TemplatesServiceName"
+      >dcm4chee.archive:service=Templates</depends>
   </mbean>
 </server>

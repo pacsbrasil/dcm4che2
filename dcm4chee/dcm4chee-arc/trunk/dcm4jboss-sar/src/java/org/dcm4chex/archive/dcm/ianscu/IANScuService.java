@@ -147,7 +147,7 @@ public class IANScuService extends AbstractScuService implements
 
     private ObjectName mppsScpServiceName;
 
-    private ObjectName fileSystemMgtServiceName;
+    private ObjectName fileSystemMgtName;
 
     private String queueName;
 
@@ -279,12 +279,12 @@ public class IANScuService extends AbstractScuService implements
         this.mppsScpServiceName = name;
     }
 
-    public ObjectName getFileSystemMgtServiceName() {
-        return fileSystemMgtServiceName;
+    public ObjectName getFileSystemMgtName() {
+        return fileSystemMgtName;
     }
 
-    public void setFileSystemMgtServiceName(ObjectName fileSystemMgtServiceName) {
-        this.fileSystemMgtServiceName = fileSystemMgtServiceName;
+    public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+        this.fileSystemMgtName = fileSystemMgtName;
     }
 
     public final String getQueueName() {
@@ -299,7 +299,7 @@ public class IANScuService extends AbstractScuService implements
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, seriesStoredFilter, null);
-        server.addNotificationListener(fileSystemMgtServiceName,
+        server.addNotificationListener(fileSystemMgtName,
                 studyDeletedListener, studyDeletedFilter, null);
         server.addNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
@@ -309,7 +309,7 @@ public class IANScuService extends AbstractScuService implements
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
                 seriesStoredListener, seriesStoredFilter, null);
-        server.removeNotificationListener(fileSystemMgtServiceName,
+        server.removeNotificationListener(fileSystemMgtName,
                 studyDeletedListener, studyDeletedFilter, null);
         server.removeNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);

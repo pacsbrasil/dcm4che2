@@ -5,8 +5,16 @@
   <mbean code="org.dcm4chex.archive.mbean.ContentEditService"
     name="dcm4chee.archive:service=ContentEditService"
     xmbean-dd="xmdesc/dcm4chee-contentedit-xmbean.xml"/>
-  <depends>dcm4chee.archive:service=FileSystemMgt</depends>
-  <depends>dcm4chee.archive:service=HL7Send</depends>
-  <depends>dcm4chee.archive:service=StudyMgtScu</depends>
-  <depends>dcm4chee.archive:service=StoreScp</depends>
+  <depends optional-attribute-name="AuditLoggerName"
+    >dcm4chee.archive:service=AuditLogger</depends>
+  <depends optional-attribute-name="FileSystemMgtName"
+     >dcm4chee.archive:service=FileSystemMgt</depends>
+  <depends optional-attribute-name="HL7SendServiceName"
+     >dcm4chee.archive:service=HL7Send</depends>
+  <depends optional-attribute-name="StudyMgtScuServiceName"
+     >dcm4chee.archive:service=StudyMgtScu</depends>
+  <depends optional-attribute-name="StoreScpServiceName"
+     >dcm4chee.archive:service=StoreScp</depends>
+  <depends optional-attribute-name="MppsScpServiceName"
+     >dcm4chee.archive:service=MPPSScp</depends>
 </server>

@@ -6,8 +6,7 @@
   <mbean code="org.dcm4chex.archive.mbean.EchoService" 
 	name="dcm4chee.archive:service=ECHOService"
 	xmbean-dd="xmdesc/dcm4chee-echo-xmbean.xml">	
-    <depends>
-      dcm4chee.archive:service=TLSConfig
-    </depends> 
+    <depends optional-attribute-name="TLSConfigName"
+      >dcm4chee.archive:service=TLSConfig</depends>
   </mbean>
 </server>

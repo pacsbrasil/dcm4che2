@@ -167,27 +167,22 @@
       </description>
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getGpwlScpServiceName" setMethod="setGpwlScpServiceName">
+   <attribute access="read-write"
+      getMethod="getGpwlScpServiceName"
+      setMethod="setGpwlScpServiceName">
       <description>Used internally. Do not modify.
       </description>
       <name>GpwlScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=GPWLScp"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
+   <attribute access="read-write"
+       getMethod="getTLSConfigName"
+       setMethod="setTLSConfigName">
       <description>Used internally. Do not modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

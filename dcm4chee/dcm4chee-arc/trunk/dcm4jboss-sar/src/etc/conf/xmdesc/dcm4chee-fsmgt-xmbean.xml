@@ -520,6 +520,28 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTimerIDCheckFilesToPurge"
+      setMethod="setTimerIDCheckFilesToPurge">
+      <description>The timer ID for scheduler of checking qualified files to purge.
+      </description>
+      <name>TimerIDCheckFilesToPurge</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckFilesToPurge" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTimerIDCheckFreeDiskSpace"
+      setMethod="setTimerIDCheckFreeDiskSpace">
+      <description>The timer ID for scheduler of checking free disk space.
+      </description>
+      <name>TimerIDCheckFreeDiskSpace</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CheckFreeDiskSpace" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
@@ -549,9 +571,6 @@ accessed studies.</description>
       </description>
       <name>AEServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AE"/>
-      </descriptors>
    </attribute>   
    <attribute access="read-write"
       getMethod="getJmsServiceName"
@@ -560,9 +579,6 @@ accessed studies.</description>
       </description>
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
    </attribute>   
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"
@@ -571,32 +587,7 @@ accessed studies.</description>
       </description>
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
    </attribute>  
-   <attribute access="read-write"
-      getMethod="getTimerIDCheckFilesToPurge"
-      setMethod="setTimerIDCheckFilesToPurge">
-      <description>The timer ID for scheduler of checking qualified files to purge.
-      </description>
-      <name>TimerIDCheckFilesToPurge</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFilesToPurge" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getTimerIDCheckFreeDiskSpace"
-      setMethod="setTimerIDCheckFreeDiskSpace">
-      <description>The timer ID for scheduler of checking free disk space.
-      </description>
-      <name>TimerIDCheckFreeDiskSpace</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFreeDiskSpace" />
-      </descriptors>
-   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

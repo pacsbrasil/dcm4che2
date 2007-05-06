@@ -124,28 +124,7 @@
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-
-   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig"/>
-      </descriptors>
-   </attribute>
    
-   <attribute access="read-write"
-      getMethod="getSchedulerServiceName"
-      setMethod="setSchedulerServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>SchedulerServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
-   </attribute>  
    <attribute access="read-write"
       getMethod="getTimerIDCheckStudyReconciliation"
       setMethod="setTimerIDCheckStudyReconciliation">
@@ -157,6 +136,24 @@
          <value value="CheckStudyReconciliation" />
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="getTLSConfigName"
+      setMethod="setTLSConfigName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>TLSConfigName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>  
    
    &defaultAttributes;
 

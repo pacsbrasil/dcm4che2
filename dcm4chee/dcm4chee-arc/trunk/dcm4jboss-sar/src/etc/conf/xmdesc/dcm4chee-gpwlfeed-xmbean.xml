@@ -28,15 +28,6 @@
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>MppsScpServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MPPSScp"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getMppsConfigFile"
       setMethod="setMppsConfigFile">
@@ -68,6 +59,14 @@
       <descriptors>
          <value value="doc1^DCM4CHEE^Dr. Allis,doc2^HUGO^Dr. Suse"/>
       </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMppsScpServiceName"
+      setMethod="setMppsScpServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>MppsScpServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 

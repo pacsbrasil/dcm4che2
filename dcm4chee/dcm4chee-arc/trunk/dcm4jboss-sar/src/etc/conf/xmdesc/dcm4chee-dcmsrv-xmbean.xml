@@ -178,9 +178,6 @@
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig" />
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

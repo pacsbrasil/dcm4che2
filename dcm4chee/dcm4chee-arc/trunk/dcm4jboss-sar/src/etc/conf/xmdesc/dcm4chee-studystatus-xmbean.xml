@@ -38,14 +38,13 @@
          <value value="110001^DCM:COMPLETED;110005^DCM:READ"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getGpwlScpServiceName" setMethod="setGpwlScpServiceName">
+   <attribute access="read-write"
+      getMethod="getGpwlScpServiceName"
+      setMethod="setGpwlScpServiceName">
       <description>Used internally. Do not modify.
       </description>
       <name>GpwlScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=GPWLScp"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

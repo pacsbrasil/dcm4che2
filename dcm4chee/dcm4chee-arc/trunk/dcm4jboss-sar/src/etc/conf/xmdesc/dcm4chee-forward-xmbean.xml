@@ -106,9 +106,6 @@ that destination outside a particular time interval.
       </description>
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StoreScp"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" 
       getMethod="getMoveScuServiceName"
@@ -117,9 +114,6 @@ that destination outside a particular time interval.
       </description>
       <name>MoveScuServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MoveScu"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getEditContentServiceName"
@@ -128,9 +122,6 @@ that destination outside a particular time interval.
       </description>
       <name>EditContentServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=ContentEditService"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

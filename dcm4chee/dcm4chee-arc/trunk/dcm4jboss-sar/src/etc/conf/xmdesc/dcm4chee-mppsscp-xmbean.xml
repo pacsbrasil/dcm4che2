@@ -144,9 +144,6 @@
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=DcmServer"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getAuditLoggerName"
@@ -155,9 +152,14 @@
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 

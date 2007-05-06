@@ -621,9 +621,6 @@ QueryRetrieveScp service.</description>
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getDcmServerName"
@@ -632,9 +629,6 @@ QueryRetrieveScp service.</description>
       </description>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=DcmServer"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getStgCmtScuScpName"
@@ -643,9 +637,6 @@ QueryRetrieveScp service.</description>
       </description>
       <name>StgCmtScuScpName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StgCmtScuScp"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getTarRetrieverName"
@@ -654,9 +645,6 @@ QueryRetrieveScp service.</description>
       </description>
       <name>TarRetrieverName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TarRetriever"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getTLSConfigName"
@@ -665,9 +653,6 @@ QueryRetrieveScp service.</description>
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getAuditLoggerName"
@@ -676,9 +661,6 @@ QueryRetrieveScp service.</description>
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getAEServiceName"
@@ -687,9 +669,14 @@ QueryRetrieveScp service.</description>
       </description>
       <name>AEServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AE"/>
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
       getMethod="getPerfMonServiceName"
@@ -698,20 +685,12 @@ QueryRetrieveScp service.</description>
       </description>
       <name>PerfMonServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value=""/>
-      </descriptors>
    </attribute>
 
    &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Reload Stylesheets</description>
-      <name>reloadStylesheets</name>
-      <return-type>void</return-type>
-   </operation>
    <operation impact="ACTION">
       <description>Used internally</description>
       <name>queueStgCmtOrder</name>

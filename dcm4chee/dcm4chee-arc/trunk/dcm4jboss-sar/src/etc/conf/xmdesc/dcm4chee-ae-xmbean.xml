@@ -34,18 +34,12 @@
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
       <description>Used internally. Do not modify.
       </description>
       <name>EchoServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=ECHOService"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getPortNumbers" setMethod="setPortNumbers">
       <description>Port numbers for AE auto configuration.&lt;br&gt;
@@ -77,9 +71,6 @@
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
    </attribute>
    
    &defaultAttributes;

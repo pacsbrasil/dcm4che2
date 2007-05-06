@@ -282,15 +282,6 @@
       </descriptors>
    </attribute>
    
-   <attribute access="read-write" getMethod="getPixQueryServiceName" setMethod="setPixQueryServiceName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>PixQueryServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Send"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" getMethod="getLocalDomain" setMethod="setLocalDomain">
       <description><![CDATA[Local Affinity Domain (Authority)<br/>
       		Name of the patient ID authorithy of this Document Source.<br/>
@@ -332,14 +323,22 @@
       </descriptors>
    </attribute>
    
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+   <attribute access="read-write"
+      getMethod="getPixQueryServiceName"
+      setMethod="setPixQueryServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>PixQueryServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
       <description>Used internally - do NOT modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
    </attribute>
 
    <attribute access="read-write" 
@@ -349,9 +348,6 @@
       </description>
       <name>IANScuServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=IANScu"/>
-      </descriptors>
    </attribute>
    
    <attribute access="read-write"
@@ -361,9 +357,6 @@
       </description>
       <name>KeyObjectServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=KeyObjectService"/>
-      </descriptors>
    </attribute>
    
    &defaultAttributes;

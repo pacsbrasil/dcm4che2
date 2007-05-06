@@ -120,50 +120,45 @@
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getFileSystemMgtName" setMethod="setFileSystemMgtName">
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
       <description>Used internally - do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getHL7SendServiceName" setMethod="setHL7SendServiceName">
+   <attribute access="read-write"
+      getMethod="getHL7SendServiceName"
+      setMethod="setHL7SendServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>HL7SendServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Send"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getStudyMgtScuServiceName" setMethod="setStudyMgtScuServiceName">
+   <attribute access="read-write"
+      getMethod="getStudyMgtScuServiceName"
+      setMethod="setStudyMgtScuServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>StudyMgtScuServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StudyMgtScu"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getStoreScpServiceName" setMethod="setStoreScpServiceName">
+   <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StoreScp"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
+   <attribute access="read-write"
+      getMethod="getMppsScpServiceName"
+      setMethod="setMppsScpServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MPPSScp"/>
-      </descriptors>
    </attribute>
       <attribute access="read-write"
       getMethod="getAuditLoggerName"
@@ -172,9 +167,6 @@
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger"/>
-      </descriptors>
    </attribute>
    &defaultAttributes;
 

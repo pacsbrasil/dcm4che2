@@ -94,9 +94,6 @@
       </description>
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
    </attribute>      
    &defaultAttributes;
    
