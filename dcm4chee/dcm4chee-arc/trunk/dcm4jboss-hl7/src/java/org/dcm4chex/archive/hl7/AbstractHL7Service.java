@@ -42,10 +42,9 @@ package org.dcm4chex.archive.hl7;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
-import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -57,12 +56,20 @@ import org.jboss.system.ServiceMBeanSupport;
 public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
         HL7Service {
 
-    static DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    
+    protected TemplatesDelegate templates = new TemplatesDelegate(this);
+
     private ObjectName hl7ServerName;
 
     private String messageTypes;
 
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
     public final ObjectName getHL7ServerName() {
         return hl7ServerName;
     }
@@ -97,32 +104,8 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
         }
     }
 
-    protected Templates getTemplates(String uri) {
-        try {
-            return (Templates) server.invoke(hl7ServerName, "getTemplates",
-                    new Object[] { uri },
-                    new String[] { String.class.getName() });
-        } catch (Exception e) {
-            String prompt = "Failed to load XSL " + uri;
-            log.error(prompt, e);
-            throw new RuntimeException(prompt, e);
-        }
-    }
-    
-    protected void reloadStylesheets() {
-		if (getState() != STARTED) return;
-        try {
-            server.invoke(hl7ServerName, "reloadStylesheets",
-                    null, null);
-        } catch (Exception e) {
-            log.error("JMX error:", e);
-            throw new RuntimeException("JMX error:", e);
-        }
-    }    
-
-	protected void startService() throws Exception {
+    protected void startService() throws Exception {
         registerService(this);
-		reloadStylesheets();
     }
 
     protected void stopService() throws Exception {

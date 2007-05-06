@@ -38,10 +38,8 @@
 
 package org.dcm4chex.archive.dcm.movescu;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Hashtable;
 
 import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
@@ -54,7 +52,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -62,7 +59,7 @@ import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -93,18 +90,24 @@ public class ForwardService2 extends ServiceMBeanSupport {
 
     private ObjectName moveScuServiceName;
     
-    private Hashtable templates = new Hashtable();
-    
-    private File configDir;
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
        
     public final String getConfigDir() {
-        return configDir.getPath();
+        return templates.getConfigDir();
     }
 
     public final void setConfigDir(String path) {
-        this.configDir = new File(path.replace('/', File.separatorChar));
+        templates.setConfigDir(path);
     }
 
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
     public final ObjectName getMoveScuServiceName() {
         return moveScuServiceName;
     }
@@ -128,13 +131,13 @@ public class ForwardService2 extends ServiceMBeanSupport {
     }
 
     protected void stopService() throws Exception {
-        templates.clear();
         server.removeNotificationListener(storeScpServiceName,
                 seriesStoredListener, seriesStoredFilter, null);
     }
     
     private void onSeriesStored(final SeriesStored stored) {
-        Templates tpl = getTemplatesFor(stored.getCallingAET(), FORWARD_XSL);
+        Templates tpl = templates.getTemplatesForAET(
+                stored.getCallingAET(), FORWARD_XSL);
         if (tpl != null) {
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             ds.putAll(stored.getPatientAttrs());
@@ -210,40 +213,5 @@ public class ForwardService2 extends ServiceMBeanSupport {
         } catch (Exception e) {
             log.error("Schedule Move failed:", e);
         }
-    }
-
-    private Templates getTemplatesFor(String aet, String fname) {
-        File f = getXSLFile(aet, fname);
-        if (f == null) {
-            return null;
-        }
-        Templates tpl = (Templates) templates.get(f);
-        if (tpl == null) {
-            try {
-                tpl = TransformerFactory.newInstance().newTemplates(
-                        new StreamSource(f));
-            } catch (Exception e) {
-                log.error("Compiling Stylesheet " + f + " failed:", e);
-                return null;
-            }
-            templates.put(f, tpl);
-        }
-        return tpl;
-    }
-
-    private File getXSLFile(String aet, String fname) {
-        if (aet != null) {
-            File f =  FileUtils.resolve(
-                        new File(new File(configDir, aet), fname));
-            if (f.exists()) {
-                return f;
-            }
-        }
-        File f = FileUtils.resolve(new File(configDir, fname));
-        return f.exists() ? f : null;
-    }
-    
-    public void reloadStylesheets() {
-        templates.clear();
     }
 }

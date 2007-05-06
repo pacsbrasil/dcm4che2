@@ -41,7 +41,6 @@ package org.dcm4chex.archive.dcm;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,8 +54,6 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.RemoteNode;
@@ -79,7 +76,7 @@ import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
-import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
@@ -122,9 +119,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected File logDir;
 
-    protected File coerceConfigDir;
-
-    protected Hashtable templates = new Hashtable();
+    protected TemplatesDelegate templates = new TemplatesDelegate(this);
 
     private final NotificationListener callingAETChangeListener = 
         new NotificationListener() {
@@ -174,6 +169,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+        
     public final String getCalledAETs() {
         return calledAETs == null ? "" : StringUtils.toString(calledAETs, '\\');
     }
@@ -228,11 +231,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final String getCoerceConfigDir() {
-        return coerceConfigDir.getPath();
+        return templates.getConfigDir();
     }
 
     public final void setCoerceConfigDir(String path) {
-        this.coerceConfigDir = new File(path.replace('/', File.separatorChar));
+        templates.setConfigDir(path);
     }
         
     protected boolean enableService() {
@@ -428,7 +431,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         disableService();
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
-        templates.clear();
         server.removeNotificationListener(dcmServerName, callingAETChangeListener);
      }
 
@@ -459,41 +461,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return new File(dir, new DTFormat().format(now) + suffix);
     }
 
-    public Templates getCoercionTemplatesFor(String aet, String fname) {
-        File f = getXSLFile(aet, fname);
-        if (f == null) {
-            return null;
-        }
-        Templates tpl = (Templates) templates.get(f);
-        if (tpl == null) {
-            try {
-                tpl = TransformerFactory.newInstance().newTemplates(
-                        new StreamSource(f));
-            } catch (Exception e) {
-                log.error("Compiling Stylesheet " + f + " failed:", e);
-                return null;
-            }
-            templates.put(f, tpl);
-        }
-        return tpl;
-    }
-
-    private File getXSLFile(String aet, String fname) {
-        if (aet != null) {
-            File f =  FileUtils.resolve(
-                        new File(new File(coerceConfigDir, aet), fname));
-            if (f.exists()) {
-                return f;
-            }
-        }
-        File f = FileUtils.resolve(new File(coerceConfigDir, fname));
-        return f.exists() ? f : null;
-    }
-
-    public void reloadStylesheets() {
-        templates.clear();
-    }
-
     private boolean contains(Object[] a, Object e) {
         for (int i = 0; i < a.length; i++) {
             if (a[i].equals(e)) {
@@ -518,7 +485,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public Dataset getCoercionAttributesFor(Association a, String xsl,
             Dataset in) {
         String callingAET = a.getCallingAET();
-        Templates stylesheet = getCoercionTemplatesFor(callingAET, xsl);
+        Templates stylesheet = templates.getTemplatesForAET(callingAET, xsl);
         if (stylesheet == null) {
             return null;
         }

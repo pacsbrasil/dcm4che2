@@ -43,6 +43,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,20 +57,19 @@ import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
 import org.dcm4che.util.MLLP_Protocol;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
@@ -106,9 +106,13 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     };
 
-    private String ackStylesheetURL = "resource:dcm4chee-hl7/msh2ack.xsl";
+    private String ackStylesheetPath;
 
-    private String logStylesheetURL = "resource:dcm4chee-hl7/logmsg.xsl";
+    private File ackStylesheetFile;
+
+    private String logStylesheetPath;
+
+    private File logStylesheetFile;
 
     private File logDir;
 
@@ -128,30 +132,38 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
-    private Hashtable templates = new Hashtable();
-
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
+    
     private Hashtable serviceRegistry = new Hashtable();
 
     private String[] noopMessageTypes = {};
 
-    public final String getAckStylesheetURL() {
-        return ackStylesheetURL;
+    public final String getAckStylesheet() {
+        return ackStylesheetPath;
     }
 
-    public final void setAckStylesheetURL(String ackStylesheetURL) {
-        this.ackStylesheetURL = ackStylesheetURL;
-        reloadStylesheets();
+    public void setAckStylesheet(String path) throws FileNotFoundException {
+        this.ackStylesheetFile = FileUtils.toExistingFile(path);
+        this.ackStylesheetPath = path;
     }
 
-    public final String getLogStylesheetURL() {
-        return logStylesheetURL;
+    public final String getLogStylesheet() {
+        return logStylesheetPath;
     }
 
-    public final void setLogStylesheetURL(String logStylesheetURL) {
-        this.logStylesheetURL = logStylesheetURL;
-        reloadStylesheets();
+    public void setLogStylesheet(String path) throws FileNotFoundException {
+        this.logStylesheetFile = FileUtils.toExistingFile(path);
+        this.logStylesheetPath = path;
     }
 
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
@@ -251,21 +263,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             serviceRegistry.remove(messageType);
     }
 
-    public Templates getTemplates(String uri)
-            throws TransformerConfigurationException {
-        Templates tpl = (Templates) templates.get(uri);
-        if (tpl == null) {
-            tpl = TransformerFactory.newInstance().newTemplates(
-                    new StreamSource(uri));
-            templates.put(uri, tpl);
-        }
-        return tpl;
-    }
-
-    public void reloadStylesheets() {
-        templates.clear();
-    }
-
     protected void startService() throws Exception {
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
                 "log");
@@ -278,12 +275,11 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     protected void stopService() throws Exception {
         hl7srv.stop();
-        templates.clear();
     }
 
     public void ack(Document document, ContentHandler hl7out, HL7Exception hl7ex) {
         try {
-            Transformer t = getTemplates(ackStylesheetURL).newTransformer();
+            Transformer t = templates.getTemplates(ackStylesheetFile).newTransformer();
             if (hl7ex != null) {
                 t.setParameter("AcknowledgementCode", hl7ex
                         .getAcknowledgementCode());
@@ -419,7 +415,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             return;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            Transformer t = getTemplates(logStylesheetURL).newTransformer();
+            Transformer t = templates.getTemplates(logStylesheetFile).newTransformer();
             t.transform(new DocumentSource(document), new StreamResult(out));
             log.info(out.toString());
         } catch (Exception e) {

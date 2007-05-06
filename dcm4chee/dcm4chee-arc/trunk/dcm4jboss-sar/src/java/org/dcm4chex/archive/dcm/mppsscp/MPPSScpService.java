@@ -278,7 +278,7 @@ public class MPPSScpService extends AbstractScpService {
         if ( ds == null ) return null;        
         Dataset sps = ds.getItem(Tags.SPSSeq);
         String aet = sps != null ? sps.getString(Tags.ScheduledStationAET) : null;
-        Templates tmpl = this.getCoercionTemplatesFor(aet, MWL2STORE_XSL);
+        Templates tmpl = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
         if (tmpl == null) {
             log.warn("Coercion template "+MWL2STORE_XSL+" not found! Can not store MWL attributes to series!");
             return null;

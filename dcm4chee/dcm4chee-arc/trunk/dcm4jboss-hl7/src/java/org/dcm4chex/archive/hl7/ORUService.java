@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +57,7 @@ import org.dcm4che.util.Base64;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
@@ -68,26 +71,29 @@ import org.xml.sax.ContentHandler;
  */
 public class ORUService extends AbstractHL7Service
 {
-    private String oru2srXSL;
-    private String oru2pdfXSL;
+    private String oru2srStylesheetPath;
+    private File oru2srStylesheetFile;
+    private String oru2pdfStylesheetPath;
+    private File oru2pdfStylesheetFile;
     private ObjectName exportManagerName;
     private int storePriority = 0;
 
-    public String getSRStylesheetURL() {
-        return oru2srXSL;
+    public String getSRStylesheet() {
+        return oru2srStylesheetPath;
     }
 
-    public void setSRStylesheetURL(String stylesheetURL) {
-        this.oru2srXSL = stylesheetURL;
-        reloadStylesheets();
+    public void setSRStylesheet(String path) throws FileNotFoundException {
+        this.oru2srStylesheetFile = FileUtils.toExistingFile(path);
+        this.oru2srStylesheetPath = path;
     }
 
-    public final String getPDFStylesheetURL() {
-        return oru2pdfXSL;
+    public final String getPDFStylesheet() {
+        return oru2pdfStylesheetPath;
     }
 
-    public final void setPDFStylesheetURL(String oru2pdfXSL) {
-        this.oru2pdfXSL = oru2pdfXSL;
+    public final void setPDFStylesheet(String path) throws FileNotFoundException {
+        this.oru2pdfStylesheetFile = FileUtils.toExistingFile(path);
+        this.oru2pdfStylesheetPath = path;
     }
 
     public final ObjectName getExportManagerName()
@@ -113,16 +119,16 @@ public class ORUService extends AbstractHL7Service
     {
         try
         {
-            Dataset doc = dof.newDataset();
+            Dataset doc = DcmObjectFactory.getInstance().newDataset();
             byte[] pdf = getPDF(msg);
             if (pdf != null) {
-                Transformer t = getTemplates(oru2pdfXSL).newTransformer();
+                Transformer t = templates.getTemplates(oru2pdfStylesheetFile).newTransformer();
                 t.transform(new DocumentSource(msg), new SAXResult(
                         doc.getSAXHandler2(null)));
                 doc.putOB(Tags.EncapsulatedDocument, pdf);
                 storeSR(doc);
             } else {
-                Transformer t = getTemplates(oru2srXSL).newTransformer();
+                Transformer t = templates.getTemplates(oru2srStylesheetFile).newTransformer();
                 t.transform(new DocumentSource(msg), new SAXResult(
                         doc.getSAXHandler2(null)));
                 addIUIDs(doc);

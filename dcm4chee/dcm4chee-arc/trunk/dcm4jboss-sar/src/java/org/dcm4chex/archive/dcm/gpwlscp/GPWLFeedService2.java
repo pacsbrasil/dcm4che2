@@ -41,14 +41,11 @@ package org.dcm4chex.archive.dcm.gpwlscp;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Hashtable;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -59,8 +56,8 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -84,9 +81,7 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
     
     private File logDir;
 
-    private File configDir;
-
-    private Hashtable templates = new Hashtable();
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
     
     private ObjectName ianScuServiceName;
     
@@ -105,12 +100,20 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
         EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
     
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
     public final String getWorkItemConfigDir() {
-        return configDir.getPath();
+        return templates.getConfigDir();
     }
 
     public final void setWorkItemConfigDir(String path) {
-        this.configDir = new File(path.replace('/', File.separatorChar));
+        templates.setConfigDir(path);
     }
     
     public final String getLogStationAETs() {
@@ -145,10 +148,6 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
         this.ianScuServiceName = ianScuServiceName;
     }
 
-    public void reloadStylesheets() {
-        templates.clear();
-    }
-
     protected void startService() throws Exception {
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
         server.addNotificationListener(ianScuServiceName,
@@ -158,7 +157,6 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
     protected void stopService() throws Exception {
         server.removeNotificationListener(ianScuServiceName,
                 ianListener, IANScuService.NOTIF_FILTER, null);
-        templates.clear();
     }
 
     private void onIAN(Dataset mpps) {
@@ -167,7 +165,7 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
         if (logMPPS) {
             logMPPS(aet, mpps);
         }
-        Templates stylesheet = getStylesheet(aet);
+        Templates stylesheet = templates.getTemplatesForAET(aet, MPPS2GPWL_XSL);
         if (stylesheet == null) {
             log.info("No mpps2gpwl.xsl found for " + aet);
             return;
@@ -222,30 +220,4 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
             log.warn("Log MPPS attributes failed:", e);
         }
     }
-
-    private Templates getStylesheet(String aet) {
-        // check AET specific attribute coercion configuration
-        File f = FileUtils.resolve(new File(new File(configDir, aet),
-                MPPS2GPWL_XSL));
-        if (!f.exists()) {
-            // check general attribute coercion configuration
-            f = FileUtils.resolve(new File(configDir, MPPS2GPWL_XSL));
-            if (!f.exists()) {
-                return null;
-            }
-        }
-        Templates tpl = (Templates) templates.get(f);
-        if (tpl == null) {
-            try {
-                tpl = TransformerFactory.newInstance().newTemplates(
-                        new StreamSource(f));
-            } catch (Exception e) {
-                log.error("Compiling Stylesheet " + f + " failed:", e);
-                return null;
-            }
-            templates.put(f, tpl);
-        }
-        return tpl;
-    }
-
 }

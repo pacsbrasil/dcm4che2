@@ -41,19 +41,18 @@ package org.dcm4chex.archive.hl7;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -63,7 +62,9 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -83,10 +84,11 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     private ObjectName mppsScpServiceName;
 
     private ObjectName hl7SendServiceName;
+    
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
 
-    private String stylesheetURL;
-
-    private Templates stylesheet;
+    private String stylesheetPath;
+    private File stylesheetFile;
 
     private String sendingApplication;
 
@@ -108,15 +110,23 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
 
     private boolean logXSLT;
 
-    public final String getStylesheetURL() {
-        return stylesheetURL;
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
     }
 
-    public final void setStylesheetURL(String mpps2ormStylesheetURL) {
-        this.stylesheetURL = mpps2ormStylesheetURL;
-        this.stylesheet = null;
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
+    public final String getStylesheet() {
+        return stylesheetPath;
     }
 
+    public void setStylesheet(String path) throws FileNotFoundException {
+        this.stylesheetFile = FileUtils.toExistingFile(path);
+        this.stylesheetPath = path;
+    }
+    
     public final String getSendingApplication() {
         return sendingApplication;
     }
@@ -332,10 +342,8 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     private TransformerHandler getTransformerHandler() throws Exception {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
                 .newInstance();
-        if (stylesheet == null) {
-            stylesheet = tf.newTemplates(new StreamSource(stylesheetURL));
-        }
-        TransformerHandler th = tf.newTransformerHandler(stylesheet);
+        TransformerHandler th = tf.newTransformerHandler(
+                templates.getTemplates(stylesheetFile));
         Transformer t = th.getTransformer();
         t.setParameter("SendingApplication", sendingApplication);
         t.setParameter("SendingFacility", sendingFacility);

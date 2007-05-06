@@ -39,14 +39,19 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dom4j.Document;
 import org.dom4j.io.DocumentSource;
@@ -60,29 +65,32 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
-	private String pidStylesheetURL = "resource:dcm4chee-hl7/pid2dcm.xsl";
+    private String pidStylesheetPath;
+    private File pidStylesheetFile;
 
-    private String mrgStylesheetURL = "resource:dcm4chee-hl7/mrg2dcm.xsl";
-    
-	private boolean ignoreDeleteErrors;
+    private String mrgStylesheetPath;
+    private File mrgStylesheetFile;
 
-	public final String getMrgStylesheetURL() {
-		return mrgStylesheetURL;
-	}
+    private boolean ignoreDeleteErrors;
 
-	public final void setMrgStylesheetURL(String mrgStylesheetURL) {
-		this.mrgStylesheetURL = mrgStylesheetURL;
-		reloadStylesheets();
-	}
+    public final String getMrgStylesheet() {
+        return mrgStylesheetPath;
+    }
 
-	public final String getPidStylesheetURL() {
-		return pidStylesheetURL;
-	}
+    public void setMrgStylesheet(String path) throws FileNotFoundException {
+        this.mrgStylesheetFile = FileUtils.toExistingFile(path);
+        this.mrgStylesheetPath = path;
+    }
 
-	public final void setPidStylesheetURL(String pidStylesheetURL) {
-		reloadStylesheets();
-		this.pidStylesheetURL = pidStylesheetURL;
-	}
+
+    public final String getPidStylesheet() {
+        return pidStylesheetPath;
+    }
+
+    public void setPidStylesheet(String path) throws FileNotFoundException {
+        this.pidStylesheetFile = FileUtils.toExistingFile(path);
+        this.pidStylesheetPath = path;
+    }
 
 	/**
 	 * @return Returns the ignoreNotFound.
@@ -99,9 +107,9 @@ public class ADTService extends AbstractHL7Service {
 	
 	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
-        Dataset pat = dof.newDataset();
+        Dataset pat = DcmObjectFactory.getInstance().newDataset();
         try {
-            Transformer t = getTemplates(pidStylesheetURL).newTransformer();
+            Transformer t = templates.getTemplates(pidStylesheetFile).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
                     .getSAXHandler2(null)));
 			String pid = pat.getString(Tags.PatientID);
@@ -116,9 +124,8 @@ public class ADTService extends AbstractHL7Service {
             PatientUpdate update = getPatientUpdateHome().create();
             try {
                 if (isMerge(msg)) {
-                    Dataset mrg = dof.newDataset();
-                    Transformer t2 = getTemplates(mrgStylesheetURL)
-                            .newTransformer();
+                    Dataset mrg = DcmObjectFactory.getInstance().newDataset();
+                    Transformer t2 = templates.getTemplates(mrgStylesheetFile).newTransformer();
                     t2.transform(new DocumentSource(msg), new SAXResult(mrg
                             .getSAXHandler2(null)));
 					final String opid = mrg.getString(Tags.PatientID);

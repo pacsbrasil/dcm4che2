@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -53,11 +55,13 @@ import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -98,7 +102,8 @@ public class ORMService extends AbstractHL7Service {
     
     private ObjectName deviceServiceName;
 
-    private String stylesheetURL = "resource:dcm4chee-hl7/orm2dcm.xsl";
+    private String stylesheetPath;
+    private File stylesheetFile;
 
     private String defaultStationAET = "UNKOWN";
 
@@ -106,13 +111,13 @@ public class ORMService extends AbstractHL7Service {
 
     private String defaultModality = "OT";
 
-    public String getStylesheetURL() {
-        return stylesheetURL;
+    public final String getStylesheet() {
+        return stylesheetPath;
     }
 
-    public void setStylesheetURL(String stylesheetURL) {
-        this.stylesheetURL = stylesheetURL;
-        reloadStylesheets();
+    public void setStylesheet(String path) throws FileNotFoundException {
+        this.stylesheetFile = FileUtils.toExistingFile(path);
+        this.stylesheetPath = path;
     }
 
     public final ObjectName getDeviceServiceName() {
@@ -177,8 +182,8 @@ public class ORMService extends AbstractHL7Service {
             throws HL7Exception {
         int op[] = toOp(msg);
         try {
-            Dataset ds = dof.newDataset();
-            Transformer t = getTemplates(stylesheetURL).newTransformer();
+            Dataset ds = DcmObjectFactory.getInstance().newDataset();
+            Transformer t = templates.getTemplates(stylesheetFile).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(ds
                     .getSAXHandler2(null)));
             final String pid = ds.getString(Tags.PatientID);

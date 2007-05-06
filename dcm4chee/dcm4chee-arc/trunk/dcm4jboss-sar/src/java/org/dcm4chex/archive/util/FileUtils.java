@@ -42,6 +42,7 @@ package org.dcm4chex.archive.util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
@@ -165,6 +166,14 @@ public class FileUtils {
         return resolve(new File(unixPath.replace('/', File.separatorChar)));
     }
 
+    public static File toExistingFile(String unixPath) throws FileNotFoundException {
+        File f = toFile(unixPath);
+        if (!f.isFile()) {
+            throw new FileNotFoundException(f.toString());
+        }
+        return f;
+    }
+    
     public static File toFile(String unixDirPath, String unixFilePath) {
         return resolve(new File(unixDirPath.replace('/', File.separatorChar),
                 unixFilePath.replace('/', File.separatorChar)));
