@@ -130,10 +130,7 @@
       <description>For internal use. Don't change!
       </description>
       <name>FileSystemMgtName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt" />
-      </descriptors>
+      <type>javax.management.ObjectName</type>
    </attribute>
     <attribute access="read-write"
       getMethod="getStudyInfoServiceName"
@@ -141,10 +138,7 @@
       <description>For internal use. Don't change!
       </description>
       <name>StudyInfoServiceName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=StudyInfoService" />
-      </descriptors>
+      <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"
@@ -153,9 +147,6 @@
       </description>
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
    </attribute>
    
    &defaultAttributes;

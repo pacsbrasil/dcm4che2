@@ -129,18 +129,23 @@
       <descriptors>
          <value value="false"/>
       </descriptors>
-   </attribute>   <attribute access="read-write"
-      getMethod="getStylesheetURL"
-      setMethod="setStylesheetURL">
-      <description>Stylesheet for DICOM MPPS to HL7 ORM^O01 mapping.
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStylesheet"
+      setMethod="setStylesheet">
+      <description><![CDATA[Stylesheet for DICOM MPPS to HL7 ORM^O01 mapping.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
-      <name>StylesheetURL</name>
+      <name>Stylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:dcm4chee-hl7/mpps2orm.xsl" />
+         <value value="conf/dcm4chee-hl7/mpps2orm.xsl" />
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
+   <attribute access="read-write"
+      getMethod="getEjbProviderURL"
+      setMethod="setEjbProviderURL">
       <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
       Use LOCAL if EJBs are deployed in same JBoss instance.
       </description>
@@ -150,25 +155,29 @@
          <value value="LOCAL"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getMppsScpServiceName" setMethod="setMppsScpServiceName">
-      <description>Used internally. Do not modify.
-      
+   <attribute access="read-write"
+      getMethod="getMppsScpServiceName"
+      setMethod="setMppsScpServiceName">
+      <description>Used internally. Do not modify.     
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MPPSScp"/>
-      </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getHl7SendServiceName" setMethod="setHl7SendServiceName">
-      <description>Used internally. Do not modify.
-      
+   <attribute access="read-write"
+      getMethod="getHl7SendServiceName"
+      setMethod="setHl7SendServiceName">
+      <description>Used internally. Do not modify.     
       </description>
       <name>Hl7SendServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Send"/>
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 

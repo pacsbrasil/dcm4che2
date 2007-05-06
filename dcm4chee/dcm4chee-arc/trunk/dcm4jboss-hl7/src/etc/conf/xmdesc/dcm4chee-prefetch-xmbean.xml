@@ -235,50 +235,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMoveScuServiceName"
-      setMethod="setMoveScuServiceName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>MoveScuServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=MoveScu" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getHL7ServerName"
-      setMethod="setHL7ServerName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>HL7ServerName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Server" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getJmsServiceName"
-      setMethod="setJmsServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>JMSServiceName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=JMS"/>
-      </descriptors>
-   </attribute>         
-   <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
       <description>Used internally - do NOT modify.
@@ -289,6 +245,38 @@
          <value value="Prefetch" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getMoveScuServiceName"
+      setMethod="setMoveScuServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MoveScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getHL7ServerName"
+      setMethod="setHL7ServerName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>HL7ServerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTLSConfigName"
+      setMethod="setTLSConfigName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>TLSConfigName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>         
    &defaultAttributes;
 
    <!-- Operations -->

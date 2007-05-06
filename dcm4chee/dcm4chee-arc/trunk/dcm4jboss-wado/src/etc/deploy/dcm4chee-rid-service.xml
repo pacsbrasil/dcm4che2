@@ -5,8 +5,11 @@
   <mbean code="org.dcm4chex.wado.mbean.RIDService"
     name="dcm4chee.archive:service=RIDService"
     xmbean-dd="xmdesc/dcm4chee-rid-xmbean.xml">
-    <depends>dcm4chee.archive:service=AuditLogger</depends>
-    <depends>dcm4chee.archive:service=FileSystemMgt</depends>
-    <depends>dcm4chee.archive:service=Scheduler</depends>
+    <depends optional-attribute-name="AuditLoggerName"
+      >dcm4chee.archive:service=AuditLogger</depends>
+    <depends optional-attribute-name="FileSystemMgtName"
+      >dcm4chee.archive:service=FileSystemMgt</depends>
+    <depends optional-attribute-name="SchedulerServiceName"
+      >dcm4chee.archive:service=Scheduler</depends>
   </mbean>
 </server>

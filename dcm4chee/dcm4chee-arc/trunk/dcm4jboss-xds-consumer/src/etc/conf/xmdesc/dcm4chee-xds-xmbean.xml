@@ -222,14 +222,13 @@
       </descriptors>
    </attribute>
 
-   <attribute access="read-write" getMethod="getRidServiceName" setMethod="setRidServiceName">
+   <attribute access="read-write"
+      getMethod="getRidServiceName"
+      setMethod="setRidServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>RidServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=RIDService"/>
-      </descriptors>
    </attribute>
 
    <!-- Operations -->

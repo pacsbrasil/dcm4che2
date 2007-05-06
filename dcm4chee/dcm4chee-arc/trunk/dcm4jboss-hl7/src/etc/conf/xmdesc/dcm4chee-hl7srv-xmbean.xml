@@ -173,25 +173,29 @@
       <type>int</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getAckStylesheetURL"
-      setMethod="setAckStylesheetURL">
-      <description>Stylesheet for generated ACK messages.
+      getMethod="getAckStylesheet"
+      setMethod="setAckStylesheet">
+      <description><![CDATA[Stylesheet for generated ACK messages.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
-      <name>AckStylesheetURL</name>
+      <name>AckStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:dcm4chee-hl7/msh2ack.xsl" />
+         <value value="conf/dcm4chee-hl7/msh2ack.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getLogStylesheetURL"
-      setMethod="setLogStylesheetURL">
-      <description>Stylesheet for logging of received HL7 messages.
+      getMethod="getLogStylesheet"
+      setMethod="setLogStylesheet">
+      <description><![CDATA[Stylesheet for logging of received HL7 messages.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
-      <name>LogStylesheetURL</name>
+      <name>LogStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:dcm4chee-hl7/logmsg.xsl" />
+         <value value="conf/dcm4chee-hl7/logmsg.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -201,9 +205,14 @@
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig" />
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 

@@ -247,28 +247,6 @@
    </attribute>
    
     <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
-      <description>For internal use. Don't change!
-      </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt" />
-      </descriptors>
-   </attribute>
-    <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>For internal use. Don't change!
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger" />
-      </descriptors>
-   </attribute>
-    <attribute access="read-write"
       getMethod="getDisabledAuditLogHosts"
       setMethod="setDisabledAuditLogHosts">
       <description>List of Host where audit log is disabled. 
@@ -291,6 +269,22 @@
          <value value="false" />
       </descriptors>
    </attribute>
+    <attribute access="read-write"
+      getMethod="getFileSystemMgtName"
+      setMethod="setFileSystemMgtName">
+      <description>For internal use. Don't change!
+      </description>
+      <name>FileSystemMgtName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+    <attribute access="read-write"
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
+      <description>For internal use. Don't change!
+      </description>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"
       setMethod="setSchedulerServiceName">
@@ -298,9 +292,6 @@
       </description>
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
    </attribute>  
    &defaultAttributes;
 

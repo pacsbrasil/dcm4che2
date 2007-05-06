@@ -263,9 +263,6 @@
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt" />
-      </descriptors>
    </attribute>
     <attribute access="read-write"
       getMethod="getAuditLoggerName"
@@ -274,9 +271,6 @@
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=AuditLogger" />
-      </descriptors>
    </attribute>
 
    <attribute access="read-write"
@@ -286,9 +280,6 @@
       </description>
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=Scheduler"/>
-      </descriptors>
    </attribute>
    
    &defaultAttributes;

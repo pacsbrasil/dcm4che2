@@ -39,7 +39,6 @@
 
 package org.dcm4chex.wado.mbean;
 
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.dcm4chex.wado.common.WADOExtRequestObject;
@@ -69,8 +68,8 @@ public class ExtendedWADOService extends AbstractCacheService {
 	 *  
 	 * @return Name of the MBean
 	 */
-	public String getFileSystemMgtName() {
-		return support.getFileSystemMgtName().toString();
+	public ObjectName getFileSystemMgtName() {
+		return support.getFileSystemMgtName();
 	}
 	
 	/**
@@ -80,12 +79,8 @@ public class ExtendedWADOService extends AbstractCacheService {
 	 *  
 	 * @param Name of the MBean
 	 */
-	public void setFileSystemMgtName( String name ) {
-		try {
-			ObjectName on = new ObjectName( name );
-			support.setFileSystemMgtName( on );
-		} catch (MalformedObjectNameException e) {
-		}
+	public void setFileSystemMgtName( ObjectName name ) {
+	    support.setFileSystemMgtName( name );
 	}
 	
 	/**
@@ -95,8 +90,8 @@ public class ExtendedWADOService extends AbstractCacheService {
 	 *  
 	 * @return Name of the MBean
 	 */
-	public String getStudyInfoServiceName() {
-		return support.getStudyInfoServiceName().toString();
+	public ObjectName getStudyInfoServiceName() {
+	    return support.getStudyInfoServiceName();
 	}
 	
 	/**
@@ -106,12 +101,8 @@ public class ExtendedWADOService extends AbstractCacheService {
 	 *  
 	 * @param Name of the MBean
 	 */
-	public void setStudyInfoServiceName( String name ) {
-		try {
-			ObjectName on = new ObjectName( name );
-			support.setStudyInfoServiceName( on );
-		} catch (MalformedObjectNameException e) {
-		}
+	public void setStudyInfoServiceName( ObjectName name ) {
+	    support.setStudyInfoServiceName( name );
 	}
 	
 	/**

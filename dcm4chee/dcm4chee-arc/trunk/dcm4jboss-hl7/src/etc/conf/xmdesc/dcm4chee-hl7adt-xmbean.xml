@@ -38,25 +38,29 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPidStylesheetURL"
-      setMethod="setPidStylesheetURL">
-      <description>Stylesheet for HL7 PID to DICOM Patient Module mapping.
+      getMethod="getPidStylesheet"
+      setMethod="setPidStylesheet">
+      <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module
+      mapping. A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
-      <name>PidStylesheetURL</name>
+      <name>PidStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:dcm4chee-hl7/pid2dcm.xsl" />
+         <value value="conf/dcm4chee-hl7/pid2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMrgStylesheetURL"
-      setMethod="setMrgStylesheetURL">
-      <description>Stylesheet for HL7 MRG to DICOM Patient Module mapping.
+      getMethod="getMrgStylesheet"
+      setMethod="setMrgStylesheet">
+      <description><![CDATA[Stylesheet for HL7 MRG to DICOM Patient Module
+      mapping. A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
-      <name>MrgStylesheetURL</name>
+      <name>MrgStylesheetL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="resource:dcm4chee-hl7/mrg2dcm.xsl" />
+         <value value="conf/dcm4chee-hl7/mrg2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -77,9 +81,14 @@
       </description>
       <name>HL7ServerName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Server" />
-      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 

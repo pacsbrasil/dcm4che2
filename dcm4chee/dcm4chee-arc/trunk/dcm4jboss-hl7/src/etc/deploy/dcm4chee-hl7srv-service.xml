@@ -9,6 +9,9 @@
          needed by ADTService and ORMService --> 
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/PatientUpdate</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/MWLManager</depends>
-    <depends>dcm4chee.archive:service=TLSConfig</depends>
+    <depends optional-attribute-name="TLSConfigName"
+      >dcm4chee.archive:service=TLSConfig</depends>
+    <depends optional-attribute-name="TemplatesServiceName"
+      >dcm4chee.archive:service=Templates</depends>
   </mbean>
 </server>
