@@ -98,10 +98,12 @@ class ConsistencyService {}
 class consistencyService {}
 
 /**
+ * @depend - - - AuditLogger
  * @depend - - - FileSystemMgt
  * @depend - - - HL7Send
  * @depend - - - StoreScp
  * @depend - - - StudyMgtScu
+ * @depend - - - MPPSScp
  */
 class ContentEditService {}
 
@@ -156,6 +158,7 @@ class echoService {}
 
 /**
  * @depend - - - AuditLogger
+ * @depend - - - TLSConfig
  * @depend - - - StoreScp
  * @depend - - - ExportManagerQueue
  * @depend - - - JMS
@@ -235,6 +238,7 @@ class forward {}
 /**
  * @depend - - - StoreScp
  * @depend - - - MoveScu
+ * @depend - - - Templates
  */
 class Forward2 {}
 
@@ -248,7 +252,6 @@ class Forward2 {}
 class forward2 {}
 
 /**
- * @depend - - - AuditLogger
  * @depend - - - MPPSScp
  */
 class GPWLFeed {}
@@ -264,6 +267,7 @@ class gpwlFeed {}
 
 /**
  * @depend - - - IANScu
+ * @depend - - - Templates
  */
 class GPWLFeed2 {}
 
@@ -278,6 +282,7 @@ class gpwlFeed2 {}
 
 /**
  * @depend - - - DcmServer
+ * @depend - - - AuditLogger
  */
 class GPWLScp {}
 
@@ -321,6 +326,7 @@ class hl7Send {}
 /**
  * @depend - - - TLSConfig
  * @depend - - - AuditLogger
+ * @depend - - - Templates
  */
 class HL7Server {}
 
@@ -335,6 +341,7 @@ class hl7Server {}
 
 /**
  * @depend - - - HL7Server
+ * @depend - - - Templates
  */
 class ADTService {}
 
@@ -350,6 +357,7 @@ class adtService {}
 /**
  * @depend - - - HL7Server
  * @depend - - - DeviceService
+ * @depend - - - Templates
  */
 class ORMService {}
 
@@ -384,6 +392,7 @@ class prefetch {}
 /**
  * @depend - - - HL7Server
  * @depend - - - ExportManager
+ * @depend - - - Templates
  */
 class ORUService {}
 
@@ -455,10 +464,11 @@ class KeyObjectService {}
 class keyObjectService {}
 
 /**
+ * @depend - - - JMS
+ * @depend - - - MCMScuQueue
  * @depend - - - Scheduler
  * @depend - - - Sendmail
- * @depend - - - MCMScuQueue
- * @depend - - - JMS
+ * @depend - - - TLSConfig
  */
 class MCMScu {}
 
@@ -488,6 +498,7 @@ class md5CheckService {}
 /**
  * @depend - - - MPPSScp
  * @depend - - - HL7Send
+ * @depend - - - Templates
  */
 class MPPS2ORM {}
 
@@ -518,6 +529,7 @@ class mppsEmulator {}
 /**
  * @depend - - - AuditLogger
  * @depend - - - DcmServer
+ * @depend - - - Templates
  */
 class MPPSScp {}
 
@@ -552,6 +564,7 @@ class mppsScu {}
  * @depend - - - DcmServer
  * @depend - - - MPPSScp
  * @depend - - - MWLScu
+ * @depend - - - Templates
  */
 class MWLFindScp {}
 
@@ -636,6 +649,7 @@ class ppsScu {}
  * @depend - - - FileSystemMgt
  * @depend - - - StgCmtScuScp
  * @depend - - - TarRetriever
+ * @depend - - - Templates
  */
 class QueryRetrieveScp {}
 
@@ -715,6 +729,7 @@ class stgCmtScuScp {}
  * @depend - - - FileSystemMgt
  * @depend - - - MWLScu
  * @depend - - - Scheduler
+ * @depend - - - Templates
  */
 class StoreScp {}
 
@@ -838,6 +853,17 @@ class TarRetriever {}
  */
 class tarRetriever {}
 
+class Templates {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.Templates
+ * @opt !hide
+ */
+class templates {}
+
 /**
  * @depend - - - FileSystemMgt
  * @depend - - - Scheduler
@@ -855,6 +881,7 @@ class WADOExtService {}
 class wadoExtService {}
 
 /**
+ * @depend - - - AuditLogger
  * @depend - - - FileSystemMgt
  * @depend - - - Scheduler
  */
