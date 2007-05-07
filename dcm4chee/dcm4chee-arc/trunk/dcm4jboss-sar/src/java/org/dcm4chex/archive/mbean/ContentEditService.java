@@ -60,6 +60,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
@@ -672,7 +673,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private void logPatientRecord( Dataset ds, AuditEvent.ActionCode actionCode ){
         if ( auditLogger.isAuditLogIHEYr4() ) return;
-        HttpUserInfo userInfo = new HttpUserInfo();
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         log.debug("log Patient Record! actionCode:"+actionCode);
         try {
             PatientRecordMessage msg = new PatientRecordMessage(actionCode);
@@ -689,7 +690,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private void logInstancesAccessed(Collection studies, AuditEvent.ActionCode actionCode) {
         if ( auditLogger.isAuditLogIHEYr4() ) return;
-        HttpUserInfo userInfo = new HttpUserInfo();
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         log.debug("log instances Accessed! actionCode:"+actionCode);
         try {
             InstancesAccessedMessage msg = new InstancesAccessedMessage(actionCode);
@@ -713,7 +714,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private void logStudyDeleted(Dataset studyMgtDs) {
         if ( auditLogger.isAuditLogIHEYr4() ) return;
-        HttpUserInfo userInfo = new HttpUserInfo();
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         try {
             StudyDeletedMessage msg = new StudyDeletedMessage();
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);

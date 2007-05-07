@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,9 +71,6 @@ import javax.management.RuntimeMBeanException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -111,7 +107,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
-import org.dcm4chex.archive.notif.Export;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -128,8 +124,6 @@ import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
  * @since Feb 15, 2006
  */
 public class XDSIService extends ServiceMBeanSupport {
-
-    private static final String WEB_REQUEST_KEY = "javax.servlet.http.HttpServletRequest";
 
     public static final String DOCUMENT_ID = "doc_1";
     public static final String PDF_DOCUMENT_ID = "pdf_doc_1";
@@ -968,10 +962,9 @@ public class XDSIService extends ServiceMBeanSupport {
         XDSMetadata md = new XDSMetadata(kos, mdProps, docs);
         Document metadata = md.getMetadata();
 		boolean b = sendSOAP(metadata, docs , null);
-		log.info("############################################### log export success:"+b);
         logExport(kos, user, b);
 		if ( b ) {
-            logExport( kos.getString(Tags.PatientID), 
+            logIHEYr4Export( kos.getString(Tags.PatientID), 
 							kos.getString(Tags.PatientName),
 							this.getDocRepositoryURI(), 
 							docRepositoryAET,
@@ -1019,7 +1012,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		boolean b = sendSOAP(metadata,docs , null);
         logExport(ds, user, b);
 		if ( b ) {
-            logExport( ds.getString(Tags.PatientID), 
+            logIHEYr4Export( ds.getString(Tags.PatientID), 
 							ds.getString(Tags.PatientName),
 							this.getDocRepositoryURI(), 
 							docRepositoryAET,
@@ -1056,7 +1049,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		return suids;
 	}
         
-        private void logExport(String patId, String patName, String node, String aet, Set suids) {
+        private void logIHEYr4Export(String patId, String patName, String node, String aet, Set suids) {
 		if (!auditLogger.isAuditLogIHEYr4()) return;
         try {
     		URL url = new URL(node);
@@ -1075,25 +1068,26 @@ public class XDSIService extends ServiceMBeanSupport {
         }		
 	}
 	private void logExport(Dataset dsKos, String user, boolean success) {
-
-    	String hostName;
-        try {
-            HttpServletRequest rq = (HttpServletRequest)
-                    PolicyContext.getContext(WEB_REQUEST_KEY);
-            user = rq.getRemoteUser();
-            hostName = rq.getRemoteHost();
-        } catch (PolicyContextException e) {
-        }
+        String requestHost = null;
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        user = userInfo.getUserId();
+        requestHost = userInfo.getHostName();
         DataExportMessage msg = new DataExportMessage();
-        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                                            AuditEvent.OutcomeIndicator.MINOR_FAILURE);
         msg.addExporterProcess(AuditMessage.getProcessID(), 
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(), user == null,
                 AuditMessage.getLocalHostName());
         if (user != null) {
-            msg.addExporterPerson(user, null, null, true, null);
+            msg.addExporterPerson(user, null, null, true, requestHost);
         }
-        msg.addDataRepository(docRepositoryURI);
+        String host = "unknown";
+        try {
+            host = new URL(docRepositoryURI).getHost();
+        } catch (MalformedURLException ignore) {
+        }
+        msg.addDestinationMedia(docRepositoryURI, null, "XDS-I Export", false, host );
         msg.addPatient(dsKos.getString(Tags.PatientID), dsKos.getString(Tags.PatientName));
         InstanceSorter sorter = getInstanceSorter(dsKos);
         for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
@@ -1108,10 +1102,8 @@ public class XDSIService extends ServiceMBeanSupport {
             }
             msg.addStudy(suid, desc);
         }
-        //TODO: need check that dataRepository is also Destination! msg.validate();
+        msg.validate();
         Logger.getLogger("auditlog").info(msg);
-    	
-	
 	}
 	
 	private InstanceSorter getInstanceSorter(Dataset dsKos) {

@@ -38,6 +38,9 @@
 
 package org.dcm4chex.archive.mbean;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
@@ -47,28 +50,55 @@ import javax.servlet.http.HttpServletRequest;
  * @version $Revision$ $Date$
  * @since Mar 7, 2007
  */
-class HttpUserInfo {
+public class HttpUserInfo {
     private static final String WEB_REQUEST_KEY =
             "javax.servlet.http.HttpServletRequest";
     private String userId;
+    private String ip;
     private String hostName;
 
-    public HttpUserInfo() {
+    public HttpUserInfo(boolean enableDNSLookups) {
         try {
             HttpServletRequest rq = (HttpServletRequest)
                     PolicyContext.getContext(WEB_REQUEST_KEY);
-            userId = rq.getRemoteUser();
-            hostName = rq.getRemoteHost();
+            init(rq, enableDNSLookups);
         } catch (PolicyContextException e) {
             userId = "UNKOWN_USER";
+        }
+    }
+    public HttpUserInfo(HttpServletRequest rq, boolean enableDNSLookups) {
+        init(rq, enableDNSLookups);
+    }
+    
+    private void init(HttpServletRequest rq, boolean enableDNSLookups) {
+        userId = rq.getRemoteUser();
+        String xForward = (String) rq.getHeader("x-forwarded-for");
+        if (xForward != null) {
+            int pos = xForward.indexOf(',');
+            ip = (pos > 0 ? xForward.substring(0,pos) : xForward).trim();
+        } else {
+            ip = rq.getRemoteAddr();
+        }
+        if ( enableDNSLookups ) {
+            try {
+                hostName = InetAddress.getByName(ip).getHostName();
+            } catch (UnknownHostException ignore) {
+                hostName = ip;
+            }
+        } else {
+            hostName = ip;
         }
     }
     
     public String getUserId() {
         return userId;
     }
+    public String getIP() {
+        return ip;
+    }
     
     public String getHostName() {
         return hostName;
     }
+
 }

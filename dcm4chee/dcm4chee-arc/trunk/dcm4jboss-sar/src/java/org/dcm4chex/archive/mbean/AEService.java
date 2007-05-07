@@ -298,7 +298,7 @@ public class AEService extends ServiceMBeanSupport {
                         new Object[] { desc, "NetWorking" },
                         new String[] { String.class.getName(), String.class.getName(), });
             } else {
-                HttpUserInfo userInfo = new HttpUserInfo();
+                HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
                 SecurityAlertMessage msg = new SecurityAlertMessage(eventTypeCode);
                 msg.addReportingProcess(AuditMessage.getProcessID(),
                         AuditMessage.getLocalAETitles(),

@@ -49,15 +49,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.management.MBeanServer;
@@ -88,14 +85,16 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DataSource;
 import org.dcm4che.util.ISO8601DateFormat;
+import org.dcm4che2.audit.message.ActiveParticipant;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.DataExportMessage;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
-import org.dcm4chex.archive.notif.Export;
-import org.dcm4chex.archive.notif.RIDExport;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.ImageCachingException;
@@ -146,7 +145,7 @@ public class RIDSupport {
 	
 	private ObjectName fileSystemMgtName;
 	private ObjectName auditLogName;
-        private Boolean auditLogIHEYr4;
+    private Boolean auditLogIHEYr4;
 	
 	private ECGSupport ecgSupport = null;
 	
@@ -588,25 +587,6 @@ public class RIDSupport {
 	 * @param reqObj
 	 * @return
 	 */
-//	private Dataset getECGQueryDS(RIDRequestObject reqObj) {
-//		String patID = reqObj.getParam( "patientID" );
-//		String[] pat = splitPatID( patID );
-//		pat = checkPatient( pat );
-//		if ( log.isDebugEnabled() ) log.debug("getECGQueryDS: pat:"+pat);
-//		if ( pat == null ) return null;
-//		Dataset ds = factory.newDataset();
-//        ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-//		ds.putLO(Tags.PatientID, pat[0]);
-//		if ( pat[1] != null ) { // Issuer of patientID is known. 
-//			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
-//		}
-//		return ds;
-//	}
-
-	/**
-	 * @param reqVO
-	 * @return
-	 */
 	public WADOResponseObject getRIDDocument(RIDRequestObject reqObj) {
 		String uid = reqObj.getParam("documentUID");
 		Dataset queryDS = factory.newDataset();
@@ -619,6 +599,7 @@ public class RIDSupport {
 			if ( cmd.next() ) {
 				WADOResponseObject response;
 				Dataset ds = cmd.getDataset();
+                log.info("Found Dataset:");log.info(ds);
 				String cuid = ds.getString( Tags.SOPClassUID );
 				if ( getECGSopCuids().values().contains( cuid ) ) {
 					response = getECGSupport().getECGDocument( reqObj, ds );
@@ -627,7 +608,7 @@ public class RIDSupport {
 				} else {
 					response = getDocument( reqObj );
 				}
-				logExport(reqObj, getPatientInfo(reqObj), "RID Request");
+                logExport(reqObj, ds, "RID Request");
 				return response;
 			} else {
 				File f = getDocumentFile(uid,reqObj.getParam("preferredContentType"));//Document is not stored in PACS (XDS)
@@ -665,50 +646,36 @@ public class RIDSupport {
         }
         
         private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
-                if (!isAuditLogIHEYr4()) return;
-        try {
-        	Set suids = new HashSet();
-        	suids.add(ds.getString(Tags.StudyInstanceUID));
-//            String url = "http://"+reqObj.getRemoteHost()+"/"+mediaType.replace(' ', '_');
-//            String srcHost = new URL(reqObj.getRequestURL()).getHost();
-//            Export export = new Export(ds, reqObj.getRemoteUser(), reqObj.getRequestURL(), srcHost, url, reqObj.getRemoteHost());
-            RIDExport export = new RIDExport(reqObj.getRequest(), ds);
-            service.sendExportNotification(export);
-            server.invoke(auditLogName,
-                    "logExport",
-                    new Object[] { ds.getString(Tags.PatientID), ds.getString(Tags.PatientName),
-            						mediaType, 
-            						suids,
-            						reqObj.getRemoteAddr(), reqObj.getRemoteHost(), null},
-                    new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
-            						Set.class.getName(),
-									String.class.getName(), String.class.getName(), String.class.getName()});
-        } catch (Exception e) {
-            log.warn("Audit Log failed:", e);
-        }		
-	}
-
-	/**
-	 * @param reqObj
-	 * @return
-	 */
-	private Dataset getPatientInfo(RIDRequestObject req) {
-		Dataset ds = dof.newDataset();
-		Dataset result = dof.newDataset();
-		try {
-			ds.putCS(Tags.QueryRetrieveLevel,"IMAGE");
-			ds.putUI(Tags.SOPInstanceUID, req.getParam("documentUID"));
-			FileInfo[][] fis = RetrieveCmd.create(ds).getFileInfos();
-			if ( fis.length > 0 ) {
-				FileInfo fi = fis[0][0]; 
-				DatasetUtils.fromByteArray(fi.patAttrs, result);
-				DatasetUtils.fromByteArray(fi.studyAttrs, result);
-			} 
-		} catch (SQLException e) {
-			log.error("Cant get Patient/Study info for "+req.getParam("documentUID"),e);
-		}
-		return result;
-	}
+            if (isAuditLogIHEYr4()) return;
+            try {
+                HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(), AuditMessage.isEnableDNSLookups());
+                String user = userInfo.getUserId();
+                String host = userInfo.getHostName();
+                DataExportMessage msg = new DataExportMessage();
+                msg.setOutcomeIndicator( AuditEvent.OutcomeIndicator.SUCCESS );
+                msg.addExporterProcess(AuditMessage.getProcessID(), 
+                        AuditMessage.getLocalAETitles(),
+                        AuditMessage.getProcessName(), false,
+                        AuditMessage.getLocalHostName());
+                msg.addDataRepository(reqObj.getRequest().getRequestURL().toString());
+                msg.addDestinationMedia(host, null, mediaType, user == null, host );
+                if (user != null) {
+                    ActiveParticipant ap = ActiveParticipant.createActivePerson(user, null, user, null, true);
+                    msg.addActiveParticipant(ap);
+                    
+                }
+                msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
+                ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                SOPClass sopClass = new SOPClass(ds.getString(Tags.SOPClassUID));
+                sopClass.setNumberOfInstances(1);
+                desc.addSOPClass(sopClass);
+                msg.addStudy(ds.getString(Tags.StudyInstanceUID), desc);
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            } catch (Exception e) {
+                log.warn("Audit Log failed:", e);
+            }		
+    	}
 
 	/**
 	 * @param reqObj

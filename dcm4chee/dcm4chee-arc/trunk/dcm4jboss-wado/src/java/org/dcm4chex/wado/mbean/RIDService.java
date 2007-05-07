@@ -42,24 +42,18 @@ package org.dcm4chex.wado.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
-//import org.dcm4chex.archive.notif.Export;
-import org.dcm4chex.archive.notif.RIDExport;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
-import org.jboss.system.ServiceMBeanSupport;
 import org.xml.sax.SAXException;
 
 /**
@@ -308,11 +302,5 @@ public class RIDService extends AbstractCacheService  {
 	}
 	
 	
-    protected void sendExportNotification(RIDExport export) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(RIDExport.class.getName(), this, eventID);
-        notif.setUserData(export);
-        super.sendNotification(notif);
-    }
     
 }
