@@ -9,7 +9,7 @@
     <depends optional-attribute-name="AuditLoggerName"
       >dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="PixQueryServiceName"
-      >dcm4chee.archive:service=HL7Send</depends>
+      >dcm4chee.archive:service=PIXQuery</depends>
     <depends optional-attribute-name="IANScuServiceName"
       >dcm4chee.archive:service=IANScu</depends>
     <depends optional-attribute-name="KeyObjectServiceName"

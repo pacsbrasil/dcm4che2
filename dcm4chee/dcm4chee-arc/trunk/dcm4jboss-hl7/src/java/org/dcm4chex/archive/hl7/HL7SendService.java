@@ -99,10 +99,6 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     private String sendingFacility;
 
-    private String pixQueryName;
-
-    private String pixManager;
-
     private int acTimeout;
 
     private int soCloseDelay;
@@ -160,22 +156,6 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public final void setSendingFacility(String sendingFacility) {
         this.sendingFacility = sendingFacility;
-    }
-
-    public final String getPIXQueryName() {
-        return pixQueryName;
-    }
-
-    public final void setPIXQueryName(String pixQueryName) {
-        this.pixQueryName = pixQueryName;
-    }
-
-    public final String getPIXManager() {
-        return pixManager;
-    }
-
-    public final void setPIXManager(String pixManager) {
-        this.pixManager = pixManager;
     }
 
     public String getRetryIntervalls() {
@@ -463,25 +443,22 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     }
 
-    public String showCorrespondingPIDs(String patientID, String issuer) {
-        try {
-            return queryCorrespondingPIDs(patientID, issuer).toString();
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
-    public List queryCorrespondingPIDs(String patientID, String issuer)
+    public List sendQBP_Q23(String pixManager, String pixQueryName,
+            String patientID, String issuer, String[] domains)
             throws Exception {
-        return queryCorrespondingPIDs(patientID, issuer, null);
-    }
-
-    public List queryCorrespondingPIDs(String patientID, String issuer,
-            String[] domains) throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, "2.5");
-        addQPD(sb, patientID, issuer, domains);
+        sb.append("\rQPD|").append(pixQueryName).append('|');
+        sb.append((++queryTag)).append('|');
+        sb.append(patientID).append("^^^").append(issuer);
+        if (domains != null && domains.length > 0) {
+            sb.append("|^^^").append(domains[0]);
+            for (int i = 1; i < domains.length; i++) {
+                sb.append("~^^^").append(domains[i]);// ~ is repeat delimiter
+                // used in makeMSH
+            }
+        }
         sb.append("\rRCP|I||||||");
         String s = sb.toString();
         log.info("Query PIX Manager " + pixManager + ":\n"
@@ -533,7 +510,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         sb.append(receiving.substring(delim + 1)).append("|");
         sb.append(timestamp).append("||");
         sb.append(msgType).append("|");
-        sb.append(getMsgCtrlId()).append("|P|");
+        sb.append(++msgCtrlid).append("|P|");
         sb.append(version).append("||||||||");
         return sb;
     }
@@ -603,33 +580,6 @@ public class HL7SendService extends ServiceMBeanSupport implements
         sb.append("||||||");
         String name = ds.getString(Tags.PatientName);
         sb.append(name != null ? name : "patName");
-    }
-
-    private void addQPD(StringBuffer sb, String patientID, String issuer,
-            String[] domains) {
-        sb.append("\rQPD|").append(getPIXQueryName()).append('|');
-        sb.append(getQueryTag()).append('|');
-        sb.append(patientID).append("^^^").append(issuer);
-        if (domains != null && domains.length > 0) {
-            sb.append("|^^^").append(domains[0]);
-            for (int i = 1; i < domains.length; i++) {
-                sb.append("~^^^").append(domains[i]);// ~ is repeat delimiter
-                // used in makeMSH
-            }
-        }
-    }
-
-    /**
-     * should this method on a central hl7 sending place?
-     * 
-     * @return
-     */
-    public synchronized long getMsgCtrlId() {
-        return msgCtrlid++;
-    }
-
-    public synchronized long getQueryTag() {
-        return queryTag++;
     }
 
     private AEManager aeMgt() throws Exception {

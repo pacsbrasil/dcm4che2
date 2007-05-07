@@ -24,25 +24,14 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getSendingApplication"
-      setMethod="setSendingApplication">
-      <description>Sending Application in transmitted messages.
+      getMethod="getPIXManager"
+      setMethod="setPIXManager">
+      <description>PIX Manager Application^Facility.
       </description>
-      <name>SendingApplication</name>
+      <name>PIXManager</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="DCM4CHEE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSendingFacility"
-      setMethod="setSendingFacility">
-      <description>Sending Facility in transmitted messages.
-      </description>
-      <name>SendingFacility</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="DCM4CHEE" />
+         <value value="MESA_XREF^XYZ_HOSPITAL" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -58,14 +47,16 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPIXManager"
-      setMethod="setPIXManager">
-      <description>PIX Manager Application^Facility.
+      getMethod="getMockResponse"
+      setMethod="setMockResponse">
+      <description><![CDATA[If specified (!= '-'), return list of Patient IDs 
+      (&lt;ID&gt;^^^&lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;)
+      separated by '|'. Useful for debugging service clients.]]>
       </description>
-      <name>PIXManager</name>
+      <name>MockResponse</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MESA_XREF^XYZ_HOSPITAL" />
+         <value value="-" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -90,7 +81,7 @@
       </parameter>
       <parameter>
         <description><![CDATA[Assigning Authority:
-          <namespace ID>&&<universal ID><universal ID type>]]>
+          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
         </description>
         <name>authority</name>
         <type>java.lang.String</type>
@@ -107,7 +98,7 @@
       </parameter>
       <parameter>
         <description><![CDATA[Assigning Authority:
-          &<namespace ID>&&<universal ID><universal ID type>]]>
+          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
         </description>
         <name>authority</name>
         <type>java.lang.String</type>
@@ -124,7 +115,7 @@
       </parameter>
       <parameter>
         <description><![CDATA[Assigning Authority:
-          <namespace ID>&&<universal ID><universal ID type>]]>
+          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
         </description>
         <name>authority</name>
         <type>java.lang.String</type>
