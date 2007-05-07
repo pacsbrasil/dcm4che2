@@ -26,15 +26,13 @@
 
 	<!-- Override with your dcm4chee-sar working directory -->
 	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4chee-sar.lib" value="${dcm4chee-sar.home}/lib" />
 	<property name="dcm4chee-sar.target" value="${dcm4chee-sar.home}/target" />
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.target}/lib/dcm4chee.jar" />
 	
       <!-- Override with your FOP dist location -->
       <property name="fop.home" value="${user.home}/fop-0.20.5"/>
 
-	<property name="lib.dir" value="lib" />
-	<property name="mogio.jar" value="${lib.dir}/mogio.jar" />
-	
 	<property name="target.dir" value="target"/>
 	<property name="product" value="${ant.project.name}"/>
 	<property name="war.file" value="${target.dir}/deploy/${product}.war"/>
@@ -70,15 +68,14 @@
 		<pathelement location="${dcm4chee-ejb-client.jar}"/>
 		<pathelement location="${dcm4chee-ejb-server.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
-		<pathelement location="${mogio.jar}"/>
-        	<pathelement location="${fop.home}/build/fop.jar"/>
-	    	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
+		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.10.jar"/>		
+    	<pathelement location="${fop.home}/build/fop.jar"/>
+    	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
 	</path>
 
 	<path id="test-classpath">
 		<pathelement location="${classes.dir}"/>
 		<pathelement location="${test.classes.dir}"/>
-		<pathelement location="${mogio.jar}"/>
 	</path>
 
 	<property name="debug" value="on"/>
@@ -100,6 +97,11 @@
 	<target name="war" depends="classes">
 		<mkdir dir="${target.dir}/deploy/"/>
 		<war warfile="${war.file}" webxml="${web.dir}/WEB-INF/web.xml">
+	     	<manifest>
+				<attribute name="Implementation-Title" value="dcm4chee-wado"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Agfa Healthcare"/>
+	     	</manifest>
 			<fileset dir="${web.dir}">
 				<exclude name="WEB-INF/web.xml" />
 			</fileset>
@@ -114,9 +116,9 @@
 		<mkdir dir="${target.dir}/lib/"/>
 	    <jar jarfile="${jar.file}">
 	     	<manifest>
-					<attribute name="Implementation-Title" value="dcm4chee-wado"/>
-					<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-					<attribute name="Implementation-Vendor" value="Tiani Medgraph AG"/>
+				<attribute name="Implementation-Title" value="dcm4chee-wado"/>
+				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+				<attribute name="Implementation-Vendor" value="Agfa Healthcare"/>
 	     	</manifest>
 	     	<fileset dir="${classes.dir}">
 	     		<include name="**/mbean/**" />
