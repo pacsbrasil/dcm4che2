@@ -324,6 +324,20 @@ class HL7Send {}
 class hl7Send {}
 
 /**
+ * @depend - - - HL7Send
+ */
+class PIXQuery {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.PIXQuery
+ * @opt !hide
+ */
+class pixQuery {}
+
+/**
  * @depend - - - TLSConfig
  * @depend - - - AuditLogger
  * @depend - - - Templates
@@ -898,7 +912,7 @@ class wadoService {}
 
 /**
  * @depend - - - AuditLogger
- * @depend - - - HL7Send
+ * @depend - - - PIXQuery
  * @depend - - - KeyObjectService
  * @depend - - - IANScu
  */
