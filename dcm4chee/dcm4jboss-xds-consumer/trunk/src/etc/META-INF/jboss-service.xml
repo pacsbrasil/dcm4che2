@@ -4,6 +4,8 @@
   <mbean code="org.dcm4chex.xds.query.mbean.XDSQueryService" 
          name="dcm4chee.archive:service=XDSQueryService"
          xmbean-dd="">
+<depends optional-attribute-name="PixQueryServiceName"
+  >dcm4chee.archive:service=PIXQuery</depends>
 <xmbean>
    <description><![CDATA[<b>XDS Query Service</b><br/>
 		Provides a Cross-enterprise Document Query Service for Document Consumer actor (Stored Query).<br/>
@@ -126,9 +128,6 @@
       </description>
       <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=HL7Send"/>
-      </descriptors>
    </attribute>
 
    <!-- Operations -->
