@@ -282,17 +282,12 @@ public class ORMService extends AbstractHL7Service {
         if (orcs.isEmpty()) {
             throw new HL7Exception("AR", "Missing ORC Segment");                             
         }
-        if (orcs.size() != obrs.size()) {
-            throw new HL7Exception("AR", "Number of ORC Segments ["
-                    + orcs.size() + "] does not match number of OBR Segments ["
-                    + obrs.size() + "]");                             
-        }
         int[] op = new int[orcs.size()];
         for (int i = 0; i < op.length; i++) {           
             List orc = ((Element) orcs.get(i)).elements("field");
             String orderControl = getText(orc, 0);
             String orderStatus = getText(orc, 4);
-            if (orderStatus.length() == 0) {
+            if (orderStatus.length() == 0 && obrs.size() > i) {
                 // use Result Status (OBR-25), if no Order Status (ORC-5);
                 List obr = ((Element) obrs.get(i)).elements("field");
                 orderStatus = getText(obr, 24);
