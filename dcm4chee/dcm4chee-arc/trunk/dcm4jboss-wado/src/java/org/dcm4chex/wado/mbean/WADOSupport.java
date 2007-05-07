@@ -977,7 +977,7 @@ public void setTextSopCuids(Map sopCuids) {
 	}
 }
 
-private boolean isAuditLogIHEYr4() {
+protected boolean isAuditLogIHEYr4() {
     if (auditLogName == null) {
         return false;
     }

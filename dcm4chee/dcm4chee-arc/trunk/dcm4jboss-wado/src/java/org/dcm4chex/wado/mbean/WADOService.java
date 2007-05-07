@@ -50,6 +50,7 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.Patient;
@@ -57,8 +58,21 @@ import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che2.audit.message.ActiveParticipant;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.DataExportMessage;
+import org.dcm4che2.audit.message.InstancesTransferredMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
+import org.dcm4che2.audit.message.ParticipantObject.TypeCode;
+import org.dcm4che2.audit.message.ParticipantObject.TypeCodeRole;
+import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.notif.WADORetrieve;
 import org.dcm4chex.wado.common.BasicRequestObject;
+import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -289,6 +303,7 @@ public class WADOService extends AbstractCacheService {
 		}
 		return sb.toString();
 	}
+    
 	public void setDisabledAuditLogHosts(String disabledAuditLogHosts) {
 		if ( "ALL".equals(disabledAuditLogHosts) ) {
 			support.setDisabledAuditLogHosts(null);
@@ -363,27 +378,60 @@ public class WADOService extends AbstractCacheService {
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
 		WADOResponseObject resp = support.getWADOObject( reqVO );
         if ( support.isAuditLogEnabled(reqVO) ) {
-            if (resp.getPatInfo() != null ) {
+            if (support.isAuditLogIHEYr4() && resp.getPatInfo() != null ) {
                 support.logInstancesSent(reqVO, resp);
-                sendExportNotification(reqVO, resp);
             } else {
-                log.debug("Suppress audit log! No patient info available!");
+                log.debug("Suppress (IHEYr4) audit log! No patient info available!");
             }
+            logExport(reqVO, resp);
         } else {
             log.debug("Suppress audit log! Disabled for host:"+reqVO.getRemoteHost());
         }
 		return resp;
 	}
 
-	protected void sendExportNotification(WADORequestObject req, WADOResponseObject resp) {
-	    long eventID = getNextNotificationSequenceNumber();
-	    WADORetrieve export = new WADORetrieve(req.getRequest(), resp.getPatInfo());
-	    if ( resp.getReturnCode() != HttpServletResponse.SC_OK ) {
-	    	export.setErrorMsg(resp.getErrorMessage());
-	    }
-	    Notification notif = new Notification(WADORetrieve.class.getName(), this, eventID);
-	    notif.setUserData(export);
-	    sendNotification(notif);
-	}
+    private void logExport(WADORequestObject reqObj, WADOResponseObject resp ) {
+        if (support.isAuditLogIHEYr4()) return;
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(), AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            String destHost = userInfo.getHostName();
+            InstancesTransferredMessage msg = 
+                new InstancesTransferredMessage(
+                        InstancesTransferredMessage.EXECUTE);
+            msg.setOutcomeIndicator( resp.getReturnCode() == HttpServletResponse.SC_OK ? 
+                    AuditEvent.OutcomeIndicator.SUCCESS : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.addSourceProcess(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(), AuditMessage.getProcessName(), 
+                    AuditMessage.getLocalHostName(), false);
+            ParticipantObject obj = new ParticipantObject(reqObj.getRequest().getRequestURL().toString(),
+                                                            IDTypeCode.URI);
+            obj.setParticipantObjectTypeCode(TypeCode.SYSTEM);
+            obj.setParticipantObjectTypeCodeRole(TypeCodeRole.DATA_REPOSITORY);
+            msg.addParticipantObject( obj );
+            msg.addDestinationProcess(destHost, null, null, 
+                    destHost, user == null);
+            if (user != null) {
+                ActiveParticipant ap = ActiveParticipant.createActivePerson(user, null, user, null, true);
+                msg.addActiveParticipant(ap);
+                
+            }
+            Dataset ds = resp.getPatInfo();
+            if ( ds != null ) {
+                msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
+                ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                SOPClass sopClass = new SOPClass(ds.getString(Tags.SOPClassUID));
+                sopClass.setNumberOfInstances(1);
+                desc.addSOPClass(sopClass);
+                msg.addStudy(ds.getString(Tags.StudyInstanceUID), desc);
+            } else {
+                msg.addStudy(reqObj.getStudyUID(),null);
+            }
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }       
+    }
 
 }
