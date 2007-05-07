@@ -289,6 +289,11 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-pixquery-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=PIXQuery"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-hl7srv-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=HL7Server"/>
     </antcall>
