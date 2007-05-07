@@ -180,7 +180,22 @@
       <return-type>int</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Send HL7 message to specified destination</description>
+      <description>Send HL7 message to specified destination and return received HL7 response as org.dom4j.Document</description>
+      <name>invoke</name>
+      <parameter>
+        <description>HL7 message as byte array</description>
+        <name>hl7msg</name>
+        <type>[B</type>
+      </parameter>
+      <parameter>
+        <description>Destination. Format: ReceivingApplication^ReceivingFacility</description>
+        <name>receiving</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>org.dom4j.Document</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Send HL7 message to specified destination and evaluate received ACK</description>
       <name>sendTo</name>
       <parameter>
         <description>HL7 message as byte array</description>
