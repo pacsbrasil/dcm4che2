@@ -86,6 +86,31 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isPixQuery"
+      setMethod="setPixQuery">
+      <description><![CDATA[Activate query of external <i>Patient Cross-reference
+      (PIX) Manager</i> for query requests with single value matching key for
+      the Patient ID.]]>
+      </description>
+      <name>PixQuery</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDefIssuerOfPatientID"
+      setMethod="setDefIssuerOfPatientID">
+      <description><![CDATA[Value for Issuer of Patient ID used for PIX Queries,
+      if the query request does not contains a value for the Issuer of Patient ID.]]>
+      </description>
+      <name>DefaultIssuerOfPatientID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getIgnorableSOPClasses"
       setMethod="setIgnorableSOPClasses">
       <description><![CDATA[
@@ -684,6 +709,14 @@ QueryRetrieveScp service.</description>
       <description>Used internally. Do NOT modify.
       </description>
       <name>PerfMonServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPixQueryServiceName"
+      setMethod="setPixQueryServiceName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 

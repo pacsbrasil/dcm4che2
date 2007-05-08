@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -59,8 +60,10 @@ import javax.xml.parsers.SAXParserFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
@@ -145,6 +148,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private ObjectName aeServiceName;
 
+    private ObjectName pixQueryServiceName;
+    
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
     private boolean sendPendingMoveRSP = true;
@@ -158,6 +163,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private boolean noMatchForNoValue = true;
 
     private boolean checkMatchingKeySupported = true;
+
+    private boolean pixQuery = false;
+    
+    private String defIssuerOfPatientID;
 
     private int acTimeout = 5000;
 
@@ -214,13 +223,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     	dicomFindScp = createFindScp();
     }
     
-	protected MoveScp createMoveScp() {
-		return new MoveScp(this);
-	}
-	
-	protected FindScp createFindScp() {
-		return new FindScp(this, true);
-	}
+    protected MoveScp createMoveScp() {
+        return new MoveScp(this);
+    }
+
+    protected FindScp createFindScp() {
+        return new FindScp(this, true);
+    }
 	
     public String getEjbProviderURL() {
         return EJBHomeFactory.getEjbProviderURL();
@@ -296,19 +305,36 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.tarRetrieverName = tarRetrieverName;
     }
 
-    /**
-     * @return Returns the aeService.
-     */
+    public final ObjectName getPixQueryServiceName() {
+        return pixQueryServiceName;
+    }
+
+    public final void setPixQueryServiceName(ObjectName name) {
+        this.pixQueryServiceName = name;
+    }
+    
     public ObjectName getAEServiceName() {
         return aeServiceName;
     }
 
-    /**
-     * @param aeService
-     *            The aeService to set.
-     */
     public void setAEServiceName(ObjectName aeServiceName) {
         this.aeServiceName = aeServiceName;
+    }
+
+    public final boolean isPixQuery() {
+        return pixQuery;
+    }
+
+    public final void setPixQuery(boolean pixQuery) {
+        this.pixQuery = pixQuery;
+    }
+
+    public final String getDefIssuerOfPatientID() {
+        return defIssuerOfPatientID;
+    }
+
+    public final void setDefIssuerOfPatientID(String defIssuerOfPatientID) {
+        this.defIssuerOfPatientID = defIssuerOfPatientID;
     }
 
     public final boolean isNoMatchForNoValue() {
@@ -657,6 +683,73 @@ public class QueryRetrieveScpService extends AbstractScpService {
             log.error("Failed to query AEData", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
+    }
+
+
+    void pixQuery(Dataset rqData) {
+        String pid = rqData.getString(Tags.PatientID);
+        if (pid == null || pid.indexOf('*') != -1 || pid.indexOf('?') != -1) {
+            return;
+        }
+        String issuer = rqData.getString(Tags.IssuerOfPatientID,
+                defIssuerOfPatientID);
+        try {
+            List pids = (List) server.invoke(this.pixQueryServiceName,
+                    "queryCorrespondingPIDs",
+                    new Object[] { pid, issuer, null },
+                    new String[] { String.class.getName(),
+                            String.class.getName(),
+                            String[].class.getName() });
+            String pidAndIssuer, otherPid, otherIssuer;
+            DcmElement otherPidSeq = rqData.get(Tags.OtherPatientIDSeq);
+            for ( Iterator iter = pids.iterator() ; iter.hasNext() ; ) {
+                pidAndIssuer = (String) iter.next();
+                otherPid = extractPID(pidAndIssuer);
+                if (otherPid == null) {
+                    log.warn("Illegal PID in PIX Query Result: " + pidAndIssuer);
+                    continue;
+                }
+                otherIssuer = extractIssuer(pidAndIssuer);
+                if (pid.equals(otherPid) && issuer.equals(otherIssuer)) {
+                    continue;
+                }
+                if (otherPidSeq == null) {
+                    rqData.putLO(Tags.IssuerOfPatientID, issuer); // set defIssuerOfPatientID, if missing
+                    otherPidSeq = rqData.putSQ(Tags.OtherPatientIDSeq);
+                } else if (containsPid(otherPidSeq, otherPid, otherIssuer)) {
+                    continue;                    
+                }
+                Dataset item = otherPidSeq.addNewItem();
+                item.putLO(Tags.PatientID, otherPid);
+                item.putLO(Tags.IssuerOfPatientID, otherIssuer);
+            }
+        } catch (JMException e) {
+            log.warn("Failed to perform PIX Query", e);
+        }
+        
+    }
+    
+    private boolean containsPid(DcmElement seq, String pid, String issuer) {
+        for (int i = 0, n = seq.countItems(); i < n; i++) {
+            Dataset item = seq.getItem(i);
+            if (pid.equals(item.get(Tags.PatientID))
+                    && issuer.equals(item.get(Tags.IssuerOfPatientID))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String extractIssuer(String pidAndIssuer) {
+        int end = pidAndIssuer.indexOf('^');
+        return end != -1 ? pidAndIssuer.substring(0, end) : null;
+    }
+
+    private static String extractPID(String pidAndIssuer) {
+        int start = pidAndIssuer.lastIndexOf('^') + 1;
+        int end = pidAndIssuer.indexOf('&', start);
+        return end != -1 ? pidAndIssuer.substring(start, end) 
+                : pidAndIssuer.substring(start);
     }
 
     boolean isLocalRetrieveAET(String aet) {

@@ -89,7 +89,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         this.filterResult = filterResult;
         perfMon = new PerfMonDelegate(this.service);
     }
-    
+ 
     public final ObjectName getPerfMonServiceName() {
 		return perfMon.getPerfMonServiceName();
 	}
@@ -120,6 +120,9 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
+            if (service.isPixQuery()) {
+                service.pixQuery(rqData);
+            }            
             MultiDimseRsp rsp = newMultiCFindRsp(rqData);
             perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
             return rsp;

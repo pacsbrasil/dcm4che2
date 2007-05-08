@@ -21,5 +21,7 @@
       >dcm4chee.archive:service=TarRetriever</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
+    <depends optional-attribute-name="PixQueryServiceName"
+      >dcm4chee.archive:service=PIXQuery</depends>
   </mbean>
 </server>
