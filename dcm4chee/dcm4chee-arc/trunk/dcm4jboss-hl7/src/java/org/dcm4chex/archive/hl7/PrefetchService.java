@@ -40,6 +40,7 @@ package org.dcm4chex.archive.hl7;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +56,6 @@ import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
@@ -73,6 +73,8 @@ import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.mbean.JMSDelegate;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.DocumentSource;
@@ -90,10 +92,13 @@ import org.xml.sax.SAXException;
 public class PrefetchService extends AbstractScuService implements
         NotificationListener, MessageListener {
 
+    private static final String ONLINE = "ONLINE";
+
     private String prefetchSourceAET;
     private String destinationQueryAET;
     private String destinationStorageAET;
-    private String stylesheetURL = "resource:dcm4chee-hl7/orm2prefetch.xsl";
+    private String stylesheetPath;
+    private File stylesheetFile;
     private ObjectName hl7ServerName;
     private ObjectName moveScuServiceName;
     private String queueName;
@@ -105,9 +110,8 @@ public class PrefetchService extends AbstractScuService implements
     private int concurrency = 1;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
     
-    private static final String ONLINE = "ONLINE";
-
     public final String getPrefetchSourceAET() {
         return prefetchSourceAET != null ? prefetchSourceAET : "NONE";
     }
@@ -156,15 +160,15 @@ public class PrefetchService extends AbstractScuService implements
         this.retrievePriority = DicomPriority.toCode(retrievePriority);
     }
     
-    public String getStylesheetURL() {
-        return stylesheetURL;
+    public final String getStylesheet() {
+        return stylesheetPath;
     }
 
-    public void setStylesheetURL(String stylesheetURL) {
-        this.stylesheetURL = stylesheetURL;
-        reloadStylesheets();
+    public void setStylesheet(String path) throws FileNotFoundException {
+        this.stylesheetFile = FileUtils.toExistingFile(path);
+        this.stylesheetPath = path;
     }
-
+    
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -243,7 +247,7 @@ public class PrefetchService extends AbstractScuService implements
         if (isORM_O01_NW(hl7doc)) {
             Dataset findRQ = DcmObjectFactory.getInstance().newDataset();
             try {
-                Transformer t = getTemplates(stylesheetURL).newTransformer();
+                Transformer t = templates.getTemplates(stylesheetFile).newTransformer();
                 t.transform(new DocumentSource(hl7doc), new SAXResult(findRQ
                         .getSAXHandler2(null)));
             } catch (TransformerException e) {
@@ -299,29 +303,6 @@ public class PrefetchService extends AbstractScuService implements
         }
     }
 
-    private Templates getTemplates(String uri) {
-        try {
-            return (Templates) server.invoke(hl7ServerName, "getTemplates",
-                    new Object[] { uri },
-                    new String[] { String.class.getName() });
-        } catch (Exception e) {
-            String prompt = "Failed to load XSL " + uri;
-            log.error(prompt, e);
-            throw new RuntimeException(prompt, e);
-        }
-    }
-    
-    private void reloadStylesheets() {
-        if (getState() != STARTED) return;
-        try {
-            server.invoke(hl7ServerName, "reloadStylesheets",
-                    null, null);
-        } catch (Exception e) {
-            log.error("JMX error:", e);
-            throw new RuntimeException("JMX error:", e);
-        }
-    }
-    
     private void process(PrefetchOrder order) throws Exception {
         Dataset keys = order.getDataset();
         log.debug("SearchDS from order:");log.debug(keys);
@@ -456,8 +437,9 @@ public class PrefetchService extends AbstractScuService implements
         reader.parse(new InputSource( new FileInputStream(file)));
         Document doc = hl7in.getDocument();
         try {
-            Transformer t = getTemplates(stylesheetURL).newTransformer();
-            t.transform(new DocumentSource(doc), new SAXResult(findRQ.getSAXHandler2(null)));
+            Transformer t = templates.getTemplates(stylesheetFile).newTransformer();
+            t.transform(new DocumentSource(doc),
+                    new SAXResult(findRQ.getSAXHandler2(null)));
         } catch (TransformerException e) {
             log.error("Failed to transform into prefetch request", e);
             return;

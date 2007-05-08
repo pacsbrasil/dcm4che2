@@ -57,7 +57,7 @@
       mapping. A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
-      <name>MrgStylesheetL</name>
+      <name>MrgStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="conf/dcm4chee-hl7/mrg2dcm.xsl" />
