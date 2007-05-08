@@ -54,10 +54,10 @@ type           Event Type Code
 <attribute name="Eject"/>
 <attribute name="PauseTime"/>
 <attribute name="PrintLabel"/>
-<attribute name="LabelPrintName"/>
 <attribute name="KeepLabelFiles"/>
 <attribute name="KeepSpoolFiles"/>
 <attribute name="LogEnabled"/>
+<attribute name="LabelPrintName"/>
 <attribute name="SpoolDirName"/>
 </mbean>
 <mbean name="dcm4chee.cdw:service=MediaComposer">
@@ -103,8 +103,6 @@ type           Event Type Code
 <attribute name="PrintQuality"/>
 </mbean>
 <mbean name="dcm4chee.cdw:service=MediaCreationMgtSCP">
-<attribute name="DcmServerName"/>
-<attribute name="SpoolDirName"/>
 <attribute name="KeepSpoolFiles"/>
 <attribute name="AcceptedTransferSyntax"/>
 <attribute name="DefaultMediaApplicationProfile"/>
@@ -124,6 +122,8 @@ type           Event Type Code
 <attribute name="TolerateDuplicateRefSOPInstances"/>
 <attribute name="MaxReadRequestRetries"/>
 <attribute name="ReadRequestRetryInterval"/>
+<attribute name="DcmServerName"/>
+<attribute name="SpoolDirName"/>
 </mbean>
 <mbean name="dcm4chee.cdw:service=MakeIsoImage">
 <attribute name="Executable"/>
@@ -154,10 +154,10 @@ type           Event Type Code
 <attribute name="Eject"/>
 <attribute name="PauseTime"/>
 <attribute name="PrintLabel"/>
-<attribute name="LabelPrintName"/>
 <attribute name="KeepLabelFiles"/>
 <attribute name="KeepSpoolFiles"/>
 <attribute name="LogEnabled"/>
+<attribute name="LabelPrintName"/>
 <attribute name="SpoolDirName"/>
 </mbean>
 <mbean name="dcm4chee.cdw:service=Scheduler"/>
@@ -290,11 +290,12 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
+<attribute name="BufferSize"/>
 <attribute name="Concurrency"/>
-<attribute name="StoreScpServiceName"/>
 <attribute name="QueueName"/>
-<attribute name="JMSServiceName"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="StoreScpServiceName"/>
+<attribute name="JMSServiceName"/>
 <attribute name="TLSConfigName"/>
 <attribute name="AuditLoggerName"/>
 </mbean>
@@ -307,10 +308,10 @@ type           Event Type Code
 <attribute name="RetryIntervals"/>
 <attribute name="Concurrency"/>
 <attribute name="BufferSize"/>
-<attribute name="StoreScpServiceName"/>
-<attribute name="JMSServiceName"/>
 <attribute name="QueueName"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="StoreScpServiceName"/>
+<attribute name="JMSServiceName"/>
 <attribute name="FileSystemMgtName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=FixPatientAttributesService">
@@ -330,6 +331,7 @@ type           Event Type Code
 <attribute name="ConfigDirectory"/>
 <attribute name="StoreScpServiceName"/>
 <attribute name="MoveScuServiceName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=FileSystemMgt">
 <attribute name="RetrieveAETitle"/>
@@ -361,20 +363,20 @@ type           Event Type Code
 <attribute name="DeleteFilesWhenUnavailable"/>
 <attribute name="RetryIntervalsForJmsOrder"/>
 <attribute name="BufferSize"/>
+<attribute name="TimerIDCheckFilesToPurge"/>
+<attribute name="TimerIDCheckFreeDiskSpace"/>
 <attribute name="EJBProviderURL"/>
 <attribute name="PurgeStudyQueueName"/>
 <attribute name="AEServiceName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="SchedulerServiceName"/>
-<attribute name="TimerIDCheckFilesToPurge"/>
-<attribute name="TimerIDCheckFreeDiskSpace"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLFeed">
 <attribute name="EjbProviderURL"/>
-<attribute name="MppsScpServiceName"/>
 <attribute name="MPPSConfigFile"/>
 <attribute name="TemplatePath"/>
 <attribute name="HumanPerformerList"/>
+<attribute name="MppsScpServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLFeed2">
 <attribute name="LogStationAETitles"/>
@@ -383,6 +385,7 @@ type           Event Type Code
 <attribute name="WorkItemConfigDirectory"/>
 <attribute name="EjbProviderURL"/>
 <attribute name="IANScuServiceName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLScp">
 <attribute name="CalledAETitles"/>
@@ -412,10 +415,11 @@ type           Event Type Code
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Service,type=ADT">
 <attribute name="MessageTypes"/>
-<attribute name="PidStylesheetURL"/>
-<attribute name="MrgStylesheetURL"/>
+<attribute name="PidStylesheet"/>
+<attribute name="MrgStylesheet"/>
 <attribute name="IgnoreDeleteErrors"/>
 <attribute name="HL7ServerName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Service,type=ORM">
 <attribute name="MessageTypes"/>
@@ -423,17 +427,19 @@ type           Event Type Code
 <attribute name="DefaultStationName"/>
 <attribute name="DefaultStationAET"/>
 <attribute name="DefaultModality"/>
-<attribute name="StylesheetURL"/>
+<attribute name="Stylesheet"/>
 <attribute name="DeviceServiceName"/>
 <attribute name="HL7ServerName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Service,type=ORU">
 <attribute name="MessageTypes"/>
-<attribute name="SRStylesheetURL"/>
-<attribute name="PDFStylesheetURL"/>
+<attribute name="SRStylesheet"/>
+<attribute name="PDFStylesheet"/>
 <attribute name="StorePriority"/>
 <attribute name="ExportManagerName"/>
 <attribute name="HL7ServerName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Send">
 <attribute name="SendingApplication"/>
@@ -458,9 +464,10 @@ type           Event Type Code
 <attribute name="FileReceivedHL7AsXML"/>
 <attribute name="MaxClients"/>
 <attribute name="MaxIdleThreads"/>
-<attribute name="AckStylesheetURL"/>
-<attribute name="LogStylesheetURL"/>
+<attribute name="AckStylesheet"/>
+<attribute name="LogStylesheet"/>
 <attribute name="TLSConfigName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HPScp">
 <attribute name="CalledAETitles"/>
@@ -505,7 +512,7 @@ type           Event Type Code
 <attribute name="JMSServiceName"/>
 <attribute name="StoreScpServiceName"/>
 <attribute name="MppsScpServiceName"/>
-<attribute name="FileSystemMgtServiceName"/>
+<attribute name="FileSystemMgtName"/>
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=JMS"/>
@@ -531,25 +538,25 @@ type           Event Type Code
 <attribute name="NotifyBurnMediaEmailTo"/>
 <attribute name="NotifyBurnMediaEmailFrom"/>
 <attribute name="EJBProviderURL"/>
-<attribute name="TLSConfigName"/>
 <attribute name="Priority"/>
 <attribute name="IncludeNonDicomObj"/>
 <attribute name="UseInstanceInfo"/>
-<attribute name="SendmailServiceName"/>
-<attribute name="SchedulerServiceName"/>
-<attribute name="JMSServiceName"/>
-<attribute name="QueueName"/>
 <attribute name="TimerIDCheckForMediaToBurn"/>
 <attribute name="TimerIDCheckForStudiesToSchedule"/>
 <attribute name="TimerIDCheckMediaStatus"/>
+<attribute name="QueueName"/>
+<attribute name="SendmailServiceName"/>
+<attribute name="SchedulerServiceName"/>
+<attribute name="JMSServiceName"/>
+<attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MD5CheckService">
 <attribute name="TaskInterval"/>
 <attribute name="MaxCheckedBefore"/>
 <attribute name="NumberOfFilesPerCheck"/>
 <attribute name="BufferSize"/>
-<attribute name="SchedulerServiceName"/>
 <attribute name="TimerIDCheckMD5"/>
+<attribute name="SchedulerServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MoveScu">
 <attribute name="CallingAETitle"/>
@@ -564,9 +571,9 @@ type           Event Type Code
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="QueueName"/>
 <attribute name="TLSConfigName"/>
 <attribute name="JMSServiceName"/>
-<attribute name="QueueName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MPPS2ORM">
 <attribute name="Enabled"/>
@@ -578,18 +585,19 @@ type           Event Type Code
 <attribute name="IgnoreInProgress"/>
 <attribute name="OneORMperSPS"/>
 <attribute name="LogXSLT"/>
-<attribute name="StylesheetURL"/>
+<attribute name="Stylesheet"/>
 <attribute name="EJBProviderURL"/>
 <attribute name="MppsScpServiceName"/>
 <attribute name="Hl7SendServiceName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MPPSEmulator">
 <attribute name="ModalityAETitles"/>
 <attribute name="PollInterval"/>
 <attribute name="CalledAETitle"/>
+<attribute name="TimerIDCheckSeriesWithoutMPPS"/>
 <attribute name="MppsScuServiceName"/>
 <attribute name="SchedulerServiceName"/>
-<attribute name="TimerIDCheckSeriesWithoutMPPS"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MPPSScp">
 <attribute name="CalledAETitles"/>
@@ -602,6 +610,7 @@ type           Event Type Code
 <attribute name="EjbProviderURL"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MPPSScu">
 <attribute name="ForwardAETitles"/>
@@ -630,6 +639,7 @@ type           Event Type Code
 <attribute name="MppsScpServiceName"/>
 <attribute name="MwlScuServiceName"/>
 <attribute name="AuditLoggerName"/>
+<attribute name="TemplatesServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MWLScu">
 <attribute name="CallingAETitle"/>
@@ -647,9 +657,9 @@ type           Event Type Code
 </mbean>
 <mbean name="dcm4chee.archive:service=PPSExceptionMgtService">
 <attribute name="Delay"/>
+<attribute name="QueueName"/>
 <attribute name="MppsScpServiceName"/>
 <attribute name="JMSServiceName"/>
-<attribute name="QueueName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=PPSScu">
 <attribute name="DestinationAETitles"/>
@@ -669,7 +679,7 @@ type           Event Type Code
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=Prefetch">
-<attribute name="StylesheetURL"/>
+<attribute name="Stylesheet"/>
 <attribute name="PrefetchSourceAETitle"/>
 <attribute name="SourceQueryPriority"/>
 <attribute name="DestinationQueryAETitle"/>
@@ -687,11 +697,11 @@ type           Event Type Code
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="QueueName"/>
 <attribute name="MoveScuServiceName"/>
 <attribute name="HL7ServerName"/>
 <attribute name="TLSConfigName"/>
 <attribute name="JMSServiceName"/>
-<attribute name="QueueName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=QueryRetrieveScp">
 <attribute name="CalledAETitles"/>
@@ -739,6 +749,7 @@ type           Event Type Code
 <attribute name="TLSConfigName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="AEServiceName"/>
+<attribute name="TemplatesServiceName"/>
 <attribute name="PerfMonServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=RIDService">
@@ -853,12 +864,13 @@ type           Event Type Code
 <attribute name="LogAETitles"/>
 <attribute name="CoerceConfigDirectory"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="TimerIDCheckPendingSeriesStored"/>
 <attribute name="SchedulerServiceName"/>
 <attribute name="FileSystemMgtName"/>
 <attribute name="MwlScuServiceName"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
-<attribute name="TimerIDCheckPendingSeriesStored"/>
+<attribute name="TemplatesServiceName"/>
 <attribute name="PerfMonServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=StudyInfoService">
@@ -874,9 +886,9 @@ type           Event Type Code
 <attribute name="SuccessStatus"/>
 <attribute name="FailureStatus"/>
 <attribute name="EJBProviderURL"/>
+<attribute name="TimerIDCheckStudyReconciliation"/>
 <attribute name="TLSConfigName"/>
 <attribute name="SchedulerServiceName"/>
-<attribute name="TimerIDCheckStudyReconciliation"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=StudyStatus">
 <attribute name="StatusUpdateRules"/>
@@ -918,8 +930,8 @@ type           Event Type Code
 <attribute name="Pattern"/>
 <attribute name="TaskInterval"/>
 <attribute name="NumberOfFilesPerTask"/>
-<attribute name="SchedulerServiceName"/>
 <attribute name="TimerIDCheckSyncFileStatus"/>
+<attribute name="SchedulerServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=TarRetriever">
 <attribute name="CacheRoot"/>
@@ -958,10 +970,10 @@ type           Event Type Code
 <attribute name="TextSopCuids"/>
 <attribute name="ExtendedWADOAllowed"/>
 <attribute name="ExtendedWADORequestType"/>
-<attribute name="FileSystemMgtName"/>
-<attribute name="AuditLoggerName"/>
 <attribute name="DisabledAuditLogHosts"/>
 <attribute name="DisableHostLookup"/>
+<attribute name="FileSystemMgtName"/>
+<attribute name="AuditLoggerName"/>
 <attribute name="SchedulerServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=WADOExtService">
@@ -978,6 +990,8 @@ type           Event Type Code
 </mbean>
 <mbean name="dcm4chee.archive:service=XDSService">
 <attribute name="XDSRegistryURI"/>
+<attribute name="XDSQueryURI"/>
+<attribute name="ForceSQLQuery"/>
 <attribute name="ProxyHost" type="Network"/>
 <attribute name="ProxyPort" type="Network"/>
 <attribute name="KeystoreURL"/>
@@ -986,10 +1000,9 @@ type           Event Type Code
 <attribute name="TrustStorePassword"/>
 <attribute name="AllowedUrlHost"/>
 <attribute name="RetrieveURI"/>
-<attribute name="ContentTypeURIpart"/>
 <attribute name="ReassignDocumentUID"/>
 <attribute name="ReassignSubmissionUID"/>
-<attribute name="ShortContentTypeEnabled"/>
+<attribute name="UseLongURI"/>
 <attribute name="FilteredSlots"/>
 <attribute name="TestPatient"/>
 <attribute name="LogSOAPMessage"/>
@@ -1021,10 +1034,10 @@ type           Event Type Code
 <attribute name="AutoPublishDocTitle"/>
 <attribute name="TestPath"/>
 <attribute name="RidURL"/>
-<attribute name="PixQueryServiceName"/>
 <attribute name="LocalDomain"/>
 <attribute name="AffinityDomain"/>
 <attribute name="LogSOAPMessage"/>
+<attribute name="PixQueryServiceName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="IANScuServiceName"/>
 <attribute name="KeyObjectServiceName"/>
