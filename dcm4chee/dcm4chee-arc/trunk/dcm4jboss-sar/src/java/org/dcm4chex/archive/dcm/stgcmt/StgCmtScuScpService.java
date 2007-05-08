@@ -95,7 +95,7 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -328,13 +328,13 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     public AEDTO queryAEData(String aet, InetAddress addr)
-            throws DcmServiceException, UnkownAETException {
+            throws DcmServiceException, UnknownAETException {
         try {
             Object o = server.invoke(aeServiceName, "getAE", new Object[] {
                     aet, addr }, new String[] { String.class.getName(),
                     InetAddress.class.getName() });
             if (o == null)
-                throw new UnkownAETException("Unkown AET: " + aet);
+                throw new UnknownAETException("Unkown AET: " + aet);
             return (AEDTO) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);

@@ -58,7 +58,7 @@ import javax.naming.NamingException;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AELocal;
 import org.dcm4chex.archive.ejb.interfaces.AELocalHome;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 
 /**
  * 
@@ -117,16 +117,16 @@ public abstract class AEManagerBean implements SessionBean {
 
     /**
      * @throws FinderException 
-     * @throws UnkownAETException 
+     * @throws UnknownAETException 
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
     public AEDTO findByAET(String aet)
-            throws FinderException, UnkownAETException {
+            throws FinderException, UnknownAETException {
         try {
             return aeHome.findByAET(aet).toDTO();
         } catch (ObjectNotFoundException e) {
-            throw new UnkownAETException(aet);
+            throw new UnknownAETException(aet);
         }
     }
 

@@ -85,7 +85,7 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -659,7 +659,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public AEDTO queryAEData(String aet, InetAddress address)
-            throws DcmServiceException, UnkownAETException {
+            throws DcmServiceException, UnknownAETException {
         // String host = address != null ? address.getCanonicalHostName() :
         // null;
         try {
@@ -667,7 +667,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                     aet, address }, new String[] { String.class.getName(),
                     InetAddress.class.getName() });
             if (o == null)
-                throw new UnkownAETException("Unkown AET: " + aet);
+                throw new UnknownAETException("Unkown AET: " + aet);
             return (AEDTO) o;
         } catch (JMException e) {
             log.error("Failed to query AEData", e);

@@ -53,7 +53,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.jboss.logging.Logger;
 
 /**
@@ -100,7 +100,7 @@ class StgCmtScuScp extends DcmServiceBase {
         try {
             AEDTO aeData = service.queryAEData(aet, a.getSocket().getInetAddress());
             service.queueStgCmtOrder(a.getCalledAET(), aet, data, true);
-        } catch (UnkownAETException e) {
+        } catch (UnknownAETException e) {
             throw new DcmServiceException(Status.MoveDestinationUnknown, aet);
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);

@@ -44,15 +44,15 @@ package org.dcm4chex.archive.exceptions;
  * @version $Revision$ $Date$
  * @since 20.04.2004
  */
-public class UnkownAETException extends Exception {    
+public class UnknownAETException extends Exception {    
 
 	private static final long serialVersionUID = 3257007665707431219L;
 
-	public UnkownAETException() {
+	public UnknownAETException() {
         super();
     }
 
-    public UnkownAETException(String message) {
+    public UnknownAETException(String message) {
         super(message);
     }
 

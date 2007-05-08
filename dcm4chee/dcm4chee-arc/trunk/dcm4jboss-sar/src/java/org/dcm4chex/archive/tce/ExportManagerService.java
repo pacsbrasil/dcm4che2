@@ -117,7 +117,7 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -1220,7 +1220,7 @@ public class ExportManagerService extends AbstractScuService implements
             dest = pos == -1 ? calledAETs : calledAETs.substring(0, pos);
         } catch (Exception x) {
             x.printStackTrace();
-            throw new UnkownAETException(
+            throw new UnknownAETException(
                     "Cant get a CalledAET from StoreSCP service! Reason:"
                             + x.getMessage());
         }

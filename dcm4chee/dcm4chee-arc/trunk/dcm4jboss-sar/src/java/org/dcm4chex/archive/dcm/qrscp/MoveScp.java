@@ -63,7 +63,7 @@ import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -118,7 +118,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
 	                    aeData,
 	                    dest))
 	                .start();
-            } catch (UnkownAETException e) {
+            } catch (UnknownAETException e) {
                 throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);
