@@ -57,7 +57,7 @@ import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.exceptions.UnkownAETException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -179,7 +179,7 @@ public class AEService extends ServiceMBeanSupport {
             aeData.setTitle(newAET);
             aeManager.updateAE(aeData);
             return true;
-        } catch (UnkownAETException e) {
+        } catch (UnknownAETException e) {
             return false;
         }
     }
@@ -193,7 +193,7 @@ public class AEService extends ServiceMBeanSupport {
         AEManager aetMgr = aeMgr();
         try {
             return aetMgr.findByAET(aet);
-        } catch (ObjectNotFoundException e) {
+        } catch (UnknownAETException e) {
             return autoConfigAE(aet, addr, aetMgr);
         }
     }
@@ -265,7 +265,7 @@ public class AEService extends ServiceMBeanSupport {
                     AEDTO aeOldByTitle = aeManager.findByAET(title);
                     throw new IllegalArgumentException("AE Title " + title
                             + " already exists!:" + aeOldByTitle);
-                } catch (UnkownAETException e) {}
+                } catch (UnknownAETException e) {}
             }
             AEDTO aeNew = new AEDTO(pk, title, host, port, cipher);
             aeManager.updateAE(aeNew);
