@@ -207,10 +207,10 @@ public class DcmServerService extends ServiceMBeanSupport {
         policy.setMaxPDULength(newMaxPDULength);
     }
 
-    public void notifyCallingAETchange(String[] affectedCalledAETs) {
+    public void notifyCallingAETchange(String[] affectedCalledAETs, String[] newCallingAETs) {
         long eventID = this.getNextNotificationSequenceNumber();
         Notification notif = new Notification(this.getClass().getName(), this, eventID );
-        notif.setUserData(affectedCalledAETs);
+        notif.setUserData(new String[][] {affectedCalledAETs, newCallingAETs} );
         log.debug("send callingAET changed notif:"+notif);
         this.sendNotification( notif );
     }

@@ -40,9 +40,11 @@
 package org.dcm4chex.archive.dcm;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -75,6 +77,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.XSLTUtils;
@@ -90,10 +93,12 @@ import org.jboss.system.server.ServerConfigLocator;
 public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected static final String ANY = "ANY";
+    protected static final String CONFIGURED_AETS = "CONFIGURED_AETS";
 
     protected static final String NONE = "NONE";
 
     protected ObjectName dcmServerName;
+    protected ObjectName aeServiceName;
 
     protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
@@ -101,6 +106,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected String[] calledAETs;
 
+    /** 
+     * List of allowed calling AETs. 
+     * <p />
+     * <code>null</code> means ANY<br /> 
+     * An empty list (length=0) means CONFIGURED_AETS. 
+     */
     protected String[] callingAETs;
 
     /**
@@ -126,12 +137,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             public void handleNotification(Notification notif, Object handback) {
                 try {
                     log.debug("Handle callingAET change notification!");
-                    String[] affectedCalledAETs = (String[]) notif.getUserData();
-                    if ( areCalledAETsAffected(affectedCalledAETs)) {
-                        AcceptorPolicy policy1 = dcmHandler.getAcceptorPolicy()
-                            .getPolicyForCalledAET(affectedCalledAETs[0]);
-                        String[] calledCallingAETs = policy1.getCallingAETs();
-                        String newCallingAETs = calledCallingAETs.length > 0 ? StringUtils.toString(calledCallingAETs,'\\') : "ANY";
+                    String[][] userData = (String[][]) notif.getUserData();
+                    if ( areCalledAETsAffected(userData[0])) {
+                        String newCallingAETs = userData[1] == null ? ANY 
+                                                : userData[1].length == 0 ? CONFIGURED_AETS
+                                                : StringUtils.toString(userData[1],'\\');
                         log.debug("newCallingAETs:"+newCallingAETs);
                         server.setAttribute(serviceName, new Attribute("CallingAETitles", newCallingAETs));
                     }
@@ -177,6 +187,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         templates.setTemplatesServiceName(serviceName);
     }
         
+    public ObjectName getAEServiceName() {
+        return aeServiceName;
+    }
+
+    public void setAEServiceName(ObjectName aeServiceName) {
+        this.aeServiceName = aeServiceName;
+    }
+
     public final String getCalledAETs() {
         return calledAETs == null ? "" : StringUtils.toString(calledAETs, '\\');
     }
@@ -242,6 +260,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         if (dcmHandler == null)
             return false;
         boolean changed = false;
+        String[] callingAETs = getCallingAETsForPolicy();
         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
         for (int i = 0; i < calledAETs.length; ++i) {
             AcceptorPolicy policy1 = policy
@@ -271,6 +290,33 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             updatePresContexts(policy1, true);
         }
         return changed;
+    }
+
+    private String[] getCallingAETsForPolicy() {
+        if ( callingAETs == null ) return null;
+        if ( callingAETs.length != 0 ) return callingAETs;
+        log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
+        try {
+            List l = (List) server.invoke(aeServiceName, "listAEs", null, null);
+            if (l == null || l.size() == 0 ) {
+                log.warn("No AETs configured! No calling AET is allowed!");
+                return callingAETs;
+            }
+            List dicomAEs = new ArrayList(l.size());
+            String aet;
+            for (Iterator iter = l.iterator(); iter.hasNext();) {
+                aet = ((AEDTO) iter.next()).getTitle();
+                if ( aet.indexOf('^') == -1 ) {//filter 'HL7' AETs
+                    dicomAEs.add(aet);
+                }
+            }
+            log.debug("Use 'CONFIGURED_AETS'. Current list of configured (dicom) AETs"+dicomAEs);
+            String[] sa = new String[dicomAEs.size()];
+            return (String[]) dicomAEs.toArray(sa);
+        } catch (Exception e) {
+            log.error("Failed to query configured AETs! No calling AET is allowed!", e);
+            return callingAETs;
+        }
     }
 
     // Only check if all items in o1 are also in o2! (and same length) 
@@ -307,19 +353,21 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public final String getCallingAETs() {
-        return callingAETs != null ? StringUtils.toString(callingAETs, '\\')
-                : ANY;
+        return callingAETs == null ? ANY
+                : callingAETs.length == 0 ? CONFIGURED_AETS
+                : StringUtils.toString(callingAETs, '\\');
     }
 
     public final void setCallingAETs(String callingAETs) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (getCallingAETs().equals(callingAETs))
             return;
         this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null
+                : CONFIGURED_AETS.equalsIgnoreCase(callingAETs) ? new String[0]
                 : StringUtils.split(callingAETs, '\\');
         if ( enableService() ) {
             server.invoke(dcmServerName, "notifyCallingAETchange",
-                    new Object[] {calledAETs} , 
-                    new String[] {String[].class.getName()});
+                    new Object[] {calledAETs, this.callingAETs} , 
+                    new String[] {String[].class.getName(), String[].class.getName()});
         }
     }
 

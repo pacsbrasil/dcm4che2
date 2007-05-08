@@ -139,8 +139,6 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private int concurrency = 1;
 
-    private ObjectName aeServiceName;
-
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
     public final ObjectName getJmsServiceName() {
@@ -214,21 +212,6 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     public final void setTcpNoDelay(boolean on) {
         tlsConfig.setTcpNoDelay(on);
-    }
-
-    /**
-     * @return Returns the aeServiceName.
-     */
-    public ObjectName getAEServiceName() {
-        return aeServiceName;
-    }
-
-    /**
-     * @param aeServiceName
-     *            The aeServiceName to set.
-     */
-    public void setAEServiceName(ObjectName aeServiceName) {
-        this.aeServiceName = aeServiceName;
     }
 
     public final String getQueueName() {

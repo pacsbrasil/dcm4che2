@@ -5,6 +5,8 @@
   <mbean code="org.dcm4chex.archive.dcm.mwlscp.MWLFindScpService"
     name="dcm4chee.archive:service=MWLFindScp"
     xmbean-dd="xmdesc/dcm4chee-mwlscp-xmbean.xml">
+    <depends optional-attribute-name="AEServiceName"
+      >dcm4chee.archive:service=AE</depends>
     <depends optional-attribute-name="AuditLoggerName"
       >dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="DcmServerName"

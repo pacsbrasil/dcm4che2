@@ -37,8 +37,11 @@
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>List of accepted calling AE titles, separated by \(backslash).
-      ANY = accept any. 
+      <description><![CDATA[
+      	List of accepted calling AE titles, separated by \(backslash).<br/>
+      	ANY = accept any. <br/>
+      	CONFIGURED_AETS = accept any configured AE Title.
+      	]]>       
       </description>
       <name>CallingAETitles</name>
       <type>java.lang.String</type>
@@ -911,6 +914,14 @@ StoreSCP service.
       <description>Used internally. Do NOT modify.
       </description>
       <name>PerfMonServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAEServiceName"
+      setMethod="setAEServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>AEServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 

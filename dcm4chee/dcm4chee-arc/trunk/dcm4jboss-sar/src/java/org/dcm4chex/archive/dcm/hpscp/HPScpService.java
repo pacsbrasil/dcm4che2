@@ -72,8 +72,6 @@ public class HPScpService extends AbstractScpService {
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
-    private ObjectName aeServiceName;
-
     private boolean sendPendingMoveRSP = true;
 
     private int acTimeout = 5000;
@@ -120,21 +118,6 @@ public class HPScpService extends AbstractScpService {
 
     public final void setTcpNoDelay(boolean on) {
         tlsConfig.setTcpNoDelay(on);
-    }
-
-    /**
-     * @return Returns the aeService.
-     */
-    public ObjectName getAEServiceName() {
-        return aeServiceName;
-    }
-
-    /**
-     * @param aeService
-     *            The aeService to set.
-     */
-    public void setAEServiceName(ObjectName aeServiceName) {
-        this.aeServiceName = aeServiceName;
     }
 
     public final int getAcTimeout() {

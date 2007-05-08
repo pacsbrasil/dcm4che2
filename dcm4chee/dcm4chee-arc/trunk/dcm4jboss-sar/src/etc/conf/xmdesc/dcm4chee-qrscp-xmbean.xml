@@ -33,8 +33,11 @@ QueryRetrieveScp service.</description>
    <attribute access="read-write"
       getMethod="getCallingAETs"
       setMethod="setCallingAETs">
-      <description>Accepted calling AE titles, separated by \(backslash).
-      ANY = accept any. 
+      <description><![CDATA[
+      	List of accepted calling AE titles, separated by \(backslash).<br/>
+      	ANY = accept any. <br/>
+      	CONFIGURED_AETS = accept any configured AE Title.
+      	]]>       
       </description>
       <name>CallingAETitles</name>
       <type>java.lang.String</type>

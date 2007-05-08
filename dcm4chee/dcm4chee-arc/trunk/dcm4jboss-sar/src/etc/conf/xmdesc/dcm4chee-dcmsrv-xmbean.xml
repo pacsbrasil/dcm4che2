@@ -196,6 +196,11 @@
         <name>calledAETs</name>
         <type>[Ljava.lang.String;</type>
       </parameter>
+      <parameter>
+        <description>List of new CallingAETs</description>
+        <name>newCallingAETs</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
       <return-type>void</return-type>
    </operation>
 </mbean>

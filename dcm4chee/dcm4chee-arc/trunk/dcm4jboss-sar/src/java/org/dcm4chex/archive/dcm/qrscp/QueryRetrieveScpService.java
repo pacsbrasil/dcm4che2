@@ -146,8 +146,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private ObjectName tarRetrieverName;
 
-    private ObjectName aeServiceName;
-
     private ObjectName pixQueryServiceName;
     
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
@@ -313,14 +311,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.pixQueryServiceName = name;
     }
     
-    public ObjectName getAEServiceName() {
-        return aeServiceName;
-    }
-
-    public void setAEServiceName(ObjectName aeServiceName) {
-        this.aeServiceName = aeServiceName;
-    }
-
     public final boolean isPixQuery() {
         return pixQuery;
     }
