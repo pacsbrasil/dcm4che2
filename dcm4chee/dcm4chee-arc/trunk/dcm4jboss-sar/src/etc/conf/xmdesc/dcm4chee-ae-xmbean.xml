@@ -29,18 +29,6 @@
       <name>AEConfiguration</name>
       <type>java.lang.String</type>
    </attribute>
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>EchoServiceName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
    <attribute access="read-write" getMethod="getPortNumbers" setMethod="setPortNumbers">
       <description>Port numbers for AE auto configuration.&lt;br&gt;
       			   The method getAE(title, hostname) use this list to find a DICOM service hosted by hostname.&lt;br&gt;
@@ -64,12 +52,16 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally. Do NOT modify.
+   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
+      <description>Used internally. Do not modify.
       </description>
       <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>EchoServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    
