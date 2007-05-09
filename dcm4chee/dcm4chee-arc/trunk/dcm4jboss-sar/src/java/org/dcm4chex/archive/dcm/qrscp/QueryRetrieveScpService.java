@@ -730,12 +730,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return false;
     }
 
-    private static String extractIssuer(String pidAndIssuer) {
+    private static String extractPID(String pidAndIssuer) {
         int end = pidAndIssuer.indexOf('^');
         return end != -1 ? pidAndIssuer.substring(0, end) : null;
     }
 
-    private static String extractPID(String pidAndIssuer) {
+    private static String extractIssuer(String pidAndIssuer) {
         int start = pidAndIssuer.lastIndexOf('^') + 1;
         int end = pidAndIssuer.indexOf('&', start);
         return end != -1 ? pidAndIssuer.substring(start, end) 
