@@ -119,6 +119,13 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void mergePatient(Dataset dominant, Dataset prior) {
         PatientLocal dominantPat = updateOrCreate(dominant);
         PatientLocal priorPat= updateOrCreate(prior);
+        PatientLocal mergedWith = dominantPat.getMergedWith();
+        while ( mergedWith != null ) {
+            if ( mergedWith.getPk().equals(priorPat.getPk())) {
+                throw new EJBException("Circular Merge detected!");
+            }
+            mergedWith = mergedWith.getMergedWith();
+        }
         dominantPat.getStudies().addAll(priorPat.getStudies());
         dominantPat.getMpps().addAll(priorPat.getMpps());
         dominantPat.getMwlItems().addAll(priorPat.getMwlItems());

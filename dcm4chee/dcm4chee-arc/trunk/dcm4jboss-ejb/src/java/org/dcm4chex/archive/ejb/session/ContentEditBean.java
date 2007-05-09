@@ -191,6 +191,12 @@ public abstract class ContentEditBean implements SessionBean {
     	Map map = new HashMap();
     	try {
 	        PatientLocal dominant = patHome.findByPrimaryKey(new Long(patPk));
+            if ( checkCircularMerge(dominant, mergedPks) ) {
+                log.warn("Circular merge detected (dominant:"+dominant.getPatientId()+
+                        "^^^"+dominant.getIssuerOfPatientId()+")! Merge order ignored!");
+                map.put("ERROR", "Circular Merge detected!");
+                return map;
+            }
             map.put("DOMINANT",dominant.getAttributes(false) );
             Dataset[] mergedPats = new Dataset[mergedPks.length];
             map.put("MERGED",mergedPats);
@@ -218,6 +224,20 @@ public abstract class ContentEditBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }        
+    }
+
+    private boolean checkCircularMerge(PatientLocal pat, long[] mergedPks) {
+        PatientLocal mergedWith = pat.getMergedWith();
+        if ( mergedWith != null ) {
+            long pk = mergedWith.getPk().longValue();
+            for ( int i = 0 ; i < mergedPks.length ; i++) {
+                if ( pk == mergedPks[i]) {
+                   return true;
+                }
+            }
+            return checkCircularMerge(pat, mergedPks);
+        }
+        return false;
     }
 
 	/**

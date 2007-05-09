@@ -70,7 +70,7 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
             if (merge != null) executeMerge();
             return view_name;
         } catch (Exception e1) {
-        	((FolderForm) getForm()).setPopupMsg("folder.err_merge",e1.getMessage());
+            FolderForm.getFolderForm(getCtx()).setExternalPopupMsg("folder.err_merge",new String[]{e1.getMessage()});
             return view_name;
         }
     }
@@ -90,6 +90,10 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
         ContentEditDelegate delegate = FolderSubmitCtrl.getDelegate(getCtx());
         Map mergedPatMap = delegate.mergePatients( pk, priors);
         if ( mergedPatMap != null ) {
+            if ( mergedPatMap.containsKey("ERROR")) {
+                FolderForm.getFolderForm(getCtx()).setExternalPopupMsg("folder.err_merge",new String[]{(String) mergedPatMap.get("ERROR")});
+                return;
+            }
 	        Dataset dominant = (Dataset) mergedPatMap.get("DOMINANT");
 	        Dataset[] priorPats = (Dataset[]) mergedPatMap.get("MERGED");
 	        Dataset prior;

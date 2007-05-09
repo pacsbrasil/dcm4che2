@@ -280,9 +280,11 @@ public class ContentEditService extends ServiceMBeanSupport {
     public Map mergePatients(Long patPk, long[] mergedPks) throws RemoteException, HomeFactoryException, CreateException {
     	if ( log.isDebugEnabled() ) log.debug("merge Partient");
     	Map map = lookupContentEdit().mergePatients( patPk.longValue(), mergedPks );
-    	sendHL7PatientMerge((Dataset) map.get("DOMINANT"), (Dataset[]) map.get("MERGED") );
-		String patID = ((Dataset) map.get("DOMINANT")).getString(Tags.PatientID);
-		sendJMXNotification( new PatientUpdated(patID, "Patient merge", getRetrieveAET()));
+        if ( ! map.containsKey("ERROR") ) {
+            sendHL7PatientMerge((Dataset) map.get("DOMINANT"), (Dataset[]) map.get("MERGED") );
+            String patID = ((Dataset) map.get("DOMINANT")).getString(Tags.PatientID);
+            sendJMXNotification( new PatientUpdated(patID, "Patient merge", getRetrieveAET()));
+        }
 		return map;
     }
     
