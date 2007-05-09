@@ -10,7 +10,6 @@
   <mbean code="org.dcm4chex.archive.tce.ExportManagerService"
     name="dcm4chee.archive:service=ExportManager"
     xmbean-dd="xmdesc/dcm4chee-exportmanager-xmbean.xml">
-    <depends>dcm4chee.archive:service=Queue,name=ExportManager</depends>
     <depends optional-attribute-name="TLSConfigName"
       >dcm4chee.archive:service=TLSConfig</depends>
     <depends optional-attribute-name="AuditLoggerName"
@@ -19,5 +18,10 @@
       >dcm4chee.archive:service=StoreScp</depends>
     <depends optional-attribute-name="JMSServiceName"
       >dcm4chee.archive:service=JMS</depends>
+    <depends>dcm4chee.archive:service=Queue,name=ExportManager</depends>
+    <attribute name="QueueName">ExportManager</attribute>
+    <!-- Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+    Use LOCAL if EJBs are deployed in same JBoss instance -->
+    <attribute name="EJBProviderURL">LOCAL</attribute>
   </mbean>
 </server>

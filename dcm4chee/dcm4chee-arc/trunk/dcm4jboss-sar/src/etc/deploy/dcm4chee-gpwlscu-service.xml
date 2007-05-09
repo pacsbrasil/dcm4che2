@@ -8,6 +8,9 @@
     <depends>jboss.j2ee:jndiName=ejb/GPWLManager,service=EJB</depends>
     <depends optional-attribute-name="TLSConfigName"
       >dcm4chee.archive:service=TLSConfig</depends>
+    <!-- Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+    Use LOCAL if EJBs are deployed in same JBoss instance -->
+    <attribute name="EJBProviderURL">LOCAL</attribute>
   </mbean>
 
 </server>

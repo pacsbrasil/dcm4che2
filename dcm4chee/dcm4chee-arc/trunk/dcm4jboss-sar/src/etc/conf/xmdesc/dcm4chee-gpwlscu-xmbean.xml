@@ -140,19 +140,15 @@
    <attribute access="read-write"
       getMethod="getEjbProviderURL"
       setMethod="setEjbProviderURL">
-      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
-      Use LOCAL if EJBs are deployed in same JBoss instance.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>EJBProviderURL</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="LOCAL"/>
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
-      <description>Used internally. Do not modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
