@@ -4,7 +4,7 @@
         <property file="../build.properties"/>
 	<property name="lib.dir" value="${basedir}/lib"/>
 	
-	<property name="version" value="DEVELOP-2.10.15"/>
+	<property name="version" value="DEVELOP-2.11.0"/>
 	<property name="vendor" value="Agfa Healthcare"/>
 
 	<!-- Override with your JBoss dist location -->
