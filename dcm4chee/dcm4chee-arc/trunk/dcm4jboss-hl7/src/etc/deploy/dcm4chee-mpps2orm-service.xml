@@ -12,6 +12,9 @@
       >dcm4chee.archive:service=HL7Send</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
+    <!-- Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
+    Use LOCAL if EJBs are deployed in same JBoss instance -->
+    <attribute name="EJBProviderURL">LOCAL</attribute>
   </mbean>
 </server>
 
