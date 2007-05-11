@@ -2,9 +2,9 @@
   <!-- Allow override from local properties file -->
   <property file="build.properties"/>
   <property file="../build.properties"/>
-  <property name="version" value="2.11.0"/>
+  <property name="version" value="2.10.15"/>
   <property name="arr-version" value="3.0.2"/>
-  <property name="audit-version" value="3.0.3"/>
+  <property name="audit-version" value="2.10.15"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
