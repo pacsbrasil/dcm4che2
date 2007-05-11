@@ -664,6 +664,7 @@ class ppsScu {}
  * @depend - - - StgCmtScuScp
  * @depend - - - TarRetriever
  * @depend - - - Templates
+ * @depend - - - PIXQuery
  */
 class QueryRetrieveScp {}
 
