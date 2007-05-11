@@ -11,10 +11,10 @@
 	<title><xsl:value-of select="patient/patientName" /> (<xsl:value-of select="patient/patientSex" />)</title>
 	<script language = "JavaScript" src= "dcm4che.js"/>
 </head>
-<body onLoad="checkPopup('{popupMsg}')" >
+<body onLoad="checkPopup('{popupMsg}')" onResize="window.location.href = window.location.href;" >
 	<script language="JavaScript"><xsl:text>&lt;!--
-        	var W=600,H=600;
-                if (parseInt(navigator.appVersion)>3) 
+        var W="95%",H="95%";
+        if (parseInt(navigator.appVersion)>3) 
 		{
 			if (navigator.appName=="Netscape") 
 			{

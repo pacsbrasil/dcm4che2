@@ -117,7 +117,7 @@ function selectValue(sObj) {
   
 function openWin( winName, url ) {
 //alert('open new window '+winName+' with URL:'+url);
-	newwindow = window.open(url, winName, 'toolbar=yes,menubar=yes,scrollbars=yes');
+	newwindow = window.open(url, winName, 'toolbar=no,menubar=no,scrollbars=yes,resizable=yes');
 	newwindow.focus();
 	return false;
 }  
