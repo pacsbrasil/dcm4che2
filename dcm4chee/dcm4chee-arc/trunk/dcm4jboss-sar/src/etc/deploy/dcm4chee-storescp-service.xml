@@ -19,5 +19,7 @@
       >dcm4chee.archive:service=Scheduler</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
+    <attribute name="TimerIDCheckPendingSeriesStored"
+      >CheckPendingSeriesStored</attribute>
   </mbean>
 </server>

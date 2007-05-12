@@ -105,13 +105,10 @@
    <attribute access="read-write"
       getMethod="getTimerIDCheckStudyPatient"
       setMethod="setTimerIDCheckStudyPatient">
-      <description>The timer ID for scheduler of checking study patient.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckStudyPatient</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckStudyPatient" />
-      </descriptors>
    </attribute>
 
    &defaultAttributes;

@@ -25,5 +25,9 @@
 	   as the MediaComposer EJB!
 	   -->
     <depends>jboss.j2ee:jndiName=ejb/MediaComposer,service=EJB</depends>
+    <attribute name="TimerIDCheckForMediaToBurn">CheckForMediaToBurn</attribute>
+    <attribute name="TimerIDCheckForStudiesToSchedule"
+      >CheckForStudiesToSchedule</attribute>
+    <attribute name="TimerIDCheckMediaStatus">CheckMediaStatus</attribute>
   </mbean>
 </server>

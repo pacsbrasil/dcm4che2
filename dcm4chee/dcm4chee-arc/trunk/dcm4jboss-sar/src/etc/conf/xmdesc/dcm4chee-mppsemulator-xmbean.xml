@@ -60,13 +60,10 @@
    <attribute access="read-write"
       getMethod="getTimerIDCheckSeriesWithoutMPPS"
       setMethod="setTimerIDCheckSeriesWithoutMPPS">
-      <description>The timer ID for scheduler of checking series without MPPS.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckSeriesWithoutMPPS</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckSeriesWithoutMPPS" />
-      </descriptors>
    </attribute>
    
    <attribute access="read-write"

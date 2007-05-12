@@ -10,5 +10,7 @@
       >dcm4chee.archive:service=Scheduler</depends>
     <depends optional-attribute-name="TLSConfigName"
       >dcm4chee.archive:service=TLSConfig</depends>
+    <attribute name="TimerIDCheckStudyReconciliation"
+      >CheckStudyReconciliation</attribute>
   </mbean>
 </server>

@@ -11,5 +11,6 @@
       >dcm4chee.archive:service=Scheduler</depends>
     <depends optional-attribute-name="StudyInfoServiceName"
       >dcm4chee.archive:service=StudyInfoService</depends>
+    <attribute name="TimerID">CheckFreeDiskSpaceWadoExt</attribute>
   </mbean>
 </server>

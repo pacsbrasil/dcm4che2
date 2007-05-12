@@ -12,6 +12,7 @@
 	    as the FileSystemMgt EJB!
 	  -->
     <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt,service=EJB</depends>
+    <attribute name="TimerIDCheckSyncFileStatus">CheckSyncFileStatus</attribute>
   </mbean>
 
 </server>

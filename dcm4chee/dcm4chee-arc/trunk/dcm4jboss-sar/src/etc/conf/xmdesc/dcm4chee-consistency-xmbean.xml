@@ -81,13 +81,10 @@
    <attribute access="read-write"
       getMethod="getTimerIDCheckStudyConsistency"
       setMethod="setTimerIDCheckStudyConsistency">
-      <description>The timer ID for scheduler of checking study consistency.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckStudyConsistency</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckStudyConsistency" />
-      </descriptors>
    </attribute>
 
 

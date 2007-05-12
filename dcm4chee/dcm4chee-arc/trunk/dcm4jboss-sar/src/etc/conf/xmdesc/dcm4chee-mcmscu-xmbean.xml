@@ -216,37 +216,28 @@
    <attribute access="read-write"
       getMethod="getTimerIDCheckForMediaToBurn"
       setMethod="setTimerIDCheckForMediaToBurn">
-      <description>The timer ID for scheduler of checking for media to burn.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckForMediaToBurn</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckForMediaToBurn" />
-      </descriptors>
    </attribute>
  
    <attribute access="read-write"
       getMethod="getTimerIDCheckForStudiesToSchedule"
       setMethod="setTimerIDCheckForStudiesToSchedule">
-      <description>The timer ID for scheduler of checking for studies to schedule.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckForStudiesToSchedule</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckForStudiesToSchedule" />
-      </descriptors>
    </attribute>
 
    <attribute access="read-write"
       getMethod="getTimerIDCheckMediaStatus"
       setMethod="setTimerIDCheckMediaStatus">
-      <description>The timer ID for scheduler of checking media status.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckMediaStatus</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckMediaStatus" />
-      </descriptors>
    </attribute>
    
    <attribute access="read-write"

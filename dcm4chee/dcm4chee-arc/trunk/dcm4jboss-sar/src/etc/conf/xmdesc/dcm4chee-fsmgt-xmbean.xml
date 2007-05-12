@@ -522,24 +522,18 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="getTimerIDCheckFilesToPurge"
       setMethod="setTimerIDCheckFilesToPurge">
-      <description>The timer ID for scheduler of checking qualified files to purge.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckFilesToPurge</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFilesToPurge" />
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getTimerIDCheckFreeDiskSpace"
       setMethod="setTimerIDCheckFreeDiskSpace">
-      <description>The timer ID for scheduler of checking free disk space.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckFreeDiskSpace</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFreeDiskSpace" />
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getPurgeStudyQueueName"

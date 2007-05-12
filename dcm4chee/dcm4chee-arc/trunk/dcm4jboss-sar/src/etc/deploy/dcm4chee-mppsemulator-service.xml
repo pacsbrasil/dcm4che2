@@ -14,5 +14,7 @@
 	as the MPPSEmulator EJB!
 	-->
     <depends>jboss.j2ee:jndiName=ejb/MPPSEmulator,service=EJB</depends>
+    <attribute name="TimerIDCheckSeriesWithoutMPPS"
+      >CheckSeriesWithoutMPPS</attribute>
   </mbean>
 </server>

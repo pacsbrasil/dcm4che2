@@ -6,8 +6,10 @@
     name="dcm4chee.archive:service=CompressionService"
     xmbean-dd="xmdesc/dcm4chee-compression-xmbean.xml">
     <depends optional-attribute-name="FileSystemMgtName"
-     >dcm4chee.archive:service=FileSystemMgt</depends>
+      >dcm4chee.archive:service=FileSystemMgt</depends>
     <depends optional-attribute-name="SchedulerServiceName"
-     >dcm4chee.archive:service=Scheduler</depends>
+      >dcm4chee.archive:service=Scheduler</depends>
+    <attribute name="TimerIDCheckFilesToCompress"
+      >CheckFilesToCompress</attribute>
   </mbean>
 </server>

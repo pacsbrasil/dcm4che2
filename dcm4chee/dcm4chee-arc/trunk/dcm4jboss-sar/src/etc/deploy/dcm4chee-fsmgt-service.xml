@@ -24,5 +24,7 @@
 	as the FileSystemMgt EJB!
 	-->
     <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt,service=EJB</depends>
+    <attribute name="TimerIDCheckFilesToPurge">CheckFilesToPurge</attribute>
+    <attribute name="TimerIDCheckFreeDiskSpace">CheckFreeDiskSpace</attribute>
   </mbean>
 </server>

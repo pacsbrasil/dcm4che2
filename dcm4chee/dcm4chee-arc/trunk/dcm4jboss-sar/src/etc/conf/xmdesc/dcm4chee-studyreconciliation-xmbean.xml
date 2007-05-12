@@ -115,13 +115,10 @@
    <attribute access="read-write"
       getMethod="getTimerIDCheckStudyReconciliation"
       setMethod="setTimerIDCheckStudyReconciliation">
-      <description>The timer ID for scheduler of checking study reconciliation.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckStudyReconciliation</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckStudyReconciliation" />
-      </descriptors>
    </attribute>
 
    <attribute access="read-write"

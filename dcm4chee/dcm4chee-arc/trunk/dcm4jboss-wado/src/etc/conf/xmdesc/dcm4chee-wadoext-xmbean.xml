@@ -60,17 +60,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getTimerID"
-      setMethod="setTimerID">
-      <description>The timer ID for scheduler.
-      </description>
-      <name>TimerID</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFreeDiskSpaceWadoExt" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getNumberOfCacheFolders"
       setMethod="setNumberOfCacheFolders">
       <description>Number of subfolders for separating caching files.
@@ -125,9 +114,17 @@
    </attribute>
 
     <attribute access="read-write"
+      getMethod="getTimerID"
+      setMethod="setTimerID">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TimerID</name>
+      <type>java.lang.String</type>
+    </attribute>
+    <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
-      <description>For internal use. Don't change!
+      <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
@@ -135,7 +132,7 @@
     <attribute access="read-write"
       getMethod="getStudyInfoServiceName"
       setMethod="setStudyInfoServiceName">
-      <description>For internal use. Don't change!
+      <description>Used internally. Do NOT modify.
       </description>
       <name>StudyInfoServiceName</name>
       <type>javax.management.ObjectName</type>

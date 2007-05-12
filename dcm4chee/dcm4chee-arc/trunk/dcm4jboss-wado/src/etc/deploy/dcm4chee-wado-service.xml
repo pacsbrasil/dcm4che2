@@ -11,5 +11,6 @@
       >dcm4chee.archive:service=FileSystemMgt</depends>
     <depends optional-attribute-name="SchedulerServiceName"
       >dcm4chee.archive:service=Scheduler</depends>
+    <attribute name="TimerID">CheckFreeDiskSpaceWado</attribute>
   </mbean>
 </server>

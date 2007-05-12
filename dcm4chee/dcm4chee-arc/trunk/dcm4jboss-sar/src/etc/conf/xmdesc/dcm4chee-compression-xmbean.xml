@@ -146,13 +146,10 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
    <attribute access="read-write"
       getMethod="getTimerIDCheckFilesToCompress"
       setMethod="setTimerIDCheckFilesToCompress">
-      <description>The timer ID for scheduler of checking files to compress.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckFilesToCompress</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFilesToCompress" />
-      </descriptors>
    </attribute>
 
    &defaultAttributes;

@@ -75,13 +75,10 @@
    <attribute access="read-write"
       getMethod="getTimerIDCheckMD5"
       setMethod="setTimerIDCheckMD5">
-      <description>The timer ID for scheduler of checking MD5.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckMD5</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckMD5" />
-      </descriptors>
    </attribute>   
 
    <attribute access="read-write"

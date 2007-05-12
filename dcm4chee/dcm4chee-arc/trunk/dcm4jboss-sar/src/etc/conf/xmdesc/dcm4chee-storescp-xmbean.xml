@@ -840,13 +840,10 @@ StoreSCP service.
    <attribute access="read-write"
       getMethod="getTimerIDCheckPendingSeriesStored"
       setMethod="setTimerIDCheckPendingSeriesStored">
-      <description>The timer ID for scheduler of checking pending series stored.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TimerIDCheckPendingSeriesStored</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckPendingSeriesStored" />
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"

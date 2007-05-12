@@ -44,17 +44,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getTimerID"
-      setMethod="setTimerID">
-      <description>The timer ID for scheduler.
-      </description>
-      <name>TimerID</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="CheckFreeDiskSpaceWado" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getDirectoryTree"
       setMethod="setDirectoryTree">
       <description><![CDATA[This list specify the directory structure (depth and limit of subdirs per dir) of this cache.<br>
@@ -270,9 +259,17 @@
       </descriptors>
    </attribute>
     <attribute access="read-write"
+      getMethod="getTimerID"
+      setMethod="setTimerID">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TimerID</name>
+      <type>java.lang.String</type>
+    </attribute>
+    <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
-      <description>For internal use. Don't change!
+      <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
@@ -280,7 +277,7 @@
     <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
-      <description>For internal use. Don't change!
+      <description>Used internally. Do NOT modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
