@@ -236,7 +236,6 @@ type           Event Type Code
 <attribute name="SendingFacility"/>
 <attribute name="CalledAETitle"/>
 <attribute name="CallingAETitle"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="FileSystemMgtName"/>
 <attribute name="HL7SendServiceName"/>
 <attribute name="StudyMgtScuServiceName"/>
@@ -269,7 +268,6 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=ExportManager">
@@ -293,7 +291,6 @@ type           Event Type Code
 <attribute name="BufferSize"/>
 <attribute name="Concurrency"/>
 <attribute name="QueueName"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="StoreScpServiceName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="TLSConfigName"/>
@@ -309,7 +306,6 @@ type           Event Type Code
 <attribute name="Concurrency"/>
 <attribute name="BufferSize"/>
 <attribute name="QueueName"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="StoreScpServiceName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="FileSystemMgtName"/>
@@ -365,14 +361,12 @@ type           Event Type Code
 <attribute name="BufferSize"/>
 <attribute name="TimerIDCheckFilesToPurge"/>
 <attribute name="TimerIDCheckFreeDiskSpace"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="PurgeStudyQueueName"/>
 <attribute name="AEServiceName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="SchedulerServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLFeed">
-<attribute name="EjbProviderURL"/>
 <attribute name="MPPSConfigFile"/>
 <attribute name="TemplatePath"/>
 <attribute name="HumanPerformerList"/>
@@ -383,7 +377,6 @@ type           Event Type Code
 <attribute name="PGPStationAETitles"/>
 <attribute name="AppendCaseStationAETitles"/>
 <attribute name="WorkItemConfigDirectory"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="IANScuServiceName"/>
 <attribute name="TemplatesServiceName"/>
 </mbean>
@@ -395,7 +388,6 @@ type           Event Type Code
 <attribute name="MaximumPDULength"/>
 <attribute name="MaximumOperationsInvoked"/>
 <attribute name="MaximumOperationsPerformed"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
 </mbean>
@@ -410,7 +402,6 @@ type           Event Type Code
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
 <attribute name="Priority"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Service,type=ADT">
@@ -483,7 +474,6 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="DcmServerName"/>
 <attribute name="TLSConfigName"/>
 <attribute name="AuditLoggerName"/>
@@ -507,7 +497,6 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="StoreScpServiceName"/>
@@ -537,7 +526,6 @@ type           Event Type Code
 <attribute name="AutomaticMediaCreation"/>
 <attribute name="NotifyBurnMediaEmailTo"/>
 <attribute name="NotifyBurnMediaEmailFrom"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="Priority"/>
 <attribute name="IncludeNonDicomObj"/>
 <attribute name="UseInstanceInfo"/>
@@ -570,7 +558,6 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="TLSConfigName"/>
 <attribute name="JMSServiceName"/>
@@ -586,7 +573,6 @@ type           Event Type Code
 <attribute name="OneORMperSPS"/>
 <attribute name="LogXSLT"/>
 <attribute name="Stylesheet"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="MppsScpServiceName"/>
 <attribute name="Hl7SendServiceName"/>
 <attribute name="TemplatesServiceName"/>
@@ -607,7 +593,6 @@ type           Event Type Code
 <attribute name="MaximumPDULength"/>
 <attribute name="MaximumOperationsInvoked"/>
 <attribute name="MaximumOperationsPerformed"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="TemplatesServiceName"/>
@@ -617,7 +602,6 @@ type           Event Type Code
 <attribute name="CallingAETitle"/>
 <attribute name="Concurrency"/>
 <attribute name="RetryIntervals"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="MppsScpServiceName"/>
@@ -634,7 +618,6 @@ type           Event Type Code
 <attribute name="MaximumOperationsPerformed"/>
 <attribute name="LogAETitles"/>
 <attribute name="CoerceConfigDirectory"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="DcmServerName"/>
 <attribute name="MppsScpServiceName"/>
 <attribute name="MwlScuServiceName"/>
@@ -645,7 +628,6 @@ type           Event Type Code
 <attribute name="CallingAETitle"/>
 <attribute name="CalledAETitle"/>
 <attribute name="MaxResults"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="Priority"/>
 <attribute name="TLSConfigName"/>
 </mbean>
@@ -672,7 +654,6 @@ type           Event Type Code
 <attribute name="CopyProcessingApplicationsCode"/>
 <attribute name="Concurrency"/>
 <attribute name="RetryIntervals"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="GpwlScpServiceName"/>
@@ -696,7 +677,6 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="MoveScuServiceName"/>
 <attribute name="HL7ServerName"/>
@@ -741,7 +721,6 @@ type           Event Type Code
 <attribute name="RetrieveWithoutLeftJoins"/>
 <attribute name="QueryTransactionIsolationLevel"/>
 <attribute name="RetrieveTransactionIsolationLevel"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="FileSystemMgtName"/>
 <attribute name="DcmServerName"/>
 <attribute name="StgCmtScuScpName"/>
@@ -809,7 +788,6 @@ type           Event Type Code
 <attribute name="TcpNoDelay"/>
 <attribute name="SendBufferSize"/>
 <attribute name="ReceiveBufferSize"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="FileSystemMgtName"/>
@@ -863,7 +841,6 @@ type           Event Type Code
 <attribute name="BufferSize"/>
 <attribute name="LogAETitles"/>
 <attribute name="CoerceConfigDirectory"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="TimerIDCheckPendingSeriesStored"/>
 <attribute name="SchedulerServiceName"/>
 <attribute name="FileSystemMgtName"/>
@@ -885,7 +862,6 @@ type           Event Type Code
 <attribute name="ScheduledStatus"/>
 <attribute name="SuccessStatus"/>
 <attribute name="FailureStatus"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="TimerIDCheckStudyReconciliation"/>
 <attribute name="TLSConfigName"/>
 <attribute name="SchedulerServiceName"/>
@@ -902,7 +878,6 @@ type           Event Type Code
 <attribute name="MaximumPDULength"/>
 <attribute name="MaximumOperationsInvoked"/>
 <attribute name="MaximumOperationsPerformed"/>
-<attribute name="EjbProviderURL"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
 </mbean>
@@ -912,7 +887,6 @@ type           Event Type Code
 <attribute name="CallingAETitle"/>
 <attribute name="RetryIntervals"/>
 <attribute name="Concurrency"/>
-<attribute name="EJBProviderURL"/>
 <attribute name="QueueName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="StudyMgtScpServiceName"/>
