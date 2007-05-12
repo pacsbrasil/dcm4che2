@@ -92,14 +92,6 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
         }
     };
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-    
     public final ObjectName getTemplatesServiceName() {
         return templates.getTemplatesServiceName();
     }

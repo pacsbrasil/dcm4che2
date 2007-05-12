@@ -54,7 +54,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.ejb.jdbc.WadoQueryCmd;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -86,14 +85,6 @@ public class StudyInfoService extends ServiceMBeanSupport {
 	}
 
 	protected void stopService() throws Exception {
-	}
-
-	public String getEjbProviderURL() {
-		return EJBHomeFactory.getEjbProviderURL();
-	}
-
-	public void setEjbProviderURL(String ejbProviderURL) {
-		EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
 	}
 
 	private Dataset getQueryDS(String level, String uid) {

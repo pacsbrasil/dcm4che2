@@ -39,7 +39,9 @@
 
 package org.dcm4chex.archive.util;
 
+import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.ejb.EJBHome;
 import javax.naming.Context;
@@ -55,45 +57,29 @@ import javax.rmi.PortableRemoteObject;
  */
 public class EJBHomeFactory {
 
-    private static final String LOCAL = "LOCAL";
+    private static final String EJB_JNDI_PROPERTIES = "ejb-jndi.properties";
 
     private static EJBHomeFactory factory;
-
-    private static String ejbProviderURL;
 
     private Hashtable homes = new Hashtable();
 
     private Context ctx;
 
-    public static String getEjbProviderURL() {
-        return ejbProviderURL;
-    }
-
-    public static void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.ejbProviderURL = ejbProviderURL;
-    }
-
     public static EJBHomeFactory getFactory() throws HomeFactoryException {
         if (EJBHomeFactory.factory == null) {
             try {
                 EJBHomeFactory.factory = new EJBHomeFactory();
-            } catch (NamingException e) {
+            } catch (Exception e) {
                 throw new HomeFactoryException(e);
             }
         }
         return EJBHomeFactory.factory;
     }
 
-    private EJBHomeFactory() throws NamingException {
-        Hashtable env = new Hashtable();
-        env.put("java.naming.factory.initial",
-                "org.jnp.interfaces.NamingContextFactory");
-        env.put("java.naming.factory.url.pkgs",
-                "org.jboss.naming:org.jnp.interfaces");
-        if (ejbProviderURL != null && ejbProviderURL.length() > 0
-                && !LOCAL.equalsIgnoreCase(ejbProviderURL)) {
-            env.put("java.naming.provider.url", ejbProviderURL);
-        }
+    private EJBHomeFactory() throws NamingException, IOException {
+        Properties env = new Properties();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        env.load(cl.getResourceAsStream(EJB_JNDI_PROPERTIES));
         ctx = new InitialContext(env);
     }
 

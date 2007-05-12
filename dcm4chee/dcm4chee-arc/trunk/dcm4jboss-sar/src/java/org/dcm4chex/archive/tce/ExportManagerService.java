@@ -307,14 +307,6 @@ public class ExportManagerService extends AbstractScuService implements
         return tmp;
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public final String getDispositionConfigFile() {
         return dispConfigFile.getPath();
     }

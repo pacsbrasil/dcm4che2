@@ -199,14 +199,6 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
         this.logXSLT = logXSLT;
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
         return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);

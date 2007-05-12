@@ -222,20 +222,12 @@ public class StgCmtScuScpService extends AbstractScpService implements
         this.queueName = queueName;
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
 
     public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
         this.fileSystemMgtName = fileSystemMgtName;
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     public final int getAcTimeout() {

@@ -50,7 +50,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -103,14 +102,6 @@ public class GPWLScpService extends AbstractScpService {
         super.sendNotification(notif);
     }
     
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }        
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public String getAcceptedSOPClasses() {
         return toString(cuidMap);
     }

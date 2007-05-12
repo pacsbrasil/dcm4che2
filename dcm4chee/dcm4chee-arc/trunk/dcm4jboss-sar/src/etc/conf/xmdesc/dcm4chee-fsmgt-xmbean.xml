@@ -542,17 +542,6 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>EJBProviderURL</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="LOCAL"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getPurgeStudyQueueName"
       setMethod="setPurgeStudyQueueName">
       <description>Used internally. Do NOT modify.

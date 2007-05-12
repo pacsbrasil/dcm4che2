@@ -78,8 +78,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfig;
-import org.jboss.system.server.ServerConfigLocator;
 import org.xml.sax.InputSource;
 
 /**
@@ -119,16 +117,6 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
     private Properties mppsConfig = new Properties();
 
     private static DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    private static ServerConfig config = ServerConfigLocator.locate();
-
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
 
     public final ObjectName getMppsScpServiceName() {
         return mppsScpServiceName;

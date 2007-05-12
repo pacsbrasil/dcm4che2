@@ -126,14 +126,6 @@ public class MWLFindScpService extends AbstractScpService implements
         this.checkMatchingKeySupported = checkMatchingKeySupport;
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public final ObjectName getMppsScpServiceName() {
         return mppsScpServiceName;
     }

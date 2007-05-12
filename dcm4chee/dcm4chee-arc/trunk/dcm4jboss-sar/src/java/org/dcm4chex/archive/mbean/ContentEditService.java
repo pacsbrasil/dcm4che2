@@ -119,14 +119,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     protected void stopService() throws Exception {
     }
     
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public ObjectName getAuditLoggerName() {
         return auditLogger.getAuditLoggerName();
     }

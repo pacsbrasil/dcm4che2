@@ -49,7 +49,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 
 public class StudyMgtScpService extends AbstractScpService {
 
@@ -79,14 +78,6 @@ public class StudyMgtScpService extends AbstractScpService {
 		stymgtScp.setIgnoreDeleteFailed( ignoreDeleteFailed );
 	}
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-	
 	protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.TianiStudyManagement, stymgtScp);
 	}

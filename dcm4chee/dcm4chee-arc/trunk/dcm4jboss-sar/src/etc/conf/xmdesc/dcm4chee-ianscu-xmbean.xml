@@ -216,13 +216,6 @@
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getEjbProviderURL"
-      setMethod="setEjbProviderURL">
-      <description>Used internally. Do not modify.</description>
-      <name>EJBProviderURL</name>
-      <type>java.lang.String</type>
-   </attribute>
    <attribute access="read-write" 
      getMethod="getQueueName"
      setMethod="setQueueName">
@@ -265,7 +258,7 @@
    <attribute access="read-write" 
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>

@@ -132,14 +132,6 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         }
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public final ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
     }

@@ -326,7 +326,7 @@
    <attribute access="read-write"
       getMethod="getPixQueryServiceName"
       setMethod="setPixQueryServiceName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
@@ -335,7 +335,7 @@
    <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>

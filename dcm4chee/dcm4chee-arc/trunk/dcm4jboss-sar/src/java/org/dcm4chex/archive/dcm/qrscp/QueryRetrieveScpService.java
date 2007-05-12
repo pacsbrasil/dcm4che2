@@ -229,14 +229,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return new FindScp(this, true);
     }
 	
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public final String getVirtualEnhancedCTConfigFile() {
         return virtualEnhancedCTConfigFile.getPath();
     }

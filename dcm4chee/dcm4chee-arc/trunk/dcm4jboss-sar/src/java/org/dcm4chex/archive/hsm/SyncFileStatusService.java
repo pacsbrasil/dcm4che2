@@ -105,14 +105,6 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public final String getFileSystem() {
         return fileSystem == null ? NONE : fileSystem;
     }

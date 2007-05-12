@@ -90,14 +90,6 @@ public class KeyObjectService extends ServiceMBeanSupport {
     protected void stopService() throws Exception {
     }
     
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-    
 	/**
 	 * @return Returns the compositSopClassUIDs.
 	 */

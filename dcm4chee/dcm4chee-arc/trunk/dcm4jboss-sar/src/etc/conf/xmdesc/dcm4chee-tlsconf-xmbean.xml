@@ -101,7 +101,7 @@
    <attribute access="read-write"
       getMethod="getAuditLoggerName"
       setMethod="setAuditLoggerName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>

@@ -98,7 +98,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
@@ -230,14 +229,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     public final void setJmsServiceName(ObjectName jmsServiceName) {
         jmsDelegate.setJmsServiceName(jmsServiceName);
-    }
-
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     public ObjectName getSchedulerServiceName() {

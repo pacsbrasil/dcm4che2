@@ -326,14 +326,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setIssuerOfPatientIDRules(rules);
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
     }

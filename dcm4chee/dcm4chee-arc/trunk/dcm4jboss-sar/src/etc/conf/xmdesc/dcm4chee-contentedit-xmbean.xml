@@ -110,20 +110,10 @@
       </descriptors>
    </attribute>
 
-   <attribute access="read-write" getMethod="getEjbProviderURL" setMethod="setEjbProviderURL">
-      <description>Identifies JNDI (e.g: jnp://hostname:1099) with EJBs.
-      "LOCAL", if EJBs are deployed in same JBoss instance.
-      </description>
-      <name>EjbProviderURL</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="LOCAL"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>
@@ -131,7 +121,7 @@
    <attribute access="read-write"
       getMethod="getHL7SendServiceName"
       setMethod="setHL7SendServiceName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>HL7SendServiceName</name>
       <type>javax.management.ObjectName</type>
@@ -139,7 +129,7 @@
    <attribute access="read-write"
       getMethod="getStudyMgtScuServiceName"
       setMethod="setStudyMgtScuServiceName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>StudyMgtScuServiceName</name>
       <type>javax.management.ObjectName</type>
@@ -147,7 +137,7 @@
    <attribute access="read-write"
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
@@ -155,7 +145,7 @@
    <attribute access="read-write"
       getMethod="getMppsScpServiceName"
       setMethod="setMppsScpServiceName">
-      <description>Used internally - do NOT modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>

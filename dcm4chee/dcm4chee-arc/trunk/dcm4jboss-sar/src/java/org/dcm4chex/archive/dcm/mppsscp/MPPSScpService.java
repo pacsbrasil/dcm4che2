@@ -94,14 +94,6 @@ public class MPPSScpService extends AbstractScpService {
     
     private MPPSScp mppsScp = new MPPSScp(this);
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }        
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.ModalityPerformedProcedureStep, mppsScp);
     }

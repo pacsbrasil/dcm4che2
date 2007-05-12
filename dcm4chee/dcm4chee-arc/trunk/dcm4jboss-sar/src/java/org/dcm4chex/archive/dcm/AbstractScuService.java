@@ -109,10 +109,6 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         return tlsConfig.getTLSConfigName();
     }
 
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
     public final int getReceiveBufferSize() {
         return tlsConfig.getReceiveBufferSize();
     }
@@ -121,10 +117,6 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         tlsConfig.setReceiveBufferSize(size);
     }
 
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
-    }
-    
     public final void setTLSConfigName(ObjectName tlsConfigName) {
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
