@@ -169,7 +169,7 @@
 							<xsl:for-each select="aets/item">
 								<xsl:sort data-type="text" order="ascending" select="title"/>
 								<option>
-									<xsl:if test="destination = title">
+									<xsl:if test="/model/destination = title">
 										<xsl:attribute name="selected"/>
 									</xsl:if>
 									<xsl:value-of select="title"/>
