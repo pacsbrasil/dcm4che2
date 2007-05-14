@@ -62,7 +62,7 @@ public class SeriesViewed {
 	
 	public void setSeriesUID(String uid) {
 		if( uid==null || uid.length()==0 ) return;
-		log.info("Series viewed set to #0", uid);
+		log.debug("Series viewed set to #0", uid);
 		this.seriesUID = uid;
 	}
 	

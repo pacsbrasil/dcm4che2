@@ -64,7 +64,6 @@ public class PatientViewed {
 	
 	public void setStudyUID(String uid) {
 		if( uid==null || uid.length()==0 ) return;
-		log.info("Study instance UID set to #0",uid);
 		this.studyUID = uid;
 	}
 	
@@ -77,7 +76,7 @@ public class PatientViewed {
 		if( pid==null || pid.length()==0 ) return;
 		if( patientIdentifier!=null && !patientIdentifier.equals(pid) ) studyUID=null;
 		this.patientIdentifier = pid;
-		log.info("The patient identifier is "+patientIdentifier);
+		log.debug("The patient identifier is "+patientIdentifier);
 	}
 	
 }
