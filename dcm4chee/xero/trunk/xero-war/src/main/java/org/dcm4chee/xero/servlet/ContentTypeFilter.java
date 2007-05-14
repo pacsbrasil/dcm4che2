@@ -48,7 +48,7 @@ class NoContentTypeResponse extends javax.servlet.http.HttpServletResponseWrappe
 
 	@Override
 	public void setContentType(String contentType) {
-		log.info("ContentTypeFilter over-riding content type of "+contentType);
+		log.debug("ContentTypeFilter over-riding content type of "+contentType);
 	}
 	
 }
