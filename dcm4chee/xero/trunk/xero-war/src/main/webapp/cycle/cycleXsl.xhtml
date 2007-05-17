@@ -41,7 +41,7 @@
     <title>Xero Cycle</title>
     <!-- <link href="/xero/stylesheet/date.css" rel="stylesheet" type="text/css" /> -->
 </head>
-<body style="border-style: none; margin-width: 0px; ">
+<body style="border-style: none;">
    <xsl:if test="/documents/debug='true'">
      Debug mode is on:<br />
      <!-- 
@@ -56,7 +56,7 @@
      </xsl:for-each>
       -->
    </xsl:if>
-<form method="get" action="cycleFrame.xml" target="mainFrame">
+<form method="get" action="cycleFrame.seam" target="mainFrame">
    <input>
      <xsl:attribute name="type">hidden</xsl:attribute>
      <xsl:attribute name="name">cid</xsl:attribute>
