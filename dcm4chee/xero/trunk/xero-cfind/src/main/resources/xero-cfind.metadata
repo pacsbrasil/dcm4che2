@@ -11,10 +11,6 @@ servletFilter.jaxbFilter.priority=999999
 servletFilter.searchCondition.priority=-1000
 servletFilter.source.priority=0
 
-#Define the example filter to include exampleSearch, and to be a servletFilter instance.
-exampleFilter.inherit=servletFilter
-exampleFilter.source=${org.dcm4chee.xero.search.example.ExampleSourceFilter}
-
 #Now, add a study filter that provides study searches. 
 studyFilter.inherit=servletFilter
 studyFilter.source=${org.dcm4chee.xero.search.study.StudySearch}
@@ -27,8 +23,18 @@ imageFilter.inherit=servletFilter
 imageFilter.source=${org.dcm4chee.xero.search.study.ImageSearch}
 imageFilter.searchCondition=${org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 imageFilter.emptyFilter.inherit=studyFilter.emptyFilter
+imageFilter.sortFilter=${org.dcm4chee.xero.search.study.SortImageFilter}
+imageFilter.sortFilter.priority=25
+imageFilter.cacheFilter=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+imageFilter.cacheFilter.priority=400
+imageFilter.pagedFilter=${org.dcm4chee.xero.search.study.PagedImageFilter}
+imageFilter.pagedFilter.priority=500
 
 seriesFilter.inherit=imageFilter
+seriesFilter.seriesSource=${org.dcm4chee.xero.search.study.SeriesSearch}
+seriesFilter.seriesSource.priority=-100000
 seriesFilter.singleImagePerSeriesFilter=${org.dcm4chee.xero.display.SingleImagePerSeriesFilter}
 seriesFilter.singleImagePerSeriesFilter.priority=15
 seriesFilter.emptyFilter.inherit=imageFilter.emptyFilter
+seriesFilter.sortFilter=${org.dcm4chee.xero.search.study.SortImageFilter}
+seriesFilter.sortFilter.priority=25

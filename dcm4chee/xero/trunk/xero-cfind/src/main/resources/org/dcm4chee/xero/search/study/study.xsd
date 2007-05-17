@@ -20,6 +20,8 @@
     <element name="image" type="tns:imageType" />
     
     <element name="gsps" type="tns:gspsType" />
+    
+    <element name="keyObject" type="tns:keyObjectType" />
 
     <complexType name="resultsType">
     	<sequence maxOccurs="unbounded" minOccurs="0">
@@ -74,6 +76,8 @@
     	<attribute name="Synthetic" type="boolean" default="false" />
     	<attribute name="SeriesDescription" type="string" />
     	<attribute name="Modality" type="string" />
+    	<!-- The actual number of objects that are available in the series to be viewed. -->
+    	<attribute name="Viewable" type="int" />
     	<anyAttribute />
     </complexType>
 
@@ -81,10 +85,12 @@
        <attribute name="SOPInstanceUID" type="tns:UID" />
        <attribute name="SOPClassUID" type="tns:UID" />
        <attribute name="InstanceNumber" type="int" />
+       <!-- Position is the absolute position within the series, 0 based without duplicates, from [0,viewable). -->
+       <attribute name="Position" type="int" />
 	</complexType>
 	    
 	<simpleType name="UID">
-	   <!-- TODO - make it more restricted about the format. -->
+	   <!-- TODO make it more restricted about the format. -->
 	   <restriction base="string" />
 	</simpleType>
 	
@@ -101,6 +107,37 @@
           <extension base="tns:dicomObjectType" />
        </complexContent>
     </complexType>
+    
+    <complexType name="reportType">
+    	<annotation>
+    		<documentation>
+    			Reports are user or automatically dictated information about the results of the study.
+    		</documentation>
+    	</annotation>
+      <complexContent>
+        <extension base="tns:dicomObjectType">
+           <sequence maxOccurs="unbounded" minOccurs="0">
+              <element ref="tns:study" />
+           </sequence>
+           <attribute name="conceptCode" type="string" />
+           <attribute name="conceptMeaning" type="string" />
+           <attribute name="completion" type="string" />
+           <attribute name="verification" type="string" />
+        </extension>
+      </complexContent>
+    </complexType>
+    
+    <complexType name="keyObjectType">
+    	<annotation>
+    		<documentation>
+    			Key objects are a named (by code meaning) list of images to display.
+    		</documentation>
+    	</annotation>
+      <complexContent>
+        <extension base="tns:reportType">
+        </extension>
+      </complexContent>
+    </complexType>
 
     <complexType name="imageType">
     	<annotation>
@@ -110,8 +147,9 @@
     	</annotation>
     	<complexContent>
     		<extension base="tns:dicomObjectType">
-    			<attribute name="Rows" type="int"></attribute>
-    			<attribute name="Columns" type="int"></attribute>
+    			<attribute name="Rows" type="int" />
+    			<attribute name="Columns" type="int" />
+    			<attribute name="Frame" type="int" />
     		</extension>
     	</complexContent>
     </complexType>

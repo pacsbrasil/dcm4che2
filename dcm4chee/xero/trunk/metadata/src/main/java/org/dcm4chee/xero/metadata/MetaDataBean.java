@@ -44,7 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.dcm4chee.xero.metadata.list.ValueList;
 
@@ -56,7 +58,7 @@ import org.dcm4chee.xero.metadata.list.ValueList;
  * @author bwallace
  */
 public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
-	static Logger log = Logger.getLogger(MetaDataBean.class.getName());
+	static Logger log = LoggerFactory.getLogger(MetaDataBean.class);
 
 	/**
 	 * This object had better actually not be serialized however, it isn't clear
@@ -123,7 +125,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 			MetaDataBean valueProviderMeta = get("valueProvider");
 
 			if( valueProviderMeta!=null ) {
-				log.finer("Updating value provider.");
+				log.debug("Updating value provider.");
 				// this could end up updating with the same values several times, but it is hard to 
 				// know whether that will be the case or not, and meta-data should be static.
 				ValueList<ValueProvider> updatedValueProviders = new ValueList<ValueProvider>(ValueProvider.class,baseList);
@@ -134,17 +136,17 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 			
 			// There are no children, so just return;
 			if( metaProviderMeta==null ) {
-				log.fine("No meta data providers configured.");
+				log.debug("No meta data providers configured.");
 				return;
 			}
 
-			log.fine("Trying to add meta-data providers.");
+			log.debug("Trying to add meta-data providers.");
 			ValueList<MetaDataProvider> newProviders = new ValueList<MetaDataProvider>(MetaDataProvider.class);
 			newProviders.add(propProvider);
 			newProviders.setMetaData(metaProviderMeta);
 			newProviders.add(InheritProvider.getInheritProvider());
 			boolean finalMetaDataProvider = (newProviders.size() <= metaDataProviders.size());
-			log.fine("Found "+(newProviders.size() - metaDataProviders.size()) +" new meta-data providers.");
+			log.debug("Found "+(newProviders.size() - metaDataProviders.size()) +" new meta-data providers.");
 			// Use the most recent providers so that they reference the right meta-data. 
 			metaDataProviders.clear();
 			metaDataProviders.addAll(newProviders);
@@ -240,10 +242,10 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 				if (value instanceof String) {
 					value = ((String) value).trim();
 				}
-				log.fine("Found a matching value for " + key + " on path "
+				log.debug("Found a matching value for " + key + " on path "
 						+ relativePath + " value " + value);
 				if (this.instanceValue != null) {
-					log.fine("Second instance of key:" + key);
+					log.debug("Second instance of key:" + key);
 					continue;
 				}
 				instanceValue = value;
@@ -254,7 +256,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 					nextDot = key.length();
 				String newChildName = key.substring(pathLen + 1, nextDot);
 				if (newChildName.isEmpty()) {
-					log.warning("Child meta-data name is empty:" + key);
+					log.warn("Child meta-data name is empty:" + key);
 					continue;
 				}
 				// Only create the children once we know there is something
@@ -265,7 +267,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 				if (child != null) {
 					continue;
 				}
-				log.fine("From mdb path " + getPath() + " creating child element "
+				log.debug("From mdb path " + getPath() + " creating child element "
 						+ newChildName);
 				String childPath = path+(path.length()>0 ? "." : "") + newChildName;
 				child = createChild(childPath);
@@ -293,13 +295,20 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 				if( additionalMetaDataProvider!=null ) {
 					// The relative path to this object is the root instance itself.
 					// This will only add children, it won't directly add values.
-					log.fine("Adding children meta-data providers to "+getPath());
+					log.debug("Adding children meta-data providers to "+getPath());
 					addMetaDataFromProvider(additionalMetaDataProvider,"");
 				}
 				// We might need to inject this after the extra meta-data is
 				// read in case it reads meta-data itself.
 				if( instanceValue instanceof MetaDataUser ) ((MetaDataUser) instanceValue).setMetaData(this);
 				return;
+			}
+		}
+		// Provide a warning for $... when it isn't found.
+		if( instanceValue !=null && (instanceValue instanceof String) ) {
+			String sInstanceValue = (String) instanceValue;
+			if( sInstanceValue.trim().startsWith("$") ) {
+				log.warn("Meta-data starts with $ but no value provider converted this to a value:"+sInstanceValue+" at node "+getPath());
 			}
 		}
 	}

@@ -7,33 +7,64 @@
    xmlns:md="http://www.dcm4che.org/xero/metadata/display"
    m:includeXsl="../image/imageToolbarXsl.xsl"
    m:body="imageToolbar"
+   m:body.priority="10000"
    xmlns:c="http://java.sun.com/jstl/core"
-   md:prev.toolbar="imageToolbarPrevious" md:prev.toolbar.priority="0"
-   md:next.toolbar="imageToolbarNext" md:next.toolbar.priority="1000"
+   md:prev.toolbar="imageToolbarPrevious" md:prev.toolbar.priority="1000"
+   md:next.toolbar="imageToolbarNext" md:next.toolbar.priority="-1000"
+   md:ajaxXslt.script="../js/AjaxXslt.js"
+   md:ajaxXslt.script.priority="980"
+   md:sarissa.script="../js/sarissa.js"
+   md:sarissa.script.priority="1100"
+   m:script="imageToolbarScript.js"
+   m:script.priority="900"
 >
 
-<xsl:template name="imageToolbarPrevious">
-  <xsl:if test="$imagePrevUID!=''">
+<xsl:template name="wlToolbar">
+  <xsl:if test="/documents/mode!='windowLevel'">
   <a>
+    <xsl:attribute name="id">windowLevel</xsl:attribute>
     <xsl:attribute name="style">float: left;</xsl:attribute>
-  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imagePrevUID" /></xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;mode=windowLevel</xsl:attribute>
+  	<span> Window Level </span>
+  </a>
+  </xsl:if>
+  <xsl:if test="/documents/mode='windowLevel'">
+  <!-- A hidden ref to use to find the href for windowLevel completion. -->
+  <a>
+    <xsl:attribute name="id">windowLevel</xsl:attribute>
+    <xsl:attribute name="style">display: none;</xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" /></xsl:attribute>
+  	<span> Window Level </span>
+  </a>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template name="imageToolbarPrevious">
+  <xsl:if test="$imagePosition > 0">
+  <a>
+    <xsl:attribute name="id">prev</xsl:attribute>
+    <xsl:attribute name="style">float: left;</xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="-1+$imagePosition" /></xsl:attribute>
+  	<xsl:attribute name="onclick">return displayXslt.action("prev");</xsl:attribute>
   	&lt;Prev<span> </span>
   </a>
   </xsl:if>
 </xsl:template>
 
 <xsl:template name="imageToolbarNext">
-  <xsl:if test="$imageNextUID!=''">
+  <xsl:if test="$seriesViewable > 1+$imagePosition">
   <a>
+    <xsl:attribute name="id">next</xsl:attribute>
     <xsl:attribute name="style">float: right;</xsl:attribute>
-  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imageNextUID" /></xsl:attribute>
+  	<xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="1+$imagePosition" /></xsl:attribute>
+  	<xsl:attribute name="onclick">return displayXslt.action("next")</xsl:attribute>
   	&gt;Next
   </a>
   </xsl:if>
 </xsl:template>
 
 <xsl:template name="imageToolbar">
-<div style="position: absolute; top:0; left:0; height: 50px;">
+<div id="imageToolbar" style="position: absolute; top:0; left:0; height: 35px; width: 512px; color: white; ">
   <span>
     <c:forEach var="tool" items="#{x:sorted(PageConfig.display,'toolbar')}">
       <c:if test="#{tool.toolbar!=null}">

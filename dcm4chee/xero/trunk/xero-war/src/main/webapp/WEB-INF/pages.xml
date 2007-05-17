@@ -48,22 +48,22 @@
     <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
     <param name="studyUID" value="#{PatientViewed.studyUID}" />
     <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="objectUID" value="#{ImageViewed.objectUID}" />
+    <param name="Position" value="#{ImageViewed.position}" />
   </page>
   
   <page view-id="/study/displayFrame.xhtml"> 
     <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
     <param name="studyUID" value="#{PatientViewed.studyUID}" />
     <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="objectUID" value="#{ImageViewed.objectUID}" />
+    <param name="position" value="#{ImageViewed.position}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/study/study.xhtml">
     <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
     <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="SeriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="objectUID" value="#{ImageViewed.objectUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="position" value="#{ImageViewed.position}" />
     <begin-conversation join="true" />
   </page>
   
@@ -73,19 +73,22 @@
     <begin-conversation join="true" />
   </page>
   
+  <page view-id="/js/js.xhtml">
+    <param name="jsEnabled" value="#{JavaScriptModel.javaScriptEnabled}" />
+  </page>
+  
   <page view-id="/image/image.xhtml">
     <param name="studyUID" value="#{PatientViewed.studyUID}" />
     <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="objectUID" value="#{ImageViewed.objectUID}" />
+    <param name="position" value="#{ImageViewed.position}" />
     <param name="cine" value="#{ImageEvent.cine}" />
-    <begin-conversation join="true" />
-  </page>
-  
-  <page view-id="/wl/dynamicWL.xhtml">
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="objectUID" value="#{ImageViewed.objectUID}" />
-    <param name="cine" value="#{ImageEvent.cine}" />
+    <param name="mode" value="#{DisplayMode.mode}" />
+    <param name="region" value="#{ZoomPanModel.region}" />
+    <param name="zoom" value="#{ZoomPanModel.zoom}" />
+    <param name="panX" value="#{ZoomPanModel.panX}" />
+    <param name="panY" value="#{ZoomPanModel.panY}" />
+    <param name="windowWidth" value="#{WindowLevelModel.windowWidth}" />
+    <param name="windowCenter" value="#{WindowLevelModel.windowCenter}" />
     <begin-conversation join="true" />
   </page>
   

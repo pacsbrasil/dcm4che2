@@ -65,4 +65,13 @@ public class ELFunctions {
 	   if( obj==null ) return "null";
 	   return obj.getClass().getName();
    }
+   
+   /** 
+    * Get the meta-data value, to allow getting methods off the value.
+    * @param metaDataBean to get the value object form.
+    * @return value object from the meta-data bean (or null if none)
+    */
+   public static Object value(MetaDataBean mdb) {
+	   return mdb.getValue();
+   }
 }

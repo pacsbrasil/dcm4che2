@@ -49,6 +49,12 @@
    </function> 
   
    <function>
+     <function-name>value</function-name>
+     <function-class>org.dcm4chee.xero.metadata.seam.ELFunctions</function-class>
+     <function-signature>java.lang.Object value(org.dcm4chee.xero.metadata.MetaDataBean)</function-signature>
+   </function> 
+  
+   <function>
      <function-name>typeof</function-name>
      <function-class>org.dcm4chee.xero.metadata.seam.ELFunctions</function-class>
      <function-signature>java.util.String typeof(java.lang.Object)</function-signature>

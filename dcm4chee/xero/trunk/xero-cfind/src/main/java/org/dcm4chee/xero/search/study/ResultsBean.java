@@ -47,6 +47,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSP;
+import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
 /**
@@ -56,7 +57,7 @@ import org.dcm4chee.xero.search.ResultFromDicom;
  * 
  */
 @XmlRootElement(name="results")
-public class ResultsBean extends ResultsType implements ResultFromDicom {
+public class ResultsBean extends ResultsType implements ResultFromDicom, CacheItem {
 
 	@XmlTransient
 	private Map<PatientIdentifier, PatientBean> patients = new HashMap<PatientIdentifier, PatientBean>();
@@ -76,6 +77,15 @@ public class ResultsBean extends ResultsType implements ResultFromDicom {
 	 */
 	public ResultsBean(DimseRSP rsp) throws IOException, InterruptedException {
 		addResults(rsp);
+	}
+
+	/**
+	 * Create a copy of the results - probably for later modification.
+	 * Shallow copy of children.
+	 * @param results
+	 */
+	public ResultsBean(ResultsType results) {
+	  getPatient().addAll(results.getPatient());	
 	}
 
 	/* (non-Javadoc)
@@ -104,5 +114,15 @@ public class ResultsBean extends ResultsType implements ResultFromDicom {
 			pb.setPatientIdentifier(pi.toString());
 			getPatient().add(pb);
 		}
+	}
+
+	/** Figure out how many bytes this consumes */
+	public long getSize() {
+		// Some amount of space for this item
+		long ret = 128;
+		for(PatientType patient : getPatient()) {
+			ret += ((CacheItem) patient).getSize();
+		}
+		return ret;
 	}
 }

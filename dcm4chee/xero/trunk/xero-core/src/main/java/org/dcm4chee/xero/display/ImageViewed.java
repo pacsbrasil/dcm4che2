@@ -51,17 +51,35 @@ import org.jboss.seam.ScopeType;
 @Scope(ScopeType.CONVERSATION)
 public class ImageViewed {
 
-	String objectUID;
+	public static final int DEFAULT_IMAGE_COUNT = 32;
+	int position = 0;
 	
-	/** Get the sop instance uid being viewed. */
-	public String getObjectUID() {
-		return objectUID;
+	/** Get the position to view */
+	public int getPosition() {
+		return position;
 	}
 	
-	public void setObjectUID(String uid) {
-		if( uid==null || uid.length()==0 ) return;
-		System.out.println("Set object UID to "+uid);
-		this.objectUID = uid;
+	/** Set the image position (ie p'th position) to view.
+	 * 
+	 * @param 1st position to view.
+	 */
+	public void setPosition(int position) {
+		this.position = position;
 	}
 	
+	/** Returns a computed value that re-uses the same positional information
+	 * many times for the meta-data calls, to avoid having too many calls.
+	 */
+	public int getComputedPosition() {
+		int cp = getPosition() - (getPosition() % getCount());
+		return cp;
+	}
+	
+	/** 
+	 * Return the number of images for which to retrieve meta-data
+	 * @return
+	 */
+	public int getCount() {
+		return DEFAULT_IMAGE_COUNT;
+	}
 }

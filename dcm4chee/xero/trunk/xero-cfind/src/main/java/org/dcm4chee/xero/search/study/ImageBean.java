@@ -46,17 +46,27 @@ import org.dcm4che2.data.Tag;
 public class ImageBean extends ImageType implements Image
 {
 
+	/** Create an empty image bean object.
+	 */
 	public ImageBean() {};
 	
+	/** Create an image bean from the given dicom data 
+	 * @param data to use for the DICOM information
+	 */
 	public ImageBean(DicomObject data) {
 		initAttributes(data);
 	}
 
-	/** Initialize the image level attributes */
+	/** Initialize the image level attributes by copying the DicomObject's
+	 * image level data for Columns, Rows, SOP Instance UID and Instance
+	 * Number.
+	 * @param data to copy image level data into this from.
+	 */
 	protected void initAttributes(DicomObject data) {
 		setColumns(data.getInt(Tag.Columns));
 		setRows(data.getInt(Tag.Rows));
-		setSOPClassUID(data.getString(Tag.SOPClassUID));
+		//setSOPClassUID(data.getString(Tag.SOPClassUID));
 		setSOPInstanceUID(data.getString(Tag.SOPInstanceUID));
+		setInstanceNumber(data.getInt(Tag.InstanceNumber));
 	}
 }

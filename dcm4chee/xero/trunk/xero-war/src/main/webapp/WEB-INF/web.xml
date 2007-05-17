@@ -12,7 +12,7 @@
    <context-param>
      <param-name>com.sun.faces.validateXml</param-name>
      <param-value>true</param-value>
-     <description>Validate teh faces-config.xml file against the DTD</description>
+     <description>Validate the faces-config.xml file against the DTD</description>
    </context-param>
    
    <!-- Making this explicit removes the error message on loading the taglibs. -->
@@ -81,7 +81,7 @@
       <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
       <init-param>
 	      <param-name>maxAge</param-name>
-    	  <param-value>3</param-value>
+    	  <param-value>9</param-value>
       </init-param>
    </filter>
    
@@ -90,7 +90,7 @@
       <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
       <init-param>
 	      <param-name>contentType</param-name>
-    	  <param-value>application/xml</param-value>
+    	  <param-value>text/xml</param-value>
       </init-param>
    </filter>
 
@@ -110,7 +110,7 @@
    
    <filter-mapping>
       <filter-name>ShortMaxAgeFilter</filter-name>
-      <url-pattern>/image/image.seam</url-pattern>
+      <url-pattern>*.seam</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
@@ -122,22 +122,16 @@
       <filter-name>Seam Exception Filter</filter-name>
       <url-pattern>*.seam</url-pattern>
    </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>Seam Redirect Filter</filter-name>
-      <url-pattern>*.xml</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Seam Exception Filter</filter-name>
-      <url-pattern>*.xml</url-pattern>
-   </filter-mapping>
-   
 
    <!-- XSL pages need to take at least a short while to time out. -->
    <filter-mapping>
       <filter-name>MaxAgeFilter</filter-name>
       <url-pattern>*.xsl</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>MaxAgeFilter</filter-name>
+      <url-pattern>*.xml</url-pattern>
    </filter-mapping>
 
    <!-- WADO servlet to use for testing window levelling performance. -->
@@ -179,31 +173,6 @@
       <url-pattern>*.xsl</url-pattern>
    </filter-mapping>
    
-
-   <servlet-mapping>
-      <servlet-name>Faces Servlet</servlet-name>
-      <url-pattern>*.xml</url-pattern>
-   </servlet-mapping>
-   
-   <!-- Data page mappings - XML files and the like -->
-   <servlet>
-      <servlet-name>Example Xml Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
-      <init-param>
-	      <param-name>metaData</param-name>
-    	  <param-value>/xero-cfind.metadata</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>filter</param-name>
-    	  <param-value>exampleFilter</param-value>
-      </init-param>
-      <load-on-startup>1</load-on-startup>      
-   </servlet>
-   <servlet-mapping>
-      <servlet-name>Example Xml Servlet</servlet-name>
-      <url-pattern>/example/example.xml</url-pattern>
-   </servlet-mapping>
-
    <servlet>
       <servlet-name>Study Xml Servlet</servlet-name>
       <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>

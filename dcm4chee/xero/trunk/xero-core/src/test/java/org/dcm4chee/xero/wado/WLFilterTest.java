@@ -46,6 +46,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterList;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.testng.annotations.Test;
 
 /**
@@ -66,6 +67,7 @@ public class WLFilterTest {
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("windowCenter", "0.5");
 		map.put("windowWidth", "1.0");
+		map.put(MemoryCacheFilter.KEY_NAME, "seriesUID=1&studyUID=1&objectUID=1&windowCenter=0.5&windowWidth=1.0");
 		assert mdb!=null;
 		MetaDataBean filtMdb = mdb.get("wlfilter");
 		assert filtMdb!=null;

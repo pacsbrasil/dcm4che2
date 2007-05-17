@@ -48,6 +48,7 @@ public class ImageSearchConditionParser extends SearchConditionParser
 	static {
 		searchColumns.addAll(TableColumn.generateSearchableColumnsForClass(Series.class));
 		searchColumns.addAll(TableColumn.generateSearchableColumnsForClass(Study.class));
+		searchColumns.addAll(TableColumn.generateSearchableColumnsForClass(Patient.class));
 	}
 	
 	public ImageSearchConditionParser()

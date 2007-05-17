@@ -42,7 +42,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -62,6 +61,8 @@ import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.ResultsBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a finder for DICOM results.  By default, it looks for items from clazz
@@ -72,7 +73,9 @@ import org.dcm4chee.xero.search.study.ResultsBean;
  */
 public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 {
-	static Logger log = Logger.getLogger(DicomCFindFilter.class.getName());
+	public static final String EXTEND_RESULTS_KEY = "EXTEND_RESULTS";
+
+	static Logger log = LoggerFactory.getLogger(DicomCFindFilter.class);
 	
     private Executor executor = new NewThreadExecutor("XERO_QUERY");
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -107,7 +110,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 			hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
 			log.info("Using DICOM host "+hostname);
 		} catch (UnknownHostException e) {
-			log.warning("Unable to get local hostname:"+e);
+			log.warn("Unable to get local hostname:"+e);
 		}
 		conn.setHostname(hostname);
 		
@@ -242,7 +245,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     {
         TransferCapability tc;
         for (int i = 0; i < cuid.length; i++) {
-        	log.finer("Looking for transfer capability "+cuid[i]);
+        	log.debug("Looking for transfer capability "+cuid[i]);
             tc = assoc.getTransferCapabilityAsSCU(cuid[i]);
             if (tc != null)
                 return tc;
@@ -295,11 +298,12 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	}
 
 	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
-		ResultsBean resultFromDicom = new ResultsBean();
+		ResultsBean resultFromDicom = (ResultsBean) params.get(EXTEND_RESULTS_KEY);
+		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
 		SearchCriteria searchCondition = (SearchCriteria) 
 			filterItem.callNamedFilter("searchCondition", params);
 		if( searchCondition==null ) {
-			log.warning("No search conditions found for parameters "+params);
+			log.warn("No search conditions found for parameters "+params);
 			return null;
 		}
 		find(searchCondition, resultFromDicom);

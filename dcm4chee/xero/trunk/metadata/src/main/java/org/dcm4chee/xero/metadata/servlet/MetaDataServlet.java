@@ -51,6 +51,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,35 +89,45 @@ public class MetaDataServlet extends HttpServlet {
 
 	/**
 	 * The time between refreshes of filtered response - this is set to an hour
-	 * as it isn't expected that new data arrives all that often.
-	 * This does NOT affect a user hitting refresh in the browser - that will
-	 * directly reload the data.
+	 * as it isn't expected that new data arrives all that often. This does NOT
+	 * affect a user hitting refresh in the browser - that will directly reload
+	 * the data.
 	 */
 	private long modifiedTimeAllowed = 60 * 60 * 1000; // 1 hour default.
-														// Refresh screen
-														// refreshes list.
+
+	// Refresh screen
+	// refreshes list.
 
 	/**
 	 * Filter the items to get a return response by calling the first filter in
 	 * the list.
 	 * 
-	 * @param request used to determine the parameters for the filter
-	 * @param response used to write the filtered data.
+	 * @param request
+	 *            used to determine the parameters for the filter
+	 * @param response
+	 *            used to write the filtered data.
 	 * @throws ServletException
 	 * @throws IOException
-	 * Sets SC_NO_CONTENT on a null return element.
+	 *             Sets SC_NO_CONTENT on a null return element.
 	 */
 	protected void doFilter(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		Map<String, Object> params = computeParameterMap(request);
-		ServletResponseItem sri = filter.filter(filterItem, params);
-		response.setCharacterEncoding("UTF-8");
-		if (sri == null) {
-			response.sendError(HttpServletResponse.SC_NO_CONTENT,
-					"No content found for this request.");
-			return;
+		try {
+			Map<String, Object> params = computeParameterMap(request);
+			ServletResponseItem sri = filter.filter(filterItem, params);
+			response.setCharacterEncoding("UTF-8");
+			if (sri == null) {
+				response.sendError(HttpServletResponse.SC_NO_CONTENT,
+						"No content found for this request.");
+				return;
+			}
+			sri.writeResponse(request, response);
+		} catch (Exception e) {
+			log.error("Caught error " + e + " for URI "
+					+ request.getRequestURI() + " with parameters "
+					+ request.getQueryString());
+			e.printStackTrace();
 		}
-		sri.writeResponse(request, response);
 	}
 
 	/**
@@ -125,9 +136,11 @@ public class MetaDataServlet extends HttpServlet {
 	 * only a single item is expected - if the type is wrong, then it is usually
 	 * an error, so it is ok to just throw an exception.
 	 * 
-	 * @param request contains the parameter map to convert to a simple map.
-	 * @return A Map to String where only 1 value is present, and to String[] for multiple values.
-	 * This break down makes the most sense in the usual case where there is only 1 possible value.
+	 * @param request
+	 *            contains the parameter map to convert to a simple map.
+	 * @return A Map to String where only 1 value is present, and to String[]
+	 *         for multiple values. This break down makes the most sense in the
+	 *         usual case where there is only 1 possible value.
 	 */
 	@SuppressWarnings("unchecked")
 	protected Map<String, Object> computeParameterMap(HttpServletRequest request) {
@@ -141,6 +154,7 @@ public class MetaDataServlet extends HttpServlet {
 			else
 				ret.put(me.getKey(), me.getValue());
 		}
+		ret.put(MemoryCacheFilter.KEY_NAME, request.getQueryString());
 		return ret;
 	}
 
@@ -156,7 +170,7 @@ public class MetaDataServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		String name = this.getInitParameter("metaData");
-		log.debug("Loading meta-data from "+name+" for servlet.");
+		log.debug("Loading meta-data from " + name + " for servlet.");
 		MetaDataBean root = StaticMetaData.getMetaData(name);
 		String filterName = getInitParameter("filter");
 		if (filterName == null)
@@ -170,16 +184,26 @@ public class MetaDataServlet extends HttpServlet {
 		filterItem = new FilterItem(metaData);
 	}
 
-	/** Get requests can return last modified information.
-	 * so add the cache control headings and then proceed with a doFilter.
+	/**
+	 * Get requests can return last modified information. so add the cache
+	 * control headings and then proceed with a doFilter.
 	 */
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		resp.addHeader("Cache-Control", "max-age="
-				+ Long.toString(getModifiedTimeAllowed() / 1000));
-		resp.addHeader("Cache-Control", "private");
-		doFilter(req, resp);
+		long modifiedTime = getModifiedTimeAllowed() / 1000;
+		long startTime = System.currentTimeMillis();
+		try {
+			resp.setHeader("Cache-Control", "max-age="
+					+ Long.toString(modifiedTime));
+			// Seems to break IE resp.addHeader("Cache-Control", "private");
+			doFilter(req, resp);
+		} finally {
+			log.info("MetaData Servlet with expiry " + modifiedTime
+					+ " s called for " + req.getRequestURI()
+					+ " with parameters " + req.getQueryString() + " took "
+					+ (System.currentTimeMillis() - startTime) + " ms");
+		}
 	}
 
 	/** Returns the amount of time allowed for modifications. */
@@ -187,12 +211,15 @@ public class MetaDataServlet extends HttpServlet {
 		return modifiedTimeAllowed;
 	}
 
-	/** Post responses always return new data - so just call doFilter directly.
+	/**
+	 * Post responses always return new data - so just call doFilter directly.
 	 */
 	@Override
-	protected void doPost(HttpServletRequest arg0, HttpServletResponse arg1)
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		doFilter(arg0, arg1);
+		log.info("MetaData Servlet as post for " + req.getRequestURI()
+				+ " with parameters " + req.getQueryString());
+		doFilter(req, resp);
 	}
 
 }

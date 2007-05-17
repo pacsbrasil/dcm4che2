@@ -8,8 +8,13 @@
    m:xsl="imageXsl.xsl"
    m:docName="/documents/images"
    m:Display.script="ImageEvent.js"
-   m:Display.script.priority="100"
+   m:Display.script.priority="950"
    m:WL.script="windowLevel.js"
+   m:WL.script.priority="50"
+   m:WL.toolbar="wlToolbar"
+   m:Event.script="../js/Events.js"
+   m:Event.script.priority="1000"
+   m:jsEnabled.inherit="jsEnabled"
 >
 
 <ui:fragment>
@@ -24,15 +29,35 @@
      imageUID=<xsl:value-of select="$imageUID" /> <br />
      imagePrevUID=<xsl:value-of select="$imagePrevUID" /><br />
      imageNextUID=<xsl:value-of select="$imageNextUID" /><br />
+     imagePosition=<xsl:value-of select="$imagePosition" /><br />
+     seriesViewable=<xsl:value-of select="$seriesViewable" /><br />
+     <xsl:for-each select="$imageCombine">
+        &lt;<xsl:value-of select="name()"/> <br />
+        <xsl:for-each select="./@*">
+           @<xsl:value-of select="name()"/>=<xsl:value-of select="." /><br />
+        </xsl:for-each>
+        <xsl:value-of select="." /> ... / > <br />
+     </xsl:for-each>
+     <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+     Rows[1]=<xsl:value-of select="($i0 | $a1 | $imageNode/@*)[name()='Rows'][1]" /><br />
+     Rows[2]=<xsl:value-of select="($i0 | $a1 | $imageNode/@*)[name()='Rows'][2]" /><br />
+     Rows[3]=<xsl:value-of select="($i0 | $a1 | $imageNode/@*)[name()='Rows'][3]" /><br />
+     RowsPri=<xsl:value-of select="(($pri/@Rows)[last()] | $imageNode/@Rows)[1]" /><br />
   </xsl:if>
 </x:template>
 
-<x:template name="displayScriptVars" m:scriptVars.script="displayScriptVars" m:scriptVars.script.priority="110">
+<x:template name="displayScriptVars" m:scriptVars.script="displayScriptVars" m:scriptVars.script.priority="-10">
     <xsl:element name="script">
+      <xsl:attribute name="id">displayScriptVars</xsl:attribute>
       <xsl:attribute name="type">text/ecmascript</xsl:attribute>
 var studyUID="<xsl:value-of select="$studyUID" />";
 var seriesUID="<xsl:value-of select="$seriesUID" />";
 var imageUID="<xsl:value-of select="$imageUID" />";
+var pageDebug=false;
+<xsl:if test="/documents/debug='true'">
+pageDebug=true;
+</xsl:if>
+var displayMode="<xsl:value-of select="/documents/mode" />";
     </xsl:element>
 </x:template>
   
@@ -42,12 +67,14 @@ var imageUID="<xsl:value-of select="$imageUID" />";
     <title>Xero Image Frame</title>
     <x:callTemplates from="#{pageConfig}" mode="script" />
   </head>
-  <body id="body" style="background: black; color: white;" onload="init()"
-        onmouseup="imageHandler.mouseUp(event)"
-        onmouseout="imageHandler.mouseUp(event)"
-        onmousemove="imageHandler.mouseMove(event)"
+  <body style="background: black; color: white;" 
+     onmouseup="imageHandler.mouseUp(event)"
+     onmouseout="imageHandler.mouseOut(event)"
+     onmousemove="imageHandler.mouseMove(event)"
   >
+  <div id="body">
     <x:callTemplates from="#{pageConfig}" mode="body" />
+  </div>
   </body>
 </html>
 </x:template>

@@ -42,21 +42,27 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.ResultsBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Detects that there is an empty search condition and returns an empty result set. */
 public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
+	private static final Logger log = LoggerFactory.getLogger(EmptyQueryParameterFilter.class);
+	
     public EmptyQueryParameterFilter() {
-    	System.err.println("Instantiated an empty query parameter filter.");
+    	log.info("Instantiated an empty query parameter filter.");
     }
 	/** Checks the search conditions to ensure there is something present. */
 	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
-		System.out.println("Filtering on empty query parameters.");
 		ResultsBean resultFromDicom = new ResultsBean();
 		SearchCriteria searchCriteria = (SearchCriteria) 
 			filterItem.callNamedFilter("searchCondition", params);
 		if( searchCriteria==null ) return resultFromDicom;
-		if( searchCriteria.getEmpty() ) return resultFromDicom;
-		System.out.println("Results were not empty with "+searchCriteria.getAttributeByName().size() + " items found.");
+		if( searchCriteria.getEmpty() ) {
+			log.info("Empty query results.");
+			return resultFromDicom;
+		}
+		log.info("Results were not empty with "+searchCriteria.getAttributeByName().size() + " items found.");
 		return (ResultFromDicom) filterItem.callNextFilter(params);
 	}
 }

@@ -121,14 +121,17 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 	 * This class removes the provided strings from the query string, updating
 	 * the map in place.
 	 */
-	public static String removeFromQuery(Map<String, Object> map,
+	public static Object[] removeFromQuery(Map<String, Object> map,
 			String... removals) {
+		Object[] ret = new Object[removals.length];
 		String queryStr = (String) map.get(MemoryCacheFilter.KEY_NAME);
 		if (queryStr == null)
-			return null;
+			throw new IllegalArgumentException("Initiale query string must not be null.");
 		boolean removed = false;
 		StringBuffer sb = new StringBuffer(queryStr);
+		int i=0;
 		for (String remove : removals) {
+			ret[i++] = map.remove(remove);
 			int pos = sb.indexOf(remove + "=");
 			if (pos == -1)
 				continue;
@@ -163,7 +166,7 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 			queryStr = sb.toString();
 			map.put(MemoryCacheFilter.KEY_NAME, queryStr);
 		}
-		return queryStr;
+		return ret;
 	}
 
 	/**

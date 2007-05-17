@@ -2,19 +2,27 @@
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:m="http://www.dcm4che.org/xero/metadata/display/vars"
    m:includeXsl="/image/imageVars.xhtml"
-   m:includeXsl.priority="-5"
+   m:includeXsl.priority="-10"
 >
 <xsl:variable name="docName" select="#{pageConfig.docName}" />
 <ui:include src="/series/seriesVars.xhtml" />
 
-<xsl:variable name="imageUIDFromSource"><xsl:value-of select="/documents/SOPInstanceUID"/></xsl:variable>
+<xsl:variable name="imagePosition"><xsl:value-of select="number(/documents/position)"/></xsl:variable>
+<xsl:variable name="seriesViewable" select="number($docNode/se:results/se:patient/se:study/se:series/@Viewable)"/>
 <xsl:variable name="imageUID">
-<xsl:if test="count($studyNode/se:series/se:image[@SOPInstanceUID=$imageUIDFromSource])!=0"><xsl:value-of select="$imageUIDFromSource"/></xsl:if>
-<xsl:if test="count($studyNode/se:series/se:image[@SOPInstanceUID=$imageUIDFromSource])=0"><xsl:value-of select="$studyNode/se:series/se:image/@SOPInstanceUID"/></xsl:if>
+<xsl:value-of select="$studyNode/se:series/se:image[@Position=$imagePosition]/@SOPInstanceUID"/>
 </xsl:variable>
 
 <xsl:variable name="imageNode" select="$docNode/se:results/se:patient/se:study/se:series/se:image[@SOPInstanceUID=$imageUID]" />
 <xsl:variable name="imagePrevUID" select="$imageNode/preceding::se:image[1]/@SOPInstanceUID" />
 <xsl:variable name="imageNextUID" select="$imageNode/following::se:image/@SOPInstanceUID" />
 
+<xsl:variable name="priSer" select="/documents/se:results/se:patient/se:study/se:series[@SeriesInstanceUID=$seriesUID]" />
+<xsl:variable name="priImg" select="$priSer/se:image[@SOPInstanceUID=$imageUID]" />
+<xsl:variable name="pri" select="$priSer | $priImg" />
+<xsl:variable name="i0" select="$priImg/* | $priImg/@*" />
+<xsl:variable name="a1" select="$priSer/*[name(.)!='image'] | $priSer/@*" />
+<xsl:variable name="b1" select="$a1[.=$i0]" />
+
+<xsl:variable name="imageCombine" select="$i0" />
 </ui:component>

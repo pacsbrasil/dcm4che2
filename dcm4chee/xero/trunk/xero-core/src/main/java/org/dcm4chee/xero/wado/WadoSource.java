@@ -76,6 +76,11 @@ public class WadoSource implements Filter<WadoImage> {
 			"windowWidth",
 			"frameNumber"
 	};
+	protected static final String wadoRequired[] = new String[]{
+			"studyUID",
+			"seriesUID", 
+			"objectUID",
+	};
 	
 	/**
 	 * Using the query string, this method looks up the object against the
@@ -88,8 +93,9 @@ public class WadoSource implements Filter<WadoImage> {
 			URL url = new URL(newWadoReq);
 			BufferedImage image = ImageIO.read(url);
 			long dur = System.currentTimeMillis()-start;
-			log.info("Initial WADO load took "+dur+" ms");
-			image = convertToUShortGray(image);
+			log.info("Initial WADO load took "+dur+" ms on URL:"+url);
+			// TODO - remove this once we can directly read the raw data...
+			image = convertToByteGray(image);
 			// TODO - get actual values from the dicom header instead of constants 0 and 65536
 			WadoImage ret = new WadoImage(image, newWadoReq, "0", "65536");
 			return ret;
@@ -104,6 +110,12 @@ public class WadoSource implements Filter<WadoImage> {
 	protected String createWadoUrl(Map<String, ?> args) {
 		StringBuffer ret = new StringBuffer(
 				"http://localhost:8080/wado?requestType=WADO");
+		for(String key : wadoRequired ) {
+			Object value = args.get(key);
+			if( value==null || value.toString().equals("")) {
+				throw new IllegalArgumentException("Required value "+key+" is missing for request.");
+			}
+		}
 		for(String key : wadoArgs) {
 			Object value = args.get(key);
 			if( value!=null ) {
@@ -113,8 +125,10 @@ public class WadoSource implements Filter<WadoImage> {
 		return ret.toString();
 	}
 
-	/** This method artificially converts the image to 16 bits */
-	BufferedImage convertToUShortGray(BufferedImage image) {
+	/** This method artificially converts the image to 16 bits.
+	 * @deprecated This shouldn't really be used - it is for testing only.
+	 */
+	static public BufferedImage convertToUShortGray(BufferedImage image) {
 		int width = image.getWidth();
 		int height = image.getHeight();
 		log.debug("Source image " + width+" x "+height);
@@ -133,4 +147,25 @@ public class WadoSource implements Filter<WadoImage> {
 		return ret;
 	}
 
+	/** This method artificially converts the image to 8 bits.
+	 * @deprecated This shouldn't really be used - it is for testing only.
+	 */
+	static public BufferedImage convertToByteGray(BufferedImage image) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+		log.debug("Source image " + width+" x "+height);
+		BufferedImage ret = new BufferedImage(image.getWidth(), image
+				.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+		WritableRaster raster = ret.getRaster();
+		int[] pix = new int[1];
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				int rgb = image.getRGB(x, y);
+				pix[0] = (rgb & 0xFF);
+				raster.setPixel(x, y, pix);
+				//if( y==255 ) log.info("Pixel "+x+","+y+"="+pix[0]+" was "+Integer.toString(rgb,16));
+			}
+		}
+		return ret;
+	}
 }

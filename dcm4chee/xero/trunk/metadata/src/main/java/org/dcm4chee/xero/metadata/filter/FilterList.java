@@ -41,6 +41,8 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.PreConfigMetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A filter list is a filter that is just a collection of child filters. 
@@ -54,6 +56,7 @@ import org.dcm4chee.xero.metadata.PreConfigMetaData;
  */
 public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListConfig>
 {
+	private static final Logger log = LoggerFactory.getLogger(FilterList.class);
 
 	/** Filters the data.  
 	 * 
@@ -66,6 +69,7 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
 		FilterItem firstFilter = filterListConfig.getFirstFilter();
+		log.debug("First filter is "+firstFilter.getName());
 		if( firstFilter!=null ) {
 			Object ret = firstFilter.filter.filter(firstFilter, params);
 			if( ret!=null ) return (T) ret;

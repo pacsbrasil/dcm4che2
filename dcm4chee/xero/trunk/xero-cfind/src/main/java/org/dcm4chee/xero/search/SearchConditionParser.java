@@ -39,10 +39,11 @@ package org.dcm4chee.xero.search;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** This class parses search conditions from a Map of name to String array
  * values, typically from the get/post parameter values.  It ignores any provided
@@ -51,7 +52,7 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
  *
  */
 public class SearchConditionParser implements Filter<SearchCriteria> {
-	private static Logger log = Logger.getLogger(SearchConditionParser.class.getName());
+	private static Logger log = LoggerFactory.getLogger(SearchConditionParser.class);
 	
 	List<TableColumn> searchColumns;
 	
@@ -85,7 +86,7 @@ public class SearchConditionParser implements Filter<SearchCriteria> {
 			}
 			TableColumn tc = searchColumnsMap.get(key);
 			if( tc==null ) {
-				log.finer("Ignoring parameter "+key+" as it isn't a table column.");
+				log.debug("Ignoring parameter "+key+" as it isn't a table column.");
 				continue;
 			}
 			if( index>0 ) {

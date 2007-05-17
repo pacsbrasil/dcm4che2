@@ -155,6 +155,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 		IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);			
 		writer.write(null,iioimage,imageWriteParam);
 		ios.close();
+		response.getOutputStream().close();
 		long dur = System.currentTimeMillis() - start;
 		log.info("Encoding image took "+dur+" ms");
 	}

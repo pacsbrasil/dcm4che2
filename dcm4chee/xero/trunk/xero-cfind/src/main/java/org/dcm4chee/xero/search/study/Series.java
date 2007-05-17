@@ -85,4 +85,8 @@ public interface Series {
 	@Column(searchable=true,type="int")
 	Integer getSeriesNumber();
 
+	/**
+	 * Gets the number of series related instances
+	 */
+	Integer getNumberOfSeriesRelatedInstances();
 }

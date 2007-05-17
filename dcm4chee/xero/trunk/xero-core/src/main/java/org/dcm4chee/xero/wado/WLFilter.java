@@ -39,11 +39,13 @@ package org.dcm4chee.xero.wado;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.ByteLookupTable;
+import java.awt.image.ColorModel;
 import java.awt.image.LookupOp;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,11 +73,18 @@ public class WLFilter implements Filter<WadoImage> {
      * @return WadoImage or null if it isn't found.
 	 */
 	public WadoImage filter(FilterItem filterItem, Map<String, Object> map) {
-		WadoImage.removeFromQuery(map,WINDOW_WIDTH, WINDOW_CENTER);
+		Object[] values = WadoImage.removeFromQuery(map,WINDOW_WIDTH, WINDOW_CENTER);
 		WadoImage wi = (WadoImage) filterItem.callNextFilter(map);
 		if( wi==null ) return null;
-		long start = System.currentTimeMillis();
 		BufferedImage bi = wi.getValue();
+		int bits = getBitsPerPixel(bi);
+		if( bits==0 ) {
+			log.warn("Image cannot be window levelled, as it has different bit lengths: " + map.get(MemoryCacheFilter.KEY_NAME) );
+			return wi;
+
+		}
+		log.debug("Number of bits for WL filter is "+bits);
+		long start = System.currentTimeMillis();
 		if( bi==null ) return null;
 		BufferedImage dest = createCompatible8BitImage(bi);
 		double minValue = wi.getMinValue();
@@ -85,10 +94,10 @@ public class WLFilter implements Filter<WadoImage> {
 		// Get the window width/center information, defaulting to show everything.
 		double windowWidth = wi.getWindowWidth();
 		double windowCenter = wi.getWindowCenter();
-		if( map.containsKey(WINDOW_WIDTH) ) windowWidth = Double.parseDouble((String) map.get(WINDOW_WIDTH));
-		if( map.containsKey(WINDOW_CENTER) ) windowCenter = Double.parseDouble((String) map.get(WINDOW_CENTER));
+		if( values[0]!=null ) windowWidth = Double.parseDouble((String) values[0]);
+		if( values[1]!=null ) windowCenter = Double.parseDouble((String) values[1]);
 		log.debug("WL  W:"+windowWidth+" C:"+windowCenter + " pixel range: ["+minValue+"-"+maxValue+")");
-		LookupOp op = computeLookupOp(bi.getColorModel().getPixelSize(),windowWidth, windowCenter, minValue, maxValue);
+		LookupOp op = computeLookupOp(bits,windowWidth, windowCenter, minValue, maxValue);
 		
 		op.filter(bi,dest);
 		WadoImage ret = wi.clone();
@@ -96,6 +105,25 @@ public class WLFilter implements Filter<WadoImage> {
 		long dur = System.currentTimeMillis()-start;
 		log.info("Window levelling took "+dur+" ms");
 		return ret;
+	}
+	
+	/** Returns the number of bits per pixel, assuming the values are constant and uniform. 
+	 * WARNING: If more standard types are defined that are indexed, or anything where luminance
+	 * isn't evenly spread across channels, then this will need to be updated.
+	 * 
+	 * @param bi to get bits per pixel from.
+	 * @return number of bits per pixel, assumign they are all  the same (excluding alpha), or 0 otherwise.
+	 */
+	public static int getBitsPerPixel(BufferedImage bi) {
+		if( bi==null ) throw new NullPointerException("Buffered image must not be null.");
+		ColorModel cm = bi.getColorModel();
+		int type = bi.getType();
+		if( type==BufferedImage.TYPE_CUSTOM || type==BufferedImage.TYPE_BYTE_INDEXED  || type==BufferedImage.TYPE_USHORT_565_RGB) return 0;
+		if( cm.getNumComponents()==1 ) {
+			return cm.getComponentSize(0);
+		}
+		// The second component is never the alpha, so it should be safe to use.
+		return cm.getComponentSize(1);
 	}
 
 	/** This method creates an 8 bit compatible, default buffered image.  Only
@@ -161,7 +189,7 @@ public class WLFilter implements Filter<WadoImage> {
 			data[i] = (byte) ivalue;
 			//if( i % 64 == 0 ) System.out.println("Mapping "+i+" to "+ivalue);
 		}
-		for (int i = end; i < 65536; i++) {
+		for (int i = end; i < data.length; i++) {
 			data[i] = (byte) 255;
 		}
 		return new LookupOp(new ByteLookupTable(0, data), null);

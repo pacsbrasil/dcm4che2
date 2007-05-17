@@ -38,34 +38,33 @@
 package org.dcm4chee.xero.metadata.filter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FilterListConfig {
-
+	private static Logger log = LoggerFactory.getLogger(FilterListConfig.class);
+	
 	List<FilterItem> filterList;
 	
 	public FilterListConfig(MetaDataBean mdb)
 	{
+		List<MetaDataBean> sortedList = mdb.sorted(); 
 		filterList = new ArrayList<FilterItem>();
-		for(Map.Entry<String,MetaDataBean> me : mdb.getChildren().entrySet() )
-		{
-			Object value = me.getValue().getValue();
+		FilterItem previous = null;
+		for(MetaDataBean valueMdb : sortedList ) {
+			Object value = valueMdb.getValue();
 			if( value instanceof Filter ) {
-				FilterItem fi = new FilterItem(me.getValue());
+				FilterItem fi = new FilterItem(valueMdb, (Filter<?>) value);
+				if( previous!=null ) previous.nextFilterItem = fi;
+				previous = fi;
+				log.debug("Adding filter to "+mdb.getPath()+" item "+fi.getName());
 				filterList.add(fi);
 			}
 		}
-		Collections.sort(filterList);
-		FilterItem previous = null;
-		for(FilterItem fi : filterList) 
-		{
-			if( previous!=null ) previous.nextFilterItem = fi;
-			previous = fi;
-		}
+		log.info("There are "+filterList.size() +" items in "+mdb.getPath());
 	}
 	
 	/** This gets the named filter */

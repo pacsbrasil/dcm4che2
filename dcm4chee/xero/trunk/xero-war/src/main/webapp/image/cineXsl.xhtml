@@ -9,6 +9,7 @@
   m:includeXsl="/image/cineXsl.xhtml"
   m:includeXsl.priority="-25"
   m:meta="cineMeta"
+  m:body="imagePrefetch"
 >
 <!-- 
 	 The CINE XSL stylesheet defines the options required for adding CINE playback
@@ -30,17 +31,32 @@
     <xsl:if test="$imageNextUID!=''">
        <xsl:if test="/documents/cine!=''">
          <a>
-           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;objectUID=<xsl:value-of select="$imageUID" /></xsl:attribute>
+           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;position=<xsl:value-of select="$imagePosition" /></xsl:attribute>
            CINE Off
          </a>
        </xsl:if>
        <xsl:if test="/documents/cine=''">
          <a>
-           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;objectUID=<xsl:value-of select="$imageUID" />&amp;cine=0.5</xsl:attribute>           
+           <xsl:attribute name="href">image.seam?cid=<xsl:value-of select="$cid" />&amp;studyUID=<xsl:value-of select="$studyUID"/>&amp;seriesUID=<xsl:value-of select="$seriesUID"/>&amp;position=<xsl:value-of select="1+$imagePosition" />&amp;cine=0.5</xsl:attribute>           
          CINE
          </a>
        </xsl:if>
     </xsl:if>
+</xsl:template>
+
+<xsl:template name="imagePrefetch">
+    <div style="display:none; " id="imagePrefetch">
+    <xsl:if test="$imageNextUID!=''">
+      <img>
+        <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="$imageNextUID"/>&amp;rows=512</xsl:attribute>
+      </img>
+    </xsl:if>
+    <xsl:if test="$imagePrevUID!=''">
+      <img>
+        <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="$imagePrevUID"/>&amp;rows=512</xsl:attribute>
+      </img>
+    </xsl:if>
+   </div>
 </xsl:template>
 
 </x:xsl>

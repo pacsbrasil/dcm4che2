@@ -41,16 +41,18 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.metadata.filter.CacheItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class StudyBean extends StudyType implements Study
+public class StudyBean extends StudyType implements Study, CacheItem
 {
-	private static Logger log = Logger.getLogger(StudyBean.class.getName());
+	private static Logger log = LoggerFactory.getLogger(StudyBean.class);
 	
 	@XmlTransient
 	Map<String,SeriesBean> children =  new HashMap<String,SeriesBean>();
@@ -65,6 +67,25 @@ public class StudyBean extends StudyType implements Study
 	public StudyBean() {	
 	}
 
+	/** Create a study instance by copying attributes and children (shallow children copy.)
+	 * Does not update the children map.
+	 * @param study to copy from.
+	 */
+	public StudyBean(StudyType study) {
+		setAccessionNumber(study.getAccessionNumber());
+		setInstanceAvailability(study.getInstanceAvailability());
+		setModalitiesInStudy(study.getModalitiesInStudy());
+		setNumberOfStudyRelatedInstances(study.getNumberOfStudyRelatedInstances());
+		setNumberOfStudyRelatedSeries(study.getNumberOfStudyRelatedSeries());
+		setReferringPhysicianName(study.getReferringPhysicianName());				
+		setStudyDateTime(study.getStudyDateTime());		
+		setStudyDescription(study.getStudyDescription());
+		setStudyID(study.getStudyID());
+		setStudyInstanceUID(study.getStudyInstanceUID());
+		setStudyStatusID(study.getStudyStatusID());
+		getSeries().addAll(study.getSeries());
+	}
+
 	/** Initialize the attributes for this study bean object from the dicom
 	 * object provided.
 	 * @param data
@@ -76,8 +97,14 @@ public class StudyBean extends StudyType implements Study
 		setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
 		setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
 		setReferringPhysicianName(data.getString(Tag.ReferringPhysicianName));
-				
-		Date date = data.getDate(Tag.StudyDate, Tag.StudyTime);
+			
+		Date date = null;
+		try {
+		   date = data.getDate(Tag.StudyDate, Tag.StudyTime);
+		}
+		catch(NumberFormatException nfe) {
+			log.warn("Illegal study date or time:"+nfe);
+		}
 		if( date!=null ) {
 			GregorianCalendar cal = new GregorianCalendar();
 			cal.setTime(date);
@@ -93,9 +120,9 @@ public class StudyBean extends StudyType implements Study
 	/** Add any series and sub-series information to this study object */
 	public void addResult(DicomObject data) {
 		String seriesUID = data.getString(Tag.SeriesInstanceUID);
-		log.finer("Adding information to study seriesUID="+seriesUID);
+		log.debug("Adding information to study seriesUID="+seriesUID);
 		if( seriesUID!=null ) {
-			log.finer("Adding child to study "+seriesUID);
+			log.debug("Adding child to study "+seriesUID);
 			if( children.containsKey(seriesUID) ) {
 				children.get(seriesUID).addResult(data);
 			}
@@ -104,7 +131,17 @@ public class StudyBean extends StudyType implements Study
 				children.put(seriesUID,child);
 				getSeries().add(child);
 			}
-		} else log.info("Study "+studyInstanceUID+" does not contain a series information.");
+		} else log.debug("Study "+studyInstanceUID+" does not contain a series information.");
+	}
+
+	/** Figure out how many bytes this consumes */
+	public long getSize() {
+		// Some amount of space for this item
+		long ret = 128;
+		for(SeriesType series : getSeries()) {
+			ret += ((CacheItem) series).getSize();
+		}
+		return ret;
 	}
 
 }

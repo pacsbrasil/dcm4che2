@@ -77,6 +77,7 @@ public class EncodeImageTest {
 		mock.setContentType("image/jpeg");
 		CaptureServletOutputStream csos = new CaptureServletOutputStream();
 		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
+		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
 		EasyMock.replay(mock);
 		sri.writeResponse(null,mock);
 		EasyMock.verify(mock);

@@ -1,0 +1,30 @@
+<x:xsl
+   pageConfig="#{PageConfig.jsEnabled}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/jsEnabled"
+   m:script="jsEnabled"
+   m:includeXsl="/js/jsXsl.xhtml"
+   m:includeXsl.priority="-10"
+>
+
+<x:template name="jsEnabled">
+  <xsl:element name="script">
+    <xsl:attribute name="type">text/ecmascript</xsl:attribute>
+var jsEnabled = false;
+function initJsEnabled() {
+    <xsl:if test="count(/documents/jsEnabled)=0 or /documents/jsEnabled='true'">
+jsEnabled = true;
+    </xsl:if>
+    <xsl:if test="/documents/jsEnabled='false'">
+xmlObj = new XMLHttpRequest();
+xmlObj.open('GET', "../js/js.seam?jsEnabled=true", false);
+xmlObj.send('');
+    </xsl:if>
+};
+addLoadEvent(initJsEnabled);
+  </xsl:element>
+</x:template>
+
+</x:xsl>

@@ -11,16 +11,37 @@
    m:includeXsl="../image/baseImageXsl.xsl"
 >
 
+<xsl:template mode="wadoUrl" match="region" priority="1">
+&amp;region=<xsl:value-of select="."/>
+</xsl:template>
+
+<xsl:template mode="wadoUrl" match="windowLevel" priority="1">
+&amp;windowCenter=<xsl:value-of select="./@center"/>&amp;windowWidth=<xsl:value-of select="./@width" />
+</xsl:template>
+
+<xsl:template mode="wadoUrl" match="*" priority="0">
+<xsl:apply-templates mode="wadoUrl" select="./*" />
+</xsl:template>
+
 <x:template name="baseImage" m:body="baseImage" m:body.priority="5">
-  <div id="imageDiv" xmlns="http://www.w3.org/1999/xhtml" style="position: absolute; top: 50px; left: 50px; height: 512px;">
+  <div id="imageDiv" xmlns="http://www.w3.org/1999/xhtml" style="position: absolute; top: 35px; left: 50px; height: 600px;">
      <img>
+        <xsl:attribute name="height">512</xsl:attribute>
         <xsl:attribute name="id">image</xsl:attribute>
         <xsl:attribute name="alt">WADO Image for <xsl:value-of select="$imageNode/@SOPInstanceUID"/></xsl:attribute>
-        <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="$imageNode/@SOPInstanceUID"/>&amp;rows=512</xsl:attribute>
+        <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="$imageNode/@SOPInstanceUID"/>&amp;rows=512<xsl:apply-templates mode="wadoUrl" /></xsl:attribute>
         <xsl:attribute name="onmousedown">imageHandler.mouseDown(event)</xsl:attribute>
      </img>
+     <br />
+     <span id="wlCurrentValue" style="background: blue; color: white; "> </span> <br />
+     <span id="debug" style="background: blue; color: white; "> </span> <br />
+     <span id="debugAjax" style="background: blue; color: white; "> </span>
   </div>
-  <span id="wlCurrentValue" style="background: blue; color: white;">WL orig </span>
+  <div>
+     <xsl:attribute name="id">imageDocName</xsl:attribute>
+     <xsl:attribute name="style">display: none; </xsl:attribute>
+     <xsl:attribute name="docName"><xsl:value-of select="$docName" /></xsl:attribute>
+  </div>
 </x:template>
 
 </x:xsl>

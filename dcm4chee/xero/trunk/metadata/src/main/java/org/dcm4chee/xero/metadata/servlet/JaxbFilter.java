@@ -39,7 +39,6 @@ package org.dcm4chee.xero.metadata.servlet;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,6 +50,8 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** This class knows how to encode a single item as XML, based on the pre-condition
  * that the underlying item is configured to allow Jaxb.  This class doesn't do any
@@ -64,7 +65,7 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 {
 	JAXBContext context;
-	static Logger log = Logger.getLogger(JaxbFilter.class.getName());
+	static Logger log = LoggerFactory.getLogger(JaxbFilter.class);
 	
 	/**
 	 * This class holds the filtered response item until it is time to be serialized
@@ -119,12 +120,12 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		String contextPath = (String) metaDataBean.getValue("contextPath");
-		log.warning("Found contextPath="+contextPath);
+		log.info("Found contextPath="+contextPath);
 		try {
 			if( contextPath!=null ) context = JAXBContext.newInstance(contextPath);
 		}
 		catch(JAXBException e) {
-			log.warning("Could not find context "+contextPath+" caught exception "+e);
+			log.error("Could not find context "+contextPath+" caught exception "+e);
 		}
 	}
 

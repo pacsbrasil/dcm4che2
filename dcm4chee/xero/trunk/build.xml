@@ -19,7 +19,14 @@
            <include name="cglib.jar" />
         </fileset>
      </copy>
-     </target>
+  </target>
+
+  <!-- Copies just the webapp files over for a quick test deploy -->
+  <target name="deployWebapp" description="Copy webapp files over for a no-redeploy test.">
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war">
+        <fileset dir="xero-war/src/main/webapp" includes="**/*" />
+     </copy>
+  </target>
 
   <!-- Sets up the deploy directory -->
   <target name="setupDeploy">

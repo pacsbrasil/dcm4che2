@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class MemoryCacheFilter<T extends FilterReturn<?> & CacheItem> implements Filter<T>{
+public class MemoryCacheFilter<T extends CacheItem> implements Filter<T>{
 	private static Logger log = LoggerFactory.getLogger(MemoryCacheFilter.class);
 
 	/** The default item to lookup in params to find the key for the cached item. */
@@ -60,7 +60,10 @@ public class MemoryCacheFilter<T extends FilterReturn<?> & CacheItem> implements
 	/** The value to use for cache-control to NOT cache the item */
 	public static final String NO_CACHE="no-cache";
 
-        public static final long DEFAULT_INITIAL_SIZE = 1024l*1024*10;
+	/** The default cache size - should probably come from meta-data
+	 * TODO Change this to some appropriate value 
+	 */
+    public static final long DEFAULT_INITIAL_SIZE_BYTES = 1024l*1024*30;
 	
 	protected String paramKeyName = KEY_NAME;
 	
@@ -71,7 +74,7 @@ public class MemoryCacheFilter<T extends FilterReturn<?> & CacheItem> implements
 	 */
 	public MemoryCacheFilter() {
 		log.info("Loading memory cache filter.");
-		setCacheSizes(DEFAULT_INITIAL_SIZE);
+		setCacheSizes(DEFAULT_INITIAL_SIZE_BYTES);
 	}
 	
 	/**
@@ -81,11 +84,11 @@ public class MemoryCacheFilter<T extends FilterReturn<?> & CacheItem> implements
 	@SuppressWarnings("unchecked")
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		String key = computeKey(params);
-		T item = cache.get(key);
-		log.debug("Looking for key "+key+" was found? "+(item!=null));
+		T item = (key!=null ? cache.get(key) : null);
+		log.info("Looking for key "+key+" item "+item);
 		if( item==null ) {
 			item = (T) filterItem.callNextFilter(params);
-			if( item!=null && !NO_CACHE.equals(item.getParameter("cache-control"))) cache.put(key,item);
+			if( item!=null && key!=null ) cache.put(key,item);
 		}
 		return item;
 	}
@@ -96,14 +99,19 @@ public class MemoryCacheFilter<T extends FilterReturn<?> & CacheItem> implements
 	 * @return
 	 */
 	protected String computeKey(Map<String,?> params) {
+		if( params==null ) throw new IllegalArgumentException("Params to filter and compute key should not be null.");
 		Object okey = params.get(paramKeyName);
 		if( okey instanceof String ) return (String) okey;
-		if( okey instanceof String[] ) return ((String[]) okey)[0];
+		if( okey instanceof String[] ) throw new IllegalArgumentException("Memory cache key must be single valued.");
+		if( okey==null ) {
+			log.warn("Memory cache must have a key value.");
+			return null;
+		}
 		return okey.toString();
 	}
 	
 	/**
-	 * Sets the size of the cache
+	 * Sets the size of the cache in bytes.
 	 */
 	public void setCacheSizes(long size) {
 		cache.setCacheSizes(size);

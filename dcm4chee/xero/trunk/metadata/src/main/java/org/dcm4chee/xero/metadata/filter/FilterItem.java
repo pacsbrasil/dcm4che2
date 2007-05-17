@@ -38,35 +38,46 @@
 package org.dcm4chee.xero.metadata.filter;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** A filter item is used to define the items in a filter list.  
  * @author bwallace
  *
  */
 public class FilterItem implements Comparable<FilterItem> {
+	private static Logger log = LoggerFactory.getLogger(FilterItem.class);
 	String name;
 	public Filter<?> filter;
 	private int priority;
 	MetaDataBean metaData;
 	Object config;
 	FilterItem nextFilterItem;
-	static Logger log = Logger.getLogger(FilterItem.class.getName());
 	
 	/**
 	 * Create a filter item based on the given meta-data node.
 	 * @param mdb to get information such as priority.
+	 * @param filter to use.
 	 */
-	public FilterItem(MetaDataBean mdb)
+	public FilterItem(MetaDataBean mdb, Filter<?> filter)
 	{
 		this.name = mdb.getChildName();
-		this.filter = (Filter<?>) mdb.getValue();
+		this.filter = filter;
 		String strPriority = (String) mdb.getValue("priority");
-		if( strPriority ==null ) strPriority = "50";
+		if( strPriority ==null ) strPriority = "0";
 		priority = Integer.parseInt(strPriority);
+		log.debug("Created filter item at "+mdb.getPath()+" name "+this.name+" priority "+this.priority);
 		metaData = mdb;
+	}
+	
+	/** Create a filter item from a meta-data bean, getting the filter
+	 * from the value of the mdb.
+	 * @param mdb to get filter and meta-data from.
+	 */	
+	public FilterItem(MetaDataBean mdb) {
+		this(mdb, (Filter<?>) mdb.getValue());
 	}
 	
 	/** Compare this filter item to another filter item.
@@ -112,12 +123,12 @@ public class FilterItem implements Comparable<FilterItem> {
 	 {
 		 FilterListConfig fl = (FilterListConfig) metaData.getParent().getValueConfig();
 		 if( fl==null ) {
-			 log.warning("Parent "+metaData.getParent().getPath()+" did not have a filter list configuration item.");
+			 log.warn("Parent "+metaData.getParent().getPath()+" did not have a filter list configuration item.");
 			 return null;
 		 }
 		 FilterItem namedFilter = fl.getNamedFilter(filterName);
 		 if( namedFilter==null ) {
-			 log.warning("No filter named "+filterName+" in "+metaData.getParent().getPath());
+			 log.warn("No filter named "+filterName+" in "+metaData.getParent().getPath());
 			 return null;			 
 		 }
 		 return namedFilter.filter.filter(namedFilter, params);

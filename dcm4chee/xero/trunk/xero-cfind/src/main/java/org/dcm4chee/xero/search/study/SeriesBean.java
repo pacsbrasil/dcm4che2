@@ -39,24 +39,49 @@ package org.dcm4chee.xero.search.study;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
-public class SeriesBean extends SeriesType implements Series, ResultFromDicom
+public class SeriesBean extends SeriesType implements Series, ResultFromDicom, CacheItem
 {
-	static Logger log = Logger.getLogger(SeriesBean.class.getName());
+	static Logger log = LoggerFactory.getLogger(SeriesBean.class.getName());
 	
 	@XmlTransient
 	Map<String,DicomObjectType> children = new HashMap<String,DicomObjectType>();
 	
+	@XmlTransient
+	private Integer numberOfSeriesRelatedInstances;
+	
 	public SeriesBean() { }
 	
-	/** Construct a series bean object from the dicom data. */
+	/** Construct a series bean object from another series type object. 
+	 * Does NOT fill in the child map at this time.
+	 */
+	public SeriesBean(SeriesType series) {
+		setModality(series.getModality());
+		setSeriesDescription(series.getSeriesDescription());
+		setSeriesInstanceUID(series.getSeriesInstanceUID());
+		try {
+		  setSeriesNumber(series.getSeriesNumber());
+		}
+		catch(NumberFormatException e) {
+			log.warn("SeriesNumber isn't in correct format.",e);
+		}
+		setViewable(series.getViewable());
+		getDicomObject().addAll(series.getDicomObject());
+	}
+
+	/** Create a series bean from the given instance data. 
+	 * @param data is the Dicom object to copy series and possibly image level data from.
+	 */
 	public SeriesBean(DicomObject data) {
 		initAttributes(data);
 		addResult(data);
@@ -67,7 +92,13 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom
 		setModality(data.getString(Tag.Modality));
 		setSeriesDescription(data.getString(Tag.SeriesDescription));
 		setSeriesInstanceUID(data.getString(Tag.SeriesInstanceUID));
-		setSeriesNumber(data.getInt(Tag.SeriesNumber));
+		setNumberOfSeriesRelatedInstances(data.getInt(Tag.NumberOfSeriesRelatedInstances));
+		try {
+		  setSeriesNumber(data.getInt(Tag.SeriesNumber));
+		}
+		catch(NumberFormatException nfe) {
+			log.warn("Series number was incorrectly formatted - sometimes happens for SR data.",nfe);
+		}
 	}
 	
 	/** Add any image level information to this series. */
@@ -75,12 +106,12 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom
 		String sopInstanceUID = data.getString(Tag.SOPInstanceUID);
 		if( sopInstanceUID==null ) return;
 		if( children.containsKey(sopInstanceUID) ) {
-			log.warning("Series "+getSeriesInstanceUID()+" already contains a child "+sopInstanceUID);
+			log.warn("Series "+getSeriesInstanceUID()+" already contains a child "+sopInstanceUID);
 		}
 		else {
 			DicomObjectType dobj = createChildByModality(data);
 			if( dobj==null ) {
-				log.warning("No object created for child "+sopInstanceUID+" of modality "+modality);
+				log.warn("No object created for child "+sopInstanceUID+" of modality "+modality);
 				return;
 			}
 			children.put(sopInstanceUID, dobj);			
@@ -90,15 +121,32 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom
 	
 	/** Create different types of children based on the modality of the series */
 	protected DicomObjectType createChildByModality(DicomObject data) {
-		if( modality.equals("KO") ) {
-			log.warning("Modality KO objects not yet defined (Key Objects).");
+		if( modality.equals("KO") || modality.equals("SR") ) {
+			log.warn("Modality SR and KO objects not yet defined (Key Objects, Structure Reports).");
 			return null;
 		}
 		if( modality.equals("PR")) {
-			log.warning("Modality PR objects not yet defined (GSPS).");
+			log.warn("Modality PR objects not yet defined (GSPS).");
 			return null;
 		}
 		return new ImageBean(data);
+	}
+
+	/** Figure out how many bytes this consumes */
+	public long getSize() {
+		// Some amount of space for this item, plus some for all the other
+		// images under this item.
+		return 128 + 256*getDicomObject().size();
+	}
+
+	/** Gets the number of DICOM objects associated with this series */
+	public Integer getNumberOfSeriesRelatedInstances() {
+		return numberOfSeriesRelatedInstances;
+	}
+	
+	/** Sets the number of DICOM objects associated with this series */
+	public void setNumberOfSeriesRelatedInstances(Integer value) {
+		this.numberOfSeriesRelatedInstances = value;
 	}
 
 }

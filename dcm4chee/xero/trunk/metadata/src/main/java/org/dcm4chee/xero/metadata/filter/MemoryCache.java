@@ -44,6 +44,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A memory cache is a Map that throws things away based on how much memory is
  * being used, and implements a multiple level least recently used cache. Items
@@ -60,6 +63,8 @@ import java.util.TreeSet;
  */
 public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 
+	private static final Logger log = LoggerFactory.getLogger(MemoryCache.class);
+	
 	static public final long DEFAULT_SIZE = 1024 * 1024;
 
 	/** By default, an item needs to be accessed first as a put, and then as get
@@ -68,6 +73,9 @@ public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 	static public final int DEFAULT_TRANSITION = 1;
 
 	protected int levels;
+	
+	/** The default maximum age for any item is 5 minutes - after that, it gets reloaded regardless */
+	protected long maxAge = 5*60*1000l;  
 
 	protected long[] cacheSizes;
 
@@ -119,6 +127,10 @@ public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 		InternalKey<K, V> value = findMap.get(key);
 		if (value == null)
 			return null;
+		if( (System.currentTimeMillis() - value.getOriginalAge()) > maxAge ) {
+			this.remove(key);
+			return null;
+		}
 		int level = value.getLevel();
 		lruSets[level].remove(value);
 		// Must call the get value before adding it back in.
@@ -132,8 +144,10 @@ public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 		lruSets[level].add(value);
 		return ret;
 	}
-
-	/** Put the item into the cache */
+	
+	/** Put the item into the cache, as long as the size is no more than
+	 * 1/2 of the first level cache size.
+	 */
 	@Override
 	public V put(K key, V value) {
 		InternalKey<K, V> item = findMap.get(key);
@@ -141,11 +155,15 @@ public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 			remove(key);
 		}
 		InternalKey<K, V> putItem = new InternalKey<K, V>(key, value);
-		if (putItem.getSize() < (cacheSizes[0] / 10)) {
+		long size = putItem.getSize();
+		if (putItem.getSize() < (cacheSizes[0] / 2)) {
 			findMap.put(key, putItem);
 			lruSets[putItem.getLevel()].add(putItem);
 			currentSizes[putItem.getLevel()] += putItem.getSize();
 			emptyLRU(putItem.getLevel());
+		}
+		else {
+			log.warn("Not caching value for "+key+" because it is too large:"+size+"/"+cacheSizes[0]);
 		}
 		if (item != null)
 			return item.getValue();
@@ -220,6 +238,8 @@ static class InternalKey<K, V extends CacheItem> implements
 	private int increment;
 	private static int currentIncrement = 0;
 	
+	private long originalAge = System.currentTimeMillis();
+	
 	private int accessCount = 0;
 
 	private long size;
@@ -258,6 +278,13 @@ static class InternalKey<K, V extends CacheItem> implements
 	/** Get the size of this item */
 	public long getSize() {
 		return size;
+	}
+	
+	/**
+	 * Gets the original age
+	 */
+	public long getOriginalAge() {
+		return originalAge;
 	}
 
 	/** Get the access count */

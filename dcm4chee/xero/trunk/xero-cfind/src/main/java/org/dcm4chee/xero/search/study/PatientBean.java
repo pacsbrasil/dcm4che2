@@ -48,9 +48,10 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
-public class PatientBean extends PatientType implements Patient, ResultFromDicom 
+public class PatientBean extends PatientType implements Patient, ResultFromDicom, CacheItem 
 {
 	static DatatypeFactory datatypeFactory;
 	static {
@@ -70,6 +71,19 @@ public class PatientBean extends PatientType implements Patient, ResultFromDicom
 		addResult(cmd);
 	}
 	
+	/**
+	 * Create a copy of the patient object by copying the attributes
+	 * and children (shallow copy).
+	 * @param patient
+	 */
+	public PatientBean(PatientType patient) {
+		setPatientID(patient.getPatientID());
+		setPatientName(patient.getPatientName());
+		setPatientSex( patient.getPatientSex() );
+		setPatientBirthDate( patient.getPatientBirthDate() );
+		getStudy().addAll(patient.getStudy());
+	}
+
 	protected static String excludeZeroEnd(String str) {
 		if( str==null ) return null;
 		if( str.length()==0 ) return str;
@@ -85,7 +99,7 @@ public class PatientBean extends PatientType implements Patient, ResultFromDicom
 		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
 		String strSex = cmd.getString(Tag.PatientSex);
 		if(strSex!=null ) {
-			setPatientSex( SexEnum.fromValue(strSex));
+			setPatientSex( SexEnum.fromValue(strSex.toUpperCase()));
 		}
 		Date date = cmd.getDate(Tag.PatientBirthDate);
 		if( date!=null ) {
@@ -110,4 +124,15 @@ public class PatientBean extends PatientType implements Patient, ResultFromDicom
 			children.put(studyUID,child);
 		}
 	}
+
+	/** Figure out how many bytes this consumes */
+	public long getSize() {
+		// Some amount of space for this item
+		long ret = 128;
+		for(StudyType study : getStudy()) {
+			ret += ((CacheItem) study).getSize();
+		}
+		return ret;
+	}
+
 }
