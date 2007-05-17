@@ -34,9 +34,6 @@
     <xsl:value-of select="$docNode/se:results/se:patient/se:study/@StudyDescription" /> <br />
 </x:template>
 
-<!-- Display available reports. -->
-
-
 <!-- Display the series images -->
 <x:template name="seriesImages" m:images.body="seriesImages" m:images.body.priority="500">
     <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series[se:image/@Rows>0]">
