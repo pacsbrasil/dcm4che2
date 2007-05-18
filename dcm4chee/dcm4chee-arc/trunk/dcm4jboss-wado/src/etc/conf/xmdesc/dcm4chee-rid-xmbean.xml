@@ -31,6 +31,18 @@
    </constructor>
 
    <attribute access="read-write"
+      getMethod="getImageQuality"
+      setMethod="setImageQuality">
+      <description>The quality of JPEG images to be returned within
+      the range 1 to 100, 100 being the best quality.
+      </description>
+      <name>ImageQuality</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="75" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getCacheRoot"
       setMethod="setCacheRoot">
       <description>Root directory where documents are stored for caching.

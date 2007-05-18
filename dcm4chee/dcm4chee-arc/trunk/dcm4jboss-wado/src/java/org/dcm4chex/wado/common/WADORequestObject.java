@@ -60,6 +60,7 @@ public interface WADORequestObject extends BasicRequestObject {
 	public static final int INVALID_TRANSFER_SYNTAX = -6;
 	public static final int INVALID_REGION = -7;
 	public static final int INVALID_WINDOW_LEVEL = -8;
+        public static final int INVALID_IMAGE_QUALITY = -9;
 	
 	/**
 	 * Returns the studyUID parameter of the http request.
@@ -131,5 +132,10 @@ public interface WADORequestObject extends BasicRequestObject {
 	 * @return Returns the value of the windowCenter parameter.
 	 */
 	String getWindowCenter();
+        
+        /**
+         * @return Returns the value of the imageQuality parameter.
+         */
+        String getImageQuality();
 	
 }

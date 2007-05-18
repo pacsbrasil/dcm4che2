@@ -75,12 +75,16 @@ public interface WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The image if in cache or null.
      */
     BufferedImage getImage(String studyUID, String seriesUID,
             String instanceUID, String rows, String columns, String region,
-            String windowWidth, String windowCenter, String suffix);
+            String windowWidth, String windowCenter, String imageQuality,
+            String suffix);
 
     /**
      * Get an image of special size from cache.
@@ -104,12 +108,15 @@ public interface WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The File object of the image if in cache or null.
      */
     File getImageFile(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, String region, String windowWidth,
-            String windowCenter, String suffix);
+            String windowCenter, String imageQuality, String suffix);
 
     /**
      * Put a region of an image of special size to this cache.
@@ -134,6 +141,9 @@ public interface WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The File object of the image in this cache.
      * @throws IOException
@@ -141,7 +151,7 @@ public interface WADOCache {
     File putImage(BufferedImage image, String studyUID, String seriesUID,
             String instanceUID, String pixelRows, String pixelColumns,
             String region, String windowWidth, String windowCenter,
-            String suffix) throws IOException;
+            String imageQuality, String suffix) throws IOException;
 
     /**
      * Puts a stream to this cache.
@@ -164,6 +174,9 @@ public interface WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The stored File object.
      * 
@@ -172,7 +185,7 @@ public interface WADOCache {
     File putStream(InputStream stream, String studyUID, String seriesUID,
             String instanceUID, String pixelRows, String pixelColumns,
             String region, String windowWidth, String windowCenter,
-            String suffix) throws IOException;
+            String imageQuality, String suffix) throws IOException;
 
     /**
      * Return the File object to get or store a file for given arguments.
@@ -295,5 +308,9 @@ public interface WADOCache {
      *            True to enable caching.
      */
     public void setRedirectCaching(boolean redirectCaching);
+
+    public String getImageQuality();
+
+    public void setImageQuality(String imageQuality);
 
 }

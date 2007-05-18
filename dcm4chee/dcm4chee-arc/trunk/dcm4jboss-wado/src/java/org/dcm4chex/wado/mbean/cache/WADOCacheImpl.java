@@ -45,18 +45,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.jboss.system.server.ServerConfigLocator;
-
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * @author franz.willer
@@ -73,7 +75,12 @@ public class WADOCacheImpl implements WADOCache {
     public static final String DEFAULT_RID_SUBDIR = "rid";
 
     public static final String DEFAULT_WADO_EXT_SUBDIR = "wfind";
+    
+    public static final String DEFAULT_IMAGE_QUALITY = "75";
 
+    /** Buffer size for read/write */
+    private static final int BUF_LEN = 65536;
+    
     public static final String NEWLINE = System.getProperty("line.separator",
             "\n");
 
@@ -127,9 +134,21 @@ public class WADOCacheImpl implements WADOCache {
      */
     private boolean redirectCaching = true;
 
-    /** Buffer size for read/write */
-    private static final int BUF_LEN = 65536;
+    private String imageQuality = DEFAULT_IMAGE_QUALITY;
+    
+    public final String getImageQuality() {
+        return imageQuality;
+    }
 
+    public final void setImageQuality(String imageQuality) {
+        int intval = Integer.parseInt( imageQuality );
+        if (intval <= 0 || intval > 100) {
+            throw new IllegalArgumentException("imageQuality: "
+                    + imageQuality + " not between 1 and 100.");
+        }
+        this.imageQuality = imageQuality;
+    }
+        
     /**
      * Creates a WADOCacheImpl instance..
      */
@@ -197,14 +216,19 @@ public class WADOCacheImpl implements WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The image if in cache or null.
      */
     public BufferedImage getImage(String studyUID, String seriesUID,
             String instanceUID, String rows, String columns, String region,
-            String windowWidth, String windowCenter, String suffix) {
+            String windowWidth, String windowCenter, String imageQuality,
+            String suffix) {
         return _readJpgFile(getImageFile(studyUID, seriesUID, instanceUID,
-                rows, columns, region, windowWidth, windowCenter, suffix));
+                rows, columns, region, windowWidth, windowCenter, imageQuality,
+                suffix));
     }
 
     /**
@@ -229,15 +253,20 @@ public class WADOCacheImpl implements WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The File object of the image if in cache or null.
      */
     public File getImageFile(String studyUID, String seriesUID,
             String instanceUID, String rows, String columns, String region,
-            String windowWidth, String windowCenter, String suffix) {
+            String windowWidth, String windowCenter, String imageQuality,
+            String suffix) {
         File file = this._getImageFile(rows + "-" + columns + "-" + region
-                + "-" + windowWidth + "-" + windowCenter, studyUID, seriesUID,
-                instanceUID, suffix, null);
+                + "-" + windowWidth + "-" + windowCenter + "-" 
+                + maskNull(imageQuality, this.imageQuality),
+                studyUID, seriesUID, instanceUID, suffix, null);
         if (file.exists()) {
             file.setLastModified(System.currentTimeMillis()); // set last
                                                                 // modified
@@ -250,6 +279,10 @@ public class WADOCacheImpl implements WADOCache {
         } else {
             return null;
         }
+    }
+
+    private static String maskNull(String val, String defval) {
+        return val != null ? val : defval;
     }
 
     /**
@@ -275,6 +308,9 @@ public class WADOCacheImpl implements WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The File object of the image in this cache.
      * @throws IOException
@@ -282,11 +318,12 @@ public class WADOCacheImpl implements WADOCache {
     public File putImage(BufferedImage image, String studyUID,
             String seriesUID, String instanceUID, String rows, String columns,
             String region, String windowWidth, String windowCenter,
-            String suffix) throws IOException {
+            String imageQuality, String suffix) throws IOException {
+        imageQuality = maskNull(imageQuality, this.imageQuality);
         File file = this._getImageFile(rows + "-" + columns + "-" + region
-                + "-" + windowWidth + "-" + windowCenter, studyUID, seriesUID,
-                instanceUID, suffix, null);
-        _writeImageFile(image, file);
+                + "-" + windowWidth + "-" + windowCenter + "-" + imageQuality,
+                studyUID, seriesUID, instanceUID, suffix, null);
+        _writeImageFile(image, file, imageQuality);
         return file;
     }
 
@@ -311,6 +348,9 @@ public class WADOCacheImpl implements WADOCache {
      *            Decimal string representing the contrast of the image.
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
+     * @param imageQuality
+     *            Integer string (1-100) representing required quality of
+     *            the image to be returned within the range 1 to 100
      * 
      * @return The stored File object.
      * 
@@ -319,12 +359,13 @@ public class WADOCacheImpl implements WADOCache {
     public File putStream(InputStream stream, String studyUID,
             String seriesUID, String instanceUID, String rows, String columns,
             String region, String windowWidth, String windowCenter,
-            String suffix) throws IOException {
+            String imageQuality, String suffix) throws IOException {
         File file;
 
         file = this._getImageFile(rows + "-" + columns + "-" + region + "-"
-                + windowWidth + "-" + windowCenter, studyUID, seriesUID,
-                instanceUID, suffix, null);
+                + windowWidth + "-" + windowCenter + "-" 
+                + maskNull(imageQuality, imageQuality),
+                studyUID, seriesUID, instanceUID, suffix, null);
 
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -836,7 +877,7 @@ public class WADOCacheImpl implements WADOCache {
      * 
      * @throws IOException
      */
-    private void _writeImageFile(BufferedImage bi, File file)
+    private void _writeImageFile(BufferedImage bi, File file, String imageQuality)
             throws IOException {
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdirs()) {
@@ -844,11 +885,18 @@ public class WADOCacheImpl implements WADOCache {
                         + file.getParentFile());
             }
         }
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+        Iterator writers = ImageIO.getImageWritersByFormatName("JPEG");
+        ImageWriter writer = (ImageWriter) writers.next();
+        ImageOutputStream out = ImageIO.createImageOutputStream(file);
+        writer.setOutput(out);
         try {
-            log.debug("Create JPEG for WADO request. file:" + file);
-            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
-            enc.encode(bi);
+            log.debug("Create JPEG (" + imageQuality 
+                    + " quality) for WADO request. file: " + file);
+            ImageWriteParam iwparam = writer.getDefaultWriteParam();
+            iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            iwparam.setCompressionQuality(Float.parseFloat(imageQuality)/100);
+            writer.write(null, new IIOImage(bi, null, null), iwparam);
+            out.flush();
         } catch (Throwable x) {
             log.error("Can not create JPEG for WADO request. file:" + file);
             if (file.exists()) {
@@ -864,6 +912,7 @@ public class WADOCacheImpl implements WADOCache {
             throw ioe;
         } finally {
             out.close();
+            writer.dispose();
         }
     }
 

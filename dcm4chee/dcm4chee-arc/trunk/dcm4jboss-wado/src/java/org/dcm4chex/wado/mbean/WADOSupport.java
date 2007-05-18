@@ -43,10 +43,6 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.RasterFormatException;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -94,10 +90,7 @@ import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.image.ColorModelFactory;
-import org.dcm4che.image.ColorModelParam;
 import org.dcm4che.imageio.plugins.DcmMetadata;
-import org.dcm4cheri.imageio.plugins.DcmImageReader;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -496,11 +489,13 @@ public class WADOSupport {
         String region = req.getRegion();
         String windowWidth = req.getWindowWidth();
         String windowCenter = req.getWindowCenter();
+        String imageQuality = req.getImageQuality();
 
         try {
             boolean[] readDicom = new boolean[] { false };
             File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
-                    frameNumber, region, windowWidth, windowCenter, readDicom);
+                    frameNumber, region, windowWidth, windowCenter, imageQuality,
+                    readDicom);
             if (file != null) {
                 WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
                         new FileInputStream(file), CONTENT_TYPE_JPEG,
@@ -569,7 +564,8 @@ public class WADOSupport {
      */
     public File getJpg(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, String frameNumber, String region,
-            String windowWidth, String windowCenter, boolean[] readDicom)
+            String windowWidth, String windowCenter, String imageQuality,
+            boolean[] readDicom)
             throws IOException, NeedRedirectionException, NoImageException,
             ImageCachingException {
         int frame = 0;
@@ -584,7 +580,8 @@ public class WADOSupport {
         BufferedImage bi = null;
 
         file = cache.getImageFile(studyUID, seriesUID, instanceUID, rows,
-                columns, region, windowWidth, windowCenter, suffix);
+                columns, region, windowWidth, windowCenter, imageQuality,
+                suffix);
 
         if (file == null) {
             File dicomFile = getDICOMFile(studyUID, seriesUID, instanceUID);
@@ -600,7 +597,7 @@ public class WADOSupport {
                 try {
                     file = cache.putImage(bi, studyUID, seriesUID, instanceUID,
                             rows, columns, region, windowWidth, windowCenter,
-                            suffix);
+                            imageQuality, suffix);
                 } catch (Exception x) {
                     log
                             .error(
@@ -900,7 +897,8 @@ public class WADOSupport {
                         req.getStudyUID(), req.getSeriesUID(),
                         req.getObjectUID(), req.getRows(), req.getColumns(),
                         req.getRegion(), req.getWindowWidth(),
-                        req.getWindowCenter(), suffix);
+                        req.getWindowCenter(), req.getImageQuality(),
+                        suffix);
                 is = new FileInputStream(file);
             }
             return new WADOStreamResponseObjectImpl(is, conn.getContentType(),
@@ -911,6 +909,7 @@ public class WADOSupport {
             return null;
         }
     }
+
 
     /**
      * Get the image from DICOM file.

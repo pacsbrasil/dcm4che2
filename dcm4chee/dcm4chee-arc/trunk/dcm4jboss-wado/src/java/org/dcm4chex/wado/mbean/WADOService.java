@@ -128,6 +128,14 @@ public class WADOService extends AbstractCacheService {
         cache.setRedirectCaching(redirectCaching);
     }
 
+    public String getImageQuality() {
+        return cache.getImageQuality();
+    }
+
+    public void setImageQuality(String imageQuality) {
+        cache.setImageQuality(imageQuality);
+    }
+    
     /**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
      */

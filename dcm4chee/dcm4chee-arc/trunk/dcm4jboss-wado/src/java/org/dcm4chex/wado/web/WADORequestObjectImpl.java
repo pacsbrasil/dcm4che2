@@ -44,14 +44,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.lang.NumberFormatException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
-import org.dcm4chex.wado.mbean.WADOService;
 
 /**
  * @author franz.willer
@@ -62,24 +59,36 @@ import org.dcm4chex.wado.mbean.WADOService;
 public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
         WADORequestObject {
 
-    private static final String ERROR_INVALID_REGION_FORMAT = "Error: region parameter is invalid! Must be a comma separated list of 4 decimal strings.";
+    private static final String ERROR_INVALID_REGION_FORMAT =
+        "Error: region parameter is invalid! Must be a comma separated list of 4 decimal strings.";
 
-    private static final String ERROR_INVALID_REGION_OUT_OF_RANGE = "Error: region parameter is invalid! Coordinates must be in range [0..1].";
+    private static final String ERROR_INVALID_REGION_OUT_OF_RANGE =
+        "Error: region parameter is invalid! Coordinates must be in range [0..1].";
 
-    private static final String ERROR_INVALID_REGION_DIMENSION = "Error: region parameter is invalid! Width and height of specified region must be > 0.";
+    private static final String ERROR_INVALID_REGION_DIMENSION =
+        "Error: region parameter is invalid! Width and height of specified region must be > 0.";
 
-    private static final String ERROR_NULL_WINDOW_WIDTH = "Error: windowWidth parameter is invalid! Must specify a value.";
+    private static final String ERROR_NULL_WINDOW_WIDTH =
+        "Error: windowWidth parameter is invalid! Must specify a value.";
 
-    private static final String ERROR_NULL_WINDOW_CENTER = "Error: windowCenter parameter is invalid! Must specify a value.";
+    private static final String ERROR_NULL_WINDOW_CENTER =
+        "Error: windowCenter parameter is invalid! Must specify a value.";
 
-    private static final String ERROR_INVALID_WINDOW_WIDTH_TYPE = "Error: windowWidth parameter is invalid! Must be a decimal string.";
+    private static final String ERROR_INVALID_WINDOW_WIDTH_TYPE =
+        "Error: windowWidth parameter is invalid! Must be a decimal string.";
 
-    private static final String ERROR_INVALID_WINDOW_CENTER_TYPE = "Error: windowCenter parameter is invalid! Must be a decimal string.";
+    private static final String ERROR_INVALID_WINDOW_CENTER_TYPE =
+        "Error: windowCenter parameter is invalid! Must be a decimal string.";
 
-    private static final String ERROR_INVALID_WINDOW_WIDTH_VALUE = "Error: windowWidth parameter is invalid! Width must be > 0.";
+    private static final String ERROR_INVALID_WINDOW_WIDTH_VALUE =
+        "Error: windowWidth parameter is invalid! Width must be > 0.";
 
-    private static Logger log = Logger.getLogger(WADOService.class.getName());
+    private static final String ERROR_INVALID_IMAGE_QUALITY_TYPE = 
+        "Error: imageQuality parameter is invalid! Must be a integer string.";
 
+    private static final String ERROR_INVALID_IMAGE_QUALITY_VALUE = 
+        "Error: imageQuality parameter is invalid! Quality must be in range [1..100].";
+   
     private String studyUID;
 
     private String seriesUID;
@@ -100,7 +109,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
 
     private String windowCenter;
 
-    private String serviceName;
+    private String imageQuality;
 
     private List contentTypes = null;
 
@@ -126,6 +135,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
         region = request.getParameter("region");
         windowWidth = request.getParameter("windowWidth");
         windowCenter = request.getParameter("windowCenter");
+        imageQuality = request.getParameter("imageQuality");
     }
 
     /**
@@ -240,6 +250,13 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     }
 
     /**
+     * @return Returns the value of the imageQuality parameter.
+     */
+    public String getImageQuality() {
+        return imageQuality;
+    }
+    
+    /**
      * Checks this request object and returns an error code.
      * <p>
      * <DL>
@@ -299,6 +316,15 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
             } catch (Exception x) {
                 setErrorMsg(x.getMessage());
                 return INVALID_WINDOW_LEVEL;
+            }
+        }
+
+        if ( imageQuality != null) {
+            try {
+                checkImageQuality(imageQuality);
+            } catch ( IllegalArgumentException e ) {
+                setErrorMsg(e.getMessage());
+                return INVALID_IMAGE_QUALITY;
             }
         }
 
@@ -376,6 +402,22 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
         }
     }
 
+    private void checkImageQuality(String imageQuality) {
+
+        int quality = -1;
+
+        try {
+            quality = Integer.parseInt( imageQuality );
+        } catch ( NumberFormatException e ) {
+            throw new IllegalArgumentException(
+                    ERROR_INVALID_IMAGE_QUALITY_TYPE);
+        }
+
+        if ( quality <= 0 || quality > 100) 
+            throw new IllegalArgumentException(
+                    ERROR_INVALID_IMAGE_QUALITY_VALUE);
+    }
+    
     /**
      * Seperate the given String with delim character and return a List of the
      * items.
