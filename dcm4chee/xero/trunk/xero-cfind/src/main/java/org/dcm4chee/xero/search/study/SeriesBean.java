@@ -69,12 +69,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 		setModality(series.getModality());
 		setSeriesDescription(series.getSeriesDescription());
 		setSeriesInstanceUID(series.getSeriesInstanceUID());
-		try {
-		  setSeriesNumber(series.getSeriesNumber());
-		}
-		catch(NumberFormatException e) {
-			log.warn("SeriesNumber isn't in correct format.",e);
-		}
+  	    setSeriesNumber(series.getSeriesNumber());
 		setViewable(series.getViewable());
 		getDicomObject().addAll(series.getDicomObject());
 	}
@@ -97,7 +92,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 		  setSeriesNumber(data.getInt(Tag.SeriesNumber));
 		}
 		catch(NumberFormatException nfe) {
-			log.warn("Series number was incorrectly formatted - sometimes happens for SR data.",nfe);
+			log.warn("Series number was incorrectly formatted - sometimes happens for SR data:"+nfe);
 		}
 	}
 	
@@ -106,7 +101,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 		String sopInstanceUID = data.getString(Tag.SOPInstanceUID);
 		if( sopInstanceUID==null ) return;
 		if( children.containsKey(sopInstanceUID) ) {
-			log.warn("Series "+getSeriesInstanceUID()+" already contains a child "+sopInstanceUID);
+			log.debug("Series "+getSeriesInstanceUID()+" already contains a child "+sopInstanceUID);
 		}
 		else {
 			DicomObjectType dobj = createChildByModality(data);
@@ -121,8 +116,11 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	
 	/** Create different types of children based on the modality of the series */
 	protected DicomObjectType createChildByModality(DicomObject data) {
-		if( modality.equals("KO") || modality.equals("SR") ) {
-			log.warn("Modality SR and KO objects not yet defined (Key Objects, Structure Reports).");
+		if( modality.equals("SR") ) {
+			return new ReportBean(data);
+		}
+		if( modality.equals("KO") ) {
+			log.warn("Modality KO objects not yet defined (Key Objects).");
 			return null;
 		}
 		if( modality.equals("PR")) {

@@ -21,6 +21,8 @@
     
     <element name="gsps" type="tns:gspsType" />
     
+    <element name="report" type="tns:reportType" />
+    
     <element name="keyObject" type="tns:keyObjectType" />
 
     <complexType name="resultsType">
@@ -66,6 +68,8 @@
     		</annotation>
     		<element ref="tns:image" />
     		<element ref="tns:gsps" />
+    		<element ref="tns:report" />
+    		<element ref="tns:keyObject" />
     	</sequence>
     	<attribute name="SeriesInstanceUID" type="tns:UID" />
     	<attribute name="SeriesNumber" type="int" />
@@ -90,7 +94,6 @@
 	</complexType>
 	    
 	<simpleType name="UID">
-	   <!-- TODO make it more restricted about the format. -->
 	   <restriction base="string" />
 	</simpleType>
 	
@@ -109,11 +112,11 @@
     </complexType>
     
     <complexType name="reportType">
-    	<annotation>
-    		<documentation>
-    			Reports are user or automatically dictated information about the results of the study.
-    		</documentation>
-    	</annotation>
+  	  <annotation>
+    	<documentation>
+Reports are user or automatically dictated information about the results of the study.
+    	</documentation>
+      </annotation>
       <complexContent>
         <extension base="tns:dicomObjectType">
            <sequence maxOccurs="unbounded" minOccurs="0">
@@ -128,11 +131,11 @@
     </complexType>
     
     <complexType name="keyObjectType">
-    	<annotation>
-    		<documentation>
-    			Key objects are a named (by code meaning) list of images to display.
-    		</documentation>
-    	</annotation>
+      <annotation>
+    	<documentation>
+Key objects are a named (by code meaning) list of images to display.
+    	</documentation>
+      </annotation>
       <complexContent>
         <extension base="tns:reportType">
         </extension>

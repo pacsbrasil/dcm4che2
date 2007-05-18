@@ -15,7 +15,7 @@
       <title>Xero - Display Frame</title>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
    </head>
-   <frameset border="0" style="background:black; color: white; " cols="20%,*">
+   <frameset border="0" cols="20%,*">
       <frame>
         <xsl:attribute name="name">seriesTrayFrame</xsl:attribute>
         <xsl:attribute name="id">seriesTrayFrame</xsl:attribute>
@@ -24,7 +24,7 @@
 		    <xsl:attribute name="src">../series/seriesTray.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
 		</xsl:if>
 	  </frame>
-      <frame>
+      <frame style=" background: grey; color: red; ">
         <xsl:attribute name="name">imageFrame</xsl:attribute>
         <xsl:attribute name="id">imageFrame</xsl:attribute>
         <xsl:attribute name="src">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" /></xsl:attribute>
