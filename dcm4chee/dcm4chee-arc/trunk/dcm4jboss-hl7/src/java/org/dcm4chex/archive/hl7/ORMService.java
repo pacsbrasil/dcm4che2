@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.hl7;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -102,8 +101,7 @@ public class ORMService extends AbstractHL7Service {
     
     private ObjectName deviceServiceName;
 
-    private String stylesheetPath;
-    private File stylesheetFile;
+    private String xslPath;
 
     private String defaultStationAET = "UNKOWN";
 
@@ -112,12 +110,11 @@ public class ORMService extends AbstractHL7Service {
     private String defaultModality = "OT";
 
     public final String getStylesheet() {
-        return stylesheetPath;
+        return xslPath;
     }
 
-    public void setStylesheet(String path) throws FileNotFoundException {
-        this.stylesheetFile = FileUtils.toExistingFile(path);
-        this.stylesheetPath = path;
+    public void setStylesheet(String path) {
+        this.xslPath = path;
     }
 
     public final ObjectName getDeviceServiceName() {
@@ -183,7 +180,8 @@ public class ORMService extends AbstractHL7Service {
         int op[] = toOp(msg);
         try {
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
-            Transformer t = templates.getTemplates(stylesheetFile).newTransformer();
+            File xslFile = FileUtils.toExistingFile(xslPath);
+            Transformer t = templates.getTemplates(xslFile).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(ds
                     .getSAXHandler2(null)));
             final String pid = ds.getString(Tags.PatientID);

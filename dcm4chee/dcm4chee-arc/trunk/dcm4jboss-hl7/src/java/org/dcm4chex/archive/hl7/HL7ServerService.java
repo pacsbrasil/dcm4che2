@@ -43,7 +43,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +57,6 @@ import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
@@ -106,13 +104,9 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     };
 
-    private String ackStylesheetPath;
+    private String ackXslPath;
 
-    private File ackStylesheetFile;
-
-    private String logStylesheetPath;
-
-    private File logStylesheetFile;
+    private String logXslPath;
 
     private File logDir;
 
@@ -139,21 +133,19 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     private String[] noopMessageTypes = {};
 
     public final String getAckStylesheet() {
-        return ackStylesheetPath;
+        return ackXslPath;
     }
 
-    public void setAckStylesheet(String path) throws FileNotFoundException {
-        this.ackStylesheetFile = FileUtils.toExistingFile(path);
-        this.ackStylesheetPath = path;
+    public void setAckStylesheet(String path) {
+        this.ackXslPath = path;
     }
 
     public final String getLogStylesheet() {
-        return logStylesheetPath;
+        return logXslPath;
     }
 
-    public void setLogStylesheet(String path) throws FileNotFoundException {
-        this.logStylesheetFile = FileUtils.toExistingFile(path);
-        this.logStylesheetPath = path;
+    public void setLogStylesheet(String path) {
+        this.logXslPath = path;
     }
 
     public final ObjectName getTemplatesServiceName() {
@@ -279,14 +271,15 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     public void ack(Document document, ContentHandler hl7out, HL7Exception hl7ex) {
         try {
-            Transformer t = templates.getTemplates(ackStylesheetFile).newTransformer();
+            File ackXslFile = FileUtils.toExistingFile(ackXslPath);
+            Transformer t = templates.getTemplates(ackXslFile).newTransformer();
             if (hl7ex != null) {
                 t.setParameter("AcknowledgementCode", hl7ex
                         .getAcknowledgementCode());
                 t.setParameter("TextMessage", hl7ex.getMessage());
             }
             t.transform(new DocumentSource(document), new SAXResult(hl7out));
-        } catch (TransformerException e) {
+        } catch (Exception e) {
             log.error("Failed to acknowlege message", e);
         }
     }
@@ -415,7 +408,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             return;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            Transformer t = templates.getTemplates(logStylesheetFile).newTransformer();
+            File logXslFile = FileUtils.toExistingFile(logXslPath);
+            Transformer t = templates.getTemplates(logXslFile).newTransformer();
             t.transform(new DocumentSource(document), new StreamResult(out));
             log.info(out.toString());
         } catch (Exception e) {

@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.hl7;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
@@ -65,31 +64,27 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
-    private String pidStylesheetPath;
-    private File pidStylesheetFile;
+    private String pidXslPath;
 
-    private String mrgStylesheetPath;
-    private File mrgStylesheetFile;
+    private String mrgXslPath;
 
     private boolean ignoreDeleteErrors;
 
     public final String getMrgStylesheet() {
-        return mrgStylesheetPath;
+        return mrgXslPath;
     }
 
-    public void setMrgStylesheet(String path) throws FileNotFoundException {
-        this.mrgStylesheetFile = FileUtils.toExistingFile(path);
-        this.mrgStylesheetPath = path;
+    public void setMrgStylesheet(String path) {
+        this.mrgXslPath = path;
     }
 
 
     public final String getPidStylesheet() {
-        return pidStylesheetPath;
+        return pidXslPath;
     }
 
-    public void setPidStylesheet(String path) throws FileNotFoundException {
-        this.pidStylesheetFile = FileUtils.toExistingFile(path);
-        this.pidStylesheetPath = path;
+    public void setPidStylesheet(String path) {
+        this.pidXslPath = path;
     }
 
 	/**
@@ -109,7 +104,8 @@ public class ADTService extends AbstractHL7Service {
             throws HL7Exception {
         Dataset pat = DcmObjectFactory.getInstance().newDataset();
         try {
-            Transformer t = templates.getTemplates(pidStylesheetFile).newTransformer();
+            File pidXslFile = FileUtils.toExistingFile(pidXslPath);
+            Transformer t = templates.getTemplates(pidXslFile).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
                     .getSAXHandler2(null)));
 			String pid = pat.getString(Tags.PatientID);
@@ -125,7 +121,8 @@ public class ADTService extends AbstractHL7Service {
             try {
                 if (isMerge(msg)) {
                     Dataset mrg = DcmObjectFactory.getInstance().newDataset();
-                    Transformer t2 = templates.getTemplates(mrgStylesheetFile).newTransformer();
+                    File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
+                    Transformer t2 = templates.getTemplates(mrgXslFile).newTransformer();
                     t2.transform(new DocumentSource(msg), new SAXResult(mrg
                             .getSAXHandler2(null)));
 					final String opid = mrg.getString(Tags.PatientID);
