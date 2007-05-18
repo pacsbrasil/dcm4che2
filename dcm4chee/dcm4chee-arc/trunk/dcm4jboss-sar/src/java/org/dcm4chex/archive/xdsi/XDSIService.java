@@ -103,11 +103,13 @@ import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -895,7 +897,7 @@ public class XDSIService extends ServiceMBeanSupport {
     }
 	
 	public boolean sendSOAP(String kosIuid, Properties mdProps) throws SQLException {
-		Dataset kos = queryInstance( kosIuid, UIDs.KeyObjectSelectionDocument );
+		Dataset kos = queryInstance( kosIuid );
 		if ( kos == null ) return false;
 		if ( mdProps == null ) mdProps = this.metadataProps;
         List files = new QueryFilesCmd(kosIuid).getFileDTOs();
@@ -912,27 +914,17 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	
 	
-	private Dataset queryInstance(String kosIuid, String sopClassUID) {
-		Dataset keys = DcmObjectFactory.getInstance().newDataset();
-		keys.putUI(Tags.SOPInstanceUID, kosIuid);
-		keys.putUI(Tags.SOPClassUID, sopClassUID);
-		QueryCmd query = null;
+	private Dataset queryInstance(String iuid) {
 		try {
-			query = QueryCmd.createInstanceQuery(keys, false, true);
-			query.execute();
-			if (query.next())
-				return query.getDataset();			
-		} catch (SQLException e) {
-			log.error("Query for Key Object Selection iuid:" + kosIuid + " failed!", e);
-		} finally {
-			if (query != null)
-				query.close();
+            return getContentManager().getInstanceByIUID(iuid);
+		} catch (Exception e) {
+			log.error("Query for SOP Instance UID:" + iuid + " failed!", e);
 		}
 		return null;
 	}
 
 	public boolean sendSOAP(String kosIuid) throws SQLException {
-		Dataset kos = queryInstance( kosIuid, UIDs.KeyObjectSelectionDocument );
+		Dataset kos = queryInstance( kosIuid );
 		return sendSOAP(kos,null);
 	}
 	public boolean sendSOAP(Dataset kos, Properties mdProps) throws SQLException {
@@ -995,7 +987,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	public boolean exportPDF(String iuid, Properties mdProps) throws SQLException, MalformedURLException {
 		log.debug("export PDF to XDS Instance UID:"+iuid);
-		Dataset ds = queryInstance(iuid, null);
+		Dataset ds = queryInstance(iuid);
 		if ( ds == null ) return false;
 		String pdfUID = UIDGenerator.getInstance().createUID();
 		log.info("Document UID of exported PDF:"+pdfUID);
@@ -1023,7 +1015,7 @@ public class XDSIService extends ServiceMBeanSupport {
     
     public boolean createFolder( Properties mdProps ) {
         String patDsIUID = mdProps.getProperty("folder.patDatasetIUID");
-        Dataset ds = queryInstance(patDsIUID,null);
+        Dataset ds = queryInstance(patDsIUID);
         log.info("create XDS Folder for patient:"+ds.getString(Tags.PatientID));
         mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
         log.info("XAD patient:"+mdProps.getProperty("xadPatientID"));
@@ -1379,5 +1371,11 @@ public class XDSIService extends ServiceMBeanSupport {
             throw new IllegalArgumentException("Error: KeyObject Service cant create manifest Key Object! Reason:"+e.getClass().getName());
         }
         return (Dataset) o;
+    }
+    
+    private ContentManager getContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
     }
 }
