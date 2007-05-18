@@ -252,7 +252,6 @@ class Forward2 {}
 class forward2 {}
 
 /**
- * @depend - - - MPPSScp
  */
 class GPWLFeed {}
 
