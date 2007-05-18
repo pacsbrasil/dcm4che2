@@ -40,8 +40,6 @@
 package org.dcm4chex.archive.dcm.gpwlscp;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -50,30 +48,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManager;
 import org.dcm4chex.archive.ejb.interfaces.GPWLManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
-import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.MWLManager;
-import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -87,24 +75,10 @@ import org.xml.sax.InputSource;
  * 
  */
 
-public class GPWLFeedService extends ServiceMBeanSupport implements
-        NotificationListener {
+public class GPWLFeedService extends ServiceMBeanSupport {
 
     private static final int[] PAT_ATTR_TAGS = { Tags.PatientName,
             Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
-
-    private static final int[] REF_RQ_TAGS_FROM_MPPS_SSA = {
-            Tags.AccessionNumber, Tags.RefStudySeq, Tags.StudyInstanceUID,
-            Tags.RequestedProcedureDescription, Tags.RequestedProcedureID, };
-
-    private static final int[] REF_RQ_TAGS_FROM_MWL_ITEM = {
-            Tags.RequestedProcedureCodeSeq, Tags.RequestingPhysician, };
-
-    private static final int[] REF_RQ_TAGS_IN_MPPS_SSA_AND_MWL_ITEM = {
-            Tags.AccessionNumber, Tags.RequestedProcedureDescription,
-            Tags.RequestedProcedureID, };
-
-    private ObjectName mppsScpServiceName;
 
     private Map humanPerformer = null;
 
@@ -112,19 +86,7 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
 
     private File templatePath = null;
 
-    private File mppsConfigFile;
-
-    private Properties mppsConfig = new Properties();
-
     private static DcmObjectFactory dof = DcmObjectFactory.getInstance();
-
-    public final ObjectName getMppsScpServiceName() {
-        return mppsScpServiceName;
-    }
-
-    public final void setMppsScpServiceName(ObjectName mppsScpServiceName) {
-        this.mppsScpServiceName = mppsScpServiceName;
-    }
 
     /**
      * @return Returns the physicians.
@@ -155,23 +117,6 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
      */
     public void setTemplatePath(String path) throws MalformedURLException {
         templatePath = new File(path.replace('/', File.separatorChar));
-    }
-
-    public final String getMppsConfigFile() {
-        return mppsConfigFile.getPath();
-    }
-
-    public final void setMppsConfigFile(String path) throws IOException {
-        File f = new File(path.replace('/', File.separatorChar));
-        Properties p = new Properties();
-        FileInputStream in = new FileInputStream(FileUtils.resolve(f));
-        try {
-            p.load(in);
-        } finally {
-            in.close();
-        }
-        this.mppsConfig = p;
-        this.mppsConfigFile = f;
     }
 
     private String codes2String(Map codes) {
@@ -218,27 +163,6 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
             map.put(codeValue, ds);
         }
         return map;
-    }
-
-    protected void startService() throws Exception {
-        server.addNotificationListener(mppsScpServiceName, this,
-                MPPSScpService.NOTIF_FILTER, null);
-    }
-
-    protected void stopService() throws Exception {
-        server.removeNotificationListener(mppsScpServiceName, this,
-                MPPSScpService.NOTIF_FILTER, null);
-    }
-
-    public void handleNotification(Notification notif, Object handback) {
-        Dataset mpps = (Dataset) notif.getUserData();
-        // if N_CREATE
-        if (mpps.contains(Tags.ScheduledStepAttributesSeq))
-            return;
-        if (!"COMPLETED".equals(mpps.getString(Tags.PPSStatus)))
-            return;
-        final String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
-        addWorklistItem(makeGPWLItem(getMPPS(mppsiuid)));
     }
 
     public List listTemplates() {
@@ -328,137 +252,6 @@ public class GPWLFeedService extends ServiceMBeanSupport implements
                 GPWLManagerHome.class, GPWLManagerHome.JNDI_NAME)).create();
     }
 
-    private Dataset makeGPWLItem(Dataset mpps) {
-        Dataset codeItem = mpps.getItem(Tags.ProcedureCodeSeq);
-        String key = codeItem.getString(Tags.CodeValue) + '^'
-                + codeItem.getString(Tags.CodingSchemeDesignator);
-        String wkitmtpl = mppsConfig.getProperty(key);
-        if (wkitmtpl == null) {
-            log.info("no workitem configured for procedure");
-            log.info(codeItem);
-            return null;
-        }
-
-        String uri = FileUtils.resolve(mppsConfigFile).getParentFile().toURI()
-                + wkitmtpl;
-        try {
-            Dataset gpsps = DatasetUtils.fromXML(new InputSource(uri));
-            gpsps.putAll(mpps.subSet(PAT_ATTR_TAGS));
-            gpsps.putUI(Tags.SOPClassUID,
-                    UIDs.GeneralPurposeScheduledProcedureStepSOPClass);
-            final String iuid = UIDGenerator.getInstance().createUID();
-            gpsps.putUI(Tags.SOPInstanceUID, iuid);
-            DcmElement ssaSq = mpps.get(Tags.ScheduledStepAttributesSeq);
-            String siuid = ssaSq.getItem().getString(Tags.StudyInstanceUID);
-            gpsps.putUI(Tags.StudyInstanceUID, siuid);
-            gpsps.putSH(Tags.SPSID, mpps.getString(Tags.PPSID));
-            if (!gpsps.contains(Tags.SPSStartDateAndTime)) {
-                gpsps.putDT(Tags.SPSStartDateAndTime, new Date());
-            }
-            DcmElement ppsSq = gpsps.putSQ(Tags.RefPPSSeq);
-            Dataset refPPS = ppsSq.addNewItem();
-            refPPS.putUI(Tags.RefSOPClassUID, mpps.getString(Tags.SOPClassUID));
-            refPPS.putUI(Tags.RefSOPInstanceUID, mpps
-                    .getString(Tags.SOPInstanceUID));
-            DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
-            DcmElement inSq = gpsps.putSQ(Tags.InputInformationSeq);
-            Dataset inputInfo = inSq.addNewItem();
-            inputInfo.putUI(Tags.StudyInstanceUID, siuid);
-            DcmElement inSeriesSq = inputInfo.putSQ(Tags.RefSeriesSeq);
-            for (int i = 0, n = perfSeriesSq.countItems(); i < n; ++i) {
-                Dataset perfSeries = perfSeriesSq.getItem(i);
-                Dataset inSeries = inSeriesSq.addNewItem();
-                inSeries.putUI(Tags.SeriesInstanceUID, perfSeries
-                        .getString(Tags.SeriesInstanceUID));
-                DcmElement inRefSopSq = inSeries.putSQ(Tags.RefSOPSeq);
-                DcmElement refImgSopSq = perfSeries.get(Tags.RefImageSeq);
-                for (int j = 0, m = refImgSopSq.countItems(); j < m; ++j) {
-                    inRefSopSq.addItem(refImgSopSq.getItem(j));
-                }
-                DcmElement refNoImgSopSq = perfSeries
-                        .get(Tags.RefNonImageCompositeSOPInstanceSeq);
-                for (int j = 0, m = refNoImgSopSq.countItems(); j < m; ++j) {
-                    inRefSopSq.addItem(refNoImgSopSq.getItem(j));
-                }
-            }
-            if (!gpsps.contains(Tags.RefRequestSeq)) {
-                initRefRequestSeq(gpsps, ssaSq);
-            }
-            log.info("create workitem using template " + wkitmtpl);
-            log.debug(gpsps);
-            return gpsps;
-        } catch (Exception e) {
-            log.error("Failed to load workitem configuration from " + uri, e);
-        }
-        return null;
-    }
-
-    private void initRefRequestSeq(Dataset gpsps, DcmElement ssaSq)
-            throws Exception {
-        DcmObjectFactory dof = DcmObjectFactory.getInstance();
-        DcmElement refRqSq = gpsps.putSQ(Tags.RefRequestSeq);
-        for (int i = 0, n = ssaSq.countItems(); i < n; ++i) {
-            Dataset ssa = ssaSq.getItem(i);
-            String rpid = ssa.getString(Tags.RequestedProcedureID);
-            String spsid = ssa.getString(Tags.SPSID);
-            if (spsid != null) {
-                Dataset refRq = dof.newDataset();
-                refRq.putAll(ssa.subSet(REF_RQ_TAGS_FROM_MPPS_SSA));
-                try {
-                    Dataset mwlItem = getMWLManager().getWorklistItem(rpid, spsid);
-                    if (mwlItem == null) {
-                        log.warn("No such MWL item[spsid=" + spsid
-                                + "] -> use request info available in MPPS");
-                    } else if (checkConsistency(mwlItem, ssa)) {
-                        refRq.putAll(mwlItem.subSet(REF_RQ_TAGS_FROM_MWL_ITEM));
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to access MWL item[spsid=" + spsid
-                            + "] -> use request info available in MPPS", e);
-                }
-                refRqSq.addItem(refRq);
-            }
-        }
-    }
-
-    private MWLManager getMWLManager() throws CreateException, RemoteException,
-            HomeFactoryException {
-        return ((MWLManagerHome) EJBHomeFactory.getFactory().lookup(
-                MWLManagerHome.class, MWLManagerHome.JNDI_NAME)).create();
-    }
-
-    private boolean checkConsistency(Dataset mwlItem, Dataset ssa) {
-        boolean ok = true;
-        DcmElement mwlAttr, ssaAttr;
-        int tag;
-        for (int i = 0; i < REF_RQ_TAGS_IN_MPPS_SSA_AND_MWL_ITEM.length; ++i) {
-            tag = REF_RQ_TAGS_IN_MPPS_SSA_AND_MWL_ITEM[i];
-            mwlAttr = mwlItem.get(tag);
-            ssaAttr = ssa.get(tag);
-            if (mwlAttr != null && ssaAttr != null && !mwlAttr.equals(ssaAttr)) {
-                log.warn("MPPS SSA attribute: " + ssaAttr + " does not match "
-                        + mwlAttr + " of referenced MWL Item[spsid="
-                        + ssa.getString(Tags.SPSID));
-                ok = false;
-            }
-        }
-        return ok;
-    }
-
-    private Dataset getMPPS(String iuid) {
-        try {
-            return getMPPSManager().getMPPS(iuid);
-        } catch (Exception e) {
-            log.error("Failed to load MPPS - " + iuid, e);
-            return null;
-        }
-    }
-
-    private MPPSManager getMPPSManager() throws CreateException,
-            RemoteException, HomeFactoryException {
-        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
-    }
 
     private ContentManager getContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory

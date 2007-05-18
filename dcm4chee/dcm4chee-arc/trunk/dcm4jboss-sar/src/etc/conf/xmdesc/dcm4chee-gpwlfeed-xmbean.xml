@@ -2,7 +2,7 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>GPWL Feed Service. Used to add entries to the General Purpose Worklist, triggered by received MPPS N-Set messages.
+   <description>GPWL Feed Service. Used by dcm4chee-web to add entries to the General Purpose Worklist.
    </description>
 
    <descriptors>
@@ -19,20 +19,8 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
-      getMethod="getMppsConfigFile"
-      setMethod="setMppsConfigFile">
-      <description><![CDATA[Configuration file, which maps
-      Procedure Codes of received MPPS messages to Work Item template files.
-      A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>  
-      </description>
-      <name>MPPSConfigFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-gpwl.conf"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getTemplatePath" setMethod="setTemplatePath">
+      getMethod="getTemplatePath"
+      setMethod="setTemplatePath">
       <description>URL to the directory of worklist entry templates.
       </description>
       <name>TemplatePath</name>
@@ -41,7 +29,9 @@
          <value value="conf/dcm4chee-gpwl"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getHumanPerformer" setMethod="setHumanPerformer">
+   <attribute access="read-write"
+      getMethod="getHumanPerformer"
+      setMethod="setHumanPerformer">
       <description>List of human performers for a worklist entry.
       </description>
       <name>HumanPerformerList</name>
@@ -49,14 +39,6 @@
       <descriptors>
          <value value="doc1^DCM4CHEE^Dr. Allis,doc2^HUGO^Dr. Suse"/>
       </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getMppsScpServiceName"
-      setMethod="setMppsScpServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>MppsScpServiceName</name>
-      <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
 

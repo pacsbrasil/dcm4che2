@@ -5,7 +5,5 @@
   <mbean code="org.dcm4chex.archive.dcm.gpwlscp.GPWLFeedService"
     name="dcm4chee.archive:service=GPWLFeed"
     xmbean-dd="xmdesc/dcm4chee-gpwlfeed-xmbean.xml">
-    <depends optional-attribute-name="MppsScpServiceName"
-      >dcm4chee.archive:service=MPPSScp</depends>
   </mbean>
 </server>
