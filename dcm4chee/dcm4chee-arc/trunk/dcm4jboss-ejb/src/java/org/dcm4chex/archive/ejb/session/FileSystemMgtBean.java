@@ -593,7 +593,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset releaseStudy(Long studyPk, Long fsPk, boolean deleteUncommited, Collection filesToPurge) throws EJBException, RemoveException,
+    public Dataset releaseStudy(Long studyPk, Long fsPk, boolean deleteUncommited, boolean deleteEmptyPatient, Collection filesToPurge) throws EJBException, RemoveException,
             FinderException {
         Dataset ian = DcmObjectFactory.getInstance().newDataset();;
         
@@ -681,6 +681,20 @@ public abstract class FileSystemMgtBean implements SessionBean {
 			// Cascade-delete the study
 			// FIXME: this will delete files stored on all file systems, but currently we only deleted the one specified.
 			study.remove();
+            if ( deleteEmptyPatient ) {
+                if ( patient.getStudies().size() == 0 &&
+                        patient.getMwlItems().size() == 0 &&
+                        patient.getGsps().size() == 0 &&
+                        patient.getMpps().size() == 0 &&
+                        patient.getGppps().size() == 0 ) {
+                    log.info( "Delete empty patient:"+patient.asString() );
+                    try {
+                        patient.remove();
+                    } catch ( Exception ignore ) {
+                        log.error("Cant remove empty patient!", ignore);
+                    }
+                }
+            }
 		}            
         
         return ian;

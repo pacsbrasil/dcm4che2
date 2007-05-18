@@ -150,7 +150,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private int validFileStatus = 0;
 
     private boolean deleteUncommited = false;
-
+    private boolean deleteEmptyPatient = false;
+    
     private long studyCacheTimeout = 0L;
 
     private long purgeFilesInterval = 0L;
@@ -419,6 +420,32 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
      */
     public void setDeleteStudiesStorageNotCommited(boolean b) {
         deleteUncommited = b;
+    }
+
+    /**
+     * Returns true if empty patients should be deleted.
+     * <p>
+     * This option is only effective if a study is deleted on the basis 
+     * of 'deleteUncommited' policy!
+     * 
+     * @return
+     */
+    public boolean isDeleteEmptyPatient() {
+        return deleteEmptyPatient;
+    }
+
+    /**
+     * Set 'delete empty patient' option for 'deleteUncommited' policy.
+     * <p>
+     * This option is only effective if a study is deleted on the basis 
+     * of 'deleteUncommited' policy!
+     * <p>
+     * Only empty patients (No studies, MWL, MPPS, GPWL and GPPPS) will be deleted!
+     * 
+     * @param deleteEmptyPatient
+     */
+    public void setDeleteEmptyPatient(boolean deleteEmptyPatient) {
+        this.deleteEmptyPatient = deleteEmptyPatient;
     }
 
     /**
@@ -1253,7 +1280,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 size = fsmgt.getStudySize(study.getPk(), studyOnFs
                         .getFileSystem().getPk());
                 this.schedule(new PurgeStudyOrder(study.getPk(), studyOnFs
-                        .getFileSystem().getPk(), deleteUncommited), System
+                        .getFileSystem().getPk(), deleteUncommited, deleteEmptyPatient), System
                         .currentTimeMillis());
 
                 // Remove the StudyOnFs record from database immediately to
@@ -1264,7 +1291,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 fsmgt.remove();
             }
         } else {
-            log.warn("Study [" + study.getStudyIuid() + "] can not be deleted");
+            if ( log.isTraceEnabled() )
+                log.trace("Study [" + study.getStudyIuid() + "] doesnt fulfil any deleter rule!");
         }
         return size;
     }
@@ -1274,7 +1302,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
         Collection files = new ArrayList();
         Dataset ian = fsmgt.releaseStudy(order.getStudyPk(), order.getFsPk(),
-                order.isDeleteUncommited(), files);
+                order.isDeleteUncommited(), order.isDeleteEmptyPatient(), files);
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
             File file = FileUtils.toFile((String) iter.next());

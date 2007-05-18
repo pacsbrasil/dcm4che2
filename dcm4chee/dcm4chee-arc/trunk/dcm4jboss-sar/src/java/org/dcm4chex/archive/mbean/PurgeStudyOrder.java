@@ -57,12 +57,14 @@ public class PurgeStudyOrder extends BaseJmsOrder implements Serializable {
 
 	private Long studyPk = null;
 	private Long fsPk = null;
-	private boolean deleteUncommited = false;
+    private boolean deleteUncommited = false;
+    private boolean deleteEmptyPatient = false;
 	
-	public PurgeStudyOrder(Long studyPk, Long fsPk, boolean deleteUncommited) {
+	public PurgeStudyOrder(Long studyPk, Long fsPk, boolean deleteUncommited, boolean deleteEmptyPatient) {
 		this.studyPk = studyPk;
 		this.fsPk = fsPk;
 		this.deleteUncommited = deleteUncommited;
+        this.deleteEmptyPatient = deleteEmptyPatient;
 	}
 		
 	public String toString()
@@ -71,7 +73,10 @@ public class PurgeStudyOrder extends BaseJmsOrder implements Serializable {
 		sb.append(super.toString());
 		sb.append("\tStudy PK: ").append(studyPk).append("\n");
 		sb.append("\tFileSystem PK: ").append(fsPk).append("\n");
-		sb.append("\tDelete uncommited: ").append(deleteUncommited).append("\n");
+        sb.append("\tDelete uncommited: ").append(deleteUncommited).append("\n");
+        if ( deleteUncommited ) {
+            sb.append("\t  Delete empty patient: ").append(deleteEmptyPatient).append("\n");
+        }
 		return sb.toString();
 	}
 
@@ -83,7 +88,11 @@ public class PurgeStudyOrder extends BaseJmsOrder implements Serializable {
 		this.deleteUncommited = deleteUncommited;
 	}
 
-	public Long getFsPk() {
+	public boolean isDeleteEmptyPatient() {
+        return deleteEmptyPatient;
+    }
+
+    public Long getFsPk() {
 		return fsPk;
 	}
 

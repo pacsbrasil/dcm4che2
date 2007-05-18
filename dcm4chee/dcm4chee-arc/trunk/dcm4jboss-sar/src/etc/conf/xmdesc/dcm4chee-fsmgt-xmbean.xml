@@ -278,6 +278,21 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isDeleteEmptyPatient"
+      setMethod="setDeleteEmptyPatient">
+      <description><![CDATA[Enables deletion of <i>empty</i> patients. <br> 
+      				This option is only effective, when a study is removed completely 
+      				on the basis of <i>DeleteStudiesFromSystem</i> rule.<br/>
+      				Only patients with NO studies, MWL, MPPS, GPWL and GPPPS 
+      				entries will be deleted! ]]>
+      </description>
+      <name>DeleteEmptyPatient</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getStudyCacheTimeout"
       setMethod="setStudyCacheTimeout">
       <description><![CDATA[Defines how long a study is not accessed before it will
