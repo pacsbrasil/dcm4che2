@@ -367,10 +367,8 @@ type           Event Type Code
 <attribute name="SchedulerServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLFeed">
-<attribute name="MPPSConfigFile"/>
 <attribute name="TemplatePath"/>
 <attribute name="HumanPerformerList"/>
-<attribute name="MppsScpServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLFeed2">
 <attribute name="LogStationAETitles"/>
