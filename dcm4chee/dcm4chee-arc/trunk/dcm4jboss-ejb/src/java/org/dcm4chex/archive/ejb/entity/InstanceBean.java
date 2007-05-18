@@ -39,8 +39,9 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-//import java.util.Collection;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,9 +67,9 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
-//import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.util.Convert;
 
@@ -110,6 +111,10 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.srCode = ?2"
  *             transaction-type="Supports"
  *
+ * @ejb.finder signature="java.util.Collection findByStudyAndSrCode(java.lang.String suid, java.lang.String cuid, java.lang.String code, java.lang.String designator)"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.studyIuid = ?1 AND i.sopCuid = ?2 AND i.srCode.codeValue = ?3 AND i.srCode.codingSchemeDesignator = ?4"
+ *             transaction-type="Supports"
+ *
  * @ejb.finder signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1"
  *             transaction-type="Supports"
@@ -118,6 +123,12 @@ import org.dcm4chex.archive.util.Convert;
  *              strategy="on-find"
  *              eager-load-group="*"
  * 
+ * @jboss.query 
+ *  signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *  dynamic="true"
+ *  strategy="on-load"
+ *  page-size="20"
+ *  eager-load-group="*"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
@@ -604,6 +615,60 @@ public abstract class InstanceBean implements EntityBean {
         }
     }
 
+    /**
+     * @ejb.select query=""
+     *  transaction-type="Supports"
+     */ 
+    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+            throws FinderException;
+    
+    /**    
+     * @ejb.home-method
+     */
+    public Collection ejbHomeListByIUIDs(String[] iuids) throws FinderException {
+        StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
+        jbossQl.append(" WHERE i.sopIuid");
+        addIN( jbossQl, 1, iuids.length);
+         log.debug("Execute JBossQL: " + jbossQl);
+        return ejbSelectGeneric(jbossQl.toString(), iuids);
+    }
+
+    /**    
+     * @ejb.home-method
+     */
+    public Collection ejbHomeListByPatientAndSRCode(PatientLocal pat, Collection srCodes, Collection cuids) throws FinderException {
+        StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
+        jbossQl.append(" WHERE i.series.study.patient = ?1");
+        ArrayList params = new ArrayList();
+        params.add(pat);
+        int idx = 2;
+        if ( srCodes != null && srCodes.size() > 0 ) {
+            jbossQl.append( " AND CONCAT(i.srCode.codeValue, CONCAT('^', i.srCode.codingSchemeDesignator) )" );
+            idx = addIN(jbossQl, idx, srCodes.size());
+            params.addAll(srCodes);
+        }
+        if ( cuids != null && cuids.size() > 0 ) {
+            jbossQl.append( " AND i.sopCuid" );
+            idx = addIN(jbossQl, idx, cuids.size());
+            params.addAll(cuids);
+        }
+        log.debug("Execute JBossQL: " + jbossQl);
+        return ejbSelectGeneric( jbossQl.toString(), params.toArray() );
+    }
+
+    private int addIN(StringBuffer jbossQl, int idx, int len) {
+        if ( len > 1 ) {
+            jbossQl.append(" IN ( ");
+            for (int i = 1; i < len; i++) {
+                jbossQl.append("?").append(idx++).append(", ");
+            } 
+            jbossQl.append("?").append(idx++).append(")");
+        } else {
+            jbossQl.append(" = ?").append(idx++);
+        }
+        return idx;
+    }
+    
     /**
      * 
      * @ejb.interface-method

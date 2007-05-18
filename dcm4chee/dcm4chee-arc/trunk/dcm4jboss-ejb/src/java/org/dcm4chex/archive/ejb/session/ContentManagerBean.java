@@ -257,13 +257,95 @@ public abstract class ContentManagerBean implements SessionBean {
      */
     public Dataset getInstanceInfo(String iuid, boolean supplement) throws FinderException {
         InstanceLocal il = instanceHome.findBySopIuid(iuid);
-		Dataset ds = il.getAttributes(supplement);
-		SeriesLocal series = il.getSeries();
-		ds.putAll( series.getAttributes(supplement));
-		StudyLocal study = series.getStudy();
-		ds.putAll( study.getAttributes(supplement));
-		ds.putAll( study.getPatient().getAttributes(supplement));
-		return ds;
+		return getInstanceInfo(il, supplement);
+    }
+    
+    /**
+     * Get the Info of an instance.
+     * <p>
+     * Info means the Dataset with all attributes stored in DB for the instance 
+     * (instance, series, study and patient attributes)
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listInstanceInfos(String[] iuids, boolean supplement) throws FinderException {
+        Collection c = instanceHome.listByIUIDs(iuids);
+        return toDatasetList(c, supplement);
+    }
+
+    /**
+     * Get the Info of an instance.
+     * <p>
+     * Info means the Dataset with all attributes stored in DB for the instance 
+     * (instance, series, study and patient attributes)
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listInstanceInfosByPatientAndSRCode(String pid, String issuer, Collection codes, Collection cuids) throws FinderException {
+        PatientLocal pat = this.getPatientLocal(pid, issuer);
+        if ( pat == null ) return null;
+        List srCodes = null;
+        if ( codes != null ) {
+            srCodes = new ArrayList( codes.size() );
+            Dataset ds;
+            for ( Iterator iter = codes.iterator() ; iter.hasNext() ; ) {
+                ds = (Dataset) iter.next();
+                srCodes.add( ds.getString(Tags.CodeValue)+"^"+ds.getString(Tags.CodingSchemeDesignator) );
+            }
+        }
+        Collection c = instanceHome.listByPatientAndSRCode(pat, srCodes, cuids);
+        return toDatasetList(c, false);
+    }
+    
+    private PatientLocal getPatientLocal(String pid, String issuer) throws FinderException {
+        Collection col;
+        if ( issuer != null ) {
+            col = patHome.findByPatientIdWithExactIssuer(pid, issuer);
+        } else {
+            col = patHome.findByPatientId(pid);
+        }
+        if ( col.isEmpty() )
+            return null;
+        if ( col.size() > 1 ) {
+            throw new FinderException("Patient for pid "+pid+" and issuer "+issuer+" is ambiguous!");
+        }
+        return (PatientLocal) col.iterator().next();
+    }
+
+    /**
+     * Get the Info of an instance.
+     * <p>
+     * Info means the Dataset with all attributes stored in DB for the instance 
+     * (instance, series, study and patient attributes)
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public List listInstanceInfosByStudyAndSRCode(String suid, String cuid, String code, String designator, boolean supplement) throws FinderException {
+        Collection c = instanceHome.findByStudyAndSrCode(suid, cuid, code, designator);
+        return toDatasetList(c, supplement);
+    }
+
+    private List toDatasetList(Collection c, boolean supplement) {
+        ArrayList list = new ArrayList(c.size());
+        InstanceLocal il;
+        for ( Iterator iter = c.iterator(); iter.hasNext() ; ) {
+            il = (InstanceLocal) iter.next();
+            list.add(getInstanceInfo(il, supplement));
+        }
+        return list;
+    }
+
+    private Dataset getInstanceInfo(InstanceLocal il, boolean supplement) {
+        Dataset ds = il.getAttributes(supplement);
+        SeriesLocal series = il.getSeries();
+        ds.putAll( series.getAttributes(supplement));
+        StudyLocal study = series.getStudy();
+        ds.putAll( study.getAttributes(supplement));
+        ds.putAll( study.getPatient().getAttributes(supplement));
+        return ds;
     }
     
     /**
