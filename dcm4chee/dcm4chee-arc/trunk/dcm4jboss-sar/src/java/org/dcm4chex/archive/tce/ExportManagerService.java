@@ -112,9 +112,10 @@ import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
@@ -401,18 +402,11 @@ public class ExportManagerService extends AbstractScuService implements
     }
 
     private void onSeriesStored(String suid, String code, String designator) {
-        Dataset keys = DcmObjectFactory.getInstance().newDataset();
-        keys.putUI(Tags.StudyInstanceUID, suid);
-        keys.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
-        Dataset item = keys.putSQ(Tags.ConceptNameCodeSeq).addNewItem();
-        item.putSH(Tags.CodeValue, code);
-        item.putSH(Tags.CodingSchemeDesignator, designator);
-        QueryCmd query = null;
         try {
-            query = QueryCmd.createInstanceQuery(keys, false, true);
-            query.execute();
-            while (query.next()) {
-                Dataset manifest = query.getDataset();
+            List l = getContentManager().listInstanceInfosByStudyAndSRCode(suid, 
+                    UIDs.KeyObjectSelectionDocument, code, designator, false);
+            for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+                Dataset manifest = (Dataset) iter.next();
                 if (!isAllReceived(manifest))
                     continue;
                 try {
@@ -427,12 +421,9 @@ public class ExportManagerService extends AbstractScuService implements
                             + manifest.getString(Tags.SOPInstanceUID), e);
                 }
             }
-        } catch (SQLException e1) {
+        } catch (Exception e1) {
             log.error("Query DB for Export Selectors " + code + '^'
                     + designator + " of study " + suid + " failed!", e1);
-        } finally {
-            if (query != null)
-                query.close();
         }
     }
 
@@ -476,32 +467,24 @@ public class ExportManagerService extends AbstractScuService implements
     }
 
     private boolean isAllReceived(Dataset sel) {
-        Dataset keys = DcmObjectFactory.getInstance().newDataset();
         ArrayList list = new ArrayList();
         copyIUIDs(sel.get(Tags.IdenticalDocumentsSeq), list);
         copyIUIDs(sel.get(Tags.CurrentRequestedProcedureEvidenceSeq), list);
         final String[] iuids = (String[]) list.toArray(new String[list.size()]);
         log.info("Check if " + iuids.length
                 + " referenced objects were already received");
-        keys.putUI(Tags.SOPInstanceUID, iuids);
-        QueryCmd query = null;
         try {
-            query = QueryCmd.createInstanceQuery(keys, false, true);
-            query.execute();
-            for (int i = iuids.length; i > 0; i--) {
-                if (!query.next()) {
-                    log.info("Waiting for receive of " + i
-                            + " referenced objects");
-                    return false;
-                }
+            List l = getContentManager().listInstanceInfos(iuids, false);
+            int diff = iuids.length - l.size();
+            if ( diff > 0 ) {
+                log.info("Waiting for receive of " + diff
+                        + " referenced objects");
+                return false;
             }
             log.info("All " + iuids.length + " referenced objects received!");
             return true;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             log.error("Query DB for Referenced Instances failed!", e);
-        } finally {
-            if (query != null)
-                query.close();
         }
         return false;
     }
@@ -1276,6 +1259,9 @@ public class ExportManagerService extends AbstractScuService implements
         Logger.getLogger("auditlog").info(msg);
     }
 
-
-
+    private ContentManager getContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
 }
