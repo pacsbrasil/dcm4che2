@@ -58,7 +58,7 @@ import java.util.*;
  */
 public class HsmRetrieveOrder extends BaseJmsOrder {
     private final Map<String, List<HsmFile>> hsmFiles;
-    private final String destination;
+    private final String destinationAET;
     private static final long serialVersionUID = 5152979080490966440L;
 
     /**
@@ -66,10 +66,10 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
      * and destination AE title of the requesting modality.
      *
      * @param archivedFiles array of files to be retrieved from the HSM archive
-     * @param destination destination AE title of the modality to send images afterwards
+     * @param destinationAET destination AE title of the modality to send images afterwards
      */
-    public HsmRetrieveOrder(FileInfo[][] archivedFiles, String destination) {
-        this(new HashMap<String, List<HsmFile>>(), destination);
+    public HsmRetrieveOrder(FileInfo[][] archivedFiles, String destinationAET) {
+        this(new HashMap<String, List<HsmFile>>(), destinationAET);
         Assert.notNull(archivedFiles, "archivedFiles"); // NON-NLS
         Map<String, HsmFile> extracted = new HashMap<String, HsmFile>();
         for(FileInfo[] finfos : archivedFiles) {
@@ -79,13 +79,13 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
                         hsmFiles.put(finfo.seriesIUID, new ArrayList<HsmFile>());
                         extracted.clear();
                     }
-                    String tarPath = HsmFile.extractTarPath(finfo.fileID);
-                    if(!extracted.containsKey(tarPath)) {
-                        HsmFile hsmFile = new HsmFile(tarPath, finfo.basedir);
+                    String path = HsmFile.isPackedTar(finfo.fileID) ? HsmFile.extractTarPath(finfo.fileID) : finfo.fileID;
+                    if(!extracted.containsKey(path)) {
+                        HsmFile hsmFile = new HsmFile(path, finfo.basedir);
                         hsmFiles.get(finfo.seriesIUID).add(hsmFile);
-                        extracted.put(tarPath, hsmFile);
+                        extracted.put(path, hsmFile);
                     }
-                    extracted.get(tarPath).addEntry(finfo);
+                    extracted.get(path).addEntry(finfo);
                 }
             }
         }
@@ -99,18 +99,18 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
      * failed and it has to be rescheduled.
      *
      * @param hsmFiles map of series IUID => list of HSM objects to retrieve
-     * @param destination destination AE title of the modality to send images afterwards
+     * @param destinationAET destination AE title of the modality to send images afterwards
      */
-    public HsmRetrieveOrder(Map<String, List<HsmFile>> hsmFiles, String destination) {
-        Assert.hasText(destination, "destination"); // NON-NLS
+    public HsmRetrieveOrder(Map<String, List<HsmFile>> hsmFiles, String destinationAET) {
+        Assert.hasText(destinationAET, "destinationAET"); // NON-NLS
         Assert.notNull(hsmFiles, "hsmFiles"); // NON-NLS
         this.hsmFiles = new HashMap<String, List<HsmFile>>(hsmFiles.size());
         this.hsmFiles.putAll(hsmFiles);
-        this.destination = destination;
+        this.destinationAET = destinationAET;
     }
 
-    public String getDestination() {
-        return destination;
+    public String getDestinationAET() {
+        return destinationAET;
     }
 
     public Map<String, List<HsmFile>> getHsmFiles() {
@@ -130,7 +130,7 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
 
         final HsmRetrieveOrder that = (HsmRetrieveOrder) o;
 
-        return destination.equals(that.destination) && hsmFiles.equals(that.hsmFiles);
+        return destinationAET.equals(that.destinationAET) && hsmFiles.equals(that.hsmFiles);
 
     }
 
@@ -143,7 +143,7 @@ public class HsmRetrieveOrder extends BaseJmsOrder {
     public int hashCode() {
         int result;
         result = hsmFiles.hashCode();
-        result = 29 * result + destination.hashCode();
+        result = 29 * result + destinationAET.hashCode();
         return result;
     }
 

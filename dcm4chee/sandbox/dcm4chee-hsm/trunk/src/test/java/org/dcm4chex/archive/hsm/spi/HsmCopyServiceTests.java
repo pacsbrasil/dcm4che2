@@ -42,14 +42,16 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.hsm.FileCopyOrder;
 import org.dcm4chex.archive.hsm.spi.utils.HsmUtils;
+import org.dcm4chex.archive.util.FileUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.testng.annotations.AfterMethod;
 import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
 import org.dcm4che.data.Dataset;
 import static org.easymock.EasyMock.*;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
+import javax.management.*;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
@@ -73,6 +75,7 @@ public class HsmCopyServiceTests {
     private File tarFile;
     private String destinationFileSystem;
     private MBeanServer mockMbeanServer;
+    private File dest;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
@@ -85,6 +88,7 @@ public class HsmCopyServiceTests {
         hsmCopyService.setTarServiceName(ObjectName.getInstance("dcm4chee.archive:service=TarService")); // NON-NLS
         hsmCopyService.setHsmClientName(ObjectName.getInstance("dcm4chee.archive:service=HsmClient")); // NON-NLS
         hsmCopyService.setFileStatus("ARCHIVED"); // NON-NLS
+        hsmCopyService.setCleanupAfterCopy(true);
 
 
         File file1 = HsmUtils.classpathResource(FILE1);
@@ -111,12 +115,19 @@ public class HsmCopyServiceTests {
         fileInfos = new ArrayList<FileInfo>();
         fileInfos.add(fileInfo1);
         fileInfos.add(fileInfo2);
-        File tempDir = new File(HsmUtils.classpathResource("."), "temp"); // NON-NLS
-        tempDir.mkdirs();
-        tarFile = new File(tempDir, TAR_FILE);
-        tarFile.createNewFile();
-        destination = HsmUtils.classpathResource(".").getCanonicalPath();
+        dest = FileUtils.toFile(classPathDir, "dest"); // NON-NLS
+        dest.mkdirs();
+        destination = dest.getCanonicalPath();
         destinationFileSystem = "tar:" + destination; // NON-NLS 
+
+        tarFile = new File(dest, TAR_FILE);
+        tarFile.createNewFile();
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception{
+        tarFile.delete();
+        dest.delete();
     }
 
     @Test
@@ -158,7 +169,70 @@ public class HsmCopyServiceTests {
     @Test
     public void removesPrefixesFromFileSystemName() throws Exception {
         destinationFileSystem = "hsm:" + destination; // NON-NLS
-        processPacksAndArchivesImages();
+        doesntPackFilesIntoATarArchiveForDestinationWithoutTarPrefix();
+    }
+
+    @Test
+    public void doesntPackFilesIntoATarArchiveForDestinationWithoutTarPrefix() throws Exception {
+        destinationFileSystem = destination; // Without "tar:" prefix
+
+        File file1Copy = FileUtils.toFile(destinationFileSystem, fileInfo1.fileID);
+        File file2Copy = FileUtils.toFile(destinationFileSystem, fileInfo2.fileID);
+
+        testCopyFilesWithoutPackingIntoTar(file1Copy, file2Copy);
+
+        assertFalse(file1Copy.exists(), "Did not cleaned up after sending file to the HSM archive.");
+        assertFalse(file2Copy.exists(), "Did not cleaned up after sending file to the HSM archive.");
+
+    }
+
+    @Test
+    public void deletesFilesOnlyIfCleanupFlagIsSet() throws Exception {
+        destinationFileSystem = destination; // Without "tar:" prefix
+
+        hsmCopyService.setCleanupAfterCopy(false);
+
+        File file1Copy = FileUtils.toFile(destinationFileSystem, fileInfo1.fileID);
+        File file2Copy = FileUtils.toFile(destinationFileSystem, fileInfo2.fileID);
+
+        try {
+            testCopyFilesWithoutPackingIntoTar(file1Copy, file2Copy);
+
+            assertTrue(file1Copy.exists(), "Must not clean up after sending file to the HSM archive.");
+            assertTrue(file2Copy.exists(), "Must not clean up after sending file to the HSM archive.");
+        } finally {
+            if(file1Copy != null && file1Copy.exists()) file1Copy.delete();
+            if(file2Copy != null && file2Copy.exists()) file2Copy.delete();
+        }
+    }
+
+    private void testCopyFilesWithoutPackingIntoTar(File file1Copy, File file2Copy) throws Exception {
+        expect(mockMbeanServer.invoke(eq(hsmCopyService.getHsmClientName()),
+                eq(HsmCopyService.ARCHIVE),
+                aryEq(new Object[]{destination, file1Copy}),
+                aryEq(new String[]{String.class.getName(), File.class.getName()}))).andReturn(null);
+        expect(mockMbeanServer.invoke(eq(hsmCopyService.getHsmClientName()),
+                eq(HsmCopyService.ARCHIVE),
+                aryEq(new Object[]{destination, file2Copy}),
+                aryEq(new String[]{String.class.getName(), File.class.getName()}))).andReturn(null);
+
+        mockStorage.storeFiles(eq(fileInfos), eq(destinationFileSystem), eq(FileStatus.ARCHIVED));
+
+        String filePath1 = fileInfo1.fileID;
+        String filePath2 = fileInfo2.fileID;
+
+        replay(mockMbeanServer);
+        replay(mockStorage);
+
+        hsmCopyService.process(new TestFileCopyOrder(destinationFileSystem, fileInfos));
+
+        verify(mockMbeanServer);
+        verify(mockStorage);
+
+        assertEquals(fileInfo1.fileID, filePath1);
+        assertEquals(fileInfo2.fileID, filePath2);
+        assertEquals(fileInfo1.basedir, destinationFileSystem);
+        assertEquals(fileInfo2.basedir, destinationFileSystem);
     }
 
     private class TestFileCopyOrder extends FileCopyOrder {

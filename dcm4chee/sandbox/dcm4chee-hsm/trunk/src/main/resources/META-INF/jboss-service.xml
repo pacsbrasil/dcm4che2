@@ -42,5 +42,12 @@
         <depends>dcm4chee.archive:service=Queue,name=FileCopy</depends>
         <depends>dcm4chee.archive:service=JMS</depends>
     </mbean>
+    <!--
+       Implementation of the following MBean is not ready yet.
+    -->
+    <!--mbean code="org.dcm4chex.archive.hsm.spi.client.SimpleHsmClient"
+           name="dcm4chee.archive:service=HsmClient"
+           xmbean-dd="resource:META-INF/SimpleHsmClient.xml">
+    </mbean-->
 
 </server>

@@ -95,6 +95,22 @@
         </descriptors>
     </attribute>
     <attribute access="read-write"
+               getMethod="isCleanupAfterCopy"
+               setMethod="setCleanupAfterCopy">
+        <description>
+            <![CDATA[
+            Boolean flag showing if cleanup is needed after files were delivered to the HSM archive. It is useful for cases when explicit HSM calls (API or command line) were used to deliver files to the HSM archive. In this case all copied files will be deleted from the disk after they were successfully archived.
+            <p/>
+            <b>Note:</b> set it to false if you are using a virtual HSM file system or relying on SyncFileStatus to check if files were successfully archived.
+            ]]>
+        </description>
+        <name>CleanupAfterCopy</name>
+        <type>boolean</type>
+        <descriptors>
+            <value value="true"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
                getMethod="getStoreScpServiceName"
                setMethod="setStoreScpServiceName">
         <description>Used internally. Do NOT modify.

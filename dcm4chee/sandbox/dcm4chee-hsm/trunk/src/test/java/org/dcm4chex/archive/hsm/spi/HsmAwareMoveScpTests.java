@@ -42,11 +42,9 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.jdbc.AEData;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.dcm.qrscp.MoveTask;
-import org.dcm4chex.archive.mbean.JMSService;
 import org.dcm4chex.archive.hsm.spi.utils.HsmUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.AfterMethod;
@@ -86,7 +84,7 @@ public class HsmAwareMoveScpTests {
     private FileInfo[][] archivedFileInfos;
     private FileInfo[][] archivedAndLocalFiles;
     private MBeanServer mockMbeanServer;
-    private HsmAwareQueryRetrieveScpService.TimeProvider timeProvider;
+    private TimeProvider timeProvider;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -193,7 +191,7 @@ public class HsmAwareMoveScpTests {
                 ObjectName.getInstance("dcm4chee.archive:service=HsmCopyService")); // NON-NLS
         service.setJmsServiceName(ObjectName.getInstance("dcm4chee.archive:service=JMS")); // NON-NLS
         service.setJmsPriority(0);
-        timeProvider = new HsmAwareQueryRetrieveScpService.TimeProvider() {
+        timeProvider = new TimeProvider() {
             public long now() {
                 return 0;
             }

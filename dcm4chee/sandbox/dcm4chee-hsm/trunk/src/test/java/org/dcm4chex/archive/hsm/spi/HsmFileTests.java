@@ -57,30 +57,30 @@ public class HsmFileTests {
 
     @Test
     public void testExtractTarPath() {
-        String tar = HsmFile.extractTarPath(HsmFileTests.FULL_PATH);
-        assertEquals(tar, HsmFileTests.TAR_PATH);
+        String tar = HsmFile.extractTarPath(FULL_PATH);
+        assertEquals(tar, TAR_PATH);
     }
 
     @Test
     public void testExtractFilePath() {
-        String file = HsmFile.extractFilePath(HsmFileTests.FULL_PATH);
-        assertEquals(file, HsmFileTests.FILE_PATH);
+        String file = HsmFile.extractFilePath(FULL_PATH);
+        assertEquals(file, FILE_PATH);
     }
 
     @Test
     public void addEntryAddsACopyOfFileInfoAndChangesFileID() throws Exception {
         FileInfo fileInfo = TestUtils.newFileInfo(1,
-                HsmFileTests.FULL_PATH,
-                HsmFileTests.HSM_DIR,
-                HsmFileTests.SERIES_IUID,
+                FULL_PATH,
+                HSM_DIR,
+                SERIES_IUID,
                 0,
                 "1.55.44.3",
                 "123456789012345678901234567890ad", 0); // NON-NLS
-        HsmFile hsmFile = new HsmFile(HsmFileTests.TAR_PATH, HsmFileTests.HSM_DIR);
+        HsmFile hsmFile = new HsmFile(TAR_PATH, HSM_DIR);
         hsmFile.addEntry(fileInfo);
 
         assertNotSame(hsmFile.getEntries().get(0), fileInfo);
         assertTrue(hsmFile.getEntries().contains(fileInfo)); // Contains a copy with the same pk
-        assertEquals(hsmFile.getEntries().get(0).fileID, HsmFile.extractFilePath(HsmFileTests.FULL_PATH));
+        assertEquals(hsmFile.getEntries().get(0).fileID, HsmFile.extractFilePath(FULL_PATH));
     }
 }

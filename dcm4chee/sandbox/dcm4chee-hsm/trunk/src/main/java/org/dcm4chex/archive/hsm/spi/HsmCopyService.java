@@ -52,6 +52,9 @@ import javax.management.ObjectName;
 import java.util.List;
 import java.text.MessageFormat;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.FileOutputStream;
 
 /**
  * A file copy service aware of HSM.
@@ -62,9 +65,9 @@ import java.io.File;
  * were archived it adds duplicated database entries for those files, changing their
  * file path, file system and file status (<code>TO_ARCHIVE</code> or <code>ARCHIVED</code>).
  * <p>
- * <b>Note:</b> at the moment this implementation will always pack files into a TAR archive
- * before copying. This feature will be extracted as a configuration option soon. 
- *
+ * If the destination file system name is a tar URI (tar:), instances of one series are
+ * packed into one tarball. Otherwise instance files are copied individually to the destination file system.
+ * 
  * @see org.dcm4chex.archive.hsm.spi.HsmClient
  * @see org.dcm4chex.archive.hsm.spi.TarService
  * @author Fuad Ibrahimov
@@ -80,8 +83,10 @@ public class HsmCopyService extends AbstractFileCopyService {
     private static final String M_DELETE = "M-DELETE [{0}]"; // NON-NLS
     static final String PACK = "pack"; // NON-NLS
     static final String ARCHIVE = "archive"; // NON-NLS
+    private static final String TAR_PREFIX = "tar:"; // NON-NLS
 
     private Storage storage;
+    private boolean cleanupAfterCopy = false;
 
     private ObjectName tarServiceName;
     private ObjectName hsmClientName;
@@ -113,13 +118,37 @@ public class HsmCopyService extends AbstractFileCopyService {
         List<FileInfo> files = fileCopyOrder.getFileInfos();
         if (files.size() > 0) {
             String destPath = fileCopyOrder.getDestinationFileSystemPath();
-            String destination = FileUtils.toFile(HsmUtils.extractFileSpaceName(destPath)).getCanonicalPath();
-            String tarFileLocation = packAndArchive(files, destination);
-            updateFilesStatus(files,
-                    fileStatus,
-                    destPath,
-                    tarFileLocationInFileSpace(tarFileLocation, destination));
+            if(destPath.startsWith(TAR_PREFIX)) {
+                String destination = FileUtils.toFile(HsmUtils.extractFileSpaceName(destPath)).getCanonicalPath();
+                String tarFileLocation = packAndArchive(files, destination);
+                updateFilesStatus(files,
+                        fileStatus,
+                        destPath,
+                        tarFileLocationInFileSpace(tarFileLocation, destination));
+            } else {
+                copyAndArchive(files, destPath);
+                storage.storeFiles(files, destPath, fileStatus);
+            }
         }
+    }
+
+    private void copyAndArchive(List<FileInfo> files, String destPath) throws Exception {
+        for(FileInfo finfo : files) {
+            File copy = copyTo(finfo, destPath);
+            try {
+                archive(destPath, copy);
+            } finally {
+                cleanup(copy, destPath);
+            }
+            finfo.basedir = destPath;
+        }
+    }
+
+    private File copyTo(FileInfo finfo, String destPath) throws IOException {
+        File original = FileUtils.toFile(finfo.basedir, finfo.fileID);
+        File copy = FileUtils.toFile(destPath, finfo.fileID);
+        HsmUtils.copy(original, copy, bufferSize);
+        return copy;
     }
 
     private String packAndArchive(List<FileInfo> files, String destination) throws Exception {
@@ -130,16 +159,22 @@ public class HsmCopyService extends AbstractFileCopyService {
                 logger.debug(MessageFormat.format(M_DELETE, tarFile.getCanonicalPath()));
             }
         } finally {
-            if (!tarFile.delete()) logger.warn(MessageFormat.format(COULD_NOT_DELETE_FILE, tarFile));
-            HsmUtils.deleteParentsTill(tarFile, destination);
+            cleanup(tarFile, destination);
         }
         return tarFile.getCanonicalPath();
     }
 
-    private void archive(String destination, File tarFile) throws Exception {
+    private void cleanup(File file, String destination) throws IOException {
+        if (this.cleanupAfterCopy) {
+            if (!file.delete()) logger.warn(MessageFormat.format(COULD_NOT_DELETE_FILE, file));
+            HsmUtils.deleteParentsTill(file, destination);
+        }
+    }
+
+    private void archive(String destination, File file) throws Exception {
         server.invoke(hsmClientName,
                 ARCHIVE,
-                new Object[]{destination, tarFile},
+                new Object[]{destination, file},
                 new String[]{String.class.getName(), File.class.getName()});
     }
 
@@ -187,5 +222,24 @@ public class HsmCopyService extends AbstractFileCopyService {
 
     public void setHsmClientName(ObjectName hsmClientName) {
         this.hsmClientName = hsmClientName;
+    }
+
+
+    public boolean isCleanupAfterCopy() {
+        return cleanupAfterCopy;
+    }
+
+    /**
+     * Sets the flag showing if cleanup is needed after files were delivered to the HSM archive.
+     * It is useful for cases when explicit HSM calls (API or command line) were used to deliver
+     * files to the HSM archive. In this case all copied files will be deleted from the
+     * disk after they were successfully archived.
+     * <p>
+     * <b>Note:</b> set it to <code>false</code> if you are using a virtual HSM file system or relying
+     * on <code>SyncFileStatus</code> to check if files were successfully archived.
+     * @param cleanupAfterCopy <code>true</code> if copied files must be cleaned up, <code>false</code> - otherwise
+     */
+    public void setCleanupAfterCopy(boolean cleanupAfterCopy) {
+        this.cleanupAfterCopy = cleanupAfterCopy;
     }
 }

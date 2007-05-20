@@ -44,9 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.text.MessageFormat;
 import java.net.URL;
 
@@ -100,5 +98,41 @@ public abstract class HsmUtils extends FileUtils {
 
     public static String resolveFileSpacePath(String fileSpaceName) throws IOException {
         return toFile(HsmUtils.extractFileSpaceName(fileSpaceName)).getCanonicalPath();
+    }
+
+    public static void copy(File from, File to, int bufferSize) throws IOException {
+        if(to.exists()) {
+            logger.info("File " + to + " exists, will replace it."); // NON-NLS
+            to.delete();
+        }
+
+        to.getParentFile().mkdirs();
+        to.createNewFile();
+
+        FileInputStream ois = null;
+        FileOutputStream cos = null;
+        try {
+            ois = new FileInputStream(from);
+            cos = new FileOutputStream(to);
+            byte[] buf = new byte[bufferSize];
+            int read;
+            while((read = ois.read(buf, 0, bufferSize)) > 0) {
+                cos.write(buf, 0, read);
+            }
+            cos.flush();
+        } finally {
+            try {
+                if(ois != null) ois.close();
+            } catch (IOException ignored) {
+                logger.warn("Could not close file input stream " + from, ignored); // NON-NLS
+            }
+            try {
+                if(cos != null){
+                    cos.close();
+                }
+            } catch (IOException ignored) {
+                logger.warn("Could not close file output stream " + to, ignored); // NON-NLS
+            }
+        }
     }
 }

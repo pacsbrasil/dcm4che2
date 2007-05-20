@@ -71,6 +71,17 @@
         </descriptors>
     </attribute>
     <attribute access="read-write"
+               getMethod="getBufferSize"
+               setMethod="setBufferSize">
+        <description>Size of write byte buffer.
+        </description>
+        <name>BufferSize</name>
+        <type>int</type>
+        <descriptors>
+            <value value="8192"/>
+        </descriptors>
+    </attribute>
+    <attribute access="read-write"
                getMethod="getHsmClientName"
                setMethod="setHsmClientName">
         <description>Used internally. Do NOT modify.

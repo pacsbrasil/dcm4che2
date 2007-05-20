@@ -69,8 +69,11 @@ import java.io.IOException;
  * HsmRetrieveService takes care of retrieving files from the HSM archive, unpacking if necessary
  * and populating the database with the retrieved files entries.
  * <br>
- * This class is not tied into any specific HSM implementation. For HSM calls it delegates to
+ * This class is not tied into any specific HSM implementation. For the HSM calls it delegates to
  * a configured <code>HsmClient</code> implementation.
+ * <p>
+ * If files were packed into a tarball it is recognized by the existence of the ".tar" file extension
+ * in the file path.
  *
  * @see org.dcm4chex.archive.hsm.spi.HsmClient
  * @see org.dcm4chex.archive.hsm.spi.HsmRetrieveOrder
@@ -92,10 +95,10 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
     private static final String FAILED_TO_RETRIEVE_SCHEDULING_RETRY = "Failed to retrieve [{0}]. Scheduling retry."; // NON-NLS
     private static final String FAILED_TO_SCHEDULE_MOVESCU_ORDER = "Failed to schedule MOVE-SCU order [{0}]"; // NON-NLS
     private static final String HSM_RETRIEVE = "HsmRetrieve"; // NON-NLS
-    private static final String RETRIEVE = "retrieve"; // NON-NLS
+    static final String RETRIEVE = "retrieve"; // NON-NLS
     private static final String MOVE_SCU = "MoveScu"; // NON-NLS
-    private static final String UNPACK = "unpack"; // NON-NLS
-    private static final String SELECT_STORAGE_FILE_SYSTEM = "selectStorageFileSystem"; // NON-NLS
+    static final String UNPACK = "unpack"; // NON-NLS
+    static final String SELECT_STORAGE_FILE_SYSTEM = "selectStorageFileSystem"; // NON-NLS
 
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
@@ -114,6 +117,9 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
     private ObjectName fileSystemMgtName;
 
     private File tempDir;
+
+    private TimeProvider timeProvider = TimeProvider.SYSTEM_TIME_PROVIDER;
+    private int bufferSize = 8192;
 
     /**
      * @param message must be an instance of <code>HsmRetrieveOrder</code>, otherwise a <code>ClassCastException</code>
@@ -136,7 +142,7 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
                 } else {
                     logger.warn(MessageFormat.format(FAILED_TO_PROCESS_SCHEDULING_RETRY, order), e);
                     order.setThrowable(e);
-                    scheduleHsmOrder(order, System.currentTimeMillis() + delay, message.getJMSPriority());
+                    scheduleHsmOrder(order, this.timeProvider.now() + delay, message.getJMSPriority());
                 }
             }
         } catch (Throwable t) {
@@ -151,24 +157,28 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
             try {
                 String destination = getCurrentStorageDirPath();
                 for (HsmFile hsmFile : files) {
-                    retrieve(hsmFile);
-                    File tarFile = new File(tempDir, hsmFile.getFilePath().replaceAll("/", File.separator));
-                    unpack(tarFile, destination);
+                    String fileSpace = HsmUtils.resolveFileSpacePath(hsmFile.getFileSpaceName());
+                    String fullFilePath = fullPath(fileSpace, hsmFile.getFilePath());
+                    retrieve(fileSpace, fullFilePath);
+                    if (hsmFile.isPackedTar()) {
+                        unpack(new File(tempDir, hsmFile.getFilePath().replaceAll("/", File.separator)), destination);
+                    } else {
+                        HsmUtils.copy(new File(fullFilePath), HsmUtils.toFile(destination, hsmFile.getFilePath()),
+                                bufferSize);
+                    }
                     storage.storeFiles(hsmFile.getEntries(), destination, FileStatus.DEFAULT);
                 }
             } catch (Exception e) {
                 // TODO - cleanup temp files
                 if (hsmFiles.size() == 1) throw e;
                 logger.warn(MessageFormat.format(FAILED_TO_RETRIEVE_SCHEDULING_RETRY, files), e);
-                scheduleNewHsmOrder(entry.getKey(), files, order.getDestination(), jmsPriority);
+                scheduleNewHsmOrder(entry.getKey(), files, order.getDestinationAET(), jmsPriority);
             }
-            scheduleMoveScuOrder(entry.getKey(), order.getDestination(), jmsPriority);
+            scheduleMoveScuOrder(entry.getKey(), order.getDestinationAET(), jmsPriority);
         }
     }
 
-    private void retrieve(HsmFile file) throws Exception {
-        String fsName = HsmUtils.resolveFileSpacePath(file.getFileSpaceName());
-        String filePath = fullPath(fsName, file.getFilePath());
+    private void retrieve(String fsName, String filePath) throws Exception {
         server.invoke(hsmClientName,
                 RETRIEVE,
                 new Object[]{fsName, filePath, tempDir},
@@ -182,7 +192,7 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
     }
 
     private String separatorFor(String fileSpaceName) {
-        return fileSpaceName.endsWith("") ? "" : File.separator;
+        return fileSpaceName.endsWith("/") ? "" : File.separator;
     }
 
     private String getCurrentStorageDirPath() throws Exception {
@@ -202,7 +212,7 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
     private void scheduleMoveScuOrder(String seriesIuid, String destination, int jmsPriority) {
         MoveOrder order = new MoveOrder(null, destination, jmsPriority, null, null, new String[]{seriesIuid});
         try {
-            jmsDelegate.queue(moveScuQueueName, order, jmsPriority, System.currentTimeMillis());
+            jmsDelegate.queue(moveScuQueueName, order, jmsPriority, this.timeProvider.now());
         } catch (Exception e) {
             logger.error(MessageFormat.format(FAILED_TO_SCHEDULE_MOVESCU_ORDER, order));
         }
@@ -219,7 +229,7 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
     private void scheduleNewHsmOrder(String seriesIuid, List<HsmFile> files, String destination, int jmsPriority) {
         Map<String, List<HsmFile>> newOrderFiles = new HashMap<String, List<HsmFile>>(1);
         newOrderFiles.put(seriesIuid, files);
-        scheduleHsmOrder(new HsmRetrieveOrder(newOrderFiles, destination), System.currentTimeMillis(), jmsPriority);
+        scheduleHsmOrder(new HsmRetrieveOrder(newOrderFiles, destination), this.timeProvider.now(), jmsPriority);
     }
 
     protected void startService() throws Exception {
@@ -347,5 +357,20 @@ public class HsmRetrieveService extends ServiceMBeanSupport implements MessageLi
         } else if (!this.tempDir.isDirectory()) {
             throw new IllegalArgumentException("Provided tempDir doesn't point to a directory: <" + this.tempDir.getCanonicalPath() + ">");
         }
+    }
+
+
+    void setTimeProvider(TimeProvider timeProvider) {
+        this.timeProvider = timeProvider;
+    }
+
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        if(bufferSize < 1) throw new IllegalArgumentException("Buffer size must be a positive integer, but was " + bufferSize);
+        this.bufferSize = bufferSize;
     }
 }

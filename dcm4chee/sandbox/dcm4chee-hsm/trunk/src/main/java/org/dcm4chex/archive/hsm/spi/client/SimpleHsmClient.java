@@ -1,6 +1,7 @@
 package org.dcm4chex.archive.hsm.spi.client;
 
 import org.dcm4chex.archive.hsm.spi.HsmClient;
+import org.jboss.system.ServiceMBeanSupport;
 
 import java.io.File;
 
@@ -10,7 +11,7 @@ import java.io.File;
  * @author Fuad Ibrahimov
  * @since Apr 22, 2007
  */
-public class SimpleHsmClient implements HsmClient {
+public class SimpleHsmClient extends ServiceMBeanSupport implements HsmClient {
 
     public void retrieve(String filespace, String filePath, File destination) throws Exception {
         // TODO implement me

@@ -60,8 +60,8 @@ import java.util.HashMap;
 /**
  * <code>TarService</code> is an MBean implementation of {@link org.dcm4chex.archive.hsm.spi.TarArchiver}.
  * <br>
- * On top of the contract of <code>TarArchiver</code>, this implementation provides mechanism to check MD5 sums
- * of packed and unpacked files.
+ * On top of the contract of the <code>TarArchiver</code>, this implementation provides mechanism to check MD5 sums
+ * of the packed and unpacked files.
  *
  * @see #setCheckMd5(boolean) 
  * @author Fuad Ibrahimov

@@ -61,6 +61,7 @@ public class HsmFile implements Serializable {
 
     private static final String ILLEGAL_TAR_PATH = "Illegal TAR path: [{0}]. Must contain [!]"; // NON-NLS
     private static final String TAR_SEPARATOR = "!"; // NON-NLS
+    private static final String TAR_EXTENSION = ".tar"; // NON-NLS
 
     /**
      * Constructs an <code>HsmFile</code> instance using the specified file path and file space name. 
@@ -121,8 +122,10 @@ public class HsmFile implements Serializable {
      * @return extracted file path
      */
     public static String extractFilePath(String path) {
-        if(!path.contains(TAR_SEPARATOR)) throw new IllegalArgumentException(MessageFormat.format(ILLEGAL_TAR_PATH, path));
-        return path.substring(path.indexOf(TAR_SEPARATOR) + 1);
+        if(path.contains(TAR_SEPARATOR))
+            return path.substring(path.indexOf(TAR_SEPARATOR) + 1);
+
+        return path;
     }
 
     public String toString() {
@@ -175,6 +178,14 @@ public class HsmFile implements Serializable {
                 finfo.size,
                 finfo.status);
         this.entries.add(newFinfo);
+    }
+
+    public boolean isPackedTar(){
+        return isPackedTar(this.filePath);
+    }
+
+    public static boolean isPackedTar(String filePath) {
+        return filePath.contains(TAR_EXTENSION);
     }
 
 }

@@ -88,6 +88,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>dcm4che</groupId>
+            <artifactId>dcm4che-audit</artifactId>
+            <version>2.0.10-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>dcm4chee</groupId>
             <artifactId>dcm4chee</artifactId>
             <version>2.10.15</version>

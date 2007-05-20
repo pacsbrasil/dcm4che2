@@ -67,7 +67,7 @@ public class HsmAwareQueryRetrieveScpService extends QueryRetrieveScpService {
 
     private int jmsPriority;
     private ObjectName jmsServiceName;
-    private TimeProvider timeProvider; // Used for tests to stub out the call to System.currentTimeMillis()
+    private TimeProvider timeProvider = TimeProvider.SYSTEM_TIME_PROVIDER; // Used for tests to stub out the call to System.currentTimeMillis()
 
     private static final String ERROR_FAILED_TO_QUEUE_HSM_RETRIEVE_ORDER = "Failed to queue HSM retrieve order [{0}]"; // NON-NLS
     private String hsmRetrieveQueueName = HSM_RETRIEVE;
@@ -101,16 +101,11 @@ public class HsmAwareQueryRetrieveScpService extends QueryRetrieveScpService {
         try {
             server.invoke(jmsServiceName,
                     QUEUE,
-                    new Object[]{this.hsmRetrieveQueueName, order, this.jmsPriority, now()},
+                    new Object[]{this.hsmRetrieveQueueName, order, this.jmsPriority, timeProvider.now()},
                     new String[]{String.class.getName(), Serializable.class.getName(), int.class.getName(), long.class.getName()});
         } catch (Exception e) {
             logger.error(MessageFormat.format(ERROR_FAILED_TO_QUEUE_HSM_RETRIEVE_ORDER, order), e);
         }
-    }
-
-    // Hook for tests to substitute the call to System.currentTimeMillis()
-    private long now() {
-        return timeProvider == null ? System.currentTimeMillis() : timeProvider.now();
     }
 
     protected void startService() throws Exception {
@@ -149,7 +144,4 @@ public class HsmAwareQueryRetrieveScpService extends QueryRetrieveScpService {
         this.timeProvider = timeProvider;
     }
 
-    static interface TimeProvider {
-        public long now();
-    }
 }
