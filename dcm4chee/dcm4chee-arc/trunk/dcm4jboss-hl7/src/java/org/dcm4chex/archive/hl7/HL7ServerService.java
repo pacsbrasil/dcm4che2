@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -110,6 +111,9 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     private File logDir;
 
+    private String errLogDirPath;
+    private File errLogDir;
+   
     private Server hl7srv = ServerFactory.getInstance().newServer(this);
 
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
@@ -117,6 +121,10 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     private boolean fileReceivedHL7AsXML;
 
     private boolean fileReceivedHL7;
+    
+    private boolean fileReceivedHL7OnError;
+    
+    private boolean suppressErrorResponse;
 
     private boolean sendNotification;
 
@@ -228,6 +236,31 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         this.fileReceivedHL7 = fileReceivedHL7;
     }
 
+    public final boolean isFileReceivedHL7OnError() {
+        return fileReceivedHL7OnError;
+    }
+
+    public final void setFileReceivedHL7OnError(boolean fileReceivedHL7) {
+        this.fileReceivedHL7OnError = fileReceivedHL7;
+    }
+
+    public final String getErrorLogDirectory() {
+        return errLogDirPath;
+    }
+
+    public final void setErrorLogDirectory(String errLogDirPath) {
+        this.errLogDirPath = errLogDirPath;
+        this.errLogDir = FileUtils.toFile(errLogDirPath);
+    }
+
+    public final boolean isSuppressErrorResponse() {
+        return suppressErrorResponse;
+    }
+
+    public final void setSuppressErrorResponse(boolean suppressErrorResponse) {
+        this.suppressErrorResponse = suppressErrorResponse;
+    }
+
     public final int getSoTimeout() {
         return soTimeout;
     }
@@ -322,17 +355,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             } while (read > 0);
             int msgNo = ++numberOfReceivedMessages;
             if (fileReceivedHL7) {
-                File logfile = makeLogfile("hl7-######.hl7", msgNo);
-                try {
-                    OutputStream loghl7 = new BufferedOutputStream(
-                            new FileOutputStream(logfile));
-                    loghl7.write(bb, 0, msglen);
-                    loghl7.close();
-                } catch (IOException e) {
-                    log.warn(
-                            "Failed to log received HL7 message to " + logfile,
-                            e);
-                }
+                fileReceivedHL7(bb, msglen, new File(logDir, 
+                        new DecimalFormat("'hl7-'000000'.hl7'").format(msgNo)));
             }
             try {
                 try {
@@ -345,8 +369,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                     log.info("Received HL7 message:");
                     logMessage(msg);
                     if (fileReceivedHL7AsXML) {
-                        fileReceivedHL7AsXML(msg, makeLogfile("hl7-######.xml",
-                                msgNo));
+                        fileReceivedHL7AsXML(msg, new File(logDir, 
+                                new DecimalFormat("'hl7-'000000'.xml'").format(msgNo)));
                     }
                     MSH msh = new MSH(msg);
                     HL7Service service = getService(msh);
@@ -361,11 +385,31 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                     throw new HL7Exception("AE", "Failed to parse message ", e);
                 }
             } catch (HL7Exception e) {
+                if (fileReceivedHL7OnError) {
+                    fileReceivedHL7(bb, msglen, new File(errLogDir, 
+                            new DecimalFormat("'hl7-'000000'.hl7'").format(msgNo)));
+                }
                 log.warn("Processing HL7 failed:", e);
                 mllpDriver.discardPendingOutput();
-                ack(hl7in.getDocument(), hl7out, e);
+                ack(hl7in.getDocument(), hl7out, suppressErrorResponse ? null : e);
             }
             mllpDriver.turn();
+        }
+    }
+
+    private void fileReceivedHL7(byte[] bb, int msglen, File logfile) {
+        if (logfile.getParentFile().mkdirs()) {
+            log.info("M-WRITE " + logfile.getParentFile());
+        }
+        try {
+            OutputStream loghl7 = new BufferedOutputStream(
+                    new FileOutputStream(logfile));
+            loghl7.write(bb, 0, msglen);
+            loghl7.close();
+        } catch (IOException e) {
+            log.warn(
+                    "Failed to log received HL7 message to " + logfile,
+                    e);
         }
     }
 
@@ -373,19 +417,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         byte[] out = new byte[newlen];
         System.arraycopy(bb, 0, out, 0, len);
         return out;
-    }
-
-    private File makeLogfile(String pattern, int msgNo) {
-        final int endPrefix = pattern.indexOf('#');
-        final int startSuffix = pattern.lastIndexOf('#') + 1;
-        final String noStr = String.valueOf(msgNo);
-        StringBuffer sb = new StringBuffer(pattern.substring(0, endPrefix));
-        for (int i = endPrefix + noStr.length(); i < startSuffix; ++i) {
-            sb.append('0');
-        }
-        sb.append(noStr);
-        sb.append(pattern.substring(startSuffix));
-        return new File(logDir, sb.toString());
     }
 
     private void fileReceivedHL7AsXML(Document msg, File f) {

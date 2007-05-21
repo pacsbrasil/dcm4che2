@@ -83,6 +83,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSuppressErrorResponse"
+      setMethod="setSuppressErrorResponse">
+      <description><![CDATA[Activates suppression of Application Reject or 
+      Application Error as acknowledgment code but always returns acknowledgment
+      code AA (=Application Accept), even if the processing of the message fails.]]>
+      </description>
+      <name>SuppressErrorResponse</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSendNotification"
       setMethod="setSendNotification">
       <description>Activates notification of registered listeners about received
@@ -109,6 +122,35 @@
       <type>boolean</type>
       <descriptors>
          <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isFileReceivedHL7OnError"
+      setMethod="setFileReceivedHL7OnError">
+      <description><![CDATA[Activates writing received HL7 messages, which
+      were rejected or which processing failed, into file (format: hl7-######.hl7,
+      with ###### as the sequence number of the received message since last
+      application start) in directory specified by <i>ErrorLogDirectory</i>]]>
+      </description>
+      <name>FileReceivedHL7OnError</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getErrorLogDirectory"
+      setMethod="setErrorLogDirectory">
+      <description><![CDATA[Directory to which HL7 messages which are rejected
+      or which processing fails are filed. Only effective if
+      <i>FileReceivedHL7OnError</i> = <code>true</code>.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>ErrorLogDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="log/hl7err" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
