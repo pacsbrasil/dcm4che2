@@ -147,16 +147,9 @@ public class RIDService extends AbstractCacheService  {
 	 * @return SOP Class UIDs to find ECG related files.
 	 */
 	public String getECGSopCuids() {
-		Map uids = support.getECGSopCuids();
-		if ( uids == null || uids.isEmpty() ) return "";
-		StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
-		Iterator iter = uids.keySet().iterator();
-		while ( iter.hasNext() ) {
-			sb.append(iter.next()).append(System.getProperty("line.separator", "\n"));
-		}
-		return sb.toString();
+		return toString(support.getECGSopCuids());
 	}
-	
+
 	/**
 	 * Set a list of SOP Class UIDs that are used to find ECG documents.
 	 * <p>
@@ -164,9 +157,34 @@ public class RIDService extends AbstractCacheService  {
 	 * 
 	 * @param sopCuids String with SOP class UIDs seperated with '|'
 	 */
-	public void setECGSopCuids( String sopCuids ) {
-		
-        StringTokenizer st = new StringTokenizer(sopCuids, "\r\n;");
+	public void setECGSopCuids( String cuids ) {
+		support.setECGSopCuids( toUidMap(cuids) );
+	}
+
+    /**
+     * Returns a String with all defined SOP Class UIDs that are used to find SR documents.
+     * <p>
+     * The uids are seperated with '|'.
+     * 
+     * @return SOP Class UIDs to find Structured Reports.
+     */
+    public String getSRSopCuids() {
+        return toString(support.getSRSopCuids());
+    }
+
+    /**
+     * Set a list of SOP Class UIDs that are used to find SR documents.
+     * <p>
+     * The UIDs are seperated with '|'.
+     * 
+     * @param sopCuids String with SOP class UIDs seperated with '|'
+     */
+    public void setSRSopCuids( String cuids ) {
+        support.setSRSopCuids( toUidMap(cuids) );
+    }
+    
+    private Map toUidMap(String cuids) {
+        StringTokenizer st = new StringTokenizer(cuids, "\r\n;");
         String uid,name;
         Map map = new TreeMap();
         int i = 0;
@@ -181,8 +199,18 @@ public class RIDService extends AbstractCacheService  {
         	}
         	map.put(name,uid);
         }
-		support.setECGSopCuids( map );
-	}
+        return map;
+    }
+
+    private String toString(Map uids) {
+        if ( uids == null || uids.isEmpty() ) return "";
+        StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
+        Iterator iter = uids.keySet().iterator();
+        while ( iter.hasNext() ) {
+            sb.append(iter.next()).append(System.getProperty("line.separator", "\n"));
+        }
+        return sb.toString();
+    }
 
 	public boolean isEncapsulatedPDFSupport() {
 		return support.isEncapsulatedPDFSupport();

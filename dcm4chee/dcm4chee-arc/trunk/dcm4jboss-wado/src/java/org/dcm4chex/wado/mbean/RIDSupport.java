@@ -49,14 +49,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.ejb.FinderException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
@@ -74,7 +78,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.fop.apps.Driver;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
@@ -92,9 +95,11 @@ import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.ImageCachingException;
@@ -138,6 +143,7 @@ public class RIDSupport {
 
     private static MBeanServer server;
     private Map ecgSopCuids = new TreeMap();
+    private Map srSopCuids = new TreeMap();
 	private String ridSummaryXsl;
 	
 	private boolean useXSLInstruction;
@@ -217,6 +223,20 @@ public class RIDSupport {
 		ecgSopCuids.put( "CardiacElectrophysiologyWaveformStorage", UIDs.CardiacElectrophysiologyWaveformStorage );
 	}
 
+    /**
+     * @return Returns the sopCuids.
+     */
+    public Map getSRSopCuids() {
+        return srSopCuids;
+    }
+    /**
+     * @param sopCuids The sopCuids to set.
+     */
+    public void setSRSopCuids(Map cuids) {
+        if ( cuids != null && ! cuids.isEmpty() ) {
+            srSopCuids = cuids;
+        }
+    }
 	
 	/**
 	 * @return Returns the encapsulatedPDFSupport.
@@ -335,72 +355,83 @@ public class RIDSupport {
 	 * @throws SAXException
 	 * @throws TransformerConfigurationException
 	 */
-	public WADOResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
-		String contentType = checkContentType( reqObj, new String[]{CONTENT_TYPE_HTML,CONTENT_TYPE_XML } );
-		if ( contentType == null ) {
-			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
-		}
-		String reqType = reqObj.getRequestType();
-		if (log.isDebugEnabled() ) log.debug(" Summary request type:"+reqObj.getRequestType());
-                Dataset queryDS = getQueryDS( reqObj );
-                if ( queryDS == null )
-                        return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
-		if ( SUMMARY_CARDIOLOGY_ECG.equals( reqType ) ) {
-			return getECGSummary( reqObj, queryDS );
-		}
-	    IHEDocumentList docList= new IHEDocumentList();
-	    initDocList( docList, reqObj, queryDS );
-	    List conceptNames = null;
-	    if ( reqType.equals( SUMMARY ) ) {
-	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
-	    	conceptNames.addAll( conceptNameCodeConfig.getConceptNameCodes(CARDIOLOGY) );
-	    } else if ( reqType.equals( SUMMARY_CARDIOLOGY) ) {
-	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(CARDIOLOGY);
-	    } else {
-	    	conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
-	    }
-		for ( Iterator iter = conceptNames.iterator() ; iter.hasNext() ; ) {
-        	DcmElement cnSq = queryDS.putSQ(Tags.ConceptNameCodeSeq);
-        	cnSq.addItem( (Dataset) iter.next() );
-        	fillDocList( docList, queryDS );
-		}
-		queryDS.remove( Tags.ConceptNameCodeSeq );//remove for next search.
-//		Dataset ecgQueryDS = getECGQueryDS( reqObj);
-		if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
-			addECGSummary( docList, queryDS );
-		}
-		
-		if ( encapsulatedPDFSupport ) {
-			if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
-				addEncapsulatedPDF(docList,queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY));
-				addEncapsulatedPDF(docList,queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG));
-			}
-			if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_RADIOLOGY ) ) {
-				addEncapsulatedPDF(docList,queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_RADIOLOGY));
-			}
-		}
-
-		if ( docList.size() < 1 ) {
-			log.info("No documents found: patientDS:"+patientDS);
-			if ( patientDS != null ) {
-				log.info("patientDS last:"+patientDS.getString( Tags.PatientName));
-	        	PersonName pn = patientDS.getPersonName(Tags.PatientName );
-	        	if ( pn != null ) {
-		        	log.info("family:"+ pn.get( PersonName.FAMILY ));
-		        	log.info("givenName:"+ pn.get( PersonName.GIVEN ));
-	        	}
-				
-				docList.setQueryDS( patientDS );
-			}
-		}
-		
-		if ( ! contentType.equals(CONTENT_TYPE_XML) ) { // transform to (x)html only if client supports (x)html.
-			docList.setXslt( ridSummaryXsl );
-		}
-		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
-		log.info("ContentType:"+contentType);
-		return new WADOTransformResponseObjectImpl(docList, contentType, HttpServletResponse.SC_OK, null);
-	}
+    public WADOResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
+        String contentType = checkContentType( reqObj, new String[]{CONTENT_TYPE_HTML,CONTENT_TYPE_XML } );
+        if ( contentType == null ) {
+            return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Client doesnt support text/xml, text/html or text/xhtml !");
+        }
+        String reqType = reqObj.getRequestType();
+        if (log.isDebugEnabled() ) log.debug(" Summary request type:"+reqObj.getRequestType());
+        String[] pat = splitPatID( reqObj.getParam( "patientID" ));
+        Dataset patDS = null;
+        try {
+            patDS = this.getContentManager().getPatientByID(pat[0], pat[1]);
+        } catch (Exception ignore) {
+        }
+        if ( patDS == null )
+            return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
+        IHEDocumentList docList= new IHEDocumentList();
+        initDocList( docList, reqObj, patDS );
+        try {
+            ArrayList encPdfCuids = new ArrayList();
+            encPdfCuids.add( UIDs.EncapsulatedPDFStorage );
+            List conceptNames = null;
+            if ( SUMMARY_CARDIOLOGY_ECG.equals( reqType ) ) {
+                fillDocList( pat[0], pat[1], docList, conceptNames, getECGSopCuids().values());
+                if ( encapsulatedPDFSupport ) {
+                    fillDocList( pat[0], pat[1], docList, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG), encPdfCuids);
+                }
+                
+                if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
+                return new WADOTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
+            }
+            if ( reqType.equals( SUMMARY ) ) {
+                conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
+                conceptNames.addAll( conceptNameCodeConfig.getConceptNameCodes(CARDIOLOGY) );
+            } else if ( reqType.equals( SUMMARY_CARDIOLOGY) ) {
+                conceptNames = conceptNameCodeConfig.getConceptNameCodes(CARDIOLOGY);
+            } else {
+                conceptNames = conceptNameCodeConfig.getConceptNameCodes(RADIOLOGY);
+            }
+            fillDocList( pat[0], pat[1], docList, conceptNames, getSRSopCuids().values());
+            if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
+                fillDocList( pat[0], pat[1], docList, null, getECGSopCuids().values());
+            }
+            if ( encapsulatedPDFSupport ) {
+                if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_CARDIOLOGY ) ) {
+                    fillDocList( pat[0], pat[1], docList, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY), encPdfCuids);
+                    fillDocList( pat[0], pat[1], docList, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG), encPdfCuids);
+                }
+                if ( reqType.equals( SUMMARY ) || reqType.equals( SUMMARY_RADIOLOGY ) ) {
+                    fillDocList( pat[0], pat[1], docList, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_RADIOLOGY), encPdfCuids);
+                }
+            }
+    
+            if ( docList.size() < 1 ) {
+                log.info("No documents found: patientDS:"+patientDS);
+                if ( patientDS != null ) {
+                    log.info("patientDS last:"+patientDS.getString( Tags.PatientName));
+                    PersonName pn = patientDS.getPersonName(Tags.PatientName );
+                    if ( pn != null ) {
+                        log.info("family:"+ pn.get( PersonName.FAMILY ));
+                        log.info("givenName:"+ pn.get( PersonName.GIVEN ));
+                    }
+                    
+                    docList.setQueryDS( patientDS );
+                }
+            }
+            
+            if ( ! contentType.equals(CONTENT_TYPE_XML) ) { // transform to (x)html only if client supports (x)html.
+                docList.setXslt( ridSummaryXsl );
+            }
+            if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
+            log.info("ContentType:"+contentType);
+            return new WADOTransformResponseObjectImpl(docList, contentType, HttpServletResponse.SC_OK, null);
+        } catch ( Exception x ) {
+            log.error("Building RID Summary failed!", x);
+            return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Creation of Summary failed! Reason:"+x.getMessage());
+        }
+    }
 	
 	/**
 	 * Checks if one of the given content types are allowed.
@@ -429,35 +460,14 @@ public class RIDSupport {
 		}
 		return null;
 	}
-
-	private WADOResponseObject getECGSummary( RIDRequestObject reqObj, Dataset queryDS ) throws SQLException {
-//		Dataset queryDS = getECGQueryDS( reqObj );
-//		if ( queryDS == null )
-//			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Patient with patientID="+reqObj.getParam("patientID")+ " not found!");
-	    IHEDocumentList docList= new IHEDocumentList();
-	    initDocList( docList, reqObj, queryDS );
-		addECGSummary( docList, queryDS );
-		if ( encapsulatedPDFSupport ) {
-			addEncapsulatedPDF( docList, queryDS, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG) );
-		}
-		
-		if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
-		return new WADOTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
-	}
 	
-	private void addECGSummary( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
-	    queryDS.putUI( Tags.SOPClassUID, (String[]) getECGSopCuids().values().toArray( new String[0] ) );
-    	fillDocList( docList, queryDS );//TODO Is it ok to put all SOP Class UIDs in one query?
-		
-	}
-	
-	private void initDocList( IHEDocumentList docList, RIDRequestObject reqObj, Dataset queryDS ) {
+	private void initDocList( IHEDocumentList docList, RIDRequestObject reqObj, Dataset patDS ) {
 	    String reqURL = reqObj.getRequestURL();
 	    docList.setReqURL(reqURL);
 	    int pos = reqURL.indexOf('?');
 	    if ( pos != -1 ) reqURL = reqURL.substring(0, pos);
 	    docList.setDocRIDUrl( reqURL.substring( 0, reqURL.lastIndexOf("/") ) );//last path element should be the servlet name! 
-	    docList.setQueryDS( queryDS );
+	    docList.setQueryDS( patDS );
 	    String docCode = reqObj.getRequestType();
 		docList.setDocCode( docCode );
 		if ( SUMMARY.equalsIgnoreCase( docCode )) 
@@ -482,42 +492,12 @@ public class RIDSupport {
                 }
 	}
 	
-	private void fillDocList( IHEDocumentList docList, Dataset queryDS ) throws SQLException {
-		QueryCmd qCmd = QueryCmd.create( queryDS, false, true );
-		try {
-			qCmd.execute();
-			while ( qCmd.next() ) {
-                            docList.add(qCmd.getDataset());
-			}
-		} catch ( SQLException x ) {
-			qCmd.close();
-			throw x;
-		}
-		qCmd.close();
-	}
-
-
-	/**
-	 * @param reqObj
-	 * @return
-	 */
-	private Dataset getQueryDS(RIDRequestObject reqObj) {
-		String patID = reqObj.getParam( "patientID" );
-		String[] pat = splitPatID( patID );
-		pat = checkPatient( pat );
-		log.info("getQueryDS: pat:"+pat);
-		if ( pat == null ) return null;
-		Dataset ds = factory.newDataset();
-        ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-		ds.putLO(Tags.PatientID, pat[0]);
-		if ( pat[1] != null ) { // Issuer of patientID is known. 
-			ds.putLO(Tags.IssuerOfPatientID, pat[1]);
-		}
-//		ds.putCS( Tags.Modality, "SR" );
-		//Concept name sequence will be used as search criteria. -> within a loop over all radiology specific concept names.
-		return ds;
-	}
-
+    private void fillDocList( String pid, String issuer, IHEDocumentList docList, Collection conceptCodes, Collection cuids ) throws RemoteException, FinderException, Exception {
+        List docs = getContentManager().listInstanceInfosByPatientAndSRCode(pid, issuer, conceptCodes, cuids);
+        for ( Iterator iter = docs.iterator() ; iter.hasNext() ; ) {
+            docList.add( (Dataset) iter.next() );
+        }
+    }
 
     static Date toDate(String dt) {
         if (dt == null || dt.length() == 0)
@@ -529,76 +509,17 @@ public class RIDSupport {
         }
     }
 
-    /**
-	 * @param pat
-	 * @return
-	 */
-	private String[] checkPatient(String[] pat) {
-		log.info("checkPatient:"+pat[0]+","+pat[1]);
-		Dataset ds = factory.newDataset();
-        ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
-		ds.putLO(Tags.PatientID, pat[0]);
-		Dataset ds1;
-		QueryCmd qCmd = null;
-		String issuer = null;
-		boolean foundWithoutIssuer = false;
-		try {
-			qCmd = QueryCmd.create( ds, false, true );
-			qCmd.execute();
-			while ( qCmd.next() ) {
-				ds1 = qCmd.getDataset();
-				if ( pat[1] != null ) {
-					issuer = ds1.getString( Tags.IssuerOfPatientID );
-					if ( log.isDebugEnabled() ) log.debug("checkPatient: issuer:"+issuer);
-					if ( pat[1].equals( issuer ) ) {
-						patientDS = ds1;
-						break;
-					} else if ( issuer == null ) {
-						patientDS = ds1;
-						foundWithoutIssuer = true;
-					}
-				} else {
-					if ( foundWithoutIssuer ) { //OK one more record -> result is not ambigous
-						log.info("Request issuer unknown; More than one patient found with given ID!");
-						qCmd.close();
-						patientDS = null;
-						return null;//Throw Exception instead?
-					}
-					foundWithoutIssuer = true; //to indicate one record is found
-					patientDS = ds1;
-				}
-			}
-			qCmd.close();
-		} catch ( SQLException x ) {
-			log.error( "Unexpected Error in isQueryDSMatching:"+x.getMessage(), x);
-		}
-		if ( qCmd != null ) qCmd.close();
-		if ( log.isDebugEnabled() ) log.debug("checkPatient: result: issuer:"+issuer+" vs:"+pat[1]+" foundWithoutIssuer:"+foundWithoutIssuer);
-		if ( pat[1] != null && pat[1].equals( issuer ) ) return pat; //OK fully match.
-		if ( foundWithoutIssuer ) {
-			pat[1] = null;
-			return pat;
-		}
-		return null;
-	}
-
-
 	/**
 	 * @param reqObj
 	 * @return
 	 */
 	public WADOResponseObject getRIDDocument(RIDRequestObject reqObj) {
 		String uid = reqObj.getParam("documentUID");
-		Dataset queryDS = factory.newDataset();
-		queryDS.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-		queryDS.putUI(Tags.SOPInstanceUID, uid );
-		QueryCmd cmd = null;
 		try {
-			cmd = QueryCmd.create( queryDS, false, true );
-			cmd.execute();
-			if ( cmd.next() ) {
-				WADOResponseObject response;
-				Dataset ds = cmd.getDataset();
+            List instances = getContentManager().listInstanceInfos( new String[] {uid}, false);
+            if ( ! instances.isEmpty() ) {
+                WADOResponseObject response;
+                Dataset ds = (Dataset) instances.get(0);
                 log.info("Found Dataset:");log.info(ds);
 				String cuid = ds.getString( Tags.SOPClassUID );
 				if ( getECGSopCuids().values().contains( cuid ) ) {
@@ -621,11 +542,9 @@ public class RIDSupport {
 				}
 				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
 			}
-		} catch (SQLException x) {
+		} catch (Exception x) {
 			log.error("Cant get RIDDocument:", x);
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
-		} finally {
-			if ( cmd != null ) cmd.close();
 		}
 	}
 	
@@ -916,30 +835,17 @@ public class RIDSupport {
 	 * @return String[] 0..patientID 1.. issuerOfPatientID
 	 */
 	private String[] splitPatID(String patientID) {
-		String[] pat = new String[]{null,null};
 		String[] sa = StringUtils.split(patientID, '^');
-		return new String[]{ sa[0], sa.length > 3 ? sa[3] : null };
+        String[] pat = new String[]{sa[0],null};
+        if ( sa.length > 3 && sa[3] != null && sa[3].trim().length() > 0 ) {
+            pat[1] = sa[3];
+        }
+		return pat;
 	}
 
 	public float getWaveformCorrection() {
 		// TODO Auto-generated method stub
 		return service.getWaveformCorrection();
-	}
-
-	/**
-	 * @param docList
-	 * @param queryDS
-	 * @param cardiologyConceptNameCodes2
-	 * @throws SQLException
-	 */
-	private void addEncapsulatedPDF(IHEDocumentList docList, Dataset queryDS, List conceptNames) throws SQLException {
-		queryDS.putUI( Tags.SOPClassUID, UIDs.EncapsulatedPDFStorage);
-		for ( Iterator iter = conceptNames.iterator() ; iter.hasNext() ; ) {
-        	DcmElement cnSq = queryDS.putSQ(Tags.ConceptNameCodeSeq);
-        	cnSq.addItem( (Dataset) iter.next() );
-        	fillDocList( docList, queryDS );
-		}
-		
 	}
 
 	public String getRadiologyConceptNames() {
@@ -1006,4 +912,10 @@ public class RIDSupport {
 	public void setECGPDFConceptNameCodes(String conceptNames) {
 		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_ECG, conceptNames );
 	}
+    
+    private ContentManager getContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
 }

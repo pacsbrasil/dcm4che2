@@ -93,12 +93,15 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
@@ -431,32 +434,13 @@ public class WADOSupport {
      * @return
      */
     protected Dataset getPatientInfo(WADORequestObject req) {
-        log.debug("get patient info from database for WADO request:" + req);
-        Dataset ds = dof.newDataset();
-        Dataset result = dof.newDataset();
+        log.debug("Get patient info from database for WADO request:"+req);
         try {
-            ds.putUI(Tags.StudyInstanceUID, req.getStudyUID());
-            ds.putLO(Tags.PatientID);
-            ds.putPN(Tags.PatientName);
-            List l = new QueryStudiesCmd(ds, false).list(0, 1);
-            if (!l.isEmpty()) {
-                result = (Dataset) l.get(0);
-            } else {
-                ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-                ds.putUI(Tags.StudyInstanceUID);
-                ds.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-                FileInfo[][] fis = RetrieveCmd.create(ds).getFileInfos();
-                if (fis.length > 0) {
-                    FileInfo fi = fis[0][0];
-                    DatasetUtils.fromByteArray(fi.patAttrs, result);
-                    DatasetUtils.fromByteArray(fi.studyAttrs, result);
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Cant get Patient/Study info for " + req.getObjectUID(),
-                    e);
+            return this.getContentManager().getInstanceInfo(req.getObjectUID(), false);
+        } catch (Exception e) {
+            log.error("Cant get Patient/Study info for "+req.getObjectUID(),e);
+            return dof.newDataset();
         }
-        return result;
     }
 
     /**
@@ -618,7 +602,6 @@ public class WADOSupport {
     private WADOResponseObject handleTextTransform(WADORequestObject req,
             FileDTO fileDTO, String contentType, String xslURL,
             TagDictionary dict) {
-        QueryCmd query = null;
         try {
             File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                     .getFilePath());
@@ -630,20 +613,7 @@ public class WADOSupport {
             parser.parseDcmFile(null, Tags.PixelData);
             Dataset dsCoerce = null;
             if (!"true".equals(req.getRequest().getParameter("useOrig"))) {
-                Dataset keys = dof.newDataset();
-                keys.putUI(Tags.SOPInstanceUID, req.getObjectUID());
-                query = QueryCmd.createInstanceQuery(keys, false, true);
-                query.execute();
-                if (!query.next()) {
-                    log
-                            .error("Internal error! Instance not found but file entry exists?! objectUID:"
-                                    + req.getObjectUID() + " file:" + fileDTO);
-                    return new WADOStreamResponseObjectImpl(null,
-                            CONTENT_TYPE_HTML,
-                            HttpServletResponse.SC_NOT_FOUND,
-                            "Instance not found but file entry exists?");
-                }
-                dsCoerce = query.getDataset();
+                dsCoerce = this.getContentManager().getInstanceInfo( req.getObjectUID(), true );
                 ds.putAll(dsCoerce);
             }
             if (log.isDebugEnabled()) {
@@ -663,12 +633,6 @@ public class WADOSupport {
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Unexpected error! Cant get dicom object");
-        } finally {
-            if (query != null)
-                try {
-                    query.close();
-                } catch (Exception ignore) {
-                }
         }
     }
 
@@ -1239,6 +1203,12 @@ public class WADOSupport {
         textSopCuids.put("KeyObjectSelectionDocument",
                 UIDs.KeyObjectSelectionDocument);
         textSopCuids.put("MammographyCADSR", UIDs.MammographyCADSR);
+    }
+
+    private ContentManager getContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
+                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
     }
 
     /**
