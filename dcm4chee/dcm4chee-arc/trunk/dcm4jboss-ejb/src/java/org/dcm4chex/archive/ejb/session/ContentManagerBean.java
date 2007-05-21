@@ -187,13 +187,14 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public Dataset getPatientByID(String pid, String issuer) throws FinderException  {
-        Collection col = patHome.findByPatientIdWithExactIssuer(pid, issuer);
-        if ( col.isEmpty()) {
+        PatientLocal pat = this.getPatientLocal(pid, issuer);
+        if ( pat == null) {
             return null;
-        } else if ( col.size() > 1 ) {
-            throw new FinderException("Patient with ID(pid:"+pid+" issuer:"+issuer+") is not unique! Found "+col.size()+" patients!");
+        } else if ( issuer == null && pat.getIssuerOfPatientId() != null) {
+            return null;
         }
-        return ((PatientLocal) col.iterator().next()).getAttributes(true);
+        return pat.getAttributes(true);
+        
     }
 
     /**
