@@ -45,7 +45,7 @@
       operation = 'NW' (* create worklist item(s) *)<br/>
           | 'XO' (* update worklist item(s) *)<br/>
           | 'CA' (* remove worklist item(s) *)<br/>
-          | 'SC(' ('IP' | 'CM' | 'DC') ')' (* update status of worklist item(s) *)<br/>
+          | 'SC(' ('SCHEDULED' | 'ARRIVED' | 'READY' | 'STARTED' | 'COMPLETED' | 'DISCONTINUED') ')' (* update status of worklist item(s) *)<br/>
           | 'NOOP' (* no operation *)</p>
       ]]>
       </description>
@@ -57,11 +57,11 @@
          XO:XO
          CA:CA
          OC:CA
-         DC:SC(DC)
-         OD:SC(DC)
-         SC(IP):SC(IP)
-         SC(CM):SC(CM)
-         SC(DC):SC(DC)
+         DC:SC(DISCONTINUED)
+         OD:SC(DISCONTINUED)
+         SC(IP):SC(STARTED)
+         SC(CM):SC(COMPLETED)
+         SC(DC):SC(DISCONTINUED)
          SC(CA):CA
          SC:NOOP
          " />

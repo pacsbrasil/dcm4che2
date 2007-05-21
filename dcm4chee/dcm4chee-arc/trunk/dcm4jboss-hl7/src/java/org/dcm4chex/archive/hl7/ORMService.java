@@ -57,6 +57,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -76,10 +77,12 @@ import org.xml.sax.ContentHandler;
 
 public class ORMService extends AbstractHL7Service {
     
-    private static final String[] OP_CODES = { "NW", "XO", "CA", "SC(IP)",
-        "SC(CM)", "SC(DC)", "NOOP" };
+    private static final String[] OP_CODES = { "NW", "XO", "CA", "NOOP",
+        "SC(SCHEDULED)", "SC(ARRIVED)", "SC(READY)", "SC(STARTED)",
+        "SC(COMPLETED)", "SC(DISCONTINUED)" };
     
     private static final List OP_CODES_LIST = Arrays.asList(OP_CODES);
+
 
     private static final int NW = 0;
 
@@ -87,13 +90,9 @@ public class ORMService extends AbstractHL7Service {
 
     private static final int CA = 2;
 
-    private static final int SC_IP = 3;
+    private static final int NOOP = 3;
     
-    private static final int SC_CM = 4;
-
-    private static final int SC_DC = 5;
-
-    private static final int NOOP = 6;
+    private static final int SC_OFF = 4;
 
     private List orderControls;
     
@@ -229,23 +228,14 @@ public class ORMService extends AbstractHL7Service {
                     log("Cancel", ds);
                     mwlManager.removeWorklistItem(rpid, spsid);
                     break;
-                case SC_IP:
-                    log("Change SPS status to IN PROGRESS", ds);
-                    mwlManager.updateSPSStatus(rpid, spsid, "IN PROGRESS");
-                    break;
-                case SC_CM:
-                    log("Change SPS status to COMPLETED", ds);
-                    mwlManager.updateSPSStatus(rpid, spsid, "COMPLETED");
-                    break;
-                case SC_DC:
-                    log("Change SPS status to DISCONTINUED", ds);
-                    mwlManager.updateSPSStatus(rpid, spsid, "DISCONTINUED");
-                    break;
                 case NOOP:
                     log("NOOP", ds);
                     break;
                 default:
-                    throw new RuntimeException();
+                    String status = SPSStatus.toString(op[i]-SC_OFF);
+                    log("Change SPS status to " + status, ds);
+                    mwlManager.updateSPSStatus(rpid, spsid, status);
+                    break;                    
                 }
             }
         } catch (HL7Exception e) {
