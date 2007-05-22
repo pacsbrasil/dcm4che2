@@ -132,7 +132,14 @@ public class IANScuService extends AbstractScuService implements
     private final NotificationListener mppsReceivedListener = 
         new NotificationListener() {
             public void handleNotification(Notification notif, Object handback) {
-                onMPPSReceived((Dataset) notif.getUserData());
+                String mppsiuid = ((Dataset) notif.getUserData()).getString(Tags.SOPInstanceUID);
+                try {
+                    onMPPSReceived( getMPPSManagerHome().create().getMPPS(mppsiuid) );
+                } catch (ObjectNotFoundException e) {
+                    log.debug("No such MPPS - " + mppsiuid);
+                } catch (Exception e) {
+                    log.error("Failed to access MPPS - " + mppsiuid, e);
+                }
             }
         };
 
