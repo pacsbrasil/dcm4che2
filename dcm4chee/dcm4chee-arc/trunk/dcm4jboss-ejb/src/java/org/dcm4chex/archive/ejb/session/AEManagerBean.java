@@ -153,7 +153,9 @@ public abstract class AEManagerBean implements SessionBean {
             ae.setHostName(modAE.getHostName());
             ae.setPort(modAE.getPort());
             ae.setCipherSuites(modAE.getCipherSuitesAsString());
-        } catch (FinderException e) {
+            ae.setIssuerOfPatientID(modAE.getIssuerOfPatientID());
+            ae.setDescription(modAE.getDescription());
+       } catch (FinderException e) {
             ctx.setRollbackOnly();
             throw e;
         }
@@ -163,8 +165,13 @@ public abstract class AEManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public void newAE(AEDTO newAE) throws CreateException {
-        aeHome.create(newAE.getTitle(), newAE.getHostName(), newAE.getPort(),
-                newAE.getCipherSuitesAsString());
+        aeHome.create(
+                newAE.getTitle(), 
+                newAE.getHostName(),
+                newAE.getPort(),
+                newAE.getCipherSuitesAsString(),
+                newAE.getIssuerOfPatientID(),
+                newAE.getDescription());
     }
 
     /**

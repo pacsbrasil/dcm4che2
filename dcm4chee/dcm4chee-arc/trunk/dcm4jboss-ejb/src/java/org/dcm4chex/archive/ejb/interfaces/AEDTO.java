@@ -71,6 +71,8 @@ public class AEDTO implements Serializable {
     private final String hostname;
     private final int port;
     private final String cipherSuites;
+    private final String issuer;
+    private final String desc;
 
     // Constructors --------------------------------------------------
     public AEDTO(
@@ -78,12 +80,16 @@ public class AEDTO implements Serializable {
         String title,
         String hostname,
         int port,
-        String cipherSuites) {
+        String cipherSuites,
+        String issuer,
+        String desc) {
         this.pk = pk;
         this.title = title;
         this.hostname = hostname;
         this.port = port;
         this.cipherSuites = cipherSuites;
+        this.issuer = issuer;
+        this.desc = desc;
     }
 
     /**
@@ -143,7 +149,15 @@ public class AEDTO implements Serializable {
     public boolean isTLS() {
         return cipherSuites != null && cipherSuites.length() != 0;
     }
-
+    
+    public String getIssuerOfPatientID() {
+        return issuer;        
+    }
+    
+    public String getDescription() {
+        return desc;        
+    }
+    
     public String toString() {
         return (isTLS() ? "dicom-tls://" : "dicom://")
             + title

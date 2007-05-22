@@ -41,7 +41,6 @@ package org.dcm4chex.archive.web.maverick.ae;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
@@ -54,8 +53,6 @@ public class AEModel extends BasicFormModel {
 
     /** The session attribute name to store the model in http session. */
     public static final String AE_ATTR_NAME = "aeModel";
-
-    private static Logger log = Logger.getLogger(AEModel.class.getName());
 
     private String user;
 
@@ -70,6 +67,10 @@ public class AEModel extends BasicFormModel {
     private String cipher2;
     
     private String cipher3;
+    
+    private String issuerOfPatientID;
+
+    private String description;
 
     private int port = -1;
 
@@ -143,6 +144,14 @@ public class AEModel extends BasicFormModel {
         cipherSuites = null;
     }
 
+    public final void setIssuerOfPatientID(String issuerOfPatientID) {
+        this.issuerOfPatientID = issuerOfPatientID;
+    }
+    
+    public final void setDescription(String description) {
+        this.description = description;
+    }
+
     public AEDTO getAE() {
         if (cipherSuites == null || cipherSuites.length() < 1) {
             StringBuffer sb = new StringBuffer();
@@ -155,7 +164,7 @@ public class AEModel extends BasicFormModel {
             cipherSuites = sb.toString();
         }
         return new AEDTO(pk, this.title, this.hostName, this.port,
-                this.cipherSuites);
+                this.cipherSuites, this.issuerOfPatientID, this.description);
     }
 
     public void setAE(AEDTO ae) {
@@ -164,6 +173,8 @@ public class AEModel extends BasicFormModel {
         hostName = ae.getHostName();
         port = ae.getPort();
         cipherSuites = ae.getCipherSuitesAsString();
+        issuerOfPatientID = ae.getIssuerOfPatientID();
+        description = ae.getDescription();
     }
 
     public void setAet(String aet) {
@@ -172,6 +183,8 @@ public class AEModel extends BasicFormModel {
         port = -1;
         hostName = null;
         cipherSuites = cipher1 = cipher2 = cipher3 = null;
+        issuerOfPatientID = null;
+        description = null;
     }
 
     /**

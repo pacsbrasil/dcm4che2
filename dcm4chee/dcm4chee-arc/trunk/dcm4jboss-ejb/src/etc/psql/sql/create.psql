@@ -3,7 +3,9 @@ CREATE TABLE ae (
 	aet          	TEXT NOT NULL,
 	hostname     	TEXT NOT NULL,
 	port			INTEGER NOT NULL,
-	cipher_suites  	TEXT
+	cipher_suites  	TEXT,
+	pat_id_issuer	TEXT,
+	ae_desc			TEXT
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
@@ -601,8 +603,8 @@ INSERT INTO users VALUES('user','Et6pb+wgWTVmq3VpLJlJWWgzrck=');
 INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 
-INSERT INTO ae (aet,hostname,port)
-	VALUES('DCM4CHEE','localhost',11112);
-INSERT INTO ae (aet,hostname,port)
-	VALUES('CDRECORD','localhost',10104);
+INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc)
+	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance');
+INSERT INTO ae (aet,hostname,port,ae_desc)
+	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)');
 

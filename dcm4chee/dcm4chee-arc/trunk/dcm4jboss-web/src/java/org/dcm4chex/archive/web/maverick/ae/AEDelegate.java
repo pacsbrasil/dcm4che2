@@ -134,13 +134,25 @@ public class AEDelegate {
     public void updateAE(AEDTO ae, boolean checkHost)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException {
-        server.invoke(aeServiceName, "updateAE", new Object[] {
-                new Long(ae.getPk()), ae.getTitle(), ae.getHostName(),
-                new Integer(ae.getPort()), ae.getCipherSuitesAsString(),
-                new Boolean(checkHost) }, new String[] { long.class.getName(),
-                String.class.getName(), String.class.getName(),
-                int.class.getName(), String.class.getName(),
-                boolean.class.getName() });
+        server.invoke(aeServiceName, "updateAE", 
+                new Object[] {
+                    new Long(ae.getPk()),
+                    ae.getTitle(),
+                    ae.getHostName(),
+                    new Integer(ae.getPort()),
+                    ae.getCipherSuitesAsString(),
+                    ae.getIssuerOfPatientID(),
+                    ae.getDescription(),
+                    new Boolean(checkHost) },
+                new String[] {
+                    long.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    int.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    boolean.class.getName() });
     }
 
     /**

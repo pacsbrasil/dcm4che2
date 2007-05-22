@@ -140,12 +140,35 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setCipherSuites(String cipherSuites);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_id_issuer"
+     */
+    public abstract String getIssuerOfPatientID();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setIssuerOfPatientID(String issuer);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ae_desc"
+     */
+    public abstract String getDescription();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setDescription(String desc);
 
     /**
      * @ejb.create-method
      */
     public Long ejbCreate(String title, String hostname, int port,
-            String cipherSuites) throws CreateException {
+            String cipherSuites, String issuer, String desc)
+            throws CreateException {
         if (log.isDebugEnabled()) {
             log.debug("create AEBean(" + title + ")");
         }
@@ -153,11 +176,14 @@ public abstract class AEBean implements EntityBean {
         setHostName(hostname);
         setPort(port);
         setCipherSuites(cipherSuites);
+        setIssuerOfPatientID(issuer);
+        setDescription(desc);
         return null;
     }
 
     public void ejbPostCreate(String title, String host, int port,
-            String cipherSuites) throws CreateException {
+            String cipherSuites, String issuer, String desc)
+            throws CreateException {
     }
 
     /**
@@ -165,8 +191,14 @@ public abstract class AEBean implements EntityBean {
      * @ejb.transaction type="Supports"
      */
     public AEDTO toDTO() {
-        return new AEDTO(getPk().longValue(), getTitle(), getHostName(),
-                getPort(), getCipherSuites());
+        return new AEDTO(
+                getPk().longValue(),
+                getTitle(),
+                getHostName(),
+                getPort(),
+                getCipherSuites(),
+                getIssuerOfPatientID(),
+                getDescription());
     }
     
     /**

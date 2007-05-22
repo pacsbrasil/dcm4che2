@@ -47,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
@@ -205,7 +204,7 @@ public class AEService extends ServiceMBeanSupport {
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null);
+            AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null, null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -240,21 +239,20 @@ public class AEService extends ServiceMBeanSupport {
      * @throws RemoteException
      */
     public void updateAE(long pk, String title, String host, int port,
-            String cipher, boolean checkHost) throws Exception {
+            String cipher, String issuer, String desc, boolean checkHost)
+            throws Exception {
         if (checkHost) {
             try {
                 host = InetAddress.getByName(host).getCanonicalHostName();
             } catch (UnknownHostException x) {
-                throw new IllegalArgumentException(
-                        "Host "
-                                + host
-                                + " cant be resolved! Disable hostname check to add new AE anyway!");
+                throw new IllegalArgumentException("Host " + host
+                        + " cant be resolved! Disable hostname check to add new AE anyway!");
             }
         }
 
         AEManager aeManager = aeMgr();
         if (pk == -1) {
-            AEDTO aeNew = new AEDTO(-1, title, host, port, cipher);
+            AEDTO aeNew = new AEDTO(-1, title, host, port, cipher, issuer, desc);
             aeManager.newAE(aeNew);
             logActorConfig("Add AE " + aeNew + " cipher:"
                     + aeNew.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -267,15 +265,15 @@ public class AEService extends ServiceMBeanSupport {
                             + " already exists!:" + aeOldByTitle);
                 } catch (UnknownAETException e) {}
             }
-            AEDTO aeNew = new AEDTO(pk, title, host, port, cipher);
+            AEDTO aeNew = new AEDTO(pk, title, host, port, cipher, issuer, desc);
             aeManager.updateAE(aeNew);
             logActorConfig("Modify AE " + aeOld + " -> " + aeNew, SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
     }
 
     public void addAE(String title, String host, int port, String cipher,
-            boolean checkHost) throws Exception {
-        updateAE(-1, title, host, port, cipher, checkHost);
+            String issuer, String desc, boolean checkHost) throws Exception {
+        updateAE(-1, title, host, port, cipher, issuer, desc, checkHost);
     }
 
     public void removeAE(String titles) throws Exception {

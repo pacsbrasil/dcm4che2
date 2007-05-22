@@ -1,0 +1,7 @@
+-- Update DB from dcm4chee-2.10.x to dcm4chee-2.11.x
+
+ALTER TABLE ae ADD pat_id_issuer VARCHAR(250) BINARY;
+ALTER TABLE ae ADD ae_desc VARCHAR(250) BINARY;
+
+DROP INDEX mwl_sps_id ON mwl_item;
+CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));

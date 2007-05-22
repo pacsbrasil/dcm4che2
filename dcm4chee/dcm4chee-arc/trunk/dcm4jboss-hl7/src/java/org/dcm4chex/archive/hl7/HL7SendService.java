@@ -305,7 +305,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public Document invoke(byte[] message, String receiver) throws Exception {
         AEDTO localAE = new AEDTO(-1, receiver, "127.0.0.1", getLocalHL7Port(),
-                null);
+                null, null, null);
         AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
                 ? localAE : aeMgt().findByAET(receiver);
         Socket s = tlsConfig.createSocket(localAE, remoteAE);

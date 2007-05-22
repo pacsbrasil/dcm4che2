@@ -143,6 +143,16 @@
        <type>java.lang.String</type>
      </parameter>
      <parameter>
+       <description>Default Issuer of Patient ID associated with this AE</description>
+       <name>issuer</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Free text description of this AE</description>
+       <name>description</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
        <description>Enable/disable check if host can be resolved to an IP address</description>
        <name>checkHost</name>
        <type>boolean</type>
@@ -171,6 +181,16 @@
      <parameter>
        <description>Cipher (seperated with ',')</description>
        <name>cipher</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Default Issuer of Patient ID associated with this AE</description>
+       <name>issuer</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Free text description of this AE</description>
+       <name>description</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
