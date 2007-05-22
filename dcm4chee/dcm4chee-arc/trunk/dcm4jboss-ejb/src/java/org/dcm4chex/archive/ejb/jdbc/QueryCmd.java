@@ -125,10 +125,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private static final String SR_CODE = "sr_code";
 
-    private static final String[] SERIES_REQUEST_LEFT_JOIN = { "SeriesRequest",
-            null, "Series.pk", "SeriesRequest.series_fk" };
-
-    
     public static int transactionIsolationLevel = 0;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -611,6 +607,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Patient.encodedAttributes",
                     "Study.encodedAttributes",
                     "Series.encodedAttributes",
+                    "Study.modalitiesInStudy",
+                    "Study.studyStatusId",
                     "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
                     "Series.numberOfSeriesRelatedInstances",
@@ -641,13 +639,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
             fillDataset(ds, 3);
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(4));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(5));
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(6));
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(9), rs.getString(10));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(11)]);
+            ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(4),
+                    '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(5));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(6));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(7));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(8));
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(9));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(10));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(11), rs.getString(12));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(13)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -673,6 +674,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Study.encodedAttributes",
                     "Series.encodedAttributes",
                     "Instance.encodedAttributes",
+                    "Study.modalitiesInStudy",
+                    "Study.studyStatusId",
                     "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
                     "Series.numberOfSeriesRelatedInstances",
@@ -717,13 +720,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 2);
             fillDataset(ds, 3);
             fillDataset(ds, 4);
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(5));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(6));
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(7));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(8), rs.getString(9));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(10)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(11));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(12));
+            ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(5),
+                    '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(6));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(7));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(8));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(9));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(10), rs.getString(11));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(12)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(13));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(14));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
 
