@@ -188,7 +188,7 @@ public class Dcm2Xml {
             dcm2xml.setExclude(new int[] {Tag.PixelData});
         }
         if (cl.hasOption("T")) {
-            final String xslurl = cl.getOptionValue("t");
+            final String xslurl = cl.getOptionValue("T");
             try {
                 dcm2xml.setXslt(new URL(xslurl));
             } catch (MalformedURLException e) {
