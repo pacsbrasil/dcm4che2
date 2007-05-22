@@ -47,160 +47,163 @@ import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
 /**
  * @author franz.willer
- *
+ * 
  * The Model for Teaching File Selector WEB interface.
  */
 public class AEModel extends BasicFormModel {
 
-	/** The session attribute name to store the model in http session. */
-	public static final String AE_ATTR_NAME = "aeModel";
-	
-	private static Logger log = Logger.getLogger( AEModel.class.getName() );
+    /** The session attribute name to store the model in http session. */
+    public static final String AE_ATTR_NAME = "aeModel";
 
-	private String user;
-	private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
-	private int port=-1;
-    private long pk=-1;
-	
-	private boolean checkHost = false;
-	
-	/**
-	 * @param chiperSuites The chiperSuites to set.
-	 */
-	public final void setCipherSuites(String cipherSuites)
-	{
-		this.cipherSuites = cipherSuites;
-	}
+    private static Logger log = Logger.getLogger(AEModel.class.getName());
 
-	/**
-	 * @param hostName The hostName to set.
-	 */
-	public final void setHostName(String hostName)
-	{
-		this.hostName = hostName;
-	}
-	
-	public final void setCheckHost( boolean checkHost ) {
-		this.checkHost = checkHost;
-	}
+    private String user;
 
-	/**
-	 * @return Returns the checkHost.
-	 */
-	public boolean isCheckHost() {
-		return checkHost;
-	}
-	/**
-	 * @param port The port to set.
-	 */
-	public final void setPort(int port)
-	{
-		this.port = port;
-	}
+    private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
 
-	/**
-	 * @param title The title to set.
-	 */
-	public final void setTitle(String title)
-	{
-		this.title = title;
-	}
+    private int port = -1;
 
-	/**
-	 * @param oldPk The oldPk to set.
-	 */
-	public final void setPk(long pk)
-	{
-		this.pk = pk;
-	}
+    private long pk = -1;
 
-	
-	public final void setCipher1(String cipher)
-	{
-		this.cipher1 = cipher;
-		cipherSuites = null;
-	}
-	public final void setCipher2(String cipher)
-	{
-		this.cipher2 = cipher;
-		cipherSuites = null;
-	}
-	public final void setCipher3(String cipher)
-	{
-		this.cipher3 = cipher;
-		cipherSuites = null;
-	}
-	
-	public AEDTO getAE()
-	{
-		if (cipherSuites == null || cipherSuites.length() < 1 ) {
-			StringBuffer sb = new StringBuffer();
-			if ( cipher1 != null && cipher1.length() > 0 ) sb.append( cipher1 );
-			if ( cipher2 != null && cipher2.length() > 0 ) sb.append(",").append( cipher2 );
-			if ( cipher3 != null && cipher3.length() > 0 ) sb.append(",").append( cipher3 );
-			cipherSuites = sb.toString();
-		}
-		return new AEDTO(
-			pk,
-			this.title,
-			this.hostName,
-			this.port,
-			this.cipherSuites);
-	}
-	
-	public void setAE( AEDTO ae ) {
-		pk = ae.getPk();
-		title = ae.getTitle();
-		hostName = ae.getHostName();
-		port = ae.getPort();
-		cipherSuites = ae.getCipherSuitesAsString();
-	}
-	
-	public void setAet(String aet) {
-		title = aet;
-		pk = -1;
-		port = -1;
-		hostName = null;
-		cipherSuites = cipher1 = cipher2 = cipher3 = null;
-	}
+    private boolean checkHost = false;
 
+    /**
+     * @param chiperSuites
+     *            The chiperSuites to set.
+     */
+    public final void setCipherSuites(String cipherSuites) {
+        this.cipherSuites = cipherSuites;
+    }
 
-	/**
-	 * Creates the model.
-	 * <p>
-	 */
-	protected AEModel(String user, HttpServletRequest request) {
-		super(request);
-		this.user = user;
-	}
-	
-	/**
-	 * @return Returns the user.
-	 */
-	public String getUser() {
-		return user;
-	}
-	
-	/**
-	 * Get the model for an http request.
-	 * <p>
-	 * Look in the session for an associated model via <code>AE_ATTR_NAME</code><br>
-	 * If there is no model stored in session (first request) a new model is created and stored in session.
-	 * 
-	 * @param request A http request.
-	 * 
-	 * @return The model for given request.
-	 */
-	public static final AEModel getModel( HttpServletRequest request ) {
-		AEModel model = (AEModel) request.getSession().getAttribute(AE_ATTR_NAME);
-		if (model == null) {
-				model = new AEModel(request.getUserPrincipal().getName(), request);
-				request.getSession().setAttribute(AE_ATTR_NAME, model);
-		}
-		return model;
-	}
+    /**
+     * @param hostName
+     *            The hostName to set.
+     */
+    public final void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
 
-	public String getModelName() { return "AEMgr"; }
-	
+    public final void setCheckHost(boolean checkHost) {
+        this.checkHost = checkHost;
+    }
+
+    /**
+     * @return Returns the checkHost.
+     */
+    public boolean isCheckHost() {
+        return checkHost;
+    }
+
+    /**
+     * @param port
+     *            The port to set.
+     */
+    public final void setPort(int port) {
+        this.port = port;
+    }
+
+    /**
+     * @param title
+     *            The title to set.
+     */
+    public final void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * @param oldPk
+     *            The oldPk to set.
+     */
+    public final void setPk(long pk) {
+        this.pk = pk;
+    }
+
+    public final void setCipher1(String cipher) {
+        this.cipher1 = cipher;
+        cipherSuites = null;
+    }
+
+    public final void setCipher2(String cipher) {
+        this.cipher2 = cipher;
+        cipherSuites = null;
+    }
+
+    public final void setCipher3(String cipher) {
+        this.cipher3 = cipher;
+        cipherSuites = null;
+    }
+
+    public AEDTO getAE() {
+        if (cipherSuites == null || cipherSuites.length() < 1) {
+            StringBuffer sb = new StringBuffer();
+            if (cipher1 != null && cipher1.length() > 0)
+                sb.append(cipher1);
+            if (cipher2 != null && cipher2.length() > 0)
+                sb.append(",").append(cipher2);
+            if (cipher3 != null && cipher3.length() > 0)
+                sb.append(",").append(cipher3);
+            cipherSuites = sb.toString();
+        }
+        return new AEDTO(pk, this.title, this.hostName, this.port,
+                this.cipherSuites);
+    }
+
+    public void setAE(AEDTO ae) {
+        pk = ae.getPk();
+        title = ae.getTitle();
+        hostName = ae.getHostName();
+        port = ae.getPort();
+        cipherSuites = ae.getCipherSuitesAsString();
+    }
+
+    public void setAet(String aet) {
+        title = aet;
+        pk = -1;
+        port = -1;
+        hostName = null;
+        cipherSuites = cipher1 = cipher2 = cipher3 = null;
+    }
+
+    /**
+     * Creates the model.
+     * <p>
+     */
+    protected AEModel(String user, HttpServletRequest request) {
+        super(request);
+        this.user = user;
+    }
+
+    /**
+     * @return Returns the user.
+     */
+    public String getUser() {
+        return user;
+    }
+
+    /**
+     * Get the model for an http request.
+     * <p>
+     * Look in the session for an associated model via <code>AE_ATTR_NAME</code><br>
+     * If there is no model stored in session (first request) a new model is
+     * created and stored in session.
+     * 
+     * @param request
+     *            A http request.
+     * 
+     * @return The model for given request.
+     */
+    public static final AEModel getModel(HttpServletRequest request) {
+        AEModel model = (AEModel) request.getSession().getAttribute(
+                AE_ATTR_NAME);
+        if (model == null) {
+            model = new AEModel(request.getUserPrincipal().getName(), request);
+            request.getSession().setAttribute(AE_ATTR_NAME, model);
+        }
+        return model;
+    }
+
+    public String getModelName() {
+        return "AEMgr";
+    }
 
 }
