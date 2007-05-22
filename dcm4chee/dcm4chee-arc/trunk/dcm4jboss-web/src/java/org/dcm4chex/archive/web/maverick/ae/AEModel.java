@@ -59,7 +59,17 @@ public class AEModel extends BasicFormModel {
 
     private String user;
 
-    private String title, hostName, cipherSuites, cipher1, cipher2, cipher3;
+    private String title;
+    
+    private String hostName;
+    
+    private String cipherSuites;
+    
+    private String cipher1;
+    
+    private String cipher2;
+    
+    private String cipher3;
 
     private int port = -1;
 
