@@ -203,6 +203,7 @@
   <element tag="(0008,1198)" name="Failed SOP Sequence" vr="SQ" vm="1" key="FailedSOPSeq" />
   <element tag="(0008,1199)" name="Referenced SOP Sequence" vr="SQ" vm="1" key="RefSOPSeq" />
   <element tag="(0008,1200)" name="Studies Containing Other Referenced Instances Sequence" vr="SQ" vm="1" key="StudiesContainingOtherRefInstancesSeq" />
+  <element tag="(0008,1250)" name="Related Series Sequence" vr="SQ" vm="1" key="RelatedSeriesSeq" />
   <element tag="(0008,2110)" name="Lossy Image Compression (Retired)" vr="CS" vm="1" key="LossyImageCompressionRetired" retired="true"/>  
   <element tag="(0008,2111)" name="Derivation Description" vr="ST" vm="1" key="DerivationDescription" />
   <element tag="(0008,2112)" name="Source Image Sequence" vr="SQ" vm="1" key="SourceImageSeq" />
