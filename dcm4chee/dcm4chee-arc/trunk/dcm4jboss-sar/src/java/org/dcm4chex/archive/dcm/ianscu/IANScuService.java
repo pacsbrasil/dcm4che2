@@ -132,9 +132,13 @@ public class IANScuService extends AbstractScuService implements
     private final NotificationListener mppsReceivedListener = 
         new NotificationListener() {
             public void handleNotification(Notification notif, Object handback) {
-                String mppsiuid = ((Dataset) notif.getUserData()).getString(Tags.SOPInstanceUID);
+                Dataset mpps = (Dataset) notif.getUserData();
+                if (isIgnoreMPPS(mpps)) {
+                    return;
+                }
+                String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
                 try {
-                    onMPPSReceived( getMPPSManagerHome().create().getMPPS(mppsiuid) );
+                    notifyIfRefInstancesAvailable( getMPPSManagerHome().create().getMPPS(mppsiuid) );
                 } catch (ObjectNotFoundException e) {
                     log.debug("No such MPPS - " + mppsiuid);
                 } catch (Exception e) {
@@ -334,7 +338,10 @@ public class IANScuService extends AbstractScuService implements
             schedule(ian);
         } else if (mppsiuid != null) {
             try {
-                onMPPSReceived(getMPPSManagerHome().create().getMPPS(mppsiuid));
+                Dataset mpps = getMPPSManagerHome().create().getMPPS(mppsiuid);
+                if (!isIgnoreMPPS(mpps)) {
+                    notifyIfRefInstancesAvailable(mpps);
+                }
             } catch (ObjectNotFoundException e) {
                 log.debug("No such MPPS - " + mppsiuid);
             } catch (Exception e) {
@@ -349,55 +356,8 @@ public class IANScuService extends AbstractScuService implements
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
     }
 
-    private void onMPPSReceived(Dataset mpps) {
-        if (isIgnoreMPPS(mpps) || !notifyOtherServices 
-                && (notifiedAETs.length == 0 || !sendOneIANforEachMPPS)) {
-            return;
-        }
-        Dataset ian = makeIAN(mpps);
-        if (ian != null) {
-            if (notifyOtherServices) {
-                sendMPPSInstancesAvailableNotification(mpps);
-            }
-            if (sendOneIANforEachMPPS) {
-                schedule(ian);
-            }
-        }
-    }
-
-    void sendMPPSInstancesAvailableNotification(Dataset mpps) {
-        long eventID = super.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(EVENT_TYPE, this, eventID);
-        notif.setUserData(mpps);
-        super.sendNotification(notif);
-    }
-    
-    private boolean isIgnoreMPPS(Dataset mpps) {
-        String status = mpps.getString(Tags.PPSStatus);
-        if ("COMPLETED".equals(status)) {
-            return false;
-        }
-        if (!"DISCONTINUE".equals(status)) {
-            if (log.isInfoEnabled()) {
-                log.info("Ignore MPPS with status " + status);
-            }
-            return true;
-        }
-        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-        if (item != null && "110514".equals(item.getString(Tags.CodeValue))
-                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
-            log.info("Ignore MPPS with Discontinuation Reason Code: " +
-                        "Wrong Worklist Entry Selected");
-            return true;
-        }
-        return false;
-    }
-
-    private Dataset makeIAN(Dataset mpps) {
+    private void notifyIfRefInstancesAvailable(Dataset mpps) {
         DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
-        if (perfSeriesSq == null) {
-            return null;
-        }
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         String cuid = mpps.getString(Tags.SOPClassUID);
         String iuid = mpps.getString(Tags.SOPInstanceUID);
@@ -417,7 +377,7 @@ public class IANScuService extends AbstractScuService implements
                 } catch (SQLException e) {
                     log.error("Failed to check availability of Instances " +
                                 "referenced in MPPS", e);
-                    return null;
+                    return;
                 }
                 String seruid = perfSeries.getString(Tags.SeriesInstanceUID);
                 if (log.isInfoEnabled()) {
@@ -427,7 +387,7 @@ public class IANScuService extends AbstractScuService implements
                                     + " Instances available");
                 }
                 if (aa.length != refImageSeq.countItems()) {
-                    return null;
+                    return;
                 }
                 Dataset refSeries = refSeriesSq.addNewItem();
                 refSeries.putUI(Tags.SeriesInstanceUID, seruid);
@@ -438,13 +398,13 @@ public class IANScuService extends AbstractScuService implements
                         log.error("Series Instance UID of " + info
                                 + " differs from value [" + seruid
                                 + "] in MPPS[iuid=" + iuid + "]");
-                        return null;
+                        return;
                     }
                     if (suid != null && !suid.equals(info.studyIUID)) {
                         log.error("Different Study Instance UIDs of "
                                 + "instances referenced in MPPS[iuid=" + iuid
                                 + "] detected");
-                        return null;
+                        return;
                     }
                     suid = info.studyIUID;
                     Dataset refSOP = refSOPSeq.addNewItem();
@@ -460,14 +420,51 @@ public class IANScuService extends AbstractScuService implements
             if (log.isInfoEnabled()) {
                 log.info("MPPS[" + iuid + "] does not reference any Instances");
             }
-            return null;
+            return;
         }
         Dataset refPPS = ian.putSQ(Tags.RefPPSSeq).addNewItem();
         refPPS.putUI(Tags.RefSOPClassUID, cuid);
         refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
         refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
         ian.putUI(Tags.StudyInstanceUID, suid);
-        return ian;
+        if (notifyOtherServices) {
+            sendMPPSInstancesAvailableNotification(mpps);
+        }
+        if (sendOneIANforEachMPPS) {
+            schedule(ian);
+        }
+    }
+
+    void sendMPPSInstancesAvailableNotification(Dataset mpps) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE, this, eventID);
+        notif.setUserData(mpps);
+        super.sendNotification(notif);
+    }
+    
+    private boolean isIgnoreMPPS(Dataset mpps) {
+        if (!notifyOtherServices
+                && (notifiedAETs.length == 0 || !sendOneIANforEachMPPS)) {
+            return true;
+        }
+        if (mpps.get(Tags.PerformedSeriesSeq) == null) {
+            return true;
+        }
+        String status = mpps.getString(Tags.PPSStatus);
+        if ("COMPLETED".equals(status)) {
+            return false;
+        }
+        if (!"DISCONTINUE".equals(status)) {
+            return true;
+        }
+        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        if (item != null && "110514".equals(item.getString(Tags.CodeValue))
+                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+            log.info("Ignore MPPS with Discontinuation Reason Code: " +
+                        "Wrong Worklist Entry Selected");
+            return true;
+        }
+        return false;
     }
 
     private void onStudyDeleted(StudyDeleted deleted) {
