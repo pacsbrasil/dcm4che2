@@ -39,6 +39,7 @@ package org.dcm4chee.xero.metadata;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
@@ -51,7 +52,7 @@ import java.lang.annotation.Target;
  * @author bwallace
  *
  */
-@Target({FIELD, METHOD})
+@Target({FIELD, METHOD, TYPE})
 @Retention(RUNTIME)
 @Documented
 public @interface MetaData {
