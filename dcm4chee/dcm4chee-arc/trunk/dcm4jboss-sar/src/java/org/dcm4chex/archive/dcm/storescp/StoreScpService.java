@@ -22,6 +22,7 @@
  * Contributor(s):
  * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  * Franz Willer <franz.willer@gwi-ag.com>
+ * Fuad Ibrahimov <fuad@ibrahimov.de>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -358,6 +359,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setAcceptPatientID(acceptPatientID);
     }
 
+    public final void setAdditionalCheckIfDuplicatedPatientID(boolean additionalCheckIfDuplicatedPatientID){
+        scp.setAdditionalCheckIfDuplicatedPatientID(additionalCheckIfDuplicatedPatientID);
+    }
+
+    public final boolean isAdditionalCheckIfDuplicatedPatientID(){
+        return scp.isAdditionalCheckIfDuplicatedPatientID();
+    }
+
     public final String getIgnorePatientID() {
         return scp.getIgnorePatientID();
     }
@@ -525,7 +534,7 @@ public class StoreScpService extends AbstractScpService {
      * Enable/disable check if an MPPS with Discontinued reason 'Incorrect
      * worklist selected' is referenced.
      * 
-     * @param checkIncorrectWorklistEntry
+     * @param check
      *            The checkIncorrectWorklistEntry to set.
      */
     public void setCheckIncorrectWorklistEntry(boolean check) {

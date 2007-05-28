@@ -22,6 +22,7 @@
  * Contributor(s):
  * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  * Franz Willer <franz.willer@gwi-ag.com>
+ * Fuad Ibrahimov <fuad@ibrahimov.de>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -50,17 +51,18 @@ import java.rmi.RemoteException;
 import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.sql.Timestamp;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.FinderException;
+import javax.ejb.EJBException;
 import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -89,14 +91,7 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.IssuerOfPatientIDRules;
-import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
-import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
-import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.Storage;
-import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.interfaces.*;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
@@ -105,6 +100,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
+import com.sun.java_cup.internal.assoc;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -142,6 +138,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private boolean acceptMissingPatientID = true;
 
     private boolean acceptMissingPatientName = true;
+
+    private boolean additionalCheckIfDuplicatedPatientID = false;
 
     private Pattern acceptPatientID;
 
@@ -202,6 +200,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setAcceptMissingPatientID(boolean accept) {
         this.acceptMissingPatientID = accept;
+    }
+
+    public boolean isAdditionalCheckIfDuplicatedPatientID() {
+        return additionalCheckIfDuplicatedPatientID;
+    }
+
+    public void setAdditionalCheckIfDuplicatedPatientID(boolean additionalCheckIfDuplicatedPatientID) {
+        this.additionalCheckIfDuplicatedPatientID = additionalCheckIfDuplicatedPatientID;
     }
 
     public final boolean isAcceptMissingPatientName() {
@@ -608,7 +614,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
-            checkPatientIdAndName(ds, callingAET);
+            checkPatientIdAndName(ds, callingAET, assoc);
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
             Storage store = getStorage(assoc);
             String prevseriud = (String) assoc.getProperty(SERIES_IUID);
@@ -869,6 +875,31 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return store;
     }
 
+    PatientLocalHome getPatientHome(Association assoc) throws RemoteException,
+            CreateException, HomeFactoryException {
+        PatientLocalHome patHome = (PatientLocalHome) assoc.getProperty(PatientLocalHome.JNDI_NAME);
+        if (patHome == null) {
+            Context jndiCtx = null;
+            try {
+                jndiCtx = new InitialContext();
+                patHome = (PatientLocalHome) jndiCtx
+                        .lookup(PatientLocalHome.JNDI_NAME);
+            } catch (NamingException e) {
+                throw new EJBException(e);
+            } finally {
+                if (jndiCtx != null) {
+                    //noinspection EmptyCatchBlock
+                    try {
+                        jndiCtx.close();
+                    } catch (NamingException ignore) {
+                    }
+                }
+            }
+            assoc.putProperty(PatientLocalHome.JNDI_NAME, patHome);
+        }
+        return patHome;
+    }
+
     private File makeFile(File basedir, Dataset ds) throws Exception {
         Calendar date = Calendar.getInstance();
         if (studyDateInFilePath) {
@@ -1005,8 +1036,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return val;
     }
 
-    private void checkPatientIdAndName(Dataset ds, String aet)
-            throws DcmServiceException {
+    private void checkPatientIdAndName(Dataset ds, String aet, Association assoc)
+            throws DcmServiceException, HomeFactoryException, RemoteException, CreateException, FinderException {
         String pid = ds.getString(Tags.PatientID);
         String pname = ds.getString(Tags.PatientName);
         if (pid == null && !acceptMissingPatientID) {
@@ -1023,17 +1054,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 && (contains(ignorePatientIDCallingAETs, aet)
                         || !acceptPatientID.matcher(pid).matches() || ignorePatientID
                         .matcher(pid).matches())) {
-            log.info("Ignore Patient ID " + pid + " for Patient Name " + pname
-                    + " in object received from " + aet);
+            if (log.isInfoEnabled()) {
+                log.info("Ignore Patient ID " + pid + " for Patient Name " + pname
+                        + " in object received from " + aet);
+            }
             pid = null;
             ds.putLO(Tags.PatientID, pid);
+        }
+        if(pid != null && additionalCheckIfDuplicatedPatientID && patientExistsWithDifferentDetails(pid, ds, assoc)){
+            if (log.isInfoEnabled()) {
+                log.info("Ignore Patient ID " + pid + " for Patient Name " + pname
+                        + " in object received from " + aet);
+            }
+            pid = null;
         }
         if (pid == null && generatePatientID != null) {
             if (generatePatientID != null) {
                 pid = generatePatientID(ds);
                 ds.putLO(Tags.PatientID, pid);
-                log.info("Add generated Patient ID " + pid
-                        + " for Patient Name " + pname);
+                if (log.isInfoEnabled()) {
+                    log.info("Add generated Patient ID " + pid
+                            + " for Patient Name " + pname);
+                }
             }
         }
         if (pid != null) {
@@ -1042,12 +1084,47 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 issuer = issuerOfPatientIDRules.issuerOf(pid);
                 if (issuer != null) {
                     ds.putLO(Tags.IssuerOfPatientID, issuer);
-                    log.info("Add missing Issuer Of Patient ID " + issuer
-                            + " for Patient ID " + pid + " and Patient Name "
-                            + pname);
+                    if (log.isInfoEnabled()) {
+                        log.info("Add missing Issuer Of Patient ID " + issuer
+                                + " for Patient ID " + pid + " and Patient Name "
+                                + pname);
+                    }
                 }
             }
         }
+    }
+
+    private boolean patientExistsWithDifferentDetails(String pid, Dataset ds, Association assoc)
+      throws RemoteException, CreateException, HomeFactoryException, FinderException {
+        PatientLocalHome patHome = getPatientHome(assoc);
+        String issuer = ds.getString(Tags.IssuerOfPatientID);
+        Collection c = issuer != null
+                ? patHome.findByPatientIdWithIssuer(pid, issuer)
+                : patHome.findByPatientId(pid);
+        if(c.size() != 0){
+            Iterator it = c.iterator();
+            while(it.hasNext()) {
+                PatientLocal patient = (PatientLocal) it.next();
+                if(!(hasSameName(patient, ds) && hasSameBirthDate(patient, ds))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasSameBirthDate(PatientLocal patient, Dataset ds) {
+        Timestamp patientBirthDate = patient.getPatientBirthDate();
+        return patientBirthDate != null && patientBirthDate.equals(new Timestamp(ds.getDate(Tags.PatientBirthDate).getTime()));
+    }
+
+    private boolean hasSameName(PatientLocal patient, Dataset ds) {
+        String name = patient.getPatientName();
+        return name != null && name.toUpperCase().equals(toUpperCase(ds.getPersonName(Tags.PatientName).toComponentGroupString(false)));
+    }
+
+    private String toUpperCase(String s) {
+        return s == null ? null : s.toUpperCase();
     }
 
     private boolean contains(Object[] a, Object e) {
