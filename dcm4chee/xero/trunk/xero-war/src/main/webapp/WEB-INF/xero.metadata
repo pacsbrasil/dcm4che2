@@ -59,6 +59,7 @@ Modality.CT=CT
 Modality.CR=CR
 Modality.MR=MR
 Modality.NM=NM
+Modality.OT=Test Objects
 Modality.SR=Structured Report
 Modality.KO=Key Object
 Modality.PR=GSPS
