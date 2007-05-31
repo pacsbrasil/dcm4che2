@@ -4,7 +4,7 @@
     <property file="build.properties" />
     <property file="../build.properties" />
 
-    <property name="version" value="2.10.15"/>
+    <property name="version" value="2.10.16"/>
     <property name="dist.jboss.conf" value="default"/>
     <property name="dist.name" value="dcm4chee-cdw-${version}"/>
     <property name="dist.src" value="dcm4chee-cdw-src-${version}"/>
