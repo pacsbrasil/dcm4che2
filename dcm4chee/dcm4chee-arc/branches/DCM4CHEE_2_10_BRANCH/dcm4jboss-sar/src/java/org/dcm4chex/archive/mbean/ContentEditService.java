@@ -325,8 +325,10 @@ public class ContentEditService extends ServiceMBeanSupport {
             Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
                     new Object[] { o, mppsIUIDs }, 
                     new String[] { o.getClass().getName(), String[].class.getName() });
-            Dataset dsN = (Dataset) map.get("StudyMgtDS");
-            if ( dsN != null ) {
+            List studyDsN = (List) map.get("StudyMgtDS");
+            Dataset dsN;
+            for ( Iterator iter = studyDsN.iterator() ; iter.hasNext() ; ) {
+                dsN = (Dataset) iter.next();
                 sendStudyMgt( dsN.getString( Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsN);
                 sendSeriesUpdatedNotifications(dsN, "Series update");
             }

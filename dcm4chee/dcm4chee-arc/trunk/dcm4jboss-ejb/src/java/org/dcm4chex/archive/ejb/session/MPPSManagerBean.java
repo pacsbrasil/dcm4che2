@@ -259,65 +259,13 @@ public abstract class MPPSManagerBean implements SessionBean {
     	log.info("linkMppsToMwl spsId:"+spsid+" mpps:"+mppsIUID);
 		MWLItemLocal mwlItem;
         MPPSLocal mpps;
-        Map map = new HashMap();
         try {
             mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
             mpps = mppsHome.findBySopIuid(mppsIUID);
-            String accNo = mwlItem.getAccessionNumber();
             PatientLocal mwlPat = mwlItem.getPatient();
             PatientLocal mppsPat = mpps.getPatient();
             Dataset mwlAttrs = mwlItem.getAttributes();
-            Dataset mppsAttrs = mpps.getAttributes();
-    		Dataset ssa;
-    		DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
-    		String ssaSpsID, studyIUID = null;
-    		boolean spsNotInList = true;
-    		for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++ ) {
-    			ssa = ssaSQ.getItem(i);
-    			if ( ssa != null ) {
-    				if ( studyIUID == null ) { 
-    					studyIUID = ssa.getString(Tags.StudyInstanceUID);
-			    		if ( !studyIUID.equals( 
-			    				mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
-			    			log.info("StudyInstanceUID corrected for spsID "+spsid);
-			    			mwlAttrs.putUI(Tags.StudyInstanceUID, ssa.getString(Tags.StudyInstanceUID) );
-			    			mwlItem.setAttributes( mwlAttrs );
-			    		}
-    				}
-    				ssaSpsID = ssa.getString(Tags.SPSID);
-	    			if ( ssaSpsID == null || spsid.equals(ssaSpsID) ) {
-	    				ssa.putSH(Tags.AccessionNumber,accNo);
-	    				ssa.putSH(Tags.SPSID, spsid);
-                                        ssa.putSH(Tags.RequestedProcedureID, rpid);
-	    				ssa.putUI(Tags.StudyInstanceUID, studyIUID);
-	    				spsNotInList = false;
-	    			}
-    			}
-    		}
-    		if ( spsNotInList ) {
-    			ssa = ssaSQ.addNewItem();
-    			Dataset spsDS = mwlAttrs.getItem(Tags.SPSSeq);
-    			ssa.putUI(Tags.StudyInstanceUID, studyIUID);
-    			ssa.putSH(Tags.SPSID, spsid);
-                        ssa.putSH(Tags.RequestedProcedureID, rpid);
-                   	ssa.putSH(Tags.AccessionNumber, accNo);
-    			ssa.putSQ(Tags.RefStudySeq);
-    			ssa.putSH(Tags.RequestedProcedureID, mwlAttrs.getString(Tags.RequestedProcedureID));
-    			ssa.putLO(Tags.SPSDescription, spsDS.getString(Tags.SPSDescription));
-    			DcmElement mppsSPCSQ = ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
-    			DcmElement mwlSPCSQ = spsDS.get(Tags.ScheduledProtocolCodeSeq);
-    			if ( mwlSPCSQ != null && mwlSPCSQ.countItems() > 0 ) {
-    				for ( int i = 0, len = mwlSPCSQ.countItems() ; i < len ; i++ ) {
-    					mppsSPCSQ.addNewItem().putAll(mwlSPCSQ.getItem(i));
-    				}
-    			}
-    			log.debug("add new scheduledStepAttribute item:");log.info(ssa);
-    			log.debug("new mppsAttrs:");log.debug(mppsAttrs);
-    		}
-            mpps.setAttributes(mppsAttrs);
-            mppsAttrs.putAll(mppsPat.getAttributes(false));
-            map.put("mppsAttrs",mppsAttrs);
-            map.put("mwlAttrs",mwlAttrs);
+    		Map map = updateLinkedMpps(mpps, mwlItem, mwlAttrs);
             if ( ! mwlPat.equals(mppsPat) ) {
         		map.put( "mwlPat", mwlPat.getAttributes(true));
         		map.put( "mppsPat",mppsPat.getAttributes(true));
@@ -328,6 +276,72 @@ public abstract class MPPSManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private Map updateLinkedMpps(MPPSLocal mpps, MWLItemLocal mwlItem, Dataset mwlAttrs) {
+        Map map = new HashMap();
+        Dataset ssa;
+        Dataset mppsAttrs = mpps.getAttributes();
+        log.debug("MPPS attrs:");log.debug(mppsAttrs);
+        log.debug("MWL attrs:");log.debug(mwlAttrs);
+        String rpid = mwlAttrs.getString(Tags.RequestedProcedureID);
+        String spsid = mwlAttrs.getItem(Tags.SPSSeq).getString(Tags.SPSID);
+        String accNo = mwlAttrs.getString(Tags.AccessionNumber);
+        DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
+        String ssaSpsID, studyIUID = null;
+        boolean spsNotInList = true;
+        for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++ ) {
+        	ssa = ssaSQ.getItem(i);
+        	if ( ssa != null ) {
+        		if ( studyIUID == null ) { 
+        			studyIUID = ssa.getString(Tags.StudyInstanceUID);
+            		if ( !studyIUID.equals( 
+            				mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
+                        if ( mwlItem != null ) {
+                			log.info("StudyInstanceUID corrected for spsID "+spsid);
+                			mwlAttrs.putUI(Tags.StudyInstanceUID, studyIUID );
+                			mwlItem.setAttributes( mwlAttrs );
+                        } else {
+                            log.warn("StudyInstanceUID of external MWL entry can not be corrected! spsID "+spsid);
+                            log.warn("--- StudyIUID MWL:"+mwlAttrs.getString(Tags.StudyInstanceUID)+"   StudyIUID MPPS:"+studyIUID);
+                        }
+            		}
+        		}
+        		ssaSpsID = ssa.getString(Tags.SPSID);
+        		if ( ssaSpsID == null || spsid.equals(ssaSpsID) ) {
+        			ssa.putSH(Tags.AccessionNumber,accNo);
+        			ssa.putSH(Tags.SPSID, spsid);
+                                    ssa.putSH(Tags.RequestedProcedureID, rpid);
+        			ssa.putUI(Tags.StudyInstanceUID, studyIUID);
+        			spsNotInList = false;
+        		}
+        	}
+        }
+        if ( spsNotInList ) {
+        	ssa = ssaSQ.addNewItem();
+        	Dataset spsDS = mwlAttrs.getItem(Tags.SPSSeq);
+        	ssa.putUI(Tags.StudyInstanceUID, studyIUID);
+        	ssa.putSH(Tags.SPSID, spsid);
+            ssa.putSH(Tags.RequestedProcedureID, rpid);
+            ssa.putSH(Tags.AccessionNumber, accNo);
+        	ssa.putSQ(Tags.RefStudySeq);
+        	ssa.putSH(Tags.RequestedProcedureID, mwlAttrs.getString(Tags.RequestedProcedureID));
+        	ssa.putLO(Tags.SPSDescription, spsDS.getString(Tags.SPSDescription));
+        	DcmElement mppsSPCSQ = ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
+        	DcmElement mwlSPCSQ = spsDS.get(Tags.ScheduledProtocolCodeSeq);
+        	if ( mwlSPCSQ != null && mwlSPCSQ.countItems() > 0 ) {
+        		for ( int i = 0, len = mwlSPCSQ.countItems() ; i < len ; i++ ) {
+        			mppsSPCSQ.addNewItem().putAll(mwlSPCSQ.getItem(i));
+        		}
+        	}
+        	log.debug("add new scheduledStepAttribute item:");log.debug(ssa);
+        	log.debug("new mppsAttrs:");log.debug(mppsAttrs);
+        }
+        mppsAttrs.putAll(mpps.getPatient().getAttributes(false));
+        mpps.setAttributes(mppsAttrs);
+        map.put("mppsAttrs",mppsAttrs);
+        map.put("mwlAttrs",mwlAttrs);
+        return map;
     }
 
     /**
@@ -360,60 +374,11 @@ public abstract class MPPSManagerBean implements SessionBean {
     public Map linkMppsToMwl(Dataset mwlAttrs, String mppsIUID) throws DcmServiceException, FinderException, CreateException {
         String spsID = mwlAttrs.get(Tags.SPSSeq).getItem().getString(Tags.SPSID);
         log.info("linkMppsToMwl sps:"+spsID+" mpps:"+mppsIUID);
-        MPPSLocal mpps;
-        Map map = new HashMap();
-        mpps = mppsHome.findBySopIuid(mppsIUID);
-        String accNo = mwlAttrs.getString(Tags.AccessionNumber);
+        MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
         Dataset mwlPatDs = filter.filter(mwlAttrs);
         PatientLocal mppsPat = mpps.getPatient();
-        Dataset mppsAttrs = mpps.getAttributes();
-        Dataset ssa;
-        DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
-        String ssaSpsID, studyIUID = null;
-        boolean spsNotInList = true;
-        for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++ ) {
-            ssa = ssaSQ.getItem(i);
-            if ( ssa != null ) {
-                if ( studyIUID == null ) { 
-                    studyIUID = ssa.getString(Tags.StudyInstanceUID);
-                    if ( !studyIUID.equals( 
-                            mwlAttrs.getString(Tags.StudyInstanceUID) ) ) {
-                        log.warn("StudyInstanceUID of external MWL entry can not be corrected! spsID "+spsID);
-                    }
-                }
-                ssaSpsID = ssa.getString(Tags.SPSID);
-                if ( ssaSpsID == null || spsID.equals(ssaSpsID) ) {
-                    ssa.putSH(Tags.AccessionNumber,accNo);
-                    ssa.putSH(Tags.SPSID, spsID);
-                    ssa.putUI(Tags.StudyInstanceUID, studyIUID);
-                    spsNotInList = false;
-                }
-            }
-        }
-        if ( spsNotInList ) {
-            ssa = ssaSQ.addNewItem();
-            Dataset spsDS = mwlAttrs.getItem(Tags.SPSSeq);
-            ssa.putUI(Tags.StudyInstanceUID, studyIUID);
-            ssa.putSH(Tags.SPSID, spsID);
-            ssa.putSH(Tags.AccessionNumber, accNo);
-            ssa.putSQ(Tags.RefStudySeq);
-            ssa.putSH(Tags.RequestedProcedureID, mwlAttrs.getString(Tags.RequestedProcedureID));
-            ssa.putLO(Tags.SPSDescription, spsDS.getString(Tags.SPSDescription));
-            DcmElement mppsSPCSQ = ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
-            DcmElement mwlSPCSQ = spsDS.get(Tags.ScheduledProtocolCodeSeq);
-            if ( mwlSPCSQ != null && mwlSPCSQ.countItems() > 0 ) {
-                for ( int i = 0, len = mwlSPCSQ.countItems() ; i < len ; i++ ) {
-                    mppsSPCSQ.addNewItem().putAll(mwlSPCSQ.getItem(i));
-                }
-            }
-            log.debug("add new scheduledStepAttribute item:");log.info(ssa);
-            log.debug("new mppsAttrs:");log.debug(mppsAttrs);
-        }
-        mpps.setAttributes(mppsAttrs);
-        mppsAttrs.putAll(mppsPat.getAttributes(false));
-        map.put("mppsAttrs",mppsAttrs);
-        map.put("mwlAttrs",mwlAttrs);
+        Map map = updateLinkedMpps(mpps, null, mwlAttrs);
         if ( ! isSamePatient(mwlPatDs,mppsPat) ) {
             Collection col = patHome.findByPatientIdWithIssuer(mwlPatDs.getString(Tags.PatientID), 
                     mwlPatDs.getString(Tags.IssuerOfPatientID));
@@ -527,7 +492,7 @@ public abstract class MPPSManagerBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public Dataset updateSeriesAndStudy(Collection seriesDS) throws FinderException {
+    public Dataset updateSeriesAndStudy(Collection seriesDS) throws FinderException, CreateException {
         Dataset ds = null;
         String iuid;
         SeriesLocal series = null;
@@ -538,7 +503,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             ds = (Dataset) iter.next();
             iuid = ds.getString(Tags.SeriesInstanceUID);
             series = seriesHome.findBySeriesIuid(iuid);
-	        series.setAttributes(ds);
+	        series.updateAttributes(ds, true);
             dsSer = refSeriesSeq.addNewItem();
             dsSer.putAll(series.getAttributes(true));
             Iterator iter2 = series.getInstances().iterator();

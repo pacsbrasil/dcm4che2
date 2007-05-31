@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Collection;
 //import java.util.HashSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -58,6 +59,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
@@ -70,6 +72,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.util.Convert;
@@ -410,26 +413,68 @@ public abstract class SeriesBean implements EntityBean {
             throws CreateException {
     	ds.setPrivateCreatorID(PrivateTags.CreatorID);
     	setSourceAET(ds.getString(PrivateTags.CallingAET));
-        setAttributes(ds);
+        setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, StudyLocal study)
             throws CreateException {
-        createRequestAttributes(ds.get(Tags.RequestAttributesSeq));
+        updateAttributes(ds, false);
         setStudy(study);
         updateMpps();
         log.info("Created " + prompt());
     }
 
-    private void createRequestAttributes(DcmElement sq) throws CreateException {
-        if (sq == null) return;
-        Collection c = getRequestAttributes();
-        SeriesLocal series = (SeriesLocal) ejbctx.getEJBLocalObject();
-        for (int i = 0, n = sq.countItems(); i < n; i++) {
-            c.add(reqHome.create(sq.getItem(i), series));
+    /**
+     * Update series attributes and SeriesRequest.
+     * <p>
+     * Deletes SeriesRequest objects if RequestAttributesSeq in newAttrs is empty. 
+     *  
+     * @param ds Dataset with series attributes.
+     * @throws CreateException 
+     * 
+     * @ejb.interface-method
+     */
+    public void updateAttributes( Dataset newAttrs, boolean overwriteReqAttrSQ ) throws CreateException {
+        Dataset oldAttrs = getAttributes(false);
+        boolean updated = updateSeriesRequest(oldAttrs, newAttrs, overwriteReqAttrSQ);
+        if ( oldAttrs == null ) {
+            setAttributes( newAttrs );
+        } else {
+            String cuid = newAttrs.getString(Tags.SOPClassUID);
+            AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+            if ( AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
+                setAttributes(oldAttrs);
+            }
         }
-        
+    }
+    
+    private boolean updateSeriesRequest(Dataset oldAttrs, Dataset newAttrs, boolean overwriteReqAttrSQ) throws CreateException {
+        DcmElement newReqAttrSQ = newAttrs.get(Tags.RequestAttributesSeq);
+        if ( newReqAttrSQ == null ) return false;
+        DcmElement oldReqAttrSQ = oldAttrs == null ? null : oldAttrs.get(Tags.RequestAttributesSeq);
+        if ( newReqAttrSQ.equals(oldReqAttrSQ) ){
+            return false;
+        }
+        Collection c = getRequestAttributes();
+        if ( overwriteReqAttrSQ && ! c.isEmpty() ) {
+            oldAttrs.remove(Tags.RequestAttributesSeq);//remove to force update of RequestAttributesSeq
+            SeriesRequestLocal[] srls = new SeriesRequestLocal[c.size()];
+            srls = (SeriesRequestLocal[]) c.toArray(srls);
+            for ( int i = 0 ; i < srls.length ; i++) {
+                try {
+                    srls[i].remove();
+                } catch (Exception ignore) {
+                    log.warn("Cant delete SeriesRequest! Ignore deletion of "+srls[i],ignore);
+                }
+            }
+            c.clear();
+        }
+        SeriesLocal series = (SeriesLocal) ejbctx.getEJBLocalObject();
+        for (int i = 0, len = newReqAttrSQ.countItems(); i < len; i++) {
+            c.add(reqHome.create(newReqAttrSQ.getItem(i), series));
+        }
+        return true;
     }
 
     /**
