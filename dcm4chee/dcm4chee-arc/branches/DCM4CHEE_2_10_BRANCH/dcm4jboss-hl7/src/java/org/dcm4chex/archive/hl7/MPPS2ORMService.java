@@ -41,7 +41,6 @@ package org.dcm4chex.archive.hl7;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 import javax.management.Notification;
@@ -87,8 +86,7 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     
     private TemplatesDelegate templates = new TemplatesDelegate(this);
 
-    private String stylesheetPath;
-    private File stylesheetFile;
+    private String xslPath;
 
     private String sendingApplication;
 
@@ -119,12 +117,11 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     }
     
     public final String getStylesheet() {
-        return stylesheetPath;
+        return xslPath;
     }
 
-    public void setStylesheet(String path) throws FileNotFoundException {
-        this.stylesheetFile = FileUtils.toExistingFile(path);
-        this.stylesheetPath = path;
+    public void setStylesheet(String path) {
+        this.xslPath = path;
     }
     
     public final String getSendingApplication() {
@@ -197,14 +194,6 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
 
     public final void setLogXSLT(boolean logXSLT) {
         this.logXSLT = logXSLT;
-    }
-
-    public String getEjbProviderURL() {
-        return EJBHomeFactory.getEjbProviderURL();
-    }
-
-    public void setEjbProviderURL(String ejbProviderURL) {
-        EJBHomeFactory.setEjbProviderURL(ejbProviderURL);
     }
 
     private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
@@ -342,8 +331,9 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     private TransformerHandler getTransformerHandler() throws Exception {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
                 .newInstance();
+        File xslFile = FileUtils.toExistingFile(xslPath);
         TransformerHandler th = tf.newTransformerHandler(
-                templates.getTemplates(stylesheetFile));
+                templates.getTemplates(xslFile));
         Transformer t = th.getTransformer();
         t.setParameter("SendingApplication", sendingApplication);
         t.setParameter("SendingFacility", sendingFacility);

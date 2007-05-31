@@ -97,8 +97,7 @@ public class PrefetchService extends AbstractScuService implements
     private String prefetchSourceAET;
     private String destinationQueryAET;
     private String destinationStorageAET;
-    private String stylesheetPath;
-    private File stylesheetFile;
+    private String xslPath;
     private ObjectName hl7ServerName;
     private ObjectName moveScuServiceName;
     private String queueName;
@@ -161,12 +160,11 @@ public class PrefetchService extends AbstractScuService implements
     }
     
     public final String getStylesheet() {
-        return stylesheetPath;
+        return xslPath;
     }
 
-    public void setStylesheet(String path) throws FileNotFoundException {
-        this.stylesheetFile = FileUtils.toExistingFile(path);
-        this.stylesheetPath = path;
+    public void setStylesheet(String path) {
+        this.xslPath = path;
     }
     
     public final ObjectName getJmsServiceName() {
@@ -247,11 +245,15 @@ public class PrefetchService extends AbstractScuService implements
         if (isORM_O01_NW(hl7doc)) {
             Dataset findRQ = DcmObjectFactory.getInstance().newDataset();
             try {
-                Transformer t = templates.getTemplates(stylesheetFile).newTransformer();
+                File xslFile = FileUtils.toExistingFile(xslPath);
+                Transformer t = templates.getTemplates(xslFile).newTransformer();
                 t.transform(new DocumentSource(hl7doc), new SAXResult(findRQ
                         .getSAXHandler2(null)));
             } catch (TransformerException e) {
                 log.error("Failed to transform ORM into prefetch request", e);
+                return;
+            } catch (FileNotFoundException e) {
+                log.error("No such stylesheet: " + xslPath);
                 return;
             }
             prepareFindReqDS(findRQ);
@@ -437,7 +439,8 @@ public class PrefetchService extends AbstractScuService implements
         reader.parse(new InputSource( new FileInputStream(file)));
         Document doc = hl7in.getDocument();
         try {
-            Transformer t = templates.getTemplates(stylesheetFile).newTransformer();
+            File xslFile = FileUtils.toExistingFile(xslPath);
+            Transformer t = templates.getTemplates(xslFile).newTransformer();
             t.transform(new DocumentSource(doc),
                     new SAXResult(findRQ.getSAXHandler2(null)));
         } catch (TransformerException e) {
