@@ -2,7 +2,7 @@
 	<property file="build.properties"/>
         <property file="../build.properties" />
 	
-	<property name="version" value="2.10.15"/>
+	<property name="version" value="2.10.16"/>
 	<property name="javac.debug" value="on"/>
 	
 	<!-- Override with your dcm4che14 dist location -->
