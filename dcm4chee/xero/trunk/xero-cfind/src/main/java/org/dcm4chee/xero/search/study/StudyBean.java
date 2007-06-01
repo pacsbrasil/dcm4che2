@@ -92,8 +92,8 @@ public class StudyBean extends StudyType implements Study, CacheItem
 	 */
 	protected void initAttributes(DicomObject data) {
 		setAccessionNumber(data.getString(Tag.AccessionNumber));
-		setInstanceAvailability(data.getString(Tag.InstanceAvailability));
-		setModalitiesInStudy(data.getString(Tag.ModalitiesInStudy));
+		setInstanceAvailability(data.getString(Tag.InstanceAvailability));		
+		setModalitiesInStudy(commaSeparate(data.getStrings(Tag.ModalitiesInStudy)));
 		setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
 		setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
 		setReferringPhysicianName(data.getString(Tag.ReferringPhysicianName));
@@ -115,6 +115,18 @@ public class StudyBean extends StudyType implements Study, CacheItem
 		setStudyID(data.getString(Tag.StudyID));
 		setStudyInstanceUID(data.getString(Tag.StudyInstanceUID));
 		setStudyStatusID(data.getString(Tag.StudyStatusIDRET));		
+	}
+
+	/** Turn an array of strings into a comma separated string. */
+	public static String commaSeparate(String[] strings) {
+		if( strings==null ) return null;
+		if( strings.length==0 ) return null;
+		if( strings.length==1 ) return strings[0];
+		StringBuffer ret = new StringBuffer(strings[0]);
+		for(int i=1; i<strings.length; i++ ) {
+			ret.append(',').append(strings[i]);
+		}
+		return ret.toString();
 	}
 
 	/** Add any series and sub-series information to this study object */
