@@ -213,7 +213,7 @@ public abstract class MWLManagerBean implements SessionBean {
             try {
                 Dataset sps = ds.getItem(Tags.SPSSeq);
                 MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(
-                        sps.getString(Tags.RequestedProcedureID),
+                        ds.getString(Tags.RequestedProcedureID),
                         sps.getString(Tags.SPSID));
                 Dataset attrs = mwlItem.getAttributes();
                 attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
