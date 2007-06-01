@@ -100,7 +100,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
-import com.sun.java_cup.internal.assoc;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
