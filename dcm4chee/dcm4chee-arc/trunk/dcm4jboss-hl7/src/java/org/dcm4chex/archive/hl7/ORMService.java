@@ -199,12 +199,13 @@ public class ORMService extends AbstractHL7Service {
             DcmElement spsSq = ds.remove(Tags.SPSSeq);
             Dataset sps;
             String spsid;
-            String rpid = ds.getString(Tags.RequestedProcedureID);
+            String rpid;
             for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
                 sps = spsSq.getItem(i);
                 spsid = sps.getString(Tags.SPSID);
                 ds.putSQ(Tags.SPSSeq).addItem(sps);
                 adjustAttributes(ds);
+                rpid = ds.getString(Tags.RequestedProcedureID);
                 switch (op[i]) {
                 case NW:
                     addMissingAttributes(ds);
@@ -225,7 +226,9 @@ public class ORMService extends AbstractHL7Service {
                     break;
                 case CA:
                     log("Cancel", ds);
-                    mwlManager.removeWorklistItem(rpid, spsid);
+                    if (mwlManager.removeWorklistItem(rpid, spsid) == null) {
+                        log("No Such ", ds);
+                    }
                     break;
                 case NOOP:
                     log("NOOP", ds);
@@ -233,7 +236,9 @@ public class ORMService extends AbstractHL7Service {
                 default:
                     String status = SPSStatus.toString(op[i]-SC_OFF);
                     log("Change SPS status to " + status, ds);
-                    mwlManager.updateSPSStatus(rpid, spsid, status);
+                    if (mwlManager.updateSPSStatus(rpid, spsid, status)) {
+                        log("No Such ", ds);
+                    }
                     break;                    
                 }
             }
