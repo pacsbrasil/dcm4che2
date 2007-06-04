@@ -204,16 +204,15 @@ public class ORMService extends AbstractHL7Service {
                 sps = spsSq.getItem(i);
                 spsid = sps.getString(Tags.SPSID);
                 ds.putSQ(Tags.SPSSeq).addItem(sps);
+                adjustAttributes(ds);
                 switch (op[i]) {
                 case NW:
-                    adjustAttributes(ds);
                     addMissingAttributes(ds);
                     log("Schedule", ds);
                     logDataset("Insert MWL Item:", ds);
                     mwlManager.addWorklistItem(ds);
                     break;
                 case XO:
-                    adjustAttributes(ds);
                     log("Update", ds);
                     logDataset("Update MWL Item:", ds);
                     if (!mwlManager.updateWorklistItem(ds)) {
@@ -250,8 +249,10 @@ public class ORMService extends AbstractHL7Service {
         Dataset sps = ds.getItem(Tags.SPSSeq);
         log.info(op
                 + " Procedure Step[id:"
-                + (sps == null ? "<unknown>(SPSSeq missing)" : sps
-                        .getString(Tags.SPSID)) + "] of Study[uid:"
+                + (sps == null ? "<unknown>(SPSSeq missing)"
+                               : sps.getString(Tags.SPSID))
+                + "] of Requested Procedure[id:"
+                + ds.getString(Tags.RequestedProcedureID) + ", uid:"
                 + ds.getString(Tags.StudyInstanceUID) + "] of Order[accNo:"
                 + ds.getString(Tags.AccessionNumber) + "] for Patient [name:"
                 + ds.getString(Tags.PatientName) + ",id:"
