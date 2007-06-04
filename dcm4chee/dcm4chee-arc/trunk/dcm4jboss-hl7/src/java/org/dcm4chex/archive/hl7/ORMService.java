@@ -236,7 +236,7 @@ public class ORMService extends AbstractHL7Service {
                 default:
                     String status = SPSStatus.toString(op[i]-SC_OFF);
                     log("Change SPS status to " + status, ds);
-                    if (mwlManager.updateSPSStatus(rpid, spsid, status)) {
+                    if (!mwlManager.updateSPSStatus(rpid, spsid, status)) {
                         log("No Such ", ds);
                     }
                     break;                    
