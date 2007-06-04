@@ -70,6 +70,9 @@ public class SpecificCharacterSet {
 		CHARSET.put("ISO 2022 IR 148", "ISO-8859-9");
 		CHARSET.put("ISO 2022 IR 13", "JIS_X0201");
 		CHARSET.put("ISO 2022 IR 166", "TIS-620");
+                CHARSET.put("ISO 2022 IR 87", "JIS0208");
+                CHARSET.put("ISO 2022 IR 159", "JIS0212");
+                CHARSET.put("ISO 2022 IR 149", "cp949");
 		CHARSET.put("ISO_IR 192", "UTF-8");
 		CHARSET.put("GB18030", "GB18030");
 	}
