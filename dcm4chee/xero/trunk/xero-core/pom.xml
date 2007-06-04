@@ -79,31 +79,4 @@
     </dependency>
   </dependencies>
   
-  <build>
-
-    <plugins>
-      <plugin>
-        <groupId>com.sun.tools.xjc.maven2</groupId>
-        <artifactId>maven-jaxb-plugin</artifactId>
-        <version>1.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <includeSchemas>
-             <includeSchema>**/*.xsd</includeSchema>
-          </includeSchemas>
-          <includeBindings>
-             <includeBinding>*.xjb</includeBinding>
-          </includeBindings>
-          <strict>true</strict>
-          <verbose>true</verbose>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
