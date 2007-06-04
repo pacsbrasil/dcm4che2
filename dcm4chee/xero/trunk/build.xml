@@ -59,22 +59,22 @@
         <arg line="install:install-file -Dfile=jboss-seam-debug.jar -DartifactId=jboss-seam-debug -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
      </exec>
      <exec executable="${mvn}" dir="${seamDir}">
-        <arg line="install:install-file -Dfile=lib\\hibernate-all.jar -DartifactId=hibernate-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+        <arg line="install:install-file -Dfile=lib/hibernate-all.jar -DartifactId=hibernate-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
      </exec>
      <exec executable="${mvn}" dir="${seamDir}">
-        <arg line="install:install-file -Dfile=lib\\jboss-ejb3-all.jar -DartifactId=jboss-ejb3-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+        <arg line="install:install-file -Dfile=lib/jboss-ejb3-all.jar -DartifactId=jboss-ejb3-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
      </exec>
      <exec executable="${mvn}" dir="${seamDir}">
-        <arg line="install:install-file -Dfile=lib\\thirdparty-all.jar -DartifactId=thirdparty-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+        <arg line="install:install-file -Dfile=lib/thirdparty-all.jar -DartifactId=thirdparty-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
      </exec>
      <exec executable="${mvn}" dir="${seamDir}">
-        <arg line="install:install-file -Dfile=lib\\el-ri.jar -DartifactId=el-ri -DgroupId=javax.el -Dversion=1.2 -DgeneratePom=true -Dpackaging=jar" />
+        <arg line="install:install-file -Dfile=lib/el-ri.jar -DartifactId=el-ri -DgroupId=javax.el -Dversion=1.2 -DgeneratePom=true -Dpackaging=jar" />
      </exec>
      <exec executable="${mvn}" dir="${seamDir}">
-        <arg line="install:install-file -Dfile=lib\\el-api.jar -DartifactId=el-api -DgroupId=javax.el -Dversion=1.2 -DgeneratePom=true -Dpackaging=jar" />
+        <arg line="install:install-file -Dfile=lib/el-api.jar -DartifactId=el-api -DgroupId=javax.el -Dversion=1.2 -DgeneratePom=true -Dpackaging=jar" />
      </exec>
      <exec executable="${mvn}" dir="${seamDir}">
-        <arg line="install:install-file -Dfile=lib\\jsf-facelets.jar -DartifactId=jsf-facelets -DgroupId=com.sun.facelets -Dversion=1.1.62 -DgeneratePom=true -Dpackaging=jar" />
+        <arg line="install:install-file -Dfile=lib/jsf-facelets.jar -DartifactId=jsf-facelets -DgroupId=com.sun.facelets -Dversion=1.1.62 -DgeneratePom=true -Dpackaging=jar" />
      </exec>
   </target>
 
