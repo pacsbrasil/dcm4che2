@@ -5,6 +5,8 @@
 # At the moment, it needs to be a 4.x stream.
 jbossSeamDir=c:/jboss-4.0.5.GA
 
+jsfDir=c:/java/jsf-1.2_04-b07-FCS
+
 # This is the directory that contains an installed, runnable Dcm4che server
 developmentServer=c:/dcm4chee
 # The same as above, but a (more) stable version, for demos etc.

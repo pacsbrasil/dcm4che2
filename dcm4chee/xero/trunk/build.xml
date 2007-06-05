@@ -78,7 +78,21 @@
      </exec>
   </target>
 
-  <target name="setup" description="Setup the development server from the JBoss base server." depends="deploy, setupLib, setupDeploy, setupConf">
+  <target name="setup" description="Setup the development server from the JBoss base server." depends="deploy, setupLib, setupDeploy, setupConf, setupJsf, setupDefaultUrl">
+  </target>
+
+  <!-- Adds default.htm and index.html to the wado war file -->
+  <target name="setupDefaultUrl">
+     <jar destfile="${developmentServer}/server/default/deploy/dcm4chee-wado.war" update="true">
+        <fileset dir="xero-war/src/main/webapp" includes="default.htm,index.html" />
+     </jar>
+  </target>
+
+  <target name="setupJsf">
+     <delete dir="${developmentServer}/server/default/deploy/jbossweb-tomcat55.sar/jsf-libs" />
+     <copy todir="${developmentServer}/server/default/deploy/jbossweb-tomcat55.sar/jsf-libs">
+        <fileset dir="${jsfDir}/lib" includes="*" />
+     </copy>
   </target>
 
   <target name="deploy" depends="build" description="Deploy Xero to the development Dcm4che server.">
@@ -88,7 +102,7 @@
      <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
         <fileset dir="xero-war/target/xero" />
      </copy>
-  </target> 
+  </target>
 
   <target name="stable" depends="build" description="Deploy Xero to the development Dcm4che server.">
      <copy file="xero-ear/target/xero.ear" todir="${stableServer}/server/default/deploy" preservelastmodified="true"/>
