@@ -84,10 +84,10 @@ rem With Sun JVMs reduce the RMI GCs to once per hour
 set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000
 
 rem Set java.library.path to find native jai-imageio components 
-JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%DIRNAME%
+set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%DIRNAME%
 
 rem Set app.name and app.pid used in emitted audit log messages
-JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee -Dapp.pid=%RANDOM%
+set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee -Dapp.pid=%RANDOM%
 
 rem JPDA options. Uncomment and modify as appropriate to enable remote debugging.
 rem set JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y %JAVA_OPTS%
