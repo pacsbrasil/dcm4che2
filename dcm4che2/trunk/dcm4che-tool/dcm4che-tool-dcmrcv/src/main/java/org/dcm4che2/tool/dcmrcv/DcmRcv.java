@@ -62,6 +62,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.Executor;
@@ -699,6 +700,32 @@ public class DcmRcv extends StorageService {
         throw new RuntimeException();
     }
 
+    /** Overwrite {@link StorageService#cstore} to send delayed C-STORE RSP 
+     * by separate Thread, so reading of following received C-STORE RQs from
+     * the open association is not blocked.
+     */
+    public void cstore(final Association as, final int pcid, DicomObject rq, 
+            PDVInputStream dataStream, String tsuid) 
+            throws DicomServiceException, IOException {
+        final DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
+        onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
+        if (rspdelay > 0) {
+            executor.execute(new Runnable(){
+
+                public void run() {
+                    try {
+                        Thread.sleep(rspdelay);
+                        as.writeDimseRSP(pcid, rsp);
+                    } catch (Exception e) {
+                    }
+                }});
+        } else {
+            as.writeDimseRSP(pcid, rsp);
+        }
+        onCStoreRSP(as, pcid, rq, dataStream, tsuid, rsp);
+    }
+
+    
     protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws IOException, DicomServiceException {
@@ -723,11 +750,6 @@ public class DcmRcv extends StorageService {
                         .getMessage());
             }
         }
-        if (rspdelay > 0)
-            try {
-                Thread.sleep(rspdelay);
-            } catch (InterruptedException e) {
-            }
     }
 
 }
