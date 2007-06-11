@@ -52,7 +52,7 @@ import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * @author franz.willer@agfa.com
- * @version $Revision:$ $Date:$
+ * @version $Revision$ $Date$
  * @since 04.10.2006
  *
  */
@@ -93,6 +93,21 @@ public class WebViewDelegate {
     public void setSelectPR(Boolean selectPR) {
         this.selectPR = selectPR;
     }
+    
+    /**
+     * Get properties to launch webviewer according given http parameter map.
+     * <p>
+     * <dl>
+     * <dt>Supported parameter:</dt>
+     * <dd>accNr: Accession Number.</dd>
+     * <dd>studyUID: Study Instance UID.</dd>
+     * <dd>seriesUID: Series Instance UID.</dd>
+     * <dd>prUID: SOP Instance UID of a Presentation State.</dd>
+     * </dl>
+     * 
+     * @param paraMap
+     * @return
+     */
     public Properties getLaunchProperties(Map paraMap) {
         String method;
         String[] value;

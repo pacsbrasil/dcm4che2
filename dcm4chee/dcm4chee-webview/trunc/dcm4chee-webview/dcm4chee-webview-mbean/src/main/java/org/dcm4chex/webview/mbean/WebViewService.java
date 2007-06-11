@@ -39,7 +39,6 @@
 
 package org.dcm4chex.webview.mbean;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,17 +54,21 @@ import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chex.webview.CustomLaunchProperties;
+import org.dcm4chex.webview.InstanceContainer;
 import org.dcm4chex.webview.UIDQuery;
 import org.jboss.system.ServiceMBeanSupport;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The MBean to manage the WebView launcher service.
  * <p>
+ * This service provides methods and configuration attributes to open a web (applet) based Dicom viewer.
+ * <p>
+ * Use standard DICOM C-FIND to find instances.
  * 
  * @author franz.willer@agfa.com
- * @version $Revision:$ $Date:$
+ * @version $Revision$ $Date$
  * @since 04.10.2006
  */
 public class WebViewService extends ServiceMBeanSupport {
@@ -80,57 +83,76 @@ public class WebViewService extends ServiceMBeanSupport {
     private boolean ignorePRinStudy = false;
     private boolean selectMultiPR = false;
     
-    //static Logger log = LoggerFactory.getLogger(WebViewService.class);
+    static Logger log = LoggerFactory.getLogger(WebViewService.class);
     
     /**
+     * Get the calledAET of the PACS to query.
+     * 
      * @return Returns the calledAET.
      */
     public String getCalledAET() {
         return calledAET;
     }
     /**
+     * Set the calledAET of the PACS to query.
+     * 
      * @param calledAET The calledAET to set.
      */
     public void setCalledAET(String calledAET) {
         this.calledAET = calledAET;
     }
     /**
+     * Get the calling AET used in Dicom Query.
      * @return Returns the callingAET.
      */
     public String getCallingAET() {
         return callingAET;
     }
     /**
+     * set the calling AET used in Dicom Query.
      * @param callingAET The callingAET to set.
      */
     public void setCallingAET(String callingAET) {
         this.callingAET = callingAET;
     }
+    
     /**
+     * Get the Hostname or IP address of the PACS
+     * 
      * @return Returns the host.
      */
     public String getHost() {
         return host;
     }
     /**
+     * Set the Hostname or IP address of the PACS
+     * 
      * @param host The host to set.
      */
     public void setHost(String host) {
         this.host = host;
     }
     /**
+     * Get the DICOM port number of the PACS to query.
+     * 
      * @return Returns the port.
      */
     public int getPort() {
         return port;
     }
     /**
+     * Set the DICOM port number of the PACS to query.
+     * 
      * @param port The port to set.
      */
     public void setPort(int port) {
         this.port = port;
     }
-    
+  
+    /**
+     * List of SOP Class UIDs of images.
+     * @return
+     */
     public String getImageSOPClasses() {
         return toUIDListString(launchProperties.getImageCUIDs());
     }
@@ -139,6 +161,10 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setImageCUIDs(parseUIDs(s));
     }
     
+    /**
+     * List of SOP Class UIDs of presentation states.
+     * @return
+     */
     public String getPresentationStateCUIDs() {
         return toUIDListString(launchProperties.getPresentationStateCUIDs());
     }
@@ -147,6 +173,15 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setPresentationStateCUIDs(parseUIDs(s));
     }
     
+    /**
+     * Config String to get launch parameter for List of SOPInstanceUIDs per series.
+     * <p/>
+     * Format:&lt;parametername&gt;|&lt;descr&gt;|&lt;descrValue&gt;|&lt;list seperator&gt;|&lt; uid seperator&gt;|&lt;postfix&gt;<br/>
+     * descrValue: either value from a DICOM attribute (e.g. 0008103E or SeriesDescription) 
+     *  or a numbering (#, #-1 or #a -&gt; 1,2,3,.. 0,1,2,.. or a,b,c,.. )<br/>
+     * e.g.:SEQUENCE|Seq. Nr.|0008103E|;|;| --> SEQUENCE1="Seq. Nr.[seriesdescr];[UID1];[UID2]"
+     * @return 
+     */
     public String getParaSeriesInstances() {
         return launchProperties.getParaSeriesInstances();
     }
@@ -155,6 +190,15 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setParaSeriesInstances(s);
     }
 
+    
+    /**
+     * Config String to get launch parameter for List of presentation states.
+     * <p/>
+     *  Format:&lt;parametername&gt;|&lt;descr&gt;|&lt;descrValue&gt;|&lt;list seperator&gt;|&lt; uid seperator&gt;|&lt;postfix&gt;<br/>
+     *  descrValue: either value from a DICOM attribute (e.g. 0008103E or SeriesDescription) 
+     *  or a numbering (#, #-1 or #a -&gt; 1,2,3,.. 0,1,2,.. or a,b,c,.. )<br/>
+     *  e.g.:PR_UIDS||||;| --> PR_UIDS="[UID1];[UID2]"
+    */
     public String getParaPresentationStates() {
         return launchProperties.getParaPresentationStates();
     }
@@ -164,6 +208,8 @@ public class WebViewService extends ServiceMBeanSupport {
     }
     
     /**
+     * Get jar file of web viewer applet.
+     * <p/>
      * @return Returns the appletArchive.
      */
     public String getAppletArchive() {
@@ -176,6 +222,8 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setAppletArchive( appletArchive );
     }
     /**
+     * Class name of web viewer applet.
+     * 
      * @return Returns the appletClass.
      */
     public String getAppletClass() {
@@ -187,7 +235,12 @@ public class WebViewService extends ServiceMBeanSupport {
     public void setAppletClass(String appletClass) {
         launchProperties.setAppletClass( appletClass );
     }
+    
     /**
+     * List of applet parameters with fixed values.<br/>
+     *      Format:&lt;parametername&gt;=&lt;value&gt;<br/>
+     *      Separate multible parameters with ';' or newline.
+     * 
      * @return Returns the appletParameterMap.
      */
     public String getAppletParameterMap() {
@@ -200,6 +253,13 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setAppletParameterMap( parseParameterList(appletParameterMap));
     }
     /**
+     * Name of a custom LaunchProperties class.
+     * <p>
+     * This class must implement CustomLaunchProperties and can be used to customize launch properties
+     * for special needs of a webviewer applet.
+     * <p>
+     * As example the WebViewerProperties class is used to set a title and patient info for the 'WebViewer' applet.
+     *  
      * @return Returns the customLaunchPropertiesClass.
      */
     public String getCustomLaunchPropertiesClass() {
@@ -220,6 +280,10 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setCustomLaunchPropertiesClass(customProps);
     }
     /**
+     * List of applet parameters with values from a DICOM attribute of the C-FIND result.
+     * <p>
+     * e.g.: patName=00100010 or patName=PatientName.
+     * 
      * @return Returns the result2appletParameterMap.
      */
     public String getResult2ParameterMap() {
@@ -231,13 +295,14 @@ public class WebViewService extends ServiceMBeanSupport {
     public void setResult2ParameterMap(String result2ParameterMap) {
         launchProperties.setResult2appletParameterMap( parseParameterList(result2ParameterMap));
     }
-    public List query(DicomObject searchDS) {
-        return null;
-    }
     
     public Properties getLaunchPropertiesForAccNr(String accNr, Boolean ignorePR, Boolean selectPR) {
         DicomObject keys = new BasicDicomObject();
         keys.putString(Tag.AccessionNumber, VR.SH, accNr);
+        //put attributes that are needed for study selection when result refers to multible studies!
+        if ( ! keys.contains(Tag.PatientName)) keys.putNull(Tag.PatientName, null);
+        if ( ! keys.contains(Tag.PatientBirthDate)) keys.putNull(Tag.PatientBirthDate, null);
+        if ( ! keys.contains(Tag.StudyDescription)) keys.putNull(Tag.StudyDescription, null);
         return getLaunchPropertiesForQuery(keys, ignorePR, selectPR );
     }
     public Properties getLaunchPropertiesForStudyUID(String studyUID, Boolean ignorePR, Boolean selectPR) {
@@ -257,36 +322,46 @@ public class WebViewService extends ServiceMBeanSupport {
         keys.putString(Tag.SOPInstanceUID, VR.UI, instanceUID);
         keys.putNull(new int[]{ Tag.ReferencedSeriesSequence, 0, Tag.SeriesInstanceUID },VR.UI);
         addResultAttributes(keys);
-        List results = new UIDQuery(callingAET, calledAET, host, port).query(keys);
+        InstanceContainer results = new UIDQuery(callingAET, calledAET, host, port).query(keys);
         if ( results.isEmpty() ) {
-            //log.info("Can't find PresentationState Object:"+instanceUID);
+            log.info("Can't find PresentationState Object:"+instanceUID);
         }
-        DicomObject prObj = (DicomObject) results.get(0);
-        Map map = new LinkedHashMap();//to ensure that the first iterator element is the query result (with all attributes)
-        List l = new ArrayList();
-        l.add(prObj);
-        map.put( prObj.getString(Tag.SeriesInstanceUID), l);
+        DicomObject prObj = (DicomObject) ((List) results.iterateSeries().next()).get(0);
+        InstanceContainer map = new InstanceContainer();
+        map.add(prObj);//the first element is the PresentationState (with all attributes)
+        String studyUid = prObj.getString(Tag.StudyInstanceUID);
         DicomElement serSeq = prObj.get(Tag.ReferencedSeriesSequence);
         if (serSeq != null) {
             DicomObject obj, imgItem, obj1;
             DicomElement imgSeq;
+            String seriesUid;
             for ( int i = 0,len=serSeq.countItems(); i < len ; i++ ) {
-                l = new ArrayList();
                 obj = serSeq.getDicomObject(i);
-                map.put( obj.getString(Tag.SeriesInstanceUID), l );
+                seriesUid =  obj.getString(Tag.SeriesInstanceUID);
                 imgSeq = obj.get(Tag.ReferencedImageSequence);
                 for ( int j=0,jLen=imgSeq.countItems() ; j < jLen ; j++) {
                     imgItem =  imgSeq.getDicomObject(j);
                     obj1 = new BasicDicomObject();
+                    obj1.putString(Tag.StudyInstanceUID, VR.UI, studyUid);
+                    obj1.putString(Tag.SeriesInstanceUID, VR.UI, seriesUid);
                     obj1.putString(Tag.SOPInstanceUID, VR.UI, imgItem.getString(Tag.ReferencedSOPInstanceUID) );
                     obj1.putString(Tag.SOPClassUID, VR.UI, imgItem.getString(Tag.ReferencedSOPClassUID) );
-                    l.add(obj1);
+                    map.add(obj1);
                 }
             }
             return launchProperties.getProperties(map, false, false);
         }
         return new Properties();
     }
+    
+    /**
+     * Get launch properties for given DICOM Query.
+     * 
+     * @param keys      Query Dataset
+     * @param ignorePR  Ignore presentation state on Study Level.
+     * @param selectPR  Select Presentation state if more than one presentation state is found.
+     * @return
+     */
     public Properties getLaunchPropertiesForQuery(DicomObject keys, Boolean ignorePR, Boolean selectPR) {
         addResultAttributes(keys);
         boolean ignorePRflag = ignorePR == null ? ignorePRinStudy:ignorePR.booleanValue();
@@ -298,13 +373,19 @@ public class WebViewService extends ServiceMBeanSupport {
             keys.putNull(Tag.ContentLabel, VR.CS);
             keys.putNull(Tag.ContentCreatorName, VR.PN);
         }
-        Map results = new UIDQuery(callingAET, calledAET, host, port).queryAndSort(keys);
+        InstanceContainer results = new UIDQuery(callingAET, calledAET, host, port).query(keys);
         return launchProperties.getProperties(results, ignorePRflag, selectPRflag);
     }
     
+    /**
+     * Ignore Presentation States if launching a web viewer with study level (studyUID or accNr.
+     * 
+     * @return
+     */
     public boolean isIgnorePresentationStateForStudies() {
         return ignorePRinStudy;
     }
+    
     public void setIgnorePresentationStateForStudies(boolean ignorePresentationStateForStudies) {
         ignorePRinStudy = ignorePresentationStateForStudies;
     }

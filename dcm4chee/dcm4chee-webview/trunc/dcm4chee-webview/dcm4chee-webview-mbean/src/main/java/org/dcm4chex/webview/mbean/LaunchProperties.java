@@ -1,9 +1,42 @@
-/*
- * Created on Oct 3, 2006
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ *
+ * The Initial Developer of the Original Code is
+ * TIANI Medgraph AG.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2005
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * Franz Willer <franz.willer@gwi-ag.com>
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4chex.webview.mbean;
 
 import java.util.HashMap;
@@ -15,15 +48,17 @@ import java.util.Properties;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chex.webview.CustomLaunchProperties;
+import org.dcm4chex.webview.InstanceContainer;
 
 /**
  * @author franz.willer@agfa.com
- * @version $Revision:$ $Date:$
+ * @version $Revision$ $Date$
  * @since 04.10.2006
  */
 public class LaunchProperties {
 
     
+    public static final String PROP_LAUNCH_MODE = "launchMode";
     private String appletClass;
     private String appletArchive;
     private Map result2appletParameterMap = new HashMap();
@@ -191,7 +226,9 @@ public class LaunchProperties {
      * <dl>
      * <dt>Property 'launchMode':</dt>
      * <dd>  applet: Properties contains applet parameter. </dd>
-     * <dd>  select: Properties contains presentation state list (key=IUID/value=Description).
+     * <dd>  pr_select: Properties contains presentation state list (key=IUID/value=Description).
+     * <dd>  study_select: Properties contains list of studies(key=StudyIUID/value=Description).
+     * <dd>  empty: Properties contains only CODE and ARCHIVE.
      * </dl>
      * @param map       Contains query Results (each map value is a list of DicomObject.
      * @param ignorePR  If true: Ignore DicomObjects with SOPClassUID listed in psCUIDs.
@@ -199,18 +236,20 @@ public class LaunchProperties {
      * 
      * @return either APPLET or Selection parameter.
      */
-    public Properties getProperties( Map map, boolean ignorePR, boolean selectPR ) {
+    public Properties getProperties( InstanceContainer results, boolean ignorePR, boolean selectPR ) {
         Properties p = new Properties();
-        p.setProperty("launchMode", "applet");
-        Properties prProps = new Properties();
-        
         p.setProperty("CODE", appletClass);
         p.setProperty("ARCHIVE", appletArchive);
         p.putAll(appletParameterMap);
-        if ( map.isEmpty() ) {
+        if ( results.isEmpty() ) {
+            p.setProperty(PROP_LAUNCH_MODE, "empty");
             return p;
+        } else if ( results.countStudies() > 1 ) { //more than one study found!
+            return getStudySelectProperties(results);
         }
-        addParameterFromResult(p, (DicomObject)((List) map.values().iterator().next()).get(0));
+        Map mapSeries = results.getSeriesMap(); //get map with all series
+        p.setProperty(PROP_LAUNCH_MODE, "applet");
+        addParameterFromResult(p, (DicomObject)((List) mapSeries.values().iterator().next()).get(0));
         
         StringBuffer sbSeries = new StringBuffer();
         StringBuffer sbPR = null;
@@ -224,7 +263,8 @@ public class LaunchProperties {
         String cuid;
         boolean imgSeries;
         boolean noSelect = true; //set to false if PR selection is necessary (selectPR=true and more than one PR)
-        for (  Iterator iter = map.values().iterator(); iter.hasNext() ; ){
+        Properties prProps = new Properties();
+        for (  Iterator iter = mapSeries.values().iterator(); iter.hasNext() ; ){
             seriess = (List) iter.next();
             sbSeries.setLength(0);
             if (paraSeriesInstances[0] != null) {
@@ -261,15 +301,29 @@ public class LaunchProperties {
                 p.setProperty(paraPresentationStates[0], sbPR.toString());
             }
             if ( customProps != null ) {
-                customProps.addCustomProperties(p,map);
+                customProps.addCustomProperties(p,mapSeries);
             }
             return p;
         } else {
-            prProps.setProperty("launchMode", "select");
+            prProps.setProperty(PROP_LAUNCH_MODE, "pr_select");
             return prProps;
         }
     }
     
+    private Properties getStudySelectProperties(InstanceContainer results) {
+        Properties p = new Properties();
+        p.setProperty("launchMode", "study_select");
+        DicomObject obj;
+        String desc;
+        for ( Iterator iter = results.iterateStudies() ; iter.hasNext() ; ) {
+            obj = (DicomObject) ((List) ((Map) iter.next()).values().iterator().next() ).get(0);
+            desc = obj.getString(Tag.PatientName)+"("+obj.getString(Tag.PatientBirthDate)+") Descr:"+
+                obj.getString(Tag.StudyDescription)+" UID:"+obj.getString(Tag.StudyInstanceUID);
+            p.setProperty( obj.getString(Tag.StudyInstanceUID), desc);
+        }
+        return p;
+    }
+
     private void appendDescription(StringBuffer sb, String[] sa, DicomObject dcm, int idx) {
         sb.append(sa[1]);//descr. part
         String s = sa[2];//descr. value

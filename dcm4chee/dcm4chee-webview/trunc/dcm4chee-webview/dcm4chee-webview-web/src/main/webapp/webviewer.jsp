@@ -13,10 +13,10 @@
 <html><head><META http-equiv="Content-Type" content="text/html; charset=UTF-8"><%
 %><title><%=props.getProperty("title")%></title><%
 %></head><%
-	if ( !"select".equals( mode ) ) {
-%><body>
+	if ( "applet".equals( mode ) ) {
+%><body onResize="window.location.href = window.location.href;" >
 	<script language="JavaScript"><!--
-		var W=600,H=600;
+		var W="95%",H="95%";
 		if (parseInt(navigator.appVersion)>3) 
 		{
 			if (navigator.appName=="Netscape") 
@@ -47,7 +47,7 @@
 		</APPLET> ');
 	//--></script>
 </body>
-<% } else { 
+<% } else if ( "pr_select".equals(mode) ) { 
 		String url = request.getRequestURL().append( "?ignorePR=true&amp;" ).append( request.getQueryString() ).toString();
 %>
 <body>
@@ -71,5 +71,29 @@
 
 	</table>
 </body>	
+<% } else if ( "study_select".equals(mode) ) { 
+%>
+<body>
+	<h1>More than one study found! Please choose one of the list:</h1>
+	<table border="0" cellspacing="0" cellpadding="0" width="100%">
+<%
+	for ( Iterator iter=props.keySet().iterator() ; iter.hasNext() ; ) {
+		key = (String) iter.next();
+%>		
+		<tr>
+			<td>
+				<a title="Study" href="webviewer.jsp?studyUID=<%=key %>">Study: <%=props.getProperty(key) %></a>
+			</td>
+		</tr>
+<% 
+	} %>
+
+	</table>
+</body>
+<% } else if ( "empty".equals(mode) ) { 
+%>
+<body>
+	<h1>Nothing found !!!</h1>
+</body>
 <% } %>
 </html>

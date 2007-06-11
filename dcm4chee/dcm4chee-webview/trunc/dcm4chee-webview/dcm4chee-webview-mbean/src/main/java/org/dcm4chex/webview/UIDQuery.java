@@ -1,18 +1,46 @@
-/*
- * Created on Sep 20, 2006
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ *
+ * The Initial Developer of the Original Code is
+ * TIANI Medgraph AG.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2005
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * Franz Willer <franz.willer@gwi-ag.com>
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4chex.webview;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -35,7 +63,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@agfa.com
- * @version $Id$
+ * @version $Revision$ $Date$
  * @since 04.10.2006
  */
 public class UIDQuery {
@@ -79,54 +107,37 @@ public class UIDQuery {
         remoteConn.setPort(port);
 
     }
-    
-    /**
-     * @param l
-     * @return
-     */
-    private Map splitSeries(List l, String patID) {
-        Map m = new HashMap();
-        DicomObject dcm;
-        String suid;
-        for ( Iterator iter = l.iterator() ; iter.hasNext() ;) {
-            dcm = (DicomObject) iter.next();
-            suid = dcm.getString(Tag.SeriesInstanceUID);
-            if ( patID == null || patID.equals(dcm.getString(Tag.PatientID))) {
-                l = (List) m.get(suid);
-                if ( l == null ) {
-                    l = new ArrayList();
-                    m.put(suid, l);
-                }
-	            l.add(dcm);
-            }
-        }
-        return m;
-    }
 
-    public List query(DicomObject keys) { 
+    /**
+     * Query for given attributes.
+     * <p>
+     * The returned InstanceContainer sort the result by study and series.
+     * 
+     * @param keys DICOM object with query attributes.
+     * 
+     * @return InstanceContainer with splitted (study and series) result.
+     */
+    public InstanceContainer query(DicomObject keys) { 
         keys.putString(Tag.QueryRetrieveLevel, VR.CS, "IMAGE");
+        if ( ! keys.contains(Tag.StudyInstanceUID)) keys.putNull(Tag.StudyInstanceUID, null);
         if ( ! keys.contains(Tag.SeriesInstanceUID)) keys.putNull(Tag.SeriesInstanceUID, null);
         if ( ! keys.contains(Tag.SOPClassUID)) keys.putNull(Tag.SOPClassUID, null);
         if ( ! keys.contains(Tag.SOPInstanceUID)) keys.putNull(Tag.SOPInstanceUID, null);
         
         configureTransferCapability();
-        List l;
+        InstanceContainer l;
         try {
             assoc = ae.connect(remoteAE, executor);
-            log.info("assoc:"+assoc);
+            log.debug("assoc:"+assoc);
             l = doQuery(keys);
-            log.info("query:"+l);
+            log.debug("query:"+l);
         } catch (Exception e) {
             log.error("Query failed:",e);
-            l = new ArrayList();
+            l = new InstanceContainer();
         }
         return l;
     }
 
-    public Map queryAndSort(DicomObject keys) { 
-     return splitSeries( query( keys ), null );
-    }
-    
     private void configureTransferCapability() {
         TransferCapability[] tc = new TransferCapability[2];
         tc[0] = new ExtQueryTransferCapability(FIND_CUID[0],
@@ -136,23 +147,28 @@ public class UIDQuery {
         ae.setTransferCapability(tc);
     }
 
-    private List doQuery(DicomObject keys) throws IOException, InterruptedException {
+    private InstanceContainer doQuery(DicomObject keys) throws IOException, InterruptedException {
         TransferCapability tc = selectFindTransferCapability();
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
-        log.info("Send Query Request using "
+        if ( log.isDebugEnabled()) {
+            log.debug("Send Query Request using "
                 + UIDDictionary.getDictionary().prompt(cuid) + ":");
-        log.info(keys.toString());
+            log.debug(keys.toString());
+        }
         DimseRSP rsp = assoc.cfind(cuid, 0, keys, tsuid, Integer.MAX_VALUE);
-        List result = new ArrayList();
+        InstanceContainer result = new InstanceContainer();
+        int count = 0;
         while (rsp.next()) {
             DicomObject cmd = rsp.getCommand();
             if (CommandUtils.isPending(cmd)) {
                 DicomObject data = rsp.getDataset();
                 result.add(data);
-                log.info("\nReceived Query Response #" 
-                        + result.size() + ":");
-                log.info(data.toString());
+                if ( log.isDebugEnabled()) {
+                    log.debug("\nReceived Query Response #" 
+                        + ++count + ":");
+                    log.debug(data.toString());
+                }
             }
         }
         return result;
