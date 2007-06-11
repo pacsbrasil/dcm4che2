@@ -5,3 +5,8 @@ ALTER TABLE ae ADD ae_desc VARCHAR(250) BINARY;
 
 DROP INDEX mwl_sps_id ON mwl_item;
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));
+
+-- convert cascaded merge relation to one direct relation:
+-- repeat following statement, until no row is affected! 
+UPDATE patient a, patient b SET a.merge_fk=b.merge_fk 
+    WHERE a.merge_fk = b.pk AND b.merge_fk IS NOT NULL;
