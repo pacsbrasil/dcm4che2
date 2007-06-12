@@ -32,7 +32,7 @@
       <name>ArchiveDirPath</name>
       <type>java.lang.String</type>      
       <descriptors>
-         <value value="archive" />
+         <value value="cdw.spool" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
