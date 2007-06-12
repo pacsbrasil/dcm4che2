@@ -2,7 +2,7 @@
 
 wado=${org.dcm4chee.xero.metadata.filter.FilterList}
 wado.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
-wado.dicomHeader=${org.dcm4chee.xero.wado.DicomHeaderFilter}
+wado.dicomHeader=${org.dcm4chee.xero.wado.DicomFilter}
 
 fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
 fileLocation.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}

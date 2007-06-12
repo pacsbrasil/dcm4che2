@@ -12,7 +12,7 @@ import static org.dcm4chee.xero.wado.DicomFileLocationFilterTest.callFilter;
  * Tests reading the header data for image, SR, PR and KO type objects. Uses
  * data from src/test/resources from the Mesa project.
  */
-public class DicomHeaderFilterTest {
+public class DicomFilterTest {
 	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata");
 
 	@Test
