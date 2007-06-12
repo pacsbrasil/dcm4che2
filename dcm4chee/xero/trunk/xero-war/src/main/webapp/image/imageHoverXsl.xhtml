@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	 The base image contains the code to generate the current image to display.
+-->
+<x:xsl
+   pageConfig="#{PageConfig.display.ImageHover}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/display/ImageHover"
+   m:includeXsl="/xero/image/imageHoverXsl.xsl"
+   m:includeXsl.priority="-1"
+   m:script="imageHover.js"
+>
+
+<x:template name="imageHoverLayout" mode="layout" match="xul:imageHover">
+  <xsl:attribute name="onmousedown">return imageHoverOnHover('imge1i0big',event);</xsl:attribute>
+</x:template>
+
+</x:xsl>
