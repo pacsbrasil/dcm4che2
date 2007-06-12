@@ -31,18 +31,6 @@
      imageNextUID=<xsl:value-of select="$imageNextUID" /><br />
      imagePosition=<xsl:value-of select="$imagePosition" /><br />
      seriesViewable=<xsl:value-of select="$seriesViewable" /><br />
-     <xsl:for-each select="$imageCombine">
-        &lt;<xsl:value-of select="name()"/> <br />
-        <xsl:for-each select="./@*">
-           @<xsl:value-of select="name()"/>=<xsl:value-of select="." /><br />
-        </xsl:for-each>
-        <xsl:value-of select="." /> ... / > <br />
-     </xsl:for-each>
-     <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-     Rows[1]=<xsl:value-of select="($i0 | $a1 | $imageNode/@*)[name()='Rows'][1]" /><br />
-     Rows[2]=<xsl:value-of select="($i0 | $a1 | $imageNode/@*)[name()='Rows'][2]" /><br />
-     Rows[3]=<xsl:value-of select="($i0 | $a1 | $imageNode/@*)[name()='Rows'][3]" /><br />
-     RowsPri=<xsl:value-of select="(($pri/@Rows)[last()] | $imageNode/@Rows)[1]" /><br />
   </xsl:if>
 </x:template>
 
@@ -67,11 +55,7 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     <title>Xero Image Frame</title>
     <x:callTemplates from="#{pageConfig}" mode="script" />
   </head>
-  <body style="background: black; color: white;" 
-     onmouseup="imageHandler.mouseUp(event)"
-     onmouseout="imageHandler.mouseOut(event)"
-     onmousemove="imageHandler.mouseMove(event)"
-  >
+  <body style="background: black; color: white;" >
   <div id="body">
     <x:callTemplates from="#{pageConfig}" mode="body" />
   </div>

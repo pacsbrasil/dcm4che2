@@ -18,9 +18,6 @@
            <include name="ejb3-persistence.jar" />
            <include name="cglib.jar" />
         </fileset>
-        <fileset dir="${seamDir}/lib">
-           <include name="el-*.jar" />
-        </fileset>
      </copy>
   </target>
 

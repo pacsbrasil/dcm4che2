@@ -81,15 +81,38 @@
     <param name="studyUID" value="#{PatientViewed.studyUID}" />
     <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
     <param name="position" value="#{ImageViewed.position}" />
-    <param name="cine" value="#{ImageEvent.cine}" />
     <param name="mode" value="#{DisplayMode.mode}" />
-    <param name="region" value="#{ZoomPanModel.region}" />
-    <param name="zoom" value="#{ZoomPanModel.zoom}" />
-    <param name="panX" value="#{ZoomPanModel.panX}" />
-    <param name="panY" value="#{ZoomPanModel.panY}" />
+    <param name="counter" value="#{DisplayMode.counter}" />
+    <!-- To be removed into an action item -->
+    <param name="cine" value="#{ImageEvent.cine}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/image/action/*">
+    <param name="studyUID" value="#{PatientViewed.studyUID}" />
+    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="objectUID" value="#{ImageViewed.objectUID}" />
+    <param name="position" value="#{ImageViewed.position}" />
+    <param name="mode" value="#{DisplayMode.mode}" />
+  </page>
+
+  <page view-id="/image/action/WindowLevel.xhtml" action="#{DisplayMode.emptyAction}">
     <param name="windowWidth" value="#{WindowLevelModel.windowWidth}" />
     <param name="windowCenter" value="#{WindowLevelModel.windowCenter}" />
-    <begin-conversation join="true" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
+  <page view-id="/image/action/ZoomPan.xhtml" action="#{DisplayMode.emptyAction}" >
+    <param name="zoom" value="#{ZoomPanModel.zoom}" />
+    <param name="relZoom" value="#{ZoomPanModel.relZoom}" />
+    <param name="panX" value="#{ZoomPanModel.panX}" />
+    <param name="panY" value="#{ZoomPanModel.panY}" />
+    <param name="region" value="#{ZoomPanModel.region}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
   </page>
   
 </pages>

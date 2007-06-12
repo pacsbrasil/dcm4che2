@@ -45,8 +45,9 @@
       <center>
          <a target="imageFrame">
            <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
-           <img>
-            <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=128</xsl:attribute>
+           <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
+           <img height="128">
+            <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
            </img>
          </a>
       </center>

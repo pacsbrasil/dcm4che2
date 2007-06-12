@@ -48,11 +48,19 @@ import org.jboss.seam.ScopeType;
  *
  */
 @Name("ImageViewed")
-@Scope(ScopeType.CONVERSATION)
+@Scope(ScopeType.EVENT)
 public class ImageViewed {
 
 	public static final int DEFAULT_IMAGE_COUNT = 32;
+	/** The position is the ordinal within a given series view of which image is to be displayed.
+	 * This may or may not correspond with the object or image number.
+	 */
 	int position = 0;
+	
+	/** The object UID contains the UID of the object being modified.  In general, this is used when 
+	 * modifying an image presentation, whereas position is used for displaying an image.
+	 */
+	String objectUID;
 	
 	/** Get the position to view */
 	public int getPosition() {
@@ -81,5 +89,15 @@ public class ImageViewed {
 	 */
 	public int getCount() {
 		return DEFAULT_IMAGE_COUNT;
+	}
+
+	/** Get the object UID for the object being modified.  */
+	public String getObjectUID() {
+		return objectUID;
+	}
+
+	/** Sets the object UID for the object being modified.  */
+	public void setObjectUID(String objectUID) {
+		this.objectUID = objectUID;
 	}
 }

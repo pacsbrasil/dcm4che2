@@ -42,8 +42,6 @@ function imageEventEmpty() { }
  * Create an ImageEvent base object
  */
 function ImageEvent() {
-  this.imageNode = document.getElementById("image");
-  this.imageDiv = document.getElementById("imageDiv");
   this.body = document.getElementById("body");
 }
 
@@ -55,6 +53,8 @@ function ImageEvent() {
 ImageEvent.prototype.mouseDown = function (evt) {
   if( this.mousing ) return;
   if( !isLeftMouse(evt) ) return;
+  this.imageNode = evt.target;
+  this.actionId = evt.target.id;
   this.startX = evt.clientX;
   this.startY = evt.clientY;
   this.mousing = this.startLeft(evt.clientX, evt.clientY);
@@ -235,7 +235,6 @@ ImageEvent.prototype.getUrlProperty = function(url,tag,def) {
  * Gets the stripped image url, and updates the image node
  */
 ImageEvent.prototype.getImageUrl = function(rem) {
-	this.imageNode = document.getElementById("image");
 	if( !this.imageNode) {
 		alert("No image node found.");
 		return undefined;

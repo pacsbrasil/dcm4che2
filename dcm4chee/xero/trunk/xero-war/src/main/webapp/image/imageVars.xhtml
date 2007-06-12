@@ -17,12 +17,11 @@
 <xsl:variable name="imagePrevUID" select="$imageNode/preceding::se:image[1]/@SOPInstanceUID" />
 <xsl:variable name="imageNextUID" select="$imageNode/following::se:image/@SOPInstanceUID" />
 
-<xsl:variable name="priSer" select="/documents/se:results/se:patient/se:study/se:series[@SeriesInstanceUID=$seriesUID]" />
-<xsl:variable name="priImg" select="$priSer/se:image[@SOPInstanceUID=$imageUID]" />
-<xsl:variable name="pri" select="$priSer | $priImg" />
-<xsl:variable name="i0" select="$priImg/* | $priImg/@*" />
-<xsl:variable name="a1" select="$priSer/*[name(.)!='image'] | $priSer/@*" />
-<xsl:variable name="b1" select="$a1[.=$i0]" />
-
-<xsl:variable name="imageCombine" select="$i0" />
+<xsl:variable name="frameNode" select="document(/documents/layout)/se:results" />
+<xsl:variable name="windowWidth" select="/documents/windowLevel/@width" />
+<xsl:variable name="windowCenter" select="/documents/windowLevel/@center" />
+<xsl:variable name="region" select="/documents/region" />
+<xsl:variable name="mode" select="/documents/mode" />
+<xsl:variable name="documentsNode" select="/documents" />
+<xsl:variable name="toolbarNode" select="document(/documents/toolbar)/*" />
 </ui:component>

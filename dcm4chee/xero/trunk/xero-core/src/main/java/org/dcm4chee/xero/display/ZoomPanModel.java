@@ -55,6 +55,9 @@ public class ZoomPanModel {
 	double centerX=0.5, centerY=0.5, hWidth=0.5, hHeight=0.5;
 	String region;
 
+	public void setRelZoom(int rzoom) {
+		setZoom(Math.max(0,izoom+rzoom));
+	}
 	/** Sets the zoom value, and as a side-affect modifies the region to re-center it with the
 	 * given limits.  Cannot be read back out, as this is a relative operation.
 	 * @param izoom level, 0 being the whole image, 1 being 90%, 2 being 81% 0.9<sup>izoom</sup>
@@ -68,6 +71,7 @@ public class ZoomPanModel {
 		hWidth = zoom;
 		hHeight = zoom;
 		fixRegion();
+		log.info("Zoom set to "+izoom);
 	}
 	
 	/** Gets the zoom level 

@@ -50,7 +50,7 @@ import org.jboss.seam.ScopeType;
  *
  */
 @Name("SeriesViewed")
-@Scope(ScopeType.CONVERSATION)
+@Scope(ScopeType.EVENT)
 public class SeriesViewed {
 	@Logger static Log log;
 

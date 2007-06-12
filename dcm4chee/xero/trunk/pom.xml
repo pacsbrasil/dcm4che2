@@ -78,6 +78,11 @@
 	<url>http://download.java.net/maven/1/</url>
 	<layout>legacy</layout>
   </repository>
+  <repository>
+    <id>dcm4che</id>
+    <name>Dcm4che repository</name>
+    <url>http://www.dcm4che.org/maven2/</url>
+  </repository>
  </repositories>
 
 </project>

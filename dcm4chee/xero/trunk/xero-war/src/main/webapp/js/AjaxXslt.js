@@ -105,21 +105,31 @@ XsltAjax.prototype.setXsltUri = function(xsltUri) {
 	  return;
 	}
 	var xslObj = new XMLHttpRequest();
+	var xsl;
     try {
        if( xslObj.overrideMimeType ) {
           xslObj.overrideMimeType('application/xml');
        }
        xslObj.open ('GET', xsltUri, false);
-       xslObj.send('');		
+       xslObj.send('');
+       if( xslObj.status==this.STATUS_OK || xslObj.status==0) {
+         xsl = this.asXml(xslObj);
+       }
+    } 
+    catch(e) {
+    	alert("Couldn't load url "+xsltUri+" exception:"+e+" xslObj status="+xslObj.status);
+    	return;
+    }
+    try {
        if( xslObj.status==this.STATUS_OK || xslObj.status==0) {
    	      this.xsltProcessor = new XSLTProcessor();
-    	  this.xsltProcessor.importStylesheet(this.asXml(xslObj));
+    	  this.xsltProcessor.importStylesheet(xsl);
        } else {
            alert("Error on "+xsltUri + " status:"+xslObj.status+" msg:"+xslObj.statusText);
        }
     }
     catch(e) {
-       alert("Could not load "+xsltUri+" exception:"+e);
+       alert("Couldn't parse xslt "+xsltUri+" exception:"+e.message);
     }
 };
 
@@ -186,9 +196,9 @@ XsltAjax.prototype.replaceNode = function (items, fromDoc) {
       }
    }
    else {
-      replaceBy = this.getElementById(fromDoc,items);      
+      replaceBy = this.getElementById(fromDoc,items);
       replaced = document.getElementById(items);
-      if( replaceBy===undefined ) {
+      if( replaceBy===undefined || replaceBy===null ) {
          alert("No item named "+items+" in result "+this.asString(fromDoc));
          return;
       }
@@ -224,7 +234,7 @@ XsltAjax.prototype.asString = function(xml) {
  */
 XsltAjax.prototype.ajaxRead = function (file, item, params){
   if(!file) {
-  	alert("Ajax read requested from undefined URL - did you forget to have a &lt;a> item with the id the name of the aciton or set the URL?");
+  	alert("Ajax read requested from undefined URL - did you forget to have a node with the id the name of the action and the right href or set the URL?");
   }
   this.inProgress = true;
   var xmlObj = null;
@@ -344,7 +354,8 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    var postUpdate = "action="+actionName+"&"+postArgs;
    var actionIdItem = document.getElementById(actionName);
    var actionHref;
-   if( updateModel ) {     
+   if( updateModel ) {
+      //alert("Post update to "+actionName+" on id "+items); 
       postUpdate = updateModel(this,actionName,postUpdate);
    }
    else if( actionIdItem ){
@@ -353,10 +364,12 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    	 // to be executed instead...
    	 actionHref = actionIdItem.getAttribute('href');
    	 if( actionHref ) {
+   	    //alert("Found href item to update action "+actionName+" on id "+items+" href="+actionHref+" args "+postArgs);
    	 	this.currentXml = null;
    	 	postUpdate = postArgs;
    	 	this.url = actionHref;
-   	 }   }
+   	 }
+   	 //else alert("No action href found to update, using get on "+this.url+" items "+items);   }
 
    if( updateModel && this.currentXml) {
       // A direct update, no refresh/post/anything.

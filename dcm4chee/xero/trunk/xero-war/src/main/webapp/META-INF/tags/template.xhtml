@@ -7,13 +7,18 @@
    xmlns:c="http://java.sun.com/jstl/core"
 >
   <c:choose>
-  <c:when test="#{match==null}">
+  <c:when test="#{match==null and mode==null}">
   <xsl:template name="#{name}">
     <ui:insert />
   </xsl:template>
   </c:when>
-  <c:otherwise>
+  <c:when test="#{mode==null}">
   <xsl:template name="#{name}" match="#{match}">
+    <ui:insert />
+  </xsl:template>
+  </c:when>
+  <c:otherwise>
+  <xsl:template name="#{name}" match="#{match}" mode="#{mode}">
     <ui:insert />
   </xsl:template>
   </c:otherwise>

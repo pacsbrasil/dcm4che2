@@ -46,7 +46,7 @@ var displayXslt;
  * Initialize the display variables
  */
 function initDisplay() {
-	displayXslt = new XsltAjax("imageXsl.xsl");
+	displayXslt = new XsltAjax("/xero/image/imageXsl.xsl");
 	// Local variable, to make things shorter
 	var t = displayXslt.itemsToUpdate;
 	t.prev=["image","imageToolbar","imagePrefetch"];

@@ -15,39 +15,8 @@
   <c:if test="#{WindowLevelModel.wlSet}">
   <windowLevel center="#{WindowLevelModel.windowCenter}" width="#{WindowLevelModel.windowWidth}" />
   </c:if>
-
-  <!-- First group of items is display configuration related, eg CINE, studies viewed etc -->
-  <frame id="f0">
-     <pane cols="20%" onImageDrag="windowLevel" id="p1" seriesId="s1" imageId="i1"/>
-     <frame id="f1">
-       <pane rows="30%" id="p2" imageId="i2" seriesId="s2">
-          <!-- Active modes are: -->
-          <cine />
-       </pane>
-       <pane rows="70%" id="p3" imageId="i3" seriesId="s1" />
-     </frame>
-  </frame>
   
-  <!-- Second group of items is image related, eg markup, window level etc. -->
-
-  <results xmlns="http://www.dcm4chee.org/xero/search/study/">
-  <patient patientIdentifier="1">
-  <study studyUID="1.2.3">  
-  <series Rows='514' seriesId="s1" SeriesInstanceUID="1.2.840.113619.2.30.1.1762288877.1586.971178368.423" position="0" windowWidth="256" windowCenter="127.5">
-     <over>Override this</over>
-     <leave>Leave this</leave>
-	 <image Rows="513" SOPInstanceUID="1.2.840.113619.2.30.1.1762288877.1586.971178368.424" windowWidth="64" windowCenter="32" region="0.1,0.1,0.75,0.75">
-	   <over>This is an overrided value.</over>
-	 </image>
-	 <image position="1" SOPInstanceUID="1.2.840.113619.2.30.1.1762288877.1586.971178368.425">
-	   <wl width="128" center="64" >c2</wl>
-	   <zoom region="0.25,0.25,0.75,0.75" />
-	 </image>
-  </series>
-  <series seriesId="s2" seriesUID="1.2.3.4" position="0" windowWidth="245" windowCenter="128" left="0.5" top="0.5" right="0.75" bottom="1.0" />
-  </study>
-  </patient>
-  </results>
-  
+  <layout doc="/xero/study/study.xml?StudyInstanceUID=#{PatientViewed.studyUID}">/xero/image/layout.xml</layout>
+  <toolbar>/xero/image/imageCommands.seam</toolbar>
   
 </x:source>

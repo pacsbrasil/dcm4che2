@@ -40,6 +40,8 @@ package org.dcm4chee.xero.display;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.ScopeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The window level class defines the window-level model data, and includes
@@ -51,12 +53,15 @@ import org.jboss.seam.ScopeType;
 @Name("WindowLevelModel")
 @Scope(ScopeType.CONVERSATION)
 public class WindowLevelModel {
+	private static Logger log = LoggerFactory.getLogger(WindowLevelModel.class);
+
 	double windowCenter=127.5, windowWidth=256;
 	boolean wlSet;
 	
 
 	/** Retrieve the window level center */
 	public double getWindowCenter() {
+		log.info("Window center got as "+windowCenter);
 		return windowCenter;
 	}
 
@@ -65,6 +70,7 @@ public class WindowLevelModel {
 	public void setWindowCenter(double windowCenter) {
 		this.windowCenter = windowCenter;
 		this.wlSet = true;
+		log.info("Window center set to "+windowCenter);
 	}
 
 

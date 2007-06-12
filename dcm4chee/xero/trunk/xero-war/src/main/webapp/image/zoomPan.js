@@ -112,7 +112,7 @@ function zpGetUpdatedUrlQuery(isDone)
 }
 
 function zpEndAction() {
-    displayXslt.action("zoomPan",this.region);
+    displayXslt.action(this.actionId,this.region);
 };
 
 /**
@@ -134,6 +134,8 @@ function zpUpdateOtherDisplay(isDone) {
 	}
 }
 
+var zoomPanHandler;
+
 /** Initialize the window level */
 function initZoomPan() {
 	ZoomPan.prototype = new ImageEvent();
@@ -151,9 +153,7 @@ function initZoomPan() {
 	t.zoomDown = t.zoomPlus;
 	t.zoomPan=t.zoomPlus;
 	
-	if( displayMode==="zoomPan") {
-		imageHandler=new ZoomPan();
-	}
+	zoomPanHandler=new ZoomPan();
 };
 
 addLoadEvent(initZoomPan);

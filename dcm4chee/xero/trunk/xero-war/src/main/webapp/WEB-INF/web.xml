@@ -166,6 +166,11 @@
     
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>*.action</url-pattern>
+   </servlet-mapping>
+    
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>*.xsl</url-pattern>
    </servlet-mapping>
    <filter-mapping>
