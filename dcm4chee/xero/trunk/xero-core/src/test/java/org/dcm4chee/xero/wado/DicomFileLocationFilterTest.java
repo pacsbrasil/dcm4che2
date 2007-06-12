@@ -31,14 +31,14 @@ public class DicomFileLocationFilterTest {
 		assert url != null;
 		File f = new File(url.getFile());
 		assert f.canRead();
-		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, f);
+		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, url);
 		if( !headerOnly ) params.put(DicomFilter.DICOM_FULL_READ,"true");
 		return fl.filter(fi, params);
 	}
 	
 	@Test
 	public void testProvidedFile() {
-		File f = (File) callFilter("fileLocation","org/dcm4chee/xero/wado/CR3S1IM1.dcm"); 
+		URL f = (URL) callFilter("fileLocation","org/dcm4chee/xero/wado/CR3S1IM1.dcm"); 
 		assert f!=null;
 	}
 }

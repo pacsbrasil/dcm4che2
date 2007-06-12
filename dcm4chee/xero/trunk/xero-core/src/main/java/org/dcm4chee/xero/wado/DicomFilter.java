@@ -2,6 +2,7 @@ package org.dcm4chee.xero.wado;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
@@ -46,12 +47,12 @@ public class DicomFilter implements Filter<DicomObject> {
 		DicomObject ret = (DicomObject) params.get(key);
 		if (ret != null)
 			return ret;
-		File location = (File) filterItem.callNamedFilter("fileLocation",
+		URL location = (URL) filterItem.callNamedFilter("fileLocation",
 				params);
 		if (location == null)
 			return null;
 		try {
-			DicomInputStream dis = new DicomInputStream(location);
+			DicomInputStream dis = new DicomInputStream(location.openStream());
 			if( !fullRead ) dis.setHandler(stopHandler);
 			ret = dis.readDicomObject();
 			params.put(key, ret);			
