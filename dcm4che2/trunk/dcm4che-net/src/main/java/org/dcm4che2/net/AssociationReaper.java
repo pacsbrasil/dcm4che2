@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  * @since Dec 10, 2005
  * 
  */
-class AssociationReaper {
+public class AssociationReaper {
     private static final float MILLISECONDS = 1000f;
 
     static Logger log = LoggerFactory.getLogger(AssociationReaper.class);
