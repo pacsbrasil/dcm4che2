@@ -60,28 +60,27 @@ import org.slf4j.LoggerFactory;
  * @since Dec 10, 2005
  * 
  */
-class AssociationReaper
-{
+class AssociationReaper {
     static Logger log = LoggerFactory.getLogger(AssociationReaper.class);
+
     private final Timer timer = new Timer(true);
+
     private List list = Collections.synchronizedList(new ArrayList());
 
     /**
      * Constructor which sets the max idle test period.
      * 
-     * @param period An int signifying the time period in milliseconds in which
+     * @param period
+     *            An int signifying the time period in milliseconds in which
      *            associations will be tested for idleness..
      */
-    public AssociationReaper(int period)
-    {
+    public AssociationReaper(int period) {
         if (log.isDebugEnabled())
             log.debug("Check for idle Associations every " + (period / 1000f)
                     + "s.");
-        timer.schedule(new TimerTask()
-        {
+        timer.schedule(new TimerTask() {
 
-            public void run()
-            {
+            public void run() {
                 long now = System.currentTimeMillis();
                 Object[] a = getAssociationList().toArray();
                 for (int i = 0; i < a.length; i++)
@@ -93,10 +92,10 @@ class AssociationReaper
     /**
      * Register an <code>Association</code> with this reaper.
      * 
-     * @param a The Association to register.
+     * @param a
+     *            The Association to register.
      */
-    public void register(Association a)
-    {
+    public void register(Association a) {
         log.debug("Start check for idle {}", a);
         list.add(a);
     }
@@ -104,10 +103,10 @@ class AssociationReaper
     /**
      * Unregister an <code>Association</code> from this reaper.
      * 
-     * @param a The <code>Association</code> to unregister.
+     * @param a
+     *            The <code>Association</code> to unregister.
      */
-    public void unregister(Association a)
-    {
+    public void unregister(Association a) {
         log.debug("Stop check for idle {}", a);
         list.remove(a);
     }
@@ -117,8 +116,7 @@ class AssociationReaper
      * 
      * @return The List of associations that this reaper is monitoring.
      */
-    List getAssociationList()
-    {
+    List getAssociationList() {
         return list;
     }
 
