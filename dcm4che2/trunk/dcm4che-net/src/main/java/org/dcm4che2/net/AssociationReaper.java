@@ -21,7 +21,8 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
- * Damien Evans <damien@theevansranch.com>
+ * Damien Evans <damien.daddy@gmail.com>
+ * Rick Riemer <rick.riemer@forcare.nl>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -39,9 +40,9 @@
 
 package org.dcm4che2.net;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,11 +62,15 @@ import org.slf4j.LoggerFactory;
  * 
  */
 class AssociationReaper {
+    private static final float MILLISECONDS = 1000f;
+
     static Logger log = LoggerFactory.getLogger(AssociationReaper.class);
+
+    private final int period;
 
     private final Timer timer = new Timer(true);
 
-    private List list = Collections.synchronizedList(new ArrayList());
+    private Map timerTasks = Collections.synchronizedMap(new HashMap());
 
     /**
      * Constructor which sets the max idle test period.
@@ -76,17 +81,10 @@ class AssociationReaper {
      */
     public AssociationReaper(int period) {
         if (log.isDebugEnabled())
-            log.debug("Check for idle Associations every " + (period / 1000f)
-                    + "s.");
-        timer.schedule(new TimerTask() {
+            log.debug("Check for idle Associations every "
+                    + (period / MILLISECONDS) + "s.");
 
-            public void run() {
-                long now = System.currentTimeMillis();
-                Object[] a = getAssociationList().toArray();
-                for (int i = 0; i < a.length; i++)
-                    ((Association) a[i]).checkIdle(now);
-            }
-        }, period, period);
+        this.period = period;
     }
 
     /**
@@ -95,9 +93,21 @@ class AssociationReaper {
      * @param a
      *            The Association to register.
      */
-    public void register(Association a) {
+    public void register(final Association a) {
         log.debug("Start check for idle {}", a);
-        list.add(a);
+
+        TimerTask task = new TimerTask() {
+            public void run() {
+                a.checkIdle(System.currentTimeMillis());
+            }
+        };
+
+        TimerTask previous = (TimerTask) timerTasks.put(a, task);
+        if (previous != null) {
+            previous.cancel();
+        }
+
+        timer.schedule(task, period, period);
     }
 
     /**
@@ -108,16 +118,10 @@ class AssociationReaper {
      */
     public void unregister(Association a) {
         log.debug("Stop check for idle {}", a);
-        list.remove(a);
-    }
 
-    /**
-     * Get the internal list of associations that this reaper is monitoring.
-     * 
-     * @return The List of associations that this reaper is monitoring.
-     */
-    List getAssociationList() {
-        return list;
+        TimerTask task = (TimerTask) timerTasks.remove(a);
+        if (task != null) {
+            task.cancel();
+        }
     }
-
 }
