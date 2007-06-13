@@ -244,6 +244,14 @@
 			<param-value>mpps</param-value>
 		</init-param>
 
+		<!-- 
+			Name of WebViewer window. use _blank to open each Webviewer in a new window.
+		-->
+		<init-param>
+			<param-name>webViewerWindowName</param-name>
+			<param-value>webView</param-value>
+		</init-param>
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	

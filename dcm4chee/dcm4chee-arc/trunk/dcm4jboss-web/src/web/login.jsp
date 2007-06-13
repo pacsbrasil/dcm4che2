@@ -20,25 +20,8 @@
 
 <%
 	String nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
-	String user = null;
-	String passwd = null;
-	if ( request.getParameter("accNr") != null || request.getParameter("studyUID") != null) {
-		user = request.getParameter("loginuser");
-		passwd = request.getParameter("passwd4user");
-		if ( passwd != null && (passwd.length() % 4) == 0) {
-			byte[] ba = Base64.base64ToByteArray(passwd);
-			passwd = new String(ba);
-		}
-	}
-	if ( user != null) {
-%>
-<body onload="document.login.submit()">
-<% } else { 
-	user = "";
-	passwd="";
 %>
 <body onload="self.focus();document.login.j_username.focus()">
-<% } %>
 <table border="0" cellspacing="0" cellpadding="0" width="100%">
  <tr>
   <td><img src="white48.jpg" width="100%" height="5px"></td>
@@ -60,11 +43,11 @@
 <table>
 	<tr valign="middle">
 	  <td><div class="text">Name:</div></td>
-	  <td><input class="textfield" type="text" name="j_username" value="<%=user %>"/></td>
+	  <td><input class="textfield" type="text" name="j_username" value=""/></td>
 	</tr>
 	<tr valign="middle">
 	  <td><div class="text">Password:</div></td>
-	  <td><input class="textfield" type="password" name="j_password" value="<%=passwd %>"/></td>
+	  <td><input class="textfield" type="password" name="j_password" value=""/></td>
 	</tr>
 	<tr><td>&nbsp;</td></tr>
 	<tr valign="middle">

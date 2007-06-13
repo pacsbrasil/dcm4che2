@@ -86,6 +86,7 @@ public class FolderForm extends BasicFolderForm {
     private String destination;
 
     private boolean webViewer;
+    private String webViewerWindowName = "webView";
     
     /** Base URL for WADO service. Used for image view */
     private String wadoBaseURL;
@@ -122,12 +123,14 @@ public class FolderForm extends BasicFolderForm {
             	}
 				form.setWadoBaseURL( wadoURL.toString() );
 				URL url = new URL( "http", request.getServerName(), 
-						request.getServerPort(), "/WebViewer/jvapplet.jar");
+						request.getServerPort(), "/dcm4chee-webview/webviewer.jsp");
 				try {
 					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 					conn.connect();
-					if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK )
+					if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK ) {
 						form.enableWebViewer();
+                        form.setWebViewerWindowName(ctx.getServletConfig().getInitParameter("webViewerWindowName"));
+                    }
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -176,7 +179,15 @@ public class FolderForm extends BasicFolderForm {
 		return webViewer;
 	}
 
-	/**
+	public String getWebViewerWindowName() {
+        return webViewerWindowName;
+    }
+
+    public void setWebViewerWindowName(String webViewerWindowName) {
+        this.webViewerWindowName = webViewerWindowName;
+    }
+
+    /**
 	 * @return Returns the wadoBaseURL.
 	 */
 	public String getWadoBaseURL() {

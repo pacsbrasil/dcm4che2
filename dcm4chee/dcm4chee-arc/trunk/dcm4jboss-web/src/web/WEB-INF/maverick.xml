@@ -124,21 +124,6 @@ default-transform-type="xslt">
 	    </view>
      </command>
  
-    <command name="studyView">
-        <controller class="org.dcm4chex.archive.web.maverick.StudyViewCtrl" />    
-	    <view name="success">
-    	  <transform path="study_view.xsl" />
-	    </view>
-	  <view name="select" type="redirect" path="folder.m?showWithoutStudies=false"/>
-     </command>
-
-    <command name="koView">
-        <controller class="org.dcm4chex.archive.web.maverick.KeyObjectViewCtrl" />    
-	    <view name="success">
-    	  <transform path="ko_view.xsl" />
-	    </view>
-     </command>
-     
      <command name="addWorklist">
         <controller class="org.dcm4chex.archive.web.maverick.AddWorklistCtrl" />    
 	    <view name="success">

@@ -727,9 +727,9 @@
     			                  <xsl:when test="modalitiesInStudy='KO'"><!-- no webviewer action if study contains only KO ! -->
     			                  </xsl:when>
     			                  <xsl:otherwise>
-    			                      <a href="studyView.m?patPk={../../pk}&amp;studyPk={pk}" >
-					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../pk" />&amp;studyPk=<xsl:value-of select="pk" />')</xsl:attribute>
-					<img src="images/webview.gif" alt="View Study" border="0" title="Anzeige Studie im Webviewer"/>		
+    			                      <a href="/dcm4chee-webview/webviewer.jsp?studyUID={studyIUID}" >
+										<xsl:attribute name="onclick" >return openWin('<xsl:value-of select="/model/webViewerWindowName" />','/dcm4chee-webview/webviewer.jsp?studyUID=<xsl:value-of select="studyIUID" />')</xsl:attribute>
+										<img src="images/webview.gif" alt="View Study" border="0" title="Anzeige Studie im Webviewer"/>
     			                      </a>
     			                  </xsl:otherwise>
     			          </xsl:choose>
@@ -865,16 +865,15 @@
 		    <td class="series_mark" align="right">
 	            <xsl:choose>
 	                <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
-	
-	    				<a href="studyView.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" >
-	    					<xsl:attribute name="onclick" >return openWin('WEBview','studyView.m?patPk=<xsl:value-of select="../../../../pk" />&amp;studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-	    					<img src="images/webview.gif" alt="View Study" border="0" title="Anzeige Serie im Webviewer"/>		
-	    				</a>					
+	                      <a href="/dcm4chee-webview/webviewer.jsp?seriesUID={seriesIUID}" >
+							<xsl:attribute name="onclick" >return openWin('<xsl:value-of select="/model/webViewerWindowName" />','/dcm4chee-webview/webviewer.jsp?seriesUID=<xsl:value-of select="seriesIUID" />')</xsl:attribute>
+							<img src="images/webview.gif" alt="View Series" border="0" title="Anzeige Serie im Webviewer"/>		
+	                      </a>
 	                </xsl:when>
 	                <xsl:when test="modality = 'KO'">
-						<a href="koView.m?studyPk={../../pk}&amp;seriesPk={pk}" >
-							<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../pk" />&amp;seriesPk=<xsl:value-of select="pk" />')</xsl:attribute>
-							<img src="images/webview_ko.gif" alt="View Study" border="0" title="Anzeige Key Objekt im Webviewer"/>		
+	                      <a href="/dcm4chee-webview/webviewer.jsp?seriesUID={seriesIUID}" >
+							<xsl:attribute name="onclick" >return openWin('<xsl:value-of select="/model/webViewerWindowName" />','/dcm4chee-webview/webviewer.jsp?seriesUID=<xsl:value-of select="seriesIUID" />')</xsl:attribute>
+							<img src="images/webview_ko.gif" alt="View Key Object" border="0" title="Anzeige Key Objekt im Webviewer"/>		
 						</a>
 					</xsl:when>
 					<xsl:otherwise>&#160;</xsl:otherwise>
@@ -1046,6 +1045,12 @@
 		<td class="instance_mark" align="right">
 			<xsl:choose>
 				<xsl:when test="availability='ONLINE'" >			
+					<xsl:if test="/model/webViewer='true'" >
+		                <a href="/dcm4chee-webview/webviewer.jsp?prUID={sopIUID}" >
+							<xsl:attribute name="onclick" >return openWin('<xsl:value-of select="/model/webViewerWindowName" />','/dcm4chee-webview/webviewer.jsp?prUID=<xsl:value-of select="sopIUID" />')</xsl:attribute>
+							<img src="images/webview_pr.gif" alt="View Presentation State" border="0" title="Presentation State im Webviewer anzeigen"/>		
+						</a>
+					</xsl:if>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen" />		
 					</a>
@@ -1127,9 +1132,9 @@
 				<td class="instance_mark" align="right" >
 					<xsl:choose>
 						<xsl:when test="/model/webViewer='true' and sopCUID='1.2.840.10008.5.1.4.1.1.88.59'" >
-							<a href="koView.m?studyPk={../../../../pk}&amp;sopIUID={sopIUID}" >
-								<xsl:attribute name="onclick" >return openWin('WEBview','koView.m?studyPk=<xsl:value-of select="../../../../pk" />&amp;sopIUID=<xsl:value-of select="sopIUID" />')</xsl:attribute>
-								<img src="images/webview_ko.gif" alt="View Study" border="0" title="Anzeige Key Object im Webviewer"/>		
+		                    <a href="/dcm4chee-webview/webviewer.jsp?instanceUID={sopIUID}" >
+								<xsl:attribute name="onclick" >return openWin('<xsl:value-of select="/model/webViewerWindowName" />','/dcm4chee-webview/webviewer.jsp?instanceUID=<xsl:value-of select="sopIUID" />')</xsl:attribute>
+								<img src="images/webview_ko.gif" alt="View Key Object" border="0" title="Anzeige Key Object im Webviewer"/>		
 							</a>
 						</xsl:when>
 						<xsl:otherwise>
