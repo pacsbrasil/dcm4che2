@@ -39,20 +39,30 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal;
+import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.util.Convert;
@@ -89,12 +99,38 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND a.issuerOfPatientId = ?2"
  *             transaction-type="Supports"
  *
+ * @ejb.ejb-ref ejb-name="OtherPatientID" view-type="local" ref-name="ejb/OtherPatientID"
+ *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */
 public abstract class PatientBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(PatientBean.class);
+
+    private OtherPatientIDLocalHome opidHome;
+
+    public void setEntityContext(EntityContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            opidHome = (OtherPatientIDLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/OtherPatientID");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
+
+    public void unsetEntityContext() {
+        opidHome = null;
+    }
 
     /**
      * Auto-generated Primary Key
@@ -210,7 +246,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.relation name="patient-other-pid" role-name="patient-with other-pids"
      * @jboss.relation-table table-name="rel_pat_other_pid"
-     * @jboss.relation fk-column="patient_fk" related-pk-field="pk"     
+     * @jboss.relation fk-column="other_pid_fk" related-pk-field="pk"     
      */
     public abstract java.util.Collection getOtherPatientIds();
     public abstract void setOtherPatientIds(java.util.Collection otherPIds);
@@ -315,13 +351,37 @@ public abstract class PatientBean implements EntityBean {
     }
 
     public void ejbPostCreate(Dataset ds) throws CreateException {
+        try {
+            createOtherPatientIds(ds.get(Tags.OtherPatientIDSeq));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
         log.info("Created " + prompt());
+    }
+
+    private void createOtherPatientIds(DcmElement opidsq)
+            throws CreateException, FinderException {
+        if (opidsq == null || opidsq.isEmpty() || opidsq.getItem().isEmpty()) {
+            return;
+        }
+        Collection opids = getOtherPatientIds();
+        for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+            opids.add(opidHome.valueOf(opidsq.getItem(i)));
+        }
     }
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
-// we have to delete studies explicitly here due to an foreign key constrain error 
-// if an mpps key is set in one of the series.
+        // Remove OtherPatientIDs only related to this Patient
+        for ( Iterator iter = getOtherPatientIds().iterator() ; iter.hasNext() ; ) {
+            OtherPatientIDLocal opid = (OtherPatientIDLocal) iter.next();
+            iter.remove();
+            if (opid.getPatients().isEmpty()) {
+                opid.remove();
+            }
+        }
+        // we have to delete studies explicitly here due to an foreign key constrain error 
+        // if an mpps key is set in one of the series.
         for ( Iterator iter = getStudies().iterator() ; iter.hasNext() ; ) {
         	StudyLocal study = (StudyLocal) iter.next();
         	iter.remove(); 
@@ -385,12 +445,51 @@ public abstract class PatientBean implements EntityBean {
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
     throws DcmServiceException {
         Dataset attrs = getAttributes(false);
+        boolean b = updateOtherPatientIds(attrs, ds);
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log) || b) {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
         }
+    }
+
+    private boolean updateOtherPatientIds(Dataset attrs, Dataset ds) {
+        DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
+        if (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty()) {
+            return false;
+        }
+        boolean update = false;
+        DcmElement opidsq = attrs.get(Tags.OtherPatientIDSeq);
+        if (opidsq == null) {
+            opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
+        }
+        for (int n = 0; n < nopidsq.countItems(); n++) {
+            Dataset nopid = nopidsq.getItem();
+            if (!containsOPID(nopid, opidsq)) {
+                opidsq.addItem(nopid);
+                getOtherPatientIds().add(opidHome.valueOf(nopid));
+                update = true;
+                log.info("Update stored object with additional Other Patient ID: "
+                        + nopid.getString(Tags.PatientID) + "^^^"
+                        +  nopid.getString(Tags.IssuerOfPatientID)
+                        + " from new received object");
+            }
+        }
+        return update;
+    }
+
+    private boolean containsOPID(Dataset nopid, DcmElement opidsq) {
+        for (int n = 0; n < opidsq.countItems(); n++) {
+            Dataset opid = opidsq.getItem();
+            if (opid.getString(Tags.PatientID)
+                    .equals(nopid.getString(Tags.PatientID))
+                && opid.getString(Tags.IssuerOfPatientID)
+                    .equals(nopid.getString(Tags.IssuerOfPatientID))) {
+                    return true;
+            }
+        }
+        return false;
     }
 
     private static String toUpperCase(String s) {

@@ -39,10 +39,17 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal;
+import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -54,10 +61,47 @@ import org.apache.log4j.Logger;
  * @ejb.persistence table-name="other_pid"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * 
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal findByPatientIdAndIssuer(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId = ?1 AND o.issuerOfPatientId = ?2"
  */
 public abstract class OtherPatientIDBean implements EntityBean {
     
     private static final Logger log = Logger.getLogger(OtherPatientIDBean.class);
+
+    private EntityContext ctx;
+
+    public void setEntityContext(EntityContext ctx) {
+        this.ctx = ctx;     
+    }
+
+    public void unsetEntityContext() {
+        this.ctx = null;        
+    }
+    
+    /**
+     * @ejb.home-method
+     */
+    public OtherPatientIDLocal ejbHomeValueOf(String pid, String issuer) {
+        OtherPatientIDLocalHome opidhome = (OtherPatientIDLocalHome) ctx.getEJBLocalHome();
+        try {
+            try {
+                return opidhome.findByPatientIdAndIssuer(pid, issuer);
+            } catch (ObjectNotFoundException e) {
+                return opidhome.create(pid, issuer);
+            }
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
+    
+    /**
+     * @ejb.home-method
+     */
+    public OtherPatientIDLocal ejbHomeValueOf(Dataset item) {
+        return ejbHomeValueOf(item.getString(Tags.PatientID),
+                item.getString(Tags.IssuerOfPatientID));
+    }
 
     /**
      * @ejb.create-method
@@ -96,7 +140,7 @@ public abstract class OtherPatientIDBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="pat_id"
+     * @ejb.persistence column-name="pat_id_issuer"
      */
     public abstract String getIssuerOfPatientId();
     public abstract void setIssuerOfPatientId(String issuer);
@@ -105,7 +149,7 @@ public abstract class OtherPatientIDBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.relation name="patient-other-pid" role-name="other-pid-of-patients"
      * @jboss.relation-table table-name="rel_pat_other_pid"
-     * @jboss.relation fk-column="other_pid_fk" related-pk-field="pk"     
+     * @jboss.relation fk-column="patient_fk" related-pk-field="pk"     
      */
     public abstract java.util.Collection getPatients();
     public abstract void setPatients(java.util.Collection studies);
