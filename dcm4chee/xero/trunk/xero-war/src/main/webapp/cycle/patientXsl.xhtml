@@ -17,6 +17,8 @@
    dob: <xsl:value-of select="$patientNode/@PatientsBirthDate" />
 </xsl:template>
 
+<xsl:template name="patientNameConverter" />
+
 <xsl:template name="patientHeader">
   <h1><xsl:value-of select="$patientNode/@PatientName" /></h1>
 </xsl:template>

@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata.seam;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
@@ -49,6 +50,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 public class ELFunctions {
    public static List<MetaDataBean> sorted(MetaDataBean parent, String having)
    {
+	   if( parent==null ) return Collections.EMPTY_LIST;
 	   return parent.sorted(having);
    }
 

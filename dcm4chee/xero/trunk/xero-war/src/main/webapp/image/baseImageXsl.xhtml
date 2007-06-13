@@ -127,7 +127,7 @@
    </div>
 </x:template>
 
-<x:template name="buttonLayout" mode="layout" match="xul:text">
+<x:template name="textLayout" mode="layout" match="xul:text">
  <xsl:value-of select="@label" />
 </x:template>
 
@@ -268,13 +268,12 @@
    </div>
 </x:template>
 
-<x:template name="imageHandlerLayout" mode="layout" match="xul:imageHandler[@mode!=$mode]" />
-
-<x:template name="imageHandlerLayout" mode="layout" match="xul:imageHandler[@mode=$mode]">
-   <xsl:param name="width" />
-   <xsl:param name="height" />
-   <xsl:param name="node" />
-   <xsl:param name="custom" />
+<x:template name="imageHandlerLayout" mode="layout" match="xul:imageHandler">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:param name="custom" />
+ <xsl:if test="@mode=$mode">
    <xsl:if test="@oncommand">
     <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="cidArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
      <xsl:with-param name="width" select="$width" />
@@ -289,6 +288,7 @@
     <xsl:attribute name="onmouseout">return <xsl:value-of select="@handler"/>.mouseOut(event);</xsl:attribute>
     <xsl:attribute name="onmouseup">return <xsl:value-of select="@handler"/>.mouseUp(event);</xsl:attribute>
    </xsl:if>
+ </xsl:if>
 </x:template>
 
 <x:template name="seriesLayout" mode="layout" match="se:series">

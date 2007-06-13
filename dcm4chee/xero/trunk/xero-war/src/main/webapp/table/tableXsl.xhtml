@@ -1,13 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jstl/core"
-    xmlns:x="http://www.dcm4che.org/xero/jsf"
+<x:xsl
+   pageConfig="#{PageConfig.table}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/search/searchForm"
 >
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
-   xmlns:s="http://www.dcm4chee.org/xero/search/"
-   xmlns="http://www.w3.org/1999/xhtml"
->
+
 <!-- Handles generic display of a table based on the results $ and 
      based on the displayed columns $displayedColumns.
      -->
@@ -86,7 +84,4 @@
   </tr>
 </xsl:template>
 
-
-</xsl:stylesheet>
-
-</ui:fragment>
+</x:xsl>

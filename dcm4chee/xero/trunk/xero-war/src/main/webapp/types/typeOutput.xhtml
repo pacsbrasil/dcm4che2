@@ -1,15 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jstl/core"
-    xmlns:x="http://www.dcm4che.org/xero/jsf"
+<x:xsl
+   pageConfig="#{PageConfig.converters}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/converters"
+   xmlns:c="http://java.sun.com/jstl/core"
 >
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
-   xmlns="http://www.w3.org/1999/xhtml"
-   >
    
-<x:includeXsl fromMeta="#{metadata.converters}" />
-
 <!-- The raw converter just prints out the raw value, unchanged. -->
 <xsl:template name="rawConverter">
    <xsl:param name="value" />
@@ -29,12 +26,6 @@
      </xsl:if>
      
   </input>
-</xsl:template>
-
-<!-- Default patient name converter. -->
-<xsl:template name="patientNameConverter">
-   <xsl:param name="value" />
-   <xsl:value-of select="$value" />
 </xsl:template>
 
 <!--  This input type handles selection of a single patient -->
@@ -74,6 +65,4 @@
    </xsl:choose>
 </xsl:template>
 
-</xsl:stylesheet>
-
-</ui:fragment>
+</x:xsl>

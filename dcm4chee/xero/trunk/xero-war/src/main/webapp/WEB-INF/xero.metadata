@@ -12,11 +12,11 @@ valueProvider.seam=${org.dcm4chee.xero.metadata.seam.SeamELValueProvider}
 
 
 # Search level
-search.xsl=searchXsl.xsl
-search.typeOutput.includeXsl=../types/typeOutput.xsl
-search.searchForm.includeXsl=../search/searchFormXsl.xsl
-search.searchForm.typeInput.includeXsl=../types/typeInput.xsl
-search.tableLayout.includeXsl=../table/tableXsl.xsl
+search.xsl=/xero/search/searchXsl.xsl
+search.typeOutput.includeXsl=/types/typeOutput.xhtml
+search.typeInput.includeXsl=/types/typeInput.xhtml
+search.tableLayout.includeXsl=/table/tableXsl.xhtml
+search.searchForm.includeXsl=/search/searchFormXsl.xhtml
 
 # Search form
 
@@ -66,4 +66,5 @@ Modality.PR=GSPS
 Modality.MG=Mammography
 inputs.DateTime.template=rawInput
 inputs.Date.template=rawInput
-inputs.messages.includeXsl=../types/messages.xsl
+
+inputs.messages.includeXsl=/types/messages.xhtml
