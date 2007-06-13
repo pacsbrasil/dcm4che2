@@ -271,39 +271,22 @@
 
    <operation impact="ACTION">
       <description><![CDATA[ Get the Applet Parameters to launch the web based DICOM viewer.<br/>
-      			Get SOP Instance UIDs for given Study Instance UID.<br>
+      			Get SOP Instance UIDs for given Study-, Series- and SOP Instance UID.<br>
        		]]> </description>
-      <name>getLaunchPropertiesForStudyUID</name>
+      <name>getLaunchProperties</name>
       <parameter>
         <description>Study Instance UID</description>
         <name>studyUID</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Ignore Presentation States of study</description>
-        <name>ignorePR</name>
-        <type>java.lang.Boolean</type>
-      </parameter>
-      <parameter>
-        <description><![CDATA[ Enable selection of Presentation State if study contains more than one PR.<br/>
-        		In this case the result contains selection parameters (key=InstanceUID, value=Description)
-        		instead of APPLET PARAMs. <br/>
-        		If selectPR is <i>null</i> the value of <b>enableSelectionOfPresentationState</b> is used as default.
-        	]]> </description>
-        <name>selectPR</name>
-        <type>java.lang.Boolean</type>
-      </parameter>
-      <return-type>java.util.Properties</return-type>
-   </operation>
-
-   <operation impact="ACTION">
-      <description><![CDATA[ Get the Applet Parameters to launch the web based DICOM viewer.<br/>
-      			Get SOP Instance UIDs for given Series Instance UID.<br>
-       		]]> </description>
-      <name>getLaunchPropertiesForSeriesUID</name>
-      <parameter>
         <description>Series Instance UID</description>
         <name>seriesUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>SOP Instance UID</description>
+        <name>iuid</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>

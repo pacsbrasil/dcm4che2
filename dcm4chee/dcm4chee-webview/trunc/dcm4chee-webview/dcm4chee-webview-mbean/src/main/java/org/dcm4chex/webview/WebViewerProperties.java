@@ -45,6 +45,7 @@ import java.util.Properties;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 
 /**
  * CustomLaunchProperties Implementation.
@@ -59,6 +60,7 @@ public class WebViewerProperties implements CustomLaunchProperties {
      * @see org.dcm4chex.webview.CustomLaunchProperties#addCustomProperties(java.util.Properties, java.util.Map)
      */
     public void addCustomProperties(Properties p, Map queryResult) {
+        if ( queryResult.isEmpty()) return;
         DicomObject dcm = (DicomObject)((List) queryResult.values().iterator().next()).get(0);
         String patientName = dcm.getString(Tag.PatientName);
         if ( patientName == null ) patientName ="";
@@ -80,6 +82,9 @@ public class WebViewerProperties implements CustomLaunchProperties {
         p.setProperty("DB_LAST_NAME", lastName);
         p.setProperty("DB_SEX", sex);
         p.setProperty("DB_BIRTH_DATE", birthDate == null ? "" : birthDate);
+        if ( UID.KeyObjectSelectionDocument.equals( dcm.getString(Tag.SOPClassUID) ) ) {
+            p.setProperty("KEYNOTE", dcm.getString(Tag.SOPInstanceUID));
+        }
     }
 
     /* (non-Javadoc)

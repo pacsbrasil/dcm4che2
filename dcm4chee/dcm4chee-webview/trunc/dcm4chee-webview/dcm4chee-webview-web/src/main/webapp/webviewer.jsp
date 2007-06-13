@@ -4,8 +4,6 @@
  <%@ page import="java.util.List" %>
  <jsp:useBean id="delegate" class="org.dcm4chex.webview.WebViewDelegate" scope="request"/>
  <%
- 	if ( request.getParameter("ignorePR") != null ) delegate.setIgnorePR(new Boolean(request.getParameter("ignorePR") ) );
- 	if ( request.getParameter("selectPR") != null ) delegate.setSelectPR(new Boolean(request.getParameter("selectPR") ) );
  	Properties props = delegate.getLaunchProperties( request.getParameterMap() );
 	String mode = (String) props.remove("launchMode");
 	String key;
@@ -94,6 +92,12 @@
 %>
 <body>
 	<h1>Nothing found !!!</h1>
+</body>
+<% } else if ( "error".equals(mode) ) { 
+%>
+<body>
+	<h1><%= props.getProperty("SEVERITY") %></h1>
+	<h2><%= props.getProperty("MESSAGE") %></h2>
 </body>
 <% } %>
 </html>

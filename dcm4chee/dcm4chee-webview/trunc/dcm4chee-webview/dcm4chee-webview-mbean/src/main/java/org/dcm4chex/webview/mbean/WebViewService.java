@@ -279,6 +279,7 @@ public class WebViewService extends ServiceMBeanSupport {
         }
         launchProperties.setCustomLaunchPropertiesClass(customProps);
     }
+
     /**
      * List of applet parameters with values from a DICOM attribute of the C-FIND result.
      * <p>
@@ -305,16 +306,14 @@ public class WebViewService extends ServiceMBeanSupport {
         if ( ! keys.contains(Tag.StudyDescription)) keys.putNull(Tag.StudyDescription, null);
         return getLaunchPropertiesForQuery(keys, ignorePR, selectPR );
     }
-    public Properties getLaunchPropertiesForStudyUID(String studyUID, Boolean ignorePR, Boolean selectPR) {
+    public Properties getLaunchProperties(String studyUID, String seriesUID, String iuid, Boolean ignorePR, Boolean selectPR) {
         DicomObject keys = new BasicDicomObject();
         keys.putString(Tag.StudyInstanceUID, VR.UI, studyUID);
+        keys.putString(Tag.SeriesInstanceUID, VR.UI, seriesUID);
+        keys.putString(Tag.SOPInstanceUID, VR.UI, iuid);
         return getLaunchPropertiesForQuery(keys, ignorePR, selectPR );
     }
-    public Properties getLaunchPropertiesForSeriesUID(String seriesUID, Boolean ignorePR, Boolean selectPR) {
-        DicomObject keys = new BasicDicomObject();
-        keys.putString(Tag.SeriesInstanceUID, VR.UI, seriesUID);
-        return getLaunchPropertiesForQuery(keys, ignorePR, selectPR);
-    }
+    
     public Properties getLaunchPropertiesForPresentationState(String studyUID, String seriesUID, String instanceUID) {
         DicomObject keys = new BasicDicomObject();
         keys.putString(Tag.StudyInstanceUID, VR.UI, studyUID);
@@ -323,15 +322,26 @@ public class WebViewService extends ServiceMBeanSupport {
         keys.putNull(new int[]{ Tag.ReferencedSeriesSequence, 0, Tag.SeriesInstanceUID },VR.UI);
         addResultAttributes(keys);
         InstanceContainer results = new UIDQuery(callingAET, calledAET, host, port).query(keys);
+        InstanceContainer instances = null;
         if ( results.isEmpty() ) {
             log.info("Can't find PresentationState Object:"+instanceUID);
+        } else {
+            DicomObject prObj = (DicomObject) ((List) results.iterateSeries().next()).get(0);
+            if ( launchProperties.getPresentationStateCUIDs().containsValue( prObj.getString(Tag.SOPClassUID) ) ) {
+                instances = getPresentationStateInstanceContainer(prObj);
+            } else {
+                log.warn("Object is not a PresentationState Object:"+instanceUID);
+            }
         }
-        DicomObject prObj = (DicomObject) ((List) results.iterateSeries().next()).get(0);
-        InstanceContainer map = new InstanceContainer();
-        map.add(prObj);//the first element is the PresentationState (with all attributes)
+        return launchProperties.getProperties(instances, false, false);
+    }
+    
+    private InstanceContainer getPresentationStateInstanceContainer(DicomObject prObj) {
+        InstanceContainer instances = new InstanceContainer();
         String studyUid = prObj.getString(Tag.StudyInstanceUID);
         DicomElement serSeq = prObj.get(Tag.ReferencedSeriesSequence);
         if (serSeq != null) {
+            instances.add(prObj);//the first element is the PresentationState (with all attributes)
             DicomObject obj, imgItem, obj1;
             DicomElement imgSeq;
             String seriesUid;
@@ -346,12 +356,11 @@ public class WebViewService extends ServiceMBeanSupport {
                     obj1.putString(Tag.SeriesInstanceUID, VR.UI, seriesUid);
                     obj1.putString(Tag.SOPInstanceUID, VR.UI, imgItem.getString(Tag.ReferencedSOPInstanceUID) );
                     obj1.putString(Tag.SOPClassUID, VR.UI, imgItem.getString(Tag.ReferencedSOPClassUID) );
-                    map.add(obj1);
+                    instances.add(obj1);
                 }
             }
-            return launchProperties.getProperties(map, false, false);
         }
-        return new Properties();
+        return instances;
     }
     
     /**
@@ -389,7 +398,6 @@ public class WebViewService extends ServiceMBeanSupport {
     public void setIgnorePresentationStateForStudies(boolean ignorePresentationStateForStudies) {
         ignorePRinStudy = ignorePresentationStateForStudies;
     }
-    
     
     /**
      * @return Returns the selectMultiPR.

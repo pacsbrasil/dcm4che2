@@ -78,8 +78,10 @@ public class WebViewDelegate {
     /**
      * @param ignorePR The ignorePR to set.
      */
-    public void setIgnorePR(Boolean ignorePR) {
-        this.ignorePR = ignorePR;
+    public void setIgnorePR(String ignorePR) {
+        if ( ignorePR != null) {
+            this.ignorePR = new Boolean(ignorePR);
+        }
     }
     /**
      * @return Returns the selectPR.
@@ -90,53 +92,106 @@ public class WebViewDelegate {
     /**
      * @param selectPR The selectPR to set.
      */
-    public void setSelectPR(Boolean selectPR) {
-        this.selectPR = selectPR;
+    public void setSelectPR(String selectPR) {
+        if ( selectPR != null ) {
+            this.selectPR = new Boolean(selectPR);
+        }
     }
     
     /**
      * Get properties to launch webviewer according given http parameter map.
      * <p>
      * <dl>
-     * <dt>Supported parameter:</dt>
+     * <dt>Supported Query parameter:</dt>
      * <dd>accNr: Accession Number.</dd>
      * <dd>studyUID: Study Instance UID.</dd>
      * <dd>seriesUID: Series Instance UID.</dd>
      * <dd>prUID: SOP Instance UID of a Presentation State.</dd>
+     * <dd>instanceUID: SOP Instance UID of a DICOM object.</dd>
+     * </dl>
+     * <dl>
+     * <dt>Supported config parameter:</dt>
+     * <dd>ignorePR: overwrites ignorePR attribute of WebView Service.</dd>
+     * <dd>selectPR: overwrites selectPR attribute of WebView service.</dd>
+     * </dl>
+     * <p>
+     * The return value contains a special property 'launchMode' which indicates the meaning
+     * of the other properties.
+     * <dl>
+     * <dt>Property 'launchMode':</dt>
+     * <dd>  applet: Properties contains applet parameter. </dd>
+     * <dd>  pr_select: Properties contains a presentation state list (key=IUID/value=Description). </dd>
+     * <dd>  study_select: Properties contains list of studies(key=StudyIUID/value=Description). </dd>
+     * <dd>  empty: Properties contains only CODE and ARCHIVE. </dd>
+     * <dd>  error: Properties contains only MESSAGE and SEVERITY. </dd>
      * </dl>
      * 
      * @param paraMap
      * @return
      */
     public Properties getLaunchProperties(Map paraMap) {
-        String method;
-        String[] value;
-        if ( (value = (String[]) paraMap.get("accNr")) != null ) {
-            method = "getLaunchPropertiesForAccNr";
-        } else if ( (value = (String[]) paraMap.get("studyUID")) != null ) {
-            method = "getLaunchPropertiesForStudyUID";
-        } else if ( (value = (String[]) paraMap.get("seriesUID")) != null ) {
-            method = "getLaunchPropertiesForSeriesUID";
-        } else if ( (value = (String[]) paraMap.get("prUID")) != null ) {
-            return getLaunchPropertiesForPresentationState(null, null, value[0]);
-        } else {
-            return new Properties();
+        setIgnorePR(getValue(paraMap,"ignorePR"));
+        setSelectPR(getValue(paraMap,"selectPR"));
+
+        String accNr = getValue(paraMap, "accNr");
+        if ( accNr != null ) {
+            return getLaunchPropertiesForAccNr( accNr );
         }
-        return getLaunchProperties(method, value[0], ignorePR, selectPR);
+        String studyUID = getValue(paraMap,"studyUID");
+        String seriesUID = getValue(paraMap,"seriesUID");
+        String prUID = getValue(paraMap, "prUID");
+        if ( prUID != null ) {
+            return getLaunchPropertiesForPresentationState(studyUID, seriesUID, prUID);
+        } 
+        String iuid = getValue(paraMap, "instanceUID");
+        if ( seriesUID != null || studyUID != null || iuid != null ) {
+            return getLaunchProperties(studyUID, seriesUID, iuid);
+        } else {
+            return getErrorProperties("Missing query parameter!", "WARNING");
+        }
+    }
+        
+    private String getValue( Map paraMap, String key ) {
+        String[] value = (String[]) paraMap.get(key);
+        return value == null ? null : value[0];
     }
     
     public Properties getLaunchPropertiesForAccNr(String accNr) {
-        return getLaunchProperties("getLaunchPropertiesForAccNr", accNr, ignorePR, selectPR);
+        try {
+            if ( server == null ) init();
+            return (Properties) server.invoke(webviewName,
+                    "getLaunchPropertiesForAccNr",
+                    new Object[] { accNr, ignorePR, selectPR },
+                    new String[] { String.class.getName(), Boolean.class.getName(), Boolean.class.getName() });
+        } catch (Exception e) {
+            return getErrorProperties("Failed to get LaunchProperties for Accession Number! Exception:"+e, "ERROR");
+        }
     }
-    public Properties getLaunchPropertiesForStudyUID(String studyUID) {
-        return getLaunchProperties("getLaunchPropertiesForStudyUID",studyUID, ignorePR, selectPR);
+    public Properties getLaunchProperties(String studyUID, String seriesUID, String iuid) {
+        try {
+            if ( server == null ) init();
+            return (Properties) server.invoke(webviewName,
+                    "getLaunchProperties",
+                    new Object[] { studyUID, seriesUID, iuid, ignorePR, selectPR },
+                    new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
+                                   Boolean.class.getName(), Boolean.class.getName() });
+        } catch (Exception e) {
+            return getErrorProperties("Failed to get LaunchProperties for UIDs! Exception:"+e, "ERROR");
+        }
     }
-    public Properties getLaunchPropertiesForSeriesUID(String seriesUID) {
-        return getLaunchProperties("getLaunchPropertiesForSeriesUID",seriesUID, null, null);
-    }
+    
     public Properties getLaunchPropertiesForQuery(DicomObject keys) {
-        return getLaunchProperties("getLaunchPropertiesForQuery",keys, ignorePR, selectPR);
+        try {
+            if ( server == null ) init();
+            return (Properties) server.invoke(webviewName,
+                    "getLaunchPropertiesForQuery",
+                    new Object[] { keys, ignorePR, selectPR },
+                    new String[] { DicomObject.class.getName(), Boolean.class.getName(), Boolean.class.getName() });
+        } catch (Exception e) {
+            return getErrorProperties("Failed to get LaunchProperties for Query Dataset! Exception:"+e, "ERROR");
+        }
     }
+    
     public Properties getLaunchPropertiesForPresentationState( String studyUID, String seriesUID, String instanceUID) {
         try {
             if ( server == null ) init();
@@ -145,24 +200,15 @@ public class WebViewDelegate {
                     new Object[] { studyUID, seriesUID, instanceUID },
                     new String[] { String.class.getName(),String.class.getName(),String.class.getName() });
         } catch (Exception e) {
-            System.out.println("Failed to get LaunchProperties for PresentationState! Exception:"+e);
-            e.printStackTrace();
-            return null;
+            return getErrorProperties("Failed to get LaunchProperties for PresentationState! Exception:"+e, "ERROR");
         }
     }
      
-    public Properties getLaunchProperties( String method, Object key, Boolean ignorePR, Boolean selectPR ) {
-        try {
-            if ( server == null ) init();
-            return (Properties) server.invoke(webviewName,
-                    method,
-                    new Object[] { key, ignorePR, selectPR },
-                    new String[] { key.getClass().getName(), Boolean.class.getName(), Boolean.class.getName() });
-        } catch (Exception e) {
-            System.out.println("Failed to get LaunchProperties with method:"+ method+"! Exception:"+e);
-            return null;
-        }
-    }
-
-   
+   private Properties getErrorProperties(String msg, String severity) {
+       Properties p = new Properties();
+       p.setProperty("launchMode", "error");
+       p.setProperty("MESSAGE", msg != null ? msg : "Unknown Error!");
+       p.setProperty("SEVERITY", severity != null ? severity : "ERROR");
+       return p;
+   }
 }

@@ -59,6 +59,14 @@ public class LaunchProperties {
 
     
     public static final String PROP_LAUNCH_MODE = "launchMode";
+    public static final String PROP_CODE = "CODE";
+    public static final String PROP_ARCHIVE = "ARCHIVE";
+    public static final String PROP_MESSAGE = "MESSAGE";
+    public static final String PROP_SEVERITY = "SEVERITY";
+    public static final String SEVERITY_WARNING = "WARNING";
+    public static final String SEVERITY_ERROR = "ERROR";
+    public static final String SEVERITY_FATAL = "FATAL";
+    
     private String appletClass;
     private String appletArchive;
     private Map result2appletParameterMap = new HashMap();
@@ -226,9 +234,10 @@ public class LaunchProperties {
      * <dl>
      * <dt>Property 'launchMode':</dt>
      * <dd>  applet: Properties contains applet parameter. </dd>
-     * <dd>  pr_select: Properties contains presentation state list (key=IUID/value=Description).
-     * <dd>  study_select: Properties contains list of studies(key=StudyIUID/value=Description).
-     * <dd>  empty: Properties contains only CODE and ARCHIVE.
+     * <dd>  pr_select: Properties contains presentation state list (key=IUID/value=Description). </dd>
+     * <dd>  study_select: Properties contains list of studies(key=StudyIUID/value=Description). </dd>
+     * <dd>  empty: Properties contains only CODE and ARCHIVE. </dd>
+     * <dd>  error: Properties contains only MESSAGE and SEVERITY. </dd>
      * </dl>
      * @param map       Contains query Results (each map value is a list of DicomObject.
      * @param ignorePR  If true: Ignore DicomObjects with SOPClassUID listed in psCUIDs.
@@ -238,10 +247,10 @@ public class LaunchProperties {
      */
     public Properties getProperties( InstanceContainer results, boolean ignorePR, boolean selectPR ) {
         Properties p = new Properties();
-        p.setProperty("CODE", appletClass);
-        p.setProperty("ARCHIVE", appletArchive);
+        p.setProperty(PROP_CODE, appletClass);
+        p.setProperty(PROP_ARCHIVE, appletArchive);
         p.putAll(appletParameterMap);
-        if ( results.isEmpty() ) {
+        if ( results == null || results.isEmpty() ) {
             p.setProperty(PROP_LAUNCH_MODE, "empty");
             return p;
         } else if ( results.countStudies() > 1 ) { //more than one study found!
