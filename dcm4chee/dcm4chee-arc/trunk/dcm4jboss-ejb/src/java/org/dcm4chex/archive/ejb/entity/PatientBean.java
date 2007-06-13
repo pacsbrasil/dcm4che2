@@ -207,6 +207,15 @@ public abstract class PatientBean implements EntityBean {
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
+     * @ejb.interface-method
+     * @ejb.relation name="patient-other-pid" role-name="patient-with other-pids"
+     * @jboss.relation-table table-name="rel_pat_other_pid"
+     * @jboss.relation fk-column="patient_fk" related-pk-field="pk"     
+     */
+    public abstract java.util.Collection getOtherPatientIds();
+    public abstract void setOtherPatientIds(java.util.Collection otherPIds);
+    
+    /**
      * @return Patient, with which this Patient was merged.
      *
      * @ejb.interface-method view-type="local"

@@ -41,6 +41,22 @@ CREATE INDEX pat_p_name ON patient(pat_p_name);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 CREATE INDEX pat_sex ON patient(pat_sex);
 
+CREATE TABLE other_pid (
+	pk          	IDENTITY PRIMARY KEY,
+	pat_id         	VARCHAR(256) NOT NULL,
+	pat_id_issuer  	VARCHAR(256) NOT NULL
+);
+CREATE UNIQUE INDEX other_pat_id ON other_pid(pat_id, pat_id_issuer);
+
+CREATE TABLE rel_pat_other_pid (
+	patient_fk      INTEGER,
+	other_pid_fk    INTEGER,
+FOREIGN KEY (patient_fk) REFERENCES patient(pk),
+FOREIGN KEY (other_pid_fk) REFERENCES other_pid(pk)
+);
+CREATE INDEX other_pid_pat_fk ON rel_pat_other_pid(patient_fk);
+CREATE INDEX pat_other_pid_fk ON rel_pat_other_pid(other_pid_fk);
+
 CREATE TABLE study (
 	pk              IDENTITY PRIMARY KEY,
 	patient_fk      INTEGER,
