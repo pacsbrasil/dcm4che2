@@ -55,10 +55,16 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     <title>Xero Image Frame</title>
     <x:callTemplates from="#{pageConfig}" mode="script" />
   </head>
-  <body style="background: black; color: white;" >
-  <div id="body">
+  <body style="background: black; color: white;"
+    onmousemove="return imageHandler.mouseMove(event);"
+    onmouseout="return imageHandler.mouseOut(event);"
+    onmouseup="return imageHandler.mouseUp(event);"
+  >
+   <div id="body">
     <x:callTemplates from="#{pageConfig}" mode="body" />
-  </div>
+    <div id="debug">Debug info</div> <br />
+    <div id="debugAjax">Debug AJAX</div>
+   </div>
   </body>
 </html>
 </x:template>

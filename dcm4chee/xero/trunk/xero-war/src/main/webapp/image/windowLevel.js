@@ -112,7 +112,7 @@ function wlUpdateOtherDisplay(isDone) {
 	}
 };
 
-var windowLevelHandler;
+var windowLevelHandler = new ImageEvent();
 
 /** Initialize the window level */
 function initWindowLevel() {

@@ -11,7 +11,7 @@
   <page view-id="/search/search.xhtml" action="#{SearchPageAction.search}">
     <navigation from-action="#{SearchPageAction.search}">
       <rule if-outcome="Add">
-         <redirect view-id="/cycle/cycleFrame.xhtml" />
+         <redirect view-id="/cycle/cycleFrame.seam" />
       </rule>
       <rule if-outcome="View">
          <redirect view-id="/study/patientFrame.xhtml">

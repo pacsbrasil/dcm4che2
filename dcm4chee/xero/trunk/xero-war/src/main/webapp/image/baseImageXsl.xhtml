@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 	 The base image contains the code to generate the current image to display.
 -->
@@ -8,7 +7,7 @@
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:m="http://www.dcm4che.org/xero/metadata/display/BaseImage"
-   m:includeXsl="/xero/image/baseImageXsl.xsl"
+   m:includeXsl="/image/baseImageXsl.xhtml"
 >
 
 <x:template name="miscLayout" mode="layout" match="*">
@@ -284,9 +283,6 @@
    </xsl:if>  
    <xsl:if test="@handler">
     <xsl:attribute name="onmousedown">return <xsl:value-of select="@handler"/>.mouseDown(event);</xsl:attribute>
-    <xsl:attribute name="onmousemove">return <xsl:value-of select="@handler"/>.mouseMove(event);</xsl:attribute>
-    <xsl:attribute name="onmouseout">return <xsl:value-of select="@handler"/>.mouseOut(event);</xsl:attribute>
-    <xsl:attribute name="onmouseup">return <xsl:value-of select="@handler"/>.mouseUp(event);</xsl:attribute>
    </xsl:if>
  </xsl:if>
 </x:template>

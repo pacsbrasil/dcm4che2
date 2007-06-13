@@ -52,25 +52,32 @@ function ImageEvent() {
  */
 ImageEvent.prototype.mouseDown = function (evt) {
   if( this.mousing ) return;
+  if( evt==null ) evt = window.event;
   if( !isLeftMouse(evt) ) return;
-  this.imageNode = evt.target;
-  this.actionId = evt.target.id;
+  this.imageNode = target(evt);
+  this.debug = document.getElementById("debug");
+  this.debugAjax = document.getElementById("debugAjax");
+  if( !this.imageNode ) {
+  	if( this.debug ) this.debug.innerHTML = "No image node.";
+  }
+  this.actionId = this.imageNode.id;
   this.startX = evt.clientX;
   this.startY = evt.clientY;
   this.mousing = this.startLeft(evt.clientX, evt.clientY);
   if( this.mousing ) {
+  	imageHandler = this;
     if( evt.preventDefault ) {
        evt.preventDefault();
     }
     else if( this.body.setCapture ) {
+      if( this.debug ) this.debug.innerHTML="Set capture mode.";
       this.body.setCapture();
     }
   }
-  this.debug = document.getElementById("debug");
-  this.debugAjax = document.getElementById("debugAjax");
   if( this.debugAjax ) {
-  	this.debugAjax.innerHTML = "mouseDown";
+  	this.debugAjax.innerHTML = "mouseDown mousing "+this.mousing;
   }
+  return false;
 };
 
 /** Empty event - just return false */
@@ -105,6 +112,7 @@ ImageEvent.prototype.mouseUp = function (evt) {
  * Handles the move move event by calling updateModel and updateScreen
  */
 ImageEvent.prototype.mouseMove = function wlMouseMove(evt) {
+  if( this.debug ) this.debug.innerHTML = "Move move.";
   if(this.mousing ) {
     this.updateModel(evt.clientX, evt.clientY);
     this.updateScreen(false);

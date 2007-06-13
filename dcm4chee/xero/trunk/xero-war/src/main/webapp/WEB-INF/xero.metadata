@@ -25,16 +25,16 @@ tabs.xsl=tabsXsl.xsl
 
 # Cycle 
 cycle.xsl=cycleXsl.xsl
-cycle.tableLayout.includeXsl=../table/tableXsl.xsl
-cycle.typeOutput.includeXsl=../types/typeOutput.xsl
+cycle.tableLayout.includeXsl=/table/tableXsl.xhtml
+cycle.typeOutput.includeXsl=/types/typeOutput.xhtml
 
 #Cycle Frame
 cycleFrame.xsl=cycleFrameXsl.xsl
 
 # Patient list on list page
 patient.xsl=patientXsl.xsl
-patient.tableLayout.includeXsl=../table/tableXsl.xsl
-patient.typeOutput.includeXsl=../types/typeOutput.xsl
+patient.tableLayout.includeXsl=/table/tableXsl.xhtml
+patient.typeOutput.includeXsl=/types/typeOutput.xhtml
 
 
 # Converters for one type to another

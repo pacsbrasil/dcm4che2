@@ -62,6 +62,17 @@ function findCoords(e) {
    }
 };
 
+/** Get the target of the event */
+function target(e) {
+	var targ;
+	if( !e ) var e = window.event;
+	if ( e.target ) targ = e.target;
+	else if (e.srcElement) targ = e.srcElement;
+	if( targ.nodeType == 3 ) // defeat Safari bug
+	  targ = targ.parentNode;
+	return targ;
+}
+
 /** Adds the given event to the given element.  Works in IE, Firefox, Konqueror, Opera, and Safari.
  * @param elm is the element node or id to add an event to.
  * @param evType is the type to add a listener for
