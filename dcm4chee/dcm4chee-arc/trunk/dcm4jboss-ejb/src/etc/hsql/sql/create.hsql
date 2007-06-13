@@ -123,6 +123,9 @@ CREATE TABLE series (
 	series_iuid     VARCHAR(256) NOT NULL,
 	series_no		VARCHAR(256),
 	modality		VARCHAR(256),
+	body_part		VARCHAR(256),
+	laterality		VARCHAR(256),
+	series_desc		VARCHAR(256),
 	institution		VARCHAR(256),
 	department		VARCHAR(256),
 	pps_start		TIMESTAMP,
@@ -146,6 +149,9 @@ CREATE INDEX series_mpps_fk ON series(mpps_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);
+CREATE INDEX body_part ON series(body_part);
+CREATE INDEX laterality ON series(laterality);
+CREATE INDEX series_desc ON series(series_desc);
 CREATE INDEX institution ON series(institution);
 CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);

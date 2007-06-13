@@ -3,6 +3,14 @@
 ALTER TABLE ae ADD pat_id_issuer VARCHAR(250) BINARY;
 ALTER TABLE ae ADD ae_desc VARCHAR(250) BINARY;
 
+ALTER TABLE series ADD body_part VARCHAR(250) BINARY;
+ALTER TABLE series ADD laterality VARCHAR(250) BINARY;
+ALTER TABLE series ADD series_desc VARCHAR(250) BINARY;
+
+CREATE INDEX body_part ON series(body_part(16));
+CREATE INDEX laterality ON series(laterality(16));
+CREATE INDEX series_desc ON series(series_desc(64));
+
 DROP INDEX mwl_sps_id ON mwl_item;
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));
 

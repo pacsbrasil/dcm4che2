@@ -40,8 +40,6 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.util.Collection;
-//import java.util.HashSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -59,7 +57,6 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
@@ -226,6 +223,36 @@ public abstract class SeriesBean implements EntityBean {
 
     public abstract void setModality(String md);
 
+    /**
+     * Body Part Examined
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="body_part"
+     */
+    public abstract String getBodyPartExamined();
+
+    public abstract void setBodyPartExamined(String bodyPart);
+
+    /**
+     * Laterality
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="laterality"
+     */
+    public abstract String getLaterality();
+
+    public abstract void setLaterality(String laterality);
+
+    /**
+     * Series Description
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="series_desc"
+     */
+    public abstract String getSeriesDescription();
+
+    public abstract void setSeriesDescription(String description);
+    
     /**
      * Department Name
      *
@@ -670,6 +697,9 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
+        setBodyPartExamined(ds.getString(Tags.Laterality));
+        setLaterality(ds.getString(Tags.Laterality));
+        setSeriesDescription(toUpperCase(ds.getString(Tags.SeriesDescription)));
         setInstitutionName(toUpperCase(ds.getString(Tags.InstitutionName)));
         setInstitutionalDepartmentName(
                 toUpperCase(ds.getString(Tags.InstitutionalDepartmentName)));
