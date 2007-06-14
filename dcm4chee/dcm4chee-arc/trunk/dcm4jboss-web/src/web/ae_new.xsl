@@ -66,6 +66,18 @@
 							</xsl:call-template>
 				        </td>
 					</tr>
+					<tr>				        
+						<td width="50">Issuer</td>														
+				        <td title="Issuer of patient ID">
+			                <input size="25" name="issuerOfPatientID" type="text" value=""/>
+				        </td>
+					</tr>
+					<tr>				        
+						<td width="50">Description</td>														
+				        <td title="Description">
+			                <input size="25" name="description" type="text" value=""/>
+				        </td>
+					</tr>
 					<tr>
 						<td colspan="2">
 							<center>
