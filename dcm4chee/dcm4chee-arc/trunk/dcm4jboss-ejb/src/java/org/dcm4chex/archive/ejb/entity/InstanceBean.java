@@ -610,7 +610,7 @@ public abstract class InstanceBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
         }
     }

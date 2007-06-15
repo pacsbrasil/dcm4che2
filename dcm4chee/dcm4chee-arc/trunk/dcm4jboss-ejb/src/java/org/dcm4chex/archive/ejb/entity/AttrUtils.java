@@ -136,14 +136,14 @@ class AttrUtils {
         return true;
     }
     
-    public static boolean updateAttributes(Dataset oldAttrs, Dataset newAttrs,
+    public static boolean mergeAttributes(Dataset oldAttrs, Dataset newAttrs,
             Logger log) {
         boolean updateEntity = false;
         for (Iterator it = newAttrs.iterator(); it.hasNext();) {
             DcmElement dsEl = (DcmElement) it.next();
             final int tag = dsEl.tag();
             final int vr = dsEl.vr();
-            final int vm = dsEl.countItems();
+            final int numItems = dsEl.countItems();
             if (Tags.isPrivate(tag) || dsEl.isEmpty())
                 continue;            
             DcmElement refEl = oldAttrs.get(tag);
@@ -153,12 +153,12 @@ class AttrUtils {
                 {
                    log.info("Update stored objects with additional element/value from new received object- " + dsEl);
                    refEl = oldAttrs.putSQ(tag);
-                   for (int i = 0; i < vm; i++)
+                   for (int i = 0; i < numItems; i++)
                          refEl.addItem(dsEl.getItem());
                     updateEntity = true;
-                } else if (refEl.countItems() == vm) {
-                    for (int i = 0; i < vm; i++)
-                        if (updateAttributes(refEl.getItem(), dsEl.getItem(), log))
+                } else if (refEl.countItems() == numItems) {
+                    for (int i = 0; i < numItems; i++)
+                        if (mergeAttributes(refEl.getItem(), dsEl.getItem(), log))
                             updateEntity = true;
                 }
             } else if (refEl == null || refEl.isEmpty())
@@ -167,7 +167,7 @@ class AttrUtils {
                 if (dsEl.hasDataFragments()) {
                       
                     refEl = oldAttrs.putXXsq(tag, vr);
-                      for (int i = 0; i < vm; i++)
+                      for (int i = 0; i < numItems; i++)
                           refEl.addDataFragment(dsEl.getDataFragment(i));
                 } else {
                     oldAttrs.putXX(tag, vr, dsEl.getByteBuffer());
@@ -178,4 +178,40 @@ class AttrUtils {
         return updateEntity;
     }
 
+    public static boolean updateAttributes(Dataset oldAttrs, Dataset newAttrs,
+            Logger log) {
+        boolean updateEntity = false;
+        for (Iterator it = newAttrs.iterator(); it.hasNext();) {
+            DcmElement dsEl = (DcmElement) it.next();
+            final int tag = dsEl.tag();
+            DcmElement refEl = oldAttrs.get(tag);
+            if (dsEl.equals(refEl)) {
+                continue;
+            }
+            if (refEl == null || refEl.isEmpty()) {
+                log.info("Add " + dsEl);
+            } else {
+                log.info("Change " + refEl + " to " + dsEl);                
+            }
+            final int vr = dsEl.vr();
+            final int numItems = dsEl.countItems();
+            if (dsEl.isEmpty()) {
+                oldAttrs.putXX(tag, vr);
+            } else if (dsEl.hasItems()) {
+                refEl = oldAttrs.putSQ(tag);
+                for (int i = 0; i < numItems; i++) {
+                    refEl.addItem(dsEl.getItem());
+                }
+            } else if (dsEl.hasDataFragments()) {
+                refEl = oldAttrs.putXXsq(tag, vr);
+                for (int i = 0; i < numItems; i++) {
+                    refEl.addDataFragment(dsEl.getDataFragment(i));
+                }
+            } else {
+                oldAttrs.putXX(tag, vr, dsEl.getByteBuffer());
+            }
+            updateEntity = true;
+        }
+        return updateEntity;
+    }
 }

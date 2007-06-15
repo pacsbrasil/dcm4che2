@@ -108,6 +108,8 @@ public abstract class PatientBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(PatientBean.class);
 
+    private static final int[] OTHER_PID_SQ = { Tags.OtherPatientIDSeq};
+
     private OtherPatientIDLocalHome opidHome;
 
     public void setEntityContext(EntityContext ctx) {
@@ -449,8 +451,18 @@ public abstract class PatientBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log) || b) {
+        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log) || b) {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        }
+    }
+    /**
+     * @ejb.interface-method
+     */
+    public void updateAttributes(Dataset ds) {
+        Dataset attrs = getAttributes(false);
+        boolean b = updateOtherPatientIds(attrs, ds);
+        if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), log) || b) {
+            setAttributes(attrs);
         }
     }
 
@@ -470,10 +482,9 @@ public abstract class PatientBean implements EntityBean {
                 opidsq.addItem(nopid);
                 getOtherPatientIds().add(opidHome.valueOf(nopid));
                 update = true;
-                log.info("Update stored object with additional Other Patient ID: "
+                log.info("Add additional Other Patient ID: "
                         + nopid.getString(Tags.PatientID) + "^^^"
-                        +  nopid.getString(Tags.IssuerOfPatientID)
-                        + " from new received object");
+                        +  nopid.getString(Tags.IssuerOfPatientID));
             }
         }
         return update;

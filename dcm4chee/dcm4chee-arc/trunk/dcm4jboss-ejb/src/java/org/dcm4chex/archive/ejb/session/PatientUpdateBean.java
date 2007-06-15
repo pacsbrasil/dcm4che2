@@ -178,19 +178,13 @@ public abstract class PatientUpdateBean implements SessionBean {
             if (c.size() > 1) { throw new FinderException("Patient ID[id="
                     + pid + ",issuer=" + issuer + " ambiguous"); }
             PatientLocal pat = (PatientLocal) c.iterator().next();
-            update(pat, ds);
+            pat.updateAttributes(ds);
             return pat;
         } catch (FinderException e) {
             throw new EJBException(e);
         } catch (CreateException e) {
             throw new EJBException(e);
         }
-    }
-
-    private void update(PatientLocal pat, Dataset attrs) {
-        Dataset ds = pat.getAttributes(false);
-        ds.putAll(attrs);
-        pat.setAttributes(ds);
     }
 
     /**

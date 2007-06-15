@@ -470,7 +470,7 @@ public abstract class SeriesBean implements EntityBean {
         } else {
             String cuid = newAttrs.getString(Tags.SOPClassUID);
             AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
-            if ( AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
+            if ( AttrUtils.mergeAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
                 setAttributes(oldAttrs);
             }
         }
@@ -731,7 +731,7 @@ public abstract class SeriesBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-        if (AttrUtils.updateAttributes(attrs, filter.filter(ds), log)) {
+        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
         }
     }

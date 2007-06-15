@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:variable name="ssn-issuer">SSN</xsl:variable>
   <xsl:template name="attr">
     <xsl:param name="tag"/>
     <xsl:param name="vr"/>
@@ -188,5 +189,21 @@
       <xsl:with-param name="tag" select="'00101060'"/>
       <xsl:with-param name="xpn" select="field[6]"/>
     </xsl:call-template>
+    <!-- Map SSN Number to Other Patient ID Sequence Item -->
+    <xsl:variable name="ssn" select="field[19]"/>
+    <xsl:if test="$ssn">
+      <attr tag="00101002" vr="SQ">
+        <item>
+          <!-- Patient ID -->
+          <attr tag="00100020" vr="LO">
+            <xsl:value-of select="$ssn"/>
+          </attr>
+          <!-- Issuer Of Patient ID -->
+          <attr tag="00100021" vr="LO">
+            <xsl:value-of select="$ssn-issuer"/>
+          </attr>
+        </item>
+      </attr>
+    </xsl:if>    
   </xsl:template>
 </xsl:stylesheet>
