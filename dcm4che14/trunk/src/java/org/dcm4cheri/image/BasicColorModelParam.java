@@ -79,6 +79,7 @@ package org.dcm4cheri.image;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
@@ -91,6 +92,8 @@ import org.dcm4che.image.ColorModelParam;
 abstract class BasicColorModelParam
     implements ColorModelParam
 {
+	private static final Logger log = Logger.getLogger(BasicColorModelParam.class);   
+
     protected final int dataType;
     protected final int size;
     protected final int bits;
@@ -123,6 +126,7 @@ abstract class BasicColorModelParam
             min = -max;
         }
         shiftmask = 32 - bits;
+        log.debug("max="+max+" min="+min+" bits="+bits+" hBit="+hBit+" size="+size);
     }
 
     protected BasicColorModelParam(BasicColorModelParam other)

@@ -237,6 +237,7 @@ public class DcmImageReader extends ImageReader {
         this.height = theDataset.getInt(Tags.Rows, 0);
         this.samplesPerPixel = theDataset.getInt(Tags.SamplesPerPixel, 1);
         this.pmi = theDataset.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
+        log.debug("Samples per pixel is "+this.samplesPerPixel +" " + this.pmi + " for size "+this.width+","+this.height);
         this.planes = theDataset.getInt(Tags.PlanarConfiguration, 0);
         this.aspectRatio = width * pixelRatio() / height;
 
@@ -458,9 +459,24 @@ public class DcmImageReader extends ImageReader {
 			return bi;
 		final WritableRaster raster = bi.getRaster();
 		DataBuffer db = raster.getDataBuffer();
-		if (!(db instanceof DataBufferUShort))
-			return bi;
-        short[] data = ((DataBufferUShort) db).getData();
+		if (db instanceof DataBufferUShort)
+          return adjustUShortBufferedImage(bi, readParam, autoWindowing, raster, db);
+		else if (db instanceof DataBufferByte)
+	          return adjustByteBufferedImage(bi, readParam, autoWindowing, raster, db);
+		else return bi;
+	}
+
+	/**
+	 * Adjusts the window level automatically for byte data, also performing the masking if appropriate.
+	 * @param bi
+	 * @param readParam
+	 * @param autoWindowing
+	 * @param raster
+	 * @param db
+	 * @return buffered image with a modified window level.
+	 */
+	private BufferedImage adjustByteBufferedImage(BufferedImage bi, DcmImageReadParam readParam, final boolean autoWindowing, final WritableRaster raster, DataBuffer db) {
+		byte[] data = ((DataBufferByte) db).getData();
         final int mask = -1 >>> (32 - stored);
         if (!autoWindowing) {
 	        for (int i = 0; i < data.length; i++)
@@ -472,15 +488,20 @@ public class DcmImageReader extends ImageReader {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         int val;
+        int signBit = 1 << (stored-1);
         if (readParam.isMaskPixelData()) {
 	        for (int i = 0; i < data.length; i++) {
-	            val = (data[i] &= mask) | sign;
+	            data[i] &= mask;
+	            // The extra &= is required because the one above is on SHORT data type not int.
+	            val = (data[i] & mask);
+	            if( (val & signBit) !=0 ) val |= sign;
 	            if (val < min) min = val;
 	            if (val > max) max = val;	            	
 	        }
         } else {
 	        for (int i = 0; i < data.length; i++) {
-	            val = (data[i] & mask) | sign;
+	            val = (data[i] & mask);
+	            if( (val & signBit) == signBit ) val |= sign;
 	            if (val < min) min = val;
 	            if (val > max) max = val;	            	
 	        }        	
@@ -488,6 +509,55 @@ public class DcmImageReader extends ImageReader {
         final float w = (max - min) * cmParam.getRescaleSlope();
         final float c = ((max + min) / 2) * cmParam.getRescaleSlope()
         								+ cmParam.getRescaleIntercept();
+        log.debug("auto c,w="+c+","+w+" min,max="+min+","+max+" mask="+mask+" sign="+sign);
+        ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam.isInverse()));
+		return new BufferedImage(cm, raster, false, null);
+	}
+
+	/**
+	 * Does auto windowing level and mask on unsigned unsigned short images.
+	 * @param bi
+	 * @param readParam
+	 * @param autoWindowing
+	 * @param raster
+	 * @param db
+	 * @return Auto-window levelled image.
+	 */
+	private BufferedImage adjustUShortBufferedImage(BufferedImage bi, DcmImageReadParam readParam, final boolean autoWindowing, final WritableRaster raster, DataBuffer db) {
+		short[] data = ((DataBufferUShort) db).getData();
+        final int mask = -1 >>> (32 - stored);
+        if (!autoWindowing) {
+	        for (int i = 0; i < data.length; i++)
+	            data[i] &= mask;
+	        return bi;
+        }
+        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ?
+        		0 : ~mask;
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        int val;
+        int signBit = 1 << (stored-1);
+        if (readParam.isMaskPixelData()) {
+	        for (int i = 0; i < data.length; i++) {
+	            data[i] &= mask;
+	            // The extra &= is required because the one above is on SHORT data type not int.
+	            val = (data[i] & mask);
+	            if( (val & signBit) !=0 ) val |= sign;
+	            if (val < min) min = val;
+	            if (val > max) max = val;	            	
+	        }
+        } else {
+	        for (int i = 0; i < data.length; i++) {
+	            val = (data[i] & mask);
+	            if( (val & signBit) == signBit ) val |= sign;
+	            if (val < min) min = val;
+	            if (val > max) max = val;	            	
+	        }        	
+        }
+        final float w = (max - min) * cmParam.getRescaleSlope();
+        final float c = ((max + min) / 2) * cmParam.getRescaleSlope()
+        								+ cmParam.getRescaleIntercept();
+        log.debug("auto w,c="+w+","+c+" min,max="+min+","+max+" mask="+mask+" sign="+sign);
         ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam.isInverse()));
 		return new BufferedImage(cm, raster, false, null);
 	}

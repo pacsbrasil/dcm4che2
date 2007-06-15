@@ -38,6 +38,7 @@
 
 package org.dcm4cheri.image;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelFactory;
@@ -52,7 +53,8 @@ import java.util.WeakHashMap;
  * @version 1.0.0
  */
 public class ColorModelFactoryImpl extends ColorModelFactory {
-   private static final WeakHashMap cache = new WeakHashMap();
+	private static final Logger log = Logger.getLogger(ColorModelFactoryImpl.class);
+	private static final WeakHashMap cache = new WeakHashMap();
    
    private final static byte[] P2D_IDENTITY = new byte[256];
    static { for (int i = 0; i < 256; ++i) P2D_IDENTITY[i] = (byte)i; }
@@ -62,6 +64,7 @@ public class ColorModelFactoryImpl extends ColorModelFactory {
    }
    
    public ColorModel getColorModel(ColorModelParam param) {
+	  log.debug("Getting a color model from "+param);
       if (!param.isCacheable()) {
          return param.newColorModel();
       }

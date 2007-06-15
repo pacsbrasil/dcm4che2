@@ -38,6 +38,7 @@
 
 package org.dcm4cheri.image;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
@@ -53,7 +54,7 @@ import java.util.Arrays;
  * @version 1.0.0
  */
 final class PaletteColorParam extends BasicColorModelParam {
-    
+	private static final Logger log = Logger.getLogger(PaletteColorParam.class);
     private final byte[] r,g,b;
 
     /** Creates a new instance of PaletteColorParam */
@@ -75,6 +76,7 @@ final class PaletteColorParam extends BasicColorModelParam {
     }
 
     public ColorModel newColorModel() {
+    	log.info("Creatinga  plaett color model.");
         return new IndexColorModel(bits, size, r, g, b);
     }
     

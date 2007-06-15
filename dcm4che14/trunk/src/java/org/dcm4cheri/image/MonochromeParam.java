@@ -38,6 +38,7 @@
 
 package org.dcm4cheri.image;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.image.ColorModelParam;
@@ -52,7 +53,7 @@ import java.util.Arrays;
  * @version 1.0.0
  */
 final class MonochromeParam extends BasicColorModelParam  {
-   
+   private static final Logger log = Logger.getLogger(MonochromeParam.class);   
    
    private final int inverse;
    private final float slope, intercept;
@@ -80,7 +81,15 @@ final class MonochromeParam extends BasicColorModelParam  {
       throw new IllegalArgumentException("pv2dll length: " + len);
    }
    
-   /** Creates a new instance of MonochromeParam */
+   /** Creates a new instance of MonochromeParam
+    * @param ds is the dicom data set header
+    * @param inverse1 is true if the is MONOCHROME1 
+    * @param pv2dll is the p-value to digital driving level LUT
+    * 	This had better either match the number of pixel values, OR
+    *   it needs to be sized as a power of 2.  It does NOT need to 
+    *   otherwise match the number of pixel values (that is, a 256 element
+    *   table works just fine for 12 bit data)
+    */
    public MonochromeParam(Dataset ds, boolean inverse1, byte[] pv2dll) {
       super(ds);
       this.inverse = inverse1 ? -1 : 0;
@@ -95,7 +104,10 @@ final class MonochromeParam extends BasicColorModelParam  {
       }
       this.pv2dll = pv2dll;
       this.pvBits = inBits(pv2dll.length);
+      // Exclude all high-bit data (overlays typically)
       this.andmask = (1<<pvBits)-1;
+      // Correct the number of bits to agree with how many values are
+      // avaialble in pv2dll.
       if (bits > pvBits) {
          this.rshift = bits - pvBits;           
          this.lshift = 0;
@@ -225,54 +237,63 @@ final class MonochromeParam extends BasicColorModelParam  {
    }
    
    public ColorModel newColorModel() {
+      // This won't work if there is an actual LUT for the modality LUT
       int[] cmap = new int[size];
+      float centerV, widthV;
       if (getNumberOfWindows() == 0) {
-         if (min == 0) {
-            for (int i = 0; i < size; ++i) {
-               cmap[i] = toARGB(pv2dll[(((i>>rshift)<<lshift) ^ inverse) & andmask]);
-            }
-         } else {
-            for (int i = 0, j = size>>1; j < size; ++j,++i) {
-               cmap[i] = toARGB(pv2dll[(((j>>rshift)<<lshift) ^ inverse) & andmask]);
-               cmap[j] = toARGB(pv2dll[(((i>>rshift)<<lshift) ^ inverse) & andmask]);
-            }
-         }
+    	  centerV = slope*(max + min)/2f+intercept;
+    	  widthV = (max-min) * slope;
       } else {
-         createCMAP(cmap, (int)((center[0] - intercept)/slope),
-            (int)(width[0]/slope));
+    	  centerV = center[0];
+    	  widthV = width[0];
       }
+      log.debug("window level "+centerV+","+widthV + " intercept, slope="+intercept+","+slope + " isInverse "+isInverse());
+      createCMAP(cmap, (centerV - intercept)/slope,widthV/slope);
       return new IndexColorModel(bits, size, cmap, 0, false, -1, dataType);
    }
    
-   private void createCMAP(int[] cmap, int c, int w) {
-      int u = c - (w>>1);
+   /** Create a colour map to digital driving levels
+    * 
+    * @param cmap is the map to fill
+    * @param c is the center
+    * @param w is the width
+    */
+   private void createCMAP(int[] cmap, float c, float wFlt) {
+	  // w is ok as an int here, as the width should be integral
+	  int w = (int) wFlt;
+      int u = (int) (c - (wFlt/2));
       int o = u + w;
+	  log.debug("cmap c,w="+c+","+w+" u,o="+u+","+o+" inverse="+inverse);
       int cmin = toARGB(pv2dll[0]);
       int cmax = toARGB(pv2dll[pv2dll.length-1]);
+      // For some reason, the image data on MONOCHROME1 already appears to be inverted correctly...
+      int useInverse = 0;
       if (u > 0) {
          Arrays.fill(cmap, 0, Math.min(u,max),
-            inverse == 0 ? cmin : cmax);
+            useInverse == 0 ? cmin : cmax);
       }
       if (o < max) {
          Arrays.fill(cmap, Math.max(0,o), max,
-            inverse == 0 ? cmax : cmin);
+            useInverse == 0 ? cmax : cmin);
       }
       for (int i = Math.max(0,u), n = Math.min(o,max); i < n; ++i) {
-         cmap[i] = toARGB(pv2dll[(((i-u)<<pvBits) / w ^ inverse) & andmask]);
+         cmap[i] = toARGB(pv2dll[(((i-u)<<pvBits) / w ^ useInverse) & andmask]);
+         //if( (i % 120) == 0 ) log.info("cmap["+i+"]="+(cmap[i] & 0xFF) );
       }
       if (min == 0) {
          return; // all done for unsigned px val
       }
       if (u > min) {
          Arrays.fill(cmap, size>>1, Math.min(u+size, size),
-            inverse == 0 ? cmin : cmax);
+            useInverse == 0 ? cmin : cmax);
       }
       if (o < 0) {
          Arrays.fill(cmap, Math.max(o+size,size>>1), size,
-            inverse == 0 ? cmax : cmin);
+            useInverse == 0 ? cmax : cmin);
       }
       for (int i = Math.max(min,u), n = Math.min(o,0); i < n; ++i) {
-         cmap[i+size] = toARGB(pv2dll[(((i-u)<<pvBits) / w ^ inverse) & andmask]);
+         cmap[i+size] = toARGB(pv2dll[(((i-u)<<pvBits) / w ^ useInverse) & andmask]);
+         //if( i % 120 == 0 ) log.info("cmap["+(i+size)+"]="+(cmap[i+size] & 0xFF) );
       }
    }
 }
