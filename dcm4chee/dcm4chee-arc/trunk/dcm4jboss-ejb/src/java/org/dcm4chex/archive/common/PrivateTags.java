@@ -55,4 +55,5 @@ public class PrivateTags {
     public static final int CallingAET = 0x00430014;
     public static final int CalledAET = 0x00430015;
     public static final int WorkItemSeq = 0x00430020;
+    public static final int TianiURIReferencedTransferSyntaxUID = 0x00430030;
 }

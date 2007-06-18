@@ -577,6 +577,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     }
                     fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
                     ds = fileDS;
+                } else {
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                    String tsuid = ds.getString(
+                            PrivateTags.TianiURIReferencedTransferSyntaxUID,
+                            UIDs.ImplicitVRLittleEndian);
+                    ds.setFileMetaInfo(objFact.newFileMetaInfo(
+                            rqCmd.getAffectedSOPClassUID(),
+                            rqCmd.getAffectedSOPInstanceUID(),
+                            tsuid));
                 }
             } else {
                 fsDTO = service.selectStorageFileSystem();
