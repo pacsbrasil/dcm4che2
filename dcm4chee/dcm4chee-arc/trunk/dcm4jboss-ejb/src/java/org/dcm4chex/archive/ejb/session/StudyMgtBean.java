@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -145,60 +144,39 @@ public abstract class StudyMgtBean implements SessionBean {
 	}
 	
 	/**
-     * @ejb.interface-method
-     */
-	public void createStudy(Dataset ds) throws DcmServiceException {
-		try {
-			checkDuplicateStudy(ds.getString(Tags.StudyInstanceUID));
-			studyHome.create(ds, getPatient(ds));
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
+	 * @ejb.interface-method
+         */
+	public void createStudy(Dataset ds)
+                throws DcmServiceException, CreateException, FinderException {
+            checkDuplicateStudy(ds.getString(Tags.StudyInstanceUID));
+            studyHome.create(ds, findOrCreatePatient(ds));
 	}
 
-	private PatientLocal getPatient(Dataset ds) throws DcmServiceException {
-		String pid = ds.getString(Tags.PatientID);
-		String issuer = ds.getString(Tags.IssuerOfPatientID);
-		try {
-			Collection c = issuer != null 
-					? patHome.findByPatientIdWithIssuer(pid, issuer)
-					: patHome.findByPatientId(pid);
-			final int n = c.size();
-			switch (n) {
-			case 0:
-				return patHome.create(ds);
-			case 1:
-				return (PatientLocal) c.iterator().next();
-			default:
-				throw new DcmServiceException(Status.ProcessingFailure,
-						"Found " + n + " Patients with id=" + pid
-						+ ", issuer=" + issuer);					
-			}
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
+	private PatientLocal findOrCreatePatient(Dataset ds)
+	        throws FinderException, CreateException  {
+	    try {
+	        return patHome.searchFor(ds, true);
+	    } catch (ObjectNotFoundException onfe) {
+	        return patHome.create(ds);
+	    }           
 	}
-
+        
 	private void checkDuplicateStudy(String suid) 
-			throws FinderException, DcmServiceException {
-		try {
-                    studyHome.findByStudyIuid(suid);
-			throw new DcmServiceException(Status.DuplicateSOPInstance, suid);
-		} catch (ObjectNotFoundException e) {
-		}
+	        throws FinderException, DcmServiceException {
+	    try {
+	        studyHome.findByStudyIuid(suid);
+	        throw new DcmServiceException(Status.DuplicateSOPInstance, suid);
+	    } catch (ObjectNotFoundException e) {
+	    }
 	}
 	
 	private StudyLocal getStudy(String suid) 
-			throws FinderException, DcmServiceException {
-		try {
-			return studyHome.findByStudyIuid(suid);
-		} catch (ObjectNotFoundException e) {
-			throw new DcmServiceException(Status.NoSuchObjectInstance, suid);
-		}
+	        throws FinderException, DcmServiceException {
+	    try {
+	        return studyHome.findByStudyIuid(suid);
+	    } catch (ObjectNotFoundException e) {
+	        throw new DcmServiceException(Status.NoSuchObjectInstance, suid);
+	    }
 	}
 	
 	/**

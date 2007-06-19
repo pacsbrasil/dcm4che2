@@ -47,6 +47,7 @@ import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -64,7 +65,11 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal;
 import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.exceptions.CircularMergedException;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
+import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -112,9 +117,12 @@ public abstract class PatientBean implements EntityBean {
 
     private OtherPatientIDLocalHome opidHome;
 
+    private EntityContext ctx;
+
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
+            this.ctx = ctx;
             jndiCtx = new InitialContext();
             opidHome = (OtherPatientIDLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/OtherPatientID");
@@ -131,6 +139,7 @@ public abstract class PatientBean implements EntityBean {
     }
 
     public void unsetEntityContext() {
+        ctx = null;
         opidHome = null;
     }
 
@@ -272,7 +281,6 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract void setMergedWith(PatientLocal mergedWith);
 
-
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="merged-patients"
@@ -391,6 +399,52 @@ public abstract class PatientBean implements EntityBean {
         }
     }
 
+    /**
+     * @ejb.home-method
+     */
+    public PatientLocal ejbHomeSearchFor(Dataset ds, boolean followMergedWith)
+            throws FinderException {
+        String pid = ds.getString(Tags.PatientID);
+        String issuer = ds.getString(Tags.IssuerOfPatientID);
+        PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
+        Collection c = issuer == null ? patHome .findByPatientId(pid)
+                : patHome.findByPatientIdWithIssuer(pid, issuer);
+
+        if (c.isEmpty()) {
+            throw new ObjectNotFoundException();
+        }
+        if (c.size() > 1) { 
+            throw new NonUniquePatientException("Patient ID[id="
+                    + pid + ",issuer=" + issuer + " ambiguous"); }
+        PatientLocal pat = (PatientLocal) c.iterator().next();
+        PatientLocal merged = pat.getMergedWith();
+        if (merged == null) {
+            return pat;            
+        }
+        if (!followMergedWith) {
+            String prompt = "Patient ID[id="
+                                + pat.getPatientId() + ",issuer="
+                                + pat.getIssuerOfPatientId()
+                                + "] merged with Patient ID[id="
+                                + merged.getPatientId() + ",issuer=" 
+                                + merged.getIssuerOfPatientId() + "]";
+            log.warn(prompt);
+            throw new PatientMergedException(prompt);            
+        }
+        PatientLocal result = pat;
+        while ((merged = result.getMergedWith()) != null) {
+            if (merged.isIdentical(pat)) {
+                String prompt = "Detect circular merged Patient " + pat.asString();
+                log.warn(prompt);
+                throw new CircularMergedException(prompt);
+            }
+            result = merged;
+        }
+        return result;
+    }
+    
+
+    
     /**
      * @ejb.interface-method
      */

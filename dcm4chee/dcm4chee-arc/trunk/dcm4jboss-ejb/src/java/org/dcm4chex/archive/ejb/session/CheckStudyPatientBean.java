@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.ejb.session;
 
-import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -49,6 +48,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -57,18 +57,16 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.PrivateTags;
-import org.dcm4chex.archive.ejb.interfaces.ContentEditLocal;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -95,6 +93,8 @@ public abstract class CheckStudyPatientBean implements SessionBean {
 
     private StudyLocalHome studyHome;
 
+    private PatientLocalHome patHome;
+
     private ContentEditLocalHome contentEditHome;
     
     private static final Logger log = Logger.getLogger(CheckStudyPatientBean.class);
@@ -108,7 +108,8 @@ public abstract class CheckStudyPatientBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Study");
             contentEditHome = (ContentEditLocalHome) jndiCtx
     		.lookup("java:comp/env/ejb/ContentEdit");
-            log.info("ContentEditHome instantiated");
+            patHome = (PatientLocalHome) jndiCtx
+                .lookup("java:comp/env/ejb/Patient");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -122,6 +123,7 @@ public abstract class CheckStudyPatientBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
+        patHome = null;
         studyHome = null;
         contentEditHome = null;
     }
@@ -176,20 +178,28 @@ public abstract class CheckStudyPatientBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Dataset moveStudyToNewPatient(Dataset patDS, long studyPk ) throws CreateException, FinderException {
-    	ContentEditLocal ce = contentEditHome.create();
-    	patDS = ce.getOrCreatePatient(patDS).getAttributes(true);
-        ByteBuffer bb = patDS.getByteBuffer(PrivateTags.PatientPk);
-        long patPk = bb == null ? -1 : Convert.toLong(bb.array());
-    	ce.moveStudies(new long[]{studyPk}, patPk);
+    public Dataset moveStudyToNewPatient(Dataset patDS, long studyPk )
+            throws CreateException, FinderException {
+    	PatientLocal pat = getOrCreatePatient(patDS);
+        contentEditHome.create().moveStudies(new long[]{studyPk}, pat.getPk().longValue());
     	return patDS;
     }
-    
+ 
+    private PatientLocal getOrCreatePatient(Dataset ds)
+            throws CreateException, FinderException {
+        try {
+            return patHome.searchFor(ds, false);
+        } catch (ObjectNotFoundException e) {
+            return patHome.create(ds);
+        }
+    }
+
     /**
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void updateStudyStatus(long studyPk, Integer studyStatus ) throws FinderException  {
+    public void updateStudyStatus(long studyPk, Integer studyStatus )
+            throws FinderException  {
     	if ( studyStatus == null ) return;
     	StudyLocal study = studyHome.findByPrimaryKey(new Long(studyPk));
     	study.setStudyStatus( studyStatus.intValue());

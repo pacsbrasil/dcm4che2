@@ -125,7 +125,7 @@ public abstract class StorageBean implements SessionBean {
     private FileSystemLocalHome fileSystemHome;
     
     private StudyOnFileSystemLocalHome sofHome;
-
+    
     private SessionContext sessionCtx;
     
     private static final int MAX_PK_CACHE_ENTRIES = 100;
@@ -210,7 +210,11 @@ public abstract class StorageBean implements SessionBean {
             log.error("inserting records for instance[uid=" + iuid
                     + "] failed:", e);
             sessionCtx.setRollbackOnly();
-            throw new DcmServiceException(Status.ProcessingFailure);
+            if (e instanceof DcmServiceException) {
+                throw (DcmServiceException) e;                
+            } else {
+                throw new DcmServiceException(Status.ProcessingFailure, e);
+            }
         }
     }
 
@@ -333,7 +337,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private SeriesLocal getSeries(Dataset ds, Dataset coercedElements, FileSystemLocal fs)
-            throws FinderException, CreateException, DcmServiceException {
+            throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
@@ -349,11 +353,9 @@ public abstract class StorageBean implements SessionBean {
      * @param ds
      * @param fs 
      * @return
-     * @throws DcmServiceException 
-     * @throws IllegalAttributeCoercionException 
      */
     private StudyLocal getStudy(Dataset ds, Dataset coercedElements, FileSystemLocal fs)
-            throws CreateException, FinderException, DcmServiceException {
+            throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
@@ -367,53 +369,17 @@ public abstract class StorageBean implements SessionBean {
         return study;
     }
 
-    /**
-     * @param ds
-     * @return
-     * @throws DcmServiceException 
-     * @throws IllegalAttributeCoercionException 
-     */
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
-            throws CreateException, FinderException, DcmServiceException {
-		String pid = ds.getString(Tags.PatientID);
-		String issuer = ds.getString(Tags.IssuerOfPatientID);
-		Collection c = issuer != null 
-				? patHome.findByPatientIdWithIssuer(pid, issuer)
-				: patHome.findByPatientId(pid);
-		final int n = c.size();
-		switch (n) {
-		case 0:
-			return patHome.create(ds);
-		case 1:
-			PatientLocal pat = checkIfMerged((PatientLocal) c.iterator().next());
+            throws Exception {
+        try {
+            PatientLocal pat = patHome.searchFor(ds, true);
             coercePatientIdentity(pat, ds, coercedElements);
-			return pat;
-		default:
-			throw new DcmServiceException(Status.ProcessingFailure,
-					"Found " + n + " Patients with id=" + pid
-					+ ", issuer=" + issuer);					
-		}
+            return pat;
+        } catch (ObjectNotFoundException e) {
+            return patHome.create(ds);
+        }
     }
     
- 	private PatientLocal checkIfMerged(PatientLocal pat) throws DcmServiceException {
-		PatientLocal merged, ret = pat;
-        HashSet chain = new HashSet();
-        chain.add(pat.getPrimaryKey());
-		while ((merged = ret.getMergedWith()) != null) {
-            if (!chain.add(merged.getPrimaryKey())) {
-                throw new DcmServiceException(Status.ProcessingFailure,
-                        "Detect circular merged Patient " + pat.asString());                                    
-            }
-			ret = merged;
-        }
-        if (ret != pat) {
-            log.warn("Received object for merged " + pat.asString()
-                    + " - coerce Patient attributes to dominant "
-                    + ret.asString());
-        }
-		return ret;
-	}
-
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException, CreateException {
         patient.coerceAttributes(ds, coercedElements);

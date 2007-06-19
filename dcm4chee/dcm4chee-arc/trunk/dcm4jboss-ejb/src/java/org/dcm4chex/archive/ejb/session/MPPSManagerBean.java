@@ -97,11 +97,11 @@ public abstract class MPPSManagerBean implements SessionBean {
     private static final int NO_LONGER_BE_UPDATED_ERR_ID = 0xA710;
 	private static final int DELETED = 1;
     private static final int[] PATIENT_ATTRS_EXC = {
+            Tags.RefPatientSeq,         
             Tags.PatientName,
             Tags.PatientID,
             Tags.PatientBirthDate,
             Tags.PatientSex,
-            Tags.RefPatientSeq,         
     };
     private static final int[] PATIENT_ATTRS_INC = {
             Tags.PatientName,
@@ -148,49 +148,40 @@ public abstract class MPPSManagerBean implements SessionBean {
      */
     public void createMPPS(Dataset ds)
         throws DcmServiceException {
+        checkDuplicate(ds.getString(Tags.SOPInstanceUID));
         try {
-        	PatientLocal pat = getPatient(ds);
-            mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), pat);
-        } catch (CreateException ce) {
-            try {
-                mppsHome.findBySopIuid(ds.getString(Tags.SOPInstanceUID));
-                throw new DcmServiceException(Status.DuplicateSOPInstance);
-            } catch (FinderException fe) {
-                throw new DcmServiceException(Status.ProcessingFailure, ce);
-            } finally {
-                sessionCtx.setRollbackOnly();
-            }
+             mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true),
+                     findOrCreatePatient(ds));
+        } catch (CreateException e) {
+            log.error("Creation of MPPS(iuid=" 
+                    + ds.getString(Tags.SOPInstanceUID) + ") failed: ", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
         }
     }
 
-    private PatientLocal getPatient(Dataset ds) throws DcmServiceException {
+    private void checkDuplicate(String ppsiuid) throws DcmServiceException {
         try {
-            final String id = ds.getString(Tags.PatientID);
-            final String issuer = ds.getString(Tags.IssuerOfPatientID);
-            Collection c = issuer != null 
-                    ? patHome.findByPatientIdWithIssuer(id, issuer)
-                    : patHome.findByPatientId(id);
-            for (Iterator it = c.iterator(); it.hasNext();) {
-                PatientLocal patient = (PatientLocal) it.next();
-                if (equals(patient, ds)) {
-                    PatientLocal mergedWith;
-                    while ((mergedWith = patient.getMergedWith()) != null) {
-                        patient = mergedWith;
-                    }
-                    return patient;
-                }
-            }
-            PatientLocal patient =
-                patHome.create(ds.subSet(PATIENT_ATTRS_INC));
-            return patient;
+            mppsHome.findBySopIuid(ppsiuid);
+            throw new DcmServiceException(Status.DuplicateSOPInstance);
+        } catch (ObjectNotFoundException e) { // Ok           
+        } catch (FinderException e) {
+            log.error("Query for GMPS(iuid=" + ppsiuid + ") failed: ", e);
+            throw new DcmServiceException(Status.ProcessingFailure);
+        }
+    }    
+    private PatientLocal findOrCreatePatient(Dataset ds)
+            throws DcmServiceException {
+        try {
+            try {
+                return patHome.searchFor(ds, true);
+            } catch (ObjectNotFoundException onfe) {
+                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+            }           
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
+        }           
     }
 
-    private boolean equals(PatientLocal patient, Dataset ds) {
-        return true;
-    }
     
     /**
      * @ejb.interface-method

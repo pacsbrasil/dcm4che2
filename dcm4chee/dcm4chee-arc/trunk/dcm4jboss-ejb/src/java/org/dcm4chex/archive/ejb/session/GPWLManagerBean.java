@@ -64,9 +64,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.GPSPSStatus;
-import org.dcm4chex.archive.ejb.entity.CodeBean;
-import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
-import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.GPPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocalHome;
@@ -171,44 +168,31 @@ public abstract class GPWLManagerBean implements SessionBean {
 		return attrs;
 	}
 
-    private PatientLocal getPatient(Dataset ds) throws FinderException,
-            CreateException {
-        final String id = ds.getString(Tags.PatientID);
-        Collection c = patHome.findByPatientId(id);
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            PatientLocal patient = (PatientLocal) it.next();
-            if (equals(patient, ds)) {
-                PatientLocal mergedWith = patient.getMergedWith();
-                if (mergedWith != null) {
-                    patient = mergedWith;
-                }
-                return patient;
-            }
-        }
-        PatientLocal patient = patHome.create(ds.subSet(PATIENT_ATTRS));
-        return patient;
-    }
-
-    private boolean equals(PatientLocal patient, Dataset ds) {
-        return true;
-    }
-
     /**
      * @ejb.interface-method
      */
     public String addWorklistItem(Dataset ds) {
-        try {
-            String iuid = ds.getString(Tags.SOPInstanceUID);
-            if (iuid == null) {
-                iuid = UIDGenerator.getInstance().createUID();
-                ds.putUI(Tags.SOPInstanceUID, iuid);
-            }
+        String iuid = ds.getString(Tags.SOPInstanceUID);
+        if (iuid == null) {
+            iuid = UIDGenerator.getInstance().createUID();
+            ds.putUI(Tags.SOPInstanceUID, iuid);
+        }
+        try {          
             gpspsHome.create(ds.subSet(PATIENT_ATTRS, true, true),
-                    getPatient(ds));
-            return iuid;
+                    findOrCreatePatient(ds));
         } catch (Exception e) {
             throw new EJBException(e);
         }
+        return iuid;
+    }
+
+    private PatientLocal findOrCreatePatient(Dataset ds)
+            throws FinderException, CreateException {
+        try {
+            return patHome.searchFor(ds, true);
+        } catch (ObjectNotFoundException onfe) {
+            return patHome.create(ds.subSet(PATIENT_ATTRS));
+        }           
     }
 
     /**

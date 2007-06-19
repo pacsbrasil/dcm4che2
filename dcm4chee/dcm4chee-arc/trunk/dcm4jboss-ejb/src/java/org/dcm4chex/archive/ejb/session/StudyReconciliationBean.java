@@ -65,6 +65,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
+import org.dcm4chex.archive.exceptions.PatientMergedException;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -169,14 +171,16 @@ public abstract class StudyReconciliationBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updatePatient(Dataset attrs) {
+    public void updatePatient(Dataset attrs)
+            throws FinderException, CreateException {
     	patientUpdate.updatePatient(attrs);
     }
     
     /**
      * @ejb.interface-method
      */
-    public void mergePatient(Dataset dominant, Dataset prior) {
+    public void mergePatient(Dataset dominant, Dataset prior)
+            throws FinderException, CreateException {
     	patientUpdate.mergePatient(dominant, prior);
     }
 

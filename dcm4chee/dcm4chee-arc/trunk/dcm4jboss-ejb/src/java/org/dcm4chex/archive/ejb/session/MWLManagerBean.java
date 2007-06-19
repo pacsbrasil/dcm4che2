@@ -39,9 +39,6 @@
 
 package org.dcm4chex.archive.ejb.session;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -61,6 +58,8 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
+import org.dcm4chex.archive.exceptions.PatientMismatchException;
 
 /**
  * 
@@ -74,11 +73,17 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
  * @ejb.transaction type="Required"
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
- * 
  */
 public abstract class MWLManagerBean implements SessionBean {
-    private static final int[] PATIENT_ATTRS = { Tags.PatientName,
-            Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
+    private static final int[] PATIENT_ATTRS = {
+        Tags.PatientName,
+        Tags.PatientID,
+        Tags.IssuerOfPatientID,
+        Tags.PatientBirthDate, 
+        Tags.PatientSex,
+        Tags.OtherPatientIDSeq,
+        Tags.PatientMotherBirthName
+    };
 
     private static Logger log = Logger.getLogger(MWLManagerBean.class);
 
@@ -114,116 +119,153 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset getWorklistItem(String rpid, String spsid) throws FinderException {
+    public Dataset removeWorklistItem(String rpid, String spsid) {
         try {
-            return getWorklistItem(rpid, spsid, false);
+            MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
+            Dataset attrs = toAttributes(mwlItem);
+            mwlItem.remove();
+            return attrs;
+        } catch (ObjectNotFoundException e) {
+            return null;
+        } catch (FinderException e) {
+            throw new EJBException(e);
         } catch (RemoveException e) {
             throw new EJBException(e);
         }
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset removeWorklistItem(Dataset ds)
+            throws PatientMismatchException, FinderException, RemoveException {
+        try {
+            MWLItemLocal mwlItem = getWorklistItem(ds, false);
+            Dataset attrs = toAttributes(mwlItem);
+            mwlItem.remove();
+            return attrs;
+        } catch (ObjectNotFoundException e) {
+            return null;
+        }
+    }
+
+    private MWLItemLocal getWorklistItem(Dataset ds, boolean updatePatient)
+            throws FinderException, PatientMismatchException {
+        Dataset sps = ds.getItem(Tags.SPSSeq);
+        MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(
+                    ds.getString(Tags.RequestedProcedureID),
+                    sps.getString(Tags.SPSID));
+        PatientLocal pat = mwlItem.getPatient();
+        try {
+            if (patHome.searchFor(ds, false).isIdentical(pat)) {
+                if (updatePatient) {
+                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS));
+                }
+                return mwlItem;
+            }
+        } catch (ObjectNotFoundException onfe) {}
+        String prompt = "Patient[pid="
+            + ds.getString(Tags.PatientID) + ", issuer=" 
+            + ds.getString(Tags.IssuerOfPatientID)
+            + "] does not match Patient associated with "
+            + mwlItem.asString();
+        log.warn(prompt);
+        throw new PatientMismatchException(prompt);        
+    }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset removeWorklistItem(String rpid, String spsid) throws EJBException,
-            RemoveException, FinderException {
-        return getWorklistItem(rpid, spsid, true);
+    public boolean updateSPSStatus(String rpid, String spsid, String status) {
+        try {
+            MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
+            Dataset attrs = mwlItem.getAttributes();
+            attrs.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
+            mwlItem.setAttributes(attrs);
+            return true;
+        } catch (ObjectNotFoundException e) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
     }
 
-    private Dataset getWorklistItem(String rpid, String spsid, boolean remove)
-            throws RemoveException, FinderException {
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateSPSStatus(Dataset ds) throws PatientMismatchException {
         MWLItemLocal mwlItem;
         try {
-            mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
-        } catch (ObjectNotFoundException onf) {
-            return null;
+            mwlItem = getWorklistItem(ds, true);
+        } catch (ObjectNotFoundException e) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
         }
-        final PatientLocal pat = mwlItem.getPatient();
+        String status = ds.getItem(Tags.SPSSeq).getString(Tags.SPSStatus);
         Dataset attrs = mwlItem.getAttributes();
-        attrs.putAll(pat.getAttributes(false));
-        if (remove) {
-            mwlItem.remove();
+        attrs.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
+        mwlItem.setAttributes(attrs);
+        return true;
+    }
+
+
+    private PatientLocal updateOrCreatePatient(Dataset ds)
+            throws FinderException, CreateException  {
+        try {
+            return patHome.searchFor(ds, false);
+        } catch (ObjectNotFoundException onfe) {
+            return patHome.create(ds.subSet(PATIENT_ATTRS));
+        }           
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset addWorklistItem(Dataset ds)
+            throws CreateException, FinderException {
+        checkDuplicate(ds);
+        MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(PATIENT_ATTRS,
+                true, true), updateOrCreatePatient(ds));
+        return toAttributes(mwlItem);
+    }
+
+
+    private void checkDuplicate(Dataset ds)
+            throws DuplicateMWLItemException, FinderException {
+        try {
+            Dataset sps = ds.getItem(Tags.SPSSeq);
+            MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(
+                    ds.getString(Tags.RequestedProcedureID),
+                    sps.getString(Tags.SPSID));
+            throw new DuplicateMWLItemException("Duplicate " + mwlItem.asString());
+        } catch (ObjectNotFoundException e) { // Ok           
         }
+    } 
+    
+    private Dataset toAttributes(MWLItemLocal mwlItem) {
+        Dataset attrs = mwlItem.getAttributes();
+        attrs.putAll(mwlItem.getPatient().getAttributes(false));
         return attrs;
     }
 
     /**
-     * @throws FinderException
-     * @throws FinderException
      * @ejb.interface-method
      */
-    public boolean updateSPSStatus(String rpid, String spsid, String status)
-            throws FinderException {
+    public boolean updateWorklistItem(Dataset ds)
+            throws PatientMismatchException {
+        MWLItemLocal mwlItem;
         try {
-            MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(rpid, spsid);
-            Dataset ds = mwlItem.getAttributes();
-            ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, status);
-            mwlItem.setAttributes(ds);
-            return true;
+            mwlItem = getWorklistItem(ds, true);
         } catch (ObjectNotFoundException e) {
             return false;
-        }
-    }
-
-    private PatientLocal getPatient(Dataset ds) throws FinderException,
-            CreateException {
-        final String id = ds.getString(Tags.PatientID);
-        final String issuer = ds.getString(Tags.IssuerOfPatientID);
-        Collection c = issuer != null 
-                        ? patHome.findByPatientIdWithIssuer(id, issuer)
-                        : patHome.findByPatientId(id);
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            PatientLocal patient = (PatientLocal) it.next();
-            if (equals(patient, ds)) {
-                PatientLocal mergedWith = patient.getMergedWith();
-                if (mergedWith != null) {
-                    patient = mergedWith;
-                }
-                return patient;
-            }
-        }
-        PatientLocal patient = patHome.create(ds.subSet(PATIENT_ATTRS));
-        return patient;
-    }
-
-    private boolean equals(PatientLocal patient, Dataset ds) {
-        // TODO Auto-generated method stub
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } 
+        Dataset attrs = mwlItem.getAttributes();
+        attrs.putAll(ds.subSet(PATIENT_ATTRS, true, true),
+                DcmObject.MERGE_ITEMS);
+        mwlItem.setAttributes(attrs);
         return true;
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public Dataset addWorklistItem(Dataset ds) {
-        try {
-            MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(PATIENT_ATTRS,
-                    true, true), getPatient(ds));
-            return mwlItem.getAttributes();
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public boolean updateWorklistItem(Dataset ds) {
-        try {
-            final Dataset woPatAttrs = ds.subSet(PATIENT_ATTRS, true, true);
-            try {
-                Dataset sps = ds.getItem(Tags.SPSSeq);
-                MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(
-                        ds.getString(Tags.RequestedProcedureID),
-                        sps.getString(Tags.SPSID));
-                Dataset attrs = mwlItem.getAttributes();
-                attrs.putAll(woPatAttrs, DcmObject.MERGE_ITEMS);
-                mwlItem.setAttributes(attrs);
-                return true;
-            } catch (ObjectNotFoundException onfe) {
-                return false;
-            }
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
     }
 }

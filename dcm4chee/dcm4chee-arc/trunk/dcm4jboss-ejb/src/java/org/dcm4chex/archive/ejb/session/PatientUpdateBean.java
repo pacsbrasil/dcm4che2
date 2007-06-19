@@ -46,13 +46,14 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.SPSStatus;
@@ -86,7 +87,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  */
 public abstract class PatientUpdateBean implements SessionBean {
 
-	private static Logger log = Logger.getLogger(PatientUpdateBean.class);
     private PatientLocalHome patHome;
     
 
@@ -114,18 +114,13 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
 
     /**
+     * @throws CreateException 
      * @ejb.interface-method
      */
-    public void mergePatient(Dataset dominant, Dataset prior) {
+    public void mergePatient(Dataset dominant, Dataset prior)
+            throws FinderException, CreateException {
         PatientLocal dominantPat = updateOrCreate(dominant);
         PatientLocal priorPat= updateOrCreate(prior);
-        PatientLocal mergedWith = dominantPat.getMergedWith();
-        while ( mergedWith != null ) {
-            if ( mergedWith.getPk().equals(priorPat.getPk())) {
-                throw new EJBException("Circular Merge detected!");
-            }
-            mergedWith = mergedWith.getMergedWith();
-        }
         dominantPat.getStudies().addAll(priorPat.getStudies());
         dominantPat.getMpps().addAll(priorPat.getMpps());
         dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
@@ -138,10 +133,12 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * Update patient data as well as relink study with the patient if the patient
      * is different than original one.
+     * @throws CreateException 
      * 
      * @ejb.interface-method
      */
-    public void updatePatient(StudyLocal study, Dataset attrs) {
+    public void updatePatient(StudyLocal study, Dataset attrs)
+            throws FinderException, CreateException {
 		String pid = attrs.getString(Tags.PatientID);
 
 		// If the patient id is not included, then we don't have to do any
@@ -164,73 +161,49 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updatePatient(Dataset attrs) {
+    public void updatePatient(Dataset attrs)
+            throws CreateException, FinderException {
         updateOrCreate(attrs);
     }
 
-    private PatientLocal updateOrCreate(Dataset ds) {
-        try {
-            String pid = ds.getString(Tags.PatientID);
-            String issuer = ds.getString(Tags.IssuerOfPatientID);
-            Collection c = issuer == null ? patHome.findByPatientId(pid)
-                    : patHome.findByPatientIdWithIssuer(pid, issuer);
-            if (c.isEmpty()) { return patHome.create(ds); }
-            if (c.size() > 1) { throw new FinderException("Patient ID[id="
-                    + pid + ",issuer=" + issuer + " ambiguous"); }
-            PatientLocal pat = (PatientLocal) c.iterator().next();
+    private PatientLocal updateOrCreate(Dataset ds)
+            throws CreateException, FinderException {
+       try {
+            PatientLocal pat = patHome.searchFor(ds, false);
             pat.updateAttributes(ds);
             return pat;
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        } catch (CreateException e) {
-            throw new EJBException(e);
+        } catch (ObjectNotFoundException e) {
+            return patHome.create(ds);
         }
     }
 
     /**
      * @ejb.interface-method
      */
-    public void deletePatient(Dataset ds) {
-    	try {
-    		PatientLocal pat = findPatient(ds);
-    		if (pat != null)
-    			patHome.remove(pat.getPk());
-    	} catch (Exception e) {
-    		throw new EJBException(e.getMessage(),e);
-    	}
+    public boolean deletePatient(Dataset ds)
+            throws RemoveException, FinderException {
+        try {
+            patHome.searchFor(ds, false).remove();
+            return true;
+        } catch (ObjectNotFoundException e) {
+            return false;
+        }
     }
 
-	private PatientLocal findPatient(Dataset ds) throws FinderException {
-		String pid = ds.getString(Tags.PatientID);
-		String issuer = ds.getString(Tags.IssuerOfPatientID);
-		Collection c = issuer == null ? patHome.findByPatientId(pid)
-				: patHome.findByPatientIdWithIssuer(pid, issuer);
-		if (c.isEmpty())
-		{
-			 log.info("No Patient with PID:"+pid+",issuer:"+issuer + " found.");
-			 return null;
-		}
-		if (c.size() > 1) { throw new FinderException("Patient ID[id="
-				+ pid + ",issuer=" + issuer + " ambiguous"); }
-		PatientLocal pat = (PatientLocal) c.iterator().next();
-		return pat;
-	}
-
     /**
-     * @throws FinderException 
      * @ejb.interface-method
      */
     public void patientArrived(Dataset ds) throws FinderException {
-		PatientLocal pat = findPatient(ds);
-		if (pat != null)
-		{
-			Collection c = pat.getMwlItems();
-			for (Iterator iter = c.iterator(); iter.hasNext();) {
-				MWLItemLocal mwlitem = (MWLItemLocal) iter.next();
-				if ( mwlitem.getSpsStatusAsInt() == SPSStatus.SCHEDULED )
-				    mwlitem.updateSpsStatus(SPSStatus.ARRIVED);
-			}
-		}
+        try {
+            PatientLocal pat = patHome.searchFor(ds, false);
+            Collection c = pat.getMwlItems();
+            for (Iterator iter = c.iterator(); iter.hasNext();) {
+                MWLItemLocal mwlitem = (MWLItemLocal) iter.next();
+                if ( mwlitem.getSpsStatusAsInt() == SPSStatus.SCHEDULED )
+                    mwlitem.updateSpsStatus(SPSStatus.ARRIVED);
+            }
+        } catch (ObjectNotFoundException e) {
+        }
     }
     
 }

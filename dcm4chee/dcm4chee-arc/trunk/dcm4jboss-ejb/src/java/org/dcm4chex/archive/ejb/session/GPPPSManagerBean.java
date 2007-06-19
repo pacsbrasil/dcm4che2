@@ -40,7 +40,6 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -86,11 +85,11 @@ public abstract class GPPPSManagerBean implements SessionBean {
     private static final int GPSPS_DIFF_TRANS_UID = 0xA505;
     private static final int GPPPS_NOT_IN_PROGRESS = 0xA506;
     private static final int[] PATIENT_ATTRS_EXC = {
+            Tags.RefPatientSeq,         
             Tags.PatientName,
             Tags.PatientID,
             Tags.PatientBirthDate,
             Tags.PatientSex,
-            Tags.RefPatientSeq,         
     };
     private static final int[] PATIENT_ATTRS_INC = {
             Tags.PatientName,
@@ -133,14 +132,27 @@ public abstract class GPPPSManagerBean implements SessionBean {
     public void createGPPPS(Dataset ds)
     throws DcmServiceException {
         checkDuplicate(ds.getString(Tags.SOPInstanceUID));
-        PatientLocal pat = getPatient(ds);
+        PatientLocal pat = findOrCreatePatient(ds);          
         Collection gpsps = findRefGpsps(ds.get(Tags.RefGPSPSSeq), pat);
         GPPPSLocal pps = doCreate(ds, pat);
         if (gpsps != null) {
             pps.setGpsps(gpsps);
         }
     }
-    
+
+    private PatientLocal findOrCreatePatient(Dataset ds)
+            throws DcmServiceException {
+        try {
+            try {
+                return patHome.searchFor(ds, true);
+            } catch (ObjectNotFoundException onfe) {
+                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+            }           
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }           
+    }
+
     private GPPPSLocal doCreate(Dataset ds, PatientLocal pat)
     throws DcmServiceException {
         try {
@@ -213,33 +225,6 @@ public abstract class GPPPSManagerBean implements SessionBean {
         return c;
     }
 
-    private PatientLocal getPatient(Dataset ds) throws DcmServiceException {
-        try {
-            final String id = ds.getString(Tags.PatientID);
-            Collection c = patHome.findByPatientId(id);
-            for (Iterator it = c.iterator(); it.hasNext();) {
-                PatientLocal patient = (PatientLocal) it.next();
-                if (equals(patient, ds)) {
-                    PatientLocal mergedWith;
-                    while ((mergedWith = patient.getMergedWith()) != null) {
-                        patient = mergedWith;
-                    }
-                    return patient;
-                }
-            }
-            PatientLocal patient =
-                patHome.create(ds.subSet(PATIENT_ATTRS_INC));
-            return patient;
-        } catch (Exception e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
-    }
-
-    private boolean equals(PatientLocal patient, Dataset ds) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-    
     /**
      * @ejb.interface-method
      */

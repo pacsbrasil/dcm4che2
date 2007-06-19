@@ -49,6 +49,7 @@ import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -161,29 +162,6 @@ public abstract class ContentEditBean implements SessionBean {
         return patHome.create(ds).getAttributes(true);
     }
     
-    /**
-     * @throws CreateException
-     * @ejb.interface-method
-     */
-    public PatientLocal getOrCreatePatient(Dataset ds) {
-        try {
-            String pid = ds.getString(Tags.PatientID);
-            String issuer = ds.getString(Tags.IssuerOfPatientID);
-            Collection c = issuer == null ? patHome.findByPatientId(pid)
-                    : patHome.findByPatientIdWithExactIssuer(pid, issuer);
-            if (c.isEmpty()) { return patHome.create(ds); }
-            if (c.size() > 1) {
-            		throw new FinderException("Patient ID[id="
-                    + pid + ",issuer=" + issuer + " ambiguous"); 
-            }
-            return (PatientLocal) c.iterator().next();
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        } catch (CreateException e) {
-            throw new EJBException(e);
-        }
-    }
-
     /**
      * @ejb.interface-method
      */
