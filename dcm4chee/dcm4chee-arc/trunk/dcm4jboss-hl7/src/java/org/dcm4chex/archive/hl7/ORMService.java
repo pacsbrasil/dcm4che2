@@ -60,6 +60,9 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
+import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
+import org.dcm4chex.archive.exceptions.PatientMergedException;
+import org.dcm4chex.archive.exceptions.PatientMismatchException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -192,20 +195,14 @@ public class ORMService extends AbstractHL7Service {
                 throw new HL7Exception("AR",
                         "Missing required PID-5: Patient Name");
             mergeProtocolCodes(ds, op);
-//            if (op == NW || op == XO) {
-                ds = addScheduledStationInfo(ds);
-//            }
+            ds = addScheduledStationInfo(ds);
             MWLManager mwlManager = getMWLManagerHome().create();
             DcmElement spsSq = ds.remove(Tags.SPSSeq);
             Dataset sps;
-            String spsid;
-            String rpid;
             for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
                 sps = spsSq.getItem(i);
-                spsid = sps.getString(Tags.SPSID);
                 ds.putSQ(Tags.SPSSeq).addItem(sps);
                 adjustAttributes(ds);
-                rpid = ds.getString(Tags.RequestedProcedureID);
                 switch (op[i]) {
                 case NW:
                     addMissingAttributes(ds);
@@ -226,7 +223,7 @@ public class ORMService extends AbstractHL7Service {
                     break;
                 case CA:
                     log("Cancel", ds);
-                    if (mwlManager.removeWorklistItem(rpid, spsid) == null) {
+                    if (mwlManager.removeWorklistItem(ds) == null) {
                         log("No Such ", ds);
                     }
                     break;
@@ -234,9 +231,9 @@ public class ORMService extends AbstractHL7Service {
                     log("NOOP", ds);
                     break;
                 default:
-                    String status = SPSStatus.toString(op[i]-SC_OFF);
-                    log("Change SPS status to " + status, ds);
-                    if (!mwlManager.updateSPSStatus(rpid, spsid, status)) {
+                    sps.putCS(Tags.SPSStatus, SPSStatus.toString(op[i]-SC_OFF));
+                    log("Change SPS status of MWL Item:", ds);
+                    if (!mwlManager.updateSPSStatus(ds)) {
                         log("No Such ", ds);
                     }
                     break;                    
@@ -244,6 +241,12 @@ public class ORMService extends AbstractHL7Service {
             }
         } catch (HL7Exception e) {
             throw e;
+        } catch (PatientMismatchException e) {
+            throw new HL7Exception("AR", e.getMessage(), e);            
+        } catch (PatientMergedException e) {
+            throw new HL7Exception("AR", e.getMessage(), e);
+        } catch (DuplicateMWLItemException e) {
+            throw new HL7Exception("AR", e.getMessage(), e);            
         } catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }

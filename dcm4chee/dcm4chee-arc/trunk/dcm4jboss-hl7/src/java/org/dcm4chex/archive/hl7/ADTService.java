@@ -49,6 +49,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
+import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -118,46 +119,41 @@ public class ADTService extends AbstractHL7Service {
 				throw new HL7Exception("AR", 
 						"Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
-            try {
-                if (isMerge(msg)) {
-                    Dataset mrg = DcmObjectFactory.getInstance().newDataset();
-                    File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
-                    Transformer t2 = templates.getTemplates(mrgXslFile).newTransformer();
-                    t2.transform(new DocumentSource(msg), new SAXResult(mrg
-                            .getSAXHandler2(null)));
-					final String opid = mrg.getString(Tags.PatientID);
-					if (opid == null || opid.trim().length() == 0)
-						throw new HL7Exception("AR",
-								"Missing required MRG-1: Prior Patient ID - Internal");
-					final String opname = mrg.getString(Tags.PatientName);
-                    log.info("Merge Patient " + opname + ", PID:" + opid
-                            + " with "+ pname + ", PID:" + pid);
-                    update.mergePatient(pat, mrg);
-                } else if ( isDelete(msh) ) {
-                	log.info("Delete Patient "+pat.getString( Tags.PatientName )
-							+ ", PID:"+pat.getString( Tags.PatientID ));
-                	try {
-                		update.deletePatient(pat);
-                	} catch ( Exception x ) {
-                		if ( ! ignoreDeleteErrors ) {
-                			throw x;
-                		}
-                	}
-                } else if ( isArrived(msh)) {
-                    log.info("Set MWL entries for Patient " + pname + ", PID:" + pid + " to arrived");
-                    update.patientArrived(pat);
-                } else {
-                    log.info("Update Patient Info of " + pname + ", PID:" + pid);
-                    update.updatePatient(pat);					
-                }
-            } finally {
-                try {
-                    update.remove();
-	            } catch (Exception ignore) {
-	            }
+            if (isMerge(msg)) {
+                Dataset mrg = DcmObjectFactory.getInstance().newDataset();
+                File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
+                Transformer t2 = templates.getTemplates(mrgXslFile).newTransformer();
+                t2.transform(new DocumentSource(msg), new SAXResult(mrg
+                        .getSAXHandler2(null)));
+				final String opid = mrg.getString(Tags.PatientID);
+				if (opid == null || opid.trim().length() == 0)
+					throw new HL7Exception("AR",
+							"Missing required MRG-1: Prior Patient ID - Internal");
+				final String opname = mrg.getString(Tags.PatientName);
+                log.info("Merge Patient " + opname + ", PID:" + opid
+                        + " with "+ pname + ", PID:" + pid);
+                update.mergePatient(pat, mrg);
+            } else if ( isDelete(msh) ) {
+            	log.info("Delete Patient "+pat.getString( Tags.PatientName )
+						+ ", PID:"+pat.getString( Tags.PatientID ));
+            	try {
+            		update.deletePatient(pat);
+            	} catch ( Exception x ) {
+            		if ( ! ignoreDeleteErrors ) {
+            			throw x;
+            		}
+            	}
+            } else if ( isArrived(msh)) {
+                log.info("Set MWL entries for Patient " + pname + ", PID:" + pid + " to arrived");
+                update.patientArrived(pat);
+            } else {
+                log.info("Update Patient Info of " + pname + ", PID:" + pid);
+                update.updatePatient(pat);					
             }
         } catch (HL7Exception e) {
             throw e;
+        } catch (PatientMergedException e) {
+            throw new HL7Exception("AR", e.getMessage());
         } catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }

@@ -29,7 +29,10 @@
    <attribute access="read-write"
       getMethod="getMessageTypes"
       setMethod="setMessageTypes">
-      <description>Comma separated list of Message Types handled by this service.
+      <description><![CDATA[Comma separated list of Message Types handled by
+       this service. <b>Attention:</b> Other services - in particular the PIX
+       Update Notification Service - must not be configured for processing
+       messages that types!]]>
       </description>
       <name>MessageTypes</name>
       <type>java.lang.String</type>
