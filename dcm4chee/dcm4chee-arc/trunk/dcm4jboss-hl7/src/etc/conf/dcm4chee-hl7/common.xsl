@@ -191,7 +191,7 @@
     </xsl:call-template>
     <!-- Map SSN Number to Other Patient ID Sequence Item -->
     <xsl:variable name="ssn" select="field[19]"/>
-    <xsl:if test="$ssn">
+    <xsl:if test="normalize-space($ssn)">
       <attr tag="00101002" vr="SQ">
         <item>
           <!-- Patient ID -->
