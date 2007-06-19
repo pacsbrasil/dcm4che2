@@ -65,7 +65,7 @@ audit_repository=AuditLogUser(*)
 
 # USER StationAET filtering
 #
-# Format:stationAetFilter.<userId>=<AET1>[,<AET2>[,...[,<AETn>]]]
+# Format:stationAetFilter.<userId>=<AET1|groupName_1>[,<AET2|groupName_2>[,...[,<AETn|groupName_m>]]]
 #
 #stationAetFilter.admin=stat1,stat2
 #stationAetFilter.rta1=stat1
