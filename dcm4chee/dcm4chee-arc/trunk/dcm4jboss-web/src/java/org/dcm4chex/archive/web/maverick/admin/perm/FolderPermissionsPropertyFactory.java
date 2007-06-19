@@ -170,10 +170,32 @@ public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
 			log.warn("User "+userID+" has no Permissions for any Folder Application! Set to use folder only!");
 			permissions.addPermissions("folder",null);
 		}
-		String aeList = ((Properties) mapPermissions.get(RAW_PROPERTIES)).getProperty("aefilter."+userID);
+        Properties rawProps = (Properties) mapPermissions.get(RAW_PROPERTIES);
+		String aeList = rawProps.getProperty(FolderPermissions.AEFILTER+"."+userID);
 		if ( aeList != null ) {
-			permissions.addPermissions("aefilter", StringUtils.split(aeList, ',') );
+			permissions.addPermissions(FolderPermissions.AEFILTER, StringUtils.split(aeList, ',') );
 		}
+        applyStationAet(permissions,rawProps, userID);
 		return permissions;
 	}
+
+    private void applyStationAet(FolderPermissions permissions, Properties rawProps, String userID) {
+        String stationAetGroups = rawProps.getProperty(FolderPermissions.STATION_AET_GROUP_LIST);
+        if ( stationAetGroups != null ) {
+            String[] groups = StringUtils.split(stationAetGroups, ',');
+            permissions.addPermissions(FolderPermissions.STATION_AET_GROUP_LIST, groups );
+            String group, groupAETs;
+            for ( int i = 0 ; i < groups.length ; i++) {
+                group = FolderPermissions.STATION_AET_GROUP+"."+groups[i];
+                groupAETs = rawProps.getProperty(group);
+                if ( groupAETs != null ) {
+                    permissions.addPermissions(group, StringUtils.split(groupAETs, ',') );
+                }
+            }
+        }
+        String stationAetFilter = rawProps.getProperty(FolderPermissions.STATION_AET_FILTER+"."+userID);
+        if ( stationAetFilter != null ) {
+            permissions.addPermissions(FolderPermissions.STATION_AET_FILTER, StringUtils.split(stationAetFilter, ',') );
+        }
+    }
 }

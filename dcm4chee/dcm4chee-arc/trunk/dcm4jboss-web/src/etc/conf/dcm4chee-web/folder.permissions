@@ -50,3 +50,24 @@ audit_repository=AuditLogUser(*)
 #aefilter.user1=PACS_NODE1,PACS_NODE2
 #aefilter.user2=PACS_NODE2
 
+# Station AET grouping
+#
+# Defining groups:
+# 1) Set named group of station AETs
+#    Format:stationAetGroup.<groupName>=<AET1>[,<AET2>[,...[,<AETn>]]]
+# 2) Set List of groups
+#    Format:stationAetGroupList=<groupName_1>[,<groupName_2>[,...[,<groupName_n>]]]
+#
+#stationAetGroup.stat1=STAT1_CT1,STAT1_CT2,STAT2_CR
+#stationAetGroup.stat2=STAT2_CT1,STAT2_NM
+#
+#stationAetGroupList=stat1,stat2
+
+# USER StationAET filtering
+#
+# Format:stationAetFilter.<userId>=<AET1>[,<AET2>[,...[,<AETn>]]]
+#
+#stationAetFilter.admin=stat1,stat2
+#stationAetFilter.rta1=stat1
+#stationAetFilter.rta2=stat2
+

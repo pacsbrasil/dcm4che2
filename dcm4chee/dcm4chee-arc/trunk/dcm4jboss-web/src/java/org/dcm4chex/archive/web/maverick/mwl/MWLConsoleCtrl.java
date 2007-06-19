@@ -73,6 +73,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
         	delegate.init( getCtx().getServletConfig() );
         }
         model =  MWLModel.getModel(getCtx().getRequest());
+        model.getFilter().setStationAetGroups(getStationAEFilterGroups(), getStationAEFilter()!=null);
         return model;
     }
 	
@@ -284,7 +285,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
 		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
 		if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
-		if ( rq.getParameter("stationAET") != null ) filter.setStationAET(rq.getParameter("stationAET") );
+		filter.setStationAET(rq.getParameter("stationAET") );//we need always set StationAET to update also with StationAET groups
 		if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
 	}
 

@@ -46,7 +46,7 @@ import java.util.Date;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.web.maverick.model.BasicFilterModel;
+import org.dcm4chex.archive.web.maverick.model.ModalityBaseFilterModel;
 
 /**
  * @author franz.willer
@@ -54,12 +54,10 @@ import org.dcm4chex.archive.web.maverick.model.BasicFilterModel;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class MWLFilter extends BasicFilterModel {
+public class MWLFilter extends ModalityBaseFilterModel {
+    
 	private Dataset dsSPS;
-    
-    private String startDate;
-    
-	public MWLFilter() {
+    public MWLFilter() {
         super();
 	}
     
@@ -70,6 +68,7 @@ public class MWLFilter extends BasicFilterModel {
         //imaging service request
         ds.putSH( Tags.AccessionNumber );
         ds.putLT( Tags.ImagingServiceRequestComments );
+        ds.putLO( Tags.RequestingService );
         ds.putPN( Tags.RequestingPhysician );
         ds.putPN( Tags.ReferringPhysicianName );
         ds.putLO( Tags.PlacerOrderNumber );
@@ -113,12 +112,6 @@ public class MWLFilter extends BasicFilterModel {
     }
 	
 	/**
-	 * @return Returns the startDate.
-	 */
-	public String getStartDate() {
-		return startDate;
-	}
-	/**
 	 * Set the start date.
 	 * <p>
 	 * Set both <code>startDate and startDateAsLong</code>.<br>
@@ -132,6 +125,9 @@ public class MWLFilter extends BasicFilterModel {
         setDateRange(dsSPS, Tags.SPSStartDate, startDate );
 	}
 	
+    public void setStationAET(String aet) {
+        super.setStationAET(dsSPS, Tags.ScheduledStationAET, aet);
+    }
 	
 	/**
 	 * returns the modality filter value.
@@ -153,22 +149,6 @@ public class MWLFilter extends BasicFilterModel {
             dsSPS.putCS( Tags.Modality, mod);
 	}
 	
-	/**
-	 * @return Returns the stationAET.
-	 */
-	public String getStationAET() {
-		return dsSPS.getString( Tags.ScheduledStationAET );
-	}
-	/**
-	 * @param aet The stationAET to set.
-	 */
-	public void setStationAET(String aet) {
-		if ( aet == null || aet.trim().length() < 1 )
-            dsSPS.putAE( Tags.ScheduledStationAET );
-		else
-            dsSPS.putAE( Tags.ScheduledStationAET, aet);
-	}
-
 	/**
 	 * @return Returns the accessionNumber.
 	 */

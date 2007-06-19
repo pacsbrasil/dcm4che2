@@ -78,7 +78,7 @@
 					</td>
 				</table>
 				<table border="0" cellpadding="0" cellspacing="0" bgcolor="eeeeee">
-					<tr>
+					<tr valign="top">
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" class="label">Patient:</td>
 						<td bgcolor="eeeeee">
@@ -102,9 +102,39 @@
 						</td>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Station AET: </td>
-						<td bgcolor="eeeeee">
-							<input size="8" name="stationAET" type="text" value="{filter/stationAET}"/>
-						</td>
+						<xsl:if test="filter/onlyGroups!='true'">
+							<td bgcolor="eeeeee">
+								<input size="10" name="stationAET" type="text" value="{filter/stationAET}"
+									title="Station AET"/>
+							</td>
+						</xsl:if>
+						<xsl:if test="count(filter/stationAetGroupNames/item) > 0">
+							<xsl:variable name="grpSelectSize">
+								<xsl:choose>
+									<xsl:when test="count(filter/stationAetGroupNames/item) > 3">
+										<xsl:value-of select="3" />
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="count(filter/stationAetGroupNames/item)" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+						    <td>
+								<select multiple="multiple" name="selectedStationAetGroups" title="Station AET Groups:">
+									<xsl:attribute name="size"><xsl:value-of select="$grpSelectSize"/></xsl:attribute>
+									<xsl:for-each select="filter/stationAetGroupNames/item">
+										<xsl:sort data-type="text" order="ascending" select="@key"/>
+											<option>
+												<xsl:attribute name="value"><xsl:value-of select="@key"/></xsl:attribute>
+												<xsl:if test=".='true'">
+													<xsl:attribute name="selected"/>
+												</xsl:if> 
+												<xsl:value-of select="@key"/>
+											</option>
+									</xsl:for-each>
+								</select>
+						    </td>
+						</xsl:if>
 						<td bgcolor="eeeeee">&#160;&#160;</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >Acc. No.: (</td>
 						<td bgcolor="eeeeee">

@@ -51,7 +51,13 @@ import java.util.Set;
  * @since 13.04.2006
  */
 public class FolderPermissions {
-	private Map allPermissions = new HashMap();
+    
+    public static final String AEFILTER = "aefilter";
+    public static final String STATION_AET_GROUP_LIST = "stationAetGroupList";
+    public static final String STATION_AET_GROUP = "stationAetGroup";
+    public static final String STATION_AET_FILTER = "stationAetFilter";
+
+    private Map allPermissions = new HashMap();
 	
 	/**
 	 * Returns the list of permissions for given application

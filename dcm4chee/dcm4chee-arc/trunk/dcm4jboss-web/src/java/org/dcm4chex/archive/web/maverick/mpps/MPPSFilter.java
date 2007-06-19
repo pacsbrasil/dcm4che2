@@ -42,9 +42,11 @@ package org.dcm4chex.archive.web.maverick.mpps;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.model.BasicFilterModel;
+import org.dcm4chex.archive.web.maverick.model.ModalityBaseFilterModel;
 
 /**
  * @author franz.willer
@@ -52,20 +54,13 @@ import org.dcm4chex.archive.web.maverick.model.BasicFilterModel;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class MPPSFilter extends BasicFilterModel{
-    private String startDate;
+public class MPPSFilter extends ModalityBaseFilterModel{
 	private boolean emptyAccNo;
 	
 	public MPPSFilter() {
         super();
 	}
 
-    /**
-     * @return Returns the startDate.
-     */
-    public String getStartDate() {
-        return startDate;
-    }
     /**
      * Set the start date.
      * <p>
@@ -136,18 +131,12 @@ public class MPPSFilter extends BasicFilterModel{
 		ds.putCS(Tags.Modality, mod);
 	}
 	
-	/**
-	 * @return Returns the stationAET.
-	 */
-	public String getStationAET() {
-		return ds.getString(Tags.PerformedStationAET);
-	}
-	/**
-	 * @param aet The stationAET to set.
-	 */
-	public void setStationAET(String aet) {
-		ds.putAE( Tags.PerformedStationAET, aet );
-	}
+    /**
+     * 
+     */
+    public void setStationAET(String aet) {
+        super.setStationAET(ds, Tags.PerformedStationAET, aet);
+    }
 
 	/**
 	 * @return Returns the accessionNumber.

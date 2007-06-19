@@ -306,4 +306,8 @@ public class MPPSModel extends BasicFormPagingModel {
 		filterWorkList(false);
 	}
 	
+    public void setSelectedStationAetGroups(String[] selected) {
+        getFilter().selectStationAetGroupNames(selected);
+    }
+    
 }

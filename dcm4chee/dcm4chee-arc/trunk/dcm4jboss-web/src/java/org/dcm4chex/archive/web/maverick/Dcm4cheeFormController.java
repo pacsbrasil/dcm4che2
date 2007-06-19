@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.web.maverick;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -182,11 +183,46 @@ public class Dcm4cheeFormController extends Throwaway2
 	}
 
 	/**
-	 * @param filter
+	 * get list of AETs
 	 */
 	protected String[] getAEFilterPermissions() {
-		Set set = getPermissions().getMethodsForApp("aefilter");
+		Set set = getPermissions().getMethodsForApp(FolderPermissions.AEFILTER);
 		return set == null ? null : (String[])set.toArray(new String[set.size()]);
 	}
-	
+
+    /**
+     * get list of statioAET Filter groupss
+     */
+    protected Map getStationAEFilterGroups() {
+        Set grpNames = getStationAEFilter();
+        if ( grpNames == null ) {
+            grpNames = getPermissions().getMethodsForApp(FolderPermissions.STATION_AET_GROUP_LIST);
+        }
+        if ( grpNames == null ) return null;
+        HashMap map = new HashMap();
+        String group;
+        Set aets;
+        for ( Iterator iter = grpNames.iterator() ; iter.hasNext() ; ) {
+            group = (String) iter.next();
+            aets = getStationAETsOfGroup(group);
+            if ( aets != null ) {
+                map.put(group, aets);
+            } else {
+                aets = new HashSet();
+                aets.add(group);
+                map.put(group, aets);
+            }
+        }
+        return map;
+    }
+  
+    protected Set getStationAEFilter() {
+        return getPermissions().getMethodsForApp(FolderPermissions.STATION_AET_FILTER);
+    }
+    
+    protected Set getStationAETsOfGroup(String group) {
+        return getPermissions().getMethodsForApp(FolderPermissions.STATION_AET_GROUP+"."+group);
+    }
+    
+    
 }

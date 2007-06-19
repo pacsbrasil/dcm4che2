@@ -353,5 +353,7 @@ public class MWLModel extends BasicFormPagingModel {
 		}
 	}
 
-	
+	public void setSelectedStationAetGroups(String[] selected) {
+        getFilter().selectStationAetGroupNames(selected);
+    }
 }
