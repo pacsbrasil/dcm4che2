@@ -15,11 +15,12 @@
  * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa HealthCare.
- * Portions created by the Initial Developer are Copyright (C) 2006
+ * Agfa-Gevaert Group.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,10 +36,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package org.dcm4chex.archive.hl7;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.dom4j.Document;
@@ -46,38 +48,50 @@ import org.dom4j.Element;
 import org.regenstrief.xhl7.HL7XMLLiterate;
 
 /**
- * @author gunter.zeilinger@tiani.com
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 29, 2006
+ * @since Jun 20, 2007
  */
-class RSP extends ACK {
+class PID {
+    
+    private final ArrayList pids = new ArrayList();
 
-    public final String queryTag;
-    public final String queryResponseStatus;
-    public final PID pid;
-
-    public RSP(Document msg) {
-        super(msg);
-        Element qak = msg.getRootElement().element("QAK");
-        if (qak == null)
-                throw new IllegalArgumentException("Missing QAK Segment");
-        List qakfds = qak.elements(HL7XMLLiterate.TAG_FIELD);
-        this.queryTag = toString(qakfds.get(0));
-        this.queryResponseStatus = toString(qakfds.get(1));
-        pid = "OK".equals(queryResponseStatus) ? new PID(msg) : null;
-    }
-
-    public String toString() {
-        return "RSP[code=" +  acknowledgmentCode 
-                + ", msgID=" + messageControlID + ','
-                + ", errorMsg=" + textMessage
-                + ", status=" + queryResponseStatus
-                + ", pid# =" + (pid != null ? pid.countPatientIDs() : 0)
-                + "]";
+    public PID(Document msg) {
+        Element pid = msg.getRootElement().element("PID");
+        if (pid == null)
+            throw new IllegalArgumentException("Missing PID Segment");
+        List pidfds = pid.elements(HL7XMLLiterate.TAG_FIELD);
+        Element pidfd = (Element) pidfds.get(2);
+        if (pidfd == null)
+            throw new IllegalArgumentException("Missing PID-3 Field");
+        pids.add(toPID(pidfd));
+        List furtherPids = pidfd.elements(HL7XMLLiterate.TAG_REPEAT);
+        for (Iterator iter = furtherPids.iterator(); iter.hasNext();) {
+            pids.add(toPID((Element) iter.next()));            
+        }
     }
     
     public List getPatientIDs() {
-        return pid != null ? pid.getPatientIDs() : Collections.EMPTY_LIST;
+        return Collections.unmodifiableList(pids);
+    }
+
+    public int countPatientIDs() {
+        return pids.size();
     }
     
+    static String[] toPID(Element pidfd) {
+        Element authority = (Element) pidfd.elements(HL7XMLLiterate.TAG_COMPONENT).get(2);
+        if (authority == null) {
+            throw new IllegalArgumentException("Missing Authority in PID-3");
+        }
+        List authorityUID = authority.elements(HL7XMLLiterate.TAG_SUBCOMPONENT);
+        String[] pid = new String[2 + authorityUID.size()];
+        pid[0] = pidfd.getText();
+        pid[1] = authority.getText();
+        for (int i = 2; i < pid.length; i++) {
+            pid[i] = ((Element) authorityUID.get(i-2)).getText();
+        }
+        return pid;
+    }
+
 }

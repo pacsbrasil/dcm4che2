@@ -682,28 +682,22 @@ public class QueryRetrieveScpService extends AbstractScpService {
                     new String[] { String.class.getName(),
                             String.class.getName(),
                             String[].class.getName() });
-            String pidAndIssuer, otherPid, otherIssuer;
+            String[] otherPid;
             DcmElement otherPidSeq = rqData.get(Tags.OtherPatientIDSeq);
             for ( Iterator iter = pids.iterator() ; iter.hasNext() ; ) {
-                pidAndIssuer = (String) iter.next();
-                otherPid = extractPID(pidAndIssuer);
-                if (otherPid == null) {
-                    log.warn("Illegal PID in PIX Query Result: " + pidAndIssuer);
-                    continue;
-                }
-                otherIssuer = extractIssuer(pidAndIssuer);
-                if (pid.equals(otherPid) && issuer.equals(otherIssuer)) {
+                otherPid = (String[]) iter.next();
+                if (pid.equals(otherPid[0]) && issuer.equals(otherPid[1])) {
                     continue;
                 }
                 if (otherPidSeq == null) {
                     rqData.putLO(Tags.IssuerOfPatientID, issuer); // set defIssuerOfPatientID, if missing
                     otherPidSeq = rqData.putSQ(Tags.OtherPatientIDSeq);
-                } else if (containsPid(otherPidSeq, otherPid, otherIssuer)) {
+                } else if (containsPid(otherPidSeq, otherPid[0], otherPid[1])) {
                     continue;                    
                 }
                 Dataset item = otherPidSeq.addNewItem();
-                item.putLO(Tags.PatientID, otherPid);
-                item.putLO(Tags.IssuerOfPatientID, otherIssuer);
+                item.putLO(Tags.PatientID, otherPid[0]);
+                item.putLO(Tags.IssuerOfPatientID, otherPid[1]);
             }
         } catch (JMException e) {
             log.warn("Failed to perform PIX Query", e);
@@ -720,18 +714,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
             }
         }
         return false;
-    }
-
-    private static String extractPID(String pidAndIssuer) {
-        int end = pidAndIssuer.indexOf('^');
-        return end != -1 ? pidAndIssuer.substring(0, end) : null;
-    }
-
-    private static String extractIssuer(String pidAndIssuer) {
-        int start = pidAndIssuer.lastIndexOf('^') + 1;
-        int end = pidAndIssuer.indexOf('&', start);
-        return end != -1 ? pidAndIssuer.substring(start, end) 
-                : pidAndIssuer.substring(start);
     }
 
     boolean isLocalRetrieveAET(String aet) {
