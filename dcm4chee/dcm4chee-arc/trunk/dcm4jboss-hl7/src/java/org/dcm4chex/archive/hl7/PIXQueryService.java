@@ -39,7 +39,8 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.management.ObjectName;
@@ -52,7 +53,7 @@ public class PIXQueryService extends ServiceMBeanSupport {
     private ObjectName hl7SendServiceName;
     private String pixQueryName;
     private String pixManager;
-    private String mockResponse;
+    private List mockResponse;
 
     public final ObjectName getHL7SendServiceName() {
         return hl7SendServiceName;
@@ -79,17 +80,46 @@ public class PIXQueryService extends ServiceMBeanSupport {
     }
 
     public final String getMockResponse() {
-        return mockResponse == null ? "-" : mockResponse;
+        return mockResponse == null ? "-" : pids2cx(mockResponse);
+    }
+
+    private String pids2cx(List pids) {
+        StringBuffer sb = new StringBuffer();
+        for (Iterator iter = pids.iterator(); iter.hasNext();) {
+            if (sb.length() > 0) {
+                sb.append('~');
+            }
+            String[] pid = (String[]) iter.next();
+            sb.append(pid[0]).append("^^^").append(pid[1]);
+            for (int i = 2; i < pid.length; i++) {
+                sb.append('&').append(pid[i]);                
+            }
+        }
+        return sb.toString();
     }
 
     public final void setMockResponse(String mockResponse) {
         String trim = mockResponse.trim();
-        this.mockResponse = "-".equals(trim) ? null : trim;
+        this.mockResponse = "-".equals(trim) ? null : cx2pids(trim);
+    }
+
+    private List cx2pids(String s) {
+        String[] cx = StringUtils.split(s, '~');
+        List l = new ArrayList(cx.length);
+        for (int i = 0; i < cx.length; i++) {
+            String[] comps = StringUtils.split(s, '^');
+            String[] subcomps = StringUtils.split(comps[3], '&');
+            String[] pid = new String[1 + subcomps.length];
+            pid[0] = comps[0];
+            System.arraycopy(subcomps, 0, pid, 1, subcomps.length);
+            l.add(pid);
+        }
+        return l;
     }
 
     public String showCorrespondingPIDs(String patientID, String issuer) {
         try {
-            return queryCorrespondingPIDs(patientID, issuer).toString();
+            return pids2cx(queryCorrespondingPIDs(patientID, issuer));
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -117,7 +147,7 @@ public class PIXQueryService extends ServiceMBeanSupport {
                                     String.class.getName(),
                                     String[].class.getName(),
                         })
-                    : Arrays.asList(StringUtils.split(mockResponse, '|'));
+                    : mockResponse;
     }
 
 }
