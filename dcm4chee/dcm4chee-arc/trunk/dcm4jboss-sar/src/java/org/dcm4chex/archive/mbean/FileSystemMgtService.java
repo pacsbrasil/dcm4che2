@@ -934,26 +934,29 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             }
             isPurging = true;
         }
-        FileSystemMgt fsMgt = newFileSystemMgt();
         int deleted, total = 0;
-        FileSystemDTO[] list;
         try {
-            list = listLocalOnlineRWFileSystems(fsMgt);
-        } catch (Exception e) {
-            log.error("Failed to query DB for file system configuration:", e);
-            return 0;
+            FileSystemMgt fsMgt = newFileSystemMgt();
+            FileSystemDTO[] list;
+            try {
+                list = listLocalOnlineRWFileSystems(fsMgt);
+            } catch (Exception e) {
+                log.error("Failed to query DB for file system configuration:", e);
+                return 0;
+            }
+            int limit = getLimitNumberOfFilesPerTask();
+            for (int i = 0; i < list.length; ++i) {
+                deleted = purgePrivateFiles(list[i].getDirectoryPath(), fsMgt,
+                        limit);
+                if (deleted < 0)
+                    break;
+                total += deleted;
+                if (total >= limit)
+                    break;
+            }
+        } finally {
+            isPurging = false;
         }
-        int limit = getLimitNumberOfFilesPerTask();
-        for (int i = 0; i < list.length; ++i) {
-            deleted = purgePrivateFiles(list[i].getDirectoryPath(), fsMgt,
-                    limit);
-            if (deleted < 0)
-                break;
-            total += deleted;
-            if (total >= limit)
-                break;
-        }
-        isPurging = false;
         return total;
     }
 
@@ -969,15 +972,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 }
                 isPurging = true;
             }
-            log.debug("Check for unreferenced (private) files to delete in filesystem:"
-                            + purgeDirPath);
-            FileSystemMgt fsMgt = newFileSystemMgt();
-            int limit = getLimitNumberOfFilesPerTask();
-            total = purgePrivateFiles(purgeDirPath, fsMgt, limit);
-            isPurging = false;
             try {
-                fsMgt.remove();
-            } catch (Exception ignore) {
+                log.debug("Check for unreferenced (private) files to delete in filesystem:"
+                            + purgeDirPath);
+                FileSystemMgt fsMgt = newFileSystemMgt();
+                int limit = getLimitNumberOfFilesPerTask();
+                total = purgePrivateFiles(purgeDirPath, fsMgt, limit);
+            } finally {
+                isPurging = false;
             }
         }
         return total;
