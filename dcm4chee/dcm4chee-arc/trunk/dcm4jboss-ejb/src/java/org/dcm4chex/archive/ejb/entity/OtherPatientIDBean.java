@@ -46,8 +46,6 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal;
 import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
 
@@ -95,14 +93,6 @@ public abstract class OtherPatientIDBean implements EntityBean {
         }
     }
     
-    /**
-     * @ejb.home-method
-     */
-    public OtherPatientIDLocal ejbHomeValueOf(Dataset item) {
-        return ejbHomeValueOf(item.getString(Tags.PatientID),
-                item.getString(Tags.IssuerOfPatientID));
-    }
-
     /**
      * @ejb.create-method
      */

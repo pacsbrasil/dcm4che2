@@ -376,7 +376,10 @@ public abstract class PatientBean implements EntityBean {
         }
         Collection opids = getOtherPatientIds();
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
-            opids.add(opidHome.valueOf(opidsq.getItem(i)));
+            Dataset opid = opidsq.getItem(i);
+            opids.add(opidHome.valueOf(
+                    opid.getString(Tags.PatientID),
+                    opid.getString(Tags.IssuerOfPatientID)));
         }
     }
 
@@ -402,8 +405,8 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.home-method
      */
-    public PatientLocal ejbHomeSearchFor(Dataset ds, boolean followMergedWith)
-            throws FinderException {
+    public PatientLocal ejbHomeSearchFor(Dataset ds,
+            boolean followMergedWith) throws FinderException {
         String pid = ds.getString(Tags.PatientID);
         String issuer = ds.getString(Tags.IssuerOfPatientID);
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
@@ -501,7 +504,7 @@ public abstract class PatientBean implements EntityBean {
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
     throws DcmServiceException {
         Dataset attrs = getAttributes(false);
-        boolean b = updateOtherPatientIds(attrs, ds);
+        boolean b = appendOtherPatientIds(attrs, ds);
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
@@ -509,18 +512,19 @@ public abstract class PatientBean implements EntityBean {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
         }
     }
+    
     /**
      * @ejb.interface-method
      */
     public void updateAttributes(Dataset ds) {
         Dataset attrs = getAttributes(false);
-        boolean b = updateOtherPatientIds(attrs, ds);
+        boolean b = appendOtherPatientIds(attrs, ds);
         if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), log) || b) {
             setAttributes(attrs);
         }
     }
 
-    private boolean updateOtherPatientIds(Dataset attrs, Dataset ds) {
+    private boolean appendOtherPatientIds(Dataset attrs, Dataset ds) {
         DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
         if (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty()) {
             return false;
@@ -532,25 +536,85 @@ public abstract class PatientBean implements EntityBean {
         }
         for (int n = 0; n < nopidsq.countItems(); n++) {
             Dataset nopid = nopidsq.getItem();
-            if (!containsOPID(nopid, opidsq)) {
+            String pid = nopid.getString(Tags.PatientID);
+            String issuer = nopid.getString(Tags.IssuerOfPatientID);
+            if (!containsPID(pid, issuer, opidsq)) {
                 opidsq.addItem(nopid);
-                getOtherPatientIds().add(opidHome.valueOf(nopid));
+                getOtherPatientIds().add(opidHome.valueOf(pid, issuer));
                 update = true;
                 log.info("Add additional Other Patient ID: "
-                        + nopid.getString(Tags.PatientID) + "^^^"
-                        +  nopid.getString(Tags.IssuerOfPatientID));
+                        + pid + "^^^"
+                        +  issuer
+                        + " to " + prompt());
             }
         }
         return update;
     }
 
-    private boolean containsOPID(Dataset nopid, DcmElement opidsq) {
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateOtherPatientIDs(Dataset ds) {
+        Dataset attrs = getAttributes(false);
+        DcmElement opidsq = attrs.remove(Tags.OtherPatientIDSeq);
+        DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
+        boolean update = false;
+        if (opidsq != null) {
+            for (int n = 0; n < opidsq.countItems(); n++) {
+                Dataset opid = opidsq.getItem();
+                String pid = opid.getString(Tags.PatientID);
+                String issuer = opid.getString(Tags.IssuerOfPatientID);
+                if (nopidsq == null || !containsPID(pid, issuer, nopidsq)) {
+                    try {
+                        OtherPatientIDLocal otherPatientId = 
+                            opidHome.findByPatientIdAndIssuer(pid, issuer);
+                        getOtherPatientIds().remove(otherPatientId);
+                        if (otherPatientId.getPatients().isEmpty()) {
+                            otherPatientId.remove();
+                        }
+                    } catch (FinderException e) {
+                        throw new EJBException(e);
+                    } catch (RemoveException e) {
+                        throw new EJBException(e);
+                    }
+                    update = true;
+                    log.info("Remove Other Patient ID: " + pid + "^^^" 
+                            +  issuer + " from " + prompt());
+                }
+            }
+        }
+        if (nopidsq != null) {
+            for (int n = 0; n < nopidsq.countItems(); n++) {
+                Dataset nopid = nopidsq.getItem();
+                String pid = nopid.getString(Tags.PatientID);
+                String issuer = nopid.getString(Tags.IssuerOfPatientID);
+                if (opidsq == null || !containsPID(pid, issuer, opidsq)) {
+                    getOtherPatientIds().add(opidHome.valueOf(pid, issuer));
+                    update = true;
+                    log.info("Add additional Other Patient ID: "
+                            + pid + "^^^" +  issuer + " to " + prompt());
+                }
+            }
+            if (update) {
+                opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
+                for (int n = 0; n < nopidsq.countItems(); n++) {
+                    opidsq.addItem(nopidsq.getItem());
+                }
+            }
+        }
+        if (update) {
+            setAttributes(attrs);            
+        }
+        return update;
+    }
+    
+    private boolean containsPID(String pid, String issuer, DcmElement opidsq) {
         for (int n = 0; n < opidsq.countItems(); n++) {
             Dataset opid = opidsq.getItem();
             if (opid.getString(Tags.PatientID)
-                    .equals(nopid.getString(Tags.PatientID))
+                    .equals(pid)
                 && opid.getString(Tags.IssuerOfPatientID)
-                    .equals(nopid.getString(Tags.IssuerOfPatientID))) {
+                    .equals(issuer)) {
                     return true;
             }
         }

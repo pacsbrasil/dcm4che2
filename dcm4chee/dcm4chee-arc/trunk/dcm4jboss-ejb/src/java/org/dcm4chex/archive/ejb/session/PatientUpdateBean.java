@@ -206,4 +206,15 @@ public abstract class PatientUpdateBean implements SessionBean {
         }
     }
     
+    /**
+     * @ejb.interface-method
+     */
+    public void updateOtherPatientIDsOrCreate(Dataset ds)
+    throws FinderException, CreateException {
+        try {
+            patHome.searchFor(ds, false).updateOtherPatientIDs(ds);
+        } catch (ObjectNotFoundException e) {
+            patHome.create(ds);
+        }
+    }
 }
