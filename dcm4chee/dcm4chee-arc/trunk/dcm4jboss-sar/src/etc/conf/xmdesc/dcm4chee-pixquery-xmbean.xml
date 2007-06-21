@@ -6,7 +6,8 @@
 <mbean>
    <description><![CDATA[The <b>PIX Query Service</b> is used to find out the
    identification of a patient in different Patient Identifier Domains by
-   sending a HL7 v2.5 QBP^Q23 message to the specified <i>Patient Identifier
+   query the data base for Patients linked by Other Patient IDs or by sending a
+   HL7 v2.5 QBP^Q23 message to the specified <i>Patient Identifier
    Cross-reference (PIX) Manager</i> and evaluating the returned HL7 RSP^K23
    message.]]>
    </description>
@@ -15,7 +16,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4chex.archive.hl7.PIXQueryService</class>
+   <class>org.dcm4chex.archive.mbean.PIXQueryService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -26,19 +27,20 @@
    <attribute access="read-write"
       getMethod="getPIXManager"
       setMethod="setPIXManager">
-      <description>PIX Manager Application^Facility.
+      <description><![CDATA[External PIX Manager &lt;Application&gt;^&lt;Facility&gt;
+      or <code>LOCAL</code> (=> query data base for Patients linked by Other Patient IDs)]]>
       </description>
       <name>PIXManager</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MESA_XREF^XYZ_HOSPITAL" />
+         <value value="LOCAL" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getPIXQueryName"
       setMethod="setPIXQueryName">
-      <description>Message Query Name (QPD-1) used in PIX Query for 
-        Corresponding Patient IDs.
+      <description><![CDATA[Message Query Name (QPD-1) used in PIX Query for 
+        Corresponding Patient IDs. Only effective if <code>PIXManger!=LOCAL</code>.]]>
       </description>
       <name>PIXQueryName</name>
       <type>java.lang.String</type>
@@ -47,11 +49,37 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getIssuersOfOnlyOtherPatientIDs"
+      setMethod="setIssuersOfOnlyOtherPatientIDs">
+      <description><![CDATA[Comma separated list of Issuers/Authorities,
+      which only qualifies Other Patient IDs - and NOT primary Patient IDs.
+      Used to optimize data base queries. Only effective if <code>PIXManger=LOCAL</code>.]]>
+      </description>
+      <name>IssuersOfOnlyOtherPatientIDs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="SSN" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIssuersOfOnlyPrimaryPatientIDs"
+      setMethod="setIssuersOfOnlyPrimaryPatientIDs">
+      <description><![CDATA[Comma separated list of Issuers/Authorities,
+      which only qualifies primary Patient IDs - and NOT Other Patient IDs.
+      Used to optimize data base queries. Only effective if <code>PIXManger=LOCAL</code>.]]>
+      </description>
+      <name>IssuersOfOnlyPrimaryPatientIDs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMockResponse"
       setMethod="setMockResponse">
       <description><![CDATA[If specified (!= '-'), return list of Patient IDs 
       (&lt;ID&gt;^^^&lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;)
-      separated by '|'. Useful for debugging service clients.]]>
+      separated by '~'. Useful for debugging service clients.]]>
       </description>
       <name>MockResponse</name>
       <type>java.lang.String</type>
@@ -72,24 +100,7 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Query PIX Manger for corresponding Patient IDs.</description>
-      <name>queryCorrespondingPIDs</name>
-      <parameter>
-        <description>Patient ID</description>
-        <name>pid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description><![CDATA[Assigning Authority:
-          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
-        </description>
-        <name>authority</name>
-        <type>java.lang.String</type>
-      </parameter>
-       <return-type>java.util.List</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Query PIX Manger for corresponding Patient IDs.</description>
+      <description>Show corresponding Patient IDs of all domains.</description>
       <name>showCorrespondingPIDs</name>
       <parameter>
         <description>Patient ID</description>
@@ -97,9 +108,7 @@
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description><![CDATA[Assigning Authority:
-          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
-        </description>
+       <description>Issuer Of Patient ID/Assigning Authority</description>
         <name>authority</name>
         <type>java.lang.String</type>
       </parameter>
@@ -114,9 +123,7 @@
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description><![CDATA[Assigning Authority:
-          &lt;namespace ID&gt;&&lt;universal ID&gt;&&lt;universal ID type&gt;]]>
-        </description>
+       <description>Issuer Of Patient ID/Assigning Authority</description>
         <name>authority</name>
         <type>java.lang.String</type>
       </parameter>
@@ -128,7 +135,6 @@
       </parameter>
        <return-type>java.util.List</return-type>
    </operation>
-   
    
 </mbean>
     

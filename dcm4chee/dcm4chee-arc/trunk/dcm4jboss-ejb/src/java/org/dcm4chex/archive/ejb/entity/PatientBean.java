@@ -77,6 +77,7 @@ import org.dcm4chex.archive.util.Convert;
  *           local-jndi-name="ejb/Patient" primkey-field="pk"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="patient"
+ * @jboss.load-group name="pid"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
@@ -103,6 +104,64 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.finder signature="java.util.Collection findByPatientIdWithExactIssuer(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND a.issuerOfPatientId = ?2"
  *             transaction-type="Supports"
+ *
+ * @ejb.finder signature="java.util.Collection findCorresponding(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId = ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId = ?1 AND p2.issuerOfPatientId = ?2)
+ *             OR (opid.patientId = ?1 AND opid.issuerOfPatientId = ?2)"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorresponding(java.lang.String pid, java.lang.String issuer)"
+ *              strategy="on-find" eager-load-group="pid"
+ *
+ * @ejb.finder signature="java.util.Collection findCorrespondingLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId LIKE ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId LIKE ?1 AND p2.issuerOfPatientId = ?2)
+ *             OR (opid.patientId LIKE ?1 AND opid.issuerOfPatientId = ?2)"
+ *             strategy="on-find" eager-load-group="pid"
+ *
+ * @ejb.finder signature="java.util.Collection findCorrespondingByPrimaryPatientID(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId = ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId = ?1 AND p2.issuerOfPatientId = ?2)"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingByPrimaryPatientID(java.lang.String pid, java.lang.String issuer)"
+ *              strategy="on-find" eager-load-group="pid"
+ *
+ * @ejb.finder signature="java.util.Collection findCorrespondingByPrimaryPatientIDLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingByPrimaryPatientIDLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId LIKE ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId LIKE ?1 AND p2.issuerOfPatientId = ?2)"
+ *             strategy="on-find" eager-load-group="pid"
+ *
+ * @ejb.finder signature="java.util.Collection findCorrespondingByOtherPatientID(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid
+ *             WHERE (opid.patientId = ?1 AND opid.issuerOfPatientId = ?2)"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingByOtherPatientID(java.lang.String pid, java.lang.String issuer)"
+ *              strategy="on-find" eager-load-group="pid"
+ *
+ * @ejb.finder signature="java.util.Collection findCorrespondingByOtherPatientIDLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingByOtherPatientIDLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid
+ *             WHERE (opid.patientId LIKE ?1 AND opid.issuerOfPatientId = ?2)"
+ *             strategy="on-find" eager-load-group="pid"
  *
  * @ejb.ejb-ref ejb-name="OtherPatientID" view-type="local" ref-name="ejb/OtherPatientID"
  *
@@ -176,6 +235,7 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id"
+     * @jboss.load-group name="pid"
      */
     public abstract String getPatientId();
 
@@ -186,6 +246,7 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id_issuer"
+     * @jboss.load-group name="pid"
      */
     public abstract String getIssuerOfPatientId();
 
@@ -634,7 +695,6 @@ public abstract class PatientBean implements EntityBean {
     }
 
     /**
-     * 
      * @ejb.interface-method
      */
     public String asString() {

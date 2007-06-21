@@ -37,7 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.hl7;
+package org.dcm4chex.archive.mbean;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,6 +46,9 @@ import java.util.List;
 import javax.management.ObjectName;
 
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.ejb.interfaces.PIXQuery;
+import org.dcm4chex.archive.ejb.interfaces.PIXQueryHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 
 public class PIXQueryService extends ServiceMBeanSupport {
@@ -54,6 +57,48 @@ public class PIXQueryService extends ServiceMBeanSupport {
     private String pixQueryName;
     private String pixManager;
     private List mockResponse;
+    private List issuersOfOnlyOtherPatientIDs;
+    private List issuersOfOnlyPrimaryPatientIDs;
+
+    public final String getIssuersOfOnlyPrimaryPatientIDs() {
+        return toString(issuersOfOnlyPrimaryPatientIDs);
+    }
+
+    public final void setIssuersOfOnlyPrimaryPatientIDs(String s) {
+        this.issuersOfOnlyPrimaryPatientIDs = toList(s);
+    }
+
+    public final String getIssuersOfOnlyOtherPatientIDs() {
+        return toString(issuersOfOnlyOtherPatientIDs);
+    }
+
+    public final void setIssuersOfOnlyOtherPatientIDs(String s) {
+        issuersOfOnlyOtherPatientIDs = toList(s);
+    }
+
+    private String toString(List list) {
+        if (list == null || list.isEmpty()) {
+            return "-";
+        }
+        Iterator iter = list.iterator();
+        StringBuffer sb = new StringBuffer((String) iter.next());
+        while (iter.hasNext()) {
+            sb.append(',').append((String) iter.next());
+        }
+        return sb.toString();
+    }
+
+    private List toList(String s) {
+        if (s.trim().equals("-")) {
+            return null;
+        }
+        String[] a = StringUtils.split(s, ',');
+        ArrayList list = new ArrayList(a.length);
+        for (int i = 0; i < a.length; i++) {
+            list.add(a[i].trim());
+        }
+        return list;
+    }
 
     public final ObjectName getHL7SendServiceName() {
         return hl7SendServiceName;
@@ -119,35 +164,47 @@ public class PIXQueryService extends ServiceMBeanSupport {
 
     public String showCorrespondingPIDs(String patientID, String issuer) {
         try {
-            return pids2cx(queryCorrespondingPIDs(patientID, issuer));
+            return pids2cx(queryCorrespondingPIDs(patientID, issuer, null));
         } catch (Exception e) {
             return e.getMessage();
         }
     }
 
-    public List queryCorrespondingPIDs(String patientID, String issuer)
-            throws Exception {
-        return queryCorrespondingPIDs(patientID, issuer, null);
-    }
-
     public List queryCorrespondingPIDs(String patientID, String issuer,
             String[] domains) throws Exception {
-        return mockResponse == null
-                    ? (List) server.invoke(hl7SendServiceName, "sendQBP_Q23",
-                            new Object[] {
-                                    pixManager,
-                                    pixQueryName,
-                                    patientID,
-                                    issuer,
-                                    domains  },
-                            new String[] {
-                                    String.class.getName(),
-                                    String.class.getName(),
-                                    String.class.getName(),
-                                    String.class.getName(),
-                                    String[].class.getName(),
-                        })
-                    : mockResponse;
+        if (mockResponse != null) {
+            return mockResponse;
+        }
+        if ("LOCAL".equalsIgnoreCase(pixManager)) {
+             if (issuersOfOnlyPrimaryPatientIDs.contains(issuer)) {
+                return pixQuery().queryCorrespondingPIDsByPrimaryPatientID(
+                        patientID, issuer, domains);
+            } else if (issuersOfOnlyOtherPatientIDs.contains(issuer)) {
+                return pixQuery().queryCorrespondingPIDsByOtherPatientID(
+                        patientID, issuer, domains);
+            } else {
+                return pixQuery().queryCorrespondingPIDs(
+                        patientID, issuer, domains);
+            }           
+        }
+        return (List) server.invoke(hl7SendServiceName, "sendQBP_Q23",
+                new Object[] {
+                    pixManager,
+                    pixQueryName,
+                    patientID,
+                    issuer,
+                    domains  },
+                new String[] {
+                    String.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    String[].class.getName(),
+        });
     }
 
+    private PIXQuery pixQuery() throws Exception {
+        return ((PIXQueryHome) EJBHomeFactory.getFactory().lookup(
+                PIXQueryHome.class, PIXQueryHome.JNDI_NAME)).create();
+    }
 }
