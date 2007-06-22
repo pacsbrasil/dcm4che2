@@ -42,6 +42,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -49,10 +50,12 @@ import javax.xml.datatype.DatatypeFactory;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
+import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
-public class PatientBean extends PatientType implements Patient, ResultFromDicom, CacheItem 
-{
+@XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "patient")
+public class PatientBean extends PatientType implements Patient,
+		ResultFromDicom, CacheItem, LocalModel<PatientIdentifier> {
 	static DatatypeFactory datatypeFactory;
 	static {
 		try {
@@ -64,64 +67,85 @@ public class PatientBean extends PatientType implements Patient, ResultFromDicom
 	};
 
 	@XmlTransient
-	Map<String,StudyBean> children = new HashMap<String,StudyBean>();
+	final Map<Object, Object> children;
 
-	public PatientBean(DicomObject cmd) {
+	/** This is the object based patient identifier, not the string PatientId */
+	@XmlTransient
+	PatientIdentifier idPatientIdentifier;
+
+	/** Create a patient bean from the dicom object */
+	public PatientBean(Map<Object, Object> children, DicomObject cmd) {
+		this.children = children;
 		initAttributes(cmd);
 		addResult(cmd);
 	}
-	
+
+	/** Create an empty patient bean */
+	public PatientBean(Map<Object, Object> children) {
+		this.children = children;
+	}
+
+	/** A really empty patient bean, without children recording */
+	public PatientBean() {
+		children = new HashMap<Object, Object>();
+	};
+
 	/**
-	 * Create a copy of the patient object by copying the attributes
-	 * and children (shallow copy).
+	 * Create a copy of the patient object by copying the attributes and
+	 * children (shallow copy).
+	 * 
 	 * @param patient
 	 */
-	public PatientBean(PatientType patient) {
+	public PatientBean(Map<Object, Object> children, PatientType patient) {
+		this.children = children;
 		setPatientID(patient.getPatientID());
+		this.idPatientIdentifier = getId();
 		setPatientName(patient.getPatientName());
-		setPatientSex( patient.getPatientSex() );
-		setPatientBirthDate( patient.getPatientBirthDate() );
+		setPatientSex(patient.getPatientSex());
+		setPatientBirthDate(patient.getPatientBirthDate());
 		getStudy().addAll(patient.getStudy());
 	}
 
 	protected static String excludeZeroEnd(String str) {
-		if( str==null ) return null;
-		if( str.length()==0 ) return str;
-		if( str.charAt(str.length()-1)==0 ) {
-			return str.substring(0,str.length()-1);
+		if (str == null)
+			return null;
+		if (str.length() == 0)
+			return str;
+		if (str.charAt(str.length() - 1) == 0) {
+			return str.substring(0, str.length() - 1);
 		}
 		return str;
 	}
-	
+
 	/** Initialize the primary attributes of this object */
-	protected void initAttributes(DicomObject cmd) {	
+	protected void initAttributes(DicomObject cmd) {
 		setPatientID(cmd.getString(Tag.PatientID));
 		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
 		String strSex = cmd.getString(Tag.PatientSex);
-		if(strSex!=null ) {
-			setPatientSex( SexEnum.fromValue(strSex.toUpperCase()));
+		if (strSex != null) {
+			setPatientSex(SexEnum.fromValue(strSex.toUpperCase()));
 		}
 		Date date = cmd.getDate(Tag.PatientBirthDate);
-		if( date!=null ) {
+		if (date != null) {
 			GregorianCalendar cal = new GregorianCalendar();
 			cal.setTime(date);
 			setPatientBirthDate(datatypeFactory.newXMLGregorianCalendar(cal));
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.dcm4chee.xero.search.study.ResultFromDicom#addResult(org.dcm4che2.data.DicomObject)
 	 */
-	public void addResult(DicomObject data)
-	{
+	public void addResult(DicomObject data) {
 		String studyUID = data.getString(Tag.StudyInstanceUID);
-		if( children.containsKey(studyUID)) {
-			children.get(studyUID).addResult(data);
-		}
-		else {
-			StudyBean child = new StudyBean(data);
+		if (children.containsKey(studyUID)) {
+			((ResultFromDicom) children.get(studyUID)).addResult(data);
+		} else {
+			StudyBean child = new StudyBean(children, data);
 			getStudy().add(child);
-			children.put(studyUID,child);
+			children.put(studyUID, child);
 		}
 	}
 
@@ -129,10 +153,36 @@ public class PatientBean extends PatientType implements Patient, ResultFromDicom
 	public long getSize() {
 		// Some amount of space for this item
 		long ret = 128;
-		for(StudyType study : getStudy()) {
+		for (StudyType study : getStudy()) {
 			ret += ((CacheItem) study).getSize();
 		}
 		return ret;
+	}
+
+	/**
+	 * Clear the study child attributes and reutrn true if there are no study
+	 * children
+	 */
+	public boolean clearEmpty() {
+		return ResultsBean.clearEmpty(children, getStudy());
+	}
+
+	public void setId(PatientIdentifier pi) {
+		setPatientIdentifier(pi.toString());
+		this.idPatientIdentifier = pi;
+	}
+
+	public PatientIdentifier getId() {
+		if (idPatientIdentifier == null) {
+			idPatientIdentifier = new PatientIdentifier(getPatientIdentifier());
+		}
+		return idPatientIdentifier;
+	}
+
+	@Override
+	public void setPatientIdentifier(String value) {
+		super.setPatientIdentifier(value);
+		idPatientIdentifier = null;
 	}
 
 }

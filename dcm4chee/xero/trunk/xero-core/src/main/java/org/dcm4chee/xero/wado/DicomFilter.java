@@ -1,6 +1,5 @@
 package org.dcm4chee.xero.wado;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
@@ -17,7 +16,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class is a dicom reader, usable for reading dicom objects and returning a "DicomObject"
- * instance.  By default it only returns header data.
+ * instance.  By default it only returns header data.  Be very careful what you read when
+ * considering reading image data - a large multi-frame may not fit into 32 bits worth of memory.
  * 
  * @author bwallace
  * 

@@ -63,7 +63,7 @@ public class GradedWadoImage extends FixedItem<WadoImage> {
 				wr.setPixel(i,j, iArray);
 			}
 		}
-		WadoImage wi = new WadoImage(bi, "BILEVEL", "-1.0", "1.0f");
+		WadoImage wi = new WadoImage(bi, "-1.0", "1.0f");
 		wi.setParameter(WadoImage.WINDOW_CENTER, 0.5d);
 		wi.setParameter(WadoImage.WINDOW_WIDTH, 1.0d);
 		return wi;

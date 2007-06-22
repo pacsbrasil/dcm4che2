@@ -26,11 +26,7 @@
 <x:template name="display.debug" m:Debug.body="display.debug" m:Debug.body.priority="100">
   <xsl:if test="/documents/debug='true'">
      docName=<xsl:value-of select="$docName" /><br />
-     imageUID=<xsl:value-of select="$imageUID" /> <br />
-     imagePrevUID=<xsl:value-of select="$imagePrevUID" /><br />
-     imageNextUID=<xsl:value-of select="$imageNextUID" /><br />
-     imagePosition=<xsl:value-of select="$imagePosition" /><br />
-     seriesViewable=<xsl:value-of select="$seriesViewable" /><br />
+     seriesUID=<xsl:value-of select="$seriesUID" /><br />
   </xsl:if>
 </x:template>
 
@@ -38,9 +34,6 @@
     <xsl:element name="script">
       <xsl:attribute name="id">displayScriptVars</xsl:attribute>
       <xsl:attribute name="type">text/ecmascript</xsl:attribute>
-var studyUID="<xsl:value-of select="$studyUID" />";
-var seriesUID="<xsl:value-of select="$seriesUID" />";
-var imageUID="<xsl:value-of select="$imageUID" />";
 var pageDebug=false;
 <xsl:if test="/documents/debug='true'">
 pageDebug=true;

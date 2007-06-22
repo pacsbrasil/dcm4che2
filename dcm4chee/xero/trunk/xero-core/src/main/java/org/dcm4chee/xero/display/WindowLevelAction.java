@@ -37,6 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
+import org.dcm4chee.xero.search.study.DicomObjectType;
+import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.ImageType;
+import org.dcm4chee.xero.search.study.SeriesBean;
+import org.jboss.seam.annotations.Begin;
+import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.ScopeType;
@@ -44,30 +50,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The window level class defines the window-level model data, and includes
- * information for all images in the study.
+ * The window level class defines the window-level termporary data and validation
+ * of that data, as well as what action is performed on an update.
  * 
  * @author bwallace
  *
  */
-@Name("WindowLevelModel")
-@Scope(ScopeType.CONVERSATION)
-public class WindowLevelModel {
-	private static Logger log = LoggerFactory.getLogger(WindowLevelModel.class);
+@Name("WindowLevel")
+@Scope(ScopeType.EVENT)
+public class WindowLevelAction {
+	private static Logger log = LoggerFactory.getLogger(WindowLevelAction.class);
 
-	double windowCenter=127.5, windowWidth=256;
-	boolean wlSet;
+	float windowCenter=127.5f, windowWidth=256f;
+	boolean wlSet = false;
 	
+	@In(value="LocalStudyModel", create=true)
+	LocalStudyModel localStudyModel;
+	
+	String applyLevel = null;
 
 	/** Retrieve the window level center */
-	public double getWindowCenter() {
+	public float getWindowCenter() {
 		log.info("Window center got as "+windowCenter);
 		return windowCenter;
 	}
 
 
 	/** Set the window level center */
-	public void setWindowCenter(double windowCenter) {
+	public void setWindowCenter(float windowCenter) {
 		this.windowCenter = windowCenter;
 		this.wlSet = true;
 		log.info("Window center set to "+windowCenter);
@@ -75,19 +85,64 @@ public class WindowLevelModel {
 
 
 	/** Retrieve thew window width for window levelling */
-	public double getWindowWidth() {
+	public float getWindowWidth() {
 		return windowWidth;
 	}
 
 
 	/** Sets the window widths for window levelling */
-	public void setWindowWidth(double windowWidth) {
+	public void setWindowWidth(float windowWidth) {
 		this.windowWidth = windowWidth;
 		this.wlSet = true;
 	}
 
-
+    /** Indicate if the window level values were set */
 	public boolean isWlSet() {
 		return wlSet;
 	}
+	
+	/** The window level has changed - apply this change to the appropriate level in the tree */
+	public String action() {
+		if( !isWlSet() ) return "failure";
+	
+		if( "image".equalsIgnoreCase(applyLevel)) {
+			ImageBean image = localStudyModel.getImage();
+			image.setWindowCenter(getWindowCenter());
+			image.setWindowWidth(getWindowWidth());
+		}
+		else {
+			SeriesBean series = localStudyModel.getSeries();
+			series.setWindowCenter(getWindowCenter());
+			series.setWindowWidth(getWindowWidth());
+			for(DicomObjectType dot : series.getDicomObject()) {
+				if( dot instanceof ImageType ) {
+					ImageType image = (ImageType) dot;
+					image.setWindowCenter(null);
+					image.setWindowWidth(null);
+				}
+			}
+		}
+		return "success";
+	}
+
+
+	public String getApplyLevel() {
+		return applyLevel;
+	}
+
+
+	public void setApplyLevel(String applyLevel) {
+		this.applyLevel = applyLevel;
+	}
+
+
+	public LocalStudyModel getLocalStudyModel() {
+		return localStudyModel;
+	}
+
+
+	public void setLocalStudyModel(LocalStudyModel localStudyModel) {
+		this.localStudyModel = localStudyModel;
+	}
+
 }

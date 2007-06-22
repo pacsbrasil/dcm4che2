@@ -87,6 +87,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     private Association assoc;
     private int priority = 0;
     private int cancelAfter = Integer.MAX_VALUE;
+	private String hostname = "localhost";
     
     private static final String[] NATIVE_LE_TS = {
         UID.ImplicitVRLittleEndian,
@@ -97,17 +98,19 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		remoteAE.setInstalled(true);
 		remoteAE.setAssociationAcceptor(true);
 		remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
+		remoteAE.setAETitle("DCM4CHEE");
 		device.setNetworkApplicationEntity(ae);
 		device.setNetworkConnection(conn);
 		ae.setNetworkConnection(conn);
 		ae.setAssociationInitiator(true);
 		ae.setAETitle("XERO");
 
-		String hostname = "localhost";
 		try {
 			// The hostname is sometimes provided as upper case, but DCM4CHEE
 			// doesn't like that.
-			hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
+			if( hostname==null ) {
+				hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
+			}
 			log.info("Using DICOM host "+hostname);
 		} catch (UnknownHostException e) {
 			log.warn("Unable to get local hostname:"+e);
@@ -116,7 +119,6 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		
 		remoteConn.setHostname(hostname);
 		remoteConn.setPort(11112);
-		remoteAE.setAETitle("DCM4CHEE");
 		
 		ae.setPackPDV(true);
 		conn.setTcpNoDelay(true);
@@ -273,6 +275,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      */
 	public void find(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom) {
 		try {
+		   log.info("Connecting to "+hostname+" remoteAE="+remoteAE+" on conn="+conn);
 	       assoc = ae.connect(remoteAE, executor);
 	       TransferCapability tc = selectTransferCapability(getCuids());
 	       if ( tc==null )
@@ -298,6 +301,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	}
 
 	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
+		log.info("DICOM CFind filter starting to search.");
 		ResultsBean resultFromDicom = (ResultsBean) params.get(EXTEND_RESULTS_KEY);
 		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
 		SearchCriteria searchCondition = (SearchCriteria) 
@@ -307,6 +311,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 			return null;
 		}
 		find(searchCondition, resultFromDicom);
+		log.info("Found result(s) - returning from filter.");
 		return resultFromDicom;
 	}
 

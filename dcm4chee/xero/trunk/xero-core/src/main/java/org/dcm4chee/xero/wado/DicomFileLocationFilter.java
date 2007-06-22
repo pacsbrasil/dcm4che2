@@ -1,6 +1,6 @@
 package org.dcm4chee.xero.wado;
 
-import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
@@ -16,16 +16,38 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 public class DicomFileLocationFilter implements Filter<URL> {
 
 	public static final String DICOM_FILE_LOCATION = " DICOM_FILE_LOCATION";
+	
+	protected static final String wadoRequired[] = new String[]{
+		"studyUID",
+		"seriesUID", 
+		"objectUID",
+	};
 
 	/** Figure out the location of the file, as referenced by SOP instance UID. */
 	public URL filter(FilterItem filterItem, Map<String, Object> params) {
 		URL ret = (URL) params.get(DICOM_FILE_LOCATION);
-		if( ret==null ) {
-			throw new UnsupportedOperationException("The reading of file locations hasn't yet been implemented.");
+		if( ret!=null ) return ret;
+		try {
+			return new URL(createWadoUrl(params));
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
 		}
-		return ret;
 	}
 	
+	/** Figures out the URL to use for the WADO request
+	 * @todo change the host to be configurable. */
+	protected String createWadoUrl(Map<String, ?> args) {
+		StringBuffer ret = new StringBuffer(
+				"http://localhost:8080/wado?requestType=WADO&contentType=application%2Fdicom");
+		for(String key : wadoRequired ) {
+			Object value = args.get(key);
+			if( value==null || value.toString().equals("")) {
+				throw new IllegalArgumentException("Required value "+key+" is missing for request.");
+			}
+		}
+		return ret.toString();
+	}
+
 	@MetaData
 	public int getPriority() {
 		return -1;

@@ -94,18 +94,18 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	 * @return New decimated ResultsType instance.   
 	 */
 	protected ResultsType decimate(ResultsType results, int position, int count) {
-		ResultsType ret = new ResultsBean(results);
+		ResultsBean ret = new ResultsBean(results);
 		ret.getPatient().clear();
 		for(PatientType patient : results.getPatient()) {
-			PatientType newPatient = new PatientBean(patient);
+			PatientType newPatient = new PatientBean(ret.getChildren(), patient);
 			newPatient.getStudy().clear();
 			ret.getPatient().add(newPatient);
 		   	for(StudyType study : patient.getStudy() ) {
-		   		StudyType newStudy = new StudyBean(study);
+		   		StudyType newStudy = new StudyBean(ret.getChildren(), study);
 		   		newStudy.getSeries().clear();
 		   		newPatient.getStudy().add(newStudy);
 		   		for(SeriesType series : study.getSeries() ) {
-		   			newStudy.getSeries().add(decimate(series,position,count));
+		   			newStudy.getSeries().add(decimate(ret.getChildren(), series,position,count));
 		   		}
 		   	}
 		}
@@ -119,10 +119,10 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	 * @param count of images to include information on.
 	 * @return Decimated copy of this object - or the original object if decimation not required.
 	 */
-	protected SeriesType decimate(SeriesType series, int position, int count) {
+	protected SeriesType decimate(Map<Object,Object> children, SeriesType series, int position, int count) {
 		series.setViewable(series.getDicomObject().size());
 		if( series.getDicomObject().size() <= position ) return series;
-		SeriesType ret = new SeriesBean(series);
+		SeriesType ret = new SeriesBean(children, series);
 		List<DicomObjectType> original = ret.getDicomObject();
 		if( position>0 ) original.subList(0,position-1).clear();
 		if( count < original.size() ) original.subList(count,original.size()).clear();

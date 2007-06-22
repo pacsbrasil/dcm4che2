@@ -4,18 +4,10 @@
    m:includeXsl="/image/imageVars.xhtml"
    m:includeXsl.priority="-10"
 >
-<xsl:variable name="docName" select="#{pageConfig.docName}" />
+<xsl:variable name="docName" select="/documents/series" />
 <ui:include src="/series/seriesVars.xhtml" />
 
 <xsl:variable name="imagePosition"><xsl:value-of select="number(/documents/position)"/></xsl:variable>
-<xsl:variable name="seriesViewable" select="number($docNode/se:results/se:patient/se:study/se:series/@Viewable)"/>
-<xsl:variable name="imageUID">
-<xsl:value-of select="$studyNode/se:series/se:image[@Position=$imagePosition]/@SOPInstanceUID"/>
-</xsl:variable>
-
-<xsl:variable name="imageNode" select="$docNode/se:results/se:patient/se:study/se:series/se:image[@SOPInstanceUID=$imageUID]" />
-<xsl:variable name="imagePrevUID" select="$imageNode/preceding::se:image[1]/@SOPInstanceUID" />
-<xsl:variable name="imageNextUID" select="$imageNode/following::se:image/@SOPInstanceUID" />
 
 <xsl:variable name="frameNode" select="document(/documents/layout)/se:results" />
 <xsl:variable name="windowWidth" select="/documents/windowLevel/@width" />

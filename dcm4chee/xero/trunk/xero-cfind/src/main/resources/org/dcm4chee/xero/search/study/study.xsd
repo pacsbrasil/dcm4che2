@@ -25,6 +25,11 @@
     
     <element name="keyObject" type="tns:keyObjectType" />
 
+    <attributeGroup name="spsAttributes">
+      <attribute name="windowLevel" type="float" />
+      <attribute name="windowWidth" type="float" />
+    </attributeGroup>
+    
     <complexType name="resultsType">
     	<sequence maxOccurs="unbounded" minOccurs="0">
     		<element ref="tns:patient"></element>
@@ -43,9 +48,10 @@
     </complexType>
 
     <complexType name="studyType">
-        <sequence maxOccurs="unbounded" minOccurs="0">
-    		<element ref="tns:series"/>
-    	</sequence>
+        <sequence>
+    		<element ref="tns:series" minOccurs="0" maxOccurs="unbounded"/>
+    		<any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+       	</sequence>
     	<attribute name="ModalitiesInStudy" />
     	<attribute name="StudyInstanceUID" type="tns:UID" />
     	<attribute name="StudyID" type="string" />
@@ -82,6 +88,11 @@
     	<attribute name="Modality" type="string" />
     	<!-- The actual number of objects that are available in the series to be viewed. -->
     	<attribute name="Viewable" type="int" />
+    	<!-- Some over-rides for common operations -->
+    	<attribute name="region" type="string" />
+    	<attribute name="zoom" type="int" />
+    	<attribute name="windowWidth" type="float" />
+    	<attribute name="windowCenter" type="float" />
     	<anyAttribute />
     </complexType>
 
@@ -91,6 +102,7 @@
        <attribute name="InstanceNumber" type="int" />
        <!-- Position is the absolute position within the series, 0 based without duplicates, from [0,viewable). -->
        <attribute name="Position" type="int" />
+       <anyAttribute />
 	</complexType>
 	    
 	<simpleType name="UID">
@@ -119,8 +131,9 @@ Reports are user or automatically dictated information about the results of the 
       </annotation>
       <complexContent>
         <extension base="tns:dicomObjectType">
-           <sequence maxOccurs="unbounded" minOccurs="0">
-              <element ref="tns:study" />
+           <sequence>
+              <element ref="tns:study" minOccurs="0" maxOccurs="unbounded"/>
+    		  <any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
            </sequence>
            <attribute name="conceptCode" type="string" />
            <attribute name="conceptMeaning" type="string" />
@@ -145,14 +158,28 @@ Key objects are a named (by code meaning) list of images to display.
     <complexType name="imageType">
     	<annotation>
     		<documentation>
-    			Images are viewable image meta-data.
+    			Images are viewable image meta-data.  Can have arbitrary additional customized
+    			attributes.
+    			@param rows is the number of available pixels in the y dimension.
+    			@param columns is the number of avaialble pixels in the x dimension.
+    			@param frame is the frame number
+    			@param SpsUID is the softcopy presentation state UID.  This can be a GSPS object or a CSPS object  				
     		</documentation>
     	</annotation>
     	<complexContent>
-    		<extension base="tns:dicomObjectType">
+	   		<extension base="tns:dicomObjectType">
+	   		    <sequence>
+	    		  <any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+	    		</sequence>
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />
     			<attribute name="Frame" type="int" />
+    			<attribute name="SpsUID" type="tns:UID" />
+    			<!-- These two are only used for over-rides, not for primary values. -->
+		    	<attribute name="region" type="string" />
+    			<attribute name="zoom" type="int" />
+		    	<attribute name="windowWidth" type="float" />
+    			<attribute name="windowCenter" type="float" />
     		</extension>
     	</complexContent>
     </complexType>

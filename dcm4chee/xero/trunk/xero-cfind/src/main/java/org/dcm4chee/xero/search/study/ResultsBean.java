@@ -39,6 +39,7 @@ package org.dcm4chee.xero.search.study;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -48,6 +49,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
+import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
 /**
@@ -60,7 +62,7 @@ import org.dcm4chee.xero.search.ResultFromDicom;
 public class ResultsBean extends ResultsType implements ResultFromDicom, CacheItem {
 
 	@XmlTransient
-	private Map<PatientIdentifier, PatientBean> patients = new HashMap<PatientIdentifier, PatientBean>();
+	private Map<Object, Object> children = new HashMap<Object, Object>();
 
 	/** Create an empty results */
 	public ResultsBean() {
@@ -104,14 +106,14 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 	/** Add a single result to the results list */
 	public void addResult(DicomObject data) {
 		PatientIdentifier pi = new PatientIdentifier(data);
-		if( patients.containsKey(pi) ) {
-			ResultFromDicom pb = patients.get(pi);
+		if( children.containsKey(pi) ) {
+			ResultFromDicom pb = (ResultFromDicom) children.get(pi);
 			pb.addResult(data);
 		}
 		else {
-			PatientBean pb = new PatientBean(data);
-			patients.put(pi,pb);
+			PatientBean pb = new PatientBean(children,data);
 			pb.setPatientIdentifier(pi.toString());
+			children.put(pb.getId(),pb);
 			getPatient().add(pb);
 		}
 	}
@@ -124,5 +126,28 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 			ret += ((CacheItem) patient).getSize();
 		}
 		return ret;
+	}
+
+	/** Clear an arbitrary list of objects that implement LocalModel */
+	public static boolean clearEmpty(Map<Object,Object> children, List<?> list) {
+		for(int i=0; i<list.size(); i++ ) {
+			Object obj = list.get(i);
+			if( obj instanceof LocalModel ) {
+				boolean empty = ((LocalModel) obj).clearEmpty();
+				if( empty ) {
+					list.remove(i);
+					children.remove(((LocalModel) obj).getId() );
+					i--;
+				}
+			}
+		}
+		return list.isEmpty();
+	}
+
+	/** Returns a map of the id to child object for any object contained in this hierarchy. 
+	 * This is needed for fast updates where objects can be spread out in the tree.
+	 */
+	public Map<Object, Object> getChildren() {
+		return children;
 	}
 }

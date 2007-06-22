@@ -97,7 +97,7 @@ public class WadoSource implements Filter<WadoImage> {
 			// TODO - remove this once we can directly read the raw data...
 			image = convertToByteGray(image);
 			// TODO - get actual values from the dicom header instead of constants 0 and 65536
-			WadoImage ret = new WadoImage(image, newWadoReq, "0", "65536");
+			WadoImage ret = new WadoImage(image, "0", "65536");
 			return ret;
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);

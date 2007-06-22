@@ -42,36 +42,48 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
+import org.dcm4chee.xero.search.LocalModel;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StudyBean extends StudyType implements Study, CacheItem
+@XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "study")
+public class StudyBean extends StudyType implements Study, CacheItem, LocalModel<String>, ResultFromDicom
 {
 	private static Logger log = LoggerFactory.getLogger(StudyBean.class);
 	
 	@XmlTransient
-	Map<String,SeriesBean> children =  new HashMap<String,SeriesBean>();
+	Map<Object,Object> children;
+	
+	public StudyBean() {
+	   this(new HashMap<Object,Object>());	
+	}
 	
     /** Create a new study bean object from the given data */
-	public StudyBean(DicomObject data) {
+	public StudyBean(Map<Object,Object> children, DicomObject data) {
+		this(children);
 		initAttributes(data);
 		addResult(data);
 	}
 	
 	/** Create a new study bean object, with no data in it */
-	public StudyBean() {	
+	public StudyBean(Map<Object,Object> children) {
+		if( children==null ) throw new IllegalArgumentException("Children must not be null.");
+		this.children = children;
 	}
 
-	/** Create a study instance by copying attributes and children (shallow children copy.)
+	/** Create a study instance by copying attributes and children (shallow children copy, no update to grand children's containment in children map.)
 	 * Does not update the children map.
 	 * @param study to copy from.
 	 */
-	public StudyBean(StudyType study) {
+	public StudyBean(Map<Object,Object> children, StudyType study) {
+		this(children);
 		setAccessionNumber(study.getAccessionNumber());
 		setInstanceAvailability(study.getInstanceAvailability());
 		setModalitiesInStudy(study.getModalitiesInStudy());
@@ -136,11 +148,11 @@ public class StudyBean extends StudyType implements Study, CacheItem
 		if( seriesUID!=null ) {
 			log.debug("Adding child to study "+seriesUID);
 			if( children.containsKey(seriesUID) ) {
-				children.get(seriesUID).addResult(data);
+				((SeriesBean) children.get(seriesUID)).addResult(data);
 			}
 			else {
-				SeriesBean child = new SeriesBean(data);
-				children.put(seriesUID,child);
+				SeriesBean child = new SeriesBean(children,data);
+				children.put(child.getId(),child);
 				getSeries().add(child);
 			}
 		} else log.debug("Study "+studyInstanceUID+" does not contain a series information.");
@@ -154,6 +166,16 @@ public class StudyBean extends StudyType implements Study, CacheItem
 			ret += ((CacheItem) series).getSize();
 		}
 		return ret;
+	}
+
+	/** Return true if there are no series children and no customized elements */
+	public boolean clearEmpty() {
+		boolean seriesEmpty = ResultsBean.clearEmpty(children,getSeries());
+		return seriesEmpty;
+	}
+
+	public String getId() {
+		return getStudyInstanceUID();
 	}
 
 }

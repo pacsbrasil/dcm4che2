@@ -40,36 +40,33 @@
   </page>
   
   <page view-id="/cycle/patient.xhtml">
-    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/study/patientFrame.xhtml" action="#{CyclePageAction.ensureStudyPresent}">
-    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="Position" value="#{ImageViewed.position}" />
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
   </page>
   
   <page view-id="/study/displayFrame.xhtml"> 
-    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="position" value="#{ImageViewed.position}" />
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/study/study.xhtml">
-    <param name="PatientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="position" value="#{ImageViewed.position}" />
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/series/seriesTray.xhtml">
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
@@ -78,33 +75,34 @@
   </page>
   
   <page view-id="/image/image.xhtml">
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="position" value="#{ImageViewed.position}" />
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
     <param name="mode" value="#{DisplayMode.mode}" />
     <param name="counter" value="#{DisplayMode.counter}" />
     <!-- To be removed into an action item -->
-    <param name="cine" value="#{ImageEvent.cine}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/image/action/*">
-    <param name="studyUID" value="#{PatientViewed.studyUID}" />
-    <param name="seriesUID" value="#{SeriesViewed.seriesUID}" />
-    <param name="objectUID" value="#{ImageViewed.objectUID}" />
-    <param name="position" value="#{ImageViewed.position}" />
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="objectUID" value="#{StudyLevel.objectUID}" />
     <param name="mode" value="#{DisplayMode.mode}" />
+    <param name="applyLevel" value="#{DisplayMode.applyLevel}" />
+    <begin-conversation join="true" />
   </page>
 
-  <page view-id="/image/action/WindowLevel.xhtml" action="#{DisplayMode.emptyAction}">
-    <param name="windowWidth" value="#{WindowLevelModel.windowWidth}" />
-    <param name="windowCenter" value="#{WindowLevelModel.windowCenter}" />
+  <page view-id="/image/action/WindowLevel.xhtml" action="#{WindowLevel.action}">
+    <param name="windowWidth" value="#{WindowLevel.windowWidth}" />
+    <param name="windowCenter" value="#{WindowLevel.windowCenter}" />
     <navigation>
       <redirect view-id="/image/image.xhtml" />
     </navigation>
   </page>
   
-  <page view-id="/image/action/ZoomPan.xhtml" action="#{DisplayMode.emptyAction}" >
+  <page view-id="/image/action/ZoomPan.xhtml">
     <param name="zoom" value="#{ZoomPanModel.zoom}" />
     <param name="relZoom" value="#{ZoomPanModel.relZoom}" />
     <param name="panX" value="#{ZoomPanModel.panX}" />

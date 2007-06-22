@@ -73,7 +73,7 @@ public class StaticMetaData {
 	 * @return A cached or new meta-data object for the given location.
 	 */
 	@SuppressWarnings("unchecked")
-	public static MetaDataBean getMetaDataByUrl(URL url) {
+	public synchronized static MetaDataBean getMetaDataByUrl(URL url) {
 		if (url == null)
 			throw new IllegalArgumentException(
 					"Properties url for meta data is null");

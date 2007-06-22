@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlTransient;
@@ -48,36 +47,46 @@ import org.slf4j.LoggerFactory;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
+import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
-public class SeriesBean extends SeriesType implements Series, ResultFromDicom, CacheItem
-{
+public class SeriesBean extends SeriesType implements Series, ResultFromDicom,
+		CacheItem, LocalModel<String> {
 	static Logger log = LoggerFactory.getLogger(SeriesBean.class.getName());
-	
+
 	@XmlTransient
-	Map<String,DicomObjectType> children = new HashMap<String,DicomObjectType>();
-	
+	protected Map<Object,Object> children;
+
 	@XmlTransient
 	private Integer numberOfSeriesRelatedInstances;
-	
-	public SeriesBean() { }
-	
-	/** Construct a series bean object from another series type object. 
-	 * Does NOT fill in the child map at this time.
+
+	public SeriesBean(Map<Object,Object> children) {
+		this.children = children;
+	}
+
+	/**
+	 * Construct a series bean object from another series type object. Does NOT
+	 * fill in the child map at this time.
 	 */
-	public SeriesBean(SeriesType series) {
+	public SeriesBean(Map<Object,Object> children,SeriesType series) {
+		this.children = children;
 		setModality(series.getModality());
 		setSeriesDescription(series.getSeriesDescription());
 		setSeriesInstanceUID(series.getSeriesInstanceUID());
-  	    setSeriesNumber(series.getSeriesNumber());
+		setSeriesNumber(series.getSeriesNumber());
 		setViewable(series.getViewable());
 		getDicomObject().addAll(series.getDicomObject());
 	}
 
-	/** Create a series bean from the given instance data. 
-	 * @param data is the Dicom object to copy series and possibly image level data from.
+	/**
+	 * Create a series bean from the given instance data.
+	 * 
+	 * @param data
+	 *            is the Dicom object to copy series and possibly image level
+	 *            data from.
 	 */
-	public SeriesBean(DicomObject data) {
+	public SeriesBean(Map<Object,Object> children,DicomObject data) {
+		this.children = children;
 		initAttributes(data);
 		addResult(data);
 	}
@@ -87,43 +96,48 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 		setModality(data.getString(Tag.Modality));
 		setSeriesDescription(data.getString(Tag.SeriesDescription));
 		setSeriesInstanceUID(data.getString(Tag.SeriesInstanceUID));
-		setNumberOfSeriesRelatedInstances(data.getInt(Tag.NumberOfSeriesRelatedInstances));
+		setNumberOfSeriesRelatedInstances(data
+				.getInt(Tag.NumberOfSeriesRelatedInstances));
 		try {
-		  setSeriesNumber(data.getInt(Tag.SeriesNumber));
-		}
-		catch(NumberFormatException nfe) {
-			log.warn("Series number was incorrectly formatted - sometimes happens for SR data:"+nfe);
+			setSeriesNumber(data.getInt(Tag.SeriesNumber));
+		} catch (NumberFormatException nfe) {
+			log
+					.warn("Series number was incorrectly formatted - sometimes happens for SR data:"
+							+ nfe);
 		}
 	}
-	
+
 	/** Add any image level information to this series. */
 	public void addResult(DicomObject data) {
 		String sopInstanceUID = data.getString(Tag.SOPInstanceUID);
-		if( sopInstanceUID==null ) return;
-		if( children.containsKey(sopInstanceUID) ) {
-			log.debug("Series "+getSeriesInstanceUID()+" already contains a child "+sopInstanceUID);
-		}
-		else {
+		if (sopInstanceUID == null)
+			return;
+		if (children.containsKey(sopInstanceUID)) {
+			log.debug("Series " + getSeriesInstanceUID()
+					+ " already contains a child " + sopInstanceUID);
+		} else {
 			DicomObjectType dobj = createChildByModality(data);
-			if( dobj==null ) {
-				log.warn("No object created for child "+sopInstanceUID+" of modality "+modality);
+			LocalModel<?> localModel = (LocalModel<?>) dobj;
+			if (dobj == null) {
+				log.warn("No object created for child " + sopInstanceUID
+						+ " of modality " + modality);
 				return;
 			}
-			children.put(sopInstanceUID, dobj);			
+			children.put(localModel.getId(), dobj);
 			getDicomObject().add(dobj);
 		}
 	}
-	
+
 	/** Create different types of children based on the modality of the series */
 	protected DicomObjectType createChildByModality(DicomObject data) {
-		if( modality.equals("SR") ) {
+		if (modality.equals("SR")) {
 			return new ReportBean(data);
 		}
-		if( modality.equals("KO") ) {
+		if (modality.equals("KO")) {
 			log.warn("Modality KO objects not yet defined (Key Objects).");
 			return null;
 		}
-		if( modality.equals("PR")) {
+		if (modality.equals("PR")) {
 			log.warn("Modality PR objects not yet defined (GSPS).");
 			return null;
 		}
@@ -134,17 +148,29 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	public long getSize() {
 		// Some amount of space for this item, plus some for all the other
 		// images under this item.
-		return 128 + 256*getDicomObject().size();
+		return 128 + 256 * getDicomObject().size();
 	}
 
 	/** Gets the number of DICOM objects associated with this series */
 	public Integer getNumberOfSeriesRelatedInstances() {
 		return numberOfSeriesRelatedInstances;
 	}
-	
+
 	/** Sets the number of DICOM objects associated with this series */
 	public void setNumberOfSeriesRelatedInstances(Integer value) {
 		this.numberOfSeriesRelatedInstances = value;
+	}
+
+	public boolean clearEmpty() {
+		boolean emptyChildren = ResultsBean.clearEmpty(children,getDicomObject());
+		return emptyChildren && getOtherAttributes().isEmpty()
+				&& getRegion() == null && getZoom() == null
+				&& getWindowCenter() == null && getWindowWidth() == null;
+	}
+
+	/** Get the ID for this object, in this case the series instance UID */
+	public String getId() {
+		return getSeriesInstanceUID();
 	}
 
 }

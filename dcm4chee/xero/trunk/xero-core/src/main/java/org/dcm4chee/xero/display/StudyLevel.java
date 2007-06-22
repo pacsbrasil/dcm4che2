@@ -37,33 +37,91 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
-import org.jboss.seam.annotations.Logger;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.log.Log;
 import org.jboss.seam.ScopeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** This class has information about the series being viewed currently.
- * There could easily be multiple instances of this bean, in separate
- * conversations for multiple studies at once.
+/**
+ * This class has information about the study, series and image being modified
+ * or viewed in this event, as well as what the level is that is being changed.
+ * 
  * @author bwallace
- *
+ * 
  */
-@Name("SeriesViewed")
+@Name("StudyLevel")
 @Scope(ScopeType.EVENT)
-public class SeriesViewed {
-	@Logger static Log log;
+public class StudyLevel {
+	static Logger log = LoggerFactory.getLogger(StudyLevel.class);
 
-	String seriesUID;
-	
+	private String studyUID;
+
+	private String seriesUID;
+
+	/**
+	 * The object UID contains the UID of the object being modified. In general,
+	 * this is used when modifying an image presentation, whereas position is
+	 * used for displaying an image.
+	 */
+	String objectUID;
+
+	private Integer frame = 0;
+
+	private String level = "series";
+
+	/** Gets the study UID */
+	public String getStudyUID() {
+		return studyUID;
+	}
+
+	public void setStudyUID(String uid) {
+		log.info("Study UID set to "+uid);
+		if (uid == null || uid.length() == 0)
+			return;
+		this.studyUID = uid;
+	}
+
 	public String getSeriesUID() {
 		return seriesUID;
 	}
-	
+
 	public void setSeriesUID(String uid) {
-		if( uid==null || uid.length()==0 ) return;
+		if (uid == null || uid.length() == 0)
+			return;
 		log.debug("Series viewed set to #0", uid);
 		this.seriesUID = uid;
 	}
-	
+
+	/** Get the object UID for the object being modified. */
+	public String getObjectUID() {
+		return objectUID;
+	}
+
+	/** Sets the object UID for the object being modified. */
+	public void setObjectUID(String objectUID) {
+		this.objectUID = objectUID;
+	}
+
+	/** Returns the frame number in a multi-frame object */
+	public Integer getFrame() {
+		return frame;
+	}
+
+	public void setFrame(Integer frame) {
+		this.frame = frame;
+	}
+
+	/**
+	 * Returns the level that is being updated - patient/study/series/image -
+	 * default is series
+	 */
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
 }

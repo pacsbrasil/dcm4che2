@@ -15,7 +15,7 @@
   <a>
     <xsl:attribute name="id">zoomPan</xsl:attribute>
     <xsl:attribute name="style">float: left;</xsl:attribute>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;mode=zoomPan</xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;mode=zoomPan</xsl:attribute>
   	Zoom/Pan<span> </span>
   </a>
   </xsl:if>
@@ -26,43 +26,43 @@
   <a>
     <xsl:attribute name="id">zoomPan</xsl:attribute>
     <xsl:attribute name="style">display: none;</xsl:attribute>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;objectUID=<xsl:value-of select="$imageUID" />&amp;position=<xsl:value-of select="$imagePosition" /></xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/></xsl:attribute>
   </a>
   
   <a>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;zoom=<xsl:value-of select='1+/documents/region/@zoom' /></xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;zoom=<xsl:value-of select='1+/documents/region/@zoom' /></xsl:attribute>
   	<xsl:attribute name="id">zoomPlus</xsl:attribute>
   	<xsl:attribute name="onclick">return displayXslt.action("zoomPlus");</xsl:attribute>
   	<span style="width: 2em;" >+</span>
   </a>
   <xsl:if test="/documents/region/@zoom > 0">
   <a>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;zoom=<xsl:value-of select='-1+/documents/region/@zoom' /></xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;zoom=<xsl:value-of select='-1+/documents/region/@zoom' /></xsl:attribute>
   	<xsl:attribute name="id">zoomMinus</xsl:attribute>
   	<xsl:attribute name="onclick">return displayXslt.action("zoomMinus");</xsl:attribute>
   	<span style="width: 2em;" >-</span>
   </a>
   </xsl:if>
   <a>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;panX=-0.25</xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;panX=-0.25</xsl:attribute>
   	<xsl:attribute name="id">zoomLeft</xsl:attribute>
   	<xsl:attribute name="onclick">return displayXslt.action("zoomLeft");</xsl:attribute>
   	<span style="width: 2em;" >&lt;-</span>
   </a>
   <a>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;panY=-0.25</xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;panY=-0.25</xsl:attribute>
   	<xsl:attribute name="id">zoomUp</xsl:attribute>
   	<xsl:attribute name="onclick">return displayXslt.action("zoomUp");</xsl:attribute>
   	<span style="width: 2em;" >^</span>
   </a>
   <a>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;panY=0.25</xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;panY=0.25</xsl:attribute>
   	<xsl:attribute name="id">zoomDown</xsl:attribute>
   	<xsl:attribute name="onclick">return displayXslt.action("zoomDown");</xsl:attribute>
   	<span style="width: 2em;" >\/</span>
   </a>
   <a>
-  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID"/>&amp;seriesUID=<xsl:value-of select="$imageNode/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID"/>&amp;position=<xsl:value-of select="$imagePosition" />&amp;panX=0.25</xsl:attribute>
+  	<xsl:attribute name="href">action/ZoomPan.action?cid=<xsl:value-of select="$cid"/>&amp;panX=0.25</xsl:attribute>
   	<xsl:attribute name="id">zoomRight</xsl:attribute>
   	<xsl:attribute name="onclick">return displayXslt.action("zoomRight");</xsl:attribute>
   	<span style="width: 2em;" >-></span>

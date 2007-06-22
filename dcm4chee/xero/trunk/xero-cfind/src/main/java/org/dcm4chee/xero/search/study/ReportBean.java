@@ -42,12 +42,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.search.LocalModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Supports dicom retrieval to XML for SR report type objects */
 @XmlRootElement
-public class ReportBean extends ReportType implements DicomObjectInterface {
+public class ReportBean extends ReportType implements DicomObjectInterface, LocalModel<String> {
 	private static final Logger log = LoggerFactory.getLogger(ReportBean.class);
 
 	/** Create an empty image bean object.
@@ -94,6 +95,16 @@ public class ReportBean extends ReportType implements DicomObjectInterface {
 		setConceptMeaning(item.getString(Tag.CodeMeaning));
 		setConceptCode(item.getString(Tag.CodeValue));
 		log.debug("Report has code meaning and value:"+getConceptCode()+","+getConceptMeaning());
+	}
+
+	/** Reports have no current modifications, so return empty all the time. */
+	public boolean clearEmpty() {
+		return true;
+	}
+
+	/** Return the SOP Instance UID for this object as the ID */
+	public String getId() {
+		return getSOPInstanceUID();
 	}
 
 }

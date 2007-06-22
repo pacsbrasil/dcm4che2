@@ -37,45 +37,39 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
-import org.jboss.seam.annotations.Logger;
+import org.dcm4chee.xero.search.study.PatientIdentifier;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.jboss.seam.ScopeType.*;
 
 /** This class has information about the patient being viewed currently.
- * There could easily be multiple instances of this bean, in separate
- * conversations for multiple patients/cycle lists at once.
  * @author bwallace
  *
  */
 @Name("PatientViewed")
 @Scope(CONVERSATION)
 public class PatientViewed {
-	@Logger static Log log;
+	Logger log = LoggerFactory.getLogger(PatientViewed.class);
 
-	String patientIdentifier;
-	String studyUID;
+	PatientIdentifier patientIdentifier;
 	
-	public String getStudyUID() {
-		return studyUID;
-	}
-	
-	public void setStudyUID(String uid) {
-		if( uid==null || uid.length()==0 ) return;
-		this.studyUID = uid;
-	}
-	
-	public String getPatientIdentifier() { 
+	/** Return the patient identifier as an object */
+	public PatientIdentifier getId() {
 		return patientIdentifier;
+	}
+	
+	public String getPatientIdentifier() {
+		if( patientIdentifier==null ) return null;
+		return patientIdentifier.toString();
 	}
 	
 	/** Sets the patient identifier - this clears the study UID if the PID changes. */
 	public void setPatientIdentifier(String pid) {
 		if( pid==null || pid.length()==0 ) return;
-		if( patientIdentifier!=null && !patientIdentifier.equals(pid) ) studyUID=null;
-		this.patientIdentifier = pid;
+		this.patientIdentifier = new PatientIdentifier(pid);
 		log.debug("The patient identifier is "+patientIdentifier);
 	}
 	

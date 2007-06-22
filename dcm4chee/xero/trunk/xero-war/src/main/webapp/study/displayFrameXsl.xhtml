@@ -31,7 +31,6 @@
 	  </frame>        
    </frameset>
    <noframe>
-     <xsl:if test="/documents/debug='true'">
         docName=<xsl:value-of select="$docName" />
         children of docNode=<xsl:value-of select="count($docNode/*)" />
         children of patient node#=<xsl:value-of select="count($patientNode/*)" />
@@ -39,7 +38,6 @@
         study UID=<xsl:value-of select="$studyUID" />
         study UID from source=<xsl:value-of select="$studyUIDFromSource" />
         Patient Ident=<xsl:value-of select="$patientIdent" />
-     </xsl:if>
    </noframe>
 </html>
 

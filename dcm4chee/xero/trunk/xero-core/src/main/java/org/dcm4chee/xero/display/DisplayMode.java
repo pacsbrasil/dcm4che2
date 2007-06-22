@@ -8,14 +8,33 @@ import org.slf4j.LoggerFactory;
 
 import static org.jboss.seam.ScopeType.CONVERSATION;
 
-/** Control the display mode being used.  Defaults to window level */
+/** Control the display mode and level being used.  Defaults to window level, series */
 @Name("DisplayMode")
 @Scope(CONVERSATION)
 public class DisplayMode {
 	private static final Logger log = LoggerFactory.getLogger(DisplayMode.class);
 
-	String mode="windowLevel";
+	public enum ApplyLevel {
+		  PATIENT_LEVEL, STUDY_LEVEL, SERIES_LEVEL, IMAGE_LEVEL
+	}
+
+	private String mode="windowLevel";
 	private int counter = 0;
+	ApplyLevel applyLevel = ApplyLevel.SERIES_LEVEL;
+
+	public ApplyLevel getApplyLevel() {
+		return applyLevel;
+	}
+
+	/** Set what level a change applies to. */
+	public void setApplyLevel(String applyLevel) {
+		if(applyLevel==null || applyLevel.length()==0 ) this.applyLevel = null;
+		else if( applyLevel.equalsIgnoreCase("patient") ) this.applyLevel=ApplyLevel.PATIENT_LEVEL;
+		else if( applyLevel.equalsIgnoreCase("study") ) this.applyLevel=ApplyLevel.STUDY_LEVEL;
+		else if( applyLevel.equalsIgnoreCase("series") ) this.applyLevel=ApplyLevel.SERIES_LEVEL;
+		else if( applyLevel.equalsIgnoreCase("image") ) this.applyLevel=ApplyLevel.IMAGE_LEVEL;
+		else throw new IllegalArgumentException("Apply level must be one of patient, study, series and image but is "+applyLevel);
+	}
 
 	/** Get the major mode in use - controlling mouse listening, keyboard etc */
 	public String getMode() {

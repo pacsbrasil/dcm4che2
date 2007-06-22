@@ -69,10 +69,9 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 	 * @param minValue is the minimum pixel value, corresponding to ushort internal value 0
 	 * @param maxVluae is the maximum pixel value, corresponding to ushort 2^n-1  
      */
-	public WadoImage(BufferedImage value, String query, String minValue,
+	public WadoImage(BufferedImage value, String minValue,
 			String maxValue) {
 		super(value);
-		setParameter(MemoryCacheFilter.KEY_NAME, query);
 		setParameter(MIN_VALUE, minValue);
 		setParameter(MAX_VALUE, maxValue);
 	}

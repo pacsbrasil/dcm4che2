@@ -1,22 +1,20 @@
 <x:source xmlns:x="http://www.dcm4che.org/xero/jsf" pageConfig="#{PageConfig.display}"
    xmlns:c="http://java.sun.com/jstl/core"
+  xmlns:h="http://java.sun.com/jsf/html"
 >
   <!-- Contains the source document references for displaying an image -->
   <cycle>#{cycleUrl}</cycle>
   <PatientIdentifier>#{PatientViewed.patientIdentifier}</PatientIdentifier>
-  <StudyInstanceUID>#{PatientViewed.studyUID}</StudyInstanceUID>
-  <series>../series/series.xml?StudyInstanceUID=#{PatientViewed.studyUID}</series>
-  <SeriesInstanceUID>#{SeriesViewed.seriesUID}</SeriesInstanceUID>
-  <images>image.xml?StudyInstanceUID=#{PatientViewed.studyUID}&amp;SeriesInstanceUID=#{SeriesViewed.seriesUID}&amp;Position=#{ImageViewed.computedPosition}&amp;Count=#{ImageViewed.count}</images>
-  <position>#{ImageViewed.position}</position>
+  <StudyInstanceUID>#{StudyLevel.studyUID}</StudyInstanceUID>
+  <series>/xero/series/series.xml?StudyInstanceUID=#{StudyLevel.studyUID}</series>
+  <SeriesInstanceUID>#{StudyLevel.seriesUID}</SeriesInstanceUID>
+  <position>0</position>
   <cine>#{ImageEvent.cine}</cine>
   <mode>#{DisplayMode.mode}</mode>
   <region zoom="#{ZoomPanModel.zoom}">#{ZoomPanModel.region}</region>
-  <c:if test="#{WindowLevelModel.wlSet}">
-  <windowLevel center="#{WindowLevelModel.windowCenter}" width="#{WindowLevelModel.windowWidth}" />
-  </c:if>
   
-  <layout doc="/xero/study/study.xml?StudyInstanceUID=#{PatientViewed.studyUID}">/xero/image/layout.xml</layout>
+  <layout doc="/xero/study/study.xml?StudyInstanceUID=#{StudyLevel.studyUID}">/xero/image/layout.xml</layout>
   <toolbar>/xero/image/imageCommands.seam</toolbar>
   
+  <h:outputText value="#{LocalStudyModel.studyXml}" escape="false" />
 </x:source>

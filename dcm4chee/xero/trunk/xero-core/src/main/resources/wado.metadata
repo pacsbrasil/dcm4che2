@@ -11,3 +11,10 @@ wado.splitRegion=${org.dcm4chee.xero.wado.SplitRegionFilter}
 wado.splitRegion.priority=100
 wado.src=${org.dcm4chee.xero.wado.WadoSource}
 wado.src.priority=0
+
+wadoDcm=${org.dcm4chee.xero.metadata.filter.FilterList}
+wadoDcm.encode=${org.dcm4chee.xero.wado.EncodeImage}
+wadoDcm.encode.priority=9999
+wadoDcm.src=${org.dcm4chee.xero.wado.DicomImageFilter}
+wadoDcm.fileLocation=${org.dcm4chee.xero.wado.WadoFileLocation}
+
