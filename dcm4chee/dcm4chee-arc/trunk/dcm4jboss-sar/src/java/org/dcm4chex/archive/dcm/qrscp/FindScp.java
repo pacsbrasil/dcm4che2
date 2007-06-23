@@ -41,11 +41,15 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.AAssociateAC;
@@ -70,6 +74,8 @@ import org.jboss.logging.Logger;
  * @since 31.08.2003
  */
 public class FindScp extends DcmServiceBase implements AssociationListener {
+    private static final int PID = 0;
+    private static final int ISSUER = 1;
     private static final String QUERY_XSL = "cfindrq.xsl";
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
@@ -120,9 +126,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
-            if (service.isPixQuery()) {
-                service.pixQuery(rqData);
-            }            
+            if (!isUniversalMatching(rqData.getString(Tags.PatientID))
+                    && service.isPixQueryCallingAET(a.getCallingAET())) {
+                pixQuery(rqData);
+            }
             MultiDimseRsp rsp = newMultiCFindRsp(rqData);
             perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
             return rsp;
@@ -132,7 +139,85 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-	protected MultiDimseRsp newMultiCFindRsp(Dataset rqData) throws SQLException {
+    private boolean isUniversalMatching(String key) {
+        if (key == null) {
+            return true;
+        }
+        char[] a = key.toCharArray();
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] != '*') {
+                return false;
+            }          
+        }
+        return true;
+    }
+
+    private boolean isWildCardMatching(String key) {
+        return key.indexOf('*') != -1 || key.indexOf('?') != -1;
+    }
+
+    private void pixQuery(Dataset rqData) throws DcmServiceException {
+        ArrayList result = new ArrayList();
+        boolean updateRQ = pixQuery(rqData, result);
+        DcmElement opidsq = rqData.get(Tags.OtherPatientIDSeq);
+        if (opidsq != null) {
+            for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+                if (pixQuery(opidsq.getItem(i), result)) {
+                    updateRQ = true;
+                }
+            }
+        }
+        if (updateRQ) {
+            Iterator iter = result.iterator();
+            setPID(rqData, (String[]) iter.next());
+            opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
+            while (iter.hasNext()) {
+                setPID(opidsq.addNewItem(), (String[]) iter.next());
+            }
+        }
+    }
+   
+    private void setPID(Dataset rqData, String[] pid) {
+        rqData.putLO(Tags.PatientID, pid[PID]);
+        rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);       
+    }
+
+    private boolean pixQuery(Dataset rqData, ArrayList result)
+            throws DcmServiceException {
+        String pid = rqData.getString(Tags.PatientID);
+        if (isUniversalMatching(pid)) {
+            return false;
+        }
+        String issuer = rqData.getString(Tags.IssuerOfPatientID);       
+        if (!service.isPixQueryIssuer(issuer)
+                || isWildCardMatching(pid) && !service.isPixQueryOnWildcard()) {
+            addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
+            return false;
+        }
+        List l = service.queryCorrespondingPIDs(pid, issuer);
+        if (l.isEmpty()) {
+            addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
+            return false;            
+        }
+        for (Iterator iter = l.iterator(); iter.hasNext();) {
+            addNewPidAndIssuerTo((String[]) iter.next(), result);            
+        }
+        return true;
+    }
+    
+    private boolean addNewPidAndIssuerTo(String[] pidAndIssuer, List result) {
+        for (Iterator iter = result.iterator(); iter.hasNext();) {
+            String[] e = (String[]) iter.next();
+            if (pidAndIssuer[PID].equals(e[PID])
+                    && pidAndIssuer[ISSUER].equals(e[ISSUER])) {
+                return false;
+            }
+        }
+        result.add(pidAndIssuer);
+        return true;
+    }
+
+    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData) throws SQLException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
                 service.isNoMatchForNoValue() );
         queryCmd.execute();

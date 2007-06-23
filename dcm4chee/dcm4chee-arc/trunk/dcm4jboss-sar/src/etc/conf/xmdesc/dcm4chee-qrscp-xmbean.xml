@@ -89,28 +89,62 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isPixQuery"
-      setMethod="setPixQuery">
-      <description><![CDATA[Activate query of external <i>Patient Cross-reference
-      (PIX) Manager</i> for query requests with single value matching key for
-      the Patient ID.]]>
+      getMethod="getPixQueryCallingAETs"
+      setMethod="setPixQueryCallingAETs">
+      <description><![CDATA[AE Titles of C-FIND SCUs, for which a
+      PIX Query of the data base or an external <i>Patient Cross-reference
+      (PIX) Manager</i> shall be executed, if the query request contains a
+      matching key for the Patient ID, to return also entities of linked
+      patients. Separate multiple values by \(backslash).
+      ANY = Enable PIX Queries for all C-FIND SCUs.]]>
       </description>
-      <name>PixQuery</name>
-      <type>boolean</type>
+      <name>PIXQueryCallingAETitles</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="false" />
+         <value value="ANY" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getDefIssuerOfPatientID"
-      setMethod="setDefIssuerOfPatientID">
-      <description><![CDATA[Value for Issuer of Patient ID used for PIX Queries,
-      if the query request does not contains a value for the Issuer of Patient ID.]]>
+      getMethod="getPixQueryIssuers"
+      setMethod="setPixQueryIssuers">
+      <description><![CDATA[Comma separated list of values for Issuers of 
+      Patient IDs in C-FIND RQs, for which a PIX Query of the data base or an
+      external <i>Patient Cross-reference (PIX) Manager</i> shall be executed,
+      to return also entities of linked patients. 
+      ANY = Execute PIX Queries for any Issuer of Patient ID.]]>
       </description>
-      <name>DefaultIssuerOfPatientID</name>
+      <name>PIXQueryIssuersOfPatientID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="SSN" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPixQueryDefIssuer"
+      setMethod="setPixQueryDefIssuer">
+      <description><![CDATA[Value for Issuer of Patient ID used for PIX Queries,
+      if the query request does not contains a value for the Issuer of Patient
+      ID. Only effective, if <i>PIXQueryIssuersOfPatientID</i> = <code>ANY</code>.]]>
+      </description>
+      <name>PIXQueryDefaultIssuerOfPatientID</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="DCM4CHEE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isPixQueryOnWildcard"
+      setMethod="setPixQueryOnWildcard">
+      <description><![CDATA[Specifies, if the PIX Query may also invoke with a
+      wildcard pattern as Patient ID - otherwise it will only be invoked for
+      a single value matching key or the Patient ID. Only supported by
+      PIX Queries against the data base, but shall not be enabled with an
+      external PIX Manager.]]>
+      </description>
+      <name>PIXQueryOnWildCardMatching</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

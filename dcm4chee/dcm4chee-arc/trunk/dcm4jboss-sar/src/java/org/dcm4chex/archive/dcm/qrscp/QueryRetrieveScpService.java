@@ -60,10 +60,8 @@ import javax.xml.parsers.SAXParserFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
-import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
@@ -98,6 +96,8 @@ import org.jboss.logging.Logger;
  * @since 31.08.2003
  */
 public class QueryRetrieveScpService extends AbstractScpService {
+
+    private static final String ANY = "ANY";
 
     private static final String NONE = "NONE";
 
@@ -162,9 +162,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean checkMatchingKeySupported = true;
 
-    private boolean pixQuery = false;
+    private String[] pixQueryCallingAETs;
     
-    private String defIssuerOfPatientID;
+    private String[] pixQueryIssuers;
+    
+    private String pixQueryDefIssuer;
+    
+    private boolean pixQueryOnWildcard;
 
     private int acTimeout = 5000;
 
@@ -303,20 +307,52 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.pixQueryServiceName = name;
     }
     
-    public final boolean isPixQuery() {
-        return pixQuery;
+    public String getPixQueryCallingAETs() {
+        return pixQueryCallingAETs == null ? ANY
+                : StringUtils.toString(pixQueryCallingAETs, '\\');
     }
 
-    public final void setPixQuery(boolean pixQuery) {
-        this.pixQuery = pixQuery;
+    public void setPixQueryCallingAETs(String s) {
+        String trim = s.trim();
+        this.pixQueryCallingAETs = trim.equalsIgnoreCase(ANY) ? null
+                : StringUtils.split(trim, '\\');
+    }
+    
+    boolean isPixQueryCallingAET(String aet) {
+        return pixQueryCallingAETs == null
+            || Arrays.asList(pixQueryCallingAETs).contains(aet);
     }
 
-    public final String getDefIssuerOfPatientID() {
-        return defIssuerOfPatientID;
+    public String getPixQueryIssuers() {
+        return pixQueryIssuers == null ? ANY
+                : StringUtils.toString(pixQueryIssuers, '\\');
     }
 
-    public final void setDefIssuerOfPatientID(String defIssuerOfPatientID) {
-        this.defIssuerOfPatientID = defIssuerOfPatientID;
+    public void setPixQueryIssuers(String s) {
+        String trim = s.trim();
+        this.pixQueryIssuers = trim.equalsIgnoreCase(ANY) ? null
+                : StringUtils.split(trim, '\\');
+    }
+
+    boolean isPixQueryIssuer(String issuer) {
+        return pixQueryIssuers == null
+            || Arrays.asList(pixQueryIssuers).contains(issuer);
+    }
+    
+    public final String getPixQueryDefIssuer() {
+        return pixQueryDefIssuer;
+    }
+
+    public final void setPixQueryDefIssuer(String pixQueryDefIssuer) {
+        this.pixQueryDefIssuer = pixQueryDefIssuer;
+    }
+
+    public final boolean isPixQueryOnWildcard() {
+        return pixQueryOnWildcard;
+    }
+
+    public final void setPixQueryOnWildcard(boolean pixQueryOnWildcard) {
+        this.pixQueryOnWildcard = pixQueryOnWildcard;
     }
 
     public final boolean isNoMatchForNoValue() {
@@ -666,56 +702,24 @@ public class QueryRetrieveScpService extends AbstractScpService {
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
     }
-
-
-    void pixQuery(Dataset rqData) {
-        String pid = rqData.getString(Tags.PatientID);
-        if (pid == null || pid.indexOf('*') != -1 || pid.indexOf('?') != -1) {
-            return;
-        }
-        String issuer = rqData.getString(Tags.IssuerOfPatientID,
-                defIssuerOfPatientID);
+   
+    List queryCorrespondingPIDs(String pid, String issuer)
+    throws DcmServiceException {
         try {
-            List pids = (List) server.invoke(this.pixQueryServiceName,
+            return (List) server.invoke(this.pixQueryServiceName,
                     "queryCorrespondingPIDs",
-                    new Object[] { pid, issuer, null },
+                    new Object[] { pid, 
+                            issuer != null ? issuer : pixQueryDefIssuer,
+                            null },
                     new String[] { String.class.getName(),
                             String.class.getName(),
                             String[].class.getName() });
-            String[] otherPid;
-            DcmElement otherPidSeq = rqData.get(Tags.OtherPatientIDSeq);
-            for ( Iterator iter = pids.iterator() ; iter.hasNext() ; ) {
-                otherPid = (String[]) iter.next();
-                if (pid.equals(otherPid[0]) && issuer.equals(otherPid[1])) {
-                    continue;
-                }
-                if (otherPidSeq == null) {
-                    rqData.putLO(Tags.IssuerOfPatientID, issuer); // set defIssuerOfPatientID, if missing
-                    otherPidSeq = rqData.putSQ(Tags.OtherPatientIDSeq);
-                } else if (containsPid(otherPidSeq, otherPid[0], otherPid[1])) {
-                    continue;                    
-                }
-                Dataset item = otherPidSeq.addNewItem();
-                item.putLO(Tags.PatientID, otherPid[0]);
-                item.putLO(Tags.IssuerOfPatientID, otherPid[1]);
-            }
         } catch (JMException e) {
-            log.warn("Failed to perform PIX Query", e);
+            log.error("Failed to perform PIX Query", e);
+            throw new DcmServiceException(Status.UnableToProcess, e);
         }
-        
     }
     
-    private boolean containsPid(DcmElement seq, String pid, String issuer) {
-        for (int i = 0, n = seq.countItems(); i < n; i++) {
-            Dataset item = seq.getItem(i);
-            if (pid.equals(item.get(Tags.PatientID))
-                    && issuer.equals(item.get(Tags.IssuerOfPatientID))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     boolean isLocalRetrieveAET(String aet) {
         for (int i = 0; i < calledAETs.length; i++) {
             if (aet.equals(calledAETs[i]))
@@ -923,4 +927,5 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         return ds;
     }
+
 }
