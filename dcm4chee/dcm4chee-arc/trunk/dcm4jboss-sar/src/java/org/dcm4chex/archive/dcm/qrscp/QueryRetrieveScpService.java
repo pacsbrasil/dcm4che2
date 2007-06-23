@@ -325,13 +325,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public String getPixQueryIssuers() {
         return pixQueryIssuers == null ? ANY
-                : StringUtils.toString(pixQueryIssuers, '\\');
+                : StringUtils.toString(pixQueryIssuers, ',');
     }
 
     public void setPixQueryIssuers(String s) {
         String trim = s.trim();
         this.pixQueryIssuers = trim.equalsIgnoreCase(ANY) ? null
-                : StringUtils.split(trim, '\\');
+                : StringUtils.split(trim, ',');
     }
 
     boolean isPixQueryIssuer(String issuer) {
