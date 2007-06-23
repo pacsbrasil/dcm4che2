@@ -386,6 +386,20 @@ class ormService {}
 
 /**
  * @depend - - - HL7Server
+ */
+class PIXUpdateNotificationService {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.PIXUpdateNotificationService
+ * @opt !hide
+ */
+class pixUpdateNotificationService {}
+
+/**
+ * @depend - - - HL7Server
  * @depend - - - TLSConfig
  * @depend - - - MoveScu
  * @depend - - - PrefetchQueue
