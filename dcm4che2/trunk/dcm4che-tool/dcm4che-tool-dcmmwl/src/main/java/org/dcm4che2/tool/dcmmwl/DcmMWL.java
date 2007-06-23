@@ -297,11 +297,15 @@ public class DcmMWL {
         this.cancelAfter = limit;
     }
 
-    public void addKey(int[] tagPath, String value) {
+    public void addMatchingKey(int[] tagPath, String value) {
         keys.putString(tagPath, null, value);
     }
 
-    public void addSpsKey(int tag, String value) {
+    public void addReturnKey(int[] tagPath) {
+        keys.putNull(tagPath, null);
+    }
+
+    public void addSpsMatchingKey(int tag, String value) {
         spsKeys.putString(tag, null, value);
     }
 
@@ -412,26 +416,26 @@ public class DcmMWL {
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmmwl.addKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
+                dcmmwl.addMatchingKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
         }
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
-                dcmmwl.addKey(Tag.toTagPath(returnKeys[i]), null);
+                dcmmwl.addReturnKey(Tag.toTagPath(returnKeys[i]));
         }
         if (cl.hasOption("date")) {
-            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartDate,
+            dcmmwl.addSpsMatchingKey(Tag.ScheduledProcedureStepStartDate,
                     cl.getOptionValue("date"));
         }
         if (cl.hasOption("time")) {
-            dcmmwl.addSpsKey(Tag.ScheduledProcedureStepStartTime,
+            dcmmwl.addSpsMatchingKey(Tag.ScheduledProcedureStepStartTime,
                     cl.getOptionValue("time"));
         }
         if (cl.hasOption("mod")) {
-            dcmmwl.addSpsKey(Tag.Modality, cl.getOptionValue("mod"));
+            dcmmwl.addSpsMatchingKey(Tag.Modality, cl.getOptionValue("mod"));
         }
         if (cl.hasOption("aet")) {
-            dcmmwl.addSpsKey(Tag.ScheduledStationAETitle,
+            dcmmwl.addSpsMatchingKey(Tag.ScheduledStationAETitle,
                     cl.getOptionValue("aet"));
         }
 

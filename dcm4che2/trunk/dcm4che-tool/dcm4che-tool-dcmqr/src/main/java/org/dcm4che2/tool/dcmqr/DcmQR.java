@@ -705,12 +705,12 @@ public class DcmQR {
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmqr.addKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
+                dcmqr.addMatchingKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
         }
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
-                dcmqr.addKey(Tag.toTagPath(returnKeys[i]), null);
+                dcmqr.addReturnKey(Tag.toTagPath(returnKeys[i]));
         }
 
         dcmqr.configureTransferCapability(cl.hasOption("ivrle"));
@@ -835,8 +835,12 @@ public class DcmQR {
         this.cancelAfter = limit;
     }
 
-    private void addKey(int[] tagPath, String value) {
+    private void addMatchingKey(int[] tagPath, String value) {
         keys.putString(tagPath, null, value);
+    }
+
+    private void addReturnKey(int[] tagPath) {
+        keys.putNull(tagPath, null);
     }
 
     private void configureTransferCapability(boolean ivrle) {

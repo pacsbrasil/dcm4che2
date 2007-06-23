@@ -307,27 +307,31 @@ public class DcmHPQR {
         this.cancelAfter = limit;
     }
 
-    public void addKey(int[] tagPath, String value) {
+    public void addMatchingKey(int[] tagPath, String value) {
         keys.putString(tagPath, null, value);
     }
 
-    public void addHPDefKey(int tag, String value) {
+    public void addReturnKey(int[] tagPath) {
+        keys.putNull(tagPath, null);
+    }
+
+    public void addHPDefMatchingKey(int tag, String value) {
         hpDefKeys.putString(tag, null, value);
     }
 
-    public void addAnatomicRegKey(int tag, String value) {
+    public void addAnatomicRegMatchingKey(int tag, String value) {
         anatomicRegKeys.putString(tag, null, value);
     }
 
-    public void addProcCodeKey(int tag, String value) {
+    public void addProcCodeMatchingKey(int tag, String value) {
         procCodeKeys.putString(tag, null, value);
     }
 
-    public void addReasonForReqProcKey(int tag, String value) {
+    public void addReasonForReqProcMatchingKey(int tag, String value) {
         reasonForReqProcKeys.putString(tag, null, value);
     }
 
-    public void addHPUserIDCodeKey(int tag, String value) {
+    public void addHPUserIDCodeMatchingKey(int tag, String value) {
         hpUserIDCodeKeys.putString(tag, null, value);
     }
 
@@ -509,41 +513,41 @@ public class DcmHPQR {
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmhpqr.addKey(Tag.toTagPath(matchingKeys[i - 1]),
+                dcmhpqr.addMatchingKey(Tag.toTagPath(matchingKeys[i - 1]),
                         matchingKeys[i]);
         }
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
-                dcmhpqr.addKey(Tag.toTagPath(returnKeys[i]), null);
+                dcmhpqr.addReturnKey(Tag.toTagPath(returnKeys[i]));
         }
         if (cl.hasOption("mod")) {
-            dcmhpqr.addHPDefKey(Tag.Modality, cl.getOptionValue("mod"));
+            dcmhpqr.addHPDefMatchingKey(Tag.Modality, cl.getOptionValue("mod"));
         }
         if (cl.hasOption("lat")) {
-            dcmhpqr.addHPDefKey(Tag.Laterality, cl.getOptionValue("lat"));
+            dcmhpqr.addHPDefMatchingKey(Tag.Laterality, cl.getOptionValue("lat"));
         }
         if (cl.hasOption("ar")) {
             String[] anatomicRegion = split(cl.getOptionValue("ar"), ':');
-            dcmhpqr.addAnatomicRegKey(Tag.CodeValue, anatomicRegion[0]);
-            dcmhpqr.addAnatomicRegKey(Tag.CodingSchemeDesignator,
+            dcmhpqr.addAnatomicRegMatchingKey(Tag.CodeValue, anatomicRegion[0]);
+            dcmhpqr.addAnatomicRegMatchingKey(Tag.CodingSchemeDesignator,
                     anatomicRegion[1]);
         }
         if (cl.hasOption("pc")) {
             String[] procCode = split(cl.getOptionValue("pc"), ':');
-            dcmhpqr.addProcCodeKey(Tag.CodeValue, procCode[0]);
-            dcmhpqr.addProcCodeKey(Tag.CodingSchemeDesignator, procCode[1]);
+            dcmhpqr.addProcCodeMatchingKey(Tag.CodeValue, procCode[0]);
+            dcmhpqr.addProcCodeMatchingKey(Tag.CodingSchemeDesignator, procCode[1]);
         }
         if (cl.hasOption("rfrp")) {
             String[] reasonForReqProc = split(cl.getOptionValue("rfrp"), ':');
-            dcmhpqr.addReasonForReqProcKey(Tag.CodeValue, reasonForReqProc[0]);
-            dcmhpqr.addReasonForReqProcKey(Tag.CodingSchemeDesignator,
+            dcmhpqr.addReasonForReqProcMatchingKey(Tag.CodeValue, reasonForReqProc[0]);
+            dcmhpqr.addReasonForReqProcMatchingKey(Tag.CodingSchemeDesignator,
                     reasonForReqProc[1]);
         }
         if (cl.hasOption("user")) {
             String[] hpUserIDCode = split(cl.getOptionValue("user"), ':');
-            dcmhpqr.addHPUserIDCodeKey(Tag.CodeValue, hpUserIDCode[0]);
-            dcmhpqr.addHPUserIDCodeKey(Tag.CodingSchemeDesignator,
+            dcmhpqr.addHPUserIDCodeMatchingKey(Tag.CodeValue, hpUserIDCode[0]);
+            dcmhpqr.addHPUserIDCodeMatchingKey(Tag.CodingSchemeDesignator,
                     hpUserIDCode[1]);
         }
         if (cl.hasOption("dest")) {
