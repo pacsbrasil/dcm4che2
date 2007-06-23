@@ -184,6 +184,11 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-pixquery-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=PIXQuery"/>
+    </antcall>
+  	<antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-ppsexceptionmgt-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=PPSExceptionMgtService"/>
     </antcall>
@@ -289,11 +294,6 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
-      <param name="xmbean.file" value="dcm4chee-pixquery-xmbean.xml"/>
-      <param name="mbean" value="dcm4chee.archive:service=PIXQuery"/>
-    </antcall>
-    <antcall target="xslt">
-      <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-hl7srv-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=HL7Server"/>
     </antcall>
@@ -301,6 +301,11 @@
       <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-mpps2orm-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=MPPS2ORM"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-pixnotif-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=PIXUpdateNotification"/>
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>

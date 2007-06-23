@@ -346,6 +346,7 @@ type           Event Type Code
 <attribute name="DeleteLocalStudiesCopyAvailable"/>
 <attribute name="ValidFileStatus"/>
 <attribute name="DeleteStudiesFromSystem"/>
+<attribute name="DeleteEmptyPatient"/>
 <attribute name="StudyAgeForDeletion"/>
 <attribute name="DeleteFilesInterval"/>
 <attribute name="DeleteFilesLimit"/>
@@ -388,6 +389,7 @@ type           Event Type Code
 <attribute name="MaximumOperationsPerformed"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
+<attribute name="AEServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=GPWLScu">
 <attribute name="CallingAETitle"/>
@@ -448,8 +450,11 @@ type           Event Type Code
 <attribute name="ProtocolName" type="Security"/>
 <attribute name="SoTimeout"/>
 <attribute name="NoopMessageTypes"/>
+<attribute name="SuppressErrorResponse"/>
 <attribute name="SendNotification"/>
 <attribute name="FileReceivedHL7"/>
+<attribute name="FileReceivedHL7OnError"/>
+<attribute name="ErrorLogDirectory"/>
 <attribute name="FileReceivedHL7AsXML"/>
 <attribute name="MaxClients"/>
 <attribute name="MaxIdleThreads"/>
@@ -594,6 +599,7 @@ type           Event Type Code
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="TemplatesServiceName"/>
+<attribute name="AEServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MPPSScu">
 <attribute name="ForwardAETitles"/>
@@ -621,6 +627,7 @@ type           Event Type Code
 <attribute name="MwlScuServiceName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="TemplatesServiceName"/>
+<attribute name="AEServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=MWLScu">
 <attribute name="CallingAETitle"/>
@@ -629,9 +636,16 @@ type           Event Type Code
 <attribute name="Priority"/>
 <attribute name="TLSConfigName"/>
 </mbean>
+<mbean name="dcm4chee.archive:service=PIXUpdateNotification">
+<attribute name="MessageTypes"/>
+<attribute name="IssuersOfOnlyOtherPatientIDs"/>
+<attribute name="HL7ServerName"/>
+</mbean>
 <mbean name="dcm4chee.archive:service=PIXQuery">
 <attribute name="PIXManager"/>
 <attribute name="PIXQueryName"/>
+<attribute name="IssuersOfOnlyOtherPatientIDs"/>
+<attribute name="IssuersOfOnlyPrimaryPatientIDs"/>
 <attribute name="MockResponse"/>
 <attribute name="HL7SendServiceName"/>
 </mbean>
@@ -687,6 +701,10 @@ type           Event Type Code
 <attribute name="SendWithDefaultTransferSyntaxToAETitles"/>
 <attribute name="SendNoPixelDataToAETitles"/>
 <attribute name="IgnoreUnsupportedSOPClassFailures"/>
+<attribute name="PIXQueryCallingAETitles"/>
+<attribute name="PIXQueryIssuersOfPatientID"/>
+<attribute name="PIXQueryDefaultIssuerOfPatientID"/>
+<attribute name="PIXQueryOnWildCardMatching"/>
 <attribute name="IgnorableSOPClasses"/>
 <attribute name="RequestStorageCommitFromAETitles"/>
 <attribute name="NoMatchForNoValue"/>
@@ -728,16 +746,18 @@ type           Event Type Code
 <attribute name="AEServiceName"/>
 <attribute name="TemplatesServiceName"/>
 <attribute name="PerfMonServiceName"/>
+<attribute name="PixQueryServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=RIDService">
+<attribute name="ImageQuality"/>
 <attribute name="CacheRoot"/>
-<attribute name="TimerID"/>
 <attribute name="DirectoryTree"/>
 <attribute name="WaveformCorrection"/>
 <attribute name="DeleterThresholds"/>
 <attribute name="PreferredFreeSpace"/>
 <attribute name="FreeDiskSpaceInterval"/>
 <attribute name="ECGSopCuids"/>
+<attribute name="SRSopCuids"/>
 <attribute name="RadiologyConceptNames"/>
 <attribute name="CardiologyConceptNames"/>
 <attribute name="EncapsulatedPDFSupport"/>
@@ -748,6 +768,7 @@ type           Event Type Code
 <attribute name="RIDSummaryXsl"/>
 <attribute name="UseXSLInstruction"/>
 <attribute name="UseOrigFile"/>
+<attribute name="TimerID"/>
 <attribute name="FileSystemMgtName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="SchedulerServiceName"/>
@@ -800,6 +821,7 @@ type           Event Type Code
 <attribute name="AcceptMismatchAffectedSOPInstanceUIDCallingAETiles"/>
 <attribute name="AcceptMissingPatientID"/>
 <attribute name="AcceptMissingPatientName"/>
+<attribute name="AdditionalCheckIfDuplicatedPatientID"/>
 <attribute name="AcceptPatientID"/>
 <attribute name="IgnorePatientID"/>
 <attribute name="IgnorePatientIDAETitles"/>
@@ -847,6 +869,7 @@ type           Event Type Code
 <attribute name="AuditLoggerName"/>
 <attribute name="TemplatesServiceName"/>
 <attribute name="PerfMonServiceName"/>
+<attribute name="AEServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=StudyInfoService">
 <attribute name="NoMatchForNoValue"/>
@@ -878,6 +901,7 @@ type           Event Type Code
 <attribute name="MaximumOperationsPerformed"/>
 <attribute name="DcmServerName"/>
 <attribute name="AuditLoggerName"/>
+<attribute name="AEServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=StudyMgtScu">
 <attribute name="ForwardingRules"/>
@@ -925,8 +949,8 @@ type           Event Type Code
 <attribute name="AuditLoggerName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=WADOService">
+<attribute name="ImageQuality"/>
 <attribute name="CacheRoot"/>
-<attribute name="TimerID"/>
 <attribute name="DirectoryTree"/>
 <attribute name="DeleterThresholds"/>
 <attribute name="PreferredFreeSpace"/>
@@ -944,6 +968,7 @@ type           Event Type Code
 <attribute name="ExtendedWADORequestType"/>
 <attribute name="DisabledAuditLogHosts"/>
 <attribute name="DisableHostLookup"/>
+<attribute name="TimerID"/>
 <attribute name="FileSystemMgtName"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="SchedulerServiceName"/>
@@ -951,11 +976,11 @@ type           Event Type Code
 <mbean name="dcm4chee.archive:service=WADOExtService">
 <attribute name="CacheEnabled"/>
 <attribute name="CacheRoot"/>
-<attribute name="TimerID"/>
 <attribute name="NumberOfCacheFolders"/>
 <attribute name="DeleterThresholds"/>
 <attribute name="PreferredFreeSpace"/>
 <attribute name="FreeDiskSpaceInterval"/>
+<attribute name="TimerID"/>
 <attribute name="FileSystemMgtName"/>
 <attribute name="StudyInfoServiceName"/>
 <attribute name="SchedulerServiceName"/>
