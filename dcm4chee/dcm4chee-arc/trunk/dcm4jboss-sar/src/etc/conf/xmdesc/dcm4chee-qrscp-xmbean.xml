@@ -137,7 +137,7 @@ QueryRetrieveScp service.</description>
       setMethod="setPixQueryOnWildcard">
       <description><![CDATA[Specifies, if the PIX Query may also invoke with a
       wildcard pattern as Patient ID - otherwise it will only be invoked for
-      a single value matching key or the Patient ID. Only supported by
+      a single value matching key for Patient IDs. Only supported by
       PIX Queries against the data base, but shall not be enabled with an
       external PIX Manager.]]>
       </description>
