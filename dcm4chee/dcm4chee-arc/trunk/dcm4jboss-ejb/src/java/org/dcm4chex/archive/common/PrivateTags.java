@@ -54,15 +54,15 @@ public class PrivateTags {
     public static final int InstancePk = 0x00430013;
     public static final int CallingAET = 0x00430014;
     public static final int CalledAET = 0x00430015;
-    public static final int PatientCustom1 = 0x00430016;
-    public static final int PatientCustom2 = 0x00430017;
-    public static final int PatientCustom3 = 0x00430018;
-    public static final int StudyCustom1 = 0x00430019;
-    public static final int StudyCustom2 = 0x0043001A;
-    public static final int StudyCustom3 = 0x0043001B;
-    public static final int SeriesCustom1 = 0x0043001C;
-    public static final int SeriesCustom2 = 0x0043001D;
-    public static final int SeriesCustom3 = 0x0043001E;
+    public static final int PatientCustomAttribute1 = 0x00430016;
+    public static final int PatientCustomAttribute2 = 0x00430017;
+    public static final int PatientCustomAttribute3 = 0x00430018;
+    public static final int StudyCustomAttribute1 = 0x00430019;
+    public static final int StudyCustomAttribute2 = 0x0043001A;
+    public static final int StudyCustomAttribute3 = 0x0043001B;
+    public static final int SeriesCustomAttribute1 = 0x0043001C;
+    public static final int SeriesCustomAttribute2 = 0x0043001D;
+    public static final int SeriesCustomAttribute3 = 0x0043001E;
     public static final int WorkItemSeq = 0x00430020;
     public static final int TianiURIReferencedTransferSyntaxUID = 0x00430030;
 }

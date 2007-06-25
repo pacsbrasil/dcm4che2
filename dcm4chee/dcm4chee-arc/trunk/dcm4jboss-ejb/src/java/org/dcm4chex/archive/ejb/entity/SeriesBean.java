@@ -732,9 +732,9 @@ public abstract class SeriesBean implements EntityBean {
             setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));
         }
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        setCustomAttribute1(ds.getString(PrivateTags.SeriesCustom1));
-        setCustomAttribute2(ds.getString(PrivateTags.SeriesCustom2));
-        setCustomAttribute3(ds.getString(PrivateTags.SeriesCustom3));
+        setCustomAttribute1(ds.getString(PrivateTags.SeriesCustomAttribute1));
+        setCustomAttribute2(ds.getString(PrivateTags.SeriesCustomAttribute2));
+        setCustomAttribute3(ds.getString(PrivateTags.SeriesCustomAttribute3));
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");

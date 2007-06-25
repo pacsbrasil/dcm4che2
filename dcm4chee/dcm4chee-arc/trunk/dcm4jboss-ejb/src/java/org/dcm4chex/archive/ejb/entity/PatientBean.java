@@ -570,9 +570,9 @@ public abstract class PatientBean implements EntityBean {
 	    }
         setPatientSex(ds.getString(Tags.PatientSex));
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        setCustomAttribute1(ds.getString(PrivateTags.PatientCustom1));
-        setCustomAttribute2(ds.getString(PrivateTags.PatientCustom2));
-        setCustomAttribute3(ds.getString(PrivateTags.PatientCustom3));
+        setCustomAttribute1(ds.getString(PrivateTags.PatientCustomAttribute1));
+        setCustomAttribute2(ds.getString(PrivateTags.PatientCustomAttribute2));
+        setCustomAttribute3(ds.getString(PrivateTags.PatientCustomAttribute3));
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
