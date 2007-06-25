@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
@@ -305,7 +304,7 @@ public class ORMService extends AbstractHL7Service {
     private String getText(List fields, int i) throws HL7Exception {
         try {
             return ((Element) fields.get(i)).getText();
-        } catch (NoSuchElementException e) {
+        } catch (IndexOutOfBoundsException e) {
             return "";
         }
     }
