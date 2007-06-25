@@ -111,17 +111,22 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
      */
     protected boolean findUnsupportedMatchingKey(Dataset ds, IntList matchingKeys) {
         DcmElement el;
+        int tag;
         for ( Iterator iter=ds.iterator() ; iter.hasNext() ; ) {
             el = (DcmElement) iter.next();
+            tag = el.tag();
+            if (el.isEmpty() || tag == Tags.SpecificCharacterSet
+                    || Tags.isPrivateCreatorDataElement(tag)) {
+                continue;
+            }
             if ( el.vr() != VRs.SQ ) {
-                if ( el.tag() != Tags.SpecificCharacterSet && el.vm(null) > 0 && 
-                        (matchingKeys == null || !matchingKeys.contains(el.tag())) ) {
+                if (matchingKeys == null || !matchingKeys.contains(tag)) {
                     log.warn("QueryCmd: Unsupported matching key found! key:"+el);
                     return true;
                 }
             } else {
-                IntList il = matchingKeys.contains(el.tag()) ? //is matching of this sequence allowed?
-                        (IntList)seqMatchingKeys.get(new Integer(el.tag())) : null;
+                IntList il = matchingKeys.contains(tag) ? //is matching of this sequence allowed?
+                        (IntList)seqMatchingKeys.get(new Integer(tag)) : null;
                 for ( int i=0; i<el.countItems() ; i++ ) {
                     if( findUnsupportedMatchingKey(el.getItem(i),il) ) {
                         log.warn("QueryCmd: Unsupported matching key found in SQ "+el);

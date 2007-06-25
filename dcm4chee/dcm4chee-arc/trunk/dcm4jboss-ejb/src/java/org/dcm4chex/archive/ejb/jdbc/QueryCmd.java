@@ -68,9 +68,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.PatientBirthDate, 
             Tags.PatientBirthTime,
             Tags.PatientSex,
-            PrivateTags.PatientCustomAttribute1,
-            PrivateTags.PatientCustomAttribute1,
-            PrivateTags.PatientCustomAttribute2
             };
 
     private static final int[] MATCHING_STUDY_KEYS = new int[] {
@@ -82,9 +79,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.ReferringPhysicianName,
             Tags.StudyDescription,
             Tags.StudyStatusID,
-            PrivateTags.StudyCustomAttribute1,
-            PrivateTags.StudyCustomAttribute1,
-            PrivateTags.StudyCustomAttribute2
             };
 
     private static final int[] MATCHING_SERIES_KEYS = new int[] {
@@ -100,10 +94,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.PPSStartDate,
             Tags.PPSStartTime, 
             Tags.RequestAttributesSeq,
-            PrivateTags.CallingAET,
-            PrivateTags.SeriesCustomAttribute1,
-            PrivateTags.SeriesCustomAttribute1,
-            PrivateTags.SeriesCustomAttribute2
             };
 
     private static final int[] MATCHING_INSTANCE_KEYS = new int[] {
@@ -268,6 +258,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 keys.getStrings(PrivateTags.PatientCustomAttribute2));
         sqlBuilder.addWildCardMatch(null, "Patient.customAttribute3", type2,
                 keys.getStrings(PrivateTags.PatientCustomAttribute3));
+        keys.remove(PrivateTags.PatientCustomAttribute1);
+        keys.remove(PrivateTags.PatientCustomAttribute2);
+        keys.remove(PrivateTags.PatientCustomAttribute3);
         matchingKeys.add(MATCHING_PATIENT_KEYS);
         seqMatchingKeys.put(new Integer(Tags.OtherPatientIDSeq), new IntList()
                 .add(MATCHING_OTHER_PAT_ID_SEQ));
@@ -362,6 +355,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 keys.getStrings(PrivateTags.StudyCustomAttribute2));
         sqlBuilder.addWildCardMatch(null, "Study.customAttribute3", type2,
                 keys.getStrings(PrivateTags.StudyCustomAttribute3));
+        keys.remove(PrivateTags.StudyCustomAttribute1);
+        keys.remove(PrivateTags.StudyCustomAttribute2);
+        keys.remove(PrivateTags.StudyCustomAttribute3);
         matchingKeys.add(MATCHING_STUDY_KEYS);
     }
 
@@ -409,6 +405,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 keys.getStrings(PrivateTags.SeriesCustomAttribute2));
         sqlBuilder.addWildCardMatch(null, "Series.customAttribute3", type2,
                 keys.getStrings(PrivateTags.SeriesCustomAttribute3));
+        keys.remove(PrivateTags.SeriesCustomAttribute1);
+        keys.remove(PrivateTags.SeriesCustomAttribute2);
+        keys.remove(PrivateTags.SeriesCustomAttribute3);
        if (this.isMatchRequestAttributes()) {
             Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 

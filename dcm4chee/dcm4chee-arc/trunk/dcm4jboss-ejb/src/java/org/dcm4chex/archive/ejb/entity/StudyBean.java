@@ -820,6 +820,14 @@ public abstract class StudyBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter(cuid);
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
+        setCustomAttributes(ds);
+    }
+    
+    private void setCustomAttributes(Dataset ds) {
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setCustomAttribute1(ds.getString(PrivateTags.StudyCustomAttribute1));
+        setCustomAttribute2(ds.getString(PrivateTags.StudyCustomAttribute2));
+        setCustomAttribute3(ds.getString(PrivateTags.StudyCustomAttribute3));
     }
     
     private void setAttributesInternal(Dataset ds, String tsuid) {
@@ -844,10 +852,6 @@ public abstract class StudyBean implements EntityBean {
             }
         }
         setStudyDescription(toUpperCase(ds.getString(Tags.StudyDescription)));
-        ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        setCustomAttribute1(ds.getString(PrivateTags.StudyCustomAttribute1));
-        setCustomAttribute2(ds.getString(PrivateTags.StudyCustomAttribute2));
-        setCustomAttribute3(ds.getString(PrivateTags.StudyCustomAttribute3));
         
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {

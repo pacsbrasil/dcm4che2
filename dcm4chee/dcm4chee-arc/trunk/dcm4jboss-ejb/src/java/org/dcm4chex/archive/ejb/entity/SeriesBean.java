@@ -709,6 +709,14 @@ public abstract class SeriesBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
+        setCustomAttributes(ds);
+    }
+
+    private void setCustomAttributes(Dataset ds) {
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setCustomAttribute1(ds.getString(PrivateTags.SeriesCustomAttribute1));
+        setCustomAttribute2(ds.getString(PrivateTags.SeriesCustomAttribute2));
+        setCustomAttribute3(ds.getString(PrivateTags.SeriesCustomAttribute3));
     }
     
     private void setAttributesInternal(Dataset ds, String tsuid) {
@@ -731,10 +739,6 @@ public abstract class SeriesBean implements EntityBean {
         if (refPPS != null) {
             setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));
         }
-        ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        setCustomAttribute1(ds.getString(PrivateTags.SeriesCustomAttribute1));
-        setCustomAttribute2(ds.getString(PrivateTags.SeriesCustomAttribute2));
-        setCustomAttribute3(ds.getString(PrivateTags.SeriesCustomAttribute3));
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
