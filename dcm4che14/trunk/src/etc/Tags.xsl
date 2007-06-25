@@ -76,6 +76,10 @@ public class Tags {
     public static boolean isPrivate(int tag) {
         return (tag &amp; 0x00010000) != 0;
     }
+    
+    public static boolean isPrivateCreatorDataElement(int tag) {
+        return (tag &amp; 0x00010000) != 0 &amp;&amp; (tag &amp; 0x0000ff00) == 0;
+    }
 
     public static StringBuffer toHexString(StringBuffer sb, int v, int l) {
 		for (int i = l; --i >= 0;)

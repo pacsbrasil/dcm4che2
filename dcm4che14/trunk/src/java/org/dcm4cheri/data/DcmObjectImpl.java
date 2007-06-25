@@ -229,6 +229,17 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     public DcmElement remove(int tag) {
+        if (Tags.isPrivate(tag)) {
+            try {
+                tag = adjustPrivateTag(tag, false);
+            } catch (DcmValueException e) {
+                log.warn("Could not access Creator ID", e);
+                return null;
+            }
+            if (tag == 0) {
+                return null;
+            }
+        }
         synchronized (list) {
             int index = indexOf(tag);
             return index >= 0 ? (DcmElement) list.remove(index) : null;
