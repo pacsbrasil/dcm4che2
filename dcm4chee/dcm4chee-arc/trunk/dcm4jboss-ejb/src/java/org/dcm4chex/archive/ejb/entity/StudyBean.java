@@ -148,8 +148,7 @@ public abstract class StudyBean implements EntityBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            codeHome = (CodeLocalHome)
-                    jndiCtx.lookup("java:comp/env/ejb/Code");
+            codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
