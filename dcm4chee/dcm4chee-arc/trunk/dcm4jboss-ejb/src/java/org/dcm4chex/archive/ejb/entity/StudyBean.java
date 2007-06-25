@@ -267,6 +267,25 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setStudyDescription(String description);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="study_custom1"
+     */
+    public abstract String getCustomAttribute1();
+    public abstract void setCustomAttribute1(String value);
+
+    /**
+     * @ejb.persistence column-name="study_custom2"
+     */
+    public abstract String getCustomAttribute2();
+    public abstract void setCustomAttribute2(String value);
+
+    /**
+     * @ejb.persistence column-name="study_custom3"
+     */
+    public abstract String getCustomAttribute3();
+    public abstract void setCustomAttribute3(String value);
+
+    /**
      * Study Status
      *
      * @ejb.interface-method
@@ -826,6 +845,11 @@ public abstract class StudyBean implements EntityBean {
             }
         }
         setStudyDescription(toUpperCase(ds.getString(Tags.StudyDescription)));
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setCustomAttribute1(ds.getString(PrivateTags.StudyCustom1));
+        setCustomAttribute2(ds.getString(PrivateTags.StudyCustom2));
+        setCustomAttribute3(ds.getString(PrivateTags.StudyCustom3));
+        
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");

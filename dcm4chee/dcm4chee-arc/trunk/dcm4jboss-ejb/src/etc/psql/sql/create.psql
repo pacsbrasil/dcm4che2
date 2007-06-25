@@ -28,6 +28,9 @@ CREATE TABLE patient (
 	pat_p_name    	TEXT,
 	pat_birthdate  	DATE,
 	pat_sex		  	TEXT,
+	pat_custom1		TEXT,
+	pat_custom2		TEXT,
+	pat_custom3		TEXT,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
 	pat_attrs		BYTEA,
@@ -40,6 +43,9 @@ CREATE INDEX pat_i_name ON patient(pat_i_name);
 CREATE INDEX pat_p_name ON patient(pat_p_name);
 CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 CREATE INDEX pat_sex ON patient(pat_sex);
+CREATE INDEX pat_custom1 ON patient(pat_custom1);
+CREATE INDEX pat_custom2 ON patient(pat_custom2);
+CREATE INDEX pat_custom3 ON patient(pat_custom3);
 
 CREATE TABLE other_pid (
 	pk          	SERIAL NOT NULL CONSTRAINT other_pid_pk PRIMARY KEY,
@@ -68,6 +74,9 @@ CREATE TABLE study (
 	ref_phys_i_name TEXT,
 	ref_phys_p_name TEXT,
 	study_desc      TEXT,
+	study_custom1	TEXT,
+	study_custom2	TEXT,
+	study_custom3	TEXT,
 	study_status_id TEXT,
 	mods_in_study	TEXT,
 	num_series		INTEGER NOT NULL,
@@ -93,6 +102,9 @@ CREATE INDEX ref_physician ON study(ref_physician);
 CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name);
 CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name);
 CREATE INDEX study_desc ON study(study_desc);
+CREATE INDEX study_custom1 ON study(study_custom1);
+CREATE INDEX study_custom2 ON study(study_custom2);
+CREATE INDEX study_custom3 ON study(study_custom3);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
@@ -145,6 +157,9 @@ CREATE TABLE series (
 	department		TEXT,
 	pps_start		TIMESTAMP,
 	pps_iuid		TEXT,
+	series_custom1	TEXT,
+	series_custom2	TEXT,
+	series_custom3	TEXT,
 	num_instances	INTEGER NOT NULL,
 	src_aet			TEXT,
 	ext_retr_aet	TEXT,
@@ -171,6 +186,9 @@ CREATE INDEX institution ON series(institution);
 CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
+CREATE INDEX series_custom1 ON series(series_custom1);
+CREATE INDEX series_custom2 ON series(series_custom2);
+CREATE INDEX series_custom3 ON series(series_custom3);
 CREATE INDEX series_src_aet ON series (src_aet);
 CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);

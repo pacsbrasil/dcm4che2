@@ -10,6 +10,9 @@
         <attr tag="00100040"/> <!-- Patient's Sex -->
         <attr tag="00101002"/> <!-- Other Patient IDs Sequence -->
         <attr tag="00104000"/> <!-- Patient Comments -->
+        <attr tag="00430016"/> <!-- Private Custom Patient Attribute 1 --> 
+        <attr tag="00430017"/> <!-- Private Custom Patient Attribute 2 --> 
+        <attr tag="00430018"/> <!-- Private Custom Patient Attribute 3 -->           
     </patient>
     <study>
         <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -21,6 +24,9 @@
         <attr tag="00081032"/> <!-- Procedure Code Seq -->
         <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
         <attr tag="00200010"/> <!-- Study ID -->
+        <attr tag="00430019"/> <!-- Private Custom Study Attribute 1 --> 
+        <attr tag="0043001A"/> <!-- Private Custom Study Attribute 2 --> 
+        <attr tag="0043001B"/> <!-- Private Custom Study Attribute 3 -->           
     </study>
     <series>
         <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -40,6 +46,9 @@
         <attr tag="00400244"/> <!-- Performed Procedure Step Start Date -->
         <attr tag="00400245"/> <!-- Performed Procedure Step Start Time -->
         <attr tag="00400275"/> <!-- Request Attributes Sequence -->
+        <attr tag="00430019"/> <!-- Private Custom Series Attribute 1 --> 
+        <attr tag="0043001A"/> <!-- Private Custom Series Attribute 2 --> 
+        <attr tag="0043001B"/> <!-- Private Custom Series Attribute 3 -->           
     </series>
     <instance>
         <attr tag="00080005"/> <!-- Specific Character Set -->

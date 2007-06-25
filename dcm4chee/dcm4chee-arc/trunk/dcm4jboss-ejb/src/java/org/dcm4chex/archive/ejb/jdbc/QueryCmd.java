@@ -67,7 +67,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.PatientName, 
             Tags.PatientBirthDate, 
             Tags.PatientBirthTime,
-            Tags.PatientSex };
+            Tags.PatientSex,
+            PrivateTags.PatientCustom1,
+            PrivateTags.PatientCustom1,
+            PrivateTags.PatientCustom2
+            };
 
     private static final int[] MATCHING_STUDY_KEYS = new int[] {
             Tags.StudyInstanceUID, 
@@ -77,7 +81,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.AccessionNumber, 
             Tags.ReferringPhysicianName,
             Tags.StudyDescription,
-            Tags.StudyStatusID };
+            Tags.StudyStatusID,
+            PrivateTags.StudyCustom1,
+            PrivateTags.StudyCustom1,
+            PrivateTags.StudyCustom2
+            };
 
     private static final int[] MATCHING_SERIES_KEYS = new int[] {
             Tags.SeriesInstanceUID, 
@@ -91,8 +99,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.Laterality,
             Tags.PPSStartDate,
             Tags.PPSStartTime, 
+            Tags.RequestAttributesSeq,
             PrivateTags.CallingAET,
-            Tags.RequestAttributesSeq };
+            PrivateTags.SeriesCustom1,
+            PrivateTags.SeriesCustom1,
+            PrivateTags.SeriesCustom2
+            };
 
     private static final int[] MATCHING_INSTANCE_KEYS = new int[] {
             Tags.SOPInstanceUID, 
@@ -249,6 +261,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                                 Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2, keys
                 .getStrings(Tags.PatientSex));
+        keys.setPrivateCreatorID(PrivateTags.CreatorID);
+        sqlBuilder.addWildCardMatch(null, "Patient.customAttribute1", type2,
+                keys.getStrings(PrivateTags.PatientCustom1));
+        sqlBuilder.addWildCardMatch(null, "Patient.customAttribute2", type2,
+                keys.getStrings(PrivateTags.PatientCustom2));
+        sqlBuilder.addWildCardMatch(null, "Patient.customAttribute3", type2,
+                keys.getStrings(PrivateTags.PatientCustom3));
         matchingKeys.add(MATCHING_PATIENT_KEYS);
         seqMatchingKeys.put(new Integer(Tags.OtherPatientIDSeq), new IntList()
                 .add(MATCHING_OTHER_PAT_ID_SEQ));
@@ -336,6 +355,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
                 keys.getStrings(Tags.StudyStatusID));
+        keys.setPrivateCreatorID(PrivateTags.CreatorID);
+        sqlBuilder.addWildCardMatch(null, "Study.customAttribute1", type2,
+                keys.getStrings(PrivateTags.StudyCustom1));
+        sqlBuilder.addWildCardMatch(null, "Study.customAttribute2", type2,
+                keys.getStrings(PrivateTags.StudyCustom2));
+        sqlBuilder.addWildCardMatch(null, "Study.customAttribute3", type2,
+                keys.getStrings(PrivateTags.StudyCustom3));
         matchingKeys.add(MATCHING_STUDY_KEYS);
     }
 
@@ -377,7 +403,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, keys
                 .getStrings(PrivateTags.CallingAET));
-        if (this.isMatchRequestAttributes()) {
+        sqlBuilder.addWildCardMatch(null, "Series.customAttribute1", type2,
+                keys.getStrings(PrivateTags.SeriesCustom1));
+        sqlBuilder.addWildCardMatch(null, "Series.customAttribute2", type2,
+                keys.getStrings(PrivateTags.SeriesCustom2));
+        sqlBuilder.addWildCardMatch(null, "Series.customAttribute3", type2,
+                keys.getStrings(PrivateTags.SeriesCustom3));
+       if (this.isMatchRequestAttributes()) {
             Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
             SqlBuilder subQuery = new SqlBuilder();

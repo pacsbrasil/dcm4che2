@@ -303,7 +303,25 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract void setPatientSex(String sex);
 
-	/**
+    /**
+     * @ejb.persistence column-name="pat_custom1"
+     */
+    public abstract String getCustomAttribute1();
+    public abstract void setCustomAttribute1(String value);
+
+    /**
+     * @ejb.persistence column-name="pat_custom2"
+     */
+    public abstract String getCustomAttribute2();
+    public abstract void setCustomAttribute2(String value);
+
+    /**
+     * @ejb.persistence column-name="pat_custom3"
+     */
+    public abstract String getCustomAttribute3();
+    public abstract void setCustomAttribute3(String value);
+
+   /**
      * Patient DICOM Attributes
      *
      * @ejb.persistence
@@ -551,6 +569,10 @@ public abstract class PatientBean implements EntityBean {
 	        log.warn("Illegal Patient Birth Date format: " + e.getMessage());
 	    }
         setPatientSex(ds.getString(Tags.PatientSex));
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setCustomAttribute1(ds.getString(PrivateTags.PatientCustom1));
+        setCustomAttribute2(ds.getString(PrivateTags.PatientCustom2));
+        setCustomAttribute3(ds.getString(PrivateTags.PatientCustom3));
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");

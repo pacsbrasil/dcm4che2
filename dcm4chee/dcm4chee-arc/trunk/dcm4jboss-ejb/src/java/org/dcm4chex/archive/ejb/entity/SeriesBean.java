@@ -297,6 +297,24 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setPpsIuid(String uid);
 
     /**
+     * @ejb.persistence column-name="series_custom1"
+     */
+    public abstract String getCustomAttribute1();
+    public abstract void setCustomAttribute1(String value);
+
+    /**
+     * @ejb.persistence column-name="series_custom2"
+     */
+    public abstract String getCustomAttribute2();
+    public abstract void setCustomAttribute2(String value);
+
+    /**
+     * @ejb.persistence column-name="series_custom3"
+     */
+    public abstract String getCustomAttribute3();
+    public abstract void setCustomAttribute3(String value);
+    
+    /**
      * Number Of Series Related Instances
      *
      * @ejb.interface-method
@@ -704,16 +722,19 @@ public abstract class SeriesBean implements EntityBean {
         setInstitutionalDepartmentName(
                 toUpperCase(ds.getString(Tags.InstitutionalDepartmentName)));
         try {
-	        setPpsStartDateTime(ds
-	                .getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
+            setPpsStartDateTime(
+                    ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Pps Date/Time format: " + e.getMessage());
         }
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
         if (refPPS != null) {
-            final String ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
-            setPpsIuid(ppsUID);
+            setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));
         }
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setCustomAttribute1(ds.getString(PrivateTags.SeriesCustom1));
+        setCustomAttribute2(ds.getString(PrivateTags.SeriesCustom2));
+        setCustomAttribute3(ds.getString(PrivateTags.SeriesCustom3));
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
