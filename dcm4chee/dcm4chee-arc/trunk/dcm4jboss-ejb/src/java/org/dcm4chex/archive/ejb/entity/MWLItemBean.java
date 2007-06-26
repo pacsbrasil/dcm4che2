@@ -123,154 +123,105 @@ public abstract class MWLItemBean implements EntityBean {
     public abstract void setPk(Long pk);
 
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
-
     public abstract void setCreatedTime(java.sql.Timestamp time);
 
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
-
     public abstract void setUpdatedTime(java.sql.Timestamp time);
 	
     /**
-     * SPS ID
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="sps_id"
+     * @ejb.persistence column-name="sps_id"
      */
     public abstract String getSpsId();
-
     public abstract void setSpsId(String spsId);
 
     /**
-     * SPS Start Datetime
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="start_datetime"
+     * @ejb.persistence column-name="start_datetime"
      */
     public abstract java.sql.Timestamp getSpsStartDateTime();
 
     public abstract void setSpsStartDateTime(java.sql.Timestamp dateTime);
 
     /**
-     * Station AET
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="station_aet"
+     * @ejb.persistence column-name="station_aet"
      */
     public abstract String getScheduledStationAET();
-
     public abstract void setScheduledStationAET(String aet);
 
     /**
-     * Modality
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="modality"
+     * @ejb.persistence column-name="station_name"
+     */
+    public abstract String getScheduledStationName();
+    public abstract void setScheduledStationName(String station);
+
+    /**
+     * @ejb.persistence column-name="modality"
      */
     public abstract String getModality();
-
     public abstract void setModality(String md);
 
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="perf_physician"
      */
     public abstract String getPerformingPhysicianName();
     public abstract void setPerformingPhysicianName(String name);
 
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="perf_phys_i_name"
      */
     public abstract String getPerformingPhysicianIdeographicName();
     public abstract void setPerformingPhysicianIdeographicName(String name);
 
     /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="perf_phys_p_name"
      */
     public abstract String getPerformingPhysicianPhoneticName();
     public abstract void setPerformingPhysicianPhoneticName(String name);
 
     /**
-     * Requested Procedure ID
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="req_proc_id"
+     * @ejb.persistence column-name="req_proc_id"
      */
     public abstract String getRequestedProcedureId();
 
     public abstract void setRequestedProcedureId(String id);
 
     /**
-     * Accession Number
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="accession_no"
+     * @ejb.persistence column-name="accession_no"
      */
     public abstract String getAccessionNumber();
-
     public abstract void setAccessionNumber(String no);
 
     /**
-     * Study Instance UID
-     *
-     * @ejb.interface-method
-     * @ejb.persistence
-     *  column-name="study_iuid"
+     * @ejb.persistence column-name="study_iuid"
      */
     public abstract String getStudyIuid();
-
     public abstract void setStudyIuid(String uid);
     
     /**
-     * MWL Item DICOM Attributes
-     *
-     * @ejb.persistence
-     *  column-name="item_attrs"
-     * 
+     * @ejb.persistence column-name="item_attrs"
      */
     public abstract byte[] getEncodedAttributes();
 
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
-     * @ejb.interface-method view-type="local"
-     * 
-     * @ejb.relation
-     *  name="patient-mwlitems"
-     *  role-name="mwlitem-of-patient"
+     * @ejb.relation name="patient-mwlitems" role-name="mwlitem-of-patient"
      *  cascade-delete="yes"
-     *
-     * @jboss.relation
-     *  fk-column="patient_fk"
-     *  related-pk-field="pk"
+     * @jboss.relation fk-column="patient_fk" related-pk-field="pk"
      */
     public abstract void setPatient(PatientLocal patient);
 
     /**
-     * @ejb.interface-method view-type="local"
-     * 
-     * @return patient of this mwl_item
+     * @ejb.interface-method
      */
     public abstract PatientLocal getPatient();
 
     /**
-     * Create MWLItem.
-     *
      * @ejb.create-method
      */
     public Long ejbCreate(Dataset ds, PatientLocal patient) throws CreateException {
@@ -325,6 +276,7 @@ public abstract class MWLItemBean implements EntityBean {
         setSpsStartDateTime(
             spsItem.getDateTime(Tags.SPSStartDate, Tags.SPSStartTime));
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
+        setScheduledStationName(spsItem.getString(Tags.ScheduledStationName));
         PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
             setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
@@ -353,10 +305,7 @@ public abstract class MWLItemBean implements EntityBean {
         return s != null ? s.toUpperCase() : null;
     }
     
-    /**
-     * @ejb.interface-method
-     */
-    public void setSpsStartDateTime(java.util.Date date) {
+    private void setSpsStartDateTime(java.util.Date date) {
         setSpsStartDateTime(date != null ? new java.sql.Timestamp(date.getTime()) : null);
     }
 

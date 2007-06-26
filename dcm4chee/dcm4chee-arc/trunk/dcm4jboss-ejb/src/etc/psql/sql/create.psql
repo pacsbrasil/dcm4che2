@@ -319,6 +319,7 @@ CREATE TABLE mwl_item (
 	sps_id			TEXT,
 	start_datetime	TIMESTAMP NOT NULL,
 	station_aet     TEXT NOT NULL,
+	station_name    TEXT,
 	modality	    TEXT NOT NULL,
 	perf_physician TEXT,
 	perf_phys_i_name  TEXT,
@@ -336,6 +337,7 @@ CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item (sps_id,req_proc_id);
 CREATE INDEX mwl_start_time ON mwl_item (start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item (station_aet);
+CREATE INDEX mwl_station_name ON mwl_item (station_name);
 CREATE INDEX mwl_modality ON mwl_item (modality);
 CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician);
 CREATE INDEX mwl_perf_phys_i_nm ON mwl_item(perf_phys_i_name);

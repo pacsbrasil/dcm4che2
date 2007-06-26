@@ -33,6 +33,9 @@ CREATE INDEX series_custom1 ON series(series_custom1(64));
 CREATE INDEX series_custom2 ON series(series_custom2(64));
 CREATE INDEX series_custom3 ON series(series_custom3(64));
 
+ALTER TABLE mwl_item ADD station_name VARCHAR(250) BINARY;
+CREATE INDEX mwl_station_name ON mwl_item (station_name(16));
+
 CREATE TABLE other_pid (
 	pk          	INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
 	pat_id         	VARCHAR(250) BINARY NOT NULL,

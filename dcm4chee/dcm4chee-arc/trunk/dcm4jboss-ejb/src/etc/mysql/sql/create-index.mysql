@@ -95,6 +95,7 @@ CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
 CREATE INDEX mwl_station_aet ON mwl_item(station_aet(16));
+CREATE INDEX mwl_station_name ON mwl_item(station_name(16));
 CREATE INDEX mwl_modality ON mwl_item(modality(16));
 CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician(64));
 CREATE INDEX mwl_perf_phys_i_nm ON mwl_item(perf_phys_i_name(64));

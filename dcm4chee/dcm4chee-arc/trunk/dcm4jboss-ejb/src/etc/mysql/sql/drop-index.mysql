@@ -47,6 +47,7 @@ ALTER TABLE filesystem DROP INDEX fs_retrieve_aet;
 ALTER TABLE files DROP INDEX file_tsuid;
 ALTER TABLE mwl_item DROP INDEX mwl_sps_id;
 ALTER TABLE mwl_item DROP INDEX mwl_station_aet;
+ALTER TABLE mwl_item DROP INDEX mwl_station_name;
 ALTER TABLE mwl_item DROP INDEX mwl_modality;
 ALTER TABLE mwl_item DROP INDEX mwl_perf_physician;
 ALTER TABLE mwl_item DROP INDEX mwl_perf_phys_i_nm;

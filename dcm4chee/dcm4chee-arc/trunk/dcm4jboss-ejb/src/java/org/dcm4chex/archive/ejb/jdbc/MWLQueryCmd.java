@@ -113,6 +113,9 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
             sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationAET",
                     SqlBuilder.TYPE1,
                     spsItem.getStrings(Tags.ScheduledStationAET));
+            sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationName",
+                    SqlBuilder.TYPE2,
+                    spsItem.getStrings(Tags.ScheduledStationName));
             sqlBuilder.addPNMatch(new String[] {
                     "MWLItem.performingPhysicianName",
                     "MWLItem.performingPhysicianIdeographicName",
@@ -132,8 +135,9 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", SqlBuilder.TYPE2, keys
-                .getString(Tags.IssuerOfPatientID));
+        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                SqlBuilder.TYPE2,
+                keys.getString(Tags.IssuerOfPatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",

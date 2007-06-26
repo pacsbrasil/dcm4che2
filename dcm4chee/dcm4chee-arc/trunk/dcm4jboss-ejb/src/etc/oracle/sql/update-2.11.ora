@@ -33,6 +33,9 @@ CREATE INDEX series_custom1 ON series(series_custom1);
 CREATE INDEX series_custom2 ON series(series_custom2);
 CREATE INDEX series_custom3 ON series(series_custom3);
 
+ALTER TABLE mwl_item ADD station_name VARCHAR2(255);
+CREATE INDEX mwl_station_name ON mwl_item (station_name);
+
 CREATE SEQUENCE other_pid_pk_seq;
 CREATE TABLE other_pid (
 	pk          	NUMBER(38,0) NOT NULL CONSTRAINT other_pid_pk PRIMARY KEY,
