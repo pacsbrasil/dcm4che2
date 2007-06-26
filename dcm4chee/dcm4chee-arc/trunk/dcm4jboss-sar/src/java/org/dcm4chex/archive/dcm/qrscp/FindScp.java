@@ -169,10 +169,12 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         }
         if (updateRQ) {
             Iterator iter = result.iterator();
-            setPID(rqData, (String[]) iter.next());
             opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
-            while (iter.hasNext()) {
-                setPID(opidsq.addNewItem(), (String[]) iter.next());
+            if (iter.hasNext()) {
+                setPID(rqData, (String[]) iter.next());
+                while (iter.hasNext()) {
+                    setPID(opidsq.addNewItem(), (String[]) iter.next());
+                }
             }
         }
     }
@@ -195,7 +197,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         List l = service.queryCorrespondingPIDs(pid, issuer);
-        if (l.isEmpty()) {
+        // TODO : As long WC matching for Other Patient IDs is not
+        // supported by QueryCmd, do NOT use it as fallback, if not
+        // resolve by PIX Query
+        if (l.isEmpty() && !isWildCardMatching(pid)) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;            
         }
