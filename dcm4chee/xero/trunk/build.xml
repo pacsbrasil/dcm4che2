@@ -18,6 +18,10 @@
            <include name="ejb3-persistence.jar" />
            <include name="cglib.jar" />
         </fileset>
+        <fileset dir="xero-ear/target/xero">
+           <include name="el-*.jar" />
+           <include name="slf4j*.jar" />
+        </fileset>
      </copy>
   </target>
 
@@ -43,7 +47,7 @@
   </target>
 
   <target name="setupConf">
-     <copy todir="${developmentServer}/server/default/conf">
+     <copy todir="${developmentServer}/server/default/conf" overwrite="true">
         <fileset dir="conf" includes="**/*" />
      </copy>
   </target>
