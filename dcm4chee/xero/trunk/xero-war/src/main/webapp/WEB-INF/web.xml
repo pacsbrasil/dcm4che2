@@ -77,6 +77,11 @@
    </filter>
 
    <filter>
+      <filter-name>TimeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.TimeFilter</filter-class>
+   </filter>
+
+   <filter>
       <filter-name>ShortMaxAgeFilter</filter-name>
       <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
       <init-param>
@@ -111,6 +116,19 @@
     	  <param-value>application/xml</param-value>
       </init-param>
    </filter>
+
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>*.seam</url-pattern>
+   </filter-mapping>
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>*.xml</url-pattern>
+   </filter-mapping>
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>*.xsl</url-pattern>
+   </filter-mapping>
    
    <filter-mapping>
       <filter-name>XmlContentFilter</filter-name>

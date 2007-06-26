@@ -69,6 +69,7 @@ public class PatientViewed {
 	/** Sets the patient identifier - this clears the study UID if the PID changes. */
 	public void setPatientIdentifier(String pid) {
 		if( pid==null || pid.length()==0 ) return;
+		pid = pid.trim();
 		this.patientIdentifier = new PatientIdentifier(pid);
 		log.debug("The patient identifier is "+patientIdentifier);
 	}

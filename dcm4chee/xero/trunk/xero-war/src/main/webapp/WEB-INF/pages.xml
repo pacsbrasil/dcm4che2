@@ -79,6 +79,7 @@
     <param name="studyUID" value="#{StudyLevel.studyUID}" />
     <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
     <param name="mode" value="#{DisplayMode.mode}" />
+    <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <param name="counter" value="#{DisplayMode.counter}" />
     <!-- To be removed into an action item -->
     <begin-conversation join="true" />
@@ -90,10 +91,16 @@
     <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
     <param name="objectUID" value="#{StudyLevel.objectUID}" />
     <param name="mode" value="#{DisplayMode.mode}" />
-    <param name="applyLevel" value="#{DisplayMode.applyLevel}" />
+    <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <begin-conversation join="true" />
   </page>
 
+  <page view-id="/image/action/Mode.xhtml" action="#{DisplayMode.action}">
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
   <page view-id="/image/action/WindowLevel.xhtml" action="#{WindowLevel.action}">
     <param name="windowWidth" value="#{WindowLevel.windowWidth}" />
     <param name="windowCenter" value="#{WindowLevel.windowCenter}" />
@@ -102,12 +109,11 @@
     </navigation>
   </page>
   
-  <page view-id="/image/action/ZoomPan.xhtml">
-    <param name="zoom" value="#{ZoomPanModel.zoom}" />
-    <param name="relZoom" value="#{ZoomPanModel.relZoom}" />
-    <param name="panX" value="#{ZoomPanModel.panX}" />
-    <param name="panY" value="#{ZoomPanModel.panY}" />
-    <param name="region" value="#{ZoomPanModel.region}" />
+  <page view-id="/image/action/ZoomPan.xhtml" action="#{ZoomPan.action}">
+    <param name="relZoom" value="#{ZoomPan.relZoom}" />
+    <param name="panX" value="#{ZoomPan.panX}" />
+    <param name="panY" value="#{ZoomPan.panY}" />
+    <param name="region" value="#{ZoomPan.region}" />
     <navigation>
       <redirect view-id="/image/image.xhtml" />
     </navigation>

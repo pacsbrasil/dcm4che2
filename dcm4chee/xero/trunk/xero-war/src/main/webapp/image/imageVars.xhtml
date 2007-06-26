@@ -10,10 +10,8 @@
 <xsl:variable name="imagePosition"><xsl:value-of select="number(/documents/position)"/></xsl:variable>
 
 <xsl:variable name="frameNode" select="document(/documents/layout)/se:results" />
-<xsl:variable name="windowWidth" select="/documents/windowLevel/@width" />
-<xsl:variable name="windowCenter" select="/documents/windowLevel/@center" />
-<xsl:variable name="region" select="/documents/region" />
 <xsl:variable name="mode" select="/documents/mode" />
+<xsl:variable name="applyLevel" select="/documents/mode/@applyLevel" />
 <xsl:variable name="documentsNode" select="/documents" />
 <xsl:variable name="toolbarNode" select="document(/documents/toolbar)/*" />
 </ui:component>

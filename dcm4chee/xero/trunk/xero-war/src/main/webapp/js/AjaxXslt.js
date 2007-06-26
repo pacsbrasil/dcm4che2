@@ -238,12 +238,14 @@ XsltAjax.prototype.ajaxRead = function (file, item, params){
   }
   this.inProgress = true;
   var xmlObj = null;
+  var asXml = null;
   var usethis = this;
   this.url = file;
   xmlObj = new XMLHttpRequest();
   xmlObj.onreadystatechange = function(){
      if(xmlObj.readyState == 4){
      	this.fromServerTime = (new Date()).getTime();
+     	asXml = usethis.asXml(xmlObj);
         usethis.updateObj(item, usethis.asXml(xmlObj));
      }
   };
@@ -369,7 +371,7 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    	 	postUpdate = postArgs;
    	 	this.url = actionHref;
    	 }
-   	 //else alert("No action href found to update, using get on "+this.url+" items "+items);   }
+   	 //else alet("No action href found to update, using get on "+this.url+" items "+items);   }
 
    if( updateModel && this.currentXml) {
       // A direct update, no refresh/post/anything.

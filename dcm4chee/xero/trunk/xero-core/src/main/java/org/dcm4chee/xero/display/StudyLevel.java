@@ -79,6 +79,7 @@ public class StudyLevel {
 		log.info("Study UID set to "+uid);
 		if (uid == null || uid.length() == 0)
 			return;
+		uid = uid.trim();
 		this.studyUID = uid;
 	}
 
@@ -89,6 +90,7 @@ public class StudyLevel {
 	public void setSeriesUID(String uid) {
 		if (uid == null || uid.length() == 0)
 			return;
+		uid = uid.trim();
 		log.debug("Series viewed set to #0", uid);
 		this.seriesUID = uid;
 	}
@@ -99,8 +101,9 @@ public class StudyLevel {
 	}
 
 	/** Sets the object UID for the object being modified. */
-	public void setObjectUID(String objectUID) {
-		this.objectUID = objectUID;
+	public void setObjectUID(String uid) {
+		if( uid!=null ) uid = uid.trim();
+		this.objectUID = uid;
 	}
 
 	/** Returns the frame number in a multi-frame object */

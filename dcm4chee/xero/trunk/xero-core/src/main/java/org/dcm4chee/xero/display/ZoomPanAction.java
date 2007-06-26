@@ -37,53 +37,79 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
+import org.dcm4chee.xero.search.study.DicomObjectType;
+import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.ImageType;
+import org.dcm4chee.xero.search.study.SeriesBean;
+import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.ScopeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Name("ZoomPanModel")
-@Scope(ScopeType.CONVERSATION)
-public class ZoomPanModel {
-	private static final Logger log = LoggerFactory.getLogger(ZoomPanModel.class); 
+@Name("ZoomPan")
+@Scope(ScopeType.EVENT)
+public class ZoomPanAction {
+	private static final double ZOOM_EXPONENT = 0.9;
+	private static final double LOG_ZOOM_EXPONENT = Math.log(ZOOM_EXPONENT);
 
-	/** Current zoom level */
-	int izoom = 0;
+	private static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class); 
+
+	@In(value="LocalStudyModel", create=true)
+	LocalStudyModel localStudyModel;
+	
+	@In(value="DisplayMode", create=true)
+	DisplayMode mode;
+
+	/** Amount to change zoom by */
+	int relZoom = 0;
+	float panX = 0, panY = 0;
 	
 	/** Center X,Y and half height values */
 	double centerX=0.5, centerY=0.5, hWidth=0.5, hHeight=0.5;
 	String region;
 
 	public void setRelZoom(int rzoom) {
-		setZoom(Math.max(0,izoom+rzoom));
+		this.relZoom = rzoom;
+		log.info("Relative zoomPan set to "+rzoom+" region="+getRegion());
 	}
-	/** Sets the zoom value, and as a side-affect modifies the region to re-center it with the
-	 * given limits.  Cannot be read back out, as this is a relative operation.
-	 * @param izoom level, 0 being the whole image, 1 being 90%, 2 being 81% 0.9<sup>izoom</sup>
+	
+	public int getRelZoom() {
+		return this.relZoom;
+	}
+	
+	/** Sets the size of the window to be that specified by the given zoom level.
 	 */
-	public void setZoom(int izoom) {
+	protected void setZoom(int izoom) {
 		if( izoom<0 || izoom > 250 ) {
 			throw new UnsupportedOperationException("Illegal zoom value "+izoom);
 		}
-		this.izoom = izoom;
-		double zoom = 0.5 * Math.pow(0.9, (double) izoom); 
+		double zoom = 0.5 * Math.pow(ZOOM_EXPONENT, (double) izoom); 
 		hWidth = zoom;
 		hHeight = zoom;
 		fixRegion();
 		log.info("Zoom set to "+izoom);
 	}
 	
-	/** Gets the zoom level 
-	 * @return zoom level 0 to 250 
+	/**
+	 * Gets the zoom level, as computed from the region.
 	 */
-	public int getZoom() {
+	protected int getZoom() {
+		if( hHeight < 0.0001 ) throw new IllegalArgumentException("Region height must be larger than 0.0001.");
+		double zoom = Math.log( hHeight * 2 ) / LOG_ZOOM_EXPONENT;
+		log.info("zoomPan getZoom hHeight="+hHeight+" dbl zoom="+zoom);
+		int izoom = (int) Math.round(zoom);
+		if( izoom < 0 ) return 0;
+		if( izoom >= 250 ) return 250;
 		return izoom;
 	}
-	
+		
 	/** Sets the region to a specific value */
 	public void setRegion(String region) {
-		log.info("Setting region to "+region);
+		if( region==null ) throw new IllegalArgumentException("Region must not be null.");
+		region = region.trim();
+		log.info("Setting region to "+region + " on "+this);
 		double[] dRegion = splitRegion(region);
 		centerX = (dRegion[0]+dRegion[2])/2;
 		centerY = (dRegion[1]+dRegion[3])/2;
@@ -91,10 +117,12 @@ public class ZoomPanModel {
 		hHeight = (dRegion[3]-dRegion[1])/2;
 		// Regenerate the region string from components.
 		this.region = null;
+		log.info("Region after set is "+getRegion());
 	}
 	
 	/** Splits region into sub-parts */
 	public static double[] splitRegion(String region) {
+		log.info("Trying to split '"+region+"'");
 		double ret[] = new double[4];
 		int start = 0;		
 		region = region.trim();
@@ -110,7 +138,7 @@ public class ZoomPanModel {
 	}
 	
 	/** Checks the regions to ensure that the zoom/pan doesn't go too far and that the image is visible */
-	void fixRegion() {
+	protected void fixRegion() {
 		if( centerX < hHeight ) centerX = hHeight;
 		else if( 1-centerX < hHeight ) centerX = 1-hHeight;
 		if( centerY < hWidth ) centerY = hWidth;
@@ -122,18 +150,16 @@ public class ZoomPanModel {
 	 * Pans in the X direction.  Affects the region value.
 	 * @param pixels amount to zoom by relative to the current displayed size (+1 will zoom an entire page width to the right)
 	 */
-	public void setPanX(double pixels) {
-		centerX = centerX + hWidth * pixels;
-		fixRegion();
+	public void setPanX(float pixels) {
+		this.panX = pixels;
 	}
 	
 	/**
 	 * Pans in the Y direction.  Affects teh region value.
 	 * @param pixels amount to zoom by relative to the current displayed size (+1 will zoom an entire page width downwards.)
 	 */
-	public void setPanY(double pixels) {
-		centerY = centerY + hHeight * pixels;
-		fixRegion();
+	public void setPanY(float pixels) {
+		this.panY = pixels;
 	}
 	
 	/**
@@ -144,7 +170,42 @@ public class ZoomPanModel {
 		if( region==null ) {
 			region = (centerX-hWidth)+","+(centerY-hHeight)+","+(centerX+hWidth)+","+(centerY+hHeight);
 		}
-		log.info("Get region "+region);
 		return region;
+	}
+	
+	/** Applies the pan/zoom to the given study, series or image. */
+	public String action() {
+		log.info("Region="+getRegion()+" relZoom="+relZoom+" pan X,y="+panX+","+panY + " on "+this);
+		if( relZoom!=0 ) {
+			int izoom = getZoom();
+			log.info("Computed zoom is "+izoom);
+			setZoom(izoom + relZoom);
+		}
+		if( panX!=0.0f || panY!=0.0 ) {
+			centerX = centerX + hWidth * panX;
+			centerY = centerY + hHeight * panY;
+			fixRegion();
+		}
+		if( hWidth <= 0.0 || hHeight <= 0.0 ) return "failure";
+		
+	    DisplayMode.ApplyLevel applyLevel;
+	    if( mode!=null ) applyLevel = mode.getApplyLevel();
+	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
+		if( applyLevel == DisplayMode.ApplyLevel.IMAGE ) {
+			ImageBean image = localStudyModel.getImage();
+			image.setRegion(getRegion());
+		}
+		else {
+			SeriesBean series = localStudyModel.getSeries();
+			series.setRegion(getRegion());
+			for(DicomObjectType dot : series.getDicomObject()) {
+				if( dot instanceof ImageType ) {
+					ImageType image = (ImageType) dot;
+					image.setRegion(null);
+				}
+			}
+		}
+
+		return "success";
 	}
 }

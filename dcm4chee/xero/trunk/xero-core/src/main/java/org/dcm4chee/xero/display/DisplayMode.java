@@ -15,25 +15,35 @@ public class DisplayMode {
 	private static final Logger log = LoggerFactory.getLogger(DisplayMode.class);
 
 	public enum ApplyLevel {
-		  PATIENT_LEVEL, STUDY_LEVEL, SERIES_LEVEL, IMAGE_LEVEL
+		  PATIENT, STUDY, SERIES, IMAGE
 	}
 
 	private String mode="windowLevel";
 	private int counter = 0;
-	ApplyLevel applyLevel = ApplyLevel.SERIES_LEVEL;
+	ApplyLevel applyLevel = ApplyLevel.SERIES;
 
 	public ApplyLevel getApplyLevel() {
 		return applyLevel;
 	}
 
 	/** Set what level a change applies to. */
-	public void setApplyLevel(String applyLevel) {
+	public void setApplyLevel(ApplyLevel applyLevel) {
+		this.applyLevel = applyLevel;
+	}
+	
+	/** Sets the apply level as a string */
+	public void setApplyLevelStr(String applyLevel) {
 		if(applyLevel==null || applyLevel.length()==0 ) this.applyLevel = null;
-		else if( applyLevel.equalsIgnoreCase("patient") ) this.applyLevel=ApplyLevel.PATIENT_LEVEL;
-		else if( applyLevel.equalsIgnoreCase("study") ) this.applyLevel=ApplyLevel.STUDY_LEVEL;
-		else if( applyLevel.equalsIgnoreCase("series") ) this.applyLevel=ApplyLevel.SERIES_LEVEL;
-		else if( applyLevel.equalsIgnoreCase("image") ) this.applyLevel=ApplyLevel.IMAGE_LEVEL;
+		else if( applyLevel.equalsIgnoreCase("patient") ) this.applyLevel=ApplyLevel.PATIENT;
+		else if( applyLevel.equalsIgnoreCase("study") ) this.applyLevel=ApplyLevel.STUDY;
+		else if( applyLevel.equalsIgnoreCase("series") ) this.applyLevel=ApplyLevel.SERIES;
+		else if( applyLevel.equalsIgnoreCase("image") ) this.applyLevel=ApplyLevel.IMAGE;
 		else throw new IllegalArgumentException("Apply level must be one of patient, study, series and image but is "+applyLevel);
+		log.info("Setting apply level string to "+applyLevel+" final value "+this.applyLevel);
+	}
+	public String getApplyLevelStr() {
+		if( applyLevel==null ) return "";
+		return applyLevel.toString();
 	}
 
 	/** Get the major mode in use - controlling mouse listening, keyboard etc */
@@ -49,12 +59,11 @@ public class DisplayMode {
 	}
 	
 	/**
-	 * An empty action that just returns "ok"
+	 * Change mode action
 	 */
-	@Begin(join=true)
-	public String emptyAction() {
-		log.info("Empty action - returning ok.");
-		return "ok";
+	public String action() {
+		log.info("Change mode to "+getMode());
+		return "success";
 	}
 	
 	/** Get a counter to cause IE to re-fetch a new page... */

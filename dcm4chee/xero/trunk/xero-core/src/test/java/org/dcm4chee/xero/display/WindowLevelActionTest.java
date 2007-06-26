@@ -12,11 +12,12 @@ public class WindowLevelActionTest extends DisplayVars
 		wl.setLocalStudyModel(model);		
 		wl.setWindowCenter(windowCenter);
 		wl.setWindowWidth(windowWidth);
+		wl.setMode(mode);
 	}
 	
 	@Test
 	public void seriesLevelWLTest() throws Exception {
-		wl.setApplyLevel("series");
+		mode.setApplyLevelStr("series");
 		String result = wl.action();
 		assert result.equals("success");
 		Number num = getXpathNum("/study/series/@windowCenter");
@@ -27,7 +28,7 @@ public class WindowLevelActionTest extends DisplayVars
 
 	@Test
 	public void imageLevelWLTest() throws Exception {
-		wl.setApplyLevel("image");
+		mode.setApplyLevelStr("image");
 		String result = wl.action();
 		assert result.equals("success");
 		Number num = getXpathNum("/study/series/image/@windowCenter");

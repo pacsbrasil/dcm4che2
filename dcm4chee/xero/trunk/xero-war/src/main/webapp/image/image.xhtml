@@ -10,8 +10,7 @@
   <SeriesInstanceUID>#{StudyLevel.seriesUID}</SeriesInstanceUID>
   <position>0</position>
   <cine>#{ImageEvent.cine}</cine>
-  <mode>#{DisplayMode.mode}</mode>
-  <region zoom="#{ZoomPanModel.zoom}">#{ZoomPanModel.region}</region>
+  <mode applyLevel="${DisplayMode.applyLevel}">#{DisplayMode.mode}</mode>
   
   <layout doc="/xero/study/study.xml?StudyInstanceUID=#{StudyLevel.studyUID}">/xero/image/layout.xml</layout>
   <toolbar>/xero/image/imageCommands.seam</toolbar>

@@ -83,25 +83,40 @@
 <xsl:param name="height" />
 <xsl:param name="node" />
 <xsl:param name="seriesUID" select="parent::*/@SeriesInstanceUID" />
-<xsl:param name="objectUID" select="@ObjectInstanceUID" />
-<xsl:param name="wlNode" select="(($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@ObjectInstanceUID=$objectUID]))[last()]" />
-<xsl:param name="wWidth" select="$wlNode/@windowWidth" />
-<xsl:param name="wCenter" select="$wlNode/@windowCenter" />
+<xsl:param name="objectUID" select="@SOPInstanceUID" />
+<xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
+<xsl:param name="wWidth" select="$custNode[@windowWidth][last()]/@windowWidth" />
+<xsl:param name="wCenter" select="$custNode[@windowCenter][last()]/@windowCenter" />
+<xsl:param name="region" select="$custNode[@region][last()]/@region" />
 <xsl:apply-templates select="." mode="hrefArgsNode" />
-<xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if>&amp;region=<xsl:value-of select='$region' /></x:template>
+<xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:if test="$region">&amp;region=<xsl:value-of select='$region' /></xsl:if></x:template>
 
 <!-- Generate arguments for the current location of this object based on the data node
      associated with this object, not based on the type of the argument.
   -->
 <x:template name="imageArgs" mode="hrefArgsNode" match="se:image"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID" /></x:template>
 
+<x:template name="region" mode="hrefArgsNode" match="xul:region">
+<xsl:param name="width" />
+<xsl:param name="height" />
+<xsl:param name="node" />
+<xsl:param name="inode" select="$node/se:image[1] | $node | $node/parent::*" />
+<xsl:param name="seriesUID" select="$inode/@SeriesInstanceUID" />
+<xsl:param name="objectUID" select="$inode/@SOPInstanceUID" />
+<xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
+<xsl:param name="region" select="$custNode/@region[last()]" />
+<xsl:if test="$region">&amp;region=<xsl:value-of select="$region" /></xsl:if>
+</x:template>
+
+<x:template name="windowLevel" mode="hrefArgsNode" match="xul:windowLevel">&amp;minPixel=0&amp;maxPixel=65535</x:template>
+
 <x:template name="seriesArgs" mode="hrefArgsNode" match="se:series"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;seriesUID=<xsl:value-of select="@SeriesInstanceUID" /></x:template>
 
 <x:template name="studyArgs" mode="hrefArgsNode" match="se:study"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;studyUID=<xsl:value-of select="@StudyInstanceUID" /></x:template>
 
-<x:template name="patientArgs" mode="hrefArgsNode" match="se:patient">&amp;patientIdentifier=<xsl:value-of select="@PatientIdentifier" /></x:template>
+<x:template name="patientArgs" mode="hrefArgsNode" match="se:patient"><xsl:if test="@PatientIdentifier">&amp;patientIdentifier=<xsl:value-of select="./@PatientIdentifier" /></xsl:if></x:template>
 
-<x:template name="cidArgs">&amp;cid=<xsl:value-of select="$cid" /></x:template>
+<x:template name="defaultHrefArgs">&amp;cid=<xsl:value-of select="$cid" /></x:template>
 
 <x:template name="toolbar" mode="layout" match="xul:toolbar[@ref]">
    <xsl:param name="width" />
@@ -134,6 +149,35 @@
  <xsl:value-of select="@label" />
 </x:template>
 
+<x:template name="applyLevel" mode="layout" match="xul:applyLevel">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:choose>
+   <xsl:when test="@level = $applyLevel">
+     <xsl:apply-templates mode="inactiveLayout">
+	    <xsl:with-param name="width" select="$width" />
+    	<xsl:with-param name="height" select="$height" />
+	    <xsl:with-param name="node" select="$node" />
+     </xsl:apply-templates>
+   </xsl:when>
+   <xsl:otherwise>
+     <xsl:apply-templates mode="layout">
+	    <xsl:with-param name="width" select="$width" />
+    	<xsl:with-param name="height" select="$height" />
+	    <xsl:with-param name="node" select="$node" />
+     </xsl:apply-templates>
+   </xsl:otherwise>
+ </xsl:choose>
+</x:template>
+
+<x:template name="inactiveButtonLayout" mode="inactiveLayout" match="xul:button">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <b><xsl:value-of select="@label" /></b>
+</x:template>
+
 <x:template name="buttonLayout" mode="layout" match="xul:button">
  <xsl:param name="width" />
  <xsl:param name="height" />
@@ -142,7 +186,11 @@
  <a>
   <xsl:attribute name="id"><xsl:value-of select="$buttonId" /></xsl:attribute>
   <xsl:if test="@oncommand">
-   <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="cidArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+   <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+    <xsl:with-param name="width" select="$width" />
+    <xsl:with-param name="height" select="$height" />
+    <xsl:with-param name="node" select="." />
+   </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
     <xsl:with-param name="width" select="$width" />
     <xsl:with-param name="height" select="$height" />
     <xsl:with-param name="node" select="$node" />
@@ -235,7 +283,7 @@
         <xsl:apply-templates select="$thisOverlay/*" mode="layout">
          <xsl:with-param name="width" select="$width" />
          <xsl:with-param name="height" select="$height" />
-         <xsl:with-param name="node" select="$node" />
+         <xsl:with-param name="node" select="$imageNode" />
         </xsl:apply-templates>
    	   </xsl:if>
       </img>
@@ -250,7 +298,11 @@
  <xsl:param name="node" />
  <xsl:if test="@mode=$mode">
    <xsl:if test="@oncommand">
-    <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="cidArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+    <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+     <xsl:with-param name="width" select="$width" />
+     <xsl:with-param name="height" select="$height" />
+     <xsl:with-param name="node" select="." />
+    </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
      <xsl:with-param name="width" select="$width" />
      <xsl:with-param name="height" select="$height" />
      <xsl:with-param name="node" select="$node" />

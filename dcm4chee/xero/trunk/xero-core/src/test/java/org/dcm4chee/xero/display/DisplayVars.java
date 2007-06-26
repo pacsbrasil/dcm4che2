@@ -25,6 +25,7 @@ public class DisplayVars implements  NamespaceContext {
 	
 	PatientViewed patientViewed = new PatientViewed();
 	StudyLevel studyLevel = new StudyLevel();
+	DisplayMode mode = new DisplayMode();
 	
 	LocalStudyModel model = new LocalStudyModel();
 	

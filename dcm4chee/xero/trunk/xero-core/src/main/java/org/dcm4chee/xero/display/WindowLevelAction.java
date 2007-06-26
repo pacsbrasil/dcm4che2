@@ -67,7 +67,8 @@ public class WindowLevelAction {
 	@In(value="LocalStudyModel", create=true)
 	LocalStudyModel localStudyModel;
 	
-	String applyLevel = null;
+	@In(value="DisplayMode", create=true)
+	DisplayMode mode;
 
 	/** Retrieve the window level center */
 	public float getWindowCenter() {
@@ -104,8 +105,10 @@ public class WindowLevelAction {
 	/** The window level has changed - apply this change to the appropriate level in the tree */
 	public String action() {
 		if( !isWlSet() ) return "failure";
-	
-		if( "image".equalsIgnoreCase(applyLevel)) {
+	    DisplayMode.ApplyLevel applyLevel;
+	    if( mode!=null ) applyLevel = mode.getApplyLevel();
+	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
+		if( applyLevel == DisplayMode.ApplyLevel.IMAGE ) {
 			ImageBean image = localStudyModel.getImage();
 			image.setWindowCenter(getWindowCenter());
 			image.setWindowWidth(getWindowWidth());
@@ -126,16 +129,6 @@ public class WindowLevelAction {
 	}
 
 
-	public String getApplyLevel() {
-		return applyLevel;
-	}
-
-
-	public void setApplyLevel(String applyLevel) {
-		this.applyLevel = applyLevel;
-	}
-
-
 	public LocalStudyModel getLocalStudyModel() {
 		return localStudyModel;
 	}
@@ -143,6 +136,16 @@ public class WindowLevelAction {
 
 	public void setLocalStudyModel(LocalStudyModel localStudyModel) {
 		this.localStudyModel = localStudyModel;
+	}
+
+
+	public DisplayMode getMode() {
+		return mode;
+	}
+
+
+	public void setMode(DisplayMode mode) {
+		this.mode = mode;
 	}
 
 }

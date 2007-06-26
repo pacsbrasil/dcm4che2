@@ -38,8 +38,12 @@
  
  /** Hovers over the given image, updating the given id item */
  function imageHoverOnHover(idToUpdate,event) {
-    var src = event.target.src;
+ 	var targ = target(event);
+    var src = targ.src;
     var dest = document.getElementById(idToUpdate);
     dest.src = src;
+    dest.setAttribute('href', targ.getAttribute('href'));
+    alert("Copying href "+dest.getAttribute('href'));
+    dest.parentNode.parentNode.style.backgroundColor = targ.parentNode.parentNode.style.backgroundColor;
  };
  

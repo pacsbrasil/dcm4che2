@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class MaxAgeFilter implements Filter
 {
-	static Logger log = LoggerFactory.getLogger(MaxAgeFilter.class.getName());
+	static Logger log = LoggerFactory.getLogger(MaxAgeFilter.class);
 
 	/** The maximum age to declare an item, in seconds. 1 minute by default. */
 	private long maxAge = 60;

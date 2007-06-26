@@ -99,7 +99,12 @@ public class PatientBean extends PatientType implements Patient,
 	public PatientBean(Map<Object, Object> children, PatientType patient) {
 		this.children = children;
 		setPatientID(patient.getPatientID());
-		this.idPatientIdentifier = getId();
+		if( patient instanceof PatientBean ) {
+			setId( ((PatientBean) patient).getId() );			
+		}
+		else {
+			setPatientIdentifier(patient.getPatientIdentifier());
+		}
 		setPatientName(patient.getPatientName());
 		setPatientSex(patient.getPatientSex());
 		setPatientBirthDate(patient.getPatientBirthDate());
@@ -120,6 +125,9 @@ public class PatientBean extends PatientType implements Patient,
 	/** Initialize the primary attributes of this object */
 	protected void initAttributes(DicomObject cmd) {
 		setPatientID(cmd.getString(Tag.PatientID));
+		// For now, just use the ID as the patient identifier
+		// This maybe changed further up by patient linking etc.
+		setId(new PatientIdentifier(getPatientID()));
 		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
 		String strSex = cmd.getString(Tag.PatientSex);
 		if (strSex != null) {
@@ -168,7 +176,7 @@ public class PatientBean extends PatientType implements Patient,
 	}
 
 	public void setId(PatientIdentifier pi) {
-		setPatientIdentifier(pi.toString());
+		patientIdentifier = pi.toString();
 		this.idPatientIdentifier = pi;
 	}
 
@@ -182,7 +190,17 @@ public class PatientBean extends PatientType implements Patient,
 	@Override
 	public void setPatientIdentifier(String value) {
 		super.setPatientIdentifier(value);
-		idPatientIdentifier = null;
+		idPatientIdentifier = new PatientIdentifier(value);
+	}
+
+	/** Use the idPatientIdentifier primarily, and otherwise use the regular patient identifier 
+	 * or finally the patient ID if none of the above are available.
+	 */
+	@Override
+	public String getPatientIdentifier() {
+		if( idPatientIdentifier!=null ) return idPatientIdentifier.toString(); 
+		if( super.getPatientIdentifier()!=null ) return super.getPatientIdentifier();
+		return getPatientID();
 	}
 
 }
