@@ -565,6 +565,7 @@ StoreSCP service.
         List of Transfer Syntaxes for Video SOP Classes that Store SCP
         service accepts. Order defines selection preference. Use either the 
         Transfer Syntaxes UID value or following defined symbolic names: 
+        JPEGBaseline
         MPEG2,
         TianiURIReferenced        
         ]]>
@@ -573,6 +574,7 @@ StoreSCP service.
       <type>java.lang.String</type>
       <descriptors>
          <value value="
+           JPEGBaseline
            MPEG2
            TianiURIReferenced"/>
       </descriptors>
