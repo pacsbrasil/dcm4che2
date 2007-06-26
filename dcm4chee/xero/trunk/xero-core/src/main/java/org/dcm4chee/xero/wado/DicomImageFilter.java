@@ -84,11 +84,12 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		param.setAutoWindowing(true);
 		ImageInputStream in = null;
 		try {
-			String fileName = location.getFile();
-			if (fileName != null && fileName.length() > 0) {
+			String surl = location.toString();
+			if (surl.startsWith("file:") ) {
+				String fileName = location.getFile();
 				in = new FileImageInputStream(new File(fileName));
 			} else {
-				// TODO change to FileCacheInputStream
+				// TODO change to FileCacheInputStream once we can configure the locaiton.
 				in = new MemoryCacheImageInputStream(location.openStream());
 			}
 			reader.setInput(in);

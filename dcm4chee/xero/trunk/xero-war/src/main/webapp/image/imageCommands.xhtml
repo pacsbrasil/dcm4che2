@@ -37,11 +37,23 @@
    
    <nextImgButton id="nextImage" label=">"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=1" />
  </toolbar>
-  
+
+ <toolbar id="imgToolbar">
+   <applyLevel level="SERIES">
+    <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1">
+     <region />
+    </modeButton>
+    <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1">
+     <region />
+    </modeButton>
+   </applyLevel>
+ </toolbar>
+   
   <!-- Contains overlay information for how items are handled, and what extra views are present
        in the image area.
     -->
   <overlay id='imageOverlay'>
+
     <imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
       <windowLevel />
     </imageHandler>

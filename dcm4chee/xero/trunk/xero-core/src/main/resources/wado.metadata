@@ -16,5 +16,6 @@ wadoDcm=${org.dcm4chee.xero.metadata.filter.FilterList}
 wadoDcm.encode=${org.dcm4chee.xero.wado.EncodeImage}
 wadoDcm.encode.priority=9999
 wadoDcm.src=${org.dcm4chee.xero.wado.DicomImageFilter}
-wadoDcm.fileLocation=${org.dcm4chee.xero.wado.WadoFileLocation}
+wadoDcm.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
+wadoDcm.fileLocation.priority=-1
 

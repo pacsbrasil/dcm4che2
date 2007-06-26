@@ -41,9 +41,11 @@ public class DicomFileLocationFilter implements Filter<URL> {
 				"http://localhost:8080/wado?requestType=WADO&contentType=application%2Fdicom");
 		for(String key : wadoRequired ) {
 			Object value = args.get(key);
-			if( value==null || value.toString().equals("")) {
+			String strValue = (value==null ? null : value.toString().trim());
+			if( strValue==null || strValue.equals("")) {
 				throw new IllegalArgumentException("Required value "+key+" is missing for request.");
 			}
+			ret.append("&").append(key).append("=").append(strValue);
 		}
 		return ret.toString();
 	}

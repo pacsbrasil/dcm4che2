@@ -256,8 +256,9 @@
    <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
    <xsl:param name="imageNode" select="$newSeriesNode/se:image[@Position=$offset]" />
 
-   <xsl:param name="overlayId" select='./@ref' />
+   <xsl:param name="overlayId" select='./@overlay' />
    <xsl:param name="thisOverlay" select="$toolbarNode/xul:overlay[@id=$overlayId]" />
+   <xsl:param name="refId" select='./@ref' />
 
    <div>
     <xsl:attribute name="style">float: left;
@@ -266,8 +267,13 @@
      <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
      <xsl:value-of select="@style" />
     </xsl:attribute>
-    <center>
-  	 <xsl:if test="$imageNode">
+	<xsl:if test="$imageNode">
+	 <xsl:apply-templates select="$toolbarNode/xul:toolbar[@id=$refId]/*" mode="layout">
+      <xsl:with-param name="width" select="$width" />
+      <xsl:with-param name="height" select="$height" />
+      <xsl:with-param name="node" select="$imageNode" />
+	 </xsl:apply-templates>
+     <center>
       <img>
        <xsl:attribute name="id">img<xsl:value-of select="@id" /></xsl:attribute>
        <xsl:attribute name="src">/xero/wlwado?requestType=WADO<xsl:apply-templates select="$imageNode" mode="wadoArgsNode" />&amp;rows=<xsl:value-of select="$rows" /></xsl:attribute>
@@ -287,8 +293,8 @@
         </xsl:apply-templates>
    	   </xsl:if>
       </img>
-     </xsl:if>
-    </center>
+     </center>
+    </xsl:if>
    </div>
 </x:template>
 
