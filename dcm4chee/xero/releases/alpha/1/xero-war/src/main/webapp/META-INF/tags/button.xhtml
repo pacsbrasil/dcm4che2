@@ -1,0 +1,15 @@
+<!-- Creates a button that works in both IE and Firefox
+  -->
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:c="http://java.sun.com/jstl/core"
+>
+  <c:choose>
+    <c:when test="#{browser == 'MSIE'}">
+      <input type="submit" name="submit" value="#{value}" style="float: right;" />
+    </c:when>
+    <c:otherwise>
+      <button type="submit" name="submit" value="#{value}" style="float: right; "><ui:insert /></button>
+    </c:otherwise>
+  </c:choose>
+</ui:component>

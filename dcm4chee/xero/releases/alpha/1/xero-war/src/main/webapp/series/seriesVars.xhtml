@@ -1,0 +1,13 @@
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+<ui:include src="/study/studyVars.xhtml" />
+
+<xsl:variable name="seriesUIDFromSource"><xsl:value-of select="/documents/SeriesInstanceUID"/></xsl:variable>
+<xsl:variable name="seriesUID">
+<xsl:if test="count($studyNode/se:series[@SeriesInstanceUID=$seriesUIDFromSource])!=0"><xsl:value-of select="$seriesUIDFromSource"/></xsl:if>
+<xsl:if test="count($studyNode/se:series[@SeriesInstanceUID=$seriesUIDFromSource])=0"><xsl:value-of select="$studyNode/se:series/@SeriesInstanceUID"/></xsl:if>
+</xsl:variable>
+
+
+</ui:component>

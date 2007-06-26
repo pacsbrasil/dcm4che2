@@ -1,0 +1,76 @@
+<x:xsl
+   pageConfig="#{PageConfig.search}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/search"
+>
+
+<!-- Converts the patient name into a link, using (Unknown) if empty. -->
+<xsl:template name="patientNameConverter">
+  <xsl:param name="row" />
+  <xsl:param name="value" />
+  <a>
+    <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;PatientIdentifier=<xsl:value-of select="$row/parent::*/@PatientIdentifier"/>&amp;studyUID=<xsl:value-of select="$row/@StudyInstanceUID" /></xsl:attribute>
+    <xsl:attribute name="target">mainFrame</xsl:attribute>
+    <xsl:if test="$value=''">
+      (Unknown)
+    </xsl:if>
+    <xsl:call-template name="outputElement">
+      <xsl:with-param name="row" select="$row" />
+      <xsl:with-param name="type" select="'Name'" />
+      <xsl:with-param name="value" select="$value" />
+    </xsl:call-template>
+  </a>
+</xsl:template>
+
+<!-- Generates the search toolbar buttons. -->
+<xsl:template name="searchToolbar" >
+   <x:button value="Add" action="search.seam"><img src="../img/add.png" alt="Add" /></x:button>
+   <x:button value="View" action="search.seam"><img src="../img/viewNow.png" alt="View Now"/></x:button>
+   <x:button value="Find" action="search.seam"><img src="../img/find.png" alt="Find"/></x:button>
+</xsl:template>
+
+<xsl:template match="/"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Xero</title>
+    <link href="../stylesheet/general.css" rel="stylesheet" type="text/css" />
+</head>
+<body style="background: white; border-style: none; position: absolute; top: -5px; left: 0px;  ">
+   <xsl:if test="/documents/debug='true'">
+     Debug mode is on:<br />
+     cid=<xsl:value-of select="$cid" /> <br />
+     table columns doc=<xsl:value-of select="$tableColumnsDoc"></xsl:value-of><br />
+     Number of table columns items=<xsl:value-of select="count($tableColumns/*)"></xsl:value-of><br />
+     Number of displayed items=<xsl:value-of select="count($displayedColumns)"></xsl:value-of><br />
+     Displayed items:<br />
+     <xsl:for-each select="$displayedColumns">
+        Item: <xsl:value-of select="@label"></xsl:value-of>
+     </xsl:for-each>  <br />
+     Search parameters count=<xsl:value-of select="count($searchParameters/*)" /><br />  
+   </xsl:if>
+   <form>
+      <xsl:attribute name="method">get</xsl:attribute>
+      <xsl:attribute name="action">search.seam</xsl:attribute>
+      <input>
+        <xsl:attribute name="name">cid</xsl:attribute>
+        <xsl:attribute name="type">hidden</xsl:attribute>
+        <xsl:attribute name="value"><xsl:value-of select="$cid" /></xsl:attribute>
+      </input>
+      
+      <xsl:call-template name="searchToolbar" />
+      
+      <xsl:call-template name="generateSearchForm" />
+
+      <table style="width:100%;">
+         <xsl:call-template name="renderTableResultsHeader" />
+         <xsl:call-template name="renderTableResultsStudy" />
+      </table>
+   </form>
+</body>
+</html>
+
+</xsl:template>
+
+</x:xsl>

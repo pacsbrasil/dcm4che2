@@ -1,0 +1,15 @@
+<searchCriteria xmlns="http://www.dcm4chee.org/xero/search/">
+  <!-- The table columns contains the information about the columns to display,
+       as well as what columns are searchable and the labels for columns.
+       Note the duplication of the study instance uid column as both a selector
+       and a UID.
+   -->
+  <attribute name="StudyInstanceUID" type="StudySelector" searchable="true" column="true" label="" />
+  <attribute name="PatientName" type="PatientName" searchable="true" column="true" label="Patient Name"/>
+  <attribute name="PatientID" type="string" searchable="true" column="true" label="Patient ID"/>
+  <attribute name="ModalitiesInStudy" type="Modality"  searchable="true" column="true" label="Modality"/>
+  <attribute name="StudyDateTime" type="DateTime" searchable="true" column="true" label="Study Date/Time"/>
+  <attribute name="AccessionNumber" type="string" searchable="true" column="true" label="Acc#"/>
+  <attribute name="StudyDescription" type="string" column="true" label="Study Description"/>
+  <attribute name="StudyInstanceUID" type="UID" searchable="true" label="Study UID"/>
+</searchCriteria>

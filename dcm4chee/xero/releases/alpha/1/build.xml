@@ -1,0 +1,146 @@
+<project name="dcm4che-xero" default="deploy">
+  <!-- Include build.properties first as it over-rides default.properties -->
+  <property file="build.properties" />
+  <property file="build.properties.default" />
+
+  <target name="build" description="Deploy Xero to the development Dcm4che server.">
+     <exec executable="${mvn}">
+        <arg line="install" />
+     </exec>
+  </target>
+
+  <!-- Sets up the lib directory -->
+  <target name="setupLib">
+     <copy todir="${developmentServer}/server/default/lib">
+        <fileset dir="${jbossSeamDir}/server/default/lib">
+           <include name="javassist.jar" />
+           <include name="*hibernate*.jar" />
+           <include name="ejb3-persistence.jar" />
+           <include name="cglib.jar" />
+        </fileset>
+        <fileset dir="xero-ear/target/xero">
+           <include name="el-*.jar" />
+           <include name="slf4j*.jar" />
+        </fileset>
+     </copy>
+  </target>
+
+  <!-- Copies just the webapp files over for a quick test deploy -->
+  <target name="deployWebapp" description="Copy webapp files over for a no-redeploy test.">
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war">
+        <fileset dir="xero-war/src/main/webapp" includes="**/*" />
+     </copy>
+  </target>
+
+  <!-- Sets up the deploy directory -->
+  <target name="setupDeploy">
+     <copy todir="${developmentServer}/server/default/deploy">
+       <fileset dir="${jbossSeamDir}/server/default/deploy">
+          <include name="ejb3.deployer/**" />
+          <include name="jboss-aop-jdk50.deployer/**" />
+          <include name="jboss-bean.deployer/**" />
+          <include name="ear-deployer.xml" />
+          <include name="ejb3-interceptors-aop.xml" />
+       </fileset>
+       <fileset dir="." includes="xero-ds.xml" /> 
+     </copy>
+  </target>
+
+  <target name="setupConf">
+     <copy todir="${developmentServer}/server/default/conf" overwrite="true">
+        <fileset dir="conf" includes="**/*" />
+     </copy>
+  </target>
+
+  <target name="installmvn" description="Install maven pre-requisites locally.">
+     <exec executable="${mvn}" dir="${developmentServer}/server/default/lib">
+        <arg line="install:install-file -Dfile=dcm4che.jar -DartifactId=dcm4che14 -DgroupId=dcm4che -Dversion=1.4.13 -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${developmentServer}/server/default/lib">
+        <arg line="install:install-file -Dfile=jai_imageio.jar -DgroupId=com.sun.media -DartifactId=jai_imageio -Dversion=1.1 -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${developmentServer}/server/default/lib">
+        <arg line="install:install-file -Dfile=clibwrapper_jiio.jar -DgroupId=com.sun.media -DartifactId=clibwrapper_jiio -Dversion=1.1 -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=jboss-seam.jar -DartifactId=jboss-seam -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=jboss-seam-ui.jar -DartifactId=jboss-seam-ui -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=jboss-seam-debug.jar -DartifactId=jboss-seam-debug -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=lib/hibernate-all.jar -DartifactId=hibernate-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=lib/jboss-ejb3-all.jar -DartifactId=jboss-ejb3-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=lib/thirdparty-all.jar -DartifactId=thirdparty-all -DgroupId=org.jboss.seam -Dversion=${seamVersion} -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=lib/el-ri.jar -DartifactId=el-ri -DgroupId=javax.el -Dversion=1.2 -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=lib/el-api.jar -DartifactId=el-api -DgroupId=javax.el -Dversion=1.2 -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+     <exec executable="${mvn}" dir="${seamDir}">
+        <arg line="install:install-file -Dfile=lib/jsf-facelets.jar -DartifactId=jsf-facelets -DgroupId=com.sun.facelets -Dversion=1.1.62 -DgeneratePom=true -Dpackaging=jar" />
+     </exec>
+  </target>
+
+  <target name="setup" description="Setup the development server from the JBoss base server." depends="deploy, setupLib, setupDeploy, setupConf, setupJsf, setupDefaultUrl">
+  </target>
+
+  <!-- Adds default.htm and index.html to the wado war file -->
+  <target name="setupDefaultUrl">
+     <jar destfile="${developmentServer}/server/default/deploy/dcm4chee-wado.war" update="true">
+        <fileset dir="xero-war/src/main/webapp" includes="default.htm,index.html" />
+     </jar>
+  </target>
+
+  <target name="setupJsf">
+     <delete dir="${developmentServer}/server/default/deploy/jbossweb-tomcat55.sar/jsf-libs" />
+     <copy todir="${developmentServer}/server/default/deploy/jbossweb-tomcat55.sar/jsf-libs">
+        <fileset dir="${jsfDir}/lib" includes="*" />
+     </copy>
+  </target>
+
+  <target name="deploy" depends="build" description="Deploy Xero to the development Dcm4che server.">
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
+        <fileset dir="xero-ear/target/xero" excludes="xero.war" />
+     </copy>
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
+        <fileset dir="xero-war/target/xero" />
+     </copy>
+  </target>
+
+  <target name="stable" depends="build" description="Deploy Xero to the development Dcm4che server.">
+     <copy file="xero-ear/target/xero.ear" todir="${stableServer}/server/default/deploy" preservelastmodified="true"/>
+     <copy todir="${stableServer}/server/default/conf">
+        <fileset dir="conf" includes="**/*" />
+     </copy>
+     <copy todir="${stableServer}/server/default/lib">
+        <fileset dir="${jbossSeamDir}/server/default/lib">
+           <include name="javassist.jar" />
+           <include name="*hibernate*.jar" />
+           <include name="ejb3-persistence.jar" />
+           <include name="cglib.jar" />
+        </fileset>
+        <fileset dir="xero-ear/target/xero" includes="el-*.jar" />
+     </copy>
+     <copy todir="${stableServer}/server/default/deploy">
+       <fileset dir="${jbossSeamDir}/server/default/deploy">
+          <include name="ejb3.deployer/**" />
+          <include name="jboss-aop-jdk50.deployer/**" />
+          <include name="jboss-bean.deployer/**" />
+          <include name="ear-deployer.xml" />
+          <include name="ejb3-interceptors-aop.xml" />
+       </fileset>
+       <fileset dir="." includes="xero-ds.xml" /> 
+     </copy>
+  </target> 
+
+</project>

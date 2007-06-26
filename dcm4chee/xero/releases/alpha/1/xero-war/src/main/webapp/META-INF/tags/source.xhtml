@@ -1,0 +1,31 @@
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:c="http://java.sun.com/jstl/core"
+   xmlns:h="http://java.sun.com/jsf/html"
+>
+<c:choose>
+<c:when test="#{_X_SOURCE_IS_DEFINED}">
+   <!-- Default documents values -->
+   <ui:insert />
+   <!-- PageConfig documents values -->
+   <c:forEach var="includeSourceHref" items="#{x:sorted(pageConfig,'includeSource')}">
+     <ui:include src="#{includeSourceHref.includeSource}" />
+   </c:forEach>
+</c:when>
+<c:otherwise>
+<c:set var="_X_SOURCE_IS_DEFINED" value="true" />
+<h:outputText escape="false" value="&lt;?"/>xml version="1.0" encoding="UTF-8"?<h:outputText escape="false" value="&gt;"/>
+<h:outputText escape="false" value="&lt;?"/>xml-stylesheet type="text/xsl" href="#{pageConfig.xsl}"?<h:outputText escape="false" value="&gt;"/>
+<documents conversationId="#{conversation.id}">
+   <!-- Default documents values -->
+   <ui:insert />
+   <!-- PageConfig documents values -->
+   <c:forEach var="includeSourceHref" items="#{x:sorted(pageConfig,'includeSource')}">
+     <ui:include src="#{includeSourceHref.includeSource}" />
+   </c:forEach>
+   <!-- Debug information -->
+   <debug><c:choose><c:when test="#{param.debug=='true'}">true</c:when><c:when test="#{param.debug==pageConfig.xsl}">true</c:when><c:otherwise>false</c:otherwise></c:choose></debug>
+</documents>
+</c:otherwise>
+</c:choose>
+
+</ui:fragment>

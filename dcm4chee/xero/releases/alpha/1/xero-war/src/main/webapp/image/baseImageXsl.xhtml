@@ -1,0 +1,378 @@
+<!-- 
+	 The base image contains the code to generate the current image to display.
+-->
+<x:xsl
+   pageConfig="#{PageConfig.display.BaseImage}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/display/BaseImage"
+   m:includeXsl="/image/baseImageXsl.xhtml"
+>
+
+<x:template name="miscLayout" mode="layout" match="*">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <div>
+  <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+  <xsl:attribute name="style">float: left;
+   width: <xsl:value-of select="floor($width)" />px;
+   height: <xsl:value-of select="floor($height)"/>px;
+   <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
+   <xsl:value-of select="@style" />
+  </xsl:attribute>
+  <xsl:apply-templates mode="layout" select="*">
+   <xsl:with-param name="width" select="$width" />
+   <xsl:with-param name="height" select="$height" />
+   <xsl:with-param name="node" select="$node" />
+  </xsl:apply-templates>
+ </div>
+</x:template>
+
+<x:template name="hboxLayout" match="xul:hbox" mode="layout">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:param name="sum" select="sum(*/@width)" />
+
+ <div>  
+  <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+    <xsl:attribute name="style">float: left;
+   width: <xsl:value-of select="floor($width)" />px;
+   height: <xsl:value-of select="floor($height)"/>px;
+   <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
+   <xsl:value-of select="@style" />
+  </xsl:attribute>
+  <xsl:for-each select="*">
+   <xsl:apply-templates select="." mode="layout">
+    <xsl:with-param name="width" select="$width * @width div $sum" />
+    <xsl:with-param name="height" select="$height" />
+    <xsl:with-param name="node" select="$node" />
+   </xsl:apply-templates>
+  </xsl:for-each>
+ </div>
+</x:template>
+
+<x:template name="vboxLayout" match="xul:vbox" mode="layout">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:param name="sum" select="sum(*/@height)" />
+
+ <div>  
+  <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+  <xsl:attribute name="style">float: left;
+   width: <xsl:value-of select="floor($width)" />px;
+   height: <xsl:value-of select="floor($height)"/>px;
+   <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
+   <xsl:value-of select="@style" />
+  </xsl:attribute>
+  <xsl:for-each select="*">
+    <xsl:apply-templates select="." mode="layout">
+     <xsl:with-param name="width" select="$width" />
+     <xsl:with-param name="height" select="$height * @height div $sum" />
+     <xsl:with-param name="node" select="$node" />
+    </xsl:apply-templates>
+  </xsl:for-each>
+ </div>
+</x:template>
+
+<x:template name="imageWado" mode="wadoArgsNode" match="se:image">
+<xsl:param name="width" />
+<xsl:param name="height" />
+<xsl:param name="node" />
+<xsl:param name="seriesUID" select="parent::*/@SeriesInstanceUID" />
+<xsl:param name="objectUID" select="@SOPInstanceUID" />
+<xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
+<xsl:param name="wWidth" select="$custNode[@windowWidth][last()]/@windowWidth" />
+<xsl:param name="wCenter" select="$custNode[@windowCenter][last()]/@windowCenter" />
+<xsl:param name="region" select="$custNode[@region][last()]/@region" />
+<xsl:apply-templates select="." mode="hrefArgsNode" />
+<xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:if test="$region">&amp;region=<xsl:value-of select='$region' /></xsl:if></x:template>
+
+<!-- Generate arguments for the current location of this object based on the data node
+     associated with this object, not based on the type of the argument.
+  -->
+<x:template name="imageArgs" mode="hrefArgsNode" match="se:image"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID" /></x:template>
+
+<x:template name="region" mode="hrefArgsNode" match="xul:region">
+<xsl:param name="width" />
+<xsl:param name="height" />
+<xsl:param name="node" />
+<xsl:param name="inode" select="$node/se:image[1] | $node | $node/parent::*" />
+<xsl:param name="seriesUID" select="$inode/@SeriesInstanceUID" />
+<xsl:param name="objectUID" select="$inode/@SOPInstanceUID" />
+<xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
+<xsl:param name="region" select="$custNode/@region[last()]" />
+<xsl:if test="$region">&amp;region=<xsl:value-of select="$region" /></xsl:if>
+</x:template>
+
+<x:template name="windowLevel" mode="hrefArgsNode" match="xul:windowLevel">&amp;minPixel=0&amp;maxPixel=65535</x:template>
+
+<x:template name="seriesArgs" mode="hrefArgsNode" match="se:series"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;seriesUID=<xsl:value-of select="@SeriesInstanceUID" /></x:template>
+
+<x:template name="studyArgs" mode="hrefArgsNode" match="se:study"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;studyUID=<xsl:value-of select="@StudyInstanceUID" /></x:template>
+
+<x:template name="patientArgs" mode="hrefArgsNode" match="se:patient"><xsl:if test="@PatientIdentifier">&amp;patientIdentifier=<xsl:value-of select="./@PatientIdentifier" /></xsl:if></x:template>
+
+<x:template name="defaultHrefArgs">&amp;cid=<xsl:value-of select="$cid" /></x:template>
+
+<x:template name="toolbar" mode="layout" match="xul:toolbar[@ref]">
+   <xsl:param name="width" />
+   <xsl:param name="height" />
+   <xsl:param name="node" />
+   
+   <xsl:param name="toolbarId" select='./@ref' />
+   <xsl:param name="thisToolbar" select="$toolbarNode/xul:toolbar[@id=$toolbarId]" />
+   
+   <div>
+    <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+    <xsl:attribute name="style">float: left;
+     width: <xsl:value-of select="floor($width)" />px;
+     height: <xsl:value-of select="floor($height)"/>px;
+     <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
+     <xsl:value-of select="@style" />
+    </xsl:attribute>
+
+    <!-- Generate the toolbar from the toolbar layout information -->
+    <xsl:apply-templates select="$thisToolbar/*" mode="layout">
+        <xsl:with-param name="width" select="$width" />
+        <xsl:with-param name="height" select="$height" />
+        <xsl:with-param name="node" select="$node" />
+    </xsl:apply-templates>
+    
+   </div>
+</x:template>
+
+<x:template name="textLayout" mode="layout" match="xul:text">
+ <xsl:value-of select="@label" />
+</x:template>
+
+<x:template name="applyLevel" mode="layout" match="xul:applyLevel">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:choose>
+   <xsl:when test="@level = $applyLevel">
+     <xsl:apply-templates mode="inactiveLayout">
+	    <xsl:with-param name="width" select="$width" />
+    	<xsl:with-param name="height" select="$height" />
+	    <xsl:with-param name="node" select="$node" />
+     </xsl:apply-templates>
+   </xsl:when>
+   <xsl:otherwise>
+     <xsl:apply-templates mode="layout">
+	    <xsl:with-param name="width" select="$width" />
+    	<xsl:with-param name="height" select="$height" />
+	    <xsl:with-param name="node" select="$node" />
+     </xsl:apply-templates>
+   </xsl:otherwise>
+ </xsl:choose>
+</x:template>
+
+<x:template name="inactiveButtonLayout" mode="inactiveLayout" match="xul:button">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <b><xsl:value-of select="@label" /></b>
+</x:template>
+
+<x:template name="buttonLayout" mode="layout" match="xul:button">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:param name="buttonId" select="concat(@id,generate-id($node))" />
+ <a>
+  <xsl:attribute name="id"><xsl:value-of select="$buttonId" /></xsl:attribute>
+  <xsl:if test="@oncommand">
+   <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+    <xsl:with-param name="width" select="$width" />
+    <xsl:with-param name="height" select="$height" />
+    <xsl:with-param name="node" select="." />
+   </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
+    <xsl:with-param name="width" select="$width" />
+    <xsl:with-param name="height" select="$height" />
+    <xsl:with-param name="node" select="$node" />
+   </xsl:apply-templates></xsl:attribute>
+   <xsl:attribute name="onclick">return displayXslt.action("<xsl:value-of select="$buttonId" />");</xsl:attribute>
+  </xsl:if>  
+  <xsl:value-of select="@label" />
+ </a>
+</x:template>
+
+<x:template name="prevImgButton" mode="layout" match="xul:prevImgButton">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+</x:template>
+
+<x:template name="changeMode" mode="layout" match="xul:changeMode">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:choose>
+  <xsl:when test="@mode = $mode">
+   <b><xsl:value-of select="@label" /></b>
+  </xsl:when>
+  <xsl:otherwise>
+    <xsl:call-template name="buttonLayout">
+     <xsl:with-param name="width" select="$width" />
+     <xsl:with-param name="height" select="$height" />
+     <xsl:with-param name="node" select="$node" />
+   </xsl:call-template>
+  </xsl:otherwise>
+ </xsl:choose>
+</x:template>
+
+<x:template name="modeButton" mode="layout" match="xul:modeButton">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:if test="@mode = $mode">
+  <xsl:call-template name="buttonLayout">
+   <xsl:with-param name="width" select="$width" />
+   <xsl:with-param name="height" select="$height" />
+   <xsl:with-param name="node" select="$node" />
+  </xsl:call-template>
+ </xsl:if>
+</x:template>
+
+<x:template name="nextImgButton" mode="layout" match="xul:nextImgButton">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+</x:template>
+
+<x:template name="imageLayout" mode="layout" match="se:image">
+   <xsl:param name="width" />
+   <xsl:param name="height" />
+   <xsl:param name="node" />
+   <xsl:param name="rows" select="$height + 256 - $height mod 256" />
+   <xsl:param name="count" select="24" />
+   <xsl:param name="offset" select="@offset" />
+   <xsl:param name="position" select="@offset - @offset mod $count" />
+   <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position)" />
+   <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
+   <xsl:param name="imageNode" select="$newSeriesNode/se:image[@Position=$offset]" />
+
+   <xsl:param name="overlayId" select='./@overlay' />
+   <xsl:param name="thisOverlay" select="$toolbarNode/xul:overlay[@id=$overlayId]" />
+   <xsl:param name="refId" select='./@ref' />
+
+   <div>
+    <xsl:attribute name="style">float: left;
+     width: <xsl:value-of select="floor($width)" />px;
+     height: <xsl:value-of select="floor($height)"/>px;
+     <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
+     <xsl:value-of select="@style" />
+    </xsl:attribute>
+	<xsl:if test="$imageNode">
+	 <xsl:apply-templates select="$toolbarNode/xul:toolbar[@id=$refId]/*" mode="layout">
+      <xsl:with-param name="width" select="$width" />
+      <xsl:with-param name="height" select="$height" />
+      <xsl:with-param name="node" select="$imageNode" />
+	 </xsl:apply-templates>
+     <center>
+      <img>
+       <xsl:attribute name="id">img<xsl:value-of select="@id" /></xsl:attribute>
+       <xsl:attribute name="src">/xero/wlwado?requestType=WADO<xsl:apply-templates select="$imageNode" mode="wadoArgsNode" />&amp;rows=<xsl:value-of select="$rows" /></xsl:attribute>
+       <xsl:choose>
+	    <xsl:when test="$imageNode/@Rows * $width > $imageNode/@Columns * $height">
+	     <xsl:attribute name="height"><xsl:value-of select="$height" /></xsl:attribute>
+    	</xsl:when>
+    	<xsl:otherwise>
+	     <xsl:attribute name="width"><xsl:value-of select="$width" /></xsl:attribute>
+    	</xsl:otherwise>
+   	   </xsl:choose>
+   	   <xsl:if test="count($thisOverlay)>0">
+        <xsl:apply-templates select="$thisOverlay/*" mode="layout">
+         <xsl:with-param name="width" select="$width" />
+         <xsl:with-param name="height" select="$height" />
+         <xsl:with-param name="node" select="$imageNode" />
+        </xsl:apply-templates>
+   	   </xsl:if>
+      </img>
+     </center>
+    </xsl:if>
+   </div>
+</x:template>
+
+<x:template name="imageHandlerLayout" mode="layout" match="xul:imageHandler">
+ <xsl:param name="width" />
+ <xsl:param name="height" />
+ <xsl:param name="node" />
+ <xsl:if test="@mode=$mode">
+   <xsl:if test="@oncommand">
+    <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+     <xsl:with-param name="width" select="$width" />
+     <xsl:with-param name="height" select="$height" />
+     <xsl:with-param name="node" select="." />
+    </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
+     <xsl:with-param name="width" select="$width" />
+     <xsl:with-param name="height" select="$height" />
+     <xsl:with-param name="node" select="$node" />
+    </xsl:apply-templates></xsl:attribute>
+   </xsl:if>  
+   <xsl:if test="@handler">
+    <xsl:attribute name="onmousedown">return <xsl:value-of select="@handler"/>.mouseDown(event);</xsl:attribute>
+   </xsl:if>
+ </xsl:if>
+</x:template>
+
+<x:template name="seriesLayout" mode="layout" match="se:series">
+   <xsl:param name="width" />
+   <xsl:param name="height" />
+   <xsl:param name="node" />
+   <xsl:param name="offset" select="@offset" />
+   <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
+   <xsl:param name="seriesNode" select="($seriesNodeForUID | $seriesNodeForUID/following-sibling::se:series)[1+$offset]" />
+   <div>
+      <xsl:attribute name="id"><xsl:value-of select="./@id" /></xsl:attribute>
+      <xsl:apply-templates mode="layout" select="*">
+        <xsl:with-param name="width" select="$width" />
+        <xsl:with-param name="height" select="$height" />
+        <xsl:with-param name="node" select="$seriesNode" />
+      </xsl:apply-templates>
+   </div>
+   <br />
+</x:template>
+
+<x:template name="studyLayout" mode="layout" match="se:study">
+   <xsl:param name="width" />
+   <xsl:param name="height" />
+   <xsl:param name="node" />
+   <xsl:param name="offset" select="1+@offset" />
+   <xsl:param name="studyNode" select="$node/se:study[$offset]" />
+   <xsl:param name="seriesDoc" select="document(concat('/xero/series/series.xml?StudyInstanceUID=',$studyNode/@StudyInstanceUID))/se:results" />
+   <xsl:param name="newStudyNode" select="$seriesDoc/se:patient/se:study[@StudyInstanceUID=$studyNode/@StudyInstanceUID]" />
+   <xsl:apply-templates mode="layout" select="*">
+    <xsl:with-param name="width" select="$width" />
+    <xsl:with-param name="height" select="$height" />
+    <xsl:with-param name="node" select="$newStudyNode" />
+   </xsl:apply-templates>
+</x:template>
+
+<x:template name="patientLayout" mode="layout" match="se:patient">
+   <xsl:param name="width" />
+   <xsl:param name="height" />
+   <xsl:param name="node" />
+   <xsl:param name="offset" select="1+@offset" />
+   <xsl:apply-templates mode="layout" select="*">
+    <xsl:with-param name="width" select="$width" />
+    <xsl:with-param name="height" select="$height" />
+    <xsl:with-param name="node" select="$node/se:patient[$offset]" />
+   </xsl:apply-templates>
+</x:template>
+
+<x:template name="baseImage" m:body="baseImage" m:body.priority="5">
+ <br />
+ <br />
+ <xsl:apply-templates select="$frameNode/*" mode="layout" >
+  <xsl:with-param name="width" select="800" />
+  <xsl:with-param name="height" select="600" />
+  <xsl:with-param name="node" select="document(/documents/layout/@doc)/se:results" />
+ </xsl:apply-templates>
+</x:template>
+
+</x:xsl>

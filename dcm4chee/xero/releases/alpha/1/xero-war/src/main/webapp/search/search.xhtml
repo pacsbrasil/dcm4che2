@@ -1,0 +1,20 @@
+<x:source xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:h="http://java.sun.com/jsf/html"
+  pageConfig="#{PageConfig.search}"
+>
+  <cycle>../cycle/cycle.xml</cycle>
+  <!-- Contains references to the source documents and criteria values for
+       searching.  It may also contain session or conversation based temporary settings.
+  -->
+  <!-- The search parameters are the current parameters and values used, if any. -->
+  <h:outputText value="#{StudySearchCriteria.xml}" escape="false" />
+  <!-- The results from the above search.  This will be empty if the search has not
+       yet been requested.
+    -->
+  <searchResults>../study/study.xml?#{StudySearchCriteria.URLParameters}</searchResults>
+  <c:if test="#{studySelection!=null}" xmlns:c="http://java.sun.com/jstl/core">
+    <!-- Do this as one row without white space because there might be lots of them. -->
+    <c:forEach var="studySel" items="#{studySelection}"><study uid="#{studySel}"/></c:forEach>
+  </c:if>
+  <tableColumns>tableColumns.seam</tableColumns>
+</x:source>

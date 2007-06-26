@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+>
+<xsl:variable name="docName" select="/documents/series"/>
+<ui:include src="/series/seriesVars.xhtml" />
+
+<xsl:template match="/">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+   <head>
+      <title>Xero - Display Frame</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   </head>
+   <frameset border="0" cols="20%,*">
+      <frame>
+        <xsl:attribute name="name">seriesTrayFrame</xsl:attribute>
+        <xsl:attribute name="id">seriesTrayFrame</xsl:attribute>
+        <xsl:attribute name="studyUID"><xsl:value-of select="$studyUID" /></xsl:attribute>
+        <xsl:if test="$studyUID!=''">
+		    <xsl:attribute name="src">../series/seriesTray.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
+		</xsl:if>
+	  </frame>
+      <frame style=" background: grey; color: red; ">
+        <xsl:attribute name="name">imageFrame</xsl:attribute>
+        <xsl:attribute name="id">imageFrame</xsl:attribute>
+        <xsl:attribute name="src">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" /></xsl:attribute>
+	  </frame>        
+   </frameset>
+   <noframe>
+        docName=<xsl:value-of select="$docName" />
+        children of docNode=<xsl:value-of select="count($docNode/*)" />
+        children of patient node#=<xsl:value-of select="count($patientNode/*)" />
+        #patients=<xsl:value-of select="count($docNode/se:results/se:patient)" />
+        study UID=<xsl:value-of select="$studyUID" />
+        study UID from source=<xsl:value-of select="$studyUIDFromSource" />
+        Patient Ident=<xsl:value-of select="$patientIdent" />
+   </noframe>
+</html>
+
+</xsl:template>
+
+</xsl:stylesheet>
+
+</ui:fragment>

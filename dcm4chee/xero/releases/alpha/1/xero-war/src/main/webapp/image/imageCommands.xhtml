@@ -1,0 +1,76 @@
+<!-- Contains information about the user preferences and settings applied to study and lower level
+     commands.  Other files define preferences for other areas.
+  -->
+<preference xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <!-- Defines the study level toolbar contents.  This is a toolbar intended to be defined
+     per-study, but that doesn't mean it can't apply things to individual images
+    -->
+  <toolbar id='studyToolbar'>
+   <button id="prevSeries" label="&lt;Series" oncommand="/xero/image/action/navigate.seam?level=series&amp;dir=-1"/>
+   <changeMode id="wlBtn" mode="windowLevel" label="Window Level" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  />
+   <changeMode id="zpBtn" mode="zoomPan" label="Zoom/Pan" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"  />
+
+   <text label="Apply to:" />
+   <applyLevel level="SERIES">
+     <button id="seriesLevel" label="Series" oncommand="/xero/image/image.seam?applyLevel=series" />
+   </applyLevel>
+   <applyLevel level="IMAGE">
+     <button id="imageLevel" label="Image" oncommand="/xero/image/image.seam?applyLevel=image"/>
+   </applyLevel>
+
+   <button id="nextSeries" label="Series>" oncommand="/xero/image/action/navigate.seam?level=series&amp;dir=1"/>
+  </toolbar>
+  
+  <!-- Defines the series level toolbar.  Can't affect the study level display.  
+    -->
+  <toolbar id='seriesToolbar'>
+   <prevImgButton id="previousImage" label="&lt;"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=-1" />
+
+   <applyLevel level="IMAGE">
+     <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1">
+       <region />
+     </modeButton>
+     <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1">
+       <region />
+     </modeButton>
+   </applyLevel>
+   
+   <nextImgButton id="nextImage" label=">"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=1" />
+ </toolbar>
+
+ <toolbar id="imgToolbar">
+   <applyLevel level="SERIES">
+    <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1">
+     <region />
+    </modeButton>
+    <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1">
+     <region />
+    </modeButton>
+   </applyLevel>
+ </toolbar>
+   
+  <!-- Contains overlay information for how items are handled, and what extra views are present
+       in the image area.
+    -->
+  <overlay id='imageOverlay'>
+
+    <imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
+      <windowLevel />
+    </imageHandler>
+    
+    <imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?i=0" />
+  </overlay>
+  
+  <overlay id='imageHover'>
+    <imageHover handler="imageHoverHandler" oncommand="/xero/image/action/ImageHover.seam?hover=true" />
+    
+    <imageHandler mode="windowLevel" oncommand="/xero/image/action/WindowLevel.seam?i=0">
+      <windowLevel />
+    </imageHandler>
+    
+    <imageHandler mode="zoomPan" oncommand="/xero/image/action/ZoomPan.seam?i=0">
+      <region />
+    </imageHandler>
+    
+  </overlay>
+</preference>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:se="http://www.dcm4chee.org/xero/search/study/"
+>
+
+<xsl:variable name="docName" select="/documents/cycle"></xsl:variable>
+<ui:include src="/study/studyVars.xhtml" />
+
+<xsl:template match="/">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+   <head>
+      <title>Xero - Patient Frame</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   </head>
+   <frameset border="0" style="background:black; color: white; ">
+      <xsl:attribute name="isDebug"><xsl:value-of select="/documents/debug" /></xsl:attribute>
+	  <xsl:attribute name="rows"><xsl:if test="/documents/debug='true'">140px,*</xsl:if><xsl:if test="/documents/debug!='true'">40px,*</xsl:if></xsl:attribute>
+      <frame>
+        <xsl:attribute name="name">studyFrame</xsl:attribute>
+        <xsl:attribute name="id">studyFrame</xsl:attribute>
+        <xsl:attribute name="scrolling">no</xsl:attribute>
+	    <xsl:attribute name="src">study.seam?cid=<xsl:value-of select="/documents/@conversationId"/>&amp;PatientIdentifier=<xsl:value-of select="$patientIdent" />&amp;studyUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
+	  </frame>
+      <frame name="displayFrame" id="displayFrame">
+        <xsl:attribute name="name">displayFrame</xsl:attribute>
+        <xsl:attribute name="id">displayFrame</xsl:attribute>
+        <xsl:attribute name="src">displayFrame.seam?cid=<xsl:value-of select="/documents/@conversationId"/>&amp;studyUID=<xsl:value-of select="$studyUID" /></xsl:attribute>
+	  </frame>        
+   </frameset>
+</html>
+</xsl:template>
+
+</xsl:stylesheet>
+
+</ui:fragment>
+

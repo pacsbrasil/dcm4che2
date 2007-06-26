@@ -1,0 +1,52 @@
+<results 
+  xmlns="http://www.dcm4chee.org/xero/search/study/" 
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+  id="f-1"
+>
+ <xul:vbox id="xcontrol">
+  <patient id="p0" offset="0" height="1">
+   <study id="s0" offset="0">
+    <xul:vbox id="x0">
+     <xul:toolbar ref="studyToolbar" height="1" />
+     <series id="e0" offset="0" height="25">
+      <xul:vbox>
+       <xul:toolbar ref="seriesToolbar" height="1"/>
+       <xul:hbox id="x1" height="15">
+        <image id="i1" offset="0" width='3' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+        <image id="i2" offset="1" width='2' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+       </xul:hbox>
+      </xul:vbox>
+     </series>
+    
+     <series id="e1" offset="1" height="25">
+      <xul:vbox>
+       <xul:toolbar ref="seriesToolbar" height="1"/>
+       <xul:hbox id="e1x0" height="15">
+        <image id="e1i0big" offset="0" width="1" background="pink" overlay="imageOverlay" ref="imgToolbar"/>
+        <!-- The image at offset 5 has a custom window width/center -->
+        <xul:vbox id="e1x1" width="1">
+         <xul:hbox id="e1x2" height="1">
+          <image id="e1i0" offset="0" width='1' background="pink" overlay="imageHover" />
+          <image id="e1i1" offset="1" width='1' background="purple" overlay="imageHover" />
+          <image id="e1i2" offset="2" width='1' background="red" overlay="imageHover" />
+         </xul:hbox>
+         <xul:hbox id="e1x3" height="1">
+          <image id="e1i3" offset="3" width='1' background="brown" overlay="imageHover" />
+          <image id="e1i4" offset="4" width='1' background="green" overlay="imageHover" />
+          <image id="e1i5" offset="5" width='1' background="blue" overlay="imageHover" />
+         </xul:hbox>
+         <xul:hbox id="e1x4" height="1">
+          <image id="e1i6" offset="6" width='1' background="yellow" overlay="imageHover" />
+          <image id="e1i7" offset="7" width='1' background="white" overlay="imageHover" />
+          <image id="e1i8" offset="8" width='1' background="grey" overlay="imageHover" />
+         </xul:hbox>
+        </xul:vbox>
+       </xul:hbox>
+      </xul:vbox>
+     </series>
+    
+    </xul:vbox>
+   </study>
+  </patient>
+ </xul:vbox>
+</results>

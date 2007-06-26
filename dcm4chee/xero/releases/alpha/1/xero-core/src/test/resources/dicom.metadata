@@ -1,0 +1,14 @@
+# This metadata is for the dicom location, header and image reader components.
+
+wado=${org.dcm4chee.xero.metadata.filter.FilterList}
+wado.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
+wado.dicomHeader=${org.dcm4chee.xero.wado.DicomFilter}
+
+image=${org.dcm4chee.xero.metadata.filter.FilterList}
+image.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
+image.fileLocation.priority=-1
+image.image=${org.dcm4chee.xero.wado.DicomImageFilter}
+
+fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
+fileLocation.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
+fileLocation.fileLocation.priority=5

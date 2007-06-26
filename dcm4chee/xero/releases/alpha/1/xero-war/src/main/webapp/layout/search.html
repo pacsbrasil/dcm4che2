@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Xero</title>
+    <!-- <link href="/xero/stylesheet/date.css" rel="stylesheet" type="text/css" /> -->
+</head>
+<body style="background: white; border-style: none; margin-width: 0px; position: absolute; top: -5px; left: 0px;  ">
+   <form>
+      <div>
+         <table>
+            <tr><td>Name</td><td><input type="text" name="patientName" /></td></tr>
+            <tr><td>ID</td><td><input type="text" name="patientId"/></td></tr>
+            <tr><td>Date</td><td><select name="studyDateTime"/>
+               <option></option>
+               <option>Last 24 hours</option>
+               <option>Last 48 hours</option>
+               <option>Today</option>
+               <option>Yesterday</option>
+               <option>This week</option>
+               <option>Last week</option>
+               <option>This month</option>
+               <option>Last month</option>
+               <option>This year</option>
+               <option>Last year</option>
+            </select></td></tr>
+         <tr><td>Location</td><td><input type="text" name="patientLocation"/></td></tr>
+      </div>
+
+      <img src="find.png" alt="Find" style="position: absolute; top: 25px; left: 250px; "/>
+      <img src="viewNow.png" alt="Find" style="position: absolute; top: 25px; left: 310px; "/>
+      <img src="add.png" alt="Find" style="position: absolute; top: 25px; left: 370px; "/>
+
+      <table style="width:100%;">
+         <tr><th></th><th>Patient Name</th><th>Patient ID</th><th>Status</th><th>Exam</th><th>Study Date/Time</th><th>Acc #</th><th>Location</th><th>Study Description</th></tr>
+         <tr style="background: #dfefff;"><th><input type="checkbox"/></th><th><a href="display.html" target="mainFrame">Flintstone, Fred</a></th><th>23498763</th><th>New</th><th>CT Chest</th><th>01/01/2007 13:26</th><th>KN6357</th><th>ER</th><th>EXR45Chest 2v PA/LAT</th></tr>
+         <tr><th><input type="checkbox"/></th><th><a href="display.html" target="mainFrame">Flintstone, Wilma</a></th><th>23498764</th><th>Future</th><th>CT Chest</th><th>01/01/2007 13:26</th><th>KN6357</th><th>ER</th><th>EXR45Chest 2v PA/LAT</th></tr>
+         <tr style="background: #dfefff;"><th><input type="checkbox"/></th><th><a href="display.html" target="mainFrame">Rubble, Barney</a></th><th>23498766</th><th>Ancient</th><th>CT Chest</th><th>01/01/2007 13:26</th><th>KN6357</th><th>ER</th><th>EXR45Chest 2v PA/LAT</th></tr>
+         <tr><th><input type="checkbox"/></th><th><a href="display.html" target="mainFrame">Rubble, Betty</a></th><th>23498767</th><th>Old</th><th>CT Chest</th><th>01/01/2007 13:26</th><th>KN6357</th><th>ER</th><th>EXR45Chest 2v PA/LAT</th></tr>
+      </table>
+   </form>
+</body>
+</html>
+
+

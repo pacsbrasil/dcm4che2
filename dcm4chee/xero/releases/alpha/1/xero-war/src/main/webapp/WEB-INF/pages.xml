@@ -1,0 +1,122 @@
+<pages>
+
+  <page view-id="/tabs/tabsFrame.xhtml">
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/tabs/tabs.xhtml">
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/search/search.xhtml" action="#{SearchPageAction.search}">
+    <navigation from-action="#{SearchPageAction.search}">
+      <rule if-outcome="Add">
+         <redirect view-id="/cycle/cycleFrame.seam" />
+      </rule>
+      <rule if-outcome="View">
+         <redirect view-id="/study/patientFrame.xhtml">
+           <param name="StudyUID" value="#{studySelection[0]}" />
+         </redirect>
+      </rule>
+      <rule if-outcome="success">
+         <render view-id="/search/search.xhtml" />
+      </rule>
+    </navigation>
+  </page>
+
+  <page view-id="/cycle/cycleFrame.xhtml" action="#{CyclePageAction.cycle}">
+    <navigation>
+      <rule if-outcome="Remove">
+         <render view-id="/cycle/cycleFrame.xhtml" />
+      </rule>
+      <rule if-outcome="success">
+         <render view-id="/cycle/cycleFrame.xhtml" />
+      </rule>
+    </navigation>
+  </page>
+  
+  <page view-id="/cycle/cycle.xhtml">
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/cycle/patient.xhtml">
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/study/patientFrame.xhtml" action="#{CyclePageAction.ensureStudyPresent}">
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+  </page>
+  
+  <page view-id="/study/displayFrame.xhtml"> 
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/study/study.xhtml">
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/series/seriesTray.xhtml">
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/js/js.xhtml">
+    <param name="jsEnabled" value="#{JavaScriptModel.javaScriptEnabled}" />
+  </page>
+  
+  <page view-id="/image/image.xhtml">
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="mode" value="#{DisplayMode.mode}" />
+    <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
+    <param name="counter" value="#{DisplayMode.counter}" />
+    <!-- To be removed into an action item -->
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/image/action/*">
+    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="studyUID" value="#{StudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="objectUID" value="#{StudyLevel.objectUID}" />
+    <param name="mode" value="#{DisplayMode.mode}" />
+    <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
+    <begin-conversation join="true" />
+  </page>
+
+  <page view-id="/image/action/Mode.xhtml" action="#{DisplayMode.action}">
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
+  <page view-id="/image/action/WindowLevel.xhtml" action="#{WindowLevel.action}">
+    <param name="windowWidth" value="#{WindowLevel.windowWidth}" />
+    <param name="windowCenter" value="#{WindowLevel.windowCenter}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
+  <page view-id="/image/action/ZoomPan.xhtml" action="#{ZoomPan.action}">
+    <param name="relZoom" value="#{ZoomPan.relZoom}" />
+    <param name="panX" value="#{ZoomPan.panX}" />
+    <param name="panY" value="#{ZoomPan.panY}" />
+    <param name="region" value="#{ZoomPan.region}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
+</pages>

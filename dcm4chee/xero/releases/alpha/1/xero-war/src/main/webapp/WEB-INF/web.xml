@@ -1,0 +1,284 @@
+<?xml version="1.0" ?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+
+   <context-param>
+      <param-name>javax.faces.CONFIG_FILES</param-name>
+      <param-value>/WEB-INF/navigation.xml</param-value>
+   </context-param>
+
+   <context-param>
+     <param-name>com.sun.faces.validateXml</param-name>
+     <param-value>true</param-value>
+     <description>Validate the faces-config.xml file against the DTD</description>
+   </context-param>
+   
+   <!-- Making this explicit removes the error message on loading the taglibs. -->
+   <!-- It worked previously, I wonder if something is missing from a direct deployment.
+   <context-param>
+		<param-name>facelets.LIBRARIES</param-name>
+		<param-value>
+			/META-INF/facelets/tags/jsf-core.taglib.xml;
+			/META-INF/facelets/tags/jsf-html.taglib.xml;
+			/META-INF/facelets/tags/jsf-ui.taglib.xml;
+			/META-INF/facelets/tags/jstl-core.taglib.xml;
+			/META-INF/facelets/tags/jjstl-fn.taglib.xml
+		</param-value>
+	</context-param>
+	-->
+	
+   <listener>
+      <listener-class>org.jboss.seam.servlet.SeamListener</listener-class>
+   </listener>
+
+   <!-- For My Faces
+   <listener>
+        <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
+   </listener> 
+   -->
+
+   <!-- For RSF 1.2 -->
+   <listener>
+      <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
+   </listener>
+
+   <!--
+   <context-param>
+      <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+      <param-value>client</param-value>
+   </context-param>
+   -->
+    
+   <context-param>
+      <param-name>facelets.DEVELOPMENT</param-name>
+      <param-value>true</param-value>
+   </context-param>
+    
+   <context-param>
+      <param-name>javax.faces.DEFAULT_SUFFIX</param-name>
+      <param-value>.xhtml</param-value>
+   </context-param>
+
+   <filter>
+      <filter-name>Seam Exception Filter</filter-name>
+      <filter-class>org.jboss.seam.servlet.SeamExceptionFilter</filter-class>
+   </filter>
+
+   <filter>
+      <filter-name>Seam Redirect Filter</filter-name>
+      <filter-class>org.jboss.seam.servlet.SeamRedirectFilter</filter-class>
+   </filter>
+   
+   <filter>
+      <filter-name>MaxAgeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
+   </filter>
+
+   <filter>
+      <filter-name>TimeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.TimeFilter</filter-class>
+   </filter>
+
+   <filter>
+      <filter-name>ShortMaxAgeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
+      <init-param>
+	      <param-name>maxAge</param-name>
+    	  <param-value>9</param-value>
+      </init-param>
+   </filter>
+   
+   <filter>
+      <filter-name>XmlContentFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
+      <init-param>
+	      <param-name>contentType</param-name>
+    	  <param-value>text/xml</param-value>
+      </init-param>
+   </filter>
+
+   <filter>
+      <filter-name>SvgContentFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
+      <init-param>
+	      <param-name>contentType</param-name>
+    	  <param-value>image/svg+xml</param-value>
+      </init-param>
+   </filter>
+
+   <filter>
+      <filter-name>XslContentFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
+      <init-param>
+	      <param-name>contentType</param-name>
+    	  <param-value>application/xml</param-value>
+      </init-param>
+   </filter>
+
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>*.seam</url-pattern>
+   </filter-mapping>
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>*.xml</url-pattern>
+   </filter-mapping>
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>*.xsl</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>XmlContentFilter</filter-name>
+      <url-pattern>*.xml</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>SvgContentFilter</filter-name>
+      <url-pattern>*.svg</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>ShortMaxAgeFilter</filter-name>
+      <url-pattern>*.seam</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Seam Redirect Filter</filter-name>
+      <url-pattern>*.seam</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Seam Exception Filter</filter-name>
+      <url-pattern>*.seam</url-pattern>
+   </filter-mapping>
+
+   <!-- XSL pages need to take at least a short while to time out. -->
+   <filter-mapping>
+      <filter-name>MaxAgeFilter</filter-name>
+      <url-pattern>*.xsl</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>MaxAgeFilter</filter-name>
+      <url-pattern>*.xml</url-pattern>
+   </filter-mapping>
+
+   <!-- WADO servlet to use for testing window levelling performance. -->
+   <servlet>
+     <servlet-name>WADO</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>/wado.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>wado</param-value>
+      </init-param>
+   </servlet>
+   <servlet-mapping>
+     <servlet-name>WADO</servlet-name>
+     <url-pattern>/wlwado</url-pattern>
+   </servlet-mapping>
+    
+   <!-- DEV WADO servlet to use for testing window levelling performance. -->
+   <servlet>
+     <servlet-name>DEVWADO</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>/wado.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>wadoDcm</param-value>
+      </init-param>
+   </servlet>
+   <servlet-mapping>
+     <servlet-name>DEVWADO</servlet-name>
+     <url-pattern>/devwado</url-pattern>
+   </servlet-mapping>
+
+   <!-- JSF and Facelets Configuration -->    
+   <servlet>
+      <servlet-name>Faces Servlet</servlet-name>
+      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+   </servlet>
+    
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>*.seam</url-pattern>
+   </servlet-mapping>
+    
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>*.action</url-pattern>
+   </servlet-mapping>
+    
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>*.xsl</url-pattern>
+   </servlet-mapping>
+   <filter-mapping>
+      <filter-name>XslContentFilter</filter-name>
+      <url-pattern>*.xsl</url-pattern>
+   </filter-mapping>
+   
+   <servlet>
+      <servlet-name>Study Xml Servlet</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>/xero-cfind.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>studyFilter</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>      
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>Study Xml Servlet</servlet-name>
+      <url-pattern>/study/study.xml</url-pattern>
+   </servlet-mapping>
+
+   <servlet>
+      <servlet-name>Image Xml Servlet</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>/xero-cfind.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>imageFilter</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>      
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>Image Xml Servlet</servlet-name>
+      <url-pattern>/image/image.xml</url-pattern>
+   </servlet-mapping>
+
+   <servlet>
+      <servlet-name>Series Xml Servlet</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>/xero-cfind.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>seriesFilter</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>      
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>Series Xml Servlet</servlet-name>
+      <url-pattern>/series/series.xml</url-pattern>
+   </servlet-mapping>
+</web-app>

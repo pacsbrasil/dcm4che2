@@ -1,0 +1,40 @@
+# This value provider allows the application context to provide meta-data
+# by registering an instance with an @Name that matches some meta-data path.
+# This will cause nested-lookups for other value providers for $ notation value lookups,
+# and also add a meta-data provider for the Seam configuration values.
+#Define the default servlet filter - eventually this meta-data should probably
+# come from meta-data annotations instead of direct setting the values.
+servletFilter=${org.dcm4chee.xero.metadata.filter.FilterList}
+servletFilter.jaxbFilter=${org.dcm4chee.xero.metadata.servlet.JaxbFilter}
+# Last filter in the list.
+servletFilter.jaxbFilter.priority=999999
+servletFilter.searchCondition.priority=-1000
+servletFilter.source.priority=0
+
+#Now, add a study filter that provides study searches. 
+studyFilter.inherit=servletFilter
+studyFilter.source=${org.dcm4chee.xero.search.study.StudySearch}
+studyFilter.searchCondition=${org.dcm4chee.xero.search.study.StudySearchConditionParser}
+studyFilter.emptyFilter=${org.dcm4chee.xero.search.EmptyQueryParameterFilter}
+studyFilter.emptyFilter.priority=1000
+
+# And also have a filter for series and/or images or the complete study.
+imageFilter.inherit=servletFilter
+imageFilter.source=${org.dcm4chee.xero.search.study.ImageSearch}
+imageFilter.searchCondition=${org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+imageFilter.emptyFilter.inherit=studyFilter.emptyFilter
+imageFilter.sortFilter=${org.dcm4chee.xero.search.study.SortImageFilter}
+imageFilter.sortFilter.priority=25
+imageFilter.cacheFilter=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+imageFilter.cacheFilter.priority=400
+imageFilter.pagedFilter=${org.dcm4chee.xero.search.study.PagedImageFilter}
+imageFilter.pagedFilter.priority=500
+
+seriesFilter.inherit=imageFilter
+seriesFilter.seriesSource=${org.dcm4chee.xero.search.study.SeriesSearch}
+seriesFilter.seriesSource.priority=-100000
+seriesFilter.singleImagePerSeriesFilter=${org.dcm4chee.xero.display.SingleImagePerSeriesFilter}
+seriesFilter.singleImagePerSeriesFilter.priority=15
+seriesFilter.emptyFilter.inherit=imageFilter.emptyFilter
+seriesFilter.sortFilter=${org.dcm4chee.xero.search.study.SortImageFilter}
+seriesFilter.sortFilter.priority=25

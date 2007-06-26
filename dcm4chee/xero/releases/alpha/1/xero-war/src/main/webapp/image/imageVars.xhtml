@@ -1,0 +1,17 @@
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/display/vars"
+   m:includeXsl="/image/imageVars.xhtml"
+   m:includeXsl.priority="-10"
+>
+<xsl:variable name="docName" select="/documents/series" />
+<ui:include src="/series/seriesVars.xhtml" />
+
+<xsl:variable name="imagePosition"><xsl:value-of select="number(/documents/position)"/></xsl:variable>
+
+<xsl:variable name="frameNode" select="document(/documents/layout)/se:results" />
+<xsl:variable name="mode" select="/documents/mode" />
+<xsl:variable name="applyLevel" select="/documents/mode/@applyLevel" />
+<xsl:variable name="documentsNode" select="/documents" />
+<xsl:variable name="toolbarNode" select="document(/documents/toolbar)/*" />
+</ui:component>

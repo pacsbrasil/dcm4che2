@@ -1,0 +1,31 @@
+<x:xsl
+   pageConfig="#{PageConfig.series.report}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/series/report"
+   m:includeXsl="/series/reportXsl.xhtml"
+>
+<!-- Display available reports. -->
+<x:template name="reportView" m:body="reportView" m:body.priority="750">
+    <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series/se:report">
+      <span>
+         <a target="imageFrame">
+            <xsl:attribute name="href">/wado?requestType=WADO&amp;studyUID=<xsl:value-of select="ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
+	        <xsl:value-of select="@conceptMeaning" />
+	        <xsl:if test="@conceptMeaning=''">
+	        Report
+	        </xsl:if>	        
+         </a>
+         <xsl:if test="@completion!=''">
+         <xsl:value-of select="@completion" /> <br />
+         </xsl:if>
+         <xsl:if test="@verification!=''">
+         <xsl:value-of select="@verification" /><br />
+         </xsl:if>
+     </span>
+     <br />
+   </xsl:for-each>
+</x:template>
+
+</x:xsl>

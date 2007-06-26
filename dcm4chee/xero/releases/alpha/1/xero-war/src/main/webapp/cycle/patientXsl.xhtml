@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xsl
+   pageConfig="#{PageConfig.patient}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/patient"
+   xmlns="http://www.w3.org/1999/xhtml"
+>
+
+<!-- Display the general information about this patient.  
+     TODO: switch to using the converters to display things cleanly.
+  -->
+<xsl:template name="patientInfo">
+   Patient ID: <xsl:value-of select="$patientNode/@PatientID" /> 
+   Sex: <xsl:value-of select="$patientNode/@PatientsSex" />  
+   dob: <xsl:value-of select="$patientNode/@PatientsBirthDate" />
+</xsl:template>
+
+<xsl:template name="patientNameConverter" />
+
+<xsl:template name="patientHeader">
+  <h1><xsl:value-of select="$patientNode/@PatientName" /></h1>
+</xsl:template>
+
+<xsl:template name="patientTable">
+   <table style="width: 100%">   
+         <xsl:call-template name="renderTableResultsHeader" />
+         <xsl:call-template name="renderTableResultsPatientsStudies" />
+   </table>
+</xsl:template>
+
+<xsl:template name="patientToolbar">
+   <a>
+     <xsl:attribute name="style">float: right;</xsl:attribute>
+     <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;PatientIdentifier=<xsl:value-of select="$patientIdent" /></xsl:attribute>
+     <xsl:attribute name="target">mainFrame</xsl:attribute>
+     <img src="../img/viewNow.png" style="float: right;" alt="View Now"/>
+   </a>
+</xsl:template>
+
+<xsl:template match="/"><html>
+<head>    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Xero Cycle Patient List</title>
+    <link href="../stylesheet/general.css" rel="stylesheet" type="text/css" />
+</head>
+<body style="border-style: none; position: relative; top: -8px;  ">
+   <xsl:if test="/documents/debug='true'">
+     Debug mode is on:<br />
+     cid=<xsl:value-of select="$cid" /> <br />
+     table columns doc=<xsl:value-of select="$tableColumnsDoc"></xsl:value-of><br />
+     Number of table columns items=<xsl:value-of select="count($tableColumns/*)"></xsl:value-of><br />
+     Number of displayed items=<xsl:value-of select="count($displayedColumns)"></xsl:value-of><br />
+     Displayed items:<br />
+     <xsl:for-each select="$displayedColumns">
+        Item: <xsl:value-of select="@label"></xsl:value-of>
+     </xsl:for-each> <br />
+     Patient Ident=<xsl:value-of select="$patientIdent" /><br />
+     Number of studies for patient=<xsl:value-of select="count($patientNode/se:study)" /><br />
+   </xsl:if>
+
+   <xsl:call-template name="patientToolbar" />
+   <xsl:call-template name="patientHeader" />
+   <xsl:call-template name="patientInfo" />
+   <xsl:call-template name="patientTable" />
+
+
+</body>
+</html>
+</xsl:template>
+
+</x:xsl>

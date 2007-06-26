@@ -1,0 +1,11 @@
+# This file contains meta-data used to run the WLFilter test.
+
+wlfilter=${org.dcm4chee.xero.metadata.filter.FilterList}
+wlfilter.src=${org.dcm4chee.xero.wado.GradedWadoImage}
+wlfilter.src.priority=0
+wlfilter.wl=${org.dcm4chee.xero.wado.WLFilter}
+wlfilter.wl.priority=15
+
+encode.inherit=wlfilter
+encode.encode=${org.dcm4chee.xero.wado.EncodeImage}
+encode.encode.priority=1000
