@@ -12,10 +12,19 @@ wado.splitRegion.priority=100
 wado.src=${org.dcm4chee.xero.wado.WadoSource}
 wado.src.priority=0
 
+fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
+fileLocation.fileLocationMgt=${org.dcm4chee.xero.wado.FileLocationMgtFilter}
+fileLocation.fileLocationMgt.priority=1000
+fileLocation.wadoLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
+fileLocation.wadoLocation.priority=100
+fileLocation.priority=-1
+
 wadoDcm=${org.dcm4chee.xero.metadata.filter.FilterList}
 wadoDcm.encode=${org.dcm4chee.xero.wado.EncodeImage}
 wadoDcm.encode.priority=9999
+wadoDcm.wl=${org.dcm4chee.xero.wado.WLFilter}
+wadoDcm.wl.priority=6000
+wadoDcm.memcache=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+wadoDcm.memcache.priority=5000
 wadoDcm.src=${org.dcm4chee.xero.wado.DicomImageFilter}
-wadoDcm.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
-wadoDcm.fileLocation.priority=-1
-
+wadoDcm.fileLocation.inherit=fileLocation

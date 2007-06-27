@@ -41,6 +41,7 @@ import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageType;
 import org.dcm4chee.xero.search.study.SeriesBean;
+import org.dcm4chee.xero.wado.WadoImage;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -54,7 +55,7 @@ public class ZoomPanAction {
 	private static final double ZOOM_EXPONENT = 0.9;
 	private static final double LOG_ZOOM_EXPONENT = Math.log(ZOOM_EXPONENT);
 
-	private static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class); 
+	public static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class); 
 
 	@In(value="LocalStudyModel", create=true)
 	LocalStudyModel localStudyModel;
@@ -110,7 +111,7 @@ public class ZoomPanAction {
 		if( region==null ) throw new IllegalArgumentException("Region must not be null.");
 		region = region.trim();
 		log.info("Setting region to "+region + " on "+this);
-		double[] dRegion = splitRegion(region);
+		double[] dRegion = WadoImage.splitRegion(region);
 		centerX = (dRegion[0]+dRegion[2])/2;
 		centerY = (dRegion[1]+dRegion[3])/2;
 		hWidth = (dRegion[2]-dRegion[0])/2;
@@ -118,23 +119,6 @@ public class ZoomPanAction {
 		// Regenerate the region string from components.
 		this.region = null;
 		log.info("Region after set is "+getRegion());
-	}
-	
-	/** Splits region into sub-parts */
-	public static double[] splitRegion(String region) {
-		log.info("Trying to split '"+region+"'");
-		double ret[] = new double[4];
-		int start = 0;		
-		region = region.trim();
-		for(int i=0; i<ret.length; i++ ) {
-			if( start>=region.length() ) throw new IllegalArgumentException("Too few arguments in "+region);
-			int end = region.indexOf(',',start);
-			if( end<0 ) end = region.length();
-			ret[i] = Double.parseDouble(region.substring(start,end));
-			start = end+1;
-		}
-		if( start<region.length() ) throw new IllegalArgumentException("Too many arguments in "+region);
-		return ret;
 	}
 	
 	/** Checks the regions to ensure that the zoom/pan doesn't go too far and that the image is visible */

@@ -40,6 +40,7 @@ package org.dcm4chee.xero.wado;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
+import org.dcm4chee.xero.display.ZoomPanAction;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
@@ -194,5 +195,22 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 				size += width * height * channels * 2;
 		}
 		return size;
+	}
+
+	/** Splits region into sub-parts */
+	public static double[] splitRegion(String region) {
+		ZoomPanAction.log.info("Trying to split '"+region+"'");
+		double ret[] = new double[4];
+		int start = 0;		
+		region = region.trim();
+		for(int i=0; i<ret.length; i++ ) {
+			if( start>=region.length() ) throw new IllegalArgumentException("Too few arguments in "+region);
+			int end = region.indexOf(',',start);
+			if( end<0 ) end = region.length();
+			ret[i] = Double.parseDouble(region.substring(start,end));
+			start = end+1;
+		}
+		if( start<region.length() ) throw new IllegalArgumentException("Too many arguments in "+region);
+		return ret;
 	}
 }

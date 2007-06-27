@@ -42,7 +42,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
-import org.dcm4chee.xero.display.ZoomPanAction;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public class RegionFilter implements Filter<WadoImage> {
 		String region = (String) WadoImage.removeFromQuery(params,"region")[0];
 		log.info("Region filter on region "+region);
 		if( region==null ) return (WadoImage) filterItem.callNextFilter(params);
-		double[] dregion = ZoomPanAction.splitRegion(region);
+		double[] dregion = WadoImage.splitRegion(region);
 		if( dregion[0]==0.0 && dregion[1]==0.0 && dregion[2] == 1.0 && dregion[3]==1.0 )
 			return (WadoImage) filterItem.callNextFilter(params);
 		log.info("Non-default region supplied:"+region);

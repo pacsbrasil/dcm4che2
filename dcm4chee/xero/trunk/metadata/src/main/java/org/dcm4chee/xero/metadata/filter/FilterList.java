@@ -87,5 +87,4 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	public FilterListConfig getConfigMetaData(MetaDataBean mdb) {
 		return new FilterListConfig(mdb);
 	}
-
 }
