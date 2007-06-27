@@ -36,7 +36,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -65,6 +69,8 @@ public class Hl7Rcv implements HL7Service
 {
 
     // Constants -----------------------------------------------------
+    
+    
     private final static LongOpt[] LONG_OPTS = new LongOpt[]{
             new LongOpt("max-clients", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("so-timeout", LongOpt.REQUIRED_ARGUMENT, null, 2),
@@ -80,6 +86,7 @@ public class Hl7Rcv implements HL7Service
             new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+            new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2)
             };
 
     private static ResourceBundle messages = ResourceBundle.getBundle(
@@ -96,14 +103,41 @@ public class Hl7Rcv implements HL7Service
 
     private SSLContextAdapter tls = null;
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
-
+    private int fileNumber = 1;
+    private File dir = null;
     // Constructors --------------------------------------------------
     Hl7Rcv(Configuration cfg)
     {
         initServer(cfg);
+        initDest(cfg);
         initTLS(cfg);
     }
+    
+    private final void initDest(Configuration cfg)
+    {
+        String dest = cfg.getProperty("dest", "", "<none>", "");
+        if (dest.length() == 0 || "/dev/null".equals(dest)) {
+            return;
+        }
 
+        this.dir = new File(dest);
+        if (!dir.exists()) {
+            if (dir.mkdirs()) {
+                log.info(MessageFormat.format(messages.getString("mkdir"),
+                        new Object[]{dir}));
+            } else {
+                exit(MessageFormat.format(messages.getString("failmkdir"),
+                        new Object[]{dest}), true);
+            }
+        } else {
+            if (!dir.isDirectory()) {
+                exit(MessageFormat.format(messages.getString("errdir"),
+                        new Object[]{dest}), true);
+            }
+        }
+       log.info("Dest=" + dest);
+    }
+    
     private void initServer(Configuration cfg)
     {
         server.setPort(
@@ -119,8 +153,7 @@ public class Hl7Rcv implements HL7Service
         ackDelay = Integer.parseInt(cfg.getProperty("ack-delay", "0"));
         handler.putService("ADT", this);
         handler.putService("ORM", this);
-        handler.putService("ORU", this);
-        
+        handler.putService("ORU", this);       
     }
 
 
@@ -177,6 +210,23 @@ public class Hl7Rcv implements HL7Service
         if (log.isDebugEnabled()) {
             log.debug("Received:\n" + hl7.toVerboseString());
         }
+       
+        if(dir != null)
+        {
+            File fileName = new File(dir,hl7.header().getMessageType() + (fileNumber++) + ".hl7");
+            try {
+                FileOutputStream f = new FileOutputStream(fileName);
+                f.write(msg);
+                f.close();
+            } catch (FileNotFoundException e1) {
+                log.error("Couldn't open file: " + fileName, e1);
+                e1.printStackTrace();
+            } catch (IOException e) {
+                log.error("IO/Exception writing to file: " + fileName);
+                e.printStackTrace();
+            }
+        }
+       
         if (ackDelay > 0) {
             try {
                 Thread.sleep(ackDelay);
@@ -186,6 +236,7 @@ public class Hl7Rcv implements HL7Service
         if (log.isDebugEnabled()) {
             log.debug("Send:\n" + hl7f.parse(ack).toVerboseString());
         }
+        
         return ack;
     }
 
