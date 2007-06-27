@@ -166,8 +166,6 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
-     * Auto-generated Primary Key
-     *
      * @ejb.interface-method
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
@@ -175,7 +173,6 @@ public abstract class StudyBean implements EntityBean {
      *
      */
     public abstract Long getPk();
-
     public abstract void setPk(Long pk);
 
     /**
@@ -183,7 +180,6 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
-
     public abstract void setCreatedTime(java.sql.Timestamp time);
 
     /**
@@ -191,39 +187,49 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
-
     public abstract void setUpdatedTime(java.sql.Timestamp time);
 
     /**
-     * Study Instance UID
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="study_iuid"
      */
     public abstract String getStudyIuid();
-
     public abstract void setStudyIuid(String uid);
 
     /**
-     * Study ID
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="study_id"
      */
     public abstract String getStudyId();
-
     public abstract void setStudyId(String uid);
 
     /**
-     * Study Datetime
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="study_datetime"
      */
     public abstract java.sql.Timestamp getStudyDateTime();
-
     public abstract void setStudyDateTime(java.sql.Timestamp dateTime);
+    
+    private void setStudyDateTime(java.util.Date date) {
+        setStudyDateTime(date != null
+                ? new java.sql.Timestamp(date.getTime())
+                : null);
+    }
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="study_time"
+     */
+    public abstract java.sql.Time getStudyTime();
+    public abstract void setStudyTime(java.sql.Time time);
 
+    
+    private void setStudyTime(java.util.Date date) {
+        setStudyTime(date != null
+                ? new java.sql.Time(date.getTime())
+                : null);
+    }
+    
     /**
      * Accession Number
      *
@@ -838,6 +844,13 @@ public abstract class StudyBean implements EntityBean {
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Study Date/Time format: " + e.getMessage());
         }
+        
+        try {
+            setStudyTime(ds.getDate(Tags.StudyTime));
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal Study Time format: " + e.getMessage());
+        }
+        
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         PersonName pn = ds.getPersonName(Tags.ReferringPhysicianName);
         if (pn != null) {
@@ -878,14 +891,7 @@ public abstract class StudyBean implements EntityBean {
     private static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : null;
     }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public void setStudyDateTime(java.util.Date date) {
-        setStudyDateTime(date != null ? new java.sql.Timestamp(date.getTime())
-                : null);
-    }
+
 
     /**
      * 

@@ -165,16 +165,12 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * Auto-generated Primary Key
-     *
      * @ejb.interface-method
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     *
      */
     public abstract Long getPk();
-
     public abstract void setPk(Long pk);
 
     /**
@@ -182,7 +178,6 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
-
     public abstract void setCreatedTime(java.sql.Timestamp time);
 
     /**
@@ -190,149 +185,130 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
-
     public abstract void setUpdatedTime(java.sql.Timestamp time);
 
     /**
-     * Series Instance UID
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="series_iuid"
      */
     public abstract String getSeriesIuid();
-
     public abstract void setSeriesIuid(String uid);
 
     /**
-     * Series Number
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="series_no"
      */
     public abstract String getSeriesNumber();
-
     public abstract void setSeriesNumber(String no);
 
     /**
-     * Modality
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
      */
     public abstract String getModality();
-
     public abstract void setModality(String md);
 
     /**
-     * Body Part Examined
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="body_part"
      */
     public abstract String getBodyPartExamined();
-
     public abstract void setBodyPartExamined(String bodyPart);
 
     /**
-     * Laterality
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="laterality"
      */
     public abstract String getLaterality();
-
     public abstract void setLaterality(String laterality);
 
     /**
-     * Series Description
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="series_desc"
      */
     public abstract String getSeriesDescription();
-
     public abstract void setSeriesDescription(String description);
     
     /**
-     * Department Name
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="department"
      */
     public abstract String getInstitutionalDepartmentName();
-
     public abstract void setInstitutionalDepartmentName(String name);
 
     /**
-     * Institution Name
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="institution"
      */
     public abstract String getInstitutionName();
-
     public abstract void setInstitutionName(String name);
 
     /**
-     * PPS Start Datetime
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="pps_start"
      */
     public abstract java.sql.Timestamp getPpsStartDateTime();
-
     public abstract void setPpsStartDateTime(java.sql.Timestamp datetime);
 
+    private void setPpsStartDateTime(java.util.Date date) {
+        setPpsStartDateTime(date != null 
+                ? new java.sql.Timestamp(date.getTime())
+                : null);
+    }
+
     /**
-     * PPS Instance UID
-     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pps_start_time"
+     */
+    public abstract java.sql.Time getPpsStartTime();
+    public abstract void setPpsStartTime(java.sql.Time time);
+
+    private void setPpsStartTime(java.util.Date date) {
+        setPpsStartTime(date != null 
+                ? new java.sql.Time(date.getTime())
+                : null);
+    }
+
+    
+    /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pps_iuid"
      */
     public abstract String getPpsIuid();
-
-    /**
-     * @ejb.interface-method
-     */
     public abstract void setPpsIuid(String uid);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="series_custom1"
      */
     public abstract String getCustomAttribute1();
     public abstract void setCustomAttribute1(String value);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="series_custom2"
      */
     public abstract String getCustomAttribute2();
     public abstract void setCustomAttribute2(String value);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="series_custom3"
      */
     public abstract String getCustomAttribute3();
     public abstract void setCustomAttribute3(String value);
     
     /**
-     * Number Of Series Related Instances
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="num_instances"
-     * 
      */
     public abstract int getNumberOfSeriesRelatedInstances();
-
     public abstract void setNumberOfSeriesRelatedInstances(int num);
     
     /**
-     * Encoded Series Dataset
-     *
      * @ejb.persistence column-name="series_attrs"
-     * 
      */
     public abstract byte[] getEncodedAttributes();
-
     public abstract void setEncodedAttributes(byte[] attr);
 
     /**
@@ -340,7 +316,6 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="fileset_iuid"
      */
     public abstract String getFilesetIuid();
-
     public abstract void setFilesetIuid(String iuid);
 
     /**
@@ -348,7 +323,6 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="fileset_id"
      */
     public abstract String getFilesetId();
-
     public abstract void setFilesetId(String id);
 
     /**
@@ -370,8 +344,6 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setExternalRetrieveAET(String aet);
 
     /**
-     * Retrieve AETs
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="retrieve_aets"
      */
@@ -380,8 +352,6 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setRetrieveAETs(String aets);
 
     /**
-     * Instance Availability
-     *
      * @ejb.persistence column-name="availability"
      */
     public abstract int getAvailability();
@@ -400,8 +370,6 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
-     * Series Status
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="series_status"
      */
@@ -450,8 +418,6 @@ public abstract class SeriesBean implements EntityBean {
 
 
     /**
-     * Create series.
-     *
      * @ejb.create-method
      */
     public Long ejbCreate(Dataset ds, StudyLocal study)
@@ -685,7 +651,7 @@ public abstract class SeriesBean implements EntityBean {
     }
     
 
-	private void updateMpps() {
+    private void updateMpps() {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
         if (ppsiuid != null) try {
@@ -733,8 +699,13 @@ public abstract class SeriesBean implements EntityBean {
             setPpsStartDateTime(
                     ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
         } catch (IllegalArgumentException e) {
-            log.warn("Illegal Pps Date/Time format: " + e.getMessage());
+            log.warn("Illegal PPS Date/Time format: " + e.getMessage());
         }
+        try {
+            setPpsStartTime(ds.getDate(Tags.PPSStartTime));
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal PPS Time format: " + e.getMessage());
+        }       
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
         if (refPPS != null) {
             setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));
@@ -764,14 +735,6 @@ public abstract class SeriesBean implements EntityBean {
 
     private static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : null;
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void setPpsStartDateTime(java.util.Date date) {
-        setPpsStartDateTime(date != null ? new java.sql.Timestamp(date
-                .getTime()) : null);
     }
 
     /**

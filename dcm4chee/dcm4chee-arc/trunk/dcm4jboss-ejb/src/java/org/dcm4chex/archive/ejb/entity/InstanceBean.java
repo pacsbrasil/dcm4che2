@@ -165,15 +165,12 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     /**
-     * Auto-generated Primary Key
-     *
      * @ejb.interface-method
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      */
     public abstract Long getPk();
-
     public abstract void setPk(Long pk);
 
     /**
@@ -181,7 +178,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
-
     public abstract void setCreatedTime(java.sql.Timestamp time);
 
     /**
@@ -189,89 +185,76 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
-
     public abstract void setUpdatedTime(java.sql.Timestamp time);
 	
     /**
-     * SOP Instance UID
-     *
-     * @ejb.persistence column-name="sop_iuid" 
      * @ejb.interface-method
+     * @ejb.persistence column-name="sop_iuid" 
      * @jboss.load-group name="most"
      */
     public abstract String getSopIuid();
-
     public abstract void setSopIuid(String iuid);
 
     /**
-     * SOP Class UID
-     *
-     * @ejb.persistence column-name="sop_cuid"
      * @ejb.interface-method
+     * @ejb.persistence column-name="sop_cuid"
      * @jboss.load-group name="most"
      *
      */
     public abstract String getSopCuid();
-
     public abstract void setSopCuid(String cuid);
 
     /**
-     * Instance Number
-     *
-     * @ejb.persistence column-name="inst_no"
      * @ejb.interface-method
+     * @ejb.persistence column-name="inst_no"
      */
     public abstract String getInstanceNumber();
-
     public abstract void setInstanceNumber(String no);
 
     /**
-     * Content Datetime
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="content_datetime"
      */
     public abstract java.sql.Timestamp getContentDateTime();
-
     public abstract void setContentDateTime(java.sql.Timestamp dateTime);
 
-    /**
-     * @ejb.interface-method
-     */
-    public void setContentDateTime(java.util.Date date) {
-		setContentDateTime(date != null ? new java.sql.Timestamp(date.getTime())
-                : null);
+    private void setContentDateTime(java.util.Date date) {
+		setContentDateTime(date != null 
+                        ? new java.sql.Timestamp(date.getTime())
+                        : null);
     }
 	
-	/**
-     * SR Completion Flag
-     *
-     * @ejb.persistence column-name="sr_complete"
+    /**
      * @ejb.interface-method
-     *
+     * @ejb.persistence column-name="content_time"
+     */
+    public abstract java.sql.Time getContentTime();
+    public abstract void setContentTime(java.sql.Time time);
+
+    private void setContentTime(java.util.Date date) {
+        setContentDateTime(date != null 
+                ? new java.sql.Time(date.getTime())
+                : null);
+    }
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="sr_complete"
      */
     public abstract String getSrCompletionFlag();
-
     public abstract void setSrCompletionFlag(String flag);
 
     /**
-     * SR Verification Flag
-     *
-     * @ejb.persistence
-     *  column-name="sr_verified"
-     * 
      * @ejb.interface-method
-     *
+     * @ejb.persistence column-name="sr_verified"
      */
     public abstract String getSrVerificationFlag();
-
     public abstract void setSrVerificationFlag(String flag);
 
     /**
      * @ejb.persistence column-name="inst_attrs"
      */
     public abstract byte[] getEncodedAttributes();
-
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
@@ -318,8 +301,6 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setAvailability(int availability);
 
     /**
-     * Instance Status
-     *
      * @ejb.interface-method
      * @ejb.persistence column-name="inst_status"
      */
@@ -590,6 +571,11 @@ public abstract class InstanceBean implements EntityBean {
             setContentDateTime(ds.getDateTime(Tags.ContentDate, Tags.ContentTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Content Date/Time format: " + e.getMessage());
+        }
+        try {
+            setContentTime(ds.getDate(Tags.ContentTime));
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal Content Time format: " + e.getMessage());
         }
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
