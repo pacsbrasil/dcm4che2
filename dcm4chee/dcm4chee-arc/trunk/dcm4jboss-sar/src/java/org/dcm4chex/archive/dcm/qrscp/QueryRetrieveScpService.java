@@ -168,6 +168,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private String pixQueryDefIssuer;
     
+    private boolean coerceRequestPatientIds;
+
+    private String[] coerceRequestPatientIdsAETs;
+
     private int acTimeout = 5000;
 
     private int dimseTimeout = 0;
@@ -345,6 +349,30 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.pixQueryDefIssuer = pixQueryDefIssuer;
     }
 
+    public final boolean isCoerceRequestPatientIds() {
+        return coerceRequestPatientIds;
+    }
+
+    public final void setCoerceRequestPatientIds(boolean coerceRequestPatientIds) {
+        this.coerceRequestPatientIds = coerceRequestPatientIds;
+    }
+
+    public String getCoerceRequestPatientIdsAETs() {
+        return coerceRequestPatientIdsAETs == null ? ANY
+                : StringUtils.toString(coerceRequestPatientIdsAETs, '\\');
+    }
+
+    public void setCoerceRequestPatientIdsAETs(String s) {
+        String trim = s.trim();
+        this.coerceRequestPatientIdsAETs = trim.equalsIgnoreCase(ANY) ? null
+                : StringUtils.split(trim, '\\');
+    }
+
+    public final boolean isCoerceRequestPatientIdsAET(String aet) {
+        return isCoerceRequestPatientIds()&&
+                (coerceRequestPatientIdsAETs == null || Arrays.asList(coerceRequestPatientIdsAETs).contains(aet));
+    }
+    
     public final boolean isNoMatchForNoValue() {
         return noMatchForNoValue;
     }
@@ -713,7 +741,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     boolean isPixQueryLocal() throws DcmServiceException {
         try {
             return ((Boolean) server.getAttribute(this.pixQueryServiceName,
-                    "pixManagerLocal")).booleanValue();
+                    "PIXManagerLocal")).booleanValue();
         } catch (JMException e) {
             log.error("Failed to access PIX Service", e);
             throw new DcmServiceException(Status.UnableToProcess, e);

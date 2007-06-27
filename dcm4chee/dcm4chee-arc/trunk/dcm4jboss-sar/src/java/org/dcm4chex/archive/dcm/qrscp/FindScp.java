@@ -288,6 +288,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 return null;
             }
             try {
+                Association a = assoc.getAssociation();
+                queryCmd.setCoercePatientIds( service.isCoerceRequestPatientIdsAET(a.getCallingAET()) );
                 if (!queryCmd.next()) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;
@@ -296,7 +298,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 Dataset data = getDataset(queryCmd);				
                 log.debug("Identifier:\n");
                 log.debug(data);
-                Association a = assoc.getAssociation();
                 service.logDIMSE(a , RESULT_XML, data);
                 Dataset coerce = 
                     service.getCoercionAttributesFor(a, RESULT_XSL, data);

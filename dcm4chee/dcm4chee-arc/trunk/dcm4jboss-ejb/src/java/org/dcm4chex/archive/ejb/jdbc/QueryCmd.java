@@ -137,6 +137,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private HashMap chkPatAttrs;
 
+    private boolean coercePatientIds = false;
+
+    public void setCoercePatientIds( boolean coercePatientIds ) {
+        this.coercePatientIds = coercePatientIds;
+    }
+    
     public static QueryCmd create(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
@@ -290,9 +296,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     return otherPatIdSQ;
             }
         }
-        log
-                .warn("Matching of items in OtherPatientIdSequence disabled! Reason: "
-                        + sb);
+        log.warn("Matching of items in OtherPatientIdSequence disabled! Reason: " + sb);
         otherPatientIDMatchNotSupported = true;
         return null;
     }
@@ -486,15 +490,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
         if (sq != null) {
             checkPatAttrs();
-            if (log.isDebugEnabled()) {
-                log.debug("PatientID in response:"
+            if ( coercePatientIds ) {
+                if (log.isDebugEnabled()) {
+                    log.debug("PatientID in response:"
                         + keys.getString(Tags.PatientID) + "^"
                         + keys.getString(Tags.IssuerOfPatientID));
-                log.debug("PatientID of match:" + ds.getString(Tags.PatientID)
+                    log.debug("PatientID of match:" + ds.getString(Tags.PatientID)
                         + "^" + ds.getString(Tags.IssuerOfPatientID));
-            }
-            ds.putAll(keys.subSet(new int[] { Tags.PatientID,
+                }
+                ds.putAll(keys.subSet(new int[] { Tags.PatientID,
                     Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
+            }
         }
     }
 

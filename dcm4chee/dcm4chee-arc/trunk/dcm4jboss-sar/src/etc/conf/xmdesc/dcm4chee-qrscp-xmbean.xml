@@ -133,6 +133,37 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCoerceRequestPatientIds"
+      setMethod="setCoerceRequestPatientIds">
+      <description><![CDATA[Override PatientId and IssuerOfPatientID, 
+      and those values contained in the OtherPatientIDSequence with the values
+      from the request (including PIX Query results).
+      ]]>
+      </description>
+      <name>CoerceRequestPatientIds</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCoerceRequestPatientIdsAETs"
+      setMethod="setCoerceRequestPatientIdsAETs">
+      <description><![CDATA[AE Titles of C-FIND SCUs, for which to
+      Override PatientId and IssuerOfPatientID, and those values
+      contained in the OtherPatientIDSequence with the values
+      from the request (including PIX Query results).      
+      Separate multiple values by \(backslash).
+      ANY = Override Ids for all C-FIND SCUs.
+      Only effective, if <i>CoerceRequestPatientIds</i> = <code>true</code>.]]>
+      </description>
+      <name>CoerceRequestPatientIdsAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getIgnorableSOPClasses"
       setMethod="setIgnorableSOPClasses">
       <description><![CDATA[
