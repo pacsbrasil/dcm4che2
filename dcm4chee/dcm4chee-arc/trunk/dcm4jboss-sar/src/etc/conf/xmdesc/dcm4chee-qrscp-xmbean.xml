@@ -133,21 +133,6 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isPixQueryOnWildcard"
-      setMethod="setPixQueryOnWildcard">
-      <description><![CDATA[Specifies, if the PIX Query may also invoke with a
-      wildcard pattern as Patient ID - otherwise it will only be invoked for
-      a single value matching key for Patient IDs. Only supported by
-      PIX Queries against the data base, but shall not be enabled with an
-      external PIX Manager.]]>
-      </description>
-      <name>PIXQueryOnWildCardMatching</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getIgnorableSOPClasses"
       setMethod="setIgnorableSOPClasses">
       <description><![CDATA[

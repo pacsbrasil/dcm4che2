@@ -115,6 +115,10 @@ public class PIXQueryService extends ServiceMBeanSupport {
     public final void setPIXManager(String pixManager) {
         this.pixManager = pixManager;
     }
+    
+    public final boolean isPIXManagerLocal() {
+        return "LOCAL".equalsIgnoreCase(pixManager);
+    }
 
     public final String getPIXQueryName() {
         return pixQueryName;
@@ -175,7 +179,7 @@ public class PIXQueryService extends ServiceMBeanSupport {
         if (mockResponse != null) {
             return mockResponse;
         }
-        if ("LOCAL".equalsIgnoreCase(pixManager)) {
+        if (isPIXManagerLocal()) {
              if (issuersOfOnlyPrimaryPatientIDs.contains(issuer)) {
                 return pixQuery().queryCorrespondingPIDsByPrimaryPatientID(
                         patientID, issuer, domains);

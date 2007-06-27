@@ -168,8 +168,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private String pixQueryDefIssuer;
     
-    private boolean pixQueryOnWildcard;
-
     private int acTimeout = 5000;
 
     private int dimseTimeout = 0;
@@ -345,14 +343,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setPixQueryDefIssuer(String pixQueryDefIssuer) {
         this.pixQueryDefIssuer = pixQueryDefIssuer;
-    }
-
-    public final boolean isPixQueryOnWildcard() {
-        return pixQueryOnWildcard;
-    }
-
-    public final void setPixQueryOnWildcard(boolean pixQueryOnWildcard) {
-        this.pixQueryOnWildcard = pixQueryOnWildcard;
     }
 
     public final boolean isNoMatchForNoValue() {
@@ -718,6 +708,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
             log.error("Failed to perform PIX Query", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
+    }
+    
+    boolean isPixQueryLocal() throws DcmServiceException {
+        try {
+            return ((Boolean) server.getAttribute(this.pixQueryServiceName,
+                    "pixManagerLocal")).booleanValue();
+        } catch (JMException e) {
+            log.error("Failed to access PIX Service", e);
+            throw new DcmServiceException(Status.UnableToProcess, e);
+        }        
     }
     
     boolean isLocalRetrieveAET(String aet) {

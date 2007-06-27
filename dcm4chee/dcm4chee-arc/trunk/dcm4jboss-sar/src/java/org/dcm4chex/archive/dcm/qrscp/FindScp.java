@@ -192,15 +192,12 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         }
         String issuer = rqData.getString(Tags.IssuerOfPatientID);       
         if (!service.isPixQueryIssuer(issuer)
-                || isWildCardMatching(pid) && !service.isPixQueryOnWildcard()) {
+                || isWildCardMatching(pid) && !service.isPixQueryLocal()) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;
         }
         List l = service.queryCorrespondingPIDs(pid, issuer);
-        // TODO : As long WC matching for Other Patient IDs is not
-        // supported by QueryCmd, do NOT use it as fallback, if not
-        // resolve by PIX Query
-        if (l.isEmpty() && !isWildCardMatching(pid)) {
+        if (l.isEmpty() && !service.isPixQueryLocal()) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;            
         }
