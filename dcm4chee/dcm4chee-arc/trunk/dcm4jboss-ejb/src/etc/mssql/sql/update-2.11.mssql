@@ -40,8 +40,26 @@ CREATE INDEX series_custom3 ON series(series_custom3);
 ALTER TABLE instance ADD content_time DATETIME;
 CREATE INDEX content_time ON instance(content_time);
 
+CREATE TABLE verify_observer (
+	pk              INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT verify_observer_pk PRIMARY KEY,
+	instance_fk     INTEGER,
+	verify_datetime DATETIME,
+	observer_name   VARCHAR(255),
+	observer_i_name VARCHAR(255),
+	observer_p_name VARCHAR(255),
+FOREIGN KEY (instance_fk) REFERENCES instance(pk)
+);
+CREATE INDEX observer_inst_fk ON verify_observer(instance_fk);
+CREATE INDEX verify_datetime ON verify_observer(verify_datetime);
+CREATE INDEX observer_name ON verify_observer(observer_name);
+CREATE INDEX observer_i_name ON verify_observer(observer_i_name);
+CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
+
 ALTER TABLE mwl_item ADD station_name VARCHAR(255);
 CREATE INDEX mwl_station_name ON mwl_item (station_name);
+DROP INDEX mwl_item.mwl_sps_id;
+CREATE UNIQUE INDEX mwl_sps_id ON mwl_item (sps_id,req_proc_id);
+
 
 CREATE TABLE other_pid (
 	pk          	INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT other_pid_pk PRIMARY KEY,
@@ -58,9 +76,6 @@ FOREIGN KEY (other_pid_fk) REFERENCES other_pid(pk)
 );
 CREATE INDEX other_pid_pat_fk ON rel_pat_other_pid(patient_fk);
 CREATE INDEX pat_other_pid_fk ON rel_pat_other_pid(other_pid_fk);
-
-DROP INDEX mwl_item.mwl_sps_id;
-CREATE UNIQUE INDEX mwl_sps_id ON mwl_item (sps_id,req_proc_id);
 
 -- convert cascaded merge relation to one direct relation:
 -- repeat following statement, until no row is affected! 

@@ -270,6 +270,21 @@ CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX inst_status ON instance(inst_status);
 CREATE INDEX commitment ON instance(commitment);
 
+CREATE TABLE verify_observer (
+	pk              IDENTITY PRIMARY KEY,
+	instance_fk     INTEGER,
+	verify_datetime TIMESTAMP,
+	observer_name   VARCHAR(256),
+	observer_i_name VARCHAR(256),
+	observer_p_name VARCHAR(256),
+FOREIGN KEY (instance_fk) REFERENCES instance(pk)
+);
+CREATE INDEX observer_inst_fk ON verify_observer(instance_fk);
+CREATE INDEX verify_datetime ON verify_observer(verify_datetime);
+CREATE INDEX observer_name ON verify_observer(observer_name);
+CREATE INDEX observer_i_name ON verify_observer(observer_i_name);
+CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
+
 CREATE TABLE filesystem (
 	pk              IDENTITY PRIMARY KEY,
 	next_fk         INTEGER,

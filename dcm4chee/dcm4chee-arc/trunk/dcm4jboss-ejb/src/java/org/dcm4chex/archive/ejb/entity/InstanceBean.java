@@ -57,6 +57,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
@@ -71,6 +72,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocalHome;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -131,22 +133,22 @@ import org.dcm4chex.archive.util.Convert;
  *  eager-load-group="*"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
- * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
- *
+ * @ejb.ejb-ref ejb-name="VerifyingObserver" view-type="local" ref-name="ejb/VerifyingObserver"
  */
 public abstract class InstanceBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
     private CodeLocalHome codeHome;
-//    private FileSystemLocalHome fsHome;
+    private VerifyingObserverLocalHome observerHome;
     
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
-//            fsHome = (FileSystemLocalHome) jndiCtx.lookup("java:comp/env/ejb/FileSystem");
+            observerHome = (VerifyingObserverLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/VerifyingObserver");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -161,7 +163,7 @@ public abstract class InstanceBean implements EntityBean {
 
     public void unsetEntityContext() {
         codeHome = null;
-//        fsHome = null;
+        observerHome = null;
     }
 
     /**
@@ -408,6 +410,18 @@ public abstract class InstanceBean implements EntityBean {
     public abstract CodeLocal getSrCode();
 
     /**
+     * @ejb.interface-method
+     * @ejb.relation name="instance-verifying-observer"
+     *               role-name="instance-with-verifying-observer"
+     *               target-role-name="verifying-observer-of-instance"
+     *               target-ejb="VerifyingObserver" 
+     *               target-cascade-delete="yes"
+     * @jboss.target-relation fk-column="instance_fk" related-pk-field="pk"
+     */
+    public abstract java.util.Collection getVerifyingObservers();
+    public abstract void setVerifyingObservers(java.util.Collection observers);
+    
+    /**
      * @ejb.create-method
      */
     public Long ejbCreate(Dataset ds, SeriesLocal series)
@@ -425,6 +439,13 @@ public abstract class InstanceBean implements EntityBean {
             throw new CreateException(e.getMessage());
         } catch (FinderException e) {
             throw new CreateException(e.getMessage());
+        }
+        DcmElement sq = ds.get(Tags.VerifyingObserverSeq);
+        if (sq != null) {
+            Collection c = getVerifyingObservers();
+            for (int i = 0, n = sq.countItems(); i < n; i++) {
+                c.add(observerHome.create(sq.getItem(i)));
+            }
         }
         setSeries(series);
         log.info("Created " + prompt());
@@ -463,21 +484,7 @@ public abstract class InstanceBean implements EntityBean {
 		if (updated = aets == null ? getRetrieveAETs() != null : !aets.equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
         return updated;
-    }
-    
-    /* Commented out: Does not work for instances which are only external
-     * retrieveable (= no (longer) files located on filesystems of this archive
-     * installation) [GZ]
-    private Set getInternalRetrieveAETs(Long pk) throws FinderException {
-    	Collection aets = fsHome.allRetrieveAETs();
-    	if(aets.size() > 1)
-        	return ejbSelectRetrieveAETs(pk);
-    	else
-        	// If there's only one AET registered with all existing file systems
-        	// we just simply return this only one.
-    		return new HashSet(aets);    	
-    }
-     */ 
+    } 
     
     /**
      * @ejb.select query="SELECT MIN(f.fileSystem.availability) FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
