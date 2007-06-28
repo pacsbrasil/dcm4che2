@@ -164,7 +164,7 @@ class PPSScp extends DcmServiceBase {
             for (int i = 0, n = refGPSPSSQ.countItems(); i < n; ++i) {
                 Dataset refGPSPS = refGPSPSSQ.getItem(i);
                 for (int j = 0; j < TYPE1_REF_GPSPS_ATTR.length; ++j) {
-                    if (refGPSPS.vm(TYPE1_REF_GPSPS_ATTR[j]) <= 0)
+                    if (!refGPSPS.containsValue(TYPE1_REF_GPSPS_ATTR[j]))
                             throw new DcmServiceException(Status.MissingAttributeValue,
                                     "Missing Type 1 Attribute "
                                             + Tags.toString(TYPE1_REF_GPSPS_ATTR[j])
