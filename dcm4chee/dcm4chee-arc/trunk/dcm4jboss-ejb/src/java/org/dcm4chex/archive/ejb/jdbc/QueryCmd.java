@@ -105,7 +105,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.ContentTime,
             Tags.CompletionFlag, 
             Tags.VerificationFlag,
-            Tags.ConceptNameCodeSeq };
+            Tags.ConceptNameCodeSeq,
+            Tags.VerifyingObserverSeq};
+
+    private static final int[] MATCHING_VERIFYING_OBSERVER = new int[] {
+            Tags.VerificationDateTime,
+            Tags.VerifyingObserverName };
 
     private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
             Tags.RequestedProcedureID,
@@ -418,12 +423,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "SeriesRequest.pk" });
             subQuery.setFrom(new String[] { "SeriesRequest" });
-            subQuery.addFieldValueMatch(null, "Series.pk", type2, null,
+            subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
                     "SeriesRequest.series_fk");
             subQuery.addWildCardMatch(null,
-                    "SeriesRequest.requestedProcedureId", type2, rqAttrs
+                    "SeriesRequest.requestedProcedureId", SqlBuilder.TYPE1, rqAttrs
                             .getStrings(Tags.RequestedProcedureID));
-            subQuery.addWildCardMatch(null, "SeriesRequest.spsId", type2,
+            subQuery.addWildCardMatch(null, "SeriesRequest.spsId", SqlBuilder.TYPE1,
                     rqAttrs.getStrings(Tags.SPSID));
             subQuery.addWildCardMatch(null, "SeriesRequest.requestingService",
                     type2, rqAttrs.getStrings(Tags.RequestingService));
@@ -463,10 +468,33 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Code.codingSchemeDesignator", type2, code
                             .getString(Tags.CodingSchemeDesignator));
         }
+        if (this.isMatchVerifyingObserver()) {
+            Dataset voAttrs = keys.getItem(Tags.VerifyingObserverSeq);
+
+            SqlBuilder subQuery = new SqlBuilder();
+            subQuery.setSelect(new String[] { "VerifyingObserver.pk" });
+            subQuery.setFrom(new String[] { "VerifyingObserver" });
+            subQuery.addFieldValueMatch(null, "Instance.pk", SqlBuilder.TYPE1, null,
+                    "VerifyingObserver.instance_fk");
+            subQuery.addRangeMatch(null,
+                    "VerifyingObserver.verificationDateTime", SqlBuilder.TYPE1,
+                    voAttrs.getDateRange(Tags.VerificationDateTime));
+            subQuery.addPNMatch(new String[] {
+                    "VerifyingObserver.verifyingObserverName",
+                    "VerifyingObserver.verifyingObserverIdeographicName",
+                    "VerifyingObserver.verifyingObserverPhoneticName" },
+                    SqlBuilder.TYPE1,
+                    voAttrs.getString(Tags.VerifyingObserverName));
+
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+            node0.addMatch(new Match.Subquery(subQuery, null, null));
+        }
 
         matchingKeys.add(MATCHING_INSTANCE_KEYS);
         seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq), new IntList()
                 .add(Tags.CodeValue).add(Tags.CodingSchemeDesignator));
+        seqMatchingKeys.put(new Integer(Tags.VerifyingObserverSeq),
+                new IntList().add(MATCHING_VERIFYING_OBSERVER));
     }
 
     public Dataset getDataset() throws SQLException {
@@ -795,4 +823,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         || rqAttrs.containsValue(Tags.RequestingService)
                         || rqAttrs.containsValue(Tags.RequestingPhysician));
     }
+
+    protected boolean isMatchVerifyingObserver() {
+        Dataset item = keys.getItem(Tags.VerifyingObserverSeq);
+        return item != null
+                && (item.containsValue(Tags.VerificationDateTime)
+                        || item.containsValue(Tags.VerifyingObserverName));
+    }
+
 }
