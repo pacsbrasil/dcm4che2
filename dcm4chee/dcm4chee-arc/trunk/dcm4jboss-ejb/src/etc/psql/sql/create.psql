@@ -69,7 +69,6 @@ CREATE TABLE study (
 	study_iuid      TEXT NOT NULL,
 	study_id        TEXT,
 	study_datetime	TIMESTAMP,
-	study_time		TIME,
 	accession_no	TEXT,
 	ref_physician  TEXT,
 	ref_phys_i_name TEXT,
@@ -98,7 +97,6 @@ CREATE INDEX patient_fk ON study(patient_fk);
 CREATE UNIQUE INDEX study_iuid ON study(study_iuid);
 CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
-CREATE INDEX study_time ON study(study_time);
 CREATE INDEX accession_no ON study(accession_no);
 CREATE INDEX ref_physician ON study(ref_physician);
 CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name);
@@ -158,7 +156,6 @@ CREATE TABLE series (
 	institution		TEXT,
 	department		TEXT,
 	pps_start		TIMESTAMP,
-	pps_start_time	TIME,
 	pps_iuid		TEXT,
 	series_custom1	TEXT,
 	series_custom2	TEXT,
@@ -188,7 +185,6 @@ CREATE INDEX series_desc ON series(series_desc);
 CREATE INDEX institution ON series(institution);
 CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
-CREATE INDEX series_pps_time ON series(pps_start_time);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_custom1 ON series(series_custom1);
 CREATE INDEX series_custom2 ON series(series_custom2);
@@ -239,7 +235,6 @@ CREATE TABLE instance (
 	sop_cuid			TEXT NOT NULL,
 	inst_no				TEXT,
 	content_datetime	TIMESTAMP,
-	content_time		TIME,
 	sr_complete			TEXT,
 	sr_verified			TEXT,
 	ext_retr_aet		TEXT,
@@ -262,7 +257,6 @@ CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid);
 CREATE INDEX sop_cuid ON instance(sop_cuid);
 CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX content_datetime ON instance(content_datetime);
-CREATE INDEX content_time ON instance(content_time);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);

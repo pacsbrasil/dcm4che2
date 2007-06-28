@@ -217,27 +217,12 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="study_time"
-     */
-    public abstract java.sql.Time getStudyTime();
-    public abstract void setStudyTime(java.sql.Time time);
-
-    
-    private void setStudyTime(java.util.Date date) {
-        setStudyTime(date != null
-                ? new java.sql.Time(date.getTime())
-                : null);
-    }
-    
-    /**
      * Accession Number
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="accession_no"
      */
     public abstract String getAccessionNumber();
-
     public abstract void setAccessionNumber(String no);
 
     /**
@@ -843,12 +828,6 @@ public abstract class StudyBean implements EntityBean {
             setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Study Date/Time format: " + e.getMessage());
-        }
-        
-        try {
-            setStudyTime(ds.getDate(Tags.StudyTime));
-        } catch (IllegalArgumentException e) {
-            log.warn("Illegal Study Time format: " + e.getMessage());
         }
         
         setAccessionNumber(ds.getString(Tags.AccessionNumber));

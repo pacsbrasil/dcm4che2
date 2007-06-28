@@ -11,19 +11,16 @@ CREATE INDEX pat_custom1 ON patient(pat_custom1);
 CREATE INDEX pat_custom2 ON patient(pat_custom2);
 CREATE INDEX pat_custom3 ON patient(pat_custom3);
 
-ALTER TABLE study ADD study_time DATETIME;
 ALTER TABLE study ADD study_custom1 VARCHAR(255);
 ALTER TABLE study ADD study_custom2 VARCHAR(255);
 ALTER TABLE study ADD study_custom3 VARCHAR(255);
 
-CREATE INDEX study_time ON study(study_time);
 CREATE INDEX study_custom1 ON study(study_custom1);
 CREATE INDEX study_custom2 ON study(study_custom2);
 CREATE INDEX study_custom3 ON study(study_custom3);
 
 ALTER TABLE series ADD body_part VARCHAR(255);
 ALTER TABLE series ADD laterality VARCHAR(255);
-ALTER TABLE series ADD pps_start_time DATETIME;
 ALTER TABLE series ADD series_desc VARCHAR(255);
 ALTER TABLE series ADD series_custom1 VARCHAR(255);
 ALTER TABLE series ADD series_custom2 VARCHAR(255);
@@ -32,13 +29,9 @@ ALTER TABLE series ADD series_custom3 VARCHAR(255);
 CREATE INDEX body_part ON series(body_part);
 CREATE INDEX laterality ON series(laterality);
 CREATE INDEX series_desc ON series(series_desc);
-CREATE INDEX series_pps_time ON series(pps_start_time);
 CREATE INDEX series_custom1 ON series(series_custom1);
 CREATE INDEX series_custom2 ON series(series_custom2);
 CREATE INDEX series_custom3 ON series(series_custom3);
-
-ALTER TABLE instance ADD content_time DATETIME;
-CREATE INDEX content_time ON instance(content_time);
 
 CREATE TABLE verify_observer (
 	pk              INTEGER IDENTITY(1,1) NOT NULL CONSTRAINT verify_observer_pk PRIMARY KEY,

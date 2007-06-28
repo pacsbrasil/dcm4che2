@@ -258,20 +258,6 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="pps_start_time"
-     */
-    public abstract java.sql.Time getPpsStartTime();
-    public abstract void setPpsStartTime(java.sql.Time time);
-
-    private void setPpsStartTime(java.util.Date date) {
-        setPpsStartTime(date != null 
-                ? new java.sql.Time(date.getTime())
-                : null);
-    }
-
-    
-    /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="pps_iuid"
      */
     public abstract String getPpsIuid();
@@ -701,11 +687,6 @@ public abstract class SeriesBean implements EntityBean {
         } catch (IllegalArgumentException e) {
             log.warn("Illegal PPS Date/Time format: " + e.getMessage());
         }
-        try {
-            setPpsStartTime(ds.getDate(Tags.PPSStartTime));
-        } catch (IllegalArgumentException e) {
-            log.warn("Illegal PPS Time format: " + e.getMessage());
-        }       
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
         if (refPPS != null) {
             setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));

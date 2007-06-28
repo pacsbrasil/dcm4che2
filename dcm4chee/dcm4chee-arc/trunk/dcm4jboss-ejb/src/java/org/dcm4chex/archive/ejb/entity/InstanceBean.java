@@ -228,19 +228,6 @@ public abstract class InstanceBean implements EntityBean {
 	
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="content_time"
-     */
-    public abstract java.sql.Time getContentTime();
-    public abstract void setContentTime(java.sql.Time time);
-
-    private void setContentTime(java.util.Date date) {
-        setContentDateTime(date != null 
-                ? new java.sql.Time(date.getTime())
-                : null);
-    }
-    
-    /**
-     * @ejb.interface-method
      * @ejb.persistence column-name="sr_complete"
      */
     public abstract String getSrCompletionFlag();
@@ -578,11 +565,6 @@ public abstract class InstanceBean implements EntityBean {
             setContentDateTime(ds.getDateTime(Tags.ContentDate, Tags.ContentTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Content Date/Time format: " + e.getMessage());
-        }
-        try {
-            setContentTime(ds.getDate(Tags.ContentTime));
-        } catch (IllegalArgumentException e) {
-            log.warn("Illegal Content Time format: " + e.getMessage());
         }
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
