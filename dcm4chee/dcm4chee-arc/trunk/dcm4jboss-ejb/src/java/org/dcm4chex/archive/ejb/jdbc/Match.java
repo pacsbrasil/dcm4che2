@@ -334,7 +334,7 @@ abstract class Match
             }
             sb.append('\'');
             if (escape) {
-                sb.append(" ESCAPE '\\'");
+                sb.append(JdbcProperties.getInstance().getEscape());
             }
         }
 

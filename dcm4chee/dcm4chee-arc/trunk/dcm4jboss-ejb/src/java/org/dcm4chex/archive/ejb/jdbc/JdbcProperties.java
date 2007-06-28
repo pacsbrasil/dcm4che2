@@ -93,14 +93,18 @@ public class JdbcProperties extends Properties {
         return value;
     }
 
-    public int getDatabase() {
+    public final int getDatabase() {
         return database;
     }
 
-    public String getDataSource() {
+    public final String getDataSource() {
         return datasource;
     }
 
+    public final String getEscape() {
+        return database == MYSQL || database == PSQL ? "" : " ESCAPE '\\'";
+    }
+    
     private JdbcProperties() {
         try {
             InputStream in =
