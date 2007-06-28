@@ -308,6 +308,7 @@ abstract class Match
             final boolean like = isLike();
             sb.append(like ? " LIKE \'" : " = \'");
             char c;
+            boolean escape = false;
             for (int i = 0; i < wc.length; i++)
             {
                 switch (c = wc[i])
@@ -325,12 +326,16 @@ abstract class Match
                     case '%' :
                         if (like) {
                             sb.append('\\');
+                            escape = true;
                         }
                         break;
                 }
                 sb.append(c);
             }
             sb.append('\'');
+            if (escape) {
+                sb.append(" ESCAPE '\\'");
+            }
         }
 
     }
