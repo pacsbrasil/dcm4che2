@@ -89,10 +89,10 @@ class GPSPSScp extends DcmServiceBase {
         if (actionID != REQUEST_GPSPS_STATUS_MODIFICATION) 
         	throw new DcmServiceException(Status.NoSuchActionType, "actionID:"
                     + actionID);
-        if (actionInfo.vm(Tags.TransactionUID) <= 0)
+        if (!actionInfo.containsValue(Tags.TransactionUID))
             throw new DcmServiceException(Status.MissingAttributeValue,
                     "Missing Transaction UID (0008,1195)");
-        if (actionInfo.vm(Tags.GPSPSStatus) <= 0)
+        if (!actionInfo.containsValue(Tags.GPSPSStatus))
             throw new DcmServiceException(Status.MissingAttributeValue,
                     "Missing GPSPS Status (0040,4001)");
         DcmElement src = actionInfo.get(Tags.ActualHumanPerformersSeq);
@@ -103,8 +103,8 @@ class GPSPSScp extends DcmServiceBase {
 	    		code = item.getItem(Tags.HumanPerformerCodeSeq);
 	    		if (code == null) {
 	    			log.warn("Missing >Human Performer Code Seq (0040,4009)");
-	    		} else if (code.vm(Tags.CodeValue) <= 0
-	    					|| code.vm(Tags.CodingSchemeDesignator) <= 0) {
+	    		} else if (!code.containsValue(Tags.CodeValue)
+	    		        || !code.containsValue(Tags.CodingSchemeDesignator)) {
 	    			log.warn("Invalid Item in >Human Performer Code Seq (0040,4009)");    			
 	    		}
 	      	}

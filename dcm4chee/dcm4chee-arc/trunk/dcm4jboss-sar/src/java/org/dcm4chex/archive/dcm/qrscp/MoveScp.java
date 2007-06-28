@@ -224,7 +224,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
 
     private void checkAttribute(DcmObject dcm, int tag, int status, String msg)
         throws DcmServiceException {
-        if (dcm.vm(tag) <= 0) {
+        if (!dcm.containsValue(tag)) {
             throw new DcmServiceException(status, msg);
         }
     }

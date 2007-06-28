@@ -175,15 +175,15 @@ public class GPWLQueryCmd extends BaseReadCmd {
 
     private boolean isMatchCode(Dataset code) {
         return code != null
-                && (code.vm(Tags.CodeValue) > 0 || code
-                        .vm(Tags.CodingSchemeDesignator) > 0);
+                && (code.containsValue(Tags.CodeValue) 
+                        || code.containsValue(Tags.CodingSchemeDesignator));
     }
 
     private boolean isMatchRefRequest() {
         Dataset refrq = keys.getItem(Tags.RefRequestSeq);
         return refrq != null
-                && (refrq.vm(Tags.RequestedProcedureID) > 0
-                        || refrq.vm(Tags.AccessionNumber) > 0);
+                && (refrq.containsValue(Tags.RequestedProcedureID)
+                        || refrq.containsValue(Tags.AccessionNumber));
     }
     
     private String[] getLeftJoin() {
@@ -241,7 +241,7 @@ public class GPWLQueryCmd extends BaseReadCmd {
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
         if (item != null) {
             boolean matchCode = isMatchCode(item.getItem(Tags.HumanPerformerCodeSeq));
-            if (matchCode || item.vm(Tags.HumanPerformerName) > 0) {
+            if (matchCode || item.containsValue(Tags.HumanPerformerName)) {
                 sqlBuilder.setDistinct(true);
                 list.add("GPSPSPerformer");
                 list.add(null);

@@ -148,14 +148,14 @@ class PPSScp extends DcmServiceBase {
     private void checkCreateAttributs(Dataset gppps) 
             throws DcmServiceException {
         for (int i = 0; i < TYPE1_NCREATE_ATTR.length; ++i) {
-            if (gppps.vm(TYPE1_NCREATE_ATTR[i]) <= 0)
+            if (!gppps.containsValue(TYPE1_NCREATE_ATTR[i]))
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Type 1 Attribute "
                                     + Tags.toString(TYPE1_NCREATE_ATTR[i]));
         }
         DcmElement refReqSQ = gppps.get(Tags.RefRequestSeq);
         for (int i = 0, n = refReqSQ.countItems(); i < n; ++i) {
-            if (refReqSQ.getItem(i).vm(Tags.StudyInstanceUID) <= 0)
+            if (!refReqSQ.getItem(i).containsValue(Tags.StudyInstanceUID))
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Study Instance UID in Referenced Request Seq.");
         }
@@ -201,7 +201,7 @@ class PPSScp extends DcmServiceBase {
             return;
         }
         for (int i = 0; i < TYPE1_CODEITEM_ATTR.length; ++i) {
-            if (item.vm(TYPE1_CODEITEM_ATTR[i]) <= 0) {
+            if (!item.containsValue(TYPE1_CODEITEM_ATTR[i])) {
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Type 1 Attribute "
                                     + Tags.toString(tag) + "/"
@@ -212,7 +212,7 @@ class PPSScp extends DcmServiceBase {
 
     private void checkSetAttributs(Dataset gppps) throws DcmServiceException {
         for (int i = 0; i < ONLY_NCREATE_ATTR.length; ++i) {
-            if (gppps.vm(ONLY_NCREATE_ATTR[i]) >= 0)
+            if (gppps.contains(ONLY_NCREATE_ATTR[i]))
                     throw new DcmServiceException(Status.ProcessingFailure,
                             "Cannot update attribute "
                                     + Tags.toString(ONLY_NCREATE_ATTR[i]));
@@ -227,7 +227,7 @@ class PPSScp extends DcmServiceBase {
                         "Invalid GPPPS Status: " + status);
         }
         for (int i = 0; i < TYPE1_FINAL_ATTR.length; ++i) {
-            if (gppps.vm(TYPE1_FINAL_ATTR[i]) <= 0)
+            if (!gppps.containsValue(TYPE1_FINAL_ATTR[i]))
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Type 1 Attribute "
                                     + Tags.toString(TYPE1_FINAL_ATTR[i]));

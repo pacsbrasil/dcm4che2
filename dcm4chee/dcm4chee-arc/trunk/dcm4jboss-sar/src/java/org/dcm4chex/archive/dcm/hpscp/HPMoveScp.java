@@ -109,12 +109,12 @@ public class HPMoveScp extends DcmServiceBase {
 	private void checkMoveRQ(Association assoc, int pcid, Command rqCmd,
 			Dataset rqData) throws DcmServiceException {
 		
-		if (rqCmd.vm(Tags.MoveDestination) <= 0) {
+		if (!rqCmd.containsValue(Tags.MoveDestination)) {
 			throw new DcmServiceException(Status.UnableToProcess, 
 					"Missing Move Destination");
 		}
 
-		if (rqData.vm(Tags.SOPInstanceUID) <= 0) {
+		if (!rqData.containsValue(Tags.SOPInstanceUID)) {
 			throw new DcmServiceException(Status.IdentifierDoesNotMatchSOPClass,
 					"Missing SOP Instance UID");
 		}

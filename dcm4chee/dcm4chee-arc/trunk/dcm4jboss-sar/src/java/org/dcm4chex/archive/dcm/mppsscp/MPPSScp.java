@@ -155,14 +155,14 @@ class MPPSScp extends DcmServiceBase {
 
 	private void checkCreateAttributs(Dataset mpps) throws DcmServiceException {
         for (int i = 0; i < TYPE1_NCREATE_ATTR.length; ++i) {
-            if (mpps.vm(TYPE1_NCREATE_ATTR[i]) <= 0)
+            if (!mpps.containsValue(TYPE1_NCREATE_ATTR[i]))
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Type 1 Attribute "
                                     + Tags.toString(TYPE1_NCREATE_ATTR[i]));
         }
         DcmElement ssaSq = mpps.get(Tags.ScheduledStepAttributesSeq);
         for (int i = 0, n = ssaSq.countItems(); i < n; ++i) {
-            if (ssaSq.getItem(i).vm(Tags.StudyInstanceUID) <= 0)
+            if (!ssaSq.getItem(i).containsValue(Tags.StudyInstanceUID))
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Study Instance UID in Scheduled Step Attributes Seq.");
         }
@@ -177,7 +177,7 @@ class MPPSScp extends DcmServiceBase {
 
     private void checkSetAttributs(Dataset mpps) throws DcmServiceException {
         for (int i = 0; i < ONLY_NCREATE_ATTR.length; ++i) {
-            if (mpps.vm(ONLY_NCREATE_ATTR[i]) >= 0)
+            if (mpps.contains(ONLY_NCREATE_ATTR[i]))
                     throw new DcmServiceException(Status.ProcessingFailure,
                             "Cannot update attribute "
                                     + Tags.toString(ONLY_NCREATE_ATTR[i]));
@@ -192,7 +192,7 @@ class MPPSScp extends DcmServiceBase {
                         "Invalid MPPS Status: " + status);
         }
         for (int i = 0; i < TYPE1_FINAL_ATTR.length; ++i) {
-            if (mpps.vm(TYPE1_FINAL_ATTR[i]) <= 0)
+            if (!mpps.containsValue(TYPE1_FINAL_ATTR[i]))
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Type 1 Attribute "
                                     + Tags.toString(TYPE1_FINAL_ATTR[i]));

@@ -174,7 +174,7 @@ public class HPStoreScp extends DcmServiceBase {
 	private void checkType1Attrs(Dataset attrs, int[] type1, String prompt)
 			throws DcmServiceException {
 		for (int i = 0; i < type1.length; ++i) {
-			if (attrs.vm(type1[i]) <= 0)
+			if (!attrs.containsValue(type1[i]))
 				datasetDoesNotMatchSOPClass(prompt + Tags.toString(type1[i]));
 		}
 	}

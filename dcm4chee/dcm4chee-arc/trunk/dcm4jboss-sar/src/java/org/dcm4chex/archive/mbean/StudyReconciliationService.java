@@ -354,7 +354,7 @@ public class StudyReconciliationService extends AbstractScuService {
         qrDS.putPN(Tags.PatientBirthDate);
         qrDS.putPN(Tags.PatientSex);
         for (int i = 0; i < UPDATE_ATTRIBUTES.length; i++) {
-            if (qrDS.vm(UPDATE_ATTRIBUTES[i]) == -1)
+            if (!qrDS.contains(UPDATE_ATTRIBUTES[i]))
                 qrDS.putXX(UPDATE_ATTRIBUTES[i]);
         }
         return qrDS;

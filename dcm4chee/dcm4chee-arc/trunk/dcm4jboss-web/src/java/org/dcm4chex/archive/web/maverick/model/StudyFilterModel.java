@@ -56,7 +56,7 @@ public class StudyFilterModel extends AbstractModel {
     }
 
     public final String getPatientID() {
-        if ( ds.vm(Tags.IssuerOfPatientID) < 1)
+        if ( !ds.containsValue(Tags.IssuerOfPatientID))
             return ds.getString(Tags.PatientID);
         else
             return ds.getString(Tags.PatientID)+"^^^"+ds.getString(Tags.IssuerOfPatientID);

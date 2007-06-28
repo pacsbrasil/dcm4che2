@@ -317,21 +317,21 @@ public class ORMService extends AbstractHL7Service {
 
     private void addMissingAttributes(Dataset ds) {
         Dataset sps = ds.getItem(Tags.SPSSeq);
-        if (sps.vm(Tags.ScheduledStationAET) < 1) {
+        if (!sps.containsValue(Tags.ScheduledStationAET)) {
             log.info("No Scheduled Station AET - use default: "
                     + defaultStationAET);
             sps.putAE(Tags.ScheduledStationAET, defaultStationAET);
         }
-        if (sps.vm(Tags.ScheduledStationName) < 1) {
+        if (!sps.containsValue(Tags.ScheduledStationName)) {
             log.info("No Scheduled Station Name - use default: "
                     + defaultStationName);
             sps.putSH(Tags.ScheduledStationName, defaultStationName);
         }
-        if (sps.vm(Tags.Modality) < 1) {
+        if (!sps.containsValue(Tags.Modality)) {
             log.info("No Modality - use default: " + defaultModality);
             sps.putCS(Tags.Modality, defaultModality);
         }
-        if (sps.vm(Tags.SPSStartDate) < 1) {
+        if (!sps.containsValue(Tags.SPSStartDate)) {
             log.info("No SPS Start Date - use current date/time");
             Date now = new Date();
             sps.putDA(Tags.SPSStartDate, now);

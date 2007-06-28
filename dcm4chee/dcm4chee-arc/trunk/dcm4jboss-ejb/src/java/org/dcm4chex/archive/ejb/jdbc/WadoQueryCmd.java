@@ -598,14 +598,14 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     protected boolean isMatchSrCode() {
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         return code != null
-                && (code.vm(Tags.CodeValue) > 0 || code
-                        .vm(Tags.CodingSchemeDesignator) > 0);
+                && (code.containsValue(Tags.CodeValue)
+                        || code.containsValue(Tags.CodingSchemeDesignator));
     }
 
     protected boolean isMatchRequestAttributes() {
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         return rqAttrs != null
-                && (rqAttrs.vm(Tags.RequestedProcedureID) > 0
-                        || rqAttrs.vm(Tags.SPSID) > 0);
+                && (rqAttrs.containsValue(Tags.RequestedProcedureID)
+                        || rqAttrs.containsValue(Tags.SPSID));
     }
 }

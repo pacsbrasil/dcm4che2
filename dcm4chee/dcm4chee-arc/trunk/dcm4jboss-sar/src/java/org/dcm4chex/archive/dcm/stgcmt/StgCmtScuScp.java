@@ -87,11 +87,11 @@ class StgCmtScuScp extends DcmServiceBase {
             throw new DcmServiceException(Status.NoSuchActionType,
                     "ActionTypeID:" + actionTypeID);
         }
-        if (data.vm(Tags.TransactionUID) <= 0) {
+        if (!data.containsValue(Tags.TransactionUID)) {
             throw new DcmServiceException(Status.MissingAttributeValue,
                     "Missing Transaction UID (0008,1195) in Action Information");
         }
-        if (data.vm(Tags.RefSOPSeq) <= 0) {
+        if (!data.containsValue(Tags.RefSOPSeq)) {
             throw new DcmServiceException(Status.MissingAttributeValue,
                     "Missing Referenced SOP Sequence (0008,1199) in Action Information");
         }
@@ -139,7 +139,7 @@ class StgCmtScuScp extends DcmServiceBase {
             throw new DcmServiceException(Status.NoSuchEventType,
                     "EventTypeID:" + eventTypeID);
         }
-        if (data.vm(Tags.TransactionUID) <= 0) {
+        if (!data.containsValue(Tags.TransactionUID)) {
             throw new DcmServiceException(Status.MissingAttributeValue,
                     "Missing Transaction UID (0008,1195) in Event Information");
         }

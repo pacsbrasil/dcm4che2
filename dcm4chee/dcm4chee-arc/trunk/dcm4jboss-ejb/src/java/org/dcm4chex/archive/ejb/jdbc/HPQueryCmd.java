@@ -132,8 +132,8 @@ public class HPQueryCmd extends BaseReadCmd {
 
     private boolean isMatchCode(Dataset code) {
         return code != null
-                && (code.vm(Tags.CodeValue) > 0 || code
-                        .vm(Tags.CodingSchemeDesignator) > 0);
+                && (code.containsValue(Tags.CodeValue)
+                        || code.containsValue(Tags.CodingSchemeDesignator));
     }
 
     private String[] getLeftJoin() {
