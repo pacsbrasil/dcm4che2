@@ -405,11 +405,11 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                 Tags.PreserveCompositeInstancesAfterMediaCreation,
                 defaultPreserveInstances,
                 rspCmd);
-        if (ds.vm(Tags.LabelText) <= 0)
+        if (!ds.containsValue(Tags.LabelText))
                 ds.putUT(Tags.LabelText, defaultLabelText);
-        if (ds.vm(Tags.LabelText) <= 0)
+        if (!ds.containsValue(Tags.LabelText))
                 ds.putCS(Tags.LabelStyleSelection, defaultLabelStyleSelection);
-        if (ds.vm(Tags.IncludeNonDICOMObjects) <= 0)
+        if (!ds.containsValue(Tags.IncludeNonDICOMObjects))
                 ds.putCS(Tags.IncludeNonDICOMObjects,
                         defaultIncludeNonDICOMObjects);
         DcmElement refSOPs = ds.get(Tags.RefSOPSeq);
@@ -418,13 +418,13 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                         "Missing or empty Referenced SOP Sequence");
         for (int i = 0, n = refSOPs.countItems(); i < n; ++i) {
             Dataset item = refSOPs.getItem(i);
-            if (item.vm(Tags.RefSOPInstanceUID) <= 0)
+            if (!item.containsValue(Tags.RefSOPInstanceUID))
                     throw new DcmServiceException(Status.MissingAttribute,
                             "Missing Referenced SOP Instance UID");
-            if (item.vm(Tags.RefSOPClassUID) <= 0)
+            if (!item.containsValue(Tags.RefSOPClassUID))
                     throw new DcmServiceException(Status.MissingAttribute,
                             "Missing Referenced SOP Class UID");
-            if (item.vm(Tags.RequestedMediaApplicationProfile) <= 0)
+            if (!item.containsValue(Tags.RequestedMediaApplicationProfile))
                     item.putLO(Tags.RequestedMediaApplicationProfile,
                             defaultMediaApplicationProfile);
         }

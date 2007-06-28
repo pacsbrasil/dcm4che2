@@ -408,7 +408,7 @@ public class StoreScpService extends AbstractScpService {
     private void checkDataset(Command rqCmd, Dataset ds, DcmParser parser)
             throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
-            if (ds.vm(TYPE1_ATTR[i]) <= 0) { throw new DcmServiceException(
+            if (!ds.containsValue(TYPE1_ATTR[i])) { throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
                     "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i])); }
         }
@@ -440,7 +440,7 @@ public class StoreScpService extends AbstractScpService {
                     +"]xFrames[" + frames + "]xSamples[" + samples
                     +"]xBytes[" + (alloc/8) + "]");            
         }
-		if (ds.vm(Tags.PatientID) <= 0) {
+		if (!ds.containsValue(Tags.PatientID)) {
 			final String pname = ds.getString(Tags.PatientName);
 			if (generatePatientID == null) {
 				log.warn("Receive object without Patient ID with Patient Name - "

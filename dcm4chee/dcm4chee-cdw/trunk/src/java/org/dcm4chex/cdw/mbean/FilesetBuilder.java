@@ -311,13 +311,13 @@ class FilesetBuilder {
                         "] - use hash of Study Instance UID " + sid + " as Study ID");
             }
             // ensure TYPE 2 Attributes in DICOMDIR record
-            if (ds.vm(Tags.AccessionNumber) == -1) {
+            if (!ds.contains(Tags.AccessionNumber)) {
                 ds.putLO(Tags.AccessionNumber); 
             }
-            if (ds.vm(Tags.StudyDescription) == -1) {
+            if (!ds.contains(Tags.StudyDescription)) {
                 ds.putLO(Tags.StudyDescription); 
             }
-            if (ds.vm(Tags.PatientName) == -1) {
+            if (!ds.contains(Tags.PatientName)) {
                 ds.putLO(Tags.PatientName); 
             }            
 
