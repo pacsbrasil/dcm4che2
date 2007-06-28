@@ -100,17 +100,17 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
  * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" ref-name="ejb/StudyOnFileSystem"
  *              view-type="local"
- *
+ * 
  * @ejb.ejb-ref ejb-name="Instance" ref-name="ejb/Instance" view-type="local"
  * @ejb.ejb-ref ejb-name="Series" ref-name="ejb/Series" view-type="local"
- *
+ * 
  */
 public abstract class FileSystemMgtBean implements SessionBean {
 
     private static Logger log = Logger.getLogger(FileSystemMgtBean.class);
-	private static final int[] IAN_PAT_TAGS = {
-		Tags.SpecificCharacterSet, Tags.PatientName, Tags.PatientID
-	};
+
+    private static final int[] IAN_PAT_TAGS = { Tags.SpecificCharacterSet,
+            Tags.PatientName, Tags.PatientID };
 
     private StudyLocalHome studyHome;
 
@@ -121,7 +121,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
     private PrivateFileLocalHome privFileHome;
 
     private FileSystemLocalHome fileSystemHome;
-    
+
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
@@ -162,7 +162,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
             EJBException, RemoveException {
         privFileHome.remove(new Long(file_pk));
     }
-    
+
     /**
      * @ejb.interface-method
      */
@@ -242,7 +242,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                     + " in " + dirPath);
         return toFileDTOs(c);
     }
-    
+
     /**
      * @throws FinderException
      * @ejb.interface-method
@@ -261,7 +261,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public void replaceFile(long pk, String path, String tsuid, int size,
-            byte[] md5) throws FinderException, CreateException, EJBException, RemoveException {
+            byte[] md5) throws FinderException, CreateException, EJBException,
+            RemoveException {
         FileLocal oldFile = fileHome.findByPrimaryKey(new Long(pk));
         oldFile.setFilePath(path);
         oldFile.setFileTsuid(tsuid);
@@ -290,70 +291,80 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public void updateFileSystem(FileSystemDTO dto) throws FinderException {
-        FileSystemLocal fs = (dto.getPk() == -1) 
-                    ? fileSystemHome.findByDirectoryPath(dto.getDirectoryPath()) 
-                    : fileSystemHome.findByPrimaryKey(new Long(dto.getPk()));
+        FileSystemLocal fs = (dto.getPk() == -1) ? fileSystemHome
+                .findByDirectoryPath(dto.getDirectoryPath()) : fileSystemHome
+                .findByPrimaryKey(new Long(dto.getPk()));
         fs.fromDTO(dto);
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public boolean updateFileSystemStatus(String dirPath, int status) throws FinderException {
-    	FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
-    	if (fs.getStatus() == status) {
-    	    return false;   
+    public boolean updateFileSystemStatus(String dirPath, int status)
+            throws FinderException {
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
+        if (fs.getStatus() == status) {
+            return false;
         }
-    	fs.setStatus(status);
+        fs.setStatus(status);
         return true;
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public boolean updateFileSystemAvailability(String dirPath, int availability) throws FinderException {
-    	FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
+    public boolean updateFileSystemAvailability(String dirPath, int availability)
+            throws FinderException {
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
 
-    	// If we set the file system to OFFLINE, we need to make sure its status should not
-    	// DEF_RW.
-    	if(availability >= Availability.OFFLINE && fs.getStatus() == FileSystemStatus.DEF_RW)
-    		fs.setStatus(FileSystemStatus.RW);
-    	int oldAvail = fs.getAvailabilitySafe();
-    	fs.setAvailability(availability);
-    	boolean changed = availability != oldAvail; 
-    	return changed;
+        // If we set the file system to OFFLINE, we need to make sure its status
+        // should not
+        // DEF_RW.
+        if (availability >= Availability.OFFLINE
+                && fs.getStatus() == FileSystemStatus.DEF_RW)
+            fs.setStatus(FileSystemStatus.RW);
+        int oldAvail = fs.getAvailabilitySafe();
+        fs.setAvailability(availability);
+        boolean changed = availability != oldAvail;
+        return changed;
     }
 
     /**
      * @ejb.interface-method
      */
-    public boolean updateFileSystemRetrieveAET(String dirPath, String retrieveAET) throws FinderException {
+    public boolean updateFileSystemRetrieveAET(String dirPath,
+            String retrieveAET) throws FinderException {
         FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
 
         String oldAET = fs.getRetrieveAET();
-        boolean changed = oldAET == null ? retrieveAET != null : !oldAET.equals(retrieveAET);
-        if ( changed )
+        boolean changed = oldAET == null ? retrieveAET != null : !oldAET
+                .equals(retrieveAET);
+        if (changed)
             fs.setRetrieveAET(retrieveAET);
         return changed;
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public int updateInstanceDerivedFields(String dirPath, boolean retrieveAETs, boolean availability, int offset, int limit) throws FinderException {
+    public int updateInstanceDerivedFields(String dirPath,
+            boolean retrieveAETs, boolean availability, int offset, int limit)
+            throws FinderException {
         Collection files = fileHome.findByFileSystem(dirPath, offset, limit);
         HashSet seriess;
         InstanceLocal instance;
         Iterator iter;
-        if ( files.size() > 0 ) {
+        if (files.size() > 0) {
             seriess = new HashSet();
-            for ( iter = files.iterator() ; iter.hasNext() ; ) {
+            for (iter = files.iterator(); iter.hasNext();) {
                 instance = ((FileLocal) iter.next()).getInstance();
-                if ( instance != null && instance.updateDerivedFields(retrieveAETs, availability) ) {
-                    seriess.add( instance.getSeries() );
+                if (instance != null
+                        && instance.updateDerivedFields(retrieveAETs,
+                                availability)) {
+                    seriess.add(instance.getSeries());
                 }
             }
-            updateSeriesDerivedFields(seriess,retrieveAETs, availability);
+            updateSeriesDerivedFields(seriess, retrieveAETs, availability);
             offset += 1000;
         }
         return files.size();
@@ -363,42 +374,46 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @param seriess
      * @throws FinderException
      */
-    private void updateSeriesDerivedFields(HashSet seriess, boolean retrieveAETs, boolean availability) throws FinderException {
+    private void updateSeriesDerivedFields(HashSet seriess,
+            boolean retrieveAETs, boolean availability) throws FinderException {
         SeriesLocal series;
         HashSet studies = new HashSet();
-        for ( Iterator iter = seriess.iterator() ; iter.hasNext() ; ) {
+        for (Iterator iter = seriess.iterator(); iter.hasNext();) {
             series = (SeriesLocal) iter.next();
-            series.updateDerivedFields(false,retrieveAETs,false,false,availability);
-            studies.add( series.getStudy() );
+            series.updateDerivedFields(false, retrieveAETs, false, false,
+                    availability);
+            studies.add(series.getStudy());
         }
         StudyLocal study;
-        for ( Iterator iter = studies.iterator() ; iter.hasNext() ; ) {
+        for (Iterator iter = studies.iterator(); iter.hasNext();) {
             study = (StudyLocal) iter.next();
-            study.updateDerivedFields(false,retrieveAETs,false,false,availability,false);
+            study.updateDerivedFields(false, retrieveAETs, false, false,
+                    availability, false);
         }
     }
 
     /**
      * @ejb.interface-method
      */
-    public Collection getFilesOnFS(String dirPath, int offset, int limit) throws FinderException {
-        Collection files = fileHome.findByFileSystem( dirPath, offset, limit );
+    public Collection getFilesOnFS(String dirPath, int offset, int limit)
+            throws FinderException {
+        Collection files = fileHome.findByFileSystem(dirPath, offset, limit);
         Collection dtos = new ArrayList();
-        for ( Iterator iter = files.iterator() ; iter.hasNext() ; ) {
-            dtos.add( ((FileLocal) iter.next()).getFileDTO() );
+        for (Iterator iter = files.iterator(); iter.hasNext();) {
+            dtos.add(((FileLocal) iter.next()).getFileDTO());
         }
         return dtos;
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public void updateFileSystem2(FileSystemDTO fs1, FileSystemDTO fs2)
-    throws FinderException {
+            throws FinderException {
         updateFileSystem(fs1);
         updateFileSystem(fs2);
     }
-    
+
     /**
      * @throws FinderException
      * @ejb.interface-method
@@ -418,8 +433,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileSystemDTO removeFileSystem(String dirPath) throws FinderException,
-            RemoveException {    	
+    public FileSystemDTO removeFileSystem(String dirPath)
+            throws FinderException, RemoveException {
         FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
         FileSystemDTO dto = fs.toDTO();
         removeFileSystem(fs);
@@ -430,28 +445,28 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      */
     public FileSystemDTO addAndLinkFileSystem(FileSystemDTO dto)
-    throws FinderException, CreateException {    	
+            throws FinderException, CreateException {
         FileSystemLocal prev0 = getRWFileSystem(dto);
         FileSystemLocal fs;
         if (prev0 == null) {
-        	fs = fileSystemHome.create(dto.getDirectoryPath(),
-                    dto.getRetrieveAET(), dto.getAvailability(),
+            fs = fileSystemHome.create(dto.getDirectoryPath(), dto
+                    .getRetrieveAET(), dto.getAvailability(),
                     FileSystemStatus.DEF_RW, dto.getUserInfo());
-        	if (dto.getAvailability() == Availability.ONLINE) {
-    	        fs.setNextFileSystem(fs);
-        	}
+            if (dto.getAvailability() == Availability.ONLINE) {
+                fs.setNextFileSystem(fs);
+            }
         } else {
-	        FileSystemLocal prev;
-	        FileSystemLocal next = prev0;
-	        do {
-	        	prev = next;
-	        	next = prev.getNextFileSystem();
-	        } while (next != null && !next.isIdentical(prev0));
-	        fs = fileSystemHome.create(dto.getDirectoryPath(),
-	        		dto.getRetrieveAET(), dto.getAvailability(),
-	        		dto.getStatus(), dto.getUserInfo());
-	        prev.setNextFileSystem(fs);
-	        fs.setNextFileSystem(next);
+            FileSystemLocal prev;
+            FileSystemLocal next = prev0;
+            do {
+                prev = next;
+                next = prev.getNextFileSystem();
+            } while (next != null && !next.isIdentical(prev0));
+            fs = fileSystemHome.create(dto.getDirectoryPath(), dto
+                    .getRetrieveAET(), dto.getAvailability(), dto.getStatus(),
+                    dto.getUserInfo());
+            prev.setNextFileSystem(fs);
+            fs.setNextFileSystem(next);
         }
         return fs.toDTO();
     }
@@ -466,37 +481,39 @@ public abstract class FileSystemMgtBean implements SessionBean {
                         FileSystemStatus.DEF_RW, FileSystemStatus.RW));
     }
 
-	private FileSystemLocal getRWFileSystem(FileSystemDTO dto)
-	throws FinderException {
-		Collection c = fileSystemHome.findByRetrieveAETAndAvailabilityAndStatus(
-        		dto.getRetrieveAET(), dto.getAvailability(), FileSystemStatus.DEF_RW);
+    private FileSystemLocal getRWFileSystem(FileSystemDTO dto)
+            throws FinderException {
+        Collection c = fileSystemHome
+                .findByRetrieveAETAndAvailabilityAndStatus(
+                        dto.getRetrieveAET(), dto.getAvailability(),
+                        FileSystemStatus.DEF_RW);
         if (c.isEmpty())
-        	return null;
+            return null;
         if (c.size() > 1)
-        	throw new FinderException("More than one RW+ Filesystem found for "
-        			+ dto);
-		return (FileSystemLocal) c.iterator().next();
-	}
-    
-    private void removeFileSystem(FileSystemLocal fs)
-    throws RemoveException, FinderException {
+            throw new FinderException("More than one RW+ Filesystem found for "
+                    + dto);
+        return (FileSystemLocal) c.iterator().next();
+    }
+
+    private void removeFileSystem(FileSystemLocal fs) throws RemoveException,
+            FinderException {
         if (fs.countFiles() > 0 || fs.countPrivateFiles() > 0)
             throw new RemoveException(fs.asString() + " not empty");
-		FileSystemLocal next = fs.getNextFileSystem();
-		if (next != null && fs.isIdentical(next)) {
-			next = null;
-		}
+        FileSystemLocal next = fs.getNextFileSystem();
+        if (next != null && fs.isIdentical(next)) {
+            next = null;
+        }
         Collection prevs = fs.getPreviousFileSystems();
         for (Iterator iter = new ArrayList(prevs).iterator(); iter.hasNext();) {
-			FileSystemLocal prev = (FileSystemLocal) iter.next();			
-			prev.setNextFileSystem(next);
-		}
+            FileSystemLocal prev = (FileSystemLocal) iter.next();
+            prev.setNextFileSystem(next);
+        }
         if (fs.getStatus() == FileSystemStatus.DEF_RW && next != null
                 && next.getStatus() == FileSystemStatus.RW) {
             next.setStatus(FileSystemStatus.DEF_RW);
         }
         fs.remove();
-	}
+    }
 
     /**
      * @ejb.interface-method
@@ -504,8 +521,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
     public void linkFileSystems(String prev, String next)
             throws FinderException {
         FileSystemLocal prevfs = fileSystemHome.findByDirectoryPath(prev);
-        FileSystemLocal nextfs = (next != null && next.length() != 0) 
-                ? fileSystemHome.findByDirectoryPath(next) : null;
+        FileSystemLocal nextfs = (next != null && next.length() != 0) ? fileSystemHome
+                .findByDirectoryPath(next)
+                : null;
         prevfs.setNextFileSystem(nextfs);
     }
 
@@ -519,7 +537,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileSystemDTO[] findFileSystems(String retrieveAET) throws FinderException {
+    public FileSystemDTO[] findFileSystems(String retrieveAET)
+            throws FinderException {
         return toDTO(fileSystemHome.findByRetrieveAET(retrieveAET));
     }
 
@@ -544,20 +563,21 @@ public abstract class FileSystemMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public long sizeOfFilesCreatedAfter(Long fsPk, long after) throws FinderException {
-        return fileSystemHome.sizeOfFilesCreatedAfter(fsPk, new Timestamp(after));
+    public long sizeOfFilesCreatedAfter(Long fsPk, long after)
+            throws FinderException {
+        return fileSystemHome.sizeOfFilesCreatedAfter(fsPk,
+                new Timestamp(after));
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public FileSystemDTO[] findFileSystemsLikeDirectoryPath(String dirpath,
             int availability, int status) throws FinderException {
-        return toDTO(fileSystemHome.findByLikeDirectoryPath(dirpath, 
+        return toDTO(fileSystemHome.findByLikeDirectoryPath(dirpath,
                 availability, status));
     }
-    
-        
+
     private FileSystemDTO[] toDTO(Collection c) {
         FileSystemDTO[] dto = new FileSystemDTO[c.size()];
         Iterator it = c.iterator();
@@ -576,10 +596,10 @@ public abstract class FileSystemMgtBean implements SessionBean {
             sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
         } catch (ObjectNotFoundException e) {
             try {
-                sofHome.create(studyHome.findByStudyIuid(siud),
-                        fileSystemHome.findByDirectoryPath(dirPath));
+                sofHome.create(studyHome.findByStudyIuid(siud), fileSystemHome
+                        .findByDirectoryPath(dirPath));
             } catch (CreateException ignore) {
-            	// Check if concurrent create
+                // Check if concurrent create
                 sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
             }
         }
@@ -593,110 +613,124 @@ public abstract class FileSystemMgtBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public Dataset releaseStudy(Long studyPk, Long fsPk, boolean deleteUncommited, boolean deleteEmptyPatient, Collection filesToPurge) throws EJBException, RemoveException,
+    public Dataset releaseStudy(Long studyPk, Long fsPk,
+            boolean deleteUncommited, boolean deleteEmptyPatient,
+            Collection filesToPurge) throws EJBException, RemoveException,
             FinderException {
-        Dataset ian = DcmObjectFactory.getInstance().newDataset();;
-        
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        ;
+
         StudyLocal study = studyHome.findByPrimaryKey(studyPk);
         FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
-        String studyOnFsStr = log.isInfoEnabled() 
-                ? study.toString() + " on " + fs.toString() 
-                : null; 
-        
+        String studyOnFsStr = log.isInfoEnabled() ? study.toString() + " on "
+                + fs.toString() : null;
+
         final PatientLocal patient = study.getPatient();
         Dataset patAttrs = patient.getAttributes(false);
         ian.putAll(patAttrs.subSet(IAN_PAT_TAGS));
-        ian.putSH(Tags.StudyID,study.getStudyId());
-        ian.putUI(Tags.StudyInstanceUID,study.getStudyIuid());
-        DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);//We dont need this information (if available) at this point.
+        ian.putSH(Tags.StudyID, study.getStudyId());
+        ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
+        DcmElement ppsSeq = ian.putSQ(Tags.RefPPSSeq);// We dont need this
+                                                        // information (if
+                                                        // available) at this
+                                                        // point.
         DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
-    
+
         //
         // Get a list of files
         //
         Collection c = study.getFiles(fsPk);
-        if ( log.isDebugEnabled() ) 
-        	log.debug( "Release "+c.size()+" files from "+studyOnFsStr );
+        if (log.isDebugEnabled())
+            log.debug("Release " + c.size() + " files from " + studyOnFsStr);
         FileLocal fileLocal;
         InstanceLocal il;
         Map seriesLocals = new HashMap();
         Map seriesSopSeq = new HashMap();
         SeriesLocal sl;
         DcmElement refSopSeq;
-        String fsPath = fs.getDirectoryPath();            
+        String fsPath = fs.getDirectoryPath();
         long size = 0;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             fileLocal = (FileLocal) iter.next();
             if (log.isDebugEnabled())
                 log.debug("Release File:" + fileLocal.asString());
             size += fileLocal.getFileSize();
-                        
+
             il = fileLocal.getInstance();
             sl = il.getSeries();
-            if ( ! seriesLocals.containsKey(sl.getPk()) ) {
-            	seriesLocals.put(sl.getPk(), sl);
-            	Dataset ds = refSerSeq.addNewItem();
-            	ds.putUI(Tags.SeriesInstanceUID, sl.getSeriesIuid());
-            	seriesSopSeq.put(sl.getPk(), refSopSeq = ds.putSQ(Tags.RefSOPSeq));
+            if (!seriesLocals.containsKey(sl.getPk())) {
+                seriesLocals.put(sl.getPk(), sl);
+                Dataset ds = refSerSeq.addNewItem();
+                ds.putUI(Tags.SeriesInstanceUID, sl.getSeriesIuid());
+                seriesSopSeq.put(sl.getPk(), refSopSeq = ds
+                        .putSQ(Tags.RefSOPSeq));
             } else {
-            	refSopSeq = (DcmElement) seriesSopSeq.get( sl.getPk() );
+                refSopSeq = (DcmElement) seriesSopSeq.get(sl.getPk());
             }
             Dataset refSOP = refSopSeq.addNewItem();
-            refSOP.putAE(Tags.RetrieveAET, StringUtils.split(il.getRetrieveAETs(),'\\') );
+            refSOP.putAE(Tags.RetrieveAET, StringUtils.split(il
+                    .getRetrieveAETs(), '\\'));
             refSOP.putUI(Tags.RefSOPClassUID, il.getSopCuid());
             refSOP.putUI(Tags.RefSOPInstanceUID, il.getSopIuid());
 
-        	// Add this file to purge list
-        	filesToPurge.add(fsPath + '/' + fileLocal.getFilePath());
+            // Add this file to purge list
+            filesToPurge.add(fsPath + '/' + fileLocal.getFilePath());
 
-        	if (!deleteUncommited) {            
-            	// Delete the file record from database
-            	fileLocal.remove();
-            	
-            	il.updateDerivedFields(true, true);
-            	int avail = il.getAvailabilitySafe();
-                refSOP.putCS(Tags.InstanceAvailability, Availability.toString(avail));
-                if ( avail == Availability.OFFLINE ) {
-                	refSOP.putSH(Tags.StorageMediaFileSetID, il.getMedia().getFilesetId());
-                	refSOP.putUI(Tags.StorageMediaFileSetUID, il.getMedia().getFilesetIuid());
+            if (!deleteUncommited) {
+                // Delete the file record from database
+                fileLocal.remove();
+
+                il.updateDerivedFields(true, true);
+                int avail = il.getAvailabilitySafe();
+                refSOP.putCS(Tags.InstanceAvailability, Availability
+                        .toString(avail));
+                if (avail == Availability.OFFLINE) {
+                    refSOP.putSH(Tags.StorageMediaFileSetID, il.getMedia()
+                            .getFilesetId());
+                    refSOP.putUI(Tags.StorageMediaFileSetUID, il.getMedia()
+                            .getFilesetIuid());
                 }
             } else {
-                refSOP.putCS(Tags.InstanceAvailability, Availability.toString(Availability.UNAVAILABLE));
+                refSOP.putCS(Tags.InstanceAvailability, Availability
+                        .toString(Availability.UNAVAILABLE));
             }
         }
-        
+
         if (!deleteUncommited) {
-        	for (Iterator iter = seriesLocals.values().iterator(); iter.hasNext();) {
-        		final SeriesLocal ser = (SeriesLocal) iter.next();
-        		ser.updateDerivedFields(false, true, false, false, true);
-        	}
-        	study.updateDerivedFields(false, true, false, false, true, false);
-        	if(log.isInfoEnabled())
-        		log.info("Release Files of " + studyOnFsStr + " - "
-        				+ (size / 1000000.f) + "MB");
-		} else {
-			if(log.isInfoEnabled())
-				log.info("Delete " + studyOnFsStr + " - " + (size / 1000000.f) + "MB");
-			
-			// Cascade-delete the study
-			// FIXME: this will delete files stored on all file systems, but currently we only deleted the one specified.
-			study.remove();
-            if ( deleteEmptyPatient ) {
-                if ( patient.getStudies().size() == 0 &&
-                        patient.getMwlItems().size() == 0 &&
-                        patient.getGsps().size() == 0 &&
-                        patient.getMpps().size() == 0 &&
-                        patient.getGppps().size() == 0 ) {
-                    log.info( "Delete empty patient:"+patient.asString() );
+            for (Iterator iter = seriesLocals.values().iterator(); iter
+                    .hasNext();) {
+                final SeriesLocal ser = (SeriesLocal) iter.next();
+                ser.updateDerivedFields(false, true, false, false, true);
+            }
+            study.updateDerivedFields(false, true, false, false, true, false);
+            if (log.isInfoEnabled())
+                log.info("Release Files of " + studyOnFsStr + " - "
+                        + (size / 1000000.f) + "MB");
+        } else {
+            if (log.isInfoEnabled())
+                log.info("Delete " + studyOnFsStr + " - " + (size / 1000000.f)
+                        + "MB");
+
+            // Cascade-delete the study
+            // FIXME: this will delete files stored on all file systems, but
+            // currently we only deleted the one specified.
+            study.remove();
+            if (deleteEmptyPatient) {
+                if (patient.getStudies().size() == 0
+                        && patient.getMwlItems().size() == 0
+                        && patient.getGsps().size() == 0
+                        && patient.getMpps().size() == 0
+                        && patient.getGppps().size() == 0) {
+                    log.info("Delete empty patient:" + patient.asString());
                     try {
                         patient.remove();
-                    } catch ( Exception ignore ) {
+                    } catch (Exception ignore) {
                         log.error("Cant remove empty patient!", ignore);
                     }
                 }
             }
-		}            
-        
+        }
+
         return ian;
     }
 
@@ -707,23 +741,25 @@ public abstract class FileSystemMgtBean implements SessionBean {
     public long getStudySize(Long studyPk, Long fsPk) throws FinderException {
         return studyHome.selectStudySize(studyPk, fsPk);
     }
-   
+
     /**
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Collection getStudiesOnFsByLastAccess(String retrieveAET, Timestamp tsBefore) throws FinderException {
+    public Collection getStudiesOnFsByLastAccess(String retrieveAET,
+            Timestamp tsBefore) throws FinderException {
         return sofHome.findByRetrieveAETAndAccessBefore(retrieveAET, tsBefore);
     }
-    
+
     /**
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Collection getStudiesOnFsAfterAccessTime(String retrieveAET, java.sql.Timestamp tsAfter, int thisBatchSize) throws FinderException 
-    {
-    	return sofHome.findByRetrieveAETAndAccessAfter(retrieveAET, tsAfter, thisBatchSize);
+    public Collection getStudiesOnFsAfterAccessTime(String retrieveAET,
+            java.sql.Timestamp tsAfter, int thisBatchSize)
+            throws FinderException {
+        return sofHome.findByRetrieveAETAndAccessAfter(retrieveAET, tsAfter,
+                thisBatchSize);
     }
-    
-    
+
 }
