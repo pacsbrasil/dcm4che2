@@ -58,105 +58,89 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 31.08.2004
- * 
- * @ejb.bean name="FileSystem" type="CMP" view-type="local" primkey-field="pk"
+ *
+ * @ejb.bean name="FileSystem"
+ *           type="CMP"
+ *           view-type="local"
+ *           primkey-field="pk"
  *           local-jndi-name="ejb/FileSystem"
  * 
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="filesystem"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.finder signature="java.util.Collection findAll()" query=""
- *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findAll()" query="SELECT
- *              OBJECT(a) FROM FileSystem AS a" strategy="on-find"
- *              eager-load-group="*"
- * 
- * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal
- *             findByDirectoryPath(java.lang.String path)" query=""
- *             transaction-type="Supports"
- * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal
- *              findByDirectoryPath(java.lang.String path)" query="SELECT
- *              OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
- *              strategy="on-find" eager-load-group="*"
- * 
- * @ejb.finder signature="java.util.Collection
- *             findByLikeDirectoryPath(java.lang.String path, int availability,
- *             int status)" query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection
- *              findByLikeDirectoryPath(java.lang.String path, int availability,
- *              int status)" query="SELECT OBJECT(a) FROM FileSystem AS a WHERE
- *              a.directoryPath LIKE ?1 AND a.availability = ?2 AND a.status =
- *              ?3" strategy="on-find" eager-load-group="*"
- * 
- * @ejb.finder signature="java.util.Collection
- *             findByRetrieveAET(java.lang.String aet)" query=""
- *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection
- *              findByRetrieveAET(java.lang.String aet)" query="SELECT OBJECT(a)
- *              FROM FileSystem AS a WHERE a.retrieveAET = ?1"
- *              strategy="on-find" eager-load-group="*"
- * 
- * @ejb.finder signature="java.util.Collection
- *             findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet,
- *             int availability, int status)" query=""
- *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection
- *              findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet,
- *              int availability, int status)" query="SELECT OBJECT(a) FROM
- *              FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2
- *              AND a.status = ?3" strategy="on-find" eager-load-group="*"
- * 
- * @ejb.finder signature="java.util.Collection
- *             findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet,
- *             int availability, int status, int alt)" query=""
- *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection
- *              findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet,
- *              int availability, int status, int alt)" query="SELECT OBJECT(a)
- *              FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability =
- *              ?2 AND (a.status = ?3 OR a.status = ?4)" strategy="on-find"
- *              eager-load-group="*"
- * 
+ * @ejb.finder signature="java.util.Collection findAll()"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findAll()"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath = ?1"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByLikeDirectoryPath(java.lang.String path, int availability, int status)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByLikeDirectoryPath(java.lang.String path, int availability, int status)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.directoryPath LIKE ?1 AND a.availability = ?2 AND a.status = ?3"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByRetrieveAET(java.lang.String aet)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByRetrieveAET(java.lang.String aet)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1"
+ *             strategy="on-find" eager-load-group="*"
+ *             
+ * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2 AND a.status = ?3"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
+ *             query="SELECT OBJECT(a) FROM FileSystem AS a WHERE a.retrieveAET = ?1 AND a.availability = ?2 AND (a.status = ?3 OR a.status = ?4)"
+ *             strategy="on-find" eager-load-group="*"
+ *             
  * @jboss.query signature="int ejbSelectNumberOfFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM File f WHERE f.fileSystem.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfPrivateFiles(java.lang.Long pk)"
- *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk =
- *              ?1"
- * 
- * @jboss.query signature="Long ejbSelectSizeOfFilesCreatedAfter(java.lang.Long
- *              pk, java.sql.Timestamp createdAfter)" query="SELECT
- *              SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND
- *              f.createdTime > ?2"
- * 
+ *              query="SELECT COUNT(f) FROM PrivateFile f WHERE f.fileSystem.pk = ?1"
+ *              
+ * @jboss.query signature="Long ejbSelectSizeOfFilesCreatedAfter(java.lang.Long pk, java.sql.Timestamp createdAfter)"
+ *              query="SELECT SUM(f.fileSize) FROM File f WHERE f.fileSystem.pk = ?1 AND f.createdTime > ?2"
+ *
  * @jboss.query signature="java.util.Collection ejbSelectAllRetrieveAETs()"
  *              query="SELECT DISTINCT f.retrieveAET FROM FileSystem f"
  */
 public abstract class FileSystemBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(FileSystemBean.class);
-
     private EntityContext ctx;
 
-    public void setEntityContext(EntityContext ctx) throws EJBException,
-            RemoteException {
-        this.ctx = ctx;
+
+    public void setEntityContext(EntityContext ctx) 
+    throws EJBException, RemoteException {
+        this.ctx = ctx;     
     }
 
     public void unsetEntityContext() throws EJBException, RemoteException {
-        this.ctx = null;
+        this.ctx = null;        
     }
-
+    
     /**
      * Create File System.
      * 
      * @ejb.create-method
      */
-    public Long ejbCreate(String dirpath, String groupId, String aet,
-            int availability, int status, String userInfo)
-            throws CreateException {
-        setDirectoryPath(dirpath);
-        setGroupId(groupId);
+    public Long ejbCreate(String dirpath, String aet, int availability,
+            int status, String userInfo)
+        throws CreateException
+    {
+        setDirectoryPath(dirpath);      
         setRetrieveAET(aet);
         setAvailability(availability);
         setStatus(status);
@@ -164,44 +148,49 @@ public abstract class FileSystemBean implements EntityBean {
         return null;
     }
 
-    public void ejbPostCreate(FileSystemDTO dto) throws CreateException {
-
+    public void ejbPostCreate(String dirpath, String aets, int availability,
+            String userInfo)
+        throws CreateException
+    {
         log.info("Created " + asString());
     }
 
-    public void ejbRemove() throws RemoveException {
+    public void ejbRemove() throws RemoveException
+    {
         log.info("Deleting " + asString());
     }
-
+    
+    
     /**
      * @ejb.select query=""
-     */
-    public abstract int ejbSelectNumberOfFiles(Long pk) throws FinderException;
-
+     */ 
+    public abstract int ejbSelectNumberOfFiles(Long pk)
+    throws FinderException;
+    
     /**
      * @ejb.interface-method
      */
     public int countFiles() throws FinderException {
         return ejbSelectNumberOfFiles(getPk());
     }
-
+    
     /**
      * @ejb.select query=""
-     */
+     */ 
     public abstract int ejbSelectNumberOfPrivateFiles(Long pk)
-            throws FinderException;
-
+    throws FinderException;
+    
     /**
      * @ejb.select query=""
-     */
-    public abstract Long ejbSelectSizeOfFilesCreatedAfter(Long pk,
-            Timestamp createdAfter) throws FinderException;
-
+     */ 
+    public abstract Long ejbSelectSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
+    throws FinderException;
+    
     /**
      * @ejb.home-method
      */
     public long ejbHomeSizeOfFilesCreatedAfter(Long pk, Timestamp createdAfter)
-            throws FinderException {
+    throws FinderException {
         try {
             Long sum = ejbSelectSizeOfFilesCreatedAfter(pk, createdAfter);
             return sum != null ? sum.longValue() : 0L;
@@ -213,9 +202,9 @@ public abstract class FileSystemBean implements EntityBean {
 
     /**
      * @ejb.select query=""
-     */
+     */ 
     public abstract Collection ejbSelectAllRetrieveAETs()
-            throws FinderException;
+    throws FinderException;
 
     /**
      * Get all available distinct retrieve AETs registered with file systems
@@ -225,33 +214,44 @@ public abstract class FileSystemBean implements EntityBean {
     public Collection ejbHomeAllRetrieveAETs() throws FinderException {
         return ejbSelectAllRetrieveAETs();
     }
-
+    
     /**
      * @ejb.interface-method
      */
     public int countPrivateFiles() throws FinderException {
         return ejbSelectNumberOfPrivateFiles(getPk());
     }
-
+    
     /**
      * @ejb.interface-method
-     */
-    public String asString() {
-        return "FileSystem[pk=" + getPk() + ", dirpath=" + getDirectoryPath()
-                + ", groupId=" + getGroupId() + ", retrieveAET="
-                + getRetrieveAET() + ", availability=" + getAvailability()
-                + ", status=" + getStatus() + ", userInfo=" + getUserInfo()
-                + ", next=" + getNextFileSystem() + "]";
+     */ 
+    public String asString()
+    {
+        return "FileSystem[pk="
+            + getPk()
+            + ", dirpath="
+            + getDirectoryPath()
+            + ", retrieveAET="
+            + getRetrieveAET()
+            + ", availability="
+            + getAvailability()
+            + ", status="
+            + getStatus()
+            + ", userInfo="
+            + getUserInfo()
+            + ", next="
+            + getNextFileSystem()
+            + "]";
     }
-
+    
     /**
      * Auto-generated Primary Key
-     * 
+     *
      * @ejb.interface-method
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * 
+     *
      */
     public abstract Long getPk();
 
@@ -265,19 +265,8 @@ public abstract class FileSystemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     */
+     */ 
     public abstract void setDirectoryPath(String dirpath);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="fs_group_id"
-     */
-    public abstract String getGroupId();
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setGroupId(String id);
 
     /**
      * @ejb.interface-method
@@ -287,7 +276,7 @@ public abstract class FileSystemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     */
+     */ 
     public abstract void setRetrieveAET(String aet);
 
     /**
@@ -300,7 +289,7 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setAvailability(int availability);
-
+    
     /**
      * @ejb.interface-method
      */
@@ -311,7 +300,7 @@ public abstract class FileSystemBean implements EntityBean {
             return 0;
         }
     }
-
+    
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fs_status"
@@ -322,7 +311,7 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setStatus(int status);
-
+    
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="user_info"
@@ -331,13 +320,15 @@ public abstract class FileSystemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     */
+     */ 
     public abstract void setUserInfo(String info);
+
 
     /**
      * @ejb.interface-method
-     * @ejb.relation name="next-filesystem" role-name="prev-filesystem"
-     * 
+     * @ejb.relation name="next-filesystem"
+     *    role-name="prev-filesystem"
+     *
      * @jboss.relation fk-column="next_fk" related-pk-field="pk"
      */
     public abstract FileSystemLocal getNextFileSystem();
@@ -346,10 +337,11 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setNextFileSystem(FileSystemLocal filesystem);
-
+    
     /**
      * @ejb.interface-method
-     * @ejb.relation name="next-filesystem" role-name="next-filesystem"
+     * @ejb.relation name="next-filesystem"
+     *    role-name="next-filesystem"
      */
     public abstract java.util.Collection getPreviousFileSystems();
 
@@ -357,19 +349,17 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setPreviousFileSystems(java.util.Collection previous);
-
+    
     /**
      * @ejb.interface-method
      */
     public void fromDTO(FileSystemDTO dto) {
         setDirectoryPath(dto.getDirectoryPath());
-        setGroupId(dto.getGroupId());
         setRetrieveAET(dto.getRetrieveAET());
         setAvailability(dto.getAvailability());
         setStatus(dto.getStatus());
         setUserInfo(dto.getUserInfo());
     }
-
     /**
      * @ejb.interface-method
      */
@@ -377,7 +367,6 @@ public abstract class FileSystemBean implements EntityBean {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setPk(getPk().longValue());
         dto.setDirectoryPath(getDirectoryPath());
-        dto.setGroupId(getGroupId());
         dto.setRetrieveAET(getRetrieveAET());
         dto.setAvailability(getAvailability());
         dto.setStatus(getStatus());
@@ -385,8 +374,8 @@ public abstract class FileSystemBean implements EntityBean {
         FileSystemLocal next = getNextFileSystem();
         if (next != null) {
             // prevent reentry in case of next == this
-            String nextPath = next.isIdentical(ctx.getEJBLocalObject()) ? getDirectoryPath()
-                    : next.getDirectoryPath();
+            String nextPath = next.isIdentical(ctx.getEJBLocalObject()) 
+                    ? getDirectoryPath() : next.getDirectoryPath();
             dto.setNext(nextPath);
         }
         return dto;
