@@ -48,7 +48,7 @@ import org.dcm4chex.archive.common.FileSystemStatus;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 13.09.2004
- *
+ * 
  */
 public class FileSystemDTO implements Serializable {
 
@@ -61,13 +61,13 @@ public class FileSystemDTO implements Serializable {
     private String retrieveAET;
 
     private int availability;
-    
+
     private int status;
-    
+
     private String userInfo;
-    
+
     private String next;
-    
+
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", ").append(directoryPath);
@@ -76,7 +76,7 @@ public class FileSystemDTO implements Serializable {
         sb.append(", ").append(FileSystemStatus.toString(status));
         sb.append(", userinfo=").append(userInfo);
         if (next != null)
-        	sb.append(", next=").append(next);
+            sb.append(", next=").append(next);
         sb.append("]");
         return sb;
     }
@@ -109,36 +109,36 @@ public class FileSystemDTO implements Serializable {
         this.retrieveAET = retrieveAET;
     }
 
-	public final int getAvailability() {
-		return availability;
-	}
+    public final int getAvailability() {
+        return availability;
+    }
 
-	public final void setAvailability(int availability) {
-		this.availability = availability;
-	}
+    public final void setAvailability(int availability) {
+        this.availability = availability;
+    }
 
-	public final int getStatus() {
-		return status;
-	}
+    public final int getStatus() {
+        return status;
+    }
 
-	public final void setStatus(int status) {
-		this.status = status;
-	}
+    public final void setStatus(int status) {
+        this.status = status;
+    }
 
-	public final String getUserInfo() {
-		return userInfo;
-	}
+    public final String getUserInfo() {
+        return userInfo;
+    }
 
-	public final void setUserInfo(String userInfo) {
-		this.userInfo = userInfo;
-	}
+    public final void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
+    }
 
-	public final String getNext() {
-		return next;
-	}
+    public final String getNext() {
+        return next;
+    }
 
-	public final void setNext(String next) {
-		this.next = next;
-	}
+    public final void setNext(String next) {
+        this.next = next;
+    }
 
 }
