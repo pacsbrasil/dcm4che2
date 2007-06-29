@@ -83,6 +83,7 @@ CREATE INDEX observer_i_name ON verify_observer(observer_i_name(64));
 CREATE INDEX observer_p_name ON verify_observer(observer_p_name(64));
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath(64));
 CREATE INDEX fs_next_fk ON filesystem(next_fk);
+CREATE INDEX fs_group_id ON filesystem(fs_group_id(64));
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet(16));
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);

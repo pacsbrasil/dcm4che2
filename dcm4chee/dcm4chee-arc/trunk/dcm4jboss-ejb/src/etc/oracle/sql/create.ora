@@ -294,6 +294,7 @@ CREATE TABLE filesystem (
 	pk          	NUMBER(38,0) NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
 	next_fk         NUMBER(38,0),
 	dirpath			VARCHAR2(255) NOT NULL,
+	fs_group_id		VARCHAR2(255) NOT NULL,
 	retrieve_aet	VARCHAR2(255) NOT NULL,
 	availability	NUMBER(38,0) NOT NULL,
 	fs_status		NUMBER(38,0) NOT NULL,
@@ -302,6 +303,7 @@ FOREIGN KEY (next_fk) REFERENCES filesystem(pk)
 );
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath);
 CREATE INDEX fs_next_fk ON filesystem(next_fk);
+CREATE INDEX fs_group_id ON filesystem(fs_group_id);
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet);
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);

@@ -114,6 +114,12 @@ import org.jboss.system.ServiceMBeanSupport;
 public class FileSystemMgtService extends ServiceMBeanSupport implements
         MessageListener {
 
+    private static final String _STORAGE = "_STORAGE";
+
+    private static final String ONLINE_STORAGE = "ONLINE_STORAGE";
+
+    private static final String NEARLINE_STORAGE = "NEARLINE_STORAGE";
+
     private static final String DATE_TIME_FORMAT = "yyyy/MM/dd HH:mm:ss";
 
     private static final String NONE = "NONE";
@@ -751,8 +757,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     	storageFileSystem = initFileSystem(Availability.ONLINE);
     	if(storageFileSystem == null) {
     		if(defStorageDir != null && !defStorageDir.equals("NONE")){
-                storageFileSystem = addFileSystem(defStorageDir, retrieveAET,
-                        Availability.ONLINE, FileSystemStatus.DEF_RW, null);
+                storageFileSystem = addFileSystem(defStorageDir, ONLINE_STORAGE,
+                        retrieveAET, Availability.ONLINE,
+                        FileSystemStatus.DEF_RW, null);
                 log.warn("No writeable Storage Directory configured for retrieve AET "
                         + retrieveAET + "- initalize default " + storageFileSystem);
             } else  {
@@ -1437,18 +1444,21 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
             String availability, String status, String userInfo)
             throws RemoteException, CreateException {
-       	if(validateStoragePath(dirPath, Availability.toInt(availability)))
-            return addFileSystem(dirPath, retrieveAET, Availability
-                    .toInt(availability), FileSystemStatus.toInt(status), userInfo);
-       	else
-    		throw new IllegalArgumentException( "Failed to validate filesystem: " + dirPath);
+        if(validateStoragePath(dirPath, Availability.toInt(availability)))
+            return addFileSystem(dirPath, availability + _STORAGE,
+                    retrieveAET, Availability.toInt(availability),
+                    FileSystemStatus.toInt(status), userInfo);
+        else
+            throw new IllegalArgumentException(
+                    "Failed to validate filesystem: " + dirPath);
     }
 
-    private FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
-            int availability, int status, String userInfo)
+    private FileSystemDTO addFileSystem(String dirPath, String groupId,
+            String retrieveAET, int availability, int status, String userInfo)
             throws RemoteException, CreateException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
+        dto.setGroupId(groupId);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(availability);
         dto.setStatus(status);
@@ -1461,6 +1471,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws RemoteException, FinderException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
+        dto.setGroupId(availability + _STORAGE);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(Availability.toInt(availability));
         dto.setStatus(FileSystemStatus.toInt(status));
@@ -1682,10 +1693,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public String addOnlineFileSystem(String dirPath, String userInfo)
             throws RemoteException, FinderException, CreateException {
     	if(validateStoragePath(dirPath, Availability.ONLINE))
-    		return addAndLinkFileSystem(dirPath, Availability.ONLINE,
-    				FileSystemStatus.RW, userInfo);
-       	else
-    		throw new IllegalArgumentException( "Failed to validate online filesystem: " + dirPath);
+    	    return addAndLinkFileSystem(dirPath, ONLINE_STORAGE,
+    	            Availability.ONLINE, FileSystemStatus.RW, userInfo);
+    	else
+    	    throw new IllegalArgumentException(
+                    "Failed to validate online filesystem: " + dirPath);
     }
 
     public String showOnlineFileSystems() throws RemoteException,
@@ -1705,10 +1717,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     public String addNearlineFileSystem(String dirPath, String userInfo)
             throws RemoteException, FinderException, CreateException {
     	if(validateStoragePath(dirPath, Availability.NEARLINE))
-    		return addAndLinkFileSystem(dirPath, Availability.NEARLINE,
-    				FileSystemStatus.RW, userInfo);
+    	    return addAndLinkFileSystem(dirPath, NEARLINE_STORAGE,
+    	            Availability.NEARLINE, FileSystemStatus.RW, userInfo);
     	else
-    		throw new IllegalArgumentException( "Failed to validate nearline filesystem: " + dirPath);
+    	    throw new IllegalArgumentException(
+                    "Failed to validate nearline filesystem: " + dirPath);
     }
 
     public String showNearlineFileSystems() throws RemoteException,
@@ -1721,11 +1734,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         return newFileSystemMgt().removeFileSystem(dirPath).toString();
     }
 
-    private String addAndLinkFileSystem(String dirPath, int availability,
-            int status, String userInfo) throws FinderException,
-            CreateException, RemoteException {
+    private String addAndLinkFileSystem(String dirPath, String groupId,
+            int availability, int status, String userInfo)
+            throws FinderException, CreateException, RemoteException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
+        dto.setGroupId(groupId);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(availability);
         dto.setStatus(status);

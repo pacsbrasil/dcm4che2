@@ -50,6 +50,12 @@ CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
 
 GRANT ALL PRIVILEGES ON TABLE verify_observer TO USER tiani;
 
+ALTER TABLE filesystem ADD fs_group_id VARCHAR(254) NOT NULL DEFAULT '';
+ALTER TABLE filesystem ALTER fs_group_id DROP DEFAULT;
+UPDATE filesystem SET fs_group_id='ONLINE_STORAGE' WHERE availability=0;
+UPDATE filesystem SET fs_group_id='NEARLINE_STORAGE' WHERE availability=1;
+CREATE INDEX fs_group_id ON filesystem(fs_group_id);
+
 ALTER TABLE mwl_item ADD station_name VARCHAR(254);
 CREATE INDEX mwl_station_name ON mwl_item (station_name);
 DROP INDEX mwl_sps_id;

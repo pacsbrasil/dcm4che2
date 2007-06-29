@@ -282,9 +282,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
      */
     public FileSystemDTO addFileSystem(FileSystemDTO dto)
             throws CreateException {
-        return fileSystemHome.create(dto.getDirectoryPath(),
-                dto.getRetrieveAET(), dto.getAvailability(), dto.getStatus(),
-                dto.getUserInfo()).toDTO();
+        return fileSystemHome.create(dto).toDTO();
     }
 
     /**
@@ -449,9 +447,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
         FileSystemLocal prev0 = getRWFileSystem(dto);
         FileSystemLocal fs;
         if (prev0 == null) {
-            fs = fileSystemHome.create(dto.getDirectoryPath(), dto
-                    .getRetrieveAET(), dto.getAvailability(),
-                    FileSystemStatus.DEF_RW, dto.getUserInfo());
+            fs = fileSystemHome.create(dto);
             if (dto.getAvailability() == Availability.ONLINE) {
                 fs.setNextFileSystem(fs);
             }
@@ -462,9 +458,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 prev = next;
                 next = prev.getNextFileSystem();
             } while (next != null && !next.isIdentical(prev0));
-            fs = fileSystemHome.create(dto.getDirectoryPath(), dto
-                    .getRetrieveAET(), dto.getAvailability(), dto.getStatus(),
-                    dto.getUserInfo());
+            fs = fileSystemHome.create(dto);
             prev.setNextFileSystem(fs);
             fs.setNextFileSystem(next);
         }

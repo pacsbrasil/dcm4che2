@@ -87,6 +87,12 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.directoryPath LIKE ?1 AND fs.availability = ?2 AND fs.status = ?3"
  *             strategy="on-find" eager-load-group="*"
  *
+ * @ejb.finder signature="java.util.Collection findByGroupId(java.lang.String id)"
+ *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupId = ?1"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByGroupId(java.lang.String id)"
+ *             strategy="on-find" eager-load-group="*"
+ *             
  * @ejb.finder signature="java.util.Collection findByRetrieveAET(java.lang.String aet)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.retrieveAET = ?1"
  *             transaction-type="Supports"
@@ -136,30 +142,18 @@ public abstract class FileSystemBean implements EntityBean {
      * 
      * @ejb.create-method
      */
-    public Long ejbCreate(String dirpath, String aet, int availability,
-            int status, String userInfo)
-        throws CreateException
-    {
-        setDirectoryPath(dirpath);      
-        setRetrieveAET(aet);
-        setAvailability(availability);
-        setStatus(status);
-        setUserInfo(userInfo);
+    public Long ejbCreate(FileSystemDTO dto) throws CreateException {
+        fromDTO(dto);
         return null;
     }
 
-    public void ejbPostCreate(String dirpath, String aets, int availability,
-            String userInfo)
-        throws CreateException
-    {
+    public void ejbPostCreate(FileSystemDTO dto) throws CreateException {
         log.info("Created " + asString());
     }
 
-    public void ejbRemove() throws RemoveException
-    {
+    public void ejbRemove() throws RemoveException {
         log.info("Deleting " + asString());
-    }
-    
+    }   
     
     /**
      * @ejb.select query=""
@@ -231,6 +225,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getPk()
             + ", dirpath="
             + getDirectoryPath()
+            + ", groupId="
+            + getGroupId()
             + ", retrieveAET="
             + getRetrieveAET()
             + ", availability="
@@ -267,6 +263,17 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      */ 
     public abstract void setDirectoryPath(String dirpath);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fs_group_id"
+     */
+    public abstract String getGroupId();
+
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setGroupId(String id);
 
     /**
      * @ejb.interface-method
@@ -355,6 +362,7 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public void fromDTO(FileSystemDTO dto) {
         setDirectoryPath(dto.getDirectoryPath());
+        setGroupId(dto.getGroupId());
         setRetrieveAET(dto.getRetrieveAET());
         setAvailability(dto.getAvailability());
         setStatus(dto.getStatus());
@@ -367,6 +375,7 @@ public abstract class FileSystemBean implements EntityBean {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setPk(getPk().longValue());
         dto.setDirectoryPath(getDirectoryPath());
+        dto.setGroupId(getGroupId());
         dto.setRetrieveAET(getRetrieveAET());
         dto.setAvailability(getAvailability());
         dto.setStatus(getStatus());

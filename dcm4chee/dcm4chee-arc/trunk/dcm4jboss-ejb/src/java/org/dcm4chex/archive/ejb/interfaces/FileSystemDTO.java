@@ -52,11 +52,13 @@ import org.dcm4chex.archive.common.FileSystemStatus;
  */
 public class FileSystemDTO implements Serializable {
 
-    private static final long serialVersionUID = 3257844398468315445L;
+    private static final long serialVersionUID = -1301228596642462447L;
 
     private long pk = -1; // unkown mark
 
     private String directoryPath;
+
+    private String groupId;
 
     private String retrieveAET;
 
@@ -71,6 +73,7 @@ public class FileSystemDTO implements Serializable {
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", ").append(directoryPath);
+        sb.append(", groupId=").append(groupId);
         sb.append(", aet=").append(retrieveAET);
         sb.append(", ").append(Availability.toString(availability));
         sb.append(", ").append(FileSystemStatus.toString(status));
@@ -99,6 +102,14 @@ public class FileSystemDTO implements Serializable {
 
     public final void setDirectoryPath(String directoryPath) {
         this.directoryPath = directoryPath;
+    }
+
+    public final String getGroupId() {
+        return groupId;
+    }
+
+    public final void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public final String getRetrieveAET() {

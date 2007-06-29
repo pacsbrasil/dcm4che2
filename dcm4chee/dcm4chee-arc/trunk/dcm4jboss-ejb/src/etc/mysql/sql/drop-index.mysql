@@ -83,6 +83,7 @@ ALTER TABLE verify_observer DROP INDEX observer_i_name;
 ALTER TABLE verify_observer DROP INDEX observer_p_name;
 ALTER TABLE filesystem DROP INDEX fs_dirpath;
 ALTER TABLE filesystem DROP INDEX fs_next_fk;
+ALTER TABLE filesystem DROP INDEX fs_group_id;
 ALTER TABLE filesystem DROP INDEX fs_retrieve_aet;
 ALTER TABLE filesystem DROP INDEX fs_availability;
 ALTER TABLE filesystem DROP INDEX fs_status;

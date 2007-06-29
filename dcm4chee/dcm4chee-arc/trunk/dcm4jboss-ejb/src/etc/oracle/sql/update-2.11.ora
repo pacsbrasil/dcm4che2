@@ -49,6 +49,12 @@ CREATE INDEX observer_name ON verify_observer(observer_name);
 CREATE INDEX observer_i_name ON verify_observer(observer_i_name);
 CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
 
+ALTER TABLE filesystem ADD fs_group_id VARCHAR2(255);
+UPDATE filesystem SET fs_group_id='ONLINE_STORAGE' WHERE availability=0;
+UPDATE filesystem SET fs_group_id='NEARLINE_STORAGE' WHERE availability=1;
+ALTER TABLE filesystem MODIFY fs_group_id NOT NULL;
+CREATE INDEX fs_group_id ON filesystem(fs_group_id);
+
 ALTER TABLE mwl_item ADD station_name VARCHAR2(255);
 CREATE INDEX mwl_station_name ON mwl_item (station_name);
 DROP INDEX mwl_sps_id;
