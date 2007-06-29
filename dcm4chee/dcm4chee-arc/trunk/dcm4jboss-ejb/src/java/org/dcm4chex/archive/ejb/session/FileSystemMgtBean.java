@@ -761,6 +761,31 @@ public abstract class FileSystemMgtBean implements SessionBean {
         return sofHome.findByRetrieveAETAndAccessAfter(retrieveAET, tsAfter,
                 thisBatchSize);
     }
+    
+    /**
+     * 
+     * @param studyIUID
+     * @return
+     * @throws FinderException
+     * @throws RemoveException 
+     * @throws EJBException 
+     * @ejb.interface-method
+     */
+    public FileDTO[] deleteWholeStudy(String studyIUID, boolean deleteEmptyPatient) throws FinderException, EJBException, RemoveException {
+        StudyLocal study = studyHome.findByStudyIuid(studyIUID);
+        Collection files = study.getAllFiles();
+        FileDTO[] fileDTOs = new FileDTO[files.size()];
+        int i = 0;
+        for ( Iterator iter = files.iterator() ; iter.hasNext() ; ) {
+            fileDTOs[i++] = ((FileLocal) iter.next() ).getFileDTO();
+        }
+        final PatientLocal pat = study.getPatient();
+        study.remove();
+        if ( deleteEmptyPatient ) {
+            doDeleteEmptyPatient(pat);
+        }
+        return fileDTOs;
+    }
 
     /**
      * @throws FinderException 

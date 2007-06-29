@@ -177,5 +177,27 @@
 
    <!-- Operations -->
    &defaultOperations;
+   
+   <operation impact="ACTION">
+      <description>Copy files of given study</description>
+      <name>copyFilesOfStudy</name>
+     <parameter>
+       <description>Study Instance UID</description>
+       <name>studyIUID</name>
+       <type>java.lang.String</type>
+     </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Copy files of given series</description>
+      <name>copyFilesOfSeries</name>
+     <parameter>
+       <description>Series Instance UID</description>
+       <name>seriesIUID</name>
+       <type>java.lang.String</type>
+     </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   
 </mbean>
 

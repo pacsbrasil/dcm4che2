@@ -45,13 +45,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarOutputStream;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
@@ -61,6 +66,7 @@ import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -109,6 +115,54 @@ public class FileCopyService extends AbstractFileCopyService {
         } catch (IndexOutOfBoundsException e) {
             throw new IllegalArgumentException(cmd);
         }
+    }
+    
+    public boolean copyFilesOfStudy(String studyIUID) throws SQLException {
+        log.info("Start copy files of study "+studyIUID);
+        Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
+        queryDs.putCS(Tags.QueryRetrieveLevel, "SERIES");
+        queryDs.putUI(Tags.StudyInstanceUID, studyIUID);
+        queryDs.putUI(Tags.SeriesInstanceUID);
+        QueryCmd cmd = QueryCmd.create(queryDs, true, false);
+        cmd.execute();
+        while ( cmd.next() ) {
+            if ( ! copyFilesOfSeries(cmd.getDataset().getString(Tags.SeriesInstanceUID) ) ) {
+                return false;
+            }
+        }
+        cmd.close();
+        return true;
+    }
+    public boolean copyFilesOfSeries(String seriesIUID) throws SQLException {
+        Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
+        queryDs.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+        queryDs.putUI(Tags.StudyInstanceUID);
+        queryDs.putUI(Tags.SeriesInstanceUID, seriesIUID);
+        queryDs.putUI(Tags.SOPInstanceUID);
+        QueryCmd cmd = QueryCmd.create(queryDs, true, false);
+        cmd.execute();
+        Dataset ds = null;
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        Dataset refSeries = ian.putSQ(Tags.RefSeriesSeq).addNewItem();
+        DcmElement refSOPs = refSeries.putSQ(Tags.RefSOPSeq);
+        while ( cmd.next() ) {
+            ds = cmd.getDataset();
+            refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
+            refSOPs.addNewItem().putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
+        }
+        cmd.close();
+        if ( ds != null ) {
+            ian.putUI(Tags.StudyInstanceUID, ds.getString(Tags.StudyInstanceUID));
+            refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
+            schedule(createOrder(ian),0l);
+            log.info("Copy files of series "+seriesIUID+" scheduled!");
+            return true;
+        } else {
+            log.info("No instances found for file copy! QueryDS:");
+            log.info(queryDs);
+            return false;
+        }
+
     }
 
     private String makeCommand(String srcParam, String fsID, String fileID) {

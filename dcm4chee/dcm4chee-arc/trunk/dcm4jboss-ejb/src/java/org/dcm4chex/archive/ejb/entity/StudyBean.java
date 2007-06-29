@@ -906,6 +906,20 @@ public abstract class StudyBean implements EntityBean {
     public Collection getFiles(Long fsPk) throws FinderException {    	
         return ejbSelectFiles(getPk(), fsPk);
     }
+
+    /**
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectAllFiles(java.lang.Long study_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getAllFiles() throws FinderException {      
+        return ejbSelectAllFiles(getPk());
+    }
     
     /**
      * @ejb.select query="SELECT Object(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media IS NULL"
