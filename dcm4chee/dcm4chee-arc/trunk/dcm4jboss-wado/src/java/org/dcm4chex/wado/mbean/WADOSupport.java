@@ -216,51 +216,84 @@ public class WADOSupport {
      */
     public WADOResponseObject getWADOObject(WADORequestObject req) {
         log.info("Get WADO object for " + req.getObjectUID());
-        FileDTO fileDTO = null;
+        Dataset objectDs = null;
+        QueryCmd cmd = null;
         try {
-            List l = new QueryFilesCmd(req.getObjectUID()).getFileDTOs();
-            if (!l.isEmpty()) {
-                fileDTO = (FileDTO) l.iterator().next();
+            Dataset dsQ = dof.newDataset();
+            dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
+            dsQ.putUI(Tags.SOPClassUID);
+            dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+            cmd = QueryCmd.create(dsQ, true, true);
+            cmd.execute();
+            if (cmd.next()) {
+                objectDs = cmd.getDataset();
             }
         } catch (SQLException x) {
             log.error("Cant get DICOM Object file reference for "
                     + req.getObjectUID(), x);
+        } finally {
+            if ( cmd != null ) cmd.close();
         }
-        log.debug("Found fileDTO:" + fileDTO);
-        if (fileDTO == null) {
+        log.debug("Found object:" + req.getObjectUID()+":");log.debug(objectDs);
+        if (objectDs == null) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_NOT_FOUND,
-                    "DICOM object not found! (Cant get file reference)");
+                    "DICOM object not found! objectUID:"+req.getObjectUID());
         }
-        log.debug("SOP Class UID or requested WADO object:"
-                + fileDTO.getSopClassUID());
-        String contentType = getPrefContentType(req, fileDTO);
+        String contentType = getPrefContentType(req, objectDs);
         log.debug("preferred ContentType:" + contentType);
         WADOResponseObject resp = null;
         if (CONTENT_TYPE_JPEG.equals(contentType)) {
-            resp = this.handleJpg(req);
+            return this.handleJpg(req);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
             return handleDicom(req); // audit log is done in handleDicom to
                                         // avoid extra query.
-        } else if (CONTENT_TYPE_DICOM_XML.equals(contentType)) {
+        } 
+        File file = null;
+        try {
+            file = this.getDICOMFile(req.getStudyUID(), req.getSeriesUID(), req
+                    .getObjectUID());
+            if (file == null) {
+                if (log.isDebugEnabled())
+                    log.debug("Dicom object not found: " + req);
+                return new WADOStreamResponseObjectImpl(null,
+                        contentType, HttpServletResponse.SC_NOT_FOUND,
+                        "DICOM object not found!");
+            }
+        } catch (IOException x) {
+            log.error("Exception in getWADOObject: " + x.getMessage(), x);
+            return new WADOStreamResponseObjectImpl(null, contentType,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Unexpected error! Cant get file");
+        } catch (NeedRedirectionException nre) {
+            if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
+                return getRemoteDICOMFile(nre.getHostname(), req);
+            } else {
+                return new WADOStreamResponseObjectImpl(null,
+                        contentType,
+                        HttpServletResponse.SC_TEMPORARY_REDIRECT,
+                        getRedirectURL(nre.getHostname(), req).toString()); 
+            }
+        }
+        if (CONTENT_TYPE_DICOM_XML.equals(contentType)) {
             if (dict == null)
                 dict = DictionaryFactory.getInstance()
                         .getDefaultTagDictionary();
-            resp = handleTextTransform(req, fileDTO, contentTypeDicomXML,
+            resp = handleTextTransform(req, file, contentTypeDicomXML,
                     getDicomXslURL(), dict);
         } else if (CONTENT_TYPE_HTML.equals(contentType)) {
-            resp = handleTextTransform(req, fileDTO, contentType,
+            resp = handleTextTransform(req, file, contentType,
                     getHtmlXslURL(), null);
         } else if (CONTENT_TYPE_XHTML.equals(contentType)) {
-            resp = handleTextTransform(req, fileDTO, contentType,
+            resp = handleTextTransform(req, file, contentType,
                     getXHtmlXslURL(), null);
         } else if (CONTENT_TYPE_XML.equals(contentType)) {
-            resp = handleTextTransform(req, fileDTO, CONTENT_TYPE_XML,
+            resp = handleTextTransform(req, file, CONTENT_TYPE_XML,
                     getXmlXslURL(), null);
         } else {
             log.debug("Content type not supported! :" + contentType
                     + "\nrequested contentType(s):" + req.getContentTypes()
-                    + " SOP Class UID:" + fileDTO.getSopClassUID());
+                    + " SOP Class UID:" + objectDs.getString(Tags.SOPClassUID));
             resp = new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_NOT_IMPLEMENTED,
                     "This method is not implemented for requested (preferred) content type!"
@@ -273,9 +306,9 @@ public class WADOSupport {
      * @param contentTypes
      * @return
      */
-    private String getPrefContentType(WADORequestObject req, FileDTO fileDTO) {
+    private String getPrefContentType(WADORequestObject req, Dataset objectDs) {
         List contentTypes = req.getContentTypes();
-        List supportedContentTypes = getSupportedContentTypes(fileDTO);
+        List supportedContentTypes = getSupportedContentTypes(objectDs);
         if (log.isDebugEnabled()) {
             log.debug("Requested content Types:" + contentTypes);
             log.debug("supported content Types:" + supportedContentTypes);
@@ -298,9 +331,9 @@ public class WADOSupport {
      * @param objectUID
      * @return
      */
-    private List getSupportedContentTypes(FileDTO fileDTO) {
+    private List getSupportedContentTypes(Dataset objectDs) {
         List types = new ArrayList();
-        String sopCuid = fileDTO.getSopClassUID();
+        String sopCuid = objectDs.getString(Tags.SOPClassUID);
         if (getTextSopCuids().containsValue(sopCuid)) {
             types.add(CONTENT_TYPE_HTML);
             types.add(CONTENT_TYPE_XHTML);
@@ -600,11 +633,9 @@ public class WADOSupport {
     /* _ */
 
     private WADOResponseObject handleTextTransform(WADORequestObject req,
-            FileDTO fileDTO, String contentType, String xslURL,
+            File file, String contentType, String xslURL,
             TagDictionary dict) {
         try {
-            File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
-                    .getFilePath());
             DataInputStream in = new DataInputStream(new BufferedInputStream(
                     new FileInputStream(file)));
             DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
@@ -758,7 +789,7 @@ public class WADOSupport {
                             .getName() });
 
         } catch (Exception e) {
-            log.error("Failed to get DICOM file", e);
+            log.error("Failed to get DICOM file:"+instanceUID, e);
         }
         if (dicomObject == null)
             return null; // not found!
@@ -870,7 +901,9 @@ public class WADOSupport {
         } catch (Exception e) {
             log.error("Can't connect to remote WADO service:" + url, e);
             e.printStackTrace();
-            return null;
+            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Redirect to find requested object failed! (Can't connect to remote WADO service:"+url+")!");
         }
     }
 

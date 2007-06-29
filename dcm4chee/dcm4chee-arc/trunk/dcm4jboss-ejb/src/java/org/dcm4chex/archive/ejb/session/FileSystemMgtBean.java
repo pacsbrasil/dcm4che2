@@ -74,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
@@ -122,6 +123,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 
     private FileSystemLocalHome fileSystemHome;
 
+    private InstanceLocalHome instanceHome;
+    
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
@@ -136,6 +139,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
                     .lookup("java:comp/env/ejb/PrivateFile");
             this.fileSystemHome = (FileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/FileSystem");
+            this.instanceHome = (InstanceLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -488,9 +493,9 @@ public abstract class FileSystemMgtBean implements SessionBean {
                     + dto);
         return (FileSystemLocal) c.iterator().next();
     }
-
-    private void removeFileSystem(FileSystemLocal fs) throws RemoveException,
-            FinderException {
+    
+    private void removeFileSystem(FileSystemLocal fs)
+    throws RemoveException, FinderException {
         if (fs.countFiles() > 0 || fs.countPrivateFiles() > 0)
             throw new RemoveException(fs.asString() + " not empty");
         FileSystemLocal next = fs.getNextFileSystem();
@@ -600,7 +605,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
     }
 
     /**
-     * Relealse a study on spcific file system.
+     * Release a study on spcific file system.
      * 
      * @return a list of files that need to be deleted
      * 
@@ -691,41 +696,42 @@ public abstract class FileSystemMgtBean implements SessionBean {
         }
 
         if (!deleteUncommited) {
-            for (Iterator iter = seriesLocals.values().iterator(); iter
-                    .hasNext();) {
-                final SeriesLocal ser = (SeriesLocal) iter.next();
-                ser.updateDerivedFields(false, true, false, false, true);
-            }
-            study.updateDerivedFields(false, true, false, false, true, false);
-            if (log.isInfoEnabled())
-                log.info("Release Files of " + studyOnFsStr + " - "
-                        + (size / 1000000.f) + "MB");
-        } else {
-            if (log.isInfoEnabled())
-                log.info("Delete " + studyOnFsStr + " - " + (size / 1000000.f)
-                        + "MB");
-
-            // Cascade-delete the study
-            // FIXME: this will delete files stored on all file systems, but
-            // currently we only deleted the one specified.
-            study.remove();
-            if (deleteEmptyPatient) {
-                if (patient.getStudies().size() == 0
-                        && patient.getMwlItems().size() == 0
-                        && patient.getGsps().size() == 0
-                        && patient.getMpps().size() == 0
-                        && patient.getGppps().size() == 0) {
-                    log.info("Delete empty patient:" + patient.asString());
-                    try {
-                        patient.remove();
-                    } catch (Exception ignore) {
-                        log.error("Cant remove empty patient!", ignore);
-                    }
-                }
+        	for (Iterator iter = seriesLocals.values().iterator(); iter.hasNext();) {
+        		final SeriesLocal ser = (SeriesLocal) iter.next();
+        		ser.updateDerivedFields(false, true, false, false, true);
+        	}
+        	study.updateDerivedFields(false, true, false, false, true, false);
+        	if(log.isInfoEnabled())
+        		log.info("Release Files of " + studyOnFsStr + " - "
+        				+ (size / 1000000.f) + "MB");
+		} else {
+			if(log.isInfoEnabled())
+				log.info("Delete " + studyOnFsStr + " - " + (size / 1000000.f) + "MB");
+			
+			// Cascade-delete the study
+			// FIXME: this will delete files stored on all file systems, but currently we only deleted the one specified.
+			study.remove();
+            if ( deleteEmptyPatient ) {
+                doDeleteEmptyPatient(patient);
             }
         }
 
         return ian;
+    }
+
+    private void doDeleteEmptyPatient(final PatientLocal patient) {
+        if ( patient.getStudies().size() == 0 &&
+                patient.getMwlItems().size() == 0 &&
+                patient.getGsps().size() == 0 &&
+                patient.getMpps().size() == 0 &&
+                patient.getGppps().size() == 0 ) {
+            log.info( "Delete empty patient:"+patient.asString() );
+            try {
+                patient.remove();
+            } catch ( Exception ignore ) {
+                log.error("Cant remove empty patient!", ignore);
+            }
+        }
     }
 
     /**
@@ -756,4 +762,20 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 thisBatchSize);
     }
 
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public FileDTO[] getFilesOfInstance(String iuid) throws FinderException {
+        return toFileDTOs(instanceHome.findBySopIuid(iuid).getFiles());
+    }
+
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public String getExternalRetrieveAET(String iuid) throws FinderException {
+        return instanceHome.findBySopIuid(iuid).getExternalRetrieveAET();
+    }
+    
 }

@@ -96,6 +96,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.notif.StudyDeleted;
@@ -1040,17 +1041,25 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     public Object locateInstance(String iuid) throws Exception {
-        List list = new QueryFilesCmd(iuid).getFileDTOs();
-        if (list.isEmpty())
-            return null;
-        for (int i = 0, n = list.size(); i < n; ++i) {
-            FileDTO dto = (FileDTO) list.get(i);
-            if (retrieveAET.equals(dto.getRetrieveAET()))
-                return FileUtils.toFile(dto.getDirectoryPath(), dto
-                        .getFilePath());
-        }
-        FileDTO dto = (FileDTO) list.get(0);
-        AEDTO aeData = aeMgt().findByAET(dto.getRetrieveAET());
+        FileDTO[] fileDTOs = null;
+        String aet = null;
+        try {
+            fileDTOs = newFileSystemMgt().getFilesOfInstance(iuid);
+            if (fileDTOs.length == 0) {
+                aet = newFileSystemMgt().getExternalRetrieveAET(iuid);
+            } else {
+                FileDTO dto;
+                for (int i = 0; i < fileDTOs.length; ++i) {
+                    dto = fileDTOs[i];
+                    if (retrieveAET.equals(dto.getRetrieveAET()))
+                        return FileUtils.toFile(dto.getDirectoryPath(), dto
+                                .getFilePath());
+                }
+                aet = fileDTOs[0].getRetrieveAET();
+            }
+        } catch (FinderException ignore) {}
+        if ( aet == null ) return null;
+        AEDTO aeData = aeMgt().findByAET(aet);
         return aeData.getHostName();
     }
 
@@ -1760,6 +1769,16 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     protected boolean validateStoragePath(String path, int availability) {
     	// By default, it's always valid
     	return true;
+    }
+    
+    public int deleteWholeStudy(String studyIUID, boolean deleteEmptyPatient) throws RemoteException, FinderException, RemoveException {
+        FileDTO[] fileDTOs = newFileSystemMgt().deleteWholeStudy(studyIUID, deleteEmptyPatient);
+        File file;
+        for ( int i = 0 ; i < fileDTOs.length ; i++ ) {
+            file = FileUtils.toFile(fileDTOs[i].getDirectoryPath(),fileDTOs[i].getFilePath());
+            delete(file);
+        }
+        return fileDTOs.length;
     }
 
     /*

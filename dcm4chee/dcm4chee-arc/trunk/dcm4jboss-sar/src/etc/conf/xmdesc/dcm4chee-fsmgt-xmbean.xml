@@ -910,6 +910,26 @@ accessed studies.</description>
       </parameter>
       <return-type>int</return-type>
    </operation>   
+   <operation impact="ACTION">
+      <description>Delete Whole Study. Remove DB entries and all files (
+      				try also deletion from RO Filesystems!)
+      				Return number of files.
+      </description>
+      <name>deleteWholeStudy</name>
+      <parameter>
+        <description>StudyInstanceUID.
+        </description>
+        <name>studyIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Delete empty patient?
+        </description>
+        <name>deleteEmptyPatient</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>   
    <operation impact="INFO">
       <description>Locate SOP Instance. Return a File object, if the instance
       is locally available, or the hostname as String object if a file
