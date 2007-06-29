@@ -58,15 +58,32 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class WebViewDelegate {
 
+    private static final String DEFAULT_WEBVIEW_SERVICE = "dcm4chee.archive:service=WebViewService";
+
     private static MBeanServer server;
 
-    private static ObjectName webviewName;
+    private ObjectName webviewName;
     
     private Boolean ignorePR, selectPR;
     
     private void init() throws MalformedObjectNameException, NullPointerException {
         WebViewDelegate.server = MBeanServerLocator.locate();
-        WebViewDelegate.webviewName = new ObjectName("dcm4chee.archive:service=WebViewService");
+        if ( webviewName == null )
+            webviewName = new ObjectName(DEFAULT_WEBVIEW_SERVICE);
+    }
+    
+    /**
+     * Set ObjectName of WebView Service.
+     * <p>
+     * If name is null use default WebView Service (dcm4chee.archive:service=WebViewService)
+     * 
+     * @param name New Objectname of WebView Service
+     * 
+     * @throws MalformedObjectNameException
+     * @throws NullPointerException
+     */
+    public void setWebviewServiceName(String name) throws MalformedObjectNameException, NullPointerException {
+        webviewName = new ObjectName(name != null ? name : DEFAULT_WEBVIEW_SERVICE);
     }
 
     /**

@@ -4,6 +4,7 @@
  <%@ page import="java.util.List" %>
  <jsp:useBean id="delegate" class="org.dcm4chex.webview.WebViewDelegate" scope="request"/>
  <%
+    delegate.setWebviewServiceName("dcm4chee.archive:service=WebViewService");
  	Properties props = delegate.getLaunchProperties( request.getParameterMap() );
 	String mode = (String) props.remove("launchMode");
 	String key;
