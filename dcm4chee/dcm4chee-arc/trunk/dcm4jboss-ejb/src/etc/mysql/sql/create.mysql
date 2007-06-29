@@ -119,6 +119,20 @@ FOREIGN KEY (pcode_fk) REFERENCES code(pk)
 CREATE INDEX pcode_study_fk ON rel_study_pcode(study_fk);
 CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
+CREATE TABLE study_permission (
+	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	study_fk        INTEGER,
+	action          VARCHAR(250) BINARY NOT NULL,
+	roles           VARCHAR(250) BINARY NOT NULL,
+	valid_from      DATETIME NOT NULL,
+	valid_until     DATETIME NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk)
+);
+CREATE INDEX sty_perm_study_fk ON study_permission(study_fk);
+CREATE INDEX sty_perm_action ON study_permission(action(1));
+CREATE INDEX sty_perm_roles ON study_permission(roles(16));
+CREATE INDEX sty_perm_from ON study_permission(valid_from);
+CREATE INDEX sty_perm_until ON study_permission(valid_until);
 
 CREATE TABLE mpps (
 	pk          		INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -291,7 +305,7 @@ FOREIGN KEY (next_fk) REFERENCES filesystem(pk)
 );
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath(64));
 CREATE INDEX fs_next_fk ON filesystem(next_fk);
-CREATE INDEX fs_group_id ON filesystem(fs_group_id(64));
+CREATE INDEX fs_group_id ON filesystem(fs_group_id(16));
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet(16));
 CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);

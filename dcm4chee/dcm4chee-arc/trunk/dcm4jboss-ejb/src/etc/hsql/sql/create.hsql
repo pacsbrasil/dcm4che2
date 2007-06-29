@@ -120,6 +120,20 @@ FOREIGN KEY (pcode_fk) REFERENCES code(pk)
 CREATE INDEX pcode_study_fk ON rel_study_pcode(study_fk);
 CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
+CREATE TABLE study_permission (
+	pk              IDENTITY PRIMARY KEY,
+	study_fk        INTEGER,
+	action          VARCHAR(256) NOT NULL,
+	roles           VARCHAR(256) NOT NULL,
+	valid_from      TIMESTAMP NOT NULL,
+	valid_until     TIMESTAMP NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk)
+);
+CREATE INDEX sty_perm_study_fk ON study_permission(study_fk);
+CREATE INDEX sty_perm_action ON study_permission(action);
+CREATE INDEX sty_perm_roles ON study_permission(roles);
+CREATE INDEX sty_perm_from ON study_permission(valid_from);
+CREATE INDEX sty_perm_until ON study_permission(valid_until);
 
 CREATE TABLE mpps (
 	pk          		IDENTITY PRIMARY KEY,

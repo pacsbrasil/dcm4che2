@@ -39,9 +39,6 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -50,6 +47,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 
@@ -58,8 +56,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
  * @version $Revision$ $Date$
  */
 public class FileBeanTest extends ServletTestCase {
-    public static final String RETRIEVE_AETS = "QR_SCP";
+    public static final String RETRIEVE_AET = "QR_SCP";
     public static final String DIRPATH = "/var/local/archive";
+    public static final String FS_GROUP_ID = "PRIMARY";
     public static final String FILEID = "2003/07/11/12345678/9ABCDEF0";
     public static final String TSUID = "1.2.40.0.13.1.1.9999.3";
     public static final int SIZE = 567890;
@@ -97,13 +96,14 @@ public class FileBeanTest extends ServletTestCase {
     }
 
     public void testCreate() throws Exception {
+        FileSystemDTO dto = new FileSystemDTO();
+        dto.setDirectoryPath(DIRPATH);
+        dto.setGroupId(FS_GROUP_ID);
+        dto.setRetrieveAET(RETRIEVE_AET);
+        dto.setAvailability(Availability.ONLINE);
+        dto.setStatus(FileSystemStatus.DEF_RW);
         FileSystemLocal fs =
-            fileSystemHome.create(
-                DIRPATH,
-                RETRIEVE_AETS,
-                Availability.ONLINE,
-                FileSystemStatus.DEF_RW,
-                null);
+            fileSystemHome.create(dto);
         FileLocal file =
             fileHome.create(
                 FILEID,
@@ -115,11 +115,5 @@ public class FileBeanTest extends ServletTestCase {
                 fs);
         file.remove();
         fs.remove();
-    }
-
-    private static String getHostName() throws UnknownHostException {
-        String hostname = InetAddress.getLocalHost().getHostName();
-        int pos = hostname.indexOf('.');
-        return pos != -1 ? hostname.substring(0, pos) : hostname;
     }
 }

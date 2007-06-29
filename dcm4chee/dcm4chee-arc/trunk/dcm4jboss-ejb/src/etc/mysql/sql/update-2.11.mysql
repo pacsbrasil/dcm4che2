@@ -52,7 +52,7 @@ ALTER TABLE filesystem ADD fs_group_id VARCHAR(250) BINARY;
 UPDATE filesystem SET fs_group_id='ONLINE_STORAGE' WHERE availability=0;
 UPDATE filesystem SET fs_group_id='NEARLINE_STORAGE' WHERE availability=1;
 ALTER TABLE filesystem ADD fs_group_id VARCHAR(250) BINARY NOT NULL;
-CREATE INDEX fs_group_id ON filesystem(fs_group_id(64));
+CREATE INDEX fs_group_id ON filesystem(fs_group_id(16));
 
 ALTER TABLE mwl_item ADD station_name VARCHAR(250) BINARY;
 CREATE INDEX mwl_station_name ON mwl_item (station_name(16));
@@ -74,6 +74,21 @@ FOREIGN KEY (other_pid_fk) REFERENCES other_pid(pk)
 );
 CREATE INDEX other_pid_pat_fk ON rel_pat_other_pid(patient_fk);
 CREATE INDEX pat_other_pid_fk ON rel_pat_other_pid(other_pid_fk);
+
+CREATE TABLE study_permission (
+	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	study_fk        INTEGER,
+	action          VARCHAR(250) BINARY NOT NULL,
+	roles           VARCHAR(250) BINARY NOT NULL,
+	valid_from      DATETIME NOT NULL,
+	valid_until     DATETIME NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk)
+);
+CREATE INDEX sty_perm_study_fk ON study_permission(study_fk);
+CREATE INDEX sty_perm_action ON study_permission(action(1));
+CREATE INDEX sty_perm_roles ON study_permission(roles(16));
+CREATE INDEX sty_perm_from ON study_permission(valid_from);
+CREATE INDEX sty_perm_until ON study_permission(valid_until);
 
 -- convert cascaded merge relation to one direct relation:
 -- repeat following statement, until no row is affected! 
