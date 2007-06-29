@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set DIRNAME=.
+set DIRNAME=%~dp0
 set RUNJAR=%DIRNAME%\run.jar
 if exist "%RUNJAR%" goto found_runjar
 echo Could not locate %RUNJAR%. Please check that you are in the
