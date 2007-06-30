@@ -266,7 +266,7 @@ class SqlBuilder {
                 matchNotSupported = true;
                 return null;
             }
-    		addListOfStringMatch(alias, field, type2, vals);
+            return addListOfStringMatch(alias, field, type2, vals);
         }
         return addWildCardMatch(alias, field, type2, vals[0]);  
     }
