@@ -170,6 +170,21 @@ public class HPDisplaySet {
         filters.add(selector);
     }
 
+    public boolean removeFilterOperation(HPSelector cmp) {
+        int index = filters.indexOf(cmp);
+        if (index == -1) {
+            return false;
+        }
+        dcmobj.get(Tag.FilterOperationsSequence).removeDicomObject(index);
+        filters.remove(index);
+        return true;
+    }
+
+    public void removeAllFilterOperations() {
+        dcmobj.putSequence(Tag.FilterOperationsSequence);
+        filters.clear();
+    }
+
     public List getSortingOperations() {
         return Collections.unmodifiableList(cmps);
     }
@@ -180,6 +195,22 @@ public class HPDisplaySet {
         cmps.add(cmp);
     }
 
+    public boolean removeSortingOperation(HPComparator cmp) {
+        int index = cmps.indexOf(cmp);
+        if (index == -1) {
+            return false;
+        }
+        dcmobj.get(Tag.SortingOperationsSequence).removeDicomObject(index);
+        cmps.remove(index);
+        return true;
+    }
+
+    public void removeAllSortingOperations() {
+        dcmobj.putSequence(Tag.SortingOperationsSequence);
+        cmps.clear();
+    }
+
+    
     public boolean contains(DicomObject o, int frame) {
         for (int i = 0, n = filters.size(); i < n; i++) {
             HPSelector selector = (HPSelector) filters.get(i);
