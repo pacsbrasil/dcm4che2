@@ -278,11 +278,9 @@ public class CheckStudyPatientService extends ServiceMBeanSupport {
                 in = new BufferedInputStream(new FileInputStream(f));
                 parser = pFact.newDcmParser(in);
                 FileFormat format = parser.detectFileFormat();
-                if (format != null) {
-                    dsFile = oFact.newDataset();
-                    parser.setDcmHandler(dsFile.getDcmHandler());
-                    parser.parseDcmFile(format, Tags.PixelData);
-                }
+                dsFile = oFact.newDataset();
+                parser.setDcmHandler(dsFile.getDcmHandler());
+                parser.parseDcmFile(format, Tags.PixelData);
                 return comparePatInfo(dsDB,dsFile) ? new Dataset[]{dsDB,null} : new Dataset[]{dsDB,dsFile};
         } catch ( IOException x ) {
         	log.error("Check patient Info with data file failed! ", x);
