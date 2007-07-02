@@ -207,6 +207,11 @@
       <priority value="INFO"/>
    </category>
    
+   <!-- Limit the org.dcm4chex.archive category to INFO --> 
+   <category name="org.dcm4chex.cdw">
+      <priority value="INFO"/>
+   </category>
+   
    <!-- Limit the org.dcm4chex.wado to INFO --> 
    <category name="org.dcm4chex.wado">
       <priority value="INFO"/>
@@ -249,6 +254,11 @@
 
    <!-- Limit the JSR77 categories -->
    <category name="org.jboss.management">
+      <priority value="INFO"/>
+   </category>
+   
+   <!-- Limit the freebXML categories (used in XDS) -->
+   <category name="org.freebxml">
       <priority value="INFO"/>
    </category>
 
