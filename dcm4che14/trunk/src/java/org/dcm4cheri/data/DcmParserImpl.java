@@ -288,7 +288,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         int len = bigEndian
             ? (b[4] & 0xff) << 24 | (b[5] & 0xff) << 16 | (b[6] & 0xff) << 8 | (b[7] & 0xff)
             : (b[7] & 0xff) << 24 | (b[6] & 0xff) << 16 | (b[5] & 0xff) << 8 | (b[4] & 0xff);
-        if (len < 116) {
+        if (len > 0 && len < 116) {
             int nexttag = bigEndian
                 ? (b[len + 8] & 0xff) << 24 | (b[len + 9] & 0xff) << 16 
                         | (b[len + 10] & 0xff) << 8 | (b[len + 11] & 0xff)
