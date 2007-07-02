@@ -408,8 +408,8 @@ public class DcmSnd implements PollDirSrv.Handler {
             try {
                 in = new BufferedInputStream(new FileInputStream(file));
                 parser = pFact.newDcmParser(in);
-                FileFormat format = parser.detectFileFormat();
-                if (format != null) {
+                try {
+                    FileFormat format = parser.detectFileFormat();
                     ds = oFact.newDataset();
                     parser.setDcmHandler(ds.getDcmHandler());
                     parser.parseDcmFile(format, Tags.PixelData);
@@ -427,7 +427,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                         MessageFormat.format(
                             messages.getString("readDone"),
                             new Object[] { file }));
-                } else {
+                } catch (DcmParseException e) {
                     log.error(
                         MessageFormat.format(
                             messages.getString("failformat"),
