@@ -449,10 +449,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             throws IOException {
        if (format == null) {
            format = detectFileFormat();
-           if (format == null) {
-               log.info("Failed to detect format - try decode as ACR/NEMA Stream");
-               format = FileFormat.ACRNEMA_STREAM;
-           }
        }
        if (handler != null)
            handler.startDcmFile();

@@ -206,9 +206,6 @@ public class DcmImageReader extends ImageReader {
         }
         theParser = pfact.newDcmParser(stream);
         FileFormat fileFormat = theParser.detectFileFormat();
-        if (fileFormat == null) {
-            throw new IOException("Unrecognized file format!");
-        }
         this.theDataset = DcmObjectFactory.getInstance().newDataset();
         theParser.setDcmHandler(theDataset.getDcmHandler());
         theParser.parseDcmFile(fileFormat, Tags.PixelData);
