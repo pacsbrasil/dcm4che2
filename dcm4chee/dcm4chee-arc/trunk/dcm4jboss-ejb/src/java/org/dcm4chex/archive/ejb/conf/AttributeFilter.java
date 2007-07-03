@@ -59,6 +59,8 @@ public final class AttributeFilter {
     private int[] tags = {};
     private int[] noCoercion = {};
     private int[] vrs = {};
+    private int[] fieldTags = {};
+    private String[] fields = {};
     private final String tsuid;
     private final boolean exclude;
     private final boolean excludePrivate;
@@ -114,6 +116,30 @@ public final class AttributeFilter {
 
     final int[] getTags() {
         return this.tags;
+    }
+    
+    final void setFields(String[] fields) {
+        if (!exclude) {
+            this.fields = fields;
+        }
+    }
+
+    final String[] getFields() {
+        return this.fields;
+    }
+    
+
+    final void setFieldTags(int[] fieldTags) {
+        this.fieldTags = fieldTags;        
+    }
+    
+    public final int[] getFieldTags() {        
+        return this.fieldTags;
+    }
+    
+    public String getField(int tag) {
+        int index = Arrays.binarySearch(fieldTags, tag);
+        return index < 0 ? null : fields[index];
     }
     
     final void setVRs(int[] vrs) {

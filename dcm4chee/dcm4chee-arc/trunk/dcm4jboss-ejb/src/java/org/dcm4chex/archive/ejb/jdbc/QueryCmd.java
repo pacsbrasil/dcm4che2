@@ -52,6 +52,7 @@ import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
@@ -262,17 +263,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                                 Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2, keys
                 .getStrings(Tags.PatientSex));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addWildCardMatch(null, "Patient.customAttribute1", type2,
-                keys.getStrings(PrivateTags.PatientCustomAttribute1));
-        sqlBuilder.addWildCardMatch(null, "Patient.customAttribute2", type2,
-                keys.getStrings(PrivateTags.PatientCustomAttribute2));
-        sqlBuilder.addWildCardMatch(null, "Patient.customAttribute3", type2,
-                keys.getStrings(PrivateTags.PatientCustomAttribute3));
-        keys.remove(PrivateTags.PatientCustomAttribute1);
-        keys.remove(PrivateTags.PatientCustomAttribute2);
-        keys.remove(PrivateTags.PatientCustomAttribute3);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
+        }
         matchingKeys.add(MATCHING_PATIENT_KEYS);
+        matchingKeys.add(fieldTags);
         seqMatchingKeys.put(new Integer(Tags.OtherPatientIDSeq), new IntList()
                 .add(MATCHING_OTHER_PAT_ID_SEQ));
     }
@@ -357,17 +357,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
                 keys.getStrings(Tags.StudyStatusID));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addWildCardMatch(null, "Study.customAttribute1", type2,
-                keys.getStrings(PrivateTags.StudyCustomAttribute1));
-        sqlBuilder.addWildCardMatch(null, "Study.customAttribute2", type2,
-                keys.getStrings(PrivateTags.StudyCustomAttribute2));
-        sqlBuilder.addWildCardMatch(null, "Study.customAttribute3", type2,
-                keys.getStrings(PrivateTags.StudyCustomAttribute3));
-        keys.remove(PrivateTags.StudyCustomAttribute1);
-        keys.remove(PrivateTags.StudyCustomAttribute2);
-        keys.remove(PrivateTags.StudyCustomAttribute3);
+        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter(null);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Study." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
+        }
         matchingKeys.add(MATCHING_STUDY_KEYS);
+        matchingKeys.add(fieldTags);
     }
 
     protected void addNestedSeriesMatch() {
@@ -405,19 +404,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         .getString(Tags.InstitutionalDepartmentName)));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, keys
-                .getStrings(PrivateTags.CallingAET));
-        sqlBuilder.addWildCardMatch(null, "Series.customAttribute1", type2,
-                keys.getStrings(PrivateTags.SeriesCustomAttribute1));
-        sqlBuilder.addWildCardMatch(null, "Series.customAttribute2", type2,
-                keys.getStrings(PrivateTags.SeriesCustomAttribute2));
-        sqlBuilder.addWildCardMatch(null, "Series.customAttribute3", type2,
-                keys.getStrings(PrivateTags.SeriesCustomAttribute3));
-        keys.remove(PrivateTags.SeriesCustomAttribute1);
-        keys.remove(PrivateTags.SeriesCustomAttribute2);
-        keys.remove(PrivateTags.SeriesCustomAttribute3);
-       if (this.isMatchRequestAttributes()) {
+        if (this.isMatchRequestAttributes()) {
             Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
             SqlBuilder subQuery = new SqlBuilder();
@@ -442,7 +429,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
 
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(null);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Series." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
+        }
+
         matchingKeys.add(MATCHING_SERIES_KEYS);
+        matchingKeys.add(fieldTags);
         seqMatchingKeys.put(new Integer(Tags.RequestAttributesSeq),
                 new IntList().add(MATCHING_REQ_ATTR_KEYS));
     }
@@ -489,8 +486,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
-
+        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            sqlBuilder.addWildCardMatch(null,
+                    "Instance." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
+        }
         matchingKeys.add(MATCHING_INSTANCE_KEYS);
+        matchingKeys.add(fieldTags);
         seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq), new IntList()
                 .add(Tags.CodeValue).add(Tags.CodingSchemeDesignator));
         seqMatchingKeys.put(new Integer(Tags.VerifyingObserverSeq),

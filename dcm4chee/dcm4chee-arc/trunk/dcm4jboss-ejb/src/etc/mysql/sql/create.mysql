@@ -251,6 +251,9 @@ CREATE TABLE instance (
 	content_datetime	DATETIME,
 	sr_complete			VARCHAR(250) BINARY,
 	sr_verified			VARCHAR(250) BINARY,
+	inst_custom1		VARCHAR(250) BINARY,
+	inst_custom2		VARCHAR(250) BINARY,
+	inst_custom3		VARCHAR(250) BINARY,	
 	ext_retr_aet		VARCHAR(250) BINARY,
 	retrieve_aets		VARCHAR(250) BINARY,
 	availability		INTEGER NOT NULL,
@@ -273,6 +276,9 @@ CREATE INDEX inst_no ON instance(inst_no(16));
 CREATE INDEX content_datetime ON instance(content_datetime);
 CREATE INDEX sr_complete ON instance(sr_complete(16));
 CREATE INDEX sr_verified ON instance(sr_verified(16));
+CREATE INDEX inst_custom1 ON instance(inst_custom1(64));
+CREATE INDEX inst_custom2 ON instance(inst_custom2(64));
+CREATE INDEX inst_custom3 ON instance(inst_custom3(64));
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet(16));
 CREATE INDEX commitment ON instance(commitment);
 CREATE INDEX inst_status ON instance(inst_status);

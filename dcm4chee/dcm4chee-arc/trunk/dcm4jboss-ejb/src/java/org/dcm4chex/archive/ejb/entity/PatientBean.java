@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -68,6 +69,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.CircularMergedException;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.Convert;
@@ -173,6 +175,8 @@ public abstract class PatientBean implements EntityBean {
     private static final Logger log = Logger.getLogger(PatientBean.class);
 
     private static final int[] OTHER_PID_SQ = { Tags.OtherPatientIDSeq};
+    
+    private static final Class[] STRING_PARAM = new Class[] { String.class };
 
     private OtherPatientIDLocalHome opidHome;
 
@@ -306,20 +310,20 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.persistence column-name="pat_custom1"
      */
-    public abstract String getCustomAttribute1();
-    public abstract void setCustomAttribute1(String value);
+    public abstract String getPatientCustomAttribute1();
+    public abstract void setPatientCustomAttribute1(String value);
 
     /**
      * @ejb.persistence column-name="pat_custom2"
      */
-    public abstract String getCustomAttribute2();
-    public abstract void setCustomAttribute2(String value);
+    public abstract String getPatientCustomAttribute2();
+    public abstract void setPatientCustomAttribute2(String value);
 
     /**
      * @ejb.persistence column-name="pat_custom3"
      */
-    public abstract String getCustomAttribute3();
-    public abstract void setCustomAttribute3(String value);
+    public abstract String getPatientCustomAttribute3();
+    public abstract void setPatientCustomAttribute3(String value);
 
    /**
      * Patient DICOM Attributes
@@ -546,14 +550,21 @@ public abstract class PatientBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(cuid);
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
-        setCustomAttributes(ds);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+        }
     }
 
-    private void setCustomAttributes(Dataset ds) {
-        ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        setCustomAttribute1(ds.getString(PrivateTags.PatientCustomAttribute1));
-        setCustomAttribute2(ds.getString(PrivateTags.PatientCustomAttribute2));
-        setCustomAttribute3(ds.getString(PrivateTags.PatientCustomAttribute3));
+    private void setField(String field, String value ) {
+        try {
+            Method m = PatientBean.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
     }
 
     private void setAttributesInternal(Dataset ds, String tsuid) {

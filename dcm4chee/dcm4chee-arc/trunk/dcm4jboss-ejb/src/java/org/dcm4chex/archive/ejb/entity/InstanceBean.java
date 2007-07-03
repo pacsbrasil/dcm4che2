@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocalHome;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -139,6 +141,8 @@ public abstract class InstanceBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
+    private static final Class[] STRING_PARAM = new Class[] { String.class };
+    
     private CodeLocalHome codeHome;
     private VerifyingObserverLocalHome observerHome;
     
@@ -239,6 +243,25 @@ public abstract class InstanceBean implements EntityBean {
      */
     public abstract String getSrVerificationFlag();
     public abstract void setSrVerificationFlag(String flag);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="inst_custom1"
+     */
+    public abstract String getInstanceCustomAttribute1();
+    public abstract void setInstanceCustomAttribute1(String value);
+
+    /**
+     * @ejb.persistence column-name="inst_custom2"
+     */
+    public abstract String getInstanceCustomAttribute2();
+    public abstract void setInstanceCustomAttribute2(String value);
+
+    /**
+     * @ejb.persistence column-name="inst_custom3"
+     */
+    public abstract String getInstanceCustomAttribute3();
+    public abstract void setInstanceCustomAttribute3(String value);
 
     /**
      * @ejb.persistence column-name="inst_attrs"
@@ -555,6 +578,21 @@ public abstract class InstanceBean implements EntityBean {
         AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(cuid);
         setAllAttributes(filter.isNoFilter());
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+        }
+    }
+
+    private void setField(String field, String value ) {
+        try {
+            Method m = PatientBean.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
     }
     
     private void setAttributesInternal(Dataset ds, String tsuid) {

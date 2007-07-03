@@ -67,6 +67,8 @@ class AttributeFilterLoader extends DefaultHandler {
     private final ArrayList tagList = new ArrayList();
     private final ArrayList vrList = new ArrayList();
     private final ArrayList noCoerceList = new ArrayList(); 
+    private final ArrayList fieldTagList = new ArrayList();
+    private final ArrayList fieldList = new ArrayList();
     private String cuid;
     private AttributeFilter filter;
 
@@ -96,6 +98,11 @@ class AttributeFilterLoader extends DefaultHandler {
             String tag = attributes.getValue("tag");
             if (tag != null) {
                 tagList.add(tag);
+                String field = attributes.getValue("field");
+                if (field != null) {
+                    fieldTagList.add(tag);
+                    fieldList.add(field);
+                }
                 if ("false".equalsIgnoreCase(attributes.getValue("coerce")))
                     noCoerceList.add(tag);
             } else {
@@ -161,9 +168,13 @@ class AttributeFilterLoader extends DefaultHandler {
                         studyFilter.getVRs(), seriesFilter.getVRs(), vrs);
             }
             filter.setTags(tags);
+            filter.setFieldTags(parseInts(fieldTagList));
+            filter.setFields((String[]) fieldList.toArray(new String[]{}));
             filter.setNoCoercion(parseInts(noCoerceList));
             filter.setVRs(vrs);
             tagList.clear();
+            fieldTagList.clear();
+            fieldList.clear();
             noCoerceList.clear();
             vrList.clear();
             cuid = null;

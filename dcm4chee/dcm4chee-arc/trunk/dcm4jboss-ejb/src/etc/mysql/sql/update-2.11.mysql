@@ -33,6 +33,13 @@ CREATE INDEX series_custom1 ON series(series_custom1(64));
 CREATE INDEX series_custom2 ON series(series_custom2(64));
 CREATE INDEX series_custom3 ON series(series_custom3(64));
 
+ALTER TABLE instance ADD inst_custom1 VARCHAR(250) BINARY;
+ALTER TABLE instance ADD inst_custom2 VARCHAR(250) BINARY;
+ALTER TABLE instance ADD inst_custom3 VARCHAR(250) BINARY;
+CREATE INDEX inst_custom1 ON instance(inst_custom1(64));
+CREATE INDEX inst_custom2 ON instance(inst_custom2(64));
+CREATE INDEX inst_custom3 ON instance(inst_custom3(64));
+
 CREATE TABLE verify_observer (
 	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
 	instance_fk     INTEGER,

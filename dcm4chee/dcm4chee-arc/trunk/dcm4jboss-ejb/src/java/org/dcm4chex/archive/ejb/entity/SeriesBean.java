@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -72,6 +73,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -128,6 +130,8 @@ import org.dcm4chex.archive.util.Convert;
 public abstract class SeriesBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(SeriesBean.class);
+
+    private static final Class[] STRING_PARAM = new Class[] { String.class };
 
     private EntityContext ejbctx;
     private MPPSLocalHome mppsHome;
@@ -267,22 +271,22 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="series_custom1"
      */
-    public abstract String getCustomAttribute1();
-    public abstract void setCustomAttribute1(String value);
+    public abstract String getSeriesCustomAttribute1();
+    public abstract void setSeriesCustomAttribute1(String value);
 
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_custom2"
      */
-    public abstract String getCustomAttribute2();
-    public abstract void setCustomAttribute2(String value);
+    public abstract String getSeriesCustomAttribute2();
+    public abstract void setSeriesCustomAttribute2(String value);
 
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_custom3"
      */
-    public abstract String getCustomAttribute3();
-    public abstract void setCustomAttribute3(String value);
+    public abstract String getSeriesCustomAttribute3();
+    public abstract void setSeriesCustomAttribute3(String value);
     
     /**
      * @ejb.interface-method
@@ -661,16 +665,23 @@ public abstract class SeriesBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
-        setCustomAttributes(ds);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+        }
     }
 
-    private void setCustomAttributes(Dataset ds) {
-        ds.setPrivateCreatorID(PrivateTags.CreatorID);
-        setCustomAttribute1(ds.getString(PrivateTags.SeriesCustomAttribute1));
-        setCustomAttribute2(ds.getString(PrivateTags.SeriesCustomAttribute2));
-        setCustomAttribute3(ds.getString(PrivateTags.SeriesCustomAttribute3));
+    private void setField(String field, String value ) {
+        try {
+            Method m = SeriesBean.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
     }
-    
+
     private void setAttributesInternal(Dataset ds, String tsuid) {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));

@@ -251,6 +251,9 @@ CREATE TABLE instance (
 	content_datetime	TIMESTAMP,
 	sr_complete			TEXT,
 	sr_verified			TEXT,
+	inst_custom1		TEXT,
+	inst_custom2		TEXT,
+	inst_custom3		TEXT,	
 	ext_retr_aet		TEXT,
 	retrieve_aets		TEXT,
 	availability		INTEGER NOT NULL,
@@ -273,6 +276,9 @@ CREATE INDEX inst_no ON instance(inst_no);
 CREATE INDEX content_datetime ON instance(content_datetime);
 CREATE INDEX sr_complete ON instance(sr_complete);
 CREATE INDEX sr_verified ON instance(sr_verified);
+CREATE INDEX inst_custom1 ON instance(inst_custom1);
+CREATE INDEX inst_custom2 ON instance(inst_custom2);
+CREATE INDEX inst_custom3 ON instance(inst_custom3);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
 CREATE INDEX instance_status ON instance(inst_status);
