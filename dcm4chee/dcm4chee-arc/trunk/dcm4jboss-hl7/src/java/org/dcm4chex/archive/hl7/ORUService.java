@@ -41,8 +41,10 @@ package org.dcm4chex.archive.hl7;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
@@ -70,10 +72,15 @@ import org.xml.sax.ContentHandler;
  */
 public class ORUService extends AbstractHL7Service
 {
+    private static final int DEFAULT_STATUS_FIELD_NR = 10;//Default: Field 11 is OBSERV RESULT STATUS
+    private static final String NO_RESULT_STATUS = "NO_OBSERV_RESULT_STATUS";
+    private static final String NO_OBX = "NO_OBX";
     private String oru2srXslPath;
     private String oru2pdfXslPath;
     private ObjectName exportManagerName;
     private int storePriority = 0;
+    private HashSet obxIgnoreStati = new HashSet();
+    private int obxStatusFieldNr = DEFAULT_STATUS_FIELD_NR;
 
     public String getSRStylesheet() {
         return oru2srXslPath;
@@ -109,9 +116,45 @@ public class ORUService extends AbstractHL7Service
         this.storePriority  = DicomPriority.toCode(storePriority);
     }
     
+    public void setObxIgnoreStati(String stati) {
+        obxIgnoreStati.clear();
+        if ( stati.equalsIgnoreCase("NONE")) return;
+        int start = 0, end = stati.indexOf(':');
+        if ( end != -1 ) {
+            obxStatusFieldNr = Integer.parseInt(stati.substring(0,end));
+            obxStatusFieldNr--;
+            start = ++end;
+        } else {
+            obxStatusFieldNr = DEFAULT_STATUS_FIELD_NR;
+        }
+        for ( end = stati.indexOf(',', start) ; end != -1 ; start = ++end, end = stati.indexOf(',', start) ) {
+            obxIgnoreStati.add(stati.substring(start, end));
+        }
+        obxIgnoreStati.add(stati.substring(start));
+    }
+    
+    public String getObxIgnoreStati() {
+        if (obxIgnoreStati.isEmpty()) return "NONE";
+        StringBuffer sb = new StringBuffer();
+        if (obxStatusFieldNr != 10) {
+            sb.append((obxStatusFieldNr+1)).append(':');
+        }
+        Iterator iter = obxIgnoreStati.iterator();
+        sb.append(iter.next());
+        while ( iter.hasNext() ) {
+            sb.append(',').append(iter.next());
+        }
+        return sb.toString();
+    }
+    
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
     throws HL7Exception
     {
+        String status = getOBXStatus(msg);
+        if ( obxIgnoreStati.contains(status) ) {
+            log.info("Ignore ORU message with OBX status='"+status+"'! MSH:"+msh);
+            return true;
+        }
         try
         {
             Dataset doc = DcmObjectFactory.getInstance().newDataset();
@@ -139,6 +182,20 @@ public class ORUService extends AbstractHL7Service
         return true;
     }
 
+    private String getOBXStatus(Document msg) {
+        Element rootElement = msg.getRootElement();
+        log.info("rootElement:"+rootElement);
+        List obxs = rootElement.elements("OBX");
+        log.info("obxs:"+obxs);
+        if ( obxs.isEmpty()) return NO_OBX;
+        List obxFields = ((Element) obxs.get(0)).elements("field");
+        log.info("obxFields:"+obxFields);
+        if ( obxFields.size() < obxStatusFieldNr) 
+            return NO_RESULT_STATUS;
+        log.info("obxFields.get(10)).getText():"+((Element) obxFields.get(obxStatusFieldNr)).getText());
+        return ((Element) obxFields.get(obxStatusFieldNr)).getText();
+    }
+    
     static String toString(Object el) {
         return el != null ? ((Element) el).getText() : "";
     }

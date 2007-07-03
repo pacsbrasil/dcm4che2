@@ -59,6 +59,23 @@
          <value value="conf/dcm4chee-hl7/oru2pdf.xsl" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getObxIgnoreStati"
+      setMethod="setObxIgnoreStati">
+      <description><![CDATA[List of OBX Stati that should be ignored by this service. <br/>
+      		Seperate multiple stati with ','.<br/>
+       		Use NONE to process all ORU messages<p/>
+       		Default field number in OBX segment is 11 (OBSERV RESULT STATUS). 
+       		You can change the default by preceeding '&lt;fieldNr&gt;:'<br/>
+       		e.g.: 'D,X' ignore all ORU message with status D and X in OBX field 11 <br/>
+       		'8:A' ignore all ORU messages with A in OBX field 8 (Abnormal Flags)]]>
+      </description>
+      <name>ObxIgnoreStati</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" 
       getMethod="getStorePriority"
       setMethod="setStorePriority">
