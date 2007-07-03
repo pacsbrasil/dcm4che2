@@ -192,7 +192,7 @@ public class FileCopyService extends AbstractFileCopyService {
     protected void process(BaseJmsOrder order) throws Exception {
         String destPath = ((FileCopyOrder)order).getDestinationFileSystemPath();
         List fileInfos = ((FileCopyOrder)order).getFileInfos();
-        ((FileCopyOrder)order).setDstFilePath(FileUtils.toFile(destPath).getCanonicalPath());
+        //((FileCopyOrder)order).setDstFilePath(FileUtils.toFile(destPath).getCanonicalPath());
         
         if (destPath.startsWith("tar:")) {
             copyTar(fileInfos, destPath);
