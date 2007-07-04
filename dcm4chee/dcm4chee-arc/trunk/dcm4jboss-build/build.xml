@@ -3,8 +3,8 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
   <property name="version" value="2.11.0"/>
-  <property name="arr-version" value="3.0.2"/>
-  <property name="audit-version" value="2.10.15"/>
+  <property name="arr-version" value="3.0.3"/>
+  <property name="audit-version" value="2.11.0"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
   <!-- Override with your JBoss server bundle dist location -->
@@ -155,7 +155,7 @@
         <include name="lib/commons-compress-20050911.jar"/>
         <include name="lib/saaj-api.jar"/>
         <include name="lib/saaj-impl.jar"/>
-        <include name="lib/dcm4che-audit-2.0.10.jar"/>
+        <include name="lib/dcm4che-audit-2.0.11.jar"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.standalone.config}">
         <include name="conf/**"/>
