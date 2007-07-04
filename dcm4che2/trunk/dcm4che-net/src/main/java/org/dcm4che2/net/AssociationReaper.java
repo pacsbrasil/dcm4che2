@@ -64,13 +64,13 @@ import org.slf4j.LoggerFactory;
 public class AssociationReaper {
     private static final float MILLISECONDS = 1000f;
 
-    static Logger log = LoggerFactory.getLogger(AssociationReaper.class);
+    private static final Logger log = LoggerFactory.getLogger(AssociationReaper.class);
 
-    private final int period;
-
-    private final Timer timer = new Timer(true);
+    private static Timer timer = new Timer(true);
 
     private Map timerTasks = Collections.synchronizedMap(new HashMap());
+    
+    private final int period;
 
     /**
      * Constructor which sets the max idle test period.
