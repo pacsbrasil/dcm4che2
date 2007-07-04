@@ -68,7 +68,7 @@
 		<pathelement location="${dcm4chee-ejb-client.jar}"/>
 		<pathelement location="${dcm4chee-ejb-server.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
-		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.10.jar"/>		
+		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.11.jar"/>		
     	<pathelement location="${fop.home}/build/fop.jar"/>
     	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
 	</path>
