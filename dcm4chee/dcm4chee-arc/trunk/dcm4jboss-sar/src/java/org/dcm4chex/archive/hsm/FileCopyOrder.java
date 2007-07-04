@@ -64,8 +64,6 @@ public class FileCopyOrder extends BaseJmsOrder {
 
     protected final String dstFsPath;
 
-    protected String dstFilePath = null;
-
     protected final String retrieveAET;
 
     protected Dataset ian = null;
@@ -108,22 +106,11 @@ public class FileCopyOrder extends BaseJmsOrder {
         return dstFsPath;
     }
 
-    public String getDstFilePath() {
-        return dstFilePath;
-    }
-
-    public void setDstFilePath(String dstFilePath) {
-        this.dstFilePath = dstFilePath;
-    }
-
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
         sb.append("\tRetrieveAET: ").append(retrieveAET).append("\n");
         sb.append("\tDestination: ").append(dstFsPath).append("\n");
-        sb.append("\tDestination file path: ").append(dstFilePath);
-        if (dstFilePath == null)
-            sb.append(" (to be resolved)");
         if (fileInfos != null) {
             sb.append("\n\tSource files: \n");
             for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
