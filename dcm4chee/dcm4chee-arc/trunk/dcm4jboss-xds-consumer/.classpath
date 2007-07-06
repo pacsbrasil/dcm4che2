@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry path="src/java" kind="src"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+	<classpathentry path="lib/jaxr-api.jar" kind="lib"/>
+	<classpathentry path="lib/jaxr-ebxml.jar" kind="lib"/>
+	<classpathentry path="lib/omar-common.jar" kind="lib"/>
+	<classpathentry path="lib/jaxb-api.jar" kind="lib"/>
+	<classpathentry path="lib/oasis-regrep.jar" kind="lib"/>
+	<classpathentry path="lib/activation.jar" kind="lib"/>
+	<classpathentry path="lib/jaxb-impl.jar" kind="lib"/>
+	<classpathentry path="lib/jaxb-libs.jar" kind="lib"/>
+	<classpathentry path="lib/saaj-api.jar" kind="lib"/>
+	<classpathentry path="lib/saaj-impl.jar" kind="lib"/>
+	<classpathentry path="lib/mail.jar" kind="lib"/>
+	<classpathentry path="lib/xsdlib.jar" kind="lib"/>
+	<classpathentry path="lib/relaxngDatatype.jar" kind="lib"/>
+	<classpathentry path="lib/FastInfoset.jar" kind="lib"/>
+	<classpathentry path="JBOSS_HOME/lib/jboss-system.jar" kind="var"/>
+	<classpathentry path="JBOSS_HOME/server/default/lib/log4j.jar" kind="var"/>
+	<classpathentry path="JBOSS_HOME/lib/jboss-common.jar" kind="var"/>
+	<classpathentry path="JBOSS_HOME/lib/jboss-jmx.jar" kind="var"/>
+	<classpathentry path="target/classes" kind="output"/>
+</classpath>
