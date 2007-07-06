@@ -785,6 +785,7 @@ public class Association implements Runnable {
 
     public void run() {
         try {
+            connector.incListenerConnectionCount();
             this.decoder = new PDUDecoder(this, in);
             while (!(state == State.STA1 || state == State.STA13))
                 decoder.nextPDU();

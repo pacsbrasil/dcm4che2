@@ -598,24 +598,23 @@ public class NetworkConnection {
         executor.execute(new Runnable() {
 
             public void run() {
-                SocketAddress addr = server.getLocalSocketAddress();
-                log.info("Start listening on {}", addr);
+                SocketAddress sockAddr = server.getLocalSocketAddress();
+                log.info("Start listening on {}", sockAddr);
                 try {
                     for (;;) {
-                        log.debug("Wait for connection on {}", addr);
+                        log.debug("Wait for connection on {}", sockAddr);
                         Socket s = server.accept();
                         setSocketOptions(s);
                         if (checkConnection(s)) {
                             Association a = Association.accept(s,
                                     NetworkConnection.this);
                             executor.execute(a);
-                            incListenerConnectionCount();
                         }
                     }
                 } catch (Throwable e) {
                     // assume exception was raised by graceful stop of server
                 }
-                log.info("Stop listening on {}", addr);
+                log.info("Stop listening on {}", sockAddr);
             }
         });
     }
@@ -665,6 +664,9 @@ public class NetworkConnection {
      * Decrement the number of active associations.
      */
     protected void decListenerConnectionCount() {
+        if (associationCount == 0) 
+            return;
+        
         --associationCount;
     }
 
