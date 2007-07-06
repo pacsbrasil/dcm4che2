@@ -3,6 +3,7 @@
 	<name>dcm4che-tool-jpg2dcm</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -3,6 +3,7 @@
 	<name>dcm4che-tool-logger</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-audit</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

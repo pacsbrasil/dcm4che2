@@ -3,6 +3,8 @@
 	<name>dcm4che-tool-dcmmwl</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-core</project>
+		<project>dcm4che-net</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

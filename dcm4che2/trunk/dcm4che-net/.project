@@ -3,6 +3,7 @@
 	<name>dcm4che-net</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

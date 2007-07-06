@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>dcm4che-iod</name>
-	<comment></comment>
+	<comment>dcm4che-iod is a module that represents DICOM Image Object Definitions.</comment>
 	<projects>
+		<project>dcm4che-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -3,6 +3,7 @@
 	<name>dcm4che-tool-xml2dcm</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

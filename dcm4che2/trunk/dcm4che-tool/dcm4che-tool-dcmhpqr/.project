@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>dcm4che-tool-dcmhp</name>
+	<name>dcm4che-tool-dcmhpqr</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-net</project>
+		<project>dcm4che-core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
