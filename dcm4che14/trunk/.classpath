@@ -7,10 +7,10 @@
 	<classpathentry path="src/java" kind="src"/>
 	<classpathentry path="test/java" kind="src"/>
 	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
-	<classpathentry path="lib/getopt.jar" kind="lib"/>
-	<classpathentry path="lib/log4j.jar" kind="lib"/>
+	<classpathentry path="lib/getopt.jar" exported="true" kind="lib"/>
+	<classpathentry path="lib/log4j.jar" exported="true" kind="lib"/>
 	<classpathentry path="lib/majix.jar" kind="lib"/>
 	<classpathentry path="lib/junit.jar" kind="lib"/>
-	<classpathentry path="lib/jai_imageio.jar" kind="lib"/>
+	<classpathentry path="lib/jai_imageio.jar" exported="true" kind="lib"/>
 	<classpathentry path="build/classes" kind="output"/>
 </classpath>
