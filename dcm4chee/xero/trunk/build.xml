@@ -102,7 +102,6 @@
   </target>
 
   <target name="setupJsf">
-     <delete dir="${developmentServer}/server/default/deploy/jbossweb-tomcat55.sar/jsf-libs" />
      <copy todir="${developmentServer}/server/default/deploy/jbossweb-tomcat55.sar/jsf-libs">
         <fileset dir="${jsfDir}/lib" includes="*" />
      </copy>
