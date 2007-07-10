@@ -188,14 +188,11 @@
 		<colgroup>
 			<col width="5%"/><!-- margin -->
 			<col width="11%"/><!-- Date/time -->
-			<col width="12%"/><!-- StudyID -->
-			<col width="10%"/><!-- Modalities -->
+			<col width="22%"/><!-- StudyID -->
 			<col width="26%"/><!-- Study Instance UID -->
 			<col width="9%"/><!-- Acc No --><!-- 73 -->
     		<col width="13%"/><!-- Ref. Physician -->
-		    <col width="4%"/><!-- Study Status ID -->
-			<col width="2%"/><!-- No. of Series -->
-		    <col width="2%"/><!-- No. of Instances -->
+		    <col width="8%"/><!-- Study Status ID -->
 			<col width="2%"/><!-- add -->
 			<col width="2%"/><!-- edit -->
 			<col width="2%"/><!-- sticky -->
@@ -215,10 +212,6 @@
 			</td>
 			<td>
 				<font size="1">
-					Mods:</font>
-			</td>
-			<td>
-				<font size="1">
 				Study IUID:
 				</font>
 			</td>
@@ -233,14 +226,6 @@
 			<td>
 				<font size="1">
 					Status:</font>
-			</td>
-			<td>
-				<font size="1">
-					NoS:</font>
-			</td>
-			<td>
-				<font size="1">
-					NoI:</font>
 			</td>
 			<td>&#160;</td>
 			<td>&#160;</td>
@@ -257,8 +242,7 @@
 			<col width="35%"/><!-- Series Instance UID. -->
 			<col width="10%"/><!-- Vendor/Model -->
 			
-    		<col width="8%"/><!-- PPS Status -->
-			<col width="2%"/><!-- spacer -->
+    		<col width="12%"/><!-- PPS Status -->
 			<col width="2%"/><!-- edit -->
 			<col width="2%"/><!-- sticky -->
 		</colgroup>
@@ -291,10 +275,6 @@
 			<td>
 				<font size="1">
 					PPS Status:</font>
-			</td>
-			<td>
-				<font size="1">
-					NoI:</font>
 			</td>
 			<td>&#160;</td>
 			<td>&#160;</td>
@@ -376,14 +356,11 @@
 			<colgroup>
 				<col width="2%"/><!-- margin -->
 				<col width="14%"/><!-- Date/time -->
-				<col width="12%"/><!-- StudyID -->
-				<col width="10%"/><!-- Modalities -->
+				<col width="22%"/><!-- StudyID -->
 				<col width="26%"/><!-- Study Instance UID -->
 				<col width="9%"/><!-- Acc No -->
 	    		<col width="13%"/><!-- Ref. Physician -->
-			    <col width="4%"/><!-- Study Status ID -->
-				<col width="2%"/><!-- No. of Series -->
-			    <col width="2%"/><!-- No. of Instances -->
+			    <col width="8%"/><!-- Study Status ID -->
 				<col width="2%"/><!-- add -->
 				<col width="2%"/><!-- edit -->
 				<col width="2%"/><!-- sticky -->
@@ -410,9 +387,6 @@
 				<xsl:if test="filesetId != '_NA_'"> @<xsl:value-of select="filesetId"/> </xsl:if>
 				&#160;
 			</td>
-		 	<td title="Modalities">
-				<xsl:value-of select="modalitiesInStudy"/>&#160;
-			</td>
 	  		<td title="Study IUID">
 				<xsl:value-of select="studyIUID"/>&#160;
 			</td>
@@ -432,12 +406,6 @@
 	  				</xsl:when>
 	  				<xsl:otherwise>&#160;</xsl:otherwise>
 	      		</xsl:choose>
-			</td>
-	  		<td title="Number of Series" align="center">
-				<xsl:value-of select="numberOfSeries"/>&#160;
-			</td>
-	  		<td title="Number of Instances" align="center">
-				<xsl:value-of select="numberOfInstances"/>&#160;
 			</td>
             <td>&#160;</td>
 		    <td class="study_mark" align="right">
@@ -465,13 +433,13 @@
 		<table class="series_line" width="100%" cellpadding="0" cellspacing="0" border="0" >	  
 			<colgroup>
 				<col width="3%"/><!-- left margin -->
+				<col width="2%"/><!-- spacer -->
 				<col width="14%"/><!-- Date/Time -->
 				<col width="12%"/><!-- Series No -->
 				<col width="10%"/><!-- Modality -->
 				<col width="35%"/><!-- Series Instance UID. -->
 				<col width="10%"/><!-- Vendor/Model -->
-	    		<col width="8%"/><!-- PPS Status -->
-				<col width="2%"/><!-- spacer -->
+	    		<col width="12%"/><!-- PPS Status -->
 				<col width="2%"/><!-- edit -->
 				<col width="2%"/><!-- sticky -->
 			</colgroup>
@@ -490,6 +458,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</td>
+			<td>&#160;</td>
 			<td title="Series Date">
 				<xsl:value-of select="seriesDateTime"/>&#160;
 			</td>
@@ -523,10 +492,7 @@
 				</xsl:choose>
 	    		&#160;
     	  	</td>
-			<td title="Number of Instances" align="center">
-				<xsl:value-of select="numberOfInstances"/>
-			</td>
-            <td>&#160;</td>
+			<td>&#160;</td>
             <td class="series_mark" align="right">
 				<a href="trashfolder.m?undel=series&amp;seriesPk={pk}"
 					onclick="return confirm('Undelete this series ?')">
