@@ -92,13 +92,6 @@ function zpUpdateModel(x,y) {
     this.origHHeight = this.hHeight;
     
     this.baseUrl = this.getImageUrl(['region', 'imageQuality']);
-
-    // Todo move this into ImageEvent generally...
-    this.lastTime = new Date().getTime();
-    this.sinceCompleteTime = -1;
-    this.loadingImage = this.imageNode;
-    this.quality = 0.8;
-    
     return true;
  };
 
@@ -129,8 +122,8 @@ function ZoomPan(minValue, maxValue) {
 
 /** Updates the centerX/Y positions in the debug window */
 function zpUpdateOtherDisplay(isDone) {
-	if( this.debug ) {
-		this.debug.innerHTML = ""+Math.round(1000*this.centerX) + ","+Math.round(1000*this.centerY);
+	if( this.debugValue ) {
+		this.debugValue.innerHTML = "Zoom Center:"+Math.round(1000*this.centerX) + ","+Math.round(1000*this.centerY);
 	}
 }
 

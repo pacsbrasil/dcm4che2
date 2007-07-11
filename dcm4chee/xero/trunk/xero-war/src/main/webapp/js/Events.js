@@ -120,3 +120,17 @@ function isLeftMouse(evt) {
 	if( evt.which ) return (evt.which<2);
 	return event.button < 2;
 };
+
+/** Encodes URL & objects correctly 
+ * @param url (string) */
+function encodeURL(url) {
+  if( ! url ) return "";
+  return url.replace(/&/g,'&amp;');
+};
+
+/** Trace the message to an auxiliary screen. */
+function trace(msg) {
+	if( typeof( jsTrace ) != 'undefined' ) {
+		jsTrace.send(msg);
+	};
+};

@@ -3,14 +3,25 @@ wado.encode=${org.dcm4chee.xero.wado.EncodeImage}
 wado.encode.priority=9999
 wado.wl=${org.dcm4chee.xero.wado.WLFilter}
 wado.wl.priority=6000
-wado.region=${org.dcm4chee.xero.wado.RegionFilter}
-wado.region.priority=5900
 wado.memcache=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 wado.memcache.priority=5000
-wado.splitRegion=${org.dcm4chee.xero.wado.SplitRegionFilter}
-wado.splitRegion.priority=100
-wado.src=${org.dcm4chee.xero.wado.WadoSource}
-wado.src.priority=0
+wado.src=${org.dcm4chee.xero.wado.DicomImageFilter}
+wado.fileLocation.inherit=fileLocation
+
+# The original version - should probably go away soon.
+wadoOld=${org.dcm4chee.xero.metadata.filter.FilterList}
+wadoOld.encode=${org.dcm4chee.xero.wado.EncodeImage}
+wadoOld.encode.priority=9999
+wadoOld.wl=${org.dcm4chee.xero.wado.WLFilter}
+wadoOld.wl.priority=6000
+wadoOld.region=${org.dcm4chee.xero.wado.RegionFilter}
+wadoOld.region.priority=5900
+wadoOld.memcache=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+wadoOld.memcache.priority=5000
+wadoOld.splitRegion=${org.dcm4chee.xero.wado.SplitRegionFilter}
+wadoOld.splitRegion.priority=100
+wadoOld.src=${org.dcm4chee.xero.wado.WadoSource}
+wadoOld.src.priority=0
 
 fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
 fileLocation.fileLocationMgt=${org.dcm4chee.xero.wado.FileLocationMgtFilter}

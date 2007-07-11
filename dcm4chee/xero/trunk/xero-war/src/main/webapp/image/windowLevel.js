@@ -68,9 +68,7 @@ function wlUpdateModel(x,y) {
   this.baseUrl = this.getImageUrl(['windowWidth', 'windowCenter', 'imageQuality']);
   this.startWidth = this.windowWidth;
   this.startCenter = this.windowCenter;
-  this.lastTime = new Date().getTime();
   this.sinceCompleteTime = -1;
-  this.loadingImage = this.imageNode;
   this.quality = 0.8;
   return true;
  }
@@ -91,13 +89,11 @@ function WindowLevelBase(minValue, maxValue) {
   this.image = new Image();
   this.range = maxValue - minValue;
   this.windowWidth = this.range;
-  this.totalTime = 0;
   this.windowCenter = minValue + this.range/2.0;
   this.originalWidth = this.windowWidth;
   this.originalCenter = this.windowCenter;
   this.minValue = minValue;
   this.maxValue = maxValue;
-  this.startCount = 0;
 };
 
 function wlEndAction() {
@@ -107,8 +103,8 @@ function wlEndAction() {
 /** Updates the width/center information.  Called when an actual update occurs.
  */
 function wlUpdateOtherDisplay(isDone) {
-	if( this.wlCurrentValue ) {
-		this.wlCurrentValue.innerHTML = "W:"+Math.round(this.windowWidth)+" C:"+Math.round(this.windowCenter);
+	if( this.debugValue ) {
+		this.debugValue.innerHTML = "WL W:"+Math.round(this.windowWidth)+" C:"+Math.round(this.windowCenter);
 	}
 };
 

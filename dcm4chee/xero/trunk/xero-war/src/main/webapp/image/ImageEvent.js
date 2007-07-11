@@ -43,6 +43,7 @@ function imageEventEmpty() { }
  */
 function ImageEvent() {
   this.body = document.getElementById("body");
+  trace("Image Event created.");
 }
 
 /**
@@ -55,14 +56,21 @@ ImageEvent.prototype.mouseDown = function (evt) {
   if( evt==null ) evt = window.event;
   if( !isLeftMouse(evt) ) return;
   this.imageNode = target(evt);
-  this.debug = document.getElementById("debug");
-  this.debugAjax = document.getElementById("debugAjax");
+  this.debugValue = document.getElementById("debugValue");
+  this.debugMouse = document.getElementById("debugMouse");
+  this.debugUrl = document.getElementById("debugUrl");
+  this.debugImage = document.getElementById("debugImage");
   if( !this.imageNode ) {
-  	if( this.debug ) this.debug.innerHTML = "No image node.";
+  	if( this.debugImage ) this.debugImage.innerHTML = "No image node.";
   }
   this.actionId = this.imageNode.id;
   this.startX = evt.clientX;
   this.startY = evt.clientY;
+  this.loadingImage = null;
+  this.quality = 1.0;
+  this.startCount = 0;
+  this.totalTime = 0;
+  this.avgTime = 2000;
   this.mousing = this.startLeft(evt.clientX, evt.clientY);
   if( this.mousing ) {
   	imageHandler = this;
@@ -70,13 +78,13 @@ ImageEvent.prototype.mouseDown = function (evt) {
        evt.preventDefault();
     }
     else if( this.body.setCapture ) {
-      if( this.debug ) this.debug.innerHTML="Set capture mode.";
+      if( this.debugMouse ) this.debugMouse.innerHTML="Set capture mode.";
       this.body.setCapture();
     }
+    // Get the initial update loading - it may not be identical to the original image.
+    this.updateScreen(false);
   }
-  if( this.debugAjax ) {
-  	this.debugAjax.innerHTML = "mouseDown mousing "+this.mousing;
-  }
+  if( this.debugMouse ) this.debugMouse.innerHTML = "mouseDown mousing "+this.mousing;
   return false;
 };
 
@@ -104,7 +112,7 @@ ImageEvent.prototype.mouseUp = function (evt) {
     this.body.releaseCapture();
   }
   this.endAction();
-  if( this.debugAjax ) this.debugAjax.innerHTML = "mouseUp";
+  if( this.debugMouse ) this.debugMouse.innerHTML = "mouseUp";
 }
 
 
@@ -112,8 +120,8 @@ ImageEvent.prototype.mouseUp = function (evt) {
  * Handles the move move event by calling updateModel and updateScreen
  */
 ImageEvent.prototype.mouseMove = function wlMouseMove(evt) {
-  if( this.debug ) this.debug.innerHTML = "Move move.";
   if(this.mousing ) {
+    if( this.debugMouse ) this.debugMouse.innerHTML = "Mouse move:"+evt.clientX+","+evt.clientY;
     this.updateModel(evt.clientX, evt.clientY);
     this.updateScreen(false);
   }
@@ -127,7 +135,7 @@ ImageEvent.prototype.mouseOut = function (evt) {
 	if(!this.mousing ) return;
 	// Would like to check if this is a real mouse out event - but how to do so is unclear.
 	this.mouseUp(evt);
-	if( this.debugAjax ) this.debugAjax.innerHTML = "mouseOut";
+	if( this.debugMouse ) this.debugMouse.innerHTML = "mouseOut";
 };
 
 
@@ -142,7 +150,14 @@ ImageEvent.prototype.mouseOut = function (evt) {
  
 ImageEvent.prototype.updateImage = function (url) 
 {
-  this.imageNode.src = url;
+  if( this.imageNode.src ) {
+  	this.imageNode.src = url;
+  	if( this.debugUrl ) this.debugUrl.innerHTML = "SRC URL:"+encodeURL(url);
+  }
+  else {
+  	this.imageNode.setAttribute("xlink:href",url);
+  	if( this.debugUrl ) this.debugUrl.innerHTML = "Xlink URL:"+encodeURL(url);
+  }
 };
 
 
@@ -181,15 +196,29 @@ ImageEvent.prototype.updateScreen = function (isDone)
   var url=this.baseUrl + this.getUpdatedUrlQuery(isDone) + "&imageQuality="+this.quality;  
   var isTime = false;
   var currentTime = new Date().getTime();
+  var reason = "";
   var delay = currentTime - this.lastTime;
-  if( delay>3500 ) {
+  if( isNaN(delay) ) {
+  	this.lastTime = currentTime;
+  	delay = 0;
+  }
+  if( ! this.loadingImage ) {
+  	this.loadingImage = new Image();
+  	this.loadingImage.src = url;
+  	if( this.debugImage ) this.debugImage.innerHTML = "Starting to load:"+currentTime;
+  	if( this.debugUrl ) this.debugUrl.innerHTML = "Initial URL:"+encodeURL(url);
+  }
+  var origUrl = this.loadingImage.src;
+  if( delay>3500 || delay > 3*this.avgTime) {
+  	reason = "Timeout ";
     isTime = true;
   }
-  else if( this.loadingImage && this.loadingImage.complete ) {
+  else if( this.loadingImage.complete ) {
+  	reason = "Loaded image: ";
     if( this.sinceCompleteTime == -1 ) {
       this.sinceCompleteTime = currentTime;
     }
-    else if( this.sinceCompleteTime + 50 < currentTime ) {
+    else if( this.sinceCompleteTime + 50 < currentTime || delay > 150) {
       isTime = true;
     }
   }
@@ -201,8 +230,8 @@ ImageEvent.prototype.updateScreen = function (isDone)
     this.lastTime = currentTime;
     this.sinceCompleteTime = -1;
     this.avgTime = this.totalTime/this.startCount;
-    if( this.debug ) this.debug.innerHTML = "C:"+this.startCount+ " A:"+Math.round(this.avgTime) + " Q:"+Math.round(this.quality*100)/100;
-    this.updateImage(url);
+    if( this.debugImage ) this.debugImage.innerHTML = reason+"C:"+this.startCount+ " A:"+Math.round(this.avgTime) + " Q:"+Math.round(this.quality*100)/100;
+    this.updateImage(origUrl);
     if(delay > 200 && this.quality > 0.25 ) this.quality = this.quality * 0.98;
     if( delay > 500 && this.quality > 0.25 ) this.quality = this.quality * 0.9;
     if( delay < 120 && this.quality < 0.90 ) this.quality = this.quality * 1.02;
@@ -248,6 +277,7 @@ ImageEvent.prototype.getImageUrl = function(rem) {
 		return undefined;
 	}
     var url = this.imageNode.getAttribute("src");
+    if( ! url ) url = this.imageNode.getAttribute("xlink:href");
     var origUrl = url;
 	if( rem ) {
 		url = this.getStrippedUrl(origUrl,rem);

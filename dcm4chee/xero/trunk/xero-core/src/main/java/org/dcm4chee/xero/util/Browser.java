@@ -51,11 +51,17 @@ public class Browser {
 	@Unwrap
 	public String getBrowser() {
 		String userAgent = (String) facesContext.getExternalContext().getRequestHeaderMap().get("USER-AGENT");
-		if( userAgent.indexOf("MSIE")>0 ) {
+		if( userAgent.indexOf("MSIE")>=0 ) {
 			return "MSIE";
 		}
-		if( userAgent.indexOf("Firefox")>0 ) {
+		if( userAgent.indexOf("Firefox")>=0 ) {
 			return "Firefox";
+		}
+		if( userAgent.indexOf("AppleWebKit")>=0 ) {
+			return "Safari";
+		}
+		if( userAgent.indexOf("Opera")>=0 ) {
+			return "Opera";
 		}
 		return userAgent;
 	}

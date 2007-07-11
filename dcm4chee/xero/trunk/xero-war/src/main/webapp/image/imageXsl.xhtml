@@ -5,6 +5,7 @@
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:m="http://www.dcm4che.org/xero/metadata/display"
+   xmlns:c="http://java.sun.com/jstl/core"
    m:xsl="imageXsl.xsl"
    m:docName="/documents/images"
    m:Display.script="ImageEvent.js"
@@ -12,7 +13,7 @@
    m:WL.script="windowLevel.js"
    m:WL.script.priority="50"
    m:WL.toolbar="wlToolbar"
-   m:Event.script="../js/Events.js"
+   m:Event.script="/xero/js/Events.js"
    m:Event.script.priority="1000"
    m:jsEnabled.inherit="jsEnabled"
 >
@@ -28,6 +29,13 @@
      docName=<xsl:value-of select="$docName" /><br />
      seriesUID=<xsl:value-of select="$seriesUID" /><br />
   </xsl:if>
+</x:template>
+
+<!-- Declare the VML template and style information if IE -->
+<x:template name="vmlDeclare" m:vml.script="vmlDeclare">
+ <c:if test="#{browser=='MSIE'}">
+  <style type="text/css">v\:* { behavior: url(#default#VML);   }</style>
+ </c:if>
 </x:template>
 
 <x:template name="displayScriptVars" m:scriptVars.script="displayScriptVars" m:scriptVars.script.priority="-10">
@@ -55,8 +63,11 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
   >
    <div id="body">
     <x:callTemplates from="#{pageConfig}" mode="body" />
-    <div id="debug">Debug info</div> <br />
-    <div id="debugAjax">Debug AJAX</div>
+    <div id="debugMouse">Debug MOUSE</div> <br />
+    <div id="debugImage">Debug Image Updates</div> <br />
+    <div id="debugValue">Debug Value Updates</div> <br />
+    <div id="debugUrl">Debug current URL</div> <br />
+    <div id="debugAjax">Debug AJAX Updates</div> <br />
    </div>
   </body>
 </html>
