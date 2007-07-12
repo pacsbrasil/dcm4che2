@@ -79,6 +79,26 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getUpdateStudyAccessTimeCallingAETs"
+      setMethod="setUpdateStudyAccessTimeCallingAETs">
+      <description><![CDATA[List of the AE titles of Storage SCUs for which
+      Study Access Time shall be updated on receive of new objects
+      of an existing study.
+      Separate multiple values by \(backslash).
+      NONE = do <b>not</b> update Study Access Time on storage from any Storage SCU,
+      ANY = update Study Access Time on storage from any Storage SCU.
+      <br><b>Attention:</b> If objects flushed by the deleter service from an
+      Online Storage File System are restored (e.g. from Off-line storage), you
+      have to list the AE title of the Storage SCU used for restoring such
+      objects here; otherwise the restored objects will not considered by the
+      deleter and therefore never flushed again on shortage of Online Storage!]]>
+      </description>
+      <name>UpdateStudyAccessTimeCallingAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>   <attribute access="read-write"
       getMethod="isAcceptMissingPatientID"
       setMethod="setAcceptMissingPatientID">
       <description><![CDATA[Accept storage of objects/images without patient ID]]>

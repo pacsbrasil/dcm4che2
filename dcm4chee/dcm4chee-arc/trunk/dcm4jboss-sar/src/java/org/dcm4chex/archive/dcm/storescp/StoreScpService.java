@@ -46,10 +46,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.management.JMException;
@@ -398,7 +401,15 @@ public class StoreScpService extends AbstractScpService {
     public void setAcceptMismatchIUIDCallingAETs(String aets) {
         scp.setAcceptMismatchIUIDCallingAETs(aets);
     }
+    
+    public String getUpdateStudyAccessTimeCallingAETs() {
+        return scp.getUpdateStudyAccessTimeCallingAETs();
+    }
 
+    public void setUpdateStudyAccessTimeCallingAETs(String aets) {
+        scp.setUpdateStudyAccessTimeCallingAETs(aets);
+    }
+    
     public boolean isStoreDuplicateIfDiffHost() {
         return scp.isStoreDuplicateIfDiffHost();
     }
@@ -781,7 +792,7 @@ public class StoreScpService extends AbstractScpService {
         String filePath = fileDTO.getFilePath();
         File f = FileUtils.toFile(fsPath, filePath);
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f, fileDTO
-                .getFileMd5());
+                .getFileMd5(), true);
         if (last) {
             SeriesStored seriesStored = store.makeSeriesStored(seriud);
             if (seriesStored != null) {
@@ -841,5 +852,6 @@ public class StoreScpService extends AbstractScpService {
     protected void doPostProcess(Dataset ds) throws Exception {
         // Extension Point for customized StoreScpService    
     }
+
    
 }

@@ -181,7 +181,8 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
-            long fspk, java.lang.String fileid, long size, byte[] md5)
+            long fspk, java.lang.String fileid, long size, byte[] md5,
+            boolean updateStudyAccessTime)
     throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -196,7 +197,8 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                instance = instHome.create(ds, getSeries(ds, coercedElements, fs));
+                instance = instHome.create(ds,
+                		getSeries(ds, coercedElements, fs));
             }
             FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
                     instance, fs);
@@ -204,6 +206,9 @@ public abstract class StorageBean implements SessionBean {
             instance.addRetrieveAET(fs.getRetrieveAET());
             instance.setInstanceStatus(RECEIVED);
             instance.getSeries().setSeriesStatus(RECEIVED);
+            if (updateStudyAccessTime) {
+            	touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);
+            }
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
@@ -218,6 +223,21 @@ public abstract class StorageBean implements SessionBean {
         }
     }
 
+	private void touchStudyOnFileSystem(String siud, FileSystemLocal fs)
+	    throws FinderException, CreateException {
+		String dirPath = fs.getDirectoryPath();
+		try {
+			sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
+		} catch (ObjectNotFoundException e) {
+		    try {
+		        sofHome.create(studyHome.findByStudyIuid(siud), fs);
+		    } catch (CreateException ignore) {
+		        // Check if concurrent create
+		        sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
+		    }
+		}
+	}
+	
     /**
      * @ejb.interface-method
      */
@@ -336,8 +356,8 @@ public abstract class StorageBean implements SessionBean {
         fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
     }
 
-    private SeriesLocal getSeries(Dataset ds, Dataset coercedElements, FileSystemLocal fs)
-            throws Exception {
+    private SeriesLocal getSeries(Dataset ds, Dataset coercedElements,
+    		FileSystemLocal fs) throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
@@ -349,13 +369,9 @@ public abstract class StorageBean implements SessionBean {
         return series;
     }
 
-    /**
-     * @param ds
-     * @param fs 
-     * @return
-     */
-    private StudyLocal getStudy(Dataset ds, Dataset coercedElements, FileSystemLocal fs)
-            throws Exception {
+    private StudyLocal getStudy(Dataset ds, Dataset coercedElements,
+    		FileSystemLocal fs)
+    		throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
@@ -363,9 +379,8 @@ public abstract class StorageBean implements SessionBean {
             coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
             study = studyHome.create(ds, getPatient(ds, coercedElements));
-            sofHome.create(study, fs);
+			sofHome.create(study, fs);
         }
-
         return study;
     }
 
