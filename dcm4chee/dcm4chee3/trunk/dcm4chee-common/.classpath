@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.5.0_06"/>
+	<classpathentry kind="var" path="JBOSS_HOME/server/default/deploy/ejb3.deployer/jboss-ejb3x.jar"/>
+	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/hibernate-entitymanager.jar"/>
+	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/hibernate-annotations.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che14"/>
+	<classpathentry exported="true" kind="lib" path="lib/spring.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
