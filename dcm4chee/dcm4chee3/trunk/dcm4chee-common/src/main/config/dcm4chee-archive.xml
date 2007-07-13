@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:lang="http://www.springframework.org/schema/lang"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+         http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
+         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+	
+	<!-- ****************************************************** -->
+	<!-- Enable the configuration of transactional behavior based on annotations -->
+	<!-- ****************************************************** -->
+	<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName" value="java:PostgresDS" />
+  	</bean>
+	
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+	<property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="showSql" value="true" />
+                <property name="generateDdl" value="false" />
+                <property name="databasePlatform" value="org.hibernate.dialect.PostgreSQLDialect" />
+            </bean>
+        </property>
+    </bean>
+	
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+	    <property name="dataSource" ref="dataSource"/>
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+	 
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
+	
+	<tx:annotation-driven />
+
+    <!-- ****************************************************** -->
+	<!-- Data Access Objects (DAO)  -->
+	<!-- ****************************************************** -->
+    <bean id="aeDAO" class="org.dcm4che.archive.dao.jpa.AEDAOImpl"/>
+    
+    <bean id="codeDAO" class="org.dcm4che.archive.dao.jpa.CodeDAOImpl"/>
+    
+    <bean id="deviceDAO" class="org.dcm4che.archive.dao.jpa.DeviceDAOImpl"/>
+    
+    <bean id="fileDAO" class="org.dcm4che.archive.dao.jpa.FileDAOImpl"/>
+    
+    <bean id="fileSystemDAO" class="org.dcm4che.archive.dao.jpa.FileSystemDAOImpl"/>
+    
+    <bean id="gpppsDAO" class="org.dcm4che.archive.dao.jpa.GPPPSDAOImpl"/>
+    
+    <bean id="gpspsDAO" class="org.dcm4che.archive.dao.jpa.GPSPSDAOImpl">
+        <property name="codeDAO" ref="codeDAO"/>
+        <property name="performerDAO" ref="gpspsPerformerDAO"/>
+        <property name="rqDAO" ref="gpspsRequestDAO"/>
+        <property name="spsIdPrefix" value="S"/>
+    </bean>
+    
+    <bean id="gpspsPerformerDAO" class="org.dcm4che.archive.dao.jpa.GPSPSPerformerDAOImpl"/>
+    
+    <bean id="gpspsRequestDAO" class="org.dcm4che.archive.dao.jpa.GPSPSRequestDAOImpl"/>
+    
+    <bean id="hpDAO" class="org.dcm4che.archive.dao.jpa.HPDAOImpl"/>
+    
+    <bean id="instanceDAO" class="org.dcm4che.archive.dao.jpa.InstanceDAOImpl"/>
+    
+    <bean id="mediaDAO" class="org.dcm4che.archive.dao.jpa.MediaDAOImpl"/>
+    
+    <bean id="mppsDAO" class="org.dcm4che.archive.dao.jpa.MPPSDAOImpl"/>
+    
+    <bean id="mwlItemDAO" class="org.dcm4che.archive.dao.jpa.MWLItemDAOImpl">
+        <property name="spsIdPrefix" value="S"/>
+        <property name="rpIdPrefix" value="P"/>
+    </bean>
+    
+    <bean id="opidDAO" class="org.dcm4che.archive.dao.jpa.OtherPatientIDDAOImpl"/>
+    
+    <bean id="patientDAO" class="org.dcm4che.archive.dao.jpa.PatientDAOImpl">
+        <property name="opidDAO" ref="opidDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+    </bean>
+    
+    <bean id="privateFileDAO" class="org.dcm4che.archive.dao.jpa.PrivateFileDAOImpl"/>
+    
+    <bean id="privateInstanceDAO" class="org.dcm4che.archive.dao.jpa.PrivateInstanceDAOImpl"/>
+    
+    <bean id="privatePatientDAO" class="org.dcm4che.archive.dao.jpa.PrivatePatientDAOImpl"/>
+    
+    <bean id="privateSeriesDAO" class="org.dcm4che.archive.dao.jpa.PrivateSeriesDAOImpl"/>
+    
+    <bean id="privateStudyDAO" class="org.dcm4che.archive.dao.jpa.PrivateStudyDAOImpl"/>
+    
+    <bean id="seriesDAO" class="org.dcm4che.archive.dao.jpa.SeriesDAOImpl">
+        <property name="mppsDAO" ref="mppsDAO"/>
+        <property name="requestDAO" ref="seriesRequestDAO"/>
+    </bean>
+    
+    <bean id="seriesRequestDAO" class="org.dcm4che.archive.dao.jpa.SeriesRequestDAOImpl"/>
+    
+    <bean id="studyDAO" class="org.dcm4che.archive.dao.jpa.StudyDAOImpl"/>
+    
+    <bean id="studyPermissionDAO" class="org.dcm4che.archive.dao.jpa.StudyPermissionDAOImpl"/>
+	
+    <bean id="studyOnFileSystemDAO" class="org.dcm4che.archive.dao.jpa.StudyOnFileSystemDAOImpl"/>
+    
+    <bean id="userDAO" class="org.dcm4che.archive.dao.jpa.UserDAOImpl"/>
+    
+    <!-- ****************************************************** -->
+	<!-- Archive services which contain business logic and provide access to the DAO layer -->
+    <!-- ****************************************************** -->
+	<bean name="aeManager" class="org.dcm4che.archive.service.impl.AEManagerBean" >
+        <property name="aeDAO" ref="aeDAO"/>
+    </bean>
+    
+    <bean name="checkStudyPatient" class="org.dcm4che.archive.service.impl.CheckStudyPatientBean" >
+        <property name="contentEdit" ref="contentEdit"/>
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+    </bean>
+    
+    <bean name="code2DeviceMapping" class="org.dcm4che.archive.service.impl.CodeToDeviceMappingBean" >
+        <property name="codeDAO" ref="codeDAO"/>
+        <property name="devDAO" ref="deviceDAO"/>
+    </bean>
+    
+    <bean name="consistencyCheck" class="org.dcm4che.archive.service.impl.ConsistencyCheckBean" >
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
+    </bean>
+    
+    <bean name="contentEdit" class="org.dcm4che.archive.service.impl.ContentEditBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
+    </bean>
+    
+    <bean name="contentManager" class="org.dcm4che.archive.service.impl.ContentManagerBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
+        <property name="privPatDAO" ref="privatePatientDAO"/>
+        <property name="privStudyDAO" ref="privateStudyDAO"/>
+        <property name="privSeriesDAO" ref="privateSeriesDAO"/>
+        <property name="privInstanceDAO" ref="privateInstanceDAO"/>
+        <property name="mppsDAO" ref="mppsDAO"/>
+    </bean>
+    
+    <bean name="fileSystemManager" class="org.dcm4che.archive.service.impl.FileSystemMgtBean" >
+        <property name="patientDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
+        <property name="fileDAO" ref="fileDAO"/>
+        <property name="fileSystemDAO" ref="fileSystemDAO"/>
+        <property name="privFileDAO" ref="privateFileDAO"/>
+        <property name="sofDAO" ref="studyOnFileSystemDAO"/>
+    </bean>
+    
+    <bean name="fixPatientAttrs" class="org.dcm4che.archive.service.impl.FixPatientAttributesBean" >
+        <property name="patDAO" ref="patientDAO"/>
+    </bean>
+    
+    <bean name="gpppsManager" class="org.dcm4che.archive.service.impl.GPPSManagerBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="ppsDAO" ref="gpppsDAO"/>
+        <property name="spsDAO" ref="gpspsDAO"/>
+    </bean>
+    
+    <bean name="gpwlManager" class="org.dcm4che.archive.service.impl.GPWLManagerBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
+        <property name="gpspsDAO" ref="gpspsDAO"/>
+    </bean>
+    
+    <bean name="hpStorage" class="org.dcm4che.archive.service.impl.HPStorageBean" >
+        <property name="hpDAO" ref="hpDAO"/>
+    </bean>
+    
+    <bean name="mediaComposer" class="org.dcm4che.archive.service.impl.MediaComposerBean" >
+        <property name="mediaDAO" ref="mediaDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+    </bean>
+    
+    <bean name="mppsEmulationManager" class="org.dcm4che.archive.service.impl.MPPSEmulatorBean" >
+        <property name="seriesDAO" ref="seriesDAO"/>
+    </bean>
+    
+    <bean name="mppsManager" class="org.dcm4che.archive.service.impl.MPPSManagerBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="mwlItemDAO" ref="mwlItemDAO"/>
+        <property name="mppsDAO" ref="mppsDAO"/>
+    </bean>
+    
+    <bean name="mwlManager" class="org.dcm4che.archive.service.impl.MWLManagerBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="mwlItemDAO" ref="mwlItemDAO"/>
+    </bean>
+    
+    <bean name="patientUpdateManager" class="org.dcm4che.archive.service.impl.PatientUpdateBean" >
+        <property name="patDAO" ref="patientDAO"/>
+    </bean>
+    
+    <bean name="pixQuery" class="org.dcm4che.archive.service.impl.PIXQueryBean" >
+        <property name="patDAO" ref="patientDAO"/>
+    </bean>
+    
+    <bean name="privateManager" class="org.dcm4che.archive.service.impl.PrivateManagerBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instDAO" ref="instanceDAO"/>
+        <property name="fileDAO" ref="fileDAO"/>
+        <property name="privPatDAO" ref="privatePatientDAO"/>
+        <property name="privStudyDAO" ref="privateStudyDAO"/>
+        <property name="privSeriesDAO" ref="privateSeriesDAO"/>
+        <property name="privInstDAO" ref="privateInstanceDAO"/>
+        <property name="privFileDAO" ref="privateFileDAO"/>
+    </bean>
+    
+    <bean name="storageManager" class="org.dcm4che.archive.service.impl.StorageBean" >
+        <property name="patientDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
+        <property name="fileDAO" ref="fileDAO"/>
+        <property name="fileSystemDAO" ref="fileSystemDAO"/>
+        <property name="sofDAO" ref="studyOnFileSystemDAO"/>
+    </bean>
+    
+    <bean name="studyManager" class="org.dcm4che.archive.service.impl.StudyMgtBean" >
+        <property name="patDAO" ref="patientDAO"/>
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instDAO" ref="instanceDAO"/>
+        <property name="patientUpdate" ref="patientUpdateManager"/>
+    </bean>
+    
+    <bean name="studyReconciliation" class="org.dcm4che.archive.service.impl.StudyReconciliationBean" >
+        <property name="studyDAO" ref="studyDAO"/>
+        <property name="patientUpdate" ref="patientUpdateManager"/>
+    </bean>
+
+</beans>
