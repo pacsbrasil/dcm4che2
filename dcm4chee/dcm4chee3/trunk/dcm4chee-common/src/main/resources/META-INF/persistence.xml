@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+                  http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
+
+    <persistence-unit name="dcm4cheePersistenceUnit" transaction-type="RESOURCE_LOCAL">
+    	<class>org.dcm4che.archive.entity.AE</class>
+    	<class>org.dcm4che.archive.entity.Code</class>
+    	<class>org.dcm4che.archive.entity.Device</class>
+    	<class>org.dcm4che.archive.entity.File</class>
+    	<class>org.dcm4che.archive.entity.FileSystem</class>
+    	<class>org.dcm4che.archive.entity.GPPPS</class>
+    	<class>org.dcm4che.archive.entity.GPSPS</class>
+    	<class>org.dcm4che.archive.entity.GPSPSPerformer</class>
+    	<class>org.dcm4che.archive.entity.GPSPSRequest</class>
+    	<class>org.dcm4che.archive.entity.HP</class>
+    	<class>org.dcm4che.archive.entity.Instance</class>
+    	<class>org.dcm4che.archive.entity.Media</class>
+    	<class>org.dcm4che.archive.entity.MPPS</class>
+    	<class>org.dcm4che.archive.entity.MWLItem</class>
+    	<class>org.dcm4che.archive.entity.OtherPatientID</class>
+    	<class>org.dcm4che.archive.entity.Patient</class>
+    	<class>org.dcm4che.archive.entity.PrivateFile</class>
+    	<class>org.dcm4che.archive.entity.PrivateInstance</class>
+    	<class>org.dcm4che.archive.entity.PrivatePatient</class>
+    	<class>org.dcm4che.archive.entity.PrivateSeries</class>
+    	<class>org.dcm4che.archive.entity.PrivateStudy</class>
+    	<class>org.dcm4che.archive.entity.Series</class>
+    	<class>org.dcm4che.archive.entity.SeriesRequest</class>
+    	<class>org.dcm4che.archive.entity.Study</class>
+        <class>org.dcm4che.archive.entity.StudyPermission</class>
+    	<class>org.dcm4che.archive.entity.StudyOnFileSystem</class>
+        <class>org.dcm4che.archive.entity.User</class>
+        <class>org.dcm4che.archive.entity.VerifyingObserver</class>
+    </persistence-unit>
+    
+</persistence>
