@@ -44,8 +44,6 @@ import java.util.StringTokenizer;
 /**
  * 
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 17.12.2003
  */
 public final class RetryIntervalls {
 

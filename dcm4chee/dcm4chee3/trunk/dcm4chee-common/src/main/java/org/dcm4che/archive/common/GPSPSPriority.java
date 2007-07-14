@@ -43,23 +43,22 @@ import java.util.Arrays;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 06.10.2004
- *
  */
 public class GPSPSPriority {
 
     private static final String[] ENUM = { "HIGH", "MEDIUM", "LOW" };
 
-    public static final int HIGH = 0;    
-    public static final int MEDIUM = 1;    
-    public static final int LOW = 2;    
+    public static final int HIGH = 0;
+
+    public static final int MEDIUM = 1;
+
+    public static final int LOW = 2;
 
     public static final String toString(int value) {
         return ENUM[value];
     }
 
-    public static final int toInt(String s) {        
+    public static final int toInt(String s) {
         final int index = Arrays.asList(ENUM).indexOf(s);
         if (index == -1)
             throw new IllegalArgumentException(s);

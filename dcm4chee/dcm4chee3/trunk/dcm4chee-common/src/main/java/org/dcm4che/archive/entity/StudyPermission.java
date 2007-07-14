@@ -20,6 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Gunter Zeilinger <gunterze@gmail.com>
  * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of

@@ -43,27 +43,29 @@ import java.util.Arrays;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 06.10.2004
- *
  */
 public class SPSStatus {
 
     private static final String[] ENUM = { "SCHEDULED", "ARRIVED", "READY",
-    	"STARTED", "COMPLETED", "DISCONTINUED" };
+            "STARTED", "COMPLETED", "DISCONTINUED" };
 
-    public static final int SCHEDULED = 0;    
+    public static final int SCHEDULED = 0;
+
     public static final int ARRIVED = 1;
+
     public static final int READY = 2;
-    public static final int STARTED = 3;    
-    public static final int COMPLETED = 4;    
+
+    public static final int STARTED = 3;
+
+    public static final int COMPLETED = 4;
+
     public static final int DISCONTINUED = 5;
 
     public static final String toString(int value) {
         return ENUM[value];
     }
 
-    public static final int toInt(String s) {        
+    public static final int toInt(String s) {
         final int index = Arrays.asList(ENUM).indexOf(s);
         if (index == -1)
             throw new IllegalArgumentException(s);

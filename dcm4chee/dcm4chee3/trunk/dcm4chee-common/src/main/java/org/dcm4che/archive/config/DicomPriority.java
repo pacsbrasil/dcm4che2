@@ -41,29 +41,31 @@ package org.dcm4che.archive.config;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since Sep 13, 2005
  */
 public class DicomPriority {
-	private static final String LOW = "LOW";
-	private static final String HIGH = "HIGH";
-	private static final String MEDIUM = "MEDIUM";
-	private static final String[] MAP = { MEDIUM, HIGH, LOW };
+    private static final String LOW = "LOW";
 
-	public static String toString(int code) {
-		try {
-			return MAP[code];
-		} catch (IndexOutOfBoundsException e) {
-			throw new IllegalArgumentException("code: " + code);
-		}
-	}
+    private static final String HIGH = "HIGH";
 
-	public static int toCode(String s) {
-		if (s.equalsIgnoreCase(HIGH))
-			return 1;
-		if (s.equalsIgnoreCase(LOW))
-			return 2;
-		return 0;
-	}
-	
+    private static final String MEDIUM = "MEDIUM";
+
+    private static final String[] MAP = { MEDIUM, HIGH, LOW };
+
+    public static String toString(int code) {
+        try {
+            return MAP[code];
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("code: " + code);
+        }
+    }
+
+    public static int toCode(String s) {
+        if (s.equalsIgnoreCase(HIGH))
+            return 1;
+        if (s.equalsIgnoreCase(LOW))
+            return 2;
+        return 0;
+    }
+
 }

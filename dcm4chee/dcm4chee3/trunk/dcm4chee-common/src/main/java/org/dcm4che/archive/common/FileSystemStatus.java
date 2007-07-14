@@ -37,38 +37,33 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package org.dcm4che.archive.common;
-
 
 /**
  * 
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since Jan 25, 2006
  */
 public class FileSystemStatus {
 
-    private static final String[] ENUM = { 
-    	"PENDING",
-    	"RW+",
-    	"RW",
-    	"RO"
-    };
+    private static final String[] ENUM = { "PENDING", "RW+", "RW", "RO" };
 
     public static final int PENDING = -1;
+
     public static final int DEF_RW = 0;
+
     public static final int RW = 1;
+
     public static final int RO = 2;
-    
+
     public static final String toString(int value) {
-       return ENUM[++value];
+        return ENUM[++value];
     }
 
     public static final int toInt(String s) {
-    	for ( int i = 0 ; i < ENUM.length ; i++) {
-    		if ( ENUM[i].equals(s) ) return --i;
-    	}
+        for (int i = 0; i < ENUM.length; i++) {
+            if (ENUM[i].equals(s))
+                return --i;
+        }
         throw new IllegalArgumentException(s);
     }
 }

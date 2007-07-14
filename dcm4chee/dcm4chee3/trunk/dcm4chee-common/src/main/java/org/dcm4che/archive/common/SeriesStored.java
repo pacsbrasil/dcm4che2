@@ -46,16 +46,17 @@ import org.dcm4che.dict.Tags;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since Nov 7, 2005
  */
 public class SeriesStored implements Serializable {
 
     private static final long serialVersionUID = -8664338212703072265L;
 
     private final Dataset patAttrs;
+
     private final Dataset studyAttrs;
+
     private final Dataset seriesAttrs;
+
     private final Dataset ian;
 
     public SeriesStored(Dataset patient, Dataset study, Dataset series,

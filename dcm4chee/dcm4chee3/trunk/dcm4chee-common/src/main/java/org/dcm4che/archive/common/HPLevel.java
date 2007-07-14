@@ -43,23 +43,24 @@ import java.util.Arrays;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since Aug 3, 2005
  */
 public class HPLevel {
-    private static final String[] ENUM = { "MANUFACTURER", "SITE", 
-        "USER_GROUP", "SINGLE_USER" };
+    private static final String[] ENUM = { "MANUFACTURER", "SITE",
+            "USER_GROUP", "SINGLE_USER" };
 
-    public static final int MANUFACTURER = 0;    
-    public static final int SITE = 1;    
-    public static final int USER_GROUP = 2;    
+    public static final int MANUFACTURER = 0;
+
+    public static final int SITE = 1;
+
+    public static final int USER_GROUP = 2;
+
     public static final int SINGLE_USER = 3;
-	
+
     public static final String toString(int value) {
         return ENUM[value];
     }
 
-    public static final int toInt(String s) {        
+    public static final int toInt(String s) {
         final int index = Arrays.asList(ENUM).indexOf(s);
         if (index == -1)
             throw new IllegalArgumentException(s);

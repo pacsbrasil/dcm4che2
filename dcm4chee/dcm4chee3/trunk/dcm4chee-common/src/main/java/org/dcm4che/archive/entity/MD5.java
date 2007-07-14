@@ -41,8 +41,6 @@ package org.dcm4che.archive.entity;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 07.12.2004
  */
 public class MD5 {
     public static byte[] toBytes(String s) {

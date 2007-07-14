@@ -48,13 +48,10 @@ import java.util.StringTokenizer;
 
 /**
  * @author gunter.zeilinter@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 13.06.2004
- *
  */
 public class Condition {
 
-	private static final int EXPECT_KEY = 0;
+    private static final int EXPECT_KEY = 0;
 
     private static final int EXPECT_EQUAL = 1;
 
@@ -68,11 +65,11 @@ public class Condition {
         return s.length() == 1 && DELIM.indexOf(s.charAt(0)) != -1;
     }
 
-	private LinkedHashMap map = new LinkedHashMap();
+    private LinkedHashMap map = new LinkedHashMap();
 
     public Condition(String spec) {
         if (!spec.startsWith("[") || !spec.endsWith("]") || spec.length() == 2)
-                return;
+            return;
         StringTokenizer stk = new StringTokenizer(spec.substring(1), DELIM,
                 true);
         String tk;
@@ -81,21 +78,25 @@ public class Condition {
         for (;;) {
             try {
                 tk = stk.nextToken();
-            } catch (NoSuchElementException e) {
+            }
+            catch (NoSuchElementException e) {
                 throw new IllegalArgumentException(spec);
             }
             switch (state) {
             case EXPECT_KEY:
-                if (isDelim(tk)) throw new IllegalArgumentException(spec);
+                if (isDelim(tk))
+                    throw new IllegalArgumentException(spec);
                 key = tk;
                 state = EXPECT_EQUAL;
                 break;
             case EXPECT_EQUAL:
-                if (!"=".equals(tk)) throw new IllegalArgumentException(spec);
+                if (!"=".equals(tk))
+                    throw new IllegalArgumentException(spec);
                 state = EXPECT_VALUE;
                 break;
             case EXPECT_VALUE:
-                if (isDelim(tk)) throw new IllegalArgumentException(spec);
+                if (isDelim(tk))
+                    throw new IllegalArgumentException(spec);
                 put(key, tk);
                 state = EXPECT_DELIM;
                 break;
@@ -104,7 +105,8 @@ public class Condition {
                     state = EXPECT_VALUE;
                 else if (",".equals(tk))
                     state = EXPECT_KEY;
-                else if ("]".equals(tk)) return;
+                else if ("]".equals(tk))
+                    return;
             }
         }
     }
@@ -129,17 +131,20 @@ public class Condition {
             String key = (String) entry.getKey();
             String[] val = (String[]) entry.getValue();
             LinkedHashSet set = (LinkedHashSet) map.get(key);
-            if (set != null && !containsAny(set, val)) return false;
+            if (set != null && !containsAny(set, val))
+                return false;
             LinkedHashSet antiset = (LinkedHashSet) map.get(key + '!');
-            if (antiset != null && containsAny(antiset, val)) return false;
+            if (antiset != null && containsAny(antiset, val))
+                return false;
         }
         return true;
     }
 
     private boolean containsAny(LinkedHashSet set, String[] val) {
         if (val != null)
-	        for (int i = 0; i < val.length; i++)
-	            if (set.contains(val[i])) return true;
+            for (int i = 0; i < val.length; i++)
+                if (set.contains(val[i]))
+                    return true;
         return false;
     }
 
@@ -148,7 +153,8 @@ public class Condition {
     }
 
     public StringBuffer toStringBuffer(StringBuffer sb) {
-        if (map.isEmpty()) return sb;
+        if (map.isEmpty())
+            return sb;
         sb.append('[');
         Iterator it = map.entrySet().iterator();
         while (it.hasNext()) {

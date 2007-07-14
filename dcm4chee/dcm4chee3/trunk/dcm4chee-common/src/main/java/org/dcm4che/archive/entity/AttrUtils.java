@@ -20,7 +20,8 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * See listed authors below. 
+ * Gunter Zeilinger <gunterze@gmail.com>
+ * Franz Willer <franz.willer@gwi-ag.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -53,8 +54,6 @@ import org.dcm4che.net.DcmServiceException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Id: AttrUtils.java,v 1.2 2007/06/23 18:59:32 asd Exp $
- * @since Jul 6, 2006
  */
 public class AttrUtils {
 

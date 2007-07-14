@@ -20,6 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Fang Yang <fang.yang@agfa.com>
  * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  * Franz Willer <franz.willer@gwi-ag.com>
  *
@@ -53,18 +54,22 @@ import java.util.Date;
  * @since April 4, 2006
  */
 public abstract class BaseJmsOrder implements Serializable {
-		
-	protected static long counter = 0;
-	private String id;
+
+    protected static long counter = 0;
+
+    private String id;
+
     private int failureCount = 0;
-    private Throwable throwable = null;  // Remember last exception happened
-	private String origQueueName = null; // The original queue
-	
-    public BaseJmsOrder()
-    {
-    	id = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date()) + counter++;
+
+    private Throwable throwable = null; // Remember last exception happened
+
+    private String origQueueName = null; // The original queue
+
+    public BaseJmsOrder() {
+        id = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date())
+                + counter++;
     }
-    
+
     public final int getFailureCount() {
         return failureCount;
     }
@@ -73,46 +78,44 @@ public abstract class BaseJmsOrder implements Serializable {
         this.failureCount = failureCount;
     }
 
-	public Throwable getThrowable() {
-		return throwable;
-	}
+    public Throwable getThrowable() {
+        return throwable;
+    }
 
-	public void setThrowable(Throwable throwable) {
-		this.throwable = throwable;
-	}
-	
-	public String toIdString()
-	{
-		return getClass().getName() + "@" + id + "@" + Integer.toHexString(hashCode());
-	}
+    public void setThrowable(Throwable throwable) {
+        this.throwable = throwable;
+    }
 
-	/**
-	 * Set the original queue name, only the first time
-	 * 
-	 * @param queueName
-	 */
-	public void setQueueName(String queueName) {		
-		if(origQueueName == null)
-			origQueueName = queueName;
-	}
-	
-	public String getQueueName()
-	{
-		return origQueueName;
-	}
-	
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer();
-		sb.append("\tInternal ID: ").append(toIdString()).append("\n");
-		sb.append("\tOriginal queue name: ").append(origQueueName).append("\n");
-		sb.append("\tFailure count: ").append(failureCount).append("\n");
-		if(throwable != null)
-		{
-			StringWriter sw = new StringWriter(); 
-			throwable.printStackTrace( new PrintWriter( sw ) ); 
-			sb.append("\tException caught: ").append(sw.toString()).append("\n");
-		}
-		return sb.toString();
-	}
+    public String toIdString() {
+        return getClass().getName() + "@" + id + "@"
+                + Integer.toHexString(hashCode());
+    }
+
+    /**
+     * Set the original queue name, only the first time
+     * 
+     * @param queueName
+     */
+    public void setQueueName(String queueName) {
+        if (origQueueName == null)
+            origQueueName = queueName;
+    }
+
+    public String getQueueName() {
+        return origQueueName;
+    }
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("\tInternal ID: ").append(toIdString()).append("\n");
+        sb.append("\tOriginal queue name: ").append(origQueueName).append("\n");
+        sb.append("\tFailure count: ").append(failureCount).append("\n");
+        if (throwable != null) {
+            StringWriter sw = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(sw));
+            sb.append("\tException caught: ").append(sw.toString())
+                    .append("\n");
+        }
+        return sb.toString();
+    }
 }

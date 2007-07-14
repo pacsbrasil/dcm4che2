@@ -46,8 +46,6 @@ import org.dcm4che.archive.common.FileSystemStatus;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.2 $ $Date: 2007/07/07 20:53:22 $
- * @since 13.09.2004
  * 
  */
 public class FileSystemDTO implements Serializable {

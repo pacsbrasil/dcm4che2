@@ -43,8 +43,6 @@ import java.io.Serializable;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 20.02.2004
  */
 public final class FileDTO implements Serializable {
 

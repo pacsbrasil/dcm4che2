@@ -44,47 +44,46 @@ import java.util.regex.Pattern;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since Jun 8, 2005
  */
 public class IssuerOfPatientIDRules {
-	
-	private final Pattern[] patterns;
-	private final String[] issuers;
 
-	public IssuerOfPatientIDRules(String rules) {
-		StringTokenizer stk = new StringTokenizer(rules, " ;\t\r\n");
-		patterns = new Pattern[stk.countTokens()];
-		issuers = new String[patterns.length];
-		for (int i = 0; i < issuers.length; i++) {
-			issuers[i] = stk.nextToken();
-			final int beginIssuer = issuers[i].indexOf(':') + 1;
-			if (beginIssuer > 0) {
-				patterns[i] = Pattern.compile(issuers[i].substring(0,
-						beginIssuer - 1));
-				issuers[i] = issuers[i].substring(beginIssuer);
-			}
-		}
-	}
-	
-	public String issuerOf(String pid) {
-		for (int i = 0; i < patterns.length; i++) {
-			if (patterns[i] == null || patterns[i].matcher(pid).matches()) {
-				return issuers[i];
-			}
-		}
-		return null;
-	}
-	
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < issuers.length; i++) {
-			if (patterns[i] != null) {
-				sb.append(patterns[i].pattern()).append(':');
-			}
-			sb.append(issuers[i]).append("\r\n");
-		}
-		return sb.toString();
-	}
+    private final Pattern[] patterns;
+
+    private final String[] issuers;
+
+    public IssuerOfPatientIDRules(String rules) {
+        StringTokenizer stk = new StringTokenizer(rules, " ;\t\r\n");
+        patterns = new Pattern[stk.countTokens()];
+        issuers = new String[patterns.length];
+        for (int i = 0; i < issuers.length; i++) {
+            issuers[i] = stk.nextToken();
+            final int beginIssuer = issuers[i].indexOf(':') + 1;
+            if (beginIssuer > 0) {
+                patterns[i] = Pattern.compile(issuers[i].substring(0,
+                        beginIssuer - 1));
+                issuers[i] = issuers[i].substring(beginIssuer);
+            }
+        }
+    }
+
+    public String issuerOf(String pid) {
+        for (int i = 0; i < patterns.length; i++) {
+            if (patterns[i] == null || patterns[i].matcher(pid).matches()) {
+                return issuers[i];
+            }
+        }
+        return null;
+    }
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < issuers.length; i++) {
+            if (patterns[i] != null) {
+                sb.append(patterns[i].pattern()).append(':');
+            }
+            sb.append(issuers[i]).append("\r\n");
+        }
+        return sb.toString();
+    }
 
 }

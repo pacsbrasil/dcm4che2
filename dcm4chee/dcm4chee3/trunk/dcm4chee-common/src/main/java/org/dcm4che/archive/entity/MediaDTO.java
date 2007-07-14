@@ -44,10 +44,7 @@ import java.util.Date;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version Revision $Date: 2007/06/12 21:03:20 $
- * @since 14.12.2004
  */
-
 public class MediaDTO implements Serializable {
 
     private static final long serialVersionUID = 3545516192564721461L;

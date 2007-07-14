@@ -53,9 +53,6 @@ import org.dcm4che.net.Association;
 
 /**
  * @author gunter.zeilinter@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 11.06.2004
- *
  */
 public class CompressionRules {
 

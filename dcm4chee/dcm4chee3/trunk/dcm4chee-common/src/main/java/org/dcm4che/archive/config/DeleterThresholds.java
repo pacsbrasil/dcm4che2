@@ -43,9 +43,7 @@ import java.util.StringTokenizer;
 import org.dcm4che.archive.util.FileUtils;
 
 /**
- * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since Jun 6, 2006
+ * @author gunter.zeilinger@tiani.com \
  */
 public class DeleterThresholds {
     private final DeleterThreshold[] thresholds;

@@ -60,28 +60,24 @@ import org.xml.sax.SAXException;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
- * @since 04.02.2005
- *
  */
-
 public class DatasetUtils {
 
-	public static void putRetrieveAET(Dataset ds, String iAETs, String eAET) {
-		if (iAETs != null) {
-	        ds.putAE(Tags.RetrieveAET, 
-	        		StringUtils.split(
-	        				eAET != null ? iAETs + '\\' + eAET : iAETs, '\\'));
-		} else {
-			ds.putAE(Tags.RetrieveAET, eAET);
-		}
-	}
+    public static void putRetrieveAET(Dataset ds, String iAETs, String eAET) {
+        if (iAETs != null) {
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(eAET != null ? iAETs
+                    + '\\' + eAET : iAETs, '\\'));
+        }
+        else {
+            ds.putAE(Tags.RetrieveAET, eAET);
+        }
+    }
 
-	public static Dataset fromByteArray(byte[] data) {
-		return fromByteArray(data, null);
-	}
+    public static Dataset fromByteArray(byte[] data) {
+        return fromByteArray(data, null);
+    }
 
-	public static Dataset fromByteArray(byte[] data, Dataset ds) {
+    public static Dataset fromByteArray(byte[] data, Dataset ds) {
         if (data == null)
             return null;
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
@@ -89,26 +85,27 @@ public class DatasetUtils {
             ds = DcmObjectFactory.getInstance().newDataset();
         try {
             ds.readFile(bin, null, -1);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new IllegalArgumentException("" + e);
         }
         return ds;
     }
 
-
     public static byte[] toByteArray(Dataset ds) {
         if (ds == null)
             return null;
-        ByteArrayOutputStream bos =
-            new ByteArrayOutputStream(ds.calcLength(DcmEncodeParam.EVR_LE));
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(ds
+                .calcLength(DcmEncodeParam.EVR_LE));
         try {
             ds.writeDataset(bos, DcmEncodeParam.EVR_LE);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new IllegalArgumentException("" + e);
         }
-        return bos.toByteArray();                    
+        return bos.toByteArray();
     }
-    
+
     public static byte[] toByteArray(Dataset ds, String tsuid) {
         if (ds == null)
             return null;
@@ -119,37 +116,40 @@ public class DatasetUtils {
         fmi.setPreamble(null);
         fmi.putUI(Tags.TransferSyntaxUID, tsuid);
         DcmEncodeParam encodeParam = DcmEncodeParam.valueOf(tsuid);
-        ByteArrayOutputStream bos =
-            new ByteArrayOutputStream(fmi.length() + ds.calcLength(encodeParam));
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(fmi.length()
+                + ds.calcLength(encodeParam));
         FileMetaInfo prevfmi = ds.getFileMetaInfo();
         ds.setFileMetaInfo(fmi);
         try {
             ds.writeFile(bos, encodeParam);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new IllegalArgumentException("" + e);
-        } finally {
+        }
+        finally {
             ds.setFileMetaInfo(prevfmi);
         }
         return bos.toByteArray();
     }
-    
+
     private static SAXParser getSAXParser() {
         try {
             return SAXParserFactory.newInstance().newSAXParser();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Dataset fromXML(InputSource is)
-        throws SAXException, IOException {
+    public static Dataset fromXML(InputSource is) throws SAXException,
+            IOException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         getSAXParser().parse(is, ds.getSAXHandler2(null));
         return ds;
     }
 
-    public static Dataset fromXML(InputStream is)
-        throws SAXException, IOException {
+    public static Dataset fromXML(InputStream is) throws SAXException,
+            IOException {
         return fromXML(new InputSource(is));
     }
 
@@ -161,5 +161,6 @@ public class DatasetUtils {
         return fromXML(new StringReader(s));
     }
 
-    private DatasetUtils() {} // no instance
+    private DatasetUtils() {
+    } // no instance
 }
