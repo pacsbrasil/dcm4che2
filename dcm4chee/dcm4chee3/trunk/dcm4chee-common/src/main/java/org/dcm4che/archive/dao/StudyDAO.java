@@ -48,6 +48,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.entity.File;
+import org.dcm4che.archive.entity.FileSystem;
 import org.dcm4che.archive.entity.Media;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.entity.Study;
@@ -108,11 +109,14 @@ public interface StudyDAO extends DAO<Study> {
             throws PersistenceException;
 
     /**
-     * @param studyPk
-     * @param fsPk
-     * @return
+     * Select the size of the study on storage as determined by the sum of the
+     * sizes of all its files.
+     * 
+     * @param studyPk The {@link Study} primary key.
+     * @param fsPk The {@link FileSystem} primary key.
+     * @return A long containing the size of the study in bytes.
      */
-    public long getStudySize(Long studyPk, Long fsPk)
+    public long selectStudySize(Long studyPk, Long fsPk)
             throws PersistenceException;
 
     /**

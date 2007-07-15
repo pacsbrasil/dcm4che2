@@ -248,17 +248,48 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
      */
     public List<File> getFiles(Study study, Long fsPk)
             throws PersistenceException {
-        // TODO: SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk =
-        // ?1 AND f.fileSystem.pk = ?2
-        return null;
+        // SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1
+        // AND f.fileSystem.pk = ?2
+        Long studyPk = study.getPk();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for files of studyPk " + studyPk
+                    + ", and fileSystemPk " + fsPk);
+        }
+
+        List<File> files = null;
+
+        Query query = em
+                .createQuery("select files from File f join f.instance i join i.series ser join ser.study st where st.pk = :studyPk AND f.fileSystem.pk = fsPk");
+        query.setParameter("studyPk", studyPk);
+        query.setParameter("fsPk", fsPk);
+        files = query.getResultList();
+
+        return files;
     }
 
     /**
-     * @see org.dcm4che.archive.dao.StudyDAO#getStudySize(java.lang.Long,
+     * @see org.dcm4che.archive.dao.StudyDAO#selectStudySize(java.lang.Long,
      *      java.lang.Long)
      */
-    public long getStudySize(Long studyPk, Long fsPk) {
-        return 0;
+    public long selectStudySize(Long studyPk, Long fsPk) {
+        Long l = selectStudyFileSize(studyPk, fsPk);
+        return l == null ? 0l : l.longValue();
+    }
+
+    private Long selectStudyFileSize(Long studyPk, Long fsPk) {
+        // SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk =
+        // ?1 AND f.fileSystem.pk = ?2
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Calculating size of studyPk " + studyPk
+                    + " on fileSystemPk " + fsPk);
+        }
+
+        Query query = em
+                .createQuery("select sum(f.fileSize) from File f join f.instance i join i.series ser join ser.study st where st.pk = :studyPk AND f.fileSystem.pk = fsPk");
+        query.setParameter("studyPk", studyPk);
+        query.setParameter("fsPk", fsPk);
+        return (Long) query.getSingleResult();
     }
 
     /**
@@ -552,9 +583,11 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
      */
     public Collection<Study> findStudiesNotOnMedia(Timestamp timestamp)
             throws PersistenceException {
-        // SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media IS NULL and st.createdTime < ?1
+        // SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s,
+        // IN(s.instances) i WHERE i.media IS NULL and st.createdTime < ?1
         if (logger.isDebugEnabled()) {
-            logger.debug("Searching for studies not on media created before " + timestamp.toString());
+            logger.debug("Searching for studies not on media created before "
+                    + timestamp.toString());
         }
 
         List<Study> studies = null;
@@ -572,7 +605,8 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
      */
     public Collection<Study> findStudiesOnMedia(Media media)
             throws PersistenceException {
-        // SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1
+        // SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s,
+        // IN(s.instances) i WHERE i.media = ?1
         Long mediaPk = media.getPk();
         if (logger.isDebugEnabled()) {
             logger.debug("Searching for studies on mediaPk " + mediaPk);
