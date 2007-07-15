@@ -52,6 +52,7 @@ import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 
 import org.dcm4che.archive.common.Availability;
 import org.dcm4che.archive.common.PrivateTags;
@@ -551,7 +552,19 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
      */
     public Collection<Study> findStudiesNotOnMedia(Timestamp timestamp)
             throws PersistenceException {
-        return null;
+        // SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media IS NULL and st.createdTime < ?1
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for studies not on media created before " + timestamp.toString());
+        }
+
+        List<Study> studies = null;
+
+        Query query = em
+                .createQuery("select distinct study from Study st join st.series as s join s.instances as i where i.media is null and st.createdTime < :timestamp");
+        query.setParameter("timestamp", timestamp, TemporalType.TIMESTAMP);
+        studies = query.getResultList();
+
+        return studies;
     }
 
     /**
@@ -559,7 +572,20 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
      */
     public Collection<Study> findStudiesOnMedia(Media media)
             throws PersistenceException {
-        return null;
+        // SELECT DISTINCT OBJECT(st) FROM Study st, IN(st.series) s, IN(s.instances) i WHERE i.media = ?1
+        Long mediaPk = media.getPk();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for studies on mediaPk " + mediaPk);
+        }
+
+        List<Study> studies = null;
+
+        Query query = em
+                .createQuery("select distinct study from Study st join st.series as s join s.instances as i where i.media.pk=:mediaPk");
+        query.setParameter("mediaPk", mediaPk);
+        studies = query.getResultList();
+
+        return studies;
     }
 
     /**
