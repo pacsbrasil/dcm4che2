@@ -231,67 +231,6 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
         return updated;
     }
 
-    @SuppressWarnings("unchecked")
-    private Set findModalityInStudies(Long pk) {
-
-        List<String> resultList = em
-                .createQuery(
-                        "select distinct s.modality from Study st, in(st.series) s where st.pk = :pk")
-                .setParameter("pk", pk).getResultList();
-        if (resultList == null)
-            return null;
-        return new HashSet<String>(resultList);
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.StudyDAO#getFiles(java.lang.Long)
-     */
-    public List<File> getFiles(Study study, Long fsPk)
-            throws PersistenceException {
-        // SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1
-        // AND f.fileSystem.pk = ?2
-        Long studyPk = study.getPk();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Searching for files of studyPk " + studyPk
-                    + ", and fileSystemPk " + fsPk);
-        }
-
-        List<File> files = null;
-
-        Query query = em
-                .createQuery("select files from File f join f.instance i join i.series ser join ser.study st where st.pk = :studyPk AND f.fileSystem.pk = fsPk");
-        query.setParameter("studyPk", studyPk);
-        query.setParameter("fsPk", fsPk);
-        files = query.getResultList();
-
-        return files;
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.StudyDAO#selectStudySize(java.lang.Long,
-     *      java.lang.Long)
-     */
-    public long selectStudySize(Long studyPk, Long fsPk) {
-        Long l = selectStudyFileSize(studyPk, fsPk);
-        return l == null ? 0l : l.longValue();
-    }
-
-    private Long selectStudyFileSize(Long studyPk, Long fsPk) {
-        // SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk =
-        // ?1 AND f.fileSystem.pk = ?2
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Calculating size of studyPk " + studyPk
-                    + " on fileSystemPk " + fsPk);
-        }
-
-        Query query = em
-                .createQuery("select sum(f.fileSize) from File f join f.instance i join i.series ser join ser.study st where st.pk = :studyPk AND f.fileSystem.pk = fsPk");
-        query.setParameter("studyPk", studyPk);
-        query.setParameter("fsPk", fsPk);
-        return (Long) query.getSingleResult();
-    }
-
     /**
      * @see org.dcm4che.archive.dao.StudyDAO#updateDerivedFields(org.dcm4che.archive.entity.Study,
      *      boolean, boolean, boolean, boolean, boolean, boolean)
@@ -347,14 +286,77 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
         return updated;
     }
 
+    @SuppressWarnings("unchecked")
+    private Set<String> findModalityInStudies(Long studyPk) {
+        // SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE st.pk
+        // = ?1
+        List<String> resultList = em
+                .createQuery(
+                        "select distinct s.modality from Study st in(st.series) s where st.pk = :pk")
+                .setParameter("pk", studyPk).getResultList();
+        if (resultList == null)
+            return new HashSet<String>();
+        return new HashSet<String>(resultList);
+    }
+
     /**
-     * @param pk
-     * @return
+     * @see org.dcm4che.archive.dao.StudyDAO#getFiles(java.lang.Long)
      */
-    private Set selectSeriesRetrieveAETs(Long pk) {
-        // TODO: SELECT DISTINCT s.retrieveAETs FROM Series s WHERE s.study.pk =
-        // ?1
-        return null;
+    public List<File> getFiles(Study study, Long fsPk)
+            throws PersistenceException {
+        // SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1
+        // AND f.fileSystem.pk = ?2
+        Long studyPk = study.getPk();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for files of studyPk " + studyPk
+                    + ", and fileSystemPk " + fsPk);
+        }
+
+        List<File> files = null;
+
+        Query query = em
+                .createQuery("select files from File f join f.instance i join i.series ser join ser.study st where st.pk = :studyPk AND f.fileSystem.pk = fsPk");
+        query.setParameter("studyPk", studyPk);
+        query.setParameter("fsPk", fsPk);
+        files = query.getResultList();
+
+        return files;
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.StudyDAO#selectStudySize(java.lang.Long,
+     *      java.lang.Long)
+     */
+    public long selectStudySize(Long studyPk, Long fsPk) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Calculating size of studyPk " + studyPk
+                    + " on fileSystemPk " + fsPk);
+        }
+
+        Long l = selectStudyFileSize(studyPk, fsPk);
+        return l == null ? 0l : l.longValue();
+    }
+
+    private Long selectStudyFileSize(Long studyPk, Long fsPk) {
+        // SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk =
+        // ?1 AND f.fileSystem.pk = ?2
+
+        Query query = em
+                .createQuery("select sum(f.fileSize) from File f join f.instance i join i.series ser join ser.study st where st.pk = :studyPk AND f.fileSystem.pk = fsPk");
+        query.setParameter("studyPk", studyPk);
+        query.setParameter("fsPk", fsPk);
+        return (Long) query.getSingleResult();
+    }
+
+    private Set<String> selectSeriesRetrieveAETs(Long studyPk) {
+        // SELECT DISTINCT s.retrieveAETs FROM Series s WHERE s.study.pk = ?1
+        List<String> resultList = em
+                .createQuery(
+                        "select distinct s.retrieveAETs from Series s join s.study st where st.pk = :studyPk")
+                .setParameter("studyPk", studyPk).getResultList();
+        if (resultList == null)
+            return new HashSet<String>();
+        return new HashSet<String>(resultList);
     }
 
     private String commonRetrieveAETs(String aets1, String aets2) {
@@ -391,14 +393,16 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
         return updated;
     }
 
-    /**
-     * @param pk
-     * @return
-     */
-    private Set selectExternalRetrieveAETs(Long pk) {
-        // TODO: SELECT DISTINCT i.externalRetrieveAET FROM Study st,
-        // IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1
-        return null;
+    private Set selectExternalRetrieveAETs(Long studyPk) {
+        // SELECT DISTINCT i.externalRetrieveAET FROM Study st, IN(st.series) s,
+        // IN(s.instances) i WHERE st.pk = ?1
+        List<String> resultList = em
+                .createQuery(
+                        "select distinct i.externalRetrieveAET from Study st in(st.series) s in(s.instances) i where st.pk = :studyPk")
+                .setParameter("studyPk", studyPk).getResultList();
+        if (resultList == null)
+            return new HashSet<String>();
+        return new HashSet<String>(resultList);
     }
 
     private boolean updateFilesetId(Study study, int numI)
@@ -407,7 +411,7 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
         String fileSetId = null;
         String fileSetIuid = null;
         if (numI > 0) {
-            if (findNumberOfStudyRelatedInstancesOnMediaWithStatus(study
+            if (selectNumberOfStudyRelatedInstancesOnMediaWithStatus(study
                     .getPk(), MediaDTO.COMPLETED) == numI) {
                 Set c = selectMediaWithStatus(study, MediaDTO.COMPLETED);
                 if (c.size() == 1) {
@@ -434,21 +438,25 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
             throws PersistenceException {
         String fsuid = study.getFilesetIuid();
         return (fsuid != null && fsuid.length() != 0)
-                || findNumberOfStudyRelatedInstancesOnMediaWithStatus(study
+                || selectNumberOfStudyRelatedInstancesOnMediaWithStatus(study
                         .getPk(), MediaDTO.COMPLETED) == study
                         .getNumberOfStudyRelatedInstances();
     }
 
     /**
-     * @param pk
-     * @param completed
-     * @return
+     * @see org.dcm4che.archive.dao.StudyDAO#selectNumberOfStudyRelatedInstancesOnMediaWithStatus(java.lang.Long,
+     *      int)
      */
-    public int findNumberOfStudyRelatedInstancesOnMediaWithStatus(Long pk,
-            int completed) {
-        // TODO: SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1
-        // AND i.media.mediaStatus = ?2
-        return 0;
+    public int selectNumberOfStudyRelatedInstancesOnMediaWithStatus(
+            Long studyPk, int completed) {
+        // SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND
+        // i.media.mediaStatus = ?2
+        Number n = (Number) em
+                .createQuery(
+                        "select count(i) from Instance i join i.series ser join ser.study st where st.pk=:studyPk and media.mediaStatus = :completed")
+                .setParameter("studyPk", studyPk).setParameter("completed",
+                        completed).getSingleResult();
+        return n == null ? 0 : n.intValue();
     }
 
     /**

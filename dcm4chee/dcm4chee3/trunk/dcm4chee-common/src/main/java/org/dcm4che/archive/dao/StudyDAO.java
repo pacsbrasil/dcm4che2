@@ -139,7 +139,7 @@ public interface StudyDAO extends DAO<Study> {
      * @param completed
      * @return
      */
-    public int findNumberOfStudyRelatedInstancesOnMediaWithStatus(Long pk,
+    public int selectNumberOfStudyRelatedInstancesOnMediaWithStatus(Long pk,
             int completed) throws PersistenceException;
 
     /**
