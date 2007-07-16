@@ -58,6 +58,7 @@ function wlUpdateModel(x,y) {
       this.windowWidth = this.originalWidth;
       this.windowCenter = this.originalCenter;
    }
+   return true;
 }
 
 /**
@@ -103,9 +104,7 @@ function wlEndAction() {
 /** Updates the width/center information.  Called when an actual update occurs.
  */
 function wlUpdateOtherDisplay(isDone) {
-	if( this.debugValue ) {
-		this.debugValue.innerHTML = "WL W:"+Math.round(this.windowWidth)+" C:"+Math.round(this.windowCenter);
-	}
+	this.debugValue("WL W:"+Math.round(this.windowWidth)+" C:"+Math.round(this.windowCenter));
 };
 
 var windowLevelHandler = new ImageEvent();

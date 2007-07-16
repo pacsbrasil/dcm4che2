@@ -16,6 +16,7 @@
    m:Event.script="/xero/js/Events.js"
    m:Event.script.priority="1000"
    m:jsEnabled.inherit="jsEnabled"
+   m:trace.script="/xero/trace/trace.js"
 >
 
 <ui:fragment>
@@ -62,12 +63,9 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     onmouseup="return imageHandler.mouseUp(event);"
   >
    <div id="body">
+    <button onclick="ttrace(document.getElementsByTagName('body')[0].innerHTML);">Body</button>
+	<button onclick="ttrace(displayXslt.asString(displayXslt.currentXml));">Source</button>
     <x:callTemplates from="#{pageConfig}" mode="body" />
-    <div id="debugMouse">Debug MOUSE</div> <br />
-    <div id="debugImage">Debug Image Updates</div> <br />
-    <div id="debugValue">Debug Value Updates</div> <br />
-    <div id="debugUrl">Debug current URL</div> <br />
-    <div id="debugAjax">Debug AJAX Updates</div> <br />
    </div>
   </body>
 </html>

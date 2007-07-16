@@ -43,7 +43,6 @@ function imageEventEmpty() { }
  */
 function ImageEvent() {
   this.body = document.getElementById("body");
-  trace("Image Event created.");
 }
 
 /**
@@ -53,15 +52,20 @@ function ImageEvent() {
  */
 ImageEvent.prototype.mouseDown = function (evt) {
   if( this.mousing ) return;
+  this.debugMouse("Mouse down.");
   if( evt==null ) evt = window.event;
   if( !isLeftMouse(evt) ) return;
   this.imageNode = target(evt);
-  this.debugValue = document.getElementById("debugValue");
-  this.debugMouse = document.getElementById("debugMouse");
+  this.svgNode = this.imageNode.parentNode;
   this.debugUrl = document.getElementById("debugUrl");
   this.debugImage = document.getElementById("debugImage");
   if( !this.imageNode ) {
-  	if( this.debugImage ) this.debugImage.innerHTML = "No image node.";
+  	error("No image node.");
+  	return true;
+  }
+  if( !this.svgNode ) {
+  	error("No SVG node.");
+  	return true;
   }
   this.actionId = this.imageNode.id;
   this.startX = evt.clientX;
@@ -78,13 +82,13 @@ ImageEvent.prototype.mouseDown = function (evt) {
        evt.preventDefault();
     }
     else if( this.body.setCapture ) {
-      if( this.debugMouse ) this.debugMouse.innerHTML="Set capture mode.";
+      this.debug("Set capture mode.");
       this.body.setCapture();
     }
     // Get the initial update loading - it may not be identical to the original image.
     this.updateScreen(false);
   }
-  if( this.debugMouse ) this.debugMouse.innerHTML = "mouseDown mousing "+this.mousing;
+  this.debugMouse("mouseDown mousing "+this.mousing);
   return false;
 };
 
@@ -112,7 +116,7 @@ ImageEvent.prototype.mouseUp = function (evt) {
     this.body.releaseCapture();
   }
   this.endAction();
-  if( this.debugMouse ) this.debugMouse.innerHTML = "mouseUp";
+  this.debugMouse("mouseUp");
 }
 
 
@@ -121,9 +125,10 @@ ImageEvent.prototype.mouseUp = function (evt) {
  */
 ImageEvent.prototype.mouseMove = function wlMouseMove(evt) {
   if(this.mousing ) {
-    if( this.debugMouse ) this.debugMouse.innerHTML = "Mouse move:"+evt.clientX+","+evt.clientY;
-    this.updateModel(evt.clientX, evt.clientY);
-    this.updateScreen(false);
+    this.debugMouse("Mouse move:"+evt.clientX+","+evt.clientY);
+    if( this.updateModel(evt.clientX, evt.clientY) ) {
+      this.updateScreen(false);
+    }
   }
 };
 
@@ -135,7 +140,7 @@ ImageEvent.prototype.mouseOut = function (evt) {
 	if(!this.mousing ) return;
 	// Would like to check if this is a real mouse out event - but how to do so is unclear.
 	this.mouseUp(evt);
-	if( this.debugMouse ) this.debugMouse.innerHTML = "mouseOut";
+	this.debugMouse("mouseOut");
 };
 
 
@@ -160,6 +165,12 @@ ImageEvent.prototype.updateImage = function (url)
   }
 };
 
+/** Allows changing the debug output to another level or otherwise updating it. */
+ImageEvent.prototype.debug = debug;
+ImageEvent.prototype.debugMouse = debug;
+ImageEvent.prototype.debugValue = info;
+ImageEvent.prototype.debugLoad = debug;
+ImageEvent.prototype.info = info;
 
 /**
  * Removes the items in rem from the given URL.
@@ -193,6 +204,7 @@ ImageEvent.prototype.getStrippedUrl = function (url, rem) {
  */
 ImageEvent.prototype.updateScreen = function (isDone)
 {
+  if( this.noImageUpdates ) return;
   var url=this.baseUrl + this.getUpdatedUrlQuery(isDone) + "&imageQuality="+this.quality;  
   var isTime = false;
   var currentTime = new Date().getTime();
@@ -205,8 +217,8 @@ ImageEvent.prototype.updateScreen = function (isDone)
   if( ! this.loadingImage ) {
   	this.loadingImage = new Image();
   	this.loadingImage.src = url;
-  	if( this.debugImage ) this.debugImage.innerHTML = "Starting to load:"+currentTime;
-  	if( this.debugUrl ) this.debugUrl.innerHTML = "Initial URL:"+encodeURL(url);
+  	this.debugLoad("Starting to load:"+currentTime);
+  	this.debugLoad("Initial URL:"+encodeURL(url));
   }
   var origUrl = this.loadingImage.src;
   if( delay>3500 || delay > 3*this.avgTime) {
@@ -230,7 +242,7 @@ ImageEvent.prototype.updateScreen = function (isDone)
     this.lastTime = currentTime;
     this.sinceCompleteTime = -1;
     this.avgTime = this.totalTime/this.startCount;
-    if( this.debugImage ) this.debugImage.innerHTML = reason+"C:"+this.startCount+ " A:"+Math.round(this.avgTime) + " Q:"+Math.round(this.quality*100)/100;
+    this.debugLoad(reason+"C:"+this.startCount+ " A:"+Math.round(this.avgTime) + " Q:"+Math.round(this.quality*100)/100);
     this.updateImage(origUrl);
     if(delay > 200 && this.quality > 0.25 ) this.quality = this.quality * 0.98;
     if( delay > 500 && this.quality > 0.25 ) this.quality = this.quality * 0.9;
@@ -273,7 +285,7 @@ ImageEvent.prototype.getUrlProperty = function(url,tag,def) {
  */
 ImageEvent.prototype.getImageUrl = function(rem) {
 	if( !this.imageNode) {
-		alert("No image node found.");
+		error("No image node found.");
 		return undefined;
 	}
     var url = this.imageNode.getAttribute("src");
@@ -282,6 +294,7 @@ ImageEvent.prototype.getImageUrl = function(rem) {
 	if( rem ) {
 		url = this.getStrippedUrl(origUrl,rem);
 	}
+	this.debug("Stripped URL:"+encodeURL(url));
 	return url;
 };
 

@@ -161,16 +161,33 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom,
 		this.numberOfSeriesRelatedInstances = value;
 	}
 
+	/** Clears children that are empty (have not interesting content, and returnes true if
+	 * this object can be cleared (has not more children and no cusotized data.
+	 */
 	public boolean clearEmpty() {
 		boolean emptyChildren = ResultsBean.clearEmpty(children,getDicomObject());
 		return emptyChildren && getOtherAttributes().isEmpty()
-				&& getRegion() == null && getZoom() == null
-				&& getWindowCenter() == null && getWindowWidth() == null;
+				&& getPresentationSizeMode()==null
+				&& getWindowCenter() == null;
 	}
 
 	/** Get the ID for this object, in this case the series instance UID */
 	public String getId() {
 		return getSeriesInstanceUID();
+	}
+
+	/** A single set command for all the presentation size attributes */
+	public void setPresentationSize(PresentationSizeMode size, String topLeft, String bottomRight, Float magnify)
+	{
+		this.setPresentationSizeMode(size);
+		this.setTopLeft(topLeft);
+		this.setBottomRight(bottomRight);
+		this.setMagnify(magnify);
+	}
+	
+	/** Clears all the presentation size mode information */
+	public void clearPresentationSize() {
+		setPresentationSize(null,null,null,null);
 	}
 
 }

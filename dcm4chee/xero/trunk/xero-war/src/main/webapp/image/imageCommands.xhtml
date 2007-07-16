@@ -27,10 +27,10 @@
    <prevImgButton id="previousImage" label="&lt;"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=-1" />
 
    <applyLevel level="IMAGE">
-     <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1">
+     <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1&amp;size=MAGNIFY">
        <region />
      </modeButton>
-     <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1">
+     <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1&amp;size=MAGNIFY">
        <region />
      </modeButton>
    </applyLevel>
@@ -40,10 +40,10 @@
 
  <toolbar id="imgToolbar">
    <applyLevel level="SERIES">
-    <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1">
+    <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1&amp;size=MAGNIFY">
      <region />
     </modeButton>
-    <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1">
+    <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1&amp;size=MAGNIFY">
      <region />
     </modeButton>
    </applyLevel>
@@ -57,19 +57,17 @@
       <windowLevel />
     </imageHandler>
     
-    <imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?i=0" />
+    <imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
   </overlay>
   
   <overlay id='imageHover'>
     <imageHover handler="imageHoverHandler" oncommand="/xero/image/action/ImageHover.seam?hover=true" />
     
-    <imageHandler mode="windowLevel" oncommand="/xero/image/action/WindowLevel.seam?i=0">
+    <imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
       <windowLevel />
     </imageHandler>
     
-    <imageHandler mode="zoomPan" oncommand="/xero/image/action/ZoomPan.seam?i=0">
-      <region />
-    </imageHandler>
+    <imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
     
   </overlay>
 </preference>

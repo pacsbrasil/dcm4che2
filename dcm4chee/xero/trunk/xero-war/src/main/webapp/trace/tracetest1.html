@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Sample Test Page</title>
+<script language="javascript" type="text/javascript" src="trace.js"></script>
+
+<script language="javascript">
+
+function sayHello(){
+	trace("Hello");
+}
+
+function getBody(){
+	var bodies = document.getElementsByTagName("body");
+	if (!bodies){
+		trace("No body tags!  How can that be???");
+		return 0;
+	}
+	var body = bodies[0];
+	if (!body){
+		trace("No body tags!  How can that be???");
+		return 0;
+	}
+	return body;
+}
+
+function showBodyHtml(){
+	var body = getBody();
+	trace("**** Body InnerHTML *********");
+	trace(body.innerHTML);
+	trace("*****************************");
+}
+
+function randomBackColor(){
+	var rgb = Math.random() * 0xffffff;
+	rgb = "#" + Math.floor(rgb).toString(16); // Convert to hex string
+	body = getBody();
+	body.style.backgroundColor = rgb;
+	trace("New Background Color: " + body.style.backgroundColor);
+}
+
+</script>
+
+</head>
+
+<body>
+<h2>Sample Test Page </h2>
+<p>Click the following links and you should see debug messages appear in the trace window to the right of this window.</p>
+<p><a href="javascript:sayHello();">Say Hello</a></p>
+<p><a href="javascript:showBodyHtml();">Show Body innerHTML</a></p>
+<p><a href="javascript:randomBackColor();">Random Background Color</a> </p>
+<h3>In the url field in the top frame, enter: </h3>
+<p><code>http://localhost/debug/tracetest2.html</code></p>
+<p>Adjust it for  your domain.</p>
+<h3>How to use it </h3>
+<p>The files:</p>
+<p><code>trace.js</code> -- JavaScript file that contains the trace function. You must include it in the web page you are debugging. When you're done debugging, remove it and all the trace calls. </p>
+<p><code>tracecontainer.html</code> -- the container for the 3 frames you see here.</p>
+<p><code>traceview.html</code> -- Has the trace window. </p>
+<p><code>traceurl.html</code> -- Has the input field for entering the web page to be debugged.</p>
+<p>I keep these files in the directory 'debug' under my root directory. </p>
+<p>Your html page will need to include trace.js somewhere at the top of the file. Of course, you'll need to adjust the path in the src attribute.</p>
+<p><code>&lt;script language=&quot;javascript&quot; type=&quot;text/javascript&quot; src=&quot;trace.js&quot;&gt;&lt;/script&gt; </code> </p>
+<p>Then, wherever you want to trace something,  add:</p>
+<p><code>&lt;script language=&quot;javascript&quot; type=&quot;text/javascript&quot;&gt;<br>
+</code><code>trace(&quot;The value of x: &quot; + x);<br>
+</code><code>&lt;/script&gt; </code> </p>
+<p>To debug your page,  enter its url in the top frame.</p>
+<p>This will not work if the url you are debugging is in a different doman from this frameset -- it's a JavaScript security feature. So don't try to debug your page on my site, it won't work.</p>
+<p>If the trace window gets too much text in it, it will bog down. Press the clear button frequently. </p>
+</body>
+</html>

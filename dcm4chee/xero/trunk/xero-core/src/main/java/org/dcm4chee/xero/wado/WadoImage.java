@@ -197,10 +197,16 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 		return size;
 	}
 
-	/** Splits region into sub-parts */
+	/** Splits region into sub-parts 
+	 */
 	public static double[] splitRegion(String region) {
+		return splitDouble(region,4);
+	}
+
+	/** Splits region into sub-parts */
+	public static double[] splitDouble(String region, int size) {
 		ZoomPanAction.log.info("Trying to split '"+region+"'");
-		double ret[] = new double[4];
+		double ret[] = new double[size];
 		int start = 0;		
 		region = region.trim();
 		for(int i=0; i<ret.length; i++ ) {

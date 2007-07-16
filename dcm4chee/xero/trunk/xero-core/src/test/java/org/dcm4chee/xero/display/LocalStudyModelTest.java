@@ -98,20 +98,4 @@ public class LocalStudyModelTest extends DisplayVars
 	   assert results.getPatient().size()==0;
 	}
 	
-	/**
-	 * Tests to see that the XML for a series UID with region set is correct
-	 */
-	@Test
-	public void testToXml() {
-		SeriesType series = model.getSeries();
-		series.setRegion("0,0,1,1");
-		String xml = model.getPatientXml();
-		assert xml!=null;
-		assert xml.contains("region=");
-		assert xml.contains("0,0,1,1");
-		assert !xml.contains("<?xml");
-		System.out.println("XML="+xml);
-		series.setRegion(null);
-	}
-	
 }

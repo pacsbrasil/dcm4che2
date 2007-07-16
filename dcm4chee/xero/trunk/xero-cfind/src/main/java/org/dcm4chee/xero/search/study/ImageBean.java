@@ -83,17 +83,33 @@ public class ImageBean extends ImageType implements Image, LocalModel<String> {
 		setInstanceNumber(data.getInt(Tag.InstanceNumber));
 	}
 
-	/** Indicate if there are any interesting children, clearing any empty ones first */
+	/** Indicate if there are any interesting children, clearing any empty ones first.
+	 * Note that size is used to drive emptiness for all size related attributes,
+	 * as is WindowCenter for all window level related attributes.
+	 */
 	public boolean clearEmpty() {
 		boolean emptyChildren = ResultsBean.clearEmpty(children,getAny());
 		return emptyChildren && getOtherAttributes().isEmpty()
-				&& getRegion() == null && getSpsUID() == null
-				&& getWindowCenter() == null && getWindowWidth() == null
-				&& getZoom() == null;
+				&& getPresentationSizeMode() == null && getSpsUID() == null
+				&& getWindowCenter() == null;
 	}
 
 	/** Return the id for this element, in this case the SOP  Instance UID */
 	public String getId() {
 		return getSOPInstanceUID()+","+getFrame();
+	}
+	
+	/** A single set command for all the presentation size attributes */
+	public void setPresentationSize(PresentationSizeMode size, String topLeft, String bottomRight, Float magnify)
+	{
+		this.setPresentationSizeMode(size);
+		this.setTopLeft(topLeft);
+		this.setBottomRight(bottomRight);
+		this.setMagnify(magnify);
+	}
+	
+	/** Clears all the presentation size mode information */
+	public void clearPresentationSize() {
+		setPresentationSize(null,null,null,null);
 	}
 }

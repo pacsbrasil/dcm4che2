@@ -25,29 +25,25 @@ v\:* { behavior: url(#default#VML);
 	<c:choose>
 	<c:when test="#{browser=='MSIE'}">
 	  MSIE (3) - todo, render using VML instead of SVG.
-	  <div style="position: absolute; top: 200px; left: 200px; width: 2560px; height: 3328px; overflow: hidden;">
-	<v:group style="width:2560px; height: 3328px;" coordorigin="0, 0" coordsize="2560, 3328">
-	  <v:image id="vimg1-00" 
-	    src="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0,0,0.5,0.5&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    href="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0,0,0.5,0.5&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    style="width:1280; height:1664; left: 0; top: 0;"
-	  />
-	  <v:image id="vimg1-10" 
-	    src="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0.5,0,1,0.5&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    href="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0.5,0,1,0.5&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    style="width:1280; height:1664; left: 1280; top: 0; "
-	  />
-	  <v:image id="vimg1-01" 
-	    src="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0,0.5,0.5,1&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    href="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0,0.5,0.5,1&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    style="width:1280; height:1664; left: 0; top: 1664;"
-	  />
-	  <v:image id="vimg1-11" 
-	    src="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0.5,0.5,1,1&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    href="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53&amp;region=0.5,0.5,1,1&amp;windowWidth=4096&amp;windowCenter=2048" 
-	    style="width:1280; height:1664; left: 1280; top: 1664;"
-	  />
-  	  <v:rect style="width:50;height:50; left: 1255; top: 1639;" fillcolor="green" strokecolor="red"> </v:rect>
+  <div style="position: absolute; top: 200px; left: 50px; width: 260px; height: 332px; overflow: hidden;">
+	<v:group 
+	  style="width:260px; height: 332px;" 
+	  coordorigin="1000, 1000" 
+	  coordsize="400, 400"
+	>
+	  <v:shape id="simg1-00" style="width:2560; height:3328; left: 0; top: 0;">
+ 	    <v:imagedata id="vimg1-00" 
+	      src="/xero/devwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=1.2.840.113681.2200664339.718.3236946656.53"  
+ 	      style="width:2560; height:3328; left: 0; top: 0;"
+	    />
+	  </v:shape>
+	  <v:shape id="timg1-00" style="width: 200; height: 25; top: 1500; left: -200;">
+	    <v:textbox>Text Annotation</v:textbox>
+	  </v:shape>
+	  <v:rect fillcolor="green" style="top:0; left:-200; width: 20; height: 20;" />
+	  <v:rect fillcolor="green" style="top:3308; left: -200; width: 20; height: 20;" />
+	  <v:rect fillcolor="green" style="top:0; left: 2740; width: 20; height: 20;" />
+	  <v:rect fillcolor="green" style="top:3288; left: 2720; width: 40; height: 40;" />
 	</v:group>
 	  </div>
     </c:when>

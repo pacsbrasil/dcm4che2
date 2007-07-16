@@ -41,6 +41,7 @@ import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageType;
 import org.dcm4chee.xero.search.study.SeriesBean;
+import org.dcm4chee.xero.search.study.PresentationSizeMode;
 import org.dcm4chee.xero.wado.WadoImage;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
 @Name("ZoomPan")
 @Scope(ScopeType.EVENT)
 public class ZoomPanAction {
-	private static final double ZOOM_EXPONENT = 0.9;
+	private static final double ZOOM_EXPONENT = 1.25;
 	private static final double LOG_ZOOM_EXPONENT = Math.log(ZOOM_EXPONENT);
 
 	public static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class); 
@@ -65,76 +66,91 @@ public class ZoomPanAction {
 
 	/** Amount to change zoom by */
 	int relZoom = 0;
-	float panX = 0, panY = 0;
+	int panX = 0, panY = 0;
 	
-	/** Center X,Y and half height values */
-	double centerX=0.5, centerY=0.5, hWidth=0.5, hHeight=0.5;
-	String region;
+	/** The presentation mode */
+	private PresentationSizeMode presentationSizeMode;
+	
+	private String region;
+	/** These are the internal display size information from the client, retrieved from region. */
+	protected int width, height, cx, cy;
+	/** Scale is a factor to convert image pixels into display pixels, converts image pixels to display pixels. */
+	float magnify, updatedMagnify;
 
 	public void setRelZoom(int rzoom) {
 		this.relZoom = rzoom;
-		log.info("Relative zoomPan set to "+rzoom+" region="+getRegion());
+		log.info("Relative zoomPan set to "+getRelZoom());
 	}
 	
 	public int getRelZoom() {
 		return this.relZoom;
 	}
 	
-	/** Sets the size of the window to be that specified by the given zoom level.
-	 */
-	protected void setZoom(int izoom) {
-		if( izoom<0 || izoom > 250 ) {
-			throw new UnsupportedOperationException("Illegal zoom value "+izoom);
-		}
-		double zoom = 0.5 * Math.pow(ZOOM_EXPONENT, (double) izoom); 
-		hWidth = zoom;
-		hHeight = zoom;
-		fixRegion();
-		log.info("Zoom set to "+izoom);
-	}
-	
 	/**
-	 * Gets the zoom level, as computed from the region.
+	 * Computes the updated manification amount.
 	 */
-	protected int getZoom() {
-		if( hHeight < 0.0001 ) throw new IllegalArgumentException("Region height must be larger than 0.0001.");
-		double zoom = Math.log( hHeight * 2 ) / LOG_ZOOM_EXPONENT;
-		log.info("zoomPan getZoom hHeight="+hHeight+" dbl zoom="+zoom);
-		int izoom = (int) Math.round(zoom);
-		if( izoom < 0 ) return 0;
-		if( izoom >= 250 ) return 250;
-		return izoom;
+	protected float updateMagnify() {
+		if( getRelZoom()==0 ) {
+			log.info("Relative zoom is zero, so using original magnify.");
+			return magnify;
+		}
+		if( magnify < 0.0001 ) {
+			log.error("Display scale must be larger than 0.0001.");
+			magnify = 1.0f;
+		}
+		double zoom = Math.log( magnify ) / LOG_ZOOM_EXPONENT;
+		int izoom = getRelZoom() + (int) Math.round(zoom);
+		log.info("Updated izoom is "+izoom);
+		if( izoom < -250 ) izoom = -250;
+		else if( izoom >= 250 ) izoom = 250;		
+		updatedMagnify = (float) Math.pow(ZOOM_EXPONENT,izoom);
+		log.info("zoomPan getZoom scale="+magnify+" dbl zoom="+zoom+" updatedMagnify="+updatedMagnify);
+		return updatedMagnify;
 	}
 		
 	/** Sets the region to a specific value */
 	public void setRegion(String region) {
 		if( region==null ) throw new IllegalArgumentException("Region must not be null.");
-		region = region.trim();
+		this.region = region.trim();
 		log.info("Setting region to "+region + " on "+this);
-		double[] dRegion = WadoImage.splitRegion(region);
-		centerX = (dRegion[0]+dRegion[2])/2;
-		centerY = (dRegion[1]+dRegion[3])/2;
-		hWidth = (dRegion[2]-dRegion[0])/2;
-		hHeight = (dRegion[3]-dRegion[1])/2;
-		// Regenerate the region string from components.
-		this.region = null;
-		log.info("Region after set is "+getRegion());
+		double[] dRegion = WadoImage.splitDouble(this.region,5);
+		width = (int) dRegion[0];
+		height = (int) dRegion[1];
+		cx = (int) dRegion[2];
+		cy = (int) dRegion[3];
+		magnify = (float) dRegion[4];
+		updatedMagnify = magnify;
+		if( magnify < 0.0001 ) {
+			log.error("Mangification provided is too small.");
+			magnify = 1.0f;
+		}
 	}
 	
-	/** Checks the regions to ensure that the zoom/pan doesn't go too far and that the image is visible */
-	protected void fixRegion() {
-		if( centerX < hHeight ) centerX = hHeight;
-		else if( 1-centerX < hHeight ) centerX = 1-hHeight;
-		if( centerY < hWidth ) centerY = hWidth;
-		else if( 1-centerY < hWidth ) centerY = 1-hWidth;
-		region = null;
-	} 
+	/**
+	 * Returns the top left corner of the area to display.
+	 * @return top left corner as a comma-separated value.
+	 */
+	public String getTopLeft() {
+	  int left = (int) (cx - width / (2 * updatedMagnify));
+	  int top = (int) (cy - height / (2 * updatedMagnify));
+	  return Integer.toString(left)+","+Integer.toString(top);
+	}
+	
+	/**
+	 * Returns the bottom right corner of the area to display.
+	 * @return bottom right corner as a comma-separated value.
+	 */
+	public String getBottomRight() {
+		int right = (int) (cx + width / (2 * updatedMagnify));
+		int bottom = (int) (cy + height / (2 * updatedMagnify));
+		return Integer.toString(right)+","+Integer.toString(bottom);
+	}
 	
 	/**
 	 * Pans in the X direction.  Affects the region value.
 	 * @param pixels amount to zoom by relative to the current displayed size (+1 will zoom an entire page width to the right)
 	 */
-	public void setPanX(float pixels) {
+	public void setPanX(int pixels) {
 		this.panX = pixels;
 	}
 	
@@ -142,54 +158,51 @@ public class ZoomPanAction {
 	 * Pans in the Y direction.  Affects teh region value.
 	 * @param pixels amount to zoom by relative to the current displayed size (+1 will zoom an entire page width downwards.)
 	 */
-	public void setPanY(float pixels) {
+	public void setPanY(int pixels) {
 		this.panY = pixels;
 	}
 	
 	/**
 	 * Gets the region string for the sub-region of the image to display
-	 * @return region left,top,right,bottom string
+	 * @return region width,height,cx,cy,scale
 	 */
 	public String getRegion() {
-		if( region==null ) {
-			region = (centerX-hWidth)+","+(centerY-hHeight)+","+(centerX+hWidth)+","+(centerY+hHeight);
-		}
 		return region;
 	}
 	
 	/** Applies the pan/zoom to the given study, series or image. */
 	public String action() {
-		log.info("Region="+getRegion()+" relZoom="+relZoom+" pan X,y="+panX+","+panY + " on "+this);
-		if( relZoom!=0 ) {
-			int izoom = getZoom();
-			log.info("Computed zoom is "+izoom);
-			setZoom(izoom + relZoom);
-		}
-		if( panX!=0.0f || panY!=0.0 ) {
-			centerX = centerX + hWidth * panX;
-			centerY = centerY + hHeight * panY;
-			fixRegion();
-		}
-		if( hWidth <= 0.0 || hHeight <= 0.0 ) return "failure";
+	    updateMagnify();
+		log.info("Zoom pan action size="+getPresentationSizeMode()+" Region="+getRegion()+" relZoom="+relZoom+" pan X,y="+panX+","+panY + " on "+this);
 		
 	    DisplayMode.ApplyLevel applyLevel;
 	    if( mode!=null ) applyLevel = mode.getApplyLevel();
 	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
-		if( applyLevel == DisplayMode.ApplyLevel.IMAGE ) {
+	    if( applyLevel == DisplayMode.ApplyLevel.IMAGE ) {
 			ImageBean image = localStudyModel.getImage();
-			image.setRegion(getRegion());
+			log.info("Setting zoom to "+updatedMagnify +" at image level.");
+			image.setPresentationSize(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
 		}
 		else {
 			SeriesBean series = localStudyModel.getSeries();
-			series.setRegion(getRegion());
+			log.info("Setting zoom to "+updatedMagnify +" at series level.");
+			series.setPresentationSize(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
 			for(DicomObjectType dot : series.getDicomObject()) {
 				if( dot instanceof ImageType ) {
-					ImageType image = (ImageType) dot;
-					image.setRegion(null);
+					ImageBean image = (ImageBean) dot;
+					image.clearPresentationSize();
 				}
 			}
 		}
-
+	    log.info("Done zoom/pan action.");
 		return "success";
+	}
+
+	public PresentationSizeMode getPresentationSizeMode() {
+		return presentationSizeMode;
+	}
+
+	public void setPresentationSizeMode(PresentationSizeMode presentationSizeMode) {
+		this.presentationSizeMode = presentationSizeMode;
 	}
 }

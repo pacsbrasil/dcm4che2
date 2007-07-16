@@ -89,12 +89,28 @@
     	<!-- The actual number of objects that are available in the series to be viewed. -->
     	<attribute name="Viewable" type="int" />
     	<!-- Some over-rides for common operations -->
-    	<attribute name="region" type="string" />
-    	<attribute name="zoom" type="int" />
+    	<attribute name="size" type="tns:PresentationSizeMode">
+    	 <annotation>
+    	  <appinfo>
+    	   <jxb:property name="presentationSizeMode" />
+    	  </appinfo>
+    	 </annotation>
+    	</attribute>
+    	<attribute name="topLeft" type="string" />
+    	<attribute name="bottomRight" type="string" />
+    	<attribute name="magnify" type="float" />
     	<attribute name="windowWidth" type="float" />
     	<attribute name="windowCenter" type="float" />
     	<anyAttribute />
     </complexType>
+    
+    <simpleType name="PresentationSizeMode">
+      <restriction base="string">
+        <enumeration value="SCALE TO FIT" />
+        <enumeration value="TRUE SIZE" />
+        <enumeration value="MAGNIFY" />
+      </restriction>
+    </simpleType>
 
     <complexType name="dicomObjectType">
        <attribute name="SOPInstanceUID" type="tns:UID" />
@@ -175,9 +191,17 @@ Key objects are a named (by code meaning) list of images to display.
     			<attribute name="Columns" type="int" />
     			<attribute name="Frame" type="int" />
     			<attribute name="SpsUID" type="tns:UID" />
-    			<!-- These two are only used for over-rides, not for primary values. -->
-		    	<attribute name="region" type="string" />
-    			<attribute name="zoom" type="int" />
+    			<!-- The following are only used for over-rides, not for primary values. -->
+    	        <attribute name="size" type="tns:PresentationSizeMode">
+     	         <annotation>
+    	          <appinfo>
+    	           <jxb:property name="presentationSizeMode" />
+    	          </appinfo>
+    	         </annotation>
+    	        </attribute>
+    	        <attribute name="topLeft" type="string" />
+    	        <attribute name="bottomRight" type="string" />
+    	        <attribute name="magnify" type="float" />
 		    	<attribute name="windowWidth" type="float" />
     			<attribute name="windowCenter" type="float" />
     		</extension>

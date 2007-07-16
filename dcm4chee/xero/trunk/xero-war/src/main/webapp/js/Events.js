@@ -128,9 +128,60 @@ function encodeURL(url) {
   return url.replace(/&/g,'&amp;');
 };
 
-/** Trace the message to an auxiliary screen. */
-function trace(msg) {
-	if( typeof( jsTrace ) != 'undefined' ) {
-		jsTrace.send(msg);
+var level = 1;
+
+/** Test to see if the trace library is available. */
+function ttrace(msg) {
+	if( typeof(trace)!='undefined') {
+		trace(msg);
+	}
+};
+
+/** A no-op for use as an included operation */
+function notrace(msg) {
+};
+
+function debug(msg) {
+	if( level<=0) {
+		ttrace(msg);
 	};
+};
+
+function info(msg) {
+	if( level<=1) {
+		ttrace(msg);
+	};
+};
+
+function warn(msg) {
+	if( level<=2) {
+		ttrace(msg);
+	};
+};
+
+function error(msg) {
+	if( level <=3 ) {
+		alert(msg);
+		ttrace(msg);
+	};
+};
+
+/** Parse get width from a node */
+function getWidthFromNode(node) {
+	var wid = node.getAttribute("width");
+	if( wid ) return Number(wid);
+	var style = node.style;
+	if(!style) error("Can't get width");
+    wid = style.width;
+    return Number(wid.substring(0,wid.length-2));
+};
+
+/** Parse get width from a node */
+function getHeightFromNode(node) {
+	var height = node.getAttribute("height");
+	if( height ) return Number(height);
+	var style = node.style;
+	if(!style) error("Can't get height");
+	height = style.height;
+    return Number(height.substring(0,height.length-2));
 };

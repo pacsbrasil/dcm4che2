@@ -55,6 +55,11 @@ XsltAjax.prototype.WAIT_CURSOR = "wait";
 XsltAjax.prototype.NORMAL_CURSOR = "auto";
 XsltAjax.prototype.STATUS_OK = 200;
 
+XsltAjax.prototype.debug=debug
+// Use for expensive debugging statements only.
+XsltAjax.prototype.logLevel=3;
+XsltAjax.prototype.info=info
+
 /**
  * Sets the cursor on the given element to the given type
  */
@@ -66,9 +71,10 @@ XsltAjax.prototype.updateCursor = function(target, cursorType) {
   if( (typeof target)=='string') {
   	this.updateCursor(document.getElementById(target),cursorType);
   }
-  else if( target.nodeType ) {
+  else if( target.nodeype ) {
      if( target.style && target.style.cursor!==undefined ) {
         target.style.cursor = cursorType;
+        this.debug("Cursor on "+target.id+" set to "+cursorType);
      }
   }
   else if( target.length ){
@@ -114,22 +120,25 @@ XsltAjax.prototype.setXsltUri = function(xsltUri) {
        xslObj.send('');
        if( xslObj.status==this.STATUS_OK || xslObj.status==0) {
          xsl = this.asXml(xslObj);
+         if( this.logLevel<1 ) this.info("XSL is "+this.asString(xsl));
        }
     } 
     catch(e) {
-    	alert("Couldn't load url "+xsltUri+" exception:"+e+" xslObj status="+xslObj.status);
+    	error("Couldn't load url "+xsltUri+" exception:"+e+" xslObj status="+xslObj.status);
     	return;
     }
     try {
        if( xslObj.status==this.STATUS_OK || xslObj.status==0) {
    	      this.xsltProcessor = new XSLTProcessor();
+   	      this.debug("Created XSLTProcessor");
     	  this.xsltProcessor.importStylesheet(xsl);
+    	  this.debug("Imported stylesheet into XSLT processor.");
        } else {
-           alert("Error on "+xsltUri + " status:"+xslObj.status+" msg:"+xslObj.statusText);
+           error("Error on "+xsltUri + " status:"+xslObj.status+" msg:"+xslObj.statusText);
        }
     }
     catch(e) {
-       alert("Couldn't parse xslt "+xsltUri+" exception:"+e.message);
+       error("Couldn't parse xslt "+xsltUri+" exception:"+e.message);
     }
 };
 
@@ -199,11 +208,11 @@ XsltAjax.prototype.replaceNode = function (items, fromDoc) {
       replaceBy = this.getElementById(fromDoc,items);
       replaced = document.getElementById(items);
       if( replaceBy===undefined || replaceBy===null ) {
-         alert("No item named "+items+" in result "+this.asString(fromDoc));
+         error("No item named "+items+" in result "+this.asString(fromDoc));
          return;
       }
       if( replaced===undefined ) {
-         alert("No item named "+items+" in current document tree.");
+         error("No item named "+items+" in current document tree.");
          return;
       }
       if( replaceBy.tagName==='img' && replaced.tagName==='img') {
@@ -211,12 +220,17 @@ XsltAjax.prototype.replaceNode = function (items, fromDoc) {
       	return;
       }
       if( replaceBy.xml!==undefined ) {
+      	this.debug("Using outerHTML to replace "+items);
         replaced.outerHTML =replaceBy.xml;
       }
       else {
+      	this.debug("Using replace child to replace "+items);
         parentNode = replaced.parentNode;
         parentNode.replaceChild(replaceBy, replaced);
+        if( this.logLevel<1 ) this.info("Using text "+this.asString(replaceBy));
+        //replaced.outerHTML = this.asString(replaceBy);
       }
+      this.debug("Finished replacing.");
    }
 };
 
@@ -241,9 +255,11 @@ XsltAjax.prototype.ajaxRead = function (file, item, params){
   var asXml = null;
   var usethis = this;
   this.url = file;
+  this.debug("Ajax read - creating http request.");
   xmlObj = new XMLHttpRequest();
   xmlObj.onreadystatechange = function(){
      if(xmlObj.readyState == 4){
+     	usethis.debug("Ajax read succeeded, updating object.");
      	this.fromServerTime = (new Date()).getTime();
      	asXml = usethis.asXml(xmlObj);
         usethis.updateObj(item, usethis.asXml(xmlObj));
@@ -259,6 +275,7 @@ XsltAjax.prototype.ajaxRead = function (file, item, params){
      xmlObj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   }
   xmlObj.send (params);
+  this.debug("Send parameters for AJAX read - awaiting response.");
 }
 
 /**
@@ -268,23 +285,23 @@ XsltAjax.prototype.ajaxRead = function (file, item, params){
  * @param
  */
 XsltAjax.prototype.updateObj = function (item, xml){
+   	if( this.logLevel<3 ) this.info("Returned XML is "+this.asString(xml));
     this.currentXml = xml;
     this.endParseTime = (new Date()).getTime();
 	if( this.xsltProcessor!==undefined ) {
       xml = this.xsltProcessor.transformToDocument(xml);
    }
    this.xslTime = (new Date()).getTime();
+   if( this.logLevel<2 ) this.info("Generated updated page is "+this.asString(xml));
    this.replaceNode(item,xml);
    this.updateCursor(item,this.NORMAL_CURSOR);
    this.inProgress = false;
    this.replaceNodeTime = (new Date()).getTime();
    
-   if( pageDebug ) {
-     alert("2.Server load:"+(this.fromServerTime-this.startTime)+
+   this.debug("Server load:"+(this.fromServerTime-this.startTime)+
      " parse:"+(this.endParseTime-this.fromServerTime)+
      " xslt:"+(this.xslTime-this.endParseTime)+" replace:"+(this.replaceNodeTime-this.xslTime)+
      " total:"+(this.replaceNodeTime-this.startTime));
-   }
 };
 
 /** Add the object to be used as document(namespaceURI)
@@ -344,6 +361,7 @@ XsltAjax.prototype.addObject = function (obj, namespaceURI) {
  */
 XsltAjax.prototype.action = function(actionName,postArgs) {
    if( this.inProgress ) return false;
+   this.debug("Action "+actionName);
    this.startTime = (new Date()).getTime();
    this.fromServerTime = this.startTime;
    this.inProgress = true;
@@ -357,21 +375,22 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    var actionIdItem = document.getElementById(actionName);
    var actionHref;
    if( updateModel ) {
-      //alert("Post update to "+actionName+" on id "+items); 
+      this.debug("Post update to "+actionName+" on id "+items); 
       postUpdate = updateModel(this,actionName,postUpdate);
    }
    else if( actionIdItem ){
    	 // Special case - action is from an id with the same name that
    	 // ALSO contains an href URL - assume the URL is a new GET action
    	 // to be executed instead...
-   	 actionHref = actionIdItem.getAttribute('href');
+   	 actionHref = actionIdItem.getAttribute('action');
+   	 if( actionHref==null ) actionHref = actionIdItem.getAttribute('href');
    	 if( actionHref ) {
-   	    //alert("Found href item to update action "+actionName+" on id "+items+" href="+actionHref+" args "+postArgs);
+   	    this.debug("Found href item to update action "+actionName+" on id "+items+" action="+actionHref+" args "+postArgs);
    	 	this.currentXml = null;
    	 	postUpdate = postArgs;
    	 	this.url = actionHref;
    	 }
-   	 //else alet("No action href found to update, using get on "+this.url+" items "+items);   }
+   	 else this.warn("No action href found to update, using get on "+this.url+" items "+items);   }
 
    if( updateModel && this.currentXml) {
       // A direct update, no refresh/post/anything.
@@ -380,6 +399,7 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    else {
 	  this.ajaxRead(this.url, items, postUpdate);
    }
+   this.debug("Finished action "+actionName +" may still asynchronously update screen.");
    return false;
 };
 

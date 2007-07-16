@@ -114,6 +114,7 @@
     <param name="panX" value="#{ZoomPan.panX}" />
     <param name="panY" value="#{ZoomPan.panY}" />
     <param name="region" value="#{ZoomPan.region}" />
+    <param name="size" value="#{ZoomPan.presentationSizeMode}" />
     <navigation>
       <redirect view-id="/image/image.xhtml" />
     </navigation>

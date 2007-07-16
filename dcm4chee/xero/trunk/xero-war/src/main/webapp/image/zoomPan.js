@@ -40,72 +40,75 @@
  * Updates the window level according to the new client X,Y positions
  */
 function zpUpdateModel(x,y) {
-   var deltaX = this.hWidth * (x-this.startX)/256.0;
-   var deltaY = this.hHeight * (y-this.startY)/256.0;
+   var deltaX = (x-this.startX) / this.scale;
+   var deltaY = (y-this.startY) / this.scale;
    if( isNaN(deltaX) || isNaN(deltaY) ) {
    	  alert("DeltaX/Y isNaN");
-   	  return;
+   	  return false;
    }
-   this.centerX = this.origCenterX - deltaX;
-   this.centerY = this.origCenterY - deltaY;
-   if( isNaN(this.centerX) || isNaN(this.centerY) ) {
-   	  alert("centerX/Y isNaN");
-   	  this.centerX = this.origCenterX;
-   	  this.centerY = this.origCenterY;
-   	  return;
+   this.orx = this.origOrx - deltaX;
+   this.ory = this.origOry - deltaY;
+   
+   if( isNaN(this.orx) || isNaN(this.ory) ) {
+   	  error("Origin x,y isNaN");
+   	  this.orx = this.orx;
+   	  this.ory = this.ory;
+   	  return false;
    }
-   if( this.centerX < this.hWidth ) this.centerX = this.hWidth;
-   else if( (1-this.centerX) < this.hWidth ) this.centerX = 1-this.hWidth;
-   if( this.centerY < this.hHeight ) this.centerY = this.hHeight;
-   else if( (1-this.centerY) < this.hHeight ) this.centerY = 1-this.hHeight;
-   var rLeft = this.centerX - this.hWidth;
-   var rRight = this.centerX + this.hWidth;
-   var rTop = this.centerY - this.hHeight;
-   var rBottom = this.centerY + this.hHeight;
-   if( isNaN(rLeft) || isNaN(rRight) || isNaN(rTop) || isNaN(rBottom) ) {
-   	 alert("isNan rLeft, rTop, rRight or rBottom:"+rLeft+","+rRight+","+rTop+","+rBottom);
-   	 return false;
-   }
-   this.region = "&region="+rLeft+","+rTop+","+rRight+","+rBottom;
-   return true;
+   
+   var origin = ""+this.orx+","+this.ory;
+   var viewBox = ""+this.orx+" "+this.ory+" "+this.szx+" "+this.szy;
+   this.svgNode.setAttribute("coordorigin",origin);
+   this.svgNode.setAttribute("viewBox", viewBox);
+   this.info("Setting viewBox="+viewBox);
+   this.svgNode.setAttribute("viewBox",viewBox);
+   // Never update the image any longer, as it is a direct update of the underlying data.
+   return false;
 };
 
 /**
  * Starts the window levelling
  */
  function zpStartLeft(x,y) {
+ 	this.info("Starting zoom/pan left button drag.");
  	this.url = this.getImageUrl();
-    this.region = this.getUrlProperty(this.url,'region', '0.0,0.0,1.0,1.0');
-    var sRegion = this.region.split(",",4);
-    this.region = "&region="+this.region;
-    var rLeft = Number(sRegion[0]);
-    var rTop = Number(sRegion[1]);
-    var rRight = Number(sRegion[2]);
-    var rBottom = Number(sRegion[3]);
-    this.centerX = (rLeft + rRight)/2;
-    this.centerY = (rTop + rBottom)/2;
-    this.hWidth = (rRight - rLeft)/2;
-    this.hHeight = (rBottom - rTop)/2;
-    this.origCenterX = this.centerX;
-    this.origCenterY = this.centerY;
-    this.origHWidth = this.hWidth;
-    this.origHHeight = this.hHeight;
+ 	var origin = (this.svgNode.getAttribute("coordorigin")+"").split(',',2);;
+ 	var carea = (this.svgNode.getAttribute("coordsize")+"").split(',',2);
+ 	
+ 	this.orx = Number(origin[0]);
+ 	this.ory = Number(origin[1]);
+ 	this.szx = Number(carea[0]);
+ 	this.szy = Number(carea[1]);
+ 	this.scale = Number(this.svgNode.getAttribute("scl"));
+ 	
+ 	this.info("Origin x,y="+this.orx+","+this.ory+" size "+this.szx+","+this.szy +" scaling:"+this.scale);
+ 	
+    this.origOrx = this.orx;
+    this.origOry = this.ory;
+    this.origSzx = this.szx;
+    this.origSzy = this.szy;
     
-    this.baseUrl = this.getImageUrl(['region', 'imageQuality']);
+    this.rows = Number(this.imageNode.getAttribute("Rows"));
+    this.columns = Number(this.imageNode.getAttribute("Columns"));
+    this.width = getWidthFromNode(this.svgNode);
+    this.height = getHeightFromNode(this.svgNode);
+    this.info("rows,columns="+this.rows+","+this.columns);
+    this.info("width,height="+this.width+","+this.height);
+
     return true;
  };
-
+ 
 /**
- * Updates the window level value on the screen - that is, changes the source URL or otherwise
- * re-loads the image.
+ * The image is never updated, so don't worry about the updated URL.
  */
 function zpGetUpdatedUrlQuery(isDone)
 {
-  return this.region;
 }
 
 function zpEndAction() {
-    displayXslt.action(this.actionId,this.region);
+	var cx = this.orx + this.width / (2*this.scale);
+	var cy = this.ory + this.height / (2*this.scale);
+    displayXslt.action(this.actionId,"&region="+this.width+","+this.height+","+cx+","+cy+","+this.scale);
 };
 
 /**
@@ -113,18 +116,11 @@ function zpEndAction() {
  */
 function ZoomPan(minValue, maxValue) {
   this.image = new Image();
-  this.left = 0.0;
-  this.right = 1.0;
-  this.top = 0.0;
-  this.bottom = 1.0;
-  this.zoom = 1.0;
 };
 
 /** Updates the centerX/Y positions in the debug window */
 function zpUpdateOtherDisplay(isDone) {
-	if( this.debugValue ) {
-		this.debugValue.innerHTML = "Zoom Center:"+Math.round(1000*this.centerX) + ","+Math.round(1000*this.centerY);
-	}
+	this.debugValue("Zoom origin:"+this.orx+","+this.ory);
 }
 
 var zoomPanHandler;
@@ -137,15 +133,7 @@ function initZoomPan() {
 	ZoomPan.prototype.updateOtherDisplay = zpUpdateOtherDisplay;
 	ZoomPan.prototype.endAction = zpEndAction;
 	ZoomPan.prototype.updateModel = zpUpdateModel;
-	var t = displayXslt.itemsToUpdate;
-	t.zoomPlus=["image","zoomPanToolbar"];
-	t.zoomMinus = t.zoomPlus;
-	t.zoomLeft = t.zoomPlus;
-	t.zoomRight = t.zoomPlus;
-	t.zoomUp = t.zoomPlus;
-	t.zoomDown = t.zoomPlus;
-	t.zoomPan=t.zoomPlus;
-	
+	ZoomPan.prototype.noImageUpdates = true;
 	zoomPanHandler=new ZoomPan();
 };
 
