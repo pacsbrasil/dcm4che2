@@ -58,6 +58,9 @@
 	</target>
 
 	<target name="jar" depends="classes">
+		<copy todir="${classes.dir}">
+			<fileset dir="${javasrc.dir}" includes="*.properties"/>
+		</copy>
 		<mkdir dir="${target.dir}/lib/"/>
 	    <jar jarfile="${jar.file}">
 	     	<manifest>
@@ -65,8 +68,7 @@
 					<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 					<attribute name="Implementation-Vendor" value="AGFA Healthcare"/>
 	     	</manifest>
-	     	<fileset dir="${classes.dir}">
-	        </fileset>
+	     	<fileset dir="${classes.dir}" />
 	     </jar>
 	</target>
 	<target name="sar" depends="jar">
