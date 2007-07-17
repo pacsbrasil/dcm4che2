@@ -220,6 +220,8 @@ public class DcmQR {
     private int priority = 0;
 
     private String moveDest;
+    
+    private boolean evalRetrieveAET = false;
 
     private int qrlevel = STUDY;
 
@@ -569,7 +571,9 @@ public class DcmQR {
         OptionBuilder.withDescription("retrieve matching objects to specified " +
                 "move destination.");
         opts.addOption(OptionBuilder.create("dest"));
-
+        
+        opts.addOption("evalRetrieveAET", false,
+                "Only Move studies not allready stored on destination AET");
         opts.addOption("lowprior", false,
                 "LOW priority of the C-FIND/C-MOVE operation, MEDIUM by default");
         opts.addOption("highprior", false,
@@ -674,6 +678,8 @@ public class DcmQR {
             dcmqr.setPriority(CommandUtils.HIGH);
         if (cl.hasOption("dest"))
             dcmqr.setMoveDest((String) cl.getOptionValue("dest"));
+        if (cl.hasOption("evalRetrieveAET"))
+            dcmqr.setEvalRetrieveAET(true);
         if (cl.hasOption("P"))
             dcmqr.setQueryLevel(PATIENT);
         else if (cl.hasOption("S"))
@@ -797,6 +803,14 @@ public class DcmQR {
             e.printStackTrace();
         }
         System.out.println("Released connection to " + remoteAE);
+    }
+
+    private void setEvalRetrieveAET(boolean evalRetrieveAET) {
+       this.evalRetrieveAET = evalRetrieveAET;
+    }
+
+    private boolean isEvalRetrieveAET() {
+        return evalRetrieveAET;
     }
 
     private void setNoExtNegotiation(boolean b) {
@@ -1001,17 +1015,25 @@ public class DcmQR {
         String tsuid = selectTransferSyntax(tc);
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
             DicomObject keys = ((DicomObject) findResults.get(i))
-                    .subSet(MOVE_KEYS);
-            System.out.println("Send Retrieve Request using "
-                    + UIDDictionary.getDictionary().prompt(cuid) + ":");
-            System.out.println(keys.toString());
-            DimseRSPHandler rspHandler = new DimseRSPHandler() {
-                public void onDimseRSP(Association as, DicomObject cmd,
-                        DicomObject data) {
-                    DcmQR.this.onMoveRSP(as, cmd, data);
-                }
-            };
-            assoc.cmove(cuid, priority, keys, tsuid, moveDest, rspHandler);
+            .subSet(MOVE_KEYS);
+            if (isEvalRetrieveAET()
+                    && moveDest.equals(((DicomObject) findResults.get(i))
+                            .getString(Tag.RetrieveAETitle))) {
+                System.out.println("Skipping "
+                        + UIDDictionary.getDictionary().prompt(cuid) + ":");
+                System.out.println(keys.toString());
+            } else {
+                System.out.println("Send Retrieve Request using "
+                        + UIDDictionary.getDictionary().prompt(cuid) + ":");
+                System.out.println(keys.toString());
+                DimseRSPHandler rspHandler = new DimseRSPHandler() {
+                    public void onDimseRSP(Association as, DicomObject cmd,
+                            DicomObject data) {
+                        DcmQR.this.onMoveRSP(as, cmd, data);
+                    }
+                };
+                assoc.cmove(cuid, priority, keys, tsuid, moveDest, rspHandler);
+            }
         }
         assoc.waitForDimseRSP();
     }
