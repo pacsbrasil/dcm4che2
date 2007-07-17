@@ -80,14 +80,22 @@ public class RIDService extends AbstractCacheService  {
 		((WADOCacheImpl) cache).setDirectoryTree(primes);
 	}
 
-        public String getImageQuality() {
-            return cache.getImageQuality();
-        }
+	public String getImageQuality() {
+		return cache.getImageQuality();
+	}
 
-        public void setImageQuality(String imageQuality) {
-            cache.setImageQuality(imageQuality);
-        }
+	public void setImageQuality(String imageQuality) {
+		cache.setImageQuality(imageQuality);
+	}
         
+	public String getImageWriterClass() {
+		return cache.getImageWriterClass();
+	}
+
+	public void setImageWriterClass(String imageWriterClass) {
+		cache.setImageWriterClass(imageWriterClass);
+	}
+	
 	public float getWaveformCorrection() {
 		return waveformCorrection;
 	}

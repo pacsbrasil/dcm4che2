@@ -57,6 +57,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.config.DeleterThresholds;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -68,7 +69,7 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class WADOCacheImpl implements WADOCache {
 
-    public static final String DEFAULT_CACHE_ROOT = "/wadocache";
+	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
 
     public static final String DEFAULT_WADO_SUBDIR = "default";
 
@@ -77,7 +78,7 @@ public class WADOCacheImpl implements WADOCache {
     public static final String DEFAULT_WADO_EXT_SUBDIR = "wfind";
     
     public static final String DEFAULT_IMAGE_QUALITY = "75";
-
+    
     /** Buffer size for read/write */
     private static final int BUF_LEN = 65536;
     
@@ -99,7 +100,7 @@ public class WADOCacheImpl implements WADOCache {
 
     private static WADOCacheImpl singletonWADOExt = null;
 
-    private static Logger log = Logger.getLogger(WADOCacheImpl.class.getName());
+    protected static Logger log = Logger.getLogger(WADOCacheImpl.class.getName());
 
     /** the root folder where this cache stores the image files. */
     private File cacheRoot = null;
@@ -135,7 +136,11 @@ public class WADOCacheImpl implements WADOCache {
     private boolean redirectCaching = true;
 
     private String imageQuality = DEFAULT_IMAGE_QUALITY;
-    
+
+    protected String imageWriterClass;
+
+	protected WADOCacheImpl() {}
+
     public final String getImageQuality() {
         return imageQuality;
     }
@@ -149,12 +154,24 @@ public class WADOCacheImpl implements WADOCache {
         this.imageQuality = imageQuality;
     }
         
-    /**
-     * Creates a WADOCacheImpl instance..
-     */
-    private WADOCacheImpl() {
+    public final String getImageWriterClass() {
+		return imageWriterClass;
+	}
 
-    }
+	public void setImageWriterClass(String imageWriterClass) {
+		getImageWriterWriter(imageWriterClass).dispose();
+		this.imageWriterClass = imageWriterClass;
+	}
+
+    private static WADOCacheImpl createWADOCache() {
+		try {
+			Class.forName("com.sun.image.codec.jpeg.JPEGImageEncoder");
+			return new WADOCacheImplSun();
+		} catch (ClassNotFoundException e) {
+			log.info("com.sun.image.codec.jpeg.JPEGImageEncoder not available");
+			return new WADOCacheImpl();
+		}
+	}
 
     /**
      * Returns the singleton instance of WADOCache.
@@ -163,20 +180,20 @@ public class WADOCacheImpl implements WADOCache {
      */
     public static WADOCache getWADOCache() {
         if (singletonWADO == null) {
-            singletonWADO = new WADOCacheImpl();
+            singletonWADO = createWADOCache();
             singletonWADO.defaultSubdir = DEFAULT_WADO_SUBDIR;
         }
         return singletonWADO;
     }
 
-    /**
+	/**
      * Returns the singleton instance of WADOCache.
      * 
      * @return
      */
     public static WADOCache getRIDCache() {
         if (singletonRID == null) {
-            singletonRID = new WADOCacheImpl();
+            singletonRID = createWADOCache();
             singletonRID.defaultSubdir = DEFAULT_RID_SUBDIR;
         }
         return singletonRID;
@@ -189,7 +206,7 @@ public class WADOCacheImpl implements WADOCache {
      */
     public static WADOCache getWADOExtCache() {
         if (singletonWADOExt == null) {
-            singletonWADOExt = new WADOCacheImpl();
+            singletonWADOExt = createWADOCache();
             singletonWADOExt.defaultSubdir = DEFAULT_WADO_EXT_SUBDIR;
         }
         return singletonWADOExt;
@@ -885,18 +902,10 @@ public class WADOCacheImpl implements WADOCache {
                         + file.getParentFile());
             }
         }
-        Iterator writers = ImageIO.getImageWritersByFormatName("JPEG");
-        ImageWriter writer = (ImageWriter) writers.next();
-        ImageOutputStream out = ImageIO.createImageOutputStream(file);
-        writer.setOutput(out);
         try {
-            log.debug("Create JPEG (" + imageQuality 
-                    + " quality) for WADO request. file: " + file);
-            ImageWriteParam iwparam = writer.getDefaultWriteParam();
-            iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            iwparam.setCompressionQuality(Float.parseFloat(imageQuality)/100);
-            writer.write(null, new IIOImage(bi, null, null), iwparam);
-            out.flush();
+        	log.debug("Create JPEG (" + imageQuality 
+        			+ " quality) for WADO request. file: " + file);
+	        createJPEG(bi, file, Float.parseFloat(imageQuality)/100);
         } catch (Throwable x) {
             log.error("Can not create JPEG for WADO request. file:" + file);
             if (file.exists()) {
@@ -910,13 +919,37 @@ public class WADOCacheImpl implements WADOCache {
                     + file + ")! Reason:" + x.getMessage());
             ioe.initCause(x);
             throw ioe;
-        } finally {
-            out.close();
-            writer.dispose();
         }
     }
 
-    /**
+	protected void createJPEG(BufferedImage bi, File file, float quality)
+			throws IOException {
+		ImageWriter writer = getImageWriterWriter(imageWriterClass);
+		ImageOutputStream out = ImageIO.createImageOutputStream(file);
+		try {
+			writer.setOutput(out);
+			ImageWriteParam iwparam = writer.getDefaultWriteParam();
+			iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			iwparam.setCompressionQuality(quality);
+			writer.write(null, new IIOImage(bi, null, null), iwparam);
+		} finally {
+			out.close();
+			writer.dispose();
+		}
+	}
+
+    private ImageWriter getImageWriterWriter(String imageWriterClass) {
+        for (Iterator writers = ImageIO.getImageWritersByFormatName("JPEG");
+        	writers.hasNext();) {
+        	ImageWriter writer = (ImageWriter) writers.next();
+        	if (writer.getClass().getName().equals(imageWriterClass)) {
+        		return writer;
+        	}
+    	}
+        throw new ConfigurationException("No such ImageWriter - " +  imageWriterClass);
+	}
+
+	/**
      * Reads an jpg file into a BufferedImage.
      * 
      * @param jpgFile

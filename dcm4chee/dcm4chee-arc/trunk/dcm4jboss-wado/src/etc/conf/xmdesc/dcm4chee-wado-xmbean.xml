@@ -33,18 +33,6 @@
    </constructor>
 
    <attribute access="read-write"
-      getMethod="getImageQuality"
-      setMethod="setImageQuality">
-      <description>The default quality of JPEG images to be returned within
-      the range 1 to 100, 100 being the best quality.
-      </description>
-      <name>ImageQuality</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="75" />
-      </descriptors>
-   </attribute>   
-   <attribute access="read-write"
       getMethod="getCacheRoot"
       setMethod="setCacheRoot">
       <description>Root directory where jpegs are stored for caching.
@@ -73,7 +61,6 @@
          <value value="337/331/317" />
       </descriptors>
    </attribute>
-
    <attribute access="read-write"
       getMethod="getDeleterThresholds"
       setMethod="setDeleterThresholds">
@@ -115,6 +102,35 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="getImageQuality"
+      setMethod="setImageQuality">
+      <description>The quality of JPEG images to be returned within
+      the range 1 to 100, 100 being the best quality.
+      </description>
+      <name>ImageQuality</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="75" />
+      </descriptors>
+   </attribute>
+    
+   <attribute access="read-write"
+      getMethod="getImageWriterClass"
+      setMethod="setImageWriterClass">
+      <description><![CDATA[Class name of used JPEG Encoder, either implementing
+      <code>javax.imageio.ImageWriter</code> (e.g.:
+      <code>com.sun.imageio.plugins.jpeg.JPEGImageWriter</code>) or
+      - if provided by the JRE -
+      <code>com.sun.image.codec.jpeg.JPEGImageEncoder</code>.]]>
+      </description>
+      <name>ImageWriterClass</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+      </descriptors>
+   </attribute>
+   
     <attribute access="read-write"
       getMethod="isClientRedirect"
       setMethod="setClientRedirect">

@@ -136,7 +136,15 @@ public class WADOService extends AbstractCacheService {
         cache.setImageQuality(imageQuality);
     }
     
-    /**
+	public String getImageWriterClass() {
+		return cache.getImageWriterClass();
+	}
+
+	public void setImageWriterClass(String imageWriterClass) {
+		cache.setImageWriterClass(imageWriterClass);
+	}
+	
+	/**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
      */
     public boolean isUseTransferSyntaxOfFileAsDefault() {

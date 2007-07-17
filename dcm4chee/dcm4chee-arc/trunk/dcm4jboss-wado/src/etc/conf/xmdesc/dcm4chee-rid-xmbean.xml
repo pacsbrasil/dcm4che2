@@ -31,18 +31,6 @@
    </constructor>
 
    <attribute access="read-write"
-      getMethod="getImageQuality"
-      setMethod="setImageQuality">
-      <description>The quality of JPEG images to be returned within
-      the range 1 to 100, 100 being the best quality.
-      </description>
-      <name>ImageQuality</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="75" />
-      </descriptors>
-   </attribute>   
-   <attribute access="read-write"
       getMethod="getCacheRoot"
       setMethod="setCacheRoot">
       <description>Root directory where documents are stored for caching.
@@ -69,18 +57,6 @@
          <value value="NONE" />
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getWaveformCorrection"
-      setMethod="setWaveformCorrection">
-      <description>Waveform Correction factor.
-      </description>
-      <name>WaveformCorrection</name>
-      <type>float</type>
-      <descriptors>
-         <value value="1" />
-      </descriptors>
-   </attribute>
- 
    <attribute access="read-write"
       getMethod="getDeleterThresholds"
       setMethod="setDeleterThresholds">
@@ -121,7 +97,48 @@
          <value value="10m" />
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getImageQuality"
+      setMethod="setImageQuality">
+      <description>The quality of JPEG images to be returned within
+      the range 1 to 100, 100 being the best quality.
+      </description>
+      <name>ImageQuality</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="75" />
+      </descriptors>
+   </attribute>
+    
+   <attribute access="read-write"
+      getMethod="getImageWriterClass"
+      setMethod="setImageWriterClass">
+      <description><![CDATA[Class name of used JPEG Encoder, either implementing
+      <code>javax.imageio.ImageWriter</code> (e.g.:
+      <code>com.sun.imageio.plugins.jpeg.JPEGImageWriter</code>) or
+      - if provided by the JRE -
+      <code>com.sun.image.codec.jpeg.JPEGImageEncoder</code>.]]>
+      </description>
+      <name>ImageWriterClass</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+      </descriptors>
+   </attribute>   
 
+   <attribute access="read-write"
+      getMethod="getWaveformCorrection"
+      setMethod="setWaveformCorrection">
+      <description>Waveform Correction factor.
+      </description>
+      <name>WaveformCorrection</name>
+      <type>float</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+ 
     <attribute access="read-write"
       getMethod="getECGSopCuids"
       setMethod="setECGSopCuids">

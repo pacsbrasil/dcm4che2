@@ -54,6 +54,7 @@ import java.io.InputStream;
  */
 public interface WADOCache {
 
+	
     /**
      * Get an image as BufferedImage from cache.
      * <p>
@@ -313,4 +314,7 @@ public interface WADOCache {
 
     public void setImageQuality(String imageQuality);
 
+    public String getImageWriterClass();
+
+	public void setImageWriterClass(String imageWriterClass);
 }
