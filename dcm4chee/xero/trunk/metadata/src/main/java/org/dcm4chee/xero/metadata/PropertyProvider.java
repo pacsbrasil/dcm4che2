@@ -67,6 +67,13 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 	public PropertyProvider(Map<String, ?> properties) {
 		this.properties = new HashMap<String, Object>(properties);
 	}
+	
+	/**
+	 * This constructor is used to create property providers that read other property files.
+	 */
+	public PropertyProvider() {
+		this.properties = new HashMap<String, Object>();
+	}
 
 	/** Returns the meta-data information available from the properties file
 	 * @param path is the location to get meta data for

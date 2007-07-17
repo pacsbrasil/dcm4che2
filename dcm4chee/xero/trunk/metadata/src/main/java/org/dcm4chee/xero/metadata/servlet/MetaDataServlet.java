@@ -51,7 +51,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +154,7 @@ public class MetaDataServlet extends HttpServlet {
 			else
 				ret.put(me.getKey(), me.getValue());
 		}
-		ret.put(MemoryCacheFilter.KEY_NAME, request.getQueryString());
+		ret.put(MemoryCacheFilterBase.KEY_NAME, request.getQueryString());
 		return ret;
 	}
 
