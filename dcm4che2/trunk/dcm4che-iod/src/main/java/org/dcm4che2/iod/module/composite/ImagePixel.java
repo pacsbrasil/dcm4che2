@@ -222,4 +222,17 @@ public class ImagePixel extends Module {
     public void setICCProfile(byte[] b) {
         dcmobj.putBytes(Tag.ICCProfile, VR.OB, b, false);
     }
+
+    /** Returns the maximum value it is possible to store */
+    public int maxPossibleStoredValue()
+    {
+        return PixelRepresentation.isSigned(dcmobj) ? (1 << (getBitsStored() - 1)) - 1 : (1 << getBitsStored()) - 1;
+    }
+
+    /** Returns the minimum value it is possible to store */
+    public int minPossibleStoredValue()
+    {
+        return PixelRepresentation.isSigned(dcmobj) ? -maxPossibleStoredValue() - 1 : 0;
+    }
+
 }
