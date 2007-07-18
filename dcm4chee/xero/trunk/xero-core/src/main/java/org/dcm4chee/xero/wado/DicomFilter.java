@@ -9,6 +9,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.filter.CacheItemImpl;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.slf4j.Logger;
@@ -55,7 +56,8 @@ public class DicomFilter implements Filter<DicomObject> {
 			DicomInputStream dis = new DicomInputStream(location.openStream());
 			if( !fullRead ) dis.setHandler(stopHandler);
 			ret = dis.readDicomObject();
-			params.put(key, ret);			
+			params.put(key, ret);
+			params.put(CacheItemImpl.CACHE_SIZE, Long.toString(ret.size()*10) );
 		} catch (IOException e) {
 			log.warn("Can't read sop instance "+params.get("objectUID"));
 		}

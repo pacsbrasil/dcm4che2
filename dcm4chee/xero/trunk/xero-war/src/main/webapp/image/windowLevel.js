@@ -65,8 +65,26 @@ function wlUpdateModel(x,y) {
  * Starts the window levelling
  */
  function wlStartLeft(x,y) {
-  this.wlCurrentValue = document.getElementById("wlCurrentValue");
   this.baseUrl = this.getImageUrl(['windowWidth', 'windowCenter', 'imageQuality']);
+  
+  this.minValue = this.imageNode.getAttribute("minPixel");
+  this.maxValue = this.imageNode.getAttribute("maxPixel");
+  this.info("Min,max pixel="+this.minValue+","+this.maxValue);
+  
+  if( (!this.minValue) || (!this.maxValue) ) {
+  	this.info("No pixel range - can't window level.");
+  	return false;
+  }  
+  this.minValue = Number(this.minValue);
+  this.maxValue = Number(this.maxValue);
+  this.range = this.maxValue - this.minValue;
+  this.windowWidth = this.range;
+  this.windowCenter = this.minValue + this.range/2;
+  this.info("Start w,c="+this.windowWidth+","+this.windowCenter+" range="+this.range);
+  
+  this.originalWidth = this.windowWidth;
+  this.originalCenter = this.windowCenter;
+  
   this.startWidth = this.windowWidth;
   this.startCenter = this.windowCenter;
   this.sinceCompleteTime = -1;
@@ -86,15 +104,8 @@ function wlGetUpdatedUrlQuery(isDone)
 /**
  * Creates a window level object
  */
-function WindowLevelBase(minValue, maxValue) {
+function WindowLevelBase() {
   this.image = new Image();
-  this.range = maxValue - minValue;
-  this.windowWidth = this.range;
-  this.windowCenter = minValue + this.range/2.0;
-  this.originalWidth = this.windowWidth;
-  this.originalCenter = this.windowCenter;
-  this.minValue = minValue;
-  this.maxValue = maxValue;
 };
 
 function wlEndAction() {
@@ -121,7 +132,7 @@ function initWindowLevel() {
 	var t = displayXslt.itemsToUpdate;
 	t.windowLevel=["image","imageToolbar"];
 	
-    windowLevelHandler = new WindowLevelBase(0, 65535);
+    windowLevelHandler = new WindowLevelBase();
 };
 
 addLoadEvent(initWindowLevel);

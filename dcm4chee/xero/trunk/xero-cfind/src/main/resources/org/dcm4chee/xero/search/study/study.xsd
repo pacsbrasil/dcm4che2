@@ -204,6 +204,8 @@ Key objects are a named (by code meaning) list of images to display.
     	        <attribute name="magnify" type="float" />
 		    	<attribute name="windowWidth" type="float" />
     			<attribute name="windowCenter" type="float" />
+    			<attribute name="minPixel" type="float" />
+    			<attribute name="maxPixel" type="float" />
     		</extension>
     	</complexContent>
     </complexType>

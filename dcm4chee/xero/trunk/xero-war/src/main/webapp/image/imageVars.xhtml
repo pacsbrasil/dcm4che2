@@ -9,7 +9,7 @@
 
 <xsl:variable name="imagePosition"><xsl:value-of select="number(/documents/position)"/></xsl:variable>
 
-<xsl:variable name="frameNode" select="document(/documents/layout)/se:results" />
+<xsl:variable name="frameNode" select="document(/documents/layout/@frame)/se:results" />
 <xsl:variable name="mode" select="/documents/mode" />
 <xsl:variable name="applyLevel" select="/documents/mode/@applyLevel" />
 <xsl:variable name="documentsNode" select="/documents" />

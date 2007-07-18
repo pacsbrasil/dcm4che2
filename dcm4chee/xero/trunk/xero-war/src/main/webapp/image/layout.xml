@@ -8,7 +8,7 @@
    <study id="s0" offset="0">
     <xul:vbox id="x0">
      <xul:toolbar ref="studyToolbar" height="1" />
-     <series id="e0" offset="0" height="25">
+     <series id="e0" offset="0" height="25" pageSize="2">
       <xul:vbox>
        <xul:toolbar ref="seriesToolbar" height="1"/>
        <xul:hbox id="x1" height="15">
@@ -18,7 +18,7 @@
       </xul:vbox>
      </series>
     
-     <series id="e1" offset="1" height="25">
+     <series id="e1" offset="1" height="25" pageSize="9">
       <xul:vbox>
        <xul:toolbar ref="seriesToolbar" height="1"/>
        <xul:hbox id="e1x0" height="15">

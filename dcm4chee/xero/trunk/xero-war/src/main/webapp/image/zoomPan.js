@@ -60,7 +60,7 @@ function zpUpdateModel(x,y) {
    var viewBox = ""+this.orx+" "+this.ory+" "+this.szx+" "+this.szy;
    this.svgNode.setAttribute("coordorigin",origin);
    this.svgNode.setAttribute("viewBox", viewBox);
-   this.info("Setting viewBox="+viewBox);
+   this.debug("Setting viewBox="+viewBox);
    this.svgNode.setAttribute("viewBox",viewBox);
    // Never update the image any longer, as it is a direct update of the underlying data.
    return false;
@@ -70,7 +70,7 @@ function zpUpdateModel(x,y) {
  * Starts the window levelling
  */
  function zpStartLeft(x,y) {
- 	this.info("Starting zoom/pan left button drag.");
+ 	this.debug("Starting zoom/pan left button drag.");
  	this.url = this.getImageUrl();
  	var origin = (this.svgNode.getAttribute("coordorigin")+"").split(',',2);;
  	var carea = (this.svgNode.getAttribute("coordsize")+"").split(',',2);
@@ -81,7 +81,7 @@ function zpUpdateModel(x,y) {
  	this.szy = Number(carea[1]);
  	this.scale = Number(this.svgNode.getAttribute("scl"));
  	
- 	this.info("Origin x,y="+this.orx+","+this.ory+" size "+this.szx+","+this.szy +" scaling:"+this.scale);
+ 	this.debug("Origin x,y="+this.orx+","+this.ory+" size "+this.szx+","+this.szy +" scaling:"+this.scale);
  	
     this.origOrx = this.orx;
     this.origOry = this.ory;
@@ -92,8 +92,8 @@ function zpUpdateModel(x,y) {
     this.columns = Number(this.imageNode.getAttribute("Columns"));
     this.width = getWidthFromNode(this.svgNode);
     this.height = getHeightFromNode(this.svgNode);
-    this.info("rows,columns="+this.rows+","+this.columns);
-    this.info("width,height="+this.width+","+this.height);
+    this.debug("rows,columns="+this.rows+","+this.columns);
+    this.debug("width,height="+this.width+","+this.height);
 
     return true;
  };

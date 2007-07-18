@@ -97,10 +97,7 @@
 <!-- Figures out the arguments to a standard WADO call, getting the region and so on setup
      correctly
   -->
-<x:template name="imageWado" mode="wadoArgsNode" match="se:image">
- <xsl:param name="loc" />
- <xsl:param name="node" />
-
+<x:template name="imageWado" mode="wadoArgsNode" match="se:image"><xsl:param name="loc" /><xsl:param name="node" />
  <xsl:param name="w" select="number(substring-before($loc,','))" />
  <xsl:param name="wr" select="substring-after($loc,',')" />
  <xsl:param name="h" select="number(substring-before($wr,','))" />
@@ -122,12 +119,7 @@
  <xsl:param name="wWidth" select="$custNode[@windowWidth][last()]/@windowWidth" />
  <xsl:param name="wCenter" select="$custNode[@windowCenter][last()]/@windowCenter" />
  
- <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO
-  <xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" />
-  <xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if>
-  <xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />
-  &amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" />
- </xsl:attribute>
+ <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
   <xsl:attribute name="style"><xsl:value-of select="concat('left:',$orx,';top:',$ory,';width:',$brx - $orx,';height:',$bry - $ory,';')" /></xsl:attribute>
  </c:if>
@@ -138,6 +130,8 @@
  </c:if>
  <xsl:attribute name="Rows"><xsl:value-of select="@Rows" /></xsl:attribute>
  <xsl:attribute name="Columns"><xsl:value-of select="@Columns" /></xsl:attribute>
+ <xsl:attribute name="minPixel"><xsl:value-of select="@minPixel" /></xsl:attribute>
+ <xsl:attribute name="maxPixel"><xsl:value-of select="@maxPixel" /></xsl:attribute>
 </x:template>
 
 <!-- Generate arguments for the current location of this object based on the data node
@@ -516,6 +510,25 @@ and cx,cy = width /2, height/2
  </xsl:apply-templates>
 </x:template>
  
+<x:template name="imageHandlerLayout" mode="newlayout" match="xul:imageHandler">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:if test="@mode=$mode">
+   <xsl:if test="@oncommand">
+    <xsl:attribute name="action"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+     <xsl:with-param name="loc" select="$loc" />
+     <xsl:with-param name="node" select="." />
+    </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
+     <xsl:with-param name="loc" select="$loc" />
+     <xsl:with-param name="node" select="$node" />
+    </xsl:apply-templates></xsl:attribute>
+   </xsl:if>  
+   <xsl:if test="@handler">
+      <xsl:attribute name="onmousedown">return <xsl:value-of select="@handler"/>.mouseDown(#{(browser=='MSIE')?"":"evt"});</xsl:attribute>
+   </xsl:if>
+ </xsl:if>
+</x:template>
+
 <x:template name="imageLayout" mode="newlayout" match="se:image">
    <xsl:param name="loc" />
    <xsl:param name="node" />
@@ -545,29 +558,16 @@ and cx,cy = width /2, height/2
    </div>
 </x:template>
 
-<x:template name="imageHandlerLayout" mode="newlayout" match="xul:imageHandler">
- <xsl:param name="loc" />
- <xsl:param name="node" />
- <xsl:if test="@mode=$mode">
-   <xsl:if test="@oncommand">
-    <xsl:attribute name="action"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
-     <xsl:with-param name="loc" select="$loc" />
-     <xsl:with-param name="node" select="." />
-    </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
-     <xsl:with-param name="loc" select="$loc" />
-     <xsl:with-param name="node" select="$node" />
-    </xsl:apply-templates></xsl:attribute>
-   </xsl:if>  
-   <xsl:if test="@handler">
-      <xsl:attribute name="onmousedown">return <xsl:value-of select="@handler"/>.mouseDown(#{(browser=='MSIE')?"":"evt"});</xsl:attribute>
-   </xsl:if>
- </xsl:if>
-</x:template>
-
 <x:template name="seriesLayout" mode="newlayout" match="se:series">
    <xsl:param name="loc" />
    <xsl:param name="node" />
    <xsl:param name="offset" select="@offset" />
+   <xsl:param name="studyNodeId" select="ancestor::se:study/@id" />
+   <xsl:param name="custStudyNode" select="$documentsNode/layout/se:study[@id=$studyNodeId]" />
+   <xsl:param name="seriesUID"><xsl:choose>
+     <xsl:when test="$custStudyNode/@viewSeriesUID != ''"><xsl:value-of select="$custStudyNode/@viewSeriesUID" /></xsl:when>
+     <xsl:otherwise><xsl:value-of select="$node/se:series[1]/@SeriesInstanceUID" /></xsl:otherwise>
+   </xsl:choose></xsl:param>
    <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
    <xsl:param name="seriesNode" select="($seriesNodeForUID | $seriesNodeForUID/following-sibling::se:series)[1+$offset]" />
    <div>

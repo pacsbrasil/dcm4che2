@@ -238,7 +238,7 @@
       <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
       <init-param>
 	      <param-name>metaData</param-name>
-    	  <param-value>/xero-cfind.metadata</param-value>
+    	  <param-value>/wado.metadata</param-value>
       </init-param>
       <init-param>
 	      <param-name>filter</param-name>
@@ -256,7 +256,7 @@
       <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
       <init-param>
 	      <param-name>metaData</param-name>
-    	  <param-value>/xero-cfind.metadata</param-value>
+    	  <param-value>/wado.metadata</param-value>
       </init-param>
       <init-param>
 	      <param-name>filter</param-name>
@@ -274,7 +274,7 @@
       <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
       <init-param>
 	      <param-name>metaData</param-name>
-    	  <param-value>/xero-cfind.metadata</param-value>
+    	  <param-value>/wado.metadata</param-value>
       </init-param>
       <init-param>
 	      <param-name>filter</param-name>

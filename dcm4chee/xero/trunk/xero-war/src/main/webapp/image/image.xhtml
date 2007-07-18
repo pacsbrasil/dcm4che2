@@ -14,7 +14,12 @@
   <!-- This needs to be settable per-machine, in mm/pixel -->
   <screenPitch>0.294</screenPitch>
   
-  <layout doc="/xero/study/study.xml?StudyInstanceUID=#{StudyLevel.studyUID}">/xero/image/layout.xml</layout>
+  <layout doc="/xero/study/study.xml?StudyInstanceUID=#{StudyLevel.studyUID}" frame="/xero/image/layout.xml"  xmlns:se="http://www.dcm4chee.org/xero/search/study/">
+    <se:study id="s0" viewSeriesUID="#{StudyLevel.seriesUID}">
+      <se:series id="e1" firstImagePosition="3" />
+    </se:study>
+  </layout>
+  
   <toolbar>/xero/image/imageCommands.seam</toolbar>
   
   <h:outputText value="#{LocalStudyModel.studyXml}" escape="false" />

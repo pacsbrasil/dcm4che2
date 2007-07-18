@@ -61,11 +61,14 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 	
 	/** The value to use for cache-control to NOT cache the item */
 	public static final String NO_CACHE="no-cache";
+	
+	/** The key to use in the meta-data for the size */
+	public static final String CACHE_SIZE="cacheSize";
 
 	/** The default cache size - should probably come from meta-data
 	 * TODO Change this to some appropriate value 
 	 */
-    public static final long DEFAULT_INITIAL_SIZE_BYTES = 1024l*1024*30;
+    public static final long DEFAULT_INITIAL_SIZE_BYTES = 1024l*1024*10;
 	
 	protected String paramKeyName = KEY_NAME;
 	
@@ -85,8 +88,9 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 	 * @return
 	 */
 	protected String computeKey(Map<String,?> params) {
-		if( params==null ) throw new IllegalArgumentException("Params to filter and compute key should not be null.");
+		if( params==null ) throw new IllegalArgumentException("Params to filter and compute key should not be null.");		
 		Object okey = params.get(paramKeyName);
+		log.info("Looking for key in "+paramKeyName+" found "+okey);
 		if( okey instanceof String ) return (String) okey;
 		if( okey instanceof String[] ) throw new IllegalArgumentException("Memory cache key must be single valued.");
 		if( okey==null ) {
@@ -104,7 +108,10 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 	}
 
 	public void setMetaData(MetaDataBean metaDataBean) {
-		String keyName = (String) metaDataBean.getValue("KEY_NAME");
-		if( keyName!=null ) this.paramKeyName = keyName;
+		String keyName = (String) metaDataBean.getValue(KEY_NAME);
+		log.info("Setting key name for parameter to "+keyName);
+		if( keyName!=null ) paramKeyName = keyName;
+		String cacheSize = (String) metaDataBean.getValue(CACHE_SIZE);
+		if( cacheSize!=null ) setCacheSizes(Long.parseLong(cacheSize)); 
 	}
 }
