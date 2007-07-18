@@ -58,7 +58,7 @@ CREATE INDEX observer_p_name ON verify_observer(observer_p_name(64));
 ALTER TABLE filesystem ADD fs_group_id VARCHAR(250) BINARY;
 UPDATE filesystem SET fs_group_id='ONLINE_STORAGE' WHERE availability=0;
 UPDATE filesystem SET fs_group_id='NEARLINE_STORAGE' WHERE availability=1;
-ALTER TABLE filesystem ADD fs_group_id VARCHAR(250) BINARY NOT NULL;
+ALTER TABLE filesystem MODIFY fs_group_id VARCHAR(250) BINARY NOT NULL;
 CREATE INDEX fs_group_id ON filesystem(fs_group_id(16));
 
 ALTER TABLE mwl_item ADD station_name VARCHAR(250) BINARY;
