@@ -119,6 +119,7 @@
         <attr tag="00080064"/> <!-- Conversion Type -->
         <attr tag="00081115"/> <!-- Referenced Series Sequence -->
         <attr tag="00081140"/> <!-- Referenced Image Sequence -->
+        <attr tag="00082111"/> <!-- Derivation Description -->
         <attr tag="00082112"/> <!-- Source Image Sequence -->
         <attr tag="00082144"/> <!-- Recommended Display Frame Rate -->
         <attr tag="00180010"/> <!-- Contrast/Bolus Agent -->
