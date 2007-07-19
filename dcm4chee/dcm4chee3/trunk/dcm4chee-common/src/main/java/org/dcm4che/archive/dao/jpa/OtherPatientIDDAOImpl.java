@@ -42,6 +42,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.OtherPatientIDDAO;
@@ -95,8 +96,7 @@ public class OtherPatientIDDAOImpl extends BaseDAOImpl<OtherPatientID>
             throws ContentCreateException {
         try {
             return findByPatientIdAndIssuer(pid, issuer);
-        }
-        catch (NoResultException e) {
+        } catch (NoResultException e) {
             return create(pid, issuer);
         }
     }
@@ -106,8 +106,19 @@ public class OtherPatientIDDAOImpl extends BaseDAOImpl<OtherPatientID>
      *      java.lang.String)
      */
     public OtherPatientID findByPatientIdAndIssuer(String pid, String issuer) {
-        // TODO
-        return null;
-    }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for OtherPatientIDs with patient id=" + pid
+                    + " and issuer=" + issuer);
+        }
 
+        OtherPatientID patId = null;
+
+        Query query = em
+                .createQuery("select opid from OtherPatientID as opid where opid.patientId = :pid and opid.issuerOfPatientId = :issuer");
+        query.setParameter("pid", pid);
+        query.setParameter("issuer", issuer);
+        patId = (OtherPatientID) query.getSingleResult();
+
+        return patId;
+    }
 }
