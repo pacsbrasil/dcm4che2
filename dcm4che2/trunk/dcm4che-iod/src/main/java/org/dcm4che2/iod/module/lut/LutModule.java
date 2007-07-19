@@ -36,6 +36,10 @@ public class LutModule extends GeneralImageModule {
 		dcmobj.putFloat(Tag.RescaleIntercept, VR.DS, intercept);
 	}
 
+	/**
+	 * Get the rescale intercept value.
+	 * @return Rescale intercept value.
+	 */
 	public float getRescaleIntercept() {
 		return dcmobj.getFloat(Tag.RescaleIntercept);
 	}
@@ -53,7 +57,7 @@ public class LutModule extends GeneralImageModule {
 	/**
 	 * m in the equation specified by Rescale Intercept (0028,1052).
 	 * 
-	 * @return 1
+	 * @return the recale slope.
 	 */
 	public float getRescaleSlope() {
 		return dcmobj.getFloat(Tag.RescaleSlope);
@@ -64,6 +68,8 @@ public class LutModule extends GeneralImageModule {
 	 * Intercept (0028,1052).
 	 * <p>
 	 * Enumerated Value: US = Unspecified
+	 * Enumerated Value: OD = Optical Density
+	 * Enumerated Value: HU = Houndsfield Units
 	 * <p>
 	 * See C.8.11.3.1.2 for further explanation.
 	 * 
@@ -193,7 +199,7 @@ public class LutModule extends GeneralImageModule {
 	 * <p>
 	 * Required if Window Center (0028,1050) is sent.
 	 * 
-	 * @return
+	 * @return An array of window widths corresponding to the window center/width explanation.
 	 */
 	public float[] getWindowWidth() {
 		return dcmobj.getFloats(Tag.WindowWidth);
@@ -204,7 +210,7 @@ public class LutModule extends GeneralImageModule {
 	 * <p>
 	 * Multiple values correspond to multiple Window Center and Width values.
 	 * 
-	 * @param lo
+	 * @param explanations to associate with window levels.
 	 */
 	public void setWindowCenterWidthExplanation(String[] explanations) {
 		dcmobj
@@ -217,7 +223,7 @@ public class LutModule extends GeneralImageModule {
 	 * <p>
 	 * Multiple values correspond to multiple Window Center and Width values.
 	 * 
-	 * @return
+	 * @return an array of explanatory names for each window level (width/center)
 	 */
 	public String[] getWindowCenterWidthExplanations() {
 		return dcmobj.getStrings(Tag.WindowCenterWidthExplanation);
