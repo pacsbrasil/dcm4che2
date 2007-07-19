@@ -69,9 +69,16 @@ public interface PrivatePatientDAO extends DAO<PrivatePatient> {
     /**
      * @param type
      * @param patientId
+     * @return
+     * @throws PersistenceException
+     */
+    public Collection<PrivatePatient> findByPatientId(int type, String patientId) throws PersistenceException;
+
+    /**
+     * @param type
+     * @param patientId
      * @param issuerOfPatientId
      * @return
      */
     public Collection<PrivatePatient> findByPatientIdWithIssuer(int type, String patientId, String issuerOfPatientId) throws PersistenceException;
-
 }

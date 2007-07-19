@@ -44,6 +44,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -91,13 +92,49 @@ public class PrivatePatientDAOImpl extends BaseDAOImpl<PrivatePatient>
     }
 
     /**
+     * @see org.dcm4che.archive.dao.PrivatePatientDAO#findByPatientId(int,
+     *      java.lang.String)
+     */
+    public Collection<PrivatePatient> findByPatientId(int type, String patientId)
+            throws PersistenceException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for PrivatePatients with patient id="
+                    + patientId);
+        }
+
+        Collection<PrivatePatient> patients = null;
+
+        Query query = em
+                .createQuery("select pp from PrivatePatient as pp where pp.privateType=:type and pp.patientId=:pid");
+        query.setParameter("type", type);
+        query.setParameter("pid", patientId);
+        patients = query.getResultList();
+
+        return patients;
+    }
+
+    /**
      * @see org.dcm4che.archive.dao.PrivatePatientDAO#findByPatientIdWithIssuer(int,
      *      java.lang.String, java.lang.String)
      */
     public Collection<PrivatePatient> findByPatientIdWithIssuer(int type,
             String patientId, String issuerOfPatientId)
             throws PersistenceException {
-        return null;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for PrivatePatients with patient id="
+                    + patientId + " and issuer=" + issuerOfPatientId);
+        }
+
+        Collection<PrivatePatient> patients = null;
+
+        Query query = em
+                .createQuery("select pp from PrivatePatient as pp where pp.privateType=:type and pp.patientId=:pid and (a.issuerOfPatientId is null or pp.issuerOfPatientId = :issuer)");
+        query.setParameter("type", type);
+        query.setParameter("pid", patientId);
+        query.setParameter("issuer", issuerOfPatientId);
+        patients = query.getResultList();
+
+        return patients;
     }
 
     /**
@@ -105,7 +142,21 @@ public class PrivatePatientDAOImpl extends BaseDAOImpl<PrivatePatient>
      */
     public Collection<PrivatePatient> findByPrivateType(int privateType)
             throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger
+                    .debug("Searching for PrivatePatient entities with privateType="
+                            + privateType);
+        }
+
+        Collection<PrivatePatient> patients = null;
+
+        Query query = em
+                .createQuery("select pp from PrivatePatient as pp where pp.privateType=:type");
+        query.setParameter("type", privateType);
+        patients = query.getResultList();
+
+        return patients;
     }
 
     /**
