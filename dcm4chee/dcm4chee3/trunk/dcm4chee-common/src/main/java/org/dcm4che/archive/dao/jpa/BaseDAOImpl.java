@@ -59,6 +59,7 @@ import org.dcm4che.archive.entity.EntityBase;
  * 
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
+
 public abstract class BaseDAOImpl<E extends EntityBase> implements DAO<E> {
     protected Logger logger = Logger.getLogger(getClass());
 
