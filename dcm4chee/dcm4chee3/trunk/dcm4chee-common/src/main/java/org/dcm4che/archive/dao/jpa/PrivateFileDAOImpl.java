@@ -43,6 +43,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -93,7 +94,21 @@ public class PrivateFileDAOImpl extends BaseDAOImpl<PrivateFile> implements
      */
     public List<PrivateFile> findDereferencedInFileSystem(String dirPath,
             int limit) {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for dereferenced files with path="
+                    + dirPath);
+        }
+
+        List<PrivateFile> files = null;
+
+        Query query = em
+                .createQuery("select pf from PrivateFile as pf where pf.instance is null and pf.fileSystem.directoryPath=:path");
+        query.setParameter("path", dirPath);
+        query.setMaxResults(limit);
+        files = query.getResultList();
+
+        return files;
     }
 
     /**
