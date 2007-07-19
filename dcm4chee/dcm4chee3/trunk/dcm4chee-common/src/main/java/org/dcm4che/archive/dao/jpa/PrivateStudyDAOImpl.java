@@ -44,6 +44,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -97,7 +98,20 @@ public class PrivateStudyDAOImpl extends BaseDAOImpl<PrivateStudy> implements
      */
     public Collection<PrivateStudy> findByStudyIuid(int type, String studyIuid)
             throws PersistenceException {
-        return null;
-    }
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for PrivateStudy entities with study iuid="
+                    + studyIuid);
+        }
+
+        Collection<PrivateStudy> studies = null;
+
+        Query query = em
+                .createQuery("select ps from PrivateStudy as ps where ps.privateType=:type and ps.studyIuid=:siuid");
+        query.setParameter("type", type);
+        query.setParameter("siuid", studyIuid);
+        studies = query.getResultList();
+
+        return studies;
+    }
 }
