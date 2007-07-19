@@ -48,6 +48,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
@@ -111,7 +112,19 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
      */
     public List<Instance> findBySeriesPk(Long seriesPk)
             throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for instances with series pk=" + seriesPk);
+        }
+
+        List<Instance> instances = null;
+
+        Query query = em
+                .createQuery("select instance from Instance as instance where instance.series.pk=:fk");
+        query.setParameter("fk", seriesPk);
+        instances = query.getResultList();
+
+        return instances;
     }
 
     /**
@@ -119,7 +132,15 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
      */
     public Instance findBySopIuid(String uid) throws NoResultException,
             PersistenceException {
-        return null;
+        Query query = em
+                .createQuery("select study from Study as study where study.sopIuid =:sopiuid");
+        query.setParameter("sopiuid", uid);
+        Instance instance = (Instance) query.getSingleResult();
+        if (instance == null) {
+            throw new NoResultException("Instance with iuid=" + uid);
+        }
+
+        return instance;
     }
 
     /**
@@ -128,7 +149,23 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
      */
     public List<Instance> findByStudyAndSrCode(String suid, String cuid,
             String code, String designator) throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for instances for study iuid=" + suid
+                    + " and SR code=" + code);
+        }
+
+        List<Instance> instances = null;
+
+        Query query = em
+                .createQuery("select instance from Instance as instance where instance.series.study.studyIuid = :studyUid AND instance.sopCuid = :cuid AND instance.srCode.codeValue = :code AND instance.srCode.codingSchemeDesignator = :designator");
+        query.setParameter("studyUid", suid);
+        query.setParameter("cuid", cuid);
+        query.setParameter("code", code);
+        query.setParameter("designator", designator);
+        instances = query.getResultList();
+
+        return instances;
     }
 
     /**
@@ -136,15 +173,6 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
      */
     public List<Instance> listByIUIDs(String[] iuids)
             throws PersistenceException {
-        return null;
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.InstanceDAO#listByPatientAndSRCode(org.dcm4che.archive.entity.Patient,
-     *      java.util.List, java.util.List)
-     */
-    public List<Instance> listByPatientAndSRCode(Patient pat, List srCodes,
-            List cuids) throws PersistenceException {
         return null;
     }
 
