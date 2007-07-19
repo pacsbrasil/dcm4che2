@@ -71,12 +71,31 @@ public class LUT extends Module {
         return dcmobj.getInts(Tag.LUTDescriptor);
     }
 
-    public void setLUTDescriptor(int[] ints) {
+    public void setLUTDescriptor(final int[] ints) {
         dcmobj.putInts(Tag.LUTDescriptor, 
                 PixelRepresentation.isSigned(dcmobj.getParent()) 
                         ? VR.SS : VR.US, ints);
     }
-
+    
+    /** Returns the number of entries in this table */
+    public int getNumberOfEntries() {
+    	final int ret = getLUTDescriptor()[0];
+    	if( ret==0 ) return 65536;
+    	return ret;
+    }
+    
+    /** Get the first stored pixel - this allows a smaller LUT to be used */
+    public int getFirstStoredPixel() {
+    	return getLUTDescriptor()[1];
+    }
+    
+    /** Get the number of bits stored per pixel.
+     * Should return 1 or 2 depending on how many bytes are used per entry. */
+    public int getBytesPerEntry() {
+    	byte[] lutData = getLUTData();
+    	return lutData.length / getNumberOfEntries();
+    }
+    
     public String getLUTExplanation() {
         return dcmobj.getString(Tag.LUTExplanation);
     }

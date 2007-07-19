@@ -41,8 +41,7 @@ package org.dcm4che2.iod.module.dx;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.iod.module.composite.GeneralImageModule;
-import org.dcm4che2.iod.module.lut.LUT;
+import org.dcm4che2.iod.module.lut.LutModule;
 import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
 import org.dcm4che2.iod.value.Flag;
@@ -68,7 +67,7 @@ import org.dcm4che2.iod.value.Sign;
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
  */
-public class DXImageModule extends GeneralImageModule {
+public class DXImageModule extends LutModule {
 
     public DXImageModule(DicomObject dcmobj) {
         super(dcmobj);
@@ -132,83 +131,6 @@ public class DXImageModule extends GeneralImageModule {
 
     public int getPixelIntensityRelationshipSign() {
         return dcmobj.getInt(Tag.PixelIntensityRelationshipSign);
-    }
-
-    /**
-     * The value b in the relationship between stored values (SV) in Pixel Data
-     * (7FE0,0010) and the output units specified in Rescale Type (0028,1054).
-     * <p>
-     * Output units = m*SV + b.
-     * <p>
-     * Enumerated Value: 0
-     * <p>
-     * See C.8.11.3.1.2 for further explanation.
-     * 
-     * @param ds
-     *            0
-     */
-    public void setRescaleIntercept(float ds) {
-        dcmobj.putFloat(Tag.RescaleIntercept, VR.DS, ds);
-    }
-
-    public float getRescaleIntercept() {
-        return dcmobj.getFloat(Tag.RescaleIntercept);
-    }
-
-    /**
-     * m in the equation specified by Rescale Intercept (0028,1052).
-     * <p>
-     * Enumerated Value: 1
-     * <p>
-     * See C.8.11.3.1.2 for further explanation.
-     * 
-     * @param f
-     *            1
-     */
-    private void setRescaleSlope(float f) {
-        dcmobj.putFloat(Tag.RescaleSlope, VR.DS, f);
-    }
-
-    /**
-     * m in the equation specified by Rescale Intercept (0028,1052).
-     * <p>
-     * Enumerated Value: 1
-     * <p>
-     * See C.8.11.3.1.2 for further explanation.
-     * 
-     * @return 1
-     */
-    public String getRescaleSlope() {
-        return dcmobj.getString(Tag.RescaleSlope);
-    }
-
-    /**
-     * Specifies the output units of Rescale Slope (0028,1053) and Rescale
-     * Intercept (0028,1052).
-     * <p>
-     * Enumerated Value: US = Unspecified
-     * <p>
-     * See C.8.11.3.1.2 for further explanation.
-     * 
-     * @param cs
-     *            US = Unspecified
-     */
-    private void setRescaleType(String cs) {
-        dcmobj.putString(Tag.RescaleType, VR.CS, cs);
-    }
-
-    /**
-     * Specifies the output units of Rescale Slope (0028,1053) and Rescale
-     * Intercept (0028,1052).
-     * <p>
-     * Enumerated Value: US = Unspecified
-     * <p>
-     * See C.8.11.3.1.2 for further explanation.
-     * 
-     * @return
-     */
-    public String getRescaleType() {
-        return dcmobj.getString(Tag.RescaleType);
     }
 
     /**
@@ -297,87 +219,4 @@ public class DXImageModule extends GeneralImageModule {
         return dcmobj.getString(Tag.CalibrationImage);
     }
 
-    public LUT[] getVOILUTs() {
-        return LUT.toLUTs(dcmobj.get(Tag.VOILUTSequence));
-    }
-
-    public void setVOILUTs(LUT[] luts) {
-        updateSequence(Tag.VOILUTSequence, luts);
-    }
-
-    /**
-     * Defines a Window Center for display.
-     * <p>
-     * See C.8.11.3.1.5 for further explanation.
-     * <p>
-     * Required if Presentation Intent Type (0008,0068) is FOR PRESENTATION and
-     * VOI LUT Sequence (0028,3010) is not present. May also be present if VOI
-     * LUT Sequence (0028,3010) is present.
-     */
-    public void setWindowCenter(float[] floats) {
-        dcmobj.putFloats(Tag.WindowCenter, VR.DS, floats);
-    }
-
-    /**
-     * Defines a Window Center for display.
-     * <p>
-     * See C.8.11.3.1.5 for further explanation.
-     * <p>
-     * Required if Presentation Intent Type (0008,0068) is FOR PRESENTATION and
-     * VOI LUT Sequence (0028,3010) is not present. May also be present if VOI
-     * LUT Sequence (0028,3010) is present.
-     * 
-     * @return
-     */
-    public float[] getWindowCenter() {
-        return dcmobj.getFloats(Tag.WindowCenter);
-    }
-
-    /**
-     * Window Width for display.
-     * <p>
-     * See C.8.11.3.1.5 for further explanation.
-     * <p>
-     * Required if Window Center (0028,1050) is sent.
-     * 
-     * @param ds
-     */
-    public void setWindowWidth(float[] floats) {
-        dcmobj.putFloats(Tag.WindowWidth, VR.DS, floats);
-    }
-
-    /**
-     * Window Width for display.
-     * <p>
-     * See C.8.11.3.1.5 for further explanation.
-     * <p>
-     * Required if Window Center (0028,1050) is sent.
-     * 
-     * @return
-     */
-    public float[] getWindowWidth() {
-        return dcmobj.getFloats(Tag.WindowWidth);
-    }
-
-    /**
-     * Free form explanation of the meaning of the Window Center and Width.
-     * <p>
-     * Multiple values correspond to multiple Window Center and Width values.
-     * 
-     * @param lo
-     */
-    public void setWindowCenterWidthExplanation(String lo) {
-        dcmobj.putString(Tag.WindowCenterWidthExplanation, VR.LO, lo);
-    }
-
-    /**
-     * Free form explanation of the meaning of the Window Center and Width.
-     * <p>
-     * Multiple values correspond to multiple Window Center and Width values.
-     * 
-     * @return
-     */
-    public String getWindowCenterWidthExplanation() {
-        return dcmobj.getString(Tag.WindowCenterWidthExplanation);
-    }
 }
