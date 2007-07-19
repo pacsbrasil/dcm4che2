@@ -47,6 +47,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.FileSystemDAO;
@@ -119,7 +120,23 @@ public class FileSystemDAOImpl extends BaseDAOImpl<FileSystem> implements
      */
     public List<FileSystem> findByLikeDirectoryPath(String dirpath,
             int availability, int status) throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for FileSystem entries with path like "
+                    + dirpath + " and availability=" + availability
+                    + " and status=" + status);
+        }
+
+        List<FileSystem> fileSystems = null;
+
+        Query query = em
+                .createQuery("select fs from FileSystem as fs where fs.directoryPath like :path AND fs.availability = :availability AND fs.status = :status");
+        query.setParameter("path", dirpath);
+        query.setParameter("availability", availability);
+        query.setParameter("status", status);
+        fileSystems = query.getResultList();
+
+        return fileSystems;
     }
 
     /**
@@ -127,7 +144,20 @@ public class FileSystemDAOImpl extends BaseDAOImpl<FileSystem> implements
      */
     public List<FileSystem> findByRetrieveAET(String retrieveAET)
             throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for FileSystem entries with retrieve AET="
+                    + retrieveAET);
+        }
+
+        List<FileSystem> fileSystems = null;
+
+        Query query = em
+                .createQuery("select fs from FileSystem as fs where fs.retrieveAET =:retrieveAET");
+        query.setParameter("retrieveAET", retrieveAET);
+        fileSystems = query.getResultList();
+
+        return fileSystems;
     }
 
     /**
@@ -137,7 +167,23 @@ public class FileSystemDAOImpl extends BaseDAOImpl<FileSystem> implements
     public List<FileSystem> findByRetrieveAETAndAvailabilityAndStatus(
             String retrieveAET, int availability, int def_rw)
             throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for FileSystem entries with retrieve AET="
+                    + retrieveAET + " and availability=" + availability
+                    + " and status=" + def_rw);
+        }
+
+        List<FileSystem> fileSystems = null;
+
+        Query query = em
+                .createQuery("select fs from FileSystem as fs where fs.retrieveAET =:retrieveAET AND fs.availability = :availability AND fs.status = :status");
+        query.setParameter("retrieveAET", retrieveAET);
+        query.setParameter("availability", availability);
+        query.setParameter("status", def_rw);
+        fileSystems = query.getResultList();
+
+        return fileSystems;
     }
 
     /**
@@ -145,9 +191,26 @@ public class FileSystemDAOImpl extends BaseDAOImpl<FileSystem> implements
      *      int, int, int)
      */
     public List<FileSystem> findByRetrieveAETAndAvailabilityAndStatus2(
-            String aet, int availability, int def_rw, int rw)
+            String retrieveAET, int availability, int def_rw, int rw)
             throws PersistenceException {
-        return null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for FileSystem entries with retrieve AET="
+                    + retrieveAET + " and availability=" + availability
+                    + " and status=" + def_rw + " and rw=" + rw);
+        }
+
+        List<FileSystem> fileSystems = null;
+
+        Query query = em
+                .createQuery("select fs from FileSystem as fs where fs.retrieveAET =:retrieveAET AND fs.availability = :availability  AND (fs.status = :status1 OR fs.status = :status2)");
+        query.setParameter("retrieveAET", retrieveAET);
+        query.setParameter("availability", availability);
+        query.setParameter("status1", def_rw);
+        query.setParameter("status1", rw);
+        fileSystems = query.getResultList();
+
+        return fileSystems;
     }
 
     /**
@@ -156,13 +219,22 @@ public class FileSystemDAOImpl extends BaseDAOImpl<FileSystem> implements
      */
     public long sizeOfFilesCreatedAfter(Long fsPk, Timestamp timestamp)
             throws PersistenceException {
-        return 0;
+        Number n = (Number) em
+                .createQuery(
+                        "select sum(f.fileSize) from File f where f.fileSystem.pk=:fsPk and f.createdTime > :createdTime")
+                .setParameter("pk", fsPk)
+                .setParameter("createdTime", timestamp).getSingleResult();
+        return n == null ? 0 : n.longValue();
     }
 
     /**
      * @see org.dcm4che.archive.dao.FileSystemDAO#countPrivateFiles(java.lang.Long)
      */
     public int countPrivateFiles(Long pk) {
-        return 0;
+        Number n = (Number) em
+                .createQuery(
+                        "select count(f) from PrivateFile f where f.fileSystem.pk=:fspk")
+                .setParameter("fspk", pk).getSingleResult();
+        return n == null ? 0 : n.intValue();
     }
 }
