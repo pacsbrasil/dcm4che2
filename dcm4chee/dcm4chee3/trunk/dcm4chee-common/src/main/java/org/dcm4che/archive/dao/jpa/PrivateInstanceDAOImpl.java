@@ -44,6 +44,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -91,13 +92,42 @@ public class PrivateInstanceDAOImpl extends BaseDAOImpl<PrivateInstance>
     public void save(PrivateInstance obj) throws ContentCreateException {
     }
 
+    public Collection<PrivateInstance> findByPrivateType(int privateType) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for PrivateInstances with privateType="
+                    + privateType);
+        }
+
+        Collection<PrivateInstance> instances = null;
+
+        Query query = em
+                .createQuery("select pi from PrivateInstance as pi where pi.privateType=:type");
+        query.setParameter("type", privateType);
+        instances = query.getResultList();
+
+        return instances;
+    }
+
     /**
      * @see org.dcm4che.archive.dao.PrivateInstanceDAO#findBySopIuid(int,
      *      java.lang.String)
      */
     public Collection<PrivateInstance> findBySopIuid(int type, String sopIuid)
             throws PersistenceException {
-        return null;
-    }
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for PrivateInstances with sop iuid="
+                    + sopIuid);
+        }
+
+        Collection<PrivateInstance> instances = null;
+
+        Query query = em
+                .createQuery("select pi from PrivateInstance as pi where pi.privateType=:type and pi.sopIuid=:siuid");
+        query.setParameter("type", type);
+        query.setParameter("siuid", sopIuid);
+        instances = query.getResultList();
+
+        return instances;
+    }
 }

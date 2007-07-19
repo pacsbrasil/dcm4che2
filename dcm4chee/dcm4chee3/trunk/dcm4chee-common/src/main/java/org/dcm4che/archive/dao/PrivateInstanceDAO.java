@@ -58,6 +58,12 @@ public interface PrivateInstanceDAO extends DAO<PrivateInstance> {
             throws ContentCreateException;
 
     /**
+     * @param privateType
+     * @return
+     */
+    public Collection<PrivateInstance> findByPrivateType(int privateType);
+
+    /**
      * @param type
      * @param sopIuid
      * @return
