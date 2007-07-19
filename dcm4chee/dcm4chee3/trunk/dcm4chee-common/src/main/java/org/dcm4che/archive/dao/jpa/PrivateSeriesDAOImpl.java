@@ -44,6 +44,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -97,7 +98,20 @@ public class PrivateSeriesDAOImpl extends BaseDAOImpl<PrivateSeries> implements
      */
     public Collection<PrivateSeries> findBySeriesIuid(int type,
             String seriesIuid) throws PersistenceException {
-        return null;
-    }
+        if (logger.isDebugEnabled()) {
+            logger
+                    .debug("Searching for PrivateSeries entities with series iuid="
+                            + seriesIuid);
+        }
 
+        Collection<PrivateSeries> series = null;
+
+        Query query = em
+                .createQuery("select ps from PrivateSeries as ps where ps.privateType=:type and ps.seriesIuid=:siuid");
+        query.setParameter("type", type);
+        query.setParameter("siuid", seriesIuid);
+        series = query.getResultList();
+
+        return series;
+    }
 }
