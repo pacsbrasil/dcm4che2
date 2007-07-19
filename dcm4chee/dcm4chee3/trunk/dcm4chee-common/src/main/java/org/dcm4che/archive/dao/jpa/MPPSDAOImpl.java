@@ -43,6 +43,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.MPPSDAO;
@@ -80,6 +81,15 @@ public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
      */
     public MPPS findBySopIuid(String ppsiuid) throws NoResultException,
             PersistenceException {
-        return null;
+        Query query = em
+                .createQuery("select mpps from MPPS as mpps where mpps.sopIuid=:ppsiuid");
+        query.setParameter("ppsiuid", ppsiuid);
+        MPPS mpps = (MPPS) query.getSingleResult();
+
+        if (mpps == null) {
+            throw new NoResultException("MPPS with Sop IUID=" + ppsiuid);
+        }
+
+        return mpps;
     }
 }
