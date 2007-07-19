@@ -536,7 +536,8 @@ and cx,cy = width /2, height/2
    <xsl:param name="count" select="24" />
    <xsl:param name="offset" select="@offset" />
    <xsl:param name="position" select="@offset - @offset mod $count" />
-   <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position)" />
+   <xsl:param name="gsps" select="$node/parent::se:study/@gspsLabel" />
+   <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,'&amp;gsps=',$gsps)" />
    <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
    <xsl:param name="imageNode" select="$newSeriesNode/se:image[@Position=$offset]" />
  
@@ -570,6 +571,7 @@ and cx,cy = width /2, height/2
    </xsl:choose></xsl:param>
    <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
    <xsl:param name="seriesNode" select="($seriesNodeForUID | $seriesNodeForUID/following-sibling::se:series)[1+$offset]" />
+
    <div>
       <xsl:attribute name="id"><xsl:value-of select="./@id" /></xsl:attribute>
       <xsl:apply-templates mode="newlayout" select="*">
@@ -585,7 +587,7 @@ and cx,cy = width /2, height/2
    <xsl:param name="node" />
    <xsl:param name="offset" select="1+@offset" />
    <xsl:param name="studyNode" select="$node/se:study[$offset]" />
-   <xsl:param name="seriesDoc" select="document(concat('/xero/series/series.xml?StudyInstanceUID=',$studyNode/@StudyInstanceUID))/se:results" />
+   <xsl:param name="seriesDoc" select="document(concat('/xero/series/series.xml?gsps=*&amp;StudyInstanceUID=',$studyNode/@StudyInstanceUID))/se:results" />
    <xsl:param name="newStudyNode" select="$seriesDoc/se:patient/se:study[@StudyInstanceUID=$studyNode/@StudyInstanceUID]" />
    <xsl:apply-templates mode="newlayout" select="*">
     <xsl:with-param name="loc" select="$loc" />

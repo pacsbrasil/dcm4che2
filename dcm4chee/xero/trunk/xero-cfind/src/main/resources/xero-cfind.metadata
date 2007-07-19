@@ -30,9 +30,14 @@ imageFilter.cacheFilter.priority=400
 imageFilter.pagedFilter=${org.dcm4chee.xero.search.study.PagedImageFilter}
 imageFilter.pagedFilter.priority=500
 
-seriesFilter.inherit=imageFilter
+seriesFilter.inherit=servletFilter
 seriesFilter.seriesSource=${org.dcm4chee.xero.search.study.SeriesSearch}
-seriesFilter.seriesSource.priority=-100000
+seriesFilter.seriesSource.priority=-1
 seriesFilter.emptyFilter.inherit=imageFilter.emptyFilter
 seriesFilter.sortFilter=${org.dcm4chee.xero.search.study.SortImageFilter}
 seriesFilter.sortFilter.priority=25
+seriesFilter.source=${org.dcm4chee.xero.search.study.ImageSearch}
+seriesFilter.searchCondition=${org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+seriesFilter.emptyFilter.inherit=studyFilter.emptyFilter
+seriesFilter.cacheFilter=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+seriesFilter.cacheFilter.priority=400

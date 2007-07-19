@@ -4,11 +4,19 @@ metaDataProvider.prop.cfind=xero-cfind.metadata
 #Filters for image,series and study meta-data.
 seriesFilter.singleImagePerSeriesFilter=${org.dcm4chee.xero.display.SingleImagePerSeriesFilter}
 seriesFilter.singleImagePerSeriesFilter.priority=15
+seriesFilter.gsps=${org.dcm4chee.xero.image.GspsDiscover}
+seriesFilter.gsps.priority=20
+
+seriesFilter.cacheFilter=OVERRIDE TO NULL
 
 imageFilter.minMaxPixelInfo=${org.dcm4chee.xero.image.MinMaxPixelInfo}
 imageFilter.minMaxPixelInfo.priority=600
 imageFilter.dicom.inherit=dicom
 imageFilter.dicom.priority=-100
+imageFilter.gspsUid=${org.dcm4chee.xero.image.GspsUid}
+imageFilter.gspsUid.priority=100
+imageFilter.gsps=${org.dcm4chee.xero.image.GspsEncode}
+imageFilter.gsps.priority=550
 
 dicom=${org.dcm4chee.xero.metadata.filter.FilterList}
 dicom.fileLocation.inherit=fileLocation

@@ -134,12 +134,11 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom,
 			return new ReportBean(data);
 		}
 		if (modality.equals("KO")) {
-			log.warn("Modality KO objects not yet defined (Key Objects).");
+			log.warn("Modality KO objects not yet defined (Key Object).");
 			return null;
 		}
 		if (modality.equals("PR")) {
-			log.warn("Modality PR objects not yet defined (GSPS).");
-			return null;
+			return new GspsBean(data);
 		}
 		return new ImageBean(data);
 	}

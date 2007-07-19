@@ -122,7 +122,7 @@ public class SingleImagePerSeriesFilter implements Filter<Object>{
 	protected ResultsBean extendWithInstanceImage(FilterItem filterItem, Map<String, Object> params, ResultsBean rb) {
 		// This will cause rb to be extended instead of a new instance being created.
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
-		log.debug("Filtering by adding an instance number=1 as a first guess.");
+		log.info("Filtering by adding an instance number=1 as a first guess.");
 		params.put(INSTANCE_NUMBER, "1");
 		Object ret = filterItem.callNextFilter(params);
 		assert ret==rb;

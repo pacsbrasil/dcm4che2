@@ -181,6 +181,7 @@ public class MetaDataServlet extends HttpServlet {
 			throw new IllegalArgumentException(
 					"Filter/meta-data information not found for " + filterName);
 		filter = (Filter<ServletResponseItem>) metaData.getValue();
+		if( filter==null ) throw new IllegalArgumentException("Filter not found for "+filterName);
 		filterItem = new FilterItem(metaData);
 	}
 

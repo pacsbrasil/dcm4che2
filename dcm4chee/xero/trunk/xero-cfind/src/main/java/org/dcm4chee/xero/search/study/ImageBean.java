@@ -90,7 +90,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String> {
 	public boolean clearEmpty() {
 		boolean emptyChildren = ResultsBean.clearEmpty(children,getAny());
 		return emptyChildren && getOtherAttributes().isEmpty()
-				&& getPresentationSizeMode() == null && getSpsUID() == null
+				&& getPresentationSizeMode() == null && getGspsUID() == null
 				&& getWindowCenter() == null;
 	}
 

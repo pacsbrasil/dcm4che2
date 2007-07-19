@@ -26,27 +26,17 @@
   <toolbar id='seriesToolbar'>
    <prevImgButton id="previousImage" label="&lt;"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=-1" />
 
-   <applyLevel level="IMAGE">
-     <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1&amp;size=MAGNIFY">
-       <region />
-     </modeButton>
-     <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1&amp;size=MAGNIFY">
-       <region />
-     </modeButton>
-   </applyLevel>
    
    <nextImgButton id="nextImage" label=">"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=1" />
  </toolbar>
 
  <toolbar id="imgToolbar">
-   <applyLevel level="SERIES">
     <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1&amp;size=MAGNIFY">
      <region />
     </modeButton>
     <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1&amp;size=MAGNIFY">
      <region />
     </modeButton>
-   </applyLevel>
  </toolbar>
    
   <!-- Contains overlay information for how items are handled, and what extra views are present

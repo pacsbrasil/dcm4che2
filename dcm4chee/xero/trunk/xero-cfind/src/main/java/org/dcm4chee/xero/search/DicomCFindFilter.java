@@ -314,5 +314,4 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		log.info("Found result(s) - returning from filter.");
 		return resultFromDicom;
 	}
-
 }

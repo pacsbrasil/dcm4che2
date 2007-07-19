@@ -63,6 +63,8 @@
     	<attribute name="ReferringPhysicianName" />
     	<attribute name="AccessionNumber" />
     	<attribute name="StudyDescription" />
+    	<!-- Contains the content name for the GSPS to apply -->
+    	<attribute name="gspsLabel" type="string" />
     </complexType>
     
     <complexType name="seriesType">
@@ -134,9 +136,12 @@
     </simpleType>
     
     <complexType name="gspsType">
-       <complexContent>
-          <extension base="tns:dicomObjectType" />
-       </complexContent>
+     <complexContent>
+       <extension base="tns:dicomObjectType">
+         <attribute name="contentLabel" />
+         <attribute name="presentationDateTime" type="dateTime"/>
+       </extension>
+     </complexContent>
     </complexType>
     
     <complexType name="reportType">
@@ -190,7 +195,7 @@ Key objects are a named (by code meaning) list of images to display.
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />
     			<attribute name="Frame" type="int" />
-    			<attribute name="SpsUID" type="tns:UID" />
+    			<attribute name="gspsUID" type="tns:UID" />
     			<!-- The following are only used for over-rides, not for primary values. -->
     	        <attribute name="size" type="tns:PresentationSizeMode">
      	         <annotation>
