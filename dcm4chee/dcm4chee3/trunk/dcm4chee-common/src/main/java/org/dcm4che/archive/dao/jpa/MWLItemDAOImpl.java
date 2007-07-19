@@ -42,6 +42,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.MWLItemDAO;
@@ -112,8 +113,18 @@ public class MWLItemDAOImpl extends BaseDAOImpl<MWLItem> implements MWLItemDAO {
      */
     public MWLItem findByRpIdAndSpsId(String rpid, String spsid)
             throws NoResultException {
-        // TODO
-        return null;
+        Query query = em
+                .createQuery("select mwl from MWLItem as mwl where mwl.requestedProcedureId=:rpid and mwl.spsId=:spsid");
+        query.setParameter("rpid", rpid);
+        query.setParameter("spsid", spsid);
+        MWLItem mwlItem = (MWLItem) query.getSingleResult();
+
+        if (mwlItem == null) {
+            throw new NoResultException("MWLItem with requested procedure id="
+                    + rpid + " and sps id=" + spsid);
+        }
+
+        return mwlItem;
     }
 
     /**
