@@ -38,6 +38,8 @@
 package org.dcm4che2.iod.module.pr;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
 
 /**
@@ -54,5 +56,28 @@ public class DisplayShutterModule extends Module {
 		super(dcmobj);
 	}
 	
+	public String[] getShutterShapes() {
+		return dcmobj.getStrings(Tag.ShutterShape);
+	}
+	
+	public void setShutterShapes(String[] shapes) {
+		dcmobj.putStrings(Tag.ShutterShape, VR.CS, shapes);
+	}
+	
+	public float[] getCenterOfCircularShutter() {
+		return dcmobj.getFloats(Tag.CenterOfCircularShutter);
+	}
+	
+	public void setCenterOfCircularShutter(float[] center) {
+		dcmobj.putFloats(Tag.CenterOfCircularShutter, VR.IS, center);
+	}
+	
+	public float getRadiusOfCircularShutter() {
+		return dcmobj.getFloat(Tag.RadiusOfCircularShutter);
+	}
+	
+	public void setRadiusOfCircularShutter(float radius) {
+		dcmobj.putFloat(Tag.RadiusOfCircularShutter,VR.IS,radius);
+	}
 	
 }
