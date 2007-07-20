@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id: dcm4chee-ae-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<server>
+  <classpath codebase="lib" archives="dcm4chee.jar"/>
+  <mbean code="org.dcm4che.archive.mbean.AEService" 
+	name="dcm4chee.archive:service=AE"
+	xmbean-dd="xmdesc/dcm4chee-ae-xmbean.xml">	
+    <depends optional-attribute-name="AuditLoggerName"
+      >dcm4chee.archive:service=AuditLogger</depends>
+    <depends optional-attribute-name="EchoServiceName"
+      >dcm4chee.archive:service=ECHOService</depends>
+  </mbean>
+</server>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: dcm4chee-studyinfo-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<server>
+  <classpath codebase="lib" archives="dcm4chee.jar"/>
+  <mbean code="org.dcm4che.archive.mbean.StudyInfoService" 
+         name="dcm4chee.archive:service=StudyInfoService"
+         xmbean-dd="xmdesc/dcm4chee-studyinfo-xmbean.xml">
+  </mbean>
+</server>

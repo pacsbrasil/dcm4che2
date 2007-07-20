@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: dcm4chee-dcmsrv-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<server>
+  <classpath codebase="lib" archives="dcm4chee.jar"/>
+  <mbean code="org.dcm4che.archive.dcm.DcmServerService" 
+         name="dcm4chee.archive:service=DcmServer"
+         xmbean-dd="xmdesc/dcm4chee-dcmsrv-xmbean.xml">
+    <depends>jboss.j2ee:service=EJB,jndiName=ejb/Storage</depends>
+    <depends>jboss.j2ee:service=EJB,jndiName=ejb/FileSystemMgt</depends>
+    <depends optional-attribute-name="TLSConfigName"
+      >dcm4chee.archive:service=TLSConfig</depends>
+  </mbean>
+</server>

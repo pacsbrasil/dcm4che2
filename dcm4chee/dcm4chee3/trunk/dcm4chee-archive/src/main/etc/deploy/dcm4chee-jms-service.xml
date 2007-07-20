@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id: dcm4chee-jms-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<server>
+  <classpath codebase="lib" archives="dcm4chee.jar"/>
+  <mbean code="org.dcm4che.archive.mbean.JMSService"
+    name="dcm4chee.archive:service=JMS"
+    xmbean-dd="xmdesc/dcm4chee-jms-xmbean.xml">
+    <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+  </mbean>
+</server>
