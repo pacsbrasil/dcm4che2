@@ -437,7 +437,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
     /**
      * @see org.dcm4che.archive.dao.SeriesDAO#findByPpsIuid(java.lang.String)
      */
-    public List<Series> findByPpsIuid(String mppsIUID)
+    public Set<Series> findByPpsIuid(String mppsIUID)
             throws PersistenceException {
         return null;
     }

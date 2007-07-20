@@ -79,7 +79,20 @@ public class PrivateFileDAOImpl extends BaseDAOImpl<PrivateFile> implements
     public PrivateFile create(String path, String tsuid, long size, byte[] md5,
             int status, PrivateInstance instance, FileSystem filesystem)
             throws ContentCreateException {
-        return null;
+        
+        PrivateFile pf = new PrivateFile();
+        pf.setFilePath(path);
+        pf.setFileTsuid(tsuid);
+        pf.setFileSize(size);
+        pf.setFileMd5(md5);
+        pf.setFileStatus(status);
+        pf.setInstance(instance);
+        pf.setFileSystem(filesystem);
+        save(pf);
+        if (logger.isInfoEnabled())
+            logger.info("Created: " + pf);
+
+        return pf;
     }
 
     /**

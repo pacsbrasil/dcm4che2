@@ -38,18 +38,17 @@
 
 package org.dcm4che.archive.dao.jpa;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.MPPSDAO;
+import org.dcm4che.archive.dao.SeriesDAO;
 import org.dcm4che.archive.entity.MPPS;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 
 /**
  * org.dcm4che.archive.dao.jpa.MPPSDAOImpl
@@ -59,6 +58,9 @@ import org.dcm4che.data.Dataset;
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
+    
+    
+    private SeriesDAO seriesDAO ;
 
     /**
      * @see org.dcm4che.archive.dao.jpa.BaseDAOImpl#getPersistentClass()
@@ -72,8 +74,18 @@ public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
      * @see org.dcm4che.archive.dao.MPPSDAO#create(org.dcm4che.data.Dataset,
      *      org.dcm4che.archive.entity.Patient)
      */
-    public void create(Dataset dataset, Patient pat)
+    public MPPS create(Dataset dataset, Patient pat)
             throws ContentCreateException {
+        
+        MPPS mpps = new MPPS();
+        mpps.setSopIuid(dataset.getString(Tags.SOPInstanceUID));
+        mpps.setPatient(pat);
+        mpps.setAttributes(dataset);
+        mpps.setSeries(seriesDAO.findByPpsIuid(mpps.getSopIuid()));
+        save(mpps);
+        logger.info("Created " + mpps);
+
+        return mpps; 
     }
 
     /**

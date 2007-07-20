@@ -75,7 +75,7 @@ public class PrivateFile extends EntityBase {
     
     @ManyToOne(targetEntity = org.dcm4che.archive.entity.PrivateInstance.class)
     @JoinColumn(name = "instance_fk")
-    private Instance instance;
+    private PrivateInstance instance;
     
     @ManyToOne(targetEntity = org.dcm4che.archive.entity.FileSystem.class)
     @JoinColumn(name = "filesystem_fk")
@@ -174,14 +174,14 @@ public class PrivateFile extends EntityBase {
     /**
      * @return the instance
      */
-    public Instance getInstance() {
+    public PrivateInstance getInstance() {
         return instance;
     }
 
     /**
      * @param instance the instance to set
      */
-    public void setInstance(Instance instance) {
+    public void setInstance(PrivateInstance instance) {
         this.instance = instance;
     }
 

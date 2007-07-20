@@ -38,16 +38,18 @@
 
 package org.dcm4che.archive.dao.jpa;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-
+import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.GPSPSPerformerDAO;
+import org.dcm4che.archive.entity.Code;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.GPSPSPerformer;
+import org.dcm4che.archive.util.StringUtils;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.entity.CodeBean;
 
 /**
  * org.dcm4che.archive.dao.jpa.GPSPSPerformerDAOImpl
@@ -58,6 +60,9 @@ import org.dcm4che.data.Dataset;
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class GPSPSPerformerDAOImpl extends BaseDAOImpl<GPSPSPerformer>
         implements GPSPSPerformerDAO {
+    
+    
+    private CodeDAO codeDAO;
 
     /**
      * 
@@ -79,7 +84,29 @@ public class GPSPSPerformerDAOImpl extends BaseDAOImpl<GPSPSPerformer>
      */
     public GPSPSPerformer create(Dataset item, GPSPS gpsps)
             throws ContentCreateException {
-        return null;
+        
+        GPSPSPerformer performer = new GPSPSPerformer();
+
+        PersonName pn = item.getPersonName(Tags.HumanPerformerName);
+        if (pn != null) {
+            performer.setHumanPerformerName(StringUtils.toUpperCase(pn.toComponentGroupString(false)));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                performer.setHumanPerformerIdeographicName(ipn.toComponentGroupString(false));
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                performer.setHumanPerformerPhoneticName(ppn.toComponentGroupString(false));
+            }
+        }  
+        performer.setCode(Code.valueOf(codeDAO, item
+                .getItem(Tags.HumanPerformerCodeSeq)));
+
+        performer.setGpsps(gpsps);
+        save(performer);
+        logger.info("Created " + performer);
+        return performer;
+
     }
 
     /**
@@ -92,6 +119,21 @@ public class GPSPSPerformerDAOImpl extends BaseDAOImpl<GPSPSPerformer>
      * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
      */
     public void save(GPSPSPerformer obj) throws ContentCreateException {
+    }
+    
+    /**
+     * @return the codeDAO
+     */
+    public CodeDAO getCodeDAO() {
+        return codeDAO;
+    }
+
+    /**
+     * @param codeDAO
+     *            the codeDAO to set
+     */
+    public void setCodeDAO(CodeDAO codeDAO) {
+        this.codeDAO = codeDAO;
     }
 
 }

@@ -77,7 +77,16 @@ public class PrivateSeriesDAOImpl extends BaseDAOImpl<PrivateSeries> implements
      */
     public PrivateSeries create(int type, Dataset ds, PrivateStudy study)
             throws ContentCreateException {
-        return null;
+        
+        PrivateSeries series = new PrivateSeries();
+        series.setPrivateType(type);
+        series.setAttributes(ds);
+        series.setStudy(study);
+        save(series);
+        if (logger.isInfoEnabled())
+            logger.info("Created: " + series);
+        
+        return series;
     }
 
     /**

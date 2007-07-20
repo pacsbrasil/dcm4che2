@@ -77,7 +77,14 @@ public class PrivateStudyDAOImpl extends BaseDAOImpl<PrivateStudy> implements
      */
     public PrivateStudy create(int type, Dataset ds, PrivatePatient patient)
             throws ContentCreateException {
-        return null;
+        
+        PrivateStudy study = new PrivateStudy();
+        study.setPrivateType(type);
+        study.setAttributes(ds);
+        save(study);
+        if (logger.isInfoEnabled())
+            logger.info("Created: " + study);
+        return study;
     }
 
     /**

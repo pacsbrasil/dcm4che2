@@ -76,7 +76,16 @@ public class PrivatePatientDAOImpl extends BaseDAOImpl<PrivatePatient>
      */
     public PrivatePatient create(int type, Dataset ds)
             throws ContentCreateException {
-        return null;
+        
+        PrivatePatient patient = new PrivatePatient();
+        
+        patient.setPrivateType(type);
+        patient.setAttributes(ds);
+        save(patient);
+        if (logger.isInfoEnabled())
+            logger.info("Created: " + patient);
+
+        return patient;
     }
 
     /**

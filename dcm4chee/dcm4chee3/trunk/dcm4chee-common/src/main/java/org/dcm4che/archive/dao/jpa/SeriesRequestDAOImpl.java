@@ -73,7 +73,15 @@ public class SeriesRequestDAOImpl extends BaseDAOImpl<SeriesRequest> implements
      */
     public SeriesRequest create(Dataset item, Series series)
             throws ContentCreateException {
-        return null;
+        
+        SeriesRequest request = new SeriesRequest();
+        request.setSeries(series);
+
+        save(request);
+        if (logger.isInfoEnabled())
+            logger.info("Created: " + request);
+        
+        return request;
     }
 
     /**

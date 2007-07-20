@@ -77,7 +77,16 @@ public class PrivateInstanceDAOImpl extends BaseDAOImpl<PrivateInstance>
      */
     public PrivateInstance create(int type, Dataset ds, PrivateSeries series)
             throws ContentCreateException {
-        return null;
+        
+        PrivateInstance instance = new PrivateInstance();
+        instance.setPrivateType(type);
+        instance.setAttributes(ds);
+        instance.setSeries(series);
+        save(instance);
+        if (logger.isInfoEnabled())
+            logger.info("Created: " + instance);
+
+        return instance;
     }
 
     /**

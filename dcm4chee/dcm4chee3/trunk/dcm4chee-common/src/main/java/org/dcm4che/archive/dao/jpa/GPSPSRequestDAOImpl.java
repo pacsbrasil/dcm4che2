@@ -48,6 +48,7 @@ import org.dcm4che.archive.dao.GPSPSRequestDAO;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.GPSPSRequest;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 
 /**
  * org.dcm4che.archive.dao.jpa.GPSPSRequestDAOImpl
@@ -73,7 +74,15 @@ public class GPSPSRequestDAOImpl extends BaseDAOImpl<GPSPSRequest> implements
      */
     public GPSPSRequest create(Dataset item, GPSPS gpsps)
             throws ContentCreateException {
-        return null;
+        
+        GPSPSRequest gpspsRequest = new GPSPSRequest();
+        gpspsRequest.setRequestedProcedureId(item.getString(Tags.RequestedProcedureID));
+        gpspsRequest.setAccessionNumber(item.getString(Tags.AccessionNumber));
+        gpspsRequest.setGpsps(gpsps);
+        save(gpspsRequest);
+        logger.info("Created " + gpspsRequest);
+        
+        return gpspsRequest;
     }
 
     /**

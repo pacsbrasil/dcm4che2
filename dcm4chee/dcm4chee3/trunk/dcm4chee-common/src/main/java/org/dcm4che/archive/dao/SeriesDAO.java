@@ -42,8 +42,8 @@ package org.dcm4che.archive.dao;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-import javax.ejb.Local;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -98,7 +98,7 @@ public interface SeriesDAO extends DAO<Series> {
      * @param mppsIUID
      * @return
      */
-    public List<Series> findByPpsIuid(String mppsIUID)
+    public Set<Series> findByPpsIuid(String mppsIUID)
             throws PersistenceException;
 
     public SeriesRequestDAO getRequestDAO();
