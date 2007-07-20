@@ -58,11 +58,11 @@
 
         These are the targets supported by this Ant build script:
             usage   ---> Print this message   
-            init       ---> Compile package, create jar, artifacts
+            init    ---> Compile package, create jar, artifacts
             compile ---> Compile all of the Java source code.
-            jar       ---> Package the compiled source and supporting files into a JAR file.
-           clean    ---> Deletes compiled classes from previous runs.
-           doc      ---> Generate javadoc API documentation.
+            jar     ---> Package the compiled source and supporting files into a JAR file.
+            clean   ---> Deletes compiled classes from previous runs.
+            doc     ---> Generate javadoc API documentation.
 
         </echo>
     </target>
