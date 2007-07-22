@@ -38,6 +38,10 @@
 
 package org.dcm4che.archive.dao.jpa;
 
+import javax.ejb.Stateless;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -49,7 +53,6 @@ import org.dcm4che.archive.util.StringUtils;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.entity.CodeBean;
 
 /**
  * org.dcm4che.archive.dao.jpa.GPSPSPerformerDAOImpl

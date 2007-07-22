@@ -38,6 +38,9 @@
 
 package org.dcm4che.archive.dao.jpa;
 
+import javax.ejb.Stateless;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
@@ -58,7 +61,6 @@ import org.dcm4che.dict.Tags;
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
-    
     
     private SeriesDAO seriesDAO ;
 

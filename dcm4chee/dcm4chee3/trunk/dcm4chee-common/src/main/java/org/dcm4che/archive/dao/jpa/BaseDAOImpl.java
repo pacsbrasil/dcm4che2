@@ -209,10 +209,6 @@ public abstract class BaseDAOImpl<E extends EntityBase> implements DAO<E> {
             logger.info("Saving " + obj.getClass().getName());
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Object details: " + obj);
-        }
-
         try {
             em.persist(obj);
         }
