@@ -4,7 +4,7 @@
 	<classpathentry path="src/test/java" kind="src"/>
 	<classpathentry excluding="**" path="src/main/resources" output="src/main/resources" kind="src"/>
 	<classpathentry excluding="**" path="src/test/resources" output="src/test/resources" kind="src"/>
-	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2sdk1.5-sun" kind="con"/>
 	<classpathentry path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER" kind="con"/>
 	<classpathentry path="target/classes" kind="output"/>
 </classpath>
