@@ -90,18 +90,6 @@ public class PrivateSeriesDAOImpl extends BaseDAOImpl<PrivateSeries> implements
     }
 
     /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(PrivateSeries obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(PrivateSeries obj) throws ContentCreateException {
-    }
-
-    /**
      * @see org.dcm4che.archive.dao.PrivateSeriesDAO#findBySeriesIuid(int,
      *      java.lang.String)
      */

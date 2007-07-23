@@ -89,18 +89,6 @@ public class PrivatePatientDAOImpl extends BaseDAOImpl<PrivatePatient>
     }
 
     /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(PrivatePatient obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(PrivatePatient obj) throws ContentCreateException {
-    }
-
-    /**
      * @see org.dcm4che.archive.dao.PrivatePatientDAO#findByPatientId(int,
      *      java.lang.String)
      */

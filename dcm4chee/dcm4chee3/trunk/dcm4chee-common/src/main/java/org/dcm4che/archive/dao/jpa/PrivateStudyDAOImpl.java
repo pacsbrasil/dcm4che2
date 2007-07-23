@@ -88,18 +88,6 @@ public class PrivateStudyDAOImpl extends BaseDAOImpl<PrivateStudy> implements
     }
 
     /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(PrivateStudy obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(PrivateStudy obj) throws ContentCreateException {
-    }
-
-    /**
      * @see org.dcm4che.archive.dao.PrivateStudyDAO#findByStudyIuid(int,
      *      java.lang.String)
      */

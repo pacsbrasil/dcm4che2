@@ -89,18 +89,6 @@ public class PrivateInstanceDAOImpl extends BaseDAOImpl<PrivateInstance>
         return instance;
     }
 
-    /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(PrivateInstance obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(PrivateInstance obj) throws ContentCreateException {
-    }
-
     public Collection<PrivateInstance> findByPrivateType(int privateType) {
         if (logger.isDebugEnabled()) {
             logger.debug("Searching for PrivateInstances with privateType="

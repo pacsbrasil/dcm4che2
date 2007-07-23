@@ -84,16 +84,4 @@ public class SeriesRequestDAOImpl extends BaseDAOImpl<SeriesRequest> implements
         return request;
     }
 
-    /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(SeriesRequest obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(SeriesRequest obj) throws ContentCreateException {
-    }
-
 }

@@ -85,16 +85,4 @@ public class GPSPSRequestDAOImpl extends BaseDAOImpl<GPSPSRequest> implements
         return gpspsRequest;
     }
 
-    /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(GPSPSRequest obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(GPSPSRequest obj) throws ContentCreateException {
-    }
-
 }

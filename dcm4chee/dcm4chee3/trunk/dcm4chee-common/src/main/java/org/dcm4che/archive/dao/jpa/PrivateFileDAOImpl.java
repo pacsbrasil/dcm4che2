@@ -125,18 +125,6 @@ public class PrivateFileDAOImpl extends BaseDAOImpl<PrivateFile> implements
     }
 
     /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(PrivateFile obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(PrivateFile obj) throws ContentCreateException {
-    }
-
-    /**
      * @see org.dcm4che.archive.dao.PrivateFileDAO#remove(java.lang.Long)
      */
     public void remove(Long pfPk) throws ContentDeleteException {
