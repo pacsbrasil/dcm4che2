@@ -43,7 +43,6 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.dcm4che.archive.dao.ContentCreateException;
-import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.GPSPSRequestDAO;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.GPSPSRequest;

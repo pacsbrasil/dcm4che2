@@ -47,7 +47,6 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
-import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.PrivateStudyDAO;
 import org.dcm4che.archive.entity.PrivatePatient;
 import org.dcm4che.archive.entity.PrivateStudy;
