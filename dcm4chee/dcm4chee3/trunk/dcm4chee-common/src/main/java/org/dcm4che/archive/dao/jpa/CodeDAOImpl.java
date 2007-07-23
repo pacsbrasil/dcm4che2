@@ -78,7 +78,7 @@ public class CodeDAOImpl extends BaseDAOImpl<Code> implements CodeDAO {
         code.setCodeMeaning(meaning);
         save(code);
         logger.info("Created " + code.toString());
-        return null;
+        return code;
     }
 
     /**
