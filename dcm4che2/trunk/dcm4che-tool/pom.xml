@@ -9,6 +9,7 @@
   <artifactId>dcm4che-tool</artifactId>
   <packaging>pom</packaging>
   <modules>
+    <module>dcm4che-tool-dcm2jpg</module>
     <module>dcm4che-tool-dcm2txt</module>
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmdir</module>
