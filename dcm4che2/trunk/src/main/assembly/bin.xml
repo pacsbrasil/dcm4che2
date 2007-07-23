@@ -10,9 +10,11 @@
         <include>dcm4che:dcm4che-audit</include>
         <include>dcm4che:dcm4che-core</include>
         <include>dcm4che:dcm4che-iod</include>
+        <include>dcm4che:dcm4che-imageio</include>
         <include>dcm4che:dcm4che-imageio-rle</include>
         <include>dcm4che:dcm4che-net</include>
         <include>dcm4che:dcm4che-hp</include>
+        <include>dcm4che:dcm4che-tool-dcm2jpg</include>
         <include>dcm4che:dcm4che-tool-dcm2txt</include>
         <include>dcm4che:dcm4che-tool-dcm2xml</include>
         <include>dcm4che:dcm4che-tool-dcmdir</include>
@@ -99,6 +101,23 @@
     </fileSet>
     <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmdir/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcm2jpg/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcm2jpg/src/bin</directory>
       <excludes>
         <exclude>*.bat</exclude>
       </excludes>
