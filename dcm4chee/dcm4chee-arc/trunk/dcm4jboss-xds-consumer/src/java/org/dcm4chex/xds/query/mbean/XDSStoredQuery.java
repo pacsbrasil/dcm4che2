@@ -223,7 +223,6 @@ public class XDSStoredQuery {
                     " (proxy:"+service.getProxyHost()+":"+service.getProxyPort()+")");
             service.configProxyAndTLS(xdsQueryURI);
             ProviderProperties.getInstance().put("javax.xml.registry.queryManagerURL", xdsQueryURI);
-            ProviderProperties.getInstance().cloneProperties().store(new java.io.FileOutputStream( new java.io.File("/tmp/jboss.omar.properties")), "JBOSS_TEST");
             ConnectionFactory connFactory = JAXRUtility.getConnectionFactory();
             ConnectionImpl connection = (ConnectionImpl) connFactory.createConnection();
             RegistryService service = connection.getRegistryService();
