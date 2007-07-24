@@ -42,6 +42,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.lut.LutModule;
+import org.dcm4che2.iod.module.lut.ModalityLutModule;
 import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
 import org.dcm4che2.iod.value.Flag;
@@ -75,9 +76,10 @@ public class DXImageModule extends LutModule {
 
     public void init() {
         super.init();
-        setRescaleIntercept(0.f);
-        setRescaleSlope(1.f);
-        setRescaleType(RescaleType.US);
+        ModalityLutModule modalityLutModule = getModalityLutModule();
+        modalityLutModule.setRescaleIntercept(0.f);
+        modalityLutModule.setRescaleSlope(1.f);
+        modalityLutModule.setRescaleType(RescaleType.US);
     }
 
     public void validate(ValidationContext ctx, ValidationResult result) {
