@@ -46,11 +46,11 @@ import java.awt.image.DataBufferUShort;
  * @version $Revision$ $Date$
  * @since Jul 23, 2007
  */
-public class ShortLUT extends LUT {
+public class ShortLut extends Lut {
    
     private short[] data;
 
-    protected ShortLUT(int srcbits, int srcoff, int dstoff, short[] data) {
+    protected ShortLut(int srcbits, int srcoff, int dstoff, short[] data) {
         super(srcbits, srcoff, dstoff);
         this.data = data;
     }

@@ -361,7 +361,7 @@ public class DicomImageReader extends ImageReader {
         }
         if (monochrome) {
             DataBuffer data = bi.getRaster().getDataBuffer();
-            LUT.createLUT(ds).lookup(data, data);
+            Lut.createLut(ds).lookup(data, data);
         }
         return bi;
     }

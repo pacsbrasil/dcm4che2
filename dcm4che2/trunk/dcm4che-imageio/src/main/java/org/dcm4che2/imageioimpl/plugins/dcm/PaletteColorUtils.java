@@ -55,27 +55,27 @@ public class PaletteColorUtils {
     public static ColorModel createPaletteColorModel(DicomObject ds) {
         int bits = ds.getInt(Tag.BitsStored, 8);
         int size = 1 << bits;
-        byte[] r = decodePaletteColorLUT(size, ds,
+        byte[] r = decodePaletteColorLut(size, ds,
                 Tag.RedPaletteColorLookupTableDescriptor,
                 Tag.RedPaletteColorLookupTableData,
                 Tag.SegmentedRedPaletteColorLookupTableData);
-        byte[] g = decodePaletteColorLUT(size, ds,
+        byte[] g = decodePaletteColorLut(size, ds,
                 Tag.GreenPaletteColorLookupTableDescriptor,
                 Tag.GreenPaletteColorLookupTableData,
                 Tag.SegmentedGreenPaletteColorLookupTableData);
-        byte[] b = decodePaletteColorLUT(size, ds,
+        byte[] b = decodePaletteColorLut(size, ds,
                 Tag.BluePaletteColorLookupTableDescriptor,
                 Tag.BluePaletteColorLookupTableData,
                 Tag.SegmentedBluePaletteColorLookupTableData);
         return new IndexColorModel(bits, size, r, g, b);
     }
 
-    private static void throwLUTLengthMismatch(int lutLen, int descLen) {
+    private static void throwLutLengthMismatch(int lutLen, int descLen) {
         throw new IllegalArgumentException("LUT Data length: " + lutLen
                 +  " mismatch entry value: " + descLen + " in LUT Descriptor");
     }
     
-    private static byte[] decodePaletteColorLUT(int size, DicomObject ds,
+    private static byte[] decodePaletteColorLut(int size, DicomObject ds,
             int descTag, int dataTag, int segmTag) {
         int[] desc = ds.getInts(descTag);
         if (desc == null) {
@@ -111,11 +111,11 @@ public class PaletteColorUtils {
                 throw new IllegalArgumentException(
                         "Segmented LUT Data with LUT Descriptor: bits=8");                                   
             }
-            inflateSegmentedLUT(segm, out, off, len);            
+            inflateSegmentedLut(segm, out, off, len);            
         } else {
             if (bits == 8) {
                 if (data.length * 2 != len) {
-                    throwLUTLengthMismatch(data.length * 2, len);
+                    throwLutLengthMismatch(data.length * 2, len);
                 }
                 int j = off;
                 int tmp;
@@ -126,7 +126,7 @@ public class PaletteColorUtils {
                 }
             } else { // bits == 16
                 if (data.length != len) {
-                    throwLUTLengthMismatch(data.length * 2, len);
+                    throwLutLengthMismatch(data.length * 2, len);
                 }
                 for (int i = 0; i < data.length; i++) {
                     out[i + off] = (byte) (data[i] >> 8);
@@ -139,7 +139,7 @@ public class PaletteColorUtils {
         return out;
     }
 
-    private static void inflateSegmentedLUT(int[] in, byte[] out, int off,
+    private static void inflateSegmentedLut(int[] in, byte[] out, int off,
             int len) {
         int x0 = off;
         int y0 = 0;
@@ -192,7 +192,7 @@ public class PaletteColorUtils {
             }
         }
         if (x0 - off != len) {
-            throwLUTLengthMismatch(x0 - off, len);
+            throwLutLengthMismatch(x0 - off, len);
         }
     }
 }

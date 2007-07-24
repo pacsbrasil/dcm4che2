@@ -46,11 +46,11 @@ import java.awt.image.DataBufferByte;
  * @version $Revision$ $Date$
  * @since Jul 23, 2007
  */
-public class ByteLUT extends LUT {
+public class ByteLut extends Lut {
    
     private byte[] data;
 
-    protected ByteLUT(int srcbits, int srcoff, int dstoff, byte[] data) {
+    protected ByteLut(int srcbits, int srcoff, int dstoff, byte[] data) {
         super(srcbits, srcoff, dstoff);
         this.data = data;
     }

@@ -48,19 +48,19 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Jul 23, 2007
  */
-public abstract class LUT {
+public abstract class Lut {
     
     protected final int andmask;
     protected final int srcoff;
     protected final int dstoff;
 
-    protected LUT(int srcbits, int srcoff, int dstoff) {
+    protected Lut(int srcbits, int srcoff, int dstoff) {
         this.andmask = (1 << srcbits) - 1;
         this.srcoff = srcoff;
         this.dstoff = dstoff;
     }
     
-    public static LUT createLUT(DicomObject ds) {
+    public static Lut createLut(DicomObject ds) {
         int allocated = ds.getInt(Tag.BitsAllocated, 8);
         int stored = ds.getInt(Tag.BitsStored, allocated);
         int range = 1 << stored;
@@ -104,7 +104,7 @@ public abstract class LUT {
                     data[i] = (byte) ((i + off) * m / w * range);
                 }            
             }
-            return new ByteLUT(stored, srcoff, iMin1 + srcoff, data);         
+            return new ByteLut(stored, srcoff, iMin1 + srcoff, data);         
         } else {
             short[] data = new short[iMax1-iMin1];
             if (inverse) {
@@ -116,7 +116,7 @@ public abstract class LUT {
                     data[i] = (short) ((i + off) * m / w * range);
                 }            
             }
-            return new ShortLUT(stored, srcoff, iMin1 + srcoff, data);         
+            return new ShortLut(stored, srcoff, iMin1 + srcoff, data);         
         }
     }
     
