@@ -83,6 +83,11 @@ public abstract class Lut {
         float w_2 = (w-1f)/2;
         int iMin = (int) (((c_05 - w_2) - b) / m_abs);
         int iMax = (int) (((c_05 + w_2) - b) / m_abs) + 1;
+        if (m_neg) {
+            int tmp = iMin;
+            iMin = -iMax;
+            iMax = -tmp;            
+        }
         float k = ((float) range) / (iMax - iMin);
         int iMin1;
         int iMax1;
