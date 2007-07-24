@@ -51,13 +51,19 @@ import org.dcm4che2.data.Tag;
 public abstract class Lut {
     
     protected final int andmask;
-    protected final int srcoff;
-    protected final int dstoff;
+    protected final int ormask;
+    protected final int signbit;
+    protected final int off;
 
-    protected Lut(int srcbits, int srcoff, int dstoff) {
+    protected Lut(int srcbits, boolean signed, int off) {
         this.andmask = (1 << srcbits) - 1;
-        this.srcoff = srcoff;
-        this.dstoff = dstoff;
+        this.ormask = ~andmask;
+        this.signbit = signed ? 1 << (srcbits-1) : 0;
+        this.off = off;
+    }
+    
+    protected final int toIndex(int src) {
+        return ((src & signbit) != 0 ? (src | ormask) : (src & andmask)) - off;
     }
     
     public static Lut createLut(DicomObject ds) {
@@ -67,56 +73,67 @@ public abstract class Lut {
         int max = range-1;
         boolean signed = ds.getInt(Tag.PixelRepresentation) != 0;
         float m = ds.getFloat(Tag.RescaleSlope, 1.f);
+        boolean m_neg = m < 0;
+        float m_abs = m_neg ? -m : m;
         float b = ds.getFloat(Tag.RescaleIntercept, 0.f);
         float c = ds.getFloat(Tag.WindowCenter, 
                 ((signed ? 0 : range/2) * m) + b);
-        float w = ds.getFloat(Tag.WindowWidth, range * m);
-        int iMin = (int) (((c - w/2) - b) / m);
-        int iMax = iMin + (int) (w / m);
-        int srcoff;
+        float w = ds.getFloat(Tag.WindowWidth, range * m_abs);
+        float c_05 = c - .5f;
+        float w_2 = (w-1f)/2;
+        int iMin = (int) (((c_05 - w_2) - b) / m_abs);
+        int iMax = (int) (((c_05 + w_2) - b) / m_abs) + 1;
+        float k = ((float) range) / (iMax - iMin);
         int iMin1;
         int iMax1;
         if (signed) {
-            srcoff = range/2;
             iMin1 = Math.max(iMin, -range/2);
             iMax1 = Math.min(iMax, range/2);
         } else {
-            srcoff = 0;
             iMin1 = Math.max(iMin, 0);
             iMax1 = Math.min(iMax, range);
         }
         int off = iMin1 - iMin;
+        int len_1 = iMax1 - iMin1;
+        int len = len_1 + 1;
         
         String plutShape = ds.getString(Tag.PresentationLUTShape);
         boolean inverse = plutShape != null 
                 ? "INVERSE".equals(plutShape)
                 : "MONOCHROME1".equals(
                         ds.getString(Tag.PhotometricInterpretation));
+        if (m_neg) {
+            inverse = !inverse;
+        }
 
         if (allocated <= 8) {
-            byte[] data = new byte[iMax1-iMin1];
+            byte[] data = new byte[len];
             if (inverse) {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] = (byte) (max - (i + off) * m / w * range);
+                for (int i = 0; i < len_1; i++) {
+                    data[i] = (byte) (max - (i + off) * k);
                 }
+                data[len_1] = (byte) Math.max(max - (len_1 + off) * k, 0);
             } else {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] = (byte) ((i + off) * m / w * range);
+                for (int i = 0; i < len_1; i++) {
+                    data[i] = (byte) ((i + off) * k);
                 }            
+                data[len_1] = (byte) Math.min((len_1 + off) * k, max);
             }
-            return new ByteLut(stored, srcoff, iMin1 + srcoff, data);         
+            return new ByteLut(stored, signed, iMin1, data);         
         } else {
-            short[] data = new short[iMax1-iMin1];
+            short[] data = new short[len];
             if (inverse) {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] = (short) (max - (i + off) * m / w * range);
+                for (int i = 0; i < len_1; i++) {
+                    data[i] = (short) (max - (i + off) * k);
                 }
+                data[len_1] = (short) Math.max(max - (len_1 + off) * k, 0);
             } else {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] = (short) ((i + off) * m / w * range);
+                for (int i = 0; i < len_1; i++) {
+                    data[i] = (short) ((i + off) * k);
                 }            
+                data[len_1] = (short) Math.min((len_1 + off) * k, max);
             }
-            return new ShortLut(stored, srcoff, iMin1 + srcoff, data);         
+            return new ShortLut(stored, signed, iMin1, data);         
         }
     }
     

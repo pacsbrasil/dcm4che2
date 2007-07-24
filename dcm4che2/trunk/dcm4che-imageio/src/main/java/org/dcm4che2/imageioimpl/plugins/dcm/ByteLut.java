@@ -50,25 +50,20 @@ public class ByteLut extends Lut {
    
     private byte[] data;
 
-    protected ByteLut(int srcbits, int srcoff, int dstoff, byte[] data) {
-        super(srcbits, srcoff, dstoff);
+    protected ByteLut(int srcbits, boolean signed, int off, byte[] data) {
+        super(srcbits, signed, off);
         this.data = data;
     }
     
-    public byte lookup(int src) {
-        int tmp = ((src + srcoff) & andmask) - dstoff;
-        return tmp <= 0  ? data[0] 
-                       : tmp >= data.length ? data[data.length-1] 
-                                          : data[tmp];
+    public final byte lookup(int src) {
+        int i = toIndex(src);
+        return i <= 0 ? data[0] : i >= data.length ? data[data.length - 1]
+                : data[i];
     }
     
-    public void lookup(byte[] src, byte[] dst) {
-        int tmp;
+    public final void lookup(byte[] src, byte[] dst) {
         for (int i = 0; i < src.length; i++) {
-            tmp = ((src[i] + srcoff) & andmask) - dstoff;
-            dst[i] = tmp <= 0  ? data[0] 
-                               : tmp >= data.length ? data[data.length-1] 
-                                                    : data[tmp];
+            dst[i] = lookup(src[i]);
         }
     }
 

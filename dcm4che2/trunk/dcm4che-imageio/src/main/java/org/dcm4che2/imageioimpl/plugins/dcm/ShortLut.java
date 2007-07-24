@@ -50,25 +50,21 @@ public class ShortLut extends Lut {
    
     private short[] data;
 
-    protected ShortLut(int srcbits, int srcoff, int dstoff, short[] data) {
-        super(srcbits, srcoff, dstoff);
+    protected ShortLut(int srcbits, boolean signed, int index, short[] data) {
+        super(srcbits, signed, index);
         this.data = data;
     }
     
-    public short lookup(int src) {
-        int tmp = ((src + srcoff) & andmask) - dstoff;
-        return tmp <= 0  ? data[0] 
-                       : tmp >= data.length ? data[data.length-1] 
-                                          : data[tmp];
+    public final short lookup(int src) {
+        int tmp = ((src & signbit) != 0 ? (src | ormask) : (src & andmask))
+                - off;
+        return tmp <= 0 ? data[0] : tmp >= data.length ? data[data.length - 1]
+                : data[tmp];
     }
     
-    public void lookup(short[] src, short[] dst) {
-        int tmp;
+    public final void lookup(short[] src, short[] dst) {
         for (int i = 0; i < src.length; i++) {
-            tmp = ((src[i] + srcoff) & andmask) - dstoff;
-            dst[i] = tmp <= 0  ? data[0] 
-                               : tmp >= data.length ? data[data.length-1] 
-                                                    : data[tmp];
+            dst[i] = lookup(src[i]);
         }
     }
 
