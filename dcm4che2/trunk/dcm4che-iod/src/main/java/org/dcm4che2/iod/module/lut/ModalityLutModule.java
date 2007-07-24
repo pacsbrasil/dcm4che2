@@ -47,9 +47,9 @@ import org.dcm4che2.iod.module.Module;
  * @since Jun 9, 2006
  *
  */
-public class VOILUTModule extends Module {
+public class ModalityLutModule extends Module {
 
-    public VOILUTModule(DicomObject dcmobj) {
+    public ModalityLutModule(DicomObject dcmobj) {
         super(dcmobj);
     }
 

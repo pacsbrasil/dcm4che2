@@ -44,8 +44,8 @@ import org.dcm4che2.iod.module.composite.ContrastBolusModule;
 import org.dcm4che2.iod.module.composite.DeviceModule;
 import org.dcm4che2.iod.module.cr.CRImageModule;
 import org.dcm4che2.iod.module.cr.CRSeriesModule;
-import org.dcm4che2.iod.module.lut.ModalityLUTModule;
-import org.dcm4che2.iod.module.lut.VOILUTModule;
+import org.dcm4che2.iod.module.lut.ModalityLutModule;
+import org.dcm4che2.iod.module.lut.VoiLutModule;
 import org.dcm4che2.iod.module.overlay.OverlayPlaneModule;
 import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
@@ -61,16 +61,16 @@ public class CRImage extends Image {
     protected final ContrastBolusModule contrastBolusModule;
     protected final DeviceModule deviceModule;
     protected final OverlayPlaneModule overlayPlaneModule;
-    protected final ModalityLUTModule modalityLUTModule;
-    protected final VOILUTModule voiLUTModule;
+    protected final ModalityLutModule modalityLUTModule;
+    protected final VoiLutModule voiLUTModule;
     
     public CRImage(DicomObject dcmobj) {
         super(dcmobj, new CRSeriesModule(dcmobj), new CRImageModule(dcmobj));
         this.contrastBolusModule = new ContrastBolusModule(dcmobj);
         this.deviceModule = new DeviceModule(dcmobj);
         this.overlayPlaneModule = new OverlayPlaneModule(dcmobj);
-        this.modalityLUTModule = new ModalityLUTModule(dcmobj);
-        this.voiLUTModule = new VOILUTModule(dcmobj);
+        this.modalityLUTModule = new ModalityLutModule(dcmobj);
+        this.voiLUTModule = new VoiLutModule(dcmobj);
     }
 
     public CRImage() {
@@ -116,11 +116,11 @@ public class CRImage extends Image {
         return overlayPlaneModule;
     }
 
-    public final ModalityLUTModule getModalityLUTModule() {
+    public final ModalityLutModule getModalityLUTModule() {
         return modalityLUTModule;
     }
     
-    public final VOILUTModule getVOILUTModule() {
+    public final VoiLutModule getVOILUTModule() {
         return voiLUTModule;
     }
 }

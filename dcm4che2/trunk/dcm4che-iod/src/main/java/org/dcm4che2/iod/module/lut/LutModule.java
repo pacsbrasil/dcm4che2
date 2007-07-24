@@ -124,7 +124,7 @@ public class LutModule extends GeneralImageModule {
 				}
 			}
 		}
-		LUT[] luts = getVOILUTs();
+		Lut[] luts = getVOILUTs();
 		if (luts == null || luts.length == 0)
 			return null;
 		if (name == null) {
@@ -132,7 +132,7 @@ public class LutModule extends GeneralImageModule {
 					"Still need to implement Lut class generally.");
 		}
 		for (int i = 0; i < luts.length; i++) {
-			LUT lut = luts[i];
+			Lut lut = luts[i];
 			if (name.equals(lut.getLUTExplanation())) {
 				throw new UnsupportedOperationException(
 						"Still need to implement Lut class generally.");
@@ -142,11 +142,11 @@ public class LutModule extends GeneralImageModule {
 		return null;
 	}
 
-	public LUT[] getVOILUTs() {
-		return LUT.toLUTs(dcmobj.get(Tag.VOILUTSequence));
+	public Lut[] getVOILUTs() {
+		return Lut.toLUTs(dcmobj.get(Tag.VOILUTSequence));
 	}
 
-	public void setVOILUTs(LUT[] luts) {
+	public void setVOILUTs(Lut[] luts) {
 		updateSequence(Tag.VOILUTSequence, luts);
 	}
 

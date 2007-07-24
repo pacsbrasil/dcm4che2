@@ -35,80 +35,22 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4che2.iod.module.lut;
 
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
-import org.dcm4che2.iod.value.PixelRepresentation;
 
 /**
- * @author Gunter Zeilinger<gunterze@gmail.com>
- * @version Revision $Date$
- * @since 02.07.2006
+ * @author gunter zeilinger(gunterze@gmail.com)
+ * @version $Revision$ $Date$
+ * @since Jun 9, 2006
+ *
  */
+public class VoiLutModule extends Module {
 
-public class LUT extends Module {
-
-    public LUT(DicomObject dcmobj) {
+    public VoiLutModule(DicomObject dcmobj) {
         super(dcmobj);
     }
 
-    public static LUT[] toLUTs(DicomElement sq) {
-        if (sq == null || !sq.hasItems()) {
-            return null;
-        }
-        LUT[] a = new LUT[sq.countItems()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = new LUT(sq.getDicomObject(i));
-        }
-        return a;
-    }
-
-    public int[] getLUTDescriptor() {
-        return dcmobj.getInts(Tag.LUTDescriptor);
-    }
-
-    public void setLUTDescriptor(final int[] ints) {
-        dcmobj.putInts(Tag.LUTDescriptor, 
-                PixelRepresentation.isSigned(dcmobj.getParent()) 
-                        ? VR.SS : VR.US, ints);
-    }
-    
-    /** Returns the number of entries in this table */
-    public int getNumberOfEntries() {
-    	final int ret = getLUTDescriptor()[0];
-    	if( ret==0 ) return 65536;
-    	return ret;
-    }
-    
-    /** Get the first stored pixel - this allows a smaller LUT to be used */
-    public int getFirstStoredPixel() {
-    	return getLUTDescriptor()[1];
-    }
-    
-    /** Get the number of bits stored per pixel.
-     * Should return 1 or 2 depending on how many bytes are used per entry. */
-    public int getBytesPerEntry() {
-    	byte[] lutData = getLUTData();
-    	return lutData.length / getNumberOfEntries();
-    }
-    
-    public String getLUTExplanation() {
-        return dcmobj.getString(Tag.LUTExplanation);
-    }
-
-    public void setLUTExplanation(String lo) {
-        dcmobj.putString(Tag.LUTExplanation, VR.LO, lo);
-    }
-
-    public byte[] getLUTData() {
-        return dcmobj.getBytes(Tag.LUTData);
-    }
-
-    public void setLUTData(byte[] ow) {
-        dcmobj.putBytes(Tag.LUTData, VR.OW, ow);
-    }
 }

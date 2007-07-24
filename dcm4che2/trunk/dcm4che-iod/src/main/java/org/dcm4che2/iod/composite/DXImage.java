@@ -47,7 +47,7 @@ import org.dcm4che2.iod.module.dx.DXDetectorModule;
 import org.dcm4che2.iod.module.dx.DXImageModule;
 import org.dcm4che2.iod.module.dx.DXPositioningModule;
 import org.dcm4che2.iod.module.dx.DXSeriesModule;
-import org.dcm4che2.iod.module.lut.VOILUTModule;
+import org.dcm4che2.iod.module.lut.VoiLutModule;
 import org.dcm4che2.iod.module.overlay.OverlayPlaneModule;
 import org.dcm4che2.iod.validation.ValidationContext;
 import org.dcm4che2.iod.validation.ValidationResult;
@@ -135,7 +135,7 @@ public class DXImage extends Image {
 
     protected final OverlayPlaneModule overlayPlaneModule;
 
-    protected final VOILUTModule voiLUTModule;
+    protected final VoiLutModule voiLUTModule;
 
     // TODO Image Histogram
 
@@ -155,7 +155,7 @@ public class DXImage extends Image {
         this.dxDetectorModule = new DXDetectorModule(dcmobj);
         this.dxPositioningModule = new DXPositioningModule(dcmobj);
         this.overlayPlaneModule = new OverlayPlaneModule(dcmobj);
-        this.voiLUTModule = new VOILUTModule(dcmobj);
+        this.voiLUTModule = new VoiLutModule(dcmobj);
         this.acquisitionContextModule = new AcquisitionContextModule(dcmobj);
     }
 
@@ -237,7 +237,7 @@ public class DXImage extends Image {
         return overlayPlaneModule;
     }
 
-    public final VOILUTModule getVOILUTModule() {
+    public final VoiLutModule getVOILUTModule() {
         return voiLUTModule;
     }
 
