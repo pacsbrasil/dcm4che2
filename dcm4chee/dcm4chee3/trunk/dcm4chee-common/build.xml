@@ -17,7 +17,7 @@
     <property name="javac.target" value="1.5" />
 
     <!-- Override with your dcm4che14 dist location -->
-    <property name="dcm4che.home" value="../dcm4che14/build" />
+    <property name="dcm4che.home" value="../../../dcm4jboss-all/dcm4che14/build" />
     <property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar" />
 
     <!-- Override with your JBoss server bundle dist location -->
