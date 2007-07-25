@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -72,9 +73,10 @@ import org.dcm4che.dict.Tags;
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
         InstanceDAO {
-    private CodeDAO codeDAO;
+    
+    @EJB private CodeDAO codeDAO;
 
-    private VerifyingObserverDAO observerDAO;
+    @EJB private VerifyingObserverDAO observerDAO;
 
     /**
      * @see org.dcm4che.archive.dao.jpa.BaseDAOImpl#getPersistentClass()
@@ -193,5 +195,33 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
             List<String> srCodes, Collection<String> cuids)
             throws PersistenceException {
         return null;
+    }
+
+    /**
+     * @return the codeDAO
+     */
+    public CodeDAO getCodeDAO() {
+        return codeDAO;
+    }
+
+    /**
+     * @param codeDAO the codeDAO to set
+     */
+    public void setCodeDAO(CodeDAO codeDAO) {
+        this.codeDAO = codeDAO;
+    }
+
+    /**
+     * @return the observerDAO
+     */
+    public VerifyingObserverDAO getObserverDAO() {
+        return observerDAO;
+    }
+
+    /**
+     * @param observerDAO the observerDAO to set
+     */
+    public void setObserverDAO(VerifyingObserverDAO observerDAO) {
+        this.observerDAO = observerDAO;
     }
 }

@@ -59,4 +59,14 @@ public interface GPSPSPerformerDAO extends DAO<GPSPSPerformer> {
      */
     public GPSPSPerformer create(Dataset item, GPSPS gpsps) throws ContentCreateException;
 
+    /**
+     * @return the codeDAO
+     */
+    public CodeDAO getCodeDAO();
+
+    /**
+     * @param codeDAO
+     *            the codeDAO to set
+     */
+    public void setCodeDAO(CodeDAO codeDAO);
 }

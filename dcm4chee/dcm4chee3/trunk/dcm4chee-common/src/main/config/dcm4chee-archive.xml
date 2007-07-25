@@ -58,22 +58,31 @@
         <property name="spsIdPrefix" value="S"/>
     </bean>
     
-    <bean id="gpspsPerformerDAO" class="org.dcm4che.archive.dao.jpa.GPSPSPerformerDAOImpl"/>
+    <bean id="gpspsPerformerDAO" class="org.dcm4che.archive.dao.jpa.GPSPSPerformerDAOImpl">
+        <property name="codeDAO" ref="codeDAO"/>
+    </bean>
     
     <bean id="gpspsRequestDAO" class="org.dcm4che.archive.dao.jpa.GPSPSRequestDAOImpl"/>
     
     <bean id="hpDAO" class="org.dcm4che.archive.dao.jpa.HPDAOImpl"/>
     
-    <bean id="instanceDAO" class="org.dcm4che.archive.dao.jpa.InstanceDAOImpl"/>
+    <bean id="instanceDAO" class="org.dcm4che.archive.dao.jpa.InstanceDAOImpl">
+        <property name="codeDAO" ref="codeDAO"/>
+        <property name="observerDAO" ref="observerDAO"/>
+    </bean>
     
     <bean id="mediaDAO" class="org.dcm4che.archive.dao.jpa.MediaDAOImpl"/>
     
-    <bean id="mppsDAO" class="org.dcm4che.archive.dao.jpa.MPPSDAOImpl"/>
+    <bean id="mppsDAO" class="org.dcm4che.archive.dao.jpa.MPPSDAOImpl">
+        <property name="seriesDAO" ref="seriesDAO"/>
+    </bean>
     
     <bean id="mwlItemDAO" class="org.dcm4che.archive.dao.jpa.MWLItemDAOImpl">
         <property name="spsIdPrefix" value="S"/>
         <property name="rpIdPrefix" value="P"/>
     </bean>
+    
+    <bean id="observerDAO" class="org.dcm4che.archive.dao.jpa.VerifyingObserverDAOImpl"/>
     
     <bean id="opidDAO" class="org.dcm4che.archive.dao.jpa.OtherPatientIDDAOImpl"/>
     

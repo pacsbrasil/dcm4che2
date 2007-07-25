@@ -160,6 +160,7 @@ public class PrivatePatientDAOImpl extends BaseDAOImpl<PrivatePatient>
      * @see org.dcm4che.archive.dao.PrivatePatientDAO#remove(java.lang.Long)
      */
     public void remove(Long long1) throws ContentDeleteException {
+        // TODO
     }
 
 }

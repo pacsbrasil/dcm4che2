@@ -59,8 +59,10 @@ import org.dcm4che.dict.Tags;
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class MWLItemDAOImpl extends BaseDAOImpl<MWLItem> implements MWLItemDAO {
+    // TODO: JNDI Resource
     private String spsIdPrefix;
 
+    // TODO: JNDI Resource
     private String rpIdPrefix;
 
     /**

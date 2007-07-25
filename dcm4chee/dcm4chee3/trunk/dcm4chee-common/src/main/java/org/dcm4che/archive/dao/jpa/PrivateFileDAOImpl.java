@@ -96,12 +96,6 @@ public class PrivateFileDAOImpl extends BaseDAOImpl<PrivateFile> implements
     }
 
     /**
-     * @see org.dcm4che.archive.dao.PrivateFileDAO#delete(java.lang.Long)
-     */
-    public void delete(Long file_pk) {
-    }
-
-    /**
      * @see org.dcm4che.archive.dao.PrivateFileDAO#findDereferencedInFileSystem(java.lang.String,
      *      int)
      */
@@ -128,6 +122,7 @@ public class PrivateFileDAOImpl extends BaseDAOImpl<PrivateFile> implements
      * @see org.dcm4che.archive.dao.PrivateFileDAO#remove(java.lang.Long)
      */
     public void remove(Long pfPk) throws ContentDeleteException {
+        // TODO
     }
 
 }

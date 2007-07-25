@@ -68,7 +68,10 @@ public interface PrivateFileDAO extends DAO<PrivateFile> {
             int limit) throws PersistenceException;
 
     /**
+     * Delete the {@link PrivateFile} record with the specified primary key.
+     * 
      * @param pfPk
+     *            The primary key of the file to delete.
      */
     public void remove(Long pfPk) throws ContentDeleteException;
 

@@ -70,7 +70,9 @@ public interface GPSPSDAO extends DAO<GPSPS> {
     public GPSPS findBySopIuid(String iuid) throws NoResultException,
             PersistenceException;
 
-    public List<GPSPS> find(Long patientFk, String accessionNumber, List<Integer> statusList, Timestamp afterTimestamp) throws PersistenceException;
+    public List<GPSPS> find(Long patientFk, String accessionNumber,
+            List<Integer> statusList, Timestamp afterTimestamp)
+            throws PersistenceException;
 
     /**
      * @param dataset
@@ -103,4 +105,34 @@ public interface GPSPSDAO extends DAO<GPSPS> {
      *            A String containing the prefix.
      */
     public void setSpsIdPrefix(String prefix);
+
+    public CodeDAO getCodeDAO();
+
+    /**
+     * @param codeDAO
+     *            the codeDAO to set
+     */
+    public void setCodeDAO(CodeDAO codeDAO);
+
+    /**
+     * @param performerDAO
+     *            the performerDAO to set
+     */
+    public void setPerformerDAO(GPSPSPerformerDAO performerDAO);
+
+    /**
+     * @param rqDAO
+     *            the rqDAO to set
+     */
+    public void setRqDAO(GPSPSRequestDAO rqDAO);
+
+    /**
+     * @return the performerDAO
+     */
+    public GPSPSPerformerDAO getPerformerDAO();
+
+    /**
+     * @return the rqDAO
+     */
+    public GPSPSRequestDAO getRqDAO();
 }

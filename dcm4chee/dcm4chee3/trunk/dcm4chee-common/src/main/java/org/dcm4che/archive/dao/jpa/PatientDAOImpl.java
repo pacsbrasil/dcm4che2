@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -68,8 +69,10 @@ import org.dcm4che.dict.Tags;
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
+    @EJB
     private OtherPatientIDDAO opidDAO;
 
+    @EJB
     private StudyDAO studyDAO;
 
     /**
@@ -319,6 +322,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      */
     public Collection<Patient> findCorresponding(String patientID, String issuer)
             throws PersistenceException {
+        // TODO
         return null;
     }
 
@@ -328,6 +332,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      */
     public Collection<Patient> findCorrespondingByOtherPatientID(
             String patientID, String issuer) throws PersistenceException {
+        // TODO
         return null;
     }
 
@@ -337,6 +342,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      */
     public Collection<Patient> findCorrespondingByOtherPatientIDLike(
             String string, String issuer) throws PersistenceException {
+        // TODO
         return null;
     }
 
@@ -346,6 +352,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      */
     public Collection<Patient> findCorrespondingByPrimaryPatientID(
             String patientID, String issuer) throws PersistenceException {
+        // TODO
         return null;
     }
 
@@ -355,6 +362,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      */
     public Collection<Patient> findCorrespondingByPrimaryPatientIDLike(
             String string, String issuer) throws PersistenceException {
+        // TODO
         return null;
     }
 
@@ -364,6 +372,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      */
     public Collection<Patient> findCorrespondingLike(String string,
             String issuer) throws PersistenceException {
+        // TODO
         return null;
     }
 

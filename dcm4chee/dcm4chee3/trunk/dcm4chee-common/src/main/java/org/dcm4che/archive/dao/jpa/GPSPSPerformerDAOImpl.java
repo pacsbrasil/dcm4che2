@@ -38,13 +38,13 @@
 
 package org.dcm4che.archive.dao.jpa;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
-import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.GPSPSPerformerDAO;
 import org.dcm4che.archive.entity.Code;
 import org.dcm4che.archive.entity.GPSPS;
@@ -65,7 +65,7 @@ public class GPSPSPerformerDAOImpl extends BaseDAOImpl<GPSPSPerformer>
         implements GPSPSPerformerDAO {
     
     
-    private CodeDAO codeDAO;
+    @EJB private CodeDAO codeDAO;
 
     /**
      * 
@@ -105,25 +105,14 @@ public class GPSPSPerformerDAOImpl extends BaseDAOImpl<GPSPSPerformer>
         performer.setCode(Code.valueOf(codeDAO, item
                 .getItem(Tags.HumanPerformerCodeSeq)));
 
-        performer.setGpsps(gpsps);
         save(performer);
+        performer.setGpsps(gpsps);
+        
         logger.info("Created " + performer);
         return performer;
 
     }
 
-    /**
-     * @see org.dcm4che.archive.dao.DAO#remove(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void remove(GPSPSPerformer obj) throws ContentDeleteException {
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
-     */
-    public void save(GPSPSPerformer obj) throws ContentCreateException {
-    }
-    
     /**
      * @return the codeDAO
      */

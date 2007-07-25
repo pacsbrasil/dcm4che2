@@ -66,5 +66,15 @@ public interface MPPSDAO extends DAO<MPPS>{
      * @param pat
      */
     public MPPS create(Dataset dataset, Patient pat) throws ContentCreateException;
+    
+    /**
+     * @return the seriesDAO
+     */
+    public SeriesDAO getSeriesDAO();
+
+    /**
+     * @param seriesDAO the seriesDAO to set
+     */
+    public void setSeriesDAO(SeriesDAO seriesDAO); 
 
 }

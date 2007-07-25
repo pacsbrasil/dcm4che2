@@ -41,7 +41,6 @@ package org.dcm4che.archive.dao;
 
 import java.util.List;
 
-import javax.ejb.Local;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -52,7 +51,6 @@ import org.dcm4che.archive.entity.EntityBase;
  * 
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
-@Local
 public interface DAO<E extends EntityBase> {
     /**
      * Save an object's data into the database.

@@ -43,6 +43,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -70,13 +71,14 @@ import org.dcm4che.dict.UIDs;
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class GPSPSDAOImpl extends BaseDAOImpl<GPSPS> implements GPSPSDAO {
+    // TODO: JNDI Resource
     private String spsIdPrefix;
 
-    private CodeDAO codeDAO;
+    @EJB private CodeDAO codeDAO;
 
-    private GPSPSRequestDAO rqDAO;
+    @EJB private GPSPSRequestDAO rqDAO;
 
-    private GPSPSPerformerDAO performerDAO;
+    @EJB private GPSPSPerformerDAO performerDAO;
 
     /**
      * @see org.dcm4che.archive.dao.jpa.BaseDAOImpl#getPersistentClass()
@@ -344,5 +346,19 @@ public class GPSPSDAOImpl extends BaseDAOImpl<GPSPS> implements GPSPSDAO {
      */
     public void setRqDAO(GPSPSRequestDAO rqDAO) {
         this.rqDAO = rqDAO;
+    }
+
+    /**
+     * @return the performerDAO
+     */
+    public GPSPSPerformerDAO getPerformerDAO() {
+        return performerDAO;
+    }
+
+    /**
+     * @return the rqDAO
+     */
+    public GPSPSRequestDAO getRqDAO() {
+        return rqDAO;
     }
 }

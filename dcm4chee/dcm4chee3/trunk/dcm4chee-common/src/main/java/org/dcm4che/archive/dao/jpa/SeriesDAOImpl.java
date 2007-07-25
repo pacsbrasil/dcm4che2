@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -80,9 +81,9 @@ import org.dcm4che.dict.Tags;
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
 
-    private MPPSDAO mppsDAO;
+    @EJB private MPPSDAO mppsDAO;
 
-    private SeriesRequestDAO requestDAO;
+    @EJB private SeriesRequestDAO requestDAO;
 
     /**
      * 

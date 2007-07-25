@@ -38,6 +38,7 @@
 
 package org.dcm4che.archive.dao.jpa;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -62,7 +63,7 @@ import org.dcm4che.dict.Tags;
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
     
-    private SeriesDAO seriesDAO ;
+    @EJB private SeriesDAO seriesDAO ;
 
     /**
      * @see org.dcm4che.archive.dao.jpa.BaseDAOImpl#getPersistentClass()
@@ -105,5 +106,19 @@ public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
         }
 
         return mpps;
+    }
+
+    /**
+     * @return the seriesDAO
+     */
+    public SeriesDAO getSeriesDAO() {
+        return seriesDAO;
+    }
+
+    /**
+     * @param seriesDAO the seriesDAO to set
+     */
+    public void setSeriesDAO(SeriesDAO seriesDAO) {
+        this.seriesDAO = seriesDAO;
     }
 }
