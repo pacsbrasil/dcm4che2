@@ -53,6 +53,8 @@
         <pathelement location="${dcm4chee-common.home}/lib/spring.jar" />
         <pathelement location="${lib.dir}/commons-compress-20050911.jar"/>
 		<pathelement location="${lib.dir}/commons-net-1.4.1.jar"/>
+		<pathelement location="${lib.dir}/saaj-impl.jar"/>
+		<pathelement location="${lib.dir}/saaj-api.jar"/>
 		<pathelement location="${lib.dir}/dcm4che-audit-2.0.11.jar"/>
 		<pathelement location="${jboss.home}/bin/"/>
 		<pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar"/>
@@ -91,8 +93,8 @@
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
     <target name="compile" depends="prepare">
-        <javac destdir="${target.classes}" debug="${javac.debug}" deprecation="off" optimize="on" classpathref="class.path" compiler="${javac.compiler}" nowarn="${javac.nowarn}" 
-                source="${javac.source}" target="${javac.target}">
+        <javac destdir="${target.classes}" debug="${javac.debug}" deprecation="off" optimize="on" compiler="${javac.compiler}" nowarn="${javac.nowarn}" 
+                source="${javac.source}" target="${javac.target}" classpathref="class.path" >
             <src path="${src.java}" />
         </javac>
     </target>

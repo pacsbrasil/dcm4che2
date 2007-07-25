@@ -17,5 +17,7 @@
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar" sourcepath="/JBOSS_SRC/system/src/main"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/deploy/ejb3.deployer/jboss-annotations-ejb3.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
+	<classpathentry kind="lib" path="lib/saaj-impl.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
