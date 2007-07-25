@@ -1,5 +1,5 @@
 #Override with your dcm4che dist location
-dcm4che.home=../dcm4che14/build
+dcm4che.home=../../../dcm4jboss-all/dcm4che14/build
 
 #Override with your dcm4chee-common working directory
 dcm4chee-common.home=../dcm4chee-common

@@ -22,11 +22,11 @@
     <property name="src.etc" value="${src.dir}/etc" />
 
     <!-- Output properties -->
-    <property name="target.dir" value="${basedir}/target" />
-    <property name="target.bin" value="${target.dir}/bin" />
-    <property name="target.classes" value="${target.dir}/classes" />
-    <property name="target.deploy" value="${target.dir}/deploy" />
-    <property name="target.lib" value="${target.dir}/lib" />
+    <property name="target.dir" value="${basedir}/target"/>
+	<property name="target.bin" value="${target.dir}/bin"/>
+	<property name="target.classes" value="${target.dir}/classes"/>
+	<property name="target.deploy" value="${target.dir}/deploy"/>
+	<property name="target.lib" value="${target.dir}/lib"/>
     <property name="build.javadocs.dir" value="${target}/doc/api" />
 
     <!-- Override with your dcm4che14 dist location -->
@@ -46,15 +46,15 @@
     <property name="jboss.deploy" value="${jboss.server.home}/deploy" />
     <property name="jboss.ejb3" value="${jboss.deploy}/ejb3.deployer" />
 
-    <path id="base.path">
+    <path id="class.path">
         <pathelement location="${dcm4che.jar}" />
         <pathelement location="${jai_imagio.jar}" />
         <pathelement location="${dcm4chee-common.target}/lib/dcm4chee-common.jar" />
         <pathelement location="${dcm4chee-common.home}/lib/spring.jar" />
+        <pathelement location="${lib.dir}/saaj-impl.jar"/>
+		<pathelement location="${lib.dir}/saaj-api.jar"/>
         <pathelement location="${lib.dir}/commons-compress-20050911.jar" />
         <pathelement location="${lib.dir}/commons-net-1.4.1.jar" />
-        <pathelement location="${lib.dir}/saaj-impl.jar" />
-        <pathelement location="${lib.dir}/saaj-api.jar" />
         <pathelement location="${lib.dir}/dcm4che-audit-2.0.11.jar" />
         <pathelement location="${jboss.home}/bin/" />
         <pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar" />
@@ -93,7 +93,8 @@
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
     <target name="compile" depends="prepare">
-        <javac destdir="${target.classes}" debug="${javac.debug}" deprecation="off" optimize="on" classpathref="base.path">
+        <javac destdir="${target.classes}" debug="${javac.debug}" deprecation="off" optimize="on" classpathref="class.path" compiler="${javac.compiler}" nowarn="${javac.nowarn}" 
+                source="${javac.source}" target="${javac.target}">
             <src path="${src.java}" />
         </javac>
     </target>
