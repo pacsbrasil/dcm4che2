@@ -57,12 +57,13 @@
         <echo>
 
         These are the targets supported by this Ant build script:
-            usage   ---> Print this message   
-            init    ---> Compile package, create jar, artifacts
-            compile ---> Compile all of the Java source code.
-            jar     ---> Package the compiled source and supporting files into a JAR file.
-            clean   ---> Deletes compiled classes from previous runs.
-            doc     ---> Generate javadoc API documentation.
+            usage      ---> Print this message   
+            init       ---> Compile package, create jar, artifacts
+            compile    ---> Compile all of the Java source code.
+            jar        ---> Package the compiled classes and persistence.xml into a JAR.
+            jar-noxml  ---> Package the compiled classes into a JAR without the persistence.xml file.
+            clean      ---> Deletes compiled classes from previous runs.
+            doc        ---> Generate javadoc API documentation.
 
         </echo>
     </target>
@@ -86,11 +87,7 @@
 
     <target name="jar" depends="compile">
         <mkdir dir="${target.lib}" />
-        <copy todir="${target.classes}/META-INF">
-            <fileset dir="${src.res}/META-INF">
-                <include name="persistence.xml"/>
-            </fileset>
-        </copy>
+        <antcall target="copy-xml" />
         <jar jarfile="${target.lib}/dcm4chee-common.jar">
             <manifest>
                 <attribute name="Class-Path" value="dcm4che.jar" />
@@ -100,6 +97,19 @@
             </manifest>
             <fileset dir="${target.classes}" />
         </jar>
+    </target>
+    
+    <target name="jar-noxml">
+        <property name="noxml" value="true"/>
+        <antcall target="jar" />
+    </target>
+    
+    <target name="copy-xml" unless="noxml">
+        <copy todir="${target.classes}/META-INF">
+            <fileset dir="${src.res}/META-INF">
+                <include name="persistence.xml"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="clean">
