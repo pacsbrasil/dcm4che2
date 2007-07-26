@@ -62,10 +62,13 @@ public class HPQueryCmd extends BaseReadCmd {
     private static final String[] SELECT = { "HP.encodedAttributes" };
 
     private static final String USER_CODE = "user_code";
-    private static final String REGION_CODE = "region_code";
-    private static final String PROC_CODE = "proc_code";
-    private static final String REASON_CODE = "reason_code";
-    
+    private static final String[] REGION_CODE = new String[]{"region_code","rel_hpdef_region","rel_hpdef_region.hpdef_fk",
+    														 "rel_hpdef_region.region_fk"};
+    private static final String[] PROC_CODE = new String[]{"proc_code","rel_hpdef_proc","rel_hpdef_proc.hpdef_fk",
+    														"rel_hpdef_proc.proc_fk"};
+    private static final String[] REASON_CODE = new String[]{"reason_code","rel_hpdef_reason",
+    													"rel_hpdef_reason.hpdef_fk","rel_hpdef_reason.reason_fk"};
+ 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     private final Dataset keys;
@@ -130,6 +133,24 @@ public class HPQueryCmd extends BaseReadCmd {
         }
     }
 
+    private void addCodeMatch(Dataset item, String[] codeQuery) {
+        if ( isMatchCode(item) ){
+        	SqlBuilder subQuery = new SqlBuilder();
+        	subQuery.setSelect(new String[]{"HPDefinition.pk"});
+        	subQuery.setFrom(new String[]{"HPDefinition",codeQuery[1],"Code"});
+        	subQuery.addFieldValueMatch(null, "HPDefinition.pk", SqlBuilder.TYPE1, null, codeQuery[2]);
+        	subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1, null, codeQuery[3]);
+        	subQuery.addSingleValueMatch(null, "Code.codeValue",
+                    SqlBuilder.TYPE2,
+                    item.getString(Tags.CodeValue));
+        	subQuery.addSingleValueMatch(null, "Code.codingSchemeDesignator",
+                    SqlBuilder.TYPE2,
+                    item.getString(Tags.CodingSchemeDesignator));
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR",false);
+            node0.addMatch( new Match.Subquery(subQuery, null, null));
+        }
+    }
+
     private boolean isMatchCode(Dataset code) {
         return code != null
                 && (code.containsValue(Tags.CodeValue)
@@ -137,54 +158,12 @@ public class HPQueryCmd extends BaseReadCmd {
     }
 
     private String[] getLeftJoin() {
-		ArrayList list = new ArrayList();
 		if (isMatchCode(keys
 				.getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
-			list.add("Code");
-			list.add(USER_CODE);
-			list.add("HP.user_fk");
-			list.add("Code.pk");
+			return new String[]{"Code",USER_CODE,"HP.user_fk","Code.pk"};
+		} else {
+			return null;
 		}
-		Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
-		if (item != null && !item.isEmpty()) {
-			sqlBuilder.setDistinct(true);
-			list.add("HPDefinition");
-			list.add(null);
-			list.add("HP.pk");
-			list.add("HPDefinition.hp_fk");
-			if (isMatchCode(item.getItem(Tags.AnatomicRegionSeq))) {
-				list.add("rel_hpdef_region");
-				list.add(null);
-				list.add("HPDefinition.pk");
-				list.add("rel_hpdef_region.hpdef_fk");
-				list.add("Code");
-				list.add(REGION_CODE);
-				list.add("rel_hpdef_region.region_fk");
-				list.add("Code.pk");
-			}
-			if (isMatchCode(item.getItem(Tags.ProcedureCodeSeq))) {
-				list.add("rel_hpdef_proc");
-				list.add(null);
-				list.add("HPDefinition.pk");
-				list.add("rel_hpdef_proc.hpdef_fk");
-				list.add("Code");
-				list.add(PROC_CODE);
-				list.add("rel_hpdef_proc.proc_fk");
-				list.add("Code.pk");
-			}
-			if (isMatchCode(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq))) {
-				list.add("rel_hpdef_reason");
-				list.add(null);
-				list.add("HPDefinition.pk");
-				list.add("rel_hpdef_reason.hpdef_fk");
-				list.add("Code");
-				list.add(REASON_CODE);
-				list.add("rel_hpdef_reason.reason_fk");
-				list.add("Code.pk");
-			}
-		}
-		return (String[]) (list.isEmpty() ? null : list.toArray(new String[list
-				.size()]));
 	}
 
     public void execute() throws SQLException {
