@@ -40,7 +40,6 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 import org.dcm4che.archive.common.DatasetUtils;
 import org.dcm4che.archive.common.HPLevel;
@@ -62,130 +61,118 @@ public class HPQueryCmd extends BaseReadCmd {
     private static final String[] SELECT = { "HP.encodedAttributes" };
 
     private static final String USER_CODE = "user_code";
-    private static final String REGION_CODE = "region_code";
-    private static final String PROC_CODE = "proc_code";
-    private static final String REASON_CODE = "reason_code";
-    
+
+    private static final String[] REGION_CODE = new String[] { "region_code",
+            "rel_hpdef_region", "rel_hpdef_region.hpdef_fk",
+            "rel_hpdef_region.region_fk" };
+
+    private static final String[] PROC_CODE = new String[] { "proc_code",
+            "rel_hpdef_proc", "rel_hpdef_proc.hpdef_fk",
+            "rel_hpdef_proc.proc_fk" };
+
+    private static final String[] REASON_CODE = new String[] { "reason_code",
+            "rel_hpdef_reason", "rel_hpdef_reason.hpdef_fk",
+            "rel_hpdef_reason.reason_fk" };
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     private final Dataset keys;
-    
+
     public HPQueryCmd(Dataset keys) throws SQLException {
-		super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-		String s;
-		int i;
-		this.keys = keys;
-		// ensure keys contains (8,0005) for use as result filter
-		if (!keys.contains(Tags.SpecificCharacterSet)) {
-			keys.putCS(Tags.SpecificCharacterSet);
-		}
-		sqlBuilder.setSelect(SELECT);
-		sqlBuilder.setFrom(FROM);
-		sqlBuilder.setLeftJoin(getLeftJoin());
-		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
-				.getStrings(Tags.SOPInstanceUID));
-		sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
-				.getStrings(Tags.SOPClassUID));
-		sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
-				SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolName));
-		if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
-			sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
-					SqlBuilder.TYPE1, HPLevel.toInt(s));
-		}
-		if ((i = keys.getInt(Tags.NumberOfPriorsReferenced, -1)) != -1) {
-			sqlBuilder.addIntValueMatch(null, "HP.numberOfPriorsReferenced",
-					SqlBuilder.TYPE1, i);
-		}
-		if ((i = keys.getInt(Tags.NumberOfScreens, -1)) != -1) {
-			sqlBuilder.addIntValueMatch(null, "HP.numberOfScreens",
-					SqlBuilder.TYPE2, i);
-		}
-		sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
-				SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolUserGroupName));
-		addCodeMatch(keys
-				.getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
-				USER_CODE);
-		Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
-		if (item != null) {
-			sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
-					SqlBuilder.TYPE2, item.getStrings(Tags.Modality));
-			sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
-					SqlBuilder.TYPE2, item.getStrings(Tags.Laterality));
-			addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
-			addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
-			addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),
-					REASON_CODE);
-		}
-	}
+        super(JdbcProperties.getInstance().getDataSource(),
+                transactionIsolationLevel);
+        String s;
+        int i;
+        this.keys = keys;
+        // ensure keys contains (8,0005) for use as result filter
+        if (!keys.contains(Tags.SpecificCharacterSet)) {
+            keys.putCS(Tags.SpecificCharacterSet);
+        }
+        sqlBuilder.setSelect(SELECT);
+        sqlBuilder.setFrom(FROM);
+        sqlBuilder.setLeftJoin(getLeftJoin());
+        sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
+                .getStrings(Tags.SOPInstanceUID));
+        sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
+                .getStrings(Tags.SOPClassUID));
+        sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
+                SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolName));
+        if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
+            sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
+                    SqlBuilder.TYPE1, HPLevel.toInt(s));
+        }
+        if ((i = keys.getInt(Tags.NumberOfPriorsReferenced, -1)) != -1) {
+            sqlBuilder.addIntValueMatch(null, "HP.numberOfPriorsReferenced",
+                    SqlBuilder.TYPE1, i);
+        }
+        if ((i = keys.getInt(Tags.NumberOfScreens, -1)) != -1) {
+            sqlBuilder.addIntValueMatch(null, "HP.numberOfScreens",
+                    SqlBuilder.TYPE2, i);
+        }
+        sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
+                SqlBuilder.TYPE2, keys
+                        .getStrings(Tags.HangingProtocolUserGroupName));
+        addCodeMatch(keys
+                .getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
+                USER_CODE);
+        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
+        if (item != null) {
+            sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
+                    SqlBuilder.TYPE2, item.getStrings(Tags.Modality));
+            sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
+                    SqlBuilder.TYPE2, item.getStrings(Tags.Laterality));
+            addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
+            addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
+            addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),
+                    REASON_CODE);
+        }
+    }
 
     private void addCodeMatch(Dataset item, String alias) {
         if (item != null) {
             sqlBuilder.addSingleValueMatch(alias, "Code.codeValue",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodeValue));
-            sqlBuilder.addSingleValueMatch(alias, "Code.codingSchemeDesignator",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodingSchemeDesignator));
+                    SqlBuilder.TYPE2, item.getString(Tags.CodeValue));
+            sqlBuilder.addSingleValueMatch(alias,
+                    "Code.codingSchemeDesignator", SqlBuilder.TYPE2, item
+                            .getString(Tags.CodingSchemeDesignator));
+        }
+    }
+
+    private void addCodeMatch(Dataset item, String[] codeQuery) {
+        if (isMatchCode(item)) {
+            SqlBuilder subQuery = new SqlBuilder();
+            subQuery.setSelect(new String[] { "HPDefinition.pk" });
+            subQuery.setFrom(new String[] { "HPDefinition", codeQuery[1],
+                    "Code" });
+            subQuery.addFieldValueMatch(null, "HPDefinition.pk",
+                    SqlBuilder.TYPE1, null, codeQuery[2]);
+            subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1,
+                    null, codeQuery[3]);
+            subQuery.addSingleValueMatch(null, "Code.codeValue",
+                    SqlBuilder.TYPE2, item.getString(Tags.CodeValue));
+            subQuery.addSingleValueMatch(null, "Code.codingSchemeDesignator",
+                    SqlBuilder.TYPE2, item
+                            .getString(Tags.CodingSchemeDesignator));
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+            node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
     }
 
     private boolean isMatchCode(Dataset code) {
         return code != null
-                && (code.containsValue(Tags.CodeValue)
-                        || code.containsValue(Tags.CodingSchemeDesignator));
+                && (code.containsValue(Tags.CodeValue) || code
+                        .containsValue(Tags.CodingSchemeDesignator));
     }
 
     private String[] getLeftJoin() {
-		ArrayList list = new ArrayList();
-		if (isMatchCode(keys
-				.getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
-			list.add("Code");
-			list.add(USER_CODE);
-			list.add("HP.user_fk");
-			list.add("Code.pk");
-		}
-		Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
-		if (item != null && !item.isEmpty()) {
-			sqlBuilder.setDistinct(true);
-			list.add("HPDefinition");
-			list.add(null);
-			list.add("HP.pk");
-			list.add("HPDefinition.hp_fk");
-			if (isMatchCode(item.getItem(Tags.AnatomicRegionSeq))) {
-				list.add("rel_hpdef_region");
-				list.add(null);
-				list.add("HPDefinition.pk");
-				list.add("rel_hpdef_region.hpdef_fk");
-				list.add("Code");
-				list.add(REGION_CODE);
-				list.add("rel_hpdef_region.region_fk");
-				list.add("Code.pk");
-			}
-			if (isMatchCode(item.getItem(Tags.ProcedureCodeSeq))) {
-				list.add("rel_hpdef_proc");
-				list.add(null);
-				list.add("HPDefinition.pk");
-				list.add("rel_hpdef_proc.hpdef_fk");
-				list.add("Code");
-				list.add(PROC_CODE);
-				list.add("rel_hpdef_proc.proc_fk");
-				list.add("Code.pk");
-			}
-			if (isMatchCode(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq))) {
-				list.add("rel_hpdef_reason");
-				list.add(null);
-				list.add("HPDefinition.pk");
-				list.add("rel_hpdef_reason.hpdef_fk");
-				list.add("Code");
-				list.add(REASON_CODE);
-				list.add("rel_hpdef_reason.reason_fk");
-				list.add("Code.pk");
-			}
-		}
-		return (String[]) (list.isEmpty() ? null : list.toArray(new String[list
-				.size()]));
-	}
+        if (isMatchCode(keys
+                .getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
+            return new String[] { "Code", USER_CODE, "HP.user_fk", "Code.pk" };
+        }
+        else {
+            return null;
+        }
+    }
 
     public void execute() throws SQLException {
         execute(sqlBuilder.getSql());
@@ -193,9 +180,9 @@ public class HPQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray( getBytes(1), ds);
+        DatasetUtils.fromByteArray(getBytes(1), ds);
         QueryCmd.adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
-	
+
 }
