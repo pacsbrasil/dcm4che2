@@ -158,13 +158,22 @@ public class HPQueryCmd extends BaseReadCmd {
     }
 
     private String[] getLeftJoin() {
-		if (isMatchCode(keys
-				.getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
-			return new String[]{"Code",USER_CODE,"HP.user_fk","Code.pk"};
-		} else {
-			return null;
-		}
-	}
+        ArrayList list = new ArrayList(); 	 
+        if (isMatchCode(keys.getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
+        	list.add("Code");
+        	list.add(USER_CODE);
+        	list.add("HP.user_fk");
+        	list.add("Code.pk");
+        }
+        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq); 	 
+        if (item != null && !item.isEmpty()) { 	 
+                list.add("HPDefinition"); 	 
+                list.add(null); 	 
+                list.add("HP.pk"); 	 
+                list.add("HPDefinition.hp_fk"); 	 
+        }
+        return (String[]) (list.isEmpty() ? null : list.toArray(new String[list.size()])); 	 
+    }
 
     public void execute() throws SQLException {
         execute(sqlBuilder.getSql());
