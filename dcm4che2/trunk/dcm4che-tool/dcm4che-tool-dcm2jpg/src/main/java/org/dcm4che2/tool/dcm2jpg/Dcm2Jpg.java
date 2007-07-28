@@ -45,12 +45,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che2.io.DicomInputStream;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
@@ -62,11 +71,38 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 public class Dcm2Jpg {
 
+    private static final String USAGE =
+        "dcm2jpg [Options] <dcmfile> <jpegfile>\n" +
+        "or dcm2jpg [Options] <dcmfile>... <outdir>\n" +
+        "or dcm2jpg [Options] <indir>... <outdir>";
+    private static final String DESCRIPTION = 
+        "Convert DICOM image(s) to JPEG(s)\nOptions:";
+    private static final String EXAMPLE = null;
+    private float center;
+    private float width;
+    private DicomObject prState;
+
+
+    private void setWindowCenter(float center) {
+        this.center = center;        
+    }
+    
+    private void setWindowWidth(float width) {
+        this.width = width;       
+    }
+
+    private void setPresentationState(DicomObject prState) {
+        this.prState = prState;        
+    }
+    
     public void convert(File src, File dest) throws IOException {
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         ImageReader reader = (ImageReader) iter.next();
         DicomImageReadParam param = 
-                (DicomImageReadParam) reader.getDefaultReadParam();
+            (DicomImageReadParam) reader.getDefaultReadParam();
+        param.setWindowCenter(center);
+        param.setWindowWidth(width);
+        param.setPresentationState(prState);
         ImageInputStream iis = ImageIO.createImageInputStream(src);
         BufferedImage bi;
         try {
@@ -92,11 +128,11 @@ public class Dcm2Jpg {
         System.out.print('.');
     }
 
-    public int mconvert(String[] args, int optind, File destDir)
+    public int mconvert(List args, int optind, File destDir)
             throws IOException {
         int count = 0;
-        for (int i = optind, n = args.length - 1; i < n; ++i) {
-            File src = new File(args[i]);
+        for (int i = optind, n = args.size() - 1; i < n; ++i) {
+            File src = new File((String) args.get(i));
             count += mconvert(src, new File(destDir, src.getName()));
         }
         return count;
@@ -118,25 +154,34 @@ public class Dcm2Jpg {
         return count;
     }
 
-    /**
-     * @param args
-     *            the command line arguments
-     */
     public static void main(String args[]) throws Exception {
+        CommandLine cl = parse(args);
         Dcm2Jpg dcm2jpg = new Dcm2Jpg();
-
-        int argc = args.length;
-        if (argc < 2) {
-            exit("dcm2jpg: missing argument\n");
+        if (cl.hasOption("p")) {
+            dcm2jpg.setPresentationState(load(
+                    new File((String) cl.getOptionValue("p"))));
         }
+        if (cl.hasOption("c")) {
+            dcm2jpg.setWindowCenter(
+                    parseFloat((String) cl.getOptionValue("c"),
+                            "illegal argument of option -c"));
+        }
+        if (cl.hasOption("w")) {
+            dcm2jpg.setWindowWidth(
+                    parseFloat((String) cl.getOptionValue("w"),
+                            "illegal argument of option -w"));
+        }
+       
+        final List argList = cl.getArgList();
+        int argc = argList.size();
 
-        File dest = new File(args[args.length - 1]);
+        File dest = new File((String) argList.get(argc-1));
         long t1 = System.currentTimeMillis();
         int count = 1;
         if (dest.isDirectory()) {
-            count = dcm2jpg.mconvert(args, 0, dest);
+            count = dcm2jpg.mconvert(argList, 0, dest);
         } else {
-            File src = new File(args[0]);
+            File src = new File((String) argList.get(0));
             if (argc > 2 || src.isDirectory()) {
                 exit("dcm2jpg: when converting several files, "
                         + "last argument must be a directory\n");
@@ -148,13 +193,70 @@ public class Dcm2Jpg {
                 / 1000f + " s.");
     }
 
-    private static void exit(String prompt) {
-        System.err.println(prompt);
-        System.err.println(USAGE);
+    private static DicomObject load(File file) {
+        try {
+            DicomInputStream in = new DicomInputStream(file);
+            try {
+                return in.readDicomObject();
+            } finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            exit(e.getMessage());
+            throw new RuntimeException();
+        }
+    }
+
+    private static CommandLine parse(String[] args) {
+        Options opts = new Options();
+        OptionBuilder.withArgName("prfile");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path of presentation state to apply");
+        opts.addOption(OptionBuilder.create("p"));
+        OptionBuilder.withArgName("center");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("Window Center");
+        opts.addOption(OptionBuilder.create("c"));
+        OptionBuilder.withArgName("width");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("Window Width");
+        opts.addOption(OptionBuilder.create("w"));
+        opts.addOption("h", "help", false, "print this message");
+        opts.addOption("V", "version", false,
+                "print the version information and exit");
+        CommandLine cl = null;
+        try {
+            cl = new PosixParser().parse(opts, args);
+        } catch (ParseException e) {
+            exit("dcm2jpg: " + e.getMessage());
+        }
+        if (cl.hasOption('V')) {
+            Package p = Dcm2Jpg.class.getPackage();
+            System.out.println("dcm2jpg v" + p.getImplementationVersion());
+            System.exit(0);
+        }
+        if (cl.hasOption('h') || cl.getArgList().size() < 2) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
+            System.exit(0);
+        }
+        return cl;
+    }
+
+    private static float parseFloat(String s, String errPrompt) {
+        try {
+            return Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            exit(errPrompt);
+            throw new RuntimeException();
+        }
+    }
+       
+    private static void exit(String msg) {
+        System.err.println(msg);
+        System.err.println("Try 'dcm2jpg -h' for more information.");
         System.exit(1);
     }
 
-    private static final String USAGE = "Usage: dcm2jpg SOURCE DEST\n"
-            + "    or dcm2jpg SOURCE... DIRECTORY\n\n"
-            + "Convert DICOM image(s) to JPEG(s).\n\n";
 }
