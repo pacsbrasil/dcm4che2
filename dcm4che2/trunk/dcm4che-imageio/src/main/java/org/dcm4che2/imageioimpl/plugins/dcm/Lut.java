@@ -83,7 +83,9 @@ public abstract class Lut {
     
     public abstract byte lookupByte(int in);
     
-    public abstract short lookupShort(int in); 
+    public abstract short lookupShort(int in);
+    
+    public abstract int lookup(int in); 
 
     public abstract void lookup(byte[] in, byte[] out);
 
@@ -93,9 +95,9 @@ public abstract class Lut {
 
     public abstract void lookup(short[] in, short[] out);
     
-    protected abstract Lut scale(int outBits);
-    protected abstract Lut inverse();   
-    protected abstract Lut combine(Lut other);
+    protected abstract Lut scale(int outBits, boolean inverse);
+    protected abstract Lut combine(Lut other, int outBits, boolean inverse);
+    protected abstract Lut combine(Lut vlut, Lut plut, int outBits, boolean inverse);
 
     public void lookup(DataBuffer in, DataBuffer out) {
         switch (in.getDataType()) {
@@ -239,13 +241,11 @@ public abstract class Lut {
             DicomObject mLut, float center, float width, boolean inverse) {
         Lut mlut = createLut(inBits, signed, mLut);
         if (width == 0) {
-            Lut lut = mlut.scale(outBits);
-            return inverse ? lut.inverse() : lut;
+            return mlut.scale(outBits, inverse);
         }
         Lut vlut = createLut(mlut.outBits, false, outBits, 1, 0, 
                 center, width, inverse);
-        Lut lut = mlut.combine(vlut);
-        return lut;
+        return mlut.combine(vlut, outBits, false);
     }
 
     private static Lut createLut(int inBits, boolean signed, DicomObject ds) {
@@ -297,9 +297,8 @@ public abstract class Lut {
      */
     public static Lut createLut(int inBits, boolean signed, int outBits, 
             float slope, float intercept, DicomObject voiLut, boolean inverse) {
-        Lut lut = createLut(inBits, signed, slope, intercept, voiLut)
-                .scale(outBits);
-        return inverse ? lut.inverse() : lut;
+        return createLut(inBits, signed, slope, intercept, voiLut)
+                .scale(outBits, inverse);
     }
 
     private static Lut createLut(int inBits, boolean signed,
@@ -344,8 +343,7 @@ public abstract class Lut {
         Lut plut = createLut(0, false, pLut);
         Lut vlut = createLut(inBits, signed, plut.inBits,
                 slope, intercept, center, width, false);
-        final Lut lut = vlut.combine(plut).scale(outBits);
-        return inverse ? lut.inverse() : lut;
+        return vlut.combine(plut, outBits, inverse);
     }
     
     /**
@@ -364,8 +362,7 @@ public abstract class Lut {
             DicomObject mLut, DicomObject voiLut, boolean inverse) {
         Lut mlut = createLut(inBits, signed, voiLut);
         Lut vlut = createLut(mlut.outBits, false, voiLut);
-        Lut lut = mlut.combine(vlut).scale(outBits);
-        return inverse ? lut.inverse() : lut;
+        return mlut.combine(vlut, outBits, inverse);
     }
    
     /**
@@ -387,8 +384,7 @@ public abstract class Lut {
             DicomObject pLut, boolean inverse) {
         Lut vlut = createLut(inBits, signed, slope, intercept, voiLut);
         Lut plut = createLut(0, false, pLut);
-        Lut lut = vlut.scale(plut.inBits).combine(plut).scale(outBits);
-        return inverse ? lut.inverse() : lut;
+        return vlut.combine(plut, outBits, inverse);
     }
    
     /**
@@ -411,16 +407,13 @@ public abstract class Lut {
             boolean inverse) {
         Lut mlut = createLut(inBits, signed, mLut);
         Lut plut = createLut(0, false, pLut);
-        Lut lut;
         if (width == 0) {
-            lut = mlut.scale(plut.inBits);
+            return mlut.combine(plut, outBits, inverse);
         } else {
             Lut vlut = createLut(mlut.outBits, false, plut.inBits, 1, 0, 
                     center, width, false);
-            lut = mlut.combine(vlut);
+            return mlut.combine(vlut, plut, outBits, inverse);
         }
-        lut = lut.combine(plut).scale(outBits);
-        return inverse ? lut.inverse() : lut;
     }
 
     /**
@@ -442,9 +435,7 @@ public abstract class Lut {
         Lut mlut = createLut(inBits, signed, mLut);
         Lut vlut = createLut(mlut.outBits, false, voiLut);
         Lut plut = createLut(0, false, pLut);
-        Lut lut = mlut.combine(vlut).scale(plut.inBits).combine(plut)
-                        .scale(outBits);
-        return inverse ? lut.inverse() : lut;
+        return mlut.combine(vlut, plut, outBits, inverse);
     }
 
     /**
@@ -669,6 +660,10 @@ public abstract class Lut {
             return (short) (lookupByte(in) & 0xff);
         }
         
+        public final int lookup(int in) {
+            return lookupByte(in) & 0xff;
+        }
+        
         public final void lookup(byte[] in, byte[] out) {
             for (int i = 0; i < in.length; i++) {
                 out[i] = lookupByte(in[i]);
@@ -704,23 +699,20 @@ public abstract class Lut {
                     : this;
         }
 
-        protected Lut scale(int outBits) {
+        protected Lut scale(int outBits, boolean inverse) {
             int shift = outBits - this.outBits;
-            if (shift == 0) {
+            if (shift == 0 && !inverse) {
                 return this;
             }
+            int outMax = (1 << outBits) - 1;
             if (outBits <= 8) {
                 byte[] newData = preserve ? new byte[data.length] : data;
-                if (shift < 0) {
-                    shift = -shift;                
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (byte) ((data[i] & 0xff) >>> shift);
-                    }              
-                } else {
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (byte) (data[i] << shift);
-                    }              
-                }
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = shift < 0 
+                            ? (data[i] & 0xff) >>> -shift
+                            : data[i] << shift;
+                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                }              
                 if (preserve) {
                     return new Byte(inBits, signbit != 0, off, outBits, newData);
                 } else {
@@ -729,38 +721,88 @@ public abstract class Lut {
                 }
             } else {
                 short[] newData = new short[data.length];
-                if (shift < 0) {
-                    shift = -shift;                
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (short) ((data[i] & 0xff) >>> shift);
-                    }              
-                } else {
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (short) ((data[i] & 0xff) << shift);
-                    }
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = shift < 0 
+                            ? (data[i] & 0xff) >>> -shift
+                            : (data[i] & 0xff) << shift;
+                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
                 }              
-                return new Short(inBits, signbit != 0, off, outBits, newData);           
+                return new Short(inBits, signbit != 0, off, outBits, newData);
             }
         }
 
-        protected Lut combine(Lut other) {
-            if (other.outBits <= 8) {
+        protected Lut combine(Lut other, int outBits, boolean inverse) {
+            int shift1 = other.inBits - this.outBits;
+            int shift2 = outBits - other.outBits;
+            int outMax = (1 << outBits) - 1;
+            if (outBits <= 8) {
                 byte[] newData = new byte[data.length];
-                for (int i = 0; i < data.length; i++) {
-                    newData[i] = other.lookupByte(data[i] & 0xff);
-                }
-                return new Byte(inBits, signbit != 0, off, other.outBits,
-                        newData);
-            } else {
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = other.lookup(shift1 < 0 
+                            ? (data[i] & 0xff) >>> -shift1
+                            : data[i] << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Byte(inBits, signbit != 0, off, outBits, newData);
+            } else { 
                 short[] newData = new short[data.length];
-                for (int i = 0; i < data.length; i++) {
-                    newData[i] = other.lookupShort(data[i] & 0xff);
-                }
-                return new Short(inBits, signbit != 0, off, other.outBits,
-                        newData);
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = other.lookup(shift1 < 0 
+                            ? (data[i] & 0xff) >>> -shift1
+                            : (data[i] & 0xff) << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Short(inBits, signbit != 0, off, outBits, newData);
             }
         }
 
+        protected Lut combine(Lut vlut, Lut plut, int outBits,
+                boolean inverse) {
+            int shift1 = plut.inBits - vlut.outBits;
+            int shift2 = outBits - plut.outBits;
+            int outMax = (1 << outBits) - 1;
+            if (outBits <= 8) {
+                byte[] newData = new byte[data.length];
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = vlut.lookup(data[i] & 0xff);
+                    tmp = plut.lookup(shift1 < 0 
+                            ? tmp >>> -shift1
+                            : tmp << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Byte(inBits, signbit != 0, off, outBits, newData);
+            } else { 
+                short[] newData = new short[data.length];
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = vlut.lookup(data[i] & 0xff);
+                    tmp = plut.lookup(shift1 < 0 
+                            ? tmp >>> -shift1
+                            : tmp << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Short(inBits, signbit != 0, off, outBits, newData);
+            }
+        }
     }
     
     public static class Short extends Lut {
@@ -792,7 +834,11 @@ public abstract class Lut {
             return tmp <= 0 ? data[0]
                     : tmp >= data.length ? data[data.length - 1] : data[tmp];
         }
-        
+
+        public final int lookup(int in) {
+            return lookupShort(in) & 0xffff;
+        }
+                
         public final void lookup(byte[] in, byte[] out) {
             for (int i = 0; i < in.length; i++) {
                 out[i] = lookupByte(in[i]);
@@ -827,38 +873,32 @@ public abstract class Lut {
                     : this;
         }
 
-        protected Lut scale(int outBits) {
+        protected Lut scale(int outBits, boolean inverse) {
             int shift = outBits - this.outBits;
-            if (shift == 0) {
+            if (shift == 0 && !inverse) {
                 return this;
             }
+            int outMax = (1 << outBits) - 1;
             if (preserve && outBits <= 8) {
                 byte[] newData = new byte[data.length];
-                if (shift < 0) {
-                    shift = -shift;                
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (byte) ((data[i] & 0xffff) >>> shift);
-                    }              
-                } else {
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (byte) (data[i] << shift);
-                    }              
-                }
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = shift < 0 
+                            ? (data[i] & 0xffff) >>> -shift
+                            : data[i] << shift;
+                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                }              
                 return new Byte(inBits, signbit != 0, off, outBits, newData);
             } else {
                 short[] newData = preserve ? new short[data.length] : data;
-                if (shift < 0) {
-                    shift = -shift;                
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (short) ((data[i] & 0xffff) >>> shift);
-                    }              
-                } else {
-                    for (int i = 0; i < newData.length; i++) {
-                        newData[i] = (short) (data[i] << shift);
-                    }
-                }
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = shift < 0 
+                            ? (data[i] & 0xffff) >>> -shift
+                            : data[i] << shift;
+                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                }              
                 if (preserve) {
-                    return new Short(inBits, signbit != 0, off, outBits, newData);
+                    return new Short(inBits, signbit != 0, off, outBits,
+                            newData);
                 } else {
                     this.outBits = outBits;
                     return this;
@@ -866,22 +906,77 @@ public abstract class Lut {
             }
         }
 
-        protected Lut combine(Lut other) {
-            if (other.outBits <= 8) {
+        protected Lut combine(Lut other, int outBits, boolean inverse) {
+            int shift1 = other.inBits - this.outBits;
+            int shift2 = outBits - other.outBits;
+            int outMax = (1 << outBits) - 1;
+            if (outBits <= 8) {
                 byte[] newData = new byte[data.length];
-                for (int i = 0; i < data.length; i++) {
-                    newData[i] = other.lookupByte(data[i] & 0xffff);
-                }
-                return new Byte(inBits, signbit != 0, off, other.outBits,
-                        newData);
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = other.lookup(shift1 < 0 
+                            ? (data[i] & 0xffff) >>> -shift1
+                            : data[i] << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Byte(inBits, signbit != 0, off, outBits, newData);
             } else { 
                 short[] newData = new short[data.length];
-                for (int i = 0; i < data.length; i++) {
-                    newData[i] = other.lookupShort(data[i] & 0xffff);
-                }
-                return new Short(inBits, signbit != 0, off, other.outBits,
-                        newData);
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = other.lookup(shift1 < 0 
+                            ? (data[i] & 0xffff) >>> -shift1
+                            : data[i] << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Short(inBits, signbit != 0, off, outBits, newData);
             }
         }
-    }    
+        
+        protected Lut combine(Lut vlut, Lut plut, int outBits,
+                boolean inverse) {
+            int shift1 = plut.inBits - vlut.outBits;
+            int shift2 = outBits - plut.outBits;
+            int outMax = (1 << outBits) - 1;
+            if (outBits <= 8) {
+                byte[] newData = new byte[data.length];
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = vlut.lookup(data[i] & 0xffff);
+                    tmp = plut.lookup(shift1 < 0 
+                            ? tmp >>> -shift1
+                            : tmp << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Byte(inBits, signbit != 0, off, outBits, newData);
+            } else { 
+                short[] newData = new short[data.length];
+                for (int i = 0; i < newData.length; i++) {
+                    int tmp = vlut.lookup(data[i] & 0xffff);
+                    tmp = plut.lookup(shift1 < 0 
+                            ? tmp >>> -shift1
+                            : tmp << shift1);
+                    if (shift2 < 0) {
+                        tmp >>>= -shift2;
+                    } else {
+                        tmp <<= shift2;
+                    }
+                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                }              
+                return new Short(inBits, signbit != 0, off, outBits, newData);
+            }
+        }
+   }    
  }
