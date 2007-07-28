@@ -419,6 +419,13 @@ public abstract class VR
                     : ByteUtils.ushorts2bytesLE(val);
         }
 
+        public byte[] toBytes(short[] val, boolean bigEndian)
+        {
+            return bigEndian
+                    ? ByteUtils.shorts2bytesBE(val)
+                    : ByteUtils.shorts2bytesLE(val);
+        }
+
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -436,6 +443,13 @@ public abstract class VR
             return toBytes(t, bigEndian);
         }
 
+        public short[] toShorts(byte[] val, boolean bigEndian)
+        {
+            return bigEndian 
+                    ? ByteUtils.bytesBE2shorts(val) 
+                    : ByteUtils.bytesLE2shorts(val);
+        }
+        
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1463,6 +1477,20 @@ public abstract class VR
                     : ByteUtils.ushorts2bytesLE(val);
         }
 
+        public byte[] toBytes(short[] val, boolean bigEndian)
+        {
+            return bigEndian 
+                    ? ByteUtils.shorts2bytesBE(val) 
+                    : ByteUtils.shorts2bytesLE(val);
+        }
+
+        public short[] toShorts(byte[] val, boolean bigEndian)
+        {
+            return bigEndian 
+                    ? ByteUtils.bytesBE2shorts(val) 
+                    : ByteUtils.bytesLE2shorts(val);
+        }
+
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -2184,6 +2212,11 @@ public abstract class VR
         throw new UnsupportedOperationException();
     }
 
+    public byte[] toBytes(short[] val, boolean bigEndian)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     public byte[] toBytes(float val, boolean bigEndian)
     {
         throw new UnsupportedOperationException();
@@ -2226,6 +2259,11 @@ public abstract class VR
     }
 
     public byte[] toBytes(DateRange val)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public short[] toShorts(byte[] val, boolean bigEndian)
     {
         throw new UnsupportedOperationException();
     }

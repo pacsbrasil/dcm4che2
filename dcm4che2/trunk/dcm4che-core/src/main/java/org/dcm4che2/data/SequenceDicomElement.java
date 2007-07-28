@@ -164,6 +164,14 @@ class SequenceDicomElement extends AbstractDicomElement {
         throw new UnsupportedOperationException();
     }
 
+    public short getShort(boolean cache) {
+        throw new UnsupportedOperationException();
+    }
+
+    public short[] getShorts(boolean cache) {
+        throw new UnsupportedOperationException();
+    }
+
     public int getInt(boolean cache) {
         throw new UnsupportedOperationException();
     }

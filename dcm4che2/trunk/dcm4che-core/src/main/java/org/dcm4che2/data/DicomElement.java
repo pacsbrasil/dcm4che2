@@ -93,6 +93,8 @@ public interface DicomElement extends Serializable {
 
     byte[] setFragment(int index, byte[] b);
 
+    short[] getShorts(boolean cache);
+
     int getInt(boolean cache);
 
     int[] getInts(boolean cache);

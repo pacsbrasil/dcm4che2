@@ -456,6 +456,32 @@ public interface DicomObject extends Serializable {
      *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
+    short[] getShorts(int tag);
+
+    /**
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return
+     */
+    short[] getShorts(int tag, short[] defVal);
+
+    /**
+     * @param tagPath
+     * @return
+     */
+    short[] getShorts(int[] tagPath);
+
+    /**
+     * @param tagPath
+     * @return
+     */
+    short[] getShorts(int[] tagPath, short[] defVal);
+    
+    /**
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @return
+     */
     float getFloat(int tag);
 
     /**
@@ -828,6 +854,15 @@ public interface DicomObject extends Serializable {
      * @param val
      * @return
      */
+    DicomElement putShorts(int tag, VR vr, short[] val);
+
+    /**
+     * @param tag
+     *            (group, element) as 8 byte integer: ggggeeee.
+     * @param vr
+     * @param val
+     * @return
+     */
     DicomElement putFloat(int tag, VR vr, float val);
 
     /**
@@ -977,6 +1012,14 @@ public interface DicomObject extends Serializable {
      * @return
      */
     DicomElement putInts(int[] tagPath, VR vr, int[] val);
+
+    /**
+     * @param tagPath
+     * @param vr
+     * @param val
+     * @return
+     */
+    DicomElement putShorts(int[] tagPath, VR vr, short[] val);
 
     /**
      * @param tagPath

@@ -150,6 +150,15 @@ class SimpleDicomElement extends AbstractDicomElement {
         return value;
     }
 
+    public short[] getShorts(boolean cache) {
+        if (cache && cachedValue instanceof short[])
+            return (short[]) cachedValue;
+        short[] val = vr.toShorts(value, bigEndian);
+        if (cache)
+            cachedValue = val;
+        return val;
+    }
+
     public int getInt(boolean cache) {
         if (cache && cachedValue instanceof Integer)
             return ((Integer) cachedValue).intValue();

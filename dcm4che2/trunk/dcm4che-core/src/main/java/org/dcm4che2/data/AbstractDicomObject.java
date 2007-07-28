@@ -394,6 +394,22 @@ abstract class AbstractDicomObject implements DicomObject {
         return a == null || a.isEmpty() ? defVal : a.getInts(cacheGet());
     }
 
+    public short[] getShorts(int tag) {
+        return toShorts(get(tag));
+    }
+
+    public short[] getShorts(int tag, short[] defVal) {
+        return toShorts(get(tag), defVal);
+    }
+
+    private short[] toShorts(DicomElement a) {
+        return a == null ? null : a.getShorts(cacheGet());
+    }
+
+    private short[] toShorts(DicomElement a, short[] defVal) {
+        return a == null || a.isEmpty() ? defVal : a.getShorts(cacheGet());
+    }
+
     public float getFloat(int tag) {
         return toFloat(get(tag), 0.f);
     }
@@ -623,6 +639,14 @@ abstract class AbstractDicomObject implements DicomObject {
         return toInts(get(tagPath), defVal);
     }
 
+    public short[] getShorts(int[] tagPath) {
+        return toShorts(get(tagPath));
+    }
+
+    public short[] getShorts(int[] tagPath, short[] defVal) {
+        return toShorts(get(tagPath), defVal);
+    }
+
     public float getFloat(int[] tagPath) {
         return toFloat(get(tagPath), 0.f);
     }
@@ -808,6 +832,13 @@ abstract class AbstractDicomObject implements DicomObject {
         int last = tagPath.length - 1;
         DicomObject item = getItem(tagPath, last, false);
         return item.putFragments(tagPath[last], vr, bigEndian);
+    }
+
+    public DicomElement putShorts(int[] tagPath, VR vr, short[] val) {
+        checkTagPathLength(tagPath);
+        int last = tagPath.length - 1;
+        DicomObject item = getItem(tagPath, last, false);
+        return item.putShorts(tagPath[last], vr, val);
     }
 
     public DicomElement putInt(int[] tagPath, VR vr, int val) {

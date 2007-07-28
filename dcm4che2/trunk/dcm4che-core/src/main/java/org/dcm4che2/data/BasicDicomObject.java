@@ -398,6 +398,14 @@ public class BasicDicomObject extends AbstractDicomObject {
         return a;
     }
 
+    public DicomElement putShorts(int tag, VR vr, short[] val) {
+        final boolean be = bigEndian();
+        if (vr == null)
+            vr = vrOf(tag);
+        return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
+                be), cachePut ? val : null));
+    }
+
     public DicomElement putInt(int tag, VR vr, int val) {
         final boolean be = bigEndian();
         if (vr == null)

@@ -389,6 +389,11 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         throw new UnsupportedOperationException();
     }
 
+    public DicomElement putShorts(int tag, VR vr, short[] val)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     public DicomElement putNestedDicomObject(int tag, DicomObject item)
     {
         throw new IllegalArgumentException(TagUtils.toString(tag));

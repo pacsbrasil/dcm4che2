@@ -206,6 +206,26 @@ public class ByteUtils
         return b;
     }
 
+    public static byte[] shorts2bytesLE(short[] val)
+    {
+        if (val == null)
+            return null;
+        byte[] b = new byte[val.length << 1];
+        for (int i = 0; i < val.length; i++)
+            ushort2bytesLE(val[i], b, i << 1);
+        return b;
+    }
+    
+    public static byte[] shorts2bytesBE(short[] val)
+    {
+        if (val == null)
+            return null;
+        byte[] b = new byte[val.length << 1];
+        for (int i = 0; i < val.length; i++)
+            ushort2bytesBE(val[i], b, i << 1);
+        return b;
+    }
+
     public static int bytesLE2ushort(byte[] b, int off)
     {
         return bytesLE2sshort(b, off) & 0xffff;
@@ -274,6 +294,30 @@ public class ByteUtils
         return val;
     }
 
+    public static short[] bytesLE2shorts(byte[] b)
+    {
+        if (b == null)
+            return null;
+        if ((b.length & 0x1) != 0)
+            throw new IllegalArgumentException("byte[" + b.length + "]");
+        short[] val = new short[b.length >> 1];
+        for (int i = 0; i < val.length; i++)
+            val[i] = (short) bytesLE2sshort(b, i << 1);
+        return val;
+    }
+    
+    public static short[] bytesBE2shorts(byte[] b)
+    {
+        if (b == null)
+            return null;
+        if ((b.length & 0x1) != 0)
+            throw new IllegalArgumentException("byte[" + b.length + "]");
+        short[] val = new short[b.length >> 1];
+        for (int i = 0; i < val.length; i++)
+            val[i] = (short) bytesBE2sshort(b, i << 1);
+        return val;
+    }
+    
     public static byte[] float2bytesLE(float val, byte[] b, int off)
     {
         return int2bytesLE(Float.floatToIntBits(val), b, off);
