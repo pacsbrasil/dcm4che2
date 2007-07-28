@@ -352,6 +352,9 @@ public class DicomImageReader extends ImageReader {
     public BufferedImage read(int imageIndex, ImageReadParam param)
             throws IOException {
         initImageReader();
+        if (param == null) {
+            param = getDefaultReadParam();
+        }
         BufferedImage bi;
         if (compressed) {
             // TODO
@@ -361,8 +364,25 @@ public class DicomImageReader extends ImageReader {
         }
         if (monochrome) {
             DataBuffer data = bi.getRaster().getDataBuffer();
-            Lut.createLut(ds).lookup(data, data);
+            createLut((DicomImageReadParam) param).lookup(data, data);           
         }
         return bi;
+    }
+
+    private Lut createLut(DicomImageReadParam param) {
+        DicomObject pr = param.getPresentationState();
+        if (pr != null) {
+            return Lut.createLutForImageWithPR(ds, pr, stored);
+        }
+        DicomObject voiLut = param.getVoiLut();
+        if (voiLut != null) {
+            return Lut.createLutForImage(ds, voiLut, stored);
+        }
+        float c = param.getWindowCenter();
+        float w = param.getWindowWidth();
+        if (w > 0) {            
+            return Lut.createLutForImage(ds, c, w, stored);
+        }
+        return Lut.createLutForImage(ds, stored);
     }
 }

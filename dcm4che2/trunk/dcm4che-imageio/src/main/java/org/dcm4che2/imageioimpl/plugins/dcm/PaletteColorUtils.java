@@ -100,10 +100,10 @@ public class PaletteColorUtils {
                     "Illegal LUT Descriptor: bits=" + bits);
 
         byte[] out = new byte[size];
-        int[] data = ds.getInts(dataTag);
+        byte[] data = ds.getBytes(dataTag);
         
         if (data == null) {
-            int[] segm = ds.getInts(segmTag);
+            short[] segm = ds.getShorts(segmTag);
             if (segm == null) {
                 throw new IllegalArgumentException("Missing LUT Data!");
             }
@@ -114,22 +114,17 @@ public class PaletteColorUtils {
             inflateSegmentedLut(segm, out, off, len);            
         } else {
             if (bits == 8) {
-                if (data.length * 2 != len) {
-                    throwLutLengthMismatch(data.length * 2, len);
-                }
-                int j = off;
-                int tmp;
-                for (int i = 0; i < data.length; i++) {
-                    tmp = data[i];
-                    out[j++] = (byte)(tmp & 0xff);
-                    out[j++] = (byte)((tmp >> 8) & 0xff);
-                }
-            } else { // bits == 16
                 if (data.length != len) {
-                    throwLutLengthMismatch(data.length * 2, len);
+                    throwLutLengthMismatch(data.length, len);
                 }
-                for (int i = 0; i < data.length; i++) {
-                    out[i + off] = (byte) (data[i] >> 8);
+                System.arraycopy(data, 0, out, off, len);
+            } else { // bits == 16
+                if (data.length != len << 1) {
+                    throwLutLengthMismatch(data.length, len);
+                }
+                int hibyte = ds.bigEndian() ? 0 : 1;
+                for (int i = 0; i < len; i++) {
+                    out[i + off] = data[(i << 1) + hibyte];
                 }                
             }
         }
@@ -139,7 +134,7 @@ public class PaletteColorUtils {
         return out;
     }
 
-    private static void inflateSegmentedLut(int[] in, byte[] out, int off,
+    private static void inflateSegmentedLut(short[] in, byte[] out, int off,
             int len) {
         int x0 = off;
         int y0 = 0;

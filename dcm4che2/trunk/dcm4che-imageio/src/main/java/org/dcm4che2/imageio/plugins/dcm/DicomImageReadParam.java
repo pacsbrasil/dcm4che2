@@ -40,6 +40,8 @@ package org.dcm4che2.imageio.plugins.dcm;
 
 import javax.imageio.ImageReadParam;
 
+import org.dcm4che2.data.DicomObject;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -47,4 +49,40 @@ import javax.imageio.ImageReadParam;
  */
 public class DicomImageReadParam extends ImageReadParam {
 
+    private float center;
+    private float width;
+    private DicomObject voiLut;
+    private DicomObject prState;
+     
+    public final float getWindowCenter() {
+        return center;
+    }
+
+    public final void setWindowCenter(float center) {
+        this.center = center;
+    }
+
+    public final float getWindowWidth() {
+        return width;
+    }
+
+    public final void setWindowWidth(float width) {
+        this.width = width;
+    }
+    
+    public final DicomObject getVoiLut() {
+        return voiLut;
+    }
+
+    public final void setVoiLut(DicomObject voiLut) {
+        this.voiLut = voiLut;
+    }
+
+    public final DicomObject getPresentationState() {
+        return prState;
+    }
+
+    public final void setPresentationState(DicomObject prState) {
+        this.prState = prState;
+    }    
 }
