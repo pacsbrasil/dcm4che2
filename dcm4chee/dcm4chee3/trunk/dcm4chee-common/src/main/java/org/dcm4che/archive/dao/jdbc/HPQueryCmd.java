@@ -40,6 +40,8 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che.archive.common.DatasetUtils;
 import org.dcm4che.archive.common.HPLevel;
@@ -165,13 +167,22 @@ public class HPQueryCmd extends BaseReadCmd {
     }
 
     private String[] getLeftJoin() {
+        List<String> list = new ArrayList<String>();
         if (isMatchCode(keys
                 .getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
-            return new String[] { "Code", USER_CODE, "HP.user_fk", "Code.pk" };
+            list.add("Code");
+            list.add(USER_CODE);
+            list.add("HP.user_fk");
+            list.add("Code.pk");
         }
-        else {
-            return null;
+        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
+        if (item != null && !item.isEmpty()) {
+            list.add("HPDefinition");
+            list.add(null);
+            list.add("HP.pk");
+            list.add("HPDefinition.hp_fk");
         }
+        return (list.isEmpty() ? null : list.toArray(new String[list.size()]));
     }
 
     public void execute() throws SQLException {
