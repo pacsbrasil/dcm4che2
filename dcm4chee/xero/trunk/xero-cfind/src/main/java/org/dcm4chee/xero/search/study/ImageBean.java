@@ -88,7 +88,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String> {
 	 * as is WindowCenter for all window level related attributes.
 	 */
 	public boolean clearEmpty() {
-		boolean emptyChildren = ResultsBean.clearEmpty(children,getAny());
+		boolean emptyChildren = getAny()==null || ResultsBean.clearEmpty(children,getAny().getAny());
 		return emptyChildren && getOtherAttributes().isEmpty()
 				&& getPresentationSizeMode() == null && getGspsUID() == null
 				&& getWindowCenter() == null;

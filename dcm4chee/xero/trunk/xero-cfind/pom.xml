@@ -22,7 +22,7 @@
         </executions>
         <configuration>
           <includeSchemas>
-            <includeSchema>**/*.xsd</includeSchema>
+            <includeSchema>org/**/*.xsd</includeSchema>
           </includeSchemas>
           <includeBindings>
             <includeBinding>*.xjb</includeBinding>

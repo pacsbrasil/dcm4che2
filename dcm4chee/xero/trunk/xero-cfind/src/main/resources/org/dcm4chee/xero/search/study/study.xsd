@@ -3,10 +3,13 @@
   xmlns="http://www.w3.org/2001/XMLSchema" 
   xmlns:tns="http://www.dcm4chee.org/xero/search/study/" 
   xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+  xmlns:svg="http://www.w3.org/2000/svg" 
   targetNamespace="http://www.dcm4chee.org/xero/search/study/" 
   jxb:version="2.0"
 >
-    <!-- A studies element is the root for all children, and all children should
+  <import namespace="http://www.w3.org/2000/svg" schemaLocation="../../../../w3/svg/partialSvg.xsd"/>
+
+  <!-- A studies element is the root for all children, and all children should
          have information upto the studies level, at least UID's, however many
          studies will NOT be complete in terms of having all children. -->
     <element name="results" type="tns:resultsType"/>
@@ -138,6 +141,9 @@
     <complexType name="gspsType">
      <complexContent>
        <extension base="tns:dicomObjectType">
+         <choice>
+           <element ref="svg:svg" minOccurs="0" maxOccurs="1" />
+         </choice>
          <attribute name="contentLabel" />
          <attribute name="presentationDateTime" type="dateTime"/>
        </extension>
@@ -175,6 +181,14 @@ Key objects are a named (by code meaning) list of images to display.
         </extension>
       </complexContent>
     </complexType>
+    
+    <element name="any">
+      <complexType>
+        <choice>
+          <any namespace="##other" minOccurs="0" maxOccurs="unbounded" />
+        </choice>
+      </complexType>
+    </element>
 
     <complexType name="imageType">
     	<annotation>
@@ -190,7 +204,8 @@ Key objects are a named (by code meaning) list of images to display.
     	<complexContent>
 	   		<extension base="tns:dicomObjectType">
 	   		    <sequence>
-	    		  <any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+	   		      <element ref="svg:use" minOccurs="0" maxOccurs="unbounded"/>
+	    		  <element ref="tns:any" minOccurs="0" maxOccurs="1"/>
 	    		</sequence>
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />

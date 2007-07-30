@@ -73,7 +73,7 @@ public class MinMaxPixelInfo  implements Filter<ResultsBean> {
 		// It is harder to handle more samples, as then we need to know about the mode - so, ignore this for now.
 		if( lm.getSamplesPerPixel()!=1 ) return;
 		
-		ILut lut = lm.getModalityLut();
+		ILut lut = lm.getModalityLutModule().getModalityLut();
 		if(lut==null ) {
 			log.debug("No modality LUT found for "+ib.getSOPInstanceUID());
 			lut = new RescaleLut(1,0, "Identity");

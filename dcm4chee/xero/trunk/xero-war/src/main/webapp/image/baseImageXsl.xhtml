@@ -373,6 +373,14 @@
  </xsl:if>
 </x:template>
 
+<!-- Adds the SVG use section to the image. -->
+<x:template name="addUse">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:message>There are <xsl:value-of select="count($node/svg:use)" /> use elements and <xsl:value-of select="count($node/*)" /> child elements.</xsl:message>
+ <xsl:copy-of select="$node/svg:use" />
+</x:template>
+
 <!-- Renders the image group, including overlays etc - calls the image, shutter etc groups. -->
 <x:template name="imageGroup" m:imageGroup.viewport="imageGroup">
  <xsl:param name="loc" />
@@ -383,6 +391,7 @@
   <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
   <xsl:call-template name="addLowResImage"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
   <xsl:call-template name="addImage"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
+  <xsl:call-template name="addUse"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
  </xsl:element>
 </x:template>
 
@@ -532,14 +541,8 @@ and cx,cy = width /2, height/2
 <x:template name="imageLayout" mode="newlayout" match="se:image">
    <xsl:param name="loc" />
    <xsl:param name="node" />
-   <!-- Compute the image document to get information from.  This will become the new node -->
-   <xsl:param name="count" select="24" />
    <xsl:param name="offset" select="@offset" />
-   <xsl:param name="position" select="@offset - @offset mod $count" />
-   <xsl:param name="gsps" select="$node/parent::se:study/@gspsLabel" />
-   <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,'&amp;gsps=',$gsps)" />
-   <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
-   <xsl:param name="imageNode" select="$newSeriesNode/se:image[@Position=$offset]" />
+   <xsl:param name="imageNode" select="$node/se:image[@Position=$offset]" />
  
    <div>
     <xsl:attribute name="id">dimg<xsl:value-of select="@id" /></xsl:attribute>
@@ -559,6 +562,30 @@ and cx,cy = width /2, height/2
    </div>
 </x:template>
 
+<!-- Changes from the series document to the image document -->
+<x:template name="switchSeriesToImageDoc">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <!-- Compute the image document to get information from.  This will become the new node -->
+ <xsl:param name="countMod" select="16" />
+ <xsl:param name="count" select="$countMod+@pageSize" />
+ <!-- This is the over-ride offset, not the image level offset -->
+ <xsl:param name="offset" select="0" />
+ <xsl:param name="position" select="@offset - @offset mod $countMod" />
+ <!--  <xsl:param name="gsps" select="$node/parent::se:study/@gspsLabel" /> -->
+ <xsl:param name="gsps" select="'DISH_P01'" />
+ <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,'&amp;gsps=',$gsps)" />
+ <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
+ 
+<xsl:message>In <xsl:value-of select='$imageUrl' /> there are <xsl:value-of select="count($newSeriesNode/../se:series/se:gsps)" /> gsps nodes.</xsl:message>
+ <xsl:copy-of select="$newSeriesNode/../se:series/se:gsps/svg:svg" />
+ <xsl:apply-templates mode="newlayout" select="*">
+  <xsl:with-param name="loc" select="$loc" />
+  <xsl:with-param name="node" select="$newSeriesNode" />
+ </xsl:apply-templates>
+</x:template>
+
+<!-- Lays out the series nodes. -->
 <x:template name="seriesLayout" mode="newlayout" match="se:series">
    <xsl:param name="loc" />
    <xsl:param name="node" />
@@ -567,17 +594,17 @@ and cx,cy = width /2, height/2
    <xsl:param name="custStudyNode" select="$documentsNode/layout/se:study[@id=$studyNodeId]" />
    <xsl:param name="seriesUID"><xsl:choose>
      <xsl:when test="$custStudyNode/@viewSeriesUID != ''"><xsl:value-of select="$custStudyNode/@viewSeriesUID" /></xsl:when>
-     <xsl:otherwise><xsl:value-of select="$node/se:series[1]/@SeriesInstanceUID" /></xsl:otherwise>
+     <xsl:otherwise><xsl:value-of select="$node/se:series/se:image/parent::*/@SeriesInstanceUID" /></xsl:otherwise>
    </xsl:choose></xsl:param>
    <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
    <xsl:param name="seriesNode" select="($seriesNodeForUID | $seriesNodeForUID/following-sibling::se:series)[1+$offset]" />
 
    <div>
       <xsl:attribute name="id"><xsl:value-of select="./@id" /></xsl:attribute>
-      <xsl:apply-templates mode="newlayout" select="*">
+      <xsl:call-template name="switchSeriesToImageDoc">
         <xsl:with-param name="loc" select="$loc" />
         <xsl:with-param name="node" select="$seriesNode" />
-      </xsl:apply-templates>
+      </xsl:call-template>
    </div>
    <br />
 </x:template>
