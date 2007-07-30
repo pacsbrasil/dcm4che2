@@ -38,10 +38,13 @@
 package org.dcm4che2.iod.module.pr;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.macro.ImageSOPInstanceReference;
 
 /**
- * 
+ * C.10.5 Graphic annotations provide information about lines and circles displayed on the 
+ * image(s).
  * @author Bill Wallace <wayfarer3130@gmail.com>
  * @version $Revision$ $Date$
  * @since July 19, 2007
@@ -51,6 +54,16 @@ public class GraphicAnnotationModule extends Module {
 	/** Create a display shutter IOD instance on the given dicom object data. */
 	public GraphicAnnotationModule(DicomObject dcmobj) {
 		super(dcmobj);
+	}
+	
+	/** Gets the graphic layer for this object */
+	public GraphicLayerModule getGraphicLayer() {
+		return new GraphicLayerModule(dcmobj);
+	}
+	
+	/** Gets the image sop instance references */
+	public ImageSOPInstanceReference[] getImageSOPInstanceReferences() {
+		return ImageSOPInstanceReference.toImageSOPInstanceReferences(dcmobj.get(Tag.ReferencedImageSequence));
 	}
 	
 	

@@ -38,10 +38,11 @@
 package org.dcm4che2.iod.module.pr;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.iod.module.Module;
 
 /**
- * C.10.7 Define what graphic layers - markup and text are displayed on the image.
+ * C.10.7 Provide the colour, z-index and other related graphical layer information.
  * @author Bill Wallace <wayfarer3130@gmail.com>
  * @version $Revision$ $Date$
  * @since July 19, 2007
@@ -53,5 +54,22 @@ public class GraphicLayerModule extends Module {
 		super(dcmobj);
 	}
 	
+	public int getGraphicLayerRecommendedDisplayGrayscaleValue() {
+		return dcmobj.getInt(Tag.GraphicLayerRecommendedDisplayGrayscaleValue);
+	}
 	
+	public int[] getGraphicLayerRecommendedDisplayCIELabValue() {
+		return dcmobj.getInts(Tag.GraphicLayerRecommendedDisplayCIELabValue);
+	}
+	public float[] getFloatLab() {
+		return DisplayShutterModule.convertToFloatLab(getGraphicLayerRecommendedDisplayCIELabValue());
+	}
+	
+	public int getGraphicLayerOrder() {
+		return dcmobj.getInt(Tag.GraphicLayerOrder);
+	}
+	
+	public String getGraphicLayerDescription() {
+		return dcmobj.getString(Tag.GraphicLayerDescription);
+	}
 }

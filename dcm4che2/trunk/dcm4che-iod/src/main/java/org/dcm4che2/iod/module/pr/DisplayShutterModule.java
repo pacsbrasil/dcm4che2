@@ -64,20 +64,85 @@ public class DisplayShutterModule extends Module {
 		dcmobj.putStrings(Tag.ShutterShape, VR.CS, shapes);
 	}
 	
-	public float[] getCenterOfCircularShutter() {
-		return dcmobj.getFloats(Tag.CenterOfCircularShutter);
+	public int[] getCenterOfCircularShutter() {
+		return dcmobj.getInts(Tag.CenterOfCircularShutter);
 	}
 	
-	public void setCenterOfCircularShutter(float[] center) {
-		dcmobj.putFloats(Tag.CenterOfCircularShutter, VR.IS, center);
+	public void setCenterOfCircularShutter(int[] center) {
+		dcmobj.putInts(Tag.CenterOfCircularShutter, VR.IS, center);
 	}
 	
-	public float getRadiusOfCircularShutter() {
-		return dcmobj.getFloat(Tag.RadiusOfCircularShutter);
+	public int getRadiusOfCircularShutter() {
+		return dcmobj.getInt(Tag.RadiusOfCircularShutter);
 	}
 	
-	public void setRadiusOfCircularShutter(float radius) {
-		dcmobj.putFloat(Tag.RadiusOfCircularShutter,VR.IS,radius);
+	public void setRadiusOfCircularShutter(int radius) {
+		dcmobj.putInt(Tag.RadiusOfCircularShutter,VR.IS,radius);
 	}
 	
+	public int getShutterLeftVerticalEdge() {
+		return dcmobj.getInt(Tag.ShutterLeftVerticalEdge);
+	}
+	public int getShutterRightVerticalEdge() {
+		return dcmobj.getInt(Tag.ShutterRightVerticalEdge);
+	}
+	public int getShutterUpperHorizontalEdge() {
+		return dcmobj.getInt(Tag.ShutterUpperHorizontalEdge);
+	}
+	public int getShutterLowerHorizontalEdge() {
+		return dcmobj.getInt(Tag.ShutterUpperHorizontalEdge);
+	}
+	public void getShutterLeftVerticalEdge(int value) {
+		dcmobj.putInt(Tag.ShutterLeftVerticalEdge,VR.IS, value);
+	}
+	public void getShutterRightVerticalEdge(int value) {
+		dcmobj.putInt(Tag.ShutterRightVerticalEdge,VR.IS, value);
+	}
+	public void getShutterUpperHorizontalEdge(int value) {
+		dcmobj.putInt(Tag.ShutterUpperHorizontalEdge,VR.IS, value);
+	}
+	public void getShutterLowerHorizontalEdge(int value) {
+		dcmobj.putInt(Tag.ShutterUpperHorizontalEdge,VR.IS, value);
+	}
+	
+	/** Returns  asingle gray unsigned value to replace occluded parts of the imatge
+	 * p-values form 0 to FFFFH (white).
+	 */
+	public int getShutterPresentationValue() {
+		return dcmobj.getInt(Tag.ShutterPresentationValue);
+	}
+	
+	/** Returns the CIELab value as PCS-Values for the shutter colour.
+	 * @return triplet L*a*b* where L is scaled from 0 to 0xFFFF correspondign to L 0 to 100
+	 * and a*, b* 0x000 of -128, 0x8080 of 0.0 and 0xFFFF of 127.
+	 */ 
+	public int[] getShutterPresentationColorCIELabValue() {
+		return dcmobj.getInts(Tag.ShutterPresentationColorCIELabValue);
+	}
+
+	/** This version of getShutterPresentationColorCIELabValue returns converted
+	 * L*a*b* values on 0..100, -128..127, -128..127 respectively.
+	 */
+	public float[] getFloatLab() {
+		int[] lab = getShutterPresentationColorCIELabValue();
+		return convertToFloatLab(lab);
+	}
+
+	/** This method converts integer DICOM encoded L*a*b* values to CIE L*a*b* regular
+	 * float encoded values.
+	 * @param lab
+	 * @return float array of 3 components L* on 0..1 and a*,b* on -128...127
+	 */
+	public static float[] convertToFloatLab(int[] lab) {
+		if( lab==null || lab.length!=3 ) return null;
+		float[] ret = new float[3];
+		ret[0] = lab[0] / 655.35f;
+		ret[1] = lab[1] / 257.0f - 128;
+		ret[2] = lab[2] / 257.0f - 128;
+		return ret;
+	}
+	
+	public int[] getVerticesOfThePolygonalShutter() {
+		return dcmobj.getInts(Tag.VerticesOfThePolygonalShutter);
+	}
 }
