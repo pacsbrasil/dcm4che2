@@ -45,6 +45,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.DeviceDAO;
@@ -74,8 +75,13 @@ public class DeviceDAOImpl extends BaseDAOImpl<Device> implements DeviceDAO {
      */
     public Device create(String name, String aet, String modality)
             throws ContentCreateException {
-        // TODO
-        return null;
+        Device device = new Device();
+        device.setStationName(name);
+        device.setStationAET(aet);
+        device.setModality(modality);
+        save(device);
+        logger.info("Created " + device.toString());
+        return device;
     }
 
     /**
@@ -83,8 +89,11 @@ public class DeviceDAOImpl extends BaseDAOImpl<Device> implements DeviceDAO {
      */
     public Collection<Device> findByProtocolCode(Code code)
             throws PersistenceException {
-        // TODO
-        return null;
+        Query q = em
+                .createQuery("select dev from Device dev join dev.protocolCodes code where code.pk=:codePk");
+        q.setParameter("codePk", code.getPk());
+
+        return q.getResultList();
     }
 
     /**
@@ -92,7 +101,10 @@ public class DeviceDAOImpl extends BaseDAOImpl<Device> implements DeviceDAO {
      */
     public Device findByStationName(String name) throws NoResultException,
             PersistenceException {
-        // TODO
-        return null;
+        Query q = em
+                .createQuery("select dev from Device dev where dev.stationName=:stationName");
+        q.setParameter("stationName", name);
+
+        return (Device) q.getSingleResult();
     }
 }
