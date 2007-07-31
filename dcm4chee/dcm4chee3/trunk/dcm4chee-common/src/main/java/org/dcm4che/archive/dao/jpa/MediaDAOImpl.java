@@ -46,7 +46,10 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
 
+import org.dcm4che.archive.common.Availability;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.MediaDAO;
@@ -70,12 +73,45 @@ public class MediaDAOImpl extends BaseDAOImpl<Media> implements MediaDAO {
     }
 
     /**
+     * @see org.dcm4che.archive.dao.MediaDAO#create(java.lang.String)
+     */
+    public Media create(String uid) throws ContentCreateException {
+        Media media = new Media();
+        media.setFilesetIuid(uid);
+        save(media);
+        logger.info("Created " + media.toString());
+        return media;
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.MediaDAO#remove(java.lang.Long)
+     */
+    public void remove(Long mediaPk) throws ContentDeleteException {
+        remove(findByPrimaryKey(mediaPk));
+    }
+
+    /**
      * @see org.dcm4che.archive.dao.MediaDAO#checkInstancesAvailable(java.lang.Long)
      */
     public boolean checkInstancesAvailable(Long mediaPk)
             throws PersistenceException {
-        // TODO
-        return false;
+        Query q = em
+                .createQuery("select max(i.availability) from Instance i where i.media.pk=:mediaPk");
+        q.setParameter("mediaPk", mediaPk);
+        Number result = (Number) q.getSingleResult();
+
+        return result != null && result.intValue() == Availability.ONLINE;
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.MediaDAO#findByStatus(int)
+     */
+    public List<Media> findByStatus(int open) throws PersistenceException {
+        Query q = em
+                .createQuery("select m from Media m where m.mediaStatus=:mediaStatus");
+        q.setParameter("mediaStatus", open);
+        List<Media> results = q.getResultList();
+        return results;
     }
 
     /**
@@ -84,8 +120,7 @@ public class MediaDAOImpl extends BaseDAOImpl<Media> implements MediaDAO {
      */
     public int countByCreatedTime(int[] stati, Timestamp tsAfter,
             Timestamp tsBefore) throws PersistenceException {
-        // TODO
-        return 0;
+        return countBy("m.createdTime", stati, tsAfter, tsBefore);
     }
 
     /**
@@ -94,24 +129,7 @@ public class MediaDAOImpl extends BaseDAOImpl<Media> implements MediaDAO {
      */
     public int countByUpdatedTime(int[] stati, Timestamp tsAfter,
             Timestamp tsBefore) throws PersistenceException {
-        // TODO
-        return 0;
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.MediaDAO#create(java.lang.String)
-     */
-    public Media create(String uid) throws ContentCreateException {
-        // TODO
-        return null;
-    }
-
-    /**
-     * @see org.dcm4che.archive.dao.MediaDAO#findByStatus(int)
-     */
-    public List<Media> findByStatus(int open) throws PersistenceException {
-        // TODO
-        return null;
+        return countBy("m.updatedTime", stati, tsAfter, tsBefore);
     }
 
     /**
@@ -122,8 +140,8 @@ public class MediaDAOImpl extends BaseDAOImpl<Media> implements MediaDAO {
     public Collection<Media> listByCreatedTime(int[] stati, Timestamp tsAfter,
             Timestamp tsBefore, Integer offset, Integer limit, boolean desc)
             throws PersistenceException {
-        // TODO
-        return null;
+        return findBy("m.createdTime", stati, tsAfter, tsBefore, offset, limit,
+                desc);
     }
 
     /**
@@ -134,15 +152,77 @@ public class MediaDAOImpl extends BaseDAOImpl<Media> implements MediaDAO {
     public Collection listByUpdatedTime(int[] stati, Timestamp tsAfter,
             Timestamp tsBefore, Integer offset, Integer limit, boolean desc)
             throws PersistenceException {
-        // TODO
-        return null;
+        return findBy("m.updatedTime", stati, tsAfter, tsBefore, offset, limit,
+                desc);
     }
 
-    /**
-     * @see org.dcm4che.archive.dao.MediaDAO#remove(java.lang.Long)
-     */
-    public void remove(Long mediaPk) throws ContentDeleteException {
-        // TODO
+    private Collection findBy(String attrName, int[] status, Timestamp after,
+            Timestamp before, Integer offset, Integer limit, boolean desc) {
+        StringBuffer jpaql = new StringBuffer("select m from Media m");
+        appendWhere(jpaql, attrName, status, after, before);
+        jpaql.append(" order by ");
+        jpaql.append(attrName);
+        jpaql.append(desc ? " desc" : " asc");
+
+        Query q = em.createQuery(jpaql.toString());
+        if (after != null)
+            q.setParameter("after", after, TemporalType.TIMESTAMP);
+        if (before != null)
+            q.setParameter("before", before, TemporalType.TIMESTAMP);
+
+        if (offset != null) {
+            q.setFirstResult(offset);
+        }
+        if (limit != null) {
+            q.setMaxResults(limit);
+        }
+
+        return q.getResultList();
     }
 
+    private int countBy(String attrName, int[] status, Timestamp after,
+            Timestamp before) {
+        StringBuffer jpaql = new StringBuffer("select count(m) from Media m");
+        appendWhere(jpaql, attrName, status, after, before);
+
+        Query q = em.createQuery(jpaql.toString());
+        if (after != null)
+            q.setParameter("after", after, TemporalType.TIMESTAMP);
+        if (before != null)
+            q.setParameter("before", before, TemporalType.TIMESTAMP);
+
+        Number results = (Number) q.getSingleResult();
+        return results == null ? 0 : results.intValue();
+    }
+
+    private void appendWhere(StringBuffer jpaql, String attrName, int[] status,
+            Timestamp after, Timestamp before) {
+        boolean addedWhere = false;
+
+        if (!isNull(status)) {
+            jpaql.append(" where m.mediaStatus in (").append(status[0]);
+            for (int i = 1; i < status.length; i++) {
+                jpaql.append(", ").append(status[i]);
+            }
+            jpaql.append(")");
+            addedWhere = true;
+        }
+
+        if (after != null) {
+            jpaql.append(addedWhere ? " and " : " where ");
+            jpaql.append(attrName);
+            jpaql.append(" > :after");
+            addedWhere = true;
+        }
+
+        if (before != null) {
+            jpaql.append(addedWhere ? " and " : " where ");
+            jpaql.append(attrName);
+            jpaql.append(" > :before");
+        }
+    }
+
+    private static boolean isNull(int[] status) {
+        return status == null || status.length == 0;
+    }
 }
