@@ -41,6 +41,7 @@ package org.dcm4che.archive.dao.jpa;
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -81,9 +82,11 @@ import org.dcm4che.dict.Tags;
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
 
-    @EJB private MPPSDAO mppsDAO;
+    @EJB
+    private MPPSDAO mppsDAO;
 
-    @EJB private SeriesRequestDAO requestDAO;
+    @EJB
+    private SeriesRequestDAO requestDAO;
 
     /**
      * 
@@ -271,27 +274,32 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
     }
 
     /**
-     * @param pk
+     * @param seriesPk
      * @param aet
      * @return
      */
     private int selectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(
-            Long pk, String aet) {
-        // TODO
+            Long seriesPk, String aet) {
+        // The old J2EE EJBQL:
         // SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i,
         // IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2
-        return 0;
+        String jpaql = "select count(distinct i) from Series s join s.instances i join i.files f where s.pk=:pk and f.fileSystem.retrieveAET=:aet";
+        Query q = em.createQuery(jpaql);
+        q.setParameter("pk", seriesPk);
+        q.setParameter("aet", aet);
+        Number result = (Number) q.getSingleResult();
+        return result == null ? 0 : result.intValue();
     }
 
-    /**
-     * @param pk
-     * @return
-     */
-    private Set selectInternalRetrieveAETs(Long pk) {
-        // TODO
-        // SELECT DISTINCT i.externalRetrieveAET FROM Series s, IN(s.instances)
-        // i WHERE s.pk = ?1
-        return null;
+    private Set<String> selectInternalRetrieveAETs(Long seriesPk) {
+        // The old J2EE EJBQL:
+        // SELECT DISTINCT f.fileSystem.retrieveAET FROM Series s,
+        // IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1
+        String jpaql = "select distinct f.fileSystem.retrieveAET from Series s join s.instances i join i.files f where s.pk=:pk";
+        Query q = em.createQuery(jpaql);
+        q.setParameter("pk", seriesPk);
+        List results = q.getResultList();
+        return new HashSet<String>(results);
     }
 
     /**
@@ -318,11 +326,15 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
      * @param pk
      * @return
      */
-    private Set selectExternalRetrieveAETs(Long pk) {
-        // TODO
+    private Set<String> selectExternalRetrieveAETs(Long seriesPk) {
+        // The old J2EE EJBQL:
         // SELECT DISTINCT i.externalRetrieveAET FROM Series s, IN(s.instances)
         // i WHERE s.pk = ?1
-        return null;
+        String jpaql = "select distinct i.externalRetrieveAET from Series s join s.instances i where s.pk=:pk";
+        Query q = em.createQuery(jpaql);
+        q.setParameter("pk", seriesPk);
+        List results = q.getResultList();
+        return new HashSet<String>(results);
     }
 
     /**
@@ -440,6 +452,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
      */
     public Set<Series> findByPpsIuid(String mppsIUID)
             throws PersistenceException {
+        // TODO
         return null;
     }
 
@@ -495,6 +508,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
      */
     public Collection<Series> findSeriesOnMedia(Media media)
             throws PersistenceException {
+        // TODO
         return null;
     }
 }
