@@ -39,6 +39,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.dao.jpa;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.dcm4che.archive.dao.GPSPSRequestDAO;
 import org.dcm4che.archive.dao.helper.QueryBuilder;
 import org.dcm4che.archive.dao.helper.QueryUtils;
 import org.dcm4che.archive.entity.Code;
+import org.dcm4che.archive.entity.EntityBase;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.data.Dataset;
@@ -172,6 +174,102 @@ public class GPSPSDAOImpl extends BaseDAOImpl<GPSPS> implements GPSPSDAO {
 
         return results;
     }
+    
+    public List<EntityBase[]> find(String firstName, String lastName, String patientId,
+            String modality, String accessionNumber, String bodyPart,
+            String institutionName, Date fromDate, Date toDate) throws PersistenceException{
+
+        if (logger.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(
+                    "Attempting to search for patients and studies by");
+            if (firstName != null)
+                sb.append(" firstName: ").append(firstName);
+            if (lastName != null)
+                sb.append(" lastName: ").append(lastName);
+            if (patientId != null)
+                sb.append(" patientId: ").append(patientId);
+            if (modality != null)
+                sb.append(" modality: ").append(modality);
+            if (accessionNumber != null)
+                sb.append(" accessionNumber: ").append(accessionNumber);
+            if (bodyPart != null)
+                sb.append(" bodyPart: ").append(bodyPart);
+            if (institutionName != null)
+                sb.append(" institutionName: ").append(institutionName);
+            if (fromDate != null)
+                sb.append(" fromDate: ").append(fromDate);
+            if (toDate != null)
+                sb.append(" toDate: ").append(toDate);
+
+            sb.append(")");
+            logger.debug(sb.toString());
+        }
+
+        String patientName = null;
+        if ((firstName != null && firstName.length() > 0)
+                || (lastName != null && lastName.length() > 0)) {
+            StringBuilder sb = new StringBuilder();
+            if (lastName != null && lastName.length() > 0)
+                sb.append(lastName);
+            sb.append("*^");
+            if (firstName != null && firstName.length() > 0)
+                sb.append(firstName);
+            sb.append("*");
+            patientName = sb.toString();
+        }
+
+        List <EntityBase[]>results = null;
+
+        QueryBuilder builder = new QueryBuilder(
+                "select study, gpsps from Study as study left outer join study.patient.gpsps as gpsps ");
+
+        if (modality != null || bodyPart != null || institutionName != null) {
+            builder.addJoin("study.series as series");
+        }
+
+        builder
+                .addCondition("gpsps.refRequests.accessionNumber = study.accessionNumber");
+        builder
+                .addCondition("study.patient.patientId", ":patientId",
+                        patientId);
+        builder.addCondition("study.accessionNumber", ":acn", accessionNumber);
+        builder.addCondition("study.patient.patientName", ":patientName",
+                patientName);
+        builder.addCondition("study.studyDateTime < :toDate", toDate);
+        builder.addCondition("study.studyDateTime > :fromDate", fromDate);
+        builder.addCondition("study.series.bodyPart", ":bodyPart", bodyPart);
+        builder.addCondition("study.series.institution", ":institutionName",
+                institutionName);
+
+        Query q = em.createQuery(builder.getQueryString());
+
+        if (patientId != null)
+            q.setParameter("patientId", patientId);
+        if (accessionNumber != null)
+            q.setParameter("accessionNumber", accessionNumber);
+        if (patientName != null)
+            q.setParameter("patientName", patientName);
+        if (toDate != null)
+            q.setParameter("toDate", toDate, TemporalType.TIMESTAMP);
+        if (fromDate != null)
+            q.setParameter("fromDate", fromDate, TemporalType.TIMESTAMP);
+        if (bodyPart != null)
+            q.setParameter("bodyPart", bodyPart);
+        if (modality != null)
+            q.setParameter("modality", modality);
+        if (institutionName != null)
+            q.setParameter("institutionName", institutionName);
+
+        results = q.getResultList();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found " + results == null ? 0 : results.size()
+                    + " results.");
+        }
+
+        return results;
+    }
+    
 
     /**
      * @see org.dcm4che.archive.dao.GPSPSDAO#findByHumanPerformer(java.lang.String)

@@ -39,6 +39,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.dao;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -46,6 +47,7 @@ import javax.ejb.Local;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
+import org.dcm4che.archive.entity.EntityBase;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.data.Dataset;
@@ -73,6 +75,10 @@ public interface GPSPSDAO extends DAO<GPSPS> {
     public List<GPSPS> find(Long patientFk, String accessionNumber,
             List<Integer> statusList, Timestamp afterTimestamp)
             throws PersistenceException;
+    
+    public List<EntityBase[]> find(String firstName, String lastName, String patientId,
+            String modality, String accessionNumber, String bodyPart,
+            String institutionName, Date fromDate, Date toDate) throws PersistenceException;
 
     /**
      * @param dataset

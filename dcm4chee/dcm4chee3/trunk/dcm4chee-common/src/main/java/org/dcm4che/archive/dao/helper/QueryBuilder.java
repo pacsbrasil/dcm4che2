@@ -51,14 +51,39 @@ public class QueryBuilder {
         query.append(" join ");
         query.append(join);
     }
+    
+    public void addLeftOuterJoin(String join){
+        query.append(" left outer join ");
+        query.append(join);
+    }
 
     public void addCondition(String condition) {
-        if (first)
+        if (first){
             query.append(" where ");
-        else
+            first = false;
+        }
+        else{
             query.append(" and ");
+        }
         query.append(condition);
-        first = false;
+    }
+    
+    public void addCondition(String condition, Object value){
+        if (value == null) return;
+        addCondition(condition);
+    }
+    
+    public void addCondition(String column, String variable, String value){
+        if (value == null) return;
+        
+        StringBuilder condition = new StringBuilder(column);
+        if (value.contains("*") || value.contains("%")){
+            condition.append(" like ");
+        }else{
+            condition.append(" = ");
+        }
+        condition.append(variable);
+        addCondition(condition.toString());
     }
 
     public String getQueryString() {
