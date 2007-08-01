@@ -1038,6 +1038,7 @@
   <element name="text" type="svg:textType"/>
   <element name="clipPath" type="svg:clipPathType"/>
   <element name="rect" type="svg:rectType" />  
+  <element name="path" type="svg:pathType" />
 
   <complexType name="svgType">
     <choice minOccurs="0" maxOccurs="unbounded">
@@ -1056,6 +1057,7 @@
       <element ref="svg:image"/>
       <element ref="svg:svg"/>
       <element ref="svg:g"/>
+      <element ref="svg:path" />
     </choice>
     <attributeGroup ref="svg:stdAttrs"/>
     <attributeGroup ref="svg:testAttrs"/>
@@ -1143,6 +1145,7 @@
       <element ref="svg:image"/>
       <element ref="svg:svg"/>
       <element ref="svg:g"/>
+      <element ref="svg:path" />
     </choice>
     <attributeGroup ref="svg:stdAttrs"/>
     <attributeGroup ref="svg:testAttrs"/>
@@ -1173,6 +1176,7 @@
       <element ref="svg:image"/>
       <element ref="svg:svg"/>
       <element ref="svg:g"/>
+      <element ref="svg:path" />
     </choice>
     <attributeGroup ref="svg:stdAttrs"/>
     <attributeGroup ref="svg:testAttrs"/>
@@ -1346,6 +1350,7 @@
       <element ref="svg:use"/>
       <element ref="svg:image"/>
       <element ref="svg:g"/>
+      <element ref="svg:path" />
     </choice>
     <attributeGroup ref="svg:stdAttrs"/>
     <attributeGroup ref="svg:testAttrs"/>
@@ -1371,6 +1376,25 @@
       </simpleType>
     </attribute>
 
+  </complexType>
+
+  <complexType name="pathType">
+    <attributeGroup ref="svg:stdAttrs"/>
+
+    <attributeGroup ref="svg:testAttrs"/>
+    <attributeGroup ref="svg:langSpaceAttrs"/>
+    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
+    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
+    <attributeGroup ref="svg:PresentationAttributes-Color"/>
+    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
+    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
+    <attributeGroup ref="svg:PresentationAttributes-Markers"/>
+
+    <attribute name="transform" type="svg:TransformListType" use="optional"/>
+    <attributeGroup ref="svg:graphicsElementEvents"/>
+    <attribute name="d" type="svg:PathDataType" use="required"/>
+    <attribute name="pathLength" type="double" use="optional"/>
   </complexType>
 
 </schema>

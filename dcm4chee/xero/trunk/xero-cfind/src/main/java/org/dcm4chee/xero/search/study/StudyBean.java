@@ -171,7 +171,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	/** Return true if there are no series children and no customized elements */
 	public boolean clearEmpty() {
 		boolean seriesEmpty = ResultsBean.clearEmpty(children,getSeries());
-		return seriesEmpty;
+		return seriesEmpty && getGspsLabel()==null;
 	}
 
 	public String getId() {

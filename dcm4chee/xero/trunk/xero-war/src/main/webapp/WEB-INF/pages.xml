@@ -101,6 +101,13 @@
     </navigation>
   </page>
   
+  <page view-id="/image/action/SelectGsps.xhtml" action="#{SelectGsps.action}">
+    <param name="gsps" value="#{SelectGsps.gsps}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
   <page view-id="/image/action/WindowLevel.xhtml" action="#{WindowLevel.action}">
     <param name="windowWidth" value="#{WindowLevel.windowWidth}" />
     <param name="windowCenter" value="#{WindowLevel.windowCenter}" />

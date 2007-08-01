@@ -1,0 +1,22 @@
+<x:xsl
+   pageConfig="#{PageConfig.series.gsps}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/series/gsps"
+   m:includeXsl="/series/gspsXsl.xhtml"
+>
+<!-- Display available gspss. -->
+<x:template name="gspsView" m:body="gspsView" m:body.priority="800">
+    <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series/se:gsps">
+      <span>
+         <a target="imageFrame">
+            <xsl:attribute name="href">/xero/image/action/SelectGsps.seam?cid=<xsl:value-of select="$cid" />&amp;patientIdentifier=<xsl:value-of select="../../../@PatientIdentifier" />&amp;studyUID=<xsl:value-of select="../../@StudyInstanceUID" />&amp;gsps=<xsl:value-of select="@contentLabel"/></xsl:attribute>
+	        GSPS <xsl:value-of select="@contentLabel" />
+         </a>
+     </span>
+     <br />
+   </xsl:for-each>
+</x:template>
+
+</x:xsl>

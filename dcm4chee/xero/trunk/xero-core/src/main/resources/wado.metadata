@@ -9,14 +9,14 @@ seriesFilter.gsps.priority=20
 
 seriesFilter.cacheFilter=OVERRIDE TO NULL
 
-imageFilter.minMaxPixelInfo=${org.dcm4chee.xero.image.MinMaxPixelInfo}
-imageFilter.minMaxPixelInfo.priority=600
 imageFilter.dicom.inherit=dicom
 imageFilter.dicom.priority=-100
 imageFilter.gspsUid=${org.dcm4chee.xero.image.GspsUid}
 imageFilter.gspsUid.priority=100
 imageFilter.gsps=${org.dcm4chee.xero.image.GspsEncode}
 imageFilter.gsps.priority=550
+imageFilter.minMaxPixelInfo=${org.dcm4chee.xero.image.MinMaxPixelInfo}
+imageFilter.minMaxPixelInfo.priority=600
 
 dicom=${org.dcm4chee.xero.metadata.filter.FilterList}
 dicom.fileLocation.inherit=fileLocation

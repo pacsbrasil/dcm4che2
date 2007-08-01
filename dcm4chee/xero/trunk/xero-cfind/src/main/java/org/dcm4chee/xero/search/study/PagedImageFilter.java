@@ -49,6 +49,8 @@ import org.slf4j.LoggerFactory;
  * Allows paged access to image data.  This class will call the next filter,
  * but then create a modified return value containing only a sub-set of the
  * items, for the given page and size of data.  
+ * The image data is passed/used unchanged, so if there are one time modifications to it,
+ * they can be done after the paging is done.
  * @author bwallace
  */
 public class PagedImageFilter implements Filter<ResultsType> {

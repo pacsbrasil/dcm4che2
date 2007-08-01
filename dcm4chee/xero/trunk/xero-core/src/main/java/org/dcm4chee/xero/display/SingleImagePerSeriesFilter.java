@@ -59,52 +59,67 @@ import org.slf4j.LoggerFactory;
  * Modify the query parameters on series searches so that image data for 1 image
  * is returned on every query - this allows a thumbnail to be shown for that
  * single image.
+ * 
  * @author bwallace
- *
+ * 
  */
 @Name("metadata.seriesFilter.singleImagePerSeriesFilter")
-public class SingleImagePerSeriesFilter implements Filter<Object>{
+public class SingleImagePerSeriesFilter implements Filter<Object> {
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-	private static Logger log = LoggerFactory.getLogger(SingleImagePerSeriesFilter.class.getName());
+	private static Logger log = LoggerFactory
+			.getLogger(SingleImagePerSeriesFilter.class.getName());
 
 	private static final String INSTANCE_NUMBER = "InstanceNumber";
 
 	/** Adds an InstanceNumber search criteria */
 	public Object filter(FilterItem filterItem, Map<String, Object> params) {
-		if( params.containsKey(INSTANCE_NUMBER) ) {
-			log.info("Search already has instance number, not filtering series.");
+		if (params.containsKey(INSTANCE_NUMBER)) {
+			log
+					.info("Search already has instance number, not filtering series.");
 			return filterItem.callNextFilter(params);
 		}
-		
-		ResultsBean rb = (ResultsBean) filterItem.callNamedFilter("seriesSource",params);
-		if( rb==null ) return null;
+
+		ResultsBean rb = (ResultsBean) filterItem.callNamedFilter(
+				"seriesSource", params);
+		if (rb == null)
+			return null;
 
 		// Now, re-do the same query at the image level
-		rb = extendWithInstanceImage(filterItem, params, rb); 
-		
+		rb = extendWithInstanceImage(filterItem, params, rb);
+
 		List<SeriesType> childless = findChildless(rb);
-		if( childless==null ) return rb;
+		if (childless == null)
+			return rb;
 		return extendWithOtherInstances(filterItem, params, rb, childless);
 	}
-	
+
 	/**
-	 * 
+	 * Extend by doing a secondary search on instances that didn't find any children.
+	 * For most series, this only is done for fewer than 10 children, 
+	 * but for PR (GSPS), MG, SR and KO this is done for any number of children, as the
+	 * series tray may need all children to determine what to show. 
 	 * @param filterItem
 	 * @param params
-	 * @param rb to extend
-	 * @param childless series to extend
+	 * @param rb
+	 *            to extend
+	 * @param childless
+	 *            series to extend
 	 * @return
 	 */
 	protected ResultsBean extendWithOtherInstances(FilterItem filterItem, Map<String, Object> params, ResultsBean rb, List<SeriesType> childless) {
 		log.info("Found "+childless.size()+" series with no child with instance number=1.");
 		List<String> uidsToSearch = new ArrayList<String>(childless.size());
 		for(SeriesType se : childless) {
-			if( ((SeriesBean) se).getNumberOfSeriesRelatedInstances() < 10 ) {
+			String modality = se.getModality();
+			if( ((SeriesBean) se).getNumberOfSeriesRelatedInstances() < 10 ||
+				modality.equals("PR") || modality.equals("MG") || modality.equals("SR") || modality.equals("KO") ) 
+			{
 				uidsToSearch.add(se.getSeriesInstanceUID());
 			}
 			else {
-				// TODO - figure out what to do here.  This one is really rather ugly
+				// TODO - figure out what to do here. This one is really rather
+				// ugly
 				log.warn("There are too many children to be able to extend series "+se.getSeriesInstanceUID() + " of modality "+se.getModality());
 			}
 		}
@@ -119,29 +134,35 @@ public class SingleImagePerSeriesFilter implements Filter<Object>{
 		return rb;
 	}
 
-	protected ResultsBean extendWithInstanceImage(FilterItem filterItem, Map<String, Object> params, ResultsBean rb) {
-		// This will cause rb to be extended instead of a new instance being created.
+	protected ResultsBean extendWithInstanceImage(FilterItem filterItem,
+			Map<String, Object> params, ResultsBean rb) {
+		// This will cause rb to be extended instead of a new instance being
+		// created.
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
 		log.info("Filtering by adding an instance number=1 as a first guess.");
 		params.put(INSTANCE_NUMBER, "1");
 		Object ret = filterItem.callNextFilter(params);
-		assert ret==rb;
+		assert ret == rb;
 		params.remove(INSTANCE_NUMBER);
 		return rb;
 	}
 
 	/**
 	 * Returns a list of all childless series.
-	 * @param ResultsBean to search for series containing no children
-	 * @return null if everyone has a child, or a List of all Series Bean's containing no children.
+	 * 
+	 * @param ResultsBean
+	 *            to search for series containing no children
+	 * @return null if everyone has a child, or a List of all Series Bean's
+	 *         containing no children.
 	 */
 	List<SeriesType> findChildless(ResultsType results) {
 		List<SeriesType> ret = null;
-		for(PatientType pat : results.getPatient() ) {
-			for(StudyType study : pat.getStudy() ) {
-				for(SeriesType series : study.getSeries() ) {
-					if( series.getDicomObject().size()==0 ) {
-						if( ret==null ) ret = new ArrayList<SeriesType>();
+		for (PatientType pat : results.getPatient()) {
+			for (StudyType study : pat.getStudy()) {
+				for (SeriesType series : study.getSeries()) {
+					if (series.getDicomObject().size() == 0) {
+						if (ret == null)
+							ret = new ArrayList<SeriesType>();
 						ret.add(series);
 					}
 				}
@@ -152,8 +173,7 @@ public class SingleImagePerSeriesFilter implements Filter<Object>{
 
 	/** Returns the default priority of this filter. */
 	@MetaData
-	public int getPriority()
-	{
+	public int getPriority() {
 		return 15;
 	}
 }

@@ -116,9 +116,9 @@
  <xsl:param name="seriesUID" select="parent::*/@SeriesInstanceUID" />
  <xsl:param name="objectUID" select="@SOPInstanceUID" />
  <xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
- <xsl:param name="wWidth" select="$custNode[@windowWidth][last()]/@windowWidth" />
- <xsl:param name="wCenter" select="$custNode[@windowCenter][last()]/@windowCenter" />
- 
+ <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth][last()]/@windowWidth"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter][last()]/@windowCenter"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
+
  <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
   <xsl:attribute name="style"><xsl:value-of select="concat('left:',$orx,';top:',$ory,';width:',$brx - $orx,';height:',$bry - $ory,';')" /></xsl:attribute>
@@ -572,12 +572,11 @@ and cx,cy = width /2, height/2
  <!-- This is the over-ride offset, not the image level offset -->
  <xsl:param name="offset" select="0" />
  <xsl:param name="position" select="@offset - @offset mod $countMod" />
- <!--  <xsl:param name="gsps" select="$node/parent::se:study/@gspsLabel" /> -->
- <xsl:param name="gsps" select="'DISH_P01'" />
+ <xsl:param name="gsps"><xsl:choose><xsl:when test="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel"><xsl:value-of select="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel" /></xsl:when><xsl:otherwise><xsl:value-of select="$node/parent::se:study/@gspsLabel" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,'&amp;gsps=',$gsps)" />
  <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
  
-<xsl:message>In <xsl:value-of select='$imageUrl' /> there are <xsl:value-of select="count($newSeriesNode/../se:series/se:gsps)" /> gsps nodes.</xsl:message>
+<xsl:message>In <xsl:value-of select='$imageUrl' /> there are <xsl:value-of select="count($newSeriesNode/../se:series/se:gsps)" /> gsps nodes for gspsLabel=<xsl:value-of select="$gsps" />.</xsl:message>
  <xsl:copy-of select="$newSeriesNode/../se:series/se:gsps/svg:svg" />
  <xsl:apply-templates mode="newlayout" select="*">
   <xsl:with-param name="loc" select="$loc" />

@@ -88,7 +88,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		log.debug("Found DICOM image reader - trying to read image now.");
 		ImageReader reader = (ImageReader) it.next();
 		DcmImageReadParam param = (DcmImageReadParam) reader.getDefaultReadParam();
-		param.setAutoWindowing(true);
+		//param.setAutoWindowing(true);
 		ImageInputStream in = null;
 		try {
 			String surl = location.toString();
