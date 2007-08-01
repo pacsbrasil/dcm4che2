@@ -302,7 +302,6 @@ QueryRetrieveScp service.</description>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           ExplicitVRLittleEndian
            ImplicitVRLittleEndian
          "/>
       </descriptors>
