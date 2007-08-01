@@ -120,14 +120,15 @@
       setMethod="setImageWriterClass">
       <description><![CDATA[Class name of used JPEG Encoder, either implementing
       <code>javax.imageio.ImageWriter</code> (e.g.:
-      <code>com.sun.imageio.plugins.jpeg.JPEGImageWriter</code>) or
+      <code>com.sun.imageio.plugins.jpeg.JPEGImageWriter</code>,
+      <code>com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter</code>) or
       - if provided by the JRE -
       <code>com.sun.image.codec.jpeg.JPEGImageEncoder</code>.]]>
       </description>
       <name>ImageWriterClass</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+         <value value="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
       </descriptors>
    </attribute>
    
