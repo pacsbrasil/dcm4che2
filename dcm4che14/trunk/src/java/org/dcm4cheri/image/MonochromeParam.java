@@ -265,11 +265,9 @@ final class MonochromeParam extends BasicColorModelParam  {
       int o = u + w;
       int cmin = toARGB(pv2dll[0]);
       int cmax = toARGB(pv2dll[pv2dll.length-1]);
-      // For some reason, the image data on MONOCHROME1 already appears to be inverted correctly
-      // for some images - you can switch this here to get the right rendering to 0 or this.inverse
-      // depending on which type of image you want to render correctly, but eventually we need to figure
-      // out how to properly compute this.
       int useInverse = this.inverse;
+      // It seems that MONOCHROME1 images that are signed data don't need to be inverted??? See mlut_17.dcm from the IHE Image Consistency test.  I don't see anything immediately wrong with the code, but that does appear to be what is happening.
+      if( min<0 ) useInverse = 0;
       if (u > 0) {
          Arrays.fill(cmap, 0, Math.min(u,max),
             useInverse == 0 ? cmin : cmax);
