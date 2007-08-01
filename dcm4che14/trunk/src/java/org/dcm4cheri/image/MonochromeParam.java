@@ -263,11 +263,13 @@ final class MonochromeParam extends BasicColorModelParam  {
 	  int w = (int) wFlt;
       int u = (int) (c - (wFlt/2));
       int o = u + w;
-	  log.debug("cmap c,w="+c+","+w+" u,o="+u+","+o+" inverse="+inverse);
       int cmin = toARGB(pv2dll[0]);
       int cmax = toARGB(pv2dll[pv2dll.length-1]);
-      // For some reason, the image data on MONOCHROME1 already appears to be inverted correctly...
-      int useInverse = 0;
+      // For some reason, the image data on MONOCHROME1 already appears to be inverted correctly
+      // for some images - you can switch this here to get the right rendering to 0 or this.inverse
+      // depending on which type of image you want to render correctly, but eventually we need to figure
+      // out how to properly compute this.
+      int useInverse = this.inverse;
       if (u > 0) {
          Arrays.fill(cmap, 0, Math.min(u,max),
             useInverse == 0 ? cmin : cmax);
