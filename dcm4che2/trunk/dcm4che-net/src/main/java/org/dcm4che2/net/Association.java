@@ -84,6 +84,8 @@ public class Association implements Runnable {
 
     private NetworkApplicationEntity ae;
 
+    private UserIdentity userIdentity;
+    
     private Socket socket;
 
     private boolean requestor;
@@ -152,9 +154,11 @@ public class Association implements Runnable {
     }
 
     static Association request(Socket socket, NetworkConnection connector,
-            NetworkApplicationEntity ae) throws IOException {
+            NetworkApplicationEntity ae, UserIdentity userIdentity)
+            throws IOException {
         Association a = new Association(socket, connector, true);
         a.setApplicationEntity(ae);
+        a.setUserIdentity(userIdentity);
         a.setState(State.STA4);
         return a;
     }
@@ -174,6 +178,11 @@ public class Association implements Runnable {
     final void setApplicationEntity(NetworkApplicationEntity ae) {
         this.ae = ae;
     }
+    
+    final void setUserIdentity(UserIdentity userIdentity) {
+        this.userIdentity = userIdentity;
+    }
+    
 
     final AAssociateAC getAssociateAC() {
         return associateAC;
@@ -293,6 +302,10 @@ public class Association implements Runnable {
 
     public String getLocalAET() {
         return requestor ? getCallingAET() : getCalledAET();
+    }
+
+    public final UserIdentity getUserIdentity() {
+        return userIdentity;
     }
 
     public TransferCapability getTransferCapabilityAsSCP(String cuid) {

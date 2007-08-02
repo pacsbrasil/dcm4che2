@@ -44,6 +44,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -103,10 +104,11 @@ public class NetworkApplicationEntity {
     private int dimseRspTimeout = 60000;
     private int moveRspTimeout = 600000;
     private int idleTimeout = 60000;
-    private String[] reuseAssocationToAETitle = {};
-    private String[] reuseAssocationFromAETitle = {};
+    private List reuseAssocationToAETitle = Collections.EMPTY_LIST;
+    private List reuseAssocationFromAETitle = Collections.EMPTY_LIST;
     private NetworkConnection[] networkConnection = {};
     private TransferCapability[] transferCapability = {};
+    private UserIdentity userIdentity;
     private Device device;
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
     private final List pool = new ArrayList();
@@ -654,7 +656,8 @@ public class NetworkApplicationEntity {
      *         will be enabled for.
      */
     public final String[] getReuseAssocationFromAETitle() {
-        return reuseAssocationFromAETitle;
+        return (String[]) reuseAssocationFromAETitle.toArray(
+                new String[reuseAssocationFromAETitle.size()]);
     }
 
     /**
@@ -668,7 +671,8 @@ public class NetworkApplicationEntity {
      */
     public final void setReuseAssocationFromAETitle(
             String[] reuseAssocationFromAETitle) {
-        this.reuseAssocationFromAETitle = reuseAssocationFromAETitle;
+        this.reuseAssocationFromAETitle = 
+            Arrays.asList(reuseAssocationFromAETitle);
     }
 
     /**
@@ -680,7 +684,8 @@ public class NetworkApplicationEntity {
      *         be enabled for.
      */
     public final String[] getReuseAssocationToAETitle() {
-        return reuseAssocationToAETitle;
+        return (String[]) reuseAssocationToAETitle.toArray(
+                new String[reuseAssocationToAETitle.size()]);
     }
 
     /**
@@ -694,11 +699,44 @@ public class NetworkApplicationEntity {
      */
     public final void setReuseAssocationToAETitle(
             String[] reuseAssocationToAETitle) {
-        this.reuseAssocationToAETitle = reuseAssocationToAETitle;
+        this.reuseAssocationToAETitle = Arrays.asList(reuseAssocationToAETitle);
+        
+    }
+
+    /** 
+     * Get User Identity used for initiating associations, if no User Identity
+     * is specified in the connect method. Returns <code>null</code>, if no
+     * User Identity is associated with this NetworkApplicationEntity.
+     * 
+     * @return User Identity associated with this NetworkApplicationEntity.
+     * 
+     * @see #setUserIdentity
+     * @see #connect(NetworkApplicationEntity, Executor)
+     * @see #connect(NetworkApplicationEntity, Executor, boolean)
+     */
+    public final UserIdentity getUserIdentity() {
+        return userIdentity;
+    }
+
+    /** 
+     * Set User Identity used for initiating associations, if no User Identity
+     * is specified in the connect method.
+     * 
+     * @param  User Identity associated with this NetworkApplicationEntity.
+     * 
+     * @see #getUserIdentity
+     * @see #connect(NetworkApplicationEntity, Executor)
+     * @see #connect(NetworkApplicationEntity, Executor, boolean)
+     */
+    public final void setUserIdentity(UserIdentity userIdentity) {
+        this.userIdentity = userIdentity;
     }
 
     /**
      * Open a connection to the remote AE, using the passed in threading model.
+     * If a User Identity was associated with this NetworkApplicationEntity by
+     * {@link #setUserIdentity(UserIdentity)}, corresponding User Identity
+     * Negotiation will be performed.
      * This method will result in an association being opened (or re-used if so
      * configured). This association is then returned for use.
      * 
@@ -717,11 +755,42 @@ public class NetworkApplicationEntity {
     public Association connect(NetworkApplicationEntity remoteAE,
             Executor executor) throws ConfigurationException, IOException,
             InterruptedException {
-        return connect(remoteAE, executor, false);
+        return connect(userIdentity, remoteAE, executor, false);
     }
 
     /**
+     * Open a connection to the remote AE, using the passed in user identity
+     * and threading model.
+     * Negotiation will be performed.
+     * This method will result in an association being opened (or re-used if so
+     * configured). This association is then returned for use.
+     * 
+     * @param userIdentity
+     *            The <code>UserIdentity</code> notified to the Association
+     *            Acceptor by User Identity Negotiation.
+     * @param remoteAE
+     *            A <code>NetworkApplicationEntity</code> to connect to.
+     * @param executor
+     *            An <code>Executor</code> implementation containing the
+     *            threading model to use for this connection/association.
+     * @return An open <code>Association</code> object.
+     * @throws ConfigurationException
+     *             If there is no compatible network connection between this AE
+     *             title and the one that it is connecting to.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public Association connect(UserIdentity userIdentity,
+            NetworkApplicationEntity remoteAE, Executor executor)
+            throws ConfigurationException, IOException, InterruptedException {
+        return connect(userIdentity, remoteAE, executor, false);
+    }
+    
+    /**
      * Open a connection to the remote AE, using the passed in threading model.
+     * If a User Identity was associated with this NetworkApplicationEntity by
+     * {@link #setUserIdentity(UserIdentity)}, corresponding User Identity
+     * Negotiation will be performed.
      * This method will result in an association being opened (or reused if so
      * configured, and the "forceNew" parameter is false). This association is
      * then returned for use.
@@ -745,22 +814,57 @@ public class NetworkApplicationEntity {
     public Association connect(NetworkApplicationEntity remoteAE,
             Executor executor, boolean forceNew) throws ConfigurationException,
             IOException, InterruptedException {
+        return connect(userIdentity, remoteAE, executor, forceNew);
+    }
+    
+    /**
+     * Open a connection to the remote AE, using the passed in user identity
+     * and threading model.
+     * Negotiation will be performed.
+     * This method will result in an association being opened (or reused if so
+     * configured, and the "forceNew" parameter is false). This association is
+     * then returned for use.
+     * 
+     * @param userIdentity
+     *            The <code>UserIdentity</code> notified to the Association
+     *            Acceptor by User Identity Negotiation.
+     * @param remoteAE
+     *            A <code>NetworkApplicationEntity</code> to connect to.
+     * @param executor
+     *            An <code>Executor</code> implementation containing the
+     *            threading model to use for this connection/association.
+     * @param forceNew
+     *            A boolean value. If true, always create a new association,
+     *            ignoring any existing association re-use configuration that
+     *            has been set.
+     * @return An open <code>Association</code> object.
+     * @throws ConfigurationException
+     *             If there is no compatible network connection between this AE
+     *             title and the one that it is connecting to.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public Association connect(UserIdentity userIdentity,
+            NetworkApplicationEntity remoteAE, Executor executor,
+            boolean forceNew)
+            throws ConfigurationException, IOException, InterruptedException {
         final String remoteAET = remoteAE.getAETitle();
         if (!forceNew
                 && !pool.isEmpty()
-                && (reuseAssocationToAETitle.length > 0 || reuseAssocationFromAETitle.length > 0)) {
-            final boolean reuseAssocationTo = Arrays.asList(
-                    reuseAssocationToAETitle).indexOf(remoteAET) != -1;
-            final boolean reuseAssocationFrom = Arrays.asList(
-                    reuseAssocationFromAETitle).indexOf(remoteAET) != -1;
+                && !(reuseAssocationToAETitle.isEmpty() 
+                        && reuseAssocationFromAETitle.isEmpty())) {
             synchronized (pool) {
                 for (Iterator iter = pool.iterator(); iter.hasNext();) {
                     Association as = (Association) iter.next();
                     if (!remoteAET.equals(as.getRemoteAET()))
                         continue;
+                    if (userIdentity != as.getUserIdentity()) {
+                        continue;
+                    }
                     if (as.isReadyForDataTransfer()
-                            && (as.isRequestor() ? reuseAssocationTo
-                                    : reuseAssocationFrom))
+                            && (as.isRequestor() ? reuseAssocationToAETitle
+                                    : reuseAssocationFromAETitle)
+                                    .contains(remoteAET))
                         return as;
                 }
             }
@@ -774,9 +878,10 @@ public class NetworkApplicationEntity {
                 NetworkConnection nc = remoteConns[j];
                 if (nc.isInstalled() && nc.isListening()
                         && c.isTLS() == nc.isTLS()) {
-                    AAssociateRQ rq = makeAAssociateRQ(remoteAE);
+                    AAssociateRQ rq = makeAAssociateRQ(userIdentity, remoteAE);
                     Socket s = c.connect(nc);
-                    Association a = Association.request(s, c, this);
+                    Association a = Association.request(s, c, this,
+                            userIdentity);
                     executor.execute(a);
                     a.negotiate(rq);
                     addToPool(a);
@@ -789,8 +894,8 @@ public class NetworkApplicationEntity {
                         + " and remote AE " + remoteAET);
     }
 
-    private AAssociateRQ makeAAssociateRQ(NetworkApplicationEntity remoteAE)
-            throws ConfigurationException {
+    private AAssociateRQ makeAAssociateRQ(UserIdentity userIdentity,
+            NetworkApplicationEntity remoteAE) throws ConfigurationException {
         AAssociateRQ aarq = new AAssociateRQ();
         aarq.setCallingAET(aeTitle);
         aarq.setCalledAET(remoteAE.getAETitle());
@@ -827,6 +932,9 @@ public class NetworkApplicationEntity {
         for (Iterator iter = scp.iterator(); iter.hasNext();) {
             String cuid = (String) iter.next();
             aarq.addRoleSelection(new RoleSelection(cuid , scu.contains(cuid), true));
+        }
+        if (userIdentity != null) {
+            aarq.setUserIdentity(userIdentity.getUserIdentityRQ());
         }
         return aarq;
     }
