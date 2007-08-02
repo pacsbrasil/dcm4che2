@@ -39,6 +39,9 @@
 package org.dcm4che2.net.pdu;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -104,11 +107,11 @@ public class UserIdentityRQ {
         primaryField = toBytes(username);
     }
 
-    public String getPasscode() {
-        return toString(secondaryField);
+    public char[] getPasscode() {
+        return toChars(secondaryField);
     }
 
-    public void setPasscode(String passcode) {
+    public void setPasscode(char[] passcode) {
         secondaryField = toBytes(passcode);
     }
 
@@ -116,7 +119,7 @@ public class UserIdentityRQ {
         try {
             return s.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            throw new Error(e);
         }
     }
 
@@ -124,10 +127,22 @@ public class UserIdentityRQ {
         try {
             return new String(b, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            throw new Error(e);
         }
     }
 
+    private static Charset utf8() {
+        return Charset.forName("UTF-8");
+    }
+    
+    private static byte[] toBytes(char[] ca) {
+        return utf8().encode(CharBuffer.wrap(ca)).array();
+    }
+
+    private static char[] toChars(byte[] b) {
+        return utf8().decode(ByteBuffer.wrap(b)).array();
+    }
+       
     public int length() {
         return 6 + primaryField.length + secondaryField.length;
     }
