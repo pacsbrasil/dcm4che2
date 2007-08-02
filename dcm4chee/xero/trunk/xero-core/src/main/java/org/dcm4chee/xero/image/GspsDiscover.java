@@ -9,7 +9,6 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsType;
-import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;

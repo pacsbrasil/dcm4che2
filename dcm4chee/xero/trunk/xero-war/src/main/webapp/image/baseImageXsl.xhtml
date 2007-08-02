@@ -97,7 +97,9 @@
 <!-- Figures out the arguments to a standard WADO call, getting the region and so on setup
      correctly
   -->
-<x:template name="imageWado" mode="wadoArgsNode" match="se:image"><xsl:param name="loc" /><xsl:param name="node" />
+<x:template name="imageWado" mode="wadoArgsNode" match="se:image">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
  <xsl:param name="w" select="number(substring-before($loc,','))" />
  <xsl:param name="wr" select="substring-after($loc,',')" />
  <xsl:param name="h" select="number(substring-before($wr,','))" />
@@ -373,20 +375,13 @@
  </xsl:if>
 </x:template>
 
-<!-- Adds the SVG use section to the image. -->
-<x:template name="addUse">
- <xsl:param name="loc" />
- <xsl:param name="node" />
- <xsl:message>There are <xsl:value-of select="count($node/svg:use)" /> use elements and <xsl:value-of select="count($node/*)" /> child elements.</xsl:message>
- <xsl:copy-of select="$node/svg:use" />
-</x:template>
-
 <!-- Renders the image group, including overlays etc - calls the image, shutter etc groups. -->
 <x:template name="imageGroup" m:imageGroup.viewport="imageGroup">
  <xsl:param name="loc" />
  <xsl:param name="node" />
  <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
   <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+  <!-- TODO this should come from meta-data as a defined list, at least for the non-attribute portions. -->
   <xsl:call-template name="addCoordAttributes"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
   <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
   <xsl:call-template name="addLowResImage"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
@@ -577,7 +572,11 @@ and cx,cy = width /2, height/2
  <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
  
 <xsl:message>In <xsl:value-of select='$imageUrl' /> there are <xsl:value-of select="count($newSeriesNode/../se:series/se:gsps)" /> gsps nodes for gspsLabel=<xsl:value-of select="$gsps" />.</xsl:message>
- <xsl:copy-of select="$newSeriesNode/../se:series/se:gsps/svg:svg" />
+<xsl:apply-templates mode="svg" select="$newSeriesNode/../se:series/se:gsps/svg:svg">
+  <xsl:with-param name="loc" select="$loc" />
+  <xsl:with-param name="node" select="." />
+ </xsl:apply-templates>
+ 
  <xsl:apply-templates mode="newlayout" select="*">
   <xsl:with-param name="loc" select="$loc" />
   <xsl:with-param name="node" select="$newSeriesNode" />

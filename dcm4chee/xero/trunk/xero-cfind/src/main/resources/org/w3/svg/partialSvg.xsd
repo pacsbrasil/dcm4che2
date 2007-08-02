@@ -1395,6 +1395,7 @@
     <attributeGroup ref="svg:graphicsElementEvents"/>
     <attribute name="d" type="svg:PathDataType" use="required"/>
     <attribute name="pathLength" type="double" use="optional"/>
+    <attribute name="path" type="string" use="optional" />
   </complexType>
 
 </schema>

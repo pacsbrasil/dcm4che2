@@ -48,6 +48,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
  *
  */
 public class ELFunctions {
+   @SuppressWarnings("unchecked")
    public static List<MetaDataBean> sorted(MetaDataBean parent, String having)
    {
 	   if( parent==null ) return Collections.EMPTY_LIST;

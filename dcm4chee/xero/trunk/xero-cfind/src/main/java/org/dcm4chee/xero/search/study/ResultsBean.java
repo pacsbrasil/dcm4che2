@@ -151,13 +151,14 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 		return children;
 	}
 	
-	static int counter = (int) (Math.random()*Integer.MAX_VALUE);
+	static long counter = (int) (Math.random()*Long.MAX_VALUE);
 	
 	/** Creates a new unique id for an instance value 
 	 * @todo implement this as something more than a simple counter.
 	 */
 	public static synchronized String createId(String baseName) {
 		counter++;
-		return "id"+counter+"."+baseName;
+		if( baseName==null ) return "id"+counter;
+		return baseName+counter;
 	}
 }

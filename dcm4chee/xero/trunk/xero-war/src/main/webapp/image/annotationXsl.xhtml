@@ -1,0 +1,96 @@
+<!-- 
+	 This xsl file defines how to display annotations, including text annotations, circles, shutters etc.
+	 It may contain simple SVG to VML conversions, assuming certain semantics about the input source to allow
+	 display under IE.
+-->
+<x:xsl
+  pageConfig="#{PageConfig.display.Annotation}"
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:ui="http://java.sun.com/jsf/facelets"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/display/Annotation"
+  xmlns:c="http://java.sun.com/jstl/core"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  m:includeXsl="/image/annotationXsl.xhtml"
+  m:script="/xero/image/MarkupEdit.js"
+>
+
+<x:template name="svgCopy" mode="svg" match="*">
+  <xsl:copy>
+    <xsl:copy-of select="@*" />
+    <xsl:apply-templates mode="svg"/>
+  </xsl:copy>
+</x:template>
+
+<c:if test="#{browser=='MSIE'}">
+
+<x:template name="vmlSvgType" mode="svg" match="svg:svg|svg:g">
+  <xsl:apply-templates mode="svg" />
+</x:template>
+
+<!-- Iterate over all the shapes references from the svg:g element. -->
+<x:template name="ieUseShape" mode="ieSvg"  xmlns:xlink="http://www.w3.org/1999/xlink" match="svg:use">
+  <xsl:param name="loc" />
+  <xsl:param name="cols" select="../@Columns" />
+  <xsl:param name="rows" select="../@Rows" />
+  <xsl:param name="id"><xsl:value-of select="substring(@xlink:href,2)"/></xsl:param>
+  <xsl:for-each select="ancestor::se:results/descendant::svg:g[@id=$id]/*">
+    <xsl:element name="v:shape">
+      <xsl:attribute name="type">#<xsl:value-of select="@id" /></xsl:attribute>
+      <xsl:attribute name="style"><xsl:value-of select="concat('width: ',$cols,'; height: ',$rows,';')" /></xsl:attribute>
+      <xsl:attribute name="coordsize"><xsl:value-of select="concat($cols,' ',$rows)" /></xsl:attribute>
+      <xsl:if test="$mode='editMarkup'">
+        <xsl:attribute name="onmousedown">return markupEdit.mouseDown(window.event);</xsl:attribute>
+      </xsl:if>
+    </xsl:element>
+  </xsl:for-each>
+</x:template>
+
+</c:if>
+
+<x:template name="svgCopyPathMouseDown" mode="svg" match="svg:path">
+  <xsl:message>Path <xsl:value-of select="count(@*)" /> attributes in <xsl:value-of select="name()" /> in mode <xsl:value-of select="$mode" /> for <xsl:value-of select="@id" /></xsl:message>
+  <xsl:element name="#{browser=='MSIE'?'v:shapeType':'svg:path'}">
+    <xsl:copy-of select="@*" />
+    <c:if test="#{browser=='MSIE'}">
+      <xsl:if test="count(@path)=0">
+        <xsl:attribute name="path"><xsl:value-of select="@d" /></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@fill!='false'">
+        <xsl:attribute name="fillcolor"><xsl:value-of select="../@color" /></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@fill='false'">
+        <xsl:attribute name="filled"><xsl:value-of select="@fill" /></xsl:attribute>
+      </xsl:if>
+      <xsl:attribute name="strokecolor"><xsl:value-of select="../@color" /></xsl:attribute>
+    </c:if>
+    <xsl:if test="$mode='editMarkup'">
+      <xsl:attribute name="onmousedown">return markupEdit.mouseDown(evt);</xsl:attribute>
+    </xsl:if>
+    <xsl:apply-templates mode="svg"/>
+  </xsl:element>
+</x:template>
+
+
+<!-- Adds the SVG use section to the image. -->
+<x:template name="addUse">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:message>There are <xsl:value-of select="count($node/svg:use)" /> use elements and <xsl:value-of select="count($node/*)" /> child elements.</xsl:message>
+ <c:choose>
+   <c:when test="#{browser=='MSIE'}">
+	 <xsl:for-each select="$node/svg:use">
+	   <xsl:apply-templates mode="ieSvg" select=".">
+	     <xsl:with-param name="loc" select="$loc" />
+	   </xsl:apply-templates>
+	 </xsl:for-each>
+   </c:when>
+   <c:otherwise>
+     <xsl:copy-of select="$node/svg:use" />
+   </c:otherwise>
+ </c:choose>
+</x:template>
+
+
+</x:xsl>

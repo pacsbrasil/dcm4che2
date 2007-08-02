@@ -47,7 +47,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.LookupOp;
-import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.dcm4che.image.ColorModelFactory;

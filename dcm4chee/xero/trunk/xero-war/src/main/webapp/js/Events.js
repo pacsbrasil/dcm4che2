@@ -185,3 +185,10 @@ function getHeightFromNode(node) {
 	height = style.height;
     return Number(height.substring(0,height.length-2));
 };
+
+/** Return true if the tag is of the given type - only compares after the : for namespaced elements */
+function isTag(node, tag) {
+	var tname = node.localName;
+	if(tname===tag) return true;
+	return false;
+};

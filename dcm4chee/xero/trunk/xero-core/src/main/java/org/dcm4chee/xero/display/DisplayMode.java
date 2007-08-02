@@ -1,6 +1,5 @@
 package org.dcm4chee.xero.display;
 
-import org.jboss.seam.annotations.Begin;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 import org.slf4j.Logger;
