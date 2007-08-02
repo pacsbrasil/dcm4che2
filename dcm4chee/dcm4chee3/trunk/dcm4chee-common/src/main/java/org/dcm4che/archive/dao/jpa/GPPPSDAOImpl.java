@@ -82,6 +82,7 @@ public class GPPPSDAOImpl extends BaseDAOImpl<GPPPS> implements GPPPSDAO {
         GPPPS gppps = new GPPPS();
         gppps.setSopIuid(ds.getString(Tags.SOPInstanceUID));
         gppps.setAttributes(ds);
+        gppps.setPatient(pat);
         save(gppps);
 
         if (logger.isInfoEnabled()) {
