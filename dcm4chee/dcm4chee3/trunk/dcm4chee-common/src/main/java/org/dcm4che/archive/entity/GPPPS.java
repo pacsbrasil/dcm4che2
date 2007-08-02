@@ -89,6 +89,7 @@ public class GPPPS extends EntityBase {
     private byte[] encodedAttributes;
 
     @ManyToOne
+    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
     @ManyToMany
