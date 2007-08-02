@@ -760,7 +760,6 @@ public class NetworkApplicationEntity {
 
     /**
      * Open a connection to the remote AE, using the passed in user identity
-     * and threading model.
      * Negotiation will be performed.
      * This method will result in an association being opened (or re-used if so
      * configured). This association is then returned for use.
@@ -820,7 +819,6 @@ public class NetworkApplicationEntity {
     /**
      * Open a connection to the remote AE, using the passed in user identity
      * and threading model.
-     * Negotiation will be performed.
      * This method will result in an association being opened (or reused if so
      * configured, and the "forceNew" parameter is false). This association is
      * then returned for use.
