@@ -53,35 +53,30 @@ import org.dcm4che.dict.Tags;
  * @since 10.02.2004
  */
 public class MWLQueryCmd extends BaseDSQueryCmd {
-    
+
     private static final String[] FROM = { "Patient", "MWLItem" };
+
     private static final String[] SELECT = { "Patient.encodedAttributes",
             "MWLItem.encodedAttributes" };
+
     private static final String[] RELATIONS = { "Patient.pk",
             "MWLItem.patient_fk" };
 
     private static final int[] MATCHING_KEYS = new int[] {
-        Tags.RequestedProcedureID,
-		Tags.AccessionNumber,
-		Tags.StudyInstanceUID,
-		Tags.PatientID,
-		Tags.IssuerOfPatientID,
-		Tags.PatientName,
-		Tags.SPSSeq
-		};
+            Tags.RequestedProcedureID, Tags.AccessionNumber,
+            Tags.StudyInstanceUID, Tags.PatientID, Tags.IssuerOfPatientID,
+            Tags.PatientName, Tags.SPSSeq };
+
     private static final int[] MATCHING_SPS_SQ_KEYS = new int[] {
-        Tags.SPSStatus,
-		Tags.SPSID,
-		Tags.SPSStartDate, Tags.SPSStartTime,
-		Tags.Modality,
-		Tags.ScheduledStationAET,
-		Tags.PerformingPhysicianName
-		};
-    
+            Tags.SPSStatus, Tags.SPSID, Tags.SPSStartDate, Tags.SPSStartTime,
+            Tags.Modality, Tags.PerformingPhysicianName,
+            Tags.ScheduledStationAET, Tags.ScheduledStationName, };
+
     public static int transactionIsolationLevel = 0;
 
-    protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    
+    protected static final DcmObjectFactory dof = DcmObjectFactory
+            .getInstance();
+
     /**
      * @param ds
      * @throws SQLException
@@ -98,56 +93,48 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         Dataset spsItem = keys.getItem(Tags.SPSSeq);
         if (spsItem != null) {
             sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
-                        SqlBuilder.TYPE1, 
-                        SPSStatus.toInts(spsItem.getStrings(Tags.SPSStatus)));
+                    SqlBuilder.TYPE1, SPSStatus.toInts(spsItem
+                            .getStrings(Tags.SPSStatus)));
             sqlBuilder.addListOfStringMatch(null, "MWLItem.spsId",
-                    SqlBuilder.TYPE1,
-                    spsItem.getStrings(Tags.SPSID));
+                    SqlBuilder.TYPE1, spsItem.getStrings(Tags.SPSID));
             sqlBuilder.addRangeMatch(null, "MWLItem.spsStartDateTime",
-                    SqlBuilder.TYPE1,
-                    spsItem.getDateTimeRange(Tags.SPSStartDate,
-                            Tags.SPSStartTime));
+                    SqlBuilder.TYPE1, spsItem.getDateTimeRange(
+                            Tags.SPSStartDate, Tags.SPSStartTime));
             sqlBuilder.addListOfStringMatch(null, "MWLItem.modality",
-                    SqlBuilder.TYPE1,
-                    spsItem.getStrings(Tags.Modality));
-            sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationAET",
-                    SqlBuilder.TYPE1,
-                    spsItem.getStrings(Tags.ScheduledStationAET));
-            sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationName",
-                    SqlBuilder.TYPE2,
-                    spsItem.getStrings(Tags.ScheduledStationName));
+                    SqlBuilder.TYPE1, spsItem.getStrings(Tags.Modality));
+            sqlBuilder.addListOfStringMatch(null,
+                    "MWLItem.scheduledStationAET", SqlBuilder.TYPE1, spsItem
+                            .getStrings(Tags.ScheduledStationAET));
+            sqlBuilder.addListOfStringMatch(null,
+                    "MWLItem.scheduledStationName", SqlBuilder.TYPE2, spsItem
+                            .getStrings(Tags.ScheduledStationName));
             sqlBuilder.addPNMatch(new String[] {
                     "MWLItem.performingPhysicianName",
                     "MWLItem.performingPhysicianIdeographicName",
-                    "MWLItem.performingPhysicianPhoneticName"},
-                    SqlBuilder.TYPE2,
-                    spsItem.getString(Tags.PerformingPhysicianName));
+                    "MWLItem.performingPhysicianPhoneticName" },
+                    SqlBuilder.TYPE2, spsItem
+                            .getString(Tags.PerformingPhysicianName));
         }
         sqlBuilder.addListOfStringMatch(null, "MWLItem.requestedProcedureId",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.RequestedProcedureID));
+                SqlBuilder.TYPE1, keys.getStrings(Tags.RequestedProcedureID));
         sqlBuilder.addListOfStringMatch(null, "MWLItem.accessionNumber",
-                SqlBuilder.TYPE2,
-                keys.getStrings(Tags.AccessionNumber));
+                SqlBuilder.TYPE2, keys.getStrings(Tags.AccessionNumber));
         sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.StudyInstanceUID));
+                SqlBuilder.TYPE1, keys.getStrings(Tags.StudyInstanceUID));
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.PatientID));
+                SqlBuilder.TYPE1, keys.getStrings(Tags.PatientID));
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.IssuerOfPatientID));
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.PatientName));
-        
+                SqlBuilder.TYPE2, keys.getString(Tags.IssuerOfPatientID));
+        sqlBuilder.addPNMatch(
+                new String[] { "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" }, SqlBuilder.TYPE2, keys
+                        .getString(Tags.PatientName));
+
         matchingKeys.add(MATCHING_KEYS);
-        seqMatchingKeys.put(new Integer(Tags.SPSSeq), new IntList().add(MATCHING_SPS_SQ_KEYS));
-        
+        seqMatchingKeys.put(new Integer(Tags.SPSSeq), new IntList()
+                .add(MATCHING_SPS_SQ_KEYS));
+
     }
 
     public void execute() throws SQLException {
@@ -155,8 +142,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1), ds);
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        DatasetUtils.fromByteArray(getBytes(1), ds);
         DatasetUtils.fromByteArray(getBytes(2), ds);
         QueryCmd.adjustDataset(ds, keys);
         return ds.subSet(keys);
