@@ -90,19 +90,19 @@ public class DisplayShutterModule extends Module {
 		return dcmobj.getInt(Tag.ShutterUpperHorizontalEdge);
 	}
 	public int getShutterLowerHorizontalEdge() {
-		return dcmobj.getInt(Tag.ShutterUpperHorizontalEdge);
+		return dcmobj.getInt(Tag.ShutterLowerHorizontalEdge);
 	}
-	public void getShutterLeftVerticalEdge(int value) {
+	public void setShutterLeftVerticalEdge(int value) {
 		dcmobj.putInt(Tag.ShutterLeftVerticalEdge,VR.IS, value);
 	}
-	public void getShutterRightVerticalEdge(int value) {
+	public void setShutterRightVerticalEdge(int value) {
 		dcmobj.putInt(Tag.ShutterRightVerticalEdge,VR.IS, value);
 	}
-	public void getShutterUpperHorizontalEdge(int value) {
+	public void setShutterUpperHorizontalEdge(int value) {
 		dcmobj.putInt(Tag.ShutterUpperHorizontalEdge,VR.IS, value);
 	}
-	public void getShutterLowerHorizontalEdge(int value) {
-		dcmobj.putInt(Tag.ShutterUpperHorizontalEdge,VR.IS, value);
+	public void setShutterLowerHorizontalEdge(int value) {
+		dcmobj.putInt(Tag.ShutterLowerHorizontalEdge,VR.IS, value);
 	}
 	
 	/** Returns  asingle gray unsigned value to replace occluded parts of the imatge
@@ -127,7 +127,7 @@ public class DisplayShutterModule extends Module {
 		int[] lab = getShutterPresentationColorCIELabValue();
 		return convertToFloatLab(lab);
 	}
-
+	
 	/** This method converts integer DICOM encoded L*a*b* values to CIE L*a*b* regular
 	 * float encoded values.
 	 * @param lab

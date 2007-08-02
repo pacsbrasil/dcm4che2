@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.iod.module.pr;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.iod.module.Module;
@@ -56,15 +57,47 @@ public class GraphicAnnotationModule extends Module {
 		super(dcmobj);
 	}
 	
-	/** Gets the graphic layer for this object */
-	public GraphicLayerModule getGraphicLayer() {
-		return new GraphicLayerModule(dcmobj);
+	/** Gets all the graphic annotation modules associated with the sequence. */
+	public static GraphicAnnotationModule[] toGraphicAnnotationModules(DicomElement sq) {
+        if (sq == null || !sq.hasItems()) {
+            return null;
+        }
+        GraphicAnnotationModule[] a = new GraphicAnnotationModule[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new GraphicAnnotationModule(sq.getDicomObject(i));
+        }
+        return a;
+	}
+
+	/** Return an array of the graphic annotation module instances in this GSPS,
+	 * given an overall dicom object.
+	 * @param dcmobj
+	 * @return
+	 */
+	public static GraphicAnnotationModule[] toGraphicAnnotationModules(DicomObject dcmobj) {
+		return toGraphicAnnotationModules(dcmobj.get(Tag.GraphicAnnotationSequence));
 	}
 	
-	/** Gets the image sop instance references */
+	/** This returns the name of hte graphic layer to use.  This will be a reference
+	 * to a graphic layer in the overall GSPS object.
+	 * @return
+	 */
+	public String getGraphicLayer() {
+		return dcmobj.getString(Tag.GraphicLayer);
+	}
+	
+	/** Gets the image sop instance references, null if none (means to apply everywhere). */
 	public ImageSOPInstanceReference[] getImageSOPInstanceReferences() {
 		return ImageSOPInstanceReference.toImageSOPInstanceReferences(dcmobj.get(Tag.ReferencedImageSequence));
 	}
 	
+	public GraphicObject[] getGraphicObjects() {
+		DicomElement de = dcmobj.get(Tag.GraphicObjectSequence);
+		return GraphicObject.toGraphicObjects(de);
+	}
 	
+	public TextObject[] getTextObjects() {
+		DicomElement sq = dcmobj.get(Tag.TextObjectSequence);
+		return TextObject.toTextObjects(sq);
+	}
 }
