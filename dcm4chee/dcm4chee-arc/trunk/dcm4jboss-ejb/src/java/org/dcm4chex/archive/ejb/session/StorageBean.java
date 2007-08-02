@@ -362,10 +362,19 @@ public abstract class StorageBean implements SessionBean {
         SeriesLocal series;
         try {
             series = findBySeriesIuid(uid);
-            coerceSeriesIdentity(series, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            series = seriesHome.create(ds, getStudy(ds, coercedElements, fs));
+        	try {
+        		return seriesHome.create(ds, getStudy(ds, coercedElements, fs));
+        	} catch (CreateException e1) {
+        		// check if Series record was inserted by concurrent thread
+                try {
+                	series = findBySeriesIuid(uid);
+                } catch (Exception e2) {
+                	throw e1;
+                }       		
+        	}
         }
+        coerceSeriesIdentity(series, ds, coercedElements);
         return series;
     }
 
@@ -376,23 +385,43 @@ public abstract class StorageBean implements SessionBean {
         StudyLocal study;
         try {
             study = studyHome.findByStudyIuid(uid);
-            coerceStudyIdentity(study, ds, coercedElements);
         } catch (ObjectNotFoundException onfe) {
-            study = studyHome.create(ds, getPatient(ds, coercedElements));
-			sofHome.create(study, fs);
+        	try {
+        		study = studyHome.create(ds, getPatient(ds, coercedElements));
+        		sofHome.create(study, fs);
+        		return study;
+        	} catch (CreateException e1) {
+        		// check if Study record was inserted by concurrent thread
+                try {
+                    study = studyHome.findByStudyIuid(uid);
+                } catch (Exception e2) {
+                	throw e1;
+                }       		
+        	}
         }
+        coerceStudyIdentity(study, ds, coercedElements);
         return study;
     }
 
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
             throws Exception {
+    	PatientLocal pat;
         try {
-            PatientLocal pat = patHome.searchFor(ds, true);
-            coercePatientIdentity(pat, ds, coercedElements);
-            return pat;
+            pat = patHome.searchFor(ds, true);
         } catch (ObjectNotFoundException e) {
-            return patHome.create(ds);
+            try {
+				return patHome.create(ds);
+			} catch (CreateException e1) {
+        		// check if Patient record was inserted by concurrent thread
+		        try {
+		            pat = patHome.searchFor(ds, true);
+		        } catch (Exception e2) {
+		        	throw e1;
+		        }
+			}
         }
+        coercePatientIdentity(pat, ds, coercedElements);
+        return pat;
     }
     
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
