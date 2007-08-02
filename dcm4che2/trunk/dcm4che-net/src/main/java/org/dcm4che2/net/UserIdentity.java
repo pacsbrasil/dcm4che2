@@ -56,6 +56,15 @@ public abstract class UserIdentity {
     public final UserIdentityRQ getUserIdentityRQ() {
         return rq;
     }
+
+    public boolean isPositiveResponseRequested() {
+        return rq.isPositiveResponseRequested();
+    }
+    
+    public void setPositiveResponseRequested(
+            boolean positiveResponseRequested) {
+        rq.setPositiveResponseRequested(positiveResponseRequested);
+    }   
     
     public static class Username extends UserIdentity {
 
