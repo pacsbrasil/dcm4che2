@@ -74,8 +74,9 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 		Tags.SPSID,
 		Tags.SPSStartDate, Tags.SPSStartTime,
 		Tags.Modality,
+		Tags.PerformingPhysicianName,
 		Tags.ScheduledStationAET,
-		Tags.PerformingPhysicianName
+		Tags.ScheduledStationName,
 		};
     
     public static int transactionIsolationLevel = 0;
