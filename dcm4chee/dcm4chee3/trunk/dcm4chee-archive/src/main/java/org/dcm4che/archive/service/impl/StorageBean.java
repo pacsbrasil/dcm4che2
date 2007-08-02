@@ -318,8 +318,21 @@ public class StorageBean implements Storage {
             coerceSeriesIdentity(series, ds, coercedElements);
         }
         catch (NoResultException onfe) {
-            series = seriesDAO.create(ds, getStudy(ds, coercedElements, fs));
+            try {
+                return seriesDAO.create(ds, getStudy(ds, coercedElements, fs));
+            }
+            catch (ContentCreateException e1) {
+                // check if Series record was inserted by concurrent thread
+                try {
+                    series = findBySeriesIuid(uid);
+                }
+                catch (Throwable e2) {
+                    log.error(e2.getMessage());
+                    throw e1;
+                }
+            }
         }
+        coerceSeriesIdentity(series, ds, coercedElements);
         return series;
     }
 
@@ -329,26 +342,55 @@ public class StorageBean implements Storage {
         Study study;
         try {
             study = studyDAO.findByStudyIuid(uid);
-            coerceStudyIdentity(study, ds, coercedElements);
         }
         catch (NoResultException onfe) {
             study = studyDAO.create(ds, getPatient(ds, coercedElements));
             sofDAO.create(study, fs);
+            try {
+                study = studyDAO.create(ds, getPatient(ds, coercedElements));
+                sofDAO.create(study, fs);
+                return study;
+            }
+            catch (ContentCreateException e1) {
+                // check if Study record was inserted by concurrent thread
+                try {
+                    study = studyDAO.findByStudyIuid(uid);
+                }
+                catch (Throwable e2) {
+                    log.error(e2.getMessage());
+                    throw e1;
+                }
+            }
         }
 
+        coerceStudyIdentity(study, ds, coercedElements);
         return study;
     }
 
     private Patient getPatient(Dataset ds, Dataset coercedElements)
             throws Exception {
+        Patient pat;
         try {
-            Patient pat = patDAO.searchFor(ds, true);
-            coercePatientIdentity(pat, ds, coercedElements);
-            return pat;
+            pat = patDAO.searchFor(ds, true);
         }
         catch (NoResultException e) {
-            return patDAO.create(ds);
+            try {
+                return patDAO.create(ds);
+            }
+            catch (ContentCreateException e1) {
+                // check if Patient record was inserted by concurrent thread
+                try {
+                    pat = patDAO.searchFor(ds, true);
+                }
+                catch (Throwable e2) {
+                    log.error(e2.getMessage());
+                    throw e1;
+                }
+            }
         }
+
+        coercePatientIdentity(pat, ds, coercedElements);
+        return pat;
     }
 
     private void coercePatientIdentity(Patient patient, Dataset ds,
