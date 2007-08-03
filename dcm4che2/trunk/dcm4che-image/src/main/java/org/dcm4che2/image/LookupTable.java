@@ -38,11 +38,6 @@
  
 package org.dcm4che2.image;
 
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -75,77 +70,29 @@ public abstract class LookupTable {
         this.preserve = preserve;
     }
     
-    public final int offset() {
+    public final int getOffset() {
         return off;
     }
     
     public abstract int length();
     
-    public abstract byte lookupByte(int in);
+    public abstract byte lookupByte(int src);
     
-    public abstract short lookupShort(int in);
+    public abstract short lookupShort(int src);
     
-    public abstract int lookup(int in); 
+    public abstract int lookup(int src); 
 
-    public abstract void lookup(byte[] in, byte[] out);
+    public abstract byte[] lookup(byte[] src, byte[] dst);
 
-    public abstract void lookup(byte[] in, short[] out);
+    public abstract short[] lookup(byte[] src, short[] dst);
 
-    public abstract void lookup(short[] in, byte[] out);
+    public abstract byte[] lookup(short[] src, byte[] dst);
 
-    public abstract void lookup(short[] in, short[] out);
+    public abstract short[] lookup(short[] src, short[] dst);
     
     protected abstract LookupTable scale(int outBits, boolean inverse);
     protected abstract LookupTable combine(LookupTable other, int outBits, boolean inverse);
     protected abstract LookupTable combine(LookupTable vlut, LookupTable plut, int outBits, boolean inverse);
-
-    public void lookup(DataBuffer in, DataBuffer out) {
-        switch (in.getDataType()) {
-        case DataBuffer.TYPE_BYTE:
-            lookup(((DataBufferByte) in).getData(), out);
-            break;
-        case DataBuffer.TYPE_USHORT:
-            lookup(((DataBufferUShort) in).getData(), out);
-            break;
-        case DataBuffer.TYPE_SHORT:
-            lookup(((DataBufferShort) in).getData(), out);
-            break;
-        default:
-            throw new IllegalArgumentException("in: " + in);
-        }
-    }
-    
-    private void lookup(short[] in, DataBuffer out) {
-        switch (out.getDataType()) {
-        case DataBuffer.TYPE_BYTE:
-            lookup(in, ((DataBufferByte) out).getData());
-            break;
-        case DataBuffer.TYPE_USHORT:
-            lookup(in, ((DataBufferUShort) out).getData());
-            break;
-        case DataBuffer.TYPE_SHORT:
-            lookup(in, ((DataBufferShort) out).getData());
-            break;
-        default:
-            throw new IllegalArgumentException("out: " + out);
-        }
-    }
-
-    private void lookup(byte[] in, DataBuffer out) {
-        switch (out.getDataType()) {
-        case DataBuffer.TYPE_BYTE:
-            lookup(in, ((DataBufferByte) out).getData());
-            break;
-        case DataBuffer.TYPE_USHORT:
-            lookup(in, ((DataBufferUShort) out).getData());
-            break;
-        case DataBuffer.TYPE_SHORT:
-            lookup(in, ((DataBufferShort) out).getData());
-            break;
-        default:
-            throw new IllegalArgumentException("out: " + out);
-        }
-    }
 
     protected final int toIndex(int in) {
         return ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
@@ -211,7 +158,7 @@ public abstract class LookupTable {
             if (iMax + off == in2) {
                 ramp[iMax] = (byte) out2;
             }
-            return new Byte(inBits, signed, off, outBits, ramp);           
+            return new ByteLookupTable(inBits, signed, off, outBits, ramp);           
         } else {
             short[] ramp = new short[size];
             for (int i = 0; i < size; i++) {
@@ -220,7 +167,7 @@ public abstract class LookupTable {
             if (iMax + off == in2) {
                 ramp[iMax] = (short) out2;
             }
-            return new Short(inBits, signed, off, outBits, ramp);
+            return new ShortLookupTable(inBits, signed, off, outBits, ramp);
         }
     }
 
@@ -272,9 +219,9 @@ public abstract class LookupTable {
             }
         }
         if (data.length == len) {
-            return new Byte(inBits, signed, off, bits, data, true);
+            return new ByteLookupTable(inBits, signed, off, bits, data, true);
         } else if (data.length == len << 1) {
-            return new Short(inBits, signed, off, bits,
+            return new ShortLookupTable(inBits, signed, off, bits,
                     ds.bigEndian() ? ByteUtils.bytesBE2shorts(data)
                                    : ByteUtils.bytesLE2shorts(data), true);
         }
@@ -309,7 +256,7 @@ public abstract class LookupTable {
             return lut;
         } else {
             LookupTable vlut = createLut(32, true, voiLut);
-            float in1 = (vlut.offset() - intercept) / slope;                
+            float in1 = (vlut.getOffset() - intercept) / slope;                
             float in2 = in1 + vlut.length() / slope;              
             int off = (int) Math.floor(Math.min(in1, in2));            
             int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
@@ -317,7 +264,7 @@ public abstract class LookupTable {
             for (int i = 0; i < data.length; i++) {
                 data[i] = vlut.lookupShort(Math.round(i * slope + intercept));
             }
-            return new Short(inBits, signed, off, vlut.outBits, data);
+            return new ShortLookupTable(inBits, signed, off, vlut.outBits, data);
         }
     }
 
@@ -629,354 +576,5 @@ public abstract class LookupTable {
             }
         }
         return null;       
-    }
-
-    public static class Byte extends LookupTable {
-        
-        private byte[] data;
-
-        public Byte(int inBits, boolean signed, int off, int outBits,
-                byte[] data) {
-            this(inBits, signed, off, outBits, data, false);
-        }
-        
-        public Byte(int inBits, boolean signed, int off, int outBits,
-                byte[] data, boolean preserve) {
-            super(inBits, signed, off, outBits, preserve);
-            this.data = data;
-        }
-
-        public final int length() {
-            return data.length;
-        }
-        
-        public final byte lookupByte(int in) {
-            int i = toIndex(in);
-            return i <= 0 ? data[0] : i >= data.length ? data[data.length - 1]
-                                                              : data[i];
-        }
-        
-        public final short lookupShort(int in) {
-            return (short) (lookupByte(in) & 0xff);
-        }
-        
-        public final int lookup(int in) {
-            return lookupByte(in) & 0xff;
-        }
-        
-        public final void lookup(byte[] in, byte[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupByte(in[i]);
-            }
-        }
-
-        public final void lookup(byte[] in, short[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupShort(in[i]);
-            }
-        }
-
-        public final void lookup(short[] in, byte[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupByte(in[i]);
-            }
-        }
-
-        public final void lookup(short[] in, short[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupShort(in[i]);
-            }
-        }
-
-        protected LookupTable inverse() {
-            int outMax = (1 << outBits) - 1;
-            byte[] newData = preserve ? new byte[data.length] : data;
-            for (int i = 0; i < newData.length; i++) {
-                newData[i] = (byte) (outMax - data[i]);
-            }
-            return preserve 
-                    ? new Byte(inBits, signbit != 0, off, outBits, newData)
-                    : this;
-        }
-
-        protected LookupTable scale(int outBits, boolean inverse) {
-            int shift = outBits - this.outBits;
-            if (shift == 0 && !inverse) {
-                return this;
-            }
-            int outMax = (1 << outBits) - 1;
-            if (outBits <= 8) {
-                byte[] newData = preserve ? new byte[data.length] : data;
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = shift < 0 
-                            ? (data[i] & 0xff) >>> -shift
-                            : data[i] << shift;
-                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
-                }              
-                if (preserve) {
-                    return new Byte(inBits, signbit != 0, off, outBits, newData);
-                } else {
-                    this.outBits = outBits;
-                    return this;
-                }
-            } else {
-                short[] newData = new short[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = shift < 0 
-                            ? (data[i] & 0xff) >>> -shift
-                            : (data[i] & 0xff) << shift;
-                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Short(inBits, signbit != 0, off, outBits, newData);
-            }
-        }
-
-        protected LookupTable combine(LookupTable other, int outBits, boolean inverse) {
-            int shift1 = other.inBits - this.outBits;
-            int shift2 = outBits - other.outBits;
-            int outMax = (1 << outBits) - 1;
-            if (outBits <= 8) {
-                byte[] newData = new byte[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = other.lookup(shift1 < 0 
-                            ? (data[i] & 0xff) >>> -shift1
-                            : data[i] << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Byte(inBits, signbit != 0, off, outBits, newData);
-            } else { 
-                short[] newData = new short[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = other.lookup(shift1 < 0 
-                            ? (data[i] & 0xff) >>> -shift1
-                            : (data[i] & 0xff) << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Short(inBits, signbit != 0, off, outBits, newData);
-            }
-        }
-
-        protected LookupTable combine(LookupTable vlut, LookupTable plut, int outBits,
-                boolean inverse) {
-            int shift1 = plut.inBits - vlut.outBits;
-            int shift2 = outBits - plut.outBits;
-            int outMax = (1 << outBits) - 1;
-            if (outBits <= 8) {
-                byte[] newData = new byte[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = vlut.lookup(data[i] & 0xff);
-                    tmp = plut.lookup(shift1 < 0 
-                            ? tmp >>> -shift1
-                            : tmp << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Byte(inBits, signbit != 0, off, outBits, newData);
-            } else { 
-                short[] newData = new short[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = vlut.lookup(data[i] & 0xff);
-                    tmp = plut.lookup(shift1 < 0 
-                            ? tmp >>> -shift1
-                            : tmp << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Short(inBits, signbit != 0, off, outBits, newData);
-            }
-        }
-    }
-    
-    public static class Short extends LookupTable {
-        
-        private short[] data;
-
-        public Short(int inBits, boolean signed, int off, int outBits,
-                short[] data) {
-            this(inBits, signed, off, outBits, data, false);
-        }
-        
-        public Short(int inBits, boolean signed, int off, int outBits,
-                short[] data, boolean preserve) {
-            super(inBits, signed, off, outBits, preserve);
-            this.data = data;
-        }
-
-        public final int length() {
-            return data.length;
-        }
-        
-        public final byte lookupByte(int in) {
-            return (byte) lookupShort(in);
-        }
-
-        public final short lookupShort(int in) {
-            int tmp = ((in & signbit) != 0 ? (in | ormask) : (in & andmask))
-                    - off;
-            return tmp <= 0 ? data[0]
-                    : tmp >= data.length ? data[data.length - 1] : data[tmp];
-        }
-
-        public final int lookup(int in) {
-            return lookupShort(in) & 0xffff;
-        }
-                
-        public final void lookup(byte[] in, byte[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupByte(in[i]);
-            }
-        }
-        
-        public final void lookup(byte[] in, short[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupShort(in[i]);
-            }
-        }        
-        public final void lookup(short[] in, byte[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupByte(in[i]);
-            }
-        }
-        
-        public final void lookup(short[] in, short[] out) {
-            for (int i = 0; i < in.length; i++) {
-                out[i] = lookupShort(in[i]);
-            }
-        }
-
-        protected LookupTable inverse() {
-            int outMax = (1 << outBits) - 1;
-            short[] newData = preserve ? new short[data.length] : data;
-            for (int i = 0; i < newData.length; i++) {
-                newData[i] = (short) (outMax - data[i]);
-            }
-            return preserve 
-                    ? new Short(inBits, signbit != 0, off, outBits, newData)
-                    : this;
-        }
-
-        protected LookupTable scale(int outBits, boolean inverse) {
-            int shift = outBits - this.outBits;
-            if (shift == 0 && !inverse) {
-                return this;
-            }
-            int outMax = (1 << outBits) - 1;
-            if (preserve && outBits <= 8) {
-                byte[] newData = new byte[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = shift < 0 
-                            ? (data[i] & 0xffff) >>> -shift
-                            : data[i] << shift;
-                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Byte(inBits, signbit != 0, off, outBits, newData);
-            } else {
-                short[] newData = preserve ? new short[data.length] : data;
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = shift < 0 
-                            ? (data[i] & 0xffff) >>> -shift
-                            : data[i] << shift;
-                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
-                }              
-                if (preserve) {
-                    return new Short(inBits, signbit != 0, off, outBits,
-                            newData);
-                } else {
-                    this.outBits = outBits;
-                    return this;
-                }
-            }
-        }
-
-        protected LookupTable combine(LookupTable other, int outBits, boolean inverse) {
-            int shift1 = other.inBits - this.outBits;
-            int shift2 = outBits - other.outBits;
-            int outMax = (1 << outBits) - 1;
-            if (outBits <= 8) {
-                byte[] newData = new byte[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = other.lookup(shift1 < 0 
-                            ? (data[i] & 0xffff) >>> -shift1
-                            : data[i] << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Byte(inBits, signbit != 0, off, outBits, newData);
-            } else { 
-                short[] newData = new short[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = other.lookup(shift1 < 0 
-                            ? (data[i] & 0xffff) >>> -shift1
-                            : data[i] << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Short(inBits, signbit != 0, off, outBits, newData);
-            }
-        }
-        
-        protected LookupTable combine(LookupTable vlut, LookupTable plut, int outBits,
-                boolean inverse) {
-            int shift1 = plut.inBits - vlut.outBits;
-            int shift2 = outBits - plut.outBits;
-            int outMax = (1 << outBits) - 1;
-            if (outBits <= 8) {
-                byte[] newData = new byte[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = vlut.lookup(data[i] & 0xffff);
-                    tmp = plut.lookup(shift1 < 0 
-                            ? tmp >>> -shift1
-                            : tmp << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (byte) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Byte(inBits, signbit != 0, off, outBits, newData);
-            } else { 
-                short[] newData = new short[data.length];
-                for (int i = 0; i < newData.length; i++) {
-                    int tmp = vlut.lookup(data[i] & 0xffff);
-                    tmp = plut.lookup(shift1 < 0 
-                            ? tmp >>> -shift1
-                            : tmp << shift1);
-                    if (shift2 < 0) {
-                        tmp >>>= -shift2;
-                    } else {
-                        tmp <<= shift2;
-                    }
-                    newData[i] = (short) (inverse ? outMax - tmp : tmp);
-                }              
-                return new Short(inBits, signbit != 0, off, outBits, newData);
-            }
-        }
-   }    
+    }    
  }
