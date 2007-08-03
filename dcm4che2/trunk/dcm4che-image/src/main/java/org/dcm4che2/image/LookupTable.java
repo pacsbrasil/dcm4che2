@@ -256,7 +256,7 @@ public abstract class LookupTable {
             return lut;
         } else {
             LookupTable vlut = createLut(32, true, voiLut);
-            float in1 = (vlut.getOffset() - intercept) / slope;                
+            float in1 = (vlut.off - intercept) / slope;                
             float in2 = in1 + vlut.length() / slope;              
             int off = (int) Math.floor(Math.min(in1, in2));            
             int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
