@@ -105,7 +105,7 @@
         </jar>
     </target>
 
-    <target name="copy-xml" unless="noxml">
+    <target name="copy-xml">
         <copy todir="${target.classes}/META-INF">
             <fileset dir="${src.res}/META-INF">
                 <include name="persistence.xml" />
