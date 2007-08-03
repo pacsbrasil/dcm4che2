@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
-package org.dcm4che2.imageioimpl.plugins.dcm;
+package org.dcm4che2.image;
 
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;

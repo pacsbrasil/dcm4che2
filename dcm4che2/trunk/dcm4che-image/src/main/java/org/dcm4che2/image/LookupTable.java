@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
-package org.dcm4che2.imageioimpl.plugins.dcm;
+package org.dcm4che2.image;
 
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -54,7 +54,7 @@ import org.dcm4che2.util.ByteUtils;
  * @version $Revision$ $Date$
  * @since Jul 23, 2007
  */
-public abstract class Lut {
+public abstract class LookupTable {
     
     protected final int inBits;
     protected final int andmask;
@@ -64,7 +64,7 @@ public abstract class Lut {
     protected int outBits;
     protected int off;
 
-    protected Lut(int inBits, boolean signed, int off, int outBits,
+    protected LookupTable(int inBits, boolean signed, int off, int outBits,
             boolean preserve) {
         this.inBits = inBits;
         this.outBits = outBits;
@@ -95,9 +95,9 @@ public abstract class Lut {
 
     public abstract void lookup(short[] in, short[] out);
     
-    protected abstract Lut scale(int outBits, boolean inverse);
-    protected abstract Lut combine(Lut other, int outBits, boolean inverse);
-    protected abstract Lut combine(Lut vlut, Lut plut, int outBits, boolean inverse);
+    protected abstract LookupTable scale(int outBits, boolean inverse);
+    protected abstract LookupTable combine(LookupTable other, int outBits, boolean inverse);
+    protected abstract LookupTable combine(LookupTable vlut, LookupTable plut, int outBits, boolean inverse);
 
     public void lookup(DataBuffer in, DataBuffer out) {
         switch (in.getDataType()) {
@@ -165,7 +165,7 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             float slope, float intercept, float center, float width,
             boolean inverse) {
         if (slope < 0) {
@@ -237,18 +237,18 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             DicomObject mLut, float center, float width, boolean inverse) {
-        Lut mlut = createLut(inBits, signed, mLut);
+        LookupTable mlut = createLut(inBits, signed, mLut);
         if (width == 0) {
             return mlut.scale(outBits, inverse);
         }
-        Lut vlut = createLut(mlut.outBits, false, outBits, 1, 0, 
+        LookupTable vlut = createLut(mlut.outBits, false, outBits, 1, 0, 
                 center, width, inverse);
         return mlut.combine(vlut, outBits, false);
     }
 
-    private static Lut createLut(int inBits, boolean signed, DicomObject ds) {
+    private static LookupTable createLut(int inBits, boolean signed, DicomObject ds) {
         int[] desc = ds.getInts(Tag.LUTDescriptor);
         byte[] data = ds.getBytes(Tag.LUTData);
         if (desc == null) {
@@ -295,20 +295,20 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             float slope, float intercept, DicomObject voiLut, boolean inverse) {
         return createLut(inBits, signed, slope, intercept, voiLut)
                 .scale(outBits, inverse);
     }
 
-    private static Lut createLut(int inBits, boolean signed,
+    private static LookupTable createLut(int inBits, boolean signed,
             float slope, float intercept, DicomObject voiLut) {
         if (slope == 1) {
-            Lut lut = createLut(inBits, signed, voiLut);
+            LookupTable lut = createLut(inBits, signed, voiLut);
             lut.off -= intercept;
             return lut;
         } else {
-            Lut vlut = createLut(32, true, voiLut);
+            LookupTable vlut = createLut(32, true, voiLut);
             float in1 = (vlut.offset() - intercept) / slope;                
             float in2 = in1 + vlut.length() / slope;              
             int off = (int) Math.floor(Math.min(in1, in2));            
@@ -337,11 +337,11 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             float slope, float intercept, float center, float width,
             DicomObject pLut, boolean inverse) {
-        Lut plut = createLut(0, false, pLut);
-        Lut vlut = createLut(inBits, signed, plut.inBits,
+        LookupTable plut = createLut(0, false, pLut);
+        LookupTable vlut = createLut(inBits, signed, plut.inBits,
                 slope, intercept, center, width, false);
         return vlut.combine(plut, outBits, inverse);
     }
@@ -358,10 +358,10 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             DicomObject mLut, DicomObject voiLut, boolean inverse) {
-        Lut mlut = createLut(inBits, signed, voiLut);
-        Lut vlut = createLut(mlut.outBits, false, voiLut);
+        LookupTable mlut = createLut(inBits, signed, voiLut);
+        LookupTable vlut = createLut(mlut.outBits, false, voiLut);
         return mlut.combine(vlut, outBits, inverse);
     }
    
@@ -379,11 +379,11 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             float slope, float intercept, DicomObject voiLut,
             DicomObject pLut, boolean inverse) {
-        Lut vlut = createLut(inBits, signed, slope, intercept, voiLut);
-        Lut plut = createLut(0, false, pLut);
+        LookupTable vlut = createLut(inBits, signed, slope, intercept, voiLut);
+        LookupTable plut = createLut(0, false, pLut);
         return vlut.combine(plut, outBits, inverse);
     }
    
@@ -402,15 +402,15 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             DicomObject mLut, float center, float width, DicomObject pLut,
             boolean inverse) {
-        Lut mlut = createLut(inBits, signed, mLut);
-        Lut plut = createLut(0, false, pLut);
+        LookupTable mlut = createLut(inBits, signed, mLut);
+        LookupTable plut = createLut(0, false, pLut);
         if (width == 0) {
             return mlut.combine(plut, outBits, inverse);
         } else {
-            Lut vlut = createLut(mlut.outBits, false, plut.inBits, 1, 0, 
+            LookupTable vlut = createLut(mlut.outBits, false, plut.inBits, 1, 0, 
                     center, width, false);
             return mlut.combine(vlut, plut, outBits, inverse);
         }
@@ -429,12 +429,12 @@ public abstract class Lut {
      * @param inverse specifies if output shall be inversed
      * @return created LUT
      */
-    public static Lut createLut(int inBits, boolean signed, int outBits, 
+    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
             DicomObject mLut, DicomObject voiLut, DicomObject pLut,
             boolean inverse) {
-        Lut mlut = createLut(inBits, signed, mLut);
-        Lut vlut = createLut(mlut.outBits, false, voiLut);
-        Lut plut = createLut(0, false, pLut);
+        LookupTable mlut = createLut(inBits, signed, mLut);
+        LookupTable vlut = createLut(mlut.outBits, false, voiLut);
+        LookupTable plut = createLut(0, false, pLut);
         return mlut.combine(vlut, plut, outBits, inverse);
     }
 
@@ -450,7 +450,7 @@ public abstract class Lut {
      * @param outBits bit depth of output range
      * @return created LUT
      */
-    public static Lut createLutForImage(DicomObject img, int bitsOut) {
+    public static LookupTable createLutForImage(DicomObject img, int bitsOut) {
         DicomObject voiLut = img.getNestedDicomObject(Tag.VOILUTSequence);
         if (voiLut != null) {
             return createLutForImage(img, voiLut, bitsOut);
@@ -483,7 +483,7 @@ public abstract class Lut {
      * @param outBits bit depth of output range
      * @return created LUT
      */
-    public static Lut createLutForImage(DicomObject img,
+    public static LookupTable createLutForImage(DicomObject img,
             float center, float width, int outBits) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
@@ -519,7 +519,7 @@ public abstract class Lut {
      * @param outBits bit depth of output range
      * @return created LUT
      */
-    public static Lut createLutForImage(DicomObject img,
+    public static LookupTable createLutForImage(DicomObject img,
             DicomObject voiLut, int outBits) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
@@ -549,7 +549,7 @@ public abstract class Lut {
      * @param outBits bit depth of output range
      * @return created LUT
      */
-    public static Lut createLutForImageWithPR(DicomObject img,
+    public static LookupTable createLutForImageWithPR(DicomObject img,
             DicomObject pr, int outBits) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
@@ -572,36 +572,36 @@ public abstract class Lut {
         if (mLut == null) {
             if (voiLut == null) {
                 if (pLut == null) {
-                    return Lut.createLut(stored, signed, outBits, 
+                    return LookupTable.createLut(stored, signed, outBits, 
                             slope, intercept, center, width, inverse);
                 } else {
-                    return Lut.createLut(stored, signed, outBits, 
+                    return LookupTable.createLut(stored, signed, outBits, 
                             slope, intercept, center, width, pLut, false);                    
                 }
             } else {
                 if (pLut == null) {
-                    return Lut.createLut(stored, signed, outBits,
+                    return LookupTable.createLut(stored, signed, outBits,
                             slope, intercept, voiLut, inverse);
                 } else {
-                    return Lut.createLut(stored, signed, outBits,
+                    return LookupTable.createLut(stored, signed, outBits,
                             slope, intercept, voiLut, pLut, false);                    
                 }                
             }
         } else {
             if (voiLut == null) {
                 if (pLut == null) {
-                    return Lut.createLut(stored, signed, outBits,
+                    return LookupTable.createLut(stored, signed, outBits,
                             mLut, center, width, inverse);
                 } else {
-                    return Lut.createLut(stored, signed, outBits,
+                    return LookupTable.createLut(stored, signed, outBits,
                             mLut, center, width, pLut, false);                    
                 }
             } else {
                 if (pLut == null) {
-                    return Lut.createLut(stored, signed, outBits,
+                    return LookupTable.createLut(stored, signed, outBits,
                             mLut, voiLut, inverse);
                 } else {
-                    return Lut.createLut(stored, signed, outBits,
+                    return LookupTable.createLut(stored, signed, outBits,
                             mLut, voiLut, pLut, false);                    
                 }                
             }           
@@ -631,7 +631,7 @@ public abstract class Lut {
         return null;       
     }
 
-    public static class Byte extends Lut {
+    public static class Byte extends LookupTable {
         
         private byte[] data;
 
@@ -688,7 +688,7 @@ public abstract class Lut {
             }
         }
 
-        protected Lut inverse() {
+        protected LookupTable inverse() {
             int outMax = (1 << outBits) - 1;
             byte[] newData = preserve ? new byte[data.length] : data;
             for (int i = 0; i < newData.length; i++) {
@@ -699,7 +699,7 @@ public abstract class Lut {
                     : this;
         }
 
-        protected Lut scale(int outBits, boolean inverse) {
+        protected LookupTable scale(int outBits, boolean inverse) {
             int shift = outBits - this.outBits;
             if (shift == 0 && !inverse) {
                 return this;
@@ -731,7 +731,7 @@ public abstract class Lut {
             }
         }
 
-        protected Lut combine(Lut other, int outBits, boolean inverse) {
+        protected LookupTable combine(LookupTable other, int outBits, boolean inverse) {
             int shift1 = other.inBits - this.outBits;
             int shift2 = outBits - other.outBits;
             int outMax = (1 << outBits) - 1;
@@ -766,7 +766,7 @@ public abstract class Lut {
             }
         }
 
-        protected Lut combine(Lut vlut, Lut plut, int outBits,
+        protected LookupTable combine(LookupTable vlut, LookupTable plut, int outBits,
                 boolean inverse) {
             int shift1 = plut.inBits - vlut.outBits;
             int shift2 = outBits - plut.outBits;
@@ -805,7 +805,7 @@ public abstract class Lut {
         }
     }
     
-    public static class Short extends Lut {
+    public static class Short extends LookupTable {
         
         private short[] data;
 
@@ -862,7 +862,7 @@ public abstract class Lut {
             }
         }
 
-        protected Lut inverse() {
+        protected LookupTable inverse() {
             int outMax = (1 << outBits) - 1;
             short[] newData = preserve ? new short[data.length] : data;
             for (int i = 0; i < newData.length; i++) {
@@ -873,7 +873,7 @@ public abstract class Lut {
                     : this;
         }
 
-        protected Lut scale(int outBits, boolean inverse) {
+        protected LookupTable scale(int outBits, boolean inverse) {
             int shift = outBits - this.outBits;
             if (shift == 0 && !inverse) {
                 return this;
@@ -906,7 +906,7 @@ public abstract class Lut {
             }
         }
 
-        protected Lut combine(Lut other, int outBits, boolean inverse) {
+        protected LookupTable combine(LookupTable other, int outBits, boolean inverse) {
             int shift1 = other.inBits - this.outBits;
             int shift2 = outBits - other.outBits;
             int outMax = (1 << outBits) - 1;
@@ -941,7 +941,7 @@ public abstract class Lut {
             }
         }
         
-        protected Lut combine(Lut vlut, Lut plut, int outBits,
+        protected LookupTable combine(LookupTable vlut, LookupTable plut, int outBits,
                 boolean inverse) {
             int shift1 = plut.inBits - vlut.outBits;
             int shift2 = outBits - plut.outBits;
