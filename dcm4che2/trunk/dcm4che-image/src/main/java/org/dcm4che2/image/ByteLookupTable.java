@@ -57,18 +57,18 @@ public class ByteLookupTable extends LookupTable {
         return data.length;
     }
 
-    public final byte lookupByte(int src) {
-        int i = toIndex(src);
-        return i <= 0 ? data[0] : i >= data.length ? data[data.length - 1]
-                : data[i];
+    public final byte lookupByte(int in) {
+        int tmp = ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
+        return tmp <= 0 ? data[0] : tmp >= data.length ? data[data.length - 1]
+                : data[tmp];
     }
 
-    public final short lookupShort(int src) {
-        return (short) (lookupByte(src) & 0xff);
+    public final short lookupShort(int in) {
+        return (short) (lookupByte(in) & 0xff);
     }
 
-    public final int lookup(int src) {
-        return lookupByte(src) & 0xff;
+    public final int lookup(int in) {
+        return lookupByte(in) & 0xff;
     }
 
     public final byte[] lookup(byte[] src, byte[] dst) {

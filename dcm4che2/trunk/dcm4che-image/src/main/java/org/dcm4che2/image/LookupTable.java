@@ -76,11 +76,11 @@ public abstract class LookupTable {
     
     public abstract int length();
     
-    public abstract byte lookupByte(int src);
+    public abstract byte lookupByte(int in);
     
-    public abstract short lookupShort(int src);
+    public abstract short lookupShort(int in);
     
-    public abstract int lookup(int src); 
+    public abstract int lookup(int in); 
 
     public abstract byte[] lookup(byte[] src, byte[] dst);
 
