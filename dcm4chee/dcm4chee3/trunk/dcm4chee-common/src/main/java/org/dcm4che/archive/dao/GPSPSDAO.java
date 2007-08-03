@@ -72,14 +72,6 @@ public interface GPSPSDAO extends DAO<GPSPS> {
     public GPSPS findBySopIuid(String iuid) throws NoResultException,
             PersistenceException;
 
-    public List<GPSPS> find(Long patientFk, String accessionNumber,
-            List<Integer> statusList, Timestamp afterTimestamp)
-            throws PersistenceException;
-    
-    public List<EntityBase[]> find(String firstName, String lastName, String patientId,
-            String modality, String accessionNumber, String bodyPart,
-            String institutionName, Date fromDate, Date toDate) throws PersistenceException;
-
     /**
      * @param dataset
      * @param patient
