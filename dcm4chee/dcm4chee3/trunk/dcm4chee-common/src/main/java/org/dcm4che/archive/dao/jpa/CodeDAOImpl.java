@@ -93,7 +93,7 @@ public class CodeDAOImpl extends BaseDAOImpl<Code> implements CodeDAO {
         }
 
         Query q = em
-                .createQuery("from Code c join where c.codeValue = :value and c.codingSchemeDesignator = :designator");
+                .createQuery("from Code c where c.codeValue = :value and c.codingSchemeDesignator = :designator");
         q.setParameter("value", value);
         q.setParameter("designator", designator);
 
