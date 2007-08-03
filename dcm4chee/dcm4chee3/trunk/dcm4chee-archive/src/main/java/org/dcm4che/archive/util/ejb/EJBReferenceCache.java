@@ -49,6 +49,10 @@ import javax.naming.NamingException;
 
 /**
  * Helper class to lookup and cache EJB references from JNDI.
+ * <p>
+ * Rethrow all exceptions as RuntimeExceptions as there is really no need to
+ * continue if an InitialContext or EJB can't be created, and we don't want to
+ * have to catch NamingExceptions all over the place.
  * 
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
@@ -62,17 +66,15 @@ public class EJBReferenceCache {
 
     private Context ctx;
 
+    /**
+     * Get a reference to this singleton object, creating an InitialContext in
+     * the process..
+     * 
+     * @return The singleton EJBReferenceCache object.
+     */
     public static EJBReferenceCache getFactory() {
         if (EJBReferenceCache.factory == null) {
-            try {
-                EJBReferenceCache.factory = new EJBReferenceCache();
-            }
-            catch (Exception e) {
-                // Rethrow it as RuntimeException as there is really no need to
-                // continue if this exception happens and we don't want to catch
-                // it everywhere.
-                throw new RuntimeException(e);
-            }
+            EJBReferenceCache.factory = new EJBReferenceCache();
         }
         return EJBReferenceCache.factory;
     }
@@ -95,6 +97,13 @@ public class EJBReferenceCache {
         }
     }
 
+    /**
+     * Lookup an EJB from JNDI.
+     * 
+     * @param jndiName
+     *            A String representing the JNDI name of the EJB.
+     * @return The Object that was obtained from JNDI.
+     */
     public Object lookup(String jndiName) {
         Object ejb = ejbs.get(jndiName);
         if (ejb == null) {
