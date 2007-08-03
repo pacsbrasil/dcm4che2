@@ -11,6 +11,7 @@
         <include>dcm4che-core/**</include>
         <include>dcm4che-core-test-dictionary/**</include>
         <include>dcm4che-hp/**</include>
+        <include>dcm4che-image/**</include>
         <include>dcm4che-imageio/**</include>
         <include>dcm4che-imageio-rle/**</include>
         <include>dcm4che-iod/**</include>
