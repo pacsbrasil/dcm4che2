@@ -39,8 +39,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.dao.jpa;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,7 +49,6 @@ import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
-import javax.persistence.TemporalType;
 
 import org.dcm4che.archive.common.DatasetUtils;
 import org.dcm4che.archive.dao.CodeDAO;
@@ -59,10 +56,7 @@ import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.GPSPSDAO;
 import org.dcm4che.archive.dao.GPSPSPerformerDAO;
 import org.dcm4che.archive.dao.GPSPSRequestDAO;
-import org.dcm4che.archive.dao.helper.QueryBuilder;
-import org.dcm4che.archive.dao.helper.QueryUtils;
 import org.dcm4che.archive.entity.Code;
-import org.dcm4che.archive.entity.EntityBase;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.data.Dataset;
