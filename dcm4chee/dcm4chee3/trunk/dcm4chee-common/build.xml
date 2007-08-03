@@ -36,7 +36,7 @@
     <property name="target" value="${basedir}/target" />
     <property name="target.classes" value="${target}/classes" />
     <property name="target.lib" value="${target}/lib" />
-    <property name="build.javadocs.dir" value="${target}/doc/api"/>
+    <property name="build.javadocs.dir" value="${target}/doc/api" />
 
     <path id="class.path">
         <pathelement location="${dcm4che.jar}" />
@@ -76,10 +76,7 @@
 
     <target name="compile" depends="init">
         <mkdir dir="${target.classes}" />
-        <javac destdir="${target.classes}" debug="${javac.debug}" 
-                deprecation="off" optimize="on" classpathref="class.path" 
-                compiler="${javac.compiler}" nowarn="${javac.nowarn}" 
-                source="${javac.source}" target="${javac.target}">
+        <javac destdir="${target.classes}" debug="${javac.debug}" deprecation="off" optimize="on" classpathref="class.path" compiler="${javac.compiler}" nowarn="${javac.nowarn}" source="${javac.source}" target="${javac.target}">
             <src path="${src.java}" />
             <include name="org/dcm4che/**" />
         </javac>
@@ -88,6 +85,15 @@
     <target name="jar" depends="compile">
         <mkdir dir="${target.lib}" />
         <antcall target="copy-xml" />
+        <antcall target="create-jar" />
+    </target>
+
+    <target name="jar-noxml">
+        <mkdir dir="${target.lib}" />
+        <antcall target="create-jar" />
+    </target>
+
+    <target name="create-jar" depends="compile">
         <jar jarfile="${target.lib}/dcm4chee-common.jar">
             <manifest>
                 <attribute name="Class-Path" value="dcm4che.jar" />
@@ -98,16 +104,11 @@
             <fileset dir="${target.classes}" />
         </jar>
     </target>
-    
-    <target name="jar-noxml">
-        <property name="noxml" value="true"/>
-        <antcall target="jar" />
-    </target>
-    
+
     <target name="copy-xml" unless="noxml">
         <copy todir="${target.classes}/META-INF">
             <fileset dir="${src.res}/META-INF">
-                <include name="persistence.xml"/>
+                <include name="persistence.xml" />
             </fileset>
         </copy>
     </target>
