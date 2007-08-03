@@ -66,6 +66,9 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.image.LookupTable;
+import org.dcm4che2.image.PaletteColorUtils;
+import org.dcm4che2.image.SimpleYBRColorSpace;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
@@ -369,20 +372,20 @@ public class DicomImageReader extends ImageReader {
         return bi;
     }
 
-    private Lut createLut(DicomImageReadParam param) {
+    private LookupTable createLut(DicomImageReadParam param) {
         DicomObject pr = param.getPresentationState();
         if (pr != null) {
-            return Lut.createLutForImageWithPR(ds, pr, stored);
+            return LookupTable.createLutForImageWithPR(ds, pr, stored);
         }
         DicomObject voiLut = param.getVoiLut();
         if (voiLut != null) {
-            return Lut.createLutForImage(ds, voiLut, stored);
+            return LookupTable.createLutForImage(ds, voiLut, stored);
         }
         float c = param.getWindowCenter();
         float w = param.getWindowWidth();
         if (w > 0) {            
-            return Lut.createLutForImage(ds, c, w, stored);
+            return LookupTable.createLutForImage(ds, c, w, stored);
         }
-        return Lut.createLutForImage(ds, stored);
+        return LookupTable.createLutForImage(ds, stored);
     }
 }
