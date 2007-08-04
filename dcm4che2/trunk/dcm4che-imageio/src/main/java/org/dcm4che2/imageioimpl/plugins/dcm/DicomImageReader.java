@@ -48,6 +48,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SampleModel;
 import java.io.IOException;
@@ -367,7 +370,23 @@ public class DicomImageReader extends ImageReader {
         }
         if (monochrome) {
             DataBuffer data = bi.getRaster().getDataBuffer();
-            createLut((DicomImageReadParam) param).lookup(data, data);           
+            LookupTable lut = createLut((DicomImageReadParam) param);
+            byte[] bb;
+            short[] ss;
+            switch (data.getDataType()) {
+            case DataBuffer.TYPE_BYTE:
+                bb = ((DataBufferByte) data).getData();
+                lut.lookup(bb, bb);
+                break;
+            case DataBuffer.TYPE_USHORT:
+                ss = ((DataBufferUShort) data).getData();
+                lut.lookup(ss, ss);
+                break;
+            case DataBuffer.TYPE_SHORT:
+                ss = ((DataBufferShort) data).getData();
+                lut.lookup(ss, ss);
+                break;
+            }
         }
         return bi;
     }
