@@ -4,12 +4,14 @@
                xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_1_0.xsd"
                version="1.0">
                
-<package>org.dcm4che.archive.entity</package>
+	<package>org.dcm4che.archive.entity</package>
 
-<entity class="EntityBase" metadata-complete="false">
-    <attributes>
-        <id name="pk" column="pk">
-            <generated-value strategy="IDENTITY"/>
-        </id>
-    </attributes>
-</entity>
+	<mapped-superclass class="EntityBase" metadata-complete="false">
+	    <attributes>
+	        <id name="pk">
+	            <generated-value strategy="IDENTITY"/>
+	        </id>
+	    </attributes>
+    </mapped-superclass>
+
+</entity-mappings>

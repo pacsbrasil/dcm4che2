@@ -4,116 +4,118 @@
                xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_1_0.xsd"
                version="1.0">
                
-<package>org.dcm4che.archive.entity</package>
+    <package>org.dcm4che.archive.entity</package>
+    
+    <mapped-superclass class="EntityBase" metadata-complete="false">
+        <attributes>
+            <id name="pk">
+                <generated-value strategy="SEQUENCE" generator="SEQ_STORE" />
+            </id>
+        </attributes>
+    </mapped-superclass>
+    
+    <entity class="AE" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="ae_pk_seq" />
+    </entity>
+    
+    <entity class="Code" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="code_pk_seq" />
+    </entity>
+    
+    <entity class="Device" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="device_pk_seq" />
+    </entity>
+    
+    <entity class="File" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="file_pk_seq" />
+    </entity>
+    
+    <entity class="FileSystem" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="filesystem_pk_seq" />
+    </entity>
+    
+    <entity class="GPPPS" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="gppps_pk_seq" />
+    </entity>
+    
+    <entity class="GPSPS" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="gpsps_pk_seq" />
+    </entity>
+    
+    <entity class="GPSPSPerformer" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="gpsps_perf_pk_seq" />
+    </entity>
+    
+    <entity class="GPSPSRequest" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="gpsps_req_pk_seq" />
+    </entity>
+    
+    <entity class="Instance" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="instance_pk_seq" />
+    </entity>
+    
+    <entity class="Media" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="media_pk_seq" />
+    </entity>
+    
+    <entity class="MPPS" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="mpps_pk_seq" />
+    </entity>
+    
+    <entity class="MWLItem" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="mwl_item_pk_seq" />
+    </entity>
+    
+    <entity class="OtherPatientID" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="other_pid_pk_seq" />
+    </entity>
+    
+    <entity class="Patient" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="patient_pk_seq" />
+    </entity>
+    
+    <entity class="PrivateFile" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="priv_file_pk_seq" />
+    </entity>
+    
+    <entity class="PrivateInstance" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="priv_instance_pk_seq" />
+    </entity>
+    
+    <entity class="PrivatePatient" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="priv_patient_pk_seq" />
+    </entity>
+    
+    <entity class="PrivateSeries" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="priv_series_pk_seq" />
+    </entity>
+    
+    <entity class="PrivateStudy" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="priv_study_pk_seq" />
+    </entity>
+    
+    <entity class="Series" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="series_pk_seq" />
+    </entity>
+    
+    <entity class="SeriesRequest" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="series_req_pk_seq" />
+    </entity>
+    
+    <entity class="Study" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="study_pk_seq" />
+    </entity>
+    
+    <entity class="StudyOnFileSystem" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="study_on_fs_pk_seq" />
+    </entity>
+    
+    <entity class="StudyPermission" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="study_permission_pk_seq" />
+    </entity>
+    
+    <entity class="VerifyingObserver" metadata-complete="false">
+        <sequence-generator name="SEQ_STORE" sequence-name="verify_observer" />
+    </entity>
 
-<entity class="EntityBase" metadata-complete="false">
-    <attributes>
-        <id name="pk" column="pk">
-            <generated-value strategy="SEQUENCE" generator="SEQ_STORE" />
-        </id>
-    </attributes>
-</entity>
-
-<entity class="AE" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="ae_pk_seq" />
-</entity>
-
-<entity class="Code" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="code_pk_seq" />
-</entity>
-
-<entity class="Device" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="device_pk_seq" />
-</entity>
-
-<entity class="File" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="file_pk_seq" />
-</entity>
-
-<entity class="FileSystem" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="filesystem_pk_seq" />
-</entity>
-
-<entity class="GPPPS" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="gppps_pk_seq" />
-</entity>
-
-<entity class="GPSPS" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="gpsps_pk_seq" />
-</entity>
-
-<entity class="GPSPSPerformer" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="gpsps_perf_pk_seq" />
-</entity>
-
-<entity class="GPSPSRequest" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="gpsps_req_pk_seq" />
-</entity>
-
-<entity class="Instance" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="instance_pk_seq" />
-</entity>
-
-<entity class="Media" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="media_pk_seq" />
-</entity>
-
-<entity class="MPPS" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="mpps_pk_seq" />
-</entity>
-
-<entity class="MWLItem" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="mwl_item_pk_seq" />
-</entity>
-
-<entity class="OtherPatientID" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="other_pid_pk_seq" />
-</entity>
-
-<entity class="Patient" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="patient_pk_seq" />
-</entity>
-
-<entity class="PrivateFile" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="priv_file_pk_seq" />
-</entity>
-
-<entity class="PrivateInstance" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="priv_instance_pk_seq" />
-</entity>
-
-<entity class="PrivatePatient" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="priv_patient_pk_seq" />
-</entity>
-
-<entity class="PrivateSeries" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="priv_series_pk_seq" />
-</entity>
-
-<entity class="PrivateStudy" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="priv_study_pk_seq" />
-</entity>
-
-<entity class="Series" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="series_pk_seq" />
-</entity>
-
-<entity class="SeriesRequest" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="series_req_pk_seq" />
-</entity>
-
-<entity class="Study" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="study_pk_seq" />
-</entity>
-
-<entity class="StudyOnFileSystem" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="study_on_fs_pk_seq" />
-</entity>
-
-<entity class="StudyPermission" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="study_permission_pk_seq" />
-</entity>
-
-<entity class="VerifyingObserver" metadata-complete="false">
-    <sequence-generator name="SEQ_STORE" sequence-name="verify_observer" />
-</entity>
+</entity-mappings>
