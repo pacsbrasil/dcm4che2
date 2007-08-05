@@ -47,7 +47,7 @@ import org.dcm4che.archive.entity.User;
 
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
-public class UserDAOImpl extends BaseDAOImpl<User> implements UserDAO {
+public class UserDAOImpl extends BaseDAOImpl implements UserDAO {
 
     @Override
     public Class getPersistentClass() {

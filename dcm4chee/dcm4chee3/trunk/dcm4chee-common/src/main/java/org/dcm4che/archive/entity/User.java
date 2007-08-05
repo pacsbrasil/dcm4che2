@@ -53,7 +53,7 @@ import org.hibernate.annotations.CollectionOfElements;
 
 @Entity
 @Table(name = "users")
-public class User extends EntityBase {
+public class User {
 
     private static final long serialVersionUID = 8535630016393206232L;
 

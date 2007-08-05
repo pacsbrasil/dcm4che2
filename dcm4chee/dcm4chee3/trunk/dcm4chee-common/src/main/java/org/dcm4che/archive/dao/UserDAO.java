@@ -40,9 +40,7 @@ package org.dcm4che.archive.dao;
 
 import javax.ejb.Local;
 
-import org.dcm4che.archive.entity.User;
-
 @Local
-public interface UserDAO extends DAO<User> {
+public interface UserDAO extends DAO {
 
 }
