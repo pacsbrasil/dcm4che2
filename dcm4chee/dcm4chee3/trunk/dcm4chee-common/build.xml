@@ -82,13 +82,13 @@
 		</javac>
 	</target>
 
-	<target name="jar" depends="compile">
+	<target name="jar" depends="clean, compile">
 		<mkdir dir="${target.lib}" />
 		<antcall target="copy-xml" />
 		<antcall target="create-jar" />
 	</target>
 
-	<target name="jar-noxml">
+	<target name="jar-noxml" depends="clean">
 		<mkdir dir="${target.lib}" />
 		<antcall target="create-jar" />
 	</target>
