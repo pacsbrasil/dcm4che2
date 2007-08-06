@@ -52,10 +52,13 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.imageio.IIOException;
@@ -80,8 +83,10 @@ import org.dcm4che2.io.StopTagInputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.corba.se.spi.ior.Writeable;
 import com.sun.media.imageio.stream.RawImageInputStream;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
+import com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -155,6 +160,11 @@ public class DicomImageReader extends ImageReader {
             this.iis = (ImageInputStream) input;
         }
     }
+    
+    public void dispose() {
+        super.dispose();
+        resetLocal();               
+    }
 
     public void reset() {
         super.reset();
@@ -188,7 +198,9 @@ public class DicomImageReader extends ImageReader {
             reader.dispose();
             reader = null;
         }
-    }
+        itemParser = null;
+        itemStream = null;
+   }
 
     public ImageReadParam getDefaultReadParam() {
         return new DicomImageReadParam();
@@ -289,8 +301,10 @@ public class DicomImageReader extends ImageReader {
         ImageReaderFactory f = ImageReaderFactory.getInstance();
         String ts = ds.getString(Tag.TransferSyntaxUID);
         this.reader = f.getReaderForTransferSyntax(ts);
-        this.itemParser = new ItemParser(dis, iis);
-        this.itemStream = new SegmentedImageInputStream(iis, itemParser);
+        if (itemParser == null) {
+            this.itemParser = new ItemParser(dis, iis);
+            this.itemStream = new SegmentedImageInputStream(iis, itemParser);
+        }
     }
 
     private void initRawImageReader() throws IIOException {
@@ -389,7 +403,9 @@ public class DicomImageReader extends ImageReader {
             bi = reader.read(imageIndex, param);
         }
         if (monochrome) {
-            DataBuffer data = bi.getRaster().getDataBuffer();
+            ColorModel cm = bi.getColorModel();
+            WritableRaster raster = bi.getRaster();
+            DataBuffer data = raster.getDataBuffer();
             LookupTable lut = createLut((DicomImageReadParam) param);
             byte[] bb;
             short[] ss;
@@ -405,7 +421,10 @@ public class DicomImageReader extends ImageReader {
             case DataBuffer.TYPE_SHORT:
                 ss = ((DataBufferShort) data).getData();
                 lut.lookup(ss, ss);
-                break;
+                return new BufferedImage(cm,
+                        Raster.createWritableRaster(raster.getSampleModel(),
+                                new DataBufferUShort(ss, ss.length), null),
+                        cm.isAlphaPremultiplied(), new Hashtable());
             }
         }
         return bi;
@@ -442,7 +461,13 @@ public class DicomImageReader extends ImageReader {
         itemStream.seek(this.frameOffsets[imageIndex]);
         reader.setInput(itemStream);
         BufferedImage bi = reader.read(0, param);
-        reader.reset();
+        // workaround for Bug in J2KImageReaderCodecLib.reset()
+        if (reader instanceof J2KImageReaderCodecLib) {
+            reader.dispose();
+            reader = null;
+        } else {
+            reader.reset();
+        }
         final int nextIndex = imageIndex + 1;
         if (nextIndex < frameOffsets.length && frameOffsets[nextIndex] == 0) {
             this.frameOffsets[nextIndex] = itemParser.seekNextFrame(itemStream);
