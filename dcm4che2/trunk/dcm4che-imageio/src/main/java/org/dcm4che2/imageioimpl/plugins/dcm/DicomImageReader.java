@@ -72,11 +72,16 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.PaletteColorUtils;
 import org.dcm4che2.image.SimpleYBRColorSpace;
+import org.dcm4che2.imageio.ImageReaderFactory;
+import org.dcm4che2.imageio.ItemParser;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.media.imageio.stream.RawImageInputStream;
+import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -84,6 +89,9 @@ import com.sun.media.imageio.stream.RawImageInputStream;
  * @since Sep 2, 2006
  */
 public class DicomImageReader extends ImageReader {
+    
+    private static final Logger log = 
+            LoggerFactory.getLogger(DicomImageReader.class);
 
     private static final String MONOCHROME1 = "MONOCHROME1";
 
@@ -126,6 +134,8 @@ public class DicomImageReader extends ImageReader {
     private boolean compressed;
     private long[] frameOffsets;
     private ImageReader reader;
+    private ItemParser itemParser;
+    private SegmentedImageInputStream itemStream;
 
     protected DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
@@ -269,10 +279,18 @@ public class DicomImageReader extends ImageReader {
         }
         readMetadata();
         if (compressed) {
-            //TODO
+            initCompressedImageReader();
         } else {
             initRawImageReader();
         }
+    }
+
+    private void initCompressedImageReader() throws IOException {
+        ImageReaderFactory f = ImageReaderFactory.getInstance();
+        String ts = ds.getString(Tag.TransferSyntaxUID);
+        this.reader = f.getReaderForTransferSyntax(ts);
+        this.itemParser = new ItemParser(dis, iis);
+        this.itemStream = new SegmentedImageInputStream(iis, itemParser);
     }
 
     private void initRawImageReader() throws IIOException {
@@ -363,8 +381,10 @@ public class DicomImageReader extends ImageReader {
         }
         BufferedImage bi;
         if (compressed) {
-            // TODO
-            bi = reader.read(0, param);
+            ImageReadParam param1 = reader.getDefaultReadParam();
+            copyReadParam(param, param1);
+            seekFrame(imageIndex, param1);
+            bi = decompress(imageIndex, param1);
         } else {
             bi = reader.read(imageIndex, param);
         }
@@ -388,6 +408,46 @@ public class DicomImageReader extends ImageReader {
                 break;
             }
         }
+        return bi;
+    }
+
+    private void copyReadParam(ImageReadParam src, ImageReadParam dst) {
+        dst.setDestination(src.getDestination());
+        dst.setSourceRegion(src.getSourceRegion());
+        dst.setSourceSubsampling(
+                src.getSourceXSubsampling(), 
+                src.getSourceYSubsampling(),
+                src.getSubsamplingXOffset(),
+                src.getSubsamplingYOffset());
+        dst.setDestinationOffset(src.getDestinationOffset());
+    }
+
+    private void seekFrame(int imageIndex, ImageReadParam param)
+            throws IOException {
+        if (imageIndex > 0 && frameOffsets[imageIndex] == 0) {
+            if (itemParser.getNumberOfDataFragments() == frameOffsets.length) {
+                for (int i = 1; i < frameOffsets.length; ++i)
+                    frameOffsets[i] = itemParser.getOffsetOfDataFragment(i);                   
+            } else {
+                for (int i = 0; i < imageIndex; ++i)
+                    if (frameOffsets[i+1] == 0)
+                        decompress(i, param);
+            }
+        }
+    }
+
+    private BufferedImage decompress(int imageIndex, ImageReadParam param)
+            throws IOException {
+        log.debug("Start decompressing frame#" + (imageIndex+1));
+        itemStream.seek(this.frameOffsets[imageIndex]);
+        reader.setInput(itemStream);
+        BufferedImage bi = reader.read(0, param);
+        reader.reset();
+        final int nextIndex = imageIndex + 1;
+        if (nextIndex < frameOffsets.length && frameOffsets[nextIndex] == 0) {
+            this.frameOffsets[nextIndex] = itemParser.seekNextFrame(itemStream);
+        }
+        log.debug("Finished decompressed frame#" + (imageIndex+1));
         return bi;
     }
 
