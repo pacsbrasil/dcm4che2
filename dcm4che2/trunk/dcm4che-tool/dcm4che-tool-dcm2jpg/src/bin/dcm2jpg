@@ -7,6 +7,11 @@
 
 ### $Id: dcm2jpg 826 2007-04-27 13:35:50Z gunterze $ ###
 
+# Need jai-imageio-1.1 installed!! 
+# (download from https://jai-imageio.dev.java.net/binary-builds.html)
+# For CLASSPATH Installation, set
+# JIO_HOME=$INSTALLDIR/jai_imageio-1_1/lib
+
 MAIN_CLASS=org.dcm4che2.tool.dcm2jpg.Dcm2Jpg
 MAIN_JAR=dcm4che-tool-dcm2jpg-2.0.12-SNAPSHOT.jar
 
@@ -46,12 +51,16 @@ CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.12-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-image-2.0.12-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-2.0.12-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/jai_imageio-1.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.2.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.2.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.13.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.0.jar"
 
+# Setup jai_imageio 
+if [ "x$JIO_HOME" != "x" ]; then
+    CP=$JIO_HOME/jai_imageio.jar:$JIO_HOME/clibwrapper_jiio.jar:$CP
+    LD_LIBRARY_PATH=$JIO_HOME:$LD_LIBRARY_PATH
+fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
