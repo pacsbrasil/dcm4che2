@@ -8,7 +8,7 @@ rem $Id: dcm2jpg.bat 826 2007-04-27 13:35:50Z gunterze $
 rem Need jai-imageio-1.1 installed!! 
 rem (download from https://jai-imageio.dev.java.net/binary-builds.html)
 rem For CLASSPATH Installation,
-rem set JIO_HOME="C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.1"
+rem set JIO_LIB="C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.1\lib"
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
@@ -58,10 +58,10 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.2.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.13.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.0.jar
 
-if "%JIO_HOME%" == "" goto :SKIP_SET_JIO_CLASSPATH
+if "%JIO_LIB%" == "" goto :SKIP_SET_JIO_CLASSPATH
 
-set CP=%JIO_HOME%\jai_imageio.jar;%JIO_HOME%\clibwrapper_jiio.jar;%CP%
-set PATH=%JIO_HOME%;%PATH%
+set CP=%JIO_LIB%\jai_imageio.jar;%JIO_LIB%\clibwrapper_jiio.jar;%CP%
+set PATH=%JIO_LIB%;%PATH%
 
 :SKIP_SET_JIO_CLASSPATH
 
