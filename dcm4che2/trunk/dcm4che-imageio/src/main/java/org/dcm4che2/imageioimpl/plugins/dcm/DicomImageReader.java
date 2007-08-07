@@ -400,7 +400,7 @@ public class DicomImageReader extends ImageReader {
             ColorModel cm = bi.getColorModel();
             WritableRaster raster = bi.getRaster();
             DataBuffer data = raster.getDataBuffer();
-            LookupTable lut = createLut((DicomImageReadParam) param);
+            LookupTable lut = createLut((DicomImageReadParam) param, data);
             byte[] bb;
             short[] ss;
             switch (data.getDataType()) {
@@ -470,7 +470,7 @@ public class DicomImageReader extends ImageReader {
         return bi;
     }
 
-    private LookupTable createLut(DicomImageReadParam param) {
+    private LookupTable createLut(DicomImageReadParam param, DataBuffer data) {
         DicomObject pr = param.getPresentationState();
         if (pr != null) {
             return LookupTable.createLutForImageWithPR(ds, pr, stored);
@@ -483,6 +483,28 @@ public class DicomImageReader extends ImageReader {
         float w = param.getWindowWidth();
         if (w > 0) {            
             return LookupTable.createLutForImage(ds, c, w, stored);
+        }
+        if (param.isAutoWindowing()
+                && !LookupTable.containsVOIAttributes(ds)) {
+            float[] cw;
+            switch (data.getDataType()) {
+            case DataBuffer.TYPE_BYTE:
+                cw = LookupTable.getMinMaxWindowCenterWidth(ds,
+                        ((DataBufferByte) data).getData());
+                break;
+            case DataBuffer.TYPE_USHORT:
+                cw = LookupTable.getMinMaxWindowCenterWidth(ds,
+                        ((DataBufferUShort) data).getData());
+                break;
+            case DataBuffer.TYPE_SHORT:
+                cw = LookupTable.getMinMaxWindowCenterWidth(ds,
+                        ((DataBufferShort) data).getData());
+                break;
+            default:
+                throw new RuntimeException(
+                        "Illegal Type of DataBuffer: " + data);
+            }
+            return LookupTable.createLutForImage(ds, cw[0], cw[1], stored);            
         }
         return LookupTable.createLutForImage(ds, stored);
     }

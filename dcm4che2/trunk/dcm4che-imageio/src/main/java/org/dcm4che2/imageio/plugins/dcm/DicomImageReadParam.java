@@ -49,11 +49,20 @@ import org.dcm4che2.data.DicomObject;
  */
 public class DicomImageReadParam extends ImageReadParam {
 
+    private boolean autoWindowing = true;
     private float center;
     private float width;
     private DicomObject voiLut;
     private DicomObject prState;
      
+    public final boolean isAutoWindowing() {
+        return autoWindowing;
+    }
+
+    public final void setAutoWindowing(boolean autoWindowing) {
+        this.autoWindowing = autoWindowing;
+    }
+
     public final float getWindowCenter() {
         return center;
     }
