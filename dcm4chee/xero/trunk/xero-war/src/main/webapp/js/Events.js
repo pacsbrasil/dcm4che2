@@ -186,9 +186,18 @@ function getHeightFromNode(node) {
     return Number(height.substring(0,height.length-2));
 };
 
-/** Return true if the tag is of the given type - only compares after the : for namespaced elements */
+/** Return true if the tag is of the given type - only compares after the : for namespaced elements.  Works 
+ * in both XHTML and HTML browsers (Firefox and IE). */
 function isTag(node, tag) {
-	var tname = node.localName;
-	if(tname===tag) return true;
-	return false;
+	return node.localName===tag || node.tagName===tag;
+};
+
+/** Finds another element by a #ID ref */
+function findByRef(numId) {
+	var octothorpe = numId.indexOf('#');
+	var search = numId;
+	if( octothorpe >=0 ) {
+		search = numId.substring(octothorpe+1);
+	}
+	return document.getElementById(search);
 };

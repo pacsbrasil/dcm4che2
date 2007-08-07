@@ -30,7 +30,7 @@
 </x:template>
 
 <!-- Iterate over all the shapes references from the svg:g element. -->
-<x:template name="ieUseShape" mode="ieSvg"  xmlns:xlink="http://www.w3.org/1999/xlink" match="svg:use">
+<x:template name="ieUseShape" mode="svg"  xmlns:xlink="http://www.w3.org/1999/xlink" match="svg:use">
   <xsl:param name="loc" />
   <xsl:param name="cols" select="../@Columns" />
   <xsl:param name="rows" select="../@Rows" />
@@ -81,7 +81,7 @@
  <c:choose>
    <c:when test="#{browser=='MSIE'}">
 	 <xsl:for-each select="$node/svg:use">
-	   <xsl:apply-templates mode="ieSvg" select=".">
+	   <xsl:apply-templates mode="svg" select=".">
 	     <xsl:with-param name="loc" select="$loc" />
 	   </xsl:apply-templates>
 	 </xsl:for-each>
