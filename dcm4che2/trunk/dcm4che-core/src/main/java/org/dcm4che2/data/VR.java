@@ -1437,20 +1437,9 @@ public abstract class VR
             return VR.parseFloatXMLValue(sb, out, last);
         }
 
-        public void toggleEndian(Object val)
+        public void toggleEndian(byte[] val, int off, int len)
         {
-            if (val instanceof List)
-            {
-                List items = (List) val;
-                for (int i = 0, n = items.size(); i < n; i++)
-                {
-                    ByteUtils.toggleIntEndian((byte[]) items.get(i));
-                }
-            }
-            else
-            {
-                ByteUtils.toggleIntEndian((byte[]) val);
-            }
+            ByteUtils.toggleIntEndian(val, off, len);
         }
     }
 
@@ -1533,20 +1522,9 @@ public abstract class VR
             return VR.parseShortXMLValue(sb, out, last);
         }
 
-        public void toggleEndian(Object val)
+        public void toggleEndian(byte[] val, int off, int len)
         {
-            if (val instanceof List)
-            {
-                List items = (List) val;
-                for (int i = 0, n = items.size(); i < n; i++)
-                {
-                    ByteUtils.toggleShortEndian((byte[]) items.get(i));
-                }
-            }
-            else
-            {
-                ByteUtils.toggleShortEndian((byte[]) val);
-            }
+            ByteUtils.toggleShortEndian(val, off, len);
         }
     }
 
