@@ -78,7 +78,7 @@ class ImageReaderWriterFactory {
             }
         } catch (IOException e) {
             throw new ConfigurationError(
-                    "failed not load imageio configuration from " + url, e);
+                    "failed to load imageio configuration from " + url, e);
         }
     }
 

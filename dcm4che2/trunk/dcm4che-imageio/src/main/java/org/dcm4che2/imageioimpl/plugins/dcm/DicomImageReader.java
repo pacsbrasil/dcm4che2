@@ -60,6 +60,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
@@ -83,7 +84,6 @@ import org.dcm4che2.io.StopTagInputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.corba.se.spi.ior.Writeable;
 import com.sun.media.imageio.stream.RawImageInputStream;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 import com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib;
@@ -97,19 +97,30 @@ public class DicomImageReader extends ImageReader {
     
     private static final Logger log = 
             LoggerFactory.getLogger(DicomImageReader.class);
-
-    private static final String MONOCHROME1 = "MONOCHROME1";
-
-    private static final String MONOCHROME2 = "MONOCHROME2";
-
-    private static final String PALETTE_COLOR = "PALETTE COLOR";
-
-    private static final String RGB = "RGB";
     
-    private static final String YBR_FULL = "YBR_FULL";
+    private static String PMI_DEFAULT_1 = "MONOCHROME2";
+    
+    private static String PMI_DEFAULT_3 = "RGB";
 
-    private static final String YBR_PARTIAL = "YBR_PARTIAL";
-
+    private static final String[] PMI = {
+        "MONOCHROME1", "MONOCHROME2", "PALETTE COLOR",
+        "RGB", "YBR_FULL", "YBR_FULL_422", "YBR_PARTIAL_422",
+        "YBR_PARTIAL_420", "YBR_ICT", "YBR_RCT"
+    };
+    
+    private static final List PMI_LIST = Arrays.asList(PMI);
+    
+    private static final int MONOCHROME1 = 0;
+    private static final int MONOCHROME2 = 1;
+    private static final int PALETTE_COLOR = 2;
+    private static final int RGB = 3;
+    private static final int YBR_FULL = 4;
+    private static final int YBR_FULL_422 = 5;
+    private static final int YBR_PARTIAL_422 = 6;
+    private static final int YBR_PARTIAL_420 = 7;
+    private static final int YBR_ICT = 8;
+    private static final int YBR_RCT = 9;
+    
     private static final int[] OFFSETS_0 = { 0 };
     
     private static final int[] OFFSETS_0_0_0 = { 0, 0, 0 };
@@ -127,11 +138,7 @@ public class DicomImageReader extends ImageReader {
     private int dataType;
     private int samples;
     private int[] bits;
-    private boolean monochrome;
-    private boolean paletteColor;
-    private boolean rgb;
-    private boolean ybrFull;
-    private boolean ybrPart;
+    private int pmi;
     private boolean banded;
     private boolean signed;
     private long pixelDataPos;
@@ -183,11 +190,7 @@ public class DicomImageReader extends ImageReader {
         dataType = 0;
         samples = 0;
         bits = null;
-        monochrome = false;
-        paletteColor = false;
-        rgb = false;
-        ybrFull = false;
-        ybrPart = false;
+        pmi = -1;
         banded = false;
         signed = false;
         pixelDataPos = 0L;
@@ -200,7 +203,16 @@ public class DicomImageReader extends ImageReader {
         }
         itemParser = null;
         itemStream = null;
-   }
+    }
+    
+    private static boolean isColor(int pmi) {
+        return pmi >= PALETTE_COLOR;
+    }
+    
+    private static int samples4pmi(int pmi) {
+        return pmi >= RGB ? 3 : 1; 
+    }
+    
 
     public ImageReadParam getDefaultReadParam() {
         return new DicomImageReadParam();
@@ -244,45 +256,24 @@ public class DicomImageReader extends ImageReader {
             dataType = allocated <= 8 ? DataBuffer.TYPE_BYTE
                     : DataBuffer.TYPE_USHORT;
             samples = ds.getInt(Tag.SamplesPerPixel, 1);
+            if (samples != 1 && samples != 3)  {
+                throw new IIOException(
+                        "Unsupported Samples per Pixel: " + samples);                
+            }
             bits = new int[samples];
             Arrays.fill(bits, stored);
-            String pmi = ds.getString(Tag.PhotometricInterpretation, MONOCHROME2);
-            if (pmi.equals(MONOCHROME2) || pmi.equals(MONOCHROME1)) {
-                if (samples != 1) {
-                    throwIllegalSamplesPerPixel(samples, pmi);                    
-                }
-                monochrome = true;
-            } else if (pmi.equals(PALETTE_COLOR)) {
-                if (samples != 1) {
-                    throwIllegalSamplesPerPixel(samples, pmi);                    
-                }
-                paletteColor = true;
-            } else if (pmi.equals(RGB)) {
-                if (samples != 3) {
-                    throwIllegalSamplesPerPixel(samples, pmi);                    
-                }
-                rgb = true;
-            } else if (pmi.startsWith(YBR_FULL)) {
-                if (samples != 3) {
-                    throwIllegalSamplesPerPixel(samples, pmi);                    
-                }
-                ybrFull = true;
-            } else if (pmi.startsWith(YBR_PARTIAL)) {
-                if (samples != 3) {
-                    throwIllegalSamplesPerPixel(samples, pmi);                    
-                }
-                ybrFull = true;
-            } else {
+            String pmiStr = ds.getString(Tag.PhotometricInterpretation,
+                    samples == 1 ? PMI_DEFAULT_1 : PMI_DEFAULT_3);
+            pmi = PMI_LIST.indexOf(pmiStr);
+            if (pmi == -1) {
                 throw new IIOException(
-                        "Unsupported Photometric Interpretation: " + pmi);                
+                        "Unsupported Photometric Interpretation: " + pmiStr);                
+            }
+            if (samples != samples4pmi(pmi)) {
+                throw new IIOException("Illegal Samples per Pixel: " + samples +
+                        " for Photometric Interpretation: " + pmiStr);
             }
         }
-    }
-
-    private void throwIllegalSamplesPerPixel(int samples, String pmi)
-            throws IIOException {
-        throw new IIOException("Illegal Samples per Pixel: " + samples +
-                " for Photometric Interpretation: " + pmi);
     }
 
     private void initImageReader() throws IOException {
@@ -346,19 +337,22 @@ public class DicomImageReader extends ImageReader {
     }
 
     private ColorModel createColorModel() {
-        if (paletteColor) {
+        if (pmi == PALETTE_COLOR) {
             return PaletteColorUtils.createPaletteColorModel(ds);
         } else {
             ColorSpace cs;
-            if (monochrome) {
-                cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            } else {
+            if (isColor(pmi)) {
                 cs = createRGBColorSpace();
-                if (ybrFull) {
-                    cs = SimpleYBRColorSpace.createYBRFullColorSpace(cs);
-                } else if (ybrPart) {
-                    cs = SimpleYBRColorSpace.createYBRPartialColorSpace(cs);                   
+                if (pmi != RGB) {
+                    if (pmi == YBR_FULL || pmi == YBR_FULL_422) {
+                        cs = SimpleYBRColorSpace.createYBRFullColorSpace(cs);
+                    } else if (pmi == YBR_PARTIAL_420
+                            || pmi == YBR_PARTIAL_422) {
+                        cs = SimpleYBRColorSpace.createYBRPartialColorSpace(cs);                   
+                    }
                 }
+            } else {
+                cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             }
             return new ComponentColorModel(cs, bits, false, false,
                     Transparency.OPAQUE, dataType);
@@ -402,7 +396,7 @@ public class DicomImageReader extends ImageReader {
         } else {
             bi = reader.read(imageIndex, param);
         }
-        if (monochrome) {
+        if (!isColor(pmi)) {
             ColorModel cm = bi.getColorModel();
             WritableRaster raster = bi.getRaster();
             DataBuffer data = raster.getDataBuffer();
