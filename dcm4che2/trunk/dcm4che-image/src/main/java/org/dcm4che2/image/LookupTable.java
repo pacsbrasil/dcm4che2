@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4che2.image;
 
 import org.dcm4che2.data.DicomElement;
@@ -50,13 +50,19 @@ import org.dcm4che2.util.ByteUtils;
  * @since Jul 23, 2007
  */
 public abstract class LookupTable {
-    
+
     protected final int inBits;
+
     protected final int andmask;
+
     protected final int ormask;
+
     protected final int signbit;
+
     protected final boolean preserve;
+
     protected int outBits;
+
     protected int off;
 
     protected LookupTable(int inBits, boolean signed, int off, int outBits,
@@ -65,22 +71,22 @@ public abstract class LookupTable {
         this.outBits = outBits;
         this.andmask = (1 << inBits) - 1;
         this.ormask = ~andmask;
-        this.signbit = signed ? 1 << (inBits-1) : 0;
+        this.signbit = signed ? 1 << (inBits - 1) : 0;
         this.off = (off & signbit) != 0 ? (off | ormask) : off;
         this.preserve = preserve;
     }
-    
+
     public final int getOffset() {
         return off;
     }
-    
+
     public abstract int length();
-    
+
     public abstract byte lookupByte(int in);
-    
+
     public abstract short lookupShort(int in);
-    
-    public abstract int lookup(int in); 
+
+    public abstract int lookup(int in);
 
     public abstract byte[] lookup(byte[] src, byte[] dst);
 
@@ -89,36 +95,44 @@ public abstract class LookupTable {
     public abstract byte[] lookup(short[] src, byte[] dst);
 
     public abstract short[] lookup(short[] src, short[] dst);
-    
+
     protected abstract LookupTable scale(int outBits, boolean inverse);
+
     protected abstract LookupTable combine(LookupTable other, int outBits,
             boolean inverse);
+
     protected abstract LookupTable combine(LookupTable vlut, LookupTable plut,
             int outBits, boolean inverse);
-    protected abstract int minOut();
-    protected abstract int maxOut();
 
     protected final int toIndex(int in) {
         return ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
     }
-    
+
     /**
-     * Create ramp LUT for given i/o range, Rescale Slope/Intercept and
-     * Window Center/Width. Create linear LUT if Window Width = 0.
+     * Create ramp LUT for given i/o range, Rescale Slope/Intercept and Window
+     * Center/Width. Create linear LUT if Window Width = 0.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param slope Rescale Slope (0028,1053)
-     * @param intercept Rescale Intercept (0028,1052)
-     * @param center Window Center (0028,1050)
-     * @param width Window Width (0028,1051) or 0 (= no Window specified)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param slope
+     *            Rescale Slope (0028,1053)
+     * @param intercept
+     *            Rescale Intercept (0028,1052)
+     * @param center
+     *            Window Center (0028,1050)
+     * @param width
+     *            Window Width (0028,1051) or 0 (= no Window specified)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            float slope, float intercept, float center, float width,
-            boolean inverse) {
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, float slope, float intercept, float center,
+            float width, boolean inverse) {
         if (slope < 0) {
             slope = -slope;
             intercept = -intercept;
@@ -126,7 +140,7 @@ public abstract class LookupTable {
             inverse = !inverse;
         }
         int inRange = 1 << inBits;
-        int inMin = signed ? -inRange/2 : 0;
+        int inMin = signed ? -inRange / 2 : 0;
         int inMax = inMin + inRange - 1;
         int in1;
         int in2;
@@ -136,7 +150,7 @@ public abstract class LookupTable {
         } else {
             float c_05 = center - .5f;
             float w_2 = (width - 1f) / 2;
-            in1 = (int) (((c_05 - w_2) - intercept) / slope);                
+            in1 = (int) (((c_05 - w_2) - intercept) / slope);
             in2 = (int) (((c_05 + w_2) - intercept) / slope) + 1;
         }
         int off = Math.max(in1, inMin);
@@ -162,7 +176,7 @@ public abstract class LookupTable {
             if (iMax + off == in2) {
                 ramp[iMax] = (byte) out2;
             }
-            return new ByteLookupTable(inBits, signed, off, outBits, ramp);           
+            return new ByteLookupTable(inBits, signed, off, outBits, ramp);
         } else {
             short[] ramp = new short[size];
             for (int i = 0; i < size; i++) {
@@ -176,25 +190,33 @@ public abstract class LookupTable {
     }
 
     /**
-     * Create LUT for given i/o range, non-linear Modality LUT and
-     * Window Center/Width. Do not apply any Window if Window Width = 0.
+     * Create LUT for given i/o range, non-linear Modality LUT and Window
+     * Center/Width. Do not apply any Window if Window Width = 0.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param mLut item of Modality LUT Sequence (0028,3000)
-     * @param center Window Center (0028,1050)
-     * @param width Window Width (0028,1051) or 0 (= no Window specified)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param mLut
+     *            item of Modality LUT Sequence (0028,3000)
+     * @param center
+     *            Window Center (0028,1050)
+     * @param width
+     *            Window Width (0028,1051) or 0 (= no Window specified)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            DicomObject mLut, float center, float width, boolean inverse) {
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, DicomObject mLut, float center, float width,
+            boolean inverse) {
         LookupTable mlut = createLut(inBits, signed, mLut);
         if (width == 0) {
             return mlut.scale(outBits, inverse);
         }
-        LookupTable vlut = createLut(mlut.outBits, false, outBits, 1, 0, 
+        LookupTable vlut = createLut(mlut.outBits, false, outBits, 1, 0,
                 center, width, inverse);
         return mlut.combine(vlut, outBits, false);
     }
@@ -219,38 +241,46 @@ public abstract class LookupTable {
         if (inBits == 0) {
             // ignore offset for P-LUT
             off = 0;
-            for (int i = len-1; i != 0; i >>>= 1) {
+            for (int i = len - 1; i != 0; i >>>= 1) {
                 ++inBits;
             }
         }
         if (data.length == len) {
             return new ByteLookupTable(inBits, signed, off, bits, data, true);
         } else if (data.length == len << 1) {
-            return new ShortLookupTable(inBits, signed, off, bits,
-                    ds.bigEndian() ? ByteUtils.bytesBE2shorts(data)
-                                   : ByteUtils.bytesLE2shorts(data), true);
+            return new ShortLookupTable(inBits, signed, off, bits, ds
+                    .bigEndian() ? ByteUtils.bytesBE2shorts(data) : ByteUtils
+                    .bytesLE2shorts(data), true);
         }
         throw new IllegalArgumentException("LUT Data length: " + data.length
-            +  " mismatch entry value: " + len + " in LUT Descriptor");            
+                + " mismatch entry value: " + len + " in LUT Descriptor");
     }
-    
+
     /**
-     * Create LUT for given i/o range, Rescale Slope/Intercept and
-     * non-linear VOI LUT.
+     * Create LUT for given i/o range, Rescale Slope/Intercept and non-linear
+     * VOI LUT.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param slope Rescale Slope (0028,1053)
-     * @param intercept Rescale Intercept (0028,1052)
-     * @param voiLut item of VOI LUT Sequence (0028,3010)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param slope
+     *            Rescale Slope (0028,1053)
+     * @param intercept
+     *            Rescale Intercept (0028,1052)
+     * @param voiLut
+     *            item of VOI LUT Sequence (0028,3010)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            float slope, float intercept, DicomObject voiLut, boolean inverse) {
-        return createLut(inBits, signed, slope, intercept, voiLut)
-                .scale(outBits, inverse);
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, float slope, float intercept, DicomObject voiLut,
+            boolean inverse) {
+        return createLut(inBits, signed, slope, intercept, voiLut).scale(
+                outBits, inverse);
     }
 
     private static LookupTable createLut(int inBits, boolean signed,
@@ -261,9 +291,9 @@ public abstract class LookupTable {
             return lut;
         } else {
             LookupTable vlut = createLut(32, true, voiLut);
-            float in1 = (vlut.off - intercept) / slope;                
-            float in2 = in1 + vlut.length() / slope;              
-            int off = (int) Math.floor(Math.min(in1, in2));            
+            float in1 = (vlut.off - intercept) / slope;
+            float in2 = in1 + vlut.length() / slope;
+            int off = (int) Math.floor(Math.min(in1, in2));
             int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
             short[] data = new short[len];
             for (int i = 0; i < data.length; i++) {
@@ -274,116 +304,154 @@ public abstract class LookupTable {
     }
 
     /**
-     * Create LUT for given i/o range, Rescale Slope/Intercept,
-     * Window Center/Width and non-linear Presentation LUT.
-     * Apply no Window if Window Width = 0.
+     * Create LUT for given i/o range, Rescale Slope/Intercept, Window
+     * Center/Width and non-linear Presentation LUT. Apply no Window if Window
+     * Width = 0.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param slope Rescale Slope (0028,1053)
-     * @param intercept Rescale Intercept (0028,1052)
-     * @param center Window Center (0028,1050)
-     * @param width Window Width (0028,1051) or 0 (= no Window specified)
-     * @param pLut item of Presentation LUT Sequence (2050,0010)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param slope
+     *            Rescale Slope (0028,1053)
+     * @param intercept
+     *            Rescale Intercept (0028,1052)
+     * @param center
+     *            Window Center (0028,1050)
+     * @param width
+     *            Window Width (0028,1051) or 0 (= no Window specified)
+     * @param pLut
+     *            item of Presentation LUT Sequence (2050,0010)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            float slope, float intercept, float center, float width,
-            DicomObject pLut, boolean inverse) {
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, float slope, float intercept, float center,
+            float width, DicomObject pLut, boolean inverse) {
         LookupTable plut = createLut(0, false, pLut);
-        LookupTable vlut = createLut(inBits, signed, plut.inBits,
-                slope, intercept, center, width, false);
+        LookupTable vlut = createLut(inBits, signed, plut.inBits, slope,
+                intercept, center, width, false);
         return vlut.combine(plut, outBits, inverse);
     }
-    
+
     /**
-     * Create LUT for given i/o range, non-linear Modality LUT and
-     * non-linear VOI LUT.
+     * Create LUT for given i/o range, non-linear Modality LUT and non-linear
+     * VOI LUT.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param mLut item of Modality LUT Sequence (0028,3000)
-     * @param voiLut item of VOI LUT Sequence (0028,3010)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param mLut
+     *            item of Modality LUT Sequence (0028,3000)
+     * @param voiLut
+     *            item of VOI LUT Sequence (0028,3010)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            DicomObject mLut, DicomObject voiLut, boolean inverse) {
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, DicomObject mLut, DicomObject voiLut, boolean inverse) {
         LookupTable mlut = createLut(inBits, signed, voiLut);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut);
         return mlut.combine(vlut, outBits, inverse);
     }
-   
+
     /**
-     * Create LUT for given i/o range, Rescale Slope/Intercept,
-     * non-linear VOI LUT and non-linear Presentation LUT.
+     * Create LUT for given i/o range, Rescale Slope/Intercept, non-linear VOI
+     * LUT and non-linear Presentation LUT.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param slope Rescale Slope (0028,1053)
-     * @param intercept Rescale Intercept (0028,1052)
-     * @param voiLut item of VOI LUT Sequence (0028,3010)
-     * @param pLut item of Presentation LUT Sequence (2050,0010)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param slope
+     *            Rescale Slope (0028,1053)
+     * @param intercept
+     *            Rescale Intercept (0028,1052)
+     * @param voiLut
+     *            item of VOI LUT Sequence (0028,3010)
+     * @param pLut
+     *            item of Presentation LUT Sequence (2050,0010)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            float slope, float intercept, DicomObject voiLut,
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, float slope, float intercept, DicomObject voiLut,
             DicomObject pLut, boolean inverse) {
         LookupTable vlut = createLut(inBits, signed, slope, intercept, voiLut);
         LookupTable plut = createLut(0, false, pLut);
         return vlut.combine(plut, outBits, inverse);
     }
-   
+
     /**
-     * Create LUT for given i/o range, non-linear Modality LUT,
-     * Window Center/Width and non-linear Presentation LUT.
-     * Apply no Window if Window Width = 0.
+     * Create LUT for given i/o range, non-linear Modality LUT, Window
+     * Center/Width and non-linear Presentation LUT. Apply no Window if Window
+     * Width = 0.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param mLut item of Modality LUT Sequence (0028,3000)
-     * @param center Window Center (0028,1050)
-     * @param width Window Width (0028,1051) or 0 (= no Window specified)
-     * @param pLut item of Presentation LUT Sequence (2050,0010)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param mLut
+     *            item of Modality LUT Sequence (0028,3000)
+     * @param center
+     *            Window Center (0028,1050)
+     * @param width
+     *            Window Width (0028,1051) or 0 (= no Window specified)
+     * @param pLut
+     *            item of Presentation LUT Sequence (2050,0010)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            DicomObject mLut, float center, float width, DicomObject pLut,
-            boolean inverse) {
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, DicomObject mLut, float center, float width,
+            DicomObject pLut, boolean inverse) {
         LookupTable mlut = createLut(inBits, signed, mLut);
         LookupTable plut = createLut(0, false, pLut);
         if (width == 0) {
             return mlut.combine(plut, outBits, inverse);
         } else {
-            LookupTable vlut = createLut(mlut.outBits, false, plut.inBits, 1, 0, 
-                    center, width, false);
+            LookupTable vlut = createLut(mlut.outBits, false, plut.inBits, 1,
+                    0, center, width, false);
             return mlut.combine(vlut, plut, outBits, inverse);
         }
     }
 
     /**
-     * Create LUT for given i/o range, non-linear Modality LUT,
-     * non-linear VOI LUT and non-linear Presentation LUT.
+     * Create LUT for given i/o range, non-linear Modality LUT, non-linear VOI
+     * LUT and non-linear Presentation LUT.
      * 
-     * @param inBits number of significant bits within input values
-     * @param signed specifies if input values are signed or unsigned
-     * @param outBits bit depth of output range
-     * @param mLut item of Modality LUT Sequence (0028,3000)
-     * @param voiLut item of VOI LUT Sequence (0028,3010)
-     * @param pLut item of Presentation LUT Sequence (2050,0010)
-     * @param inverse specifies if output shall be inversed
+     * @param inBits
+     *            number of significant bits within input values
+     * @param signed
+     *            specifies if input values are signed or unsigned
+     * @param outBits
+     *            bit depth of output range
+     * @param mLut
+     *            item of Modality LUT Sequence (0028,3000)
+     * @param voiLut
+     *            item of VOI LUT Sequence (0028,3010)
+     * @param pLut
+     *            item of Presentation LUT Sequence (2050,0010)
+     * @param inverse
+     *            specifies if output shall be inversed
      * @return created LUT
      */
-    public static LookupTable createLut(int inBits, boolean signed, int outBits, 
-            DicomObject mLut, DicomObject voiLut, DicomObject pLut,
-            boolean inverse) {
+    public static LookupTable createLut(int inBits, boolean signed,
+            int outBits, DicomObject mLut, DicomObject voiLut,
+            DicomObject pLut, boolean inverse) {
         LookupTable mlut = createLut(inBits, signed, mLut);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut);
         LookupTable plut = createLut(0, false, pLut);
@@ -391,15 +459,16 @@ public abstract class LookupTable {
     }
 
     /**
-     * Create LUT for given DICOM image and output range.
-     * If the image specifies multiple non-linear VOI LUTs, the VOI LUT specified 
-     * by the first item of the VOI LUT Sequence (0028,3010) will be applied.
-     * If the image does not specify any non-linear VOI LUT, but multiple
-     * values for Window Center/Width, the first Window Center/Width value
-     * will be applied.
+     * Create LUT for given DICOM image and output range. If the image specifies
+     * multiple non-linear VOI LUTs, the VOI LUT specified by the first item of
+     * the VOI LUT Sequence (0028,3010) will be applied. If the image does not
+     * specify any non-linear VOI LUT, but multiple values for Window
+     * Center/Width, the first Window Center/Width value will be applied.
      * 
-     * @param img DICOM image
-     * @param outBits bit depth of output range
+     * @param img
+     *            DICOM image
+     * @param outBits
+     *            bit depth of output range
      * @return created LUT
      */
     public static LookupTable createLutForImage(DicomObject img, int bitsOut) {
@@ -414,10 +483,10 @@ public abstract class LookupTable {
 
     private static boolean isModalityLUTcontainsPixelIntensityRelationshipLUT(
             DicomObject img) {
-        return isModalityLUTcontainsPixelIntensityRelationshipLUT(
-                img.getString(Tag.SOPClassUID));
+        return isModalityLUTcontainsPixelIntensityRelationshipLUT(img
+                .getString(Tag.SOPClassUID));
     }
-    
+
     private static boolean isModalityLUTcontainsPixelIntensityRelationshipLUT(
             String uid) {
         return UID.XRayAngiographicImageStorage.equals(uid)
@@ -429,46 +498,51 @@ public abstract class LookupTable {
      * Create LUT for given DICOM image, Window Center/Width and output range.
      * Apply no Window if Window Width = 0.
      * 
-     * @param img DICOM image
-     * @param center Window Center (0028,1050)
-     * @param width Window Width (0028,1051) or 0 (= no Window specified)
-     * @param outBits bit depth of output range
+     * @param img
+     *            DICOM image
+     * @param center
+     *            Window Center (0028,1050)
+     * @param width
+     *            Window Width (0028,1051) or 0 (= no Window specified)
+     * @param outBits
+     *            bit depth of output range
      * @return created LUT
      */
-    public static LookupTable createLutForImage(DicomObject img,
-            float center, float width, int outBits) {
+    public static LookupTable createLutForImage(DicomObject img, float center,
+            float width, int outBits) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         float slope = img.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
-        DicomObject mLut = 
-            isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
-                    : img.getNestedDicomObject(Tag.ModalityLUTSequence);
+        DicomObject mLut = isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
+                : img.getNestedDicomObject(Tag.ModalityLUTSequence);
         boolean inverse = isInverse(img);
         if (mLut != null) {
-            return createLut(stored, signed, outBits, 
-                    mLut, center, width, inverse);
+            return createLut(stored, signed, outBits, mLut, center, width,
+                    inverse);
         } else {
-            return createLut(stored, signed, outBits, 
-                    slope, intercept, center, width, inverse);
+            return createLut(stored, signed, outBits, slope, intercept, center,
+                    width, inverse);
         }
     }
 
     private static boolean isInverse(DicomObject img) {
         String shape = img.getString(Tag.PresentationLUTShape);
-        return shape != null ? "INVERSE".equals(shape) 
-                : "MONOCHROME1".equals(
-                        img.getString(Tag.PhotometricInterpretation));
+        return shape != null ? "INVERSE".equals(shape) : "MONOCHROME1"
+                .equals(img.getString(Tag.PhotometricInterpretation));
     }
 
     /**
      * Create LUT for given DICOM image, non-linear VOI LUT and output range.
      * Apply no Window if Window Width = 0.
      * 
-     * @param img DICOM image
-     * @param voiLut item of VOI LUT Sequence (0028,3010)
-     * @param outBits bit depth of output range
+     * @param img
+     *            DICOM image
+     * @param voiLut
+     *            item of VOI LUT Sequence (0028,3010)
+     * @param outBits
+     *            bit depth of output range
      * @return created LUT
      */
     public static LookupTable createLutForImage(DicomObject img,
@@ -478,27 +552,27 @@ public abstract class LookupTable {
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         float slope = img.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
-        DicomObject mLut = 
-            isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
-                    : img.getNestedDicomObject(Tag.ModalityLUTSequence);
+        DicomObject mLut = isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
+                : img.getNestedDicomObject(Tag.ModalityLUTSequence);
         boolean inverse = isInverse(img);
         if (mLut != null) {
-            return createLut(stored, signed, outBits, 
-                    mLut, voiLut, inverse);
+            return createLut(stored, signed, outBits, mLut, voiLut, inverse);
         } else {
-            return createLut(stored, signed, outBits, 
-                    slope, intercept, voiLut, inverse);
+            return createLut(stored, signed, outBits, slope, intercept, voiLut,
+                    inverse);
         }
     }
-    
+
     /**
-     * Create LUT for given DICOM image with DICOM Presentation State and 
-     * output range.
-     * Apply no Window if Window Width = 0.
+     * Create LUT for given DICOM image with DICOM Presentation State and output
+     * range. Apply no Window if Window Width = 0.
      * 
-     * @param img DICOM image
-     * @param pr DICOM Presentation State
-     * @param outBits bit depth of output range
+     * @param img
+     *            DICOM image
+     * @param pr
+     *            DICOM Presentation State
+     * @param outBits
+     *            bit depth of output range
      * @return created LUT
      */
     public static LookupTable createLutForImageWithPR(DicomObject img,
@@ -518,17 +592,17 @@ public abstract class LookupTable {
             width = voi.getFloat(Tag.WindowWidth);
             voiLut = voi.getNestedDicomObject(Tag.VOILUTSequence);
         }
-        boolean inverse = "INVERSE".equals(
-                pr.getString(Tag.PresentationLUTShape));
+        boolean inverse = "INVERSE".equals(pr
+                .getString(Tag.PresentationLUTShape));
         DicomObject pLut = pr.getNestedDicomObject(Tag.PresentationLUTSequence);
         if (mLut == null) {
             if (voiLut == null) {
                 if (pLut == null) {
-                    return LookupTable.createLut(stored, signed, outBits, 
+                    return LookupTable.createLut(stored, signed, outBits,
                             slope, intercept, center, width, inverse);
                 } else {
-                    return LookupTable.createLut(stored, signed, outBits, 
-                            slope, intercept, center, width, pLut, false);                    
+                    return LookupTable.createLut(stored, signed, outBits,
+                            slope, intercept, center, width, pLut, false);
                 }
             } else {
                 if (pLut == null) {
@@ -536,27 +610,27 @@ public abstract class LookupTable {
                             slope, intercept, voiLut, inverse);
                 } else {
                     return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, voiLut, pLut, false);                    
-                }                
+                            slope, intercept, voiLut, pLut, false);
+                }
             }
         } else {
             if (voiLut == null) {
                 if (pLut == null) {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            mLut, center, width, inverse);
+                    return LookupTable.createLut(stored, signed, outBits, mLut,
+                            center, width, inverse);
                 } else {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            mLut, center, width, pLut, false);                    
+                    return LookupTable.createLut(stored, signed, outBits, mLut,
+                            center, width, pLut, false);
                 }
             } else {
                 if (pLut == null) {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            mLut, voiLut, inverse);
+                    return LookupTable.createLut(stored, signed, outBits, mLut,
+                            voiLut, inverse);
                 } else {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            mLut, voiLut, pLut, false);                    
-                }                
-            }           
+                    return LookupTable.createLut(stored, signed, outBits, mLut,
+                            voiLut, pLut, false);
+                }
+            }
         }
     }
 
@@ -570,102 +644,150 @@ public abstract class LookupTable {
             DicomObject item = voisq.getDicomObject(i);
             DicomElement refImgs = item.get(Tag.ReferencedImageSequence);
             if (refImgs == null) {
-                return item;                
+                return item;
             }
-            for (int j = 0, m = refImgs.countItems(); j < m; j++) {              
+            for (int j = 0, m = refImgs.countItems(); j < m; j++) {
                 DicomObject refImage = refImgs.getDicomObject(j);
-                if (iuid.equals(
-                        refImage.getString(Tag.ReferencedSOPInstanceUID))) {
+                if (iuid.equals(refImage
+                        .getString(Tag.ReferencedSOPInstanceUID))) {
                     return item;
                 }
             }
         }
-        return null;       
+        return null;
     }
-    
+
     public static boolean containsVOIAttributes(DicomObject img) {
         return img.containsValue(Tag.WindowCenter)
                 && img.containsValue(Tag.WindowWidth)
                 || img.containsValue(Tag.VOILUTSequence);
     }
-    
+
     public static float[] getMinMaxWindowCenterWidth(DicomObject img,
             short[] pxVals) {
         return calcMinMaxWindowCenterWidth(img, pxVals);
     }
-    
+
     public static float[] getMinMaxWindowCenterWidth(DicomObject img,
             byte[] pxVals) {
         return calcMinMaxWindowCenterWidth(img, pxVals);
     }
-    
+
     private static float[] calcMinMaxWindowCenterWidth(DicomObject img,
             Object pxVals) {
+        int[] minMax;
+        float slope;
+        float intercept;
+        DicomObject mLut = 
+                isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
+                        : img.getNestedDicomObject(Tag.ModalityLUTSequence);
+        if (mLut != null) {
+            slope = 1;
+            intercept = 0;
+            minMax = calcMinMax(mLut);
+        } else {
+            slope = img.getFloat(Tag.RescaleSlope, 1.f);
+            intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
+            if (img.containsValue(Tag.SmallestImagePixelValue)
+                    && img.containsValue(Tag.LargestImagePixelValue)) {
+                minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
+                        img.getInt(Tag.LargestImagePixelValue) };
+            } else {
+                minMax = calcMinMax(img, pxVals);
+            }
+        }
+        return new float[] {
+                ((minMax[1] + minMax[0]) / 2.f) * slope + intercept,
+                (minMax[1] - minMax[0]) * slope + 1 };
+    }
+
+    private static int[] calcMinMax(DicomObject img, Object pxVals) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
-        DicomObject mLut = 
-            isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
-                    : img.getNestedDicomObject(Tag.ModalityLUTSequence);
-        if (mLut != null) {
-            LookupTable mlut = createLut(stored, signed, mLut);
-            int minOut = mlut.minOut();
-            int maxOut = mlut.maxOut();
-            return new float[] {
-                    (maxOut + minOut) / 2.f,
-                    maxOut - minOut + 1
-            };
-        }
         int range = 1 << stored;
         int andmask = range - 1;
         int ormask = ~andmask;
-        int signbit = signed ? 1 << (stored-1) : 0;
-        int minVal = img.getInt(Tag.SmallestImagePixelValue);
-        int maxVal = img.getInt(Tag.LargestImagePixelValue);
-        if (signbit == 0) {
-            // ensure correct sign for unsigned pixel values
-            minVal &= andmask;
-            maxVal &= andmask;
-        }
-        if (minVal == 0 && maxVal == 0) {
-            maxVal = signed ? -range/2 : 0;
-            minVal = maxVal + andmask;
-            if (pxVals instanceof short[]) {
-                short[] ss = (short[]) pxVals;
-                for (int i = 0; i < ss.length; i++) {
-                    int val = ss[i] & andmask;
-                    if ((val & signbit) != 0) {
-                        val |= ormask;
-                    }
-                    if (minVal > val) {
-                        minVal = val;
-                    }
-                    if (maxVal < val) {
-                        maxVal = val;
-                    }
-                }                
-            } else {
-                byte[] bs = (byte[]) pxVals;
-                for (int i = 0; i < bs.length; i++) {
-                    int val = bs[i] & andmask;
-                    if ((val & signbit) != 0) {
-                        val |= ormask;
-                    }
-                    if (minVal > val) {
-                        minVal = val;
-                    }
-                    if (maxVal < val) {
-                        maxVal = val;
-                    }
-                }                               
+        int signbit = signed ? 1 << (stored - 1) : 0;
+        int maxVal = Integer.MIN_VALUE;
+        int minVal = Integer.MAX_VALUE;
+        if (pxVals instanceof short[]) {
+            short[] ss = (short[]) pxVals;
+            for (int i = 0; i < ss.length; i++) {
+                int val = ss[i] & andmask;
+                if ((val & signbit) != 0) {
+                    val |= ormask;
+                }
+                if (minVal > val) {
+                    minVal = val;
+                }
+                if (maxVal < val) {
+                    maxVal = val;
+                }
+            }
+        } else {
+            byte[] bs = (byte[]) pxVals;
+            for (int i = 0; i < bs.length; i++) {
+                int val = bs[i] & andmask;
+                if ((val & signbit) != 0) {
+                    val |= ormask;
+                }
+                if (minVal > val) {
+                    minVal = val;
+                }
+                if (maxVal < val) {
+                    maxVal = val;
+                }
             }
         }
-        float slope = img.getFloat(Tag.RescaleSlope, 1.f);
-        float intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
-        return new float[] {
-                ((maxVal + minVal) / 2.f) * slope + intercept,
-                (maxVal - minVal) * slope  + 1
-        };
+        return new int[] { minVal, maxVal };
+    }
+
+    private static int[] calcMinMax(DicomObject lut) {
+        int[] desc = lut.getInts(Tag.LUTDescriptor);
+        byte[] data = lut.getBytes(Tag.LUTData);
+        if (desc == null) {
+            throw new IllegalArgumentException("Missing LUT Descriptor!");
+        }
+        if (desc.length != 3) {
+            throw new IllegalArgumentException(
+                    "Illegal number of LUT Descriptor values: " + desc.length);
+        }
+        if (data == null) {
+            throw new IllegalArgumentException("Missing LUT Data!");
+        }
+        int len = desc[0] == 0 ? 0x10000 : desc[0];
+        int minVal = Integer.MAX_VALUE;
+        int maxVal = Integer.MIN_VALUE;
+        if (data.length == len) {
+            for (int i = 0; i < len; i++) {
+                int val = data[i] & 0xff;
+                if (minVal > val) {
+                    minVal = val;
+                }
+                if (maxVal < val) {
+                    maxVal = val;
+                }
+            }
+        } else if (data.length == len << 1) {
+            int hibyte = lut.bigEndian() ? 0 : 1;
+            int lobyte = 1 - hibyte;
+            for (int i = 0, j = 0; i < len; i++, j++, j++) {
+                int val = (data[j + hibyte] & 0xff) << 8
+                        | (data[j + lobyte] & 0xff);
+                if (minVal > val) {
+                    minVal = val;
+                }
+                if (maxVal < val) {
+                    maxVal = val;
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("LUT Data length: "
+                    + data.length + " mismatch entry value: " + len
+                    + " in LUT Descriptor");
+        }
+        return new int[] { minVal, maxVal };
     }
 
 }

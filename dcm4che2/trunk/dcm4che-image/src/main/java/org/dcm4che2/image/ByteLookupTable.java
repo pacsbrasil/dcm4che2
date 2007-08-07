@@ -226,20 +226,4 @@ public class ByteLookupTable extends LookupTable {
                     newData);
         }
     }
-
-    protected int maxOut() {
-        int max = 0;
-        for (int i = 0; i < data.length; i++) {
-            max = Math.max(max, data[i] & 0xff);
-        }
-        return max;
-    }
-
-    protected int minOut() {
-        int min = 0xff;
-        for (int i = 0; i < data.length; i++) {
-            min = Math.min(min, data[i] & 0xff);
-        }
-        return min;
-    }
 }
