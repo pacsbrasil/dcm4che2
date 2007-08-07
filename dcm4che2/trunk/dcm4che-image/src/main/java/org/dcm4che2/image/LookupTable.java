@@ -91,8 +91,12 @@ public abstract class LookupTable {
     public abstract short[] lookup(short[] src, short[] dst);
     
     protected abstract LookupTable scale(int outBits, boolean inverse);
-    protected abstract LookupTable combine(LookupTable other, int outBits, boolean inverse);
-    protected abstract LookupTable combine(LookupTable vlut, LookupTable plut, int outBits, boolean inverse);
+    protected abstract LookupTable combine(LookupTable other, int outBits,
+            boolean inverse);
+    protected abstract LookupTable combine(LookupTable vlut, LookupTable plut,
+            int outBits, boolean inverse);
+    protected abstract int minOut();
+    protected abstract int maxOut();
 
     protected final int toIndex(int in) {
         return ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
@@ -195,7 +199,8 @@ public abstract class LookupTable {
         return mlut.combine(vlut, outBits, false);
     }
 
-    private static LookupTable createLut(int inBits, boolean signed, DicomObject ds) {
+    private static LookupTable createLut(int inBits, boolean signed,
+            DicomObject ds) {
         int[] desc = ds.getInts(Tag.LUTDescriptor);
         byte[] data = ds.getBytes(Tag.LUTData);
         if (desc == null) {
@@ -576,5 +581,91 @@ public abstract class LookupTable {
             }
         }
         return null;       
-    }    
- }
+    }
+    
+    public static boolean containsVOIAttributes(DicomObject img) {
+        return img.containsValue(Tag.WindowCenter)
+                && img.containsValue(Tag.WindowWidth)
+                || img.containsValue(Tag.VOILUTSequence);
+    }
+    
+    public static float[] getMinMaxWindowCenterWidth(DicomObject img,
+            short[] pxVals) {
+        return calcMinMaxWindowCenterWidth(img, pxVals);
+    }
+    
+    public static float[] getMinMaxWindowCenterWidth(DicomObject img,
+            byte[] pxVals) {
+        return calcMinMaxWindowCenterWidth(img, pxVals);
+    }
+    
+    private static float[] calcMinMaxWindowCenterWidth(DicomObject img,
+            Object pxVals) {
+        int allocated = img.getInt(Tag.BitsAllocated, 8);
+        int stored = img.getInt(Tag.BitsStored, allocated);
+        boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
+        DicomObject mLut = 
+            isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
+                    : img.getNestedDicomObject(Tag.ModalityLUTSequence);
+        if (mLut != null) {
+            LookupTable mlut = createLut(stored, signed, mLut);
+            int minOut = mlut.minOut();
+            int maxOut = mlut.maxOut();
+            return new float[] {
+                    (maxOut + minOut) / 2.f,
+                    maxOut - minOut + 1
+            };
+        }
+        int range = 1 << stored;
+        int andmask = range - 1;
+        int ormask = ~andmask;
+        int signbit = signed ? 1 << (stored-1) : 0;
+        int minVal = img.getInt(Tag.SmallestImagePixelValue);
+        int maxVal = img.getInt(Tag.LargestImagePixelValue);
+        if (signbit == 0) {
+            // ensure correct sign for unsigned pixel values
+            minVal &= andmask;
+            maxVal &= andmask;
+        }
+        if (minVal == 0 && maxVal == 0) {
+            maxVal = signed ? -range/2 : 0;
+            minVal = maxVal + andmask;
+            if (pxVals instanceof short[]) {
+                short[] ss = (short[]) pxVals;
+                for (int i = 0; i < ss.length; i++) {
+                    int val = ss[i] & andmask;
+                    if ((val & signbit) != 0) {
+                        val |= ormask;
+                    }
+                    if (minVal > val) {
+                        minVal = val;
+                    }
+                    if (maxVal < val) {
+                        maxVal = val;
+                    }
+                }                
+            } else {
+                byte[] bs = (byte[]) pxVals;
+                for (int i = 0; i < bs.length; i++) {
+                    int val = bs[i] & andmask;
+                    if ((val & signbit) != 0) {
+                        val |= ormask;
+                    }
+                    if (minVal > val) {
+                        minVal = val;
+                    }
+                    if (maxVal < val) {
+                        maxVal = val;
+                    }
+                }                               
+            }
+        }
+        float slope = img.getFloat(Tag.RescaleSlope, 1.f);
+        float intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
+        return new float[] {
+                ((maxVal + minVal) / 2.f) * slope + intercept,
+                (maxVal - minVal) * slope  + 1
+        };
+    }
+
+}
