@@ -48,7 +48,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
@@ -397,24 +396,13 @@ public class DicomImageReader extends ImageReader {
             bi = reader.read(imageIndex, param);
         }
         if (!isColor(pmi)) {
-            ColorModel cm = bi.getColorModel();
             WritableRaster raster = bi.getRaster();
             DataBuffer data = raster.getDataBuffer();
             LookupTable lut = createLut((DicomImageReadParam) param, data);
-            byte[] bb;
-            short[] ss;
-            switch (data.getDataType()) {
-            case DataBuffer.TYPE_BYTE:
-                bb = ((DataBufferByte) data).getData();
-                lut.lookup(bb, bb);
-                break;
-            case DataBuffer.TYPE_USHORT:
-                ss = ((DataBufferUShort) data).getData();
-                lut.lookup(ss, ss);
-                break;
-            case DataBuffer.TYPE_SHORT:
-                ss = ((DataBufferShort) data).getData();
-                lut.lookup(ss, ss);
+            lut.lookup(data, data);
+            if (data.getDataType() == DataBuffer.TYPE_SHORT) {
+                ColorModel cm = bi.getColorModel();
+                short[] ss = ((DataBufferShort) data).getData();
                 return new BufferedImage(cm,
                         Raster.createWritableRaster(raster.getSampleModel(),
                                 new DataBufferUShort(ss, ss.length), null),
@@ -486,24 +474,7 @@ public class DicomImageReader extends ImageReader {
         }
         if (param.isAutoWindowing()
                 && !LookupTable.containsVOIAttributes(ds)) {
-            float[] cw;
-            switch (data.getDataType()) {
-            case DataBuffer.TYPE_BYTE:
-                cw = LookupTable.getMinMaxWindowCenterWidth(ds,
-                        ((DataBufferByte) data).getData());
-                break;
-            case DataBuffer.TYPE_USHORT:
-                cw = LookupTable.getMinMaxWindowCenterWidth(ds,
-                        ((DataBufferUShort) data).getData());
-                break;
-            case DataBuffer.TYPE_SHORT:
-                cw = LookupTable.getMinMaxWindowCenterWidth(ds,
-                        ((DataBufferShort) data).getData());
-                break;
-            default:
-                throw new RuntimeException(
-                        "Illegal Type of DataBuffer: " + data);
-            }
+            float[] cw = LookupTable.getMinMaxWindowCenterWidth(ds, data);
             return LookupTable.createLutForImage(ds, cw[0], cw[1], stored);            
         }
         return LookupTable.createLutForImage(ds, stored);

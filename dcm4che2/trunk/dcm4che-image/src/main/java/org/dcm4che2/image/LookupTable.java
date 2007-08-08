@@ -38,6 +38,11 @@
 
 package org.dcm4che2.image;
 
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -95,6 +100,57 @@ public abstract class LookupTable {
     public abstract byte[] lookup(short[] src, byte[] dst);
 
     public abstract short[] lookup(short[] src, short[] dst);
+    
+    public void lookup(DataBuffer src, DataBuffer dst) {
+        switch (src.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            lookup(((DataBufferByte) src).getData(), dst);
+            break;
+        case DataBuffer.TYPE_USHORT:
+            lookup(((DataBufferUShort) src).getData(), dst);
+            break;
+        case DataBuffer.TYPE_SHORT:
+            lookup(((DataBufferShort) src).getData(), dst);
+            break;
+        default:
+            throw new IllegalArgumentException(
+                    "Illegal Type of Source DataBuffer: " + src);
+        }       
+    }
+
+    private void lookup(short[] src, DataBuffer dst) {
+        switch (dst.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            lookup(src, ((DataBufferByte) dst).getData());
+            break;
+        case DataBuffer.TYPE_USHORT:
+            lookup(src, ((DataBufferUShort) dst).getData());
+            break;
+        case DataBuffer.TYPE_SHORT:
+            lookup(src, ((DataBufferShort) dst).getData());
+            break;
+        default:
+            throw new IllegalArgumentException(
+                    "Illegal Type of Destination DataBuffer: " + dst);
+        }       
+    }
+
+    private void lookup(byte[] src, DataBuffer dst) {
+        switch (dst.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            lookup(src, ((DataBufferByte) dst).getData());
+            break;
+        case DataBuffer.TYPE_USHORT:
+            lookup(src, ((DataBufferUShort) dst).getData());
+            break;
+        case DataBuffer.TYPE_SHORT:
+            lookup(src, ((DataBufferShort) dst).getData());
+            break;
+        default:
+            throw new IllegalArgumentException(
+                    "Illegal Type of Destination DataBuffer: " + dst);
+        }       
+    }
 
     protected abstract LookupTable scale(int outBits, boolean inverse);
 
@@ -664,17 +720,7 @@ public abstract class LookupTable {
     }
 
     public static float[] getMinMaxWindowCenterWidth(DicomObject img,
-            short[] pxVals) {
-        return calcMinMaxWindowCenterWidth(img, pxVals);
-    }
-
-    public static float[] getMinMaxWindowCenterWidth(DicomObject img,
-            byte[] pxVals) {
-        return calcMinMaxWindowCenterWidth(img, pxVals);
-    }
-
-    private static float[] calcMinMaxWindowCenterWidth(DicomObject img,
-            Object pxVals) {
+            DataBuffer db) {
         int[] minMax;
         float slope;
         float intercept;
@@ -693,7 +739,7 @@ public abstract class LookupTable {
                 minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
                         img.getInt(Tag.LargestImagePixelValue) };
             } else {
-                minMax = calcMinMax(img, pxVals);
+                minMax = calcMinMax(img, db);
             }
         }
         return new float[] {
@@ -701,43 +747,57 @@ public abstract class LookupTable {
                 (minMax[1] - minMax[0]) * slope + 1 };
     }
 
-    private static int[] calcMinMax(DicomObject img, Object pxVals) {
+    private static int[] calcMinMax(DicomObject img, DataBuffer db) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         int range = 1 << stored;
-        int andmask = range - 1;
-        int ormask = ~andmask;
+        int mask = range - 1;
         int signbit = signed ? 1 << (stored - 1) : 0;
-        int maxVal = Integer.MIN_VALUE;
+        switch (db.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            return calcMinMax(signbit, mask, ((DataBufferByte) db).getData()); 
+        case DataBuffer.TYPE_USHORT:
+            return calcMinMax(signbit, mask, ((DataBufferUShort) db).getData()); 
+        case DataBuffer.TYPE_SHORT:
+            return calcMinMax(signbit, mask, ((DataBufferShort) db).getData());
+        default:
+            throw new IllegalArgumentException(
+                    "Illegal Type of DataBuffer: " + db);
+        }
+    }
+
+    private static int[] calcMinMax(int signbit, int mask, short[] data) {
         int minVal = Integer.MAX_VALUE;
-        if (pxVals instanceof short[]) {
-            short[] ss = (short[]) pxVals;
-            for (int i = 0; i < ss.length; i++) {
-                int val = ss[i] & andmask;
-                if ((val & signbit) != 0) {
-                    val |= ormask;
-                }
-                if (minVal > val) {
-                    minVal = val;
-                }
-                if (maxVal < val) {
-                    maxVal = val;
-                }
+        int maxVal = Integer.MIN_VALUE;
+        for (int i = 0; i < data.length; i++) {
+            int val = data[i] & mask;
+            if ((val & signbit) != 0) {
+                val |= ~mask;
             }
-        } else {
-            byte[] bs = (byte[]) pxVals;
-            for (int i = 0; i < bs.length; i++) {
-                int val = bs[i] & andmask;
-                if ((val & signbit) != 0) {
-                    val |= ormask;
-                }
-                if (minVal > val) {
-                    minVal = val;
-                }
-                if (maxVal < val) {
-                    maxVal = val;
-                }
+            if (minVal > val) {
+                minVal = val;
+            }
+            if (maxVal < val) {
+                maxVal = val;
+            }
+        }
+        return new int[] { minVal, maxVal };
+    }
+
+    private static int[] calcMinMax(int signbit, int mask, byte[] data) {
+        int minVal = Integer.MAX_VALUE;
+        int maxVal = Integer.MIN_VALUE;
+        for (int i = 0; i < data.length; i++) {
+            int val = data[i] & mask;
+            if ((val & signbit) != 0) {
+                val |= ~mask;
+            }
+            if (minVal > val) {
+                minVal = val;
+            }
+            if (maxVal < val) {
+                maxVal = val;
             }
         }
         return new int[] { minVal, maxVal };
