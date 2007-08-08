@@ -194,6 +194,7 @@ class fileCopy {}
 /**
  * @depend - - - AE
  * @depend - - - Scheduler
+ * @depend - - - TarRetriever
  * @depend - - - PurgeStudyQueue
  * @depend - - - JMS
  */

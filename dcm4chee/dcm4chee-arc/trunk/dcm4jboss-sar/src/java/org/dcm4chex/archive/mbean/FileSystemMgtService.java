@@ -55,7 +55,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -96,8 +95,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
-import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -133,8 +130,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
     
-    private ObjectName aeServiceName;
+    private ObjectName tarRetrieverName;
 
+    private ObjectName aeServiceName;
+    
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
     private boolean checkStorageFileSystemStatus = true;
@@ -223,6 +222,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
+    public final ObjectName getTarRetrieverName() {
+        return tarRetrieverName;
+    }
+
+    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
+        this.tarRetrieverName = tarRetrieverName;
+    }
+    
     public final ObjectName getAEServiceName() {
         return aeServiceName;
     }
@@ -1040,6 +1047,19 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         return true;
     }
 
+    File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
+        return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
+                new Object[] { fsID, fileID }, new String[] {
+                        String.class.getName(), String.class.getName() });
+    }
+    
+    protected File getFile(FileDTO dto) throws Exception {
+    	String fsID = dto.getDirectoryPath();
+    	String fileID = dto.getFilePath();
+    	return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
+    			: FileUtils.toFile(fsID, fileID);
+    }    
+    
     public Object locateInstance(String iuid) throws Exception {
         FileDTO[] fileDTOs = null;
         String aet = null;
@@ -1052,8 +1072,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 for (int i = 0; i < fileDTOs.length; ++i) {
                     dto = fileDTOs[i];
                     if (retrieveAET.equals(dto.getRetrieveAET()))
-                        return FileUtils.toFile(dto.getDirectoryPath(), dto
-                                .getFilePath());
+                        return getFile(dto);
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }

@@ -559,6 +559,14 @@ accessed studies.</description>
       <type>java.lang.String</type>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTarRetrieverName"
+      setMethod="setTarRetrieverName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TarRetrieverName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAEServiceName"
       setMethod="setAEServiceName">
       <description>Used internally. Do NOT modify.

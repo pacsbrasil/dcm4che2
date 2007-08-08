@@ -15,6 +15,8 @@
       >dcm4chee.archive:service=AE</depends>
     <depends optional-attribute-name="SchedulerServiceName"
       >dcm4chee.archive:service=Scheduler</depends>
+    <depends optional-attribute-name="TarRetrieverName"
+      >dcm4chee.archive:service=TarRetriever</depends>
     <depends optional-attribute-name="JMSServiceName"
       >dcm4chee.archive:service=JMS</depends>
     <depends>dcm4chee.archive:service=Queue,name=PurgeStudy</depends>

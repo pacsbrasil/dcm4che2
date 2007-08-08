@@ -42,7 +42,9 @@ package org.dcm4chex.archive.ejb.session;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -787,12 +789,29 @@ public abstract class FileSystemMgtBean implements SessionBean {
         return fileDTOs;
     }
 
+    private static final Comparator DESC_FILE_PK = new Comparator() {
+
+        /**
+         * This will make sure the most available file will be listed first
+         */
+        public int compare(Object o1, Object o2) {
+            FileDTO dto1 = (FileDTO) o1;
+            FileDTO dto2 = (FileDTO) o2;
+            int diffAvail = dto1.getAvailability() - dto2.getAvailability();
+            long diffPk = dto2.getPk() - dto1.getPk();
+            return diffAvail != 0 ? diffAvail 
+            		: diffPk == 0 ? 0 : diffPk < 0 ? -1 : 1;
+        }
+    };
+        
     /**
      * @throws FinderException 
      * @ejb.interface-method
      */
     public FileDTO[] getFilesOfInstance(String iuid) throws FinderException {
-        return toFileDTOs(instanceHome.findBySopIuid(iuid).getFiles());
+        FileDTO[] dtos = toFileDTOs(instanceHome.findBySopIuid(iuid).getFiles());
+        Arrays.sort(dtos, DESC_FILE_PK);
+		return dtos;
     }
 
     /**
