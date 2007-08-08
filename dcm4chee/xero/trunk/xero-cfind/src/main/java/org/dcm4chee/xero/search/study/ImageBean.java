@@ -112,4 +112,10 @@ public class ImageBean extends ImageType implements Image, LocalModel<String> {
 	public void clearPresentationSize() {
 		setPresentationSize(null,null,null,null);
 	}
+
+   /** Removes all the SVG use elements contained in this object */
+   public void clearUse() {
+      this.use = null;
+   }
+	
 }

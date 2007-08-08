@@ -9,14 +9,17 @@
   xmlns:ui="http://java.sun.com/jsf/facelets"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:m="http://www.dcm4che.org/xero/metadata/display/Annotation"
+  xmlns:md="http://www.dcm4che.org/xero/metadata/display"
   xmlns:c="http://java.sun.com/jstl/core"
   xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:svg="http://www.w3.org/2000/svg"
   m:includeXsl="/image/annotationXsl.xhtml"
-  m:script="/xero/image/MarkupEdit.js"
+  md:editMarkup.script="/xero/image/MarkupEdit.js"
+  md:createMarkup.script="/xero/image/MarkupCreate.js"
 >
 
 <x:template name="svgCopy" mode="svg" match="*">
+  <xsl:message>SVG Copying node <xsl:value-of select="name(.)" /> id=<xsl:value-of select="@id" /></xsl:message>
   <xsl:copy>
     <xsl:copy-of select="@*" />
     <xsl:apply-templates mode="svg"/>

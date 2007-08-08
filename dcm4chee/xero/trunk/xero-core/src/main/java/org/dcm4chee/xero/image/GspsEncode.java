@@ -112,13 +112,20 @@ import org.w3.svg.UseType;
  */
 public class GspsEncode implements Filter<ResultsBean> {
    private static final int X_OFFSET = 0;
+
    private static final int Y_OFFSET = 1;
+
    private static final int ELLIPSE_MAJOR_X1 = X_OFFSET;
+
    private static final int ELLIPSE_MAJOR_Y1 = Y_OFFSET;
-   private static final int ELLIPSE_MAJOR_X2 = 2+X_OFFSET;
-   private static final int ELLIPSE_MAJOR_Y2 = 2+Y_OFFSET;
-   private static final int ELLIPSE_MINOR_X1 = 4+X_OFFSET;
-   private static final int ELLIPSE_MINOR_X2 = 6+X_OFFSET;
+
+   private static final int ELLIPSE_MAJOR_X2 = 2 + X_OFFSET;
+
+   private static final int ELLIPSE_MAJOR_Y2 = 2 + Y_OFFSET;
+
+   private static final int ELLIPSE_MINOR_X1 = 4 + X_OFFSET;
+
+   private static final int ELLIPSE_MINOR_X2 = 6 + X_OFFSET;
 
    private static final Logger log = LoggerFactory.getLogger(GspsEncode.class);
 
@@ -150,7 +157,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 addAnnotationToResults(dcmobj, gspsType, images);
 		 addShutterToResults(dcmobj, gspsType, images);
 	  }
-	  log.info("Time to add GSPS information:"+(System.currentTimeMillis()-startTime)+" ms");
+	  log.info("Time to add GSPS information:" + (System.currentTimeMillis() - startTime) + " ms");
 	  return results;
    }
 
@@ -161,11 +168,12 @@ public class GspsEncode implements Filter<ResultsBean> {
      * @param gspsType
      * @param images
      */
-   @SuppressWarnings({ "unchecked", "deprecation" })
+   @SuppressWarnings( { "unchecked", "deprecation" })
    protected void addAnnotationToResults(DicomObject dcmobj, GspsType gspsType, List<ImageBean> images) {
 	  GraphicAnnotationModule[] grans = GraphicAnnotationModule.toGraphicAnnotationModules(dcmobj);
-	  // This is type-safe, but can't be case right now because of Java 1.4 restrictions.
-	  Map<String,GraphicLayerModule> grals = GraphicLayerModule.toGraphicLayerMap(dcmobj);
+	  // This is type-safe, but can't be case right now because of Java 1.4
+	  // restrictions.
+	  Map<String, GraphicLayerModule> grals = GraphicLayerModule.toGraphicLayerMap(dcmobj);
 	  if (grans == null)
 		 return;
 	  int id = 0;
@@ -173,15 +181,18 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  for (GraphicAnnotationModule gran : grans) {
 		 String graphicLayerName = gran.getGraphicLayer();
 		 GraphicLayerModule gral = grals.get(graphicLayerName);
-		 // The layer name doesn't uniquely distinguish this correctly, as there can be multiple
-		 // graphic annotation modules for one layer, applying to different image sets.
-		 GType g = getG(gspsType, "annot"+id);
+		 // The layer name doesn't uniquely distinguish this correctly, as
+		 // there can be multiple
+		 // graphic annotation modules for one layer, applying to different
+		 // image sets.
+		 GType g = getG(gspsType, "a" + id);
 		 id++;
-		 String rgb = toRGB(gral.getGraphicLayerRecommendedDisplayGrayscaleValue(), gral.getFloatLab(), gral.getGraphicLayerRecommendedDisplayRGBValueRET());
-		 log.info("Graphic layer recommended display grayscale value is "+gral.getGraphicLayerRecommendedDisplayGrayscaleValue() + " rgb is "+rgb
-			   + " for layer "+gral.getGraphicLayer()+" description "+gral.getGraphicLayerDescription());
+		 String rgb = toRGB(gral.getGraphicLayerRecommendedDisplayGrayscaleValue(), gral.getFloatLab(), gral
+			   .getGraphicLayerRecommendedDisplayRGBValueRET());
+		 log.info("Graphic layer recommended display grayscale value is " + gral.getGraphicLayerRecommendedDisplayGrayscaleValue()
+			   + " rgb is " + rgb + " for layer " + gral.getGraphicLayer() + " description " + gral.getGraphicLayerDescription());
 		 // To not fill, over-ride these values in children.
-		 g.setStyle("fill: "+rgb+"; stroke: "+rgb+";" );
+		 g.setStyle("fill: " + rgb + "; stroke: " + rgb + ";");
 		 g.setColor(rgb);
 		 GraphicObject[] gos = gran.getGraphicObjects();
 		 if (gos != null) {
@@ -198,7 +209,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 }
 
 		 // TODO - check to see which objects to add this to - only add them
-            // to specified images.
+		 // to specified images.
 		 UseType useG = new UseType();
 		 useG.setHref("#" + g.getId());
 		 useG.setId(ResultsBean.createId("u"));
@@ -208,31 +219,36 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  }
    }
 
-   /** Adds the text object txo to svg:g. 
-    * TODO add child elements for bounding box and anchor point display.
-    */
+   /**
+     * Adds the text object txo to svg:g. TODO add child elements for bounding
+     * box and anchor point display.
+     */
    protected void addTextObject(GType g, TextObject txo) {
 	  TextType text = new TextType();
 	  String unformatted = txo.getUnformattedTextValue();
 	  text.setContent(unformatted);
 	  // TODO handle multi-line text blocks.
 	  int lineLen = unformatted.length();
-	  if(lineLen==0) return;
-	  
+	  if (lineLen == 0)
+		 return;
+
 	  float[] topLeft = txo.getBoundingBoxTopLeftHandCorner();
-	  if( topLeft!=null ) {
+	  if (topLeft != null) {
 		 float[] bottomRight = txo.getBoundingBoxBottomRightHandCorner();
 		 float x = topLeft[X_OFFSET];
 		 float y = topLeft[Y_OFFSET];
 		 text.setX(Integer.toString((int) topLeft[X_OFFSET]));
 		 text.setY(Integer.toString((int) topLeft[Y_OFFSET]));
 		 int rotation = toRotation(topLeft, bottomRight);
-		 if( rotation!=0 ) text.setTransform("rotate("+rotation+","+x+','+y+")");
+		 if (rotation != 0)
+			text.setTransform("rotate(" + rotation + "," + x + ',' + y + ")");
 		 float xlen = Math.abs(bottomRight[X_OFFSET] - topLeft[X_OFFSET]);
-		 // At least 5 pixels are needed, otherwise don't bother trying to figure out font size.
-		 if( xlen>5 ) text.setFontSize(Float.toString(xlen*2 / lineLen));
+		 // At least 5 pixels are needed, otherwise don't bother trying to
+		 // figure out font size.
+		 if (xlen > 5)
+			text.setFontSize(Float.toString(xlen * 2 / lineLen));
 	  } else {
- 	     float[] anchor = txo.getAnchorPoint();
+		 float[] anchor = txo.getAnchorPoint();
 		 text.setX(Float.toString(anchor[X_OFFSET]));
 		 text.setY(Float.toString(anchor[Y_OFFSET]));
 		 // Specify some default font size.
@@ -248,17 +264,17 @@ public class GspsEncode implements Filter<ResultsBean> {
      */
    protected void addGraphicObject(GType g, GraphicObject go) {
 	  String type = go.getGraphicType();
-	  if( type.equalsIgnoreCase(GraphicObject.POLYLINE) ) {
+	  if (type.equalsIgnoreCase(GraphicObject.POLYLINE)) {
 		 addPolyline(g, go);
-	  } else if( type.equalsIgnoreCase(GraphicObject.CIRCLE) ) {
-		 addCircle(g,go);
-	  } else if( type.equalsIgnoreCase(GraphicObject.ELLIPSE)) {
-		 addEllipse(g,go);
-	  } else if( type.equalsIgnoreCase(GraphicObject.POINT)) {
-		 addPoint(g,go);
-	  } else if( type.equalsIgnoreCase(GraphicObject.INTERPOLATED)) {
+	  } else if (type.equalsIgnoreCase(GraphicObject.CIRCLE)) {
+		 addCircle(g, go);
+	  } else if (type.equalsIgnoreCase(GraphicObject.ELLIPSE)) {
+		 addEllipse(g, go);
+	  } else if (type.equalsIgnoreCase(GraphicObject.POINT)) {
+		 addPoint(g, go);
+	  } else if (type.equalsIgnoreCase(GraphicObject.INTERPOLATED)) {
 		 // TODO replace this with something better.
-		 addPolyline(g,go);
+		 addPolyline(g, go);
 	  } else {
 		 log.warn("Unsupported graphic object type:" + type);
 	  }
@@ -272,45 +288,51 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 return;
 	  }
 	  EllipseType ellipse = new EllipseType();
-	  ellipse.setCx(Float.toString((points[ELLIPSE_MAJOR_X1]+points[ELLIPSE_MAJOR_X2])/2));
-	  ellipse.setCy(Float.toString((points[ELLIPSE_MAJOR_Y1]+points[ELLIPSE_MAJOR_Y2])/2));
-	  ellipse.setRx(Float.toString(length(points,ELLIPSE_MAJOR_X1,ELLIPSE_MAJOR_X2)/2));
-	  ellipse.setRy(Float.toString(length(points,ELLIPSE_MINOR_X1,ELLIPSE_MINOR_X2)/2));
-	  if( !go.getGraphicFilled() ) {
+	  ellipse.setCx(Float.toString((points[ELLIPSE_MAJOR_X1] + points[ELLIPSE_MAJOR_X2]) / 2));
+	  ellipse.setCy(Float.toString((points[ELLIPSE_MAJOR_Y1] + points[ELLIPSE_MAJOR_Y2]) / 2));
+	  ellipse.setRx(Float.toString(length(points, ELLIPSE_MAJOR_X1, ELLIPSE_MAJOR_X2) / 2));
+	  ellipse.setRy(Float.toString(length(points, ELLIPSE_MINOR_X1, ELLIPSE_MINOR_X2) / 2));
+	  if (!go.getGraphicFilled()) {
 		 ellipse.setStyle("fill: none;");
 		 ellipse.setFill("false");
 	  }
 	  g.getChildren().add(ellipse);
    }
-   
-   /** Converts a bounding box to a rotation amount.   Returns a multiple of 90, as that is the only
-    * bounding information that we can tell from just the bounding box. */
+
+   /**
+     * Converts a bounding box to a rotation amount. Returns a multiple of 90,
+     * as that is the only bounding information that we can tell from just the
+     * bounding box.
+     */
    public static int toRotation(float[] topLeft, float[] bottomRight) {
 	  float x1 = topLeft[X_OFFSET];
 	  float x2 = bottomRight[X_OFFSET];
 	  float y1 = topLeft[Y_OFFSET];
 	  float y2 = bottomRight[Y_OFFSET];
-	  if( x1 < x2 ) {
-		 if( y1<y2 ) {
+	  if (x1 < x2) {
+		 if (y1 < y2) {
 			return 0;
 		 }
 		 return 90;
 	  } else {
-		 if( y1 < y2 ) {
+		 if (y1 < y2) {
 			return 180;
 		 }
 		 return 270;
 	  }
    }
-   
+
    /** Returns the length between the points in data specified by p1 and p2. */
    public static float length(float[] data, int p1, int p2) {
 	  float dx = data[p1] - data[p2];
-	  float dy = data[p1+1] - data[p2+1];
-	  return (float) Math.sqrt(dx*dx+dy*dy);
+	  float dy = data[p1 + 1] - data[p2 + 1];
+	  return (float) Math.sqrt(dx * dx + dy * dy);
    }
 
-   /** Adds a point SVG to the graphic object, as a circle of radius 0.5 centered on the given position. */
+   /**
+     * Adds a point SVG to the graphic object, as a circle of radius 0.5
+     * centered on the given position.
+     */
    protected void addPoint(GType g, GraphicObject go) {
 	  float[] points = go.getGraphicData();
 	  if (points == null || points.length != 2) {
@@ -334,15 +356,14 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  CircleType circle = new CircleType();
 	  circle.setCx(Float.toString(points[0]));
 	  circle.setCy(Float.toString(points[1]));
-	  float r = length(points,0,2);
+	  float r = length(points, 0, 2);
 	  circle.setR(Float.toString(r));
-	  if( !go.getGraphicFilled() ) {
+	  if (!go.getGraphicFilled()) {
 		 circle.setStyle("fill: none;");
 		 circle.setFill("false");
 	  }
 	  g.getChildren().add(circle);
    }
-   
 
    /**
      * Adds a polyline graphic object as a child of g.
@@ -362,14 +383,14 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  StringBuffer d = new StringBuffer();
 	  d.append("M").append((int) points[0]).append(',').append((int) points[1]);
 	  // Start at 3 so that if the length happens to be odd, we don't throw an
-        // exception, but just ignore the extra value.
+	  // exception, but just ignore the extra value.
 	  for (int i = 3; i < points.length; i += 2) {
 		 // Note the order is x,y NOT y,x as it is for shutters (shudder)
-		 d.append(" L").append((int) points[i - 1]).append(',').append((int)points[i]);
+		 d.append(" L").append((int) points[i - 1]).append(',').append((int) points[i]);
 	  }
 	  path.setD(d.toString());
 	  path.setId(ResultsBean.createId("p"));
-	  if( !go.getGraphicFilled() ) {
+	  if (!go.getGraphicFilled()) {
 		 path.setStyle("fill: none;");
 		 path.setFill("false");
 	  }
@@ -472,41 +493,41 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  d.append(" L0,").append(height);
 	  d.append(" L").append(width).append(',').append(height);
 	  d.append(" L").append(width).append(",0").append(" L0,0");
-	  
+
 	  // Then remove the polygon in the center
 	  if (useRect) {
 		 d.append(" L").append(shutter.getShutterLeftVerticalEdge()).append(',').append(shutter.getShutterUpperHorizontalEdge());
-		 d.append(" L").append(shutter.getShutterRightVerticalEdge()).append(',')
-			   .append(shutter.getShutterUpperHorizontalEdge());
+		 d.append(" L").append(shutter.getShutterRightVerticalEdge()).append(',').append(shutter.getShutterUpperHorizontalEdge());
 		 d.append(" L").append(shutter.getShutterRightVerticalEdge()).append(',').append(shutter.getShutterLowerHorizontalEdge());
 		 d.append(" L").append(shutter.getShutterLeftVerticalEdge()).append(',').append(shutter.getShutterLowerHorizontalEdge());
 		 d.append(" L").append(shutter.getShutterLeftVerticalEdge()).append(',').append(shutter.getShutterUpperHorizontalEdge());
 	  } else {
 		 int[] vertices = shutter.getVerticesOfThePolygonalShutter();
-		 if( vertices==null | vertices.length<2 ) return;
+		 if (vertices == null | vertices.length < 2)
+			return;
 		 for (int i = 1; i < vertices.length; i += 2) {
 			d.append(" L").append(vertices[i]).append(',').append(vertices[i - 1]);
 		 }
-		 if( vertices[vertices.length-1]!=vertices[1] || vertices[vertices.length-2]!=vertices[0]) {
-		   d.append(" L").append(vertices[1]).append(',').append(vertices[0]);
+		 if (vertices[vertices.length - 1] != vertices[1] || vertices[vertices.length - 2] != vertices[0]) {
+			d.append(" L").append(vertices[1]).append(',').append(vertices[0]);
 		 }
 	  }
 	  d.append(" Z");
 	  log.info("Set rect shutter path to " + d);
 
-	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(),null);
+	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(), null);
 	  path.setColor(rgb);
-	  path.setStyle("fill:"+rgb+";");
+	  path.setStyle("fill:" + rgb + ";");
 	  path.setId(ResultsBean.createId("shre"));
 	  path.setD(d.toString());
-	  	  
+
 	  g.getChildren().add(path);
    }
 
    /**
      * Adds a circular shutter to the group g provided. Defines the clip path
-     * inside the svg child of gspsType.  Defines both SVG and VML parameters on the svg path,
-     * so that it is easy to convert to a VML shutter if required.
+     * inside the svg child of gspsType. Defines both SVG and VML parameters on
+     * the svg path, so that it is easy to convert to a VML shutter if required.
      * 
      * @param gspsType
      *            to add the clip path to.
@@ -530,33 +551,32 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  log.info("Adding circular shutter to object.");
 	  PathType path = new PathType();
 	  StringBuffer d = new StringBuffer("M");
-	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET]-radius);
+	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] - radius);
 	  d.append(" L0,0 L");
 	  d.append(width).append(",0 L").append(width).append(',').append(height);
 	  d.append(" L0,").append(height).append(" L0,0 L");
-	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET]-radius);
+	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] - radius);
 	  StringBuffer v = new StringBuffer(d);
 	  d.append(" A").append(radius).append(',').append(radius);
 	  d.append(" 0 1,0 ");
-	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET]+radius);
+	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] + radius);
 	  d.append(" A").append(radius).append(',').append(radius);
 	  d.append(" 0 1,0 ");
-	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET]-radius);
-	  
-	  
-	  v.append(" at ").append(center[X_OFFSET]-radius).append(',');
-	  v.append(center[Y_OFFSET]-radius).append(' ');
-	  v.append(center[X_OFFSET]+radius).append(',');
-	  v.append(center[Y_OFFSET]+radius).append(' ');
-	  v.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET]-radius).append(' ');
-	  v.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET]-radius);
-	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(),null);
+	  d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] - radius);
+
+	  v.append(" at ").append(center[X_OFFSET] - radius).append(',');
+	  v.append(center[Y_OFFSET] - radius).append(' ');
+	  v.append(center[X_OFFSET] + radius).append(',');
+	  v.append(center[Y_OFFSET] + radius).append(' ');
+	  v.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] - radius).append(' ');
+	  v.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] - radius);
+	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(), null);
 	  path.setColor(rgb);
-	  path.setStyle("fill:"+rgb+";");
+	  path.setStyle("fill:" + rgb + ";");
 	  path.setId(ResultsBean.createId("shcr"));
 	  path.setD(d.toString());
 	  path.setPath(v.toString());
-	  	  
+
 	  g.getChildren().add(path);
    }
 
@@ -578,9 +598,9 @@ public class GspsEncode implements Filter<ResultsBean> {
 			g = (int) (rgb[1] * 255);
 			b = (int) (rgb[2] * 255);
 			log.info("L*a*b* " + labColour[0] + "," + labColour[1] + "," + labColour[2] + " sRGB " + r + "," + g + "," + b
-				  +" colour space type id "+lab.getType()); 
+				  + " colour space type id " + lab.getType());
 		 }
-	  } else if( rgbColour!=null ) {
+	  } else if (rgbColour != null) {
 		 r = rgbColour[0];
 		 g = rgbColour[1];
 		 b = rgbColour[2];
@@ -597,12 +617,11 @@ public class GspsEncode implements Filter<ResultsBean> {
    protected GType getG(GspsType gspsType, String name) {
 	  SvgType svg = getSvg(gspsType);
 	  GType g = new GType();
-	  // TODO make this name unique in a standardized fashion.
-	  g.setId(name);
+	  g.setId(gspsType.getSOPInstanceUID()+"-"+name);
 	  svg.getChildren().add(g);
 	  return g;
    }
-   
+
    /**
      * Gets the defs element to be used to add a new child to the gsps display
      * information
@@ -617,7 +636,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  }
 	  return svg;
    }
-   
+
    /** Reads the dicom header for the specified SOP Instance UID and returns it. */
    public static DicomObject readDicomHeader(FilterItem filterItem, Map<String, Object> params, String uid) {
 	  // This might come from a different series or even study, so don't
@@ -642,15 +661,17 @@ public class GspsEncode implements Filter<ResultsBean> {
 				  if (!(dot instanceof ImageBean))
 					 continue;
 				  ImageBean image = (ImageBean) dot;
-				  if (image.getGspsUID() != null) {
-					 List<ImageBean> l = gspsUids.get(image.getGspsUID());
-					 if (l == null) {
-						l = new ArrayList<ImageBean>();
-						gspsUids.put(image.getGspsUID(), l);
-					 }
-					 l.add(image);
-					 log.info("Image " + image.getSOPInstanceUID() + " references GSPS " + image.getGspsUID());
+				  if (image.getGspsUID() == null)
+					 continue;
+				  image.clearUse();
+				  List<ImageBean> l = gspsUids.get(image.getGspsUID());
+				  if (l == null) {
+					 l = new ArrayList<ImageBean>();
+					 gspsUids.put(image.getGspsUID(), l);
 				  }
+				  l.add(image);
+				  log.info("Image " + image.getSOPInstanceUID() + " references GSPS " + image.getGspsUID());
+
 			   }
 			}
 		 }

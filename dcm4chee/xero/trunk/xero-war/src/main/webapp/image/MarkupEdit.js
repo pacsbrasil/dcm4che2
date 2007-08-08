@@ -77,8 +77,8 @@ MarkupEdit.prototype.debug = info;
 MarkupEdit.prototype.info = info;
 MarkupEdit.prototype.warn = info;
 
-MarkupEdit.prototype.svgns = 'http://www.w3.org/2000/svg';
-MarkupEdit.prototype.xlinkns = 'http://www.w3.org/1999/xlink';
+var svgns = 'http://www.w3.org/2000/svg';
+var xlinkns = 'http://www.w3.org/1999/xlink';
 
 /** Handles the mouse down functionality */
 MarkupEdit.prototype.mouseDown = function(evt) {
@@ -86,15 +86,14 @@ MarkupEdit.prototype.mouseDown = function(evt) {
   if( !isLeftMouse(evt) ) return;
   var evtTarget = target(evt);
   // Get the parent before any dereferencing takes places.
-  var group;
   if( isTag(evtTarget,"shape") ) {
-  	group = evtTarget.parentNode;
+  	this.group = evtTarget.parentNode;
   	evtTarget = findByRef(evtTarget.type);
   }
   else {
   	// SVG case - need to find the svg object that contains the use that references the group we are in.
   	// TODO - get the real group (how? - iterate over all the nodes and see which one contains the clicked item?)
-  	group = document.getElementsByTagNameNS(this.svgns,"image").item(0).parentNode;
+  	this.group = document.getElementsByTagNameNS(svgns,"image").item(0).parentNode;
   }
   this.debug("Clicked on "+evtTarget.tagName+" id="+evtTarget.id+" isTag shape="+isTag(evtTarget,"shape"));
   if(!evt.ctrlKey ) {
@@ -103,7 +102,7 @@ MarkupEdit.prototype.mouseDown = function(evt) {
   		this.removeSelected(evtTarget);
   	}
   	else {
-  		this.addSelected(group,evtTarget);
+  		this.addSelected(evtTarget);
   	}
   }
   else {
@@ -112,28 +111,31 @@ MarkupEdit.prototype.mouseDown = function(evt) {
   	}
   	else {
   		this.clearSelected();
-  		this.addSelected(group,evtTarget);
+  		this.addSelected(evtTarget);
   	};
   };
   return true;
 };
 
 /** Adds tar to the selected set, displaying appropriate edit handles.
- * @param {Element} group
  * @param {Element} targ
  */
-MarkupEdit.prototype.addSelected = function(group,targ) {
+MarkupEdit.prototype.addSelected = function(targ) {
 	this.debug("Selecting "+targ.id);
 	this.selected[targ.id] = targ;
 	// TODO Compute this based on scale, not as an absolute value.
 	var handleSize = 25;
-	var handles = new EditHandle(targ, handleSize);
-	handles.createHandleSvg(group, handleSize);
+	targ.editHandle = new EditHandle(targ, handleSize);
+	targ.editHandle.createSvg(this.group, handleSize);
 };
 
 /** Removes all selected items, also clearing all edit handles */
 MarkupEdit.prototype.clearSelected = function() {
 	this.debug("Clearing all selected.");
+	for(var i in this.selected) {
+		this.debug("Found markup edit selected item "+i);
+		if( this.selected[i] && this.selected[i].editHandle )	this.selected[i].editHandle.clearSelected();
+	}
 	this.selected = new Object();	
 };
 
@@ -147,6 +149,7 @@ MarkupEdit.prototype.isSelected = function(targ) {
 /** Removes targ from the selected items, also clearing any edit handles. */
 MarkupEdit.prototype.removeSelected = function(targ) {
 	this.debug("Removing selection from "+targ.id);
+	if( this.selected[targ.id] && this.selected[targ.id].editHandle )	this.selected[targ.id].editHandle.clearSelected();
 	this.selected[targ.id] = null;
 };
 
@@ -161,18 +164,21 @@ var markupEdit = new MarkupEdit();
 function EditHandle(node, size) {
 	this.node = node;
 	this.handleSize = size;
-	this.handles = this.getHandles(node);
+	this.createHandles(node);
 };
 
-EditHandle.prototype.debug = info;
+EditHandle.prototype.debug = debug;
 EditHandle.prototype.info = info;
 EditHandle.prototype.warn = info;
 
-EditHandle.prototype.svgns = 'http://www.w3.org/2000/svg';
-EditHandle.prototype.xlinkns = 'http://www.w3.org/1999/xlink';
-
-/** Returns the updated path d */
-EditHandle.prototype.getD = function() {
+/** Updates the path d (and also potentially the path element path for VML). */
+EditHandle.prototype.updateD = function() {
+	var d = "";
+	var i=0;
+	for(i=0; i<this.cmds.length; i++ ) {
+		d = d + this.cmds[i].value;
+	}
+	this.node.setAttributeNS(null,"d",d);
 };
 
 /** Creates the appropriate types of objects for the handles
@@ -182,8 +188,7 @@ EditHandle.prototype.getD = function() {
  * @return {Array} of SVG objects that comprise the handles (or vml for IE)
 * @r
  */
-EditHandle.prototype.createHandleSvg = function(group) {
-	var ret = new Array(this.handles.length);
+EditHandle.prototype.createSvg = function(group) {
 	var i;
 	var handle;
 	var rect;
@@ -192,22 +197,25 @@ EditHandle.prototype.createHandleSvg = function(group) {
 	var mup = function (evt) { useThis.mouseUp(evt); };
 	var mmove = function (evt) { useThis.mouseMove(evt); };
 	this.handleDragging = false;
+	this.group = group;
 	for(i=0; i<this.handles.length; i++ ) {
 		handle = this.handles[i];
-		rect = document.createElementNS(this.svgns,"svg:rect");
-		rect.setAttributeNS(null,"x",handle.x-this.handleSize/2);
-		rect.setAttributeNS(null,"y", handle.y-this.handleSize/2);
-		rect.setAttributeNS(null,"width", this.handleSize);
-		rect.setAttributeNS(null,"height", this.handleSize);
-		rect.setAttributeNS(null,"style", "fill: black; stroke: white;");
+		rect = handle.createSvg()
+		group.appendChild(rect);
 		rect.addEventListener("mousedown",mdown,true);
 		rect.addEventListener("mouseup",mup,true);
-		rect.addEventListener("mousemove",mmove,true);
-		this.debug("Created rect "+rect+" about to append.");
-		group.appendChild(rect);
-		ret[i] = rect;
+		rect.addEventListener("mousemove",mmove,true);	
+		rect.addEventListener("mouseout", mup, true);
 	}
-	return ret;
+};
+
+EditHandle.prototype.clearSelected = function() {
+	var i;
+	if( this.handles ) {
+		for(i=0; i<this.handles.length; i++) {
+			this.handles[i].clearSelected(this.group);
+		}
+	}	
 };
 
 /**
@@ -227,8 +235,13 @@ EditHandle.prototype.mouseDown = function(event) {
  */
 EditHandle.prototype.mouseUp = function(event) {
   if( !this.handleDragging ) return;
-  info("Done dragging a handle.");
+  this.mouseMove(event);
+  this.debug("Done dragging a handle.");
   this.handleDragging = false;
+  var i;
+  for(i=0; i<this.handles.length; i++) {
+  	this.handles[i].finalizePosition();
+  }
 };
 
 /**
@@ -236,10 +249,21 @@ EditHandle.prototype.mouseUp = function(event) {
  * @param {Event} event
  */
 EditHandle.prototype.mouseMove = function(event) {
-	if( ! this.handleDragging ) return;
-	var dx = event.clientX-this.startX;
-	var dy = event.clientY-this.startY;
-	this.debug("Mouse move delta "+dx+","+dy);
+  if( ! this.handleDragging ) return;
+  var dx = event.clientX-this.startX;
+  var dy = event.clientY-this.startY;
+  var pnt;
+  var scl = this.group.getAttribute("scl");
+  dx = dx / scl;
+  dy = dy / scl;
+  this.debug("Scaled dx/dy is "+dx+","+dy+" for scaling "+scl);
+  this.debug("Mouse move delta "+dx+","+dy);
+  var evtTarg = target(event);
+  var handle = evtTarg.handleObj;
+  if( handle ) {
+  	handle.invalidate(dx,dy);
+  	this.updateD();
+  }
 };
 
 /** Returns the index of the next letter position, -1 if past the end of the string, OR the end string length
@@ -275,26 +299,33 @@ EditHandle.prototype.drawCommand = function(str) {
 
 
 /** Checkes to see if handle exists, and if it doesn't, then add it as a handle */
-EditHandle.prototype.addHandle = function(handles,handle) {
+EditHandle.prototype.addHandle = function(handle,cmd) {
+	var handles = this.handles;
 	var len = handles.length;
 	var i;
 	for(i=0; i<len; i++ ) {
-		if( handles[i].x==handle.x && handles[i].y==handle.y ) return false;
+		if( handles[i].x==handle.x && handles[i].y==handle.y ) {
+			handles[i].addCmd(cmd);
+			return handles[i];
+		}
 	}
 	this.debug("Adding a handle at "+i+"="+handle);
-	handles[i] = handle;
-	return true;
+	handles.push(handle);
+	handle.addCmd(cmd);
+	return handle;
 };
 
-/** Returns an array of the handle points for dragging. */
-EditHandle.prototype.getHandles = function(targ) {
+/** Creates an array of the handle points for dragging, as well as creating the cmds list
+ * associated with the handles.
+ */
+EditHandle.prototype.createHandles = function(targ) {
 	var dstr = targ.getAttribute("d");
-	var handles = new Array();
+	this.cmds = new Array();
+	this.handles = new Array();
 	var i = 0;
 	var next = this.nextLetterIndex(dstr,i);
 	var cur;
 	var cmd;
-	var handle;
 	while( next>0 ) {
 		cur = dstr.substr(i,next-i);
 		i = next;
@@ -302,25 +333,102 @@ EditHandle.prototype.getHandles = function(targ) {
 		cmd = this.drawCommand(cur);		
 		args = cur.substr(cmd.length);
 		if( cmd === "M" || cmd==="L" ) {
-			handle = new PointHandle(args);
-  		    this.debug("Handle at "+handle);
-  		    this.addHandle(handles,handle);
+			cmd = new PointCmd(cmd,args);
+			handle = new PointHandle(args, this.handleSize);
+			this.cmds.push(cmd);
+  		    this.debug("Cmd at "+cmd);
+  		    this.addHandle(handle,cmd);
 		}
 		else {
 			this.warn("Unknown handle type "+cmd + " with args "+args);
 		}		
 	}
-	return handles;
 };
 
 
 /** A point handle is a standard handle that adjusts one or more values all in exactly the same way
  * when it is moved.
  */
-function PointHandle(point) {
+function PointHandle(point, handleSize) {
 	var xy = point.match(/\d+/g);
 	this.startX = parseInt(xy[0]);
 	this.startY = parseInt(xy[1]);
 	this.x = this.startX;
 	this.y = this.startY;
+	this.hHandleSize = handleSize/2;
+	this.handleSize = handleSize;
+	this.cmds = new Array();
+};
+
+/**
+ * Finalizes point values, setting the starting point to the current one.
+ */
+PointHandle.prototype.finalizePosition = function()
+{
+	this.startX = this.x;
+	this.startY = this.y;
+}
+/**
+ * Updates the point by moving it dx,dy.  Maybe constrained in some way, eg orthogonal movement.
+ * @param {Number} dx
+ * @param {Number} dy
+ */
+PointHandle.prototype.invalidate = function(dx,dy) {
+  this.x = Math.floor(this.startX + dx);
+  this.y = Math.floor(this.startY + dy);
+  var i;
+  for(i=0; i<this.cmds.length; i++ ) {
+  	this.cmds[i].invalidate(this);
+  }
+  this.rect.setAttributeNS(null,"x",this.x-this.hHandleSize);
+  this.rect.setAttributeNS(null,"y", this.y-this.hHandleSize);
+};
+
+/**
+ * Adds a command to the set of commands to update when this object changes.
+ */
+PointHandle.prototype.addCmd = function(cmd) {
+	this.cmds.push(cmd);
+};
+
+/** Creates the SVG that can be dragged and used as a handle by the user. */
+PointHandle.prototype.createSvg = function() {
+	this.rect = document.createElementNS(svgns,"svg:rect");
+	var rect = this.rect;
+	rect.setAttributeNS(null,"x",this.x-this.hHandleSize);
+	rect.setAttributeNS(null,"y", this.y-this.hHandleSize);
+	rect.setAttributeNS(null,"width", this.handleSize);
+	rect.setAttributeNS(null,"height", this.handleSize);
+	rect.setAttributeNS(null,"style", "fill: black; stroke: white;");
+	rect.handleObj = this;
+	return rect;
+};
+
+/**
+ * Clears the created SVG from the given group.  After this, any svg would need to be re-created.
+ * @param {Element} group
+ */
+PointHandle.prototype.clearSelected = function(group) {
+	if( this.rect ) {
+		group.removeChild(this.rect);
+		this.rect = null;
+	};
+};
+
+/**
+ * Defines a point region (either an L or an M command) to update.
+ */
+function PointCmd(cmd, args) {
+	this.cmd = cmd;
+	this.value = this.cmd + args;
+};
+
+PointCmd.prototype.debug = debug;
+/**
+ * Invalidates the previous value and causes a new value to be computed.
+ * @param {PointHandle} handle
+ */
+PointCmd.prototype.invalidate = function(handle) {
+	this.value = this.cmd+handle.x+","+handle.y+" ";
+	this.debug("Updated point cmd value to "+this.value);
 };
