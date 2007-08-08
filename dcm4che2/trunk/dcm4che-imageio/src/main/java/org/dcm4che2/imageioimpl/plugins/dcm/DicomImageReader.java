@@ -291,10 +291,8 @@ public class DicomImageReader extends ImageReader {
         ImageReaderFactory f = ImageReaderFactory.getInstance();
         String ts = ds.getString(Tag.TransferSyntaxUID);
         this.reader = f.getReaderForTransferSyntax(ts);
-        if (itemParser == null) {
-            this.itemParser = new ItemParser(dis, iis);
-            this.itemStream = new SegmentedImageInputStream(iis, itemParser);
-        }
+        this.itemParser = new ItemParser(dis, iis);
+        this.itemStream = new SegmentedImageInputStream(iis, itemParser);
     }
 
     private void initRawImageReader() throws IIOException {
@@ -446,7 +444,9 @@ public class DicomImageReader extends ImageReader {
         // workaround for Bug in J2KImageReaderCodecLib.reset()
         if (reader instanceof J2KImageReaderCodecLib) {
             reader.dispose();
-            reader = null;
+            ImageReaderFactory f = ImageReaderFactory.getInstance();
+            String ts = ds.getString(Tag.TransferSyntaxUID);
+            reader = f.getReaderForTransferSyntax(ts);
         } else {
             reader.reset();
         }
