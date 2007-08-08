@@ -82,7 +82,10 @@ import com.sun.media.imageio.stream.SegmentedImageInputStream;
  */
 public class DecompressCmd extends CodecCmd {
 
-    private final ItemParser itemParser;
+    private static final String J2KIMAGE_READER_CODEC_LIB = 
+    		"com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib";
+
+	private final ItemParser itemParser;
     
     private final ImageInputStream iis;
 
@@ -177,7 +180,16 @@ public class DecompressCmd extends CodecCmd {
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
                 bi = reader.read(0, param);
-                reader.reset();
+                // workaround for Bug in J2KImageReaderCodecLib.reset()
+                if (J2KIMAGE_READER_CODEC_LIB.equals(
+                		reader.getClass().getName())) {
+                	reader.dispose();
+                    reader = i < frames - 1 
+                    		? f.getReaderForTransferSyntax(tsuid)
+                    		: null;
+                } else {
+                	reader.reset();
+                }
                 itemParser.seekNextFrame(siis);
                 write(bi.getRaster(), out, byteOrder);
             }
