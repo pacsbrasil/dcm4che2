@@ -88,8 +88,9 @@ public class DcmImageReader extends ImageReader {
 
     private static final Logger log = Logger.getLogger(DcmImageReader.class);
     
-    static final DcmParserFactory pfact = DcmParserFactory.getInstance();
-
+    private static final String J2KIMAGE_READER_CODEC_LIB = 
+		"com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib";
+    
     private static final ColorModelFactory cmFactory = ColorModelFactory
             .getInstance();
 
@@ -204,7 +205,7 @@ public class DcmImageReader extends ImageReader {
         if (stream == null) {
             throw new IllegalStateException("Input not set!");
         }
-        theParser = pfact.newDcmParser(stream);
+        theParser = DcmParserFactory.getInstance().newDcmParser(stream);
         FileFormat fileFormat = theParser.detectFileFormat();
         this.theDataset = DcmObjectFactory.getInstance().newDataset();
         theParser.setDcmHandler(theDataset.getDcmHandler());
@@ -565,7 +566,16 @@ public class DcmImageReader extends ImageReader {
         itemStream.seek(this.frameStartPos[imageIndex]);
         decompressor.setInput(itemStream);
         BufferedImage bi = decompressor.read(0, readParam);
-        decompressor.reset();
+        // workaround for Bug in J2KImageReaderCodecLib.reset()
+        if (J2KIMAGE_READER_CODEC_LIB.equals(
+        		decompressor.getClass().getName())) {
+            decompressor.dispose();
+            ImageReaderFactory f = ImageReaderFactory.getInstance();
+            String ts = theDataset.getFileMetaInfo().getTransferSyntaxUID();
+            decompressor = f.getReaderForTransferSyntax(ts);
+        } else {
+            decompressor.reset();
+        }
         final int nextIndex = imageIndex + 1;
         if (nextIndex < frameStartPos.length && frameStartPos[nextIndex] == 0) {
             this.frameStartPos[nextIndex] = itemParser.seekNextFrame(itemStream);

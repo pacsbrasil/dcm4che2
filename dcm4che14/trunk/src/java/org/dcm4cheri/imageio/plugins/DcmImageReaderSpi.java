@@ -40,6 +40,7 @@ package org.dcm4cheri.imageio.plugins;
 
 import org.dcm4che.data.DcmParseException;
 import org.dcm4che.data.DcmParser;
+import org.dcm4che.data.DcmParserFactory;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -109,8 +110,8 @@ public class DcmImageReaderSpi extends ImageReaderSpi {
             return false;
         }
         
-        DcmParser parser =
-                DcmImageReader.pfact.newDcmParser((ImageInputStream)input);
+        DcmParser parser = DcmParserFactory.getInstance()
+        		.newDcmParser((ImageInputStream)input);
         try {
             parser.detectFileFormat();
             return true;
