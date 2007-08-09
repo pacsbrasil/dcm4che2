@@ -224,3 +224,13 @@ function parsePoint(point) {
 	};	
 	return xy;
 };
+
+/** Tests to see which browser this is. */
+function browserNameFunc() {
+	if( navigator.appName=="Microsoft Internet Explorer" ) {
+		return "IE";
+	}
+	warn("Unknown browser -update browserNameFunc with support for "+navigator.appName);
+	return navigator.appName;
+};
+var browserName = browserNameFunc();

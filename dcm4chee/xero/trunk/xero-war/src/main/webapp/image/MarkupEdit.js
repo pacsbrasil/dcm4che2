@@ -178,7 +178,9 @@ NodeHandles.prototype.updateD = function() {
 	for(i=0; i<this.cmds.length; i++ ) {
 		d = d + this.cmds[i].value;
 	}
-	this.node.setAttributeNS(null,"d",d);
+	// Only one of these will be valid, but do both to make it easy.
+	this.node.setAttribute("d",d);
+	this.node.setAttribute("path",d);
 };
 
 /** Creates the appropriate types of objects for the handles
@@ -207,6 +209,7 @@ NodeHandles.prototype.createSvg = function(group) {
 		addEvent(rect,"mouseup",mup,true);
 		addEvent(rect,"mousemove",mmove,true);	
 		addEvent(rect,"mouseout", mup, true);
+		this.debug("Added events to "+rect);
 	}
 };
 
@@ -267,6 +270,8 @@ NodeHandles.prototype.mouseMove = function(event) {
   if( handle ) {
   	handle.invalidate(dx,dy);
   	this.updateD();
+  } else {
+  	this.warn("The handle for the mouse move seems to be missing?");
   }
 };
 
@@ -407,6 +412,9 @@ function PointHandle(point, handleSize, htype) {
 	this.cmds = new Array();
 };
 
+PointHandle.prototype.debug = debug;
+PointHandle.prototype.info = info;
+
 /**
  * Finalizes point values, setting the starting point to the current one.
  */
@@ -427,8 +435,16 @@ PointHandle.prototype.invalidate = function(dx,dy) {
   for(i=0; i<this.cmds.length; i++ ) {
   	this.cmds[i].invalidate(this);
   }
-  this.rect.setAttributeNS(null,"x",this.x-this.hHandleSize);
-  this.rect.setAttributeNS(null,"y", this.y-this.hHandleSize);
+  if( browserName==="IE") {
+  	this.rect.style.left = this.x-this.hHandleSize;
+  	this.rect.style.top = this.y-this.hHandleSize;
+  	this.debug("Updated rect style left/top.");
+  }
+  else {
+    this.rect.setAttribute("x",this.x-this.hHandleSize);
+    this.rect.setAttribute("y", this.y-this.hHandleSize);
+    this.debug("Setting rect x,y coordinates for svg.");
+  }
 };
 
 /**
@@ -440,14 +456,25 @@ PointHandle.prototype.addCmd = function(cmd) {
 
 /** Creates the SVG that can be dragged and used as a handle by the user. */
 PointHandle.prototype.createSvg = function() {
-	this.rect = document.createElementNS(svgns,"svg:rect");
-	var rect = this.rect;
-	rect.setAttributeNS(null,"x",this.x-this.hHandleSize);
-	rect.setAttributeNS(null,"y", this.y-this.hHandleSize);
-	rect.setAttributeNS(null,"width", this.handleSize);
-	rect.setAttributeNS(null,"height", this.handleSize);
-	rect.setAttributeNS(null,"style", "fill: black; stroke: white;");
+	var rect;
+	if( browserName!=="IE" ) {
+		rect = document.createElementNS(svgns,"svg:rect");
+		rect.setAttribute("x",this.x-this.hHandleSize);
+		rect.setAttribute("y", this.y-this.hHandleSize);
+		rect.setAttribute("width", this.handleSize);
+		rect.setAttribute("height", this.handleSize);
+		rect.setAttribute("style", "fill: black; stroke: white;");
+	} else {
+		rect = document.createElement("v:rect");
+		rect.style.width = this.handleSize;
+		rect.style.height = this.handleSize;
+		rect.style.left = this.x-this.hHandleSize;
+		rect.style.top = this.y - this.hHandleSize;
+		rect.strokecolor="white";
+		rect.fillcolor="black";
+	}
 	rect.handleObj = this;
+	this.rect = rect;
 	return rect;
 };
 
