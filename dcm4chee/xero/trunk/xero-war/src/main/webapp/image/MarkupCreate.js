@@ -73,6 +73,7 @@ MarkupCreate.prototype.findCoords = function(event) {
  * Add a point to an existing poly-line being created, or add a new starting point.
  */
 MarkupCreate.prototype.mouseDown = function(event) {
+	if( !event) event = window.event;
 	if( !isLeftMouse(event) ) return;
 	if( this.creating ) {
 		this.extendObject(event);
@@ -83,7 +84,7 @@ MarkupCreate.prototype.mouseDown = function(event) {
 };
 
 
-EditHandle.prototype.createPolyline = EditHandle.prototype.Polyline;
+NodeHandles.prototype.createPolyline = NodeHandles.prototype.Polyline;
 
 /**
  * Extends a previously created object by the clicked/being clicked on point.
@@ -98,32 +99,47 @@ MarkupCreate.prototype.extendObject = function(event) {
 		return;
 	}
 	var coords = this.findCoords(event);
+	var point = ""+coords;
 	this.debug("Mouse down on markup extend at "+coords);
-	var d = this.creating.getAttribute("d") + " L"+coords;
-	this.creating.setAttribute("d",d);
-	this.removeSelected(this.creating);
-	this.addSelected(this.creating);
-	this.creating.editHandle.mouseDown(event);
+	var cmd = new PointCmd("L",point);
+	var handle = new PointHandle(point,this.handleSize);
+	var posn = -1;
+	if( this.isClosed() ) posn = -2;
+	var newHandle = this.creating.nodeHandles.addNewHandle(handle,cmd,posn);
+	this.creating.nodeHandles.createSvg(this.group);
+	this.creating.nodeHandles.mouseDown(event);
+};
+
+/** Returns true if this is a closed object */
+MarkupCreate.prototype.isClosed = function() {
+	if( this.createType=="Polygon" || this.createType=="Circle" || this.createType=="Ellipse" || this.createType.indexOf("Shutter")>=0 ) return true;
+	return false;	
 };
 
 /**
  * Creates an object of the appropriate current type (caliper in this case.)
  */
 MarkupCreate.prototype.createObject = function(event) {
-	var evtTarget = target(event);
+	var etTarget = target(event);
 	this.group = evtTarget.parentNode;
 	var coords = this.findCoords(event);
 	this.debug("Mouse down on markup create at "+coords);
 	this.creating = document.createElementNS(svgns,"svg:path");
 	var d = "M"+coords+" L"+(coords[0]+1)+","+(coords[1]+1);
 	this.debug("Initial d="+d);
+	if( this.isClosed() ) {
+ 	  d = d+" L"+coords;
+  	  this.creating.setAttribute("style", "fill: green; stroke: white; stroke-width: 1;");
+	}
+	else {
+  	  this.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 1;");
+	}
 	this.creating.setAttribute("d", d);
-	this.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 3;");
 	this.creating.setAttribute("prType","create"+this.createType);
 	this.creating.setAttribute("id","create"+this.createType+Math.random());
 	this.group.appendChild(this.creating);
 	this.addSelected(this.creating);
-	this.creating.editHandle.mouseDown(event);
+	this.creating.nodeHandles.mouseDown(event);
 };
 
 var markupCreate = new MarkupCreate(); 

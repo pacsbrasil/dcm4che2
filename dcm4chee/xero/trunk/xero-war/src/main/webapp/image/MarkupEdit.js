@@ -73,9 +73,10 @@ function MarkupEdit() {
 	this.selected = new Object();
 };
 
-MarkupEdit.prototype.debug = info;
+MarkupEdit.prototype.debug = debug;
 MarkupEdit.prototype.info = info;
-MarkupEdit.prototype.warn = info;
+MarkupEdit.prototype.warn = warn;
+MarkupEdit.prototype.handleSize = 25;
 
 var svgns = 'http://www.w3.org/2000/svg';
 var xlinkns = 'http://www.w3.org/1999/xlink';
@@ -124,9 +125,8 @@ MarkupEdit.prototype.addSelected = function(targ) {
 	this.debug("Selecting "+targ.id);
 	this.selected[targ.id] = targ;
 	// TODO Compute this based on scale, not as an absolute value.
-	var handleSize = 25;
-	targ.editHandle = new EditHandle(targ, handleSize);
-	targ.editHandle.createSvg(this.group, handleSize);
+	targ.nodeHandles = new NodeHandles(targ, this.handleSize);
+	targ.nodeHandles.createSvg(this.group, this.handleSize);
 };
 
 /** Removes all selected items, also clearing all edit handles */
@@ -134,7 +134,7 @@ MarkupEdit.prototype.clearSelected = function() {
 	this.debug("Clearing all selected.");
 	for(var i in this.selected) {
 		this.debug("Found markup edit selected item "+i);
-		if( this.selected[i] && this.selected[i].editHandle )	this.selected[i].editHandle.clearSelected();
+		if( this.selected[i] && this.selected[i].nodeHandles )	this.selected[i].nodeHandles.clearSelected();
 	}
 	this.selected = new Object();	
 };
@@ -149,7 +149,7 @@ MarkupEdit.prototype.isSelected = function(targ) {
 /** Removes targ from the selected items, also clearing any edit handles. */
 MarkupEdit.prototype.removeSelected = function(targ) {
 	this.debug("Removing selection from "+targ.id);
-	if( this.selected[targ.id] && this.selected[targ.id].editHandle )	this.selected[targ.id].editHandle.clearSelected();
+	if( this.selected[targ.id] && this.selected[targ.id].nodeHandles )	this.selected[targ.id].nodeHandles.clearSelected();
 	this.selected[targ.id] = null;
 };
 
@@ -161,18 +161,18 @@ var markupEdit = new MarkupEdit();
  * @param {Element} node
  * @param {Number} size
  */
-function EditHandle(node, size) {
+function NodeHandles(node, size) {
 	this.node = node;
 	this.handleSize = size;
 	this.createHandles(node);
 };
 
-EditHandle.prototype.debug = debug;
-EditHandle.prototype.info = info;
-EditHandle.prototype.warn = info;
+NodeHandles.prototype.debug = debug;
+NodeHandles.prototype.info = info;
+NodeHandles.prototype.warn = warn;
 
 /** Updates the path d (and also potentially the path element path for VML). */
-EditHandle.prototype.updateD = function() {
+NodeHandles.prototype.updateD = function() {
 	var d = "";
 	var i=0;
 	for(i=0; i<this.cmds.length; i++ ) {
@@ -188,7 +188,7 @@ EditHandle.prototype.updateD = function() {
  * @return {Array} of SVG objects that comprise the handles (or vml for IE)
 * @r
  */
-EditHandle.prototype.createSvg = function(group) {
+NodeHandles.prototype.createSvg = function(group) {
 	var i;
 	var handle;
 	var rect;
@@ -200,6 +200,7 @@ EditHandle.prototype.createSvg = function(group) {
 	this.group = group;
 	for(i=0; i<this.handles.length; i++ ) {
 		handle = this.handles[i];
+		if( handle.rect ) continue;
 		rect = handle.createSvg()
 		group.appendChild(rect);
 		addEvent(rect,"mousedown",mdown,true);
@@ -209,7 +210,7 @@ EditHandle.prototype.createSvg = function(group) {
 	}
 };
 
-EditHandle.prototype.clearSelected = function() {
+NodeHandles.prototype.clearSelected = function() {
 	var i;
 	if( this.handles ) {
 		for(i=0; i<this.handles.length; i++) {
@@ -222,8 +223,9 @@ EditHandle.prototype.clearSelected = function() {
  * Handles mouse down events on the handle - starts to drag, can set updates etc.
  * @param {Event} event
  */
-EditHandle.prototype.mouseDown = function(event) {
+NodeHandles.prototype.mouseDown = function(event) {
   if( this.handleDragging ) return;
+  if( !event) event = window.event;
   this.debug("Mouse down on handle.");
   this.handleDragging = true;
   this.startX = event.clientX;
@@ -233,8 +235,9 @@ EditHandle.prototype.mouseDown = function(event) {
 /**
  * Handles mouse up events on the handle - stops dragging, and posts the update to the server
  */
-EditHandle.prototype.mouseUp = function(event) {
+NodeHandles.prototype.mouseUp = function(event) {
   if( !this.handleDragging ) return;
+  if( !event) event = window.event;
   this.mouseMove(event);
   this.debug("Done dragging a handle.");
   this.handleDragging = false;
@@ -248,8 +251,9 @@ EditHandle.prototype.mouseUp = function(event) {
  * Handles mouse movement on the handle.  Updates the handle position in the source data.
  * @param {Event} event
  */
-EditHandle.prototype.mouseMove = function(event) {
+NodeHandles.prototype.mouseMove = function(event) {
   if( ! this.handleDragging ) return;
+  if( !event) event = window.event;
   var dx = event.clientX-this.startX;
   var dy = event.clientY-this.startY;
   var pnt;
@@ -269,7 +273,7 @@ EditHandle.prototype.mouseMove = function(event) {
 /** Returns the index of the next letter position, -1 if past the end of the string, OR the end string length
  * if not yet past the end of the string.
  */
-EditHandle.prototype.nextLetterIndex = function (str, pos) {
+NodeHandles.prototype.nextLetterIndex = function (str, pos) {
 	if( pos>=str.length) return -1;
 	var i = pos+1;
 	var ch;
@@ -285,7 +289,7 @@ EditHandle.prototype.nextLetterIndex = function (str, pos) {
  * Gets the draw command as a string - returns the initial substring containing the upper and lower
  * characters, eg M128,256 would return M, while at128,256 would return at.  Assume at least one character.
  */
-EditHandle.prototype.drawCommand = function(str) {
+NodeHandles.prototype.drawCommand = function(str) {
 	var i = 1;
 	var ch;
 	while( i<str.length ) {
@@ -299,7 +303,7 @@ EditHandle.prototype.drawCommand = function(str) {
 
 
 /** Checkes to see if handle exists, and if it doesn't, then add it as a handle */
-EditHandle.prototype.addHandle = function(handle,cmd) {
+NodeHandles.prototype.addHandle = function(handle,cmd) {
 	var handles = this.handles;
 	var len = handles.length;
 	var i;
@@ -315,13 +319,25 @@ EditHandle.prototype.addHandle = function(handle,cmd) {
 	return handle;
 };
 
+/** Adds a new handle to an existing, fully shown object
+ * @param {Array} this.cmds
+ */
+NodeHandles.prototype.addNewHandle = function(handle,cmd,posn) {
+	if( posn<0 ) posn += this.cmds.length+1;
+	if( posn<0 ) return;
+	if( posn>this.cmds.length ) return;
+	this.cmds.splice(posn,0,cmd);
+	var useHandle = this.addHandle(handle,cmd);
+	return useHandle;
+};
+
 /** Creates an array of the handle points for dragging, as well as creating the cmds list
  * associated with the handles.
  */
-EditHandle.prototype.createHandles = function(targ) {
+NodeHandles.prototype.createHandles = function(targ) {
 	var dstr = targ.getAttribute("d");
 	var prType = targ.getAttribute("prType");
-	if( !prType ) prType = guessPrType(targ,dstr);
+	if( !prType ) prType = this.guessPrType(targ,dstr);
 	this.debug("Looks like prType to edit is "+prType);
 	if( !prType ) {
 		log.info("No prType for "+targ.getAttribute("id"));
@@ -338,16 +354,16 @@ EditHandle.prototype.createHandles = function(targ) {
  * @param {Element} targ
  * @param {String} dstr
  */
-EditHandle.prototype.guessPrType = function(targ,dstr) {
+NodeHandles.prototype.guessPrType = function(targ,dstr) {
 	var matches = dstr.match(/[^ \t,.0-9lmLM]/);
-	if( matches.length==0 ) return "Polyline";
+	if( !matches ) return "Polyline";
 	return null;
 };
 
 /**
  * Creates handles for polylines
  */
-EditHandle.prototype.Polyline = function(targ,dstr) {
+NodeHandles.prototype.Polyline = function(targ,dstr) {
 	this.cmds = new Array();
 	this.handles = new Array();
 	var i = 0;
@@ -376,9 +392,11 @@ EditHandle.prototype.Polyline = function(targ,dstr) {
 
 
 /** A point handle is a standard handle that adjusts one or more values all in exactly the same way
- * when it is moved.
+ * when it is moved.  Point handles can have types that define how some other objects move relative to 
+ * them (eg center, major axis, minor axis, etc).  This must be defined by customized PointCmd objects.
  */
-function PointHandle(point, handleSize) {
+function PointHandle(point, handleSize, htype) {
+	this.htype = htype;
 	var xy = parsePoint(point);
 	this.startX = xy[0];
 	this.startY = xy[1];
