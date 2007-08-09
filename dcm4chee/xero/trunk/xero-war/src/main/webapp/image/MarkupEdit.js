@@ -229,6 +229,7 @@ NodeHandles.prototype.clearSelected = function() {
 NodeHandles.prototype.mouseDown = function(event) {
   if( this.handleDragging ) return;
   if( !event) event = window.event;
+  if( !isLeftMouse(event) ) return;
   this.debug("Mouse down on handle.");
   this.handleDragging = true;
   this.startX = event.clientX;
@@ -241,7 +242,7 @@ NodeHandles.prototype.mouseDown = function(event) {
 NodeHandles.prototype.mouseUp = function(event) {
   if( !this.handleDragging ) return;
   if( !event) event = window.event;
-  this.mouseMove(event);
+  this.mouseMove(event,true);
   this.debug("Done dragging a handle.");
   this.handleDragging = false;
   var i;
@@ -254,8 +255,9 @@ NodeHandles.prototype.mouseUp = function(event) {
  * Handles mouse movement on the handle.  Updates the handle position in the source data.
  * @param {Event} event
  */
-NodeHandles.prototype.mouseMove = function(event) {
+NodeHandles.prototype.mouseMove = function(event, ignoreMouseDown) {
   if( ! this.handleDragging ) return;
+  if( (!ignoreMouseDown) && (!isLeftMouse(event)) ) return;
   if( !event) event = window.event;
   var dx = event.clientX-this.startX;
   var dy = event.clientY-this.startY;

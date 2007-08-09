@@ -45,7 +45,7 @@ function MarkupCreate() {
 };
 
 MarkupCreate.prototype = new MarkupEdit();
-MarkupCreate.prototype.debug = info;
+MarkupCreate.prototype.debug = debug;
 MarkupCreate.prototype.createType = "Polyline";
 
 /**
@@ -56,14 +56,14 @@ MarkupCreate.prototype.createType = "Polyline";
 MarkupCreate.prototype.findCoords = function(event) {
 	var scl = this.group.getAttribute("scl");
 	// Non-standard attribute, but always present for VML compatibility.
-	var origin = parsePoint(this.group.getAttribute("coordorigin"));
+	var origin = parsePoint(""+this.group.getAttribute("coordorigin"));
 	var x,y;
 	if( event.layerX ) {
-	  x = Math.floor(event.layerX / scl - origin[0]);
-	  y = Math.floor(event.layerY / scl - origin[1]);
+	  x = Math.floor(event.layerX / scl + origin[0]);
+	  y = Math.floor(event.layerY / scl + origin[1]);
 	} else {
-	  x = Math.floor(event.x / scl - origin[0]);
-	  y = Math.floor(event.y / scl - origin[1]);
+	  x = Math.floor(event.offsetX / scl);
+	  y = Math.floor(event.offsetY / scl);
 	}
 	this.debug("findCoords layer x,y / scl = "+x+","+y+" scl="+scl+" origin="+origin);
 	return [x , y];
@@ -108,6 +108,7 @@ MarkupCreate.prototype.extendObject = function(event) {
 	var newHandle = this.creating.nodeHandles.addNewHandle(handle,cmd,posn);
 	this.creating.nodeHandles.createSvg(this.group);
 	this.creating.nodeHandles.mouseDown(event);
+	this.creating.nodeHandles.updateD();
 };
 
 /** Returns true if this is a closed object */
@@ -120,19 +121,41 @@ MarkupCreate.prototype.isClosed = function() {
  * Creates an object of the appropriate current type (caliper in this case.)
  */
 MarkupCreate.prototype.createObject = function(event) {
-	var etTarget = target(event);
+	var evtTarget = target(event);
 	this.group = evtTarget.parentNode;
 	var coords = this.findCoords(event);
 	this.debug("Mouse down on markup create at "+coords);
-	this.creating = document.createElementNS(svgns,"svg:path");
+	if( browserName==="IE") {
+		this.creating = document.createElement("v:shape");	
+	}
+	else {
+  		this.creating = document.createElementNS(svgns,"svg:path");
+	}
 	var d = "M"+coords+" L"+(coords[0]+1)+","+(coords[1]+1);
 	this.debug("Initial d="+d);
 	if( this.isClosed() ) {
- 	  d = d+" L"+coords;
-  	  this.creating.setAttribute("style", "fill: green; stroke: white; stroke-width: 1;");
+ 		d = d+" L"+coords;
+  		this.creating.setAttribute("style", "fill: green; stroke: white; stroke-width: 1;");
+ 		this.creating.setAttribute("filled", "t");
 	}
 	else {
-  	  this.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 1;");
+		this.creating.setAttribute("filled", "f");
+  		this.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 1;");
+	}
+	var csize, corg;
+	if( browserName==="IE") {
+		this.creating.setAttribute("strokecolor", "white");
+		this.creating.setAttribute("fillcolor", "green");
+		this.creating.setAttribute("path",d);
+		csize = parsePoint(""+this.group.getAttribute("coordsize"));
+		corg = parsePoint(""+this.group.getAttribute("coordorigin"));
+		// This value will be fine for the displayed area, but if the user pans to add more 
+		// markup, then it won't be big enough - that doesn't seem to make any difference, however.
+		csize[0] = csize[0] + corg[0];
+		csize[1] = csize[1] + corg[1];
+		this.creating.setAttribute("coordsize", csize);
+		this.creating.style.width  = csize[0];
+		this.creating.style.height = csize[1];
 	}
 	this.creating.setAttribute("d", d);
 	this.creating.setAttribute("prType","create"+this.createType);

@@ -218,7 +218,7 @@ function findByRef(numId) {
  * @param {String} point
  */
 function parsePoint(point) {
-	var xy = point.match(/[0-9.]+/g);
+	var xy = point.match(/[\-0-9.]+/g);
 	for(var i=0; i<xy.length; i++) {
 		xy[i] = parseInt(xy[i]);
 	};	
