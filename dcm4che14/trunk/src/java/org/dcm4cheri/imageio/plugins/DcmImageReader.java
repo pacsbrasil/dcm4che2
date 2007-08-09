@@ -88,8 +88,8 @@ public class DcmImageReader extends ImageReader {
 
     private static final Logger log = Logger.getLogger(DcmImageReader.class);
     
-    private static final String J2KIMAGE_READER_CODEC_LIB = 
-		"com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib";
+    private static final String J2KIMAGE_READER = 
+		"com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
     
     private static final ColorModelFactory cmFactory = ColorModelFactory
             .getInstance();
@@ -566,9 +566,8 @@ public class DcmImageReader extends ImageReader {
         itemStream.seek(this.frameStartPos[imageIndex]);
         decompressor.setInput(itemStream);
         BufferedImage bi = decompressor.read(0, readParam);
-        // workaround for Bug in J2KImageReaderCodecLib.reset()
-        if (J2KIMAGE_READER_CODEC_LIB.equals(
-        		decompressor.getClass().getName())) {
+        // workaround for Bug in J2KImageReader and J2KImageReaderCodecLib.setInput()
+        if (decompressor.getClass().getName().startsWith(J2KIMAGE_READER)) {
             decompressor.dispose();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             String ts = theDataset.getFileMetaInfo().getTransferSyntaxUID();
