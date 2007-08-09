@@ -47,9 +47,9 @@
  * @return [x,y] document based coordinates.
  * @author tarquinwj (public code in posted as demo)
  */
-function findCoords(e) {
+function docCoords(e) {
    if( !e ) { e = window.event; } if( !e || ( typeof( e.pageX ) != 'number' && typeof( e.clientX ) != 'number' ) ) { return [ 0, 0 ]; }
-   if( typeof( e.pageX ) == 'number' ) { var posX = e.pageX; var posY = e.pageY; } else {
+   if( typeof( e.pageX ) == 'number' ) { return [e.pageX,e.pageY];} else {
       var posX = e.clientX; var posY = e.clientY;
       if( !( ( window.navigator.userAgent.indexOf( 'Opera' ) + 1 ) || ( window.ScriptEngine && ScriptEngine().indexOf( 'InScript' ) + 1 ) || window.navigator.vendor == 'KDE' ) ) {
          if( document.documentElement && ( document.documentElement.scrollTop || document.documentElement.scrollLeft ) ) {
@@ -141,6 +141,18 @@ function ttrace(msg) {
 function notrace(msg) {
 };
 
+/** Dumps an object, complete with all attributes */
+function dumpObj(msg,obj) {
+	var e;
+	try {
+  		for(var v in obj) {
+			info(msg+"."+v+"="+obj[v]);
+		}	
+	} catch(e) {
+		warn("<b>Caught exception while dumping:"+e+"</b>");
+	}
+};
+
 function debug(msg) {
 	if( level<=0) {
 		ttrace(msg);
@@ -200,4 +212,15 @@ function findByRef(numId) {
 		search = numId.substring(octothorpe+1);
 	}
 	return document.getElementById(search);
+};
+
+/** Parses a point into some number of numbers as an array.  
+ * @param {String} point
+ */
+function parsePoint(point) {
+	var xy = point.match(/[0-9.]+/g);
+	for(var i=0; i<xy.length; i++) {
+		xy[i] = parseInt(xy[i]);
+	};	
+	return xy;
 };

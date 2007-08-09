@@ -35,3 +35,95 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+
+ /**
+  * MarkupCreate is a class that allows creation of various types of markups. 
+  * The user selects the create markup mode, and then starts clicking on the image.
+  * The length of the caliper and the caliper itself should be drawn.  
+  */
+function MarkupCreate() {
+};
+
+MarkupCreate.prototype = new MarkupEdit();
+MarkupCreate.prototype.debug = info;
+MarkupCreate.prototype.createType = "Polyline";
+
+/**
+ * Convert from event to SVG/VML image based coordinates (NOT display coordinates)
+ * Must have group (SVG element or VML group element) defined.
+ * @return [ x, y ]
+ */
+MarkupCreate.prototype.findCoords = function(event) {
+	var scl = this.group.getAttribute("scl");
+	// Non-standard attribute, but always present for VML compatibility.
+	var origin = parsePoint(this.group.getAttribute("coordorigin"));
+	var x,y;
+	if( event.layerX ) {
+	  x = Math.floor(event.layerX / scl - origin[0]);
+	  y = Math.floor(event.layerY / scl - origin[1]);
+	} else {
+	  x = Math.floor(event.x / scl - origin[0]);
+	  y = Math.floor(event.y / scl - origin[1]);
+	}
+	this.debug("findCoords layer x,y / scl = "+x+","+y+" scl="+scl+" origin="+origin);
+	return [x , y];
+};
+
+/**
+ * Add a point to an existing poly-line being created, or add a new starting point.
+ */
+MarkupCreate.prototype.mouseDown = function(event) {
+	if( !isLeftMouse(event) ) return;
+	if( this.creating ) {
+		this.extendObject(event);
+	}
+	else {
+		this.createObject(event);
+	}
+};
+
+
+EditHandle.prototype.createPolyline = EditHandle.prototype.Polyline;
+
+/**
+ * Extends a previously created object by the clicked/being clicked on point.
+ * @param {Event} event
+ */
+MarkupCreate.prototype.extendObject = function(event) {
+	var evtTarget = target(event);
+	var clickGroup = evtTarget.parentNode;
+	// TODO -finalize the previous item, and create a new one rather than ignoring.
+	if( clickGroup != this.group ) {
+		this.info("Should finalize old item and start a new item.");
+		return;
+	}
+	var coords = this.findCoords(event);
+	this.debug("Mouse down on markup extend at "+coords);
+	var d = this.creating.getAttribute("d") + " L"+coords;
+	this.creating.setAttribute("d",d);
+	this.removeSelected(this.creating);
+	this.addSelected(this.creating);
+	this.creating.editHandle.mouseDown(event);
+};
+
+/**
+ * Creates an object of the appropriate current type (caliper in this case.)
+ */
+MarkupCreate.prototype.createObject = function(event) {
+	var evtTarget = target(event);
+	this.group = evtTarget.parentNode;
+	var coords = this.findCoords(event);
+	this.debug("Mouse down on markup create at "+coords);
+	this.creating = document.createElementNS(svgns,"svg:path");
+	var d = "M"+coords+" L"+(coords[0]+1)+","+(coords[1]+1);
+	this.debug("Initial d="+d);
+	this.creating.setAttribute("d", d);
+	this.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 3;");
+	this.creating.setAttribute("prType","create"+this.createType);
+	this.creating.setAttribute("id","create"+this.createType+Math.random());
+	this.group.appendChild(this.creating);
+	this.addSelected(this.creating);
+	this.creating.editHandle.mouseDown(event);
+};
+
+var markupCreate = new MarkupCreate(); 

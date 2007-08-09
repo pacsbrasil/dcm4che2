@@ -117,7 +117,7 @@ MarkupEdit.prototype.mouseDown = function(evt) {
   return true;
 };
 
-/** Adds tar to the selected set, displaying appropriate edit handles.
+/** Adds targ to the selected set, displaying appropriate edit handles.
  * @param {Element} targ
  */
 MarkupEdit.prototype.addSelected = function(targ) {
@@ -202,10 +202,10 @@ EditHandle.prototype.createSvg = function(group) {
 		handle = this.handles[i];
 		rect = handle.createSvg()
 		group.appendChild(rect);
-		rect.addEventListener("mousedown",mdown,true);
-		rect.addEventListener("mouseup",mup,true);
-		rect.addEventListener("mousemove",mmove,true);	
-		rect.addEventListener("mouseout", mup, true);
+		addEvent(rect,"mousedown",mdown,true);
+		addEvent(rect,"mouseup",mup,true);
+		addEvent(rect,"mousemove",mmove,true);	
+		addEvent(rect,"mouseout", mup, true);
 	}
 };
 
@@ -320,6 +320,34 @@ EditHandle.prototype.addHandle = function(handle,cmd) {
  */
 EditHandle.prototype.createHandles = function(targ) {
 	var dstr = targ.getAttribute("d");
+	var prType = targ.getAttribute("prType");
+	if( !prType ) prType = guessPrType(targ,dstr);
+	this.debug("Looks like prType to edit is "+prType);
+	if( !prType ) {
+		log.info("No prType for "+targ.getAttribute("id"));
+		return false;
+	}
+	if( ! this[prType] ) {
+		this.info("o handler for prType "+prType);
+		return false;
+	}
+	return this[prType](targ,dstr);
+};
+
+/** Guesses the type of an object.  
+ * @param {Element} targ
+ * @param {String} dstr
+ */
+EditHandle.prototype.guessPrType = function(targ,dstr) {
+	var matches = dstr.match(/[^ \t,.0-9lmLM]/);
+	if( matches.length==0 ) return "Polyline";
+	return null;
+};
+
+/**
+ * Creates handles for polylines
+ */
+EditHandle.prototype.Polyline = function(targ,dstr) {
 	this.cmds = new Array();
 	this.handles = new Array();
 	var i = 0;
@@ -330,7 +358,7 @@ EditHandle.prototype.createHandles = function(targ) {
 		cur = dstr.substr(i,next-i);
 		i = next;
 		next = this.nextLetterIndex(dstr,i);
-		cmd = this.drawCommand(cur);		
+		cmd = this.drawCommand(cur);
 		args = cur.substr(cmd.length);
 		if( cmd === "M" || cmd==="L" ) {
 			cmd = new PointCmd(cmd,args);
@@ -341,8 +369,9 @@ EditHandle.prototype.createHandles = function(targ) {
 		}
 		else {
 			this.warn("Unknown handle type "+cmd + " with args "+args);
-		}		
+		}	
 	}
+	return true;
 };
 
 
@@ -350,9 +379,9 @@ EditHandle.prototype.createHandles = function(targ) {
  * when it is moved.
  */
 function PointHandle(point, handleSize) {
-	var xy = point.match(/\d+/g);
-	this.startX = parseInt(xy[0]);
-	this.startY = parseInt(xy[1]);
+	var xy = parsePoint(point);
+	this.startX = xy[0];
+	this.startY = xy[1];
 	this.x = this.startX;
 	this.y = this.startY;
 	this.hHandleSize = handleSize/2;
