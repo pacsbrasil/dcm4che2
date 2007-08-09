@@ -76,7 +76,7 @@ function MarkupEdit() {
 MarkupEdit.prototype.debug = debug;
 MarkupEdit.prototype.info = info;
 MarkupEdit.prototype.warn = warn;
-MarkupEdit.prototype.handleSize = 25;
+MarkupEdit.prototype.defaultHandleSize = 12;
 
 var svgns = 'http://www.w3.org/2000/svg';
 var xlinkns = 'http://www.w3.org/1999/xlink';
@@ -96,6 +96,8 @@ MarkupEdit.prototype.mouseDown = function(evt) {
   	// TODO - get the real group (how? - iterate over all the nodes and see which one contains the clicked item?)
   	this.group = document.getElementsByTagNameNS(svgns,"image").item(0).parentNode;
   }
+  var scl = this.group.getAttribute("scl");
+  this.handleSize = Math.floor(this.defaultHandleSize/scl+1);
   this.debug("Clicked on "+evtTarget.tagName+" id="+evtTarget.id+" isTag shape="+isTag(evtTarget,"shape"));
   if(!evt.ctrlKey ) {
   	// This event adds/remove just this object
@@ -171,16 +173,22 @@ NodeHandles.prototype.debug = debug;
 NodeHandles.prototype.info = info;
 NodeHandles.prototype.warn = warn;
 
-/** Updates the path d (and also potentially the path element path for VML). */
+/** Updates the path d (and also potentially the path element path for VML),
+ * along with any other information dependent on the path (eg a text line summary if one exists.)
+ */
 NodeHandles.prototype.updateD = function() {
+	this.prObj.updateD(this);
+};
+
+function defaultUpdateD(useThis) {
 	var d = "";
 	var i=0;
-	for(i=0; i<this.cmds.length; i++ ) {
-		d = d + this.cmds[i].value;
+	for(i=0; i<useThis.cmds.length; i++ ) {
+		d = d + useThis.cmds[i].value;
 	}
 	// Only one of these will be valid, but do both to make it easy.
-	this.node.setAttribute("d",d);
-	this.node.setAttribute("path",d);
+	useThis.node.setAttribute("d",d);
+	useThis.node.setAttribute("path",d);
 };
 
 /** Creates the appropriate types of objects for the handles
@@ -277,37 +285,6 @@ NodeHandles.prototype.mouseMove = function(event, ignoreMouseDown) {
   }
 };
 
-/** Returns the index of the next letter position, -1 if past the end of the string, OR the end string length
- * if not yet past the end of the string.
- */
-NodeHandles.prototype.nextLetterIndex = function (str, pos) {
-	if( pos>=str.length) return -1;
-	var i = pos+1;
-	var ch;
-	while( i<str.length ) {
-		ch = str.charAt(i);
-		if( (ch>='a' && ch <='z') || (ch>='A' && ch<='Z') ) return i;
-		i = i+1;
-	};
-	return i;
-};
-
-/**
- * Gets the draw command as a string - returns the initial substring containing the upper and lower
- * characters, eg M128,256 would return M, while at128,256 would return at.  Assume at least one character.
- */
-NodeHandles.prototype.drawCommand = function(str) {
-	var i = 1;
-	var ch;
-	while( i<str.length ) {
-		ch = str.charAt(i);
-		if( (ch>='a' && ch <='z') || (ch>='A' && ch<='Z') ) continue;
-		return str.substr(0,i);
-	};
-	return str;
-};
-
-
 
 /** Checkes to see if handle exists, and if it doesn't, then add it as a handle */
 NodeHandles.prototype.addHandle = function(handle,cmd) {
@@ -351,10 +328,11 @@ NodeHandles.prototype.createHandles = function(targ) {
 		return false;
 	}
 	if( ! this[prType] ) {
-		this.info("o handler for prType "+prType);
+		this.info("No handler for prType "+prType);
 		return false;
 	}
-	return this[prType](targ,dstr);
+	this.prObj = this[prType];
+	return this.prObj.createHandles(this,targ,dstr);
 };
 
 /** Guesses the type of an object.  
@@ -370,9 +348,49 @@ NodeHandles.prototype.guessPrType = function(targ,dstr) {
 /**
  * Creates handles for polylines
  */
-NodeHandles.prototype.Polyline = function(targ,dstr) {
-	this.cmds = new Array();
-	this.handles = new Array();
+function Polyline() {
+};
+
+Polyline.prototype.debug = debug;
+Polyline.prototype.info = info;
+Polyline.prototype.warn = warn;
+
+Polyline.prototype.prType = "Polyline";
+
+/** Returns the index of the next letter position, -1 if past the end of the string, OR the end string length
+ * if not yet past the end of the string.
+ */
+Polyline.prototype.nextLetterIndex = function (str, pos) {
+	if( pos>=str.length) return -1;
+	var i = pos+1;
+	var ch;
+	while( i<str.length ) {
+		ch = str.charAt(i);
+		if( (ch>='a' && ch <='z') || (ch>='A' && ch<='Z') ) return i;
+		i = i+1;
+	};
+	return i;
+};
+
+/**
+ * Gets the draw command as a string - returns the initial substring containing the upper and lower
+ * characters, eg M128,256 would return M, while at128,256 would return at.  Assume at least one character.
+ */
+Polyline.prototype.drawCommand = function(str) {
+	var i = 1;
+	var ch;
+	while( i<str.length ) {
+		ch = str.charAt(i);
+		if( (ch>='a' && ch <='z') || (ch>='A' && ch<='Z') ) continue;
+		return str.substr(0,i);
+	};
+	return str;
+};
+
+
+Polyline.prototype.createHandles = function(nodeHandles, targ,dstr) {
+	nodeHandles.cmds = new Array();
+	nodeHandles.handles = new Array();
 	var i = 0;
 	var next = this.nextLetterIndex(dstr,i);
 	var cur;
@@ -385,10 +403,10 @@ NodeHandles.prototype.Polyline = function(targ,dstr) {
 		args = cur.substr(cmd.length);
 		if( cmd === "M" || cmd==="L" ) {
 			cmd = new PointCmd(cmd,args);
-			handle = new PointHandle(args, this.handleSize);
-			this.cmds.push(cmd);
+			handle = new PointHandle(args, nodeHandles.handleSize);
+			nodeHandles.cmds.push(cmd);
   		    this.debug("Cmd at "+cmd);
-  		    this.addHandle(handle,cmd);
+  		    nodeHandles.addHandle(handle,cmd);
 		}
 		else {
 			this.warn("Unknown handle type "+cmd + " with args "+args);
@@ -396,6 +414,10 @@ NodeHandles.prototype.Polyline = function(targ,dstr) {
 	}
 	return true;
 };
+
+Polyline.prototype.updateD = defaultUpdateD;
+
+NodeHandles.prototype.Polyline = Polyline.prototype;
 
 
 /** A point handle is a standard handle that adjusts one or more values all in exactly the same way

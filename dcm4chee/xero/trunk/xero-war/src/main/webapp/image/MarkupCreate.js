@@ -46,7 +46,7 @@ function MarkupCreate() {
 
 MarkupCreate.prototype = new MarkupEdit();
 MarkupCreate.prototype.debug = debug;
-MarkupCreate.prototype.createType = "Polyline";
+MarkupCreate.prototype.prObj = new Polyline();
 
 /**
  * Convert from event to SVG/VML image based coordinates (NOT display coordinates)
@@ -55,8 +55,8 @@ MarkupCreate.prototype.createType = "Polyline";
  */
 MarkupCreate.prototype.findCoords = function(event) {
 	var scl = this.group.getAttribute("scl");
-	// Non-standard attribute, but always present for VML compatibility.
-	var origin = parsePoint(""+this.group.getAttribute("coordorigin"));
+	// Non-standard attribute, but always present for VML compatibility. 
+	var origin = parsePoint(this.group.getAttribute("coordorigin"));
 	var x,y;
 	if( event.layerX ) {
 	  x = Math.floor(event.layerX / scl + origin[0]);
@@ -99,22 +99,20 @@ MarkupCreate.prototype.extendObject = function(event) {
 		return;
 	}
 	var coords = this.findCoords(event);
-	var point = ""+coords;
 	this.debug("Mouse down on markup extend at "+coords);
-	var cmd = new PointCmd("L",point);
-	var handle = new PointHandle(point,this.handleSize);
-	var posn = -1;
-	if( this.isClosed() ) posn = -2;
-	var newHandle = this.creating.nodeHandles.addNewHandle(handle,cmd,posn);
-	this.creating.nodeHandles.createSvg(this.group);
-	this.creating.nodeHandles.mouseDown(event);
-	this.creating.nodeHandles.updateD();
+	this.prObj.extendObject(this,event,coords);
 };
-
-/** Returns true if this is a closed object */
-MarkupCreate.prototype.isClosed = function() {
-	if( this.createType=="Polygon" || this.createType=="Circle" || this.createType=="Ellipse" || this.createType.indexOf("Shutter")>=0 ) return true;
-	return false;	
+	
+Polyline.prototype.extendObject = function(create, event, coords)  {
+	var point = ""+coords;
+	var cmd = new PointCmd("L",point);
+	var handle = new PointHandle(point,create.handleSize);
+	var posn = -1;
+	if( this.closed ) posn = -2;
+	var newHandle = create.creating.nodeHandles.addNewHandle(handle,cmd,posn);
+	create.creating.nodeHandles.createSvg(create.group);
+	create.creating.nodeHandles.mouseDown(event);
+	create.creating.nodeHandles.updateD();
 };
 
 /**
@@ -123,46 +121,53 @@ MarkupCreate.prototype.isClosed = function() {
 MarkupCreate.prototype.createObject = function(event) {
 	var evtTarget = target(event);
 	this.group = evtTarget.parentNode;
+	var scl = this.group.getAttribute("scl");
+	this.handleSize = Math.floor(this.defaultHandleSize/scl+1);
 	var coords = this.findCoords(event);
 	this.debug("Mouse down on markup create at "+coords);
+	this.prObj.createObject(this,event,coords);
+};
+
+/** This handles the creation code specific to Polylines. */
+Polyline.prototype.createObject = function(create,event,coords) {
 	if( browserName==="IE") {
-		this.creating = document.createElement("v:shape");	
+		create.creating = document.createElement("v:shape");	
 	}
 	else {
-  		this.creating = document.createElementNS(svgns,"svg:path");
+  		create.creating = document.createElementNS(svgns,"svg:path");
 	}
 	var d = "M"+coords+" L"+(coords[0]+1)+","+(coords[1]+1);
 	this.debug("Initial d="+d);
-	if( this.isClosed() ) {
+	if( this.closed ) {
  		d = d+" L"+coords;
-  		this.creating.setAttribute("style", "fill: green; stroke: white; stroke-width: 1;");
- 		this.creating.setAttribute("filled", "t");
+  		create.creating.setAttribute("style", "fill: green; stroke: white; stroke-width: 1;");
+ 		create.creating.setAttribute("filled", "t");
 	}
 	else {
-		this.creating.setAttribute("filled", "f");
-  		this.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 1;");
+		create.creating.setAttribute("filled", "f");
+  		create.creating.setAttribute("style", "fill: none; stroke: white; stroke-width: 1;");
 	}
 	var csize, corg;
 	if( browserName==="IE") {
-		this.creating.setAttribute("strokecolor", "white");
-		this.creating.setAttribute("fillcolor", "green");
-		this.creating.setAttribute("path",d);
-		csize = parsePoint(""+this.group.getAttribute("coordsize"));
-		corg = parsePoint(""+this.group.getAttribute("coordorigin"));
+		create.creating.setAttribute("strokecolor", "white");
+		create.creating.setAttribute("fillcolor", "green");
+		create.creating.setAttribute("path",d);
+		csize = parsePoint(create.group.getAttribute("coordsize"));
+		corg = parsePoint(create.group.getAttribute("coordorigin"));
 		// This value will be fine for the displayed area, but if the user pans to add more 
 		// markup, then it won't be big enough - that doesn't seem to make any difference, however.
 		csize[0] = csize[0] + corg[0];
 		csize[1] = csize[1] + corg[1];
-		this.creating.setAttribute("coordsize", csize);
-		this.creating.style.width  = csize[0];
-		this.creating.style.height = csize[1];
+		create.creating.setAttribute("coordsize", csize);
+		create.creating.style.width  = csize[0];
+		create.creating.style.height = csize[1];
 	}
-	this.creating.setAttribute("d", d);
-	this.creating.setAttribute("prType","create"+this.createType);
-	this.creating.setAttribute("id","create"+this.createType+Math.random());
-	this.group.appendChild(this.creating);
-	this.addSelected(this.creating);
-	this.creating.nodeHandles.mouseDown(event);
+	create.creating.setAttribute("d", d);
+	create.creating.setAttribute("prType",this.prType);
+	create.creating.setAttribute("id",this.prType+Math.random());
+	create.group.appendChild(create.creating);
+	create.addSelected(create.creating);
+	create.creating.nodeHandles.mouseDown(event);
 };
 
 var markupCreate = new MarkupCreate(); 
