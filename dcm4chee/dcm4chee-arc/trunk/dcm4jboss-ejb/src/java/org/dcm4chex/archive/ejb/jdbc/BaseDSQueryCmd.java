@@ -116,7 +116,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
             el = (DcmElement) iter.next();
             tag = el.tag();
             if (el.isEmpty() || tag == Tags.SpecificCharacterSet
-                    || Tags.isPrivateCreatorDataElement(tag)) {
+                    || Tags.isPrivate(tag)) {
                 continue;
             }
             if ( el.vr() != VRs.SQ ) {
