@@ -454,6 +454,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
         FileSystemLocal prev0 = getRWFileSystem(dto);
         FileSystemLocal fs;
         if (prev0 == null) {
+        	dto.setStatus(FileSystemStatus.DEF_RW);
             fs = fileSystemHome.create(dto);
             if (dto.getAvailability() == Availability.ONLINE) {
                 fs.setNextFileSystem(fs);
