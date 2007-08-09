@@ -85,7 +85,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.media.imageio.stream.RawImageInputStream;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
-import com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -96,6 +95,9 @@ public class DicomImageReader extends ImageReader {
     
     private static final Logger log = 
             LoggerFactory.getLogger(DicomImageReader.class);
+    
+    private static final String J2KIMAGE_READER = 
+        "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
     
     private static String PMI_DEFAULT_1 = "MONOCHROME2";
     
@@ -441,8 +443,8 @@ public class DicomImageReader extends ImageReader {
         itemStream.seek(this.frameOffsets[imageIndex]);
         reader.setInput(itemStream);
         BufferedImage bi = reader.read(0, param);
-        // workaround for Bug in J2KImageReaderCodecLib.reset()
-        if (reader instanceof J2KImageReaderCodecLib) {
+        // workaround for Bug in J2KImageReader and J2KImageReaderCodecLib.setInput()
+        if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
             reader.dispose();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             String ts = ds.getString(Tag.TransferSyntaxUID);
