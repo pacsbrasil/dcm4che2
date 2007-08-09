@@ -12,5 +12,5 @@
 	<classpathentry kind="lib" path="lib/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="lib/maverick.jar"/>
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
