@@ -92,7 +92,7 @@ import com.sun.media.imageio.stream.SegmentedImageInputStream;
  * @since Sep 2, 2006
  */
 public class DicomImageReader extends ImageReader {
-    
+
     private static final Logger log = 
             LoggerFactory.getLogger(DicomImageReader.class);
     
@@ -214,7 +214,6 @@ public class DicomImageReader extends ImageReader {
         return pmi >= RGB ? 3 : 1; 
     }
     
-
     public ImageReadParam getDefaultReadParam() {
         return new DicomImageReadParam();
     }    
@@ -379,7 +378,27 @@ public class DicomImageReader extends ImageReader {
         initImageReader();
         return reader.getImageTypes(0);
     }
+    
+    public boolean canReadRaster() {
+        return true;
+    }
 
+    public Raster readRaster(int imageIndex, ImageReadParam param)
+            throws IOException {
+        initImageReader();
+        if (param == null) {
+            param = getDefaultReadParam();
+        }
+        if (compressed) {
+            ImageReadParam param1 = reader.getDefaultReadParam();
+            copyReadParam(param, param1);
+            seekFrame(imageIndex, param1);
+            return decompressRaster(imageIndex, param1);
+        } else {
+            return reader.readRaster(imageIndex, param);
+        }
+    }
+    
     public BufferedImage read(int imageIndex, ImageReadParam param)
             throws IOException {
         initImageReader();
@@ -431,18 +450,42 @@ public class DicomImageReader extends ImageReader {
                     frameOffsets[i] = itemParser.getOffsetOfDataFragment(i);                   
             } else {
                 for (int i = 0; i < imageIndex; ++i)
-                    if (frameOffsets[i+1] == 0)
-                        decompress(i, param);
+                    if (frameOffsets[i+1] == 0) {
+                        decompressRaster(i, param);
+                    }
             }
         }
     }
 
     private BufferedImage decompress(int imageIndex, ImageReadParam param)
             throws IOException {
-        log.debug("Start decompressing frame#" + (imageIndex+1));
         itemStream.seek(this.frameOffsets[imageIndex]);
         reader.setInput(itemStream);
+        log.debug("Start decompressing frame#" + (imageIndex+1));
         BufferedImage bi = reader.read(0, param);
+        log.debug("Finished decompressing frame#" + (imageIndex+1));
+        postDecompress(imageIndex+1);
+        return bi;
+    }
+
+    private Raster decompressRaster(int imageIndex, ImageReadParam param)
+            throws IOException {
+        if (!reader.canReadRaster()) {
+            return decompress(imageIndex, param).getData();
+        }
+        itemStream.seek(this.frameOffsets[imageIndex]);
+        reader.setInput(itemStream);
+        log.debug("Start decompressing frame#" + (imageIndex+1));
+        Raster raster = reader.readRaster(0, param);
+        log.debug("Finished decompressing frame#" + (imageIndex+1));
+        postDecompress(imageIndex+1);
+        return raster;
+    }
+
+    private void postDecompress(int nextIndex) throws IOException {
+        if (nextIndex < frameOffsets.length && frameOffsets[nextIndex] == 0) {
+            this.frameOffsets[nextIndex] = itemParser.seekNextFrame(itemStream);
+        }
         // workaround for Bug in J2KImageReader and J2KImageReaderCodecLib.setInput()
         if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
             reader.dispose();
@@ -452,12 +495,6 @@ public class DicomImageReader extends ImageReader {
         } else {
             reader.reset();
         }
-        final int nextIndex = imageIndex + 1;
-        if (nextIndex < frameOffsets.length && frameOffsets[nextIndex] == 0) {
-            this.frameOffsets[nextIndex] = itemParser.seekNextFrame(itemStream);
-        }
-        log.debug("Finished decompressed frame#" + (imageIndex+1));
-        return bi;
     }
 
     private LookupTable createLut(DicomImageReadParam param, DataBuffer data) {
