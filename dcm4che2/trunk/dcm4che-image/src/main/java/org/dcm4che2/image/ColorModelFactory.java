@@ -38,7 +38,13 @@
  
 package org.dcm4che2.image;
 
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.color.ICC_ColorSpace;
+import java.awt.color.ICC_Profile;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.util.Arrays;
 
@@ -50,8 +56,71 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Jul 21, 2007
  */
-public class PaletteColorUtils {
+public class ColorModelFactory {
 
+    private static final String MONOCHROME1 = "MONOCHROME1";
+    private static final String MONOCHROME2 = "MONOCHROME2";
+    private static final String PALETTE_COLOR = "PALETTE COLOR";
+    private static final String RGB = "RGB";
+    private static final String YBR_FULL = "YBR_FULL";
+
+    public static ColorModel createColorModel(DicomObject ds) {
+        int samples = ds.getInt(Tag.SamplesPerPixel, 1);
+        if (samples != 1 && samples != 3)  {
+            throw new IllegalArgumentException(
+                    "Unsupported Samples per Pixel: " + samples);                
+        }
+        int allocated = ds.getInt(Tag.BitsAllocated, 8);
+        int stored = ds.getInt(Tag.BitsStored, allocated);
+        int dataType = allocated <= 8 ? DataBuffer.TYPE_BYTE
+                : DataBuffer.TYPE_USHORT;
+        int[] bits = new int[samples];
+        Arrays.fill(bits, stored);
+        ColorSpace cs = null;
+        String pmi = null; 
+        if (samples == 1) {
+            pmi = ds.getString(Tag.PhotometricInterpretation, MONOCHROME2);
+            if (pmi.equals(MONOCHROME2) || pmi.equals(MONOCHROME1)) {
+                cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            } else if (pmi.equals(PALETTE_COLOR)) {
+                return createPaletteColorModel(ds);               
+            }
+        } else if (samples == 3) {
+            pmi = ds.getString(Tag.PhotometricInterpretation, RGB);
+            if (pmi.equals(RGB)) {
+                cs = createRGBColorSpace(ds);
+            } else if (pmi.equals(YBR_FULL)) {
+                cs = SimpleYBRColorSpace.createYBRFullColorSpace(
+                        createRGBColorSpace(ds));
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Unsupported Samples per Pixel: " + samples);            
+        }
+        if (cs == null) {
+            throw new IllegalArgumentException(
+                    "Unsupported Photometric Interpretation: " + pmi +
+                    " with Samples per Pixel: " + samples);            
+            
+        }
+        return new ComponentColorModel(cs, bits, false, false,
+                Transparency.OPAQUE, dataType);
+    }
+
+    private static ColorSpace createRGBColorSpace(DicomObject ds) {
+        byte[] iccProfile = ds.getBytes(Tag.ICCProfile);
+        return iccProfile != null
+                ? new ICC_ColorSpace(ICC_Profile.getInstance(iccProfile))
+                : ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    }
+
+    public static boolean isMonochrome(DicomObject ds) {
+        return ds.getInt(Tag.SamplesPerPixel, 1) == 1
+                && !PALETTE_COLOR.equals(
+                        ds.getString(Tag.PhotometricInterpretation));
+    }
+
+    
     public static ColorModel createPaletteColorModel(DicomObject ds) {
         int bits = ds.getInt(Tag.BitsStored, 8);
         int size = 1 << bits;

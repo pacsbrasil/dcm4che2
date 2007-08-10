@@ -39,14 +39,9 @@
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
 import java.awt.Dimension;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.color.ICC_ColorSpace;
-import java.awt.color.ICC_Profile;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
@@ -59,7 +54,6 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
@@ -72,9 +66,8 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.image.LookupTable;
-import org.dcm4che2.image.PaletteColorUtils;
-import org.dcm4che2.image.SimpleYBRColorSpace;
 import org.dcm4che2.imageio.ImageReaderFactory;
 import org.dcm4che2.imageio.ItemParser;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
@@ -99,29 +92,6 @@ public class DicomImageReader extends ImageReader {
     private static final String J2KIMAGE_READER = 
         "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
     
-    private static String PMI_DEFAULT_1 = "MONOCHROME2";
-    
-    private static String PMI_DEFAULT_3 = "RGB";
-
-    private static final String[] PMI = {
-        "MONOCHROME1", "MONOCHROME2", "PALETTE COLOR",
-        "RGB", "YBR_FULL", "YBR_FULL_422", "YBR_PARTIAL_422",
-        "YBR_PARTIAL_420", "YBR_ICT", "YBR_RCT"
-    };
-    
-    private static final List PMI_LIST = Arrays.asList(PMI);
-    
-    private static final int MONOCHROME1 = 0;
-    private static final int MONOCHROME2 = 1;
-    private static final int PALETTE_COLOR = 2;
-    private static final int RGB = 3;
-    private static final int YBR_FULL = 4;
-    private static final int YBR_FULL_422 = 5;
-    private static final int YBR_PARTIAL_422 = 6;
-    private static final int YBR_PARTIAL_420 = 7;
-    private static final int YBR_ICT = 8;
-    private static final int YBR_RCT = 9;
-    
     private static final int[] OFFSETS_0 = { 0 };
     
     private static final int[] OFFSETS_0_0_0 = { 0, 0, 0 };
@@ -138,8 +108,7 @@ public class DicomImageReader extends ImageReader {
     private int stored;
     private int dataType;
     private int samples;
-    private int[] bits;
-    private int pmi;
+    private boolean monochrome;
     private boolean banded;
     private boolean signed;
     private long pixelDataPos;
@@ -190,8 +159,6 @@ public class DicomImageReader extends ImageReader {
         stored = 0;
         dataType = 0;
         samples = 0;
-        bits = null;
-        pmi = -1;
         banded = false;
         signed = false;
         pixelDataPos = 0L;
@@ -204,14 +171,6 @@ public class DicomImageReader extends ImageReader {
         }
         itemParser = null;
         itemStream = null;
-    }
-    
-    private static boolean isColor(int pmi) {
-        return pmi >= PALETTE_COLOR;
-    }
-    
-    private static int samples4pmi(int pmi) {
-        return pmi >= RGB ? 3 : 1; 
     }
     
     public ImageReadParam getDefaultReadParam() {
@@ -245,6 +204,11 @@ public class DicomImageReader extends ImageReader {
             pixelDataPos = dis.getStreamPosition();
             pixelDataLen = dis.valueLength();
             compressed = pixelDataLen == -1;
+            if (compressed) {
+                ImageReaderFactory f = ImageReaderFactory.getInstance();
+                String ts = ds.getString(Tag.TransferSyntaxUID);                
+                f.adjustDatasetForTransferSyntax(ds, ts);               
+            }
             width = ds.getInt(Tag.Columns);
             height = ds.getInt(Tag.Rows);
             frames = ds.getInt(Tag.NumberOfFrames, 1);
@@ -256,23 +220,7 @@ public class DicomImageReader extends ImageReader {
             dataType = allocated <= 8 ? DataBuffer.TYPE_BYTE
                     : DataBuffer.TYPE_USHORT;
             samples = ds.getInt(Tag.SamplesPerPixel, 1);
-            if (samples != 1 && samples != 3)  {
-                throw new IIOException(
-                        "Unsupported Samples per Pixel: " + samples);                
-            }
-            bits = new int[samples];
-            Arrays.fill(bits, stored);
-            String pmiStr = ds.getString(Tag.PhotometricInterpretation,
-                    samples == 1 ? PMI_DEFAULT_1 : PMI_DEFAULT_3);
-            pmi = PMI_LIST.indexOf(pmiStr);
-            if (pmi == -1) {
-                throw new IIOException(
-                        "Unsupported Photometric Interpretation: " + pmiStr);                
-            }
-            if (samples != samples4pmi(pmi)) {
-                throw new IIOException("Illegal Samples per Pixel: " + samples +
-                        " for Photometric Interpretation: " + pmiStr);
-            }
+            monochrome = ColorModelFactory.isMonochrome(ds);
         }
     }
 
@@ -314,7 +262,7 @@ public class DicomImageReader extends ImageReader {
     }
 
     private ImageTypeSpecifier createImageTypeSpecifier() throws IIOException {
-        ColorModel cm = createColorModel();
+        ColorModel cm = ColorModelFactory.createColorModel(ds);
         SampleModel sm = createSampleModel();
         return new ImageTypeSpecifier(cm, sm);
     }
@@ -332,36 +280,6 @@ public class DicomImageReader extends ImageReader {
                         3, width * 3, OFFSETS_0_1_2);              
             }
         }
-    }
-
-    private ColorModel createColorModel() {
-        if (pmi == PALETTE_COLOR) {
-            return PaletteColorUtils.createPaletteColorModel(ds);
-        } else {
-            ColorSpace cs;
-            if (isColor(pmi)) {
-                cs = createRGBColorSpace();
-                if (pmi != RGB) {
-                    if (pmi == YBR_FULL || pmi == YBR_FULL_422) {
-                        cs = SimpleYBRColorSpace.createYBRFullColorSpace(cs);
-                    } else if (pmi == YBR_PARTIAL_420
-                            || pmi == YBR_PARTIAL_422) {
-                        cs = SimpleYBRColorSpace.createYBRPartialColorSpace(cs);                   
-                    }
-                }
-            } else {
-                cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            }
-            return new ComponentColorModel(cs, bits, false, false,
-                    Transparency.OPAQUE, dataType);
-        }
-    }
-
-    private ColorSpace createRGBColorSpace() {
-        byte[] iccProfile = ds.getBytes(Tag.ICCProfile);
-        return iccProfile != null
-                ? new ICC_ColorSpace(ICC_Profile.getInstance(iccProfile))
-                : ColorSpace.getInstance(ColorSpace.CS_sRGB);
     }
 
     public int getHeight(int imageIndex) throws IOException {
@@ -414,7 +332,7 @@ public class DicomImageReader extends ImageReader {
         } else {
             bi = reader.read(imageIndex, param);
         }
-        if (!isColor(pmi)) {
+        if (monochrome) {
             WritableRaster raster = bi.getRaster();
             DataBuffer data = raster.getDataBuffer();
             LookupTable lut = createLut((DicomImageReadParam) param, data);

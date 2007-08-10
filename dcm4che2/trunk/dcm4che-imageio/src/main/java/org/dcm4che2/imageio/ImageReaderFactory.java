@@ -44,6 +44,10 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
 import org.dcm4che2.data.ConfigurationError;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.image.ColorModelFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -78,8 +82,10 @@ public class ImageReaderFactory extends ImageReaderWriterFactory {
         if (delim == -1) {
             throw new ConfigurationError("Missing ',' in " + tsuid + "=" + s); 
         }
+        int delim2 = s.indexOf(',', delim+1);
         final String formatName = s.substring(0, delim);
-        final String className = s.substring(delim+1);
+        final String className = s.substring(delim+1, 
+                delim2 == -1 ? s.length() : delim2);
         for (Iterator it = ImageIO.getImageReadersByFormatName(formatName);
                 it.hasNext();) {
             ImageReader r = (ImageReader) it.next();
@@ -90,4 +96,41 @@ public class ImageReaderFactory extends ImageReaderWriterFactory {
         throw new ConfigurationError("No Image Reader of class " + className
                 + " available for format:" + formatName); 
     }
+
+    public void adjustDatasetForTransferSyntax(DicomObject ds, String tsuid) {
+        if (ds.getInt(Tag.SamplesPerPixel, 1) == 1) {
+            return;
+        }
+        String s = config.getProperty(tsuid);
+        if (s == null) {
+            return;
+        }
+        int delim = s.indexOf(',');
+        if (delim == -1) {
+            return; 
+        }
+        int delim2 = s.indexOf(',', delim+1);
+        if (delim2 == -1) {
+            return;            
+        }
+        int delim3 = s.indexOf(',', delim2+1);
+        final String planarConfig = s.substring(delim2+1, 
+                delim3 == -1 ? s.length() : delim3);
+        if (planarConfig.length() != 0) {
+            try {
+                ds.putInt(Tag.PlanarConfiguration, VR.US,
+                        Integer.parseInt(planarConfig));
+            } catch (NumberFormatException e) {
+                throw new ConfigurationError(
+                        "Illegal value for Planar Configuration: " + s); 
+            }
+        }
+        if (delim3 == -1) {
+            return;            
+        }
+        final String pmi = s.substring(delim3+1);
+        if (pmi.length() != 0) {
+            ds.putString(Tag.PhotometricInterpretation, VR.CS, pmi);
+        }        
+   }
 }
