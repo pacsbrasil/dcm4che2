@@ -56,7 +56,7 @@ import javax.imageio.stream.ImageInputStream;
 public class DicomImageReaderSpi extends ImageReaderSpi {
 
     private static final String[] formatNames = { "dicom", "DICOM" };
-    private static final String[] suffixes = { "dcm" };
+    private static final String[] suffixes = { "dcm", "dic", "dicm", "dicom" };
     private static final String[] MIMETypes = { "application/dicom" };
     private static String vendor;
     private static String version;

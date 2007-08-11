@@ -71,6 +71,7 @@ import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.imageio.ImageReaderFactory;
 import org.dcm4che2.imageio.ItemParser;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.slf4j.Logger;
@@ -115,6 +116,7 @@ public class DicomImageReader extends ImageReader {
     private int pixelDataLen;
     private boolean compressed;
     private long[] frameOffsets;
+    private DicomStreamMetaData streamMetaData;
     private ImageReader reader;
     private ItemParser itemParser;
     private SegmentedImageInputStream itemStream;
@@ -152,6 +154,7 @@ public class DicomImageReader extends ImageReader {
         iis = null;
         dis = null;
         ds = null;
+        streamMetaData = null;
         width = 0;
         height = 0;
         frames = 0;
@@ -178,7 +181,7 @@ public class DicomImageReader extends ImageReader {
     }    
 
     public IIOMetadata getStreamMetadata() throws IOException {
-        return null;
+        return streamMetaData;
     }
     
     public IIOMetadata getImageMetadata(int imageIndex) throws IOException {
@@ -200,6 +203,8 @@ public class DicomImageReader extends ImageReader {
         dis = new DicomInputStream(iis);
         dis.setHandler(new StopTagInputHandler(Tag.PixelData));
         ds = dis.readDicomObject();
+        streamMetaData = new DicomStreamMetaData();
+        streamMetaData.setDicomObject(ds);
         if (dis.tag() == Tag.PixelData) {
             pixelDataPos = dis.getStreamPosition();
             pixelDataLen = dis.valueLength();
