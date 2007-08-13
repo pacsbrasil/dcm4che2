@@ -54,6 +54,7 @@ import org.dcm4che.archive.entity.PrivateInstance;
  */
 @Local
 public interface PrivateFileDAO extends DAO<PrivateFile> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/PrivateFileDAOImpl/local";
 
     public PrivateFile create(String path, String tsuid, long size, byte[] md5,
             int status, PrivateInstance instance, FileSystem filesystem)

@@ -52,6 +52,8 @@ import org.dcm4che.archive.entity.StudyPermission;
  */
 @Local
 public interface StudyPermissionDAO extends DAO<StudyPermission> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/StudyPermissionDAOImpl/local";
+
     public StudyPermission create(String action, String role,
             Timestamp validFrom, Timestamp validUntil, Study study)
             throws ContentCreateException;

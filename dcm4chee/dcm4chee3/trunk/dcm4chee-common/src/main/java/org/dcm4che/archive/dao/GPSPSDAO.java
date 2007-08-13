@@ -39,15 +39,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.dao;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 
 import javax.ejb.Local;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
-import org.dcm4che.archive.entity.EntityBase;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.data.Dataset;
@@ -59,6 +56,7 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface GPSPSDAO extends DAO<GPSPS> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/GPSPSDAOImpl/local";
 
     /**
      * Find GPSPS by the item's DICOM UID.

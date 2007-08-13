@@ -50,6 +50,7 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface HPDAO extends DAO<HP> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/HPDAOImpl/local";
 
     /**
      * @param ds

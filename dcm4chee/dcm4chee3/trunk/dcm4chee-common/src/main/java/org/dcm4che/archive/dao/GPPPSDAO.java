@@ -53,17 +53,20 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface GPPPSDAO extends DAO<GPPPS> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/GPPPSDAOImpl/local";
 
     /**
      * @param ppsiuid
      */
-    public GPPPS findBySopIuid(String ppsiuid) throws NoResultException, PersistenceException;
+    public GPPPS findBySopIuid(String ppsiuid) throws NoResultException,
+            PersistenceException;
 
     /**
      * @param dataset
      * @param pat
      * @return
      */
-    public GPPPS create(Dataset dataset, Patient pat) throws ContentCreateException;
+    public GPPPS create(Dataset dataset, Patient pat)
+            throws ContentCreateException;
 
 }

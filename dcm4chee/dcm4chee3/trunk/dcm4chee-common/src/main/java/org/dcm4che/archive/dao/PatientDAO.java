@@ -59,6 +59,8 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface PatientDAO extends DAO<Patient> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/PatientDAOImpl/local";
+
     public List<Patient> findByPatientIdWithIssuer(String pid, String issuer)
             throws PersistenceException;
 

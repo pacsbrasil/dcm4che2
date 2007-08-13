@@ -42,5 +42,6 @@ import javax.ejb.Local;
 
 @Local
 public interface UserDAO extends DAO {
+    public static final String JNDI_NAME = "dcm4cheeArchive/UserDAOImpl/local";
 
 }

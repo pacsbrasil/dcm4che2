@@ -57,8 +57,6 @@ import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * org.dcm4che.archive.entity.MPPS
@@ -324,7 +322,7 @@ public class MPPS extends EntityBase {
         return DatasetUtils.fromByteArray(getEncodedAttributes());
     }
 
-    public void setAttributes(Dataset ds) {
+    public void setAttributes(Dataset ds, CodeDAO codeDAO) {
         setPpsStartDateTime(ds
                 .getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
         setPerformedStationAET(ds.getString(Tags.PerformedStationAET));
@@ -332,7 +330,7 @@ public class MPPS extends EntityBase {
         setPpsStatus(ds.getString(Tags.PPSStatus));
         Dataset ssa = ds.getItem(Tags.ScheduledStepAttributesSeq);
         setAccessionNumber(ssa.getString(Tags.AccessionNumber));
-        setDrCode(Code.valueOf(getCodeDAO(), ds
+        setDrCode(Code.valueOf(codeDAO, ds
                 .getItem(Tags.PPSDiscontinuationReasonCodeSeq)));
         byte[] b = DatasetUtils.toByteArray(ds,
                 UIDs.DeflatedExplicitVRLittleEndian);
@@ -340,11 +338,6 @@ public class MPPS extends EntityBase {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
         setEncodedAttributes(b);
-    }
-
-    private CodeDAO getCodeDAO() {
-        return (CodeDAO) SpringContext.getApplicationContext().getBean(
-                BeanId.CODE_DAO.getId());
     }
 
     public boolean isIncorrectWorklistEntrySelected() {

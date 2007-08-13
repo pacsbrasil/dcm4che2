@@ -54,6 +54,8 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface PrivateStudyDAO extends DAO<PrivateStudy> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/PrivateStudyDAOImpl/local";
+
     public PrivateStudy create(int type, Dataset ds, PrivatePatient patient)
             throws ContentCreateException;
 

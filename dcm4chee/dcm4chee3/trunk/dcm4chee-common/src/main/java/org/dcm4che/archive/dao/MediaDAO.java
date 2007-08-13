@@ -54,6 +54,7 @@ import org.dcm4che.archive.entity.Media;
  */
 @Local
 public interface MediaDAO extends DAO<Media> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/MediaDAOImpl/local";
 
     /**
      * @param open
@@ -73,7 +74,8 @@ public interface MediaDAO extends DAO<Media> {
      * @param tsBefore
      * @return
      */
-    public int countByCreatedTime(int[] stati, Timestamp tsAfter, Timestamp tsBefore) throws PersistenceException;
+    public int countByCreatedTime(int[] stati, Timestamp tsAfter,
+            Timestamp tsBefore) throws PersistenceException;
 
     /**
      * @param stati
@@ -84,7 +86,9 @@ public interface MediaDAO extends DAO<Media> {
      * @param desc
      * @return
      */
-    public Collection<Media> listByCreatedTime(int[] stati, Timestamp tsAfter, Timestamp tsBefore, Integer offset, Integer limit, boolean desc) throws PersistenceException;
+    public Collection<Media> listByCreatedTime(int[] stati, Timestamp tsAfter,
+            Timestamp tsBefore, Integer offset, Integer limit, boolean desc)
+            throws PersistenceException;
 
     /**
      * @param stati
@@ -95,7 +99,9 @@ public interface MediaDAO extends DAO<Media> {
      * @param desc
      * @return
      */
-    public Collection listByUpdatedTime(int[] stati, Timestamp tsAfter, Timestamp tsBefore, Integer offset, Integer limit, boolean desc) throws PersistenceException;
+    public Collection listByUpdatedTime(int[] stati, Timestamp tsAfter,
+            Timestamp tsBefore, Integer offset, Integer limit, boolean desc)
+            throws PersistenceException;
 
     /**
      * @param stati
@@ -103,7 +109,8 @@ public interface MediaDAO extends DAO<Media> {
      * @param tsBefore
      * @return
      */
-    public int countByUpdatedTime(int[] stati, Timestamp tsAfter, Timestamp tsBefore) throws PersistenceException;
+    public int countByUpdatedTime(int[] stati, Timestamp tsAfter,
+            Timestamp tsBefore) throws PersistenceException;
 
     /**
      * @param mediaPk
@@ -114,6 +121,7 @@ public interface MediaDAO extends DAO<Media> {
      * @param mediaPk
      * @return
      */
-    public boolean checkInstancesAvailable(Long mediaPk) throws PersistenceException;
+    public boolean checkInstancesAvailable(Long mediaPk)
+            throws PersistenceException;
 
 }

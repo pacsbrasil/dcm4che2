@@ -54,6 +54,8 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface PrivateSeriesDAO extends DAO<PrivateSeries> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/PrivateSeriesDAOImpl/local";
+
     public PrivateSeries create(int type, Dataset ds, PrivateStudy study)
             throws ContentCreateException;
 
@@ -62,5 +64,6 @@ public interface PrivateSeriesDAO extends DAO<PrivateSeries> {
      * @param seriesIuid
      * @return
      */
-    public Collection<PrivateSeries> findBySeriesIuid(int type, String seriesIuid) throws PersistenceException;
+    public Collection<PrivateSeries> findBySeriesIuid(int type,
+            String seriesIuid) throws PersistenceException;
 }

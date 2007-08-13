@@ -53,6 +53,7 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface MWLItemDAO extends DAO<MWLItem> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/MWLDAOImpl/local";
 
     /**
      * Create an {@link MWLItem} in the database.
@@ -80,8 +81,9 @@ public interface MWLItemDAO extends DAO<MWLItem> {
      * @throws NoResultException
      *             If the item was not found.
      */
-    public MWLItem findByRpIdAndSpsId(String rpid, String spsid) throws NoResultException, PersistenceException;
-    
+    public MWLItem findByRpIdAndSpsId(String rpid, String spsid)
+            throws NoResultException, PersistenceException;
+
     /**
      * Get the site-specific prefix for created SPS IDs
      * 
@@ -96,7 +98,7 @@ public interface MWLItemDAO extends DAO<MWLItem> {
      *            A String containing the prefix.
      */
     public void setSpsIdPrefix(String prefix);
-    
+
     /**
      * Get the site-specific prefix for created Requested Procedure IDs
      * 

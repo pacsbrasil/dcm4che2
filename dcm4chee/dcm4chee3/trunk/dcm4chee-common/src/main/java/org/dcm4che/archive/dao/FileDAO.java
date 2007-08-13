@@ -54,6 +54,7 @@ import org.dcm4che.archive.entity.Instance;
  */
 @Local
 public interface FileDAO extends DAO<File> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/FileDAOImpl/local";
 
     /**
      * Create a File record in the database with the specified initial

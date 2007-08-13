@@ -50,6 +50,8 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface VerifyingObserverDAO extends DAO<VerifyingObserver> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/VerifyingObserverDAOImpl/local";
+
     /**
      * Create a {@link VerifyingObserver} record in the database.
      * 

@@ -51,8 +51,11 @@ import org.dcm4che.archive.entity.AE;
  */
 @Local
 public interface AEDAO extends DAO<AE> {
-    public AE create(String title, String hostname, int port, String cipherSuites, String issuer,
-            String desc) throws ContentCreateException;
-    
+    public static final String JNDI_NAME = "dcm4cheeArchive/AEDAOImpl/local";
+
+    public AE create(String title, String hostname, int port,
+            String cipherSuites, String issuer, String desc)
+            throws ContentCreateException;
+
     public AE findByAET(String aet) throws NoResultException;
 }

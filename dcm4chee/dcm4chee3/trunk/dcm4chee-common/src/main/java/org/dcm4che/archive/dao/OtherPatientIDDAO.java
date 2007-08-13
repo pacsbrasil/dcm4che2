@@ -49,7 +49,13 @@ import org.dcm4che.archive.entity.OtherPatientID;
  */
 @Local
 public interface OtherPatientIDDAO extends DAO<OtherPatientID> {
-    public OtherPatientID create(String pid, String issuer) throws ContentCreateException;
-    public OtherPatientID valueOf(String pid, String issuer) throws ContentCreateException;
+    public static final String JNDI_NAME = "dcm4cheeArchive/OtherPatientIDDAOImpl/local";
+
+    public OtherPatientID create(String pid, String issuer)
+            throws ContentCreateException;
+
+    public OtherPatientID valueOf(String pid, String issuer)
+            throws ContentCreateException;
+
     public OtherPatientID findByPatientIdAndIssuer(String pid, String issuer);
 }

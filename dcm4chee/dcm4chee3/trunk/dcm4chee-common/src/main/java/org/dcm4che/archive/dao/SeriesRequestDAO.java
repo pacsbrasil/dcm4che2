@@ -45,7 +45,6 @@ import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.SeriesRequest;
 import org.dcm4che.data.Dataset;
 
-
 /**
  * org.dcm4che.archive.dao.SeriesRequestDAO
  * 
@@ -53,12 +52,14 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface SeriesRequestDAO extends DAO<SeriesRequest> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/SeriesRequestDAOImpl/local";
 
     /**
      * @param item
      * @param series
      * @return
      */
-    public SeriesRequest create(Dataset item, Series series) throws ContentCreateException;
+    public SeriesRequest create(Dataset item, Series series)
+            throws ContentCreateException;
 
 }

@@ -53,7 +53,10 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface PrivatePatientDAO extends DAO<PrivatePatient> {
-    public PrivatePatient create(int type, Dataset ds) throws ContentCreateException;
+    public static final String JNDI_NAME = "dcm4cheeArchive/PrivatePatientDAOImpl/local";
+
+    public PrivatePatient create(int type, Dataset ds)
+            throws ContentCreateException;
 
     /**
      * @param long1
@@ -64,7 +67,8 @@ public interface PrivatePatientDAO extends DAO<PrivatePatient> {
      * @param privateType
      * @return
      */
-    public Collection<PrivatePatient> findByPrivateType(int privateType) throws PersistenceException;
+    public Collection<PrivatePatient> findByPrivateType(int privateType)
+            throws PersistenceException;
 
     /**
      * @param type
@@ -72,7 +76,8 @@ public interface PrivatePatientDAO extends DAO<PrivatePatient> {
      * @return
      * @throws PersistenceException
      */
-    public Collection<PrivatePatient> findByPatientId(int type, String patientId) throws PersistenceException;
+    public Collection<PrivatePatient> findByPatientId(int type, String patientId)
+            throws PersistenceException;
 
     /**
      * @param type
@@ -80,5 +85,7 @@ public interface PrivatePatientDAO extends DAO<PrivatePatient> {
      * @param issuerOfPatientId
      * @return
      */
-    public Collection<PrivatePatient> findByPatientIdWithIssuer(int type, String patientId, String issuerOfPatientId) throws PersistenceException;
+    public Collection<PrivatePatient> findByPatientIdWithIssuer(int type,
+            String patientId, String issuerOfPatientId)
+            throws PersistenceException;
 }

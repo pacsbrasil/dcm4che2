@@ -52,6 +52,8 @@ import org.dcm4che.archive.entity.Code;
  */
 @Local
 public interface CodeDAO extends DAO<Code> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/CodeDAOImpl/local";
+
     public Code create(String value, String designator, String version,
             String meaning) throws ContentCreateException;
 
@@ -61,6 +63,7 @@ public interface CodeDAO extends DAO<Code> {
      * @return
      * @throws DAOException
      */
-    public List<Code> findByValueAndDesignator(String value, String designator) throws PersistenceException;
-    
+    public List<Code> findByValueAndDesignator(String value, String designator)
+            throws PersistenceException;
+
 }

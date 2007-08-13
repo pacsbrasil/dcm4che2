@@ -54,6 +54,8 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface PrivateInstanceDAO extends DAO<PrivateInstance> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/PrivateInstanceDAOImpl/local";
+
     public PrivateInstance create(int type, Dataset ds, PrivateSeries series)
             throws ContentCreateException;
 

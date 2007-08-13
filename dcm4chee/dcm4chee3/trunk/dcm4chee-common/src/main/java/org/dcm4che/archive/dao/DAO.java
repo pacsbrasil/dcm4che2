@@ -52,6 +52,7 @@ import org.dcm4che.archive.entity.EntityBase;
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
 public interface DAO<E extends EntityBase> {
+
     /**
      * Save an object's data into the database.
      * 
@@ -115,18 +116,5 @@ public interface DAO<E extends EntityBase> {
      *             If the object was not found.
      */
     public E findByPrimaryKey(Long pk) throws NoResultException,
-            PersistenceException;
-
-    /**
-     * Find an instance of this class in the database by its primary key.
-     * 
-     * @param pk
-     *            A Long containing the primary key.
-     * @return The <code>PersistentInterface</code> implementation that was
-     *         found in the database.
-     * @throws NoResultException
-     *             If the object was not found.
-     */
-    public E findByPrimaryKey(Object pk) throws NoResultException,
             PersistenceException;
 }

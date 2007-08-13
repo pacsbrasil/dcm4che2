@@ -46,6 +46,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
+import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.MPPSDAO;
 import org.dcm4che.archive.dao.SeriesDAO;
@@ -64,6 +65,8 @@ import org.dcm4che.dict.Tags;
 public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
     
     @EJB private SeriesDAO seriesDAO ;
+    
+    @EJB private CodeDAO codeDAO;
 
     /**
      * @see org.dcm4che.archive.dao.jpa.BaseDAOImpl#getPersistentClass()
@@ -83,7 +86,7 @@ public class MPPSDAOImpl extends BaseDAOImpl<MPPS> implements MPPSDAO {
         MPPS mpps = new MPPS();
         mpps.setSopIuid(dataset.getString(Tags.SOPInstanceUID));
         mpps.setPatient(pat);
-        mpps.setAttributes(dataset);
+        mpps.setAttributes(dataset, codeDAO);
         mpps.setSeries(seriesDAO.findByPpsIuid(mpps.getSopIuid()));
         save(mpps);
         logger.info("Created " + mpps);

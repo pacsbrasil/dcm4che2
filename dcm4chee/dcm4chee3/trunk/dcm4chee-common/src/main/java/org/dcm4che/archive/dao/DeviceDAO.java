@@ -54,6 +54,7 @@ import org.dcm4che.archive.entity.Device;
  */
 @Local
 public interface DeviceDAO extends DAO<Device> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/DeviceDAOImpl/local";
 
     /**
      * @param name
@@ -61,18 +62,21 @@ public interface DeviceDAO extends DAO<Device> {
      * @param modality
      * @return
      */
-    public Device create(String name, String aet, String modality) throws ContentCreateException;
+    public Device create(String name, String aet, String modality)
+            throws ContentCreateException;
 
     /**
      * @param name
      * @return
      */
-    public Device findByStationName(String name) throws NoResultException, PersistenceException;
+    public Device findByStationName(String name) throws NoResultException,
+            PersistenceException;
 
     /**
      * @param code
      * @return
      */
-    public Collection<Device> findByProtocolCode(Code code) throws PersistenceException;
+    public Collection<Device> findByProtocolCode(Code code)
+            throws PersistenceException;
 
 }

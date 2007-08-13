@@ -52,7 +52,6 @@ import org.dcm4che.archive.entity.FileSystem;
 import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.entity.StudyOnFileSystem;
 
-
 /**
  * org.dcm4che.archive.dao.StudyOnFileSystemDAO
  * 
@@ -60,28 +59,33 @@ import org.dcm4che.archive.entity.StudyOnFileSystem;
  */
 @Local
 public interface StudyOnFileSystemDAO extends DAO<StudyOnFileSystem> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/StudyOnFileSystemDAOImpl/local";
 
     /**
      * @param study
      * @param fs
      */
-    public StudyOnFileSystem create(Study study, FileSystem fs) throws ContentCreateException;
+    public StudyOnFileSystem create(Study study, FileSystem fs)
+            throws ContentCreateException;
 
-    public List<File> findFilesForStudyOnFileSystem(Long studyPk, Long fileSystemPk) throws PersistenceException;
+    public List<File> findFilesForStudyOnFileSystem(Long studyPk,
+            Long fileSystemPk) throws PersistenceException;
 
     /**
      * @param siud
      * @param dirPath
      * @return
      */
-    public StudyOnFileSystem findByStudyAndFileSystem(String siud, String dirPath) throws NoResultException, PersistenceException;
+    public StudyOnFileSystem findByStudyAndFileSystem(String siud,
+            String dirPath) throws NoResultException, PersistenceException;
 
     /**
      * @param retrieveAET
      * @param tsBefore
      * @return
      */
-    public Collection findByRetrieveAETAndAccessBefore(String retrieveAET, Timestamp tsBefore) throws PersistenceException;
+    public Collection findByRetrieveAETAndAccessBefore(String retrieveAET,
+            Timestamp tsBefore) throws PersistenceException;
 
     /**
      * @param retrieveAET
@@ -89,6 +93,7 @@ public interface StudyOnFileSystemDAO extends DAO<StudyOnFileSystem> {
      * @param thisBatchSize
      * @return
      */
-    public Collection findByRetrieveAETAndAccessAfter(String retrieveAET, Timestamp tsAfter, int thisBatchSize) throws PersistenceException;
+    public Collection findByRetrieveAETAndAccessAfter(String retrieveAET,
+            Timestamp tsAfter, int thisBatchSize) throws PersistenceException;
 
 }

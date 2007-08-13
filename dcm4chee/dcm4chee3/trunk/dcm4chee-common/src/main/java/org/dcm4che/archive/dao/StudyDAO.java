@@ -61,6 +61,7 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface StudyDAO extends DAO<Study> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/StudyDAOImpl/local";
 
     /**
      * @param iuid
@@ -112,8 +113,10 @@ public interface StudyDAO extends DAO<Study> {
      * Select the size of the study on storage as determined by the sum of the
      * sizes of all its files.
      * 
-     * @param studyPk The {@link Study} primary key.
-     * @param fsPk The {@link FileSystem} primary key.
+     * @param studyPk
+     *            The {@link Study} primary key.
+     * @param fsPk
+     *            The {@link FileSystem} primary key.
      * @return A long containing the size of the study in bytes.
      */
     public long selectStudySize(Long studyPk, Long fsPk)

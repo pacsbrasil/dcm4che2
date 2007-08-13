@@ -54,6 +54,8 @@ import org.dcm4che.archive.entity.FileSystemDTO;
  */
 @Local
 public interface FileSystemDAO extends DAO<FileSystem> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/FileSystemDAOImpl/local";
+
     public FileSystem findByDirectoryPath(String dirPath)
             throws NoResultException, PersistenceException;
 
@@ -62,8 +64,7 @@ public interface FileSystemDAO extends DAO<FileSystem> {
      * @return
      * @throws ContentCreateException
      */
-    public FileSystem create(FileSystemDTO dto)
-            throws ContentCreateException;
+    public FileSystem create(FileSystemDTO dto) throws ContentCreateException;
 
     /**
      * @param retrieveAET

@@ -58,6 +58,7 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface InstanceDAO extends DAO<Instance> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/InstanceDAOImpl/local";
 
     /**
      * @param uid
@@ -114,7 +115,8 @@ public interface InstanceDAO extends DAO<Instance> {
      * @return
      */
     public List<Instance> listByPatientAndSRCode(Patient pat,
-            List<String> srCodes, Collection<String> cuids) throws PersistenceException;
+            List<String> srCodes, Collection<String> cuids)
+            throws PersistenceException;
 
     /**
      * @param long1

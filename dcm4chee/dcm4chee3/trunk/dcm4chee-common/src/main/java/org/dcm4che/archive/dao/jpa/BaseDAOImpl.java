@@ -172,33 +172,6 @@ public abstract class BaseDAOImpl<E extends EntityBase> implements DAO<E> {
     }
 
     /**
-     * @see org.dcm4che.archive.dao.DAO#findByPk(java.lang.Object)
-     */
-    @SuppressWarnings("unchecked")
-    public E findByPrimaryKey(Object pk) throws NoResultException,
-            PersistenceException {
-        if (pk == null) {
-            throw new IllegalArgumentException("PK is required");
-        }
-
-        if (logger.isInfoEnabled()) {
-            logger.info("Attempting to find " + getClass() + " with pk=" + pk);
-        }
-
-        Object obj = em.find(getPersistentClass(), pk);
-        if (obj == null) {
-            throw new NoResultException("Could not find "
-                    + getPersistentClass() + " in the database");
-        }
-
-        if (logger.isInfoEnabled()) {
-            logger.info("Fetched : " + obj);
-        }
-
-        return (E) obj;
-    }
-
-    /**
      * @see org.dcm4che.archive.dao.DAO#save(org.dcm4che.archive.entity.EntityBase)
      */
     public void save(E obj) throws ContentCreateException {

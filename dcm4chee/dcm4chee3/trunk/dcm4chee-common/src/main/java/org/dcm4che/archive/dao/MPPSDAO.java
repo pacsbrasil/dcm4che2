@@ -53,28 +53,32 @@ import org.dcm4che.data.Dataset;
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
 @Local
-public interface MPPSDAO extends DAO<MPPS>{
+public interface MPPSDAO extends DAO<MPPS> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/MPPSDAOImpl/local";
 
     /**
      * @param ppsiuid
      * @return
      */
-    public MPPS findBySopIuid(String ppsiuid) throws NoResultException, PersistenceException;
+    public MPPS findBySopIuid(String ppsiuid) throws NoResultException,
+            PersistenceException;
 
     /**
      * @param dataset
      * @param pat
      */
-    public MPPS create(Dataset dataset, Patient pat) throws ContentCreateException;
-    
+    public MPPS create(Dataset dataset, Patient pat)
+            throws ContentCreateException;
+
     /**
      * @return the seriesDAO
      */
     public SeriesDAO getSeriesDAO();
 
     /**
-     * @param seriesDAO the seriesDAO to set
+     * @param seriesDAO
+     *            the seriesDAO to set
      */
-    public void setSeriesDAO(SeriesDAO seriesDAO); 
+    public void setSeriesDAO(SeriesDAO seriesDAO);
 
 }

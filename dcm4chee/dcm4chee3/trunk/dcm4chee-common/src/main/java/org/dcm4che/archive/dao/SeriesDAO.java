@@ -60,6 +60,7 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface SeriesDAO extends DAO<Series> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/SeriesDAOImpl/local";
 
     /**
      * @param uid

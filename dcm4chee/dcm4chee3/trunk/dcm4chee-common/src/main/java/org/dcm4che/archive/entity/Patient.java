@@ -65,8 +65,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * org.dcm4che.archive.entity.Patient
@@ -381,10 +379,10 @@ public class Patient extends EntityBase {
      * @throws DcmServiceException
      * @throws DAOException
      */
-    public void coerceAttributes(Dataset ds, Dataset coercedElements)
+    public void coerceAttributes(Dataset ds, Dataset coercedElements, OtherPatientIDDAO opidDAO)
             throws DcmServiceException {
         Dataset attrs = getAttributes(false);
-        boolean b = appendOtherPatientIds(attrs, ds);
+        boolean b = appendOtherPatientIds(attrs, ds, opidDAO);
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter
                 .getPatientAttributeFilter(cuid);
@@ -394,16 +392,16 @@ public class Patient extends EntityBase {
         }
     }
 
-    public void updateAttributes(Dataset ds) {
+    public void updateAttributes(Dataset ds, OtherPatientIDDAO opidDAO) {
         Dataset attrs = getAttributes(false);
-        boolean b = appendOtherPatientIds(attrs, ds);
+        boolean b = appendOtherPatientIds(attrs, ds, opidDAO);
         if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), log)
                 || b) {
             setAttributes(attrs);
         }
     }
 
-    private boolean appendOtherPatientIds(Dataset attrs, Dataset ds) {
+    private boolean appendOtherPatientIds(Dataset attrs, Dataset ds, OtherPatientIDDAO opidDAO) {
         DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
         if (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty()) {
             return false;
@@ -415,7 +413,7 @@ public class Patient extends EntityBase {
             opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
         }
 
-        OtherPatientIDDAO opidDAO = getOtherPatientIdDAO();
+
         for (int n = 0; n < nopidsq.countItems(); n++) {
             Dataset nopid = nopidsq.getItem();
             String pid = nopid.getString(Tags.PatientID);
@@ -429,11 +427,6 @@ public class Patient extends EntityBase {
             }
         }
         return update;
-    }
-
-    private OtherPatientIDDAO getOtherPatientIdDAO() {
-        return (OtherPatientIDDAO) SpringContext.getApplicationContext()
-                .getBean(BeanId.OPID_DAO.getId());
     }
 
     public static boolean containsPID(String pid, String issuer,

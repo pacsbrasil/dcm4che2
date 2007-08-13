@@ -51,13 +51,15 @@ import org.dcm4che.data.Dataset;
  */
 @Local
 public interface GPSPSPerformerDAO extends DAO<GPSPSPerformer> {
+    public static final String JNDI_NAME = "dcm4cheeArchive/GPSPSPerformerDAOImpl/local";
 
     /**
      * @param item
      * @param gpsps
      * @return
      */
-    public GPSPSPerformer create(Dataset item, GPSPS gpsps) throws ContentCreateException;
+    public GPSPSPerformer create(Dataset item, GPSPS gpsps)
+            throws ContentCreateException;
 
     /**
      * @return the codeDAO
