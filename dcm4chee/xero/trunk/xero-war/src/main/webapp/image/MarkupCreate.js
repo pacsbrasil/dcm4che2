@@ -46,7 +46,7 @@ function MarkupCreate() {
 
 MarkupCreate.prototype = new MarkupEdit();
 MarkupCreate.prototype.debug = debug;
-MarkupCreate.prototype.prObj = new Polyline();
+MarkupCreate.prototype.prObj = new Caliper();
 
 /**
  * Convert from event to SVG/VML image based coordinates (NOT display coordinates)
@@ -163,11 +163,39 @@ Polyline.prototype.createObject = function(create,event,coords) {
 		create.creating.style.height = csize[1];
 	}
 	create.creating.setAttribute("d", d);
+	info("prType in created object being set to "+this.prType);
 	create.creating.setAttribute("prType",this.prType);
 	create.creating.setAttribute("id",this.prType+Math.random());
 	create.group.appendChild(create.creating);
 	create.addSelected(create.creating);
 	create.creating.nodeHandles.mouseDown(event);
+};
+
+Caliper.prototype.superCreateObject = Polyline.prototype.createObject;
+/** Create a caliper object, complete with text node associated with the object. */
+Caliper.prototype.createObject = function(create,event,coords) {
+	var textNode;
+	if( browserName==="IE") {
+		this.info("Creating a v:textbox for the caliper.");
+		textNode = document.createElement("v:textbox");
+  		textNode.style.top = coords[1]-12;
+  		textNode.style.left = coords[0];
+  		textNode.style.width = 128;
+  		textNode.style.height = 11;
+	}
+	else {
+		this.info("Creating an svg:text for the caliper.");
+  		textNode = document.createElementNS(svgns,"svg:text");
+  		textNode.appendChild(document.createTextNode("Empty"));
+		textNode.setAttribute("x",coords[0]);
+		textNode.setAttribute("y",coords[1]-12);
+		textNode.setAttribute("font-size",24);
+		textNode.setAttribute("fill", "red");
+	};
+	create.group.appendChild(textNode);
+	this.debug("Created the caliper text object and added it in.");
+	this.superCreateObject(create,event,coords);
+	create.creating.nodeHandles.textNode = textNode;
 };
 
 var markupCreate = new MarkupCreate(); 

@@ -331,6 +331,7 @@ NodeHandles.prototype.createHandles = function(targ) {
 		this.info("No handler for prType "+prType);
 		return false;
 	}
+	this.debug("Create handles, assigning type "+prType);
 	this.prObj = this[prType];
 	return this.prObj.createHandles(this,targ,dstr);
 };
@@ -417,8 +418,43 @@ Polyline.prototype.createHandles = function(nodeHandles, targ,dstr) {
 
 Polyline.prototype.updateD = defaultUpdateD;
 
-NodeHandles.prototype.Polyline = Polyline.prototype;
+/** Create/edit a caliper instead of a simple polyline. */
+function Caliper() {
+};
+Caliper.prototype = new Polyline();
+Caliper.prototype.prType = "Caliper";
+Caliper.prototype.debug = debug;
 
+Caliper.prototype.updateD = function(nodeHandles) {
+	Polyline.prototype.updateD(nodeHandles);
+	var len = 0;
+	var cmds = nodeHandles.cmds;
+	var prevPoint = cmds[0].point;
+	var segLen;
+	var nextPoint;
+	var dx,dy;
+	for(var i=1; i<cmds.length; i++) {
+		nextPoint = cmds[i].point;
+		dx = nextPoint[0] - prevPoint[0];
+		dy = nextPoint[1] - prevPoint[1];
+		segLen = Math.sqrt(dx*dx+dy*dy);
+		len = len+segLen;
+	}
+	var str = "L: "+len.toPrecision(5)+"px";
+	if( nodeHandles.textNode ) {
+		if( isTag(nodeHandles.textNode,"textbox") ) {
+			nodeHandles.textNode.string = str;
+		} else {
+			nodeHandles.textNode.firstChild.data = str;
+		}
+	}
+	else {
+		this.info("No text to set in: polyline length"+str);
+	}
+};
+
+NodeHandles.prototype.Polyline = Polyline.prototype;
+NodeHandles.prototype.Caliper = Caliper.prototype;
 
 /** A point handle is a standard handle that adjusts one or more values all in exactly the same way
  * when it is moved.  Point handles can have types that define how some other objects move relative to 
@@ -518,6 +554,7 @@ PointHandle.prototype.clearSelected = function(group) {
  */
 function PointCmd(cmd, args) {
 	this.cmd = cmd;
+	this.point = parsePoint(args);
 	this.value = this.cmd + args;
 };
 
@@ -528,5 +565,7 @@ PointCmd.prototype.debug = debug;
  */
 PointCmd.prototype.invalidate = function(handle) {
 	this.value = this.cmd+handle.x+","+handle.y+" ";
+	this.point[0] = handle.x;
+	this.point[1] = handle.y;
 	this.debug("Updated point cmd value to "+this.value);
 };
