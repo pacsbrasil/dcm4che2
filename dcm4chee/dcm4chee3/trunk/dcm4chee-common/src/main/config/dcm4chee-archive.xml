@@ -205,15 +205,18 @@
         <property name="seriesDAO" ref="seriesDAO"/>
         <property name="mwlItemDAO" ref="mwlItemDAO"/>
         <property name="mppsDAO" ref="mppsDAO"/>
+        <property name="codeDAO" ref="codeDAO"/>
     </bean>
     
     <bean name="mwlManager" class="org.dcm4che.archive.service.impl.MWLManagerBean" >
         <property name="patDAO" ref="patientDAO"/>
         <property name="mwlItemDAO" ref="mwlItemDAO"/>
+        <property name="opidDAO" ref="opidDAO"/>
     </bean>
     
     <bean name="patientUpdateManager" class="org.dcm4che.archive.service.impl.PatientUpdateBean" >
         <property name="patDAO" ref="patientDAO"/>
+        <property name="opidDAO" ref="opidDAO"/>
     </bean>
     
     <bean name="pixQuery" class="org.dcm4che.archive.service.impl.PIXQueryBean" >
@@ -241,6 +244,7 @@
         <property name="fileDAO" ref="fileDAO"/>
         <property name="fileSystemDAO" ref="fileSystemDAO"/>
         <property name="sofDAO" ref="studyOnFileSystemDAO"/>
+        <property name="opidDAO" ref="opidDAO"/>
     </bean>
     
     <bean name="studyManager" class="org.dcm4che.archive.service.impl.StudyMgtBean" >
