@@ -46,6 +46,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.service.StudyMgt;
+import org.dcm4che.archive.service.StudyMgtLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -55,8 +57,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 class StudyMgtScp extends DcmServiceBase {
 
@@ -86,9 +86,9 @@ class StudyMgtScp extends DcmServiceBase {
         this.ignoreDeleteFailed = ignoreDeleteFailed;
     }
 
-    private StudyMgt getStudyMgt() {
-        return (StudyMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.STUDY_MGT.getId());
+    protected StudyMgt getStudyMgt() {
+        return (StudyMgt) EJBReferenceCache.getInstance().lookup(
+                StudyMgtLocal.JNDI_NAME);
     }
 
     protected Dataset doNAction(ActiveAssociation assoc, Dimse rq,

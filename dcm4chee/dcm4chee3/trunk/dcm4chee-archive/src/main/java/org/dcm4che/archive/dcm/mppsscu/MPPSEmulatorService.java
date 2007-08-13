@@ -51,10 +51,10 @@ import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.SchedulerDelegate;
 import org.dcm4che.archive.service.MPPSEmulator;
+import org.dcm4che.archive.service.MPPSEmulatorLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * MBean providing MPPS emulation non-integrated environments.
@@ -286,9 +286,9 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
         sendMPPS(scu, false, mpps.subSet(MPPS_SET_TAGS), calledAET);
     }
 
-    private MPPSEmulator getMPPSEmulator() {
-        return (MPPSEmulator) SpringContext.getApplicationContext().getBean(
-                BeanId.MPPS_EMU.getId());
+    protected MPPSEmulator getMPPSEmulator() {
+        return (MPPSEmulator) EJBReferenceCache.getInstance().lookup(
+                MPPSEmulatorLocal.JNDI_NAME);
     }
 
     private void sendMPPS(MPPSScuServiceMBean scu, boolean create,

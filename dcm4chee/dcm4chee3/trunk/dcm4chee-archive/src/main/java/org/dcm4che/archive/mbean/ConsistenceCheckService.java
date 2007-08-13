@@ -49,8 +49,8 @@ import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.service.ConsistencyCheck;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
+import org.dcm4che.archive.service.ConsistencyCheckLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -256,9 +256,8 @@ public class ConsistenceCheckService extends MBeanServiceBase {
                 consistentCheckListener);
     }
 
-    private ConsistencyCheck newConsistencyCheck() {
-        return (ConsistencyCheck) SpringContext.getApplicationContext()
-                .getBean(BeanId.CONS_CHECK.getId());
+    protected ConsistencyCheck newConsistencyCheck() {
+        return (ConsistencyCheck) EJBReferenceCache.getInstance().lookup(ConsistencyCheckLocal.JNDI_NAME);
     }
 
     public String getTimerIDCheckStudyConsistency() {

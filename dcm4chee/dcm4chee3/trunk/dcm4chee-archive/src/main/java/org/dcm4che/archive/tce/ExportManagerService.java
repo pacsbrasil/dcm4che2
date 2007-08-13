@@ -83,9 +83,12 @@ import org.dcm4che.archive.mbean.AuditLoggerDelegate;
 import org.dcm4che.archive.mbean.JMSDelegate;
 import org.dcm4che.archive.service.AEManager;
 import org.dcm4che.archive.service.ContentManager;
+import org.dcm4che.archive.service.ContentManagerLocal;
 import org.dcm4che.archive.service.Storage;
+import org.dcm4che.archive.service.StorageLocal;
 import org.dcm4che.archive.util.FileDataSource;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.Destination;
 import org.dcm4che.auditlog.Patient;
@@ -113,8 +116,6 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.BeginTransferringMessage;
 import org.dcm4che2.audit.message.DataExportMessage;
@@ -425,8 +426,8 @@ public class ExportManagerService extends AbstractScuService implements
     }
 
     protected Storage getStorage() {
-        Storage storage = (Storage) SpringContext.getApplicationContext()
-                .getBean(BeanId.STORAGE.getId());
+        Storage storage = (Storage) EJBReferenceCache.getInstance().lookup(
+                StorageLocal.JNDI_NAME);
         return storage;
     }
 
@@ -1271,8 +1272,8 @@ public class ExportManagerService extends AbstractScuService implements
         Logger.getLogger("auditlog").info(msg);
     }
 
-    private ContentManager getContentManager() throws Exception {
-        return (ContentManager) SpringContext.getApplicationContext().getBean(
-                BeanId.CONTENT_MGR.getId());
+    protected ContentManager getContentManager() throws Exception {
+        return (ContentManager) EJBReferenceCache.getInstance().lookup(
+                ContentManagerLocal.JNDI_NAME);
     }
 }

@@ -44,6 +44,8 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 /**
+ * A delegate class to be used by classes wishing to register for scheduled events.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class SchedulerDelegate {

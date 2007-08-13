@@ -46,7 +46,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
@@ -60,7 +66,8 @@ import org.dcm4che.archive.entity.Instance;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.ContentEdit;
+import org.dcm4che.archive.service.ContentEditLocal;
+import org.dcm4che.archive.service.ContentEditRemote;
 import org.dcm4che.archive.util.Convert;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -75,8 +82,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  * @since 14.01.2004
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class ContentEditBean implements ContentEdit {
+public class ContentEditBean implements ContentEditLocal, ContentEditRemote {
 
     private static final int CHANGE_MODE_NO = 0;
 
@@ -88,13 +100,13 @@ public class ContentEditBean implements ContentEdit {
 
     private static final int DELETED = 1;
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
-    private InstanceDAO instDAO;
+    @EJB private InstanceDAO instDAO;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 

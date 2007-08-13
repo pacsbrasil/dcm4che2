@@ -61,16 +61,16 @@ import org.dcm4che.archive.exceptions.CircularMergedException;
 import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
 import org.dcm4che.archive.service.CheckStudyPatient;
+import org.dcm4che.archive.service.CheckStudyPatientLocal;
 import org.dcm4che.archive.util.Convert;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -82,7 +82,7 @@ public class CheckStudyPatientService extends MBeanServiceBase {
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
-    private long taskInterval = 0L;
+    private long taskInterval;
 
     private Integer studyStatus;
 
@@ -378,9 +378,8 @@ public class CheckStudyPatientService extends MBeanServiceBase {
                 consistentCheckListener);
     }
 
-    private CheckStudyPatient newConsistencyCheck() {
-        return (CheckStudyPatient) SpringContext.getApplicationContext()
-                .getBean(BeanId.CHECK_STUDY_PAT.getId());
+    protected CheckStudyPatient newConsistencyCheck() {
+        return (CheckStudyPatient) EJBReferenceCache.getInstance().lookup(CheckStudyPatientLocal.JNDI_NAME);
     }
 
     public String getTimerIDCheckStudyPatient() {

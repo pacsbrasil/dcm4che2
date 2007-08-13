@@ -64,10 +64,10 @@ import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.entity.FileDTO;
 import org.dcm4che.archive.entity.FileSystemDTO;
 import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -446,9 +446,8 @@ public class CompressionService extends MBeanServiceBase {
                 delayedCompressionListener);
     }
 
-    private FileSystemMgt newFileSystemMgt() {
-        return (FileSystemMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.FS_MGMT.getId());
+    protected FileSystemMgt newFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(FileSystemMgtLocal.JNDI_NAME);
     }
 
     public class CompressionRule {

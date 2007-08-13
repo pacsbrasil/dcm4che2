@@ -73,8 +73,11 @@ import org.dcm4che.archive.exceptions.UnknownAETException;
 import org.dcm4che.archive.mbean.JMSDelegate;
 import org.dcm4che.archive.mbean.TLSConfigDelegate;
 import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
 import org.dcm4che.archive.service.Storage;
+import org.dcm4che.archive.service.StorageLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -97,8 +100,6 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -285,9 +286,9 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
-    private AEManager aeMgr() throws Exception {
-        return (AEManager) SpringContext.getApplicationContext().getBean(
-                BeanId.AE_MGR.getId());
+    protected AEManager aeMgr() throws Exception {
+        return (AEManager) EJBReferenceCache.getInstance().lookup(
+                AEManagerLocal.JNDI_NAME);
     }
 
     boolean isLocalRetrieveAET(String aet) {
@@ -413,9 +414,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     protected Storage getStorage() {
-        Storage storage = (Storage) SpringContext.getApplicationContext()
-                .getBean(BeanId.STORAGE.getId());
-        return storage;
+        return (Storage) EJBReferenceCache.getInstance().lookup(
+                StorageLocal.JNDI_NAME);
     }
 
     private void process(StgCmtOrder order) throws Exception {

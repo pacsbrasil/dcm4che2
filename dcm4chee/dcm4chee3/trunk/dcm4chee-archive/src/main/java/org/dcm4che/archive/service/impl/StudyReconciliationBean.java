@@ -46,6 +46,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -56,7 +62,8 @@ import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.exceptions.PatientException;
 import org.dcm4che.archive.service.PatientUpdate;
-import org.dcm4che.archive.service.StudyReconciliation;
+import org.dcm4che.archive.service.StudyReconciliationLocal;
+import org.dcm4che.archive.service.StudyReconciliationRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.net.DcmServiceException;
@@ -68,15 +75,20 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  * @since Jun 6, 2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class StudyReconciliationBean implements StudyReconciliation  {
+public class StudyReconciliationBean implements StudyReconciliationLocal, StudyReconciliationRemote  {
 
     private static final Logger log = Logger
             .getLogger(StudyReconciliationBean.class);
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private PatientUpdate patientUpdate;
+    @EJB private PatientUpdate patientUpdate;
 
     private Study getStudy(String suid) throws PersistenceException,
             DcmServiceException {

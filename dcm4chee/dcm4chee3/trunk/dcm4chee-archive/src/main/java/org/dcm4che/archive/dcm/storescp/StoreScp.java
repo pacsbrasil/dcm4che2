@@ -76,9 +76,13 @@ import org.dcm4che.archive.perf.PerfCounterEnum;
 import org.dcm4che.archive.perf.PerfMonDelegate;
 import org.dcm4che.archive.perf.PerfPropertyEnum;
 import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
 import org.dcm4che.archive.service.MPPSManager;
+import org.dcm4che.archive.service.MPPSManagerLocal;
 import org.dcm4che.archive.service.Storage;
+import org.dcm4che.archive.service.StorageLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -100,8 +104,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.BufferedOutputStream;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -812,24 +814,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 && "DCM".equals(item.getString(Tags.CodingSchemeDesignator));
     }
 
-    // Get the Spring managed MPPS management service
-    private MPPSManager getMPPSManager() {
-        return (MPPSManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MPPS_MGR.getId());
+    // Get the MPPS management service
+    protected MPPSManager getMPPSManager() {
+        return (MPPSManager) EJBReferenceCache.getInstance().lookup(
+                MPPSManagerLocal.JNDI_NAME);
     }
 
-    // Get the Spring managed FileSystem management service
-    private FileSystemMgt getFileSystemMgt() {
-        return (FileSystemMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.FS_MGMT.getId());
+    // Get the FileSystem management service
+    protected FileSystemMgt getFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(
+                FileSystemMgtLocal.JNDI_NAME);
     }
 
-    // Get the Spring managed Storage service
+    // Get the Storage service
     Storage getStorage(Association assoc) {
-        Storage store = (Storage) assoc.getProperty(BeanId.STORAGE.getId());
+        Storage store = (Storage) assoc.getProperty(StorageLocal.JNDI_NAME);
         if (store == null) {
             store = service.getStorage();
-            assoc.putProperty(BeanId.STORAGE.getId(), store);
+            assoc.putProperty(StorageLocal.JNDI_NAME, store);
         }
 
         return store;

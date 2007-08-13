@@ -51,14 +51,14 @@ import java.util.TreeMap;
 import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.service.ContentManager;
+import org.dcm4che.archive.service.ContentManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author franz.willer@tiani.com
@@ -405,12 +405,12 @@ public class KeyObjectService extends MBeanServiceBase {
 
     }
 
-    private ContentManager lookupContentManager() {
+    protected ContentManager lookupContentManager() {
         if (contentMgr != null)
             return contentMgr;
 
-        contentMgr = (ContentManager) SpringContext.getApplicationContext()
-                .getBean(BeanId.CONTENT_MGR.getId());
+        contentMgr = (ContentManager) EJBReferenceCache.getInstance().lookup(
+                ContentManagerLocal.JNDI_NAME);
         return contentMgr;
     }
 }

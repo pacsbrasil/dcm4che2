@@ -44,6 +44,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -59,7 +65,8 @@ import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.exceptions.PatientException;
 import org.dcm4che.archive.service.PatientUpdate;
-import org.dcm4che.archive.service.StudyMgt;
+import org.dcm4che.archive.service.StudyMgtLocal;
+import org.dcm4che.archive.service.StudyMgtRemote;
 import org.dcm4che.archive.util.AttributeFilter;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -74,20 +81,25 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since Jun 6, 2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class StudyMgtBean implements StudyMgt {
+public class StudyMgtBean implements StudyMgtLocal, StudyMgtRemote {
 
     private static final Logger log = Logger.getLogger(StudyMgtBean.class);
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
-    private InstanceDAO instDAO;
+    @EJB private InstanceDAO instDAO;
 
-    private PatientUpdate patientUpdate;
+    @EJB private PatientUpdate patientUpdate;
 
     /** 
      * @see org.dcm4che.archive.service.StudyMgt#createStudy(org.dcm4che.data.Dataset)

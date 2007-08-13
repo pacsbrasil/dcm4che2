@@ -68,8 +68,11 @@ import org.dcm4che.archive.exceptions.ConfigurationException;
 import org.dcm4che.archive.exceptions.UnknownAETException;
 import org.dcm4che.archive.mbean.TLSConfigDelegate;
 import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
 import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
@@ -81,8 +84,6 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
@@ -864,9 +865,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
 
-    private AEManager aeMgr() {
-        return (AEManager) SpringContext.getApplicationContext().getBean(
-                BeanId.AE_MGR.getId());
+    protected AEManager aeMgr() {
+        return (AEManager) EJBReferenceCache.getInstance().lookup(
+                AEManagerLocal.JNDI_NAME);
     }
 
     public void queueStgCmtOrder(String calling, String called,
@@ -888,9 +889,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         String.class.getName(), String.class.getName() });
     }
 
-    FileSystemMgt getFileSystemMgt() {
-        return (FileSystemMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.FS_MGMT.getId());
+    protected FileSystemMgt getFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(
+                FileSystemMgtLocal.JNDI_NAME);
     }
 
     void updateStudyAccessTime(Set studyInfos) {

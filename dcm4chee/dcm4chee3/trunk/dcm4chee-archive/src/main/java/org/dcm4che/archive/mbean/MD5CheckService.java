@@ -57,10 +57,10 @@ import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.entity.FileDTO;
 import org.dcm4che.archive.entity.FileSystemDTO;
 import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.util.MD5Utils;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -265,9 +265,8 @@ public class MD5CheckService extends MBeanServiceBase {
         scheduler.stopScheduler(timerIDCheckMD5, listenerID, timerListener);
     }
 
-    private FileSystemMgt newFileSystemMgt() {
-        return (FileSystemMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.FS_MGMT.getId());
+    protected FileSystemMgt newFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(FileSystemMgtLocal.JNDI_NAME);
     }
 
     public String getTimerIDCheckMD5() {

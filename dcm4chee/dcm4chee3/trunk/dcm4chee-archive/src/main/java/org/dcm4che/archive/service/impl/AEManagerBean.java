@@ -42,6 +42,12 @@ package org.dcm4che.archive.service.impl;
 
 import java.util.List;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -50,7 +56,8 @@ import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.exceptions.UnknownAETException;
-import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
+import org.dcm4che.archive.service.AEManagerRemote;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,9 +65,14 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author <a href="mailto:umberto.cappellini@tiani.com">Umberto Cappellini</a>
  */
-public class AEManagerBean implements AEManager  {
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
+@Transactional(propagation = Propagation.REQUIRED)
+public class AEManagerBean implements AEManagerLocal, AEManagerRemote  {
 
-    private AEDAO aeHome;
+    @EJB private AEDAO aeHome;
 
     /** 
      * @see org.dcm4che.archive.service.AEManager#setAeDAO(org.dcm4che.archive.dao.AEDAO)

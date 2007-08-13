@@ -43,12 +43,19 @@ package org.dcm4che.archive.service.impl;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.common.SPSStatus;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
+import org.dcm4che.archive.dao.OtherPatientIDDAO;
 import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.entity.MWLItem;
 import org.dcm4che.archive.entity.Patient;
@@ -57,7 +64,8 @@ import org.dcm4che.archive.exceptions.CircularMergedException;
 import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
-import org.dcm4che.archive.service.PatientUpdate;
+import org.dcm4che.archive.service.PatientUpdateLocal;
+import org.dcm4che.archive.service.PatientUpdateRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.springframework.transaction.annotation.Propagation;
@@ -67,10 +75,20 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author gunter.zeilinger@tiani.com
  */
+// EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class PatientUpdateBean implements PatientUpdate {
+public class PatientUpdateBean implements PatientUpdateLocal,
+        PatientUpdateRemote {
 
+    @EJB
     private PatientDAO patDAO;
+    
+    @EJB
+    private OtherPatientIDDAO opidDAO;
 
     /**
      * @see org.dcm4che.archive.service.PatientUpdate#mergePatient(org.dcm4che.data.Dataset,
@@ -130,7 +148,7 @@ public class PatientUpdateBean implements PatientUpdate {
             PatientMergedException, CircularMergedException {
         try {
             Patient pat = patDAO.searchFor(ds, false);
-            pat.updateAttributes(ds);
+            pat.updateAttributes(ds, opidDAO);
             return pat;
         }
         catch (NoResultException e) {
@@ -196,5 +214,19 @@ public class PatientUpdateBean implements PatientUpdate {
      */
     public void setPatDAO(PatientDAO patHome) {
         this.patDAO = patHome;
+    }
+
+    /**
+     * @return the opidDAO
+     */
+    public OtherPatientIDDAO getOpidDAO() {
+        return opidDAO;
+    }
+
+    /**
+     * @param opidDAO the opidDAO to set
+     */
+    public void setOpidDAO(OtherPatientIDDAO opidDAO) {
+        this.opidDAO = opidDAO;
     }
 }

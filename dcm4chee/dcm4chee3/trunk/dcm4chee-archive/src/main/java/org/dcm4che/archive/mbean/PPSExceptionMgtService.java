@@ -48,10 +48,10 @@ import javax.management.ObjectName;
 
 import org.dcm4che.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4che.archive.service.PrivateManager;
+import org.dcm4che.archive.service.PrivateManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -162,12 +162,12 @@ public class PPSExceptionMgtService extends MBeanServiceBase implements
         }
     }
 
-    private PrivateManager lookupPrivateManager() {
+    protected PrivateManager lookupPrivateManager() {
         if (privateManager != null)
             return privateManager;
 
-        privateManager = (PrivateManager) SpringContext.getApplicationContext()
-                .getBean(BeanId.PRIV_MGR.getId());
+        privateManager = (PrivateManager) EJBReferenceCache.getInstance()
+                .lookup(PrivateManagerLocal.JNDI_NAME);
         return privateManager;
     }
 

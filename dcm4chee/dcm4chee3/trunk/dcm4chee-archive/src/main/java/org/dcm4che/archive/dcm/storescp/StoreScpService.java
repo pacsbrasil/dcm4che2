@@ -65,7 +65,9 @@ import org.dcm4che.archive.entity.FileDTO;
 import org.dcm4che.archive.entity.FileSystemDTO;
 import org.dcm4che.archive.mbean.SchedulerDelegate;
 import org.dcm4che.archive.service.Storage;
+import org.dcm4che.archive.service.StorageLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
@@ -78,8 +80,6 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
@@ -822,8 +822,8 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public Storage getStorage() {
-        return (Storage) SpringContext.getApplicationContext().getBean(
-                BeanId.STORAGE.getId());
+        return (Storage) EJBReferenceCache.getInstance().lookup(
+                StorageLocal.JNDI_NAME);
     }
 
     public List findMWLEntries(Dataset ds) throws Exception {

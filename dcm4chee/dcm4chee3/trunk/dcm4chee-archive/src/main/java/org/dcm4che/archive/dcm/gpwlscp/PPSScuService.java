@@ -53,7 +53,10 @@ import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.dcm.AbstractScuService;
 import org.dcm4che.archive.mbean.JMSDelegate;
 import org.dcm4che.archive.service.GPPPSManager;
+import org.dcm4che.archive.service.GPPPSManagerLocal;
 import org.dcm4che.archive.service.GPWLManager;
+import org.dcm4che.archive.service.GPWLManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -65,8 +68,6 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -183,14 +184,14 @@ public class PPSScuService extends AbstractScuService implements
         return concurrency;
     }
 
-    private GPWLManager getGPWLManager() {
-        return (GPWLManager) SpringContext.getApplicationContext().getBean(
-                BeanId.GPWL_MGR.getId());
+    protected GPWLManager getGPWLManager() {
+        return (GPWLManager) EJBReferenceCache.getInstance().lookup(
+                GPWLManagerLocal.JNDI_NAME);
     }
 
-    private GPPPSManager getGPPPSManager() {
-        return (GPPPSManager) SpringContext.getApplicationContext().getBean(
-                BeanId.GPPPS_MGR.getId());
+    protected GPPPSManager getGPPPSManager() {
+        return (GPPPSManager) EJBReferenceCache.getInstance().lookup(
+                GPPPSManagerLocal.JNDI_NAME);
     }
 
     public final void setConcurrency(int concurrency) throws Exception {

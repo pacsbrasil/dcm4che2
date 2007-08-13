@@ -46,10 +46,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.MPPSDAO;
 import org.dcm4che.archive.dao.MWLItemDAO;
@@ -61,7 +68,8 @@ import org.dcm4che.archive.entity.MWLItem;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.MPPSManager;
+import org.dcm4che.archive.service.MPPSManagerLocal;
+import org.dcm4che.archive.service.MPPSManagerRemote;
 import org.dcm4che.archive.util.AttributeFilter;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -77,8 +85,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since 21.03.2004
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class MPPSManagerBean implements MPPSManager  {
+public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
 
     private static Logger log = Logger.getLogger(MPPSManagerBean.class);
 
@@ -95,13 +108,15 @@ public class MPPSManagerBean implements MPPSManager  {
     private static final int[] PATIENT_ATTRS_INC = { Tags.PatientName,
             Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
-    private MPPSDAO mppsDAO;
+    @EJB private MPPSDAO mppsDAO;
 
-    private MWLItemDAO mwlItemDAO;
+    @EJB private MWLItemDAO mwlItemDAO;
+    
+    @EJB private CodeDAO codeDAO;
 
     /** 
      * @see org.dcm4che.archive.service.MPPSManager#createMPPS(org.dcm4che.data.Dataset)
@@ -180,7 +195,7 @@ public class MPPSManagerBean implements MPPSManager  {
         }
         Dataset attrs = mpps.getAttributes();
         attrs.putAll(ds);
-        mpps.setAttributes(attrs);
+        mpps.setAttributes(attrs, codeDAO);
     }
 
     /** 
@@ -286,7 +301,7 @@ public class MPPSManagerBean implements MPPSManager  {
             log.debug(mppsAttrs);
         }
         mppsAttrs.putAll(mpps.getPatient().getAttributes(false));
-        mpps.setAttributes(mppsAttrs);
+        mpps.setAttributes(mppsAttrs, codeDAO);
         map.put("mppsAttrs", mppsAttrs);
         map.put("mwlAttrs", mwlAttrs);
         return map;
@@ -377,7 +392,7 @@ public class MPPSManagerBean implements MPPSManager  {
         ds.putLO(Tags.SPSDescription, (String) null);
         ds.putSQ(Tags.ScheduledProtocolCodeSeq);
         mppsAttrs.putSQ(Tags.ScheduledStepAttributesSeq).addItem(ds);
-        mpps.setAttributes(mppsAttrs);
+        mpps.setAttributes(mppsAttrs, codeDAO);
     }
 
     /** 
@@ -464,5 +479,19 @@ public class MPPSManagerBean implements MPPSManager  {
             dsN.putAll(study.getAttributes(true));
         }
         return dsN;
+    }
+
+    /**
+     * @return the codeDAO
+     */
+    public CodeDAO getCodeDAO() {
+        return codeDAO;
+    }
+
+    /**
+     * @param codeDAO the codeDAO to set
+     */
+    public void setCodeDAO(CodeDAO codeDAO) {
+        this.codeDAO = codeDAO;
     }
 }

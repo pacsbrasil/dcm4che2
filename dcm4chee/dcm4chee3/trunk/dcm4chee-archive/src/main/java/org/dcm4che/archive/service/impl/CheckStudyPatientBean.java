@@ -45,6 +45,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -62,6 +68,8 @@ import org.dcm4che.archive.exceptions.CircularMergedException;
 import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
 import org.dcm4che.archive.service.CheckStudyPatient;
+import org.dcm4che.archive.service.CheckStudyPatientLocal;
+import org.dcm4che.archive.service.CheckStudyPatientRemote;
 import org.dcm4che.archive.service.ContentEdit;
 import org.dcm4che.data.Dataset;
 import org.springframework.transaction.annotation.Propagation;
@@ -71,14 +79,19 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author franz.willer@gwi-ag.com
  */
+// EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class CheckStudyPatientBean implements CheckStudyPatient {
+public class CheckStudyPatientBean implements CheckStudyPatientLocal, CheckStudyPatientRemote {
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private ContentEdit contentEdit;
+    @EJB private ContentEdit contentEdit;
 
     private static final Logger log = Logger
             .getLogger(CheckStudyPatientBean.class);

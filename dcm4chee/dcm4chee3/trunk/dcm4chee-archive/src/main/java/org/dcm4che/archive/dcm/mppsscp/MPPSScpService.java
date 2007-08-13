@@ -58,7 +58,9 @@ import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dcm.AbstractScpService;
 import org.dcm4che.archive.service.MPPSManager;
+import org.dcm4che.archive.service.MPPSManagerLocal;
 import org.dcm4che.archive.util.XSLTUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -67,8 +69,6 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -365,10 +365,9 @@ public class MPPSScpService extends AbstractScpService {
         }
     }
 
-    private MPPSManager getMPPSManager() {
-        // TODO: Cache this as a field.
-        return (MPPSManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MPPS_MGR.getId());
+    protected MPPSManager getMPPSManager() {
+        return (MPPSManager) EJBReferenceCache.getInstance().lookup(
+                MPPSManagerLocal.JNDI_NAME);
     }
 
 }

@@ -46,8 +46,6 @@ import org.dcm4che.archive.dao.AEDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.exceptions.UnknownAETException;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * org.dcm4che.archive.service.impl.AEManager
@@ -60,23 +58,17 @@ public interface AEManager {
 
     public AEDAO getAeDAO();
 
-    @Transactional(propagation = Propagation.REQUIRED)
     public AE findByPrimaryKey(long aePk) throws PersistenceException;
 
-    @Transactional(propagation = Propagation.REQUIRED)
     public AE findByAET(String aet) throws PersistenceException,
             UnknownAETException;
 
-    @Transactional(propagation = Propagation.REQUIRED)
     public List<AE> findAll() throws PersistenceException;
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = PersistenceException.class)
     public void updateAE(AE modAE) throws PersistenceException;
 
-    @Transactional(propagation = Propagation.REQUIRED)
     public void newAE(AE newAE) throws ContentCreateException;
 
-    @Transactional(propagation = Propagation.REQUIRED)
     public void removeAE(long aePk) throws Exception;
 
 }

@@ -48,6 +48,8 @@ import javax.management.ObjectName;
 import javax.management.timer.TimerNotification;
 
 /**
+ * A JMX service for registering for scheduled notifications.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class SchedulerService extends MBeanServiceBase {

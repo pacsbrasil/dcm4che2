@@ -47,6 +47,8 @@ import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.TLSConfigDelegate;
 import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -56,8 +58,6 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PDataTF;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 
 /**
@@ -221,7 +221,7 @@ public abstract class AbstractScuService extends MBeanServiceBase {
     }
 
     protected AEManager aeMgt() {
-        return (AEManager) SpringContext.getApplicationContext().getBean(BeanId.AE_MGR.getId());
+        return (AEManager) EJBReferenceCache.getInstance().lookup(AEManagerLocal.JNDI_NAME);
     }
     
     /** 

@@ -56,6 +56,8 @@ import org.dcm4che.archive.dao.StudyDAO;
 import org.dcm4che.archive.dao.StudyOnFileSystemDAO;
 import org.dcm4che.archive.entity.FileDTO;
 import org.dcm4che.archive.entity.FileSystemDTO;
+import org.dcm4che.archive.entity.Study;
+import org.dcm4che.archive.entity.StudyOnFileSystem;
 import org.dcm4che.data.Dataset;
 
 /**
@@ -244,10 +246,25 @@ public interface FileSystemMgt {
             throws PersistenceException, ContentCreateException;
 
     /**
+     * Check study properties to ensure it can be released.
+     * 
+     * @param study
+     *            The {@link Study} which will be released.
+     * @param deleteUncommited
+     * @param flushOnMedia
+     * @param flushExternal
+     * @param flushOnROFs
+     * @param validFileStatus
+     * @return boolean True if the study can be released.
+     */
+    public boolean isStudyAbleToBeReleased(Study study,
+            boolean deleteUncommited, boolean flushOnMedia,
+            boolean flushExternal, boolean flushOnROFs, int validFileStatus);
+    
+    /**
      * Release a study on spcific file system.
      * 
      * @return a list of files that need to be deleted
-     * 
      * 
      * @ejb.transaction type="Required"
      */
@@ -255,6 +272,15 @@ public interface FileSystemMgt {
             boolean deleteUncommited, boolean deleteEmptyPatient,
             Collection filesToPurge) throws EJBException,
             ContentDeleteException, PersistenceException;
+    
+    /**
+     * Delete a {@link StudyOnFileSystem} record in the database.
+     * 
+     * @param sof The primary key of the {@link StudyOnFileSystem} to be deleted.
+     * 
+     * @throws ContentDeleteException
+     */
+    public void removeStudyOnFSRecord(Long sofPk) throws ContentDeleteException;
 
     /**
      * @throws PersistenceException

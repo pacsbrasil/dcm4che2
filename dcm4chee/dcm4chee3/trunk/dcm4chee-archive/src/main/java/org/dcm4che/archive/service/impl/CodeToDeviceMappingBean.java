@@ -45,6 +45,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -56,6 +62,8 @@ import org.dcm4che.archive.dao.DeviceDAO;
 import org.dcm4che.archive.entity.Code;
 import org.dcm4che.archive.entity.Device;
 import org.dcm4che.archive.service.CodeToDeviceMapping;
+import org.dcm4che.archive.service.CodeToDeviceMappingLocal;
+import org.dcm4che.archive.service.CodeToDeviceMappingRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
@@ -68,12 +76,17 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  * @since 17.02.2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class CodeToDeviceMappingBean implements CodeToDeviceMapping {
+public class CodeToDeviceMappingBean implements CodeToDeviceMappingLocal, CodeToDeviceMappingRemote {
 
-    private CodeDAO codeDAO;
+    @EJB private CodeDAO codeDAO;
 
-    private DeviceDAO devDAO;
+    @EJB private DeviceDAO devDAO;
 
     private static final Logger log = Logger
             .getLogger(CodeToDeviceMappingBean.class);

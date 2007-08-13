@@ -56,12 +56,12 @@ import javax.xml.transform.stream.StreamSource;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.service.CodeToDeviceMapping;
+import org.dcm4che.archive.service.CodeToDeviceMappingLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -160,11 +160,9 @@ public class DeviceService extends MBeanServiceBase {
      * 
      * @return The CodeToDeviceMapping.
      */
-    private CodeToDeviceMapping lookupMapper() {
+    protected CodeToDeviceMapping lookupMapper() {
         if (mapper == null) {
-            mapper = (CodeToDeviceMapping) SpringContext
-                    .getApplicationContext().getBean(
-                            BeanId.CODE2DEV_MAPPING.getId());
+            mapper = (CodeToDeviceMapping) EJBReferenceCache.getInstance().lookup(CodeToDeviceMappingLocal.JNDI_NAME);
         }
         return mapper;
     }

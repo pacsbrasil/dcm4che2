@@ -50,11 +50,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.dcm4che.archive.dao.SeriesDAO;
 import org.dcm4che.archive.entity.Instance;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.MPPSEmulator;
+import org.dcm4che.archive.service.MPPSEmulatorLocal;
+import org.dcm4che.archive.service.MPPSEmulatorRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -71,8 +79,13 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author gunter.zeilinger@tiani.com
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class MPPSEmulatorBean implements MPPSEmulator {
+public class MPPSEmulatorBean implements MPPSEmulatorLocal, MPPSEmulatorRemote {
 
     private static final int[] PATIENT_TAGS = { Tags.SpecificCharacterSet,
             Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
@@ -88,7 +101,7 @@ public class MPPSEmulatorBean implements MPPSEmulator {
     private static final int[] SERIES_PPS_TAGS = { Tags.PPSStartDate,
             Tags.PPSStartTime, Tags.PPSID };
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
     /** 
      * @see org.dcm4che.archive.service.MPPSEmulator#generateMPPS(java.lang.String, long)

@@ -43,6 +43,8 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.service.HPStorage;
+import org.dcm4che.archive.service.HPStorageLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -52,8 +54,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -115,9 +115,9 @@ public class HPStoreScp extends DcmServiceBase {
         }
     }
 
-    private HPStorage getStorageHome() {
-        return (HPStorage) SpringContext.getApplicationContext().getBean(
-                BeanId.HP_STORAGE.getId());
+    protected HPStorage getStorageHome() {
+        return (HPStorage) EJBReferenceCache.getInstance().lookup(
+                HPStorageLocal.JNDI_NAME);
     }
 
     private void checkAttrs(Dataset hp, String iuid, String cuid)

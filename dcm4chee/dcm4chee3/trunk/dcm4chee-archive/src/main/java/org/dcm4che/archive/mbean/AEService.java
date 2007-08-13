@@ -54,8 +54,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.exceptions.UnknownAETException;
 import org.dcm4che.archive.service.AEManager;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
@@ -361,21 +360,6 @@ public class AEService extends MBeanServiceBase {
     }
 
     protected AEManager aeMgr() {
-        return (AEManager) SpringContext.getApplicationContext().getBean(
-                BeanId.AE_MGR.getId());
-    }
-
-    /**
-     * @see org.dcm4che.archive.mbean.MBeanServiceBase#startService()
-     */
-    @Override
-    protected void startService() throws Exception {
-    }
-
-    /**
-     * @see org.dcm4che.archive.mbean.MBeanServiceBase#stopService()
-     */
-    @Override
-    protected void stopService() throws Exception {
+        return (AEManager) EJBReferenceCache.getInstance().lookup("AEManager/Local");
     }
 }

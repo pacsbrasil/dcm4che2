@@ -40,14 +40,22 @@
 
 package org.dcm4che.archive.service.impl;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.MWLItemDAO;
+import org.dcm4che.archive.dao.OtherPatientIDDAO;
 import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.entity.MWLItem;
 import org.dcm4che.archive.entity.Patient;
@@ -56,7 +64,8 @@ import org.dcm4che.archive.exceptions.DuplicateMWLItemException;
 import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
 import org.dcm4che.archive.exceptions.PatientMismatchException;
-import org.dcm4che.archive.service.MWLManager;
+import org.dcm4che.archive.service.MWLManagerLocal;
+import org.dcm4che.archive.service.MWLManagerRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.dict.Tags;
@@ -69,8 +78,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since 10.12.2003
  */
+// EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class MWLManagerBean implements MWLManager {
+public class MWLManagerBean implements MWLManagerLocal, MWLManagerRemote {
     private static final int[] PATIENT_ATTRS = { Tags.PatientName,
             Tags.PatientID, Tags.IssuerOfPatientID, Tags.PatientBirthDate,
             Tags.PatientSex, Tags.OtherPatientIDSeq,
@@ -78,14 +92,21 @@ public class MWLManagerBean implements MWLManager {
 
     private static Logger log = Logger.getLogger(MWLManagerBean.class);
 
+    @EJB
     private PatientDAO patDAO;
 
+    @EJB
     private MWLItemDAO mwlItemDAO;
 
-    /** 
-     * @see org.dcm4che.archive.service.MWLManager#removeWorklistItem(java.lang.String, java.lang.String)
+    @EJB
+    private OtherPatientIDDAO opidDAO;
+
+    /**
+     * @see org.dcm4che.archive.service.MWLManager#removeWorklistItem(java.lang.String,
+     *      java.lang.String)
      */
-    public Dataset removeWorklistItem(String rpid, String spsid) throws PersistenceException{
+    public Dataset removeWorklistItem(String rpid, String spsid)
+            throws PersistenceException {
         try {
             MWLItem mwlItem = mwlItemDAO.findByRpIdAndSpsId(rpid, spsid);
             Dataset attrs = toAttributes(mwlItem);
@@ -97,7 +118,7 @@ public class MWLManagerBean implements MWLManager {
         }
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#removeWorklistItem(org.dcm4che.data.Dataset)
      */
     public Dataset removeWorklistItem(Dataset ds)
@@ -126,7 +147,7 @@ public class MWLManagerBean implements MWLManager {
         try {
             if (patDAO.searchFor(ds, false).equals(pat)) {
                 if (updatePatient) {
-                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS));
+                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS), opidDAO);
                 }
                 return mwlItem;
             }
@@ -141,8 +162,9 @@ public class MWLManagerBean implements MWLManager {
         throw new PatientMismatchException(prompt);
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.MWLManager#updateSPSStatus(java.lang.String, java.lang.String, java.lang.String)
+    /**
+     * @see org.dcm4che.archive.service.MWLManager#updateSPSStatus(java.lang.String,
+     *      java.lang.String, java.lang.String)
      */
     public boolean updateSPSStatus(String rpid, String spsid, String status) {
         try {
@@ -160,10 +182,11 @@ public class MWLManagerBean implements MWLManager {
         }
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#updateSPSStatus(org.dcm4che.data.Dataset)
      */
-    public boolean updateSPSStatus(Dataset ds) throws PatientMismatchException, Exception {
+    public boolean updateSPSStatus(Dataset ds) throws PatientMismatchException,
+            Exception {
         MWLItem mwlItem;
         try {
             mwlItem = getWorklistItem(ds, true);
@@ -193,14 +216,14 @@ public class MWLManagerBean implements MWLManager {
         }
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#addWorklistItem(org.dcm4che.data.Dataset)
      */
     public Dataset addWorklistItem(Dataset ds) throws ContentCreateException,
             PersistenceException, Exception {
         checkDuplicate(ds);
-        MWLItem mwlItem = mwlItemDAO.create(ds.subSet(PATIENT_ATTRS, true,
-                true), updateOrCreatePatient(ds));
+        MWLItem mwlItem = mwlItemDAO.create(ds
+                .subSet(PATIENT_ATTRS, true, true), updateOrCreatePatient(ds));
         return toAttributes(mwlItem);
     }
 
@@ -224,7 +247,7 @@ public class MWLManagerBean implements MWLManager {
         return attrs;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#updateWorklistItem(org.dcm4che.data.Dataset)
      */
     public boolean updateWorklistItem(Dataset ds)
@@ -246,31 +269,46 @@ public class MWLManagerBean implements MWLManager {
         return true;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#getMwlItemDAO()
      */
     public MWLItemDAO getMwlItemDAO() {
         return mwlItemDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#setMwlItemDAO(org.dcm4che.archive.dao.MWLItemDAO)
      */
     public void setMwlItemDAO(MWLItemDAO mwlItemDAO) {
         this.mwlItemDAO = mwlItemDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#getPatDAO()
      */
     public PatientDAO getPatDAO() {
         return patDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MWLManager#setPatDAO(org.dcm4che.archive.dao.PatientDAO)
      */
     public void setPatDAO(PatientDAO patDAO) {
         this.patDAO = patDAO;
+    }
+
+    /**
+     * @return the opidDAO
+     */
+    public OtherPatientIDDAO getOpidDAO() {
+        return opidDAO;
+    }
+
+    /**
+     * @param opidDAO
+     *            the opidDAO to set
+     */
+    public void setOpidDAO(OtherPatientIDDAO opidDAO) {
+        this.opidDAO = opidDAO;
     }
 }

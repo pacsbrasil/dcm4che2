@@ -52,6 +52,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
@@ -66,7 +72,8 @@ import org.dcm4che.archive.entity.Media;
 import org.dcm4che.archive.entity.MediaDTO;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.MediaComposer;
+import org.dcm4che.archive.service.MediaComposerLocal;
+import org.dcm4che.archive.service.MediaComposerRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -80,17 +87,22 @@ import org.springframework.transaction.annotation.Transactional;
  * @version Revision $Date: 2007/06/23 18:59:01 $
  * @since 14.12.2004
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class MediaComposerBean implements MediaComposer {
+public class MediaComposerBean implements MediaComposerLocal, MediaComposerRemote {
 
     private static Logger log = Logger.getLogger(MediaComposerBean.class
             .getName());
 
-    private MediaDAO mediaDAO;
+    @EJB private MediaDAO mediaDAO;
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
     /** 
      * @see org.dcm4che.archive.service.MediaComposer#getStudiesReceivedBefore(long)

@@ -79,8 +79,6 @@ import org.dcm4che.archive.config.DeleterThresholds;
 import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
-import org.dcm4che.archive.dao.StudyDAO;
-import org.dcm4che.archive.dao.StudyOnFileSystemDAO;
 import org.dcm4che.archive.dao.jdbc.FileInfo;
 import org.dcm4che.archive.dao.jdbc.RetrieveCmd;
 import org.dcm4che.archive.entity.AE;
@@ -90,17 +88,18 @@ import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.entity.StudyOnFileSystem;
 import org.dcm4che.archive.notif.StudyDeleted;
 import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
 import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
 import org.dcm4che.archive.util.FileDataSource;
 import org.dcm4che.archive.util.FileSystemUtils;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4che.util.Executer;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -203,21 +202,6 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     private ObjectName[] otherServiceNames = {};
 
     private String[] otherServiceAETAttrs = {};
-
-    private FileSystemMgt fsMgt;
-
-    private StudyDAO studyDAO;
-
-    private StudyOnFileSystemDAO sofDAO;
-
-    public FileSystemMgtService() {
-        fsMgt = (FileSystemMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.FS_MGMT.getId());
-        studyDAO = (StudyDAO) SpringContext.getApplicationContext().getBean(
-                BeanId.STUDY_DAO.getId());
-        sofDAO = (StudyOnFileSystemDAO) SpringContext.getApplicationContext()
-                .getBean(BeanId.SOF_DAO.getId());
-    }
 
     private final NotificationListener purgeFilesListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -749,6 +733,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
      * @throws Exception
      */
     protected FileSystemDTO initFileSystem(int availability) throws Exception {
+        FileSystemMgt fsMgt = newFileSystemMgt();
         FileSystemDTO[] c = fsMgt.findFileSystems(retrieveAET, availability,
                 FileSystemStatus.DEF_RW);
         FileSystemDTO fsDTO = null;
@@ -797,8 +782,9 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
         boolean checkDiskSpace = checkStorageFileSystem == 0L
                 || checkStorageFileSystem < System.currentTimeMillis();
-        if (checkStorageFileSystemStatus || checkDiskSpace) {
 
+        if (checkStorageFileSystemStatus || checkDiskSpace) {
+            FileSystemMgt fsMgt = newFileSystemMgt();
             FileSystemDTO fsDTO = fsMgt.getFileSystem(new Long(
                     storageFileSystem.getPk()));
             if (!checkStorageFileSystemStatus(fsDTO) || checkDiskSpace
@@ -961,6 +947,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         int deleted, total = 0;
         FileSystemDTO[] list;
         try {
+            FileSystemMgt fsMgt = newFileSystemMgt();
             try {
                 list = listLocalOnlineRWFileSystems(fsMgt);
             }
@@ -1004,7 +991,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
                 log
                         .debug("Check for unreferenced (private) files to delete in filesystem:"
                                 + purgeDirPath);
-
+                FileSystemMgt fsMgt = newFileSystemMgt();
                 int limit = getLimitNumberOfFilesPerTask();
                 total = purgePrivateFiles(purgeDirPath, fsMgt, limit);
             }
@@ -1068,6 +1055,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         FileDTO[] fileDTOs = null;
         String aet = null;
         try {
+            FileSystemMgt fsMgt = newFileSystemMgt();
             fileDTOs = fsMgt.getFilesOfInstance(iuid);
             if (fileDTOs.length == 0) {
                 aet = fsMgt.getExternalRetrieveAET(iuid);
@@ -1091,9 +1079,14 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         return aeData.getHostname();
     }
 
-    private AEManager aeMgt() throws Exception {
-        return (AEManager) SpringContext.getApplicationContext().getBean(
-                BeanId.AE_MGR.getId());
+    protected AEManager aeMgt() {
+        return (AEManager) EJBReferenceCache.getInstance().lookup(
+                AEManagerLocal.JNDI_NAME);
+    }
+
+    protected FileSystemMgt newFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(
+                FileSystemMgtLocal.JNDI_NAME);
     }
 
     public DataSource getDatasourceOfInstance(String iuid) throws SQLException {
@@ -1148,7 +1141,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     public void freeDiskSpace() {
         log.info("Check available Disk Space");
         try {
-
+            FileSystemMgt fsMgt = newFileSystemMgt();
             FileSystemDTO[] fs = listLocalOnlineRWFileSystems(fsMgt);
             Calendar now = Calendar.getInstance();
             if (adjustExpectedDataVolumePerDay != 0
@@ -1213,7 +1206,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
             boolean checkExternal, boolean checkOnRO, int validFileStatus,
             long maxSizeToDel, Timestamp tsBefore) throws Exception {
 
-        Collection c = fsMgt.getStudiesOnFsByLastAccess(retrieveAET, tsBefore);
+        Collection c = newFileSystemMgt().getStudiesOnFsByLastAccess(retrieveAET, tsBefore);
         if (log.isDebugEnabled()) {
             log.debug("Release studies on filesystem(s) accessed before "
                     + tsBefore + " :" + c.size());
@@ -1258,7 +1251,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         long sizeDeleted = 0L;
         for (; sizeDeleted < maxSizeToDel;) {
 
-            Collection c = fsMgt.getStudiesOnFsAfterAccessTime(retrieveAET,
+            Collection c = newFileSystemMgt().getStudiesOnFsAfterAccessTime(retrieveAET,
                     tsAfter, deleteStudiesLimit);
             if (c.size() == 0)
                 break;
@@ -1283,7 +1276,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     }
 
     public String adjustExpectedDataVolumePerDay() throws Exception {
-
+        FileSystemMgt fsMgt = newFileSystemMgt();
         return adjustExpectedDataVolumePerDay(fsMgt,
                 listLocalOnlineRWFileSystems(fsMgt));
     }
@@ -1309,16 +1302,15 @@ public class FileSystemMgtService extends MBeanServiceBase implements
             boolean deleteUncommited, boolean flushOnMedia,
             boolean flushExternal, boolean flushOnROFs, int validFileStatus)
             throws Exception {
+        FileSystemMgt fsMgt = newFileSystemMgt();
+        
         long size = 0L;
         Study study = studyOnFs.getStudy();
-        boolean release = flushExternal
-                && studyDAO.isStudyExternalRetrievable(study) || flushOnMedia
-                && studyDAO.isStudyAvailableOnMedia(study) || flushOnROFs
-                && studyDAO.isStudyAvailableOnROFs(study, validFileStatus);
+        boolean release = fsMgt.isStudyAbleToBeReleased(study,
+                deleteUncommited, flushOnMedia, flushExternal, flushOnROFs,
+                validFileStatus);
 
-        deleteUncommited = (deleteUncommited && studyDAO
-                .findNumberOfCommitedInstances(study) == 0);
-        if (release || deleteUncommited) {
+        if (release) {
 
             // Send PurgeStudy JMS message
 
@@ -1332,7 +1324,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
             // Remove the StudyOnFs record from database immediately to
             // prevent duplicate query
             // when previous jobs are not finished yet
-            sofDAO.remove(studyOnFs);
+            fsMgt.removeStudyOnFSRecord(studyOnFs.getPk());
         }
         else {
             if (log.isDebugEnabled())
@@ -1341,11 +1333,12 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         }
         return size;
     }
-
+    
     private void releaseStudy(PurgeStudyOrder order) throws Exception {
+        FileSystemMgt fsmgt = newFileSystemMgt();
 
         Collection files = new ArrayList();
-        Dataset ian = fsMgt
+        Dataset ian = fsmgt
                 .releaseStudy(order.getStudyPk(), order.getFsPk(), order
                         .isDeleteUncommited(), order.isDeleteEmptyPatient(),
                         files);
@@ -1379,7 +1372,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public FileSystemDTO[] listLocalOnlineRWFileSystems()
             throws PersistenceException {
-        return listLocalOnlineRWFileSystems(fsMgt);
+        return listLocalOnlineRWFileSystems(newFileSystemMgt());
     }
 
     private FileSystemDTO[] listLocalOnlineRWFileSystems(FileSystemMgt fsMgt)
@@ -1389,7 +1382,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     }
 
     public long showStudySize(Long pk, Long fsPk) throws PersistenceException {
-
+        FileSystemMgt fsMgt = newFileSystemMgt();
         return fsMgt.getStudySize(pk, fsPk);
     }
 
@@ -1481,14 +1474,14 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     }
 
     public FileSystemDTO[] listAllFileSystems() throws PersistenceException {
-        return fsMgt.getAllFileSystems();
+        return newFileSystemMgt().getAllFileSystems();
     }
 
-    public FileSystemDTO addFileSystem(String dirPath, String retrieveAET,
+    public FileSystemDTO addFileSystem(String dirPath, String retrAETitle,
             String availability, String status, String userInfo)
             throws ContentCreateException {
         if (validateStoragePath(dirPath, Availability.toInt(availability)))
-            return addFileSystem(dirPath, availability + _STORAGE, retrieveAET,
+            return addFileSystem(dirPath, availability + _STORAGE, retrAETitle,
                     Availability.toInt(availability), FileSystemStatus
                             .toInt(status), userInfo);
         else
@@ -1506,7 +1499,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         dto.setAvailability(availability);
         dto.setStatus(status);
         dto.setUserInfo(userInfo);
-        return fsMgt.addFileSystem(dto);
+        return newFileSystemMgt().addFileSystem(dto);
     }
 
     public void updateFileSystem(String dirPath, String retrieveAET,
@@ -1519,13 +1512,13 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         dto.setAvailability(Availability.toInt(availability));
         dto.setStatus(FileSystemStatus.toInt(status));
         dto.setUserInfo(userInfo);
-        fsMgt.updateFileSystem(dto);
+        newFileSystemMgt().updateFileSystem(dto);
         checkStorageFileSystem();
     }
 
     public boolean updateFileSystemStatus(String dirPath, String status)
             throws PersistenceException {
-        if (!fsMgt.updateFileSystemStatus(dirPath, FileSystemStatus
+        if (!newFileSystemMgt().updateFileSystemStatus(dirPath, FileSystemStatus
                 .toInt(status))) {
             return false;
         }
@@ -1539,7 +1532,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public boolean updateFileSystemAvailability(String dirPath,
             String availability) throws Exception {
-        FileSystemMgt mgt = fsMgt;
+        FileSystemMgt mgt = newFileSystemMgt();
         int iAvail = Availability.toInt(availability);
         log.info("Update availability of " + dirPath + " to " + availability
                 + "(" + iAvail + ")");
@@ -1603,7 +1596,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     public boolean updateRetrieveAETitle(String newAET) throws Exception {
         if (newAET.equals(retrieveAET))
             return false;
-        FileSystemMgt mgt = fsMgt;
+        FileSystemMgt mgt = newFileSystemMgt();
         FileSystemDTO[] dtos = mgt.findFileSystems(retrieveAET);
         for (int i = 0; i < dtos.length; i++) {
             updateFileSystemRetrieveAET(dtos[i].getDirectoryPath(), newAET, mgt);
@@ -1614,7 +1607,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public boolean updateFileSystemRetrieveAET(String dirPath,
             String retrieveAET) throws PersistenceException {
-        return updateFileSystemRetrieveAET(dirPath, retrieveAET, fsMgt);
+        return updateFileSystemRetrieveAET(dirPath, retrieveAET, newFileSystemMgt());
     }
 
     private boolean updateFileSystemRetrieveAET(String dirPath,
@@ -1629,12 +1622,12 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         }
     }
 
-    public int updateDerivedFields(String dirPath, boolean retrieveAET,
+    public int updateDerivedFields(String dirPath, boolean retr_aet,
             boolean availability) throws PersistenceException {
-        return updateDerivedFields(dirPath, retrieveAET, availability, fsMgt);
+        return updateDerivedFields(dirPath, retr_aet, availability, newFileSystemMgt());
     }
 
-    private int updateDerivedFields(String dirPath, boolean retrieveAET,
+    private int updateDerivedFields(String dirPath, boolean retr_aet,
             boolean availability, FileSystemMgt mgt)
             throws PersistenceException {
         checkStorageFileSystem();
@@ -1643,7 +1636,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         int size;
         log.info("Update Derived Fields of all instances of filesystem "
                 + dirPath);
-        while ((size = mgt.updateInstanceDerivedFields(dirPath, retrieveAET,
+        while ((size = mgt.updateInstanceDerivedFields(dirPath, retr_aet,
                 availability, offset, limit)) > 0) {
             log.info("  " + size + " instances updated!");
             offset += size;
@@ -1653,7 +1646,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     }
 
     public void deleteFilesOnFS(String dirPath) throws PersistenceException {
-        FileSystemMgt mgt = fsMgt;
+        FileSystemMgt mgt = newFileSystemMgt();
         int avail = mgt.getFileSystem(dirPath).getAvailability();
         if (avail != Availability.UNAVAILABLE)
             throw new IllegalStateException(
@@ -1698,7 +1691,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
      * @throws
      */
     public int checkFilesOnFS(String dirPath) throws PersistenceException {
-        FileSystemMgt mgt = fsMgt;
+        FileSystemMgt mgt = newFileSystemMgt();
         int offset = 0;
         Collection files = mgt.getFilesOnFS(dirPath, offset,
                 limitNumberOfFilesPerTask);
@@ -1730,7 +1723,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public void linkFileSystems(String prev, String next)
             throws PersistenceException {
-        fsMgt.linkFileSystems(prev, next);
+        newFileSystemMgt().linkFileSystems(prev, next);
         checkStorageFileSystem();
     }
 
@@ -1750,7 +1743,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     private String showFileSystemsWithAvailability(int availability)
             throws PersistenceException {
-        FileSystemDTO[] dtos = fsMgt
+        FileSystemDTO[] dtos = newFileSystemMgt()
                 .findRWFileSystemByRetieveAETAndAvailability(retrieveAET,
                         availability);
         sortFileSystems(dtos);
@@ -1773,7 +1766,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public String removeFileSystem(String dirPath) throws PersistenceException,
             ContentDeleteException {
-        return fsMgt.removeFileSystem(dirPath).toString();
+        return newFileSystemMgt().removeFileSystem(dirPath).toString();
     }
 
     private String addAndLinkFileSystem(String dirPath, String groupId,
@@ -1786,7 +1779,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         dto.setAvailability(availability);
         dto.setStatus(status);
         dto.setUserInfo(userInfo);
-        FileSystemDTO newFS = fsMgt.addAndLinkFileSystem(dto);
+        FileSystemDTO newFS = newFileSystemMgt().addAndLinkFileSystem(dto);
         checkStorageFileSystem();
         return newFS.toString();
     }
@@ -1806,7 +1799,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public int deleteWholeStudy(String studyIUID, boolean deletePatientIfEmpty)
             throws ContentDeleteException, PersistenceException {
-        FileDTO[] fileDTOs = fsMgt.deleteWholeStudy(studyIUID,
+        FileDTO[] fileDTOs = newFileSystemMgt().deleteWholeStudy(studyIUID,
                 deletePatientIfEmpty);
         File file;
         for (int i = 0; i < fileDTOs.length; i++) {

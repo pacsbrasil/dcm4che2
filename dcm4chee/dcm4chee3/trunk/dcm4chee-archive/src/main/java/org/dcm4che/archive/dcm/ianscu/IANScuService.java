@@ -65,6 +65,8 @@ import org.dcm4che.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4che.archive.mbean.JMSDelegate;
 import org.dcm4che.archive.notif.StudyDeleted;
 import org.dcm4che.archive.service.MPPSManager;
+import org.dcm4che.archive.service.MPPSManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -78,8 +80,6 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -352,9 +352,9 @@ public class IANScuService extends AbstractScuService implements
 
     }
 
-    private MPPSManager getMPPSManager() {
-        return (MPPSManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MPPS_MGR.getId());
+    protected MPPSManager getMPPSManager() {
+        return (MPPSManager) EJBReferenceCache.getInstance().lookup(
+                MPPSManagerLocal.JNDI_NAME);
     }
 
     private void notifyIfRefInstancesAvailable(Dataset mpps) {

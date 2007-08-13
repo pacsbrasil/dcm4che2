@@ -44,6 +44,8 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.common.PPSStatus;
 import org.dcm4che.archive.service.MPPSManager;
+import org.dcm4che.archive.service.MPPSManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -53,8 +55,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -105,9 +105,9 @@ class MPPSScp extends DcmServiceBase {
         return null;
     }
 
-    private MPPSManager getMPPSManager() {
-        return (MPPSManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MPPS_MGR.getId());
+    protected MPPSManager getMPPSManager() {
+        return (MPPSManager) EJBReferenceCache.getInstance().lookup(
+                MPPSManagerLocal.JNDI_NAME);
     }
 
     private void createMPPS(Dataset mpps) throws DcmServiceException {

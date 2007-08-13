@@ -45,6 +45,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.dao.jdbc.AddRoleToUserCmd;
@@ -55,7 +60,8 @@ import org.dcm4che.archive.dao.jdbc.QueryUsersCmd;
 import org.dcm4che.archive.dao.jdbc.RemoveRoleFromUserCmd;
 import org.dcm4che.archive.dao.jdbc.RemoveUserCmd;
 import org.dcm4che.archive.dao.jdbc.UpdatePasswordForUserCmd;
-import org.dcm4che.archive.service.UserManager;
+import org.dcm4che.archive.service.UserManagerLocal;
+import org.dcm4che.archive.service.UserManagerRemote;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,8 +70,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  * @since Jun 22, 2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class UserManagerBean implements UserManager  {
+public class UserManagerBean implements UserManagerLocal, UserManagerRemote  {
 
     private static final String DB_JNDI_NAME = "java:comp/env/jdbc/DS";
 

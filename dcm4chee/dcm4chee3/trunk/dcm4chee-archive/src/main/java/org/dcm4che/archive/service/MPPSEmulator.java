@@ -48,10 +48,6 @@ import org.dcm4che.data.Dataset;
  */
 public interface MPPSEmulator {
 
-    /**
-     * @see org.dcm4che.archive.service.MPPSEmulator#generateMPPS(String,
-     *      long)
-     */
     public Dataset[] generateMPPS(String sourceAET, long delay);
 
     /**

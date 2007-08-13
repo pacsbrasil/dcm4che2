@@ -59,9 +59,9 @@ import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.mbean.JMSDelegate;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.service.Storage;
+import org.dcm4che.archive.service.StorageLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -293,9 +293,8 @@ public abstract class AbstractFileCopyService extends MBeanServiceBase
     protected abstract void process(BaseJmsOrder order) throws Exception;
 
     protected static Storage getStorage() {
-        Storage storage = (Storage) SpringContext.getApplicationContext()
-                .getBean(BeanId.STORAGE.getId());
-        return storage;
+        return (Storage) EJBReferenceCache.getInstance().lookup(
+                StorageLocal.JNDI_NAME);
     }
 
 }

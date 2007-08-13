@@ -49,13 +49,13 @@ import org.dcm4che.archive.dcm.AbstractScpService;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.mbean.TLSConfigDelegate;
 import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -166,9 +166,9 @@ public class HPScpService extends AbstractScpService {
         return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
 
-    private AEManager aeMgr() {
-        return (AEManager) SpringContext.getApplicationContext().getBean(
-                BeanId.AE_MGR.getId());
+    protected AEManager aeMgr() {
+        return (AEManager) EJBReferenceCache.getInstance().lookup(
+                AEManagerLocal.JNDI_NAME);
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {

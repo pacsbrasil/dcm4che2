@@ -49,7 +49,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.common.PrivateTags;
@@ -76,6 +82,8 @@ import org.dcm4che.archive.entity.PrivateStudy;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.service.ContentManager;
+import org.dcm4che.archive.service.ContentManagerLocal;
+import org.dcm4che.archive.service.ContentManagerRemote;
 import org.dcm4che.archive.util.Convert;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -90,8 +98,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since 14.01.2004
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class ContentManagerBean implements ContentManager {
+public class ContentManagerBean implements ContentManagerLocal, ContentManagerRemote {
 
     private static final int[] MPPS_FILTER_TAGS = { Tags.PerformedStationAET,
             Tags.PerformedStationName, Tags.PPSStartDate, Tags.PPSStartTime,
@@ -102,23 +115,23 @@ public class ContentManagerBean implements ContentManager {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
-    private InstanceDAO instanceDAO;
+    @EJB private InstanceDAO instanceDAO;
 
-    private PrivatePatientDAO privPatDAO;
+    @EJB private PrivatePatientDAO privPatDAO;
 
-    private PrivateStudyDAO privStudyDAO;
+    @EJB private PrivateStudyDAO privStudyDAO;
 
-    private PrivateSeriesDAO privSeriesDAO;
+    @EJB private PrivateSeriesDAO privSeriesDAO;
 
-    private PrivateInstanceDAO privInstanceDAO;
+    @EJB private PrivateInstanceDAO privInstanceDAO;
 
-    private MPPSDAO mppsDAO;
+    @EJB private MPPSDAO mppsDAO;
 
     /** 
      * @see org.dcm4che.archive.service.ContentManager#getPatientByID(java.lang.String, java.lang.String)

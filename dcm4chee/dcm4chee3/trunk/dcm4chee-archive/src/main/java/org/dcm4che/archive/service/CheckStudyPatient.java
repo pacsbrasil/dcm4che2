@@ -48,7 +48,6 @@ import org.dcm4che.archive.dao.StudyDAO;
 import org.dcm4che.archive.exceptions.CircularMergedException;
 import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
-import org.dcm4che.archive.service.ContentEdit;
 import org.dcm4che.data.Dataset;
 
 /**

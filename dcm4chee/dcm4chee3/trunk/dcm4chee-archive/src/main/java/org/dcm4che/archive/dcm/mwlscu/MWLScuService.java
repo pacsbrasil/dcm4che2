@@ -47,6 +47,8 @@ import org.dcm4che.archive.config.DicomPriority;
 import org.dcm4che.archive.dao.jdbc.MWLQueryCmd;
 import org.dcm4che.archive.dcm.AbstractScuService;
 import org.dcm4che.archive.service.MWLManager;
+import org.dcm4che.archive.service.MWLManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -57,8 +59,6 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -296,9 +296,9 @@ public class MWLScuService extends AbstractScuService {
         }
     }
 
-    private MWLManager mwlMgt() throws Exception {
-        return (MWLManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MWL_MGR.getId());
+    protected MWLManager mwlMgt() throws Exception {
+        return (MWLManager) EJBReferenceCache.getInstance().lookup(
+                MWLManagerLocal.JNDI_NAME);
     }
 
 }

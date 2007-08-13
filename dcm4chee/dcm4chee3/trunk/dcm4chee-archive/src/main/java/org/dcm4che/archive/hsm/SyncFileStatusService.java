@@ -25,9 +25,9 @@ import org.dcm4che.archive.entity.FileDTO;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.SchedulerDelegate;
 import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.util.Executer;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -344,9 +344,9 @@ public class SyncFileStatusService extends MBeanServiceBase {
         }
     }
 
-    private FileSystemMgt newFileSystemMgt() {
-        return (FileSystemMgt) SpringContext.getApplicationContext().getBean(
-                BeanId.FS_MGMT.getId());
+    protected FileSystemMgt newFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(
+                FileSystemMgtLocal.JNDI_NAME);
     }
 
     public String getTimerIDCheckSyncFileStatus() {

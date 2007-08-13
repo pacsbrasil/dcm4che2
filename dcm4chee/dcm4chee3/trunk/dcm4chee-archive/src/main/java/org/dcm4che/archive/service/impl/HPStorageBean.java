@@ -40,9 +40,17 @@
 
 package org.dcm4che.archive.service.impl;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.HPDAO;
-import org.dcm4che.archive.service.HPStorage;
+import org.dcm4che.archive.service.HPStorageLocal;
+import org.dcm4che.archive.service.HPStorageRemote;
 import org.dcm4che.dict.Status;
 import org.dcm4che.net.DcmServiceException;
 import org.springframework.transaction.annotation.Propagation;
@@ -53,10 +61,15 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  * @since Aug 17, 2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class HPStorageBean implements HPStorage {
+public class HPStorageBean implements HPStorageLocal, HPStorageRemote {
 
-    private HPDAO hpDAO;
+    @EJB private HPDAO hpDAO;
 
     /** 
      * @see org.dcm4che.archive.service.HPStorage#store(org.dcm4che.data.Dataset)

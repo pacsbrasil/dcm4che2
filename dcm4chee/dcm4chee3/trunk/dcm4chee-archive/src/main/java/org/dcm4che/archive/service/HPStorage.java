@@ -38,6 +38,8 @@
 
 package org.dcm4che.archive.service;
 
+import javax.ejb.Local;
+
 import org.dcm4che.archive.dao.HPDAO;
 import org.dcm4che.net.DcmServiceException;
 
@@ -46,6 +48,7 @@ import org.dcm4che.net.DcmServiceException;
  * 
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
+@Local
 public interface HPStorage {
 
     /**

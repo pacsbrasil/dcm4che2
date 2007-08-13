@@ -58,15 +58,17 @@ import org.dcm4che.archive.entity.FileDTO;
 import org.dcm4che.archive.notif.PatientUpdated;
 import org.dcm4che.archive.notif.SeriesUpdated;
 import org.dcm4che.archive.service.ContentEdit;
+import org.dcm4che.archive.service.ContentEditLocal;
 import org.dcm4che.archive.service.ContentManager;
+import org.dcm4che.archive.service.ContentManagerLocal;
 import org.dcm4che.archive.service.PrivateManager;
+import org.dcm4che.archive.service.PrivateManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
@@ -753,30 +755,27 @@ public class ContentEditService extends MBeanServiceBase {
         this.sendSeriesUpdatedNotifications(ds, "Move instances");
     }
 
-    private ContentEdit lookupContentEdit() {
+    protected ContentEdit lookupContentEdit() {
         if (contentEdit != null)
             return contentEdit;
 
-        contentEdit = (ContentEdit) SpringContext.getApplicationContext()
-                .getBean(BeanId.CONTENT_EDIT.getId());
+        contentEdit = (ContentEdit) EJBReferenceCache.getInstance().lookup(ContentEditLocal.JNDI_NAME);
         return contentEdit;
     }
 
-    private ContentManager lookupContentManager() {
+    protected ContentManager lookupContentManager() {
         if (contentMgr != null)
             return contentMgr;
 
-        contentMgr = (ContentManager) SpringContext.getApplicationContext()
-                .getBean(BeanId.CONTENT_MGR.getId());
+        contentMgr = (ContentManager) EJBReferenceCache.getInstance().lookup(ContentManagerLocal.JNDI_NAME);
         return contentMgr;
     }
 
-    private PrivateManager lookupPrivateManager() {
+    protected PrivateManager lookupPrivateManager() {
         if (privateMgr != null)
             return privateMgr;
 
-        privateMgr = (PrivateManager) SpringContext.getApplicationContext()
-                .getBean(BeanId.PRIV_MGR.getId());
+        privateMgr = (PrivateManager) EJBReferenceCache.getInstance().lookup(PrivateManagerLocal.JNDI_NAME);
         return privateMgr;
     }
 

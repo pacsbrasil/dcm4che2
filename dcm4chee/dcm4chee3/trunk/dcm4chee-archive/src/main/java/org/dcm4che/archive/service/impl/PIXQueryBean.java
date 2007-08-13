@@ -44,19 +44,32 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.entity.Patient;
-import org.dcm4che.archive.service.PIXQuery;
+import org.dcm4che.archive.service.PIXQueryLocal;
+import org.dcm4che.archive.service.PIXQueryRemote;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public abstract class PIXQueryBean implements PIXQuery {
+public abstract class PIXQueryBean implements PIXQueryLocal, PIXQueryRemote {
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
     /** 
      * @see org.dcm4che.archive.service.PIXQuery#queryCorrespondingPIDs(java.lang.String, java.lang.String, java.lang.String[])

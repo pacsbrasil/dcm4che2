@@ -48,7 +48,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -74,7 +80,9 @@ import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.entity.PrivateFile;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.entity.StudyOnFileSystem;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
+import org.dcm4che.archive.service.FileSystemMgtRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -88,29 +96,34 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.6 $ $Date: 2007/07/15 16:27:08 $
  * @since 12.09.2004
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class FileSystemMgtBean implements FileSystemMgt {
+public class FileSystemMgtBean implements FileSystemMgtLocal, FileSystemMgtRemote {
 
     private static Logger log = Logger.getLogger(FileSystemMgtBean.class);
 
     private static final int[] IAN_PAT_TAGS = { Tags.SpecificCharacterSet,
             Tags.PatientName, Tags.PatientID };
 
-    private PatientDAO patientDAO;
+    @EJB private PatientDAO patientDAO;
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
-    private InstanceDAO instanceDAO;
+    @EJB private InstanceDAO instanceDAO;
 
-    private StudyOnFileSystemDAO sofDAO;
+    @EJB private StudyOnFileSystemDAO sofDAO;
 
-    private FileDAO fileDAO;
+    @EJB private FileDAO fileDAO;
 
-    private PrivateFileDAO privFileDAO;
+    @EJB private PrivateFileDAO privFileDAO;
 
-    private FileSystemDAO fileSystemDAO;
+    @EJB private FileSystemDAO fileSystemDAO;
 
     /**
      * @see org.dcm4che.archive.service.FileSystemMgt#deletePrivateFile(java.lang.Long)
@@ -568,6 +581,19 @@ public class FileSystemMgtBean implements FileSystemMgt {
             }
         }
     }
+    
+    public boolean isStudyAbleToBeReleased(Study study,
+            boolean deleteUncommited, boolean flushOnMedia,
+            boolean flushExternal, boolean flushOnROFs, int validFileStatus) {
+        boolean release = (flushExternal
+                && studyDAO.isStudyExternalRetrievable(study) || flushOnMedia
+                && studyDAO.isStudyAvailableOnMedia(study) || flushOnROFs
+                && studyDAO.isStudyAvailableOnROFs(study, validFileStatus));
+        deleteUncommited = (deleteUncommited && studyDAO
+                .findNumberOfCommitedInstances(study) == 0);
+        
+        return (release || deleteUncommited);
+    }
 
     /**
      * @see org.dcm4che.archive.service.FileSystemMgt#releaseStudy(java.lang.Long,
@@ -685,6 +711,17 @@ public class FileSystemMgtBean implements FileSystemMgt {
         }
 
         return ian;
+    }
+    
+    /**
+     * Delete a {@link StudyOnFileSystem} record in the database.
+     * 
+     * @param sof The primary key of the {@link StudyOnFileSystem} to be deleted.
+     * 
+     * @throws ContentDeleteException
+     */
+    public void removeStudyOnFSRecord(Long sofPk) throws ContentDeleteException {
+        sofDAO.remove(sofDAO.findByPrimaryKey(sofPk));
     }
 
     private void doDeleteEmptyPatient(final Patient patient) {

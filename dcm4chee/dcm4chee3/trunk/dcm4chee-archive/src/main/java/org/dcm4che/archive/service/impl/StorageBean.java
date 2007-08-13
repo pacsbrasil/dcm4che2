@@ -49,7 +49,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -61,6 +67,7 @@ import org.dcm4che.archive.dao.ContentDeleteException;
 import org.dcm4che.archive.dao.FileDAO;
 import org.dcm4che.archive.dao.FileSystemDAO;
 import org.dcm4che.archive.dao.InstanceDAO;
+import org.dcm4che.archive.dao.OtherPatientIDDAO;
 import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.dao.SeriesDAO;
 import org.dcm4che.archive.dao.StudyDAO;
@@ -71,7 +78,8 @@ import org.dcm4che.archive.entity.Instance;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.Storage;
+import org.dcm4che.archive.service.StorageLocal;
+import org.dcm4che.archive.service.StorageRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -90,8 +98,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision: 1.4 $ $Date: 2007/07/12 19:17:25 $
  */
+// EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class StorageBean implements Storage {
+public class StorageBean implements StorageLocal, StorageRemote {
 
     private static final int STORED = 0;
 
@@ -99,18 +112,28 @@ public class StorageBean implements Storage {
 
     private static Logger log = Logger.getLogger(StorageBean.class);
 
+    @EJB
     private PatientDAO patDAO;
 
+    @EJB
+    private OtherPatientIDDAO opidDAO;
+
+    @EJB
     private StudyDAO studyDAO;
 
+    @EJB
     private SeriesDAO seriesDAO;
 
+    @EJB
     private InstanceDAO instDAO;
 
+    @EJB
     private FileDAO fileDAO;
 
+    @EJB
     private FileSystemDAO fileSystemDAO;
 
+    @EJB
     private StudyOnFileSystemDAO sofDAO;
 
     private static final int MAX_PK_CACHE_ENTRIES = 100;
@@ -396,7 +419,7 @@ public class StorageBean implements Storage {
     private void coercePatientIdentity(Patient patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException,
             ContentCreateException {
-        patient.coerceAttributes(ds, coercedElements);
+        patient.coerceAttributes(ds, coercedElements, opidDAO);
     }
 
     private void coerceStudyIdentity(Study study, Dataset ds,
@@ -707,6 +730,21 @@ public class StorageBean implements Storage {
      */
     public void setStudyDAO(StudyDAO studyDAO) {
         this.studyDAO = studyDAO;
+    }
+
+    /**
+     * @return the opidDAO
+     */
+    public OtherPatientIDDAO getOpidDAO() {
+        return opidDAO;
+    }
+
+    /**
+     * @param opidDAO
+     *            the opidDAO to set
+     */
+    public void setOpidDAO(OtherPatientIDDAO opidDAO) {
+        this.opidDAO = opidDAO;
     }
 
 }

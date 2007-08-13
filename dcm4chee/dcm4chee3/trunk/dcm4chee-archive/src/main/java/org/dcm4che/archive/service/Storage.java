@@ -53,8 +53,6 @@ import org.dcm4che.archive.dao.StudyDAO;
 import org.dcm4che.archive.dao.StudyOnFileSystemDAO;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.net.DcmServiceException;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * org.dcm4che.archive.service.impl.Storage
@@ -66,7 +64,6 @@ public interface Storage {
     /**
      * 
      */
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = DcmServiceException.class)
     public Dataset store(Dataset ds, long fspk, String fileid, long size,
             byte[] md5, boolean updateStudyAccessTime) throws DcmServiceException;
 

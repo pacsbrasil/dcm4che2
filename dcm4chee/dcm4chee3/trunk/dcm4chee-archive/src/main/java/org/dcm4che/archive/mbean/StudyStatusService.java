@@ -50,10 +50,10 @@ import javax.management.ObjectName;
 
 import org.dcm4che.archive.dcm.gpwlscp.GPWLScpService;
 import org.dcm4che.archive.service.StudyMgt;
+import org.dcm4che.archive.service.StudyMgtLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -150,8 +150,8 @@ public class StudyStatusService extends MBeanServiceBase implements
         }
 
         try {
-            StudyMgt mgt = (StudyMgt) SpringContext.getApplicationContext()
-                    .getBean(BeanId.STUDY_MGT.getId());
+            StudyMgt mgt = (StudyMgt) EJBReferenceCache.getInstance().lookup(
+                    StudyMgtLocal.JNDI_NAME);
             mgt.updateStudyStatusId(suid, status);
             log.info("Updated Status ID of Study[iuid=" + suid + "] to "
                     + status);

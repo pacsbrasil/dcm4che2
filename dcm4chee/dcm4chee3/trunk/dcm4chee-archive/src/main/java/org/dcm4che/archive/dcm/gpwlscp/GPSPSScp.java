@@ -43,6 +43,8 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.service.GPWLManager;
+import org.dcm4che.archive.service.GPWLManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -52,8 +54,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -125,8 +125,8 @@ class GPSPSScp extends DcmServiceBase {
         }
     }
 
-    private GPWLManager getGPWLManager() {
-        return (GPWLManager) SpringContext.getApplicationContext().getBean(
-                BeanId.GPWL_MGR.getId());
+    protected GPWLManager getGPWLManager() {
+        return (GPWLManager) EJBReferenceCache.getInstance().lookup(
+                GPWLManagerLocal.JNDI_NAME);
     }
 }

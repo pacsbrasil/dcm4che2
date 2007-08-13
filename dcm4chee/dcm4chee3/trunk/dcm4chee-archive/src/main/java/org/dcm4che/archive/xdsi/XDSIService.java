@@ -96,15 +96,15 @@ import org.dcm4che.archive.mbean.AuditLoggerDelegate;
 import org.dcm4che.archive.mbean.HttpUserInfo;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.service.ContentManager;
+import org.dcm4che.archive.service.ContentManagerLocal;
 import org.dcm4che.archive.util.FileUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.DataExportMessage;
@@ -121,8 +121,7 @@ import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
 
 /**
  * @author franz.willer@gwi-ag.com
- * @version $Revision: 1.2 $ $Date: 2007-05-18 10:07:06 -0500 (Fri, 18 May
- *          2007) $
+ * @version $Revision: 1.2 $ $Date: 2007-05-18 10:07:06 -0500 (Fri, 18 May 2007) $
  * @since Feb 15, 2006
  */
 public class XDSIService extends MBeanServiceBase {
@@ -370,10 +369,10 @@ public class XDSIService extends MBeanServiceBase {
         usr2author.clear();
         if (s.indexOf('=') == -1) {
             metadataProps.setProperty(AUTHOR_PERSON, s); // NO mapping user
-                                                            // -> authorPerson;
-                                                            // use fix
-                                                            // authorPerson
-                                                            // instead
+            // -> authorPerson;
+            // use fix
+            // authorPerson
+            // instead
         }
         else {
             this.addMappingString(s, usr2author);
@@ -1621,8 +1620,8 @@ public class XDSIService extends MBeanServiceBase {
         return (Dataset) o;
     }
 
-    private ContentManager getContentManager() {
-        return (ContentManager) SpringContext.getApplicationContext().getBean(
-                BeanId.CONTENT_MGR.getId());
+    protected ContentManager getContentManager() {
+        return (ContentManager) EJBReferenceCache.getInstance().lookup(
+                ContentManagerLocal.JNDI_NAME);
     }
 }

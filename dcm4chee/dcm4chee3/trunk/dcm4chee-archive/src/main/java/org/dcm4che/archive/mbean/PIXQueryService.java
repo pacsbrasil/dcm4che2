@@ -46,8 +46,8 @@ import java.util.List;
 import javax.management.ObjectName;
 
 import org.dcm4che.archive.service.PIXQuery;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
+import org.dcm4che.archive.service.PIXQueryLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4cheri.util.StringUtils;
 
 public class PIXQueryService extends MBeanServiceBase {
@@ -205,9 +205,9 @@ public class PIXQueryService extends MBeanServiceBase {
                         String.class.getName(), String[].class.getName(), });
     }
 
-    private PIXQuery pixQuery() throws Exception {
-        return ((PIXQuery) SpringContext.getApplicationContext().getBean(
-                BeanId.PIX_QUERY.getId()));
+    protected PIXQuery pixQuery() throws Exception {
+        return (PIXQuery) EJBReferenceCache.getInstance().lookup(
+                PIXQueryLocal.JNDI_NAME);
     }
 
     /**

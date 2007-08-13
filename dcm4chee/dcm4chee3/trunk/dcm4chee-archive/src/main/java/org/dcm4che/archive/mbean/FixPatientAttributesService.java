@@ -45,8 +45,8 @@ import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
 import org.dcm4che.archive.service.FixPatientAttributes;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
+import org.dcm4che.archive.service.FixPatientAttributesLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -88,22 +88,8 @@ public class FixPatientAttributesService extends MBeanServiceBase {
         return total;
     }
 
-    private FixPatientAttributes newFixPatientAttributes() {
-        return (FixPatientAttributes) SpringContext.getApplicationContext().getBean(BeanId.FIX_PAT_ATTR.getId());
+    protected FixPatientAttributes newFixPatientAttributes() {
+        return (FixPatientAttributes) EJBReferenceCache.getInstance().lookup(
+                FixPatientAttributesLocal.JNDI_NAME);
     }
-
-    /** 
-     * @see org.dcm4che.archive.mbean.MBeanServiceBase#startService()
-     */
-    @Override
-    protected void startService() throws Exception {
-    }
-
-    /** 
-     * @see org.dcm4che.archive.mbean.MBeanServiceBase#stopService()
-     */
-    @Override
-    protected void stopService() throws Exception {
-    }
-
 }

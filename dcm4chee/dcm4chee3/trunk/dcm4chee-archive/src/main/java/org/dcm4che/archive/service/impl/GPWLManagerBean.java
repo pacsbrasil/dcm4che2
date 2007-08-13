@@ -44,7 +44,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -62,7 +68,8 @@ import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.exceptions.CircularMergedException;
 import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
-import org.dcm4che.archive.service.GPWLManager;
+import org.dcm4che.archive.service.GPWLManagerLocal;
+import org.dcm4che.archive.service.GPWLManagerRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -79,8 +86,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version Revision $Date: 2007/06/23 18:59:01 $
  * @since 28.03.2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class GPWLManagerBean implements GPWLManager {
+public class GPWLManagerBean implements GPWLManagerLocal, GPWLManagerRemote {
 
     private static final int MAY_NO_LONGER_BE_UPDATED = 0xA501;
 
@@ -97,11 +109,11 @@ public class GPWLManagerBean implements GPWLManager {
 
     private static Logger log = Logger.getLogger(GPWLManagerBean.class);
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private InstanceDAO instanceDAO;
+    @EJB private InstanceDAO instanceDAO;
 
-    private GPSPSDAO gpspsDAO;
+    @EJB private GPSPSDAO gpspsDAO;
 
     /** 
      * @see org.dcm4che.archive.service.GPWLManager#getWorklistItem(java.lang.String)

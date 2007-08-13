@@ -42,6 +42,12 @@ package org.dcm4che.archive.service.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
@@ -54,7 +60,8 @@ import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.entity.GPPPS;
 import org.dcm4che.archive.entity.GPSPS;
 import org.dcm4che.archive.entity.Patient;
-import org.dcm4che.archive.service.GPPPSManager;
+import org.dcm4che.archive.service.GPPPSManagerLocal;
+import org.dcm4che.archive.service.GPPPSManagerRemote;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
@@ -68,8 +75,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since Apr 9, 2006
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class GPPPSManagerBean implements GPPPSManager {
+public class GPPPSManagerBean implements GPPPSManagerLocal, GPPPSManagerRemote {
 
     private static Logger log = Logger.getLogger(GPPPSManagerBean.class);
 
@@ -86,11 +98,11 @@ public class GPPPSManagerBean implements GPPPSManager {
     private static final int[] PATIENT_ATTRS_INC = { Tags.PatientName,
             Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
 
-    private PatientDAO patDAO;
+    @EJB private PatientDAO patDAO;
 
-    private GPSPSDAO spsDAO;
+    @EJB private GPSPSDAO spsDAO;
 
-    private GPPPSDAO ppsDAO;
+    @EJB private GPPPSDAO ppsDAO;
 
     /** 
      * @see org.dcm4che.archive.service.GPPPSManager#createGPPPS(org.dcm4che.data.Dataset)

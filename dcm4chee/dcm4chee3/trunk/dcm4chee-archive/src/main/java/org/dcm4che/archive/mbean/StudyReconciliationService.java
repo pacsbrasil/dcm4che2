@@ -55,11 +55,12 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.apache.log4j.Logger;
 import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.dao.jdbc.QueryCmd;
 import org.dcm4che.archive.dcm.AbstractScuService;
 import org.dcm4che.archive.service.StudyReconciliation;
+import org.dcm4che.archive.service.StudyReconciliationLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -70,8 +71,6 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -131,10 +130,12 @@ public class StudyReconciliationService extends AbstractScuService {
                     log.debug("Study Reconciliation ignored in time between "
                             + disabledStartHour + " and " + disabledEndHour
                             + " !");
-            } else {
+            }
+            else {
                 try {
                     log.info(check());
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     log.error("Study Reconciliation failed!", e);
                 }
             }
@@ -169,7 +170,8 @@ public class StudyReconciliationService extends AbstractScuService {
         if (pos == -1) {
             taskInterval = RetryIntervalls.parseIntervalOrNever(interval);
             disabledEndHour = -1;
-        } else {
+        }
+        else {
             taskInterval = RetryIntervalls.parseIntervalOrNever(interval
                     .substring(0, pos));
             int pos1 = interval.indexOf('-', pos);
@@ -261,8 +263,8 @@ public class StudyReconciliationService extends AbstractScuService {
         Map archiveStudy;
         Dataset qrSeriesDS = getSeriesQueryDS();
         Dataset qrInstanceDS = getInstanceQueryDS();
-        ActiveAssociation aa = openAssociation(calledAET, 
-                UIDs.StudyRootQueryRetrieveInformationModelFIND);        
+        ActiveAssociation aa = openAssociation(calledAET,
+                UIDs.StudyRootQueryRetrieveInformationModelFIND);
         int numPatUpdt = 0, numPatMerge = 0, numFailures = 0;
         try {
             String studyIuid;
@@ -274,40 +276,41 @@ public class StudyReconciliationService extends AbstractScuService {
                         archiveStudy, aa);
                 if (patDS != null) {
                     log.debug("check Patient info of study " + studyIuid);
-                    Dataset origPatDS = (Dataset) archiveStudy.values().iterator().next();
+                    Dataset origPatDS = (Dataset) archiveStudy.values()
+                            .iterator().next();
                     if (compare(patDS, origPatDS, Tags.PatientID)
-                            && compare(patDS, origPatDS,
-                                    Tags.IssuerOfPatientID)) {
+                            && compare(patDS, origPatDS, Tags.IssuerOfPatientID)) {
                         if (!compare(patDS, origPatDS, Tags.PatientName)
                                 || !compare(patDS, origPatDS,
                                         Tags.PatientBirthDate)
-                                        || !compare(patDS, origPatDS,
-                                                Tags.PatientSex)) {
+                                || !compare(patDS, origPatDS, Tags.PatientSex)) {
                             log.info("UPDATE patient: "
                                     + origPatDS.getString(Tags.PatientID));
                             studyReconciliation.updatePatient(origPatDS);
                             numPatUpdt++;
                         }
-                    } else {
+                    }
+                    else {
                         log.info("MERGE patient: "
-                                + patDS.getString(Tags.PatientID)
-                                + " with "
+                                + patDS.getString(Tags.PatientID) + " with "
                                 + origPatDS.getString(Tags.PatientID));
                         studyReconciliation.mergePatient(origPatDS, patDS);
                         numPatMerge++;
                     }
                     studyReconciliation.updateStudyAndSeries(studyIuid,
                             successStatus, archiveStudy);
-                } else {
+                }
+                else {
                     numFailures++;
-                    studyReconciliation.updateStatus(studyIuid,
-                            failureStatus);
+                    studyReconciliation.updateStatus(studyIuid, failureStatus);
                 }
             }
-        } finally {
+        }
+        finally {
             try {
                 aa.release(true);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.warn(
                         "Failed to release association " + aa.getAssociation(),
                         e);
@@ -450,7 +453,8 @@ public class StudyReconciliationService extends AbstractScuService {
                                         + seriesIUID);
                         return null;
                     }
-                } catch (Exception x) {
+                }
+                catch (Exception x) {
                     log.error("Study Reconciliation failed! (study:"
                             + qrSeriesDS.getString(Tags.StudyInstanceUID)
                             + ")! Internal error:" + x.getMessage(), x);
@@ -474,7 +478,8 @@ public class StudyReconciliationService extends AbstractScuService {
                 checked = checkSeries(qrInstanceDS, aa);
             }
             return checked ? ds : null;
-        } finally {
+        }
+        finally {
             queryCmd.close();
         }
     }
@@ -520,7 +525,8 @@ public class StudyReconciliationService extends AbstractScuService {
                                         + iuid);
                         return false;
                     }
-                } catch (Exception x) {
+                }
+                catch (Exception x) {
                     log.error("Study Reconciliation failed! (Series IUID:"
                             + qrInstanceDS.getString(Tags.SeriesInstanceUID)
                             + ")! Internal error:" + x.getMessage(), x);
@@ -536,7 +542,8 @@ public class StudyReconciliationService extends AbstractScuService {
                                         .getString(Tags.SeriesInstanceUID));
                 return false;
             }
-        } finally {
+        }
+        finally {
             queryCmd.close();
         }
         return true;
@@ -558,6 +565,7 @@ public class StudyReconciliationService extends AbstractScuService {
         }
         return total + " studies rescheduled for Reconciliation!";
     }
+
     private boolean isDisabled(int hour) {
         if (disabledEndHour == -1)
             return false;
@@ -577,8 +585,9 @@ public class StudyReconciliationService extends AbstractScuService {
         super.stopService();
     }
 
-    private StudyReconciliation newStudyReconciliation() {
-        return (StudyReconciliation) SpringContext.getApplicationContext().getBean(BeanId.STUDY_RECONCILE.getId());
+    protected StudyReconciliation newStudyReconciliation() {
+        return (StudyReconciliation) EJBReferenceCache.getInstance().lookup(
+                StudyReconciliationLocal.JNDI_NAME);
     }
 
     public String getTimerIDCheckStudyReconciliation() {

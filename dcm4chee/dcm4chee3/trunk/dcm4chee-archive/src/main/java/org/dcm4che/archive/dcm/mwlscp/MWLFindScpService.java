@@ -52,15 +52,16 @@ import javax.management.ReflectionException;
 import org.dcm4che.archive.dcm.AbstractScpService;
 import org.dcm4che.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4che.archive.service.MPPSManager;
+import org.dcm4che.archive.service.MPPSManagerLocal;
 import org.dcm4che.archive.service.MWLManager;
+import org.dcm4che.archive.service.MWLManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -165,14 +166,14 @@ public class MWLFindScpService extends AbstractScpService implements
                 enable ? valuesToStringArray(tsuidMap) : null);
     }
 
-    private MWLManager getMWLManagerHome() {
-        return (MWLManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MWL_MGR.getId());
+    protected MWLManager getMWLManagerHome() {
+        return (MWLManager) EJBReferenceCache.getInstance().lookup(
+                MWLManagerLocal.JNDI_NAME);
     }
 
-    private MPPSManager getMPPSManagerHome() {
-        return (MPPSManager) SpringContext.getApplicationContext().getBean(
-                BeanId.MPPS_MGR.getId());
+    protected MPPSManager getMPPSManagerHome() {
+        return (MPPSManager) EJBReferenceCache.getInstance().lookup(
+                MPPSManagerLocal.JNDI_NAME);
     }
 
     private Dataset getMPPS(String iuid) throws Exception {

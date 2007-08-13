@@ -72,7 +72,7 @@ public class EJBReferenceCache {
      * 
      * @return The singleton EJBReferenceCache object.
      */
-    public static EJBReferenceCache getFactory() {
+    public static EJBReferenceCache getInstance() {
         if (EJBReferenceCache.factory == null) {
             EJBReferenceCache.factory = new EJBReferenceCache();
         }

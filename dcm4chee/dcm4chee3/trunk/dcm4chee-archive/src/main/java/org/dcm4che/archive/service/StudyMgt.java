@@ -46,7 +46,6 @@ import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.dao.SeriesDAO;
 import org.dcm4che.archive.dao.StudyDAO;
 import org.dcm4che.archive.exceptions.PatientException;
-import org.dcm4che.archive.service.PatientUpdate;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.net.DcmServiceException;
 
@@ -68,9 +67,10 @@ public interface StudyMgt {
      * patient and study attributes will be replaced with the new data, which is
      * different from data coercion during the storage, where only empty
      * attibutes are updated.
-     * @throws PatientException 
      * 
-     * 
+     * @throws PatientException
+     * @throws {@link DcmServiceException}
+     * @throws PersistenceException
      */
     public void updateStudyAndPatientOnly(String iuid, Dataset ds)
             throws DcmServiceException, PersistenceException, PatientException;
@@ -109,7 +109,8 @@ public interface StudyMgt {
     public InstanceDAO getInstDAO();
 
     /**
-     * @param instDAO the instDAO to set
+     * @param instDAO
+     *            the instDAO to set
      */
     public void setInstDAO(InstanceDAO instDAO);
 
@@ -119,7 +120,8 @@ public interface StudyMgt {
     public PatientDAO getPatDAO();
 
     /**
-     * @param patDAO the patDAO to set
+     * @param patDAO
+     *            the patDAO to set
      */
     public void setPatDAO(PatientDAO patDAO);
 
@@ -129,7 +131,8 @@ public interface StudyMgt {
     public PatientUpdate getPatientUpdate();
 
     /**
-     * @param patientUpdate the patientUpdate to set
+     * @param patientUpdate
+     *            the patientUpdate to set
      */
     public void setPatientUpdate(PatientUpdate patientUpdate);
 
@@ -139,7 +142,8 @@ public interface StudyMgt {
     public SeriesDAO getSeriesDAO();
 
     /**
-     * @param seriesDAO the seriesDAO to set
+     * @param seriesDAO
+     *            the seriesDAO to set
      */
     public void setSeriesDAO(SeriesDAO seriesDAO);
 
@@ -149,7 +153,8 @@ public interface StudyMgt {
     public StudyDAO getStudyDAO();
 
     /**
-     * @param studyDAO the studyDAO to set
+     * @param studyDAO
+     *            the studyDAO to set
      */
     public void setStudyDAO(StudyDAO studyDAO);
 

@@ -43,12 +43,19 @@ package org.dcm4che.archive.service.impl;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.entity.Patient;
-import org.dcm4che.archive.service.FixPatientAttributes;
+import org.dcm4che.archive.service.FixPatientAttributesLocal;
+import org.dcm4che.archive.service.FixPatientAttributesRemote;
 import org.dcm4che.archive.util.AttributeFilter;
 import org.dcm4che.data.Dataset;
 import org.springframework.transaction.annotation.Propagation;
@@ -60,13 +67,18 @@ import org.springframework.transaction.annotation.Transactional;
  * @author <a href="mailto:franz.willer@gwi-ag.com">Franz Willer </a>
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class FixPatientAttributesBean implements FixPatientAttributes {
+public class FixPatientAttributesBean implements FixPatientAttributesLocal, FixPatientAttributesRemote {
 
     private static Logger log = Logger
             .getLogger(FixPatientAttributesBean.class);
 
-    private PatientDAO patHome;
+    @EJB private PatientDAO patHome;
 
     /** 
      * @see org.dcm4che.archive.service.FixPatientAttributes#checkPatientAttributes(int, int, boolean)

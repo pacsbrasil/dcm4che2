@@ -44,7 +44,13 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
@@ -54,7 +60,8 @@ import org.dcm4che.archive.dao.StudyDAO;
 import org.dcm4che.archive.entity.Instance;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.ConsistencyCheck;
+import org.dcm4che.archive.service.ConsistencyCheckLocal;
+import org.dcm4che.archive.service.ConsistencyCheckRemote;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,14 +71,19 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.1 $ $Date: 2007/06/23 18:59:01 $
  * @since 25.03.2005
  */
+//EJB3
+@Stateless
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+// Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class ConsistencyCheckBean implements ConsistencyCheck {
+public class ConsistencyCheckBean implements ConsistencyCheckLocal, ConsistencyCheckRemote {
 
-    private StudyDAO studyDAO;
+    @EJB private StudyDAO studyDAO;
 
-    private SeriesDAO seriesDAO;
+    @EJB private SeriesDAO seriesDAO;
 
-    private InstanceDAO instanceDAO;
+    @EJB private InstanceDAO instanceDAO;
 
     private static final Logger log = Logger
             .getLogger(ConsistencyCheckBean.class);

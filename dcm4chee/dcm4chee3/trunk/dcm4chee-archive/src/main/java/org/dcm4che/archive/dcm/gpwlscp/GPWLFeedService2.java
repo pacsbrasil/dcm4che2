@@ -52,14 +52,14 @@ import org.dcm4che.archive.dcm.ianscu.IANScuService;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.TemplatesDelegate;
 import org.dcm4che.archive.service.GPWLManager;
+import org.dcm4che.archive.service.GPWLManagerLocal;
 import org.dcm4che.archive.util.FileUtils;
 import org.dcm4che.archive.util.XSLTUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.spring.BeanId;
-import org.dcm4che.util.spring.SpringContext;
 import org.dcm4cheri.util.StringUtils;
 
 /**
@@ -203,9 +203,9 @@ public class GPWLFeedService2 extends MBeanServiceBase {
         return false;
     }
 
-    private GPWLManager getGPWLManager() throws Exception {
-        return (GPWLManager) SpringContext.getApplicationContext().getBean(
-                BeanId.GPWL_MGR.getId());
+    protected GPWLManager getGPWLManager() throws Exception {
+        return (GPWLManager) EJBReferenceCache.getInstance().lookup(
+                GPWLManagerLocal.JNDI_NAME);
     }
 
     private void logMPPS(String aet, Dataset mpps) {
