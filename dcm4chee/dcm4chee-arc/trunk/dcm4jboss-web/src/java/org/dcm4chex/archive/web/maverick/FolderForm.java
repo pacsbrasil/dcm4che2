@@ -107,6 +107,7 @@ public class FolderForm extends BasicFolderForm {
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
             form = new FolderForm(request);
+            String jspUrl = ctx.getServletConfig().getInitParameter("webViewJspUrl");
             try {
             	String wadoBase = ctx.getServletConfig().getInitParameter("wadoBaseURL");
             	URL wadoURL = null;
@@ -121,23 +122,23 @@ public class FolderForm extends BasicFolderForm {
             		wadoURL = new URL( request.isSecure() ? "https" : "http", request.getServerName(),
 						request.getServerPort(), "/");
             	}
-				form.setWadoBaseURL( wadoURL.toString() );
-				URL url = new URL( "http", request.getServerName(), 
-						request.getServerPort(), "/dcm4chee-webview/webviewer.jsp");
-				try {
-					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-					conn.connect();
-					if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK ) {
-						form.enableWebViewer();
+            	form.setWadoBaseURL( wadoURL.toString() );
+		URL url = new URL( "http", request.getServerName(), 
+		request.getServerPort(), 
+		jspUrl);
+		try {
+		    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		    conn.connect();
+		    if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK ) {
+		        form.enableWebViewer();
                         form.setWebViewerWindowName(ctx.getServletConfig().getInitParameter("webViewerWindowName"));
                     }
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		} catch (IOException ignore) {
+			log.debug("Webviewer disabled! Reason: IOException:"+ignore);
+		}
+            } catch (MalformedURLException e) {
+                log.error("Webviewer disabled! Reason: Init Parameter 'webViewJspUrl' is invalid:"+jspUrl);
+            }
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
 

@@ -248,6 +248,10 @@
 			Name of WebViewer window. use _blank to open each Webviewer in a new window.
 		-->
 		<init-param>
+			<param-name>webViewJspUrl</param-name>
+			<param-value>/dcm4chee-webview/webviewer.jsp</param-value>
+		</init-param>
+		<init-param>
 			<param-name>webViewerWindowName</param-name>
 			<param-value>webView</param-value>
 		</init-param>
