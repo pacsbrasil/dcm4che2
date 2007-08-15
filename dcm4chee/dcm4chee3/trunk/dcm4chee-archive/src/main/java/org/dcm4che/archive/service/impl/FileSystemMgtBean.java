@@ -420,6 +420,7 @@ public class FileSystemMgtBean implements FileSystemMgtLocal, FileSystemMgtRemot
         FileSystem prev0 = getRWFileSystem(dto);
         FileSystem fs;
         if (prev0 == null) {
+            dto.setStatus(FileSystemStatus.DEF_RW);
             fs = fileSystemDAO.create(dto);
             if (dto.getAvailability() == Availability.ONLINE) {
                 fs.setNextFileSystem(fs);
