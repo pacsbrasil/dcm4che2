@@ -32,7 +32,7 @@ public class MaxAgeFilter implements Filter
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		httpResponse.setHeader("Cache-Control", "max-age="+maxAge);
 		// Seems to break IE httpResponse.addHeader("Cache-Control", "private");
-		log.info("For request "+httpRequest.getRequestURI()+" set max-age="+maxAge);
+		log.debug("For request "+httpRequest.getRequestURI()+" set max-age="+maxAge);
 		chain.doFilter(request,response);
 	}
 

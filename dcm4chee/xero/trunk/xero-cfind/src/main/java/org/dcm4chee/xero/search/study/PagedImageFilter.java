@@ -117,7 +117,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 newPatient.getStudy().clear();
 		 ret.getPatient().add(newPatient);
 		 for (StudyType study : patient.getStudy()) {
-			StudyType newStudy = new StudyBean(ret.getChildren(), study);
+			StudyType newStudy = new StudyBean(ret.getChildren(), (StudyBean) study);
 			newStudy.getSeries().clear();
 			newPatient.getStudy().add(newStudy);
 			for (SeriesType series : study.getSeries()) {
@@ -183,7 +183,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 			i += addList.size()-1;
 		 }
 		 else {
-			log.info("Not splitting non-multi-frame object "+modified.get(i).getSOPInstanceUID());
+			log.debug("Not splitting non-multi-frame object "+modified.get(i).getSOPInstanceUID());
 		 }
 	  }
 	  return ret;

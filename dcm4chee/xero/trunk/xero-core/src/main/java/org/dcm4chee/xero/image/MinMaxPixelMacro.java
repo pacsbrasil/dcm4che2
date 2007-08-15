@@ -55,13 +55,10 @@ public class MinMaxPixelMacro implements Macro {
 	  this.maxPixel = maxPixel;
    }
 
-   public int updateAny(Map<QName, String> attrs, Map<QName, Object> elements) {
-	  if( attrs!=null ) {
-		 attrs.put(Q_MIN_PIXEL, Float.toString(minPixel));
-		 attrs.put(Q_MAX_PIXEL, Float.toString(maxPixel));
-	     return 2;
-	  }
-	  return 0;
+   public int updateAny(Map<QName, String> attrs) {
+	 attrs.put(Q_MIN_PIXEL, Float.toString(minPixel));
+	 attrs.put(Q_MAX_PIXEL, Float.toString(maxPixel));
+     return 2;
    }
 
    public float getMaxPixel() {

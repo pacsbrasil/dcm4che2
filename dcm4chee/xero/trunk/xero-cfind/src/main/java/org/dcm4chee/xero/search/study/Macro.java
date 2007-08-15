@@ -38,7 +38,6 @@
 package org.dcm4chee.xero.search.study;
 
 import java.util.Map;
-
 import javax.xml.namespace.QName;
 
 public interface Macro {
@@ -48,5 +47,5 @@ public interface Macro {
     * @param elements
     * @return Number of items put.
     */
-   int updateAny(Map<QName, String> attrs, Map<QName,Object> elements);
+   int updateAny(Map<QName, String> attrs);
 }

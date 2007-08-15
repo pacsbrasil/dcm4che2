@@ -20,15 +20,12 @@ public class RegionMacro implements Macro {
 	  this.magnify = magnify;
    }
    
-   public int updateAny(Map<QName, String> attrs, Map<QName, Object> elements) {
-	  if( attrs!=null ) {
-		 attrs.put(Q_PRESENTATION_SIZE_MODE, presentationSizeMode.toString());
-		 attrs.put(Q_TOP_LEFT, topLeft);
-		 attrs.put(Q_BOTTOM_RIGHT, bottomRight);
-		 attrs.put(Q_MAGNIFY,Float.toString(magnify));
-		 return 4;
-	  }
-	  return 0;
+   public int updateAny(Map<QName, String> attrs) {
+	 attrs.put(Q_PRESENTATION_SIZE_MODE, presentationSizeMode.toString());
+	 attrs.put(Q_TOP_LEFT, topLeft);
+	 attrs.put(Q_BOTTOM_RIGHT, bottomRight);
+	 attrs.put(Q_MAGNIFY,Float.toString(magnify));
+	 return 4;
    }
 
 }

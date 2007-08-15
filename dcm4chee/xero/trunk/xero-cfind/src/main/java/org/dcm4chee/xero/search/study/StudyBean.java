@@ -54,128 +54,155 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "study")
-public class StudyBean extends StudyType implements Study, CacheItem, LocalModel<String>, ResultFromDicom
-{
-	private static Logger log = LoggerFactory.getLogger(StudyBean.class);
-	
-	@XmlTransient
-	Map<Object,Object> children;
-	
-	public StudyBean() {
-	   this(new HashMap<Object,Object>());	
-	}
-	
-    /** Create a new study bean object from the given data */
-	public StudyBean(Map<Object,Object> children, DicomObject data) {
-		this(children);
-		initAttributes(data);
-		addResult(data);
-	}
-	
-	/** Create a new study bean object, with no data in it */
-	public StudyBean(Map<Object,Object> children) {
-		if( children==null ) throw new IllegalArgumentException("Children must not be null.");
-		this.children = children;
-	}
+public class StudyBean extends StudyType implements Study, CacheItem, LocalModel<String>, ResultFromDicom {
+   private static Logger log = LoggerFactory.getLogger(StudyBean.class);
 
-	/** Create a study instance by copying attributes and children (shallow children copy, no update to grand children's containment in children map.)
-	 * Does not update the children map.
-	 * @param study to copy from.
-	 */
-	public StudyBean(Map<Object,Object> children, StudyType study) {
-		this(children);
-		setAccessionNumber(study.getAccessionNumber());
-		setInstanceAvailability(study.getInstanceAvailability());
-		setModalitiesInStudy(study.getModalitiesInStudy());
-		setNumberOfStudyRelatedInstances(study.getNumberOfStudyRelatedInstances());
-		setNumberOfStudyRelatedSeries(study.getNumberOfStudyRelatedSeries());
-		setReferringPhysicianName(study.getReferringPhysicianName());				
-		setStudyDateTime(study.getStudyDateTime());		
-		setStudyDescription(study.getStudyDescription());
-		setStudyID(study.getStudyID());
-		setStudyInstanceUID(study.getStudyInstanceUID());
-		setStudyStatusID(study.getStudyStatusID());
-		getSeries().addAll(study.getSeries());
-	}
+   @XmlTransient
+   Map<Object, Object> children;
 
-	/** Initialize the attributes for this study bean object from the dicom
-	 * object provided.
-	 * @param data
-	 */
-	protected void initAttributes(DicomObject data) {
-		setAccessionNumber(data.getString(Tag.AccessionNumber));
-		setInstanceAvailability(data.getString(Tag.InstanceAvailability));		
-		setModalitiesInStudy(commaSeparate(data.getStrings(Tag.ModalitiesInStudy)));
-		setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
-		setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
-		setReferringPhysicianName(data.getString(Tag.ReferringPhysicianName));
-			
-		Date date = null;
-		try {
-		   date = data.getDate(Tag.StudyDate, Tag.StudyTime);
-		}
-		catch(NumberFormatException nfe) {
-			log.warn("Illegal study date or time:"+nfe);
-		}
-		if( date!=null ) {
-			GregorianCalendar cal = new GregorianCalendar();
-			cal.setTime(date);
-			setStudyDateTime(PatientBean.datatypeFactory.newXMLGregorianCalendar(cal));
-		}
-		
-		setStudyDescription(data.getString(Tag.StudyDescription));
-		setStudyID(data.getString(Tag.StudyID));
-		setStudyInstanceUID(data.getString(Tag.StudyInstanceUID));
-		setStudyStatusID(data.getString(Tag.StudyStatusIDRET));		
-	}
+   @XmlTransient
+   StudyBean originalStudy;
 
-	/** Turn an array of strings into a comma separated string. */
-	public static String commaSeparate(String[] strings) {
-		if( strings==null ) return null;
-		if( strings.length==0 ) return null;
-		if( strings.length==1 ) return strings[0];
-		StringBuffer ret = new StringBuffer(strings[0]);
-		for(int i=1; i<strings.length; i++ ) {
-			ret.append(',').append(strings[i]);
-		}
-		return ret.toString();
-	}
+   public StudyBean() {
+	  this(new HashMap<Object, Object>());
+   }
 
-	/** Add any series and sub-series information to this study object */
-	public void addResult(DicomObject data) {
-		String seriesUID = data.getString(Tag.SeriesInstanceUID);
-		log.debug("Adding information to study seriesUID="+seriesUID);
-		if( seriesUID!=null ) {
-			log.debug("Adding child to study "+seriesUID);
-			if( children.containsKey(seriesUID) ) {
-				((SeriesBean) children.get(seriesUID)).addResult(data);
-			}
-			else {
-				SeriesBean child = new SeriesBean(children,data);
-				children.put(child.getId(),child);
-				getSeries().add(child);
-			}
-		} else log.debug("Study "+studyInstanceUID+" does not contain a series information.");
-	}
+   /** Create a new study bean object from the given data */
+   public StudyBean(Map<Object, Object> children, DicomObject data) {
+	  this(children);
+	  initAttributes(data);
+	  addResult(data);
+   }
 
-	/** Figure out how many bytes this consumes */
-	public long getSize() {
-		// Some amount of space for this item
-		long ret = 128;
-		for(SeriesType series : getSeries()) {
-			ret += ((CacheItem) series).getSize();
-		}
-		return ret;
-	}
+   /** Create a new study bean object, with no data in it */
+   public StudyBean(Map<Object, Object> children) {
+	  if (children == null)
+		 throw new IllegalArgumentException("Children must not be null.");
+	  this.children = children;
+   }
 
-	/** Return true if there are no series children and no customized elements */
-	public boolean clearEmpty() {
-		boolean seriesEmpty = ResultsBean.clearEmpty(children,getSeries());
-		return seriesEmpty && getGspsLabel()==null;
-	}
+   /**
+     * Create a study instance by copying attributes and children (shallow
+     * children copy, no update to grand children's containment in children
+     * map.) Does not update the children map.
+     * 
+     * @param study
+     *            to copy from.
+     */
+   public StudyBean(Map<Object, Object> children, StudyBean study) {
+	  this(children);
+	  this.originalStudy = study;
+	  setAccessionNumber(study.getAccessionNumber());
+	  setInstanceAvailability(study.getInstanceAvailability());
+	  setModalitiesInStudy(study.getModalitiesInStudy());
+	  setNumberOfStudyRelatedInstances(study.getNumberOfStudyRelatedInstances());
+	  setNumberOfStudyRelatedSeries(study.getNumberOfStudyRelatedSeries());
+	  setReferringPhysicianName(study.getReferringPhysicianName());
+	  setStudyDateTime(study.getStudyDateTime());
+	  setStudyDescription(study.getStudyDescription());
+	  setStudyID(study.getStudyID());
+	  setStudyInstanceUID(study.getStudyInstanceUID());
+	  setStudyStatusID(study.getStudyStatusID());
+	  getSeries().addAll(study.getSeries());
+   }
 
-	public String getId() {
-		return getStudyInstanceUID();
-	}
+   /**
+     * Initialize the attributes for this study bean object from the dicom
+     * object provided.
+     * 
+     * @param data
+     */
+   protected void initAttributes(DicomObject data) {
+	  setAccessionNumber(data.getString(Tag.AccessionNumber));
+	  setInstanceAvailability(data.getString(Tag.InstanceAvailability));
+	  setModalitiesInStudy(commaSeparate(data.getStrings(Tag.ModalitiesInStudy)));
+	  setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
+	  setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
+	  setReferringPhysicianName(data.getString(Tag.ReferringPhysicianName));
 
+	  Date date = null;
+	  try {
+		 date = data.getDate(Tag.StudyDate, Tag.StudyTime);
+	  } catch (NumberFormatException nfe) {
+		 log.warn("Illegal study date or time:" + nfe);
+	  }
+	  if (date != null) {
+		 GregorianCalendar cal = new GregorianCalendar();
+		 cal.setTime(date);
+		 setStudyDateTime(PatientBean.datatypeFactory.newXMLGregorianCalendar(cal));
+	  }
+
+	  setStudyDescription(data.getString(Tag.StudyDescription));
+	  setStudyID(data.getString(Tag.StudyID));
+	  setStudyInstanceUID(data.getString(Tag.StudyInstanceUID));
+	  setStudyStatusID(data.getString(Tag.StudyStatusIDRET));
+   }
+
+   /** Turn an array of strings into a comma separated string. */
+   public static String commaSeparate(String[] strings) {
+	  if (strings == null)
+		 return null;
+	  if (strings.length == 0)
+		 return null;
+	  if (strings.length == 1)
+		 return strings[0];
+	  StringBuffer ret = new StringBuffer(strings[0]);
+	  for (int i = 1; i < strings.length; i++) {
+		 ret.append(',').append(strings[i]);
+	  }
+	  return ret.toString();
+   }
+
+   /** Add any series and sub-series information to this study object */
+   public void addResult(DicomObject data) {
+	  String seriesUID = data.getString(Tag.SeriesInstanceUID);
+	  log.debug("Adding information to study seriesUID=" + seriesUID);
+	  if (seriesUID != null) {
+		 log.debug("Adding child to study " + seriesUID);
+		 if (children.containsKey(seriesUID)) {
+			((SeriesBean) children.get(seriesUID)).addResult(data);
+		 } else {
+			SeriesBean child = new SeriesBean(children, data);
+			children.put(child.getId(), child);
+			getSeries().add(child);
+		 }
+	  } else
+		 log.debug("Study " + studyInstanceUID + " does not contain a series information.");
+   }
+
+   /** Figure out how many bytes this consumes */
+   public long getSize() {
+	  // Some amount of space for this item
+	  long ret = 128;
+	  for (SeriesType series : getSeries()) {
+		 ret += ((CacheItem) series).getSize();
+	  }
+	  return ret;
+   }
+
+   /** Return true if there are no series children and no customized elements */
+   public boolean clearEmpty() {
+	  boolean seriesEmpty = ResultsBean.clearEmpty(children, getSeries());
+	  return seriesEmpty && getGspsLabel() == null;
+   }
+
+   public String getId() {
+	  return getStudyInstanceUID();
+   }
+
+   /**
+     * Returns the original study that this clone is based on - or returns this
+     * if this is the original.
+     */
+   public StudyBean getOriginalStudy() {
+	  if (originalStudy != null)
+		 return originalStudy;
+	  return this;
+   }
+
+   /** Gets a child by UID */
+   public Object getChildById(Object uid) {
+	  if( children!=null ) return children.get(uid);
+	  return null;
+   }
 }

@@ -62,7 +62,7 @@ public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
 			log.info("Empty query results.");
 			return resultFromDicom;
 		}
-		log.info("Results were not empty with "+searchCriteria.getAttributeByName().size() + " items found.");
+		log.debug("Results were not empty with "+searchCriteria.getAttributeByName().size() + " items found.");
 		return (ResultFromDicom) filterItem.callNextFilter(params);
 	}
 }

@@ -48,7 +48,6 @@
     <complexType name="studyType">
         <sequence>
     		<element ref="tns:series" minOccurs="0" maxOccurs="unbounded"/>
-    		<any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
        	</sequence>
     	<attribute name="ModalitiesInStudy" />
     	<attribute name="StudyInstanceUID" type="tns:UID" />
@@ -139,7 +138,6 @@ Reports are user or automatically dictated information about the results of the 
         <extension base="tns:dicomObjectType">
            <sequence>
               <element ref="tns:study" minOccurs="0" maxOccurs="unbounded"/>
-    		  <any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
            </sequence>
            <attribute name="conceptCode" type="string" />
            <attribute name="conceptMeaning" type="string" />
@@ -161,14 +159,6 @@ Key objects are a named (by code meaning) list of images to display.
       </complexContent>
     </complexType>
     
-    <element name="any">
-      <complexType>
-        <choice>
-          <any namespace="##other" minOccurs="0" maxOccurs="unbounded" />
-        </choice>
-      </complexType>
-    </element>
-
     <complexType name="imageType">
     	<annotation>
     		<documentation>
@@ -182,13 +172,8 @@ Key objects are a named (by code meaning) list of images to display.
     	</annotation>
     	<complexContent>
 	   		<extension base="tns:dicomObjectType">
-	   		    <sequence>
-	   		      <element ref="svg:use" minOccurs="0" maxOccurs="unbounded"/>
-	    		  <element ref="tns:any" minOccurs="0" maxOccurs="1"/>
-	    		</sequence>
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />
-    			<attribute name="frame" type="int" use="optional" />
     			<attribute name="gspsUID" type="tns:UID" />
     		</extension>
     	</complexContent>

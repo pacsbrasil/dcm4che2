@@ -27,7 +27,7 @@ public class ContentTypeFilter  implements Filter{
 		HttpServletRequest hsr = (HttpServletRequest) request;
 		String specificContent = request.getParameter("contentType");
 		if( specificContent==null ) specificContent = contentType;
-		log.info("Setting content type to "+specificContent+" for url "+hsr.getRequestURI());
+		log.debug("Setting content type to "+specificContent+" for url "+hsr.getRequestURI());
 		response.setContentType(specificContent);
 		chain.doFilter(request,new NoContentTypeResponse((HttpServletResponse) response));
 	}

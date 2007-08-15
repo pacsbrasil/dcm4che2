@@ -80,14 +80,11 @@ public class WindowLevelMacro implements Macro {
       this.width = width;
    }
 
-   public int updateAny(Map<QName, String> attrs, Map<QName, Object> elements) {
-	  if( attrs!=null ) {
-		 attrs.put(Q_WINDOW_CENTER, Float.toString(center));
-		 attrs.put(Q_WINDOW_WIDTH,Float.toString(width));
-		 attrs.put(Q_WINDOW_EXPLANATION,explanation);
-		 return 3;
-	  }
-	  return 0;
+   public int updateAny(Map<QName, String> attrs) {
+	 attrs.put(Q_WINDOW_CENTER, Float.toString(center));
+	 attrs.put(Q_WINDOW_WIDTH,Float.toString(width));
+	 attrs.put(Q_WINDOW_EXPLANATION,explanation);
+	 return 3;
    }
 
 }

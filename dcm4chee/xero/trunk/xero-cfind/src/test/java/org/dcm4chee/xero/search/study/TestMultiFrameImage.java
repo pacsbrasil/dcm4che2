@@ -122,12 +122,10 @@ public class TestMultiFrameImage {
 	  assert image != null;
 	  assert image.getFrame() == 1;
 
-	  assert image.getMacroItems().findMacro(WindowLevelMacro.class) != null;
-	  assert image.getMacroItems().findMacro(WindowLevelMacro.class) == wl;
+	  assert image.getOtherAttributes().get(WindowLevelMacro.Q_WINDOW_CENTER)!=null;
 
 	  image = frames.getImageFrame(frames.getNumberOfFrames()/2);
-	  assert image.getMacroItems().findMacro(WindowLevelMacro.class) != null;
-	  assert image.getMacroItems().findMacro(WindowLevelMacro.class) == wl;
+	  assert image.getOtherAttributes().get(WindowLevelMacro.Q_WINDOW_CENTER)!=null;
    }
 
    ImageBeanMultiFrame getMultiFrames() {

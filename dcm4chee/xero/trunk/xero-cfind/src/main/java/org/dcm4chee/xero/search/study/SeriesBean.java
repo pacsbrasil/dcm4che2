@@ -195,7 +195,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
    /** Adds the given macro item, AND clears it from any children elements */
    public void addMacro(Macro macro) {
 	  getMacroItems().addMacro(macro);
-	  Class clazz = macro.getClass();
+	  Class<? extends Macro> clazz = macro.getClass();
 	  for (DicomObjectType dot : getDicomObject()) {
 		 if (dot instanceof ImageBean) {
 			ImageBean image = (ImageBean) dot;

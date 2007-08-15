@@ -78,13 +78,14 @@ public class ImageBeanMultiFrame extends ImageBean {
     */
    public ImageBean getImageFrame(int posn) {
 	  if( posn < 1 || posn>getNumberOfFrames() ) throw new IllegalArgumentException("A position between 1 and the number of frames must be requested.");
-	  ImageBean ret = new ImageBean(this,posn);
-	  if( macroItems!=null ) {
-	    ret.getMacroItems().getMacros().addAll(this.getMacroItems().getMacros());
-	  }
-	  if( frameItems[posn-1]!=null ) {
-	    ret.getMacroItems().getMacros().addAll(frameItems[posn-1].getMacros());
-	  }
+	  ImageBean ret = new ImageBeanFrame(this,posn);
 	  return ret;
+   }
+   
+   /** Gets the image frame macro item */
+   public MacroItems getFrameMacroItems(int posn) {
+	  if( posn < 1 || posn>getNumberOfFrames() ) throw new IllegalArgumentException("A position between 1 and the number of frames must be requested.");
+	  if( frameItems[posn-1]==null ) frameItems[posn-1] = new MacroItems();
+	  return frameItems[posn-1];
    }
 }

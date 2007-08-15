@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.iod.module.lut.ILut;
 import org.dcm4che2.iod.module.lut.LutModule;
 import org.dcm4che2.iod.module.lut.RescaleLut;
@@ -49,6 +50,7 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.MacroItems;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;
@@ -112,19 +114,23 @@ public class MinMaxPixelInfo  implements Filter<ResultsBean> {
 	 * and adds the information to the image bean.
 	 */
 	public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, ImageBean ib) {
+	   return updatePixelRange(dobj,ib.getMacroItems());
+	}
+	
+	public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, MacroItems macros) {
 		LutModule lm = new LutModule(dobj);
 		// It is harder to handle more samples, as then we need to know about the mode - so, ignore this for now.
 		if( lm.getSamplesPerPixel()!=1 ) return null;
 		
 		ILut lut = lm.getModalityLutModule().getModalityLut();
 		if(lut==null ) {
-			log.debug("No modality LUT found for "+ib.getSOPInstanceUID());
+			log.debug("No modality LUT found for "+ dobj.getString(Tag.SOPInstanceUID));
 			lut = new RescaleLut(1,0, "Identity");
 		}
 		float minPixelValue = lut.lookup(lm.minPossibleStoredValue());
 		float maxPixelValue = lut.lookup(lm.maxPossibleStoredValue());
 		MinMaxPixelMacro minMax = new MinMaxPixelMacro(minPixelValue, maxPixelValue);
-		ib.getMacroItems().addMacro(minMax);
+		macros.addMacro(minMax);
 		return minMax;
 	}
 	
@@ -142,8 +148,10 @@ public class MinMaxPixelInfo  implements Filter<ResultsBean> {
 		   wl = new WindowLevelMacro((minMax.getMaxPixel()+minMax.getMinPixel()+1)/2, minMax.getMaxPixel()-minMax.getMinPixel()+1,"Pixel Range WL");
 		}
 		else {
-		   String[] explanations = voi.getWindowCenterWidthExplanations(); 
-		   wl = new WindowLevelMacro(centers[0],widths[0],explanations[0]);
+		   String[] explanations = voi.getWindowCenterWidthExplanations();
+		   String explanation = "";
+		   if( explanations!=null && explanations.length>0 ) explanation = explanations[0];
+		   wl = new WindowLevelMacro(centers[0],widths[0],explanation);
 		}
 		ib.getMacroItems().addMacro(wl);
 	}

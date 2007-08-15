@@ -1028,16 +1028,10 @@
   </attributeGroup>
 
   <element name="svg" type="svg:svgType"/>
-  <element name="use" type="svg:useType"/>
   <element name="image" type="svg:imageType"/>
   <element name="g" type="svg:gType"/>
   <element name="defs" type="svg:defsType"/>
-  <element name="circle" type="svg:circleType"/>
-  <element name="ellipse" type="svg:ellipseType"/>
-  <element name="line" type="svg:lineType"/>
   <element name="text" type="svg:textType"/>
-  <element name="clipPath" type="svg:clipPathType"/>
-  <element name="rect" type="svg:rectType" />  
   <element name="path" type="svg:pathType" />
 
   <complexType name="svgType">
@@ -1048,11 +1042,6 @@
     
       <element ref="svg:defs"/>
       <element ref="svg:text"/>
-      <element ref="svg:circle"/>
-	  <element ref="svg:rect" />
-	  <element ref="svg:clipPath" />
-      <element ref="svg:ellipse"/>
-      <element ref="svg:line"/>
       <element ref="svg:use"/>
       <element ref="svg:image"/>
       <element ref="svg:svg"/>
@@ -1087,7 +1076,8 @@
     <attribute name="height" type="svg:LengthType" use="required"/>
   </complexType>
 
-  <complexType name="useType">
+  <element name="use">
+   <complexType>
     <attributeGroup ref="svg:stdAttrs"/>
     <attributeGroup ref="svg:xlinkRefAttrsEmbed"/>
 
@@ -1105,7 +1095,9 @@
     <attribute name="y" type="svg:CoordinateType" use="optional"/>
     <attribute name="width" type="svg:LengthType" use="optional"/>
     <attribute name="height" type="svg:LengthType" use="optional"/>
-  </complexType>
+   </complexType>
+  </element>
+  
   <complexType name="imageType">
     <attributeGroup ref="svg:stdAttrs"/>
 
@@ -1136,11 +1128,6 @@
     
       <element ref="svg:defs"/>
       <element ref="svg:text"/>
-      <element ref="svg:circle"/>
-	  <element ref="svg:rect" />
-	  <element ref="svg:clipPath" />
-      <element ref="svg:ellipse"/>
-      <element ref="svg:line"/>
       <element ref="svg:use"/>
       <element ref="svg:image"/>
       <element ref="svg:svg"/>
@@ -1167,11 +1154,6 @@
     
       <element ref="svg:defs"/>
       <element ref="svg:text"/>
-      <element ref="svg:circle"/>
-	  <element ref="svg:rect" />
-	  <element ref="svg:clipPath" />
-      <element ref="svg:ellipse"/>
-      <element ref="svg:line"/>
       <element ref="svg:use"/>
       <element ref="svg:image"/>
       <element ref="svg:svg"/>
@@ -1188,100 +1170,6 @@
     <attribute name="transform" type="svg:TransformListType" use="optional"/>
 
     <attributeGroup ref="svg:graphicsElementEvents"/>
-  </complexType>
-
-  <complexType name="circleType">
-    <attributeGroup ref="svg:stdAttrs"/>
-    <attributeGroup ref="svg:testAttrs"/>
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-    <attribute name="cx" type="svg:CoordinateType" use="optional"/>
-    <attribute name="cy" type="svg:CoordinateType" use="optional"/>
-    <attribute name="r" type="svg:LengthType" use="required"/>
-  </complexType>
-
-  <complexType name="ellipseType">
-    <attributeGroup ref="svg:stdAttrs"/>
-
-    <attributeGroup ref="svg:testAttrs"/>
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-    <attribute name="cx" type="svg:CoordinateType" use="optional"/>
-    <attribute name="cy" type="svg:CoordinateType" use="optional"/>
-    <attribute name="rx" type="svg:LengthType" use="required"/>
-    <attribute name="ry" type="svg:LengthType" use="required"/>
-  </complexType>
-
-  <complexType name="lineType">
-    <attributeGroup ref="svg:stdAttrs"/>
-
-    <attributeGroup ref="svg:testAttrs"/>
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-    <attributeGroup ref="svg:PresentationAttributes-Markers"/>
-
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-    <attribute name="x1" type="svg:CoordinateType" use="optional"/>
-    <attribute name="y1" type="svg:CoordinateType" use="optional"/>
-    <attribute name="x2" type="svg:CoordinateType" use="optional"/>
-    <attribute name="y2" type="svg:CoordinateType" use="optional"/>
-  </complexType>
-
-  <complexType name="polylineType">
-    <attributeGroup ref="svg:stdAttrs"/>
-    <attributeGroup ref="svg:testAttrs"/>
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-
-    <attributeGroup ref="svg:PresentationAttributes-Markers"/>
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-    <attribute name="points" type="svg:PointsType" use="required"/>
-  </complexType>
-
-  <complexType name="polygonType">
-    <attributeGroup ref="svg:stdAttrs"/>
-    <attributeGroup ref="svg:testAttrs"/>
-
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-    <attributeGroup ref="svg:PresentationAttributes-Markers"/>
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-    <attribute name="points" type="svg:PointsType" use="required"/>
   </complexType>
 
   <complexType name="textType" mixed="true">
@@ -1314,69 +1202,6 @@
     </attribute>
   </complexType>
 
-  <complexType name="rectType">
-    <attributeGroup ref="svg:stdAttrs"/>
-    <attributeGroup ref="svg:testAttrs"/>
-
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-
-    <attribute name="x" type="svg:CoordinateType" use="optional"/>
-    <attribute name="y" type="svg:CoordinateType" use="optional"/>
-    <attribute name="width" type="svg:LengthType" use="required"/>
-    <attribute name="height" type="svg:LengthType" use="required"/>
-    <attribute name="rx" type="svg:LengthType" use="optional"/>
-    <attribute name="ry" type="svg:LengthType" use="optional"/>
-  </complexType>
-
-  <complexType name="clipPathType">
-    <choice minOccurs="0" maxOccurs="unbounded">
-      <annotation><appinfo>
-        <jxb:property name="Children" />
-      </appinfo></annotation>
-    
-      <element ref="svg:text"/>
-      <element ref="svg:circle"/>
-	  <element ref="svg:rect" />
-      <element ref="svg:ellipse"/>
-      <element ref="svg:line"/>
-      <element ref="svg:use"/>
-      <element ref="svg:image"/>
-      <element ref="svg:g"/>
-      <element ref="svg:path" />
-    </choice>
-    <attributeGroup ref="svg:stdAttrs"/>
-    <attributeGroup ref="svg:testAttrs"/>
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
-    <attributeGroup ref="svg:PresentationAttributes-FontSpecification"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-    <attributeGroup ref="svg:PresentationAttributes-TextContentElements"/>
-    <attributeGroup ref="svg:PresentationAttributes-TextElements"/>
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-
-    <attribute name="clipPathUnits" use="optional">
-      <simpleType>
-        <restriction base="string">
-          <enumeration value="userSpaceOnUse"/>
-          <enumeration value="userSpace"/>
-          <enumeration value="objectBoundingBox"/>
-        </restriction>
-      </simpleType>
-    </attribute>
-
-  </complexType>
 
   <complexType name="pathType">
     <attributeGroup ref="svg:stdAttrs"/>
@@ -1396,6 +1221,7 @@
     <attribute name="d" type="svg:PathDataType" use="required"/>
     <attribute name="pathLength" type="double" use="optional"/>
     <attribute name="path" type="string" use="optional" />
+    <attribute name="prType" type="string" />
   </complexType>
 
 </schema>

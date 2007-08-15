@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
+import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageType;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsType;
@@ -75,7 +76,7 @@ public class LocalStudyModelTest extends DisplayVars
 	@Test
 	public void testGetImage()
 	{
-		ImageType image = model.getImage();
+		ImageBean image = model.getImage();
 		assert image!=null;
 		assert image==model.getImage();
 		assert image.getSOPInstanceUID().equals(objectUid);

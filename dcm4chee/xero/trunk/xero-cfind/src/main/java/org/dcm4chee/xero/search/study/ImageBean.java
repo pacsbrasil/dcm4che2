@@ -37,9 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
+import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.namespace.QName;
@@ -58,6 +61,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    protected Map<Object, Object> children;
 
    /** Used to define the DICOM macro tables included in this object */
+   @XmlTransient
    MacroItems macroItems;
 
    /**
@@ -74,18 +78,6 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      */
    public ImageBean(DicomObject data) {
 	  initAttributes(data);
-   }
-
-   public ImageBean(ImageBean image, int frame) {
-	  this.frame = frame;
-	  this.sopInstanceUID = image.getSOPInstanceUID();
-	  this.instanceNumber = image.getInstanceNumber();
-	  this.gspsUID = image.getGspsUID();
-	  this.children = image.children;
-	  if (image.position != null)
-		 this.position = image.position + frame - 1;
-	  this.rows = image.rows;
-	  this.columns = image.columns;
    }
 
    /**
@@ -109,21 +101,13 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      * attributes, as is WindowCenter for all window level related attributes.
      */
    public boolean clearEmpty() {
-	  boolean emptyChildren = getAny() == null || ResultsBean.clearEmpty(children, getAny().getAny());
-	  return emptyChildren && getGspsUID() == null
+	  return getGspsUID() == null
 			&& (macroItems == null || macroItems.clearEmpty());
    }
 
    /** Return the id for this element, in this case the SOP Instance UID */
    public String getId() {
-	  if (getFrame() == null || getFrame() == 0)
-		 return getSOPInstanceUID();
-	  return getSOPInstanceUID() + getFrame();
-   }
-
-   /** Removes all the SVG use elements contained in this object */
-   public void clearUse() {
-	  this.use = null;
+	 return getSOPInstanceUID();
    }
 
    /** Gets additional attributes and child elements defined in other objects */
@@ -132,20 +116,25 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 		 macroItems = new MacroItems();
 	  return macroItems;
    }
-
+   
    /** Get the attributes from the macro items that are included in this object. */
    @XmlAnyAttribute
    public Map<QName, String> getOtherAttributes() {
-	  log.info("Get other attributes called.");
 	  Map<QName, String> ret = null;
 	  if (macroItems != null)
 		 ret = macroItems.getAnyAttributes();
-	  log.info("Returning macroItems=" + ret);
+	  if( log.isDebugEnabled() ) log.debug("Getting other attributes="+ret);
 	  return ret;
+   }
+   
+   @XmlAnyElement(lax=true)
+   public List<Object> getOtherElements() {
+	  if( this.macroItems==null ) return null;
+	  return this.macroItems.getOtherElements();
    }
 
    /** Clears the macro from this class, and any children of this class. */
-   public void clearMacro(Class clazz) {
+   public void clearMacro(Class<? extends Macro> clazz) {
 	  if (macroItems == null)
 		 return;
 	  Macro item = macroItems.findMacro(clazz);
@@ -159,5 +148,16 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      */
    public int getNumberOfFrames() {
 	  return 1;
+   }
+   
+   public MacroItems getFrameMacroItems(int posn) {
+	  if( posn!=1 ) throw new IllegalArgumentException("Frame number must be 1 for single-frame getFrameMacroItems");
+	  return getMacroItems();
+   }
+   
+   /** The frame number for image beans is always null - only ImageBeanFrame has a frame number */
+   @XmlAttribute
+   public Integer getFrame() {
+	  return null;
    }
 }

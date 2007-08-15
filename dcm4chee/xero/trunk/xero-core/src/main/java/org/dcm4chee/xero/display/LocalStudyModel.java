@@ -9,6 +9,7 @@ import javax.xml.bind.Marshaller;
 
 import org.dcm4chee.xero.display.DisplayMode.ApplyLevel;
 import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.ImageBeanFrame;
 import org.dcm4chee.xero.search.study.Macro;
 import org.dcm4chee.xero.search.study.PatientBean;
 import org.dcm4chee.xero.search.study.PatientIdentifier;
@@ -196,14 +197,19 @@ public class LocalStudyModel {
 	  if (objectUid == null)
 		 throw new IllegalArgumentException("Object UID must be supplied.");
 	  String id = objectUid;
-	  if( studyLevel.getFrame()!=null && studyLevel.getFrame()!=0 ) id = id+","+studyLevel.getFrame();
+	  Integer frame = studyLevel.getFrame();
+	  if( frame!=null && frame!=0 ) id = id+","+frame;
 	  ImageBean ret = (ImageBean) children.get(id);
 	  if (ret != null)
 		 return ret;
 	  SeriesBean series = getSeries();
- 	  ret = new ImageBean();
+	  if( frame!=null && frame!=0 ) {
+		ret = new ImageBeanFrame(null,frame);
+	  } 
+	  else {
+ 	    ret = new ImageBean();
+	  }
 	  ret.setSOPInstanceUID(objectUid);
-	  ret.setFrame(studyLevel.getFrame());
 	  series.getDicomObject().add(ret);
 	  children.put(ret.getId(), ret);
 	  return ret;
