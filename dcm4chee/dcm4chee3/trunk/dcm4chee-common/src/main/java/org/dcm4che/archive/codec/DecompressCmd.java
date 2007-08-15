@@ -78,78 +78,87 @@ import com.sun.media.imageio.stream.SegmentedImageInputStream;
  * @author gunter.zeilinter@tiani.com
  * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
  * @since 22.05.2004
- *
+ * 
  */
 public class DecompressCmd extends CodecCmd {
 
-    private static final String J2KIMAGE_READER_CODEC_LIB = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReaderCodecLib";
+    private static final String J2KIMAGE_READER = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
 
     private final ItemParser itemParser;
-    
+
     private final ImageInputStream iis;
 
     private String tsuid;
 
-    public static byte[] decompressFile(File inFile, File outFile, String outTS,
-    		int pxdataVR, byte[] buffer)
-		throws Exception {
+    public static byte[] decompressFile(File inFile, File outFile,
+            String outTS, int pxdataVR, byte[] buffer) throws Exception {
         log.info("M-READ file:" + inFile);
         FileImageInputStream fiis = new FileImageInputStream(inFile);
         try {
-            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(fiis);
+            DcmParser parser = DcmParserFactory.getInstance()
+                    .newDcmParser(fiis);
             DcmObjectFactory dof = DcmObjectFactory.getInstance();
             Dataset ds = dof.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
             log.info("M-WRITE file:" + outFile);
             MessageDigest md = MessageDigest.getInstance("MD5");
-            DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(outFile), md);
+            DigestOutputStream dos = new DigestOutputStream(
+                    new FileOutputStream(outFile), md);
             BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
-    			DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
-                DecompressCmd cmd = new DecompressCmd(ds, getTransferSyntax(ds), parser);
+                DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
+                DecompressCmd cmd = new DecompressCmd(ds,
+                        getTransferSyntax(ds), parser);
                 int len = cmd.getPixelDataLength();
-        		FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);
-        		ds.setFileMetaInfo(fmi);
+                FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);
+                ds.setFileMetaInfo(fmi);
                 ds.writeFile(bos, encParam);
-                ds.writeHeader(bos, encParam, Tags.PixelData, pxdataVR, (len+1)&~1);
+                ds.writeHeader(bos, encParam, Tags.PixelData, pxdataVR,
+                        (len + 1) & ~1);
                 try {
-	                cmd.decompress(encParam.byteOrder, bos);
-				} catch (IOException e) {
-				    throw e;
-				} catch (Throwable e) {
-				    throw new RuntimeException("Decompression failed:", e);
-				}
-				if ((len&1)!=0)
-					bos.write(0);
-				parser.parseDataset(parser.getDcmDecodeParam(), -1);
-				ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
-            } finally {
-            	bos.close();
+                    cmd.decompress(encParam.byteOrder, bos);
+                }
+                catch (IOException e) {
+                    throw e;
+                }
+                catch (Throwable e) {
+                    throw new RuntimeException("Decompression failed:", e);
+                }
+                if ((len & 1) != 0)
+                    bos.write(0);
+                parser.parseDataset(parser.getDcmDecodeParam(), -1);
+                ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
+            }
+            finally {
+                bos.close();
             }
             return md.digest();
-        } finally {
+        }
+        finally {
             try {
                 fiis.close();
-            } catch (IOException ignore) {
+            }
+            catch (IOException ignore) {
             }
         }
     }
-    
+
     public static String getTransferSyntax(Dataset ds) {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         return fmi != null ? fmi.getTransferSyntaxUID()
                 : UIDs.ImplicitVRLittleEndian;
     }
 
-    public DecompressCmd(Dataset ds,String tsuid, DcmParser parser) throws IOException {
-    	super(ds);
+    public DecompressCmd(Dataset ds, String tsuid, DcmParser parser)
+            throws IOException {
+        super(ds);
         this.tsuid = tsuid;
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
         if (samples == 3) {
             ds.putUS(Tags.PlanarConfiguration, 0);
-            if (tsuid.equals(UIDs.JPEGBaseline) 
+            if (tsuid.equals(UIDs.JPEGBaseline)
                     || tsuid.equals(UIDs.JPEGExtended)) {
                 ds.putCS(Tags.PhotometricInterpretation, "RGB");
             }
@@ -169,7 +178,8 @@ public class DecompressCmd extends CodecCmd {
             log.info("start decompression of image: " + rows + "x" + columns
                     + "x" + frames);
             t1 = System.currentTimeMillis();
-            SegmentedImageInputStream siis = new SegmentedImageInputStream(iis, itemParser);
+            SegmentedImageInputStream siis = new SegmentedImageInputStream(iis,
+                    itemParser);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
             bi = createBufferedImage();
@@ -179,9 +189,9 @@ public class DecompressCmd extends CodecCmd {
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
                 bi = reader.read(0, param);
-                // workaround for Bug in J2KImageReaderCodecLib.reset()
-                if (J2KIMAGE_READER_CODEC_LIB.equals(reader.getClass()
-                        .getName())) {
+                // workaround for Bug in J2KImageReader and
+                // J2KImageReaderCodecLib.setInput()
+                if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
                     reader.dispose();
                     reader = i < frames - 1 ? f
                             .getReaderForTransferSyntax(tsuid) : null;
@@ -193,8 +203,10 @@ public class DecompressCmd extends CodecCmd {
                 write(bi.getRaster(), out, byteOrder);
             }
             itemParser.seekFooter();
-        } finally {
-            if (reader != null) reader.dispose();
+        }
+        finally {
+            if (reader != null)
+                reader.dispose();
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
