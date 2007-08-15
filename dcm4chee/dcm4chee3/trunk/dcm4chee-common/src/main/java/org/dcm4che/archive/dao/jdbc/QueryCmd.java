@@ -405,6 +405,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         .getString(Tags.InstitutionalDepartmentName)));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
+        keys.setPrivateCreatorID(PrivateTags.CreatorID);
+        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, keys
+                .getStrings(PrivateTags.CallingAET));
         if (this.isMatchRequestAttributes()) {
             Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
