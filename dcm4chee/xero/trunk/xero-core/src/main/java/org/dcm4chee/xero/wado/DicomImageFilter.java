@@ -90,6 +90,9 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		DcmImageReadParam param = (DcmImageReadParam) reader.getDefaultReadParam();
 		//param.setAutoWindowing(true);
 		ImageInputStream in = null;
+		String strFrame = (String) params.get("frameNumber");
+		int frame = 0;
+		if( strFrame!=null ) frame = Integer.parseInt(strFrame)-1; 
 		try {
 			String surl = location.toString();
 			if (surl.startsWith("file:") ) {
@@ -105,7 +108,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			int width = reader.getWidth(0);
 			int height = reader.getHeight(0);
 			updateParamFromRegion(param, params, width, height);
-			BufferedImage bi = reader.read(0,param);
+			BufferedImage bi = reader.read(frame,param);
 			ret = new WadoImage(bi,null,null);
             Dataset data = ((DcmMetadata) reader.getStreamMetadata())
             .getDataset();

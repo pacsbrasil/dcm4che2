@@ -73,6 +73,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			"studyUID",
 			"seriesUID",
 			"objectUID",
+			"frameNumber",
 			"region",
 			"rows",
 			"columns",

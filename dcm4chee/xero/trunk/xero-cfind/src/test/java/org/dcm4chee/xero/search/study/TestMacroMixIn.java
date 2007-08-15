@@ -37,25 +37,49 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
+import java.io.ByteArrayOutputStream;
 
-public interface DicomObjectInterface {
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.annotations.Test;
+import static org.dcm4chee.xero.search.study.TestJaxbEncode.getXpathNum;
 
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+public class TestMacroMixIn 
+{
+   private static final Logger log = LoggerFactory.getLogger(TestMacroMixIn.class);
+   
+   @Test
+   public void testWindowLevelImage() {
+	  ImageBean image = new ImageBean();
+	  assert image.getOtherAttributes()==null;
+	  image.getMacroItems().addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
+	  assert image.getOtherAttributes()!=null;
+	  assert Float.parseFloat(image.getOtherAttributes().get(WindowLevelMacro.Q_WINDOW_CENTER))==128f;
+	  WindowLevelMacro wl = (WindowLevelMacro) image.getMacroItems().findMacro(WindowLevelMacro.class);
+	  assert wl!=null;
+	  assert wl.getWidth()==256f;
+   }
+   
+   @Test
+   public void testEncodeMixIn() throws Exception {
+	  PatientBean patient = TestJaxbEncode.loadPatient(TestJaxbEncode.singleUrl);
+	  StudyBean study = (StudyBean) patient.getStudy().get(0);
+	  
+	  SeriesBean series = (SeriesBean) study.getSeries().get(0);
+	  ImageBean image = (ImageBean) series.getDicomObject().get(0);
+	  assert image!=null;
+	  image.getMacroItems().addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
+	  assert Float.parseFloat(image.getOtherAttributes().get(WindowLevelMacro.Q_WINDOW_WIDTH))==256f;
+	  
+	  JAXBContext context = JAXBContext.newInstance("org.dcm4chee.xero.search.study");
+	  Marshaller m = context.createMarshaller();
+	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	  m.marshal(study, baos);
+	  String studyStr = baos.toString("UTF-8");
+      log.info("Study str with window level macro="+studyStr);
+	  assert getXpathNum(studyStr,"study/series/image/@windowWidth").floatValue()==256f;
+   }
 }

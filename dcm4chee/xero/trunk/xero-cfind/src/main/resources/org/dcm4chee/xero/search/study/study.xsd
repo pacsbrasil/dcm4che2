@@ -27,11 +27,6 @@
     <element name="report" type="tns:reportType" />
     
     <element name="keyObject" type="tns:keyObjectType" />
-
-    <attributeGroup name="spsAttributes">
-      <attribute name="windowLevel" type="float" />
-      <attribute name="windowWidth" type="float" />
-    </attributeGroup>
     
     <complexType name="resultsType">
     	<sequence maxOccurs="unbounded" minOccurs="0">
@@ -104,9 +99,6 @@
     	<attribute name="topLeft" type="string" />
     	<attribute name="bottomRight" type="string" />
     	<attribute name="magnify" type="float" />
-    	<attribute name="windowWidth" type="float" />
-    	<attribute name="windowCenter" type="float" />
-    	<anyAttribute />
     </complexType>
     
     <simpleType name="PresentationSizeMode">
@@ -119,11 +111,9 @@
 
     <complexType name="dicomObjectType">
        <attribute name="SOPInstanceUID" type="tns:UID" />
-       <attribute name="SOPClassUID" type="tns:UID" />
        <attribute name="InstanceNumber" type="int" />
        <!-- Position is the absolute position within the series, 0 based without duplicates, from [0,viewable). -->
        <attribute name="Position" type="int" />
-       <anyAttribute />
 	</complexType>
 	    
 	<simpleType name="UID">
@@ -209,7 +199,7 @@ Key objects are a named (by code meaning) list of images to display.
 	    		</sequence>
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />
-    			<attribute name="Frame" type="int" />
+    			<attribute name="frame" type="int" use="optional" />
     			<attribute name="gspsUID" type="tns:UID" />
     			<!-- The following are only used for over-rides, not for primary values. -->
     	        <attribute name="size" type="tns:PresentationSizeMode">
@@ -222,10 +212,6 @@ Key objects are a named (by code meaning) list of images to display.
     	        <attribute name="topLeft" type="string" />
     	        <attribute name="bottomRight" type="string" />
     	        <attribute name="magnify" type="float" />
-		    	<attribute name="windowWidth" type="float" />
-    			<attribute name="windowCenter" type="float" />
-    			<attribute name="minPixel" type="float" />
-    			<attribute name="maxPixel" type="float" />
     		</extension>
     	</complexContent>
     </complexType>

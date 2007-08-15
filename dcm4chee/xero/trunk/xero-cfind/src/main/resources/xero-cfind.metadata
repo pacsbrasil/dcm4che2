@@ -6,6 +6,7 @@
 # come from meta-data annotations instead of direct setting the values.
 servletFilter=${org.dcm4chee.xero.metadata.filter.FilterList}
 servletFilter.jaxbFilter=${org.dcm4chee.xero.metadata.servlet.JaxbFilter}
+servletFilter.jaxbFilter.contextPath=org.dcm4chee.xero.search.study
 # Last filter in the list.
 servletFilter.jaxbFilter.priority=999999
 servletFilter.searchCondition.priority=-1000

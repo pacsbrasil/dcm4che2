@@ -1,5 +1,7 @@
 package org.dcm4chee.xero.display;
 
+import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.WindowLevelMacro;
 import org.testng.annotations.Test;
 
 public class WindowLevelActionTest extends DisplayVars
@@ -30,6 +32,11 @@ public class WindowLevelActionTest extends DisplayVars
 	public void imageLevelWLTest() throws Exception {
 		mode.setApplyLevelStr("image");
 		String result = wl.action();
+		ImageBean ib = model.getImage();
+		assert ib!=null;
+		WindowLevelMacro wl = (WindowLevelMacro) ib.getMacroItems().findMacro(WindowLevelMacro.class);
+		assert wl!=null;
+		assert wl.getCenter()==windowCenter;
 		assert result.equals("success");
 		Number num = getXpathNum("/study/series/image/@windowCenter");
 		assert num.floatValue() - windowCenter == 0.0f;

@@ -79,7 +79,7 @@ public class LocalStudyModelTest extends DisplayVars
 		assert image!=null;
 		assert image==model.getImage();
 		assert image.getSOPInstanceUID().equals(objectUid);
-		assert image.getFrame().equals(frame);
+		assert image.getFrame()==null;
 		SeriesType series = model.getSeries();
 		assert series!=null;
 		assert series.getDicomObject().contains(image);

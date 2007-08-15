@@ -53,6 +53,7 @@ import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
+import org.dcm4chee.xero.search.study.WindowLevelMacro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +79,7 @@ public class MinMaxPixelInfo  implements Filter<ResultsBean> {
 						ImageBean ib = (ImageBean) dot;
 						// If it has already had information added, eg from GSPS,
 						// then don't update it again (ie don't read the header.)
-						if( ib.getMinPixel()!=null ) continue;
+						if( ib.getMacroItems().findMacro(MinMaxPixelMacro.class)!=null ) continue;
 						log.info("MinMaxPixelInfo on "+ib.getSOPInstanceUID());
 						updateImage(filterItem, params, ib);
 					}
@@ -103,17 +104,17 @@ public class MinMaxPixelInfo  implements Filter<ResultsBean> {
 			log.warn("Could not read dicom header for this object.");
 			return;
 		}
-		updatePixelRange(dobj,ib);
-		updateWindowLevel(dobj,ib);
+		MinMaxPixelMacro minMax = updatePixelRange(dobj,ib);
+		if( minMax!=null ) updateWindowLevel(dobj,ib, minMax);
 	}
 	
 	/** This method takes an existing dicom object, and reads the appropriate min/max pixel values 
 	 * and adds the information to the image bean.
 	 */
-	public static void updatePixelRange(DicomObject dobj, ImageBean ib) {
+	public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, ImageBean ib) {
 		LutModule lm = new LutModule(dobj);
 		// It is harder to handle more samples, as then we need to know about the mode - so, ignore this for now.
-		if( lm.getSamplesPerPixel()!=1 ) return;
+		if( lm.getSamplesPerPixel()!=1 ) return null;
 		
 		ILut lut = lm.getModalityLutModule().getModalityLut();
 		if(lut==null ) {
@@ -122,25 +123,28 @@ public class MinMaxPixelInfo  implements Filter<ResultsBean> {
 		}
 		float minPixelValue = lut.lookup(lm.minPossibleStoredValue());
 		float maxPixelValue = lut.lookup(lm.maxPossibleStoredValue());
-		ib.setMinPixel(minPixelValue);
-		ib.setMaxPixel(maxPixelValue);
+		MinMaxPixelMacro minMax = new MinMaxPixelMacro(minPixelValue, maxPixelValue);
+		ib.getMacroItems().addMacro(minMax);
+		return minMax;
 	}
 	
 	/** This method updates the header with VOI  window level defaults (if any) using the first
 	 * VOI LUT found, or a window level such that the entire image data is shown.
 	 * TODO Change this to provide a voi lut name when there is a provided VOI Lut.
+	 * @param minMax 
 	 */
-	public static void updateWindowLevel(DicomObject dobj, ImageBean ib) {
+	public static void updateWindowLevel(DicomObject dobj, ImageBean ib, MinMaxPixelMacro minMax) {
 		VoiLutModule voi = new VoiLutModule(dobj);
 		float[] centers = voi.getWindowCenter();
-		float[] widths = voi.getWindowWidth();
+	    float[] widths = voi.getWindowWidth();
+		WindowLevelMacro wl;
 		if( centers==null || widths==null ) {
-			ib.setWindowWidth(ib.getMaxPixel()-ib.getMinPixel()+1);
-			ib.setWindowCenter((ib.getMaxPixel()+ib.getMinPixel()+1)/2);
+		   wl = new WindowLevelMacro((minMax.getMaxPixel()+minMax.getMinPixel()+1)/2, minMax.getMaxPixel()-minMax.getMinPixel()+1,"Pixel Range WL");
 		}
 		else {
-			ib.setWindowCenter(centers[0]);
-			ib.setWindowWidth(widths[0]);
+		   String[] explanations = voi.getWindowCenterWidthExplanations(); 
+		   wl = new WindowLevelMacro(centers[0],widths[0],explanations[0]);
 		}
+		ib.getMacroItems().addMacro(wl);
 	}
 }

@@ -35,27 +35,49 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.image;
 
-import org.dcm4chee.xero.search.Column;
+import java.util.Map;
 
-public interface DicomObjectInterface {
+import javax.xml.namespace.QName;
 
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
+import org.dcm4chee.xero.search.study.Macro;
 
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+/** Stores min/max pixel information, for use by window levelling */
+public class MinMaxPixelMacro implements Macro {
+   public static final QName Q_MIN_PIXEL = new QName(null,"minPixel");
+   public static final QName Q_MAX_PIXEL = new QName(null,"maxPixel");
+   float minPixel, maxPixel;
+   
+   /** Create a min/max pixel value from the given values. */
+   public MinMaxPixelMacro(float minPixel, float maxPixel) {
+	  this.minPixel = minPixel;
+	  this.maxPixel = maxPixel;
+   }
+
+   public int updateAny(Map<QName, String> attrs, Map<QName, Object> elements) {
+	  if( attrs!=null ) {
+		 attrs.put(Q_MIN_PIXEL, Float.toString(minPixel));
+		 attrs.put(Q_MAX_PIXEL, Float.toString(maxPixel));
+	     return 2;
+	  }
+	  return 0;
+   }
+
+   public float getMaxPixel() {
+      return maxPixel;
+   }
+
+   public void setMaxPixel(float maxPixel) {
+      this.maxPixel = maxPixel;
+   }
+
+   public float getMinPixel() {
+      return minPixel;
+   }
+
+   public void setMinPixel(float minPixel) {
+      this.minPixel = minPixel;
+   }
+
 }

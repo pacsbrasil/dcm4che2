@@ -39,83 +39,138 @@ package org.dcm4chee.xero.search.study;
 
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.search.LocalModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @XmlRootElement
-public class ImageBean extends ImageType implements Image, LocalModel<String> {
+public class ImageBean extends ImageType implements Image, LocalModel<String>, MacroMixIn {
+   private static final Logger log = LoggerFactory.getLogger(ImageBean.class);
 
-	@XmlTransient
-	protected Map<Object,Object> children;
+   @XmlTransient
+   protected Map<Object, Object> children;
 
-	/**
-	 * Create an empty image bean object.
-	 */
-	public ImageBean() {
-	};
+   /** Used to define the DICOM macro tables included in this object */
+   MacroItems macroItems;
 
-	/**
-	 * Create an image bean from the given dicom data
-	 * 
-	 * @param data
-	 *            to use for the DICOM information
-	 */
-	public ImageBean(DicomObject data) {
-		initAttributes(data);
-	}
+   /**
+     * Create an empty image bean object.
+     */
+   public ImageBean() {
+   };
 
-	/**
-	 * Initialize the image level attributes by copying the DicomObject's image
-	 * level data for Columns, Rows, SOP Instance UID and Instance Number.
-	 * 
-	 * @param data
-	 *            to copy image level data into this from.
-	 */
-	protected void initAttributes(DicomObject data) {
-		setColumns(data.getInt(Tag.Columns));
-		setRows(data.getInt(Tag.Rows));
-		// setSOPClassUID(data.getString(Tag.SOPClassUID));
-		setSOPInstanceUID(data.getString(Tag.SOPInstanceUID));
-		setInstanceNumber(data.getInt(Tag.InstanceNumber));
-	}
+   /**
+     * Create an image bean from the given dicom data
+     * 
+     * @param data
+     *            to use for the DICOM information
+     */
+   public ImageBean(DicomObject data) {
+	  initAttributes(data);
+   }
 
-	/** Indicate if there are any interesting children, clearing any empty ones first.
-	 * Note that size is used to drive emptiness for all size related attributes,
-	 * as is WindowCenter for all window level related attributes.
-	 */
-	public boolean clearEmpty() {
-		boolean emptyChildren = getAny()==null || ResultsBean.clearEmpty(children,getAny().getAny());
-		return emptyChildren && getOtherAttributes().isEmpty()
-				&& getPresentationSizeMode() == null && getGspsUID() == null
-				&& getWindowCenter() == null;
-	}
+   public ImageBean(ImageBean image, int frame) {
+	  this.frame = frame;
+	  this.sopInstanceUID = image.getSOPInstanceUID();
+	  this.instanceNumber = image.getInstanceNumber();
+	  this.gspsUID = image.getGspsUID();
+	  this.children = image.children;
+	  if (image.position != null)
+		 this.position = image.position + frame - 1;
+	  this.rows = image.rows;
+	  this.columns = image.columns;
+   }
 
-	/** Return the id for this element, in this case the SOP  Instance UID */
-	public String getId() {
-		return getSOPInstanceUID()+","+getFrame();
-	}
-	
-	/** A single set command for all the presentation size attributes */
-	public void setPresentationSize(PresentationSizeMode size, String topLeft, String bottomRight, Float magnify)
-	{
-		this.setPresentationSizeMode(size);
-		this.setTopLeft(topLeft);
-		this.setBottomRight(bottomRight);
-		this.setMagnify(magnify);
-	}
-	
-	/** Clears all the presentation size mode information */
-	public void clearPresentationSize() {
-		setPresentationSize(null,null,null,null);
-	}
+   /**
+     * Initialize the image level attributes by copying the DicomObject's image
+     * level data for Columns, Rows, SOP Instance UID and Instance Number.
+     * 
+     * @param data
+     *            to copy image level data into this from.
+     */
+   protected void initAttributes(DicomObject data) {
+	  setColumns(data.getInt(Tag.Columns));
+	  setRows(data.getInt(Tag.Rows));
+	  // setSOPClassUID(data.getString(Tag.SOPClassUID));
+	  setSOPInstanceUID(data.getString(Tag.SOPInstanceUID));
+	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
+   }
+
+   /**
+     * Indicate if there are any interesting children, clearing any empty ones
+     * first. Note that size is used to drive emptiness for all size related
+     * attributes, as is WindowCenter for all window level related attributes.
+     */
+   public boolean clearEmpty() {
+	  boolean emptyChildren = getAny() == null || ResultsBean.clearEmpty(children, getAny().getAny());
+	  return emptyChildren && getPresentationSizeMode() == null && getGspsUID() == null
+			&& (macroItems == null || macroItems.clearEmpty());
+   }
+
+   /** Return the id for this element, in this case the SOP Instance UID */
+   public String getId() {
+	  if (getFrame() == null || getFrame() == 0)
+		 return getSOPInstanceUID();
+	  return getSOPInstanceUID() + getFrame();
+   }
+
+   /** A single set command for all the presentation size attributes */
+   public void setPresentationSize(PresentationSizeMode size, String topLeft, String bottomRight, Float magnify) {
+	  this.setPresentationSizeMode(size);
+	  this.setTopLeft(topLeft);
+	  this.setBottomRight(bottomRight);
+	  this.setMagnify(magnify);
+   }
+
+   /** Clears all the presentation size mode information */
+   public void clearPresentationSize() {
+	  setPresentationSize(null, null, null, null);
+   }
 
    /** Removes all the SVG use elements contained in this object */
    public void clearUse() {
-      this.use = null;
+	  this.use = null;
    }
-	
+
+   /** Gets additional attributes and child elements defined in other objects */
+   public MacroItems getMacroItems() {
+	  if (macroItems == null)
+		 macroItems = new MacroItems();
+	  return macroItems;
+   }
+
+   /** Get the attributes from the macro items that are included in this object. */
+   @XmlAnyAttribute
+   public Map<QName, String> getOtherAttributes() {
+	  log.info("Get other attributes called.");
+	  Map<QName, String> ret = null;
+	  if (macroItems != null)
+		 ret = macroItems.getAnyAttributes();
+	  log.info("Returning macroItems=" + ret);
+	  return ret;
+   }
+
+   /** Clears the macro from this class, and any children of this class. */
+   public void clearMacro(Class clazz) {
+	  if (macroItems == null)
+		 return;
+	  Macro item = macroItems.findMacro(clazz);
+	  if (item != null)
+		 macroItems.removeMacro(item);
+   }
+
+   /**
+     * Gets the number of frames in this object - always 1 for non-multi frame
+     * objects
+     */
+   public int getNumberOfFrames() {
+	  return 1;
+   }
 }

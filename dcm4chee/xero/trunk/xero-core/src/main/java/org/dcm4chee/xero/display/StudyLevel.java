@@ -66,7 +66,7 @@ public class StudyLevel {
 	 */
 	String objectUID;
 
-	private Integer frame = 0;
+	private Integer frame = null;
 
 	private String level = "series";
 
@@ -112,7 +112,8 @@ public class StudyLevel {
 	}
 
 	public void setFrame(Integer frame) {
-		this.frame = frame;
+		if( frame==0 ) this.frame = null;
+		else this.frame = frame;
 	}
 
 	/**

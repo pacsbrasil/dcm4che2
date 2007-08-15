@@ -37,10 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
-import org.dcm4chee.xero.search.study.DicomObjectType;
-import org.dcm4chee.xero.search.study.ImageBean;
-import org.dcm4chee.xero.search.study.ImageType;
-import org.dcm4chee.xero.search.study.SeriesBean;
+import org.dcm4chee.xero.search.study.WindowLevelMacro;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -105,25 +102,10 @@ public class WindowLevelAction {
 	public String action() {
 		if( !isWlSet() ) return "failure";
 	    DisplayMode.ApplyLevel applyLevel;
+	    WindowLevelMacro wl = new WindowLevelMacro(getWindowCenter(), getWindowWidth(), "User");
 	    if( mode!=null ) applyLevel = mode.getApplyLevel();
 	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
-		if( applyLevel == DisplayMode.ApplyLevel.IMAGE ) {
-			ImageBean image = localStudyModel.getImage();
-			image.setWindowCenter(getWindowCenter());
-			image.setWindowWidth(getWindowWidth());
-		}
-		else {
-			SeriesBean series = localStudyModel.getSeries();
-			series.setWindowCenter(getWindowCenter());
-			series.setWindowWidth(getWindowWidth());
-			for(DicomObjectType dot : series.getDicomObject()) {
-				if( dot instanceof ImageType ) {
-					ImageType image = (ImageType) dot;
-					image.setWindowCenter(null);
-					image.setWindowWidth(null);
-				}
-			}
-		}
+	    localStudyModel.apply(applyLevel,wl);
 		return "success";
 	}
 

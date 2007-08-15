@@ -45,7 +45,7 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 
 /**
- * This class sorts the images by instance number.
+ * This class sorts the images by instance number, and adds the position information into the image level data.
  * @author bwallace
  *
  */
@@ -59,7 +59,18 @@ public class SortImageFilter implements Filter<ResultsType>{
 	public ResultsType filter(FilterItem filterItem, Map<String, Object> params) {
 		ResultsType results = (ResultsType) filterItem.callNextFilter(params);
 		if( results==null ) return null;
-		List<PatientType> patients = results.getPatient();
+		return sortSeriesAndImages(results);
+	}
+
+	/**
+	 * Sorts the series and images, and adds in positional information.
+	 * TODO: This is supposed to take into account multi-frame ordering and grouping, but some of the
+	 * enhanced CT/MR ordering may not be supported yet. 
+	 * @param results
+	 * @return
+	 */
+    public static ResultsType sortSeriesAndImages(ResultsType results) {
+	  List<PatientType> patients = results.getPatient();
 		for(PatientType patient : patients) {
 			List<StudyType> studies = patient.getStudy();
 			for(StudyType study : studies) {
@@ -67,12 +78,12 @@ public class SortImageFilter implements Filter<ResultsType>{
 			}
 		}
 		return results;
-	}
+   }
 	
 	/** Sorts the series items, and then calls the sort on the image items.
 	 * @param series are a list of series objects to sort by series number
 	 */
-	public void sortSeries(List<SeriesType> series) {
+	public static void sortSeries(List<SeriesType> series) {
 		Collections.sort(series,new SeriesComparator());
 		for(SeriesType aSeries : series) {
 			sortImages(aSeries.getDicomObject());
@@ -80,10 +91,22 @@ public class SortImageFilter implements Filter<ResultsType>{
 	}
 	
 	/** Sorts the image items 
+	 * TODO Currently assumes that multi-frame images are fully sequential.
 	 * @param images are the dicom objects to sort
 	 */
-	public void sortImages(List<DicomObjectType> images) {
+	public static void sortImages(List<DicomObjectType> images) {
 		Collections.sort(images,new DicomObjectComparator());
+		int position = 0;
+		for(DicomObjectType dot : images) {
+		   if( dot instanceof ImageBeanMultiFrame ) {
+			  dot.setPosition(position);
+			  ImageBeanMultiFrame image = (ImageBeanMultiFrame) dot;
+			  position += image.getNumberOfFrames();
+		   }
+		   else if( dot instanceof ImageBean ) {
+			  dot.setPosition(position++);
+		   }
+		}
 	}
 
 }

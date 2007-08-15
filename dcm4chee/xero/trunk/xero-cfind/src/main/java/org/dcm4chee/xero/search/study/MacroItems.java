@@ -37,25 +37,64 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public interface DicomObjectInterface {
+import javax.xml.namespace.QName;
 
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
+public class MacroItems {
+   private List<Macro> macros;
 
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+   /** Returns a map containing all the attributes provided by the macros. */
+   public Map<QName,String> getAnyAttributes() {
+	  if( macros==null || macros.size()==0) return null;
+	  Map<QName, String> attrs = new HashMap<QName,String>();
+	  int count = 0;
+	  for(Macro m : macros) {
+		 count += m.updateAny(attrs,null);
+	  }
+	  if( count==0 ) return null;
+	  return attrs;
+   }
+   
+   /** Adds a macro to this set of macro items */
+   public void addMacro(Macro macro) {
+	  getMacros().add(macro);
+   }
+   
+   /** Removes the given macro */
+   public void removeMacro(Macro macro) {
+	  if( macros==null ) return;
+	  macros.remove(macro);
+   }
+   
+   /** Finds the macro by class */
+   public Macro findMacro(Class clazz) {
+	  if( macros==null ) return null;
+	  for(Macro m : macros) {
+		 if( clazz.isInstance(m) ) return m;
+	  }
+	  return null;
+   }
+
+   /** Clears any non-information providing children (none in this case), and return true
+    * if the object is empty after the clear.  For macro items, returns true only if no
+    * children exist.
+    * @return boolean true if this object provides no attributes or children.
+    */
+   public boolean clearEmpty() {
+	  if( macros==null || macros.size()==0 ) {
+		 macros = null;
+		 return true;
+	  }
+	  return false;
+   }
+
+   /** Get the underlying list of macros - this is a live list that modifies the internal representaiton */
+   public List<Macro> getMacros() {
+	  if( macros==null ) macros = new ArrayList<Macro>(1);
+	  return macros;
+   }
 }

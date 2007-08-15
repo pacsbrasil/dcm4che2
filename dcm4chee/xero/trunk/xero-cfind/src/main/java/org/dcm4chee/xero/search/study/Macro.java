@@ -37,25 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
+import java.util.Map;
 
-public interface DicomObjectInterface {
+import javax.xml.namespace.QName;
 
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
-
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+public interface Macro {
+   /** Add items to either attrs or elements, or both.  Do nothing if the item is null that needs to have
+    * new items.
+    * @param attrs
+    * @param elements
+    * @return Number of items put.
+    */
+   int updateAny(Map<QName, String> attrs, Map<QName,Object> elements);
 }

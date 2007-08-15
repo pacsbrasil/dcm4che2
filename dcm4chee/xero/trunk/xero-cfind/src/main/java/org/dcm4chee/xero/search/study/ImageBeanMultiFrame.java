@@ -37,25 +37,54 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
+import javax.xml.bind.annotation.XmlTransient;
 
-public interface DicomObjectInterface {
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
+/**
+ * This class is another instance of the image bean, but with a frames sub-object.  It is modified and
+ * optimized to handle storage of sub-objects within it, and is thus handled different from the default
+ * image bean object.
+ * @author bwallace
+ */
+public class ImageBeanMultiFrame extends ImageBean {
+   @XmlTransient
+   MacroItems[] frameItems;
 
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+   /** Construct this object, complete with child frames. */
+   public ImageBeanMultiFrame(DicomObject dcmObj) {
+	  super(dcmObj);
+   }
+   
+   
+   /** Read additional attributes from the dicom object */   
+   @Override
+   protected void initAttributes(DicomObject data) {
+	  super.initAttributes(data);
+	  frameItems = new MacroItems[data.getInt(Tag.NumberOfFrames)];
+   }
+
+
+
+   /** Return the number of frames in this instance */
+   public int getNumberOfFrames() {
+	  return frameItems.length;
+   }
+   
+   /** Get the n'th image bean - the is a temporary object, don't make changes to it and expect them
+    * to stick.
+    * @param posn is a 1 based index to retrieve the given frame information.
+    */
+   public ImageBean getImageFrame(int posn) {
+	  if( posn < 1 || posn>getNumberOfFrames() ) throw new IllegalArgumentException("A position between 1 and the number of frames must be requested.");
+	  ImageBean ret = new ImageBean(this,posn);
+	  if( macroItems!=null ) {
+	    ret.getMacroItems().getMacros().addAll(this.getMacroItems().getMacros());
+	  }
+	  if( frameItems[posn-1]!=null ) {
+	    ret.getMacroItems().getMacros().addAll(frameItems[posn-1].getMacros());
+	  }
+	  return ret;
+   }
 }

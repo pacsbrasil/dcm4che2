@@ -56,8 +56,9 @@ public class DisplayVars implements  NamespaceContext {
 	}
 	
 	Number getXpathNum(String xpathStr) throws XPathExpressionException, SAXException, IOException {
-		ByteArrayInputStream bais = new ByteArrayInputStream(getStudyXml().getBytes());
-		if( getStudyXml().length()==0 ) return null;
+	    String xmlStr = getStudyXml();
+		if( xmlStr==null || xmlStr.length()==0 ) return null;
+		ByteArrayInputStream bais = new ByteArrayInputStream(xmlStr.getBytes());
 		Document doc = builder.parse(bais);
 		Number ret = (Number) xpath.evaluate(xpathStr,doc, XPathConstants.NUMBER);
 		return ret;

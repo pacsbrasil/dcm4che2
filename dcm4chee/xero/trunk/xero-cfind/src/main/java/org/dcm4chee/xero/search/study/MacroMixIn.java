@@ -37,25 +37,22 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
+/**
+ * This class represents a Macro as defined in the DICOM part 3 standard that is mixed into an existing 
+ * object, or used to create multiple copies of an object.  There are several intended uses of this:
+ * 1. To extend single frame images to multi-frame images, storing only the ordering information to allow
+ *    multiple mix-in's to define multiple multi-frames (only the extra objects are stored).
+ * 2. To allow storage of information at either the frame or image level depending on whether this is a single
+ *    or multi-frame image.
+ * 3. To allow storage of any of the extra image level information at alternative levels, to allow per-instance
+ * 		over-rides of the various levels.
+ * 
+ * The point of doing this is both to reduce the amount of memory required, as well as allowing better
+ * re-use and editing of the various levels of information.
+ * @author bwallace
+ */
+public interface MacroMixIn {
 
-public interface DicomObjectInterface {
-
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
-
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+   public MacroItems getMacroItems();
+   
 }

@@ -37,25 +37,57 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
+import java.util.Map;
 
-public interface DicomObjectInterface {
+import javax.xml.namespace.QName;
 
-	/**
-	 * Gets the value of the sopInstanceUID property.
-	 * 
-	 * @return
-	 *     possible object is
-	 *     {@link String }
-	 *     
-	 */
-	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
 
-	/** Get the instance number - this is a value starting at 1 that defines the position of this object
-	 * in terms of when it was received.  
-	 * @return
-	 */
-	@Column(searchable=true,type="int")
-	Integer getInstanceNumber();
+/** Represents a window level default - other window levels are represented by other macros */
+public class WindowLevelMacro implements Macro {
+   public static final QName Q_WINDOW_CENTER = new QName(null,"windowCenter");
+   public static final QName Q_WINDOW_WIDTH = new QName(null,"windowWidth");
+   public static final QName Q_WINDOW_EXPLANATION = new QName(null,"windowExplanation");
+   private float center, width;
+   private String explanation;
+   
+   public WindowLevelMacro(float center, float width, String reason) {
+	  this.width = width;
+	  this.center = center;
+	  this.explanation = reason;
+   }
+
+   public float getCenter() {
+      return center;
+   }
+
+   public void setCenter(float center) {
+      this.center = center;
+   }
+
+   public String getExplanation() {
+      return explanation;
+   }
+
+   public void setExplanation(String reason) {
+      this.explanation = reason;
+   }
+
+   public float getWidth() {
+      return width;
+   }
+
+   public void setWidth(float width) {
+      this.width = width;
+   }
+
+   public int updateAny(Map<QName, String> attrs, Map<QName, Object> elements) {
+	  if( attrs!=null ) {
+		 attrs.put(Q_WINDOW_CENTER, Float.toString(center));
+		 attrs.put(Q_WINDOW_WIDTH,Float.toString(width));
+		 attrs.put(Q_WINDOW_EXPLANATION,explanation);
+		 return 3;
+	  }
+	  return 0;
+   }
+
 }
