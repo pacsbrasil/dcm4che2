@@ -40,6 +40,7 @@ package org.dcm4chee.xero.display;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageType;
+import org.dcm4chee.xero.search.study.RegionMacro;
 import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.PresentationSizeMode;
 import org.dcm4chee.xero.wado.WadoImage;
@@ -170,7 +171,7 @@ public class ZoomPanAction {
 		return region;
 	}
 	
-	/** Applies the pan/zoom to the given study, series or image. */
+	/** Applies the pan/zoom to the given study, series or image. This maybe used by GSPS or as a temporary change.*/
 	public String action() {
 	    updateMagnify();
 		log.info("Zoom pan action size="+getPresentationSizeMode()+" Region="+getRegion()+" relZoom="+relZoom+" pan X,y="+panX+","+panY + " on "+this);
@@ -178,22 +179,8 @@ public class ZoomPanAction {
 	    DisplayMode.ApplyLevel applyLevel;
 	    if( mode!=null ) applyLevel = mode.getApplyLevel();
 	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
-	    if( applyLevel == DisplayMode.ApplyLevel.IMAGE ) {
-			ImageBean image = localStudyModel.getImage();
-			log.info("Setting zoom to "+updatedMagnify +" at image level.");
-			image.setPresentationSize(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
-		}
-		else {
-			SeriesBean series = localStudyModel.getSeries();
-			log.info("Setting zoom to "+updatedMagnify +" at series level.");
-			series.setPresentationSize(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
-			for(DicomObjectType dot : series.getDicomObject()) {
-				if( dot instanceof ImageType ) {
-					ImageBean image = (ImageBean) dot;
-					image.clearPresentationSize();
-				}
-			}
-		}
+	    RegionMacro macro = new RegionMacro(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
+	    localStudyModel.apply(applyLevel,macro);
 	    log.info("Done zoom/pan action.");
 		return "success";
 	}

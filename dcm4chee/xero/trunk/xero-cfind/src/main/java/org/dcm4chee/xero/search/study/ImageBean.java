@@ -110,7 +110,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      */
    public boolean clearEmpty() {
 	  boolean emptyChildren = getAny() == null || ResultsBean.clearEmpty(children, getAny().getAny());
-	  return emptyChildren && getPresentationSizeMode() == null && getGspsUID() == null
+	  return emptyChildren && getGspsUID() == null
 			&& (macroItems == null || macroItems.clearEmpty());
    }
 
@@ -119,19 +119,6 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 	  if (getFrame() == null || getFrame() == 0)
 		 return getSOPInstanceUID();
 	  return getSOPInstanceUID() + getFrame();
-   }
-
-   /** A single set command for all the presentation size attributes */
-   public void setPresentationSize(PresentationSizeMode size, String topLeft, String bottomRight, Float magnify) {
-	  this.setPresentationSizeMode(size);
-	  this.setTopLeft(topLeft);
-	  this.setBottomRight(bottomRight);
-	  this.setMagnify(magnify);
-   }
-
-   /** Clears all the presentation size mode information */
-   public void clearPresentationSize() {
-	  setPresentationSize(null, null, null, null);
    }
 
    /** Removes all the SVG use elements contained in this object */
