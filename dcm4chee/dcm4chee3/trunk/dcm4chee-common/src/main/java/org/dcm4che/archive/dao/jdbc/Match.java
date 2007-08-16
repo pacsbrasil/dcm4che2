@@ -355,6 +355,42 @@ abstract class Match {
 
     }
 
+    static class ModalitiesInStudyMultiNestedMatch extends Match {
+        private final String[] mds;
+
+        public ModalitiesInStudyMultiNestedMatch(String alias, String[] mds) {
+            super(alias, "Series.modality", false);
+            this.mds = mds != null ? mds : new String[0];
+        }
+
+        public boolean isUniveralMatch() {
+            return mds.length == 0;
+        }
+
+        protected void appendBodyTo(StringBuffer sb) {
+            JdbcProperties jp = JdbcProperties.getInstance();
+            sb.append("exists (SELECT 1 FROM ");
+            sb.append(jp.getProperty("Series"));
+            sb.append(" WHERE ");
+            sb.append(jp.getProperty("Series.study_fk"));
+            sb.append(" = ");
+            sb.append(jp.getProperty("Study.pk"));
+            sb.append(" AND ");
+            sb.append(column);
+            if (mds.length == 1) {
+                sb.append(" = \'").append(mds[0]).append('\'');
+            }
+            else {
+                sb.append(" IN ('").append(mds[0]);
+                for (int i = 1; i < mds.length; i++) {
+                    sb.append("\', \'").append(mds[i]);
+                }
+                sb.append("\')");
+            }
+            sb.append(')');
+        }
+    }
+
     static class ModalitiesInStudyNestedMatch extends Match {
         private final char[] wc;
 

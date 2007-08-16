@@ -323,8 +323,13 @@ class SqlBuilder {
         				ORA_DATE_FORMAT : DATE_FORMAT);
     }
     
-    public Match addModalitiesInStudyNestedMatch(String alias, String md) {
-        return addMatch(new Match.ModalitiesInStudyNestedMatch(alias, md));
+        public Match addModalitiesInStudyNestedMatch(String alias, String[] mds) {
+        if (mds != null && mds.length == 1)
+            return addMatch(new Match.ModalitiesInStudyNestedMatch(alias,
+                    mds[0]));
+        else
+            return addMatch(new Match.ModalitiesInStudyMultiNestedMatch(alias,
+                    mds));
     }
     
     public Match addCallingAETsNestedMatch(boolean privateTables, String[] callingAETs) {
