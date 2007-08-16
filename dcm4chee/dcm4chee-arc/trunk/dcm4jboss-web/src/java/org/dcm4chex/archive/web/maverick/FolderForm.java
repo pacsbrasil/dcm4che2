@@ -123,7 +123,7 @@ public class FolderForm extends BasicFolderForm {
 						request.getServerPort(), "/");
             	}
             	form.setWadoBaseURL( wadoURL.toString() );
-		URL url = new URL( "http", request.getServerName(), 
+		URL url = new URL( request.isSecure() ? "https" : "http", request.getServerName(), 
 		request.getServerPort(), 
 		jspUrl);
 		try {
