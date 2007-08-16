@@ -245,12 +245,15 @@
 		</init-param>
 
 		<!-- 
-			Name of WebViewer window. use _blank to open each Webviewer in a new window.
+			Name of WebView Launcher Service. Only used to check if a webviewer application is installed.
 		-->
 		<init-param>
-			<param-name>webViewJspUrl</param-name>
-			<param-value>/dcm4chee-webview/webviewer.jsp</param-value>
+			<param-name>webviewServiceName</param-name>
+			<param-value>dcm4chee.archive:service=WebViewService</param-value>
 		</init-param>
+		<!-- 
+			Name of WebViewer window. use _blank to open each Webviewer in a new window.
+		-->
 		<init-param>
 			<param-name>webViewerWindowName</param-name>
 			<param-value>webView</param-value>

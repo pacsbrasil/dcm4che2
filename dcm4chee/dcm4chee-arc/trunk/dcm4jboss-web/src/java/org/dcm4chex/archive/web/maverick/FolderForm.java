@@ -47,6 +47,7 @@ import java.util.List;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -107,9 +108,8 @@ public class FolderForm extends BasicFolderForm {
                 .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
             form = new FolderForm(request);
-            String jspUrl = ctx.getServletConfig().getInitParameter("webViewJspUrl");
+            String wadoBase = ctx.getServletConfig().getInitParameter("wadoBaseURL");
             try {
-            	String wadoBase = ctx.getServletConfig().getInitParameter("wadoBaseURL");
             	URL wadoURL = null;
             	if ( wadoBase != null ) {
             		try {
@@ -123,21 +123,18 @@ public class FolderForm extends BasicFolderForm {
 						request.getServerPort(), "/");
             	}
             	form.setWadoBaseURL( wadoURL.toString() );
-		URL url = new URL( request.isSecure() ? "https" : "http", request.getServerName(), 
-		request.getServerPort(), 
-		jspUrl);
-		try {
-		    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		    conn.connect();
-		    if ( conn.getResponseCode() == HttpURLConnection.HTTP_OK ) {
-		        form.enableWebViewer();
-                        form.setWebViewerWindowName(ctx.getServletConfig().getInitParameter("webViewerWindowName"));
-                    }
-		} catch (IOException ignore) {
-			log.debug("Webviewer disabled! Reason: IOException:"+ignore);
-		}
             } catch (MalformedURLException e) {
-                log.error("Webviewer disabled! Reason: Init Parameter 'webViewJspUrl' is invalid:"+jspUrl);
+                log.error("Init Parameter 'wadoBaseURL' is invalid:"+wadoBase);
+            }
+            try {
+                ObjectName webviewServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("webviewServiceName"));
+                MBeanServer server = MBeanServerLocator.locate();
+                server.getObjectInstance(webviewServiceName);
+                log.info("Webviewer is enabled!");
+                form.enableWebViewer();
+                form.setWebViewerWindowName(ctx.getServletConfig().getInitParameter("webViewerWindowName"));
+            } catch (Exception ignore) {
+                log.debug("Webviewer is disabled!",ignore);
             }
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
