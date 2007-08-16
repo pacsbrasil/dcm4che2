@@ -41,6 +41,7 @@ package org.dcm4chex.archive.web.maverick.model;
 
 
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 
 /**
@@ -139,11 +140,11 @@ public class StudyFilterModel extends AbstractModel {
     }
 
     public final String getModality() {
-        return ds.getString(Tags.ModalitiesInStudy);
+        return StringUtils.toString(ds.getStrings(Tags.ModalitiesInStudy), '\\');
     }
 
     public final void setModality(String s) {
-        ds.putCS(Tags.ModalitiesInStudy, s);
+        ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(s, '\\'));
     }
     
     public final void setCallingAET(String aet ) {
