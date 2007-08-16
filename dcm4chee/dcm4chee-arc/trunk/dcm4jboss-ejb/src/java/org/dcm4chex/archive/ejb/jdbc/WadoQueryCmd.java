@@ -180,7 +180,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
                 type2,
                 keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
-                keys.getString(Tags.ModalitiesInStudy));
+                keys.getStrings(Tags.ModalitiesInStudy));
     }
 
     protected void addSeriesMatch() {

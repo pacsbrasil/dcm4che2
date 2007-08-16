@@ -371,7 +371,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
-                .getString(Tags.ModalitiesInStudy));
+                .getStrings(Tags.ModalitiesInStudy));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(false, keys
                 .getStrings(PrivateTags.CallingAET));

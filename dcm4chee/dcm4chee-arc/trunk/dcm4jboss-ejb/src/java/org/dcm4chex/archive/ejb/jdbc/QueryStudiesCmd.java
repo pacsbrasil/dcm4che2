@@ -135,7 +135,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
                 filter.getStrings(Tags.AccessionNumber));
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
-                filter.getString(Tags.ModalitiesInStudy));
+                filter.getStrings(Tags.ModalitiesInStudy));
         filter.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(false,
                 filter.getStrings(PrivateTags.CallingAET));
