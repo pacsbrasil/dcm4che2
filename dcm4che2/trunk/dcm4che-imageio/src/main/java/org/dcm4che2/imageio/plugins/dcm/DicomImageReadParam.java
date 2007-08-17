@@ -54,6 +54,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private float width;
     private DicomObject voiLut;
     private DicomObject prState;
+    private short[] pval2gray;
      
     public final boolean isAutoWindowing() {
         return autoWindowing;
@@ -93,5 +94,13 @@ public class DicomImageReadParam extends ImageReadParam {
 
     public final void setPresentationState(DicomObject prState) {
         this.prState = prState;
+    }
+
+    public final short[] getPValue2Gray() {
+        return pval2gray;
+    }
+
+    public final void setPValue2Gray(short[] pval2gray) {
+        this.pval2gray = pval2gray;
     }    
 }

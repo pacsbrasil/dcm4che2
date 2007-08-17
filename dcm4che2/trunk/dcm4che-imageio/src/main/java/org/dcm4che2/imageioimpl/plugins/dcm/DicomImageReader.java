@@ -421,24 +421,27 @@ public class DicomImageReader extends ImageReader {
     }
 
     private LookupTable createLut(DicomImageReadParam param, DataBuffer data) {
+        short[] pval2gray = param.getPValue2Gray();
         DicomObject pr = param.getPresentationState();
         if (pr != null) {
-            return LookupTable.createLutForImageWithPR(ds, pr, stored);
+            return LookupTable.createLutForImageWithPR(ds, pr, stored,
+                    pval2gray);
         }
         DicomObject voiLut = param.getVoiLut();
         if (voiLut != null) {
-            return LookupTable.createLutForImage(ds, voiLut, stored);
+            return LookupTable.createLutForImage(ds, voiLut, stored, pval2gray);
         }
         float c = param.getWindowCenter();
         float w = param.getWindowWidth();
         if (w > 0) {            
-            return LookupTable.createLutForImage(ds, c, w, stored);
+            return LookupTable.createLutForImage(ds, c, w, stored, pval2gray);
         }
         if (param.isAutoWindowing()
                 && !LookupTable.containsVOIAttributes(ds)) {
             float[] cw = LookupTable.getMinMaxWindowCenterWidth(ds, data);
-            return LookupTable.createLutForImage(ds, cw[0], cw[1], stored);            
+            return LookupTable.createLutForImage(ds, cw[0], cw[1], stored,
+                    pval2gray);            
         }
-        return LookupTable.createLutForImage(ds, stored);
+        return LookupTable.createLutForImage(ds, stored, pval2gray);
     }
 }
