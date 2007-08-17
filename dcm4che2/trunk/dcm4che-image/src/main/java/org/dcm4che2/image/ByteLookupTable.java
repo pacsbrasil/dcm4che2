@@ -111,45 +111,29 @@ public class ByteLookupTable extends LookupTable {
         return dst;
     }
 
-    protected LookupTable inverse() {
-        int outMax = (1 << outBits) - 1;
-        byte[] newData = preserve ? new byte[data.length] : data;
-        for (int i = 0; i < newData.length; i++) {
-            newData[i] = (byte) (outMax - data[i]);
-        }
-        return preserve ? new ByteLookupTable(inBits, signbit != 0, off,
-                outBits, newData) : this;
-    }
-
     protected LookupTable scale(int outBits, boolean inverse,
             short[] pval2out) {
-        int shift1;
-        int shift2;
-        if (pval2out == null) {
-            shift1 = outBits - this.outBits;
-            if (shift1 == 0 && !inverse) {
-                return this;
-            }
-            shift2 = 0;
-        } else {
-            shift1 = inBits(pval2out) - this.outBits;
-            shift2 = outBits - 16;
+        if (outBits == this.outBits && !inverse && pval2out == null) {
+            return this;
         }
-        int outMax = (1 << outBits) - 1;
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int shift = outBits1 - this.outBits;
+        int pval2outShift = 16 - outBits;
+        int outMax = (1 << outBits1) - 1;
         if (outBits <= 8) {
             byte[] newData = preserve ? new byte[data.length] : data;
             for (int i = 0; i < newData.length; i++) {
                 int tmp = data[i] & 0xff;
-                if (shift1 < 0) {
-                    tmp >>>= -shift1;
+                if (shift < 0) {
+                    tmp >>>= -shift;
                 } else {
-                    tmp <<= shift1;
+                    tmp <<= shift;
                 }
                 if (inverse) {
                     tmp = outMax - tmp;
                 }
                 if (pval2out != null) {
-                    tmp = pval2out[tmp] >>>= -shift2;
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
                 }
                 newData[i] = (byte) tmp;
             }
@@ -164,16 +148,16 @@ public class ByteLookupTable extends LookupTable {
             short[] newData = new short[data.length];
             for (int i = 0; i < newData.length; i++) {
                 int tmp = data[i] & 0xff;
-                if (shift1 < 0) {
-                    tmp >>>= -shift1;
+                if (shift < 0) {
+                    tmp >>>= -shift;
                 } else {
-                    tmp <<= shift1;
+                    tmp <<= shift;
                 }
                 if (inverse) {
                     tmp = outMax - tmp;
                 }
                 if (pval2out != null) {
-                    tmp = pval2out[tmp] >>>= -shift2;
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
                 }
                 newData[i] = (short) tmp;
             }
@@ -185,16 +169,10 @@ public class ByteLookupTable extends LookupTable {
     protected LookupTable combine(LookupTable other, int outBits,
             boolean inverse, short[] pval2out) {
         int shift1 = other.inBits - this.outBits;
-        int shift2;
-        int shift3;
-        if (pval2out == null) {
-            shift2 = outBits - other.outBits;
-            shift3 = 0;
-        } else {
-            shift2 = inBits(pval2out) - other.outBits;
-            shift3 = outBits - 16;
-        }
-        int outMax = (1 << outBits) - 1;
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int shift2 = outBits1 - other.outBits;
+        int pval2outShift = 16 - outBits;
+        int outMax = (1 << outBits1) - 1;
         if (outBits <= 8) {
             byte[] newData = new byte[data.length];
             for (int i = 0; i < newData.length; i++) {
@@ -210,7 +188,7 @@ public class ByteLookupTable extends LookupTable {
                     tmp = outMax - tmp;
                 }
                 if (pval2out != null) {
-                    tmp = pval2out[tmp] >>>= -shift3;
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
                 }
                 newData[i] = (byte) tmp;
             }
@@ -231,7 +209,7 @@ public class ByteLookupTable extends LookupTable {
                     tmp = outMax - tmp;
                 }
                 if (pval2out != null) {
-                    tmp = pval2out[tmp] >>>= -shift3;
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
                 }
                 newData[i] = (short) tmp;
             }
@@ -243,16 +221,10 @@ public class ByteLookupTable extends LookupTable {
     protected LookupTable combine(LookupTable vlut, LookupTable plut,
             int outBits, boolean inverse, short[] pval2out) {
         int shift1 = plut.inBits - vlut.outBits;
-        int shift2;
-        int shift3;
-        if (pval2out == null) {
-            shift2 = outBits - plut.outBits;
-            shift3 = 0;
-        } else {
-            shift2 = inBits(pval2out) - plut.outBits;
-            shift3 = outBits - 16;
-        }
-        int outMax = (1 << outBits) - 1;
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int shift2 = outBits - plut.outBits;
+        int pval2outShift = 16 - outBits;
+        int outMax = (1 << outBits1) - 1;
         if (outBits <= 8) {
             byte[] newData = new byte[data.length];
             for (int i = 0; i < newData.length; i++) {
@@ -267,7 +239,7 @@ public class ByteLookupTable extends LookupTable {
                     tmp = outMax - tmp;
                 }
                 if (pval2out != null) {
-                    tmp = pval2out[tmp] >>>= -shift3;
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
                 }
                 newData[i] = (byte) tmp;
             }
@@ -287,7 +259,7 @@ public class ByteLookupTable extends LookupTable {
                     tmp = outMax - tmp;
                 }
                 if (pval2out != null) {
-                    tmp = pval2out[tmp] >>>= -shift3;
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
                 }
                 newData[i] = (short) tmp;
             }

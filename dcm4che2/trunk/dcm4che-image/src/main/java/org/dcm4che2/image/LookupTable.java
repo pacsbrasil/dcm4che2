@@ -248,7 +248,8 @@ public abstract class LookupTable {
         int off = Math.max(in1, inMin);
         int iMax = Math.min(in2, inMax) - off;
         int size = iMax + 1;
-        int outRange = 1 << (pval2out == null ? outBits : inBits(pval2out));
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int outRange = 1 << outBits1;
         int out1;
         int out2;
         if (inverse) {
@@ -270,13 +271,14 @@ public abstract class LookupTable {
                     ramp[iMax] = (byte) out2;
                 }
             } else {
-                int pvalShift = 16 - outBits;
+                int pval2outShift = 16 - outBits;
                 for (int i = 0; i < size; i++) {
-                    ramp[i] = (byte)
-                            (pval2out[(int) (m * i + b)] >>> pvalShift);
+                    ramp[i] = (byte) ((pval2out[(int) (m * i + b)] & 0xffff)
+                            >>> pval2outShift);
                 }
                 if (iMax + off == in2) {
-                    ramp[iMax] = (byte) (pval2out[out2] >>> pvalShift);
+                    ramp[iMax] = (byte) ((pval2out[out2] & 0xffff)
+                            >>> pval2outShift);
                 }               
             }
             return new ByteLookupTable(inBits, signed, off, outBits, ramp);
@@ -290,13 +292,14 @@ public abstract class LookupTable {
                     ramp[iMax] = (short) out2;
                 }
             } else {
-                int pvalShift = 16 - outBits;
+                int pval2outShift = 16 - outBits;
                 for (int i = 0; i < size; i++) {
-                    ramp[i] = (short)
-                            (pval2out[(int) (m * i + b)] >>> pvalShift);
+                    ramp[i] = (short) ((pval2out[(int) (m * i + b)] & 0xffff)
+                            >>> pval2outShift);
                 }
                 if (iMax + off == in2) {
-                    ramp[iMax] = (short) (pval2out[out2] >>> pvalShift);
+                    ramp[iMax] = (short) ((pval2out[out2] & 0xffff)
+                            >>> pval2outShift);
                 }               
             }
             return new ShortLookupTable(inBits, signed, off, outBits, ramp);
