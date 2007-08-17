@@ -42,8 +42,6 @@ import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.ScopeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The window level class defines the window-level termporary data and validation
@@ -55,7 +53,6 @@ import org.slf4j.LoggerFactory;
 @Name("WindowLevel")
 @Scope(ScopeType.EVENT)
 public class WindowLevelAction {
-	private static Logger log = LoggerFactory.getLogger(WindowLevelAction.class);
 
 	float windowCenter=127.5f, windowWidth=256f;
 	boolean wlSet = false;

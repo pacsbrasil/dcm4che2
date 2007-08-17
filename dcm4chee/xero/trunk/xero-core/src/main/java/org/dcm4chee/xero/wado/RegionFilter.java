@@ -44,6 +44,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,14 +74,14 @@ public class RegionFilter implements Filter<WadoImage> {
 	public static final Logger log = LoggerFactory.getLogger(RegionFilter.class);
 
 	public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
-		String region = (String) WadoImage.removeFromQuery(params,"region")[0];
+		String region = (String) MemoryCacheFilterBase.removeFromQuery(params,"region")[0];
 		log.info("Region filter on region "+region);
 		if( region==null ) return (WadoImage) filterItem.callNextFilter(params);
 		double[] dregion = WadoImage.splitRegion(region);
 		if( dregion[0]==0.0 && dregion[1]==0.0 && dregion[2] == 1.0 && dregion[3]==1.0 )
 			return (WadoImage) filterItem.callNextFilter(params);
 		log.info("Non-default region supplied:"+region);
-		Object[] values = WadoImage.removeFromQuery(params,"rows", "columns");
+		Object[] values = MemoryCacheFilterBase.removeFromQuery(params,"rows", "columns");
 		String rows = (String) values[0];
 		String columns = (String) values[1];
 		WadoImage wiFull = (WadoImage) filterItem.callNextFilter(params);

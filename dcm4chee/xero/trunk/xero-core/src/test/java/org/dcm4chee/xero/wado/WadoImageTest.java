@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.testng.annotations.Test;
 
 public class WadoImageTest {
@@ -55,12 +56,12 @@ public class WadoImageTest {
 		map.put("end", "fini");
 		map.put("middle", "456");
 		map.put(MemoryCacheFilter.KEY_NAME,"first=123&middle=456&endmiddle=321&end=fini&");
-		WadoImage.removeFromQuery(map, "first");
+		MemoryCacheFilterBase.removeFromQuery(map, "first");
 		assert map.get(MemoryCacheFilter.KEY_NAME).equals("middle=456&endmiddle=321&end=fini");
 		map.put(MemoryCacheFilter.KEY_NAME,"first=123&middle=456&endmiddle=321&end=fini");
-		assert WadoImage.removeFromQuery(map, "end")[0].equals("fini");
+		assert MemoryCacheFilterBase.removeFromQuery(map, "end")[0].equals("fini");
 		assert map.get(MemoryCacheFilter.KEY_NAME).equals("first=123&middle=456&endmiddle=321");
-		assert WadoImage.removeFromQuery(map, "middle")[0].equals("456");
+		assert MemoryCacheFilterBase.removeFromQuery(map, "middle")[0].equals("456");
 		assert map.get(MemoryCacheFilter.KEY_NAME).equals("first=123&endmiddle=321");
 	}
 }

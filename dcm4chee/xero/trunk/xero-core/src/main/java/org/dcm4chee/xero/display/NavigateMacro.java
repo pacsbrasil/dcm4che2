@@ -43,25 +43,29 @@ import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
 
-/** The series viewed macro allows the first series to be displayed in a given study to be define at 
- * the study level.  This is a simple first come first served approach to study display - complex displays
- * will use an alternative mechanism that uses named children elements to define the view positions.
+/** The navigate macro allows a patient/study/series to have a defined "start" position for the next level.
+ * This is a simple navigation scheme that allows navigation at one level at a time.  More complex navigation
+ * schemes use other mechanisms to define positions.
  * @author bwallace
  *
  */
-public class SeriesViewedMacro implements Macro {
-   public static QName Q_FIRST_SERIES_UID = new QName("firstSeriesUID");
-   String firstSeriesUID;
+public class NavigateMacro implements Macro {
+   public static QName Q_VIEW_START = new QName("viewStart");
+   String viewStart;
    
-   /** Setup a study to have a particular series viewed as the first series. */
-   public SeriesViewedMacro(String seriesUID) {
-	  this.firstSeriesUID = seriesUID;
+   /** Setup an object to navigate to the given start position. */
+   public NavigateMacro(String viewStart) {
+	  if( viewStart==null || viewStart.isEmpty()) throw new IllegalArgumentException("Navigate must be provided with a start position.");
+	  this.viewStart = viewStart;
    }
 
    /** Add to the array of extra attributes */
    public int updateAny(Map<QName, String> attrs) {
-	  attrs.put(Q_FIRST_SERIES_UID,firstSeriesUID);
+	  attrs.put(Q_VIEW_START,viewStart);
 	  return 1;
    }
 
+   public String toString() {
+	  return "nav("+viewStart+")";
+   }
 }

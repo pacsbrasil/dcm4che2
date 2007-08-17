@@ -99,9 +99,9 @@ public class ConversationStudyModel extends StudyModel {
 			this.actionStudyLevel = studyLevel;
 			
 			StudyBean study = getStudy();
-			Macro oldMacro = study.getMacroItems().findMacro(SeriesViewedMacro.class);
+			Macro oldMacro = study.getMacroItems().findMacro(NavigateMacro.class);
 			if( oldMacro!=null ) study.getMacroItems().removeMacro(oldMacro);
-			study.getMacroItems().addMacro(new SeriesViewedMacro(studyLevel.getSeriesUID()));
+			study.getMacroItems().addMacro(new NavigateMacro(studyLevel.getSeriesUID()));
 		 }
 		 return;
 	  }

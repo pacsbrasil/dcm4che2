@@ -38,12 +38,10 @@
 package org.dcm4chee.xero.wado;
 
 import java.awt.image.BufferedImage;
-import java.util.Map;
 
 import org.dcm4chee.xero.display.ZoomPanAction;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 
 /**
  * A wado image is a buffered image return object that includes methods to
@@ -114,58 +112,6 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 	/** Clone this object */
 	public WadoImage clone() {
 		WadoImage ret = new WadoImage(this);
-		return ret;
-	}
-
-	/**
-	 * This class removes the provided strings from the query string, updating
-	 * the map in place.
-	 */
-	public static Object[] removeFromQuery(Map<String, Object> map,
-			String... removals) {
-		Object[] ret = new Object[removals.length];
-		String queryStr = (String) map.get(MemoryCacheFilter.KEY_NAME);
-		if (queryStr == null)
-			throw new IllegalArgumentException("Initiale query string must not be null.");
-		boolean removed = false;
-		StringBuffer sb = new StringBuffer(queryStr);
-		int i=0;
-		for (String remove : removals) {
-			ret[i++] = map.remove(remove);
-			int pos = sb.indexOf(remove + "=");
-			if (pos == -1)
-				continue;
-			int end = pos + remove.length();
-			if (pos > 0) {
-				if (sb.charAt(pos - 1) != '&')
-					continue;
-				pos--;
-			}
-			if (end < sb.length()) {
-				int nextAmp = sb.indexOf("&", end);
-				if (nextAmp == -1)
-					end = sb.length();
-				else
-					end = nextAmp;
-			}
-			sb.delete(pos, end);
-			removed = true;
-		}
-		// Clean it up at the beginning and end
-		if (sb.length() > 0) {
-			if (sb.charAt(0) == '&') {
-				sb.delete(0, 1);
-				removed = true;
-			}
-			if (sb.charAt(sb.length() - 1) == '&') {
-				sb.delete(sb.length()-1, sb.length());
-				removed = true;
-			}
-		}
-		if (removed) {
-			queryStr = sb.toString();
-			map.put(MemoryCacheFilter.KEY_NAME, queryStr);
-		}
 		return ret;
 	}
 

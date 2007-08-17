@@ -26,10 +26,10 @@
   <!-- Defines the series level toolbar.  Can't affect the study level display.  
     -->
   <toolbar id='seriesToolbar'>
-   <prevImgButton id="previousImage" label="&lt;"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=-1" />
+   <navImgButton id="previousImage" dir="-1" label="&lt;Image"  oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=-1" />
 
    
-   <nextImgButton id="nextImage" label=">"  oncommand="/xero/image/action/navigate.seam?level=image&amp;dir=1" />
+   <navImgButton id="nextImage" label="Image>"  dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=1" />
  </toolbar>
 
  <toolbar id="imgToolbar">

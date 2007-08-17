@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,15 +76,16 @@ public class PagedImageFilter implements Filter<ResultsType> {
    public ResultsType filter(FilterItem filterItem, Map<String, Object> params) {
 	  int position = 0;
 	  int count = 0;
-	  if (params.containsKey(POSITION_KEY)) {
-		 position = Integer.parseInt((String) params.get(POSITION_KEY));
+	  Object[] page = MemoryCacheFilterBase.removeFromQuery(params,POSITION_KEY,COUNT_KEY);
+	  if (page[0]!=null) {
+		 position = Integer.parseInt((String) page[0]);
 		 // A negative position might be specified by offset logic, so just
             // use zero.
 		 if (position < 0)
 			position = 0;
 		 count = DEFAULT_COUNT;
-		 if (params.containsKey(COUNT_KEY)) {
-			count = Integer.parseInt((String) params.get(COUNT_KEY));
+		 if (page[1]!=null) {
+			count = Integer.parseInt((String) page[1]);
 		 }
 		 log.debug("Paged image filter return items from " + position + "," + count);
 	  }
@@ -144,7 +146,6 @@ public class PagedImageFilter implements Filter<ResultsType> {
      *         decimation not required.
      */
    public SeriesType decimate(Map<Object, Object> children, SeriesType series, int position, int count) {
-	  series.setViewable(series.getDicomObject().size());
 	  List<DicomObjectType> original = series.getDicomObject();
 	  int size = original.size();
 	  if (size == 0)

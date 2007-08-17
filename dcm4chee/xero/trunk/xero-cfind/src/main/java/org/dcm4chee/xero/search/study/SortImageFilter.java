@@ -86,7 +86,15 @@ public class SortImageFilter implements Filter<ResultsType>{
 	public static void sortSeries(List<SeriesType> series) {
 		Collections.sort(series,new SeriesComparator());
 		for(SeriesType aSeries : series) {
-			sortImages(aSeries.getDicomObject());
+		    List<DicomObjectType> dicomObjects = aSeries.getDicomObject();
+		    if( dicomObjects!=null && dicomObjects.size()>0 ) {
+			  sortImages(dicomObjects);
+			  DicomObjectType lastDot = dicomObjects.get(dicomObjects.size()-1);
+			  if( lastDot instanceof ImageBean ) {
+				 ImageBean image = (ImageBean) lastDot;
+			     aSeries.setViewable(lastDot.getPosition()+image.getNumberOfFrames());
+			  } 
+		    }
 		}
 	}
 	

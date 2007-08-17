@@ -120,6 +120,14 @@
     </navigation>
   </page>
   
+  <page view-id="/image/action/Navigate.xhtml" action="#{NavigateAction.action}">
+    <param name="position" value="#{NavigateAction.position}" />
+    <param name="dir" value="#{NavigateAction.dir}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
   <page view-id="/image/action/ZoomPan.xhtml" action="#{ZoomPan.action}">
     <param name="relZoom" value="#{ZoomPan.relZoom}" />
     <param name="panX" value="#{ZoomPan.panX}" />

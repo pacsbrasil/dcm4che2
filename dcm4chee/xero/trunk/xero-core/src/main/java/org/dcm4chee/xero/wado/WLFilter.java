@@ -54,6 +54,7 @@ import org.dcm4che.image.ColorModelParam;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,7 @@ public class WLFilter implements Filter<WadoImage>
 	public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
 		log.info("DicomWLFilter");
 		long start = System.currentTimeMillis();
-		Object[] values = WadoImage.removeFromQuery(params,WINDOW_WIDTH, WINDOW_CENTER);
+		Object[] values = MemoryCacheFilterBase.removeFromQuery(params,WINDOW_WIDTH, WINDOW_CENTER);
 		WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 		if( wi==null ) {
 			log.info("No wado image found.");

@@ -52,127 +52,137 @@ import org.slf4j.LoggerFactory;
  * This class has information about the study, series and image being modified
  * or viewed in this event, as well as what the level is that is being changed.
  * 
- * TODO move the Display level variables into another object that is multi-valued, or make this one
- *    multi-valued in order to allow selection of multiple studies/series/images to be displayed on the URL
- *    call.
+ * TODO move the Display level variables into another object that is
+ * multi-valued, or make this one multi-valued in order to allow selection of
+ * multiple studies/series/images to be displayed on the URL call.
+ * 
  * @author bwallace
  * 
  */
 @Name("ActionStudyLevel")
 @Scope(ScopeType.EVENT)
-@Role(name="DisplayStudyLevel", scope=ScopeType.EVENT)
+@Role(name = "DisplayStudyLevel", scope = ScopeType.EVENT)
 public class StudyLevel {
-	static Logger log = LoggerFactory.getLogger(StudyLevel.class);
+   static Logger log = LoggerFactory.getLogger(StudyLevel.class);
 
-	PatientIdentifier patientIdentifier;
+   PatientIdentifier patientIdentifier;
 
-	/** The pages.xml can set either study UIDs or a single study UID */
-	private String studyUID;
-	private List<String> studyUIDs;
+   /** The pages.xml can set either study UIDs or a single study UID */
+   private String studyUID;
 
-	private String seriesUID;
+   private List<String> studyUIDs;
 
-	/**
-	 * The object UID contains the UID of the object being modified. In general,
-	 * this is used when modifying an image presentation, whereas position is
-	 * used for displaying an image.
-	 */
-	String objectUID;
+   private String seriesUID;
 
-	private Integer frame = null;
+   /**
+     * The object UID contains the UID of the object being modified. In general,
+     * this is used when modifying an image presentation, whereas position is
+     * used for displaying an image.
+     */
+   String objectUID;
 
-	private String level = "series";
+   private Integer frame = null;
 
-	
-	/** Return the patient identifier as an object */
-	public PatientIdentifier getPatientIdentifier() {
-		return patientIdentifier;
-	}
-	
-	public String getPid() {
-		if( patientIdentifier==null ) return null;
-		return patientIdentifier.toString();
-	}
-	
-	/** Sets the patient identifier - this clears the study UID if the PID changes. */
-	public void setPid(String pid) {
-		if( pid==null || pid.length()==0 ) return;
-		pid = pid.trim();
-		this.patientIdentifier = new PatientIdentifier(pid);
-		log.debug("The patient identifier is "+patientIdentifier);
-	}
+   private String level = "series";
 
-	/** Gets the study UID */
-	public String getStudyUID() {
-	   return studyUID;
-	}
+   /** Return the patient identifier as an object */
+   public PatientIdentifier getPatientIdentifier() {
+	  return patientIdentifier;
+   }
 
-	public void setStudyUID(String uid) {
-		log.info("Study UID set to "+uid);
-		if (uid == null || uid.length() == 0)
-			return;
-		uid = uid.trim();
-		this.studyUID = uid;
-		this.studyUIDs = null;
-	}
-	
-	public List<String> getStudyUIDs() {
-	   if( studyUIDs==null && studyUID!=null ) {
-		  studyUIDs = Collections.singletonList(studyUID);
-	   }
-	   return studyUIDs;
-	}
-	
-	/** Sets the first study UID as well as the general list of study UIDS. */
-	public void setStudyUIDs(List<String> uids) {
-	   this.studyUIDs = uids;
-	   this.studyUID = null;
-	   if( uids.size()>0 ) this.studyUID = uids.get(0);
-	}
+   public String getPid() {
+	  if (patientIdentifier == null)
+		 return null;
+	  return patientIdentifier.toString();
+   }
 
-	public String getSeriesUID() {
-		return seriesUID;
-	}
+   /**
+     * Sets the patient identifier - this clears the study UID if the PID
+     * changes.
+     */
+   public void setPid(String pid) {
+	  if (pid == null || pid.length() == 0)
+		 return;
+	  pid = pid.trim();
+	  this.patientIdentifier = new PatientIdentifier(pid);
+	  log.debug("The patient identifier is " + patientIdentifier);
+   }
 
-	public void setSeriesUID(String uid) {
-		if (uid == null || uid.length() == 0)
-			return;
-		uid = uid.trim();
-		log.debug("Series viewed set to #0", uid);
-		this.seriesUID = uid;
-	}
+   /** Gets the study UID */
+   public String getStudyUID() {
+	  return studyUID;
+   }
 
-	/** Get the object UID for the object being modified. */
-	public String getObjectUID() {
-		return objectUID;
-	}
+   public void setStudyUID(String uid) {
+	  log.info("Study UID set to " + uid);
+	  if (uid == null || uid.length() == 0)
+		 return;
+	  uid = uid.trim();
+	  this.studyUID = uid;
+	  this.studyUIDs = null;
+   }
 
-	/** Sets the object UID for the object being modified. */
-	public void setObjectUID(String uid) {
-		if( uid!=null ) uid = uid.trim();
-		this.objectUID = uid;
-	}
+   public List<String> getStudyUIDs() {
+	  if (studyUIDs == null && studyUID != null) {
+		 studyUIDs = Collections.singletonList(studyUID);
+	  }
+	  return studyUIDs;
+   }
 
-	/** Returns the frame number in a multi-frame object */
-	public Integer getFrame() {
-		return frame;
-	}
+   /** Sets the first study UID as well as the general list of study UIDS. */
+   public void setStudyUIDs(List<String> uids) {
+	  this.studyUIDs = uids;
+	  this.studyUID = null;
+	  if (uids.size() > 0)
+		 this.studyUID = uids.get(0);
+   }
 
-	public void setFrame(Integer frame) {
-		if( frame==0 ) this.frame = null;
-		else this.frame = frame;
-	}
+   public String getSeriesUID() {
+	  return seriesUID;
+   }
 
-	/**
-	 * Returns the level that is being updated - patient/study/series/image -
-	 * default is series
-	 */
-	public String getLevel() {
-		return level;
-	}
+   public void setSeriesUID(String uid) {
+	  if (uid == null || uid.length() == 0)
+		 return;
+	  uid = uid.trim();
+	  log.debug("Series viewed set to #0", uid);
+	  this.seriesUID = uid;
+   }
 
-	public void setLevel(String level) {
-		this.level = level;
-	}
+   /** Get the object UID for the object being modified. */
+   public String getObjectUID() {
+	  return objectUID;
+   }
+
+   /** Sets the object UID for the object being modified. */
+   public void setObjectUID(String uid) {
+	  if (uid != null)
+		 uid = uid.trim();
+	  this.objectUID = uid;
+   }
+
+   /** Returns the frame number in a multi-frame object */
+   public Integer getFrame() {
+	  return frame;
+   }
+
+   public void setFrame(Integer frame) {
+	  if (frame == 0)
+		 this.frame = null;
+	  else
+		 this.frame = frame;
+   }
+
+   /**
+     * Returns the level that is being updated - patient/study/series/image -
+     * default is series
+     */
+   public String getLevel() {
+	  return level;
+   }
+
+   public void setLevel(String level) {
+	  this.level = level;
+   }
 
 }
