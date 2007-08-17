@@ -97,11 +97,14 @@ public class WindowFactory {
         int signbit = signed ? 1 << (stored - 1) : 0;
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            return WindowFactory.calcMinMax(signbit, mask, ((DataBufferByte) db).getData()); 
+            return WindowFactory.calcMinMax(signbit, mask,
+                    ((DataBufferByte) db).getData()); 
         case DataBuffer.TYPE_USHORT:
-            return WindowFactory.calcMinMax(signbit, mask, ((DataBufferUShort) db).getData()); 
+            return WindowFactory.calcMinMax(signbit, mask,
+                    ((DataBufferUShort) db).getData()); 
         case DataBuffer.TYPE_SHORT:
-            return WindowFactory.calcMinMax(signbit, mask, ((DataBufferShort) db).getData());
+            return WindowFactory.calcMinMax(signbit, mask,
+                    ((DataBufferShort) db).getData());
         default:
             throw new IllegalArgumentException(
                     "Illegal Type of DataBuffer: " + db);
