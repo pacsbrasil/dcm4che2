@@ -110,7 +110,7 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
     public Study findByStudyIuid(String iuid) throws NoResultException {
         Study study = (Study) em
                 .createQuery(
-                        "select study from Study as study where study.studyUID=:studyUID")
+                        "select study from Study as study where study.studyIuid=:studyUID")
                 .setParameter("studyUID", iuid).getSingleResult();
         if (study == null) {
             throw new NoResultException("Study with iuid=" + iuid);
