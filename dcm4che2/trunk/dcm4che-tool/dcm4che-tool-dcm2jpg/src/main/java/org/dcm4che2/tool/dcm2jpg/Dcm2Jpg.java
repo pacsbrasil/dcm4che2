@@ -85,6 +85,7 @@ public class Dcm2Jpg {
     private float width;
     private DicomObject prState;
     private short[] pval2gray;
+    private boolean autoWindowing;
 
     private void setWindowCenter(float center) {
         this.center = center;        
@@ -92,6 +93,10 @@ public class Dcm2Jpg {
     
     private void setWindowWidth(float width) {
         this.width = width;       
+    }
+
+    private final void setAutoWindowing(boolean autoWindowing) {
+        this.autoWindowing = autoWindowing;
     }
 
     private void setPresentationState(DicomObject prState) {
@@ -111,6 +116,7 @@ public class Dcm2Jpg {
         param.setWindowWidth(width);
         param.setPresentationState(prState);
         param.setPValue2Gray(pval2gray);
+        param.setAutoWindowing(autoWindowing);
         ImageInputStream iis = ImageIO.createImageInputStream(src);
         BufferedImage bi;
         try {
@@ -183,7 +189,7 @@ public class Dcm2Jpg {
                     parseFloat((String) cl.getOptionValue("w"),
                             "illegal argument of option -w"));
         }
-       
+        dcm2jpg.setAutoWindowing(cl.hasOption("auto"));     
         final List argList = cl.getArgList();
         int argc = argList.size();
 
@@ -273,6 +279,8 @@ public class Dcm2Jpg {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("Window Width");
         opts.addOption(OptionBuilder.create("w"));
+        opts.addOption("auto", false,
+                "calculate apropriate Window Center/Width for images w/o VOI attributes");
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
