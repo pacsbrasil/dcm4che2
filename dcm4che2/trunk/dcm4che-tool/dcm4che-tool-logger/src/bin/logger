@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.tool.logger.Logger
-MAIN_JAR=dcm4che-tool-logger-2.0.11.jar
+MAIN_JAR=dcm4che-tool-logger-2.0.12-SNAPSHOT.jar
 
 DIRNAME=`dirname $0`
 
@@ -43,7 +43,7 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/logger/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-audit-2.0.11.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-audit-2.0.12-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.13.jar"
 
 # For Cygwin, switch paths to Windows format before running java

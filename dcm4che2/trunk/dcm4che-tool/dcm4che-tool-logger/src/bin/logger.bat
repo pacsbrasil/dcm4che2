@@ -9,7 +9,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che2.tool.logger.Logger
-set MAIN_JAR=dcm4che-tool-logger-2.0.11.jar
+set MAIN_JAR=dcm4che-tool-logger-2.0.12-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -44,7 +44,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\logger
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-audit-2.0.11.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-audit-2.0.12-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.13.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
