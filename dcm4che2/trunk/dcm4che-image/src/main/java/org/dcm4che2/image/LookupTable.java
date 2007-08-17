@@ -152,21 +152,55 @@ public abstract class LookupTable {
         }       
     }
 
-    protected abstract LookupTable scale(int outBits, boolean inverse);
+    protected abstract LookupTable scale(int outBits, boolean inverse,
+            short[] pval2out);
 
     protected abstract LookupTable combine(LookupTable other, int outBits,
-            boolean inverse);
+            boolean inverse, short[] pval2out);
 
     protected abstract LookupTable combine(LookupTable vlut, LookupTable plut,
-            int outBits, boolean inverse);
+            int outBits, boolean inverse, short[] pval2out);
 
     protected final int toIndex(int in) {
         return ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
     }
 
+
+    static int inBits(short[] pval2out) {
+        switch (pval2out.length) {
+        case 0x100:
+            return 8;
+        case 0x200:
+            return 9;
+        case 0x400:
+            return 10;
+        case 0x800:
+            return 11;
+        case 0x1000:
+            return 12;
+        case 0x2000:
+            return 13;
+        case 0x4000:
+            return 14;
+        case 0x8000:
+            return 15;
+        case 0x10000:
+            return 16;
+        default:
+            throw new IllegalArgumentException(
+                    "pval2out.length: " + pval2out.length + " != 2^[8..16]");
+        }
+    }
+    
     /**
      * Create ramp LUT for given i/o range, Rescale Slope/Intercept and Window
      * Center/Width. Create linear LUT if Window Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -183,12 +217,14 @@ public abstract class LookupTable {
      * @param width
      *            Window Width (0028,1051) or 0 (= no Window specified)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, float slope, float intercept, float center,
-            float width, boolean inverse) {
+            float width, boolean inverse, short[] pval2out) {
         if (slope < 0) {
             slope = -slope;
             intercept = -intercept;
@@ -212,7 +248,7 @@ public abstract class LookupTable {
         int off = Math.max(in1, inMin);
         int iMax = Math.min(in2, inMax) - off;
         int size = iMax + 1;
-        int outRange = 1 << outBits;
+        int outRange = 1 << (pval2out == null ? outBits : inBits(pval2out));
         int out1;
         int out2;
         if (inverse) {
@@ -226,20 +262,42 @@ public abstract class LookupTable {
         float b = out1 + m * (off - in1) + .5f;
         if (outBits <= 8) {
             byte[] ramp = new byte[size];
-            for (int i = 0; i < size; i++) {
-                ramp[i] = (byte) (m * i + b);
-            }
-            if (iMax + off == in2) {
-                ramp[iMax] = (byte) out2;
+            if (pval2out == null) {
+                for (int i = 0; i < size; i++) {
+                    ramp[i] = (byte) (m * i + b);
+                }
+                if (iMax + off == in2) {
+                    ramp[iMax] = (byte) out2;
+                }
+            } else {
+                int pvalShift = 16 - outBits;
+                for (int i = 0; i < size; i++) {
+                    ramp[i] = (byte)
+                            (pval2out[(int) (m * i + b)] >>> pvalShift);
+                }
+                if (iMax + off == in2) {
+                    ramp[iMax] = (byte) (pval2out[out2] >>> pvalShift);
+                }               
             }
             return new ByteLookupTable(inBits, signed, off, outBits, ramp);
         } else {
             short[] ramp = new short[size];
-            for (int i = 0; i < size; i++) {
-                ramp[i] = (short) (m * i + b);
-            }
-            if (iMax + off == in2) {
-                ramp[iMax] = (short) out2;
+            if (pval2out == null) {
+                for (int i = 0; i < size; i++) {
+                    ramp[i] = (short) (m * i + b);
+                }
+                if (iMax + off == in2) {
+                    ramp[iMax] = (short) out2;
+                }
+            } else {
+                int pvalShift = 16 - outBits;
+                for (int i = 0; i < size; i++) {
+                    ramp[i] = (short)
+                            (pval2out[(int) (m * i + b)] >>> pvalShift);
+                }
+                if (iMax + off == in2) {
+                    ramp[iMax] = (short) (pval2out[out2] >>> pvalShift);
+                }               
             }
             return new ShortLookupTable(inBits, signed, off, outBits, ramp);
         }
@@ -248,6 +306,12 @@ public abstract class LookupTable {
     /**
      * Create LUT for given i/o range, non-linear Modality LUT and Window
      * Center/Width. Do not apply any Window if Window Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -262,19 +326,21 @@ public abstract class LookupTable {
      * @param width
      *            Window Width (0028,1051) or 0 (= no Window specified)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, DicomObject mLut, float center, float width,
-            boolean inverse) {
+            boolean inverse, short[] pval2out) {
         LookupTable mlut = createLut(inBits, signed, mLut);
         if (width == 0) {
-            return mlut.scale(outBits, inverse);
+            return mlut.scale(outBits, inverse, pval2out);
         }
         LookupTable vlut = createLut(mlut.outBits, false, outBits, 1, 0,
-                center, width, inverse);
-        return mlut.combine(vlut, outBits, false);
+                center, width, inverse, pval2out);
+        return mlut.combine(vlut, outBits, false, null);
     }
 
     private static LookupTable createLut(int inBits, boolean signed,
@@ -315,6 +381,12 @@ public abstract class LookupTable {
     /**
      * Create LUT for given i/o range, Rescale Slope/Intercept and non-linear
      * VOI LUT.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -329,14 +401,16 @@ public abstract class LookupTable {
      * @param voiLut
      *            item of VOI LUT Sequence (0028,3010)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, float slope, float intercept, DicomObject voiLut,
-            boolean inverse) {
+            boolean inverse, short[] pval2out) {
         return createLut(inBits, signed, slope, intercept, voiLut).scale(
-                outBits, inverse);
+                outBits, inverse, pval2out);
     }
 
     private static LookupTable createLut(int inBits, boolean signed,
@@ -363,6 +437,12 @@ public abstract class LookupTable {
      * Create LUT for given i/o range, Rescale Slope/Intercept, Window
      * Center/Width and non-linear Presentation LUT. Apply no Window if Window
      * Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -381,21 +461,29 @@ public abstract class LookupTable {
      * @param pLut
      *            item of Presentation LUT Sequence (2050,0010)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, float slope, float intercept, float center,
-            float width, DicomObject pLut, boolean inverse) {
+            float width, DicomObject pLut, boolean inverse, short[] pval2out) {
         LookupTable plut = createLut(0, false, pLut);
         LookupTable vlut = createLut(inBits, signed, plut.inBits, slope,
-                intercept, center, width, false);
-        return vlut.combine(plut, outBits, inverse);
+                intercept, center, width, false, null);
+        return vlut.combine(plut, outBits, inverse, pval2out);
     }
 
     /**
      * Create LUT for given i/o range, non-linear Modality LUT and non-linear
      * VOI LUT.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -408,19 +496,28 @@ public abstract class LookupTable {
      * @param voiLut
      *            item of VOI LUT Sequence (0028,3010)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
-            int outBits, DicomObject mLut, DicomObject voiLut, boolean inverse) {
+            int outBits, DicomObject mLut, DicomObject voiLut, boolean inverse,
+            short[] pval2out) {
         LookupTable mlut = createLut(inBits, signed, voiLut);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut);
-        return mlut.combine(vlut, outBits, inverse);
+        return mlut.combine(vlut, outBits, inverse, pval2out);
     }
 
     /**
      * Create LUT for given i/o range, Rescale Slope/Intercept, non-linear VOI
      * LUT and non-linear Presentation LUT.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -437,21 +534,29 @@ public abstract class LookupTable {
      * @param pLut
      *            item of Presentation LUT Sequence (2050,0010)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, float slope, float intercept, DicomObject voiLut,
-            DicomObject pLut, boolean inverse) {
+            DicomObject pLut, boolean inverse, short[] pval2out) {
         LookupTable vlut = createLut(inBits, signed, slope, intercept, voiLut);
         LookupTable plut = createLut(0, false, pLut);
-        return vlut.combine(plut, outBits, inverse);
+        return vlut.combine(plut, outBits, inverse, pval2out);
     }
 
     /**
      * Create LUT for given i/o range, non-linear Modality LUT, Window
      * Center/Width and non-linear Presentation LUT. Apply no Window if Window
      * Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -468,26 +573,34 @@ public abstract class LookupTable {
      * @param pLut
      *            item of Presentation LUT Sequence (2050,0010)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, DicomObject mLut, float center, float width,
-            DicomObject pLut, boolean inverse) {
+            DicomObject pLut, boolean inverse, short[] pval2out) {
         LookupTable mlut = createLut(inBits, signed, mLut);
         LookupTable plut = createLut(0, false, pLut);
         if (width == 0) {
-            return mlut.combine(plut, outBits, inverse);
+            return mlut.combine(plut, outBits, inverse, pval2out);
         } else {
             LookupTable vlut = createLut(mlut.outBits, false, plut.inBits, 1,
-                    0, center, width, false);
-            return mlut.combine(vlut, plut, outBits, inverse);
+                    0, center, width, false, null);
+            return mlut.combine(vlut, plut, outBits, inverse, pval2out);
         }
     }
 
     /**
      * Create LUT for given i/o range, non-linear Modality LUT, non-linear VOI
      * LUT and non-linear Presentation LUT.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param inBits
      *            number of significant bits within input values
@@ -502,16 +615,18 @@ public abstract class LookupTable {
      * @param pLut
      *            item of Presentation LUT Sequence (2050,0010)
      * @param inverse
-     *            specifies if output shall be inversed
+     *            specifies if output shall be inverted
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, DicomObject mLut, DicomObject voiLut,
-            DicomObject pLut, boolean inverse) {
+            DicomObject pLut, boolean inverse, short[] pval2out) {
         LookupTable mlut = createLut(inBits, signed, mLut);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut);
         LookupTable plut = createLut(0, false, pLut);
-        return mlut.combine(vlut, plut, outBits, inverse);
+        return mlut.combine(vlut, plut, outBits, inverse, pval2out);
     }
 
     /**
@@ -520,21 +635,30 @@ public abstract class LookupTable {
      * the VOI LUT Sequence (0028,3010) will be applied. If the image does not
      * specify any non-linear VOI LUT, but multiple values for Window
      * Center/Width, the first Window Center/Width value will be applied.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param img
      *            DICOM image
      * @param outBits
      *            bit depth of output range
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
-    public static LookupTable createLutForImage(DicomObject img, int bitsOut) {
+    public static LookupTable createLutForImage(DicomObject img, int bitsOut,
+            short[] pval2out) {
         DicomObject voiLut = img.getNestedDicomObject(Tag.VOILUTSequence);
         if (voiLut != null) {
-            return createLutForImage(img, voiLut, bitsOut);
+            return createLutForImage(img, voiLut, bitsOut, pval2out);
         }
         float c = img.getFloat(Tag.WindowCenter);
         float w = img.getFloat(Tag.WindowWidth);
-        return createLutForImage(img, c, w, bitsOut);
+        return createLutForImage(img, c, w, bitsOut, pval2out);
     }
 
     private static boolean isModalityLUTcontainsPixelIntensityRelationshipLUT(
@@ -553,6 +677,12 @@ public abstract class LookupTable {
     /**
      * Create LUT for given DICOM image, Window Center/Width and output range.
      * Apply no Window if Window Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param img
      *            DICOM image
@@ -562,10 +692,12 @@ public abstract class LookupTable {
      *            Window Width (0028,1051) or 0 (= no Window specified)
      * @param outBits
      *            bit depth of output range
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLutForImage(DicomObject img, float center,
-            float width, int outBits) {
+            float width, int outBits, short[] pval2out) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
@@ -576,10 +708,10 @@ public abstract class LookupTable {
         boolean inverse = isInverse(img);
         if (mLut != null) {
             return createLut(stored, signed, outBits, mLut, center, width,
-                    inverse);
+                    inverse, pval2out);
         } else {
             return createLut(stored, signed, outBits, slope, intercept, center,
-                    width, inverse);
+                    width, inverse, pval2out);
         }
     }
 
@@ -591,7 +723,12 @@ public abstract class LookupTable {
 
     /**
      * Create LUT for given DICOM image, non-linear VOI LUT and output range.
-     * Apply no Window if Window Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param img
      *            DICOM image
@@ -599,29 +736,39 @@ public abstract class LookupTable {
      *            item of VOI LUT Sequence (0028,3010)
      * @param outBits
      *            bit depth of output range
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLutForImage(DicomObject img,
-            DicomObject voiLut, int outBits) {
+            DicomObject voiLut, int outBits, short[] pval2out) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         float slope = img.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
-        DicomObject mLut = isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
-                : img.getNestedDicomObject(Tag.ModalityLUTSequence);
+        DicomObject mLut = 
+                isModalityLUTcontainsPixelIntensityRelationshipLUT(img) ? null
+                        : img.getNestedDicomObject(Tag.ModalityLUTSequence);
         boolean inverse = isInverse(img);
         if (mLut != null) {
-            return createLut(stored, signed, outBits, mLut, voiLut, inverse);
+            return createLut(stored, signed, outBits, mLut, voiLut, inverse,
+                    pval2out);
         } else {
             return createLut(stored, signed, outBits, slope, intercept, voiLut,
-                    inverse);
+                    inverse, pval2out);
         }
     }
 
     /**
      * Create LUT for given DICOM image with DICOM Presentation State and output
-     * range. Apply no Window if Window Width = 0.
+     * range.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output will
+     * be weighted according this function, where the highest input value 
+     * (p-value) maps to array index length-1 and the highest output value
+     * (2^outBits-1) is represented by 0xFFFF. Length of <code>pval2out</code>
+     * must be equal to 2^inBits, with inBits in the range [8, 16].
      * 
      * @param img
      *            DICOM image
@@ -629,10 +776,12 @@ public abstract class LookupTable {
      *            DICOM Presentation State
      * @param outBits
      *            bit depth of output range
+     * @param pval2out
+     *            p-value to output map or <code>null</code>
      * @return created LUT
      */
     public static LookupTable createLutForImageWithPR(DicomObject img,
-            DicomObject pr, int outBits) {
+            DicomObject pr, int outBits, short[] pval2out) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
@@ -655,36 +804,37 @@ public abstract class LookupTable {
             if (voiLut == null) {
                 if (pLut == null) {
                     return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, center, width, inverse);
+                            slope, intercept, center, width, inverse, pval2out);
                 } else {
                     return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, center, width, pLut, false);
+                            slope, intercept, center, width, pLut, false, 
+                            pval2out);
                 }
             } else {
                 if (pLut == null) {
                     return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, voiLut, inverse);
+                            slope, intercept, voiLut, inverse, pval2out);
                 } else {
                     return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, voiLut, pLut, false);
+                            slope, intercept, voiLut, pLut, false, pval2out);
                 }
             }
         } else {
             if (voiLut == null) {
                 if (pLut == null) {
                     return LookupTable.createLut(stored, signed, outBits, mLut,
-                            center, width, inverse);
+                            center, width, inverse, pval2out);
                 } else {
                     return LookupTable.createLut(stored, signed, outBits, mLut,
-                            center, width, pLut, false);
+                            center, width, pLut, false, pval2out);
                 }
             } else {
                 if (pLut == null) {
                     return LookupTable.createLut(stored, signed, outBits, mLut,
-                            voiLut, inverse);
+                            voiLut, inverse, pval2out);
                 } else {
                     return LookupTable.createLut(stored, signed, outBits, mLut,
-                            voiLut, pLut, false);
+                            voiLut, pLut, false, pval2out);
                 }
             }
         }

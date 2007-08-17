@@ -121,18 +121,37 @@ public class ByteLookupTable extends LookupTable {
                 outBits, newData) : this;
     }
 
-    protected LookupTable scale(int outBits, boolean inverse) {
-        int shift = outBits - this.outBits;
-        if (shift == 0 && !inverse) {
-            return this;
+    protected LookupTable scale(int outBits, boolean inverse,
+            short[] pval2out) {
+        int shift1;
+        int shift2;
+        if (pval2out == null) {
+            shift1 = outBits - this.outBits;
+            if (shift1 == 0 && !inverse) {
+                return this;
+            }
+            shift2 = 0;
+        } else {
+            shift1 = inBits(pval2out) - this.outBits;
+            shift2 = outBits - 16;
         }
         int outMax = (1 << outBits) - 1;
         if (outBits <= 8) {
             byte[] newData = preserve ? new byte[data.length] : data;
             for (int i = 0; i < newData.length; i++) {
-                int tmp = shift < 0 ? (data[i] & 0xff) >>> -shift
-                        : data[i] << shift;
-                newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                int tmp = data[i] & 0xff;
+                if (shift1 < 0) {
+                    tmp >>>= -shift1;
+                } else {
+                    tmp <<= shift1;
+                }
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = pval2out[tmp] >>>= -shift2;
+                }
+                newData[i] = (byte) tmp;
             }
             if (preserve) {
                 return new ByteLookupTable(inBits, signbit != 0, off, outBits,
@@ -144,9 +163,19 @@ public class ByteLookupTable extends LookupTable {
         } else {
             short[] newData = new short[data.length];
             for (int i = 0; i < newData.length; i++) {
-                int tmp = shift < 0 ? (data[i] & 0xff) >>> -shift
-                        : (data[i] & 0xff) << shift;
-                newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                int tmp = data[i] & 0xff;
+                if (shift1 < 0) {
+                    tmp >>>= -shift1;
+                } else {
+                    tmp <<= shift1;
+                }
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = pval2out[tmp] >>>= -shift2;
+                }
+                newData[i] = (short) tmp;
             }
             return new ShortLookupTable(inBits, signbit != 0, off, outBits,
                     newData);
@@ -154,37 +183,57 @@ public class ByteLookupTable extends LookupTable {
     }
 
     protected LookupTable combine(LookupTable other, int outBits,
-            boolean inverse) {
+            boolean inverse, short[] pval2out) {
         int shift1 = other.inBits - this.outBits;
-        int shift2 = outBits - other.outBits;
+        int shift2;
+        int shift3;
+        if (pval2out == null) {
+            shift2 = outBits - other.outBits;
+            shift3 = 0;
+        } else {
+            shift2 = inBits(pval2out) - other.outBits;
+            shift3 = outBits - 16;
+        }
         int outMax = (1 << outBits) - 1;
         if (outBits <= 8) {
             byte[] newData = new byte[data.length];
             for (int i = 0; i < newData.length; i++) {
-                int tmp = other
-                        .lookup(shift1 < 0 ? (data[i] & 0xff) >>> -shift1
-                                : data[i] << shift1);
+                int tmp = data[i] & 0xff;
+                tmp = other.lookup(
+                        shift1 < 0 ? tmp >>> -shift1 : tmp << shift1);
                 if (shift2 < 0) {
                     tmp >>>= -shift2;
                 } else {
                     tmp <<= shift2;
                 }
-                newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = pval2out[tmp] >>>= -shift3;
+                }
+                newData[i] = (byte) tmp;
             }
             return new ByteLookupTable(inBits, signbit != 0, off, outBits,
                     newData);
         } else {
             short[] newData = new short[data.length];
             for (int i = 0; i < newData.length; i++) {
-                int tmp = other
-                        .lookup(shift1 < 0 ? (data[i] & 0xff) >>> -shift1
-                                : (data[i] & 0xff) << shift1);
+                int tmp = data[i] & 0xff;
+                tmp = other.lookup(
+                        shift1 < 0 ? tmp >>> -shift1 : tmp << shift1);
                 if (shift2 < 0) {
                     tmp >>>= -shift2;
                 } else {
                     tmp <<= shift2;
                 }
-                newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = pval2out[tmp] >>>= -shift3;
+                }
+                newData[i] = (short) tmp;
             }
             return new ShortLookupTable(inBits, signbit != 0, off, outBits,
                     newData);
@@ -192,9 +241,17 @@ public class ByteLookupTable extends LookupTable {
     }
 
     protected LookupTable combine(LookupTable vlut, LookupTable plut,
-            int outBits, boolean inverse) {
+            int outBits, boolean inverse, short[] pval2out) {
         int shift1 = plut.inBits - vlut.outBits;
-        int shift2 = outBits - plut.outBits;
+        int shift2;
+        int shift3;
+        if (pval2out == null) {
+            shift2 = outBits - plut.outBits;
+            shift3 = 0;
+        } else {
+            shift2 = inBits(pval2out) - plut.outBits;
+            shift3 = outBits - 16;
+        }
         int outMax = (1 << outBits) - 1;
         if (outBits <= 8) {
             byte[] newData = new byte[data.length];
@@ -206,7 +263,13 @@ public class ByteLookupTable extends LookupTable {
                 } else {
                     tmp <<= shift2;
                 }
-                newData[i] = (byte) (inverse ? outMax - tmp : tmp);
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = pval2out[tmp] >>>= -shift3;
+                }
+                newData[i] = (byte) tmp;
             }
             return new ByteLookupTable(inBits, signbit != 0, off, outBits,
                     newData);
@@ -220,7 +283,13 @@ public class ByteLookupTable extends LookupTable {
                 } else {
                     tmp <<= shift2;
                 }
-                newData[i] = (short) (inverse ? outMax - tmp : tmp);
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = pval2out[tmp] >>>= -shift3;
+                }
+                newData[i] = (short) tmp;
             }
             return new ShortLookupTable(inBits, signbit != 0, off, outBits,
                     newData);
