@@ -6,7 +6,7 @@
      per-study, but that doesn't mean it can't apply things to individual images
     -->
   <toolbar id='studyToolbar'>
-   <button id="prevSeries" label="&lt;Series" oncommand="/xero/image/action/navigate.seam?level=series&amp;dir=-1"/>
+   <navSeriesButton id="prevSeries" dir="-1" label="&lt;Series" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
    <changeMode id="wlBtn" mode="windowLevel" label="Window Level" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  />
    <changeMode id="zpBtn" mode="zoomPan" label="Zoom/Pan" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"  />
    <changeMode id="emBtn" mode="editMarkup" label="Edit" oncommand="/xero/image/action/Mode.seam?mode=editMarkup"  />
@@ -20,7 +20,7 @@
      <button id="imageLevel" label="Image" oncommand="/xero/image/image.seam?applyLevel=image"/>
    </applyLevel>
 
-   <button id="nextSeries" label="Series>" oncommand="/xero/image/action/navigate.seam?level=series&amp;dir=1"/>
+   <navSeriesButton id="nextSeries" dir="1" label="Series>" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
   </toolbar>
   
   <!-- Defines the series level toolbar.  Can't affect the study level display.  

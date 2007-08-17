@@ -81,7 +81,6 @@
 <x:template name="addUse">
  <xsl:param name="loc" />
  <xsl:param name="node" />
- <xsl:message>There are <xsl:value-of select="count($node/svg:use)" /> use elements and <xsl:value-of select="count($node/*)" /> child elements.</xsl:message>
  <c:choose>
    <c:when test="#{browser=='MSIE'}">
 	 <xsl:for-each select="$node/svg:use">

@@ -40,9 +40,7 @@ public class NavigateAction {
 	  else
 		 applyLevel = DisplayMode.ApplyLevel.SERIES;
 	  if (applyLevel == DisplayMode.ApplyLevel.SERIES) {
-		 NavigateMacro macro = new NavigateMacro(actionStudyLevel.getSeriesUID());
-		 log.info("Navigating series "+macro);
-		 studyModel.apply(DisplayMode.ApplyLevel.STUDY, macro);
+		 studyModel.setDisplayStudyLevel(actionStudyLevel);
 	  } else if (applyLevel == DisplayMode.ApplyLevel.IMAGE) {
 		 NavigateMacro macro = new NavigateMacro(Integer.toString(position+dir));
 		 log.info("Navigating to image "+macro);

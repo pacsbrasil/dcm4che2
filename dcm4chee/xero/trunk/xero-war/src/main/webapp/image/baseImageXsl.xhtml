@@ -257,7 +257,23 @@
  </xsl:if>
 </x:template>
 
-<x:template name="navImgButton" mode="newlayout" match="xul:navImgButton">
+<x:template name="navSeriesButton" mode="newlayout" match="xul:navSeriesButton">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custStudyNode" select="$layoutNode/se:patient/se:study[@StudyInstanceUID=$node/@StudyInstanceUID]" />
+  <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custStudyNode/@viewStart"><xsl:value-of select="$custStudyNode/@viewStart" /></xsl:when><xsl:otherwise><xsl:value-of select="$node/se:series/@SeriesInstanceUID" /></xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="seriesPos" select="1 + count($node/se:series[@SeriesInstanceUID=$viewStart]/preceding-sibling::se:series) + @dir" />
+  <xsl:param name="series" select="$node/se:series[$seriesPos]" />
+  <xsl:message>Series at <xsl:value-of select="$seriesPos" /> node name is <xsl:value-of select="name($series)" /> </xsl:message>
+  <xsl:if test="$series">
+    <xsl:call-template name="buttonLayout">
+      <xsl:with-param name="loc" select="$loc" />
+      <xsl:with-param name="node" select="$series" />
+    </xsl:call-template>
+  </xsl:if>
+</x:template>
+
+<x:template name="navImageButton" mode="newlayout" match="xul:navImgButton">
   <xsl:param name="loc" />
   <xsl:param name="node" />
   <xsl:param name="dir" select="@dir" />
@@ -584,7 +600,6 @@ and cx,cy = width /2, height/2
  <xsl:param name="gsps"><xsl:choose><xsl:when test="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel"><xsl:value-of select="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel" /></xsl:when><xsl:otherwise><xsl:value-of select="$node/parent::se:study/@gspsLabel" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,'&amp;gsps=',$gsps)" />
  <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
-   <xsl:message>Image layout at switch starts at <xsl:value-of select="$viewStart" /> position <xsl:value-of select="$position" /> </xsl:message>
 
 <xsl:apply-templates mode="svg" select="$newSeriesNode/../se:series/se:gsps/svg:svg">
   <xsl:with-param name="loc" select="$loc" />
