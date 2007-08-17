@@ -264,7 +264,6 @@
   <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custStudyNode/@viewStart"><xsl:value-of select="$custStudyNode/@viewStart" /></xsl:when><xsl:otherwise><xsl:value-of select="$node/se:series/@SeriesInstanceUID" /></xsl:otherwise></xsl:choose></xsl:param>
   <xsl:param name="seriesPos" select="1 + count($node/se:series[@SeriesInstanceUID=$viewStart]/preceding-sibling::se:series) + @dir" />
   <xsl:param name="series" select="$node/se:series[$seriesPos]" />
-  <xsl:message>Series at <xsl:value-of select="$seriesPos" /> node name is <xsl:value-of select="name($series)" /> </xsl:message>
   <xsl:if test="$series">
     <xsl:call-template name="buttonLayout">
       <xsl:with-param name="loc" select="$loc" />
