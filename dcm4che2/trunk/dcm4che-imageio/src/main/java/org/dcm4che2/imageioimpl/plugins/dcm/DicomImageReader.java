@@ -68,6 +68,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.image.LookupTable;
+import org.dcm4che2.image.WindowFactory;
 import org.dcm4che2.imageio.ImageReaderFactory;
 import org.dcm4che2.imageio.ItemParser;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
@@ -437,8 +438,8 @@ public class DicomImageReader extends ImageReader {
             return LookupTable.createLutForImage(ds, c, w, stored, pval2gray);
         }
         if (param.isAutoWindowing()
-                && !LookupTable.containsVOIAttributes(ds)) {
-            float[] cw = LookupTable.getMinMaxWindowCenterWidth(ds, data);
+                && !WindowFactory.containsVOIAttributes(ds)) {
+            float[] cw = WindowFactory.getMinMaxWindowCenterWidth(ds, data);
             return LookupTable.createLutForImage(ds, cw[0], cw[1], stored,
                     pval2gray);            
         }
