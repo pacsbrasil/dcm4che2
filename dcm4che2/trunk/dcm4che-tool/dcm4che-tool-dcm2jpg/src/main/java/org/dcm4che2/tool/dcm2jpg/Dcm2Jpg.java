@@ -40,9 +40,12 @@ package org.dcm4che2.tool.dcm2jpg;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -52,11 +55,11 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
@@ -81,7 +84,7 @@ public class Dcm2Jpg {
     private float center;
     private float width;
     private DicomObject prState;
-
+    private short[] pval2gray;
 
     private void setWindowCenter(float center) {
         this.center = center;        
@@ -95,6 +98,10 @@ public class Dcm2Jpg {
         this.prState = prState;        
     }
     
+    private void setPValue2Gray(short[] pval2gray) {
+        this.pval2gray = pval2gray;
+    }
+    
     public void convert(File src, File dest) throws IOException {
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         ImageReader reader = (ImageReader) iter.next();
@@ -103,6 +110,7 @@ public class Dcm2Jpg {
         param.setWindowCenter(center);
         param.setWindowWidth(width);
         param.setPresentationState(prState);
+        param.setPValue2Gray(pval2gray);
         ImageInputStream iis = ImageIO.createImageInputStream(src);
         BufferedImage bi;
         try {
@@ -158,9 +166,13 @@ public class Dcm2Jpg {
         CommandLine cl = parse(args);
         Dcm2Jpg dcm2jpg = new Dcm2Jpg();
         if (cl.hasOption("p")) {
-            dcm2jpg.setPresentationState(load(
+            dcm2jpg.setPresentationState(loadDicomObject(
                     new File((String) cl.getOptionValue("p"))));
         }
+        if (cl.hasOption("pv2gray")) {
+            dcm2jpg.setPValue2Gray(loadPVal2Gray(
+                    new File((String) cl.getOptionValue("pv2gray"))));
+        }        
         if (cl.hasOption("c")) {
             dcm2jpg.setWindowCenter(
                     parseFloat((String) cl.getOptionValue("c"),
@@ -193,13 +205,52 @@ public class Dcm2Jpg {
                 / 1000f + " s.");
     }
 
-    private static DicomObject load(File file) {
+    private static DicomObject loadDicomObject(File file) {
         try {
             DicomInputStream in = new DicomInputStream(file);
             try {
                 return in.readDicomObject();
             } finally {
                 in.close();
+            }
+        } catch (IOException e) {
+            exit(e.getMessage());
+            throw new RuntimeException();
+        }
+    }
+
+    private static short[] loadPVal2Gray(File file) {
+        try {
+            BufferedReader r = new BufferedReader(new InputStreamReader(
+                            new FileInputStream(file)));
+            try {
+                short[] pval2gray = new short[256];
+                int n = 0;
+                String line;
+                while ((line = r.readLine()) != null) {
+                    try {
+                        int val = Integer.parseInt(line.trim()); 
+                        if (n == pval2gray.length) {
+                            if (n == 0x10000) {
+                                exit("Number of entries in " + file
+                                        + " > 2^16");                   
+                            }
+                            short[] tmp = pval2gray;
+                            pval2gray = new short[n << 1];
+                            System.arraycopy(tmp, 0, pval2gray, 0, n);
+                        }
+                        pval2gray[n++] = (short) val;
+                    } catch (NumberFormatException nfe) {
+                        // ignore lines where Integer.parseInt fails
+                    }
+                }
+                if (n != pval2gray.length) {
+                    exit("Number of entries in " + file + ": "
+                            + n + " != 2^[8..16]");                   
+                }
+                return pval2gray;
+            } finally {
+                r.close();
             }
         } catch (IOException e) {
             exit(e.getMessage());
@@ -222,12 +273,17 @@ public class Dcm2Jpg {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("Window Width");
         opts.addOption(OptionBuilder.create("w"));
+        OptionBuilder.withArgName("file");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path of P-Value to gray value map");
+        opts.addOption(OptionBuilder.create("pv2gray"));
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
                 "print the version information and exit");
         CommandLine cl = null;
         try {
-            cl = new PosixParser().parse(opts, args);
+            cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcm2jpg: " + e.getMessage());
         }
