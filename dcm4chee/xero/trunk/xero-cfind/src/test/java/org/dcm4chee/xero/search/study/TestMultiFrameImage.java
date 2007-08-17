@@ -117,7 +117,7 @@ public class TestMultiFrameImage {
 		 return;
 	  assert frames.getNumberOfFrames() == 54;
 	  WindowLevelMacro wl = new WindowLevelMacro(128f, 256f, "Because");
-	  frames.getMacroItems().addMacro(wl);
+	  frames.addMacro(wl);
 	  ImageBean image = frames.getImageFrame(1);
 	  assert image != null;
 	  assert image.getFrame() == 1;

@@ -1,8 +1,8 @@
 <documents conversationId="#{conversation.id}">
    <cycle>#{cycleUrl}</cycle>
-   <PatientIdentifier>#{PatientViewed.patientIdentifier}</PatientIdentifier>
-   <StudyInstanceUID>#{StudyLevel.studyUID}</StudyInstanceUID>
-   <series>/xero/series/series.xml?StudyInstanceUID=#{StudyLevel.studyUID}</series>
-   <SeriesInstanceUID>#{StudyLevel.seriesUID}</SeriesInstanceUID>
+   <PatientIdentifier>#{DisplayStudyLevel.pid}</PatientIdentifier>
+   <StudyInstanceUID>#{DisplayStudyLevel.studyUID}</StudyInstanceUID>
+   <series>/xero/series/series.xml?StudyInstanceUID=#{DisplayStudyLevel.studyUID}</series>
+   <SeriesInstanceUID>#{DisplayStudyLevel.seriesUID}</SeriesInstanceUID>
    <debug>false</debug>
 </documents>

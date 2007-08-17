@@ -87,4 +87,7 @@ public class WindowLevelMacro implements Macro {
 	 return 3;
    }
 
+   public String toString() {
+	  return "WL(C:"+center+",W:"+width+",E:"+explanation+")";
+   }
 }

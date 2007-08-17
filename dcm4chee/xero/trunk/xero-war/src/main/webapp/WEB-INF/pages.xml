@@ -40,33 +40,33 @@
   </page>
   
   <page view-id="/cycle/patient.xhtml">
-    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
+    <param name="pid" value="#{DisplayStudyLevel.pid}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/study/patientFrame.xhtml" action="#{CyclePageAction.ensureStudyPresent}">
-    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{StudyLevel.studyUID}" />
-    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="pid" value="#{DisplayStudyLevel.pid}" />
+    <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{DisplayStudyLevel.seriesUID}" />
   </page>
   
   <page view-id="/study/displayFrame.xhtml"> 
-    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{StudyLevel.studyUID}" />
-    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="pid" value="#{DisplayStudyLevel.pid}" />
+    <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{DisplayStudyLevel.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/study/study.xhtml">
-    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{StudyLevel.studyUID}" />
-    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="pid" value="#{DisplayStudyLevel.pid}" />
+    <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{DisplayStudyLevel.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
   <page view-id="/series/seriesTray.xhtml">
-    <param name="studyUID" value="#{StudyLevel.studyUID}" />
-    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{DisplayStudyLevel.seriesUID}" />
     <begin-conversation join="true" />
   </page>
   
@@ -75,9 +75,9 @@
   </page>
   
   <page view-id="/image/image.xhtml">
-    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{StudyLevel.studyUID}" />
-    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
+    <param name="pid" value="#{DisplayStudyLevel.pid}" />
+    <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{DisplayStudyLevel.seriesUID}" />
     <param name="mode" value="#{DisplayMode.mode}" />
     <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <param name="counter" value="#{DisplayMode.counter}" />
@@ -86,15 +86,19 @@
   </page>
   
   <page view-id="/image/action/*">
-    <param name="patientIdentifier" value="#{PatientViewed.patientIdentifier}" />
-    <param name="studyUID" value="#{StudyLevel.studyUID}" />
-    <param name="seriesUID" value="#{StudyLevel.seriesUID}" />
-    <param name="objectUID" value="#{StudyLevel.objectUID}" />
+    <param name="pid" value="#{ActionStudyLevel.pid}" />
+    <param name="studyUID" value="#{ActionStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{ActionStudyLevel.seriesUID}" />
+    <param name="objectUID" value="#{ActionStudyLevel.objectUID}" />
+    <param name="frame" value="#{ActionStudyLevel.frame}" />
     <param name="mode" value="#{DisplayMode.mode}" />
     <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <begin-conversation join="true" />
   </page>
 
+  <page view-id="/image/action/Navigate.xhtml" action="#{Navigate.action}">
+  </page>
+  
   <page view-id="/image/action/Mode.xhtml" action="#{DisplayMode.action}">
     <navigation>
       <redirect view-id="/image/image.xhtml" />

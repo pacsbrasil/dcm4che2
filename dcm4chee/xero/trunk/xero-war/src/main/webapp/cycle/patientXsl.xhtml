@@ -33,7 +33,7 @@
 <xsl:template name="patientToolbar">
    <a>
      <xsl:attribute name="style">float: right;</xsl:attribute>
-     <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;PatientIdentifier=<xsl:value-of select="$patientIdent" /></xsl:attribute>
+     <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$patientIdent" /></xsl:attribute>
      <xsl:attribute name="target">mainFrame</xsl:attribute>
      <img src="../img/viewNow.png" style="float: right;" alt="View Now"/>
    </a>

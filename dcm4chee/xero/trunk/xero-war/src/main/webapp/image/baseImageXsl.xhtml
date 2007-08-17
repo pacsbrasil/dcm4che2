@@ -117,10 +117,11 @@
 
  <xsl:param name="seriesUID" select="parent::*/@SeriesInstanceUID" />
  <xsl:param name="objectUID" select="@SOPInstanceUID" />
- <xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
+ <xsl:param name="frame" select="@frame" />
+ <xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID][count(@frame)=0 or @frame=$frame])" />
  <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth][last()]/@windowWidth"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter][last()]/@windowCenter"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
- <xsl:param name="frame" select="@frame" />
+ <xsl:message>Frame number <xsl:value-of select="$frame" /> has custNode frame <xsl:value-of select="$custNode/@frame" /> wWidth=<xsl:value-of select="$wWidth" /></xsl:message>
 
  <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
@@ -140,7 +141,7 @@
 <!-- Generate arguments for the current location of this object based on the data node
      associated with this object, not based on the type of the argument.
   -->
-<x:template name="imageArgs" mode="hrefArgsNode" match="se:image"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID" /></x:template>
+<x:template name="imageArgs" mode="hrefArgsNode" match="se:image"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID" /><xsl:if test="@frame">&amp;frame=<xsl:value-of select="@frame" /></xsl:if></x:template>
 
 <!-- Add the full region code to the submit - may also want to know mode type eventually -->
 <x:template name="region" mode="hrefArgsNode" match="xul:region">
@@ -153,7 +154,7 @@
 
 <x:template name="studyArgs" mode="hrefArgsNode" match="se:study"><xsl:apply-templates select=".." mode="hrefArgsNode" />&amp;studyUID=<xsl:value-of select="@StudyInstanceUID" /></x:template>
 
-<x:template name="patientArgs" mode="hrefArgsNode" match="se:patient"><xsl:if test="@PatientIdentifier">&amp;patientIdentifier=<xsl:value-of select="./@PatientIdentifier" /></xsl:if></x:template>
+<x:template name="patientArgs" mode="hrefArgsNode" match="se:patient"><xsl:if test="@PatientIdentifier">&amp;pid=<xsl:value-of select="./@PatientIdentifier" /></xsl:if></x:template>
 
 <x:template name="defaultHrefArgs">&amp;cid=<xsl:value-of select="$cid" /></x:template>
 
@@ -568,11 +569,11 @@ and cx,cy = width /2, height/2
  <!-- This is the over-ride offset, not the image level offset -->
  <xsl:param name="offset" select="0" />
  <xsl:param name="position" select="@offset - @offset mod $countMod" />
+ <xsl:param name="studyUID" select="$node/../@StudyInstanceUID" />
  <xsl:param name="gsps"><xsl:choose><xsl:when test="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel"><xsl:value-of select="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel" /></xsl:when><xsl:otherwise><xsl:value-of select="$node/parent::se:study/@gspsLabel" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,'&amp;gsps=',$gsps)" />
  <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series" />
- 
-<xsl:message>In <xsl:value-of select='$imageUrl' /> there are <xsl:value-of select="count($newSeriesNode/../se:series/se:gsps)" /> gsps nodes for gspsLabel=<xsl:value-of select="$gsps" />.</xsl:message>
+
 <xsl:apply-templates mode="svg" select="$newSeriesNode/../se:series/se:gsps/svg:svg">
   <xsl:with-param name="loc" select="$loc" />
   <xsl:with-param name="node" select="." />
@@ -589,11 +590,11 @@ and cx,cy = width /2, height/2
    <xsl:param name="loc" />
    <xsl:param name="node" />
    <xsl:param name="offset" select="@offset" />
-   <xsl:param name="studyNodeId" select="ancestor::se:study/@id" />
-   <xsl:param name="custStudyNode" select="$documentsNode/layout/se:study[@id=$studyNodeId]" />
+   <xsl:param name="studyUID" select="$node/@StudyInstanceUID" />
+   <xsl:param name="custStudyNode" select="$documentsNode/layout/se:patient/se:study[@StudyInstanceUID=$studyUID]" />
    <xsl:param name="seriesUID"><xsl:choose>
-     <xsl:when test="$custStudyNode/@viewSeriesUID != ''"><xsl:value-of select="$custStudyNode/@viewSeriesUID" /></xsl:when>
-     <xsl:otherwise><xsl:value-of select="$node/se:series/se:image/parent::*/@SeriesInstanceUID" /></xsl:otherwise>
+     <xsl:when test="$custStudyNode/@firstSeriesUID != ''"><xsl:value-of select="$custStudyNode/@firstSeriesUID" /></xsl:when>
+     <xsl:otherwise><xsl:value-of select="$node/se:series/se:image/../@SeriesInstanceUID" /></xsl:otherwise>
    </xsl:choose></xsl:param>
    <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
    <xsl:param name="seriesNode" select="($seriesNodeForUID | $seriesNodeForUID/following-sibling::se:series)[1+$offset]" />

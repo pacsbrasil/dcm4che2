@@ -82,12 +82,13 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setViewable(series.getViewable());
 	  getDicomObject().addAll(series.getDicomObject());
    }
-   
+
    /**
-    * This creates a series beans with no attributes or preset values.
-    *
-    */
-   public SeriesBean() { }
+     * This creates a series beans with no attributes or preset values.
+     * 
+     */
+   public SeriesBean() {
+   }
 
    /**
      * Create a series bean from the given instance data.
@@ -194,8 +195,17 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 
    /** Adds the given macro item, AND clears it from any children elements */
    public void addMacro(Macro macro) {
+	  clearMacro(macro.getClass());
 	  getMacroItems().addMacro(macro);
-	  Class<? extends Macro> clazz = macro.getClass();
+   }
+
+   /** Clears the macro from this class, and any children of this class. */
+   public void clearMacro(Class<? extends Macro> clazz) {
+	  if (macroItems != null) {
+		 Macro item = macroItems.findMacro(clazz);
+		 if (item != null)
+			macroItems.removeMacro(item);
+	  }
 	  for (DicomObjectType dot : getDicomObject()) {
 		 if (dot instanceof ImageBean) {
 			ImageBean image = (ImageBean) dot;

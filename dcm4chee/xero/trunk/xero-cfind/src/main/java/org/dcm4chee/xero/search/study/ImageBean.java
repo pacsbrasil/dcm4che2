@@ -133,13 +133,19 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 	  return this.macroItems.getOtherElements();
    }
 
-   /** Clears the macro from this class, and any children of this class. */
+   /** Adds the given macro to this objects set of macro items */
+   public void addMacro(Macro m) {
+	  clearMacro(m.getClass());
+	  getMacroItems().addMacro(m);
+   }
+   
+   /** Clears the macro from this class, and any children of this class.
+    * This uses getMacroItems rather than direct access to the variable in order to work with both
+    * frame and non-framed images.  It still needs extra work for the multi-frame single object, however. */
    public void clearMacro(Class<? extends Macro> clazz) {
-	  if (macroItems == null)
-		 return;
-	  Macro item = macroItems.findMacro(clazz);
+	  Macro item = getMacroItems().findMacro(clazz);
 	  if (item != null)
-		 macroItems.removeMacro(item);
+		 getMacroItems().removeMacro(item);
    }
 
    /**

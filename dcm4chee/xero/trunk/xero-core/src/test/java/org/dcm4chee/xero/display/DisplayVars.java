@@ -23,7 +23,6 @@ public class DisplayVars implements  NamespaceContext {
 	String objectUid = "1.1.1";
 	Integer frame = new Integer(0);
 	
-	PatientViewed patientViewed = new PatientViewed();
 	StudyLevel studyLevel = new StudyLevel();
 	DisplayMode mode = new DisplayMode();
 	
@@ -35,12 +34,11 @@ public class DisplayVars implements  NamespaceContext {
 	DocumentBuilder builder;
 	
 	public DisplayVars() {
-		patientViewed.setPatientIdentifier(pid);
+		studyLevel.setPid(pid);
 		studyLevel.setStudyUID("1");
 		studyLevel.setSeriesUID(seriesUid);
 		studyLevel.setObjectUID(objectUid);
 		studyLevel.setFrame(frame);
-		model.setPatientViewed(patientViewed);
 		model.setStudyLevel(studyLevel);
 		xpath.setNamespaceContext(this);
 		try {
@@ -51,12 +49,12 @@ public class DisplayVars implements  NamespaceContext {
 		}
 	}
 
-	String getStudyXml() {
-		return model.getStudyXml();
+	String getPatientXml() {
+		return model.getPatientXml();
 	}
 	
 	Number getXpathNum(String xpathStr) throws XPathExpressionException, SAXException, IOException {
-	    String xmlStr = getStudyXml();
+	    String xmlStr = getPatientXml();
 		if( xmlStr==null || xmlStr.length()==0 ) return null;
 		ByteArrayInputStream bais = new ByteArrayInputStream(xmlStr.getBytes());
 		Document doc = builder.parse(bais);

@@ -63,7 +63,7 @@ public class MacroItems {
 	  return attrs;
    }
    
-   /** Adds a macro to this set of macro items */
+   /** Adds a macro to this set of macro items.   */
    public void addMacro(Macro macro) {
 	  getMacros().add(0,macro);
    }

@@ -39,6 +39,7 @@ package org.dcm4chee.xero.display;
 
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageType;
+import org.dcm4chee.xero.search.study.PatientBean;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsType;
 import org.dcm4chee.xero.search.study.SeriesType;
@@ -95,7 +96,7 @@ public class LocalStudyModelTest extends DisplayVars
 	   assert image!=null;
 	   ResultsType results = model.getResults();
 	   assert results.getPatient().size()>0;
-	   model.clearEmpty();
+	   model.clearEmpty((PatientBean) results.getPatient().get(0));
 	   assert results.getPatient().size()==0;
 	}
 	

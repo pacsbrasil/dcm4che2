@@ -60,15 +60,14 @@ public class WindowLevelAction {
 	float windowCenter=127.5f, windowWidth=256f;
 	boolean wlSet = false;
 	
-	@In(value="LocalStudyModel", create=true)
-	LocalStudyModel localStudyModel;
+	@In(value="SessionStudyModel", create=true)
+	StudyModel studyModel;
 	
 	@In(value="DisplayMode", create=true)
 	DisplayMode mode;
 
 	/** Retrieve the window level center */
 	public float getWindowCenter() {
-		log.info("Window center got as "+windowCenter);
 		return windowCenter;
 	}
 
@@ -77,7 +76,6 @@ public class WindowLevelAction {
 	public void setWindowCenter(float windowCenter) {
 		this.windowCenter = windowCenter;
 		this.wlSet = true;
-		log.info("Window center set to "+windowCenter);
 	}
 
 
@@ -105,18 +103,18 @@ public class WindowLevelAction {
 	    WindowLevelMacro wl = new WindowLevelMacro(getWindowCenter(), getWindowWidth(), "User");
 	    if( mode!=null ) applyLevel = mode.getApplyLevel();
 	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
-	    localStudyModel.apply(applyLevel,wl);
+	    studyModel.apply(applyLevel,wl);
 		return "success";
 	}
 
 
-	public LocalStudyModel getLocalStudyModel() {
-		return localStudyModel;
+	public StudyModel getStudyModel() {
+		return studyModel;
 	}
 
 
-	public void setLocalStudyModel(LocalStudyModel localStudyModel) {
-		this.localStudyModel = localStudyModel;
+	public void setStudyModel(StudyModel studyModel) {
+		this.studyModel = studyModel;
 	}
 
 

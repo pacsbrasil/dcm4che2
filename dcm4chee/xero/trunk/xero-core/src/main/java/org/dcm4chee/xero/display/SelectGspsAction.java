@@ -50,8 +50,8 @@ import org.slf4j.LoggerFactory;
 public class SelectGspsAction {
 	private static Logger log = LoggerFactory.getLogger(SelectGspsAction.class);
 
-	@In(value="LocalStudyModel", create=true)
-	LocalStudyModel localStudyModel;
+	@In(value="ConversationStudyModel", create=true)
+	StudyModel studyModel;
 	
 	String gsps;
 
@@ -68,7 +68,7 @@ public class SelectGspsAction {
 	
 	/** Change the applied GSPS */
 	public void action() {
-		StudyBean studyBean = localStudyModel.getStudy();
+		StudyBean studyBean = studyModel.getStudy();
 		studyBean.setGspsLabel(gsps);
 	}
 }

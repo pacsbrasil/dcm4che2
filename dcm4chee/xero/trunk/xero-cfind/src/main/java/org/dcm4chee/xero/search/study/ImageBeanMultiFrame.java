@@ -88,4 +88,14 @@ public class ImageBeanMultiFrame extends ImageBean {
 	  if( frameItems[posn-1]==null ) frameItems[posn-1] = new MacroItems();
 	  return frameItems[posn-1];
    }
+   
+   public void clearMacro(Class<? extends Macro> clazz) {
+	  if( this.macroItems!=null ) super.clearMacro(clazz);
+	  for(int i=0; i<frameItems.length; i++ ) {
+		 if( frameItems[i]!=null ) {
+			Macro m = frameItems[i].findMacro(clazz);
+			if( m!=null ) frameItems[i].removeMacro(m);
+		 }
+	  }
+   }
 }

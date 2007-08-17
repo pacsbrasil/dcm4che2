@@ -5,22 +5,17 @@
   <!-- Contains the source document references for displaying an image -->
   <cycle>#{cycleUrl}</cycle>
   <PatientIdentifier>#{PatientViewed.patientIdentifier}</PatientIdentifier>
-  <StudyInstanceUID>#{StudyLevel.studyUID}</StudyInstanceUID>
-  <series>/xero/series/series.xml?gsps=*&amp;StudyInstanceUID=#{StudyLevel.studyUID}</series>
-  <SeriesInstanceUID>#{StudyLevel.seriesUID}</SeriesInstanceUID>
-  <position>0</position>
-  <cine>#{ImageEvent.cine}</cine>
+
   <mode applyLevel="${DisplayMode.applyLevel}">#{DisplayMode.mode}</mode>
+
   <!-- This needs to be settable per-machine, in mm/pixel -->
   <screenPitch>0.294</screenPitch>
   
-  <layout doc="/xero/study/study.xml?StudyInstanceUID=#{StudyLevel.studyUID}" frame="/xero/image/layout.xml"  xmlns:se="http://www.dcm4chee.org/xero/search/study/">
-    <se:study id="s0" viewSeriesUID="#{StudyLevel.seriesUID}">
-      <se:series id="e1" firstImagePosition="3" />
-    </se:study>
+  <layout doc="#{ConversationStudyModel.url}" frame="#{ConversationStudyModel.layout}"  xmlns:se="http://www.dcm4chee.org/xero/search/study/">
+    <h:outputText value="#{ConversationStudyModel.patientXml}" escape="false" />
   </layout>
   
   <toolbar>/xero/image/imageCommands.seam</toolbar>
   
-  <h:outputText value="#{LocalStudyModel.studyXml}" escape="false" />
+  <h:outputText value="#{SessionStudyModel.patientXml}" escape="false" />
 </x:source>

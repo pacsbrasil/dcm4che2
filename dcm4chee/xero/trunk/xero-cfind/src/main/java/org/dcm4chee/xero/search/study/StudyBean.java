@@ -42,8 +42,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -62,6 +64,9 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 
    @XmlTransient
    StudyBean originalStudy;
+
+   @XmlTransient
+   MacroItems macroItems;
 
    public StudyBean() {
 	  this(new HashMap<Object, Object>());
@@ -104,6 +109,13 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setStudyInstanceUID(study.getStudyInstanceUID());
 	  setStudyStatusID(study.getStudyStatusID());
 	  getSeries().addAll(study.getSeries());
+   }
+
+   /** Gets additional attributes and child elements defined in other objects */
+   public MacroItems getMacroItems() {
+	  if (macroItems == null)
+		 macroItems = new MacroItems();
+	  return macroItems;
    }
 
    /**
@@ -183,7 +195,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
    /** Return true if there are no series children and no customized elements */
    public boolean clearEmpty() {
 	  boolean seriesEmpty = ResultsBean.clearEmpty(children, getSeries());
-	  return seriesEmpty && getGspsLabel() == null;
+	  return seriesEmpty && getGspsLabel() == null && (macroItems == null || macroItems.clearEmpty());
    }
 
    public String getId() {
@@ -202,7 +214,33 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 
    /** Gets a child by UID */
    public Object getChildById(Object uid) {
-	  if( children!=null ) return children.get(uid);
+	  if (children != null)
+		 return children.get(uid);
 	  return null;
+   }
+
+   /** Get the attributes from the macro items that are included in this object. */
+   @XmlAnyAttribute
+   public Map<QName, String> getAnyAttributes() {
+	  if (macroItems == null)
+		 return null;
+	  return macroItems.getAnyAttributes();
+   }
+   
+   /** Adds the given macro item, AND clears it from any children elements */
+   public void addMacro(Macro macro) {
+	  clearMacro(macro.getClass());
+	  getMacroItems().addMacro(macro);
+   }
+
+   public void clearMacro(Class<? extends Macro> clazz) {
+	  if( macroItems!=null ) {
+		 Macro m = getMacroItems().findMacro(clazz);
+		 if( m!=null ) getMacroItems().removeMacro(m);
+	  }
+	  for (SeriesType seriesT : getSeries()) {
+		SeriesBean seriesB = (SeriesBean) seriesT;
+		seriesB.clearMacro(clazz);
+	  }
    }
 }

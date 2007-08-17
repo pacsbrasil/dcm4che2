@@ -37,41 +37,31 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
-import org.dcm4chee.xero.search.study.PatientIdentifier;
-import org.jboss.seam.annotations.Name;
-import org.jboss.seam.annotations.Scope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
 
-import static org.jboss.seam.ScopeType.*;
+import javax.xml.namespace.QName;
 
-/** This class has information about the patient being viewed currently.
+import org.dcm4chee.xero.search.study.Macro;
+
+/** The series viewed macro allows the first series to be displayed in a given study to be define at 
+ * the study level.  This is a simple first come first served approach to study display - complex displays
+ * will use an alternative mechanism that uses named children elements to define the view positions.
  * @author bwallace
  *
  */
-@Name("PatientViewed")
-@Scope(CONVERSATION)
-public class PatientViewed {
-	Logger log = LoggerFactory.getLogger(PatientViewed.class);
+public class SeriesViewedMacro implements Macro {
+   public static QName Q_FIRST_SERIES_UID = new QName("firstSeriesUID");
+   String firstSeriesUID;
+   
+   /** Setup a study to have a particular series viewed as the first series. */
+   public SeriesViewedMacro(String seriesUID) {
+	  this.firstSeriesUID = seriesUID;
+   }
 
-	PatientIdentifier patientIdentifier;
-	
-	/** Return the patient identifier as an object */
-	public PatientIdentifier getId() {
-		return patientIdentifier;
-	}
-	
-	public String getPatientIdentifier() {
-		if( patientIdentifier==null ) return null;
-		return patientIdentifier.toString();
-	}
-	
-	/** Sets the patient identifier - this clears the study UID if the PID changes. */
-	public void setPatientIdentifier(String pid) {
-		if( pid==null || pid.length()==0 ) return;
-		pid = pid.trim();
-		this.patientIdentifier = new PatientIdentifier(pid);
-		log.debug("The patient identifier is "+patientIdentifier);
-	}
-	
+   /** Add to the array of extra attributes */
+   public int updateAny(Map<QName, String> attrs) {
+	  attrs.put(Q_FIRST_SERIES_UID,firstSeriesUID);
+	  return 1;
+   }
+
 }

@@ -11,7 +11,7 @@ public class WindowLevelActionTest extends DisplayVars
 	WindowLevelAction wl = new WindowLevelAction();
 	
 	public WindowLevelActionTest() {
-		wl.setLocalStudyModel(model);		
+		wl.setStudyModel(model);		
 		wl.setWindowCenter(windowCenter);
 		wl.setWindowWidth(windowWidth);
 		wl.setMode(mode);
@@ -22,9 +22,9 @@ public class WindowLevelActionTest extends DisplayVars
 		mode.setApplyLevelStr("series");
 		String result = wl.action();
 		assert result.equals("success");
-		Number num = getXpathNum("/study/series/@windowCenter");
+		Number num = getXpathNum("/patient/study/series/@windowCenter");
 		assert num.floatValue() - windowCenter == 0.0f;
-		num = getXpathNum("/study/series/image/@windowCenter");
+		num = getXpathNum("/patient/study/series/image/@windowCenter");
 		assert num==null || Float.isNaN(num.floatValue());
 	}
 
@@ -38,7 +38,7 @@ public class WindowLevelActionTest extends DisplayVars
 		assert wl!=null;
 		assert wl.getCenter()==windowCenter;
 		assert result.equals("success");
-		Number num = getXpathNum("/study/series/image/@windowCenter");
+		Number num = getXpathNum("/patient/study/series/image/@windowCenter");
 		assert num.floatValue() - windowCenter == 0.0f;
 	}
 }

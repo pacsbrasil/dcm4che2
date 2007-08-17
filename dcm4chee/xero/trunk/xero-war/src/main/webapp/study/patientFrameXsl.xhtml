@@ -22,12 +22,12 @@
         <xsl:attribute name="name">studyFrame</xsl:attribute>
         <xsl:attribute name="id">studyFrame</xsl:attribute>
         <xsl:attribute name="scrolling">no</xsl:attribute>
-	    <xsl:attribute name="src">study.seam?cid=<xsl:value-of select="/documents/@conversationId"/>&amp;PatientIdentifier=<xsl:value-of select="$patientIdent" />&amp;studyUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
+	    <xsl:attribute name="src">study.seam?cid=<xsl:value-of select="/documents/@conversationId"/>&amp;pid=<xsl:value-of select="$patientIdent" />&amp;studyUID=<xsl:value-of select="$studyUID"/></xsl:attribute>
 	  </frame>
       <frame name="displayFrame" id="displayFrame">
         <xsl:attribute name="name">displayFrame</xsl:attribute>
         <xsl:attribute name="id">displayFrame</xsl:attribute>
-        <xsl:attribute name="src">displayFrame.seam?cid=<xsl:value-of select="/documents/@conversationId"/>&amp;studyUID=<xsl:value-of select="$studyUID" /></xsl:attribute>
+        <xsl:attribute name="src">displayFrame.seam?cid=<xsl:value-of select="/documents/@conversationId"/>&amp;pid=<xsl:value-of select="$patientIdent" />&amp;studyUID=<xsl:value-of select="$studyUID" /></xsl:attribute>
 	  </frame>        
    </frameset>
 </html>

@@ -55,8 +55,8 @@ public class ZoomPanAction {
 
 	public static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class); 
 
-	@In(value="LocalStudyModel", create=true)
-	LocalStudyModel localStudyModel;
+	@In(value="SessionStudyModel", create=true)
+	StudyModel studyModel;
 	
 	@In(value="DisplayMode", create=true)
 	DisplayMode mode;
@@ -176,7 +176,7 @@ public class ZoomPanAction {
 	    if( mode!=null ) applyLevel = mode.getApplyLevel();
 	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
 	    RegionMacro macro = new RegionMacro(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
-	    localStudyModel.apply(applyLevel,macro);
+	    studyModel.apply(applyLevel,macro);
 	    log.info("Done zoom/pan action.");
 		return "success";
 	}

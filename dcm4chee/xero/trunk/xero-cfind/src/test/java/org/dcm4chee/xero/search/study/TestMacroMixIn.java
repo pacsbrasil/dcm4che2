@@ -55,7 +55,7 @@ public class TestMacroMixIn
    public void testWindowLevelImage() {
 	  ImageBean image = new ImageBean();
 	  assert image.getOtherAttributes()==null;
-	  image.getMacroItems().addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
+	  image.addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
 	  assert image.getOtherAttributes()!=null;
 	  assert Float.parseFloat(image.getOtherAttributes().get(WindowLevelMacro.Q_WINDOW_CENTER))==128f;
 	  WindowLevelMacro wl = (WindowLevelMacro) image.getMacroItems().findMacro(WindowLevelMacro.class);
@@ -71,7 +71,7 @@ public class TestMacroMixIn
 	  SeriesBean series = (SeriesBean) study.getSeries().get(0);
 	  ImageBean image = (ImageBean) series.getDicomObject().get(0);
 	  assert image!=null;
-	  image.getMacroItems().addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
+	  image.addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
 	  assert Float.parseFloat(image.getOtherAttributes().get(WindowLevelMacro.Q_WINDOW_WIDTH))==256f;
 	  
 	  JAXBContext context = JAXBContext.newInstance("org.dcm4chee.xero.search.study");

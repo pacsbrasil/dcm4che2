@@ -37,7 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.dcm4chee.xero.search.study.PatientIdentifier;
 import org.jboss.seam.annotations.Name;
+import org.jboss.seam.annotations.Role;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.ScopeType;
 import org.slf4j.Logger;
@@ -47,15 +52,23 @@ import org.slf4j.LoggerFactory;
  * This class has information about the study, series and image being modified
  * or viewed in this event, as well as what the level is that is being changed.
  * 
+ * TODO move the Display level variables into another object that is multi-valued, or make this one
+ *    multi-valued in order to allow selection of multiple studies/series/images to be displayed on the URL
+ *    call.
  * @author bwallace
  * 
  */
-@Name("StudyLevel")
+@Name("ActionStudyLevel")
 @Scope(ScopeType.EVENT)
+@Role(name="DisplayStudyLevel", scope=ScopeType.EVENT)
 public class StudyLevel {
 	static Logger log = LoggerFactory.getLogger(StudyLevel.class);
 
+	PatientIdentifier patientIdentifier;
+
+	/** The pages.xml can set either study UIDs or a single study UID */
 	private String studyUID;
+	private List<String> studyUIDs;
 
 	private String seriesUID;
 
@@ -70,9 +83,28 @@ public class StudyLevel {
 
 	private String level = "series";
 
+	
+	/** Return the patient identifier as an object */
+	public PatientIdentifier getPatientIdentifier() {
+		return patientIdentifier;
+	}
+	
+	public String getPid() {
+		if( patientIdentifier==null ) return null;
+		return patientIdentifier.toString();
+	}
+	
+	/** Sets the patient identifier - this clears the study UID if the PID changes. */
+	public void setPid(String pid) {
+		if( pid==null || pid.length()==0 ) return;
+		pid = pid.trim();
+		this.patientIdentifier = new PatientIdentifier(pid);
+		log.debug("The patient identifier is "+patientIdentifier);
+	}
+
 	/** Gets the study UID */
 	public String getStudyUID() {
-		return studyUID;
+	   return studyUID;
 	}
 
 	public void setStudyUID(String uid) {
@@ -81,6 +113,21 @@ public class StudyLevel {
 			return;
 		uid = uid.trim();
 		this.studyUID = uid;
+		this.studyUIDs = null;
+	}
+	
+	public List<String> getStudyUIDs() {
+	   if( studyUIDs==null && studyUID!=null ) {
+		  studyUIDs = Collections.singletonList(studyUID);
+	   }
+	   return studyUIDs;
+	}
+	
+	/** Sets the first study UID as well as the general list of study UIDS. */
+	public void setStudyUIDs(List<String> uids) {
+	   this.studyUIDs = uids;
+	   this.studyUID = null;
+	   if( uids.size()>0 ) this.studyUID = uids.get(0);
 	}
 
 	public String getSeriesUID() {
