@@ -51,7 +51,7 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Aug 18, 2007
  */
-public class WindowFactory {
+public class VOIUtils {
 
     public static boolean containsVOIAttributes(DicomObject img) {
         return img.containsValue(Tag.WindowCenter)
@@ -71,7 +71,7 @@ public class WindowFactory {
         if (mLut != null) {
             slope = 1;
             intercept = 0;
-            minMax = WindowFactory.calcMinMax(mLut);
+            minMax = calcMinMax(mLut);
         } else {
             slope = img.getFloat(Tag.RescaleSlope, 1.f);
             intercept = img.getFloat(Tag.RescaleIntercept, 0.f);
@@ -80,7 +80,7 @@ public class WindowFactory {
                 minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
                         img.getInt(Tag.LargestImagePixelValue) };
             } else {
-                minMax = WindowFactory.calcMinMax(img, db);
+                minMax = calcMinMax(img, db);
             }
         }
         return new float[] {
@@ -97,14 +97,11 @@ public class WindowFactory {
         int signbit = signed ? 1 << (stored - 1) : 0;
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            return WindowFactory.calcMinMax(signbit, mask,
-                    ((DataBufferByte) db).getData()); 
+            return calcMinMax(signbit, mask, ((DataBufferByte) db).getData()); 
         case DataBuffer.TYPE_USHORT:
-            return WindowFactory.calcMinMax(signbit, mask,
-                    ((DataBufferUShort) db).getData()); 
+            return calcMinMax(signbit, mask, ((DataBufferUShort) db).getData()); 
         case DataBuffer.TYPE_SHORT:
-            return WindowFactory.calcMinMax(signbit, mask,
-                    ((DataBufferShort) db).getData());
+            return calcMinMax(signbit, mask, ((DataBufferShort) db).getData());
         default:
             throw new IllegalArgumentException(
                     "Illegal Type of DataBuffer: " + db);
