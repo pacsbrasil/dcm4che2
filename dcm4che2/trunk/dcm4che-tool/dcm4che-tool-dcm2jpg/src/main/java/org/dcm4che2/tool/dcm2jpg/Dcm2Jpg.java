@@ -189,7 +189,7 @@ public class Dcm2Jpg {
                     parseFloat((String) cl.getOptionValue("w"),
                             "illegal argument of option -w"));
         }
-        dcm2jpg.setAutoWindowing(cl.hasOption("auto"));     
+        dcm2jpg.setAutoWindowing(!cl.hasOption("noauto"));     
         final List argList = cl.getArgList();
         int argc = argList.size();
 
@@ -279,8 +279,8 @@ public class Dcm2Jpg {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("Window Width");
         opts.addOption(OptionBuilder.create("w"));
-        opts.addOption("auto", false,
-                "calculate apropriate Window Center/Width for images w/o VOI attributes");
+        opts.addOption("noauto", false,
+                "disable auto-windowing for images w/o VOI attributes");
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
