@@ -91,6 +91,17 @@ public class ByteLookupTable extends LookupTable {
         return dst;
     }
 
+    public final int[] lookup(byte[] src, int[] dst, int alpha) {
+        if (dst == null) {
+            dst = new int[src.length];
+        }
+        for (int i = 0; i < src.length; i++) {
+            int tmp = lookup(src[i]);
+            dst[i] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
+        }
+        return dst;
+    }
+    
     public final byte[] lookup(short[] src, byte[] dst) {
         if (dst == null) {
             dst = new byte[src.length];
@@ -111,6 +122,17 @@ public class ByteLookupTable extends LookupTable {
         return dst;
     }
 
+    public final int[] lookup(short[] src, int[] dst, int alpha) {
+        if (dst == null) {
+            dst = new int[src.length];
+        }
+        for (int i = 0; i < src.length; i++) {
+            int tmp = lookup(src[i]);
+            dst[i] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
+        }
+        return dst;
+    }
+        
     protected LookupTable scale(int outBits, boolean inverse,
             short[] pval2out) {
         if (outBits == this.outBits && !inverse && pval2out == null) {

@@ -40,6 +40,7 @@ package org.dcm4che2.image;
 
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 
@@ -55,6 +56,8 @@ import org.dcm4che2.util.ByteUtils;
  * @since Jul 23, 2007
  */
 public abstract class LookupTable {
+
+    private static final int OPAQUE = 255;
 
     protected final int inBits;
 
@@ -97,10 +100,22 @@ public abstract class LookupTable {
 
     public abstract short[] lookup(byte[] src, short[] dst);
 
+    public abstract int[] lookup(byte[] src, int[] dst, int alpha);
+
     public abstract byte[] lookup(short[] src, byte[] dst);
 
     public abstract short[] lookup(short[] src, short[] dst);
+
+    public abstract int[] lookup(short[] src, int[] dst, int alpha);
     
+    public int[] lookup(byte[] src, int[] dst) {
+        return lookup(src, dst, OPAQUE);
+    }
+
+    public int[] lookup(short[] src, int[] dst) {
+        return lookup(src, dst, OPAQUE);
+    }
+
     public void lookup(DataBuffer src, DataBuffer dst) {
         switch (src.getDataType()) {
         case DataBuffer.TYPE_BYTE:
@@ -129,6 +144,9 @@ public abstract class LookupTable {
         case DataBuffer.TYPE_SHORT:
             lookup(src, ((DataBufferShort) dst).getData());
             break;
+        case DataBuffer.TYPE_INT:
+            lookup(src, ((DataBufferInt) dst).getData());
+            break;
         default:
             throw new IllegalArgumentException(
                     "Illegal Type of Destination DataBuffer: " + dst);
@@ -145,6 +163,9 @@ public abstract class LookupTable {
             break;
         case DataBuffer.TYPE_SHORT:
             lookup(src, ((DataBufferShort) dst).getData());
+            break;
+        case DataBuffer.TYPE_INT:
+            lookup(src, ((DataBufferInt) dst).getData());
             break;
         default:
             throw new IllegalArgumentException(
