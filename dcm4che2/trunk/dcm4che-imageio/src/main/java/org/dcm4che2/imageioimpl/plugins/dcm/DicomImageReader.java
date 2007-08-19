@@ -434,12 +434,14 @@ public class DicomImageReader extends ImageReader {
         }
         float c = param.getWindowCenter();
         float w = param.getWindowWidth();
+        String vlutFct = param.getVoiLutFunction();
         if (w > 0) {            
-            return LookupTable.createLutForImage(ds, c, w, stored, pval2gray);
+            return LookupTable.createLutForImage(ds, c, w, vlutFct, stored, 
+                    pval2gray);
         }
         if (param.isAutoWindowing() && !VOIUtils.containsVOIAttributes(ds)) {
             float[] cw = VOIUtils.getMinMaxWindowCenterWidth(ds, data);
-            return LookupTable.createLutForImage(ds, cw[0], cw[1], stored,
+            return LookupTable.createLutForImage(ds, cw[0], cw[1], null, stored,
                     pval2gray);            
         }
         return LookupTable.createLutForImage(ds, stored, pval2gray);

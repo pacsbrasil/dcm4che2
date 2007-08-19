@@ -49,9 +49,13 @@ import org.dcm4che2.data.DicomObject;
  */
 public class DicomImageReadParam extends ImageReadParam {
 
+    public static final String LINEAR = "LINEAR";
+    public static final String SIGMOID = "SIGMOID";
+    
     private boolean autoWindowing = true;
     private float center;
     private float width;
+    private String vlutFct;
     private DicomObject voiLut;
     private DicomObject prState;
     private short[] pval2gray;
@@ -79,6 +83,14 @@ public class DicomImageReadParam extends ImageReadParam {
     public final void setWindowWidth(float width) {
         this.width = width;
     }
+
+    public final void setVoiLutFunction(String vlutFct) {
+        this.vlutFct = vlutFct;
+    }    
+
+    public final String getVoiLutFunction() {
+        return vlutFct;
+    }    
     
     public final DicomObject getVoiLut() {
         return voiLut;
@@ -102,5 +114,5 @@ public class DicomImageReadParam extends ImageReadParam {
 
     public final void setPValue2Gray(short[] pval2gray) {
         this.pval2gray = pval2gray;
-    }    
+    }
 }

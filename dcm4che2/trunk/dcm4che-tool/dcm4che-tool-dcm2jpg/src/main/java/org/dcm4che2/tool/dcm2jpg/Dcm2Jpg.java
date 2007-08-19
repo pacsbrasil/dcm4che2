@@ -83,9 +83,10 @@ public class Dcm2Jpg {
     private static final String EXAMPLE = null;
     private float center;
     private float width;
+    private String vlutFct;
+    private boolean autoWindowing;
     private DicomObject prState;
     private short[] pval2gray;
-    private boolean autoWindowing;
 
     private void setWindowCenter(float center) {
         this.center = center;        
@@ -94,6 +95,10 @@ public class Dcm2Jpg {
     private void setWindowWidth(float width) {
         this.width = width;       
     }
+
+    public final void setVoiLutFunction(String vlutFct) {
+        this.vlutFct = vlutFct;
+    }    
 
     private final void setAutoWindowing(boolean autoWindowing) {
         this.autoWindowing = autoWindowing;
@@ -114,6 +119,7 @@ public class Dcm2Jpg {
             (DicomImageReadParam) reader.getDefaultReadParam();
         param.setWindowCenter(center);
         param.setWindowWidth(width);
+        param.setVoiLutFunction(vlutFct);
         param.setPresentationState(prState);
         param.setPValue2Gray(pval2gray);
         param.setAutoWindowing(autoWindowing);
@@ -188,6 +194,9 @@ public class Dcm2Jpg {
             dcm2jpg.setWindowWidth(
                     parseFloat((String) cl.getOptionValue("w"),
                             "illegal argument of option -w"));
+        }
+        if (cl.hasOption("sigmoid")) {
+            dcm2jpg.setVoiLutFunction(DicomImageReadParam.SIGMOID);
         }
         dcm2jpg.setAutoWindowing(!cl.hasOption("noauto"));     
         final List argList = cl.getArgList();
@@ -279,6 +288,8 @@ public class Dcm2Jpg {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("Window Width");
         opts.addOption(OptionBuilder.create("w"));
+        opts.addOption("sigmoid", false,
+                "apply sigmoid VOI LUT function with given Window Center/Width");
         opts.addOption("noauto", false,
                 "disable auto-windowing for images w/o VOI attributes");
         OptionBuilder.withArgName("file");
