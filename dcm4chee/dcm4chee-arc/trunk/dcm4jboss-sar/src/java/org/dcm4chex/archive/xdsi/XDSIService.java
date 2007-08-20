@@ -1206,23 +1206,30 @@ public class XDSIService extends ServiceMBeanSupport {
 	private boolean checkResponse(SOAPMessage response) throws SOAPException {
 		log.info("checkResponse:"+response);
 		try {
-//OK i give up! response.getSOAPBody() doesnt work (can not get/create Envelope due to an namespace	trouble ?!)
-//So i read the DOM from SOAPPart content! 
-//TODO somehow who know the right xalan, xerces, jaxp, ssaj,.. version mix to get it work 			
-			JAXMStreamSource src = (JAXMStreamSource) response.getSOAPPart().getContent();
-			NodeList nl;
-	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            dbFactory.setNamespaceAware(true);
-            DocumentBuilder builder = dbFactory.newDocumentBuilder();
-	        Document d = builder.parse( src.getInputStream() );
-			nl = d.getElementsByTagName("RegistryResponse");
-			log.debug("RegistryResponse NodeList:"+nl);
+		    NodeList nl;
+		    NodeList errors;
+	            try {
+	                SOAPBody body = response.getSOAPBody();
+	                log.debug("SOAPBody:"+body );
+	                nl = body.getElementsByTagName("RegistryResponse");
+	                errors = body.getElementsByTagName("RegistryError");
+	            } catch ( Throwable t) {
+                        log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage!");
+                        log.debug("SOAPBody Failure:",t);
+	                JAXMStreamSource src = (JAXMStreamSource) response.getSOAPPart().getContent();
+	                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	                dbFactory.setNamespaceAware(true);
+	                DocumentBuilder builder = dbFactory.newDocumentBuilder();
+	                Document d = builder.parse( src.getInputStream() );
+	                nl = d.getElementsByTagName("RegistryResponse");
+                        log.debug("Fallback RegistryResponse NodeList:"+nl);
+                        errors = d.getElementsByTagName("RegistryError");
+	            }
 			if ( nl.getLength() != 0  ) {
 				Node n = nl.item(0);
 				String status = n.getAttributes().getNamedItem("status").getNodeValue();
 				log.info("XDSI: SOAP response status."+status);
 				if ( "Failure".equals(status) ) {
-					NodeList errors = d.getElementsByTagName("RegistryError");
 					StringBuffer sb = new StringBuffer();
 					Node errNode;
 					for ( int i = 0, len=errors.getLength(); i < len ; i++ ) {
