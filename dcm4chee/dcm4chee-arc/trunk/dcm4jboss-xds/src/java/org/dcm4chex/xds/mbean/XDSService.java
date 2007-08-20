@@ -411,8 +411,20 @@ public class XDSService extends ServiceMBeanSupport {
 		try {
 			File file;
 			Map attachments = getAttachments(message);
-			Document d = getDocumentFromMessage(message);
-			NodeList nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
+			NodeList nl;
+			Node leafRegistryObjectList;
+	                try {
+	                    SOAPBody body = message.getSOAPBody();
+	                    log.debug("SOAPBody:"+body );
+	                    nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
+                            leafRegistryObjectList = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
+	                } catch ( Throwable t) {
+	                    log.warn("Retrieve of SOAPBody failed! Try to get ExtrinsicObject directly from SOAPMessage!");
+	                    Document d = getDocumentFromMessage(message);
+	                    d.getDocumentElement();
+	                    nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
+	                    leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
+	                }
 	        if(nl.getLength() < 1 ) {
                 if ( attachments.isEmpty() ) {
                     log.debug("No ExtrinsicObject found! But we have nothing to store (no Attachment) -> forward message to registry!");
@@ -426,35 +438,32 @@ public class XDSService extends ServiceMBeanSupport {
                 return new SOAPMessageResponse( sendSOAP(message, getXDSRegistryURI()));
             }
 	        XDSDocumentMetadata metadata;
+	        Element el;
 	        for(int i = 0, len = nl.getLength(); i < len; i++) {
-	        	metadata = new XDSDocumentMetadata((Element)nl.item(i));
-	        	if (reassignDocumentUID) {
-	        		metadata.setUniqueID( UIDGeneratorImpl.getInstance().createUID() );
-	        	}
-	        	filterMetadata(metadata);
-	        	file = saveDocumentEntry(metadata, attachments);
-	        	metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()));
-	        	if ( file != null) {
-	         		storedFiles.add(file);
-	        	}
+	            el = (Element)nl.item(i);
+	            metadata = new XDSDocumentMetadata(el);
+	            if (reassignDocumentUID) {
+	        	metadata.setUniqueID( UIDGeneratorImpl.getInstance().createUID() );
+	            }
+	            filterMetadata(metadata);
+	            file = saveDocumentEntry(metadata, attachments);
+	            metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()));
+	            if ( file != null) {
+	                storedFiles.add(file);
+	            }
+	            if ( testPatient!= null) {
+	                log.warn("Change patientID in metadata (urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446) to testPatient! new patientID:"+testPatient);
+	                this.updateExternalIdentifier(el,"urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446",testPatient);
+	            }
 	        }
-	        if ( this.reassignSubmissionUID ) {
-	        	this.updateExternalIdentifier(d.getDocumentElement(),"urn:uuid:96fdda7c-d067-4183-912e-bf5ee74998a8", 
-	        			UIDGeneratorImpl.getInstance().createUID());
-	        }
-	        if ( testPatient!= null) {
-	            log.warn("Change patientID in metadata (urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446) to testPatient! new patientID:"+testPatient);
-	        	this.updateExternalIdentifier(d.getDocumentElement(),"urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446",testPatient);
-	        }
-			log.info(storedFiles.size()+" Documents saved!");
-		    MessageFactory messageFactory = MessageFactory.newInstance();
-		    SOAPMessage msg = messageFactory.createMessage();
-		    SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
-		    SOAPBody soapBody = envelope.getBody();
-		    SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName("SubmitObjectsRequest","rs","urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1"));
-			Node leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
-			bodyElement.appendChild(bodyElement.getOwnerDocument().importNode(leafRegistryObjectList,true));
-			SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
+		log.info(storedFiles.size()+" Documents saved!");
+		MessageFactory messageFactory = MessageFactory.newInstance();
+		SOAPMessage msg = messageFactory.createMessage();
+		SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
+		SOAPBody soapBody = envelope.getBody();
+		SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName("SubmitObjectsRequest","rs","urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1"));
+		bodyElement.appendChild(bodyElement.getOwnerDocument().importNode(leafRegistryObjectList,true));
+		SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
             if ( ! checkResponse( response, "RegistryResponse" ) ) {
             	deleteFiles(storedFiles);
             	log.error("Export document(s) failed! see prior messages for reason. SubmissionSet uid:"+submissionUID);
@@ -709,16 +718,25 @@ public class XDSService extends ServiceMBeanSupport {
 		log.info("check RegistryResponse:"+response);
 		try {
 			NodeList nl;
-	        Document d = getDocumentFromMessage( response );
-			nl = d.getElementsByTagName(responseTag);
-			log.debug("RegistryResponse NodeList:"+nl);
+			NodeList errors;
+	                try {
+	                    SOAPBody body = response.getSOAPBody();
+	                    log.debug("SOAPBody:"+body );
+	                    nl = body.getElementsByTagName("RegistryResponse");
+                            errors = body.getElementsByTagName("RegistryError");
+	                } catch ( Throwable t) {
+	                    log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage");
+	                    Document d = getDocumentFromMessage( response );
+	                    nl = d.getElementsByTagName(responseTag);
+                            errors = d.getElementsByTagName("RegistryError");
+                            log.debug("Fallback RegistryResponse NodeList:"+nl);
+	                }
 			if ( nl.getLength() != 0  ) {
 				Node n = nl.item(0);
 				String status = n.getAttributes().getNamedItem("status").getNodeValue();
 				log.info("XDS: SOAP response status:"+status);
 				if ( "Failure".equals(status) ) {
-					NodeList errors = d.getElementsByTagName("RegistryError");
-					StringBuffer sb = new StringBuffer();
+						StringBuffer sb = new StringBuffer();
 					Node errNode;
 					for ( int i = 0, len=errors.getLength(); i < len ; i++ ) {
 					    sb.setLength(0); 
@@ -731,7 +749,7 @@ public class XDSService extends ServiceMBeanSupport {
 					return false;
 				}
 			} else {
-				log.warn("XDS: SOAP response without RegistryResponse!");
+			     log.warn("XDS: SOAP response without RegistryResponse!");
 			}
 			return true;
 		} catch ( Exception x ) {
