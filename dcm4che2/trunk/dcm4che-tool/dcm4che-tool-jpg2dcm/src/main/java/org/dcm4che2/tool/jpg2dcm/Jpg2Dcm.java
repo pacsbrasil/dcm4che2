@@ -53,6 +53,7 @@ import java.util.Properties;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
@@ -175,7 +176,14 @@ public class Jpg2Dcm {
 
     private boolean missingImagePixelAttr(DicomObject attrs) {
         return !(attrs.containsValue(Tag.Rows) 
-                && attrs.containsValue(Tag.Columns));
+                && attrs.containsValue(Tag.Columns)
+                && attrs.containsValue(Tag.SamplesPerPixel)
+                && attrs.containsValue(Tag.PhotometricInterpretation)
+                && attrs.containsValue(Tag.BitsAllocated)
+                && attrs.containsValue(Tag.BitsStored)
+                && attrs.containsValue(Tag.HighBit)
+                && attrs.containsValue(Tag.PixelRepresentation)
+                );
     }
 
     private void detectImagePixelAttrs(DicomObject attrs, ImageInputStream iis)
@@ -186,8 +194,27 @@ public class Jpg2Dcm {
         }                
         ImageReader reader = (ImageReader) iter.next();
         reader.setInput(iis);
-        attrs.putInt(Tag.Rows, VR.US, reader.getHeight(0));
-        attrs.putInt(Tag.Columns, VR.US, reader.getWidth(0));
+        ensureUS(attrs, Tag.Rows, reader.getHeight(0));
+        ensureUS(attrs, Tag.Columns, reader.getWidth(0));
+        if (!(attrs.containsValue(Tag.SamplesPerPixel)
+                && attrs.containsValue(Tag.PhotometricInterpretation))) {
+            ImageTypeSpecifier type =
+                (ImageTypeSpecifier) reader.getImageTypes(0).next();
+            if (type.getNumBands() == 3) {
+                attrs.putInt(Tag.SamplesPerPixel, VR.US, 3);
+                attrs.putString(Tag.PhotometricInterpretation, VR.CS, 
+                        "YBR_FULL_422");
+                attrs.putInt(Tag.PlanarConfiguration, VR.US, 0);
+            } else {
+                attrs.putInt(Tag.SamplesPerPixel, VR.US, 1);
+                attrs.putString(Tag.PhotometricInterpretation, VR.CS, 
+                        "MONOCHROME2");                
+            }
+        }
+        ensureUS(attrs, Tag.BitsAllocated, 8);
+        ensureUS(attrs, Tag.BitsStored, attrs.getInt(Tag.BitsAllocated));
+        ensureUS(attrs, Tag.HighBit, attrs.getInt(Tag.BitsStored) - 1);
+        ensureUS(attrs, Tag.PixelRepresentation, 0);
         reader.dispose();
         iis.seek(0);
     }
@@ -198,6 +225,11 @@ public class Jpg2Dcm {
         }        
     }
 
+    private void ensureUS(DicomObject attrs, int tag, int val) {
+        if (!attrs.containsValue(tag)) {
+            attrs.putInt(tag, VR.US, val);
+        }        
+    }    
     public static void main(String[] args) {
         try {
             CommandLine cl = parse(args);
