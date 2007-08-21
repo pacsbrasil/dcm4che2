@@ -84,8 +84,8 @@ final class UserIdentityRQImpl implements UserIdentityRQ {
         this.userIdentityType = din.readUnsignedByte();
         this.positiveResponseRequested = din.readBoolean();
         int primaryFieldLen = din.readUnsignedShort();
-        if (primaryFieldLen + 7 > len) {
-            throw new PDUException( "SCP/SCU role selection sub-item length: "
+        if (primaryFieldLen + 6 > len) {
+            throw new PDUException( "User Identity sub-item length: "
                     + len + " mismatch primary-field-length:" + primaryFieldLen,
                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                AAbort.INVALID_PDU_PARAMETER_VALUE));
@@ -93,8 +93,8 @@ final class UserIdentityRQImpl implements UserIdentityRQ {
         this.primaryField = new byte[primaryFieldLen];
         din.read(primaryField);
         int secondaryFieldLen = din.readUnsignedShort();
-        if (secondaryFieldLen + primaryFieldLen + 7 != len) {
-            throw new PDUException( "SCP/SCU role selection sub-item length: "
+        if (secondaryFieldLen + primaryFieldLen + 6 != len) {
+            throw new PDUException( "User Identity sub-item length: "
                     + len + " mismatch secondary-field-length:" + secondaryFieldLen,
                 new AAbortImpl(AAbort.SERVICE_PROVIDER,
                                AAbort.INVALID_PDU_PARAMETER_VALUE));
