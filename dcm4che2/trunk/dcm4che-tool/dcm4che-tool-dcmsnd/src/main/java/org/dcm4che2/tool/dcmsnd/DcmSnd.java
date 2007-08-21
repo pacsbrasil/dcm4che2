@@ -83,6 +83,7 @@ import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.net.TransferCapability;
+import org.dcm4che2.net.UserIdentity;
 import org.dcm4che2.net.service.StorageCommitmentService;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
@@ -271,6 +272,10 @@ public class DcmSnd extends StorageCommitmentService {
         ae.setAETitle(calling);
     }
     
+    public final void setUserIdentity(UserIdentity userIdentity) {
+        ae.setUserIdentity(userIdentity);
+    }
+
     public final void setStorageCommitment(boolean stgcmt) {
         this.stgcmt = stgcmt;
     }
@@ -364,7 +369,24 @@ public class DcmSnd extends StorageCommitmentService {
                 "set AET, local address and listening port of local Application Entity");
         opts.addOption(OptionBuilder.create("L"));
 
-        
+        OptionBuilder.withArgName("username");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable User Identity Negotiation with specified username and "
+                + " optional passcode");
+        opts.addOption(OptionBuilder.create("username"));
+
+        OptionBuilder.withArgName("passcode");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "optional passcode for User Identity Negotiation, "
+                + "only effective with option -username");
+        opts.addOption(OptionBuilder.create("passcode"));
+
+        opts.addOption("uidnegrsp", false,
+                "request positive User Identity Negotation response, "
+                + "only effective with option -username");
+                
         OptionBuilder.withArgName("NULL|3DES|AES");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -547,6 +569,19 @@ public class DcmSnd extends StorageCommitmentService {
             if (callingAETHost[1] != null) {
                 dcmsnd.setLocalHost(callingAETHost[0]);
             }
+        }
+        if (cl.hasOption("username")) {
+            String username = (String) cl.getOptionValue("username");
+            UserIdentity userId;
+            if (cl.hasOption("passcode")) {
+                String passcode = (String) cl.getOptionValue("passcode");
+                userId = new UserIdentity.UsernamePasscode(username,
+                        passcode.toCharArray());
+            } else {
+                userId = new UserIdentity.Username(username);
+            }
+            userId.setPositiveResponseRequested(cl.hasOption("uidnegrsp"));
+            dcmsnd.setUserIdentity(userId);
         }
         dcmsnd.setStorageCommitment(cl.hasOption("stgcmt"));
         if (cl.hasOption("connectTO"))

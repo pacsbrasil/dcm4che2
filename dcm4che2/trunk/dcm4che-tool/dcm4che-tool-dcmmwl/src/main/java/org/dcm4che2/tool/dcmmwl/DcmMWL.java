@@ -69,6 +69,7 @@ import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
+import org.dcm4che2.net.UserIdentity;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -241,6 +242,10 @@ public class DcmMWL {
         ae.setAETitle(calling);
     }
 
+    public final void setUserIdentity(UserIdentity userIdentity) {
+        ae.setUserIdentity(userIdentity);
+    }
+
     public final void setPriority(int priority) {
         this.priority = priority;
     }
@@ -373,6 +378,19 @@ public class DcmMWL {
             if (callingAETHost[1] != null) {
                 dcmmwl.setLocalHost(callingAETHost[1]);
             }
+        }
+        if (cl.hasOption("username")) {
+            String username = (String) cl.getOptionValue("username");
+            UserIdentity userId;
+            if (cl.hasOption("passcode")) {
+                String passcode = (String) cl.getOptionValue("passcode");
+                userId = new UserIdentity.UsernamePasscode(username,
+                        passcode.toCharArray());
+            } else {
+                userId = new UserIdentity.Username(username);
+            }
+            userId.setPositiveResponseRequested(cl.hasOption("uidnegrsp"));
+            dcmmwl.setUserIdentity(userId);
         }
         if (cl.hasOption("connectTO"))
             dcmmwl.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
@@ -525,6 +543,24 @@ public class DcmMWL {
                 "Application Entity, use ANONYMOUS and pick up any valid\n" +
                 "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
+        
+        OptionBuilder.withArgName("username");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable User Identity Negotiation with specified username and "
+                + " optional passcode");
+        opts.addOption(OptionBuilder.create("username"));
+
+        OptionBuilder.withArgName("passcode");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "optional passcode for User Identity Negotiation, "
+                + "only effective with option -username");
+        opts.addOption(OptionBuilder.create("passcode"));
+
+        opts.addOption("uidnegrsp", false,
+                "request positive User Identity Negotation response, "
+                + "only effective with option -username");
         
         OptionBuilder.withArgName("NULL|3DES|AES");
         OptionBuilder.hasArg();

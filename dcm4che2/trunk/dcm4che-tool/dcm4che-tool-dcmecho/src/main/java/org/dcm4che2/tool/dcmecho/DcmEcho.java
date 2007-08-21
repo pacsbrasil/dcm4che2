@@ -62,6 +62,7 @@ import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
+import org.dcm4che2.net.UserIdentity;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -182,6 +183,10 @@ public class DcmEcho {
         ae.setAETitle(calling);
     }
 
+    public final void setUserIdentity(UserIdentity userIdentity) {
+        ae.setUserIdentity(userIdentity);
+    }
+
     public final void setIdleTimeout(int timeout) {
         ae.setIdleTimeout(timeout);
     }
@@ -220,6 +225,24 @@ public class DcmEcho {
                         + "socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
+        OptionBuilder.withArgName("username");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "enable User Identity Negotiation with specified username and "
+                + " optional passcode");
+        opts.addOption(OptionBuilder.create("username"));
+
+        OptionBuilder.withArgName("passcode");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "optional passcode for User Identity Negotiation, "
+                + "only effective with option -username");
+        opts.addOption(OptionBuilder.create("passcode"));
+
+        opts.addOption("uidnegrsp", false,
+                "request positive User Identity Negotation response, "
+                + "only effective with option -username");
+        
         OptionBuilder.withArgName("NULL|3DES|AES");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -357,6 +380,19 @@ public class DcmEcho {
             if (callingAETHost[1] != null) {
                 dcmecho.setLocalHost(callingAETHost[1]);
             }
+        }
+        if (cl.hasOption("username")) {
+            String username = (String) cl.getOptionValue("username");
+            UserIdentity userId;
+            if (cl.hasOption("passcode")) {
+                String passcode = (String) cl.getOptionValue("passcode");
+                userId = new UserIdentity.UsernamePasscode(username,
+                        passcode.toCharArray());
+            } else {
+                userId = new UserIdentity.Username(username);
+            }
+            userId.setPositiveResponseRequested(cl.hasOption("uidnegrsp"));
+            dcmecho.setUserIdentity(userId);
         }
         if (cl.hasOption("connectTO"))
             dcmecho.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
