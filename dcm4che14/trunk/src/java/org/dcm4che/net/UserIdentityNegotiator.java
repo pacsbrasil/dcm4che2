@@ -45,5 +45,5 @@ package org.dcm4che.net;
  */
 public interface UserIdentityNegotiator {
     UserIdentityAC negotiate(Association assoc)
-            throws UserIdentityRejectionException;
+            throws AAssociateRJException;
 }

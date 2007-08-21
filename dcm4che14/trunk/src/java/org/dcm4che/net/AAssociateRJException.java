@@ -15,12 +15,12 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * AGFA HealthCare.
+ * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * See listed authors below.
+ * Gunter Zeilinger <gunter.zeilinger@tiani.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,16 +35,29 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4che.net;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since Jan 25, 2007
+ *
+ * @author  gunter.zeilinger@tiani.com
+ * @version $Revision: 2010 $ $Date: 2005-10-06 21:55:27 +0200 (Thu, 06 Oct 2005) $
+ * @since Aug 21, 2007
+ *
  */
-public class UserIdentityRejectionException extends Exception {
+public class AAssociateRJException extends Exception {
+	
+	private static final long serialVersionUID = 605235739711850731L;
 
-    private static final long serialVersionUID = -6415449229138350695L;
+	private final AAssociateRJ aarj;
+
+	public AAssociateRJException(AAssociateRJ aarj) {
+		super(aarj.toString());
+		this.aarj = aarj;
+	}
+	
+	public AAssociateRJ getAAssociateRJ() {
+		return aarj;
+	}
 
 }

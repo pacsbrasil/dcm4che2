@@ -77,6 +77,7 @@
 package org.dcm4cheri.net;
 
 import org.dcm4che.Implementation;
+import org.dcm4che.net.AAssociateRJException;
 import org.dcm4che.net.AETFilter;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AAssociateRQ;
@@ -93,7 +94,6 @@ import org.dcm4che.net.RoleSelection;
 import org.dcm4che.net.UserIdentityAC;
 import org.dcm4che.net.UserIdentityNegotiator;
 import org.dcm4che.net.UserIdentityRQ;
-import org.dcm4che.net.UserIdentityRejectionException;
 import org.dcm4che.dict.UIDs;
 
 import org.dcm4cheri.util.StringUtils;
@@ -439,11 +439,8 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         try {
             ac.setUserIdentity(
             		userIdentityNegotiator.negotiate(assoc));
-        } catch (UserIdentityRejectionException e) {
-            return new AAssociateRJImpl(
-                    AAssociateRJ.REJECTED_PERMANENT,
-                    AAssociateRJ.SERVICE_PROVIDER_ACSE,
-                    AAssociateRJ.NO_REASON_GIVEN);
+        } catch (AAssociateRJException e) {
+            return e.getAAssociateRJ();
         }
         negotiatePresCtx(rq, ac);
         negotiateRoleSelection(rq, ac);
