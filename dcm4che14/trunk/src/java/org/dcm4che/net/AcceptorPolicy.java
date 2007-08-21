@@ -121,7 +121,11 @@ public interface AcceptorPolicy
    ExtNegotiator putExtNegPolicy(String uid, ExtNegotiator en);
    
    ExtNegotiator getExtNegPolicy(String uid);
+
+   void setUserIdentityNegotiator(UserIdentityNegotiator identNegotiator);
    
-   PDU negotiate(AAssociateRQ rq);
+   UserIdentityNegotiator getUserIdentityNegotiator();
+      
+   PDU negotiate(Association assoc);
   
 }

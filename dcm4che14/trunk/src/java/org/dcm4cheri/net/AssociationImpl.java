@@ -120,7 +120,6 @@ final class AssociationImpl implements Association {
     private final DimseWriterImpl writer;
     private int msgID = 0;
     private final byte[] b10 = new byte[10];
-    private static int assocCount = 0;
     private Hashtable properties = null;
     private int rqTimeout = 5000;
     private int acTimeout = 5000;
@@ -288,7 +287,7 @@ final class AssociationImpl implements Association {
             if (!(rq instanceof AAssociateRQ))
                 return (AAbort) rq;
 
-            PDU rp = policy.negotiate((AAssociateRQ) rq);
+            PDU rp = policy.negotiate(this);
             if (rp instanceof AAssociateAC)
                 fsm.write((AAssociateAC) rp);
             else

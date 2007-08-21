@@ -82,6 +82,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRJ;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.AsyncOpsWindow;
 import org.dcm4che.net.PresContext;
@@ -136,8 +137,10 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     private static final UserIdentityNegotiator DEF_USER_IDENTITY_NEGOTIATOR = 
             new UserIdentityNegotiator(){
 
-                public UserIdentityAC negotiate(UserIdentityRQ rq) {
-                    return rq.isPositiveResponseRequested() 
+                public UserIdentityAC negotiate(Association assoc) {
+                	UserIdentityRQ rq =
+                			assoc.getAAssociateRQ().getUserIdentity();
+                    return rq != null && rq.isPositiveResponseRequested() 
                         ? new UserIdentityACImpl() : null;
                 }};
     
@@ -381,7 +384,12 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         this.userIdentityNegotiator = userIdentityNegotiator;
     }
 
-    public PDU negotiate(AAssociateRQ rq) {
+    public final UserIdentityNegotiator getUserIdentityNegotiator() {
+        return userIdentityNegotiator;
+    }
+
+    public PDU negotiate(Association assoc) {
+    	AAssociateRQ rq = assoc.getAAssociateRQ();
         if ((rq.getProtocolVersion() & 0x0001) == 0) {
             return new AAssociateRJImpl(
                 AAssociateRJ.REJECTED_PERMANENT,
@@ -408,19 +416,10 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
                 AAssociateRJ.CALLING_AE_TITLE_NOT_RECOGNIZED);
         }
         AcceptorPolicyImpl policy2 =
-        (AcceptorPolicyImpl)policy1.getPolicyForCallingAET(callingAET);
+        	(AcceptorPolicyImpl)policy1.getPolicyForCallingAET(callingAET);
         if (policy2 == null)
             policy2 = policy1;
         
-        return policy2.doNegotiate(rq);
-    }
-    
-    // Package protected ---------------------------------------------
-    
-    // Protected -----------------------------------------------------
-    
-    // Private -------------------------------------------------------
-    private PDU doNegotiate(AAssociateRQ rq) {
         String appCtx = negotiateAppCtx(rq.getApplicationContext());
         if (appCtx == null) {
             return new AAssociateRJImpl(
@@ -428,6 +427,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
             AAssociateRJ.SERVICE_USER,
             AAssociateRJ.APPLICATION_CONTEXT_NAME_NOT_SUPPORTED);
         }
+        
         AAssociateAC ac = new AAssociateACImpl();
         ac.setApplicationContext(appCtx);
         ac.setCalledAET(rq.getCalledAET());
@@ -436,16 +436,14 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         ac.setImplClassUID(this.implClassUID);
         ac.setImplVersionName(this.implVers);
         ac.setAsyncOpsWindow(negotiateAOW(rq.getAsyncOpsWindow()));
-        UserIdentityRQ userid = rq.getUserIdentity();
-        if (userid != null) {
-            try {
-                ac.setUserIdentity(userIdentityNegotiator.negotiate(userid));
-            } catch (UserIdentityRejectionException e) {
-                return new AAssociateRJImpl(
-                        AAssociateRJ.REJECTED_PERMANENT,
-                        AAssociateRJ.SERVICE_PROVIDER_ACSE,
-                        AAssociateRJ.NO_REASON_GIVEN);
-            }
+        try {
+            ac.setUserIdentity(
+            		userIdentityNegotiator.negotiate(assoc));
+        } catch (UserIdentityRejectionException e) {
+            return new AAssociateRJImpl(
+                    AAssociateRJ.REJECTED_PERMANENT,
+                    AAssociateRJ.SERVICE_PROVIDER_ACSE,
+                    AAssociateRJ.NO_REASON_GIVEN);
         }
         negotiatePresCtx(rq, ac);
         negotiateRoleSelection(rq, ac);
