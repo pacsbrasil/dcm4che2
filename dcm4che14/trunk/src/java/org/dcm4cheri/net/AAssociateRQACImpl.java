@@ -522,7 +522,13 @@ abstract class AAssociateRQACImpl implements AAssociateRQAC {
       for (Iterator it = commonExtNegs.values().iterator(); it.hasNext();) {
           CommonExtNegotiationImpl en = (CommonExtNegotiationImpl)it.next();
           retval += 4 + en.length();
-       }
+      }
+      if (userIdentityRQ != null) {
+          retval += 4 + ((UserIdentityRQImpl)userIdentityRQ).length();
+      }
+      if (userIdentityAC != null) {
+          retval += 4 + ((UserIdentityACImpl)userIdentityAC).length();
+      }
       return retval;
    }
    
