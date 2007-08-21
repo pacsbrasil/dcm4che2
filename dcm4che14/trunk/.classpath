@@ -6,6 +6,7 @@
 	<classpathentry path="samples/java" kind="src"/>
 	<classpathentry path="src/java" kind="src"/>
 	<classpathentry path="test/java" kind="src"/>
+	<classpathentry path="samples/conf" kind="src"/>
 	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
 	<classpathentry path="lib/getopt.jar" exported="true" kind="lib"/>
 	<classpathentry path="lib/log4j.jar" exported="true" kind="lib"/>
