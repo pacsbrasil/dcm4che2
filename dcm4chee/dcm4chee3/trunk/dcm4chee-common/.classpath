@@ -2,10 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/jboss-ejb3x.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/hibernate-entitymanager.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/ejb3-persistence.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/hibernate-annotations.jar"/>
+	<classpathentry kind="var" path="JBOSS42_HOME/server/default/lib/jboss-ejb3x.jar"/>
+	<classpathentry kind="var" path="JBOSS42_HOME/server/default/lib/hibernate-entitymanager.jar"/>
+	<classpathentry kind="var" path="JBOSS42_HOME/server/default/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="var" path="JBOSS42_HOME/server/default/lib/hibernate-annotations.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che14"/>
 	<classpathentry exported="true" kind="lib" path="lib/spring.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
