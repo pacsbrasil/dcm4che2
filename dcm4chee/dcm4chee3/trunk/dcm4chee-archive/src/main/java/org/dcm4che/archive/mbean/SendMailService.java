@@ -64,10 +64,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.management.Notification;
+import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 
 import org.dcm4che.archive.config.RetryIntervalls;
-import org.dcm4cheri.util.StringUtils;
 
 /**
  * A service used to send email. After the reception of a JMS message containing
@@ -117,6 +118,16 @@ public class SendMailService extends MBeanServiceBase {
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+
+        private static final long serialVersionUID = -993747994840770270L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return SendMailMessageStatus.class.getName()
+                    .equals(notif.getType());
+        }
+    };
+
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -141,7 +152,7 @@ public class SendMailService extends MBeanServiceBase {
         if (concurrency <= 0)
             throw new IllegalArgumentException("Concurrency: " + concurrency);
         if (this.concurrency != concurrency) {
-            final boolean restart = isStarted();
+            final boolean restart = getState() == STARTED;
             if (restart)
                 stop();
             this.concurrency = concurrency;
@@ -226,11 +237,13 @@ public class SendMailService extends MBeanServiceBase {
     };
 
     protected void startService() throws Exception {
+        super.startService();
         jmsDelegate.startListening(queueName, listener, concurrency);
     }
 
     protected void stopService() throws Exception {
         jmsDelegate.stopListening(queueName);
+        super.stopService();
     }
 
     /**
@@ -284,7 +297,7 @@ public class SendMailService extends MBeanServiceBase {
                 }
             }
             message.setContent(multipart);
-            log.info(new StringBuilder().append("sending message: ").append(
+            log.info(new StringBuffer().append("sending message: ").append(
                     files.length).append(" files attached"));
         }
         else {
@@ -295,6 +308,7 @@ public class SendMailService extends MBeanServiceBase {
             message.saveChanges();
             Transport.send(message);
             log.info("Message sent to " + mailProps.get(MAIL_TO_ADDR));
+            sendJMXNotification(new SendMailMessageStatus(mailProps));
         }
         catch (Exception e) {
             log.warn("Failed to send " + mailProps, e);
@@ -308,6 +322,7 @@ public class SendMailService extends MBeanServiceBase {
             final long delay = retryIntervalls.getIntervall(failureCount);
             if (delay == -1L) {
                 log.error("Give up to send " + mailProps);
+                sendJMXNotification(new SendMailMessageStatus(false, mailProps));
             }
             else {
                 log.warn("Failed to send " + mailProps + ". Scheduling retry.");
@@ -338,27 +353,6 @@ public class SendMailService extends MBeanServiceBase {
             log.error(e.getMessage(), e);
             return "Failed to send mail '" + subject + "' to " + toAddress
                     + " ! Reason:" + e.getMessage();
-        }
-    }
-
-    /**
-     * @param files
-     * @return
-     */
-    private Object string2Files(String files) {
-        if (files == null)
-            return null;
-        try {
-            String[] sa = StringUtils.split(files, ',');
-            File[] fa = new File[sa.length];
-            for (int i = 0, len = fa.length; i < len; i++) {
-                fa[i] = new File(sa[i]);
-            }
-            return fa;
-        }
-        catch (Exception x) {
-            log.warn("File attachments ignored! Reason:" + x.getMessage(), x);
-            return null;
         }
     }
 
@@ -463,4 +457,16 @@ public class SendMailService extends MBeanServiceBase {
         }
     }
 
+    /**
+     * Fire a SendMailMessageStatus JMX notification.
+     * 
+     * @param msg
+     */
+    private void sendJMXNotification(SendMailMessageStatus msg) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(msg.getClass().getName(), this,
+                eventID);
+        notif.setUserData(msg);
+        super.sendNotification(notif);
+    }
 }
