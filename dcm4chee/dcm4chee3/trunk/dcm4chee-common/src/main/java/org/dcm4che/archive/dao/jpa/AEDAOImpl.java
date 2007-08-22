@@ -79,18 +79,12 @@ public class AEDAOImpl extends BaseDAOImpl<AE> implements AEDAO {
      * @throws ContentCreateException
      */
     public AE create(String title, String hostname, int port,
-            String cipherSuites, String issuer, String desc)
-            throws ContentCreateException {
+            String cipherSuites, String issuer, String user, String passwd,
+            String desc) throws ContentCreateException {
         if (logger.isDebugEnabled()) {
             logger.debug("Creating AE (" + title + ")");
         }
-        AE ae = new AE();
-        ae.setTitle(title);
-        ae.setHostname(hostname);
-        ae.setPort(port);
-        ae.setCipherSuites(cipherSuites);
-        ae.setIssuerOfPatientID(issuer);
-        ae.setDescription(desc);
+        AE ae = new AE(title, hostname, port, cipherSuites, issuer, user, passwd, desc);
         save(ae);
         return ae;
     }

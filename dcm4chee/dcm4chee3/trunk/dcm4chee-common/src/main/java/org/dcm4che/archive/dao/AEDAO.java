@@ -53,9 +53,33 @@ import org.dcm4che.archive.entity.AE;
 public interface AEDAO extends DAO<AE> {
     public static final String JNDI_NAME = "dcm4cheeArchive/AEDAOImpl/local";
 
+    /**
+     * Create an AE and initialize all of its fields.
+     * 
+     * @param pk
+     *            The primary key of the AE record in the database. May be null
+     *            if the AE is new.
+     * @param aet
+     *            The AE title.
+     * @param aeHost
+     *            The host name.
+     * @param portNum
+     *            The port number of the AE title.
+     * @param cipher
+     *            Security protocols in use by the AE.
+     * @param issuer
+     *            The issuer of the patient id where this AE is located/used.
+     * @param user
+     *            A string containing the user id for user identity negotiation.
+     * @param passwd
+     *            A string containing the password for user identity
+     *            negotiation.
+     * @param desc
+     *            A description of the AE.
+     */
     public AE create(String title, String hostname, int port,
-            String cipherSuites, String issuer, String desc)
-            throws ContentCreateException;
+            String cipherSuites, String issuer, String user, String passwd,
+            String desc) throws ContentCreateException;
 
     public AE findByAET(String aet) throws NoResultException;
 }

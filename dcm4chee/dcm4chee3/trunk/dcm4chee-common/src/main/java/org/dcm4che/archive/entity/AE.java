@@ -75,6 +75,12 @@ public class AE extends EntityBase {
 
     @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
+    
+    @Column(name = "user_id")
+    private String userID;
+    
+    @Column(name = "passwd")
+    private String password;
 
     @Column(name = "ae_desc")
     private String description;
@@ -89,9 +95,6 @@ public class AE extends EntityBase {
     /**
      * Create an AE and initialize all of its fields.
      * 
-     * @param pk
-     *            The primary key of the AE record in the database. May be null
-     *            if the AE is new.
      * @param aet
      *            The AE title.
      * @param aeHost
@@ -102,18 +105,24 @@ public class AE extends EntityBase {
      *            Security protocols in use by the AE.
      * @param issuer
      *            The issuer of the patient id where this AE is located/used.
+     * @param user
+     *            A string containing the user id for user identity negotiation.
+     * @param passwd
+     *            A string containing the password for user identity
+     *            negotiation.
      * @param desc
      *            A description of the AE.
      */
-    public AE(Long pk, String aet, String aeHost, int portNum, String cipher,
-            String issuer, String desc) {
-        setPk(pk);
-        this.title = aet;
-        this.hostname = aeHost;
-        this.port = portNum;
-        this.issuerOfPatientID = issuer;
-        this.cipherSuites = cipher;
-        this.description = desc;
+    public AE(String aet, String aeHost, int portNum, String cipher,
+            String issuer, String user, String passwd, String desc) {
+        setTitle(aet);
+        setHostname(aeHost);
+        setPort(portNum);
+        setIssuerOfPatientID(issuer);
+        setUserID(user);
+        setPassword(passwd);
+        setCipherSuites(cipher);
+        setDescription(desc);
     }
 
     /**
@@ -174,6 +183,34 @@ public class AE extends EntityBase {
      */
     public void setIssuerOfPatientID(String issuerOfPatientID) {
         this.issuerOfPatientID = issuerOfPatientID;
+    }
+
+    /**
+     * @return the userID
+     */
+    public String getUserID() {
+        return userID;
+    }
+
+    /**
+     * @param userID the userID to set
+     */
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**
