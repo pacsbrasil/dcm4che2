@@ -420,7 +420,11 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         if (policy2 == null)
             policy2 = policy1;
         
-        String appCtx = negotiateAppCtx(rq.getApplicationContext());
+        return policy2.doNegotiate(assoc, rq);
+    }
+
+	private PDU doNegotiate(Association assoc, AAssociateRQ rq) {
+		String appCtx = negotiateAppCtx(rq.getApplicationContext());
         if (appCtx == null) {
             return new AAssociateRJImpl(
             AAssociateRJ.REJECTED_PERMANENT,
@@ -446,7 +450,7 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
         negotiateRoleSelection(rq, ac);
         negotiateExt(rq, ac);
         return ac;
-    }
+	}
     
     private String negotiateAppCtx(String proposed) {
         String retval = (String)appCtxMap.get(proposed);
