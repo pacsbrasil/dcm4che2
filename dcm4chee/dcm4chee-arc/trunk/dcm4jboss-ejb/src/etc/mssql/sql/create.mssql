@@ -170,6 +170,7 @@ CREATE TABLE series (
 	laterality		VARCHAR(255),
 	series_desc		VARCHAR(255),
 	institution		VARCHAR(255),
+	station_name	VARCHAR(255),
 	department		VARCHAR(255),
 	pps_start		DATETIME,
 	pps_iuid		VARCHAR(255),
@@ -199,6 +200,7 @@ CREATE INDEX body_part ON series(body_part);
 CREATE INDEX laterality ON series(laterality);
 CREATE INDEX series_desc ON series(series_desc);
 CREATE INDEX institution ON series(institution);
+CREATE INDEX station_name ON series(station_name);
 CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
@@ -631,7 +633,7 @@ CREATE TABLE device (
 	station_aet     VARCHAR(255) NOT NULL,
 	modality		VARCHAR(255) NOT NULL
 );
-CREATE UNIQUE INDEX station_name ON device(station_name);
+CREATE UNIQUE INDEX dev_station_name ON device(station_name);
 
 CREATE TABLE rel_dev_proto (
 	device_fk      INTEGER,

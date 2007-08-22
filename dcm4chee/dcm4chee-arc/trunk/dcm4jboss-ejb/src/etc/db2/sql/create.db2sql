@@ -175,6 +175,7 @@ CREATE TABLE series (
 	laterality		VARCHAR(254),
 	series_desc		VARCHAR(254),
 	institution		VARCHAR(254),
+	station_name    VARCHAR(254),
 	department		VARCHAR(254),
 	pps_start		TIMESTAMP,
 	pps_iuid		VARCHAR(254),
@@ -204,6 +205,7 @@ CREATE INDEX body_part ON series(body_part);
 CREATE INDEX laterality ON series(laterality);
 CREATE INDEX series_desc ON series(series_desc);
 CREATE INDEX institution ON series(institution);
+CREATE INDEX station_name ON series(station_name);
 CREATE INDEX department ON series(department);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series(pps_iuid);

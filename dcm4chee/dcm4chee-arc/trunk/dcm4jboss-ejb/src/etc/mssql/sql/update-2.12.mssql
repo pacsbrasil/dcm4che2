@@ -2,3 +2,9 @@
 
 ALTER TABLE ae ADD user_id VARCHAR(255);
 ALTER TABLE ae ADD passwd VARCHAR(255);
+
+ALTER TABLE series ADD station_name VARCHAR(255);
+
+DROP INDEX device.station_name;
+CREATE INDEX station_name ON series(station_name);
+CREATE UNIQUE INDEX dev_station_name ON device(station_name);

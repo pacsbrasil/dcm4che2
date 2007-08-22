@@ -29,6 +29,7 @@
         <attr tag="00080060"/> <!-- Modality -->
         <attr tag="00080070"/> <!-- Manufacturer -->
         <attr tag="00080080"/> <!-- Institution Name -->
+        <attr tag="00081010"/> <!-- Station Name -->
         <attr tag="0008103E"/> <!-- Series Description -->
         <attr tag="00081040"/> <!-- Institutional Department Name -->
         <attr tag="00081090"/> <!-- Manufacturer Model Name -->

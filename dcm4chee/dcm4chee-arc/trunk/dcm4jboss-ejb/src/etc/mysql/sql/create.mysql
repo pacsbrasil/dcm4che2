@@ -170,6 +170,7 @@ CREATE TABLE series (
 	laterality		VARCHAR(250) BINARY,
 	series_desc		VARCHAR(250) BINARY,
 	institution		VARCHAR(250) BINARY,
+	station_name	VARCHAR(250) BINARY,
 	department		VARCHAR(250) BINARY,
 	pps_start		DATETIME,
 	pps_iuid		VARCHAR(250) BINARY,
@@ -199,6 +200,7 @@ CREATE INDEX body_part ON series(body_part(16));
 CREATE INDEX laterality ON series(laterality(16));
 CREATE INDEX series_desc ON series(series_desc(64));
 CREATE INDEX institution ON series(institution(64));
+CREATE INDEX station_name ON series(station_name(16));
 CREATE INDEX department ON series(department(64));
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid(64));
@@ -631,7 +633,7 @@ CREATE TABLE device (
 	station_aet     VARCHAR(250) BINARY NOT NULL,
 	modality		VARCHAR(250) BINARY NOT NULL
 );
-CREATE UNIQUE INDEX station_name ON device(station_name(16));
+CREATE UNIQUE INDEX dev_station_name ON device(station_name(16));
 
 CREATE TABLE rel_dev_proto (
 	device_fk      INTEGER,

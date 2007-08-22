@@ -249,6 +249,13 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="station_name"
+     */
+    public abstract String getStationName();
+    public abstract void setStationName(String name);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="pps_start"
      */
     public abstract java.sql.Timestamp getPpsStartDateTime();
@@ -692,6 +699,7 @@ public abstract class SeriesBean implements EntityBean {
         setInstitutionName(toUpperCase(ds.getString(Tags.InstitutionName)));
         setInstitutionalDepartmentName(
                 toUpperCase(ds.getString(Tags.InstitutionalDepartmentName)));
+        setStationName(toUpperCase(ds.getString(Tags.StationName)));
         try {
             setPpsStartDateTime(
                     ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));

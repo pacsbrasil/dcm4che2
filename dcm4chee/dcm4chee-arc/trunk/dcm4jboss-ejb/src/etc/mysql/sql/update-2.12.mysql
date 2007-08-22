@@ -2,3 +2,9 @@
 
 ALTER TABLE ae ADD user_id VARCHAR(250) BINARY;
 ALTER TABLE ae ADD passwd VARCHAR(250) BINARY;
+
+ALTER TABLE series ADD station_name VARCHAR(250) BINARY;
+
+ALTER TABLE device DROP INDEX station_name;
+CREATE INDEX station_name ON series(station_name(16));
+CREATE UNIQUE INDEX dev_station_name ON device(station_name(16));
