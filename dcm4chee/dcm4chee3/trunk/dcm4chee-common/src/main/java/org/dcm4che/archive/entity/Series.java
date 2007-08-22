@@ -99,6 +99,9 @@ public class Series extends EntityBase {
 
     @Column(name = "institution")
     private String institutionName;
+    
+    @Column(name = "station_name")
+    private String stationName;
 
     @Column(name = "num_instances")
     private int numberOfSeriesRelatedInstances;
@@ -272,6 +275,20 @@ public class Series extends EntityBase {
      */
     public void setInstitutionName(String institutionName) {
         this.institutionName = institutionName;
+    }
+
+    /**
+     * @return the stationName
+     */
+    public String getStationName() {
+        return stationName;
+    }
+
+    /**
+     * @param stationName the stationName to set
+     */
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
     }
 
     /**
@@ -619,6 +636,7 @@ public class Series extends EntityBase {
         setInstitutionName(toUpperCase(ds.getString(Tags.InstitutionName)));
         setInstitutionalDepartmentName(toUpperCase(ds
                 .getString(Tags.InstitutionalDepartmentName)));
+        setStationName(toUpperCase(ds.getString(Tags.StationName)));
         try {
             setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate,
                     Tags.PPSStartTime));

@@ -89,6 +89,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.Modality,
             Tags.ModalitiesInStudy, 
             Tags.InstitutionName,
+            Tags.StationName,
             Tags.SeriesDescription,
             Tags.InstitutionalDepartmentName,
             Tags.BodyPartExamined,
@@ -398,6 +399,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 keys.getStrings(Tags.Laterality));
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
                 SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionName)));
+        sqlBuilder.addWildCardMatch(null, "Series.stationName", type2,
+                SqlBuilder.toUpperCase(keys.getString(Tags.StationName)));
         sqlBuilder.addWildCardMatch(null, "Series.seriesDescription", type2,
                 SqlBuilder.toUpperCase(keys.getString(Tags.SeriesDescription)));
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
