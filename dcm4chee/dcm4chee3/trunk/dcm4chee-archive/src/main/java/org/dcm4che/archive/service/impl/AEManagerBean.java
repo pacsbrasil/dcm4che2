@@ -62,6 +62,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Service for the management of DICOM application entities (AE) within the system.
  * 
  * @author <a href="mailto:umberto.cappellini@tiani.com">Umberto Cappellini</a>
  */
@@ -129,6 +130,8 @@ public class AEManagerBean implements AEManagerLocal, AEManagerRemote  {
         ae.setPort(modAE.getPort());
         ae.setCipherSuites(modAE.getCipherSuites());
         ae.setIssuerOfPatientID(modAE.getIssuerOfPatientID());
+        ae.setUserID(modAE.getUserID());
+        ae.setPassword(modAE.getPassword());
         ae.setDescription(modAE.getDescription());
     }
 
@@ -139,6 +142,7 @@ public class AEManagerBean implements AEManagerLocal, AEManagerRemote  {
     public void newAE(AE newAE) throws ContentCreateException {
         aeHome.create(newAE.getTitle(), newAE.getHostname(), newAE.getPort(),
                 newAE.getCipherSuites(), newAE.getIssuerOfPatientID(), newAE
+                        .getUserID(), newAE.getPassword(), newAE
                         .getDescription());
     }
 

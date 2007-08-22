@@ -206,7 +206,8 @@ public class AEService extends MBeanServiceBase {
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            AE ae = new AE(null, aet, aeHost, portNumbers[i], null, null, null);
+            AE ae = new AE(aet, aeHost, portNumbers[i], null, null, null, null,
+                    null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -249,8 +250,8 @@ public class AEService extends MBeanServiceBase {
      * @throws Exception
      */
     public void updateAE(Long pk, String title, String host, int port,
-            String cipher, String issuer, String desc, boolean checkHost)
-            throws Exception {
+            String cipher, String issuer, String user, String passwd,
+            String desc, boolean checkHost) throws Exception {
         if (checkHost) {
             try {
                 host = InetAddress.getByName(host).getCanonicalHostName();
@@ -265,7 +266,8 @@ public class AEService extends MBeanServiceBase {
 
         AEManager aeManager = aeMgr();
         if (pk == null) {
-            AE aeNew = new AE(null, title, host, port, cipher, issuer, desc);
+            AE aeNew = new AE(title, host, port, cipher, issuer, user, passwd,
+                    desc);
             aeManager.newAE(aeNew);
             logActorConfig("Add AE " + aeNew + " cipher:"
                     + aeNew.getCipherSuites(),
@@ -282,7 +284,9 @@ public class AEService extends MBeanServiceBase {
                 catch (UnknownAETException e) {
                 }
             }
-            AE aeNew = new AE(pk, title, host, port, cipher, issuer, desc);
+            AE aeNew = new AE(title, host, port, cipher, issuer, user, passwd,
+                    desc);
+            aeNew.setPk(pk);
             aeManager.updateAE(aeNew);
             logActorConfig("Modify AE " + aeOld + " -> " + aeNew,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -290,8 +294,10 @@ public class AEService extends MBeanServiceBase {
     }
 
     public void addAE(String title, String host, int port, String cipher,
-            String issuer, String desc, boolean checkHost) throws Exception {
-        updateAE(null, title, host, port, cipher, issuer, desc, checkHost);
+            String issuer, String user, String passwd, String desc,
+            boolean checkHost) throws Exception {
+        updateAE(null, title, host, port, cipher, issuer, desc, user, passwd,
+                checkHost);
     }
 
     /**
@@ -360,6 +366,7 @@ public class AEService extends MBeanServiceBase {
     }
 
     protected AEManager aeMgr() {
-        return (AEManager) EJBReferenceCache.getInstance().lookup("AEManager/Local");
+        return (AEManager) EJBReferenceCache.getInstance().lookup(
+                "AEManager/Local");
     }
 }
