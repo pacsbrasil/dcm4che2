@@ -154,6 +154,28 @@ public abstract class AEBean implements EntityBean {
     
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="user_id"
+     */
+    public abstract String getUserID();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setUserID(String user);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="passwd"
+     */
+    public abstract String getPassword();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setPassword(String passwd);
+    
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="ae_desc"
      */
     public abstract String getDescription();
@@ -167,7 +189,8 @@ public abstract class AEBean implements EntityBean {
      * @ejb.create-method
      */
     public Long ejbCreate(String title, String hostname, int port,
-            String cipherSuites, String issuer, String desc)
+            String cipherSuites, String issuer, String user, String passwd,
+            String desc)
             throws CreateException {
         if (log.isDebugEnabled()) {
             log.debug("create AEBean(" + title + ")");
@@ -177,12 +200,15 @@ public abstract class AEBean implements EntityBean {
         setPort(port);
         setCipherSuites(cipherSuites);
         setIssuerOfPatientID(issuer);
+        setUserID(user);
+        setPassword(passwd);
         setDescription(desc);
         return null;
     }
 
     public void ejbPostCreate(String title, String host, int port,
-            String cipherSuites, String issuer, String desc)
+            String cipherSuites, String issuer, String user, String passwd,
+            String desc)
             throws CreateException {
     }
 
@@ -198,6 +224,8 @@ public abstract class AEBean implements EntityBean {
                 getPort(),
                 getCipherSuites(),
                 getIssuerOfPatientID(),
+                getUserID(),
+                getPassword(),
                 getDescription());
     }
     

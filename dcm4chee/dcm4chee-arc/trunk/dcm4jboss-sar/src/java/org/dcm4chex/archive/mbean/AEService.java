@@ -204,7 +204,8 @@ public class AEService extends ServiceMBeanSupport {
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null, null);
+            AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null,
+            		null, null, null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -239,7 +240,8 @@ public class AEService extends ServiceMBeanSupport {
      * @throws RemoteException
      */
     public void updateAE(long pk, String title, String host, int port,
-            String cipher, String issuer, String desc, boolean checkHost)
+            String cipher, String issuer, String user, String passwd,
+            String desc, boolean checkHost)
             throws Exception {
         if (checkHost) {
             try {
@@ -252,7 +254,8 @@ public class AEService extends ServiceMBeanSupport {
 
         AEManager aeManager = aeMgr();
         if (pk == -1) {
-            AEDTO aeNew = new AEDTO(-1, title, host, port, cipher, issuer, desc);
+            AEDTO aeNew = new AEDTO(-1, title, host, port, cipher,
+            		issuer, user, passwd, desc);
             aeManager.newAE(aeNew);
             logActorConfig("Add AE " + aeNew + " cipher:"
                     + aeNew.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -265,15 +268,19 @@ public class AEService extends ServiceMBeanSupport {
                             + " already exists!:" + aeOldByTitle);
                 } catch (UnknownAETException e) {}
             }
-            AEDTO aeNew = new AEDTO(pk, title, host, port, cipher, issuer, desc);
+            AEDTO aeNew = new AEDTO(pk, title, host, port, cipher,
+            		issuer, user, passwd, desc);
             aeManager.updateAE(aeNew);
-            logActorConfig("Modify AE " + aeOld + " -> " + aeNew, SecurityAlertMessage.NETWORK_CONFIGURATION);
+            logActorConfig("Modify AE " + aeOld + " -> " + aeNew,
+            		SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
     }
 
     public void addAE(String title, String host, int port, String cipher,
-            String issuer, String desc, boolean checkHost) throws Exception {
-        updateAE(-1, title, host, port, cipher, issuer, desc, checkHost);
+            String issuer, String user, String passwd, String desc,
+            boolean checkHost) throws Exception {
+        updateAE(-1, title, host, port, cipher, issuer, user, passwd, desc,
+        		checkHost);
     }
 
     public void removeAE(String titles) throws Exception {
@@ -283,7 +290,8 @@ public class AEService extends ServiceMBeanSupport {
         while (st.hasMoreTokens()) {
             ae = aeManager.findByAET(st.nextToken());
             aeManager.removeAE(ae.getPk());
-            logActorConfig("Remove AE " + ae, SecurityAlertMessage.NETWORK_CONFIGURATION);
+            logActorConfig("Remove AE " + ae,
+            		SecurityAlertMessage.NETWORK_CONFIGURATION);
         }
     }
    

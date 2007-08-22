@@ -70,6 +70,10 @@ public class AEModel extends BasicFormModel {
     
     private String issuerOfPatientID;
 
+    private String userID;
+    
+    private String passwd;
+    
     private String description;
 
     private int port = -1;
@@ -148,7 +152,15 @@ public class AEModel extends BasicFormModel {
         this.issuerOfPatientID = issuerOfPatientID;
     }
     
-    public final void setDescription(String description) {
+	public final void setUserID(String userID) {
+		this.userID = userID;
+	}
+
+	public final void setPassword(String passwd) {
+		this.passwd = passwd;
+	}
+
+	public final void setDescription(String description) {
         this.description = description;
     }
 
@@ -164,7 +176,8 @@ public class AEModel extends BasicFormModel {
             cipherSuites = sb.toString();
         }
         return new AEDTO(pk, this.title, this.hostName, this.port,
-                this.cipherSuites, this.issuerOfPatientID, this.description);
+                this.cipherSuites, this.issuerOfPatientID, this.userID,
+                this.passwd, this.description);
     }
 
     public void setAE(AEDTO ae) {
@@ -174,6 +187,8 @@ public class AEModel extends BasicFormModel {
         port = ae.getPort();
         cipherSuites = ae.getCipherSuitesAsString();
         issuerOfPatientID = ae.getIssuerOfPatientID();
+        userID = ae.getUserID();
+        passwd = ae.getPassword();
         description = ae.getDescription();
     }
 
@@ -184,6 +199,8 @@ public class AEModel extends BasicFormModel {
         hostName = null;
         cipherSuites = cipher1 = cipher2 = cipher3 = null;
         issuerOfPatientID = null;
+        userID = null;
+        passwd = null;
         description = null;
     }
 

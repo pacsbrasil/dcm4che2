@@ -154,6 +154,8 @@ public abstract class AEManagerBean implements SessionBean {
             ae.setPort(modAE.getPort());
             ae.setCipherSuites(modAE.getCipherSuitesAsString());
             ae.setIssuerOfPatientID(modAE.getIssuerOfPatientID());
+            ae.setUserID(modAE.getUserID());
+            ae.setPassword(modAE.getPassword());
             ae.setDescription(modAE.getDescription());
        } catch (FinderException e) {
             ctx.setRollbackOnly();
@@ -171,6 +173,8 @@ public abstract class AEManagerBean implements SessionBean {
                 newAE.getPort(),
                 newAE.getCipherSuitesAsString(),
                 newAE.getIssuerOfPatientID(),
+                newAE.getUserID(),
+                newAE.getPassword(),
                 newAE.getDescription());
     }
 

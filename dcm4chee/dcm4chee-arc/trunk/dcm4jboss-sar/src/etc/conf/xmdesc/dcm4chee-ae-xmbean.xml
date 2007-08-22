@@ -148,6 +148,16 @@
        <type>java.lang.String</type>
      </parameter>
      <parameter>
+       <description>Default User ID associated with this AE</description>
+       <name>user</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Password of Default User ID associated with this AE</description>
+       <name>password</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
        <description>Free text description of this AE</description>
        <name>description</name>
        <type>java.lang.String</type>
@@ -186,6 +196,16 @@
      <parameter>
        <description>Default Issuer of Patient ID associated with this AE</description>
        <name>issuer</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Default User ID associated with this AE</description>
+       <name>user</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Password of Default User ID associated with this AE</description>
+       <name>password</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>

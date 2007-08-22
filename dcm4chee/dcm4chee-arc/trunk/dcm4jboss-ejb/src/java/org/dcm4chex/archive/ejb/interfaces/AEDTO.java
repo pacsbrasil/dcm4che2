@@ -72,6 +72,8 @@ public class AEDTO implements Serializable {
     private final int port;
     private final String cipherSuites;
     private final String issuer;
+    private final String userID;
+    private final String passwd;
     private final String desc;
 
     // Constructors --------------------------------------------------
@@ -82,6 +84,8 @@ public class AEDTO implements Serializable {
         int port,
         String cipherSuites,
         String issuer,
+        String userID,
+        String passwd,
         String desc) {
         this.pk = pk;
         this.title = title;
@@ -89,6 +93,8 @@ public class AEDTO implements Serializable {
         this.port = port;
         this.cipherSuites = cipherSuites;
         this.issuer = issuer;
+        this.userID = userID;
+        this.passwd = passwd;
         this.desc = desc;
     }
 
@@ -152,6 +158,14 @@ public class AEDTO implements Serializable {
     
     public String getIssuerOfPatientID() {
         return issuer;        
+    }
+    
+    public String getUserID() {
+        return userID;        
+    }
+    
+    public String getPassword() {
+        return passwd;        
     }
     
     public String getDescription() {

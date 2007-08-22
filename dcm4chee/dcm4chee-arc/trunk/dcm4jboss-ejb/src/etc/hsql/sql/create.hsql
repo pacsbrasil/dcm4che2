@@ -5,6 +5,8 @@ CREATE TABLE ae (
 	port			INTEGER NOT NULL,
 	cipher_suites  	VARCHAR(256),
 	pat_id_issuer	VARCHAR(256),
+	user_id			VARCHAR(256),
+	passwd			VARCHAR(256),
 	ae_desc			VARCHAR(256)
 );
 CREATE UNIQUE INDEX aet ON ae(aet);

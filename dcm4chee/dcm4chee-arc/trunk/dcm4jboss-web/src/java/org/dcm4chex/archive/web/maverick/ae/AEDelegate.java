@@ -142,6 +142,8 @@ public class AEDelegate {
                     new Integer(ae.getPort()),
                     ae.getCipherSuitesAsString(),
                     ae.getIssuerOfPatientID(),
+                    ae.getUserID(),
+                    ae.getPassword(),
                     ae.getDescription(),
                     new Boolean(checkHost) },
                 new String[] {
@@ -149,6 +151,8 @@ public class AEDelegate {
                     String.class.getName(),
                     String.class.getName(),
                     int.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
                     String.class.getName(),
                     String.class.getName(),
                     String.class.getName(),

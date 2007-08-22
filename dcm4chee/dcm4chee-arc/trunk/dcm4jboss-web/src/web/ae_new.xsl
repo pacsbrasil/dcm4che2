@@ -73,6 +73,18 @@
 				        </td>
 					</tr>
 					<tr>				        
+						<td width="50">User ID</td>														
+				        <td title="User ID">
+			                <input size="25" name="userID" type="text" value=""/>
+				        </td>
+					</tr>
+					<tr>				        
+						<td width="50">Password</td>														
+				        <td title="Password">
+			                <input size="25" name="password" type="password" value=""/>
+				        </td>
+					</tr>
+					<tr>				        
 						<td width="50">Description</td>														
 				        <td title="Description">
 			                <input size="25" name="description" type="text" value=""/>
