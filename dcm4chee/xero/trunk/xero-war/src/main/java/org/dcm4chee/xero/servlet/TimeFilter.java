@@ -26,10 +26,10 @@ public class TimeFilter  implements Filter{
 		long dur = System.currentTimeMillis() - start;
 		String msg = "The request "+ req.getRequestURI()
 		+ " with parameters " + req.getQueryString() + " took "+dur+" ms.";
-		if( dur < 100 ) {
+		if( dur < 10 ) {
 			log.debug(msg);
 		}
-		else if( dur < 250 ) {
+		else if( dur < 400 ) {
 			log.info(msg);
 		}
 		else if( dur < 1000 ) {

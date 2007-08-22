@@ -117,7 +117,9 @@
   </target>
 
   <target name="stable" depends="build" description="Deploy Xero to the development Dcm4che server.">
-     <copy file="xero-ear/target/xero.ear" todir="${stableServer}/server/default/deploy" preservelastmodified="true"/>
+     <copy todir="${stableServer}/server/default/deploy/xero.ear" preservelastmodified="true">
+        <fileset dir="xero-ear/target/xero" excludes="xero.war" />
+     </copy>
      <copy todir="${stableServer}/server/default/conf">
         <fileset dir="conf" includes="**/*" />
      </copy>

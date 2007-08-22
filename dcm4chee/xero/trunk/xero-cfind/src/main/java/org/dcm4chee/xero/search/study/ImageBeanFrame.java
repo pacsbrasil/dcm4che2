@@ -75,10 +75,19 @@ public class ImageBeanFrame extends ImageBean {
 	  this.frame = frame;
 	  this.sopInstanceUID = objectUID;
    }
+   
+   public ImageBeanFrame() {
+	  // Should only be used by JAXB.
+   }
 
    /** Return the frame number */
    public Integer getFrame() {
 	  return frame;
+   }
+   
+   /** Sets the frame number */
+   public void setFrame(Integer frame) {
+	  this.frame = frame;
    }
    
    /** Return the id for this element, in this case the SOP Instance UID */

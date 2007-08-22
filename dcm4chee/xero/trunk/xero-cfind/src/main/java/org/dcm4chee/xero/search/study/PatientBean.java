@@ -52,10 +52,13 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "patient")
 public class PatientBean extends PatientType implements Patient,
 		ResultFromDicom, CacheItem, LocalModel<PatientIdentifier> {
+   private static final Logger log = LoggerFactory.getLogger(PatientBean.class);
 	static DatatypeFactory datatypeFactory;
 	static {
 		try {
@@ -111,7 +114,8 @@ public class PatientBean extends PatientType implements Patient,
 		getStudy().addAll(patient.getStudy());
 	}
 
-	protected static String excludeZeroEnd(String str) {
+	/** Excludes a zero at the end of the string from being included. */
+	public static String excludeZeroEnd(String str) {
 		if (str == null)
 			return null;
 		if (str.length() == 0)
@@ -131,9 +135,21 @@ public class PatientBean extends PatientType implements Patient,
 		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
 		String strSex = cmd.getString(Tag.PatientSex);
 		if (strSex != null) {
+		   try {
 			setPatientSex(SexEnum.fromValue(strSex.toUpperCase()));
+		   }
+		   catch(IllegalArgumentException e) {
+			  log.warn("Caught illegal sex value "+strSex);
+			  setPatientSex(SexEnum.O);
+		   }
 		}
-		Date date = cmd.getDate(Tag.PatientBirthDate);
+		Date date;
+		try {
+		   date = cmd.getDate(Tag.PatientBirthDate);
+		}
+		catch(Exception e) {
+		   date = null;
+		}
 		if (date != null) {
 			GregorianCalendar cal = new GregorianCalendar();
 			cal.setTime(date);
