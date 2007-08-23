@@ -62,17 +62,17 @@ import org.dcm4che.util.UIDGenerator;
  */
 public class StudyInfoService extends MBeanServiceBase {
 
-	private static Logger log = Logger.getLogger(
-            StudyInfoService.class.getName());
+    private static Logger log = Logger.getLogger(StudyInfoService.class
+            .getName());
 
-	DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private boolean noMatchForNoValue = true;
 
-	public StudyInfoService() {
-	}
+    public StudyInfoService() {
+    }
 
-	public final boolean isNoMatchForNoValue() {
+    public final boolean isNoMatchForNoValue() {
         return noMatchForNoValue;
     }
 
@@ -81,127 +81,131 @@ public class StudyInfoService extends MBeanServiceBase {
     }
 
     protected void startService() throws Exception {
-	}
+    }
 
-	protected void stopService() throws Exception {
-	}
+    protected void stopService() throws Exception {
+    }
 
-	private Dataset getQueryDS(String level, String uid) {
-		Dataset dsQ = dof.newDataset();
-		if ("STUDY".equals(level))
-			dsQ.putUI(Tags.StudyInstanceUID, uid);
-		else if ("SERIES".equals(level))
-			dsQ.putUI(Tags.SeriesInstanceUID, uid);
-		else if ("IMAGE".equals(level))
-			dsQ.putUI(Tags.SOPInstanceUID, uid);
-		else
-			throw new IllegalArgumentException(
-					"Argument level must be either STUDY,SERIES or IMAGE! level:"
-							+ level);
-		dsQ.putCS(Tags.QueryRetrieveLevel, level);
-		return dsQ;
-	}
+    private Dataset getQueryDS(String level, String uid) {
+        Dataset dsQ = dof.newDataset();
+        if ("STUDY".equals(level))
+            dsQ.putUI(Tags.StudyInstanceUID, uid);
+        else if ("SERIES".equals(level))
+            dsQ.putUI(Tags.SeriesInstanceUID, uid);
+        else if ("IMAGE".equals(level))
+            dsQ.putUI(Tags.SOPInstanceUID, uid);
+        else
+            throw new IllegalArgumentException(
+                    "Argument level must be either STUDY,SERIES or IMAGE! level:"
+                            + level);
+        dsQ.putCS(Tags.QueryRetrieveLevel, level);
+        return dsQ;
+    }
 
-	public boolean checkOutdated(Date date, String level, String uid) {
-		Dataset dsQ = getQueryDS(level, uid);
-		RetrieveStudyDatesCmd cmd = null;
-		try {
-			cmd = RetrieveStudyDatesCmd.create(dsQ);
-			Date mrDate = cmd.getMostRecentUpdatedTime();
-			return date.before(mrDate);
-		} catch (SQLException x) {
-			log.error("Error while RetrieveStudyDatesCmd!", x);
-		} finally {
-			if (cmd != null)
-				cmd.close();
-		}
-		return true;
-	}
+    public boolean checkOutdated(Date date, String level, String uid) {
+        Dataset dsQ = getQueryDS(level, uid);
+        RetrieveStudyDatesCmd cmd = null;
+        try {
+            cmd = RetrieveStudyDatesCmd.create(dsQ);
+            Date mrDate = cmd.getMostRecentUpdatedTime();
+            return date.before(mrDate);
+        }
+        catch (SQLException x) {
+            log.error("Error while RetrieveStudyDatesCmd!", x);
+        }
+        finally {
+            if (cmd != null)
+                cmd.close();
+        }
+        return true;
+    }
 
-	public Dataset retrieveStudyInfo(String level, Dataset dsQ)
-			throws SQLException, IOException {
+    public Dataset retrieveStudyInfo(String level, Dataset dsQ)
+            throws SQLException, IOException {
 
-		WadoQueryCmd queryCmd = null;
-		Dataset dsAll = dof.newDataset();
+        WadoQueryCmd queryCmd = null;
+        Dataset dsAll = dof.newDataset();
 
-		// general attributes
-		dsAll.putUI(Tags.SOPClassUID, UIDs.TianiStudyInfo);
-		dsAll
-				.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance()
-						.createUID());
+        // general attributes
+        dsAll.putUI(Tags.SOPClassUID, UIDs.TianiStudyInfo);
+        dsAll
+                .putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance()
+                        .createUID());
 
-		try {
-			queryCmd = WadoQueryCmd.create(dsQ, false, noMatchForNoValue );
-			queryCmd.execute();
-			HashMap data = new HashMap();
-			while (queryCmd.next()) {
-				//
-				// Need to convert flat result set to hierachical hierarchical
-				//				
-				queryCmd.fillDatasetHierarchical(data);
-			}
+        try {
+            queryCmd = WadoQueryCmd.create(dsQ, false, noMatchForNoValue);
+            queryCmd.execute();
+            HashMap data = new HashMap();
+            while (queryCmd.next()) {
+                //
+                // Need to convert flat result set to hierachical hierarchical
+                //				
+                queryCmd.fillDatasetHierarchical(data);
+            }
 
-			// Convert to dataset
+            // Convert to dataset
 
-			// referenced patient sequence
-			DcmElement psq = dsAll.putSQ(Tags.RefPatientSeq);
-			for (Iterator pit = data.values().iterator(); pit.hasNext();) {
-				WadoQueryCmd.KeyData pkd = (WadoQueryCmd.KeyData) pit.next();
-				psq.addItem(pkd.ds);
+            // referenced patient sequence
+            DcmElement psq = dsAll.putSQ(Tags.RefPatientSeq);
+            for (Iterator pit = data.values().iterator(); pit.hasNext();) {
+                WadoQueryCmd.KeyData pkd = (WadoQueryCmd.KeyData) pit.next();
+                psq.addItem(pkd.ds);
 
-				if (pkd.seq.size() == 0)
-					continue;
+                if (pkd.seq.size() == 0)
+                    continue;
 
-				// referenced study sequence
-				DcmElement ssq = pkd.ds.putSQ(Tags.RefStudySeq);
-				for (Iterator sit = pkd.seq.values().iterator(); sit.hasNext();) {
-					WadoQueryCmd.KeyData skd = (WadoQueryCmd.KeyData) sit
-							.next();
-					ssq.addItem(skd.ds);
+                // referenced study sequence
+                DcmElement ssq = pkd.ds.putSQ(Tags.RefStudySeq);
+                for (Iterator sit = pkd.seq.values().iterator(); sit.hasNext();) {
+                    WadoQueryCmd.KeyData skd = (WadoQueryCmd.KeyData) sit
+                            .next();
+                    ssq.addItem(skd.ds);
 
-					if (skd.seq.size() == 0)
-						continue;
+                    if (skd.seq.size() == 0)
+                        continue;
 
-					// referenced series sequence
-					DcmElement rsq = skd.ds.putSQ(Tags.RefSeriesSeq);
-					for (Iterator rit = skd.seq.values().iterator(); rit
-							.hasNext();) {
-						WadoQueryCmd.KeyData rkd = (WadoQueryCmd.KeyData) rit
-								.next();
-						rsq.addItem(rkd.ds);
+                    // referenced series sequence
+                    DcmElement rsq = skd.ds.putSQ(Tags.RefSeriesSeq);
+                    for (Iterator rit = skd.seq.values().iterator(); rit
+                            .hasNext();) {
+                        WadoQueryCmd.KeyData rkd = (WadoQueryCmd.KeyData) rit
+                                .next();
+                        rsq.addItem(rkd.ds);
 
-						if (rkd.seq.size() == 0)
-							continue;
+                        if (rkd.seq.size() == 0)
+                            continue;
 
-						// referenced image instance sequence
-						DcmElement isq = rkd.ds.putSQ(Tags.RefInstanceSeq);
-						for (Iterator iit = rkd.seq.values().iterator(); iit
-								.hasNext();) {
-							WadoQueryCmd.KeyData ikd = (WadoQueryCmd.KeyData) iit
-									.next();
-							isq.addItem(ikd.ds);
+                        // referenced image instance sequence
+                        DcmElement isq = rkd.ds.putSQ(Tags.RefInstanceSeq);
+                        for (Iterator iit = rkd.seq.values().iterator(); iit
+                                .hasNext();) {
+                            WadoQueryCmd.KeyData ikd = (WadoQueryCmd.KeyData) iit
+                                    .next();
+                            isq.addItem(ikd.ds);
 
-							if (ikd.seq.size() == 0)
-								continue;
+                            if (ikd.seq.size() == 0)
+                                continue;
 
-							// referenced image location sequence
-							DcmElement lsq = ikd.ds.putSQ(Tags.RefImageSeq);
-							for (Iterator lit = ikd.seq.values().iterator(); lit
-									.hasNext();) {
-								WadoQueryCmd.KeyData lkd = (WadoQueryCmd.KeyData) lit
-										.next();
-								lsq.addItem(lkd.ds);
-							}
-						}
-					}
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			queryCmd.close();
-		}
+                            // referenced image location sequence
+                            DcmElement lsq = ikd.ds.putSQ(Tags.RefImageSeq);
+                            for (Iterator lit = ikd.seq.values().iterator(); lit
+                                    .hasNext();) {
+                                WadoQueryCmd.KeyData lkd = (WadoQueryCmd.KeyData) lit
+                                        .next();
+                                lsq.addItem(lkd.ds);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            queryCmd.close();
+        }
 
-		return dsAll;
-	}
+        return dsAll;
+    }
 }
