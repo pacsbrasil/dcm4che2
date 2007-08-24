@@ -6,7 +6,8 @@
  * The library supports Gecko based browsers like Mozilla and Firefox,
  * Internet Explorer (5.5+ with MSXML3.0+), Konqueror, Safari and a little of Opera
  * @version ${project.version}
- * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+ * @author: @author: Copyright 2004-2007 Emmanouil Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+ *
  * ====================================================================
  * Licence
  * ====================================================================
@@ -17,6 +18,7 @@
  * In case your copy of Sarissa does not include the license texts, you may find
  * them online in various formats at <a href="http://www.gnu.org">http://www.gnu.org</a> and 
  * <a href="http://www.apache.org">http://www.apache.org</a>.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
  * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
  * WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE 
@@ -43,12 +45,25 @@ var _SARISSA_HAS_DOM_IMPLEMENTATION = document.implementation && true;
 var _SARISSA_HAS_DOM_CREATE_DOCUMENT = _SARISSA_HAS_DOM_IMPLEMENTATION && document.implementation.createDocument;
 var _SARISSA_HAS_DOM_FEATURE = _SARISSA_HAS_DOM_IMPLEMENTATION && document.implementation.hasFeature;
 var _SARISSA_IS_MOZ = _SARISSA_HAS_DOM_CREATE_DOCUMENT && _SARISSA_HAS_DOM_FEATURE;
-var _SARISSA_IS_SAFARI = (navigator.userAgent && navigator.vendor && (navigator.userAgent.toLowerCase().indexOf("applewebkit") != -1 || navigator.vendor.indexOf("Apple") != -1));
+var _SARISSA_IS_SAFARI = navigator.userAgent.toLowerCase().indexOf("safari") != -1 || navigator.userAgent.toLowerCase().indexOf("konqueror") != -1;
+var _SARISSA_IS_SAFARI_OLD = _SARISSA_IS_SAFARI && parseInt((navigator.userAgent.match(/AppleWebKit\/(\d+)/)||{})[1]) < 420;
 var _SARISSA_IS_IE = document.all && window.ActiveXObject && navigator.userAgent.toLowerCase().indexOf("msie") > -1  && navigator.userAgent.toLowerCase().indexOf("opera") == -1;
+var _SARISSA_IS_OPERA = navigator.userAgent.toLowerCase().indexOf("opera") != -1;
 if(!window.Node || !Node.ELEMENT_NODE){
     Node = {ELEMENT_NODE: 1, ATTRIBUTE_NODE: 2, TEXT_NODE: 3, CDATA_SECTION_NODE: 4, ENTITY_REFERENCE_NODE: 5,  ENTITY_NODE: 6, PROCESSING_INSTRUCTION_NODE: 7, COMMENT_NODE: 8, DOCUMENT_NODE: 9, DOCUMENT_TYPE_NODE: 10, DOCUMENT_FRAGMENT_NODE: 11, NOTATION_NODE: 12};
 };
 
+//This breaks for(x in o) loops in the old Safari
+if(_SARISSA_IS_SAFARI_OLD){
+    HTMLHtmlElement = document.createElement("html").constructor;
+    Node = HTMLElement = {};
+    HTMLElement.prototype = HTMLHtmlElement.__proto__.__proto__;
+    HTMLDocument = Document = document.constructor;
+    var x = new DOMParser();
+    XMLDocument = x.constructor;
+    Element = x.parseFromString("<Single />", "text/xml").documentElement.constructor;
+    x = null;
+}
 if(typeof XMLDocument == "undefined" && typeof Document !="undefined"){ XMLDocument = Document; } 
 
 // IE initialization
@@ -68,18 +83,19 @@ if(_SARISSA_IS_IE){
      */
     Sarissa.pickRecentProgID = function (idList){
         // found progID flag
-        var bFound = false;
+        var bFound = false, e;
         for(var i=0; i < idList.length && !bFound; i++){
             try{
                 var oDoc = new ActiveXObject(idList[i]);
-                o2Store = idList[i];
+                var o2Store = idList[i];
                 bFound = true;
             }catch (objException){
                 // trap; try next progID
+                e = objException;
             };
         };
         if (!bFound) {
-            throw "Could not retreive a valid progID of Class: " + idList[idList.length-1]+". (original exception: "+e+")";
+            throw "Could not retrieve a valid progID of Class: " + idList[idList.length-1]+". (original exception: "+e+")";
         };
         idList = null;
         return o2Store;
@@ -184,12 +200,15 @@ if(_SARISSA_IS_IE){
         // convert stylesheet to free threaded
         var converted = new ActiveXObject(_SARISSA_THREADEDDOM_PROGID);
         // make included/imported stylesheets work if exist and xsl was originally loaded from url
+        try{
+            converted.resolveExternals = true; 
+            converted.setProperty("AllowDocumentFunction", true); 
+        }
+        catch(e){
+            // Ignore. "AllowDocumentFunction" is only supported in MSXML 3.0 SP4 and later.
+        }; 
         if(xslDoc.url && xslDoc.selectSingleNode("//xsl:*[local-name() = 'import' or local-name() = 'include']") != null){
             converted.async = false;
-            if (_SARISSA_THREADEDDOM_PROGID == "MSXML2.FreeThreadedDOMDocument.6.0") { 
-                converted.setProperty("AllowDocumentFunction", true); 
-                converted.resolveExternals = true; 
-            }
             converted.load(xslDoc.url);
         } else {
             converted.loadXML(xslDoc.xml);
@@ -200,7 +219,7 @@ if(_SARISSA_IS_IE){
         this.template.stylesheet = converted;
         this.processor = this.template.createProcessor();
         // for getParameter and clearParameters
-        this.paramsSet = new Array();
+        this.paramsSet = [];
     };
 
     /**
@@ -273,21 +292,22 @@ if(_SARISSA_IS_IE){
      * @argument name The parameter base name
      * @argument value The new parameter value
      */
-    XSLTProcessor.prototype.setParameter = function(nsURI, name, value){
-        // make value a zero length string if null to allow clearing
-        value = value ? value : "";
-        // nsURI is optional but cannot be null 
-        if(nsURI){
-            this.processor.addParameter(name, value, nsURI);
-        }else{
-            this.processor.addParameter(name, value);
-        };
-        // update updated params for getParameter 
-        if(!this.paramsSet[""+nsURI]){
-            this.paramsSet[""+nsURI] = new Array();
-        };
-        this.paramsSet[""+nsURI][name] = value;
-    };
+     XSLTProcessor.prototype.setParameter = function(nsURI, name, value){
+         // make value a zero length string if null to allow clearing
+         value = value ? value : "";
+         // nsURI is optional but cannot be null
+         if(nsURI){
+             this.processor.addParameter(name, value, nsURI);
+         }else{
+             this.processor.addParameter(name, value);
+         };
+         // update updated params for getParameter
+         nsURI = "" + (nsURI || "");
+         if(!this.paramsSet[nsURI]){
+             this.paramsSet[nsURI] = new Array();
+         };
+         this.paramsSet[nsURI][name] = value;
+     };
     /**
      * Gets a parameter if previously set by setParameter. Returns null
      * otherwise
@@ -296,7 +316,7 @@ if(_SARISSA_IS_IE){
      * @return The parameter value if reviously set by setParameter, null otherwise
      */
     XSLTProcessor.prototype.getParameter = function(nsURI, name){
-        nsURI = "" + nsURI;
+        nsURI = "" + (nsURI || "");
         if(this.paramsSet[nsURI] && this.paramsSet[nsURI][name]){
             return this.paramsSet[nsURI][name];
         }else{
@@ -309,7 +329,7 @@ if(_SARISSA_IS_IE){
     XSLTProcessor.prototype.clearParameters = function(){
         for(var nsURI in this.paramsSet){
             for(var name in this.paramsSet[nsURI]){
-                if(nsURI){
+                if(nsURI!=""){
                     this.processor.addParameter(name, "", nsURI);
                 }else{
                     this.processor.addParameter(name, "");
@@ -346,8 +366,9 @@ if(_SARISSA_IS_IE){
         Sarissa.__setReadyState__ = function(oDoc, iReadyState){
             oDoc.readyState = iReadyState;
             oDoc.readystate = iReadyState;
-            if (oDoc.onreadystatechange != null && typeof oDoc.onreadystatechange == "function")
+            if (oDoc.onreadystatechange != null && typeof oDoc.onreadystatechange == "function") {
                 oDoc.onreadystatechange();
+            }
         };
         Sarissa.getDomDocument = function(sUri, sName){
             var oDoc = document.implementation.createDocument(sUri?sUri:null, sName?sName:null, null);
@@ -554,6 +575,10 @@ Sarissa.clearChildNodes = function(oNode) {
  * @argument bPreserveExisting whether to preserve the original content of nodeTo, default is false
  */
 Sarissa.copyChildNodes = function(nodeFrom, nodeTo, bPreserveExisting) {
+    if(_SARISSA_IS_SAFARI && nodeTo.nodeType == Node.DOCUMENT_NODE){ // SAFARI_OLD ??
+        nodeTo = nodeTo.documentElement; //Appearantly there's a bug in safari where you can't appendChild to a document node
+    }
+    
     if((!nodeFrom) || (!nodeTo)){
         throw "Both source and destination nodes must be provided";
     };
@@ -610,12 +635,12 @@ Sarissa.moveChildNodes = function(nodeFrom, nodeTo, bPreserveExisting) {
 };
 
 /** 
- * <p>Serialize any object to an XML string. All properties are serialized using the property name
+ * <p>Serialize any <strong>non</strong> DOM object to an XML string. All properties are serialized using the property name
  * as the XML element name. Array elements are rendered as <code>array-item</code> elements, 
  * using their index/key as the value of the <code>key</code> attribute.</p>
  * @argument anyObject the object to serialize
  * @argument objectName a name for that object
- * @return the XML serializationj of the given object as a string
+ * @return the XML serialization of the given object as a string
  */
 Sarissa.xmlize = function(anyObject, objectName, indentSpace){
     indentSpace = indentSpace?indentSpace:'';
@@ -627,14 +652,13 @@ Sarissa.xmlize = function(anyObject, objectName, indentSpace){
         isLeaf = true;
     }else{
         s += "\n";
-        var itemKey = '';
         var isArrayItem = anyObject instanceof Array;
         for(var name in anyObject){
             s += Sarissa.xmlize(anyObject[name], (isArrayItem?"array-item key=\""+name+"\"":name), indentSpace + "   ");
         };
         s += indentSpace;
     };
-    return s += (objectName.indexOf(' ')!=-1?"</array-item>\n":"</" + objectName + ">\n");
+    return (s += (objectName.indexOf(' ')!=-1?"</array-item>\n":"</" + objectName + ">\n"));
 };
 
 /** 

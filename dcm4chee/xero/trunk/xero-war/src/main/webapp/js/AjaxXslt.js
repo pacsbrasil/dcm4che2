@@ -55,9 +55,9 @@ XsltAjax.prototype.WAIT_CURSOR = "wait";
 XsltAjax.prototype.NORMAL_CURSOR = "auto";
 XsltAjax.prototype.STATUS_OK = 200;
 
-XsltAjax.prototype.debug=debug
-// Use for expensive debugging statements only.
-XsltAjax.prototype.logLevel=3;
+XsltAjax.prototype.debug=info;
+// Use for expensive debugging statements only - set to 3 normally.
+XsltAjax.prototype.logLevel=2;
 XsltAjax.prototype.info=info
 
 /**
@@ -89,14 +89,24 @@ XsltAjax.prototype.updateCursor = function(target, cursorType) {
  */
 XsltAjax.prototype.asXml = function(xmlHttp) {
   var xml;
-  if( xmlHttp && xmlHttp.responseXML ) {
-     if( xmlHttp.responseXML.hasChildNodes() ) {
-       return xmlHttp.responseXML; 
-     }
-     else {
-       xml = (new DOMParser()).parseFromString(xmlHttp.responseText,"text/xml");
-       return xml;
-     }
+  var parser;
+  var error;
+  if( xmlHttp && xmlHttp.responseXML && xmlHttp.responseXML.hasChildNodes() ) {
+  	this.debug("Returning xmlHttp.responseXML="+xmlHttp.responseXML);
+    return xmlHttp.responseXML; 
+  }
+  else if( xmlHttp.responseText ) {
+    this.debug("Parsing returned raw text="+xmlHttp.responseText);
+    xml = Sarissa.getDomDocument();
+    parser = new DOMParser();
+    xml = parser.parseFromString(xmlHttp.responseText,"text/xml");
+    this.debug("Parsing completed.");
+    error = Sarissa.getParseErrorText(xml);
+    if( error!==Sarissa.PARSED_OK ) {
+    	alert("Invalid parsing/XSLT of document:"+error+" from text:"+xmlHttp.responseText);
+    	return xml;
+    }
+    return xml;
   }
   return undefined;
 };
@@ -130,9 +140,7 @@ XsltAjax.prototype.setXsltUri = function(xsltUri) {
     try {
        if( xslObj.status==this.STATUS_OK || xslObj.status==0) {
    	      this.xsltProcessor = new XSLTProcessor();
-   	      this.debug("Created XSLTProcessor");
     	  this.xsltProcessor.importStylesheet(xsl);
-    	  this.debug("Imported stylesheet into XSLT processor.");
        } else {
            error("Error on "+xsltUri + " status:"+xslObj.status+" msg:"+xslObj.statusText);
        }
@@ -262,7 +270,7 @@ XsltAjax.prototype.ajaxRead = function (file, item, params){
      	usethis.debug("Ajax read succeeded, updating object.");
      	this.fromServerTime = (new Date()).getTime();
      	asXml = usethis.asXml(xmlObj);
-        usethis.updateObj(item, usethis.asXml(xmlObj));
+        usethis.updateObj(item, asXml);
      }
   };
   if( xmlObj.overrideMimeType ) {
@@ -289,7 +297,9 @@ XsltAjax.prototype.updateObj = function (item, xml){
     this.currentXml = xml;
     this.endParseTime = (new Date()).getTime();
 	if( this.xsltProcessor!==undefined ) {
+	  this.debug("About to XSLT transform xml document.");
       xml = this.xsltProcessor.transformToDocument(xml);
+      this.debug("Done transformation of document.");
    }
    this.xslTime = (new Date()).getTime();
    if( this.logLevel<2 ) this.info("Generated updated page is "+this.asString(xml));

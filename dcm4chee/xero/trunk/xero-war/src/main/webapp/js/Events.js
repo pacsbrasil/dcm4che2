@@ -173,7 +173,7 @@ function warn(msg) {
 
 function error(msg) {
 	if( level <=3 ) {
-		alert(msg);
+		alert("Error:"+msg);
 		ttrace(msg);
 	};
 };

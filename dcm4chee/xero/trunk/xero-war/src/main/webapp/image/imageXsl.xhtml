@@ -62,7 +62,7 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
   >
    <div id="body">
     <button onclick="ttrace(document.getElementsByTagName('body')[0].innerHTML);">Body</button>
-	<button onclick="ttrace(displayXslt.asString(displayXslt.currentXml));">Source</button>
+	<button onclick="ttrace('Source='+displayXslt.asString(displayXslt.currentXml));">Source</button>
     <x:callTemplates from="#{pageConfig}" mode="body" />
    </div>
   </body>
