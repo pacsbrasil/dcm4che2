@@ -162,7 +162,7 @@
 
    <filter-mapping>
      <filter-name>XsltFilter</filter-name>
-     <url-pattern>/image/image.seam</url-pattern>
+     <url-pattern>*.seam</url-pattern>
    </filter-mapping>
 
    <filter-mapping>

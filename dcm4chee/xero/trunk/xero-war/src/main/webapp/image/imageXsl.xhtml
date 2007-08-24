@@ -21,7 +21,7 @@
 
 <ui:fragment>
 <x:template name="contentTypeMeta" m:Display.meta="contentTypeMeta" m:Display.meta.priority="25">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" xmlns="http://www.w3.org/1999/xhtml"/>
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=UTF-8"/>
 </x:template>
 </ui:fragment>
 
@@ -49,7 +49,7 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     </xsl:element>
 </x:template>
   
-<x:template name="displayHtml" match="/"><html style="background: black; color: white; ">
+<x:template name="displayHtml" match="/"><html style="background: black; color: white; " xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <x:callTemplates from="#{pageConfig}" mode="meta" />
     <title>Xero Image Frame</title>

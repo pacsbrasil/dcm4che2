@@ -43,6 +43,8 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -73,27 +75,36 @@ public class XsltFilter implements Filter {
 
    FilterConfig filterConfig;
 
-   Transformer transformer;
+   Map<String,Transformer> transformers = new HashMap<String,Transformer>();
 
    public void destroy() {
    }
 
    /**
      * Gets the transformer appropriate to transform the given request, as
-     * embodied in the responseWrapper
+     * embodied in the responseWrapper.  Currently this replaces the last bit of the
+     * URL (.seam) with Xsl.xsl and does a request, checking first to see if it is in the cache.
+     * Assume this filter is single-threaded - if not, we need to use a rental model whereby
+     * there is a replace transformer call.
      */
-   protected Transformer getTransformer(ServletRequest request, String xml) throws IOException {
+   protected Transformer getTransformer(HttpServletRequest request, String xml) throws IOException {
+	  String xsl = request.getRequestURI();
+	  int lastDot = xsl.lastIndexOf('.');
+	  if( lastDot<0 ) throw new IllegalArgumentException("Unknown request - need to be .X for some X");
+	  xsl = "http://localhost:8080/"+xsl.substring(0,lastDot)+"Xsl.xsl";
+	  Transformer transformer = transformers.get(xsl);
 	  if (transformer == null) {
-		 String styleSheet = "http://wtl-bwallace:8080/xero/image/imageXsl.xsl";
-		 URL url = new URL(styleSheet);
+		 URL url = new URL(xsl);
 		 Source styleSource = new StreamSource(url.openStream());
 		 TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		 transformerFactory.setURIResolver(new UrlURIResolver(request));
 		 try {
 			transformer = transformerFactory.newTransformer(styleSource);
 		 } catch (TransformerConfigurationException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		 }
+		 transformers.put(xsl,transformer);
 	  }
 	  return transformer;
    }
@@ -101,26 +112,27 @@ public class XsltFilter implements Filter {
    /**
      * Detect if XSLT should be applied
      */
-   protected boolean checkApplyXslt(ServletRequest request) {
+   protected boolean checkApplyXslt(HttpServletRequest request) {
 	  if ("true".equalsIgnoreCase(request.getParameter(XSLT_PARAMETER)))
 		 return true;
-	  HttpServletRequest hRequest = (HttpServletRequest) request;
-	  String agent = hRequest.getHeader("USER-AGENT");
-	  if (agent.indexOf("AppleWebKit") >= 0) {
+	  String agent = request.getHeader("USER-AGENT");
+	  // Note that apple web-kit is NOT included, as pages for that browser are conditionally included
+	  // based on need.
+	  if (agent.indexOf("Opera") >= 0) {
 		 return true;
 	  }
-	  if (agent.indexOf("Opera") >= 0) {
+	  if (agent.indexOf("Konqueror") >=0 ) {
 		 return true;
 	  }
 	  return false;
    }
 
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filters) throws IOException, ServletException {
-	  if (!checkApplyXslt(request)) {
+	  HttpServletRequest hRequest = (HttpServletRequest) request;
+	  if (!checkApplyXslt(hRequest)) {
 		 filters.doFilter(request, response);
 		 return;
 	  }
-
 	  PrintWriter out = response.getWriter();
 	  CharResponseWrapper responseWrapper = new CharResponseWrapper((HttpServletResponse) response);
 	  filters.doFilter(request, responseWrapper);
@@ -130,8 +142,8 @@ public class XsltFilter implements Filter {
 	  Source xmlSource = new StreamSource(sr);
 
 	  try {
-		 Transformer useTransform = getTransformer(request, xml);
-		 useTransform.setURIResolver(new UrlURIResolver());
+		 Transformer useTransform = getTransformer(hRequest, xml);
+		 useTransform.setURIResolver(new UrlURIResolver(hRequest));
 		 CharArrayWriter caw = new CharArrayWriter();
 		 StreamResult result = new StreamResult(caw);
 		 useTransform.transform(xmlSource, result);
@@ -155,17 +167,30 @@ public class XsltFilter implements Filter {
  * resolve. TODO Later on, include any security credentials.
  */
 class UrlURIResolver implements URIResolver {
+   String localPrefix;
+   String prefix = "http://localhost:8080/";
+   
+   public UrlURIResolver(HttpServletRequest request) {
+	  String uri = request.getRequestURI();
+	  uri = uri.substring(1,uri.lastIndexOf("/")+1);
+	  localPrefix = prefix+uri;
+   }
 
    public Source resolve(String href, String base) throws TransformerException {
 	  URL url;
-	  String sUrl = "http://localhost:8080/" + href;
+	  String sUrl;
+	  if( href.startsWith("/") ) {
+		 sUrl = prefix + href;
+	  } else {
+		 sUrl = localPrefix + href;
+	  }
 	  try {
 		 url = new URL(sUrl);
 		 return new StreamSource(url.openStream());
 	  } catch (MalformedURLException e) {
-		 throw new RuntimeException("Invalid URL:" + base + href, e);
+		 throw new RuntimeException("Invalid URL:" + sUrl, e);
 	  } catch (IOException e) {
-		 throw new RuntimeException("IO Exception on URL:" + base + href, e);
+		 throw new RuntimeException("IO Exception on URL:" + sUrl, e);
 	  }
    }
 }
