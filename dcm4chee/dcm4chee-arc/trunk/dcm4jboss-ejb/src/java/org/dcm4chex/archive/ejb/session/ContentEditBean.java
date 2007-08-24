@@ -49,7 +49,6 @@ import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -62,7 +61,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
-import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -135,9 +133,7 @@ public abstract class ContentEditBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
             throw new EJBException(e);
-        } catch (ConfigurationException e) {
-            throw new EJBException(e);
-		} finally {
+        } finally {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();

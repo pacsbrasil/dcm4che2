@@ -53,7 +53,6 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 
@@ -97,9 +96,7 @@ public abstract class FixPatientAttributesBean implements SessionBean {
             patHome = (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
         } catch (NamingException e) {
             throw new EJBException(e);
-        } catch (ConfigurationException e) {
-            throw new EJBException(e);
-		} finally {
+	} finally {
             if (jndiCtx != null) {
                 try {
                     jndiCtx.close();

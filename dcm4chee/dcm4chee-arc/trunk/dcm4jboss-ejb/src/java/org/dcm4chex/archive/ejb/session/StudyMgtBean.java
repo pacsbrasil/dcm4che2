@@ -62,7 +62,6 @@ import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -123,8 +122,6 @@ public abstract class StudyMgtBean implements SessionBean {
             		.lookup("java:comp/env/ejb/PatientUpdate");
 
 		} catch (NamingException e) {
-			throw new EJBException(e);
-		} catch (ConfigurationException e) {
 			throw new EJBException(e);
 		} finally {
 			if (jndiCtx != null) {

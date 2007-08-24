@@ -46,6 +46,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

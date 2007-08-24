@@ -63,7 +63,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
-import org.dcm4chex.archive.ejb.conf.ConfigurationException;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -198,8 +197,6 @@ public abstract class PrivateManagerBean implements SessionBean {
             privFileHome = (PrivateFileLocalHome) jndiCtx
     		        .lookup("java:comp/env/ejb/PrivateFile");
         } catch (NamingException e) {
-            throw new EJBException(e);
-        } catch (ConfigurationException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
