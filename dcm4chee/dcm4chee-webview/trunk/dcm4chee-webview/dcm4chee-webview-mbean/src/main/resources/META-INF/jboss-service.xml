@@ -328,6 +328,31 @@
       </parameter>
       <return-type>java.util.Properties</return-type>
    </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Get the Applet Parameters to launch the web based DICOM viewer.<br/>
+      			Get SOP Instance UIDs referenced by a Manifest retrieved from given URL.<br>
+       		]]> </description>
+      <name>getLaunchPropertiesForManifest</name>
+      <parameter>
+        <description>Manifest URL</description>
+        <name>url</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.Properties</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Get the Applet Parameters to launch the web based DICOM viewer.<br/>
+      			Get SOP Instance UIDs referenced by given Manifest (Key Object Selection Document).<br>
+       		]]> </description>
+      <name>getLaunchPropertiesForManifest</name>
+      <parameter>
+        <description>Manifest (Key Object Selection Document)</description>
+        <name>manifest</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <return-type>java.util.Properties</return-type>
+   </operation>
    
 </xmbean>
 

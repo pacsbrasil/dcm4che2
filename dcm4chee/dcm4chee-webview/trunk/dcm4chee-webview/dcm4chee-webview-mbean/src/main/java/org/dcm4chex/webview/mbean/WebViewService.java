@@ -39,6 +39,10 @@
 
 package org.dcm4chex.webview.mbean;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +56,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chex.webview.CustomLaunchProperties;
 import org.dcm4chex.webview.InstanceContainer;
@@ -384,6 +389,76 @@ public class WebViewService extends ServiceMBeanSupport {
         }
         InstanceContainer results = new UIDQuery(callingAET, calledAET, host, port).query(keys);
         return launchProperties.getProperties(results, ignorePRflag, selectPRflag);
+    }
+    
+    public Properties getLaunchPropertiesForManifest(String manifestURL) throws MalformedURLException, IOException {
+        DicomObject manifest = loadManifest( new URL(manifestURL) );
+        if ( manifest == null ) {
+            log.info("Can't find Manifest:"+manifestURL);
+        }
+        return getLaunchPropertiesForManifest( manifest );
+    }
+    
+    public Properties getLaunchPropertiesForManifest(DicomObject manifest) {
+        InstanceContainer instances = null;
+        if ( manifest != null ) {
+            if ( manifest.getString(Tag.SOPClassUID).equals( UID.KeyObjectSelectionDocument) ) {
+                instances = getKOSInstanceContainer(manifest);
+            } else {
+                log.warn("Object is not a manifest (Key Object Selection Document):"+manifest);
+            }
+        }
+        return launchProperties.getProperties(instances, false, false);
+    }
+    private InstanceContainer getKOSInstanceContainer(DicomObject manifest) {
+        InstanceContainer instances = new InstanceContainer();
+        String patName = manifest.getString(Tag.PatientName);
+        String birthDate = manifest.getString(Tag.PatientBirthDate);
+        String sex = manifest.getString(Tag.PatientSex);
+        String studyIUID, aet, seriesIUID, iuid, cuid;
+        DicomElement evSq = manifest.get(Tag.CurrentRequestedProcedureEvidenceSequence);
+        DicomElement refSerSq, refSopSq;
+        DicomObject evSqItem, refSerItem, refSopItem, obj;
+        for ( int i = 0, len = evSq.countItems() ; i < len ; i++ ) {
+            evSqItem = evSq.getDicomObject(i);
+            studyIUID = evSqItem.getString(Tag.StudyInstanceUID);
+            refSerSq = evSqItem.get(Tag.ReferencedSeriesSequence);
+            for ( int j = 0, lenj = refSerSq.countItems() ; j < lenj ; j++ ) {
+                refSerItem = refSerSq.getDicomObject(j);
+                seriesIUID =  refSerItem.getString(Tag.SeriesInstanceUID);
+                refSopSq = refSerItem.get(Tag.ReferencedSOPSequence);
+                for ( int k = 0, lenk = refSopSq.countItems() ; k < lenk ; k++ ) {
+                    refSopItem = refSopSq.getDicomObject(k);
+                    iuid = refSopItem.getString(Tag.ReferencedSOPInstanceUID);
+                    cuid = refSopItem.getString(Tag.ReferencedSOPClassUID);
+                    obj = new BasicDicomObject();
+                    obj.putString(Tag.PatientName, VR.PN, patName);
+                    obj.putString(Tag.PatientBirthDate, VR.DA, birthDate);
+                    obj.putString(Tag.StudyInstanceUID, VR.CS, sex);
+                    obj.putString(Tag.StudyInstanceUID, VR.UI, studyIUID);
+                    obj.putString(Tag.SeriesInstanceUID, VR.UI, seriesIUID);
+                    obj.putString(Tag.SOPInstanceUID, VR.UI, iuid );
+                    obj.putString(Tag.SOPClassUID, VR.UI, cuid );
+                    instances.add(obj);
+                }
+            }
+        }
+        return instances;
+    }
+    private DicomObject loadManifest(URL url) throws IOException {
+        java.net.HttpURLConnection httpUrlConn = (java.net.HttpURLConnection) url.openConnection();
+        InputStream bis = httpUrlConn.getInputStream();
+        DicomObject manifest = null;
+        try {
+            DicomInputStream in = new DicomInputStream(bis);
+            manifest = in.readDicomObject();
+       } finally {
+            try {
+                bis.close();
+            } catch (IOException ignore) {
+            }
+        }
+        return manifest;
     }
     
     /**
