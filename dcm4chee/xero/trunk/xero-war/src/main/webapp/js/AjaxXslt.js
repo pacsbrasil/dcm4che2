@@ -55,9 +55,9 @@ XsltAjax.prototype.WAIT_CURSOR = "wait";
 XsltAjax.prototype.NORMAL_CURSOR = "auto";
 XsltAjax.prototype.STATUS_OK = 200;
 
-XsltAjax.prototype.debug=info;
+XsltAjax.prototype.debug=debug;
 // Use for expensive debugging statements only - set to 3 normally.
-XsltAjax.prototype.logLevel=2;
+XsltAjax.prototype.logLevel=3;
 XsltAjax.prototype.info=info
 
 /**

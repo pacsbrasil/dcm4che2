@@ -69,7 +69,7 @@ function wlUpdateModel(x,y) {
   
   this.minValue = this.imageNode.getAttribute("minPixel");
   this.maxValue = this.imageNode.getAttribute("maxPixel");
-  this.info("Min,max pixel="+this.minValue+","+this.maxValue);
+  this.debug("Min,max pixel="+this.minValue+","+this.maxValue);
   
   if( (!this.minValue) || (!this.maxValue) ) {
   	this.info("No pixel range - can't window level.");
@@ -78,9 +78,16 @@ function wlUpdateModel(x,y) {
   this.minValue = Number(this.minValue);
   this.maxValue = Number(this.maxValue);
   this.range = this.maxValue - this.minValue;
-  this.windowWidth = this.range;
-  this.windowCenter = this.minValue + this.range/2;
-  this.info("Start w,c="+this.windowWidth+","+this.windowCenter+" range="+this.range);
+  if( this.imageNode.getAttribute("windowWidth") ) {
+	 this.windowWidth = Number(this.imageNode.getAttribute("windowWidth"));
+	 this.windowCenter = Number(this.imageNode.getAttribute("windowCenter"));
+     this.debug("Starting window level: w,c="+this.windowWidth+","+this.windowCenter);
+  }
+  else {
+	 this.windowWidth = this.range;
+	 this.windowCenter = this.minValue + this.range/2;
+     this.info("Using min/max values to generate window level: w,c="+this.windowWidth+","+this.windowCenter+" range="+this.range);
+  }
   
   this.originalWidth = this.windowWidth;
   this.originalCenter = this.windowCenter;

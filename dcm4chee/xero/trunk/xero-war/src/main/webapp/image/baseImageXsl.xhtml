@@ -115,12 +115,17 @@
  <xsl:param name="brx"><xsl:choose><xsl:when test="$cx + $w div (2 * $s) >= @Columns"><xsl:value-of select="@Columns" /></xsl:when><xsl:otherwise><xsl:value-of select="$cx + $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="bry"><xsl:choose><xsl:when test="$cy + $h div (2 * $s) >= @Rows"><xsl:value-of select="@Rows" /></xsl:when><xsl:otherwise><xsl:value-of select="$cy + $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
 
+ <xsl:param name="studyUID" select="ancestor-or-self::*/@StudyInstanceUID[last()]" />
  <xsl:param name="seriesUID" select="parent::*/@SeriesInstanceUID" />
  <xsl:param name="objectUID" select="@SOPInstanceUID" />
  <xsl:param name="frame" select="@frame" />
- <xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID][count(@frame)=0 or @frame=$frame])" />
- <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth][last()]/@windowWidth"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
- <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter][last()]/@windowCenter"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="custStudy" select="$documentsNode/se:patient/se:study[@StudyInstanceUID=$studyUID]" />
+ <xsl:param name="custSeries" select="$custStudy/se:series[@SeriesInstanceUID=$seriesUID]" />
+ <xsl:param name="custNode" select="$custStudy | $custSeries | ($custSeries/se:image[@SOPInstanceUID=$objectUID][count(@frame)=0 or @frame=$frame])" />
+ <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth]"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter]"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
+ 
+ <xsl:message>count custNode=<xsl:value-of select="concat($wWidth,',',$wCenter)" /></xsl:message>
 
  <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
@@ -135,6 +140,8 @@
  <xsl:attribute name="Columns"><xsl:value-of select="@Columns" /></xsl:attribute>
  <xsl:attribute name="minPixel"><xsl:value-of select="@minPixel" /></xsl:attribute>
  <xsl:attribute name="maxPixel"><xsl:value-of select="@maxPixel" /></xsl:attribute>
+ <xsl:attribute name="windowWidth"><xsl:value-of select="$wWidth" /></xsl:attribute>
+ <xsl:attribute name="windowCenter"><xsl:value-of select="$wCenter" /></xsl:attribute>
 </x:template>
 
 <!-- Generate arguments for the current location of this object based on the data node

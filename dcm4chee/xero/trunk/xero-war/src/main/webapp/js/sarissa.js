@@ -112,7 +112,7 @@ if(_SARISSA_IS_IE){
          */
         XMLHttpRequest = function() {
             if(!_SARISSA_XMLHTTP_PROGID){
-                _SARISSA_XMLHTTP_PROGID = Sarissa.pickRecentProgID(["Msxml2.XMLHTTP.6.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"]);
+                _SARISSA_XMLHTTP_PROGID = Sarissa.pickRecentProgID(["Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"]);
             };
             return new ActiveXObject(_SARISSA_XMLHTTP_PROGID);
         };
@@ -124,7 +124,7 @@ if(_SARISSA_IS_IE){
     // see non-IE version
     Sarissa.getDomDocument = function(sUri, sName){
         if(!_SARISSA_DOM_PROGID){
-            _SARISSA_DOM_PROGID = Sarissa.pickRecentProgID(["Msxml2.DOMDocument.6.0", "Msxml2.DOMDocument.3.0", "MSXML2.DOMDocument", "MSXML.DOMDocument", "Microsoft.XMLDOM"]);
+            _SARISSA_DOM_PROGID = Sarissa.pickRecentProgID(["Msxml2.DOMDocument.4.0", "Msxml2.DOMDocument.3.0", "MSXML2.DOMDocument", "MSXML.DOMDocument", "Microsoft.XMLDOM"]);
         };
         var oDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
         // if a root tag name was provided, we need to load it in the DOM object
@@ -181,7 +181,7 @@ if(_SARISSA_IS_IE){
      */
     XSLTProcessor = function(){
         if(!_SARISSA_XSLTEMPLATE_PROGID){
-            _SARISSA_XSLTEMPLATE_PROGID = Sarissa.pickRecentProgID(["Msxml2.XSLTemplate.6.0", "MSXML2.XSLTemplate.3.0"]);
+            _SARISSA_XSLTEMPLATE_PROGID = Sarissa.pickRecentProgID(["Msxml2.XSLTemplate.4.0", "MSXML2.XSLTemplate.3.0"]);
         };
         this.template = new ActiveXObject(_SARISSA_XSLTEMPLATE_PROGID);
         this.processor = null;
@@ -193,7 +193,7 @@ if(_SARISSA_IS_IE){
      */
     XSLTProcessor.prototype.importStylesheet = function(xslDoc){
         if(!_SARISSA_THREADEDDOM_PROGID){
-            _SARISSA_THREADEDDOM_PROGID = Sarissa.pickRecentProgID(["MSXML2.FreeThreadedDOMDocument.6.0", "MSXML2.FreeThreadedDOMDocument.3.0"]);
+            _SARISSA_THREADEDDOM_PROGID = Sarissa.pickRecentProgID(["MSXML2.FreeThreadedDOMDocument.4.0", "MSXML2.FreeThreadedDOMDocument.3.0"]);
         };
         xslDoc.setProperty("SelectionLanguage", "XPath");
         xslDoc.setProperty("SelectionNamespaces", "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'");
@@ -238,7 +238,7 @@ if(_SARISSA_IS_IE){
         }
         else{
             if(!_SARISSA_DOM_XMLWRITER){
-                _SARISSA_DOM_XMLWRITER = Sarissa.pickRecentProgID(["Msxml2.MXXMLWriter.6.0", "Msxml2.MXXMLWriter.3.0", "MSXML2.MXXMLWriter", "MSXML.MXXMLWriter", "Microsoft.XMLDOM"]);
+                _SARISSA_DOM_XMLWRITER = Sarissa.pickRecentProgID(["Msxml2.MXXMLWriter.4.0", "Msxml2.MXXMLWriter.3.0", "MSXML2.MXXMLWriter", "MSXML.MXXMLWriter", "Microsoft.XMLDOM"]);
             };
             this.processor.input = sourceDoc;
             var outDoc = new ActiveXObject(_SARISSA_DOM_XMLWRITER);
@@ -446,6 +446,7 @@ if(!window.DOMParser){
         DOMParser = function() { };
         DOMParser.prototype.parseFromString = function(sXml, contentType){
             var doc = Sarissa.getDomDocument();
+            doc.validateOnParse = false;
             doc.loadXML(sXml);
             return doc;
         };

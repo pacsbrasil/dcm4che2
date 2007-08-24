@@ -168,8 +168,8 @@ ImageEvent.prototype.updateImage = function (url)
 /** Allows changing the debug output to another level or otherwise updating it. */
 ImageEvent.prototype.debug = debug;
 ImageEvent.prototype.debugMouse = debug;
-ImageEvent.prototype.debugValue = info;
-ImageEvent.prototype.debugLoad = debug;
+ImageEvent.prototype.debugValue = debug;
+ImageEvent.prototype.debugLoad = info;
 ImageEvent.prototype.info = info;
 
 /**
