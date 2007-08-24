@@ -39,25 +39,31 @@
 package org.dcm4che.net;
 
 /**
- *
- * @author  gunter.zeilinger@tiani.com
- * @version $Revision: 2010 $ $Date: 2005-10-06 21:55:27 +0200 (Thu, 06 Oct 2005) $
+ * 
+ * @author gunter.zeilinger@tiani.com
+ * @version $Revision: 2010 $ $Date: 2005-10-06 21:55:27 +0200 (Thu, 06 Oct
+ *          2005) $
  * @since Aug 21, 2007
- *
+ * 
  */
 public class AAssociateRJException extends Exception {
-	
-	private static final long serialVersionUID = 605235739711850731L;
 
-	private final AAssociateRJ aarj;
+    private static final long serialVersionUID = -7212742757253610552L;
 
-	public AAssociateRJException(AAssociateRJ aarj) {
-		super(aarj.toString());
-		this.aarj = aarj;
-	}
-	
-	public AAssociateRJ getAAssociateRJ() {
-		return aarj;
-	}
+    private final AAssociateRJ aarj;
+
+    public AAssociateRJException(AAssociateRJ aarj) {
+        super(aarj.toString());
+        this.aarj = aarj;
+    }
+
+    public AAssociateRJException(int result, int source, int reason) {
+        this(AssociationFactory.getInstance()
+                .newAAssociateRJ(result, source, reason));
+    }
+
+    public AAssociateRJ getAAssociateRJ() {
+        return aarj;
+    }
 
 }
