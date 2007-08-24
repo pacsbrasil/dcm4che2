@@ -57,6 +57,7 @@ XsltAjax.prototype.STATUS_OK = 200;
 
 XsltAjax.prototype.debug=debug;
 // Use for expensive debugging statements only - set to 3 normally.
+XsltAjax.prototype.profile=info;
 XsltAjax.prototype.logLevel=3;
 XsltAjax.prototype.info=info
 
@@ -116,7 +117,7 @@ XsltAjax.prototype.asXml = function(xmlHttp) {
  */
 XsltAjax.prototype.setXsltUri = function(xsltUri) {
 	this.xsltUri = xsltUri;
-	if( xsltUri===undefined ) {
+	if( xsltUri===undefined || browserName==="Safari" || browserName==="Konqueror" || browserName==="Opera") {
 	  this.xsltProcessor = undefined;
 	  return;
 	}
@@ -258,6 +259,9 @@ XsltAjax.prototype.ajaxRead = function (file, item, params){
   if(!file) {
   	alert("Ajax read requested from undefined URL - did you forget to have a node with the id the name of the action and the right href or set the URL?");
   }
+  if( !this.xsltProcessor ) {
+  	file = file+"&xslt=true";
+  }
   this.inProgress = true;
   var xmlObj = null;
   var asXml = null;
@@ -308,7 +312,7 @@ XsltAjax.prototype.updateObj = function (item, xml){
    this.inProgress = false;
    this.replaceNodeTime = (new Date()).getTime();
    
-   this.debug("Server load:"+(this.fromServerTime-this.startTime)+
+   this.profile("Server load:"+(this.fromServerTime-this.startTime)+
      " parse:"+(this.endParseTime-this.fromServerTime)+
      " xslt:"+(this.xslTime-this.endParseTime)+" replace:"+(this.replaceNodeTime-this.xslTime)+
      " total:"+(this.replaceNodeTime-this.startTime));

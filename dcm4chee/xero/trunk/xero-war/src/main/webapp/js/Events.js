@@ -231,7 +231,18 @@ function browserNameFunc() {
 	if( navigator.appName=="Microsoft Internet Explorer" ) {
 		return "IE";
 	}
-	warn("Unknown browser -update browserNameFunc with support for "+navigator.appName);
+	if( navigator.userAgent.indexOf("WebKit")>=0 ) {
+		return "Safari";
+	}
+	if( navigator.userAgent.indexOf("Konqueror")>=0 ) {
+		return "Konqueror";
+	}
+	if( navigator.userAgent.indexOf("Gecko")>=0 ) {
+		return "Firefox";
+	}
+	if( window.opera ) return "Opera";
+	var msg = "Unknown browser -update browserNameFunc with support for "+navigator.appName+" userAgent="+navigator.userAgent;
+	warn(msg);
 	return navigator.appName;
 };
 var browserName = browserNameFunc();

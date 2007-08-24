@@ -67,6 +67,11 @@
    </context-param>
 
    <filter>
+      <filter-name>XsltFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.XsltFilter</filter-class>
+   </filter>
+   
+   <filter>
       <filter-name>Seam Exception Filter</filter-name>
       <filter-class>org.jboss.seam.servlet.SeamExceptionFilter</filter-class>
    </filter>
@@ -105,6 +110,15 @@
    </filter>
 
    <filter>
+      <filter-name>HtmlContentFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
+      <init-param>
+	      <param-name>contentType</param-name>
+    	  <param-value>text/html</param-value>
+      </init-param>
+   </filter>
+
+   <filter>
       <filter-name>SvgContentFilter</filter-name>
       <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
       <init-param>
@@ -126,6 +140,7 @@
       <filter-name>TimeFilter</filter-name>
       <url-pattern>*.seam</url-pattern>
    </filter-mapping>
+   
    <filter-mapping>
       <filter-name>TimeFilter</filter-name>
       <url-pattern>*.xml</url-pattern>
@@ -146,8 +161,8 @@
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>ShortMaxAgeFilter</filter-name>
-      <url-pattern>*.seam</url-pattern>
+     <filter-name>XsltFilter</filter-name>
+     <url-pattern>/image/image.seam</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
