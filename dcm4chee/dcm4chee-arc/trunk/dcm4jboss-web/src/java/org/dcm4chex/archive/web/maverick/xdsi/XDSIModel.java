@@ -46,7 +46,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.registry.BulkResponse;
 import javax.xml.registry.JAXRException;
 
 import org.apache.log4j.Logger;

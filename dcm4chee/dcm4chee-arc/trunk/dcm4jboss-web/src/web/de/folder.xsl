@@ -1395,6 +1395,12 @@
     				<a href="showManifest.m?url={URL}&amp;documentID={id}" target="xdsManifest" >
 						<img src="images/image.gif" alt="XML" border="0" title="XDSI Manifest oeffnen"/>		
 					</a>
+					<xsl:if test="/model/webViewer='true'">
+	                    <a href="/dcm4chee-webview/webviewer.jsp?manifestURL={URL}" >
+							<xsl:attribute name="onclick" >return openWin('<xsl:value-of select="/model/webViewerWindowName" />','/dcm4chee-webview/webviewer.jsp?manifestURL=<xsl:value-of select="URL" />')</xsl:attribute>
+							<img src="images/webview.gif" alt="Manifest oeffnen" border="0" title="XDSI Manifest in Webviewer oeffnen"/>
+	                    </a>
+					</xsl:if>
     			</xsl:when>
     			<xsl:when test="mimeType='application/pdf'">
     				<a href="{URI}" target="xdsdoc" >

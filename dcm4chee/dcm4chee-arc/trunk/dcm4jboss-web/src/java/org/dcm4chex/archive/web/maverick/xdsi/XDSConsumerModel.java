@@ -39,21 +39,14 @@
 
 package org.dcm4chex.archive.web.maverick.xdsi;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.registry.BulkResponse;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
-import org.dcm4chex.archive.web.maverick.util.CodeItem;
-import org.dcm4chex.archive.xdsi.XDSIService;
 
 /**
  * @author franz.willer
