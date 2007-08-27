@@ -45,10 +45,12 @@ import javax.management.ObjectName;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.UserIdentityNegotiator;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
 import org.dcm4che.util.DcmProtocol;
+import org.dcm4chex.archive.mbean.DicomSecurityDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -75,12 +77,23 @@ public class DcmServerService extends ServiceMBeanSupport {
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
+    private DicomSecurityDelegate dicomSecurity =
+            new DicomSecurityDelegate(this);
+
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
 
     public final void setTLSConfigName(ObjectName tlsConfigName) {
         tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+
+    public final ObjectName getDicomSecurityServiceName() {
+        return dicomSecurity.getDicomSecurityServiceName();
+    }
+
+    public final void setDicomSecurityServiceName(ObjectName serviceName) {
+        this.dicomSecurity.setDicomSecurityServiceName(serviceName);
     }
 
     public int getPort() {
@@ -213,6 +226,10 @@ public class DcmServerService extends ServiceMBeanSupport {
         notif.setUserData(new String[][] {affectedCalledAETs, newCallingAETs} );
         log.debug("send callingAET changed notif:"+notif);
         this.sendNotification( notif );
+    }
+
+    public UserIdentityNegotiator userIdentityNegotiator() {
+        return dicomSecurity.userIdentityNegotiator();
     }
 
     protected void startService() throws Exception {

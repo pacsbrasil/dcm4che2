@@ -71,6 +71,7 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
+import org.dcm4che.net.UserIdentityNegotiator;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.util.DTFormat;
 import org.dcm4che2.audit.message.AuditMessage;
@@ -101,8 +102,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected ObjectName aeServiceName;
 
     protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
-
+    
     protected DcmHandler dcmHandler;
+    
+    protected UserIdentityNegotiator userIdentityNegotiator;
 
     protected String[] calledAETs;
 
@@ -268,6 +271,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             if (policy1 == null) {
                 policy1 = AssociationFactory.getInstance().newAcceptorPolicy();
                 policy1.setCallingAETs(callingAETs);
+                policy1.setUserIdentityNegotiator(userIdentityNegotiator);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);
                 policy.addCalledAET(calledAETs[i]);
                 changed = true;
@@ -468,6 +472,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected void startService() throws Exception {
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
                 "log");
+        userIdentityNegotiator = (UserIdentityNegotiator) server.invoke(
+                dcmServerName, "userIdentityNegotiator", null, null);
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
@@ -479,6 +485,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         disableService();
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
+        userIdentityNegotiator = null;
         server.removeNotificationListener(dcmServerName, callingAETChangeListener);
      }
 

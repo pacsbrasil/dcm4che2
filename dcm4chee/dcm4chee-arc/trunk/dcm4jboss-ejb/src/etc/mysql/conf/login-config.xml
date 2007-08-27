@@ -146,6 +146,20 @@ $Revision$
        </authentication>
     </application-policy>
 
+    <application-policy name = "dcm4chee-dicom">
+       <authentication>
+          <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
+             flag = "required" >
+             <module-option name = "dsJndiName">java:/MySqlDS</module-option>
+             <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
+             <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
+             <module-option name = "hashEncoding">base64</module-option>
+             <module-option name = "hashCharset">UTF-8</module-option>
+             <module-option name = "hashAlgorithm">SHA-1</module-option>
+          </login-module>
+       </authentication>
+    </application-policy>
+
     <!-- A template configuration for the web-console web application. This
       defaults to the UsersRolesLoginModule the same as other and should be
       changed to a stronger authentication mechanism as required.

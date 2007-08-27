@@ -110,7 +110,7 @@ $Revision$
        </authentication>
     </application-policy>
 
-    <application-policy name = "dcm4chee-web">
+    <application-policy name = "dcm4chee-arr">
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
@@ -128,7 +128,7 @@ $Revision$
        </authentication>
     </application-policy>
 
-    <application-policy name = "dcm4chee-arr">
+    <application-policy name = "dcm4chee-dicom">
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
@@ -138,10 +138,6 @@ $Revision$
              <module-option name = "hashEncoding">base64</module-option>
              <module-option name = "hashCharset">UTF-8</module-option>
              <module-option name = "hashAlgorithm">SHA-1</module-option>
-          </login-module>
-          <login-module code="org.dcm4chex.archive.security.AuditLoginModule"
-             flag = "optional" >
-             <module-option name = "auditLoggerName">dcm4chee.archive:service=AuditLogger</module-option>
           </login-module>
        </authentication>
     </application-policy>

@@ -71,7 +71,6 @@ public class DicomSecurityService extends ServiceMBeanSupport
     private String defUserID;
     private String defPassword;
     private boolean rejectIfNoUserIdentity;
-    private ObjectName aeServiceName;
 
     public final String getSecurityDomain() {
         return securityDomain;
@@ -121,13 +120,17 @@ public class DicomSecurityService extends ServiceMBeanSupport
     }
 
     public final ObjectName getAEServiceName() {
-        return aeServiceName;
+        return aeService.getAEServiceName();
     }
 
     public final void setAEServiceName(ObjectName aeServiceName) {
-        this.aeServiceName = aeServiceName;
+        aeService.setAEServiceName(aeServiceName);
     }
-    
+       
+    protected void startService() throws Exception {
+        initSecurityManager();
+    }
+
     private void initSecurityManager() {
         InitialContext iniCtx = null;
         try {

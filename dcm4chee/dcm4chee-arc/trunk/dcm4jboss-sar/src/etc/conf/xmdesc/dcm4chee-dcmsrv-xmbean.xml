@@ -172,6 +172,14 @@
       <type>int</type>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDicomSecurityServiceName"
+      setMethod="setDicomSecurityServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>DicomSecurityServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.
@@ -203,5 +211,14 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   
+   	<operation impact="INFO">
+		<description>get UserIdentityNegotiator</description>
+		<name>userIdentityNegotiator</name>
+		<return-type>
+			org.dcm4che.net.UserIdentityNegotiator
+		</return-type>
+	</operation>
+   
 </mbean>
     

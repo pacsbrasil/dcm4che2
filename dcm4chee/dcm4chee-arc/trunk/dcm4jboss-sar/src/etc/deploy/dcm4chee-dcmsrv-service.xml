@@ -7,6 +7,8 @@
          xmbean-dd="xmdesc/dcm4chee-dcmsrv-xmbean.xml">
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/Storage</depends>
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/FileSystemMgt</depends>
+    <depends optional-attribute-name="DicomSecurityServiceName"
+      >dcm4chee.archive:service=DicomSecurity</depends>
     <depends optional-attribute-name="TLSConfigName"
       >dcm4chee.archive:service=TLSConfig</depends>
   </mbean>
