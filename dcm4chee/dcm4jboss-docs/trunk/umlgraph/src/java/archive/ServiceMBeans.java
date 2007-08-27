@@ -117,7 +117,7 @@ class ContentEditService {}
 class contentEditService {}
 
 /**
- * @depend - - - AuditLogger
+ * @depend - - - DicomSecurity
  * @depend - - - TLSConfig
  */
 class DcmServer {}
@@ -141,6 +141,20 @@ class DeviceService {}
  * @opt !hide
  */
 class deviceService {}
+
+/**
+ * @depend - - - AE
+ */
+class DicomSecurity {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.DicomSecurity
+ * @opt !hide
+ */
+class dicomSecurity {}
 
 /**
  * @depend - - - TLSConfig
