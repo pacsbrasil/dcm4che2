@@ -88,9 +88,9 @@ public class TestJaxbEncode {
 	  }
    }
 
-   static final URL singleUrl = Thread.currentThread().getContextClassLoader().getResource("org/dcm4chee/xero/search/study/singleFrame.dcm");
+   public static final URL singleUrl = Thread.currentThread().getContextClassLoader().getResource("org/dcm4chee/xero/search/study/singleFrame.dcm");
 
-   static final StopTagInputHandler stopHandler = new StopTagInputHandler(
+   public static final StopTagInputHandler stopHandler = new StopTagInputHandler(
    Tag.PixelData);
 
    @Test

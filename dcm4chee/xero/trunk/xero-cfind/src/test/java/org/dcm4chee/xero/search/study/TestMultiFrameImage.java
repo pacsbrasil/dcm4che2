@@ -54,7 +54,7 @@ import org.testng.annotations.Test;
 public class TestMultiFrameImage {
    static Logger log = LoggerFactory.getLogger(TestMultiFrameImage.class);
 
-   static final URL multiUrl = Thread.currentThread().getContextClassLoader().getResource(
+   public static final URL multiUrl = Thread.currentThread().getContextClassLoader().getResource(
 		 "org/dcm4chee/xero/search/study/multiFrame.dcm");
 
    /** Tests to see that a single frame load still works normally. */

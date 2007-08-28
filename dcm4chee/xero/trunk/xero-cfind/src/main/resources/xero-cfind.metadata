@@ -9,6 +9,8 @@ servletFilter.jaxbFilter=${org.dcm4chee.xero.metadata.servlet.JaxbFilter}
 servletFilter.jaxbFilter.contextPath=org.dcm4chee.xero.search.study
 # Last filter in the list.
 servletFilter.jaxbFilter.priority=999999
+servletFilter.rename=${org.dcm4chee.xero.search.study.RenameAttributeFilter}
+servletFilter.rename.priority=2000
 servletFilter.searchCondition.priority=-1000
 servletFilter.source.priority=0
 
