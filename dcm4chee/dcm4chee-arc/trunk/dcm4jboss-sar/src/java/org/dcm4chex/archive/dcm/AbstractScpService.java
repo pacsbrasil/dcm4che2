@@ -140,6 +140,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             public void handleNotification(Notification notif, Object handback) {
                 try {
                     log.debug("Handle callingAET change notification!");
+                    log.info("Sequence Number:"+notif.getSequenceNumber());
                     String[][] userData = (String[][]) notif.getUserData();
                     if ( areCalledAETsAffected(userData[0])) {
                         String newCallingAETs = userData[1] == null ? ANY 
@@ -164,6 +165,33 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 }
                 return false;
             }
+        };
+    private final NotificationListener aetChangeListener = 
+        new NotificationListener() {
+            public void handleNotification(Notification notif, Object handback) {
+            	if ( callingAETs != null || callingAETs.length == 0 ) {
+                    try {
+                        log.debug("Handle AE Title change notification!");
+                        String[] userData = (String[]) notif.getUserData();
+                        String removeAET = userData[0];
+                        String addAET = userData[1];
+                        AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+                        for (int i = 0; i < calledAETs.length; ++i) {
+                            AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
+                            if ( removeAET != null ) {
+                            	policy1.removeCallingAET(removeAET);
+                            }
+                            if ( addAET != null ) {
+                            	policy1.addCallingAET(addAET);
+                            }
+                        }
+                        
+                    } catch (Throwable th) {
+                       log.warn("Failed to process AE Title change notification: ", th);       
+                    }
+            	}
+            }
+
         };
         
     public final ObjectName getDcmServerName() {
@@ -478,6 +506,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
         server.addNotificationListener(dcmServerName, callingAETChangeListener, null, null);
+        server.addNotificationListener(aeServiceName, aetChangeListener, null, null);
         enableService();
     }
 
@@ -487,6 +516,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         dcmHandler = null;
         userIdentityNegotiator = null;
         server.removeNotificationListener(dcmServerName, callingAETChangeListener);
+        server.removeNotificationListener(aeServiceName, aetChangeListener);
      }
 
     protected abstract void bindDcmServices(DcmServiceRegistry services);

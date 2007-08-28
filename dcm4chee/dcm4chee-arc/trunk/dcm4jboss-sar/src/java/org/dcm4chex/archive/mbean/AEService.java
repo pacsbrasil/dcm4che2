@@ -42,11 +42,13 @@ package org.dcm4chex.archive.mbean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
@@ -174,9 +176,10 @@ public class AEService extends ServiceMBeanSupport {
         }
         AEManager aeManager = aeMgr();
         try {
-            AEDTO aeData = aeManager.findByAET(prevAET);
-            aeData.setTitle(newAET);
-            aeManager.updateAE(aeData);
+            AEDTO ae = aeManager.findByAET(prevAET);
+            ae.setTitle(newAET);
+            aeManager.updateAE(ae);
+            notifyAETchange(prevAET, newAET);
             return true;
         } catch (UnknownAETException e) {
             return false;
@@ -215,6 +218,7 @@ public class AEService extends ServiceMBeanSupport {
                 }
                 logActorConfig("Add new auto-configured AE " + ae, 
                         SecurityAlertMessage.NETWORK_CONFIGURATION);
+                notifyAETchange(null,aet);
                 return ae;
             }
         }
@@ -254,33 +258,38 @@ public class AEService extends ServiceMBeanSupport {
 
         AEManager aeManager = aeMgr();
         if (pk == -1) {
-            AEDTO aeNew = new AEDTO(-1, title, host, port, cipher,
+        	AEDTO newAE = new AEDTO(-1, title, host, port, cipher,
             		issuer, user, passwd, desc);
-            aeManager.newAE(aeNew);
-            logActorConfig("Add AE " + aeNew + " cipher:"
-                    + aeNew.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
+            aeManager.newAE(newAE);
+            logActorConfig("Add AE " + newAE + " cipher:"
+                    + newAE.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
+            notifyAETchange(null, title);
+
         } else {
-            AEDTO aeOld = aeManager.findByPrimaryKey(pk);
-            if (!aeOld.getTitle().equals(title)) {
+        	AEDTO oldAE = aeManager.findByPrimaryKey(pk);
+        	String oldAET = null;
+            if (!oldAE.getTitle().equals(title)) {
                 try {
                     AEDTO aeOldByTitle = aeManager.findByAET(title);
                     throw new IllegalArgumentException("AE Title " + title
                             + " already exists!:" + aeOldByTitle);
                 } catch (UnknownAETException e) {}
+                oldAET = oldAE.getTitle();
             }
-            AEDTO aeNew = new AEDTO(pk, title, host, port, cipher,
+            AEDTO newAE = new AEDTO(pk, title, host, port, cipher,
             		issuer, user, passwd, desc);
-            aeManager.updateAE(aeNew);
-            logActorConfig("Modify AE " + aeOld + " -> " + aeNew,
+            aeManager.updateAE(newAE);
+            logActorConfig("Modify AE " + oldAE + " -> " + newAE,
             		SecurityAlertMessage.NETWORK_CONFIGURATION);
+            if ( oldAET != null )
+            	notifyAETchange(oldAET, title);
         }
     }
 
     public void addAE(String title, String host, int port, String cipher,
             String issuer, String user, String passwd, String desc,
             boolean checkHost) throws Exception {
-        updateAE(-1, title, host, port, cipher, issuer, user, passwd, desc,
-        		checkHost);
+        updateAE(-1, title, host, port, cipher, issuer, user, passwd, desc, checkHost);
     }
 
     public void removeAE(String titles) throws Exception {
@@ -292,6 +301,7 @@ public class AEService extends ServiceMBeanSupport {
             aeManager.removeAE(ae.getPk());
             logActorConfig("Remove AE " + ae,
             		SecurityAlertMessage.NETWORK_CONFIGURATION);
+            notifyAETchange(ae.getTitle(),null);
         }
     }
    
@@ -319,6 +329,15 @@ public class AEService extends ServiceMBeanSupport {
             log.warn("Failed to log ActorConfig:", e);
         }
     }
+    
+    private void notifyAETchange(String oldTitle, String newTitle) {
+        long eventID = this.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(this.getClass().getName(), this, eventID );
+        notif.setUserData(new String[] {oldTitle, newTitle} );
+        log.debug("send AE Title changed notif:"+notif);
+        this.sendNotification( notif );
+    }
+
 
     private boolean echo(AEDTO ae) {
         try {
