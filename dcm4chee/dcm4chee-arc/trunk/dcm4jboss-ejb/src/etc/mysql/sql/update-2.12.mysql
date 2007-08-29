@@ -8,3 +8,6 @@ ALTER TABLE series ADD station_name VARCHAR(250) BINARY;
 ALTER TABLE device DROP INDEX station_name;
 CREATE INDEX station_name ON series(station_name(16));
 CREATE UNIQUE INDEX dev_station_name ON device(station_name(16));
+
+ALTER TABLE series_req ADD study_iuid VARCHAR(250) BINARY;
+CREATE INDEX ser_rq_study_iuid ON series_req(study_iuid(64));

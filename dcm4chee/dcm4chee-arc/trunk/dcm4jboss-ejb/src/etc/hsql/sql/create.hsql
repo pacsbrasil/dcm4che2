@@ -215,6 +215,7 @@ CREATE INDEX series_created ON series(created_time);
 CREATE TABLE series_req (
 	pk              IDENTITY PRIMARY KEY,
 	series_fk       INTEGER,
+	study_iuid      VARCHAR(256),
 	req_proc_id     VARCHAR(256),
 	sps_id          VARCHAR(256),
 	req_service		VARCHAR(256),
@@ -224,6 +225,7 @@ CREATE TABLE series_req (
 FOREIGN KEY (series_fk) REFERENCES series(pk)
 );
 CREATE INDEX ser_req_series_fk ON series_req(series_fk);
+CREATE INDEX ser_rq_study_iuid ON series_req(study_iuid);
 CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
 CREATE INDEX ser_req_sps_id ON series_req(sps_id);	
 CREATE INDEX ser_req_service ON series_req(req_service);

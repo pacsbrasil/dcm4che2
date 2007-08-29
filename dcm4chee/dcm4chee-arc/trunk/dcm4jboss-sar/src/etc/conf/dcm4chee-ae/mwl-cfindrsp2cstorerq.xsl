@@ -23,6 +23,8 @@
       <!-- (0040,0275) SQ #-1 Request Attributes Sequence -->
       <attr tag="00400275" vr="SQ">
         <item>
+          <!-- Study Instance UID -->
+          <xsl:copy-of select="attr[@tag='0020000D']"/>
           <!-- Requesting Physican -->
           <xsl:copy-of select="attr[@tag='00321032']"/>
           <!-- Requesting Service -->

@@ -70,6 +70,7 @@ public abstract class SeriesRequestBean implements EntityBean {
      */
     public Long ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
+        setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setSpsId(ds.getString(Tags.SPSID));
         setRequestingService(ds.getString(Tags.RequestingService));
@@ -118,6 +119,13 @@ public abstract class SeriesRequestBean implements EntityBean {
 
     public abstract void setPk(Long pk);
     
+    /**
+     * @ejb.persistence column-name="study_iuid"
+     */
+    public abstract String getStudyIuid();
+
+    public abstract void setStudyIuid(String uid);
+   
     /**
      * @ejb.persistence column-name="req_proc_id"
      */
