@@ -80,10 +80,11 @@ class PID {
     }
     
     static String[] toPID(Element pidfd) {
-        Element authority = (Element) pidfd.elements(HL7XMLLiterate.TAG_COMPONENT).get(2);
-        if (authority == null) {
-            throw new IllegalArgumentException("Missing Authority in PID-3");
+        List comps = pidfd.elements(HL7XMLLiterate.TAG_COMPONENT);
+        if (comps.size() < 3) {
+        	throw new IllegalArgumentException("Missing Authority in PID-3");        	
         }
+		Element authority = (Element) comps.get(2);
         List authorityUID = authority.elements(HL7XMLLiterate.TAG_SUBCOMPONENT);
         String[] pid = new String[2 + authorityUID.size()];
         pid[0] = pidfd.getText();
