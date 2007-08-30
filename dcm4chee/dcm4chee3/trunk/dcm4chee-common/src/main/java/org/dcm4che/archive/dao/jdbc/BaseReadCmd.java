@@ -47,121 +47,134 @@ import java.sql.SQLException;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- *
+ * 
  */
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            int resultSetType)
-    throws SQLException {
+            int resultSetType) throws SQLException {
         super(dsJndiName, transactionIsolationLevel, null, resultSetType);
     }
-    
-    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
-			throws SQLException {
-		super(dsJndiName, transactionIsolationLevel, null);
-	}
 
-	protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-			String sql) throws SQLException {
-		super(dsJndiName, transactionIsolationLevel, sql);
-	}
-	
-	public byte[] getBytes(int column) throws SQLException {
-	    ResultSetMetaData meta = rs.getMetaData();
-		if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
-			Blob blob = rs.getBlob(column);
-			return blob != null ? blob.getBytes(1,(int)blob.length()) : null;
-		}
-		return rs.getBytes(column);
-	}
+    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
+            throws SQLException {
+        super(dsJndiName, transactionIsolationLevel, null);
+    }
+
+    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
+            String sql) throws SQLException {
+        super(dsJndiName, transactionIsolationLevel, sql);
+    }
+
+    public byte[] getBytes(int column) throws SQLException {
+        ResultSetMetaData meta = rs.getMetaData();
+        if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
+            Blob blob = rs.getBlob(column);
+            return blob != null ? blob.getBytes(1, (int) blob.length()) : null;
+        }
+        return rs.getBytes(column);
+    }
 
     public void execute(String sql) throws SQLException {
         if (rs != null) {
             throw new IllegalStateException();
-        }		
-        log.debug("SQL: " + sql);
-        
-        Exception lastException = null;
-        for(int i = 0; i < updateDatabaseMaxRetries; i++)
-        {
-	        try
-	        {
-	        	rs = stmt.executeQuery(sql);
-	        	
-	        	// Success 
-				if(i > 0)
-					log.info("execute sql successfully after retry: " + (i+1));
-
-	        	return;
-	        }
-	        catch(Exception e)
-	        {
-	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
-		        	log.warn( "failed to execute sql: "+sql+" - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
-	        	else
-		        	log.warn( "failed to execute sql: "+sql+", got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);
-	        	lastException = e;
-
-				close();
-				
-	        	try {
-					Thread.sleep(updateDatabaseRetryInterval); 
-				} catch (InterruptedException e1) { log.warn(e1);} 
-				
-				try
-				{
-					open();
-				}
-				catch(SQLException e1){}
-	        }
         }
-       	throw new SQLException("give up executing SQL statement after all retries: " + sql);        
+        log.debug("SQL: " + sql);
+
+        Exception lastException = null;
+        for (int i = 0; i < updateDatabaseMaxRetries; i++) {
+            try {
+                rs = stmt.executeQuery(sql);
+
+                // Success
+                if (i > 0)
+                    log
+                            .info("execute sql successfully after retry: "
+                                    + (i + 1));
+
+                return;
+            }
+            catch (Exception e) {
+                if (lastException == null
+                        || !lastException.getMessage().equals(e.getMessage()))
+                    log.warn("failed to execute sql: " + sql + " - retry: "
+                            + (i + 1) + " of " + updateDatabaseMaxRetries, e);
+                else
+                    log.warn("failed to execute sql: " + sql
+                            + ", got the same exception as above - retry: "
+                            + (i + 1) + " of " + updateDatabaseMaxRetries);
+                lastException = e;
+
+                close();
+
+                try {
+                    Thread.sleep(updateDatabaseRetryInterval);
+                }
+                catch (InterruptedException e1) {
+                    log.warn(e1);
+                }
+
+                try {
+                    open();
+                }
+                catch (SQLException e1) {
+                }
+            }
+        }
+        throw new SQLException(
+                "give up executing SQL statement after all retries: " + sql);
     }
 
     public void execute() throws SQLException {
         if (rs != null) {
             throw new IllegalStateException();
-        }		 		
- 		
- 		Exception lastException = null;
-        for(int i = 0; i < updateDatabaseMaxRetries; i++)
-        {
-	        try
-	        {
-	        	rs = ((PreparedStatement) stmt).executeQuery();
-	        	
-	        	// Success 
-				if(i > 0)
-					log.info("execute sql successfully after retry: " + (i+1));
-
-	        	return;
-	        }
-	        catch(Exception e)
-	        {
-	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
-		        	log.warn( "failed to execute sql: "+sql+" - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
-	        	else
-		        	log.warn( "failed to execute sql: "+sql+", got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);
-	        	lastException = e;
-				
-				close();
-
-	        	try {
-					Thread.sleep(updateDatabaseRetryInterval); 
-				} catch (InterruptedException e1) { log.warn(e1);}
-
-				try
-				{
-					open();
-				}
-				catch(SQLException e1){}
-	        }
         }
-       	throw new SQLException("give up executing SQL statement after all retries: " + sql);        
+
+        Exception lastException = null;
+        for (int i = 0; i < updateDatabaseMaxRetries; i++) {
+            try {
+                rs = ((PreparedStatement) stmt).executeQuery();
+
+                // Success
+                if (i > 0)
+                    log
+                            .info("execute sql successfully after retry: "
+                                    + (i + 1));
+
+                return;
+            }
+            catch (Exception e) {
+                if (lastException == null
+                        || !lastException.getMessage().equals(e.getMessage()))
+                    log.warn("failed to execute sql: " + sql + " - retry: "
+                            + (i + 1) + " of " + updateDatabaseMaxRetries, e);
+                else
+                    log.warn("failed to execute sql: " + sql
+                            + ", got the same exception as above - retry: "
+                            + (i + 1) + " of " + updateDatabaseMaxRetries);
+                lastException = e;
+
+                close();
+
+                try {
+                    Thread.sleep(updateDatabaseRetryInterval);
+                }
+                catch (InterruptedException e1) {
+                    log.warn(e1);
+                }
+
+                try {
+                    open();
+                }
+                catch (SQLException e1) {
+                }
+            }
+        }
+        throw new SQLException(
+                "give up executing SQL statement after all retries: " + sql);
     }
-	
+
     public boolean next() throws SQLException {
         if (rs == null) {
             throw new IllegalStateException();
@@ -173,9 +186,11 @@ public abstract class BaseReadCmd extends BaseCmd {
         if (rs != null) {
             try {
                 rs.close();
-            } catch (SQLException ignore) {}
+            }
+            catch (SQLException ignore) {
+            }
             rs = null;
         }
-		super.close();
+        super.close();
     }
 }
