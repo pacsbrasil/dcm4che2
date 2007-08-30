@@ -24,6 +24,14 @@
    </constructor>
 
    <!-- Attributes -->
+   <attribute access="read-only" getMethod="getCharsetName">
+      <description><![CDATA[Charset of incoming and outgoing HL7 messages as
+      specified by the corresponding attribute of the associated HL7 Server
+      Service.]]>
+      </description>
+      <name>CharsetName</name>
+      <type>java.lang.String</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSendingApplication"
       setMethod="setSendingApplication">

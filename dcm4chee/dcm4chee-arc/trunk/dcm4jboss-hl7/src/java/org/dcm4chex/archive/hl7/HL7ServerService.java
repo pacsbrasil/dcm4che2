@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -93,8 +94,6 @@ import org.xml.sax.XMLReader;
 public class HL7ServerService extends ServiceMBeanSupport implements
         Server.Handler {
 
-    private static final String ISO_8859_1 = "ISO-8859-1";
-
     public static final String EVENT_TYPE = "org.dcm4chex.archive.hl7";
 
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
@@ -105,6 +104,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             return EVENT_TYPE.equals(notif.getType());
         }
     };
+
+    private String charsetName = "ISO-8859-1";
 
     private String ackXslPath;
 
@@ -141,7 +142,15 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     private String[] noopMessageTypes = {};
 
-    public final String getAckStylesheet() {
+    public final String getCharsetName() {
+		return charsetName;
+	}
+
+	public final void setCharsetName(String charsetName) {
+		this.charsetName = Charset.forName(charsetName).name();
+	}
+
+	public final String getAckStylesheet() {
         return ackXslPath;
     }
 
@@ -339,7 +348,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         InputStream mllpIn = mllpDriver.getInputStream();
         XMLReader xmlReader = new HL7XMLReader();
         XMLWriter xmlWriter = new HL7XMLWriter(new OutputStreamWriter(
-        		mllpDriver.getOutputStream(), ISO_8859_1));
+        		mllpDriver.getOutputStream(), charsetName));
         ContentHandler hl7out = xmlWriter.getContentHandler();
         SAXContentHandler hl7in = new SAXContentHandler();
         xmlReader.setContentHandler(hl7in);
@@ -364,7 +373,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                     ByteArrayInputStream bbin = new ByteArrayInputStream(bb, 0,
                             msglen);
                     InputSource in = new InputSource(new InputStreamReader(
-                            bbin, ISO_8859_1));
+                            bbin, charsetName));
                     xmlReader.parse(in);
                     Document msg = hl7in.getDocument();
                     log.info("Received HL7 message:");

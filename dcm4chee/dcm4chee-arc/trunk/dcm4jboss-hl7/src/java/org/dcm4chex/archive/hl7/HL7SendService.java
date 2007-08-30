@@ -68,6 +68,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -82,8 +83,6 @@ import org.xml.sax.XMLReader;
 
 public class HL7SendService extends ServiceMBeanSupport implements
         NotificationListener, MessageListener {
-
-    private static final String ISO_8859_1 = "ISO-8859-1";
 
     private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 
@@ -117,6 +116,15 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
+    public String getCharsetName() {
+        try {
+            return (String) (this.getServer()
+            		.getAttribute(hl7ServerName, "CharsetName"));
+        } catch (Exception x) {
+            throw new ConfigurationException(x);
+        }
+	}
+    
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -237,7 +245,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         xmlReader.setContentHandler(hl7in);
         try {
             InputSource in = new InputSource(new InputStreamReader(
-                    new ByteArrayInputStream(hl7msg), ISO_8859_1));
+                    new ByteArrayInputStream(hl7msg), getCharsetName()));
             xmlReader.parse(in);
         } catch (Exception e) {
             log.error("Failed to parse HL7 message", e);
@@ -359,7 +367,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private Document readMessage(InputStream mllpIn) throws IOException,
             SAXException {
         InputSource in = new InputSource(mllpIn);
-        in.setEncoding(ISO_8859_1);
+        in.setEncoding(getCharsetName());
         XMLReader xmlReader = new HL7XMLReader();
         SAXContentHandler hl7in = new SAXContentHandler();
         xmlReader.setContentHandler(hl7in);
@@ -370,19 +378,20 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     private void writeMessage(byte[] message, String receiving, OutputStream out)
             throws UnsupportedEncodingException, IOException {
-        out.write("MSH|^~\\&|".getBytes(ISO_8859_1));
-        out.write(sendingApplication.getBytes(ISO_8859_1));
+        final String charsetName = getCharsetName();
+		out.write("MSH|^~\\&|".getBytes(charsetName));
+        out.write(sendingApplication.getBytes(charsetName));
         out.write('|');
-        out.write(sendingFacility.getBytes(ISO_8859_1));
+        out.write(sendingFacility.getBytes(charsetName));
         out.write('|');
         final int delim = receiving.indexOf('^');
-        out.write(receiving.substring(0, delim).getBytes(ISO_8859_1));
+        out.write(receiving.substring(0, delim).getBytes(charsetName));
         out.write('|');
-        out.write(receiving.substring(delim + 1).getBytes(ISO_8859_1));
+        out.write(receiving.substring(delim + 1).getBytes(charsetName));
         out.write('|');
         final SimpleDateFormat tsFormat = new SimpleDateFormat(
                 "yyyyMMddHHmmss.SSS");
-        out.write(tsFormat.format(new Date()).getBytes(ISO_8859_1));
+        out.write(tsFormat.format(new Date()).getBytes(charsetName));
         // skip MSH:1-7
         int left = 0;
         for (int i = 0; i < 7; ++i)
@@ -395,7 +404,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         while (message[right++] != '|')
             ;
         out.write(message, left - 1, right - left + 1);
-        out.write(String.valueOf(++messageControlID).getBytes(ISO_8859_1));
+        out.write(String.valueOf(++messageControlID).getBytes(charsetName));
         // skip MSH:10
         while (message[right++] != '|')
             ;
@@ -414,10 +423,11 @@ public class HL7SendService extends ServiceMBeanSupport implements
         sb.append("\r");
         sb.append("PV1||||||||||||||||||||||||||||||||||||||||||||||||||||");
         // PatientClass(2),VisitNr(19) and VisitIndicator(51) ???
+        final String charsetName = getCharsetName();
         if (useForward) {
-            forward(sb.toString().getBytes(ISO_8859_1));
+            forward(sb.toString().getBytes(charsetName));
         } else {
-            sendTo(sb.toString().getBytes(ISO_8859_1), receiving);
+            sendTo(sb.toString().getBytes(charsetName), receiving);
         }
     }
 
@@ -431,13 +441,14 @@ public class HL7SendService extends ServiceMBeanSupport implements
         addEVN(sb, timestamp);
         addPID(sb, dsDominant);
         int SBlen = sb.length();
+        final String charsetName = getCharsetName();
         for (int i = 0, len = priorPats.length; i < len; i++) {
             sb.setLength(SBlen);
             addMRG(sb, priorPats[i]);
             if (useForward) {
-                forward(sb.toString().getBytes(ISO_8859_1));
+                forward(sb.toString().getBytes(charsetName));
             } else {
-                sendTo(sb.toString().getBytes(ISO_8859_1), receiving);
+                sendTo(sb.toString().getBytes(charsetName), receiving);
             }
         }
 
@@ -463,7 +474,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
         String s = sb.toString();
         log.info("Query PIX Manager " + pixManager + ":\n"
                 + s.replace('\r', '\n'));
-        Document msg = invoke(s.getBytes(ISO_8859_1), pixManager);
+        final String charsetName = getCharsetName();
+        Document msg = invoke(s.getBytes(charsetName), pixManager);
         log.info("PIX Query returns:");
         logMessage(msg);
         MSH msh = new MSH(msg);

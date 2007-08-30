@@ -23,6 +23,20 @@
 
    <!-- Attributes -->
    <attribute access="read-write"
+      getMethod="getCharsetName"
+      setMethod="setCharsetName">
+      <description><![CDATA[Specifies Charset of incoming and outgoing HL7
+      messages by its name as listed in the
+      <a href="http://www.iana.org/assignments/character-sets">
+      <i>IANA Charset Registry</i></a> (e.g. <code>ISO-8859-1</code>).]]>
+      </description>
+      <name>CharsetName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ISO-8859-1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
       <description>TCP listening port. This is the most important value in
