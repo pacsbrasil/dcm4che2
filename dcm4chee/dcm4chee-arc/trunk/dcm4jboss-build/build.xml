@@ -173,6 +173,9 @@
        	<exclude name="bin/uninstall-dcm4chee-arr-old.sh"/>
        	<exclude name="bin/uninstall-dcm4chee-auditlog-old.sh"/>
       </zipfileset>
+      <zipfileset dir="../dcm4jboss-hl7" prefix="${dist.standalone.config}">
+        <include name="lib/xhl7.jar"/>
+      </zipfileset>
       <zipfileset dir="../dcm4jboss-hl7/target" prefix="${dist.standalone.config}">
         <include name="lib/*"/>
       </zipfileset>

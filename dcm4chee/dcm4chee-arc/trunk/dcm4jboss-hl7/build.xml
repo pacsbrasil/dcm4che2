@@ -23,6 +23,7 @@
 	<property name="jboss.server.lib" value="${jboss.home}/server/default/lib"/>
 
 	<property name="src.java" value="${basedir}/src/java"/>
+	<property name="lib" value="${basedir}/lib"/>
 	
 	<property name="target" value="${basedir}/target"/>
 	<property name="target.classes" value="${target}/classes"/>
@@ -31,6 +32,7 @@
 	<path id="class.path">
 		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
+		<pathelement location="${lib}/xhl7.jar"/>
 		<pathelement location="${dcm4chee-ejb.target}/common/lib/dcm4chee-ejb-client.jar"/>
 		<pathelement location="${dcm4chee-ejb.target}/hsql/lib/dcm4chee-jdbc-hsql.jar"/>
 		<fileset dir="${jboss.lib}">

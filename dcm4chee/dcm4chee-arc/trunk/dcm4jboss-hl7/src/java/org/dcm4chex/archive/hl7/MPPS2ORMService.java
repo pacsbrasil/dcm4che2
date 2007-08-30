@@ -42,6 +42,7 @@ package org.dcm4chex.archive.hl7;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -77,6 +78,8 @@ import org.regenstrief.xhl7.XMLWriter;
  */
 public class MPPS2ORMService extends ServiceMBeanSupport implements
         NotificationListener {
+
+    private static final String ISO_8859_1 = "ISO-8859-1";
 
     private static final int INIT_BUFFER_SIZE = 512;
 
@@ -292,8 +295,8 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
             ByteArrayOutputStream out = new ByteArrayOutputStream(
                     INIT_BUFFER_SIZE);
             TransformerHandler th = getTransformerHandler();
-            XMLWriter xmlWriter = new HL7XMLWriter();
-            xmlWriter.setOutputStream(out);
+            XMLWriter xmlWriter = new HL7XMLWriter(
+            		new OutputStreamWriter(out, ISO_8859_1));
             th.setResult(new SAXResult(xmlWriter.getContentHandler()));
             mpps.writeDataset2(th, null, null, 64, null);
             log.info(new String(out.toByteArray()));

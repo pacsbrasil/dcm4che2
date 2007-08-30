@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -337,8 +338,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                 .getOutputStream(), false);
         InputStream mllpIn = mllpDriver.getInputStream();
         XMLReader xmlReader = new HL7XMLReader();
-        XMLWriter xmlWriter = new HL7XMLWriter();
-        xmlWriter.setOutputStream(mllpDriver.getOutputStream());
+        XMLWriter xmlWriter = new HL7XMLWriter(new OutputStreamWriter(
+        		mllpDriver.getOutputStream(), ISO_8859_1));
         ContentHandler hl7out = xmlWriter.getContentHandler();
         SAXContentHandler hl7in = new SAXContentHandler();
         xmlReader.setContentHandler(hl7in);
