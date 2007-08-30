@@ -125,6 +125,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
+    
+    private ObjectName tarRetrieverName;
 
     private ObjectName aeServiceName;
 
@@ -141,25 +143,25 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     private long expectedDataVolumePerDay = 100000L;
 
-    private boolean flushExternalRetrievable = false;
+    private boolean flushExternalRetrievable;
 
-    private boolean flushOnMedia = false;
+    private boolean flushOnMedia;
 
-    private boolean flushOnROFsAvailable = false;
+    private boolean flushOnROFsAvailable;
 
-    private int validFileStatus = 0;
+    private int validFileStatus;
 
-    private boolean deleteUncommited = false;
+    private boolean deleteUncommited;
 
-    private boolean deleteEmptyPatient = false;
+    private boolean deleteEmptyPatient;
 
-    private long studyCacheTimeout = 0L;
+    private long studyCacheTimeout;
 
-    private long purgeFilesInterval = 0L;
+    private long purgeFilesInterval;
 
     private int limitNumberOfFilesPerTask = 1000;
 
-    private long freeDiskSpaceInterval = 0L;
+    private long freeDiskSpaceInterval;
 
     private Integer purgeFilesListenerID;
 
@@ -167,7 +169,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     private boolean freeDiskSpaceOnDemand = true;
 
-    private boolean isPurging = false;
+    private boolean isPurging;
 
     private int bufferSize = 8192;
 
@@ -181,11 +183,11 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     private long checkFreeDiskSpaceMaxInterval;
 
-    private long checkStorageFileSystem = 0L;
+    private long checkStorageFileSystem;
 
-    private String purgeStudyQueueName = null;
+    private String purgeStudyQueueName;
 
-    private long adjustExpectedDataVolumePerDay = 0L;
+    private long adjustExpectedDataVolumePerDay;
 
     protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
 
@@ -216,6 +218,14 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     };
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    
+    public final ObjectName getTarRetrieverName() {
+        return tarRetrieverName;
+    }
+
+    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
+        this.tarRetrieverName = tarRetrieverName;
+    }
 
     public final ObjectName getAEServiceName() {
         return aeServiceName;
@@ -1050,6 +1060,19 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         }
         return true;
     }
+    
+    File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
+        return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
+                new Object[] { fsID, fileID }, new String[] {
+                        String.class.getName(), String.class.getName() });
+    }
+
+    protected File getFile(FileDTO dto) throws Exception {
+        String fsID = dto.getDirectoryPath();
+        String fileID = dto.getFilePath();
+        return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
+                : FileUtils.toFile(fsID, fileID);
+    }
 
     public Object locateInstance(String iuid) throws Exception {
         FileDTO[] fileDTOs = null;
@@ -1065,8 +1088,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
                 for (int i = 0; i < fileDTOs.length; ++i) {
                     dto = fileDTOs[i];
                     if (retrieveAET.equals(dto.getRetrieveAET()))
-                        return FileUtils.toFile(dto.getDirectoryPath(), dto
-                                .getFilePath());
+                        return getFile(dto);
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }
