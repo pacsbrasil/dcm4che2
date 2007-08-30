@@ -562,6 +562,14 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                     }                    
                     lread += parseSequence(rVR, rLen);
                 } else {
+                    if (rLen < 0)
+                        throw new DcmParseException(logMsg()
+                        		+ ", value length [" + (rLen&0xffffffffL)
+                        		+ "] exceeds maximal supported length[2^31-1]");
+                    if (rTag != Tags.PixelData && rLen > maxAlloc) {
+                        throw new DcmParseException(logMsg()
+                        		+ ", MaxAlloc:" + maxAlloc);                    	
+                    }
                     readValue();
                     lread += rLen;
                 }
@@ -596,6 +604,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                 int itemtag = (bb12.getShort(0) << 16)
                             | (bb12.getShort(2) & 0xffff);
                 int itemlen = bb12.getInt(4);
+                if (itemlen < 0)
+                    throw new DcmParseException(logMsg()
+                    		+ ", item length [" + (itemlen&0xffffffffL)
+                    		+ "] exceeds maximal supported length[2^31-1]"  );
+                
                 switch (itemtag) {
                     case SEQ_DELIMITATION_ITEM_TAG:
                         if (sqLen != -1) {
@@ -720,8 +733,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private byte[] readBytes(int len) throws IOException {
         if (len == 0)
             return b0;
-        if (len < 0 || len > maxAlloc)
-            throw new DcmParseException(logMsg() + ", MaxAlloc:" + maxAlloc);
         byte[] retval = new byte[len];
         in.readFully(retval, 0, len);
         rPos += len;
