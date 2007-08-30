@@ -76,46 +76,50 @@ public class AEService extends MBeanServiceBase {
 
     private int[] portNumbers;
 
-    /**
-     * @return Returns the echoServiceName.
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getEchoServiceName()
      */
     public ObjectName getEchoServiceName() {
         return echoServiceName;
     }
 
-    /**
-     * @param echoServiceName
-     *            The echoServiceName to set.
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#setEchoServiceName(javax.management.ObjectName)
      */
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAuditLoggerName()
+     */
     public ObjectName getAuditLoggerName() {
         return auditLogger.getAuditLoggerName();
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#setAuditLoggerName(javax.management.ObjectName)
+     */
     public void setAuditLoggerName(ObjectName auditLogName) {
         this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
-    /**
-     * @return Returns the autoConfig.
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#isDontSaveIP()
      */
     public boolean isDontSaveIP() {
         return dontSaveIP;
     }
 
-    /**
-     * @param dontSaveIP
-     *            The dontSaveIP to set.
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#setDontSaveIP(boolean)
      */
     public void setDontSaveIP(boolean dontSaveIP) {
         this.dontSaveIP = dontSaveIP;
     }
 
-    /**
-     * @return Returns the portNumbers.
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getPortNumbers()
      */
     public String getPortNumbers() {
         if (portNumbers == null || portNumbers.length < 1)
@@ -130,9 +134,8 @@ public class AEService extends MBeanServiceBase {
         return sb.toString();
     }
 
-    /**
-     * @param portNumbers
-     *            The portNumbers to set.
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#setPortNumbers(java.lang.String)
      */
     public void setPortNumbers(String ports) {
         if (ports == null || "NONE".equalsIgnoreCase(ports)) {
@@ -147,6 +150,9 @@ public class AEService extends MBeanServiceBase {
         }
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAEs()
+     */
     public String getAEs() throws Exception {
         Collection c = aeMgr().findAll();
         StringBuilder sb = new StringBuilder();
@@ -159,14 +165,23 @@ public class AEService extends MBeanServiceBase {
         return sb.toString();
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#listAEs()
+     */
     public List listAEs() throws Exception {
         return aeMgr().findAll();
     }
 
-    public AE getAE(String title) throws Exception {
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAE(java.lang.String)
+     */
+    public AE getAE(String title) throws UnknownAETException {
         return aeMgr().findByAET(title);
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#updateAETitle(java.lang.String, java.lang.String)
+     */
     public boolean updateAETitle(String prevAET, String newAET)
             throws Exception {
         if (prevAET.equals(newAET)) {
@@ -184,11 +199,17 @@ public class AEService extends MBeanServiceBase {
         }
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAE(java.lang.String, java.lang.String)
+     */
     public AE getAE(String title, String host) throws RemoteException,
             Exception {
         return getAE(title, host == null ? null : InetAddress.getByName(host));
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAE(java.lang.String, java.net.InetAddress)
+     */
     public AE getAE(String aet, InetAddress addr) throws Exception {
         AEManager aetMgr = aeMgr();
         try {
@@ -224,30 +245,8 @@ public class AEService extends MBeanServiceBase {
         return null;
     }
 
-    /**
-     * Adds or updates an AE Title.
-     * 
-     * @param pk
-     *            The primary key of the AE title in the database if this is an
-     *            update.
-     * @param aet
-     *            Application Entity Title
-     * @param host
-     *            Hostname or IP addr.
-     * @param port
-     *            port number
-     * @param cipher
-     *            String with cypher(s) to create a secure connection (seperated
-     *            with ',') or null
-     * @param issuer
-     *            A string containing the issuer of the patient id used at this
-     *            AE title.
-     * @param desc
-     *            A description string for this AE title.
-     * @param checkHost
-     *            Enable/disable checking if the host can be resolved.
-     * 
-     * @throws Exception
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#updateAE(java.lang.Long, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
     public void updateAE(Long pk, String title, String host, int port,
             String cipher, String issuer, String user, String passwd,
@@ -293,6 +292,9 @@ public class AEService extends MBeanServiceBase {
         }
     }
 
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#addAE(java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     */
     public void addAE(String title, String host, int port, String cipher,
             String issuer, String user, String passwd, String desc,
             boolean checkHost) throws Exception {
@@ -300,13 +302,8 @@ public class AEService extends MBeanServiceBase {
                 checkHost);
     }
 
-    /**
-     * Remove the specified AE titles from the database.
-     * 
-     * @param titles
-     *            A delimited (space, comma, semi-colon, tab, new line) string
-     *            containing the AE titles to remove.
-     * @throws Exception
+    /** 
+     * @see org.dcm4che.archive.mbean.AEServiceMBean#removeAE(java.lang.String)
      */
     public void removeAE(String titles) throws Exception {
         StringTokenizer st = new StringTokenizer(titles, " ,;\t\r\n");

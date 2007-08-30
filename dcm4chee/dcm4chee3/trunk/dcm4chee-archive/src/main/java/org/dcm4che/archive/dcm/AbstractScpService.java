@@ -64,7 +64,6 @@ import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.mbean.AuditLoggerDelegate;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.TemplatesDelegate;
-import org.dcm4che.archive.util.FileUtils;
 import org.dcm4che.archive.util.XSLTUtils;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.RemoteNode;
@@ -80,12 +79,13 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
+import org.dcm4che.net.UserIdentityNegotiator;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.util.DTFormat;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
-
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * Base class for DICOM SCP services to extend from.
@@ -95,24 +95,28 @@ import org.dcm4cheri.util.StringUtils;
 public abstract class AbstractScpService extends MBeanServiceBase {
 
     protected static final String ANY = "ANY";
+
     protected static final String CONFIGURED_AETS = "CONFIGURED_AETS";
 
     protected static final String NONE = "NONE";
 
     protected ObjectName dcmServerName;
+
     protected ObjectName aeServiceName;
 
     protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     protected DcmHandler dcmHandler;
 
+    protected UserIdentityNegotiator userIdentityNegotiator;
+
     protected String[] calledAETs;
 
-    /** 
-     * List of allowed calling AETs. 
+    /**
+     * List of allowed calling AETs.
      * <p />
-     * <code>null</code> means ANY<br /> 
-     * An empty list (length=0) means CONFIGURED_AETS. 
+     * <code>null</code> means ANY<br />
+     * An empty list (length=0) means CONFIGURED_AETS.
      */
     protected String[] callingAETs;
 
@@ -134,37 +138,73 @@ public abstract class AbstractScpService extends MBeanServiceBase {
 
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
 
-    private final NotificationListener callingAETChangeListener = 
-        new NotificationListener() {
-            public void handleNotification(Notification notif, Object handback) {
-                try {
-                    log.debug("Handle callingAET change notification!");
-                    String[][] userData = (String[][]) notif.getUserData();
-                    if ( areCalledAETsAffected(userData[0])) {
-                        String newCallingAETs = userData[1] == null ? ANY 
-                                                : userData[1].length == 0 ? CONFIGURED_AETS
-                                                : StringUtils.toString(userData[1],'\\');
-                        log.debug("newCallingAETs:"+newCallingAETs);
-                        server.setAttribute(serviceName, new Attribute("CallingAETitles", newCallingAETs));
-                    }
-                } catch (Throwable th) {
-                   log.warn("Failed to process callingAET change notification: ", th);       
+    private final NotificationListener callingAETChangeListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                log.debug("Handle callingAET change notification!");
+                log.info("Sequence Number:" + notif.getSequenceNumber());
+                String[][] userData = (String[][]) notif.getUserData();
+                if (areCalledAETsAffected(userData[0])) {
+                    String newCallingAETs = userData[1] == null ? ANY
+                            : userData[1].length == 0 ? CONFIGURED_AETS
+                                    : StringUtils.toString(userData[1], '\\');
+                    log.debug("newCallingAETs:" + newCallingAETs);
+                    server.setAttribute(serviceName, new Attribute(
+                            "CallingAETitles", newCallingAETs));
                 }
             }
+            catch (Throwable th) {
+                log.warn("Failed to process callingAET change notification: ",
+                        th);
+            }
+        }
 
-            private boolean areCalledAETsAffected(String[] affectedCalledAETs) {
-                if ( calledAETs == null) return true;
-                if ( affectedCalledAETs != null ) {
-                    for ( int i = 0 ; i < affectedCalledAETs.length ; i++ ) {
-                        for ( int j = 0 ; j < calledAETs.length ; j++) {
-                            if ( affectedCalledAETs[i].equals(calledAETs[j])) return true;
+        private boolean areCalledAETsAffected(String[] affectedCalledAETs) {
+            if (calledAETs == null)
+                return true;
+            if (affectedCalledAETs != null) {
+                for (int i = 0; i < affectedCalledAETs.length; i++) {
+                    for (int j = 0; j < calledAETs.length; j++) {
+                        if (affectedCalledAETs[i].equals(calledAETs[j]))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+    };
+
+    private final NotificationListener aetChangeListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            if (callingAETs != null || callingAETs.length == 0) {
+                try {
+                    log.debug("Handle AE Title change notification!");
+                    String[] userData = (String[]) notif.getUserData();
+                    String removeAET = userData[0];
+                    String addAET = userData[1];
+                    AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+                    for (int i = 0; i < calledAETs.length; ++i) {
+                        AcceptorPolicy policy1 = policy
+                                .getPolicyForCalledAET(calledAETs[i]);
+                        if (removeAET != null) {
+                            policy1.removeCallingAET(removeAET);
+                        }
+                        if (addAET != null) {
+                            policy1.addCallingAET(addAET);
                         }
                     }
+
                 }
-                return false;
+                catch (Throwable th) {
+                    log.warn(
+                            "Failed to process AE Title change notification: ",
+                            th);
+                }
             }
-        };
-        
+        }
+
+    };
+
     public final ObjectName getDcmServerName() {
         return dcmServerName;
     }
@@ -188,7 +228,7 @@ public abstract class AbstractScpService extends MBeanServiceBase {
     public final void setTemplatesServiceName(ObjectName serviceName) {
         templates.setTemplatesServiceName(serviceName);
     }
-        
+
     public ObjectName getAEServiceName() {
         return aeServiceName;
     }
@@ -257,7 +297,7 @@ public abstract class AbstractScpService extends MBeanServiceBase {
     public final void setCoerceConfigDir(String path) {
         templates.setConfigDir(path);
     }
-        
+
     protected boolean enableService() {
         if (dcmHandler == null)
             return false;
@@ -270,18 +310,21 @@ public abstract class AbstractScpService extends MBeanServiceBase {
             if (policy1 == null) {
                 policy1 = AssociationFactory.getInstance().newAcceptorPolicy();
                 policy1.setCallingAETs(callingAETs);
+                policy1.setUserIdentityNegotiator(userIdentityNegotiator);
                 policy.putPolicyForCalledAET(calledAETs[i], policy1);
                 policy.addCalledAET(calledAETs[i]);
                 changed = true;
-            } else {
+            }
+            else {
                 String[] aets = policy1.getCallingAETs();
-                if (aets.length == 0 ) {
+                if (aets.length == 0) {
                     if (callingAETs != null) {
                         policy1.setCallingAETs(callingAETs);
                         changed = true;
                     }
-                } else {
-                    if ( ! haveSameItems(aets, callingAETs) ) {
+                }
+                else {
+                    if (!haveSameItems(aets, callingAETs)) {
                         policy1.setCallingAETs(callingAETs);
                         changed = true;
                     }
@@ -295,12 +338,14 @@ public abstract class AbstractScpService extends MBeanServiceBase {
     }
 
     private String[] getCallingAETsForPolicy() {
-        if ( callingAETs == null ) return null;
-        if ( callingAETs.length != 0 ) return callingAETs;
+        if (callingAETs == null)
+            return null;
+        if (callingAETs.length != 0)
+            return callingAETs;
         log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
         try {
             List l = (List) server.invoke(aeServiceName, "listAEs", null, null);
-            if (l == null || l.size() == 0 ) {
+            if (l == null || l.size() == 0) {
                 log.warn("No AETs configured! No calling AET is allowed!");
                 return callingAETs;
             }
@@ -308,28 +353,35 @@ public abstract class AbstractScpService extends MBeanServiceBase {
             String aet;
             for (Iterator iter = l.iterator(); iter.hasNext();) {
                 aet = ((AE) iter.next()).getTitle();
-                if ( aet.indexOf('^') == -1 ) {//filter 'HL7' AETs
+                if (aet.indexOf('^') == -1) {// filter 'HL7' AETs
                     dicomAEs.add(aet);
                 }
             }
-            log.debug("Use 'CONFIGURED_AETS'. Current list of configured (dicom) AETs"+dicomAEs);
+            log
+                    .debug("Use 'CONFIGURED_AETS'. Current list of configured (dicom) AETs"
+                            + dicomAEs);
             String[] sa = new String[dicomAEs.size()];
             return (String[]) dicomAEs.toArray(sa);
-        } catch (Exception e) {
-            log.error("Failed to query configured AETs! No calling AET is allowed!", e);
+        }
+        catch (Exception e) {
+            log
+                    .error(
+                            "Failed to query configured AETs! No calling AET is allowed!",
+                            e);
             return callingAETs;
         }
     }
 
-    // Only check if all items in o1 are also in o2! (and same length) 
+    // Only check if all items in o1 are also in o2! (and same length)
     // e.g. {"a","a","d"}, {"a","d","d"} will also return true!
     private boolean haveSameItems(Object[] o1, Object[] o2) {
-        if ( o1 == null || o2 == null || o1.length != o2.length ) return false;
-        if ( o1.length == 1 ) 
+        if (o1 == null || o2 == null || o1.length != o2.length)
+            return false;
+        if (o1.length == 1)
             return o1[0].equals(o2[0]);
-        iloop:for ( int i = 0, len = o1.length ; i < len ; i++ ) {
-            for ( int j = 0 ; j < len ; j++ ) {
-                if ( o1[i].equals( o2[j]))
+        iloop: for (int i = 0, len = o1.length; i < len; i++) {
+            for (int j = 0; j < len; j++) {
+                if (o1[i].equals(o2[j]))
                     continue iloop;
             }
             return false;
@@ -356,20 +408,23 @@ public abstract class AbstractScpService extends MBeanServiceBase {
 
     public final String getCallingAETs() {
         return callingAETs == null ? ANY
-                : callingAETs.length == 0 ? CONFIGURED_AETS
-                : StringUtils.toString(callingAETs, '\\');
+                : callingAETs.length == 0 ? CONFIGURED_AETS : StringUtils
+                        .toString(callingAETs, '\\');
     }
 
-    public final void setCallingAETs(String callingAETs) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public final void setCallingAETs(String callingAETs)
+            throws InstanceNotFoundException, MBeanException,
+            ReflectionException {
         if (getCallingAETs().equals(callingAETs))
             return;
         this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null
                 : CONFIGURED_AETS.equalsIgnoreCase(callingAETs) ? new String[0]
-                : StringUtils.split(callingAETs, '\\');
-        if ( enableService() ) {
+                        : StringUtils.split(callingAETs, '\\');
+        if (enableService()) {
             server.invoke(dcmServerName, "notifyCallingAETchange",
-                    new Object[] {calledAETs, this.callingAETs} , 
-                    new String[] {String[].class.getName(), String[].class.getName()});
+                    new Object[] { calledAETs, this.callingAETs },
+                    new String[] { String[].class.getName(),
+                            String[].class.getName() });
         }
     }
 
@@ -435,7 +490,7 @@ public abstract class AbstractScpService extends MBeanServiceBase {
         if (uids == null || uids.isEmpty())
             return "";
         String nl = System.getProperty("line.separator", "\n");
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         Iterator iter = uids.keySet().iterator();
         while (iter.hasNext()) {
             sb.append(iter.next()).append(nl);
@@ -455,7 +510,8 @@ public abstract class AbstractScpService extends MBeanServiceBase {
                 if (!UIDs.isValid(uid))
                     throw new IllegalArgumentException("UID " + uid
                             + " isn't a valid UID!");
-            } else {
+            }
+            else {
                 uid = UIDs.forName(name);
             }
             map.put(name, uid);
@@ -468,11 +524,17 @@ public abstract class AbstractScpService extends MBeanServiceBase {
     }
 
     protected void startService() throws Exception {
-        logDir = new File(System.getProperty(FileUtils.SERVER_HOME_DIR, "log"));
+        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
+                "log");
+        userIdentityNegotiator = (UserIdentityNegotiator) server.invoke(
+                dcmServerName, "userIdentityNegotiator", null, null);
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
-        server.addNotificationListener(dcmServerName, callingAETChangeListener, null, null);
+        server.addNotificationListener(dcmServerName, callingAETChangeListener,
+                null, null);
+        server.addNotificationListener(aeServiceName, aetChangeListener, null,
+                null);
         enableService();
     }
 
@@ -480,8 +542,11 @@ public abstract class AbstractScpService extends MBeanServiceBase {
         disableService();
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
-        server.removeNotificationListener(dcmServerName, callingAETChangeListener);
-     }
+        userIdentityNegotiator = null;
+        server.removeNotificationListener(dcmServerName,
+                callingAETChangeListener);
+        server.removeNotificationListener(aeServiceName, aetChangeListener);
+    }
 
     protected abstract void bindDcmServices(DcmServiceRegistry services);
 
@@ -525,7 +590,8 @@ public abstract class AbstractScpService extends MBeanServiceBase {
             try {
                 XSLTUtils.writeTo(ds,
                         getLogFile(new Date(), callingAET, suffix));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.warn("Logging of attributes failed:", e);
             }
         }
@@ -541,7 +607,8 @@ public abstract class AbstractScpService extends MBeanServiceBase {
         Dataset out = DcmObjectFactory.getInstance().newDataset();
         try {
             XSLTUtils.xslt(in, stylesheet, a, out);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error("Attribute coercion failed:", e);
             return null;
         }
@@ -563,7 +630,8 @@ public abstract class AbstractScpService extends MBeanServiceBase {
                 if (oldEl == null || coerced) {
                     ds.putXX(el.tag(), el.vr());
                 }
-            } else {
+            }
+            else {
                 Dataset item;
                 DcmElement sq = oldEl;
                 switch (el.vr()) {
@@ -609,7 +677,8 @@ public abstract class AbstractScpService extends MBeanServiceBase {
                         .info(parent == null ? ("Coerce " + oldEl + " to " + el)
                                 : ("Coerce " + oldEl + " to " + el
                                         + " in item of " + parent));
-            } else {
+            }
+            else {
                 if (oldEl == null && log.isDebugEnabled()) {
                     log.debug(parent == null ? ("Add " + el) : ("Add " + el
                             + " in item of " + parent));
@@ -618,7 +687,7 @@ public abstract class AbstractScpService extends MBeanServiceBase {
             }
         }
     }
-    
+
     public void sendJMXNotification(Object o) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(o.getClass().getName(), this,
@@ -630,29 +699,33 @@ public abstract class AbstractScpService extends MBeanServiceBase {
     public void logDicomQuery(Association assoc, String cuid, Dataset keys) {
         try {
             if (auditLogger.isAuditLogIHEYr4()) {
-                RemoteNode rnode = AuditLoggerFactory.getInstance().newRemoteNode(
-                        assoc.getSocket(), assoc.getCallingAET());
-                server.invoke(auditLogger.getAuditLoggerName(), "logDicomQuery", 
-                        new Object[] { keys, rnode, cuid },
+                RemoteNode rnode = AuditLoggerFactory
+                        .getInstance()
+                        .newRemoteNode(assoc.getSocket(), assoc.getCallingAET());
+                server.invoke(auditLogger.getAuditLoggerName(),
+                        "logDicomQuery", new Object[] { keys, rnode, cuid },
                         new String[] { Dataset.class.getName(),
-                            RemoteNode.class.getName(), String.class.getName() });
-            } else {
+                                RemoteNode.class.getName(),
+                                String.class.getName() });
+            }
+            else {
                 QueryMessage msg = new QueryMessage();
-                msg.addDestinationProcess(AuditMessage.getProcessID(), 
-                        calledAETs, AuditMessage.getProcessName(), 
-                        AuditMessage.getLocalHostName(), false);
-                
-                String srcHost = AuditMessage.hostNameOf(
-                        assoc.getSocket().getInetAddress());
-                msg.addSourceProcess(srcHost , 
-                        new String[] { assoc.getCallingAET() }, null, 
-                        srcHost, true);
-                byte[] query = DatasetUtils.toByteArray(keys, UIDs.ExplicitVRLittleEndian);
+                msg.addDestinationProcess(AuditMessage.getProcessID(),
+                        calledAETs, AuditMessage.getProcessName(), AuditMessage
+                                .getLocalHostName(), false);
+
+                String srcHost = AuditMessage.hostNameOf(assoc.getSocket()
+                        .getInetAddress());
+                msg.addSourceProcess(srcHost, new String[] { assoc
+                        .getCallingAET() }, null, srcHost, true);
+                byte[] query = DatasetUtils.toByteArray(keys,
+                        UIDs.ExplicitVRLittleEndian);
                 msg.addQuerySOPClass(cuid, UIDs.ExplicitVRLittleEndian, query);
                 msg.validate();
                 Logger.getLogger("auditlog").info(msg);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
     }

@@ -43,11 +43,13 @@ package org.dcm4che.archive.dcm;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
+import org.dcm4che.archive.mbean.DicomSecurityDelegate;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.TLSConfigDelegate;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.UserIdentityNegotiator;
 import org.dcm4che.server.DcmHandler;
 import org.dcm4che.server.Server;
 import org.dcm4che.server.ServerFactory;
@@ -69,10 +71,13 @@ public class DcmServerService extends MBeanServiceBase {
     private DcmHandler handler = sf.newDcmHandler(policy, services);
 
     private Server dcmsrv = sf.newServer(handler);
-    
+
     private DcmProtocol protocol = DcmProtocol.DICOM;
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+
+    private DicomSecurityDelegate dicomSecurity = new DicomSecurityDelegate(
+            this);
 
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
@@ -80,6 +85,14 @@ public class DcmServerService extends MBeanServiceBase {
 
     public final void setTLSConfigName(ObjectName tlsConfigName) {
         tlsConfig.setTLSConfigName(tlsConfigName);
+    }
+
+    public final ObjectName getDicomSecurityServiceName() {
+        return dicomSecurity.getDicomSecurityServiceName();
+    }
+
+    public final void setDicomSecurityServiceName(ObjectName serviceName) {
+        this.dicomSecurity.setDicomSecurityServiceName(serviceName);
     }
 
     public int getPort() {
@@ -135,21 +148,21 @@ public class DcmServerService extends MBeanServiceBase {
     }
 
     public final int getReceiveBufferSize() {
-        return dcmsrv.getReceiveBufferSize();        
+        return dcmsrv.getReceiveBufferSize();
     }
-    
+
     public final void setReceiveBufferSize(int size) {
         dcmsrv.setReceiveBufferSize(size);
     }
 
     public final int getSendBufferSize() {
-        return dcmsrv.getSendBufferSize();        
+        return dcmsrv.getSendBufferSize();
     }
-    
+
     public final void setSendBufferSize(int size) {
         dcmsrv.setSendBufferSize(size);
     }
-        
+
     public final boolean isTcpNoDelay() {
         return dcmsrv.isTcpNoDelay();
     }
@@ -157,7 +170,7 @@ public class DcmServerService extends MBeanServiceBase {
     public final void setTcpNoDelay(boolean on) {
         dcmsrv.setTcpNoDelay(on);
     }
-    
+
     public int getMaxClients() {
         return dcmsrv.getMaxClients();
     }
@@ -173,15 +186,15 @@ public class DcmServerService extends MBeanServiceBase {
     public int getMaxIdleThreads() {
         return dcmsrv.getMaxIdleThreads();
     }
-    
+
     public int getNumIdleThreads() {
         return dcmsrv.getNumIdleThreads();
     }
-    
+
     public void setMaxIdleThreads(int max) {
         dcmsrv.setMaxIdleThreads(max);
     }
-        
+
     public String[] getCallingAETs() {
         return policy.getCallingAETs();
     }
@@ -206,17 +219,26 @@ public class DcmServerService extends MBeanServiceBase {
         policy.setMaxPDULength(newMaxPDULength);
     }
 
-    public void notifyCallingAETchange(String[] affectedCalledAETs, String[] newCallingAETs) {
+    public void notifyCallingAETchange(String[] affectedCalledAETs,
+            String[] newCallingAETs) {
         long eventID = this.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(this.getClass().getName(), this, eventID );
-        notif.setUserData(new String[][] {affectedCalledAETs, newCallingAETs} );
-        log.debug("send callingAET changed notif:"+notif);
-        this.sendNotification( notif );
+        Notification notif = new Notification(this.getClass().getName(), this,
+                eventID);
+        notif
+                .setUserData(new String[][] { affectedCalledAETs,
+                        newCallingAETs });
+        log.debug("send callingAET changed notif:" + notif);
+        this.sendNotification(notif);
+    }
+
+    public UserIdentityNegotiator userIdentityNegotiator() {
+        return dicomSecurity.userIdentityNegotiator();
     }
 
     protected void startService() throws Exception {
         dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
-        dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
+        dcmsrv.addHandshakeCompletedListener(tlsConfig
+                .handshakeCompletedListener());
         dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
         dcmsrv.start();
