@@ -115,6 +115,7 @@ CREATE INDEX study_custom3 ON study(study_custom3);
 CREATE INDEX study_status_id ON study(study_status_id);
 CREATE INDEX study_checked ON study(checked_time);
 CREATE INDEX study_created ON study(created_time);
+CREATE INDEX study_updated ON study(updated_time);
 CREATE INDEX study_status ON study(study_status);
 
 CREATE TABLE rel_study_pcode (

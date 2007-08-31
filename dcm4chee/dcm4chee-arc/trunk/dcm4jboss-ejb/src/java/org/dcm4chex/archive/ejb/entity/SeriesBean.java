@@ -106,10 +106,10 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesStatus = ?1 AND s.createdTime < ?2"
  *             transaction-type="Supports"
  *             
- * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
- *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.createdTime < ?2"
+ * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.study.updatedTime < ?2"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
+ * @jboss.query signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
  *              strategy="on-find"
  *              eager-load-group="*"
  * 

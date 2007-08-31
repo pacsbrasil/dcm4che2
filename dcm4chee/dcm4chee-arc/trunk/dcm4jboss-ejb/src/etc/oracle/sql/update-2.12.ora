@@ -11,3 +11,5 @@ CREATE UNIQUE INDEX dev_station_name ON device(station_name);
 
 ALTER TABLE series_req ADD study_iuid VARCHAR2(255);
 CREATE INDEX ser_rq_study_iuid ON series_req(study_iuid);
+
+CREATE INDEX study_updated ON study(updated_time);

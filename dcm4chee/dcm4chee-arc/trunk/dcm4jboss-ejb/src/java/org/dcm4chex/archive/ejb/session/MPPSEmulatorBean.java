@@ -123,7 +123,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
      */
     public Dataset[] generateMPPS(String sourceAET, long delay)
             throws FinderException {
-        Collection c = seriesHome.findWithNoPpsIuidFromSrcAETReceivedBefore(
+        Collection c = seriesHome.findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(
                 sourceAET, new Timestamp(System.currentTimeMillis() - delay));
         HashMap mppsMap = new HashMap();
         for (Iterator it = c.iterator(); it.hasNext();) {

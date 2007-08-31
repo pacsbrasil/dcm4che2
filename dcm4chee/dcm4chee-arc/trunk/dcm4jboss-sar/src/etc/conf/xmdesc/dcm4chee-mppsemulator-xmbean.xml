@@ -21,8 +21,8 @@
      setMethod="setModalityAETitles">
       <description><![CDATA[AE titles of modalities for which MPPS messages 
         shall be emulated. Multiple AE titles are separated by new line.
-        For each AE title, a minimum delay time between the time the first
-        object of the a series is received and the generation of the MPPS
+        For each AE title, a minimum delay time between the time the last
+        object of the a study is received and the generation of the MPPS
         message can be explicit specified. If no delay is specified, a default
         delay of 5 minutes is used.
         <br/>Format: <i>aeTitle</i>[:<i>delay</i>] 

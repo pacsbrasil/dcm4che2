@@ -28,6 +28,7 @@ ALTER TABLE study DROP INDEX study_custom3;
 ALTER TABLE study DROP INDEX study_status_id;
 ALTER TABLE study DROP INDEX study_checked;
 ALTER TABLE study DROP INDEX study_created;
+ALTER TABLE study DROP INDEX study_updated;
 ALTER TABLE study DROP INDEX study_status;
 ALTER TABLE rel_study_pcode DROP INDEX pcode_study_fk;
 ALTER TABLE rel_study_pcode DROP INDEX study_pcode_fk;
