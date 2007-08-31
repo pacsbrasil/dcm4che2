@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
@@ -76,50 +77,46 @@ public class AEService extends MBeanServiceBase {
 
     private int[] portNumbers;
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getEchoServiceName()
+    /**
+     * @return Returns the echoServiceName.
      */
     public ObjectName getEchoServiceName() {
         return echoServiceName;
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#setEchoServiceName(javax.management.ObjectName)
+    /**
+     * @param echoServiceName
+     *            The echoServiceName to set.
      */
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAuditLoggerName()
-     */
     public ObjectName getAuditLoggerName() {
         return auditLogger.getAuditLoggerName();
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#setAuditLoggerName(javax.management.ObjectName)
-     */
     public void setAuditLoggerName(ObjectName auditLogName) {
         this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#isDontSaveIP()
+    /**
+     * @return Returns the autoConfig.
      */
     public boolean isDontSaveIP() {
         return dontSaveIP;
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#setDontSaveIP(boolean)
+    /**
+     * @param dontSaveIP
+     *            The dontSaveIP to set.
      */
     public void setDontSaveIP(boolean dontSaveIP) {
         this.dontSaveIP = dontSaveIP;
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getPortNumbers()
+    /**
+     * @return Returns the portNumbers.
      */
     public String getPortNumbers() {
         if (portNumbers == null || portNumbers.length < 1)
@@ -134,8 +131,9 @@ public class AEService extends MBeanServiceBase {
         return sb.toString();
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#setPortNumbers(java.lang.String)
+    /**
+     * @param portNumbers
+     *            The portNumbers to set.
      */
     public void setPortNumbers(String ports) {
         if (ports == null || "NONE".equalsIgnoreCase(ports)) {
@@ -150,9 +148,6 @@ public class AEService extends MBeanServiceBase {
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAEs()
-     */
     public String getAEs() throws Exception {
         Collection c = aeMgr().findAll();
         StringBuilder sb = new StringBuilder();
@@ -165,23 +160,14 @@ public class AEService extends MBeanServiceBase {
         return sb.toString();
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#listAEs()
-     */
     public List listAEs() throws Exception {
         return aeMgr().findAll();
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAE(java.lang.String)
-     */
-    public AE getAE(String title) throws UnknownAETException {
+    public AE getAE(String title) throws Exception {
         return aeMgr().findByAET(title);
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#updateAETitle(java.lang.String, java.lang.String)
-     */
     public boolean updateAETitle(String prevAET, String newAET)
             throws Exception {
         if (prevAET.equals(newAET)) {
@@ -189,9 +175,10 @@ public class AEService extends MBeanServiceBase {
         }
         AEManager aeManager = aeMgr();
         try {
-            AE aeData = aeManager.findByAET(prevAET);
-            aeData.setTitle(newAET);
-            aeManager.updateAE(aeData);
+            AE ae = aeManager.findByAET(prevAET);
+            ae.setTitle(newAET);
+            aeManager.updateAE(ae);
+            notifyAETchange(prevAET, newAET);
             return true;
         }
         catch (UnknownAETException e) {
@@ -199,17 +186,11 @@ public class AEService extends MBeanServiceBase {
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAE(java.lang.String, java.lang.String)
-     */
     public AE getAE(String title, String host) throws RemoteException,
             Exception {
         return getAE(title, host == null ? null : InetAddress.getByName(host));
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#getAE(java.lang.String, java.net.InetAddress)
-     */
     public AE getAE(String aet, InetAddress addr) throws Exception {
         AEManager aetMgr = aeMgr();
         try {
@@ -227,8 +208,8 @@ public class AEService extends MBeanServiceBase {
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            AE ae = new AE(aet, aeHost, portNumbers[i], null, null, null, null,
-                    null);
+            AE ae = new AE(aet, aeHost, portNumbers[i], null, null,
+                    null, null, null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -239,16 +220,32 @@ public class AEService extends MBeanServiceBase {
                 }
                 logActorConfig("Add new auto-configured AE " + ae,
                         SecurityAlertMessage.NETWORK_CONFIGURATION);
+                notifyAETchange(null, aet);
                 return ae;
             }
         }
         return null;
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#updateAE(java.lang.Long, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+    /**
+     * Adds (replace) a new AE Title.
+     * 
+     * @param aet
+     *            Application Entity Title
+     * @param host
+     *            Hostname or IP addr.
+     * @param port
+     *            port number
+     * @param cipher
+     *            String with cypher(s) to create a secure connection (seperated
+     *            with ',') or null
+     * @param checkHost
+     *            Enable/disable checking if the host can be resolved.
+     * 
+     * @throws Exception
+     * @throws RemoteException
      */
-    public void updateAE(Long pk, String title, String host, int port,
+    public void updateAE(long pk, String title, String host, int port,
             String cipher, String issuer, String user, String passwd,
             String desc, boolean checkHost) throws Exception {
         if (checkHost) {
@@ -259,22 +256,26 @@ public class AEService extends MBeanServiceBase {
                 throw new IllegalArgumentException(
                         "Host "
                                 + host
-                                + " can't be resolved! Disable hostname check to force addition of new AE!");
+                                + " cant be resolved! Disable hostname check to add new AE anyway!");
             }
         }
 
         AEManager aeManager = aeMgr();
-        if (pk == null) {
-            AE aeNew = new AE(title, host, port, cipher, issuer, user, passwd,
+        if (pk == -1) {
+            AE newAE = new AE(title, host, port, cipher, issuer, user, passwd,
                     desc);
-            aeManager.newAE(aeNew);
-            logActorConfig("Add AE " + aeNew + " cipher:"
-                    + aeNew.getCipherSuites(),
+            newAE.setPk(pk);
+            aeManager.newAE(newAE);
+            logActorConfig("Add AE " + newAE + " cipher:"
+                    + newAE.getCipherSuites(),
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
+            notifyAETchange(null, title);
+
         }
         else {
-            AE aeOld = aeManager.findByPrimaryKey(pk);
-            if (!aeOld.getTitle().equals(title)) {
+            AE oldAE = aeManager.findByPrimaryKey(pk);
+            String oldAET = null;
+            if (!oldAE.getTitle().equals(title)) {
                 try {
                     AE aeOldByTitle = aeManager.findByAET(title);
                     throw new IllegalArgumentException("AE Title " + title
@@ -282,29 +283,25 @@ public class AEService extends MBeanServiceBase {
                 }
                 catch (UnknownAETException e) {
                 }
+                oldAET = oldAE.getTitle();
             }
-            AE aeNew = new AE(title, host, port, cipher, issuer, user, passwd,
+            AE newAE = new AE(title, host, port, cipher, issuer, user, passwd,
                     desc);
-            aeNew.setPk(pk);
-            aeManager.updateAE(aeNew);
-            logActorConfig("Modify AE " + aeOld + " -> " + aeNew,
+            aeManager.updateAE(newAE);
+            logActorConfig("Modify AE " + oldAE + " -> " + newAE,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
+            if (oldAET != null)
+                notifyAETchange(oldAET, title);
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#addAE(java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
-     */
     public void addAE(String title, String host, int port, String cipher,
             String issuer, String user, String passwd, String desc,
             boolean checkHost) throws Exception {
-        updateAE(null, title, host, port, cipher, issuer, desc, user, passwd,
+        updateAE(-1, title, host, port, cipher, issuer, user, passwd, desc,
                 checkHost);
     }
 
-    /** 
-     * @see org.dcm4che.archive.mbean.AEServiceMBean#removeAE(java.lang.String)
-     */
     public void removeAE(String titles) throws Exception {
         StringTokenizer st = new StringTokenizer(titles, " ,;\t\r\n");
         AE ae;
@@ -314,6 +311,7 @@ public class AEService extends MBeanServiceBase {
             aeManager.removeAE(ae.getPk());
             logActorConfig("Remove AE " + ae,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
+            notifyAETchange(ae.getTitle(), null);
         }
     }
 
@@ -346,6 +344,15 @@ public class AEService extends MBeanServiceBase {
         catch (Exception e) {
             log.warn("Failed to log ActorConfig:", e);
         }
+    }
+
+    private void notifyAETchange(String oldTitle, String newTitle) {
+        long eventID = this.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(this.getClass().getName(), this,
+                eventID);
+        notif.setUserData(new String[] { oldTitle, newTitle });
+        log.debug("send AE Title changed notif:" + notif);
+        this.sendNotification(notif);
     }
 
     private boolean echo(AE ae) {
