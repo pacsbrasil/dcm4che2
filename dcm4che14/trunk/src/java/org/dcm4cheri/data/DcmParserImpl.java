@@ -604,11 +604,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                 int itemtag = (bb12.getShort(0) << 16)
                             | (bb12.getShort(2) & 0xffff);
                 int itemlen = bb12.getInt(4);
-                if (itemlen < 0)
-                    throw new DcmParseException(logMsg()
-                    		+ ", item length [" + (itemlen&0xffffffffL)
-                    		+ "] exceeds maximal supported length[2^31-1]"  );
-                
                 switch (itemtag) {
                     case SEQ_DELIMITATION_ITEM_TAG:
                         if (sqLen != -1) {
