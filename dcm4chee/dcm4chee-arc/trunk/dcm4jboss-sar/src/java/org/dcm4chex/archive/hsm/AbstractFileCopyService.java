@@ -42,6 +42,7 @@ package org.dcm4chex.archive.hsm;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -57,6 +58,8 @@ import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.Condition;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -149,19 +152,26 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
                 : condition.toString() + destination;
     }
 
-    public final void setDestination(String destination) {
-        this.condition = null;
-        this.destination = null;
+    public final void setDestination(String destination) throws Exception {
         if ("NONE".equalsIgnoreCase(destination)) {
+            this.condition = null;
+            this.destination = null;
             return;
         }
+        Condition newCondition = null;
         int startDest = destination.indexOf(']');
         if (startDest != -1) {
-            this.condition = new Condition(destination.substring(0, startDest+1));
-            this.destination = destination.substring(startDest+1);
-        } else {
-            this.destination = destination;
+            newCondition = new Condition(destination.substring(0, startDest+1));
+            destination = destination.substring(startDest+1);
         }
+        try {
+            getFileSystemMgt().getFileSystem(destination);
+        } catch (ObjectNotFoundException e) {
+            throw new IllegalArgumentException(
+                    "No such file system configured: " + destination);
+        }
+        this.condition = newCondition;
+        this.destination = destination;
     }
 
     public final String getFileStatus() {
@@ -290,4 +300,9 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
                 StorageHome.class, StorageHome.JNDI_NAME);
     }
 
+
+    protected static FileSystemMgt getFileSystemMgt() throws Exception {
+        return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
+    }
 }
