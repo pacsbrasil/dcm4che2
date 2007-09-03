@@ -39,17 +39,10 @@
 
 package org.dcm4chex.archive.web.maverick.xdsi;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
-import org.dcm4che.data.Dataset;
-import org.dcm4chex.archive.ejb.interfaces.ContentManager;
-import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.dcm4chex.archive.web.maverick.FolderForm;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
-import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
 /**
  * 
@@ -85,7 +78,7 @@ public class XDSQueryCtrl extends Dcm4cheeFormController {
         XDSQueryDelegate delegate = XDSQueryDelegate.getInstance(getCtx());
         if ( getCtx().getRequest().getParameter("useRefs") != null ) 
         	delegate.setUseLeafFind(false);
-        XDSConsumerModel model = XDSConsumerModel.getModel(getCtx().getRequest());
+        XDSConsumerModel model = PatientModel.getConsumerModel();
         try {
 	        if ( "findDocuments".equals(type)) {
 	            delegate.findDocuments(patId, issuer, model);

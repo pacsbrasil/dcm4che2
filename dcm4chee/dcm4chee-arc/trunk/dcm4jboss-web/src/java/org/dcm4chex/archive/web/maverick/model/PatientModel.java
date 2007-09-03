@@ -162,6 +162,10 @@ public class PatientModel extends AbstractModel {
         consumerModel = m;
     }
 
+    public static XDSConsumerModel getConsumerModel() {
+        return consumerModel;
+    }
+
     /**
      * @return the showXDS
      */
