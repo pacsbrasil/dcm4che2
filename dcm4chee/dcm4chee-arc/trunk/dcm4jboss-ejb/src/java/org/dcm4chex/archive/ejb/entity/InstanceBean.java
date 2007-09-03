@@ -126,6 +126,14 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.query signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
  *              strategy="on-find"
  *              eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.seriesIuid = ?1"
+ *             transaction-type="Supports"
+ *
+ * @jboss.query signature="java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
+ *              strategy="on-find"
+ *              eager-load-group="most"
  * 
  * @jboss.query 
  *  signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"

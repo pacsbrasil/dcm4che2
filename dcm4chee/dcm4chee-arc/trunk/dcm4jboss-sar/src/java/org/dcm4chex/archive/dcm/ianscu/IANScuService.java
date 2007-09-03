@@ -40,10 +40,8 @@
 package org.dcm4chex.archive.dcm.ianscu;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -68,15 +66,13 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -132,17 +128,10 @@ public class IANScuService extends AbstractScuService implements
     private final NotificationListener mppsReceivedListener = 
         new NotificationListener() {
             public void handleNotification(Notification notif, Object handback) {
-                Dataset mpps = (Dataset) notif.getUserData();
-                if (isIgnoreMPPS(mpps)) {
-                    return;
-                }
-                String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
-                try {
-                    notifyIfRefInstancesAvailable( getMPPSManagerHome().create().getMPPS(mppsiuid) );
-                } catch (ObjectNotFoundException e) {
-                    log.debug("No such MPPS - " + mppsiuid);
-                } catch (Exception e) {
-                    log.error("Failed to access MPPS - " + mppsiuid, e);
+            	Dataset mpps = (Dataset) notif.getUserData();
+            	if (!isIgnoreMPPS(mpps)) {
+	            	String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
+	            	notifyIfRefInstancesAvailable(mppsiuid);
                 }
             }
         };
@@ -331,24 +320,14 @@ public class IANScuService extends AbstractScuService implements
         if (!notifyOtherServices && notifiedAETs.length == 0)
             return;
         Dataset ian = stored.getIAN();
-        Dataset pps = ian.getItem(Tags.RefPPSSeq);
-        String mppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID)
-                : null;
         if (!sendOneIANforEachMPPS) {
             schedule(ian);
-        } else if (mppsiuid != null) {
-            try {
-                Dataset mpps = getMPPSManagerHome().create().getMPPS(mppsiuid);
-                if (!isIgnoreMPPS(mpps)) {
-                    notifyIfRefInstancesAvailable(mpps);
-                }
-            } catch (ObjectNotFoundException e) {
-                log.debug("No such MPPS - " + mppsiuid);
-            } catch (Exception e) {
-                log.error("Failed to access MPPS - " + mppsiuid, e);
-            }
         }
-
+        Dataset pps = ian.getItem(Tags.RefPPSSeq);
+        if (pps != null && (notifyOtherServices
+        		||(sendOneIANforEachMPPS && notifiedAETs.length > 0))) {
+        	notifyIfRefInstancesAvailable(pps.getString(Tags.RefSOPInstanceUID));
+        }        
     }
 
     private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
@@ -356,83 +335,22 @@ public class IANScuService extends AbstractScuService implements
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
     }
 
-    private void notifyIfRefInstancesAvailable(Dataset mpps) {
-        DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
-        Dataset ian = DcmObjectFactory.getInstance().newDataset();
-        String cuid = mpps.getString(Tags.SOPClassUID);
-        String iuid = mpps.getString(Tags.SOPInstanceUID);
-        DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
-        String suid = null;
-        for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
-            Dataset perfSeries = perfSeriesSq.getItem(i);
-            DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
-            if (refImageSeq == null) {
-                refImageSeq = perfSeries
-                        .get(Tags.RefNonImageCompositeSOPInstanceSeq);
-            }
-            if (refImageSeq != null && !refImageSeq.isEmpty()) {
-                FileInfo[][] aa;
-                try {
-                    aa = RetrieveCmd.create(refImageSeq).getFileInfos();
-                } catch (SQLException e) {
-                    log.error("Failed to check availability of Instances " +
-                                "referenced in MPPS", e);
-                    return;
-                }
-                String seruid = perfSeries.getString(Tags.SeriesInstanceUID);
-                if (log.isInfoEnabled()) {
-                    log
-                            .info("Series[" + seruid + "]: " + aa.length
-                                    + " from " + refImageSeq.countItems()
-                                    + " Instances available");
-                }
-                if (aa.length != refImageSeq.countItems()) {
-                    return;
-                }
-                Dataset refSeries = refSeriesSq.addNewItem();
-                refSeries.putUI(Tags.SeriesInstanceUID, seruid);
-                DcmElement refSOPSeq = refSeries.putSQ(Tags.RefSOPSeq);
-                for (int j = 0; j < aa.length; j++) {
-                    FileInfo info = aa[j][0];
-                    if (!info.seriesIUID.equals(seruid)) {
-                        log.error("Series Instance UID of " + info
-                                + " differs from value [" + seruid
-                                + "] in MPPS[iuid=" + iuid + "]");
-                        return;
-                    }
-                    if (suid != null && !suid.equals(info.studyIUID)) {
-                        log.error("Different Study Instance UIDs of "
-                                + "instances referenced in MPPS[iuid=" + iuid
-                                + "] detected");
-                        return;
-                    }
-                    suid = info.studyIUID;
-                    Dataset refSOP = refSOPSeq.addNewItem();
-                    refSOP.putUI(Tags.RefSOPClassUID, info.sopCUID);
-                    refSOP.putUI(Tags.RefSOPInstanceUID, info.sopIUID);
-                    refSOP.putCS(Tags.InstanceAvailability, Availability
-                            .toString(info.availability));
-                    refSOP.putAE(Tags.RetrieveAET, info.fileRetrieveAET);
-                }
-            }
-        }
-        if (suid == null) {
-            if (log.isInfoEnabled()) {
-                log.info("MPPS[" + iuid + "] does not reference any Instances");
-            }
-            return;
-        }
-        Dataset refPPS = ian.putSQ(Tags.RefPPSSeq).addNewItem();
-        refPPS.putUI(Tags.RefSOPClassUID, cuid);
-        refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
-        refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
-        ian.putUI(Tags.StudyInstanceUID, suid);
-        if (notifyOtherServices) {
-            sendMPPSInstancesAvailableNotification(mpps);
-        }
-        if (sendOneIANforEachMPPS) {
-            schedule(ian);
-        }
+    private void notifyIfRefInstancesAvailable(String mppsIuid) {
+    	try {
+	    	MPPSManager mppsManager = getMPPSManagerHome().create();
+	    	Dataset ian = mppsManager.createIAN(mppsIuid);
+	    	if (ian != null) {
+	    		if (sendOneIANforEachMPPS) {
+	    			schedule(ian);
+	    		}
+		        if (notifyOtherServices) {
+		            sendMPPSInstancesAvailableNotification(
+		            		mppsManager.getMPPS(mppsIuid));
+		        }
+	    	}
+    	} catch (Exception e) {
+    		log.error("Failure processing notifyIfRefInstancesAvailable(): ", e);
+    	}
     }
 
     void sendMPPSInstancesAvailableNotification(Dataset mpps) {

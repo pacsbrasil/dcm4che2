@@ -61,9 +61,12 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
@@ -87,6 +90,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
+ * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
  * 
  */
 public abstract class MPPSManagerBean implements SessionBean {
@@ -111,6 +115,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     };
     private PatientLocalHome patHome;
 	private SeriesLocalHome seriesHome;
+	private InstanceLocalHome instHome;
     private MPPSLocalHome mppsHome;
 	private MWLItemLocalHome mwlItemHome;
     private SessionContext sessionCtx;    
@@ -123,6 +128,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             patHome =
                 (PatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/Patient");
 			seriesHome = (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+			instHome = (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
             mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
 			mwlItemHome = (MWLItemLocalHome) jndiCtx.lookup("java:comp/env/ejb/MWLItem");
         } catch (NamingException e) {
@@ -141,6 +147,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         mppsHome = null;
         patHome = null;
 		seriesHome = null;
+		instHome = null;
     }
 
     /**
@@ -222,6 +229,119 @@ public abstract class MPPSManagerBean implements SessionBean {
     
     
     /**
+     * @ejb.interface-method
+     */
+    public Dataset createIAN(String iuid) {
+    	final MPPSLocal mpps;
+        try {
+			mpps = mppsHome.findBySopIuid(iuid);
+		} catch (ObjectNotFoundException onf) {
+			return null;
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+        Dataset attrs = mpps.getAttributes();
+        if (ignoreMPPS(attrs)) {
+        	return null;
+        }
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
+        DcmElement perfSeriesSq = attrs.get(Tags.PerformedSeriesSeq);
+        for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
+        	Dataset perfSeries = perfSeriesSq.getItem(i);
+        	String seriesIUID =  perfSeries.getString(Tags.SeriesInstanceUID);            
+        	DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
+        	DcmElement refNonImageSeq = perfSeries.get(
+        			Tags.RefNonImageCompositeSOPInstanceSeq);
+            final Collection insts;
+			try {
+				insts = instHome.findBySeriesIuid(seriesIUID);
+			} catch (FinderException e) {
+				throw new EJBException(e);
+			}
+            int countImage = refImageSeq != null
+            		? refImageSeq.countItems() : 0;
+            int countNonImage = refNonImageSeq != null
+            		? refNonImageSeq.countItems() : 0;
+            if (insts.size() <  countImage + countNonImage) {
+            	return null;
+            }
+            Dataset refSeries = refSeriesSq.addNewItem();
+            refSeries.putUI(Tags.SeriesInstanceUID, seriesIUID);
+            DcmElement refSOPSeq = refSeries.putSQ(Tags.RefSOPSeq);
+            if (refImageSeq != null
+            		&& !containsAll(insts, refImageSeq, refSOPSeq)) {
+            	return null;
+            }
+            if (refNonImageSeq != null
+            		&& !containsAll(insts, refNonImageSeq, refSOPSeq)) {
+            	return null;
+            }
+        }
+        Dataset ssa = attrs.getItem(Tags.ScheduledStepAttributesSeq);
+        String studyIUID = ssa != null 
+        		? ssa.getString(Tags.StudyInstanceUID) : null;
+        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
+        Dataset refPPS = refPPSSeq.addNewItem();
+        refPPS.putUI(Tags.RefSOPClassUID, UIDs.ModalityPerformedProcedureStep);
+        refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
+        refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
+        ian.putUI(Tags.StudyInstanceUID, studyIUID);
+        return ian;
+    }
+    
+    private static boolean containsAll(Collection insts,
+    		DcmElement srcRefSOPSeq, DcmElement dstRefSOPSeq) {
+        for (int i = 0, n = srcRefSOPSeq.countItems(); i < n; i++) {
+        	Dataset srcRefSOP = srcRefSOPSeq.getItem(i);
+        	String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
+        	InstanceLocal inst = selectByIuid(insts, iuid);
+        	if (inst == null) {
+        		return false;
+        	}
+        	Dataset dstRefSOP = dstRefSOPSeq.addNewItem();
+        	dstRefSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
+        	dstRefSOP.putUI(Tags.RefSOPInstanceUID, iuid);
+        	dstRefSOP.putCS(Tags.InstanceAvailability,
+        			Availability.toString(inst.getAvailabilitySafe()));
+        	dstRefSOP.putAE(Tags.RetrieveAET, inst.getRetrieveAETs());
+        }
+		return true;
+	}
+
+	private static InstanceLocal selectByIuid(Collection insts, String iuid) {
+		for (Iterator iter = insts.iterator(); iter.hasNext();) {
+			InstanceLocal inst = (InstanceLocal) iter.next();
+			if (inst.getSopIuid().equals(iuid)) {
+				return inst;
+			}
+		}
+		return null;
+	}
+
+	private static boolean ignoreMPPS(Dataset mpps) {
+        DcmElement perfSeriesSeq = mpps.get(Tags.PerformedSeriesSeq);
+		if (perfSeriesSeq == null || perfSeriesSeq.isEmpty()) {
+            return true;
+        }
+        String status = mpps.getString(Tags.PPSStatus);
+        if ("COMPLETED".equals(status)) {
+            return false;
+        }
+        if (!"DISCONTINUE".equals(status)) {
+            return true;
+        }
+        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        if (item != null && "110514".equals(item.getString(Tags.CodeValue))
+                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+            log.info("Ignore MPPS with Discontinuation Reason Code: " +
+                        "Wrong Worklist Entry Selected");
+            return true;
+        }
+        return false;
+	}
+
+	/**
      * Links a mpps to a mwl entry (LOCAL).
      * <p>
      * This method can be used if MWL entry is locally available.
