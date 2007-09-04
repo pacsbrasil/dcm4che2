@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
@@ -51,8 +50,11 @@ import org.dcm4che.net.UserIdentityAC;
 import org.dcm4che.net.UserIdentityNegotiator;
 import org.dcm4che.net.UserIdentityRQ;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.plugins.JaasSecurityManager;
 import org.jboss.system.ServiceMBeanSupport;
@@ -65,7 +67,6 @@ import org.jboss.system.ServiceMBeanSupport;
 public class DicomSecurityService extends ServiceMBeanSupport
         implements UserIdentityNegotiator {
 
-    private AEServiceDelegate aeService = new AEServiceDelegate(this);
     private JaasSecurityManager securityManager;   
     private String securityDomain;
     private String defUserID;
@@ -119,14 +120,6 @@ public class DicomSecurityService extends ServiceMBeanSupport
         this.defPassword = nullify(defPassword, "-");
     }
 
-    public final ObjectName getAEServiceName() {
-        return aeService.getAEServiceName();
-    }
-
-    public final void setAEServiceName(ObjectName aeServiceName) {
-        aeService.setAEServiceName(aeServiceName);
-    }
-       
     protected void startService() throws Exception {
         initSecurityManager();
     }
@@ -145,8 +138,7 @@ public class DicomSecurityService extends ServiceMBeanSupport
                     iniCtx.close();
                 } catch (NamingException ignore) {}
             }
-        }
-        
+        }        
     }
     
     public UserIdentityNegotiator userIdentityNegotiator() {
@@ -164,10 +156,13 @@ public class DicomSecurityService extends ServiceMBeanSupport
             passwd = uidRQ.getPasscode();
         } else {
             try {
-                AEDTO ae = aeService.getAE(rq.getCallingAET());
+                AEDTO ae = aeMgr().findByAET(rq.getCallingAET());
                 userId = ae.getUserID();
                 passwd = ae.getPassword();
-            } catch (UnknownAETException e) {}
+            } catch (UnknownAETException e) {
+            } catch (Exception e) {
+				throw new ConfigurationException(e);
+			}
             if (userId == null || userId.length() == 0) {
                 if (rejectIfNoUserIdentity) {
                     throw new AAssociateRJException(
@@ -195,4 +190,9 @@ public class DicomSecurityService extends ServiceMBeanSupport
                 ? AssociationFactory.getInstance().newUserIdentity() : null;
     }
 
+    private AEManager aeMgr() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
 }

@@ -6,7 +6,5 @@
   <mbean code="org.dcm4chex.archive.mbean.DicomSecurityService" 
 	name="dcm4chee.archive:service=DicomSecurity"
 	xmbean-dd="xmdesc/dcm4chee-dcmsec-xmbean.xml">	
-    <depends optional-attribute-name="AEServiceName"
-      >dcm4chee.archive:service=AE</depends>
   </mbean>
 </server>

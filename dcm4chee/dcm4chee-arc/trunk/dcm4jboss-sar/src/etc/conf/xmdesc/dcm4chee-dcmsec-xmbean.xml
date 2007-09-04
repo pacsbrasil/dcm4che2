@@ -84,13 +84,6 @@
 		</descriptors>
 	</attribute>
 
-	<attribute access="read-write" getMethod="getEchoServiceName"
-		setMethod="setAEServiceName">
-		<description>Used internally. Do not modify.</description>
-		<name>AEServiceName</name>
-		<type>javax.management.ObjectName</type>
-	</attribute>
-
 	&defaultAttributes;
 
 	<!-- Operations -->
