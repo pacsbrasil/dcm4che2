@@ -36,15 +36,12 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
 <!ELEMENT dcm4chee-attribute-filter (patient+,study+,series+,instance+)>
 
 <!ELEMENT patient (attr)*>
-<!ATTLIST patient cuid CDATA #IMPLIED>
 <!ATTLIST patient tsuid CDATA #IMPLIED>
 
 <!ELEMENT study (attr)*>
-<!ATTLIST study cuid CDATA #IMPLIED>
 <!ATTLIST study tsuid CDATA #IMPLIED>
 
 <!ELEMENT series (attr)*>
-<!ATTLIST series cuid CDATA #IMPLIED>
 <!ATTLIST series tsuid CDATA #IMPLIED>
 
 <!ELEMENT instance (attr)*>
