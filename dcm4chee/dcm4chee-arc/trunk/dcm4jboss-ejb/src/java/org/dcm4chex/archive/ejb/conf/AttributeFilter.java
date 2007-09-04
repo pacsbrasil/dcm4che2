@@ -52,10 +52,10 @@ import org.dcm4che.data.Dataset;
  */
 public final class AttributeFilter {
     private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
-    private static HashMap patient = new HashMap();
-    private static HashMap study = new HashMap();
-    private static HashMap series = new HashMap();
-    private static HashMap instance = new HashMap();
+    static AttributeFilter patientFilter;
+    static AttributeFilter studyFilter;
+    static AttributeFilter seriesFilter;
+    static HashMap instanceFilters = new HashMap();
     private int[] tags = {};
     private int[] noCoercion = {};
     private int[] vrs = {};
@@ -67,37 +67,32 @@ public final class AttributeFilter {
     private boolean noFilter = false;
     
     static {
-        AttributeFilterLoader.loadFrom(patient, study, series, instance, 
-                CONFIG_URL);        
+        AttributeFilterLoader.loadFrom(CONFIG_URL);        
     }
 
     // Test Driver
     public static void main(String[] args) {
-        AttributeFilterLoader.loadFrom(patient, study, series, instance, args[0]);
+        AttributeFilterLoader.loadFrom(args[0]);
     }
     
-    public static AttributeFilter getPatientAttributeFilter(String cuid)  {
-        return getAttributeFilter(cuid, patient);
+    public static AttributeFilter getPatientAttributeFilter()  {
+        return patientFilter;
     }
 
-    public static AttributeFilter getStudyAttributeFilter(String cuid) {
-        return getAttributeFilter(cuid, study);
+    public static AttributeFilter getStudyAttributeFilter() {
+        return studyFilter;
     }
 
     public static AttributeFilter getSeriesAttributeFilter(String cuid) {
-        return getAttributeFilter(cuid, series);
+        return seriesFilter;
     }
     
     public static AttributeFilter getInstanceAttributeFilter(String cuid) {
-        return getAttributeFilter(cuid, instance);
-    }
-
-    static AttributeFilter getAttributeFilter(String cuid, HashMap map) {
-        AttributeFilter filter = (AttributeFilter) map.get(cuid);
-        if (filter == null) {
-            filter = (AttributeFilter) map.get(null);
-        }
-        return filter;
+        AttributeFilter filter = (AttributeFilter) instanceFilters.get(cuid);
+		if (filter == null) {
+		    filter = (AttributeFilter) instanceFilters.get(null);
+		}
+		return filter;
     }
 
     AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate) {

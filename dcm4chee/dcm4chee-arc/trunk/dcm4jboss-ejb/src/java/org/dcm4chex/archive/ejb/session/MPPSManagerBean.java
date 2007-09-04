@@ -486,7 +486,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         String spsID = mwlAttrs.get(Tags.SPSSeq).getItem().getString(Tags.SPSID);
         log.info("linkMppsToMwl sps:"+spsID+" mpps:"+mppsIUID);
         MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
-        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         Dataset mwlPatDs = filter.filter(mwlAttrs);
         PatientLocal mppsPat = mpps.getPatient();
         Map map = updateLinkedMpps(mpps, null, mwlAttrs);

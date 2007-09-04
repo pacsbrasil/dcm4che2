@@ -131,7 +131,7 @@ public abstract class FixPatientAttributesBean implements SessionBean {
     	PatientLocal patient;
     	Dataset patAttrs, filtered;
     	int[] result = { 0, 0 };
-        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
     	for ( Iterator iter = col.iterator() ; iter.hasNext() ; result[1]++) {
 			patient = (PatientLocal) iter.next();
 			patAttrs = patient.getAttributes(false);

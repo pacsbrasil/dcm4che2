@@ -186,8 +186,8 @@ public abstract class StudyMgtBean implements SessionBean {
 	public void updateStudyAndPatientOnly(String iuid, Dataset ds) throws DcmServiceException {
 		try {
 			StudyLocal study = getStudy(iuid);
-			AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter(null);
-			AttributeFilter studyFilter = AttributeFilter.getStudyAttributeFilter(null);
+			AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter();
+			AttributeFilter studyFilter = AttributeFilter.getStudyAttributeFilter();
 			Dataset patientAttr = patientFilter.filter(ds);
 			Dataset studyAttr = studyFilter.filter(ds);
 
