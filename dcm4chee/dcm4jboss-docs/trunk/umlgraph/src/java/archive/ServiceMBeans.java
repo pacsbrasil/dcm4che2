@@ -143,7 +143,6 @@ class DeviceService {}
 class deviceService {}
 
 /**
- * @depend - - - AE
  */
 class DicomSecurity {}
 
