@@ -58,7 +58,7 @@ public class TrustLoginModule extends UsernamePasswordLoginModule {
         return new Group[0];
     }
 
-     protected boolean validatePassword(String inputPassword,
+    protected boolean validatePassword(String inputPassword,
             String expectedPassword) {
         return true;
     }

@@ -49,6 +49,7 @@ import javax.management.Notification;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.persistence.NoResultException;
 
 import org.dcm4che.archive.common.BaseJmsOrder;
 import org.dcm4che.archive.common.FileStatus;
@@ -58,6 +59,8 @@ import org.dcm4che.archive.config.ForwardingRules;
 import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.mbean.JMSDelegate;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
+import org.dcm4che.archive.service.FileSystemMgt;
+import org.dcm4che.archive.service.FileSystemMgtLocal;
 import org.dcm4che.archive.service.Storage;
 import org.dcm4che.archive.service.StorageLocal;
 import org.dcm4che.archive.util.ejb.EJBReferenceCache;
@@ -150,12 +153,13 @@ public abstract class AbstractFileCopyService extends MBeanServiceBase
                 : condition.toString() + destination;
     }
 
-    public final void setDestination(String destination) {
-        this.condition = null;
-        this.destination = null;
+    public final void setDestination(String destination) throws Exception {
         if ("NONE".equalsIgnoreCase(destination)) {
+            this.condition = null;
+            this.destination = null;
             return;
         }
+        Condition newCondition = null;
         int startDest = destination.indexOf(']');
         if (startDest != -1) {
             this.condition = new Condition(destination.substring(0,
@@ -164,7 +168,19 @@ public abstract class AbstractFileCopyService extends MBeanServiceBase
         }
         else {
             this.destination = destination;
+            newCondition = new Condition(destination
+                    .substring(0, startDest + 1));
+            destination = destination.substring(startDest + 1);
         }
+        try {
+            getFileSystemMgt().getFileSystem(destination);
+        }
+        catch (NoResultException e) {
+            throw new IllegalArgumentException(
+                    "No such file system configured: " + destination);
+        }
+        this.condition = newCondition;
+        this.destination = destination;
     }
 
     public final String getFileStatus() {
@@ -295,6 +311,11 @@ public abstract class AbstractFileCopyService extends MBeanServiceBase
     protected static Storage getStorage() {
         return (Storage) EJBReferenceCache.getInstance().lookup(
                 StorageLocal.JNDI_NAME);
+    }
+    
+    protected static FileSystemMgt getFileSystemMgt() {
+        return (FileSystemMgt) EJBReferenceCache.getInstance().lookup(
+                FileSystemMgtLocal.JNDI_NAME);
     }
 
 }

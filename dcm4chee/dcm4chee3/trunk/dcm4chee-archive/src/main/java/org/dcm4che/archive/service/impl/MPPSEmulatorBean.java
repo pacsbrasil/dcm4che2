@@ -108,7 +108,7 @@ public class MPPSEmulatorBean implements MPPSEmulatorLocal, MPPSEmulatorRemote {
      */
     public Dataset[] generateMPPS(String sourceAET, long delay) {
         List<Series> seriess = seriesDAO
-                .findWithNoPpsIuidFromSrcAETReceivedBefore(sourceAET,
+                .findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(sourceAET,
                         new Timestamp(System.currentTimeMillis() - delay));
         Map mppsMap = new HashMap();
         for (int i = 0; i < seriess.size(); i++) {

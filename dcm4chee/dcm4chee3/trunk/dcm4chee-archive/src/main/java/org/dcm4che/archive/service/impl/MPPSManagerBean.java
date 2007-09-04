@@ -56,8 +56,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.archive.common.Availability;
 import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
+import org.dcm4che.archive.dao.InstanceDAO;
 import org.dcm4che.archive.dao.MPPSDAO;
 import org.dcm4che.archive.dao.MWLItemDAO;
 import org.dcm4che.archive.dao.PatientDAO;
@@ -76,6 +78,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,13 +88,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since 21.03.2004
  */
-//EJB3
+// EJB3
 @Stateless
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 // Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
+public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote {
 
     private static Logger log = Logger.getLogger(MPPSManagerBean.class);
 
@@ -108,17 +111,25 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
     private static final int[] PATIENT_ATTRS_INC = { Tags.PatientName,
             Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
 
-    @EJB private PatientDAO patDAO;
+    @EJB
+    private PatientDAO patDAO;
 
-    @EJB private SeriesDAO seriesDAO;
+    @EJB
+    private SeriesDAO seriesDAO;
 
-    @EJB private MPPSDAO mppsDAO;
+    @EJB
+    private InstanceDAO instDAO;
 
-    @EJB private MWLItemDAO mwlItemDAO;
-    
-    @EJB private CodeDAO codeDAO;
+    @EJB
+    private MPPSDAO mppsDAO;
 
-    /** 
+    @EJB
+    private MWLItemDAO mwlItemDAO;
+
+    @EJB
+    private CodeDAO codeDAO;
+
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#createMPPS(org.dcm4che.data.Dataset)
      */
     public void createMPPS(Dataset ds) throws DcmServiceException {
@@ -147,8 +158,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         }
     }
 
-    private Patient findOrCreatePatient(Dataset ds)
-            throws DcmServiceException {
+    private Patient findOrCreatePatient(Dataset ds) throws DcmServiceException {
         try {
             try {
                 return patDAO.searchFor(ds, true);
@@ -162,7 +172,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         }
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#getMPPS(java.lang.String)
      */
     public Dataset getMPPS(String iuid) throws PersistenceException {
@@ -173,7 +183,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         return attrs;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#updateMPPS(org.dcm4che.data.Dataset)
      */
     public void updateMPPS(Dataset ds) throws DcmServiceException {
@@ -198,8 +208,112 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         mpps.setAttributes(attrs, codeDAO);
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.MPPSManager#linkMppsToMwl(java.lang.String, java.lang.String, java.lang.String)
+    public Dataset createIAN(String iuid) {
+        final MPPS mpps;
+        try {
+            mpps = mppsDAO.findBySopIuid(iuid);
+        }
+        catch (NoResultException onf) {
+            return null;
+        }
+        Dataset attrs = mpps.getAttributes();
+        if (ignoreMPPS(attrs)) {
+            return null;
+        }
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
+        DcmElement perfSeriesSq = attrs.get(Tags.PerformedSeriesSeq);
+        for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
+            Dataset perfSeries = perfSeriesSq.getItem(i);
+            String seriesIUID = perfSeries.getString(Tags.SeriesInstanceUID);
+            DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
+            DcmElement refNonImageSeq = perfSeries
+                    .get(Tags.RefNonImageCompositeSOPInstanceSeq);
+            final Collection insts = instDAO.findBySeriesIuid(seriesIUID);
+            int countImage = refImageSeq != null ? refImageSeq.countItems() : 0;
+            int countNonImage = refNonImageSeq != null ? refNonImageSeq
+                    .countItems() : 0;
+            if (insts.size() < countImage + countNonImage) {
+                return null;
+            }
+            Dataset refSeries = refSeriesSq.addNewItem();
+            refSeries.putUI(Tags.SeriesInstanceUID, seriesIUID);
+            DcmElement refSOPSeq = refSeries.putSQ(Tags.RefSOPSeq);
+            if (refImageSeq != null
+                    && !containsAll(insts, refImageSeq, refSOPSeq)) {
+                return null;
+            }
+            if (refNonImageSeq != null
+                    && !containsAll(insts, refNonImageSeq, refSOPSeq)) {
+                return null;
+            }
+        }
+        Dataset ssa = attrs.getItem(Tags.ScheduledStepAttributesSeq);
+        String studyIUID = ssa != null ? ssa.getString(Tags.StudyInstanceUID)
+                : null;
+        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
+        Dataset refPPS = refPPSSeq.addNewItem();
+        refPPS.putUI(Tags.RefSOPClassUID, UIDs.ModalityPerformedProcedureStep);
+        refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
+        refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
+        ian.putUI(Tags.StudyInstanceUID, studyIUID);
+        return ian;
+    }
+
+    private static boolean containsAll(Collection insts,
+            DcmElement srcRefSOPSeq, DcmElement dstRefSOPSeq) {
+        for (int i = 0, n = srcRefSOPSeq.countItems(); i < n; i++) {
+            Dataset srcRefSOP = srcRefSOPSeq.getItem(i);
+            String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
+            Instance inst = selectByIuid(insts, iuid);
+            if (inst == null) {
+                return false;
+            }
+            Dataset dstRefSOP = dstRefSOPSeq.addNewItem();
+            dstRefSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
+            dstRefSOP.putUI(Tags.RefSOPInstanceUID, iuid);
+            dstRefSOP.putCS(Tags.InstanceAvailability, Availability
+                    .toString(inst.getAvailability()));
+            dstRefSOP.putAE(Tags.RetrieveAET, inst.getRetrieveAETs());
+        }
+        return true;
+    }
+
+    private static Instance selectByIuid(Collection insts, String iuid) {
+        for (Iterator iter = insts.iterator(); iter.hasNext();) {
+            Instance inst = (Instance) iter.next();
+            if (inst.getSopIuid().equals(iuid)) {
+                return inst;
+            }
+        }
+        return null;
+    }
+
+    private static boolean ignoreMPPS(Dataset mpps) {
+        DcmElement perfSeriesSeq = mpps.get(Tags.PerformedSeriesSeq);
+        if (perfSeriesSeq == null || perfSeriesSeq.isEmpty()) {
+            return true;
+        }
+        String status = mpps.getString(Tags.PPSStatus);
+        if ("COMPLETED".equals(status)) {
+            return false;
+        }
+        if (!"DISCONTINUE".equals(status)) {
+            return true;
+        }
+        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+        if (item != null && "110514".equals(item.getString(Tags.CodeValue))
+                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+            log.info("Ignore MPPS with Discontinuation Reason Code: "
+                    + "Wrong Worklist Entry Selected");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @see org.dcm4che.archive.service.MPPSManager#linkMppsToMwl(java.lang.String,
+     *      java.lang.String, java.lang.String)
      */
     public Map linkMppsToMwl(String rpid, String spsid, String mppsIUID)
             throws DcmServiceException {
@@ -227,8 +341,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         }
     }
 
-    private Map updateLinkedMpps(MPPS mpps, MWLItem mwlItem,
-            Dataset mwlAttrs) {
+    private Map updateLinkedMpps(MPPS mpps, MWLItem mwlItem, Dataset mwlAttrs) {
         Map map = new HashMap();
         Dataset ssa;
         Dataset mppsAttrs = mpps.getAttributes();
@@ -307,8 +420,9 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         return map;
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.MPPSManager#linkMppsToMwl(org.dcm4che.data.Dataset, java.lang.String)
+    /**
+     * @see org.dcm4che.archive.service.MPPSManager#linkMppsToMwl(org.dcm4che.data.Dataset,
+     *      java.lang.String)
      */
     public Map linkMppsToMwl(Dataset mwlAttrs, String mppsIUID)
             throws DcmServiceException, PersistenceException,
@@ -355,7 +469,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
                 .getString(Tags.IssuerOfPatientID)) : true;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#unlinkMpps(java.lang.String)
      */
     public void unlinkMpps(String mppsIUID) throws PersistenceException {
@@ -370,8 +484,8 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
             spsID = ds.getString(Tags.SPSID);
             if (spsID != null) {
                 try {
-                    MWLItem mwlItem = mwlItemDAO.findByRpIdAndSpsId(rpID,
-                            spsID);
+                    MWLItem mwlItem = mwlItemDAO
+                            .findByRpIdAndSpsId(rpID, spsID);
                     Dataset mwlDS = mwlItem.getAttributes();
                     mwlDS.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus,
                             "SCHEDULED");
@@ -395,7 +509,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         mpps.setAttributes(mppsAttrs, codeDAO);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#deleteMPPSEntries(java.lang.String[])
      */
     public boolean deleteMPPSEntries(String[] iuids) {
@@ -410,7 +524,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         return true;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#getSeriesIUIDs(java.lang.String)
      */
     public Collection getSeriesIUIDs(String mppsIUID)
@@ -423,7 +537,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         return col;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#getSeriesAndStudyDS(java.lang.String)
      */
     public Collection getSeriesAndStudyDS(String mppsIUID)
@@ -441,7 +555,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
         return col;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.MPPSManager#updateSeriesAndStudy(java.util.Collection)
      */
     public Dataset updateSeriesAndStudy(Collection seriesDS)
@@ -489,7 +603,8 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote  {
     }
 
     /**
-     * @param codeDAO the codeDAO to set
+     * @param codeDAO
+     *            the codeDAO to set
      */
     public void setCodeDAO(CodeDAO codeDAO) {
         this.codeDAO = codeDAO;

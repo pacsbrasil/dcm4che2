@@ -166,5 +166,7 @@ public interface MPPSManager {
      */
     public Dataset updateSeriesAndStudy(Collection seriesDS)
             throws PersistenceException, ContentCreateException;
+    
+    public Dataset createIAN(String iuid);
 
 }
