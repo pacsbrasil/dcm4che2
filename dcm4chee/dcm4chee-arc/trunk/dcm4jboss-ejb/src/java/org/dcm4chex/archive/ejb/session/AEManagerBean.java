@@ -87,7 +87,7 @@ public abstract class AEManagerBean implements SessionBean {
     private static final int MAX_MAX_CACHE_SIZE = 1000;
     private static int maxCacheSize = 20;
     private static Map aeCache = Collections.synchronizedMap(
-    		new LinkedHashMap() {
+    		new LinkedHashMap(32, 0.75f, true) {
 				protected boolean removeEldestEntry(Map.Entry eldest) {
 					return size() > maxCacheSize;
 				}
