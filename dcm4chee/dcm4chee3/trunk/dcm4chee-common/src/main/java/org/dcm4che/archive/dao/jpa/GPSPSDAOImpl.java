@@ -42,6 +42,7 @@ package org.dcm4che.archive.dao.jpa;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -67,7 +68,7 @@ import org.dcm4che.dict.UIDs;
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class GPSPSDAOImpl extends BaseDAOImpl<GPSPS> implements GPSPSDAO {
-    // TODO: JNDI Resource
+    @Resource(name = "SpsIdPrefix")
     private String spsIdPrefix;
 
     @EJB private CodeDAO codeDAO;

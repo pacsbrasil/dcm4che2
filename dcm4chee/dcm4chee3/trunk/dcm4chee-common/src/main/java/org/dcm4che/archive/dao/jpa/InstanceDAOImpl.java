@@ -51,18 +51,22 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
+import org.dcm4che.archive.common.Availability;
 import org.dcm4che.archive.dao.CodeDAO;
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.InstanceDAO;
 import org.dcm4che.archive.dao.VerifyingObserverDAO;
 import org.dcm4che.archive.entity.Code;
 import org.dcm4che.archive.entity.Instance;
+import org.dcm4che.archive.entity.Media;
+import org.dcm4che.archive.entity.MediaDTO;
 import org.dcm4che.archive.entity.Patient;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.VerifyingObserver;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 
 /**
  * org.dcm4che.archive.dao.jpa.InstanceDAOImpl
@@ -73,10 +77,15 @@ import org.dcm4che.dict.Tags;
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
         InstanceDAO {
-    
-    @EJB private CodeDAO codeDAO;
 
-    @EJB private VerifyingObserverDAO observerDAO;
+    private static final String FIND_BY_STUDY_AND_SR_CODE = "select instance from Instance as instance where instance.series.study.studyIuid = :studyUid "
+            + "AND instance.sopCuid = :cuid AND instance.srCode.codeValue = :code AND instance.srCode.codingSchemeDesignator = :designator";
+
+    @EJB
+    private CodeDAO codeDAO;
+
+    @EJB
+    private VerifyingObserverDAO observerDAO;
 
     /**
      * @see org.dcm4che.archive.dao.jpa.BaseDAOImpl#getPersistentClass()
@@ -135,7 +144,7 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
     public Instance findBySopIuid(String uid) throws NoResultException,
             PersistenceException {
         Query query = em
-                .createQuery("select study from Study as study where study.sopIuid =:sopiuid");
+                .createQuery("select i from Instance as i where i.sopIuid =:sopiuid");
         query.setParameter("sopiuid", uid);
         Instance instance = (Instance) query.getSingleResult();
         if (instance == null) {
@@ -159,8 +168,7 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
 
         List<Instance> instances = null;
 
-        Query query = em
-                .createQuery("select instance from Instance as instance where instance.series.study.studyIuid = :studyUid AND instance.sopCuid = :cuid AND instance.srCode.codeValue = :code AND instance.srCode.codingSchemeDesignator = :designator");
+        Query query = em.createQuery(FIND_BY_STUDY_AND_SR_CODE);
         query.setParameter("studyUid", suid);
         query.setParameter("cuid", cuid);
         query.setParameter("code", code);
@@ -175,7 +183,20 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
      */
     public List<Instance> listByIUIDs(String[] iuids)
             throws PersistenceException {
-        return null;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for instances matching uid list");
+        }
+
+        List<Instance> instances = null;
+
+        StringBuilder strQuery = new StringBuilder(
+                "from Instance i where sopIuid ");
+        addIN(strQuery, iuids);
+        Query query = em.createQuery(strQuery.toString());
+
+        instances = query.getResultList();
+
+        return instances;
     }
 
     /**
@@ -184,7 +205,68 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
      */
     public boolean updateDerivedFields(Instance instance, boolean retrieveAETs,
             boolean availability) {
-        return false;
+        boolean updated = false;
+        if (retrieveAETs)
+            if (updateRetrieveAETs(instance))
+                updated = true;
+        if (availability)
+            if (updateAvailability(instance, instance.getRetrieveAETs()))
+                updated = true;
+        return updated;
+    }
+
+    private boolean updateAvailability(Instance instance, String retrieveAETs) {
+        int availability = Availability.UNAVAILABLE;
+        Media media;
+        if (retrieveAETs != null)
+            availability = selectLocalAvailability(instance.getPk());
+        else if (instance.getExternalRetrieveAET() != null)
+            availability = Availability.NEARLINE;
+        else if ((media = instance.getMedia()) != null
+                && media.getMediaStatus() == MediaDTO.COMPLETED)
+            availability = Availability.OFFLINE;
+        boolean updated = (availability != instance.getAvailability());
+        if (updated) {
+            instance.setAvailability(availability);
+        }
+        return updated;
+    }
+
+    private int selectLocalAvailability(Long pk) {
+        Number n = (Number) em
+                .createQuery(
+                        "select min(f.fileSystem.availability) from Instance i join i.files f where i.pk = :pk")
+                .setParameter("pk", pk).getSingleResult();
+        return n == null ? Availability.UNAVAILABLE : n.intValue();
+    }
+
+    private boolean updateRetrieveAETs(Instance instance)
+            throws PersistenceException {
+        final Set aetSet = selectRetrieveAETs(instance.getPk());
+        if (aetSet.remove(null))
+            logger.warn("Instance[iuid=" + instance.getSopIuid()
+                    + "] reference File(s) with unspecified Retrieve AET");
+        final String aets = asString(aetSet);
+        boolean updated = (aets == null ? instance.getRetrieveAETs() != null
+                : !aets.equals(instance.getRetrieveAETs()));
+        if (updated)
+            instance.setRetrieveAETs(aets);
+        return updated;
+    }
+
+    private Set<String> selectRetrieveAETs(Long pk) {
+        String jpaql = "select distinct f.fileSystem.retrieveAET from Instance i join i.files f where i.pk = :pk";
+        Query q = em.createQuery(jpaql);
+        q.setParameter("pk", pk);
+        List results = q.getResultList();
+        return new HashSet<String>(results);
+    }
+
+    private static String asString(Set s) {
+        if (s.isEmpty())
+            return null;
+        String[] a = (String[]) s.toArray(new String[s.size()]);
+        return StringUtils.toString(a, '\\');
     }
 
     /**
@@ -205,7 +287,8 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
     }
 
     /**
-     * @param codeDAO the codeDAO to set
+     * @param codeDAO
+     *            the codeDAO to set
      */
     public void setCodeDAO(CodeDAO codeDAO) {
         this.codeDAO = codeDAO;
@@ -219,9 +302,25 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
     }
 
     /**
-     * @param observerDAO the observerDAO to set
+     * @param observerDAO
+     *            the observerDAO to set
      */
     public void setObserverDAO(VerifyingObserverDAO observerDAO) {
         this.observerDAO = observerDAO;
+    }
+
+    private void addIN(StringBuilder query, String[] elements) {
+        if (elements.length > 1) {
+            query.append(" IN (");
+            for (int i = 0; i < elements.length; i++) {
+                if (i > 0)
+                    query.append(",");
+                query.append("'").append(elements[i]).append("'");
+            }
+            query.append(")");
+        }
+        else {
+            query.append(" = '").append(elements[0]).append("'");
+        }
     }
 }
