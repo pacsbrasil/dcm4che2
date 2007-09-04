@@ -52,6 +52,21 @@
          <value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getMaxCacheSize" setMethod="setMaxCacheSize">
+      <description>Maximal number of cached AE configurations.
+      </description>
+      <name>MaxCacheSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="20"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-only" getMethod="getCacheSize">
+      <description>Current number of cached AE configurations.
+      </description>
+      <name>CacheSize</name>
+      <type>int</type>
+   </attribute>
    <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
       <description>Used internally. Do not modify.
       </description>
@@ -245,6 +260,11 @@
      </parameter>
      <return-type>boolean</return-type>
 	</operation>
+	
+  <operation impact="ACTION">
+     <description>Clear AE Cache</description>
+     <name>clearCache</name>
+  </operation>
 	&defaultOperations;
 </mbean>
 

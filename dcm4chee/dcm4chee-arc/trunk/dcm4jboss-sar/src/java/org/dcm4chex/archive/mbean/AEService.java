@@ -42,7 +42,6 @@ package org.dcm4chex.archive.mbean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -58,8 +57,10 @@ import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.session.AEManagerBean;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.jboss.system.ServiceMBean;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -71,6 +72,8 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class AEService extends ServiceMBeanSupport {
 
+    private static final int MAX_MAX_CACHE_SIZE = 1000;
+
     private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private ObjectName echoServiceName;
@@ -78,6 +81,8 @@ public class AEService extends ServiceMBeanSupport {
     private boolean dontSaveIP = true;
 
     private int[] portNumbers;
+
+	private int maxCacheSize;
 
     /**
      * @return Returns the echoServiceName.
@@ -147,6 +152,28 @@ public class AEService extends ServiceMBeanSupport {
                 portNumbers[i] = Integer.parseInt(st.nextToken());
             }
         }
+    }
+    
+    public int getCacheSize() throws Exception {
+        return aeMgr().getCacheSize();
+    }
+
+    public int getMaxCacheSize() throws Exception {
+    	return maxCacheSize;
+    }
+
+    public void setMaxCacheSize(int maxCacheSize) throws Exception {
+    	if (maxCacheSize < 0 || maxCacheSize > MAX_MAX_CACHE_SIZE) {
+    		throw new IllegalArgumentException("maxCacheSize: " + maxCacheSize);
+    	}
+        this.maxCacheSize = maxCacheSize;
+        if (getState() == ServiceMBean.STARTED) {
+        	aeMgr().setMaxCacheSize(maxCacheSize);
+        }
+    }
+
+    public void clearCache() throws Exception {
+    	aeMgr().clearCache();
     }
 
     public String getAEs() throws Exception {
@@ -357,4 +384,8 @@ public class AEService extends ServiceMBeanSupport {
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
     }
+
+	protected void startService() throws Exception {
+    	aeMgr().setMaxCacheSize(maxCacheSize);
+	}
 }

@@ -41,8 +41,11 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -81,6 +84,15 @@ public abstract class AEManagerBean implements SessionBean {
 
     private SessionContext ctx;
 
+    private static final int MAX_MAX_CACHE_SIZE = 1000;
+    private static int maxCacheSize = 20;
+    private static Map aeCache = Collections.synchronizedMap(
+    		new LinkedHashMap() {
+				protected boolean removeEldestEntry(Map.Entry eldest) {
+					return size() > maxCacheSize;
+				}
+			});
+    
     public void setSessionContext(SessionContext ctx) throws EJBException,
             RemoteException {
         Context jndiCtx = null;
@@ -106,6 +118,41 @@ public abstract class AEManagerBean implements SessionBean {
     }
 
     /**
+     * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+     */
+    public int getCacheSize() {
+        return AEManagerBean.aeCache.size();
+    }
+
+    /**
+     * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+     */
+    public int getMaxCacheSize() {
+        return AEManagerBean.maxCacheSize;
+    }
+
+    /**
+     * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+     */
+    public void setMaxCacheSize(int maxCacheSize) {
+    	if (maxCacheSize < 0 || maxCacheSize > MAX_MAX_CACHE_SIZE) {
+    		throw new IllegalArgumentException("maxCacheSize: " + maxCacheSize);
+    	}
+        AEManagerBean.maxCacheSize = maxCacheSize;
+    }
+
+    /**
+     * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+     */
+    public void clearCache() {
+        AEManagerBean.aeCache.clear();
+    }
+
+    /**
      * @throws FinderException 
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
@@ -123,11 +170,16 @@ public abstract class AEManagerBean implements SessionBean {
      */
     public AEDTO findByAET(String aet)
             throws FinderException, UnknownAETException {
-        try {
-            return aeHome.findByAET(aet).toDTO();
-        } catch (ObjectNotFoundException e) {
-            throw new UnknownAETException(aet);
-        }
+    	AEDTO ae = (AEDTO) AEManagerBean.aeCache.get(aet);
+    	if (ae == null) {
+	        try {
+	            ae = aeHome.findByAET(aet).toDTO();
+	            AEManagerBean.aeCache.put(aet, ae);
+	        } catch (ObjectNotFoundException e) {
+	            throw new UnknownAETException(aet);
+	        }
+    	}
+    	return ae;
     }
 
     /**
@@ -149,6 +201,7 @@ public abstract class AEManagerBean implements SessionBean {
     public void updateAE(AEDTO modAE) throws FinderException {
         try {
             AELocal ae = aeHome.findByPrimaryKey(new Long(modAE.getPk()));
+            AEManagerBean.aeCache.remove(ae.getTitle());
             ae.setTitle(modAE.getTitle());
             ae.setHostName(modAE.getHostName());
             ae.setPort(modAE.getPort());
@@ -184,6 +237,7 @@ public abstract class AEManagerBean implements SessionBean {
     public void removeAE(long aePk) throws Exception {
         try {
             aeHome.remove(new Long(aePk));
+            AEManagerBean.aeCache.clear();
         } catch (RemoveException e) {
             throw new Exception(e);
         }
