@@ -130,7 +130,7 @@ public interface SeriesDAO extends DAO<Series> {
      * @param timestamp
      * @return
      */
-    public List<Series> findWithNoPpsIuidFromSrcAETReceivedBefore(
+    public List<Series> findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(
             String sourceAET, Timestamp timestamp) throws PersistenceException;
 
     /**

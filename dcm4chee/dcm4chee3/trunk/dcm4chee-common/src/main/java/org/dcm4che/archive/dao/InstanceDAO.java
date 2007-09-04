@@ -119,10 +119,25 @@ public interface InstanceDAO extends DAO<Instance> {
             throws PersistenceException;
 
     /**
-     * @param long1
-     * @return
+     * Find instances by their containing series.
+     * 
+     * @param seriesPk
+     *            The primary key of the series record.
+     * @return A List of {@link Instance} objects
+     * @throws PersistenceException
      */
     public List<Instance> findBySeriesPk(Long seriesPk)
+            throws PersistenceException;
+
+    /**
+     * Find instances by their containing series.
+     * 
+     * @param seriesIuid
+     *            The Series Instance UID
+     * @return A List of {@link Instance} objects
+     * @throws PersistenceException
+     */
+    public List<Instance> findBySeriesIuid(String seriesIuid)
             throws PersistenceException;
 
 }

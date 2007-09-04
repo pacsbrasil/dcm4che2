@@ -116,6 +116,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.VerifyingObserverName };
 
     private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
+            Tags.StudyInstanceUID,
             Tags.RequestedProcedureID,
             Tags.SPSID, 
             Tags.RequestingService,
@@ -419,6 +420,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             subQuery.setFrom(new String[] { "SeriesRequest" });
             subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
                     "SeriesRequest.series_fk");
+            subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
+                    rqAttrs.getStrings(Tags.StudyInstanceUID));
             subQuery.addWildCardMatch(null,
                     "SeriesRequest.requestedProcedureId", SqlBuilder.TYPE1, rqAttrs
                             .getStrings(Tags.RequestedProcedureID));

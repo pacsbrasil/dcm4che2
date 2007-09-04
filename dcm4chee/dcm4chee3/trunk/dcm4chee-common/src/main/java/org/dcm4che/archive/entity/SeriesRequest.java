@@ -40,6 +40,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -52,18 +53,146 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "series_req")
-public class SeriesRequest extends EntityBase{
+public class SeriesRequest extends EntityBase {
 
     private static final long serialVersionUID = 5657492869941909703L;
+
+    @Column(name = "study_iuid")
+    private String studyIuid;
+
+    @Column(name = "req_proc_id")
+    private String requestedProcedureId;
+
+    @Column(name = "sps_id")
+    private String spsId;
+
+    @Column(name = "req_service")
+    private String requestingService;
+
+    @Column(name = "req_physician")
+    private String requestingPhysician;
+
+    @Column(name = "req_phys_i_name")
+    private String requestingPhysicianIdeographicName;
+
+    @Column(name = "req_phys_p_name")
+    private String requestingPhysicianPhoneticName;
 
     @ManyToOne
     @JoinColumn(name = "series_fk")
     private Series series;
-    
+
     /**
      * 
      */
     public SeriesRequest() {
+    }
+
+    /**
+     * @return the requestedProcedureId
+     */
+    public String getRequestedProcedureId() {
+        return requestedProcedureId;
+    }
+
+    /**
+     * @param requestedProcedureId
+     *            the requestedProcedureId to set
+     */
+    public void setRequestedProcedureId(String requestedProcedureId) {
+        this.requestedProcedureId = requestedProcedureId;
+    }
+
+    /**
+     * @return the requestingPhysician
+     */
+    public String getRequestingPhysician() {
+        return requestingPhysician;
+    }
+
+    /**
+     * @param requestingPhysician
+     *            the requestingPhysician to set
+     */
+    public void setRequestingPhysician(String requestingPhysician) {
+        this.requestingPhysician = requestingPhysician;
+    }
+
+    /**
+     * @return the requestingPhysicianIdeographicName
+     */
+    public String getRequestingPhysicianIdeographicName() {
+        return requestingPhysicianIdeographicName;
+    }
+
+    /**
+     * @param requestingPhysicianIdeographicName
+     *            the requestingPhysicianIdeographicName to set
+     */
+    public void setRequestingPhysicianIdeographicName(
+            String requestingPhysicianIdeographicName) {
+        this.requestingPhysicianIdeographicName = requestingPhysicianIdeographicName;
+    }
+
+    /**
+     * @return the requestingPhysicianPhoneticName
+     */
+    public String getRequestingPhysicianPhoneticName() {
+        return requestingPhysicianPhoneticName;
+    }
+
+    /**
+     * @param requestingPhysicianPhoneticName
+     *            the requestingPhysicianPhoneticName to set
+     */
+    public void setRequestingPhysicianPhoneticName(
+            String requestingPhysicianPhoneticName) {
+        this.requestingPhysicianPhoneticName = requestingPhysicianPhoneticName;
+    }
+
+    /**
+     * @return the requestingService
+     */
+    public String getRequestingService() {
+        return requestingService;
+    }
+
+    /**
+     * @param requestingService
+     *            the requestingService to set
+     */
+    public void setRequestingService(String requestingService) {
+        this.requestingService = requestingService;
+    }
+
+    /**
+     * @return the spsId
+     */
+    public String getSpsId() {
+        return spsId;
+    }
+
+    /**
+     * @param spsId
+     *            the spsId to set
+     */
+    public void setSpsId(String spsId) {
+        this.spsId = spsId;
+    }
+
+    /**
+     * @return the studyIuid
+     */
+    public String getStudyIuid() {
+        return studyIuid;
+    }
+
+    /**
+     * @param studyIuid
+     *            the studyIuid to set
+     */
+    public void setStudyIuid(String studyIuid) {
+        this.studyIuid = studyIuid;
     }
 
     public Series getSeries() {
@@ -72,5 +201,19 @@ public class SeriesRequest extends EntityBase{
 
     public void setSeries(Series series) {
         this.series = series;
+    }
+
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return new StringBuilder("SeriesRequestAttribute[pk=").append(getPk())
+                .append(", rpid=").append(getRequestedProcedureId())
+                .append(", spsid=").append(getSpsId())
+                .append(", service=").append(getRequestingService())
+                .append(", phys=").append(getRequestingPhysician())
+                .append(", series->").append(getSeries()).append("]").toString();
+
     }
 }

@@ -472,10 +472,10 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
     }
 
     /**
-     * @see org.dcm4che.archive.dao.SeriesDAO#findWithNoPpsIuidFromSrcAETReceivedBefore(java.lang.String,
+     * @see org.dcm4che.archive.dao.SeriesDAO#findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String,
      *      java.sql.Timestamp)
      */
-    public List<Series> findWithNoPpsIuidFromSrcAETReceivedBefore(
+    public List<Series> findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(
             String sourceAET, Timestamp timestamp) {
         if (logger.isDebugEnabled()) {
             logger.debug("Attempting to find series from src " + sourceAET
@@ -483,7 +483,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
         }
 
         Query query = em
-                .createQuery("from org.dcm4che.archive.entity.Series as s where s.sourceAET=:aet and s.createdTime < :ts");
+                .createQuery("from Series as s join s.study as st where s.sourceAET=:aet and st.updatedTime < :ts");
         query.setParameter("aet", sourceAET);
         query.setParameter("ts", timestamp, TemporalType.TIMESTAMP);
 

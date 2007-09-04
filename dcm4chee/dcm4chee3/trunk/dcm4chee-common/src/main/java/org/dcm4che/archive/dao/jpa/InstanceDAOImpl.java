@@ -137,6 +137,26 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
 
         return instances;
     }
+    
+    /**
+     * @see org.dcm4che.archive.dao.InstanceDAO#findBySeriesIuid(java.lang.String)
+     */
+    public List<Instance> findBySeriesIuid(String seriesIuid)
+            throws PersistenceException {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Searching for instances with series uid=" + seriesIuid);
+        }
+
+        List<Instance> instances = null;
+
+        Query query = em
+                .createQuery("select instance from Instance i join i.series ser where ser.seriesIuid =:uid");
+        query.setParameter("uid", seriesIuid);
+        instances = query.getResultList();
+
+        return instances;
+    }
 
     /**
      * @see org.dcm4che.archive.dao.InstanceDAO#findBySopIuid(java.lang.String)
