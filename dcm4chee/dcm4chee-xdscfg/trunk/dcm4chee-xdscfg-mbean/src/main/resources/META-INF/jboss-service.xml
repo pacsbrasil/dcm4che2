@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Version $Revision:$ $Date:$ -->
+<server>
+  <mbean code="org.dcm4chee.xds.cfg.mbean.XdsCfgService" 
+         name="dcm4chee.archive:service=XdsCfgService"
+         xmbean-dd="">
+
+<xmbean>
+   <description><![CDATA[<b>XDS Config Service</b><br/>
+		Provides a Service to save and load XDS Configurations.<br/>.
+		]]> </description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chee.xds.cfg.mbean.XdsCfgService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>XdsCfgService</name>
+   </constructor>
+
+   <attribute access="read-only" getMethod="getSavedConfigs">
+      <description>List of saved XDS configurations.
+      </description>
+      <name>SavedConfigs</name>
+      <type>java.util.Set</type>
+   </attribute>
+   <attribute access="read-write" getMethod="getAttributesToStore" setMethod="setAttributesToStore">
+      <description>List of services with their attributes to store as configuration.
+      </description>
+      <name>AttributesToStore</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="XDS-I:*;XDSQueryService:*;XDSService:*"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getServiceDomainPrefix" setMethod="setServiceDomainPrefix">
+      <description>Default ServiceDomainPrefix for the AttributesToStore List.
+      </description>
+      <name>ServiceDomainPrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service="/>
+      </descriptors>
+   </attribute>
+
+   <!-- Operations -->
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Save an XDS configuration for given name.
+       		]]> </description>
+      <name>save</name>
+      <parameter>
+        <description>Configuration Name</description>
+        <name>configName</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Load a XDS configuration for given name.
+       		]]> </description>
+      <name>load</name>
+      <parameter>
+        <description>Configuration Name</description>
+        <name>configName</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+</xmbean>
+
+
+  </mbean>
+</server>
