@@ -121,17 +121,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAdditionalCheckIfDuplicatedPatientID"
-      setMethod="setAdditionalCheckIfDuplicatedPatientID">
-      <description><![CDATA[Shows if an additional check by patient name and birth date is necessary in case of duplicated patient IDs. Make sure that the parameter GeneratePatientID is set as well.]]>
-      </description>
-      <name>AdditionalCheckIfDuplicatedPatientID</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getAcceptPatientID"
       setMethod="setAcceptPatientID">
       <description>Regular Expression for valid Patient IDs. Patient IDs which

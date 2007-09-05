@@ -362,14 +362,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setAcceptPatientID(acceptPatientID);
     }
 
-    public final void setAdditionalCheckIfDuplicatedPatientID(boolean additionalCheckIfDuplicatedPatientID){
-        scp.setAdditionalCheckIfDuplicatedPatientID(additionalCheckIfDuplicatedPatientID);
-    }
-
-    public final boolean isAdditionalCheckIfDuplicatedPatientID(){
-        return scp.isAdditionalCheckIfDuplicatedPatientID();
-    }
-
     public final String getIgnorePatientID() {
         return scp.getIgnorePatientID();
     }

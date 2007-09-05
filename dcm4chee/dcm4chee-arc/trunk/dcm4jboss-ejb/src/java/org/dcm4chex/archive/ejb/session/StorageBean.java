@@ -66,7 +66,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
@@ -542,79 +541,5 @@ public abstract class StorageBean implements SessionBean {
     	seriesPkCache.put(uid, ser.getPk());
     	return ser;
     }
-    
-    /**
-     * @throws FinderException 
-     * @ejb.interface-method
-     */
-    public boolean patientExistsWithDifferentDetails(Dataset ds, int[] detailTags) throws FinderException {
-        String pid = ds.getString(Tags.PatientID);
-        String issuer = ds.getString(Tags.IssuerOfPatientID);
-        Collection c = issuer != null
-                ? patHome.findByPatientIdWithIssuer(pid, issuer)
-                : patHome.findByPatientId(pid);
-        for ( Iterator iter = c.iterator(); iter.hasNext() ; ) {
-            PatientLocal patient = (PatientLocal) iter.next();
-            if(! checkDetails(ds, patient.getAttributes(false), detailTags)) {
-                String suid = null;
-                suid = ds.getString(Tags.StudyInstanceUID);
-                if ( suid != null ) {
-                    try {
-                        studyHome.findByStudyIuid(suid);
-                        log.info("Different patient details found but Study Instance UID ("+suid+") already exists! Patient ID not changed!");
-                        return false;
-                    } catch ( ObjectNotFoundException ignore ) {
-                    }
-                }
-                suid = ds.getString(Tags.SeriesInstanceUID);
-                if ( suid != null ) {
-                    try {
-                        seriesHome.findBySeriesIuid(suid);
-                        log.info("Different patient details found but Series Instance UID ("+suid+") already exists! Patient ID not changed!");
-                        return false;
-                    } catch ( ObjectNotFoundException ignore ) {
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if given Detail Attributes are equal in both Datasets.
-     * <p>
-     * PN attributes are checked case insensitive!
-     * <p>
-     * SQ attributes are checked via SQElement equals method. 
-     * (therefore PN attributes within a Sequence are NOT checked case insensitive!)
-     * 
-     * @param ds1           Dataset 1: missing detailAttributes are not checked
-     * @param ds2           Dataset 2: missing detailAttributes are checked if also missing in ds1!
-     * @param detailTags    List of detail attributes to check
-     * 
-     * @return true if all given details are equal.
-     */
-    private boolean checkDetails(Dataset ds1, Dataset ds2, int[] detailTags) {
-        DcmElement elem1, elem2;
-        int tag;
-        for ( int i = 0 ; i < detailTags.length ; i++ ) {
-            tag = detailTags[i];
-            elem1 = ds1.get(tag);
-            if ( elem1 != null ) {
-                elem2 = ds2.get(tag);
-                if ( elem2 == null ) return false; //
-                if ( elem1.vr() == VRs.PN ) {
-                    if ( ! ds1.getString(tag).equalsIgnoreCase(ds2.getString(tag)) )
-                        return false;
-                } else {
-                    if ( ! elem1.equals(elem2))
-                        return false;
-                }
-            } //else ignore detail check for attributes that are not in ds1!
-        }
-        return true;
-    }
-
 }
 

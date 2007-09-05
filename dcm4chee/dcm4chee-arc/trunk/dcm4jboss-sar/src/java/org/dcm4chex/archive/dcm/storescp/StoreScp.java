@@ -145,8 +145,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private boolean acceptMissingPatientName = true;
 
-    private boolean additionalCheckIfDuplicatedPatientID = false;
-
     private Pattern acceptPatientID;
 
     private Pattern ignorePatientID;
@@ -208,14 +206,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setAcceptMissingPatientID(boolean accept) {
         this.acceptMissingPatientID = accept;
-    }
-
-    public boolean isAdditionalCheckIfDuplicatedPatientID() {
-        return additionalCheckIfDuplicatedPatientID;
-    }
-
-    public void setAdditionalCheckIfDuplicatedPatientID(boolean additionalCheckIfDuplicatedPatientID) {
-        this.additionalCheckIfDuplicatedPatientID = additionalCheckIfDuplicatedPatientID;
     }
 
     public final boolean isAcceptMissingPatientName() {
@@ -1072,15 +1062,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             pid = null;
             ds.putLO(Tags.PatientID, pid);
         }
-        if(pid != null && additionalCheckIfDuplicatedPatientID && 
-                store.patientExistsWithDifferentDetails(ds, 
-                        new int[]{Tags.PatientName, Tags.PatientBirthDate}) ){
-            if (log.isInfoEnabled()) {
-                log.info("Different Patient details found! Ignore Patient ID " + pid + " for Patient Name " + pname
-                        + " in object received from " + aet);
-            }
-            pid = null;
-        }
         if (pid == null && generatePatientID != null) {
             if (generatePatientID != null) {
                 pid = generatePatientID(ds);
@@ -1105,11 +1086,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
             }
         }
-    }
-
-    private boolean patientExistsWithDifferentDetails(Dataset ds, Storage store)
-      throws RemoteException, CreateException, HomeFactoryException, FinderException {
-        return store.patientExistsWithDifferentDetails(ds, new int[]{Tags.PatientName, Tags.PatientBirthDate});
     }
 
     private boolean contains(Object[] a, Object e) {
