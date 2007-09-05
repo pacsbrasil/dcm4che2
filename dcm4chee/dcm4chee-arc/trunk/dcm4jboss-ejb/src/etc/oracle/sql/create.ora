@@ -26,7 +26,7 @@ CREATE SEQUENCE patient_pk_seq;
 CREATE TABLE patient (
 	pk          	NUMBER(38,0) NOT NULL CONSTRAINT patient_pk PRIMARY KEY,
 	merge_fk        NUMBER(38,0),
-	pat_id         	VARCHAR2(255) NOT NULL,
+	pat_id         	VARCHAR2(255),
 	pat_id_issuer  	VARCHAR2(255),
 	pat_name    	NVARCHAR2(255),
 	pat_i_name    	NVARCHAR2(255),

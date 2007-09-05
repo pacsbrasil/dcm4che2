@@ -40,7 +40,9 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -85,27 +87,63 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
  * @ejb.finder signature="Collection findAll()"
- *             query="SELECT OBJECT(a) FROM Patient AS a"
+ *             query="SELECT OBJECT(p) FROM Patient AS p"
  *             transaction-type="Supports"
  * @ejb.finder signature="Collection findAll(int offset, int limit)"
  *             query=""
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findAll(int offset, int limit)"
- *              query="SELECT OBJECT(a) FROM Patient AS a ORDER BY a.pk OFFSET ?1 LIMIT ?2"
+ *              query="SELECT OBJECT(p) FROM Patient AS p ORDER BY p.pk OFFSET ?1 LIMIT ?2"
  *              
  * @ejb.finder signature="java.util.Collection findByPatientId(java.lang.String pid)"
- *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1"
+ *             query="SELECT OBJECT(p) FROM Patient AS p WHERE p.patientId = ?1"
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByPatientId(java.lang.String pid)"
  *              strategy="on-find" eager-load-group="*"
  * 
- * @ejb.finder signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
- *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND (a.issuerOfPatientId IS NULL OR a.issuerOfPatientId = ?2)"
+ * @ejb.finder signature="java.util.Collection findByPatientIdWithExactIssuer(
+ *             java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p
+ *             WHERE p.patientId = ?1 AND p.issuerOfPatientId = ?2"
  *             transaction-type="Supports"
  *
- * @ejb.finder signature="java.util.Collection findByPatientIdWithExactIssuer(java.lang.String pid, java.lang.String issuer)"
- *             query="SELECT OBJECT(a) FROM Patient AS a WHERE a.patientId = ?1 AND a.issuerOfPatientId = ?2"
+ * @ejb.finder signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p
+ *             WHERE p.patientId = ?1
+ *             AND (p.issuerOfPatientId IS NULL OR p.issuerOfPatientId = ?2)"
  *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
+ *              strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientIdAndName(java.lang.String pid, java.lang.String pn)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientIdAndName(java.lang.String pid, java.lang.String pn)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p
+ *             WHERE p.patientId = ?1 AND p.patientName LIKE ?2"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientIdAndNameAndBirthDate(java.lang.String pid, java.lang.String pn, java.sql.Timestamp birthdate)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientIdAndNameAndBirthDate(java.lang.String pid, java.lang.String pn, java.sql.Timestamp birthdate)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p
+ *             WHERE p.patientId = ?1 AND p.patientName LIKE ?2
+ *             AND (p.patientBirthDate IS NULL or p.patientBirthDate = ?3)"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientName(java.lang.String pn)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientName(java.lang.String pn)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p
+ *             WHERE p.patientName LIKE ?1"
+ *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientNameAndBirthDate(java.lang.String pn, java.sql.Timestamp birthdate)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientNameAndBirthDate(java.lang.String pn, java.sql.Timestamp birthdate)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p
+ *             WHERE p.patientName LIKE ?1
+ *             AND (p.patientBirthDate IS NULL or p.patientBirthDate = ?2)"
+ *             strategy="on-find" eager-load-group="*"
  *
  * @ejb.finder signature="java.util.Collection findCorresponding(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
@@ -493,9 +531,37 @@ public abstract class PatientBean implements EntityBean {
         String pid = ds.getString(Tags.PatientID);
         String issuer = ds.getString(Tags.IssuerOfPatientID);
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
-        Collection c = issuer == null ? patHome .findByPatientId(pid)
-                : patHome.findByPatientIdWithIssuer(pid, issuer);
-
+        Collection c;
+        if (pid != null && issuer != null) {
+        	c = patHome.findByPatientIdWithIssuer(pid, issuer);
+        } else {
+        	PersonName pn = ds.getPersonName(Tags.PatientName);
+        	if (pn != null) {
+        		String pnLike = toLike(pn);
+        		Date birthdate = ds.getDate(Tags.PatientBirthDate);
+        		if (birthdate != null) {
+        			Timestamp ts = new Timestamp(birthdate.getTime());
+        			if (pid != null) {
+        				c = patHome.findByPatientIdAndNameAndBirthDate(pid,
+        						pnLike, ts);
+        			} else { // pid == null
+        				c = patHome.findByPatientNameAndBirthDate(pnLike, ts);
+        			}
+        		} else { // birthdate == null
+        			if (pid != null) {
+        				c = patHome.findByPatientIdAndName(pid, pnLike);       			
+        			} else { // pid == null
+        				c = patHome.findByPatientName(pnLike);
+        			}
+        		}
+        	} else { // pn == null
+        		if (pid != null) {
+        			c = patHome .findByPatientId(pid);
+        		} else { // pid == null
+        			throw new ObjectNotFoundException();
+        		}
+        	}
+        }
         if (c.isEmpty()) {
             throw new ObjectNotFoundException();
         }
@@ -528,10 +594,19 @@ public abstract class PatientBean implements EntityBean {
         }
         return result;
     }
-    
+       
+    private String toLike(PersonName pn) {
+		StringBuffer sb = new StringBuffer(
+				pn.get(PersonName.FAMILY).toUpperCase());
+		String gn = pn.get(PersonName.GIVEN);
+		if (gn != null) {
+			sb.append('^').append(gn.toUpperCase());
+		}
+		sb.append("^%");
+		return sb.toString();
+	}
 
-    
-    /**
+	/**
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
