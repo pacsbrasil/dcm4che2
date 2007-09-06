@@ -61,54 +61,74 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * The MBean to manage the WebView launcher service.
+ * A MBean service to manage configurations for XDS services.
  * <p>
- * This service provides methods and configuration attributes to open a web (applet) based Dicom viewer.
+ * This service can be used to save and load jmx attributes for a configurable set of mbeans.
  * <p>
- * Use standard DICOM C-FIND to find instances.
  * 
  * @author franz.willer@agfa.com
  * @version $Revision$ $Date$
- * @since 04.10.2006
+ * @since 05.09.2007
  */
 public class XdsCfgService extends ServiceMBeanSupport {
 
-    public static final String VERSION_PREFIX = "XDS_CFG_";
-	private static final String NEW_LINE = System.getProperty("line.separator", "\n");
+    private String versionPrefix = "XDS_CFG_";
+    
+    private static final String NEW_LINE = System.getProperty("line.separator", "\n");
 
-	private Set savedConfigs = new HashSet();
     /**
      * Map defining services and their attributes to save.
      * key is service name (ObjectName format); value list of attribute names
      */
     private Map attributesToStore = new LinkedHashMap();
     
-	private String serviceDomainPrefix;
+    private String serviceDomainPrefix;
 	
     static Logger log = LoggerFactory.getLogger(XdsCfgService.class);
 
-	public String getAttributesToStore() {
-		return toString(attributesToStore);
-	}
+    /**
+     * Get the attributes that should be saved for a configuration.
+     * <p>
+     * <dl>
+     * <dt>Format: &lt;MBean&gt;:&lt;attributeList&gt;</dt>
+     * <dd>MBean: Either the full ObjectName or the service name when <code>serviceDomainPrefix</code> can be used.</dd>
+     * <dd>attributeList:attribute names separated by ',' or '*' for all attributes of the MBean.
+     * </dl>
+     * @return
+     */
+    public String getAttributesToStore() {
+	return toString(attributesToStore);
+    }
 
-	public void setAttributesToStore(String attributesToStore) {
-		this.attributesToStore = toMap(attributesToStore);
-	}
+    public void setAttributesToStore(String attributesToStore) {
+        this.attributesToStore = toMap(attributesToStore);
+    }
     
-	public Set getSavedConfigs() {
-		return savedConfigs;
-	}
+    public String getVersionPrefix() {
+        return versionPrefix;
+    }
 
-    
+    public void setVersionPrefix(String versionPrefix) {
+        this.versionPrefix = versionPrefix;
+    }
+
+    /**
+     * Get the default domain prefix.
+     * <p>
+     * This prefix allow the use of short service names in attributesToStore instead of the full qualified ObjectName.
+     * <p>
+     * e.g.:'dcm4chee.archive:service='
+     * @return
+     */
     public String getServiceDomainPrefix() {
-		return serviceDomainPrefix;
-	}
+	return serviceDomainPrefix;
+    }
 
-	public void setServiceDomainPrefix(String serviceDomainPrefix) {
-		this.serviceDomainPrefix = serviceDomainPrefix;
-	}
+    public void setServiceDomainPrefix(String serviceDomainPrefix) {
+	this.serviceDomainPrefix = serviceDomainPrefix;
+    }
 
-	protected String toString(Map map) {
+    protected String toString(Map map) {
         if (map == null || map.isEmpty())
             return "";
         StringBuffer sb = new StringBuffer();
@@ -157,9 +177,17 @@ public class XdsCfgService extends ServiceMBeanSupport {
         return map;
     }
     
+    /**
+     * Save attributes defined in 'attributesToStore' for given name.
+     * <p>
+     * Call Persistance Manager store method for each service defined in attributesToStore.
+     * 
+     * @param configName
+     * @throws Exception
+     */
     public void save(String configName) throws Exception {
     	XMLAttributePersistenceManager apm = new XMLAttributePersistenceManager();
-    	apm.create(VERSION_PREFIX+configName, null);
+    	apm.create(versionPrefix+configName, null);
     	String key;
     	ObjectName name;
     	List attrList;
@@ -171,12 +199,17 @@ public class XdsCfgService extends ServiceMBeanSupport {
         	AttributeList attributes = server.getAttributes(name, attrNames);
         	apm.store(name.getKeyPropertyListString(), attributes);
     	}
-    	this.savedConfigs.add(configName);
     }
 
+    /**
+     * Load a configuration for given name.
+     * 
+     * @param configName
+     * @throws Exception
+     */
     public void load(String configName) throws Exception {
     	XMLAttributePersistenceManager apm = new XMLAttributePersistenceManager();
-    	apm.create(VERSION_PREFIX+configName, null);
+    	apm.create(versionPrefix+configName, null);
     	String key;
     	ObjectName name;
     	AttributeList attributes;
@@ -188,25 +221,43 @@ public class XdsCfgService extends ServiceMBeanSupport {
     	}
     }
 
-	private ObjectName getObjectName(String key)
+    /**
+     * Get the ObjectName for given String.
+     * <p>
+     * <code>key</code> can be either a full ObjectName or only the 'service' name.
+     * In this case the serviceDomainPrefix is used to get a full qualified ObjectName String.
+     * @param key
+     * @return
+     * @throws MalformedObjectNameException
+     */
+    private ObjectName getObjectName(String key)
 			throws MalformedObjectNameException {
-		ObjectName name;
-		name = key.indexOf(':') == -1 ? new ObjectName(serviceDomainPrefix+key) : new ObjectName(key);
-		return name;
-	}
+        ObjectName name;
+        name = key.indexOf(':') == -1 ? new ObjectName(serviceDomainPrefix+key) : new ObjectName(key);
+        return name;
+    }
     
-	private String[] getAttributeNames(ObjectName name, List attrList) throws Exception {
-		String[] attrNames;
-		if ( attrList != null && attrList.size() > 0) {
-			attrNames = (String[]) attrList.toArray(new String[attrList.size()]);
-		} else {
-			MBeanAttributeInfo[] attrInfos = server.getMBeanInfo(name).getAttributes();
-			attrNames = new String[attrInfos.length];
-			for ( int i = 0 ; i < attrNames.length ; i++ ) {
-				attrNames[i] = attrInfos[i].getName();
-			}
-		}
-		return attrNames;
+    /**
+     * Get either the attribute names defined in attrList or 
+     * all attribute names of the service specified with name.
+     * 
+     * @param name
+     * @param attrList
+     * @return
+     * @throws Exception
+     */
+    private String[] getAttributeNames(ObjectName name, List attrList) throws Exception {
+	String[] attrNames;
+	if ( attrList != null && attrList.size() > 0) {
+	    attrNames = (String[]) attrList.toArray(new String[attrList.size()]);
+	} else {
+	    MBeanAttributeInfo[] attrInfos = server.getMBeanInfo(name).getAttributes();
+	    attrNames = new String[attrInfos.length];
+	    for ( int i = 0 ; i < attrNames.length ; i++ ) {
+	        attrNames[i] = attrInfos[i].getName();
+	    }
 	}
+	return attrNames;
+    }
     
 }
