@@ -46,6 +46,20 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSupplementIssuerOfPatientID"
+      setMethod="setSupplementIssuerOfPatientID">
+      <description><![CDATA[Supplement received C-FIND RQ identifier containing
+          a <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
+          for <i>Issuer Of Patient ID</i>, if such is associated with the
+          C-FIND SCU AE by its AE Configuration entry.]]>
+      </description>
+      <name>SupplementIssuerOfPatientID</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getSendWithDefaultTransferSyntaxToAETitles"
       setMethod="setSendWithDefaultTransferSyntaxToAETitles">
       <description>Move Destination AE titles to which objects are sent 

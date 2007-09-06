@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import javax.management.Attribute;
@@ -63,6 +64,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -79,8 +81,12 @@ import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
@@ -98,6 +104,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected static final String NONE = "NONE";
 
+    private static int sequenceInt = new Random().nextInt();
+    
     protected ObjectName dcmServerName;
     protected ObjectName aeServiceName;
 
@@ -106,7 +114,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected DcmHandler dcmHandler;
     
     protected UserIdentityNegotiator userIdentityNegotiator;
-
+    
     protected String[] calledAETs;
 
     /** 
@@ -117,6 +125,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
      */
     protected String[] callingAETs;
 
+    protected String[] generatePatientID = null;
+    
+    protected String issuerOfGeneratedPatientID;
+    
+    protected boolean supplementIssuerOfPatientID;
+    
     /**
      * Map containing accepted Transfer Syntax UIDs. key is name (as in config
      * string), value is real uid)
@@ -226,7 +240,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         this.aeServiceName = aeServiceName;
     }
 
-    public final String getCalledAETs() {
+	public final String getCalledAETs() {
         return calledAETs == null ? "" : StringUtils.toString(calledAETs, '\\');
     }
 
@@ -245,6 +259,77 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setLogCallingAETs(String aets) {
         logCallingAETs = StringUtils.split(aets, '\\');
     }
+
+    public final String getGeneratePatientID() {
+        if (generatePatientID == null) {
+            return NONE;
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < generatePatientID.length; i++) {
+            sb.append(generatePatientID[i]);
+        }
+        return sb.toString();
+    }
+
+    public final void setGeneratePatientID(String pattern) {
+        if (pattern.equalsIgnoreCase(NONE)) {
+            this.generatePatientID = null;
+            return;
+        }
+        int pl = pattern.indexOf('#');
+        int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
+        int sl = pattern.indexOf('$');
+        int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;
+        if (pl == -1 && sl == -1) {
+            this.generatePatientID = new String[] { pattern };
+        } else if (pl != -1 && sl != -1) {
+            this.generatePatientID = pl < sl
+            		? split(pattern, pl, pr, sl, sr)
+                    : split(pattern, sl, sr, pl, pr);
+
+        } else {
+            this.generatePatientID = pl != -1
+            		? split(pattern, pl, pr)
+            		: split(pattern, sl, sr);
+        }
+    }
+
+    private static String[] split(String pattern, int l1, int r1) {
+        return new String[] {
+        		pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1),
+                pattern.substring(r1 + 1), };
+    }
+
+    private static String[] split(String pattern, int l1, int r1, int l2, int r2) {
+        if (r1 > l2) {
+            throw new IllegalArgumentException(pattern);
+        }
+        return new String[] {
+        		pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1),
+                pattern.substring(r1 + 1, l2),
+                pattern.substring(l2, r2 + 1),
+                pattern.substring(r2 + 1) };
+    }
+    
+    public final String getIssuerOfGeneratedPatientID() {
+		return issuerOfGeneratedPatientID;
+	}
+
+	public final void setIssuerOfGeneratedPatientID(
+			String issuerOfGeneratedPatientID) {
+		this.issuerOfGeneratedPatientID = issuerOfGeneratedPatientID;
+	}
+	
+	public final boolean isSupplementIssuerOfPatientID() {
+		return supplementIssuerOfPatientID;
+	}
+
+	public final void setSupplementIssuerOfPatientID(
+			boolean supplementIssuerOfPatientID) {
+		this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
+	}
 
     public final int getMaxPDULength() {
         return maxPDULength;
@@ -329,8 +414,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         if ( callingAETs.length != 0 ) return callingAETs;
         log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
         try {
-            List l = (List) server.invoke(aeServiceName, "listAEs", null, null);
-            if (l == null || l.size() == 0 ) {
+            List l = aeMgr().findAll();
+            if (l.size() == 0 ) {
                 log.warn("No AETs configured! No calling AET is allowed!");
                 return callingAETs;
             }
@@ -699,5 +784,80 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
         return DcmObjectFactory.getInstance().newPersonName(pname).format();
     }
+    
+    public void supplementIssuerOfPatientID(Dataset ds, String callingAET) {
+    	if (supplementIssuerOfPatientID
+    			&& !ds.containsValue(Tags.IssuerOfPatientID)) {
+    		String pid = ds.getString(Tags.PatientID);
+    		if (pid != null) {
+    			try {
+    				AEDTO ae = aeMgr().findByAET(callingAET);
+    				String issuer = ae.getIssuerOfPatientID();
+    				ds.putLO(Tags.IssuerOfPatientID, issuer);
+    				if (log.isInfoEnabled()) {
+    					log.info("Add missing Issuer Of Patient ID " + issuer
+    							+ " for Patient ID " + pid);
+    				}
+    			} catch (UnknownAETException e) {
+    			} catch (Exception e) {
+    				log.warn("Failed to supplement Issuer Of Patient ID: ", e);
+    			}
+    		}
+    	}
+    }
 
+	public void generatePatientID(Dataset pat, Dataset sty) {
+    	String pid = pat.getString(Tags.PatientID);
+    	if (pid != null) {
+    		return;
+    	}
+    	String pname = pat.getString(Tags.PatientName);
+        if (generatePatientID.length == 1) {
+            pid = generatePatientID[0];
+        } else {
+        	String suid = sty != null ? sty.getString(Tags.StudyInstanceUID) : null;
+        	int suidHash = suid != null ? suid.hashCode() : ++sequenceInt;
+        	// generate different Patient IDs for different studies
+        	// if no Patient Name
+        	int pnameHash = pname == null ? suidHash : pname.hashCode() * 37
+        				+ pat.getString(Tags.PatientBirthDate, "").hashCode();
+
+        	StringBuffer sb = new StringBuffer();
+        	for (int i = 0; i < generatePatientID.length; i++) {
+        		String s = generatePatientID[i];
+                int l = s.length();
+                if (l == 0)
+                    continue;
+                char c = s.charAt(0);
+                if (c != '#' && c != '$') {
+                    sb.append(s);
+                    continue;
+                }
+                String v = Long.toString((c == '#' ? pnameHash : suidHash)
+                		& 0xffffffffL);
+                for (int j = v.length() - l; j < 0; j++) {
+                    sb.append('0');
+                }
+                sb.append(v);
+            }
+        	pid = sb.toString();
+        }
+        pat.putLO(Tags.PatientID, pid);
+        pat.putLO(Tags.IssuerOfPatientID, issuerOfGeneratedPatientID);
+        if (log.isInfoEnabled()) {
+        	StringBuffer prompt = new StringBuffer("Generate Patient ID: ");
+        	prompt.append(pid);
+        	if (issuerOfGeneratedPatientID != null) {
+            	prompt.append("^^^").append(issuerOfGeneratedPatientID);
+        	}
+        	prompt.append(" for Patient: ").append(pname);
+	        log.info(prompt.toString());
+        }
+    }
+
+    private AEManager aeMgr() throws Exception {
+        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
+                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        return home.create();
+    }
 }

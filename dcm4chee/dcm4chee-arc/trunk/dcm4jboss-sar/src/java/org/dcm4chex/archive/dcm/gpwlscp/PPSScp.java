@@ -50,6 +50,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -104,6 +105,8 @@ class PPSScp extends DcmServiceBase {
 
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
+        Association as = assoc.getAssociation();
+        String callingAET = as.getCallingAET();
         final Command cmd = rq.getCommand();
         final Dataset gppps = rq.getDataset();
         final String cuid = cmd.getAffectedSOPClassUID();
@@ -114,6 +117,8 @@ class PPSScp extends DcmServiceBase {
 		log.debug("GP-PPS Attributes:");
 		log.debug(gppps);
         checkCreateAttributs(gppps);
+        service.supplementIssuerOfPatientID(gppps, callingAET);
+        service.generatePatientID(gppps, gppps.getItem(Tags.RefRequestSeq));
         gppps.putUI(Tags.SOPClassUID, cuid);
         gppps.putUI(Tags.SOPInstanceUID, iuid);
         createGPPPS(gppps);

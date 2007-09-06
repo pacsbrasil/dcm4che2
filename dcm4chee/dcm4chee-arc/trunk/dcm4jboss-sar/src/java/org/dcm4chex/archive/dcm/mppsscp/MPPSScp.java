@@ -50,6 +50,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -92,6 +93,8 @@ class MPPSScp extends DcmServiceBase {
 
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
+        Association as = assoc.getAssociation();
+        String callingAET = as.getCallingAET();
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String cuid = cmd.getAffectedSOPClassUID();
@@ -101,7 +104,9 @@ class MPPSScp extends DcmServiceBase {
         }
 		log.debug("Creating MPPS:\n");
 		log.debug(mpps);
-        checkCreateAttributs(mpps);
+        checkCreateAttributs(mpps);        
+        service.supplementIssuerOfPatientID(mpps, callingAET);
+        service.generatePatientID(mpps, mpps.getItem(Tags.ScheduledStepAttributesSeq));
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         createMPPS(mpps);

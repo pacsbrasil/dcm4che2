@@ -121,58 +121,13 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getAcceptPatientID"
-      setMethod="setAcceptPatientID">
-      <description>Regular Expression for valid Patient IDs. Patient IDs which
-      does not match the specified pattern are ignored and replaced by a
-      Patient ID generated according attribute "GeneratePatientID".
-      </description>
-      <name>AcceptPatientID</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value=".*"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getIgnorePatientID"
-      setMethod="setIgnorePatientID">
-      <description>Regular Expression for invalid Patient IDs. Patient IDs which
-      match the specified pattern are ignored and replaced by a
-      Patient ID generated according attribute "GeneratePatientID".  
-      </description>
-      <name>IgnorePatientID</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="UNKOWN"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getIgnorePatientIDCallingAETs"
-      setMethod="setIgnorePatientIDCallingAETs">
-      <description>List of the AE titles for the Storage SCUs for which the
-      Patient ID in received objects is ignored. Usually used together with
-      attribute "GeneratePatientID" to generate a new Patient ID for such objects.   
-      Separate multiple values by \(backslash).
-      NONE = no calling AE titles.  
-      </description>
-      <name>IgnorePatientIDAETitles</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getGeneratePatientID"
       setMethod="setGeneratePatientID">
-      <description><![CDATA[Generate a patient ID from a hash of the patient name and
-          birth date and/or study instance uid, if
-          <ol>
-          <li>the received object has no patient ID or
-          <li>the patient ID does not match the pattern defined in "AcceptPatientID" or
-          <li>it match the pattern defined in "IgnorePatientID" or
-          <li>the object is received from an AE listed in "IgnorePatientIDAETitles".
-          </ol>
-          <br>Use ### and/or $$$ as a placeholder for the decimal hash value of patient name and/or study instance uid.
+      <description><![CDATA[Generate a patient ID from a hash of the 
+          patient name and birth date and/or study instance uid, if
+          the received object contains no patient ID.
+          <br>Use ### and/or $$$ as a placeholder for the decimal hash value of
+          patient name and/or study instance uid.
           For example, PACS-##########.
           <br>NONE = do not generate patient IDs. But, this means media creation will fail.]]>
       </description>
@@ -183,22 +138,30 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getIssuerOfPatientIDRules"
-      setMethod="setIssuerOfPatientIDRules">
-      <description><![CDATA[List of rules used to add the Issuer Of PatientID
-      value if not contained in the received object, if the Patient ID matches
-      the specified regular expression. Multiple rules are separated by new lines.
-      Format: 
-      <br><i>regExpression</i>:<i>issuer</i>
-      <br>Example:
-      <br>^PACS- \d*:DCM4CHEE 
-      <br>If no regular expression is specified,
-      the issuer is added for all patient IDs.]]>
+      getMethod="getIssuerOfGeneratedPatientID"
+      setMethod="setIssuerOfGeneratedPatientID">
+      <description><![CDATA[Value for Issuer Of Patient ID if the patient ID is
+      generated according configured <i>GeneratePatientID<i>.
+      <br>NONE = do not set Issuer Of Patient ID for generated patient IDs.]]>
       </description>
-      <name>IssuerOfPatientIDRules</name>
+      <name>IssuerOfPatientIDGeneratedPatientID</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="^PACS-\d*:DCM4CHEE"/>
+         <value value="DCM4CHEE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSupplementIssuerOfPatientID"
+      setMethod="setSupplementIssuerOfPatientID">
+      <description><![CDATA[Supplement received objects containing a
+          <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
+          for <i>Issuer Of Patient ID</i>, if such is associated with the
+          Storage SCU AE by its AE Configuration entry.]]>
+      </description>
+      <name>SupplementIssuerOfPatientID</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

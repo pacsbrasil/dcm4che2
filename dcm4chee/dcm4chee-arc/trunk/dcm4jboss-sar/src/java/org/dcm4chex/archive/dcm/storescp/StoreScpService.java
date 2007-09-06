@@ -46,13 +46,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.management.JMException;
@@ -314,22 +311,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setSerializeDBUpdate(serialize);
     }
 
-    public final String getGeneratePatientID() {
-        return scp.getGeneratePatientID();
-    }
-
-    public final void setGeneratePatientID(String pattern) {
-        scp.setGeneratePatientID(pattern);
-    }
-
-    public final String getIssuerOfPatientIDRules() {
-        return scp.getIssuerOfPatientIDRules();
-    }
-
-    public final void setIssuerOfPatientIDRules(String rules) {
-        scp.setIssuerOfPatientIDRules(rules);
-    }
-
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
     }
@@ -352,30 +333,6 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setMwlScuServiceName(ObjectName mwlScuServiceName) {
         this.mwlScuServiceName = mwlScuServiceName;
-    }
-
-    public final String getAcceptPatientID() {
-        return scp.getAcceptPatientID();
-    }
-
-    public final void setAcceptPatientID(String acceptPatientID) {
-        scp.setAcceptPatientID(acceptPatientID);
-    }
-
-    public final String getIgnorePatientID() {
-        return scp.getIgnorePatientID();
-    }
-
-    public final void setIgnorePatientID(String ignorePatientID) {
-        scp.setIgnorePatientID(ignorePatientID);
-    }
-
-    public final String getIgnorePatientIDCallingAETs() {
-        return scp.getIgnorePatientIDCallingAETs();
-    }
-
-    public final void setIgnorePatientIDCallingAETs(String aets) {
-        scp.setIgnorePatientIDCallingAETs(aets);
     }
 
     public String getCoerceWarnCallingAETs() {

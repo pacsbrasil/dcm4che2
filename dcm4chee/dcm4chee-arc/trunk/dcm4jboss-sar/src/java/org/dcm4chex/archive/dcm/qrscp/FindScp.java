@@ -106,6 +106,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
+        Association as = assoc.getAssociation();
+        String callingAET = as.getCallingAET();
         try {
         	perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
         	
@@ -126,6 +128,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
+            service.supplementIssuerOfPatientID(rqData, callingAET);
             if (!isUniversalMatching(rqData.getString(Tags.PatientID))
                     && service.isPixQueryCallingAET(a.getCallingAET())) {
                 pixQuery(rqData);
