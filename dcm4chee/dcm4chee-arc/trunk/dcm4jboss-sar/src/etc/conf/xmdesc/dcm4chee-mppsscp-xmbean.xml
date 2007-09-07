@@ -115,8 +115,12 @@
    <attribute access="read-write"
       getMethod="getCoerceConfigDir"
       setMethod="setCoerceConfigDir">
-      <description><![CDATA[Directory where configuration files for
-      attribute coercion are located. A relative path name is resolved relative to
+      <description><![CDATA[Directory where configuration files for attribute
+      coercion are located: if XSL stylesheet "mpps-ncreaterq.xsl" or 
+      "mpps-nsetrq.xsl" exists in this directory or in a sub-directory equal
+      to the AE Title of a MPPS SCU, attributes of MPPS N-CREATE or MPPS N-SET
+      requests from this SCU will be coerced according these stylesheets.
+      A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>  
       </description>
       <name>CoerceConfigDirectory</name>

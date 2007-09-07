@@ -67,6 +67,9 @@ import org.jboss.logging.Logger;
  */
 class MPPSScp extends DcmServiceBase {
 
+	private static final String CREATE_XSL = "mpps-ncreaterq.xsl";
+	private static final String SET_XSL = "mpps-nsetrq.xsl";
+
     private static final int[] TYPE1_NCREATE_ATTR = {
             Tags.ScheduledStepAttributesSeq, Tags.PPSID,
             Tags.PerformedStationAET, Tags.PPSStartDate, Tags.PPSStartTime,
@@ -104,6 +107,10 @@ class MPPSScp extends DcmServiceBase {
         }
 		log.debug("Creating MPPS:\n");
 		log.debug(mpps);
+        Dataset coerce = service.getCoercionAttributesFor(as, CREATE_XSL, mpps);
+        if (coerce != null) {
+            service.coerceAttributes(mpps, coerce);
+        }
         checkCreateAttributs(mpps);        
         service.supplementIssuerOfPatientID(mpps, callingAET);
         service.generatePatientID(mpps, mpps.getItem(Tags.ScheduledStepAttributesSeq));
@@ -135,11 +142,16 @@ class MPPSScp extends DcmServiceBase {
 
     protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
+        Association as = assoc.getAssociation();
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
 		log.debug("Set MPPS:\n");
 		log.debug(mpps);
+        Dataset coerce = service.getCoercionAttributesFor(as, SET_XSL, mpps);
+        if (coerce != null) {
+            service.coerceAttributes(mpps, coerce);
+        }
         checkSetAttributs(mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         updateMPPS(mpps);
