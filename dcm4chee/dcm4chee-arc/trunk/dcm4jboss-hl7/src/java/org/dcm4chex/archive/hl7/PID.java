@@ -61,9 +61,9 @@ class PID {
         if (pid == null)
             throw new IllegalArgumentException("Missing PID Segment");
         List pidfds = pid.elements(HL7XMLLiterate.TAG_FIELD);
+        if (pidfds.size() < 3)
+        	throw new IllegalArgumentException("Missing PID-3 Field");
         Element pidfd = (Element) pidfds.get(2);
-        if (pidfd == null)
-            throw new IllegalArgumentException("Missing PID-3 Field");
         pids.add(toPID(pidfd));
         List furtherPids = pidfd.elements(HL7XMLLiterate.TAG_REPEAT);
         for (Iterator iter = furtherPids.iterator(); iter.hasNext();) {

@@ -40,13 +40,18 @@
 package org.dcm4chex.archive.hl7;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
@@ -54,7 +59,9 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
+import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -65,12 +72,57 @@ import org.xml.sax.ContentHandler;
 
 public class ADTService extends AbstractHL7Service {
 
+    private static final int ID = 0;
+
+    private static final int ISSUER = 1;
+
     private String pidXslPath;
 
     private String mrgXslPath;
+    
+    private String pixUpdateNotificationMessageType;
+
+    private List issuersOfOnlyOtherPatientIDs;
 
     private boolean ignoreDeleteErrors;
 
+
+    public final String getPixUpdateNotificationMessageType() {
+		return pixUpdateNotificationMessageType;
+	}
+
+
+	public final void setPixUpdateNotificationMessageType(String messageType) {
+		this.pixUpdateNotificationMessageType = messageType;
+	}
+
+
+	public final String getIssuersOfOnlyOtherPatientIDs() {
+        if (issuersOfOnlyOtherPatientIDs == null
+                || issuersOfOnlyOtherPatientIDs.isEmpty()) {
+            return "-";
+        }
+        Iterator iter = issuersOfOnlyOtherPatientIDs.iterator();
+        StringBuffer sb = new StringBuffer((String) iter.next());
+        while (iter.hasNext()) {
+            sb.append(',').append((String) iter.next());
+        }
+        return sb.toString();
+    }
+
+
+    public final void setIssuersOfOnlyOtherPatientIDs(String s) {
+        if (s.trim().equals("-")) {
+            issuersOfOnlyOtherPatientIDs = null;
+        } else {
+            String[] a = StringUtils.split(s, ',');
+            issuersOfOnlyOtherPatientIDs = new ArrayList(a.length);
+            for (int i = 0; i < a.length; i++) {
+                issuersOfOnlyOtherPatientIDs.add(a[i].trim());
+            }
+        }
+    }
+    
     public final String getMrgStylesheet() {
         return mrgXslPath;
     }
@@ -103,8 +155,11 @@ public class ADTService extends AbstractHL7Service {
 	
 	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
-        Dataset pat = DcmObjectFactory.getInstance().newDataset();
         try {
+        	if (isUpdateNotificationMessage(msh, msg)) {
+        		return processUpdateNotificationMessage(msg);
+        	}
+        	Dataset pat = DcmObjectFactory.getInstance().newDataset();
             File pidXslFile = FileUtils.toExistingFile(pidXslPath);
             Transformer t = templates.getTemplates(pidXslFile).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
@@ -160,6 +215,59 @@ public class ADTService extends AbstractHL7Service {
         return true;
     }
 
+
+	private boolean isUpdateNotificationMessage(MSH msh, Document msg) {
+        return pixUpdateNotificationMessageType.equals(
+        		msh.messageType + '^' + msh.triggerEvent)
+        		&& !containsPatientName(msg);     
+	}
+
+	private boolean containsPatientName(Document msg) {
+		Element pidSegm = msg.getRootElement().element("PID");
+		if (pidSegm == null) {
+			return false;        	
+		}
+		List pidfds = pidSegm.elements(HL7XMLLiterate.TAG_FIELD);
+		if (pidfds.size() < 5) {
+			return false;        	
+		}
+		String pname = ((Element) pidfds.get(4)).getTextTrim();
+		return (pname != null && pname.length() > 0);
+	}
+
+	private boolean processUpdateNotificationMessage(Document msg)
+			throws Exception {
+		List pids;
+		try {
+			pids = new PID(msg).getPatientIDs();
+		} catch (IllegalArgumentException e) {
+			throw new HL7Exception("AR", e.getMessage());
+		}
+		PatientUpdateHome patUpdate = getPatientUpdateHome();
+		for (int i = 0, n = pids.size(); i < n; ++i) {
+			String[] pid = (String[]) pids.get(i);
+			if (!issuersOfOnlyOtherPatientIDs.contains(pid[ISSUER])) {
+				Dataset ds = toDataset(pid);
+				DcmElement opids = ds.putSQ(Tags.OtherPatientIDSeq);
+				for (int j = 0, m = pids.size(); j < m; ++j) {
+					String[] opid = (String[]) pids.get(j);
+					if (opid != pid) {
+						opids.addItem(toDataset(opid));
+					}
+				}
+				patUpdate.create().updateOtherPatientIDsOrCreate(ds);
+			}
+		}
+		return true;
+	}
+	
+    private Dataset toDataset(String[] pid) {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        ds.putLO(Tags.PatientID, pid[ID]);
+        ds.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
+        return ds;
+    } 
+	
 	private boolean isArrived(MSH msh) {
         return "A10".equals(msh.triggerEvent);
 	}

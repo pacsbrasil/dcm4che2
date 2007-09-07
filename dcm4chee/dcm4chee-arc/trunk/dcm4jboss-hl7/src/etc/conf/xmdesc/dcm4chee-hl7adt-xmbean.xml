@@ -30,14 +30,45 @@
       getMethod="getMessageTypes"
       setMethod="setMessageTypes">
       <description><![CDATA[Comma separated list of Message Types handled by
-       this service. <b>Attention:</b> Other services - in particular the PIX
-       Update Notification Service - must not be configured for processing
-       messages that types!]]>
+       this service.]]>
       </description>
       <name>MessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A10,ADT^A23,ADT^A34,ADT^A40" />
+         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A10,ADT^A23,ADT^A31,ADT^A34,ADT^A40" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPixUpdateNotificationMessageType"
+      setMethod="setPixUpdateNotificationMessageType">
+      <description><![CDATA[Message Type for PIX Update Notification.
+       Messages of this type <b>and</b> without (non-whitespace) Patient Name
+       (PID-5) will be interpreted as PIX Update Notification according <i>IHE
+       Transaction ITI-10</i> specified in the <i>IHE IT Infrastructure
+       Technical Framework</i>. <i>IHE Transaction ITI-10</i> specifies 
+       <code>ADT^A31</code> as message type for PIX Update Notification.<br/>
+       The message type must be also listed in configured <i>MessageTypes</i>
+       handled by this service.]]>
+      </description>
+      <name>PixUpdateNotificationMessageType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ADT^A31" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIssuersOfOnlyOtherPatientIDs"
+      setMethod="setIssuersOfOnlyOtherPatientIDs">
+      <description><![CDATA[Comma separated list of Issuers/Authorities,
+      which only qualifies Other Patient IDs - and NOT primary Patient IDs.
+      Patient IDs in PIX Update Notifications with such Issuer/Authority will
+      NOT cause to create a new Patient Record, in the case that there is no 
+      Patient Record with such primary Patient ID]]>
+      </description>
+      <name>IssuersOfOnlyOtherPatientIDs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="SSN" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
