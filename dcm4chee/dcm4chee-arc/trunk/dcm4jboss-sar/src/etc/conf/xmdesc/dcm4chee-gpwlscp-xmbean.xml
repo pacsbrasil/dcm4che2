@@ -75,7 +75,7 @@
       <description><![CDATA[Supplement received GP-PPS N-CREATE message containing
           a <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
           for <i>Issuer Of Patient ID</i>, if such is associated with the
-          MPPS SCU AE by its AE Configuration entry.]]>
+          GP-PPS SCU AE by its AE Configuration entry.]]>
       </description>
       <name>SupplementIssuerOfPatientID</name>
       <type>boolean</type>
