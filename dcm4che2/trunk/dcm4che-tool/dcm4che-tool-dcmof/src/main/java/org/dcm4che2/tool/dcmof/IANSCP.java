@@ -43,10 +43,12 @@ import java.io.File;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.Status;
 import org.dcm4che2.net.service.NCreateService;
+import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -71,7 +73,12 @@ class IANSCP extends NCreateService {
 
     protected DicomObject doNCreate(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
-        final String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
+        String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
+        if (iuid == null) {
+            iuid = UIDUtils.createUID();
+            rq.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+            rsp.putString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+        }
         data.initFileMetaInformation(
                 UID.InstanceAvailabilityNotificationSOPClass, iuid,
                 UID.ExplicitVRLittleEndian);
