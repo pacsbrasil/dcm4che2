@@ -140,7 +140,7 @@ class MPPSSCP {
                 throw ex;
             }
             data.copyTo(mpps);
-            store(f, data);
+            store(f, mpps);
         } catch (DicomServiceException e) {
             throw e;
         } catch (Exception e) {
