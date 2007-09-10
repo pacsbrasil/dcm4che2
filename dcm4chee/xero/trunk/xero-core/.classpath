@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/xero-cfind"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/metadata"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="lib" path="E:/bin/sizeof/objectprofiler.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

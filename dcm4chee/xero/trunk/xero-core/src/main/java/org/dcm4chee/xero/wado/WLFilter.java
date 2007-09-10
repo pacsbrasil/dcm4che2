@@ -76,7 +76,6 @@ public class WLFilter implements Filter<WadoImage> {
 
    public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
 	  log.info("DicomWLFilter");
-	  long start = System.currentTimeMillis();
 	  Object[] values = MemoryCacheFilterBase.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER);
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if (wi == null) {
@@ -84,6 +83,7 @@ public class WLFilter implements Filter<WadoImage> {
 		 return null;
 	  }
 
+	  long start = System.currentTimeMillis();
 	  BufferedImage bi = wi.getValue();
 	  ColorModel cm = bi.getColorModel();
 	  ColorModelParam cmParam = (ColorModelParam) wi.getParameter(DicomImageFilter.COLOR_MODEL_PARAM);

@@ -16,11 +16,13 @@ public class MemoryCacheFilter<T extends CacheItem> extends MemoryCacheFilterBas
 	@SuppressWarnings("unchecked")
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		String key = computeKey(params);
-		T item = (key!=null ? cache.get(key) : null);
-		log.info("Looking for key "+key+" item "+item);
+		boolean noCache = (params.get(NO_CACHE)!=null);
+		T item = ((key!=null && !noCache) ? cache.get(key) : null);
+		if( noCache) log.info("Not caching or using cache for "+key);
+		else log.info("Looking for key "+key+" item "+item);
 		if( item==null ) {
 			item = (T) filterItem.callNextFilter(params);
-			if( item!=null && key!=null ) cache.put(key,item);
+			if( item!=null && key!=null && !noCache) cache.put(key,item);
 		}
 		return item;
 	}

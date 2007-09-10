@@ -241,7 +241,7 @@ public class TestUrlRetrieve {
 	  }
 	  if (studyRet.runnables.size() == 0) {
 		 // 14 image CR String uid = "1.2.124.113532.128.5.1.74.20020108.75343.563790";
-		 String uid="1.2.124.113532.128.5.1.74.20020131.162815.589479";
+		 String uid="1.2.124.113532.132.183.36.32.20040429.112406.11120792";
 		 studyRet.runnables.add(new StudyRun(uid));
 		 seriesRet.runnables.add(new SeriesRun(uid));
 	  }

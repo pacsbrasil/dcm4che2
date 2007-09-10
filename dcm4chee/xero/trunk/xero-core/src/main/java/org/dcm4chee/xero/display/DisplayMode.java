@@ -20,6 +20,9 @@ public class DisplayMode {
 	private String mode="windowLevel";
 	private int counter = 0;
 	ApplyLevel applyLevel = ApplyLevel.SERIES;
+	
+	/** Trace whether to include XSLT in the current response */
+	private String xslt=null;
 
 	public ApplyLevel getApplyLevel() {
 		return applyLevel;
@@ -72,4 +75,12 @@ public class DisplayMode {
 	public void setCounter(int value) {
 		// No-op
 	}
+
+   public String getXslt() {
+      return xslt;
+   }
+
+   public void setXslt(String xslt) {
+      this.xslt = xslt;
+   }
 }

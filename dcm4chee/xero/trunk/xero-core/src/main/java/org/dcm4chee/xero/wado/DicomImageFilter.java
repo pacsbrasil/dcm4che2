@@ -73,6 +73,12 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);
 	private ColorModelFactory colorModelFactory = ColorModelFactory.getInstance();
 
+	static boolean first = true;
+	public DicomImageFilter() {
+	   if( first ) ImageIO.scanForPlugins();
+	   first = false;
+	}
+	
 	/** Read the raw DICOM image object 
 	 * @return WADO image.
 	 */

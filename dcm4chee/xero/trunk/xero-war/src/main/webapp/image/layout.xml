@@ -22,23 +22,23 @@
       <xul:vbox>
        <xul:toolbar ref="seriesToolbar" height="1"/>
        <xul:hbox id="e1x0" height="15">
-        <image id="e1i0big" offset="0" width="1" background="pink" overlay="imageOverlay" ref="imgToolbar"/>
+        <image id="e1i0big" offset="0" width="1" background="black" overlay="imageOverlay" ref="imgToolbar"/>
         <!-- The image at offset 5 has a custom window width/center -->
         <xul:vbox id="e1x1" width="1">
          <xul:hbox id="e1x2" height="1">
-          <image id="e1i0" offset="0" width='1' background="pink" overlay="imageHover" />
-          <image id="e1i1" offset="1" width='1' background="purple" overlay="imageHover" />
-          <image id="e1i2" offset="2" width='1' background="red" overlay="imageHover" />
+          <image id="e1i0" offset="0" width='1' background="black" overlay="imageHover" />
+          <image id="e1i1" offset="1" width='1' background="black" overlay="imageHover" />
+          <image id="e1i2" offset="2" width='1' background="black" overlay="imageHover" />
          </xul:hbox>
          <xul:hbox id="e1x3" height="1">
-          <image id="e1i3" offset="3" width='1' background="brown" overlay="imageHover" />
-          <image id="e1i4" offset="4" width='1' background="green" overlay="imageHover" />
-          <image id="e1i5" offset="5" width='1' background="blue" overlay="imageHover" />
+          <image id="e1i3" offset="3" width='1' background="black" overlay="imageHover" />
+          <image id="e1i4" offset="4" width='1' background="black" overlay="imageHover" />
+          <image id="e1i5" offset="5" width='1' background="black" overlay="imageHover" />
          </xul:hbox>
          <xul:hbox id="e1x4" height="1">
-          <image id="e1i6" offset="6" width='1' background="yellow" overlay="imageHover" />
-          <image id="e1i7" offset="7" width='1' background="white" overlay="imageHover" />
-          <image id="e1i8" offset="8" width='1' background="grey" overlay="imageHover" />
+          <image id="e1i6" offset="6" width='1' background="black" overlay="imageHover" />
+          <image id="e1i7" offset="7" width='1' background="black" overlay="imageHover" />
+          <image id="e1i8" offset="8" width='1' background="black" overlay="imageHover" />
          </xul:hbox>
         </xul:vbox>
        </xul:hbox>

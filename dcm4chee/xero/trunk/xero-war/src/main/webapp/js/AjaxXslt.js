@@ -117,7 +117,7 @@ XsltAjax.prototype.asXml = function(xmlHttp) {
  */
 XsltAjax.prototype.setXsltUri = function(xsltUri) {
 	this.xsltUri = xsltUri;
-	if( xsltUri===undefined || browserName==="Safari" || browserName==="Konqueror" || browserName==="Opera") {
+	if( xsltUri===undefined || browserName==="Safari" ||  browserName==="Konqueror" || browserName==="Opera") {
 	  this.xsltProcessor = undefined;
 	  return;
 	}
@@ -232,10 +232,27 @@ XsltAjax.prototype.replaceNode = function (items, fromDoc) {
       	this.debug("Using outerHTML to replace "+items);
         replaced.outerHTML =replaceBy.xml;
       }
+      else if( browserName==='Safari' ) {
+		this.debug("Safari - replacing child with imported child.");
+		try {
+			replaceBy = document.importNode(replaceBy,true);
+			parentNode = replaced.parentNode;
+			parentNode.replaceChild(replaceBy,replaced);
+		} catch(e) {
+			this.debug("Caught exception on replacing with importNode:"+e);
+			return;
+		}
+      }
       else {
       	this.debug("Using replace child to replace "+items);
         parentNode = replaced.parentNode;
-        parentNode.replaceChild(replaceBy, replaced);
+        try {
+          parentNode.replaceChild(replaceBy, replaced);
+        }
+        catch(e) {
+        	this.info("Caught exception on replace by "+e);
+        	return;
+        }
         if( this.logLevel<1 ) this.info("Using text "+this.asString(replaceBy));
         //replaced.outerHTML = this.asString(replaceBy);
       }
@@ -258,9 +275,11 @@ XsltAjax.prototype.asString = function(xml) {
 XsltAjax.prototype.ajaxRead = function (file, item, params){
   if(!file) {
   	alert("Ajax read requested from undefined URL - did you forget to have a node with the id the name of the action and the right href or set the URL?");
+  	return;
   }
-  if( !this.xsltProcessor ) {
+  if( this.xsltProcessor===undefined ) {
   	file = file+"&xslt=true";
+  	this.debug("Using server-side XSLT, url="+file);
   }
   this.inProgress = true;
   var xmlObj = null;
@@ -408,9 +427,11 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
 
    if( updateModel && this.currentXml) {
       // A direct update, no refresh/post/anything.
+      this.debug("Direct update obj.");
       this.updateObj(items, this.currentXml);
    }
    else {
+   	  this.debug("Ajax READ.");
 	  this.ajaxRead(this.url, items, postUpdate);
    }
    this.debug("Finished action "+actionName +" may still asynchronously update screen.");

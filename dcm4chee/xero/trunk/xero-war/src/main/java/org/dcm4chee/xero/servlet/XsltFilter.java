@@ -63,6 +63,9 @@ import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class sits in front of another page and applies the requested XSLT to
  * the page. The XSLT to be applied may only depend on the base URL (eg
@@ -71,6 +74,7 @@ import javax.xml.transform.stream.StreamSource;
  * @author bwallace
  */
 public class XsltFilter implements Filter {
+   private static final Logger log = LoggerFactory.getLogger(XsltFilter.class);
    public String XSLT_PARAMETER = "xslt";
 
    FilterConfig filterConfig;
@@ -113,8 +117,8 @@ public class XsltFilter implements Filter {
      * Detect if XSLT should be applied
      */
    protected boolean checkApplyXslt(HttpServletRequest request) {
-	  if ("true".equalsIgnoreCase(request.getParameter(XSLT_PARAMETER)))
-		 return true;
+	  if ( request.getParameter(XSLT_PARAMETER)!=null ) 
+		 return "true".equalsIgnoreCase(request.getParameter(XSLT_PARAMETER));
 	  String agent = request.getHeader("USER-AGENT");
 	  // Note that apple web-kit is NOT included, as pages for that browser are conditionally included
 	  // based on need.
@@ -130,14 +134,23 @@ public class XsltFilter implements Filter {
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filters) throws IOException, ServletException {
 	  HttpServletRequest hRequest = (HttpServletRequest) request;
 	  if (!checkApplyXslt(hRequest)) {
+		 log.debug("Not applying XSLT transformation to "+hRequest.getRequestURI());
 		 filters.doFilter(request, response);
 		 return;
 	  }
+	  log.debug("Apply XSLT.");
+ 	  response.setContentType("application/xhtml+xml");
 	  PrintWriter out = response.getWriter();
 	  CharResponseWrapper responseWrapper = new CharResponseWrapper((HttpServletResponse) response);
 	  filters.doFilter(request, responseWrapper);
 	  // Get response from servlet
 	  String xml = responseWrapper.toString();
+	  if( xml.indexOf("<?xml-stylesheet")==-1 ) {
+		 log.debug("Not applying XSLT - no xml-stylesheet applied.");
+		 response.setContentLength(xml.length());
+		 out.write(xml);
+		 return;
+	  }
 	  StringReader sr = new StringReader(xml);
 	  Source xmlSource = new StreamSource(sr);
 
@@ -147,8 +160,9 @@ public class XsltFilter implements Filter {
 		 CharArrayWriter caw = new CharArrayWriter();
 		 StreamResult result = new StreamResult(caw);
 		 useTransform.transform(xmlSource, result);
-		 response.setContentLength(caw.toString().length());
-		 out.write(caw.toString());
+		 String html = caw.toString();
+		 response.setContentLength(html.length());
+		 out.write(html);
 	  } catch (Exception ex) {
 		 out.println(ex.toString());
 		 out.write(responseWrapper.toString());

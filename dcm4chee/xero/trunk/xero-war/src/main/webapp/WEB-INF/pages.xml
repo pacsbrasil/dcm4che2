@@ -81,6 +81,7 @@
     <param name="mode" value="#{DisplayMode.mode}" />
     <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <param name="counter" value="#{DisplayMode.counter}" />
+    <param name="xslt" value="#{DisplayMode.xslt}" />
     <!-- To be removed into an action item -->
     <begin-conversation join="true" />
   </page>
@@ -92,6 +93,7 @@
     <param name="objectUID" value="#{ActionStudyLevel.objectUID}" />
     <param name="frame" value="#{ActionStudyLevel.frame}" />
     <param name="mode" value="#{DisplayMode.mode}" />
+    <param name="xslt" value="#{DisplayMode.xslt}" />
     <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <begin-conversation join="true" />
   </page>
