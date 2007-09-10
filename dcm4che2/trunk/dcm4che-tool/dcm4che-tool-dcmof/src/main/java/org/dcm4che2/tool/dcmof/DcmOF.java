@@ -123,11 +123,11 @@ public class DcmOF {
             + "If <aet> is specified, only requests with matching called AE "
             + "title will be accepted.\n" + "Options:";
 
-    private static final String EXAMPLE = "\nExample 1: dcmof DCM4CHE_OF:11112 --mwl /var/local/dcmof/mwl\n"
+    private static final String EXAMPLE = "\nExample 1: dcmof DCM4CHE_OF:11112 -mwl /var/local/dcmof/mwl\n"
             + "=> Starts MWL SCP listening on port 11112, accepting association "
             + "requests with DCM4CHE_OF as called AE title, provides worklist items "
             + "stored in files in directory /var/local/dcmof/mwl as MWL SCP.\n"
-            + "Example 2: dcmof DCM4CHE_OF:11112 --mpps /tmp --ian /tmp --scn /tmp\n"
+            + "Example 2: dcmof DCM4CHE_OF:11112 -mpps /tmp -ian /tmp -scn /tmp\n"
             + "=> Starts MPPS+IAN+SCN SCP listening on port 11112, accepting association "
             + "requests with DCM4CHE_OF as called AE title, storing received messages "
             + "to /tmp.";
