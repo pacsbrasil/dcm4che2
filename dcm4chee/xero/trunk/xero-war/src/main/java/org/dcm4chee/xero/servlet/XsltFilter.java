@@ -37,22 +37,37 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.servlet;
 
+import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -101,7 +116,7 @@ public class XsltFilter implements Filter {
 		 URL url = new URL(xsl);
 		 Source styleSource = new StreamSource(url.openStream());
 		 TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		 transformerFactory.setURIResolver(new UrlURIResolver(request));
+		 transformerFactory.setURIResolver(new UrlURIResolver(request, filterConfig.getServletContext()));
 		 try {
 			transformer = transformerFactory.newTransformer(styleSource);
 		 } catch (TransformerConfigurationException e) {
@@ -156,7 +171,7 @@ public class XsltFilter implements Filter {
 
 	  try {
 		 Transformer useTransform = getTransformer(hRequest, xml);
-		 useTransform.setURIResolver(new UrlURIResolver(hRequest));
+		 useTransform.setURIResolver(new UrlURIResolver(hRequest,filterConfig.getServletContext()));
 		 CharArrayWriter caw = new CharArrayWriter();
 		 StreamResult result = new StreamResult(caw);
 		 useTransform.transform(xmlSource, result);
@@ -181,30 +196,311 @@ public class XsltFilter implements Filter {
  * resolve. TODO Later on, include any security credentials.
  */
 class UrlURIResolver implements URIResolver {
-   String localPrefix;
-   String prefix = "http://localhost:8080/";
+   private static Logger log = LoggerFactory.getLogger(UrlURIResolver.class);
    
-   public UrlURIResolver(HttpServletRequest request) {
-	  String uri = request.getRequestURI();
-	  uri = uri.substring(1,uri.lastIndexOf("/")+1);
-	  localPrefix = prefix+uri;
+   HttpServletRequest request;
+   ServletContext servletContext;
+   
+   public UrlURIResolver(HttpServletRequest request, ServletContext servletContext) {
+	  this.request = request;
+	  this.servletContext = servletContext;
    }
 
    public Source resolve(String href, String base) throws TransformerException {
-	  URL url;
-	  String sUrl;
-	  if( href.startsWith("/") ) {
-		 sUrl = prefix + href;
-	  } else {
-		 sUrl = localPrefix + href;
+	  log.info("Trying to resolve "+href);
+	  int firstSlash = href.indexOf('/');
+	  RequestDispatcher dispatcher;
+	  if( firstSlash!=0) {
+		 log.info("Resolving against relative request dispatcher ");
+		 dispatcher = request.getRequestDispatcher(href);
 	  }
-	  try {
-		 url = new URL(sUrl);
-		 return new StreamSource(url.openStream());
-	  } catch (MalformedURLException e) {
-		 throw new RuntimeException("Invalid URL:" + sUrl, e);
+	  else {
+		 log.info("Resolving absolute path.");
+		 int secondSlash = href.indexOf('/',1);
+		 if( secondSlash<0 ) {
+			throw new RuntimeException("Not an absolute path within a request module:"+href);
+		 }
+		 String relative = href.substring(secondSlash);
+		 String contextPath = href.substring(0,secondSlash);
+		 log.info("Context path="+contextPath+" relative url="+relative);
+		 if( contextPath.equals(request.getContextPath()) ) {
+		   dispatcher = request.getRequestDispatcher(relative);
+		 }
+		 else {
+		   ServletContext altContext = servletContext.getContext(contextPath);
+		   dispatcher = altContext.getRequestDispatcher(relative);
+		 }
+	  }
+	  
+	  try {	 
+		 CaptureHttpServletResponse response = new CaptureHttpServletResponse();
+		 IncludeHttpServletRequest includeRequest = new IncludeHttpServletRequest(request,href);
+		 dispatcher.include(includeRequest, response);
+		 String resolvedResponse = response.getResponseString();
+		 StringReader reader = new StringReader(resolvedResponse);
+		 return new StreamSource(reader);
 	  } catch (IOException e) {
-		 throw new RuntimeException("IO Exception on URL:" + sUrl, e);
+		 throw new RuntimeException("IO Exception on URL:" + href, e);
+	  } catch (ServletException e) {
+		 throw new RuntimeException("Caught servlet exception "+e,e);
 	  }
+   }
+}
+
+/** This class removes all request attributes, replacing them with ones parsed from the new URL */
+class IncludeHttpServletRequest extends HttpServletRequestWrapper {
+   private static final Logger log = LoggerFactory.getLogger(IncludeHttpServletRequest.class);
+   private Map<String,String[]> parameterMap = new HashMap<String,String[]>();
+   private String queryString = "";
+   private String requestURI;
+   
+   /** Add all the parameters from href into the parameter map, instead of the original values */
+   public IncludeHttpServletRequest(HttpServletRequest request, String href) {
+	  super(request);
+	  int qPos = href.indexOf("?");
+	  requestURI = href;
+	  if( qPos==-1 ) return;
+	  queryString = href.substring(qPos+1);
+	  log.info("Include http servlet query string="+queryString);
+	  requestURI = href.substring(0,qPos);
+	  if( href.length()==0 ) return;
+	  String[] args = queryString.split("&");
+	  for(String arg : args) {
+		 int keyEnd = arg.indexOf('=');
+		 if( keyEnd<=0 ) continue;
+		 String key = arg.substring(0,keyEnd);
+		 String value = arg.substring(keyEnd+1);
+		 if( value.isEmpty() ) continue;
+		 String[] vals = parameterMap.get(key);
+		 if( vals==null ) {
+			parameterMap.put(key,new String[]{value});
+		 }
+		 else {
+			String[] newVals = new String[vals.length+1];
+			System.arraycopy(vals, 0, newVals, 0, vals.length);
+			parameterMap.put(key,newVals);
+		 }
+	  }
+   }
+   
+   @Override
+   public String getQueryString() {
+	  return queryString;
+   }
+   
+   @Override
+   public String getRequestURI() {
+	  return requestURI;
+   }
+
+   @Override
+   public String getParameter(String arg0) {
+	  String[] val = parameterMap.get(arg0);
+	  if( val==null || val.length==0 ) return null;
+	  return val[0];
+   }
+
+   @Override
+   public Map getParameterMap() {
+	  return parameterMap;
+   }
+
+   @Override
+   public Enumeration getParameterNames() {
+	  throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public String[] getParameterValues(String arg0) {
+	  return parameterMap.get(arg0);
+   }
+   
+   
+}
+
+/**
+ * Converts a regular output stream into a servlet output stream.
+ * @author bwallace
+ *
+ */
+class ServletOutputStreamConverter extends ServletOutputStream {
+   private OutputStream outputStream;
+   
+   public ServletOutputStreamConverter(OutputStream os) {
+	 outputStream = os;  
+   }
+
+   @Override
+   public void write(int b) throws IOException {
+	  outputStream.write(b);
+   }
+
+   @Override
+   public void close() throws IOException {
+	  super.close();
+	  outputStream.close();
+   }
+
+   @Override
+   public void flush() throws IOException {
+	  super.flush();
+	  outputStream.flush();
+   }
+
+   @Override
+   public void write(byte[] b, int off, int len) throws IOException {
+	  outputStream.write(b,off,len);
+   }
+
+   @Override
+   public void write(byte[] b) throws IOException {
+	  outputStream.write(b);
+   }
+   
+}
+
+/** This class just captures the output from the given http request */
+class CaptureHttpServletResponse implements HttpServletResponse {
+   
+   private ByteArrayOutputStream outputStream;
+   private ServletOutputStreamConverter servletOutputStream;
+   
+   private CharArrayWriter writer;
+   private PrintWriter printWriter;
+   
+   public void addCookie(Cookie arg0) {
+   }
+
+   /** Return the string response sent from the servlet */
+   public String getResponseString() {
+	  if( writer!=null ) {
+		 return writer.toString();
+	  }
+	  if( outputStream!=null ) {
+		 try {
+			return outputStream.toString("UTF-8");
+		 } catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("Should be able to decode UTF-8");
+		 }
+	  }
+	  return "";
+   }
+
+   public void addDateHeader(String arg0, long arg1) {
+   }
+
+   public void addHeader(String arg0, String arg1) {
+   }
+
+   public void addIntHeader(String arg0, int arg1) {
+   }
+
+   public boolean containsHeader(String arg0) {
+	  return false;
+   }
+
+   public String encodeRedirectURL(String arg0) {
+	  return null;
+   }
+
+   public String encodeRedirectUrl(String arg0) {
+	  return null;
+   }
+
+   public String encodeURL(String arg0) {
+	  return null;
+   }
+
+   public String encodeUrl(String arg0) {
+	  return null;
+   }
+
+   public void sendError(int arg0) throws IOException {
+   }
+
+   public void sendError(int arg0, String arg1) throws IOException {
+   }
+
+   public void sendRedirect(String arg0) throws IOException {
+   }
+
+   public void setDateHeader(String arg0, long arg1) {
+   }
+
+   public void setHeader(String arg0, String arg1) {
+   }
+
+   public void setIntHeader(String arg0, int arg1) {
+   }
+
+   public void setStatus(int arg0) {
+   }
+
+   public void setStatus(int arg0, String arg1) {
+   }
+
+   public void flushBuffer() throws IOException {
+   }
+
+   public int getBufferSize() {
+	  return 0;
+   }
+
+   public String getCharacterEncoding() {
+	  return "UTF-8";
+   }
+
+   public String getContentType() {
+	  return null;
+   }
+
+   public Locale getLocale() {
+	  return null;
+   }
+
+   public ServletOutputStream getOutputStream() throws IOException {
+	  if( servletOutputStream==null ) {
+		 if( printWriter!=null ) 
+			throw new IOException("Can't use both output stream and writer.");
+		 outputStream = new ByteArrayOutputStream();
+		 servletOutputStream = new ServletOutputStreamConverter(outputStream);
+	  }
+	  return servletOutputStream;
+   }
+
+   public PrintWriter getWriter() throws IOException {
+	  if( printWriter==null ) {
+		 if( servletOutputStream!=null ) throw new IOException("Can't use both writer and output stream.");
+		 writer = new CharArrayWriter();
+		 printWriter = new PrintWriter(writer);
+	  }
+	  return printWriter;
+   }
+
+   public boolean isCommitted() {
+	  return false;
+   }
+
+   public void reset() {
+	  throw new UnsupportedOperationException();
+   }
+
+   public void resetBuffer() {
+	  throw new UnsupportedOperationException();
+   }
+
+   public void setBufferSize(int arg0) {
+   }
+
+   public void setCharacterEncoding(String arg0) {
+   }
+
+   public void setContentLength(int arg0) {
+   }
+
+   public void setContentType(String arg0) {
+   }
+
+   public void setLocale(Locale arg0) {
    }
 }
