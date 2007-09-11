@@ -39,7 +39,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.dao.jpa;
 
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,6 +52,7 @@ import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.ContentDeleteException;
@@ -64,11 +67,51 @@ import org.dcm4che.archive.exceptions.NonUniquePatientException;
 import org.dcm4che.archive.exceptions.PatientMergedException;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 
 @Stateless
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
+    private static final String FIND_BY_NAME_AND_DOB = "from Patient p where p.patientName like :pnLike "
+            + "and (p.patientBirthDate is null or p.patientBirthDate = :ts";
+
+    private static final String FIND_BY_PID_WITH_ISSUER = "from Patient p where p.patientId = :pid "
+            + "and (p.issuerOfPatientId is null or p.issuerOfPatientId = :issuer)";
+
+    private static final String FIND_BY_PID_NAME_AND_ISSUER = "from Patient p where p.patientId = :pid "
+            + "and p.patientName like :pnLike and (p.patientBirthDate is null or p.patientBirthDate = :ts";
+
+    private static final String FIND_CORRESP_BY_PID_AND_ISSUER = "select distinct from Patient p1"
+            + " join p1.otherPatientIds as opid join opid.patients p2"
+            + " where (p1.patientId = :pid and p1.issuerOfPatientId = :issuer)"
+            + " or (p2.patientId = :pid and p2.issuerOfPatientId = :issuer)"
+            + " or (opid.patientId = :pid and opid.issuerOfPatientId = :issuer)";
+
+    private static final String FIND_CORRESP_BY_OTHER_PID_AND_ISSUER = "select from Patient p1"
+            + " join p1.otherPatientIds as opid"
+            + " where (opid.patientId = :pid and opid.issuerOfPatientId = :issuer)";
+
+    private static final String FIND_CORRESP_PID_AND_ISSUER_LIKE = "select distinct from Patient p1"
+            + " join p1.otherPatientIds as opid join opid.patients p2"
+            + " where (p1.patientId like :pid and p1.issuerOfPatientId = :issuer)"
+            + " or (p2.patientId like :pid and p2.issuerOfPatientId = :issuer)";
+
+    private static final String FIND_CORRESP_BY_OTHER_PID_AND_ISSUER_LIKE = "select from Patient p1"
+            + " join p1.otherPatientIds as opid"
+            + " where (opid.patientId like :pid and opid.issuerOfPatientId = :issuer)";
+
+    private static final String FIND_CORRESP_BY_PRIMARY_PID_AND_ISSUER = "select distinct from Patient p1"
+            + " join p1.otherPatientIds as opid join opid.patients p2"
+            + " where (p1.patientId = :pid and p1.issuerOfPatientId = :issuer)"
+            + " or (opid.patientId = :pid and opid.issuerOfPatientId = :issuer)";
+
+    private static final String FIND_CORRESP_PID_LIKE = "select distinct from Patient p1"
+            + " join p1.otherPatientIds as opid join opid.patients p2"
+            + " where (p1.patientId like :pid and p1.issuerOfPatientId = :issuer)"
+            + " or (p2.patientId like :pid and p2.issuerOfPatientId = :issuer)"
+            + " or (opid.patientId like :pid and opid.issuerOfPatientId = :issuer)";
+
     @EJB
     private OtherPatientIDDAO opidDAO;
 
@@ -135,8 +178,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
                     + issuer);
         }
 
-        Query q = em
-                .createQuery("from org.dcm4che.archive.entity.Patient p where p.patientId = :pid and (p.issuerOfPatientId is null or p.issuerOfPatientId = :issuer)");
+        Query q = em.createQuery(FIND_BY_PID_WITH_ISSUER);
         q.setParameter("pid", pid);
         q.setParameter("issuer", issuer);
         return q.getResultList();
@@ -154,7 +196,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
         }
 
         Query q = em
-                .createQuery("from org.dcm4che.archive.entity.Patient p where p.patientId = :pid and p.issuerOfPatientId = :issuer");
+                .createQuery("from Patient p where p.patientId = :pid and p.issuerOfPatientId = :issuer");
         q.setParameter("pid", pid);
         q.setParameter("issuer", issuer);
         return q.getResultList();
@@ -169,17 +211,52 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
             PatientMergedException, CircularMergedException {
         String pid = ds.getString(Tags.PatientID);
         String issuer = ds.getString(Tags.IssuerOfPatientID);
-        Collection c = issuer == null ? findByPatientId(pid)
-                : findByPatientIdWithIssuer(pid, issuer);
+        Collection<Patient> results;
+        if (pid != null && issuer != null) {
+            results = findByPatientIdWithIssuer(pid, issuer);
+        }
+        else {
+            PersonName pn = ds.getPersonName(Tags.PatientName);
+            if (pn != null) {
+                String pnLike = toLike(pn);
+                Date birthdate = ds.getDate(Tags.PatientBirthDate);
+                if (birthdate != null) {
+                    Timestamp ts = new Timestamp(birthdate.getTime());
+                    if (pid != null) {
+                        results = findByPatientIdAndNameAndBirthDate(pid,
+                                pnLike, ts);
+                    }
+                    else { // pid == null
+                        results = findByPatientNameAndBirthDate(pnLike, ts);
+                    }
+                }
+                else { // birthdate == null
+                    if (pid != null) {
+                        results = findByPatientIdAndName(pid, pnLike);
+                    }
+                    else { // pid == null
+                        results = findByPatientName(pnLike);
+                    }
+                }
+            }
+            else { // pn == null
+                if (pid != null) {
+                    results = findByPatientId(pid);
+                }
+                else { // pid == null
+                    throw new NoResultException();
+                }
+            }
+        }
 
-        if (c.isEmpty()) {
+        if (results.isEmpty()) {
             throw new NoResultException();
         }
-        if (c.size() > 1) {
+        if (results.size() > 1) {
             throw new NonUniquePatientException("Patient ID[id=" + pid
                     + ",issuer=" + issuer + " ambiguous");
         }
-        Patient pat = (Patient) c.iterator().next();
+        Patient pat = results.iterator().next();
         Patient merged = pat.getMergedWith();
         if (merged == null) {
             return pat;
@@ -203,6 +280,83 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
             result = merged;
         }
         return result;
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.PatientDAO#findByPatientName(java.lang.String)
+     */
+    public Collection<Patient> findByPatientName(String pnLike) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patient with name: " + pnLike);
+        }
+
+        Query q = em
+                .createQuery("from Patient p where p.patientName like :pnLike");
+        q.setParameter("pnLike", pnLike);
+        return q.getResultList();
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.PatientDAO#findByPatientIdAndName(java.lang.String,
+     *      java.lang.String)
+     */
+    public Collection<Patient> findByPatientIdAndName(String pid, String pnLike) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patient with id: " + pid + " and name: "
+                    + pnLike);
+        }
+
+        Query q = em
+                .createQuery("from Patient p where p.patientId = :pid and p.patientName like :pnLike");
+        q.setParameter("pid", pid);
+        q.setParameter("pnLike", pnLike);
+        return q.getResultList();
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.PatientDAO#findByPatientNameAndBirthDate(java.lang.String,
+     *      java.sql.Timestamp)
+     */
+    public Collection<Patient> findByPatientNameAndBirthDate(String pnLike,
+            Timestamp ts) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patient with name: " + pnLike
+                    + " and DOB of: " + ts);
+        }
+
+        Query q = em.createQuery(FIND_BY_NAME_AND_DOB);
+        q.setParameter("pnLike", pnLike);
+        q.setParameter("ts", ts, TemporalType.TIMESTAMP);
+        return q.getResultList();
+    }
+
+    /**
+     * @see org.dcm4che.archive.dao.PatientDAO#findByPatientIdAndNameAndBirthDate(java.lang.String,
+     *      java.lang.String, java.sql.Timestamp)
+     */
+    public Collection<Patient> findByPatientIdAndNameAndBirthDate(String pid,
+            String pnLike, Timestamp ts) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patient with name: " + pnLike
+                    + " and DOB of: " + ts);
+        }
+
+        Query q = em.createQuery(FIND_BY_PID_NAME_AND_ISSUER);
+        q.setParameter("pid", pid);
+        q.setParameter("pnLike", pnLike);
+        q.setParameter("ts", ts, TemporalType.TIMESTAMP);
+        return q.getResultList();
+    }
+
+    private String toLike(PersonName pn) {
+        StringBuilder sb = new StringBuilder(pn.get(PersonName.FAMILY)
+                .toUpperCase());
+        String gn = pn.get(PersonName.GIVEN);
+        if (gn != null) {
+            sb.append('^').append(gn.toUpperCase());
+        }
+        sb.append("^%");
+        return sb.toString();
     }
 
     /**
@@ -277,8 +431,7 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
             }
         }
         // we have to delete studies explicitly here due to an foreign key
-        // constrain error
-        // if an mpps key is set in one of the series.
+        // constraint error if an mpps key is set in one of the series.
         for (Iterator iter = pat.getStudies().iterator(); iter.hasNext();) {
             Study study = (Study) iter.next();
             iter.remove();
@@ -320,20 +473,34 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      * @see org.dcm4che.archive.dao.PatientDAO#findCorresponding(java.lang.String,
      *      java.lang.String)
      */
-    public Collection<Patient> findCorresponding(String patientID, String issuer)
+    public Collection<Patient> findCorresponding(String pid, String issuer)
             throws PersistenceException {
-        // TODO
-        return null;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patients with pid: " + pid
+                    + " and issuer of: " + issuer);
+        }
+
+        Query q = em.createQuery(FIND_CORRESP_BY_PID_AND_ISSUER);
+        q.setParameter("pid", pid);
+        q.setParameter("issuer", issuer);
+        return q.getResultList();
     }
 
     /**
      * @see org.dcm4che.archive.dao.PatientDAO#findCorrespondingByOtherPatientID(java.lang.String,
      *      java.lang.String)
      */
-    public Collection<Patient> findCorrespondingByOtherPatientID(
-            String patientID, String issuer) throws PersistenceException {
-        // TODO
-        return null;
+    public Collection<Patient> findCorrespondingByOtherPatientID(String pid,
+            String issuer) throws PersistenceException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patients with pid: " + pid
+                    + " and issuer of: " + issuer);
+        }
+
+        Query q = em.createQuery(FIND_CORRESP_BY_OTHER_PID_AND_ISSUER);
+        q.setParameter("pid", pid);
+        q.setParameter("issuer", issuer);
+        return q.getResultList();
     }
 
     /**
@@ -341,19 +508,33 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      *      java.lang.String)
      */
     public Collection<Patient> findCorrespondingByOtherPatientIDLike(
-            String string, String issuer) throws PersistenceException {
-        // TODO
-        return null;
+            String pid, String issuer) throws PersistenceException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patients with pid like: " + pid
+                    + " and issuer of: " + issuer);
+        }
+
+        Query q = em.createQuery(FIND_CORRESP_BY_OTHER_PID_AND_ISSUER_LIKE);
+        q.setParameter("pid", pid);
+        q.setParameter("issuer", issuer);
+        return q.getResultList();
     }
 
     /**
      * @see org.dcm4che.archive.dao.PatientDAO#findCorrespondingByPrimaryPatientID(java.lang.String,
      *      java.lang.String)
      */
-    public Collection<Patient> findCorrespondingByPrimaryPatientID(
-            String patientID, String issuer) throws PersistenceException {
-        // TODO
-        return null;
+    public Collection<Patient> findCorrespondingByPrimaryPatientID(String pid,
+            String issuer) throws PersistenceException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patients with primary pid: " + pid
+                    + " and issuer of: " + issuer);
+        }
+
+        Query q = em.createQuery(FIND_CORRESP_BY_PRIMARY_PID_AND_ISSUER);
+        q.setParameter("pid", pid);
+        q.setParameter("issuer", issuer);
+        return q.getResultList();
     }
 
     /**
@@ -361,19 +542,33 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
      *      java.lang.String)
      */
     public Collection<Patient> findCorrespondingByPrimaryPatientIDLike(
-            String string, String issuer) throws PersistenceException {
-        // TODO
-        return null;
+            String pid, String issuer) throws PersistenceException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patients with primary pid like: " + pid
+                    + " and issuer of: " + issuer);
+        }
+
+        Query q = em.createQuery(FIND_CORRESP_PID_AND_ISSUER_LIKE);
+        q.setParameter("pid", pid);
+        q.setParameter("issuer", issuer);
+        return q.getResultList();
     }
 
     /**
      * @see org.dcm4che.archive.dao.PatientDAO#findCorrespondingLike(java.lang.String,
      *      java.lang.String)
      */
-    public Collection<Patient> findCorrespondingLike(String string,
-            String issuer) throws PersistenceException {
-        // TODO
-        return null;
+    public Collection<Patient> findCorrespondingLike(String pid, String issuer)
+            throws PersistenceException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking up patients with pid like: " + pid
+                    + " and issuer of: " + issuer);
+        }
+
+        Query q = em.createQuery(FIND_CORRESP_PID_LIKE);
+        q.setParameter("pid", pid);
+        q.setParameter("issuer", issuer);
+        return q.getResultList();
     }
 
 }
