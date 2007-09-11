@@ -1,0 +1,15 @@
+<results 
+  xmlns="http://www.dcm4chee.org/xero/search/study/" 
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+  id="f-1"
+>
+ <xul:vbox id="xcontrol">
+  <patient id="p0" offset="0" height="1">
+   <study id="s0" offset="0">
+     <series id="e0" offset="0" height="25" pageSize="2">
+        <image id="i1" offset="0" width='3'/>
+     </series>
+   </study>
+  </patient>
+ </xul:vbox>
+</results>

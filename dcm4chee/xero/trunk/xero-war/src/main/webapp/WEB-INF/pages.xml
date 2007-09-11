@@ -82,6 +82,8 @@
     <param name="applyLevel" value="#{DisplayMode.applyLevelStr}" />
     <param name="counter" value="#{DisplayMode.counter}" />
     <param name="xslt" value="#{DisplayMode.xslt}" />
+    <param name="debug" value="#{DebugMode.debug}" />
+  
     <!-- To be removed into an action item -->
     <begin-conversation join="true" />
   </page>
@@ -125,6 +127,13 @@
   <page view-id="/image/action/Navigate.xhtml" action="#{NavigateAction.action}">
     <param name="position" value="#{NavigateAction.position}" />
     <param name="dir" value="#{NavigateAction.dir}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
+  <page view-id="/image/action/Layout.xhtml" action="#{LayoutAction.action}">
+    <param name="layout" value="#{LayoutAction.layout}" />
     <navigation>
       <redirect view-id="/image/image.xhtml" />
     </navigation>

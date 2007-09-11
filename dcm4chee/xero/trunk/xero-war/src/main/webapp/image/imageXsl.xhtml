@@ -61,8 +61,10 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     onmouseup="return imageHandler.mouseUp(event);"
   >
    <div id="body">
-    <button onclick="ttrace(document.getElementsByTagName('body')[0].innerHTML);">Body</button>
-	<button onclick="ttrace('Source='+displayXslt.asString(displayXslt.currentXml));">Source</button>
+    <xsl:if test="/documents/debug='true'">
+     <button onclick="ttrace(document.getElementsByTagName('body')[0].innerHTML);">Body</button>
+	 <button onclick="ttrace('Source='+displayXslt.asString(displayXslt.currentXml));">Source</button>
+    </xsl:if>
     <x:callTemplates from="#{pageConfig}" mode="body" />
    </div>
   </body>

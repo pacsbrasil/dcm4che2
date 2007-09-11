@@ -1,0 +1,59 @@
+<results 
+  xmlns="http://www.dcm4chee.org/xero/search/study/" 
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+  id="f-1"
+>
+ <xul:vbox id="xcontrol">
+  <patient id="p0" offset="0" height="1">
+   <study id="s0" offset="0">
+    <xul:vbox id="x0">
+     <xul:toolbar ref="studyToolbar" height="1" />
+    
+     <series id="e0" offset="0" height="50" pageSize="25">
+      <xul:vbox>
+       <xul:toolbar ref="seriesToolbar" height="1"/>
+       <xul:vbox id="e0x1" height="7">
+        <xul:hbox id="e0x2" height="2">
+         <image id="e0i0" offset="0" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i1" offset="1" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i2" offset="2" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i3" offset="3" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i4" offset="4" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+        </xul:hbox>
+        <xul:hbox id="e0x3" height="2">
+         <image id="e0i5" offset="5" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i6" offset="6" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i7" offset="7" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i8" offset="8" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0i9" offset="9" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+        </xul:hbox>
+        <xul:hbox id="e0x4" height="2">
+         <image id="e0iA" offset="10" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iB" offset="11" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iC" offset="12" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iD" offset="13" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iE" offset="14" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+        </xul:hbox>
+        <xul:hbox id="e0x5" height="2">
+         <image id="e0iF" offset="15" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iG" offset="16" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iH" offset="17" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iI" offset="18" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+         <image id="e0iJ" offset="19" width='1' background="black" overlay="imageOverlay" ref="imgToolbar"/>
+        </xul:hbox>
+        <xul:hbox id="e0x6" height="2">
+         <image id="e0iK" offset="20" width='1' background="black" overlay="imageOverlay" />
+         <image id="e0iL" offset="21" width='1' background="black" overlay="imageOverlay" />
+         <image id="e0iM" offset="22" width='1' background="black" overlay="imageOverlay" />
+         <image id="e0iN" offset="23" width='1' background="black" overlay="imageOverlay" />
+         <image id="e0iP" offset="24" width='1' background="black" overlay="imageOverlay" />
+        </xul:hbox>
+       </xul:vbox>
+      </xul:vbox>
+     </series>
+        
+    </xul:vbox>
+   </study>
+  </patient>
+ </xul:vbox>
+</results>

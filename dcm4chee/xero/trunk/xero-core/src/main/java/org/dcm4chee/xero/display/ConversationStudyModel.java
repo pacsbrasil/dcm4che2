@@ -43,6 +43,7 @@ import org.dcm4chee.xero.search.study.Macro;
 import org.dcm4chee.xero.search.study.PatientBean;
 import org.dcm4chee.xero.search.study.PatientIdentifier;
 import org.dcm4chee.xero.search.study.StudyBean;
+import org.dcm4chee.xero.util.DebugMode;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -68,12 +69,15 @@ import org.slf4j.LoggerFactory;
 public class ConversationStudyModel extends StudyModel {
    static Logger log = LoggerFactory.getLogger(ConversationStudyModel.class);
 
+   @In(value="DebugMode", required=false)
+   DebugMode debugMode;
+   
    /**
      * Contains the name of the current frame layout TODO make this dependent on
      * what target is current. TODO check the setting of this value to ensure it
      * is safe. (SECURITY concern)
      */
-   protected String layout = "/xero/image/layout.xml";
+   private String layout = null;
 
 
    public ConversationStudyModel() {
@@ -109,6 +113,14 @@ public class ConversationStudyModel extends StudyModel {
    }
 
    public String getLayout() {
+	  if( layout==null ) {
+		 if( debugMode!=null && debugMode.isDebug() ) {
+			return "layout.xml";
+		 }
+		 else {
+			return "layoutSe2x2.xml";
+		 }
+	  }
 	  return layout;
    }
 
