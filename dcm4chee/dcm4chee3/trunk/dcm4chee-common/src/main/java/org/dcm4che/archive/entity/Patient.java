@@ -324,9 +324,7 @@ public class Patient extends EntityBase {
     }
 
     public void setAttributes(Dataset ds) {
-        String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter
-                .getPatientAttributeFilter(cuid);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
@@ -383,9 +381,7 @@ public class Patient extends EntityBase {
             throws DcmServiceException {
         Dataset attrs = getAttributes(false);
         boolean b = appendOtherPatientIds(attrs, ds, opidDAO);
-        String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter
-                .getPatientAttributeFilter(cuid);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
         if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log) || b) {
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
