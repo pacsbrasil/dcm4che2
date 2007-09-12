@@ -483,7 +483,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
         }
 
         Query query = em
-                .createQuery("from Series as s join s.study as st where s.sourceAET=:aet and st.updatedTime < :ts");
+                .createQuery("from Series as s join s.study as st where s.ppsIuid is null and s.sourceAET=:aet and st.updatedTime < :ts");
         query.setParameter("aet", sourceAET);
         query.setParameter("ts", timestamp, TemporalType.TIMESTAMP);
 
