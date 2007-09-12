@@ -94,7 +94,7 @@ class SimpleDicomElement extends AbstractDicomElement {
         int len = s.readInt();
         if (len != 0) {
             value = new byte[len];
-            s.read(value);
+            s.readFully(value);
         } else {
             value = NULL_VALUE;
         }
