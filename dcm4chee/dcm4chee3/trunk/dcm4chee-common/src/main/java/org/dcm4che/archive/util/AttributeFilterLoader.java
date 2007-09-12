@@ -40,7 +40,7 @@ package org.dcm4che.archive.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.parsers.SAXParserFactory;
 
@@ -59,40 +59,22 @@ class AttributeFilterLoader extends DefaultHandler {
             Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
             Tags.StorageMediaFileSetUID };
 
-    private final HashMap patient;
+    private final List<String> tagList = new ArrayList<String>();
 
-    private final HashMap study;
+    private final List<String> vrList = new ArrayList<String>();
 
-    private final HashMap series;
+    private final List<String> noCoerceList = new ArrayList<String>();
 
-    private final HashMap instance;
+    private final List<String> fieldTagList = new ArrayList<String>();
 
-    private final ArrayList tagList = new ArrayList();
+    private final List<String> fieldList = new ArrayList<String>();
 
-    private final ArrayList vrList = new ArrayList();
-
-    private final ArrayList noCoerceList = new ArrayList();
-
-    private final ArrayList fieldTagList = new ArrayList();
-
-    private final ArrayList fieldList = new ArrayList();
-
-    private String cuid;
+    // private String cuid;
 
     private AttributeFilter filter;
 
-    public AttributeFilterLoader(HashMap patient, HashMap study,
-            HashMap series, HashMap instance) {
-        this.patient = patient;
-        this.study = study;
-        this.series = series;
-        this.instance = instance;
-    }
-
-    public static void loadFrom(HashMap patient, HashMap study, HashMap series,
-            HashMap instance, String url) throws ConfigurationException {
-        AttributeFilterLoader h = new AttributeFilterLoader(patient, study,
-                series, instance);
+    public static void loadFrom(String url) throws ConfigurationException {
+        AttributeFilterLoader h = new AttributeFilterLoader();
         try {
             SAXParserFactory.newInstance().newSAXParser().parse(url, h);
         }
@@ -122,34 +104,37 @@ class AttributeFilterLoader extends DefaultHandler {
                     vrList.add(vr);
                 }
             }
-            return;
         }
-        HashMap map;
-        if (qName.equals("instance")) {
-            map = instance;
+        else if (qName.equals("instance")) {
+            String cuid = attributes.getValue("cuid");
+            filter = new AttributeFilter(attributes.getValue("tsuid"), "true"
+                    .equalsIgnoreCase(attributes.getValue("exclude")), "true"
+                    .equalsIgnoreCase(attributes.getValue("excludePrivate")));
+            if (AttributeFilter.instanceFilters.put(cuid, filter) != null) {
+                throw new SAXException(
+                        "more than one instance element with cuid=" + cuid);
+            }
         }
         else if (qName.equals("series")) {
-            map = series;
+            if (AttributeFilter.seriesFilter != null) {
+                throw new SAXException("more than one series element");
+            }
+            AttributeFilter.seriesFilter = filter = new AttributeFilter(
+                    attributes.getValue("tsuid"), false, false);
         }
         else if (qName.equals("study")) {
-            map = study;
+            if (AttributeFilter.studyFilter != null) {
+                throw new SAXException("more than one study element");
+            }
+            AttributeFilter.studyFilter = filter = new AttributeFilter(
+                    attributes.getValue("tsuid"), false, false);
         }
         else if (qName.equals("patient")) {
-            map = patient;
-        }
-        else {
-            return;
-        }
-        cuid = attributes.getValue("cuid");
-        String tsuid = attributes.getValue("tsuid");
-        boolean exclude = "true".equalsIgnoreCase(attributes
-                .getValue("exclude"));
-        boolean exludePrivate = "true".equalsIgnoreCase(attributes
-                .getValue("excludePrivate"));
-        filter = new AttributeFilter(tsuid, exclude, exludePrivate);
-        if (map.put(cuid, filter) != null) {
-            throw new SAXException("more than one " + qName
-                    + " element with cuid=" + cuid);
+            if (AttributeFilter.patientFilter != null) {
+                throw new SAXException("more than one patient element");
+            }
+            AttributeFilter.patientFilter = filter = new AttributeFilter(
+                    attributes.getValue("tsuid"), false, false);
         }
     }
 
@@ -164,32 +149,28 @@ class AttributeFilterLoader extends DefaultHandler {
             int[] tags = parseInts(tagList);
             int[] vrs = parseVRs(vrList);
             if (inst && filter.isExclude()) {
-                AttributeFilter patFilter = AttributeFilter.getAttributeFilter(
-                        cuid, patient);
-                if (patFilter == null) {
+                if (AttributeFilter.patientFilter == null) {
                     throw new SAXException(
                             "missing patient before instance element");
                 }
-                AttributeFilter studyFilter = AttributeFilter
-                        .getAttributeFilter(cuid, study);
-                if (studyFilter == null) {
+                if (AttributeFilter.studyFilter == null) {
                     throw new SAXException(
                             "missing study before instance element");
                 }
-                AttributeFilter seriesFilter = AttributeFilter
-                        .getAttributeFilter(cuid, series);
-                if (seriesFilter == null) {
+                if (AttributeFilter.seriesFilter == null) {
                     throw new SAXException(
                             "missing series before instance element");
                 }
-                tags = merge(INST_SUPPL_TAGS, patFilter.getTags(), studyFilter
-                        .getTags(), seriesFilter.getTags(), tags);
-                vrs = merge(new int[] {}, patFilter.getVRs(), studyFilter
-                        .getVRs(), seriesFilter.getVRs(), vrs);
+                tags = merge(INST_SUPPL_TAGS, AttributeFilter.patientFilter
+                        .getTags(), AttributeFilter.studyFilter.getTags(),
+                        AttributeFilter.seriesFilter.getTags(), tags);
+                vrs = merge(new int[] {}, AttributeFilter.patientFilter
+                        .getVRs(), AttributeFilter.studyFilter.getVRs(),
+                        AttributeFilter.seriesFilter.getVRs(), vrs);
             }
             filter.setTags(tags);
             filter.setFieldTags(parseInts(fieldTagList));
-            filter.setFields((String[]) fieldList.toArray(new String[] {}));
+            filter.setFields(fieldList.toArray(new String[] {}));
             filter.setNoCoercion(parseInts(noCoerceList));
             filter.setVRs(vrs);
             tagList.clear();
@@ -197,7 +178,6 @@ class AttributeFilterLoader extends DefaultHandler {
             fieldList.clear();
             noCoerceList.clear();
             vrList.clear();
-            cuid = null;
             filter = null;
         }
     }
@@ -215,34 +195,36 @@ class AttributeFilterLoader extends DefaultHandler {
         return dst;
     }
 
-    private static int[] parseInts(ArrayList list) {
+    private static int[] parseInts(List<String> list) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = Integer.parseInt((String) list.get(i), 16);
+            array[i] = Integer.parseInt(list.get(i), 16);
         }
         Arrays.sort(array);
         return array;
     }
 
-    private static int[] parseVRs(ArrayList list) {
+    private static int[] parseVRs(List<String> list) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = VRs.valueOf((String) list.get(i));
+            array[i] = VRs.valueOf(list.get(i));
         }
         return array;
     }
 
     public void endDocument() throws SAXException {
-        check(patient, "patient");
-        check(study, "study");
-        check(series, "series");
-        check(instance, "instance");
-    }
-
-    private void check(HashMap map, String qname) throws SAXException {
-        if (!map.containsKey(null)) {
-            throw new SAXException("missing element " + qname);
+        if (AttributeFilter.patientFilter == null) {
+            throw new SAXException("missing patient element");
         }
-
+        if (AttributeFilter.studyFilter == null) {
+            throw new SAXException("missing study element");
+        }
+        if (AttributeFilter.seriesFilter == null) {
+            throw new SAXException("missing series element");
+        }
+        if (AttributeFilter.instanceFilters.get(null) == null) {
+            throw new SAXException("missing instance element");
+        }
     }
+
 }

@@ -39,6 +39,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.dao;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
@@ -126,7 +127,7 @@ public interface PatientDAO extends DAO<Patient> {
      * @return
      */
     public Collection<Patient> findCorrespondingByOtherPatientIDLike(
-            String string, String issuer) throws PersistenceException;
+            String pid, String issuer) throws PersistenceException;
 
     /**
      * @param patientID
@@ -134,7 +135,7 @@ public interface PatientDAO extends DAO<Patient> {
      * @return
      */
     public Collection<Patient> findCorrespondingByOtherPatientID(
-            String patientID, String issuer) throws PersistenceException;
+            String pid, String issuer) throws PersistenceException;
 
     /**
      * @param patientID
@@ -142,7 +143,7 @@ public interface PatientDAO extends DAO<Patient> {
      * @return
      */
     public Collection<Patient> findCorrespondingByPrimaryPatientID(
-            String patientID, String issuer) throws PersistenceException;
+            String pid, String issuer) throws PersistenceException;
 
     /**
      * @param string
@@ -150,14 +151,14 @@ public interface PatientDAO extends DAO<Patient> {
      * @return
      */
     public Collection<Patient> findCorrespondingByPrimaryPatientIDLike(
-            String string, String issuer) throws PersistenceException;
+            String pid, String issuer) throws PersistenceException;
 
     /**
      * @param patientID
      * @param issuer
      * @return
      */
-    public Collection<Patient> findCorresponding(String patientID, String issuer)
+    public Collection<Patient> findCorresponding(String pid, String issuer)
             throws PersistenceException;
 
     /**
@@ -165,6 +166,38 @@ public interface PatientDAO extends DAO<Patient> {
      * @param issuer
      * @return
      */
-    public Collection<Patient> findCorrespondingLike(String string,
+    public Collection<Patient> findCorrespondingLike(String pid,
             String issuer) throws PersistenceException;
+
+    /**
+     * @param pnLike
+     * @return
+     */
+    public Collection<Patient> findByPatientName(String pnLike)
+            throws PersistenceException;
+
+    /**
+     * @param pid
+     * @param pnLike
+     * @return
+     */
+    public Collection<Patient> findByPatientIdAndName(String pid, String pnLike)
+            throws PersistenceException;
+
+    /**
+     * @param pnLike
+     * @param ts
+     * @return
+     */
+    public Collection<Patient> findByPatientNameAndBirthDate(String pnLike,
+            Timestamp ts) throws PersistenceException;
+
+    /**
+     * @param pid
+     * @param pnLike
+     * @param ts
+     * @return
+     */
+    public Collection<Patient> findByPatientIdAndNameAndBirthDate(String pid,
+            String pnLike, Timestamp ts) throws PersistenceException;
 }

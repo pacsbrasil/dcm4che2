@@ -266,7 +266,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                                 Tags.PatientBirthTime));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2, keys
                 .getStrings(Tags.PatientSex));
-        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
@@ -360,7 +360,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
                 keys.getStrings(Tags.StudyStatusID));
-        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
