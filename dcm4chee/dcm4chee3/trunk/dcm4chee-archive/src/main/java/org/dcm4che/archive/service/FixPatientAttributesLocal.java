@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface FixPatientAttributesLocal extends FixPatientAttributes {
-    public static final String JNDI_NAME="dcm4cheeArchive/FixPatientAttributesBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/FixPatientAttributesBean/local";
 }

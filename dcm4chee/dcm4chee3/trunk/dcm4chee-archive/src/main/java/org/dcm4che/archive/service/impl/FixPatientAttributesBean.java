@@ -91,8 +91,7 @@ public class FixPatientAttributesBean implements FixPatientAttributesLocal, FixP
         Patient patient;
         Dataset patAttrs, filtered;
         int[] result = { 0, 0 };
-        AttributeFilter filter = AttributeFilter
-                .getPatientAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         for (Iterator iter = col.iterator(); iter.hasNext(); result[1]++) {
             patient = (Patient) iter.next();
             patAttrs = patient.getAttributes(false);

@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface FileSystemMgtRemote extends FileSystemMgt {
-    public static final String JNDI_NAME="dcm4cheeArchive/FileSystemMgtBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/FileSystemMgtBean/remote";
 }

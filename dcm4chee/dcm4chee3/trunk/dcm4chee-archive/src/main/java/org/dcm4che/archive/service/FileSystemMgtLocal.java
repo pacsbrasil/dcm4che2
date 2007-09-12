@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface FileSystemMgtLocal extends FileSystemMgt {
-    public static final String JNDI_NAME="dcm4cheeArchive/FileSystemMgtBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/FileSystemMgtBean/local";
 }

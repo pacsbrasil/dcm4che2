@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface AEManagerRemote extends AEManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/AEManagerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/AEManagerBean/remote";
 }

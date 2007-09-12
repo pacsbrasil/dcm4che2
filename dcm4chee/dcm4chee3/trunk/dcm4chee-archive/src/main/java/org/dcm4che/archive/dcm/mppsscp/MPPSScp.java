@@ -52,6 +52,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
@@ -60,6 +61,10 @@ import org.dcm4che.net.Dimse;
  * @author Gunter.Zeilinger@tiani.com
  */
 class MPPSScp extends DcmServiceBase {
+
+    private static final String CREATE_XSL = "mpps-ncreaterq.xsl";
+
+    private static final String SET_XSL = "mpps-nsetrq.xsl";
 
     private static final int[] TYPE1_NCREATE_ATTR = {
             Tags.ScheduledStepAttributesSeq, Tags.PPSID,
@@ -87,6 +92,8 @@ class MPPSScp extends DcmServiceBase {
 
     protected Dataset doNCreate(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
+        Association as = assoc.getAssociation();
+        String callingAET = as.getCallingAET();
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String cuid = cmd.getAffectedSOPClassUID();
@@ -96,7 +103,14 @@ class MPPSScp extends DcmServiceBase {
         }
         log.debug("Creating MPPS:\n");
         log.debug(mpps);
-        checkCreateAttributs(mpps);
+        Dataset coerce = service.getCoercionAttributesFor(as, CREATE_XSL, mpps);
+        if (coerce != null) {
+            service.coerceAttributes(mpps, coerce);
+        }
+        checkCreateAttributes(mpps);
+        service.supplementIssuerOfPatientID(mpps, callingAET);
+        service.generatePatientID(mpps, mpps
+                .getItem(Tags.ScheduledStepAttributesSeq));
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         createMPPS(mpps);
@@ -124,11 +138,16 @@ class MPPSScp extends DcmServiceBase {
 
     protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
+        Association as = assoc.getAssociation();
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
         log.debug("Set MPPS:\n");
         log.debug(mpps);
+        Dataset coerce = service.getCoercionAttributesFor(as, SET_XSL, mpps);
+        if (coerce != null) {
+            service.coerceAttributes(mpps, coerce);
+        }
         checkSetAttributs(mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         updateMPPS(mpps);
@@ -149,7 +168,7 @@ class MPPSScp extends DcmServiceBase {
         }
     }
 
-    private void checkCreateAttributs(Dataset mpps) throws DcmServiceException {
+    private void checkCreateAttributes(Dataset mpps) throws DcmServiceException {
         for (int i = 0; i < TYPE1_NCREATE_ATTR.length; ++i) {
             if (!mpps.containsValue(TYPE1_NCREATE_ATTR[i]))
                 throw new DcmServiceException(Status.MissingAttributeValue,

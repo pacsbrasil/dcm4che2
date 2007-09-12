@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface PIXQueryLocal extends PIXQuery {
-    public static final String JNDI_NAME="dcm4cheeArchive/PIXQueryBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/PIXQueryBean/local";
 }

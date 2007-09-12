@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface CodeToDeviceMappingLocal extends CodeToDeviceMapping {
-    public static final String JNDI_NAME="dcm4cheeArchive/CodeToDeviceMappingBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/CodeToDeviceMappingBean/local";
 }

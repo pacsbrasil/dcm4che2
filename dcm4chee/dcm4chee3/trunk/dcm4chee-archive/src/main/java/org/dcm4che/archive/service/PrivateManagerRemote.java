@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface PrivateManagerRemote extends PrivateManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/PrivateManagerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/PrivateManagerBean/remote";
 }

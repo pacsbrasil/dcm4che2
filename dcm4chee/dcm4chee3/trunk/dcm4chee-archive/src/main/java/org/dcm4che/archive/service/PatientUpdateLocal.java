@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface PatientUpdateLocal extends PatientUpdate {
-    public static final String JNDI_NAME="dcm4cheeArchive/PatientUpdateBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/PatientUpdateBean/local";
 }

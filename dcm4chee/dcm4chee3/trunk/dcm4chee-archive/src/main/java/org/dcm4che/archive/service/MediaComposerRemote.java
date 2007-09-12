@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface MediaComposerRemote extends MediaComposer {
-    public static final String JNDI_NAME="dcm4cheeArchive/MediaComposerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/MediaComposerBean/remote";
 }

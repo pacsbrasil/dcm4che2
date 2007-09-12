@@ -431,8 +431,7 @@ public class MPPSManagerBean implements MPPSManagerLocal, MPPSManagerRemote {
                 .getString(Tags.SPSID);
         log.info("linkMppsToMwl sps:" + spsID + " mpps:" + mppsIUID);
         MPPS mpps = mppsDAO.findBySopIuid(mppsIUID);
-        AttributeFilter filter = AttributeFilter
-                .getPatientAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         Dataset mwlPatDs = filter.filter(mwlAttrs);
         Patient mppsPat = mpps.getPatient();
         Map map = updateLinkedMpps(mpps, null, mwlAttrs);

@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface MPPSEmulatorLocal extends MPPSEmulator {
-    public static final String JNDI_NAME="dcm4cheeArchive/MPPSEmulatorBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/MPPSEmulatorBean/local";
 }

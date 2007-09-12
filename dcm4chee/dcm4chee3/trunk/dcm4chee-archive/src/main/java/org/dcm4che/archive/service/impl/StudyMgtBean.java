@@ -146,10 +146,8 @@ public class StudyMgtBean implements StudyMgtLocal, StudyMgtRemote {
     public void updateStudyAndPatientOnly(String iuid, Dataset ds)
             throws DcmServiceException, PatientException, PersistenceException {
         Study study = getStudy(iuid);
-        AttributeFilter patientFilter = AttributeFilter
-                .getPatientAttributeFilter(null);
-        AttributeFilter studyFilter = AttributeFilter
-                .getStudyAttributeFilter(null);
+        AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter();
+        AttributeFilter studyFilter = AttributeFilter.getStudyAttributeFilter();
         Dataset patientAttr = patientFilter.filter(ds);
         Dataset studyAttr = studyFilter.filter(ds);
 

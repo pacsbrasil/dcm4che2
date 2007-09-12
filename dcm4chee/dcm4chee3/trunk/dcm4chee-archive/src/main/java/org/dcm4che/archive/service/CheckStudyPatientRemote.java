@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface CheckStudyPatientRemote extends CheckStudyPatient {
-    public static final String JNDI_NAME="dcm4cheeArchive/CheckStudyPatientBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/CheckStudyPatientBean/remote";
 }

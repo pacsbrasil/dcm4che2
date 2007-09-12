@@ -72,7 +72,6 @@ import org.dcm4che.archive.dao.PatientDAO;
 import org.dcm4che.archive.dao.SeriesDAO;
 import org.dcm4che.archive.dao.StudyDAO;
 import org.dcm4che.archive.dao.StudyOnFileSystemDAO;
-import org.dcm4che.archive.entity.File;
 import org.dcm4che.archive.entity.FileSystem;
 import org.dcm4che.archive.entity.Instance;
 import org.dcm4che.archive.entity.Patient;
@@ -86,7 +85,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.springframework.transaction.annotation.Propagation;
@@ -140,6 +138,8 @@ public class StorageBean implements StorageLocal, StorageRemote {
 
     private static Map seriesPkCache = Collections
             .synchronizedMap(new LinkedHashMap() {
+                private static final long serialVersionUID = 1L;
+
                 protected boolean removeEldestEntry(Map.Entry eldest) {
                     return size() > MAX_PK_CACHE_ENTRIES;
                 }
@@ -155,7 +155,7 @@ public class StorageBean implements StorageLocal, StorageRemote {
             throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
-        final String cuid = fmi.getMediaStorageSOPClassUID();
+        // final String cuid = fmi.getMediaStorageSOPClassUID();
         final String tsuid = fmi.getTransferSyntaxUID();
         log.info("inserting instance " + fmi);
 
@@ -172,8 +172,7 @@ public class StorageBean implements StorageLocal, StorageRemote {
                 instance = instDAO.create(ds,
                         getSeries(ds, coercedElements, fs));
             }
-            File file = fileDAO.create(fileid, tsuid, size, md5, 0, instance,
-                    fs);
+            fileDAO.create(fileid, tsuid, size, md5, 0, instance, fs);
             instance.setAvailability(Availability.ONLINE);
             instance.addRetrieveAET(fs.getRetrieveAET());
             instance.setInstanceStatus(RECEIVED);
@@ -544,94 +543,6 @@ public class StorageBean implements StorageLocal, StorageRemote {
         Series ser = seriesDAO.findBySeriesIuid(uid);
         seriesPkCache.put(uid, ser.getPk());
         return ser;
-    }
-
-    /**
-     * @see org.dcm4che.archive.service.Storage#patientExistsWithDifferentDetails(org.dcm4che.data.Dataset,
-     *      int[])
-     */
-    public boolean patientExistsWithDifferentDetails(Dataset ds,
-            int[] detailTags) throws PersistenceException {
-        String pid = ds.getString(Tags.PatientID);
-        String issuer = ds.getString(Tags.IssuerOfPatientID);
-        Collection c = issuer != null ? patDAO.findByPatientIdWithIssuer(pid,
-                issuer) : patDAO.findByPatientId(pid);
-        for (Iterator iter = c.iterator(); iter.hasNext();) {
-            Patient patient = (Patient) iter.next();
-            if (!checkDetails(ds, patient.getAttributes(false), detailTags)) {
-                String suid = null;
-                suid = ds.getString(Tags.StudyInstanceUID);
-                if (suid != null) {
-                    try {
-                        studyDAO.findByStudyIuid(suid);
-                        log
-                                .info("Different patient details found but Study Instance UID ("
-                                        + suid
-                                        + ") already exists! Patient ID not changed!");
-                        return false;
-                    }
-                    catch (NoResultException ignore) {
-                    }
-                }
-                suid = ds.getString(Tags.SeriesInstanceUID);
-                if (suid != null) {
-                    try {
-                        seriesDAO.findBySeriesIuid(suid);
-                        log
-                                .info("Different patient details found but Series Instance UID ("
-                                        + suid
-                                        + ") already exists! Patient ID not changed!");
-                        return false;
-                    }
-                    catch (NoResultException ignore) {
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if given Detail Attributes are equal in both Datasets.
-     * <p>
-     * PN attributes are checked case insensitive!
-     * <p>
-     * SQ attributes are checked via SQElement equals method. (therefore PN
-     * attributes within a Sequence are NOT checked case insensitive!)
-     * 
-     * @param ds1
-     *            Dataset 1: missing detailAttributes are not checked
-     * @param ds2
-     *            Dataset 2: missing detailAttributes are checked if also
-     *            missing in ds1!
-     * @param detailTags
-     *            List of detail attributes to check
-     * 
-     * @return true if all given details are equal.
-     */
-    private boolean checkDetails(Dataset ds1, Dataset ds2, int[] detailTags) {
-        DcmElement elem1, elem2;
-        int tag;
-        for (int i = 0; i < detailTags.length; i++) {
-            tag = detailTags[i];
-            elem1 = ds1.get(tag);
-            if (elem1 != null) {
-                elem2 = ds2.get(tag);
-                if (elem2 == null)
-                    return false; //
-                if (elem1.vr() == VRs.PN) {
-                    if (!ds1.getString(tag)
-                            .equalsIgnoreCase(ds2.getString(tag)))
-                        return false;
-                }
-                else {
-                    if (!elem1.equals(elem2))
-                        return false;
-                }
-            } // else ignore detail check for attributes that are not in ds1!
-        }
-        return true;
     }
 
     /**

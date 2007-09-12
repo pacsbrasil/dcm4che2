@@ -70,5 +70,13 @@ public interface AEManager {
     public void newAE(AE newAE) throws ContentCreateException;
 
     public void removeAE(long aePk) throws Exception;
+    
+    public int getCacheSize();
+    
+    public int getMaxCacheSize();
+    
+    public void setMaxCacheSize(int maxCacheSize);
+    
+    public void clearCache();
 
 }

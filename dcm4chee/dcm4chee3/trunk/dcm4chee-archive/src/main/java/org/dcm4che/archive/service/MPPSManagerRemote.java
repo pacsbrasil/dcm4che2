@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface MPPSManagerRemote extends MPPSManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/MPPSManagerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/MPPSManagerBean/remote";
 }

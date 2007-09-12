@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.archive.mbean;
 
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
@@ -45,6 +44,9 @@ import javax.security.auth.Subject;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.exceptions.ConfigurationException;
 import org.dcm4che.archive.exceptions.UnknownAETException;
+import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.net.AAssociateRJ;
 import org.dcm4che.net.AAssociateRJException;
 import org.dcm4che.net.AAssociateRQ;
@@ -63,8 +65,6 @@ import org.jboss.security.plugins.JaasSecurityManager;
  */
 public class DicomSecurityService extends MBeanServiceBase implements
         UserIdentityNegotiator {
-
-    private AEServiceDelegate aeService = new AEServiceDelegate(this);
 
     private JaasSecurityManager securityManager;
 
@@ -123,14 +123,6 @@ public class DicomSecurityService extends MBeanServiceBase implements
         this.defPassword = nullify(defPassword, "-");
     }
 
-    public final ObjectName getAEServiceName() {
-        return aeService.getAEServiceName();
-    }
-
-    public final void setAEServiceName(ObjectName aeServiceName) {
-        aeService.setAEServiceName(aeServiceName);
-    }
-
     protected void startService() throws Exception {
         initSecurityManager();
     }
@@ -154,7 +146,6 @@ public class DicomSecurityService extends MBeanServiceBase implements
                 }
             }
         }
-
     }
 
     public UserIdentityNegotiator userIdentityNegotiator() {
@@ -173,11 +164,14 @@ public class DicomSecurityService extends MBeanServiceBase implements
         }
         else {
             try {
-                AE ae = aeService.getAE(rq.getCallingAET());
+                AE ae = aeMgr().findByAET(rq.getCallingAET());
                 userId = ae.getUserID();
                 passwd = ae.getPassword();
             }
             catch (UnknownAETException e) {
+            }
+            catch (Exception e) {
+                throw new ConfigurationException(e);
             }
             if (userId == null || userId.length() == 0) {
                 if (rejectIfNoUserIdentity) {
@@ -206,4 +200,7 @@ public class DicomSecurityService extends MBeanServiceBase implements
                 : null;
     }
 
+    private AEManager aeMgr() {
+        return (AEManager) EJBReferenceCache.getInstance().lookup(AEManagerLocal.JNDI_NAME);
+    }
 }

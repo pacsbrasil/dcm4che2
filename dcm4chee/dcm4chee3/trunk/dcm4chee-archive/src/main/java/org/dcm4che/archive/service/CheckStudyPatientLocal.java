@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface CheckStudyPatientLocal extends CheckStudyPatient {
-    public static final String JNDI_NAME="dcm4cheeArchive/CheckStudyPatientBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/CheckStudyPatientBean/local";
 }

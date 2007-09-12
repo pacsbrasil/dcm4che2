@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface StudyReconciliationLocal extends StudyReconciliation {
-    public static final String JNDI_NAME="dcm4cheeArchive/StudyReconciliationBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/StudyReconciliationBean/local";
 }

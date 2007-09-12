@@ -47,6 +47,6 @@ import javax.ejb.Local;
  */
 @Local
 public interface AEManagerLocal extends AEManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/AEManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/AEManagerBean/local";
 
 }

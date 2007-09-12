@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface GPPPSManagerRemote extends GPPPSManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/GPPPSManagerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/GPPPSManagerBean/remote";
 }

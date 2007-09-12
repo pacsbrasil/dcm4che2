@@ -120,13 +120,6 @@ public interface Storage {
             ContentDeleteException;
 
     /**
-     * @throws PersistenceException
-     * 
-     */
-    public boolean patientExistsWithDifferentDetails(Dataset ds,
-            int[] detailTags) throws PersistenceException;
-
-    /**
      * @return the fileDAO
      */
     public FileDAO getFileDAO();

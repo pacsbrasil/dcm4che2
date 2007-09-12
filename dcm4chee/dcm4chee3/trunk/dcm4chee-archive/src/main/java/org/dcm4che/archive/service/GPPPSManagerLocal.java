@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface GPPPSManagerLocal extends GPPPSManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/GPPPSManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/GPPPSManagerBean/local";
 }

@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface ContentManagerLocal extends ContentManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/ContentManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/ContentManagerBean/local";
 }

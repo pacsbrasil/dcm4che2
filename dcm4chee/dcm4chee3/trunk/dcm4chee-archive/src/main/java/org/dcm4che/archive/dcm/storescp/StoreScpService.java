@@ -309,22 +309,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setSerializeDBUpdate(serialize);
     }
 
-    public final String getGeneratePatientID() {
-        return scp.getGeneratePatientID();
-    }
-
-    public final void setGeneratePatientID(String pattern) {
-        scp.setGeneratePatientID(pattern);
-    }
-
-    public final String getIssuerOfPatientIDRules() {
-        return scp.getIssuerOfPatientIDRules();
-    }
-
-    public final void setIssuerOfPatientIDRules(String rules) {
-        scp.setIssuerOfPatientIDRules(rules);
-    }
-
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
     }
@@ -347,40 +331,6 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setMwlScuServiceName(ObjectName mwlScuServiceName) {
         this.mwlScuServiceName = mwlScuServiceName;
-    }
-
-    public final String getAcceptPatientID() {
-        return scp.getAcceptPatientID();
-    }
-
-    public final void setAcceptPatientID(String acceptPatientID) {
-        scp.setAcceptPatientID(acceptPatientID);
-    }
-
-    public final void setAdditionalCheckIfDuplicatedPatientID(
-            boolean additionalCheckIfDuplicatedPatientID) {
-        scp
-                .setAdditionalCheckIfDuplicatedPatientID(additionalCheckIfDuplicatedPatientID);
-    }
-
-    public final boolean isAdditionalCheckIfDuplicatedPatientID() {
-        return scp.isAdditionalCheckIfDuplicatedPatientID();
-    }
-
-    public final String getIgnorePatientID() {
-        return scp.getIgnorePatientID();
-    }
-
-    public final void setIgnorePatientID(String ignorePatientID) {
-        scp.setIgnorePatientID(ignorePatientID);
-    }
-
-    public final String getIgnorePatientIDCallingAETs() {
-        return scp.getIgnorePatientIDCallingAETs();
-    }
-
-    public final void setIgnorePatientIDCallingAETs(String aets) {
-        scp.setIgnorePatientIDCallingAETs(aets);
     }
 
     public String getCoerceWarnCallingAETs() {
@@ -810,7 +760,7 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    private void checkPendingSeriesStored() throws Exception {
+    void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
         SeriesStored[] seriesStored = store
                 .checkSeriesStored(pendingSeriesStoredTimeout);

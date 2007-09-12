@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface ConsistencyCheckLocal extends ConsistencyCheck {
-    public static final String JNDI_NAME="dcm4cheeArchive/ConsistencyCheckBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/ConsistencyCheckBean/local";
 }

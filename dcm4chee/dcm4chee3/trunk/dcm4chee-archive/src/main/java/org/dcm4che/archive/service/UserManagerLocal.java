@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface UserManagerLocal extends UserManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/UserManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/UserManagerBean/local";
 }

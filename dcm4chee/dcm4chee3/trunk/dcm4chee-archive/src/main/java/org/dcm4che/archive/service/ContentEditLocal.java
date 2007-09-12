@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface ContentEditLocal extends ContentEdit {
-    public static final String JNDI_NAME="dcm4cheeArchive/ContentEditBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/ContentEditBean/local";
 }

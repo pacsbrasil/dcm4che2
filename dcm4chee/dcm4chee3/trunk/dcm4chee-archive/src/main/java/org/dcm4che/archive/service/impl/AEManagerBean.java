@@ -40,7 +40,10 @@
 
 package org.dcm4che.archive.service.impl;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -62,69 +65,130 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service for the management of DICOM application entities (AE) within the system.
+ * Service for the management of DICOM application entities (AE) within the
+ * system.
  * 
  * @author <a href="mailto:umberto.cappellini@tiani.com">Umberto Cappellini</a>
  */
 @Stateless
 @TransactionManagement(TransactionManagementType.CONTAINER)
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
-// Spring
-@Transactional(propagation = Propagation.REQUIRED)
-public class AEManagerBean implements AEManagerLocal, AEManagerRemote  {
+public class AEManagerBean implements AEManagerLocal, AEManagerRemote {
 
-    @EJB private AEDAO aeHome;
+    private static final int MAX_MAX_CACHE_SIZE = 1000;
 
-    /** 
+    protected static int maxCacheSize = 20;
+
+    private static Map aeCache = Collections.synchronizedMap(new LinkedHashMap(
+            32, 0.75f, true) {
+        private static final long serialVersionUID = 1L;
+
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > maxCacheSize;
+        }
+    });
+
+    @EJB
+    private AEDAO aeHome;
+
+    /**
      * @see org.dcm4che.archive.service.AEManager#setAeDAO(org.dcm4che.archive.dao.AEDAO)
      */
     public void setAeDAO(AEDAO aeDAO) {
         this.aeHome = aeDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.AEManager#getAeDAO()
      */
     public AEDAO getAeDAO() {
         return aeHome;
     }
 
-    /** 
+    /**
+     * @see org.dcm4che.archive.service.AEManager#getCacheSize()
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public int getCacheSize() {
+        return AEManagerBean.aeCache.size();
+    }
+
+    /**
+     * @see org.dcm4che.archive.service.AEManager#getMaxCacheSize()
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public int getMaxCacheSize() {
+        return AEManagerBean.maxCacheSize;
+    }
+
+    /**
+     * @see org.dcm4che.archive.service.AEManager#setMaxCacheSize(int)
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void setMaxCacheSize(int maxCacheSize) {
+        if (maxCacheSize < 0 || maxCacheSize > MAX_MAX_CACHE_SIZE) {
+            throw new IllegalArgumentException("maxCacheSize: " + maxCacheSize);
+        }
+        AEManagerBean.maxCacheSize = maxCacheSize;
+    }
+
+    /**
+     * @see org.dcm4che.archive.service.AEManager#clearCache()
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void clearCache() {
+        AEManagerBean.aeCache.clear();
+    }
+
+    /**
      * @see org.dcm4che.archive.service.AEManager#findByPrimaryKey(long)
      */
     @Transactional(propagation = Propagation.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public AE findByPrimaryKey(long aePk) throws PersistenceException {
         return aeHome.findByPrimaryKey(new Long(aePk));
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.AEManager#findByAET(java.lang.String)
      */
     @Transactional(propagation = Propagation.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public AE findByAET(String aet) throws PersistenceException,
             UnknownAETException {
-        try {
-            return aeHome.findByAET(aet);
+        AE ae = (AE) AEManagerBean.aeCache.get(aet);
+        if (ae == null) {
+            try {
+                ae = aeHome.findByAET(aet);
+                AEManagerBean.aeCache.put(aet, ae);
+            }
+            catch (NoResultException e) {
+                throw new UnknownAETException(aet);
+            }
         }
-        catch (NoResultException e) {
-            throw new UnknownAETException(aet);
-        }
+        return ae;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.AEManager#findAll()
      */
     @Transactional(propagation = Propagation.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public List<AE> findAll() throws PersistenceException {
         return aeHome.findAll();
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.AEManager#updateAE(org.dcm4che.archive.entity.AE)
      */
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = PersistenceException.class)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateAE(AE modAE) throws PersistenceException {
         AE ae = aeHome.findByPrimaryKey(new Long(modAE.getPk()));
+        AEManagerBean.aeCache.remove(ae.getTitle());
         ae.setTitle(modAE.getTitle());
         ae.setHostname(modAE.getHostname());
         ae.setPort(modAE.getPort());
@@ -135,10 +199,11 @@ public class AEManagerBean implements AEManagerLocal, AEManagerRemote  {
         ae.setDescription(modAE.getDescription());
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.AEManager#newAE(org.dcm4che.archive.entity.AE)
      */
     @Transactional(propagation = Propagation.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void newAE(AE newAE) throws ContentCreateException {
         aeHome.create(newAE.getTitle(), newAE.getHostname(), newAE.getPort(),
                 newAE.getCipherSuites(), newAE.getIssuerOfPatientID(), newAE
@@ -146,13 +211,15 @@ public class AEManagerBean implements AEManagerLocal, AEManagerRemote  {
                         .getDescription());
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.AEManager#removeAE(long)
      */
     @Transactional(propagation = Propagation.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeAE(long aePk) throws Exception {
         try {
             aeHome.remove(aeHome.findByPrimaryKey(aePk));
+            AEManagerBean.aeCache.clear();
         }
         catch (ContentDeleteException e) {
             throw new Exception(e);

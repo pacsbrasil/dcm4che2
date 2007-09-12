@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface StudyReconciliationRemote extends StudyReconciliation {
-    public static final String JNDI_NAME="dcm4cheeArchive/StudyReconciliationBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/StudyReconciliationBean/remote";
 }

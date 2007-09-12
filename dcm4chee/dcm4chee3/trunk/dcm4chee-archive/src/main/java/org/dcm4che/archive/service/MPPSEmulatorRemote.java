@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface MPPSEmulatorRemote extends MPPSEmulator {
-    public static final String JNDI_NAME="dcm4cheeArchive/MPPSEmulatorBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/MPPSEmulatorBean/remote";
 }

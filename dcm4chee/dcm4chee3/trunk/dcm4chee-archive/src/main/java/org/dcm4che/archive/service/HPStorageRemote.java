@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface HPStorageRemote extends HPStorage {
-    public static final String JNDI_NAME="dcm4cheeArchive/HPStorageBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/HPStorageBean/remote";
 }

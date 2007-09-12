@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface StudyMgtLocal extends StudyMgt {
-    public static final String JNDI_NAME="dcm4cheeArchive/StudyMgtBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/StudyMgtBean/local";
 }

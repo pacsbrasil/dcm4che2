@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface CodeToDeviceMappingRemote extends CodeToDeviceMapping {
-    public static final String JNDI_NAME="dcm4cheeArchive/CodeToDeviceMappingBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/CodeToDeviceMappingBean/remote";
 }

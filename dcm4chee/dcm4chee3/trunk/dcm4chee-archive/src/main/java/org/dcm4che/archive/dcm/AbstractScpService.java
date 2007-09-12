@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import javax.management.Attribute;
@@ -61,16 +62,21 @@ import javax.xml.transform.Templates;
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.common.DatasetUtils;
 import org.dcm4che.archive.entity.AE;
+import org.dcm4che.archive.exceptions.UnknownAETException;
 import org.dcm4che.archive.mbean.AuditLoggerDelegate;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.TemplatesDelegate;
+import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
 import org.dcm4che.archive.util.XSLTUtils;
+import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.AcceptorPolicy;
@@ -100,6 +106,8 @@ public abstract class AbstractScpService extends MBeanServiceBase {
 
     protected static final String NONE = "NONE";
 
+    private static int sequenceInt = new Random().nextInt();
+
     protected ObjectName dcmServerName;
 
     protected ObjectName aeServiceName;
@@ -111,6 +119,12 @@ public abstract class AbstractScpService extends MBeanServiceBase {
     protected UserIdentityNegotiator userIdentityNegotiator;
 
     protected String[] calledAETs;
+
+    protected String[] generatePatientID;
+
+    protected String issuerOfGeneratedPatientID;
+
+    protected boolean supplementIssuerOfPatientID;
 
     /**
      * List of allowed calling AETs.
@@ -257,6 +271,72 @@ public abstract class AbstractScpService extends MBeanServiceBase {
         logCallingAETs = StringUtils.split(aets, '\\');
     }
 
+    public final String getGeneratePatientID() {
+        if (generatePatientID == null) {
+            return NONE;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < generatePatientID.length; i++) {
+            sb.append(generatePatientID[i]);
+        }
+        return sb.toString();
+    }
+
+    public final void setGeneratePatientID(String pattern) {
+        if (pattern.equalsIgnoreCase(NONE)) {
+            this.generatePatientID = null;
+            return;
+        }
+        int pl = pattern.indexOf('#');
+        int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
+        int sl = pattern.indexOf('$');
+        int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;
+        if (pl == -1 && sl == -1) {
+            this.generatePatientID = new String[] { pattern };
+        }
+        else if (pl != -1 && sl != -1) {
+            this.generatePatientID = pl < sl ? split(pattern, pl, pr, sl, sr)
+                    : split(pattern, sl, sr, pl, pr);
+
+        }
+        else {
+            this.generatePatientID = pl != -1 ? split(pattern, pl, pr) : split(
+                    pattern, sl, sr);
+        }
+    }
+
+    private static String[] split(String pattern, int l1, int r1) {
+        return new String[] { pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1), };
+    }
+
+    private static String[] split(String pattern, int l1, int r1, int l2, int r2) {
+        if (r1 > l2) {
+            throw new IllegalArgumentException(pattern);
+        }
+        return new String[] { pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1, l2),
+                pattern.substring(l2, r2 + 1), pattern.substring(r2 + 1) };
+    }
+
+    public final String getIssuerOfGeneratedPatientID() {
+        return issuerOfGeneratedPatientID;
+    }
+
+    public final void setIssuerOfGeneratedPatientID(
+            String issuerOfGeneratedPatientID) {
+        this.issuerOfGeneratedPatientID = issuerOfGeneratedPatientID;
+    }
+
+    public final boolean isSupplementIssuerOfPatientID() {
+        return supplementIssuerOfPatientID;
+    }
+
+    public final void setSupplementIssuerOfPatientID(
+            boolean supplementIssuerOfPatientID) {
+        this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
+    }
+
     public final int getMaxPDULength() {
         return maxPDULength;
     }
@@ -344,7 +424,7 @@ public abstract class AbstractScpService extends MBeanServiceBase {
             return callingAETs;
         log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
         try {
-            List l = (List) server.invoke(aeServiceName, "listAEs", null, null);
+            List l = aeMgr().findAll();
             if (l == null || l.size() == 0) {
                 log.warn("No AETs configured! No calling AET is allowed!");
                 return callingAETs;
@@ -490,7 +570,7 @@ public abstract class AbstractScpService extends MBeanServiceBase {
         if (uids == null || uids.isEmpty())
             return "";
         String nl = System.getProperty("line.separator", "\n");
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator iter = uids.keySet().iterator();
         while (iter.hasNext()) {
             sb.append(iter.next()).append(nl);
@@ -735,6 +815,85 @@ public abstract class AbstractScpService extends MBeanServiceBase {
             return null;
         }
         return DcmObjectFactory.getInstance().newPersonName(pname).format();
+    }
+
+    public void supplementIssuerOfPatientID(Dataset ds, String callingAET) {
+        if (supplementIssuerOfPatientID
+                && !ds.containsValue(Tags.IssuerOfPatientID)) {
+            String pid = ds.getString(Tags.PatientID);
+            if (pid != null) {
+                try {
+                    AE ae = aeMgr().findByAET(callingAET);
+                    String issuer = ae.getIssuerOfPatientID();
+                    ds.putLO(Tags.IssuerOfPatientID, issuer);
+                    if (log.isInfoEnabled()) {
+                        log.info("Add missing Issuer Of Patient ID " + issuer
+                                + " for Patient ID " + pid);
+                    }
+                }
+                catch (UnknownAETException e) {
+                }
+                catch (Exception e) {
+                    log.warn("Failed to supplement Issuer Of Patient ID: ", e);
+                }
+            }
+        }
+    }
+
+    public void generatePatientID(Dataset pat, Dataset sty) {
+        String pid = pat.getString(Tags.PatientID);
+        if (pid != null) {
+            return;
+        }
+        String pname = pat.getString(Tags.PatientName);
+        if (generatePatientID.length == 1) {
+            pid = generatePatientID[0];
+        }
+        else {
+            String suid = sty != null ? sty.getString(Tags.StudyInstanceUID)
+                    : null;
+            int suidHash = suid != null ? suid.hashCode() : ++sequenceInt;
+            // generate different Patient IDs for different studies
+            // if no Patient Name
+            int pnameHash = pname == null ? suidHash : pname.hashCode() * 37
+                    + pat.getString(Tags.PatientBirthDate, "").hashCode();
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < generatePatientID.length; i++) {
+                String s = generatePatientID[i];
+                int l = s.length();
+                if (l == 0)
+                    continue;
+                char c = s.charAt(0);
+                if (c != '#' && c != '$') {
+                    sb.append(s);
+                    continue;
+                }
+                String v = Long
+                        .toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
+                for (int j = v.length() - l; j < 0; j++) {
+                    sb.append('0');
+                }
+                sb.append(v);
+            }
+            pid = sb.toString();
+        }
+        pat.putLO(Tags.PatientID, pid);
+        pat.putLO(Tags.IssuerOfPatientID, issuerOfGeneratedPatientID);
+        if (log.isInfoEnabled()) {
+            StringBuilder prompt = new StringBuilder("Generate Patient ID: ");
+            prompt.append(pid);
+            if (issuerOfGeneratedPatientID != null) {
+                prompt.append("^^^").append(issuerOfGeneratedPatientID);
+            }
+            prompt.append(" for Patient: ").append(pname);
+            log.info(prompt.toString());
+        }
+    }
+
+    private AEManager aeMgr() throws Exception {
+        return (AEManager) EJBReferenceCache.getInstance().lookup(
+                AEManagerLocal.JNDI_NAME);
     }
 
 }

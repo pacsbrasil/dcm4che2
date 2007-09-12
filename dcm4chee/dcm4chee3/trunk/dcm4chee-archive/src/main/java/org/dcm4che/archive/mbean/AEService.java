@@ -55,10 +55,12 @@ import org.apache.log4j.Logger;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.exceptions.UnknownAETException;
 import org.dcm4che.archive.service.AEManager;
+import org.dcm4che.archive.service.AEManagerLocal;
 import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
+import org.jboss.system.ServiceMBean;
 
 /**
  * <description>
@@ -69,6 +71,8 @@ import org.dcm4che2.audit.message.SecurityAlertMessage;
  */
 public class AEService extends MBeanServiceBase {
 
+    private static final int MAX_MAX_CACHE_SIZE = 1000;
+
     private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private ObjectName echoServiceName;
@@ -76,6 +80,8 @@ public class AEService extends MBeanServiceBase {
     private boolean dontSaveIP = true;
 
     private int[] portNumbers;
+
+    private int maxCacheSize;
 
     /**
      * @return Returns the echoServiceName.
@@ -148,6 +154,28 @@ public class AEService extends MBeanServiceBase {
         }
     }
 
+    public int getCacheSize() throws Exception {
+        return aeMgr().getCacheSize();
+    }
+
+    public int getMaxCacheSize() throws Exception {
+        return maxCacheSize;
+    }
+
+    public void setMaxCacheSize(int maxCacheSize) throws Exception {
+        if (maxCacheSize < 0 || maxCacheSize > MAX_MAX_CACHE_SIZE) {
+            throw new IllegalArgumentException("maxCacheSize: " + maxCacheSize);
+        }
+        this.maxCacheSize = maxCacheSize;
+        if (isStarted()) {
+            aeMgr().setMaxCacheSize(maxCacheSize);
+        }
+    }
+
+    public void clearCache() throws Exception {
+        aeMgr().clearCache();
+    }
+
     public String getAEs() throws Exception {
         Collection c = aeMgr().findAll();
         StringBuilder sb = new StringBuilder();
@@ -208,8 +236,8 @@ public class AEService extends MBeanServiceBase {
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            AE ae = new AE(aet, aeHost, portNumbers[i], null, null,
-                    null, null, null);
+            AE ae = new AE(aet, aeHost, portNumbers[i], null, null, null, null,
+                    null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -366,11 +394,14 @@ public class AEService extends MBeanServiceBase {
             log.warn("Failed to use echo service:", e);
             return false;
         }
-
     }
 
     protected AEManager aeMgr() {
         return (AEManager) EJBReferenceCache.getInstance().lookup(
-                "AEManager/Local");
+                AEManagerLocal.JNDI_NAME);
+    }
+
+    protected void startService() throws Exception {
+        aeMgr().setMaxCacheSize(maxCacheSize);
     }
 }

@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface StorageLocal extends Storage {
-    public static final String JNDI_NAME="dcm4cheeArchive/StorageBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/StorageBean/local";
 }

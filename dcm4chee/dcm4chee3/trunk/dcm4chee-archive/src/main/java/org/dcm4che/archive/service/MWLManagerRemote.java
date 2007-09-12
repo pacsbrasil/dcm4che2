@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface MWLManagerRemote extends MWLManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/MWLManagerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/MWLManagerBean/remote";
 }

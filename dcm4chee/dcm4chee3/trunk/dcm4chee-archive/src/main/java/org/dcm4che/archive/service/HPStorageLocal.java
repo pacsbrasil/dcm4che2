@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface HPStorageLocal extends HPStorage {
-    public static final String JNDI_NAME="dcm4cheeArchive/HPStorageBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/HPStorageBean/local";
 }

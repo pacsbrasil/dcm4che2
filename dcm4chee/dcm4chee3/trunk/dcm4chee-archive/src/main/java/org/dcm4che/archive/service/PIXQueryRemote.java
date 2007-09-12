@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface PIXQueryRemote extends PIXQuery {
-    public static final String JNDI_NAME="dcm4cheeArchive/PIXQueryBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/PIXQueryBean/remote";
 }

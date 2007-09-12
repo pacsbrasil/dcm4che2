@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface MPPSManagerLocal extends MPPSManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/MPPSManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/MPPSManagerBean/local";
 }

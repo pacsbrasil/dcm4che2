@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface GPWLManagerLocal extends GPWLManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/GPWLManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/GPWLManagerBean/local";
 }

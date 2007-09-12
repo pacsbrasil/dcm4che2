@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface StorageRemote extends Storage {
-    public static final String JNDI_NAME="dcm4cheeArchive/StorageBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/StorageBean/remote";
 }

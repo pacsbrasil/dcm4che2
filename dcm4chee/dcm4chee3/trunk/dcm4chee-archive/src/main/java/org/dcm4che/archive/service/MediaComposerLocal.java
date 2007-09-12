@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface MediaComposerLocal extends MediaComposer {
-    public static final String JNDI_NAME="dcm4cheeArchive/MediaComposerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/MediaComposerBean/local";
 }

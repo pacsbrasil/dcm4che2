@@ -47,5 +47,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface MWLManagerLocal extends MWLManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/MWLManagerBean/local";
+    public static final String JNDI_NAME="dcm4chee-arc/MWLManagerBean/local";
 }

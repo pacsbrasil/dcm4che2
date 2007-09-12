@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface ConsistencyCheckRemote extends ConsistencyCheck {
-    public static final String JNDI_NAME="dcm4cheeArchive/ConsistencyCheckBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/ConsistencyCheckBean/remote";
 }

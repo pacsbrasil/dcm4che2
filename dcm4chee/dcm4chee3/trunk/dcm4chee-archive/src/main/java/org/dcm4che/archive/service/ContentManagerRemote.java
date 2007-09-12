@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface ContentManagerRemote extends ContentManager {
-    public static final String JNDI_NAME="dcm4cheeArchive/ContentManagerBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/ContentManagerBean/remote";
 }

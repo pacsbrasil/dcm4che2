@@ -47,5 +47,5 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface FixPatientAttributesRemote extends FixPatientAttributes {
-    public static final String JNDI_NAME="dcm4cheeArchive/FixPatientAttributesBean/remote";
+    public static final String JNDI_NAME="dcm4chee-arc/FixPatientAttributesBean/remote";
 }
