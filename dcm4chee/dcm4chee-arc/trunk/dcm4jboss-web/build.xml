@@ -8,13 +8,13 @@
 	<property name="vendor" value="Agfa Healthcare"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA" />
+	<property name="jboss.home" value="${user.home}/jboss-4.2.1.GA" />
 	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
 	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
 	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
 	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
 	<property name="j2ee.jar" value="${jboss.server.lib.dir}/jboss-j2ee.jar"/>
-	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
+	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/servlet-api.jar"/>
 	<property name="maverick.jar" value="${lib.dir}/maverick.jar"/>
 	<property name="jdom.jar" value="${lib.dir}/jdom.jar"/>
 	<property name="commons-beanutils.jar" value="${lib.dir}/commons-beanutils.jar"/>

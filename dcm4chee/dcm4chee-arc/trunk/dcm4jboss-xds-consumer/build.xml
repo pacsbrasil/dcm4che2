@@ -5,13 +5,8 @@
 
 	<property name="version" value="2.12.0"/>
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA" />
-	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
-	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
-	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
-	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
-	<property name="mail.jar" value="${jboss.server.lib.dir}/mail.jar"/>
-	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
+	<property name="jboss.home" value="${user.home}/jboss-4.2.1.GA" />
+	<property name="jboss.server.home" value="${jboss.home}/server/default"/>
 
 	<property name="lib.dir" value="lib"/>
 	
@@ -29,9 +24,12 @@
 	<property name="service.deploy.dir" value="${deploy.root}/deploy"/>
 
 	<path id="master-classpath">
-		<pathelement location="${jboss.lib.dir}/jboss-system.jar"/>
-		<pathelement location="${jboss-jmx.jar}"/>
-		<pathelement location="${log4j.jar}"/>
+		<fileset dir="${jboss.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${jboss.server.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
 		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
 		</fileset>

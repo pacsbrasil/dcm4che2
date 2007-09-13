@@ -18,7 +18,7 @@
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.home}/target/lib/dcm4chee.jar" />
 	
     <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>
+	<property name="jboss.home" value="${user.home}/jboss-4.2.1.GA"/>
 	<property name="jboss.lib" value="${jboss.home}/lib"/>
 	<property name="jboss.server.lib" value="${jboss.home}/server/default/lib"/>
 

@@ -7,9 +7,6 @@
   <property name="audit-version" value="2.12.0"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
-  <!-- Override with your JBoss server bundle dist location -->
-  <property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>
-  <property name="jboss.server.home" value="${jboss.home}/server/default"/>
   <!-- Override with your dcm4chee-arr 3.x location -->
   <property name="dcm4chee-arr.home" value="${user.home}/dcm4chee/dcm4chee-arr"/>
   <property name="dcm4chee-arr.entities" value="${dcm4chee-arr.home}/dcm4chee-arr-entities"/>
@@ -72,146 +69,141 @@
   <target name="dist" depends="hsql-dist,psql-dist,mysql-dist,mssql-dist,oracle-dist,db2-dist"/>
   
   <target name="hsql-dist" depends="jar,fixcrlf">
-    <antcall target="standalone-dist">
+    <antcall target="db-dist">
       <param name="db.name" value="hsql"/>
     </antcall>
   </target>
   <target name="psql-dist" depends="jar,fixcrlf">
-    <antcall target="standalone-dist">
+    <antcall target="db-dist">
       <param name="db.name" value="psql"/>
     </antcall>
   </target>
   <target name="mysql-dist" depends="jar,fixcrlf">
-    <antcall target="standalone-dist">
+    <antcall target="db-dist">
       <param name="db.name" value="mysql"/>
     </antcall>
   </target>
   <target name="oracle-dist" depends="jar,fixcrlf">
-    <antcall target="standalone-dist">
+    <antcall target="db-dist">
       <param name="db.name" value="oracle"/>
     </antcall>
   </target>
   <target name="db2-dist" depends="jar,fixcrlf">
-    <antcall target="standalone-dist">
+    <antcall target="db-dist">
       <param name="db.name" value="db2"/>
     </antcall>
   </target>
   <target name="mssql-dist" depends="jar,fixcrlf">
-    <antcall target="standalone-dist">
+    <antcall target="db-dist">
       <param name="db.name" value="mssql"/>
     </antcall>
   </target>
 
-  <target name="standalone-dist">
-    <property name="dist.standalone" value="dcm4chee-standalone-${db.name}-${version}"/>
-    <property name="dist.standalone.config" value="${dist.standalone}/server/${dist.jboss.conf}"/>
-    <zip destfile="${target.dir}/${dist.standalone}.zip">
-      <zipfileset dir="../dcm4che14/build" prefix="${dist.standalone.config}">
+  <target name="db-dist">
+    <property name="dist.db" value="dcm4chee-${db.name}-${version}"/>
+    <property name="dist.db.config" value="${dist.db}/server/default"/>
+    <zip destfile="${target.dir}/${dist.db}.zip">
+      <zipfileset dir="../dcm4che14/build" prefix="${dist.db.config}">
         <include name="lib/dcm4che.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4che14" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4che14" prefix="${dist.db.config}">
         <include name="lib/dcm4che-imageio-rle-2.0.4.jar"/>
         <include name="lib/jai_imageio.jar"/>
         <include name="lib/clibwrapper_jiio.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4che14" prefix="${dist.standalone}">
+      <zipfileset dir="../dcm4che14" prefix="${dist.db}">
         <include name="bin/libclib_jiio.so"/>
         <include name="bin/clib_jiio*.dll"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.db.config}">
         <include name="lib/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.standalone}">
+      <zipfileset dir="../dcm4jboss-ejb/target/common" prefix="${dist.db}">
         <include name="bin/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-ejb/test/data" prefix="${dist.standalone}/bin"/>
-      <zipfileset dir="../dcm4jboss-ejb/target/${db.name}" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-ejb/test/data" prefix="${dist.db}/bin"/>
+      <zipfileset dir="../dcm4jboss-ejb/target/${db.name}" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-ejb/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-ejb/src/etc/common" prefix="${dist.db.config}">
         <include name="conf/*"/>
-        <!--include name="deploy/**"/-->
+        <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.db.config}">
         <include name="conf/*"/>
         <include name="deploy/**"/>
         <include name="data/**"/>
         <include name="lib/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.standalone}">
+      <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}" prefix="${dist.db}">
         <include name="sql/*"/>
       </zipfileset>
-        <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.standalone.config}">
+        <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.db.config}">
           <include name="lib/*"/>
         </zipfileset>
-        <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.standalone}">
+        <zipfileset dir="../dcm4jboss-sar/target" prefix="${dist.db}">
           <include name="bin/*"/>
         </zipfileset>
-      <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone}">
+      <zipfileset dir="../dcm4jboss-sar" prefix="${dist.db}">
         <include name="bin/JavaService.exe"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-sar" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-sar" prefix="${dist.db.config}">
         <include name="lib/commons-compress-20050911.jar"/>
-        <include name="lib/saaj-api.jar"/>
-        <include name="lib/saaj-impl.jar"/>
         <include name="lib/dcm4che-audit-2.0.11.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="${target.dir}" prefix="${dist.standalone}">
+      <zipfileset dir="${target.dir}" prefix="${dist.db}">
         <include name="bin/*"/>
       	<exclude name="bin/*.sh"/>
       	<exclude name="bin/uninstall-dcm4chee-arr-old.bat"/>
       	<exclude name="bin/uninstall-dcm4chee-auditlog-old.bat"/>
         <include name="doc/**"/>
       </zipfileset>
-      <zipfileset dir="${target.dir}" prefix="${dist.standalone}" filemode="755">
+      <zipfileset dir="${target.dir}" prefix="${dist.db}" filemode="755">
         <include name="bin/*.sh"/>
        	<exclude name="bin/uninstall-dcm4chee-arr-old.sh"/>
        	<exclude name="bin/uninstall-dcm4chee-auditlog-old.sh"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-hl7" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-hl7" prefix="${dist.db.config}">
         <include name="lib/xhl7.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-hl7/target" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-hl7/target" prefix="${dist.db.config}">
         <include name="lib/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-hl7/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-hl7/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-wado/target" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-wado/target" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-wado/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-wado/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-web/target" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-web/target" prefix="${dist.db.config}">
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-web/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-web/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-web/src" prefix="${dist.standalone}">
-        <include name="etc/dcm4chee-web.cfg/**"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds/target" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-xds/target" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-xds/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds-consumer/target" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-xds-consumer/target" prefix="${dist.db.config}">
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds-consumer" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-xds-consumer" prefix="${dist.db.config}">
         <include name="lib/FastInfoset.jar"/>
         <include name="lib/jaxb-api.jar"/>
         <include name="lib/jaxb-impl.jar"/>
@@ -223,108 +215,33 @@
         <include name="lib/relaxngDatatype.jar"/>
         <include name="lib/xsdlib.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-arr/target/common" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-arr/target/common" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-arr/target/${db.name}" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-arr/target/${db.name}" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-arr/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-arr/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
         <exclude name="conf/standardjboss.xml"/>
         <exclude name="conf/standardjbosscmp-jdbc.xml"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-cdw/target" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-cdw/target" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-cdw/src/etc" prefix="${dist.standalone.config}">
+      <zipfileset dir="../dcm4jboss-cdw/src/etc" prefix="${dist.db.config}">
         <include name="conf/dcm4chee-cdw/*"/>
         <include name="conf/xmdesc/*"/>
         <include name="data/**"/>
       </zipfileset>
-      <zipfileset dir="${jboss.home}" prefix="${dist.standalone}" filemode="755">
-        <include name="bin/*.sh"/>
-      </zipfileset>
-      <zipfileset dir="${jboss.home}" prefix="${dist.standalone}">
-        <include name="bin/*"/>
-        <exclude name="bin/*.sh"/>
-        <exclude name="bin/run.bat"/>
-        <exclude name="bin/run.conf"/>
-        <exclude name="bin/run.log"/>
-        <include name="lib/**"/>
-        <include name="client/getopt.jar"/>
-        <include name="client/jbossall-client.jar"/>
-        <include name="client/log4j.jar"/>
-      </zipfileset>
-      <zipfileset dir="${jboss.home}/docs/examples/jms" prefix="${dist.standalone.config}">
-        <include name="conf/jbossmq-state.xml"/>
-      </zipfileset>
-      <zipfileset dir="${jboss.home}/docs/examples" prefix="${dist.standalone.config}/deploy">
-        <include name="jms/file-state-service.xml"/>
-      </zipfileset>
-      <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
-        <include name="conf/**"/>
-        <exclude name="conf/log4j.xml"/>
-        <exclude name="conf/login-config.xml"/>
-        <exclude name="conf/standardjboss.xml"/>
-        <exclude name="conf/standardjbosscmp-jdbc.xml"/>
-        <exclude name="conf/jboss-service.xml"/>
-        <include name="deploy/jbossweb-tomcat55.sar/**"/>
-        <include name="deploy/jms/jms-ds.xml"/>
-        <include name="deploy/jms/jms-ra.rar"/>
-        <include name="deploy/jms/jvm-il-service.xml"/>
-        <include name="deploy/jms/uil2-service.xml"/>
-        <include name="deploy/jmx-console.war/**"/>
-        <exclude name="deploy/jmx-console.war/inspectMBean.jsp"/>
-        <exclude name="deploy/jbossweb-tomcat55.sar/server.xml"/>
-        <!--exclude name="deploy/jmx-console.war/WEB-INF/*.xml"/-->
-        <!--include name="deploy/naming.sar/**"/-->
-        <!--include name="deploy/security.sar/**"/-->
-      	<!--include name="deploy/dynclassloader-service.xml"/-->
-     	<!--include name="deploy/ejb-deployer.xml"/-->
-      	<!--include name="deploy/ejb-timer-service.xml"/-->
-      	<!--include name="deploy/invokers-service.xml"/-->
-        <include name="deploy/jbossjca-service.xml"/>
-        <include name="deploy/jboss-local-jdbc.rar"/>
-      	<!--include name="deploy/jdbc-metadata-service.xml"/-->
-        <include name="deploy/jmx-invoker-service.xml"/>
-        <include name="lib/activation.jar"/>
-        <include name="lib/bcel.jar"/>
-        <!--include name="lib/bsh-1.3.0.jar"/-->
-        <!--include name="lib/bsh-deployer.jar"/-->
-        <include name="lib/commons-logging.jar"/>
-        <include name="lib/dom4j.jar"/>
-        <include name="lib/hsqldb.jar"/>
-        <include name="lib/hsqldb-plugin.jar"/>
-        <include name="lib/javax.servlet.jar"/>
-        <include name="lib/javax.servlet.jsp.jar"/>
-        <include name="lib/jboss.jar"/>
-        <include name="lib/jboss-common-jdbc-wrapper.jar"/>
-        <include name="lib/jboss-j2ee.jar"/>
-        <include name="lib/jboss-jaxrpc.jar"/>
-        <include name="lib/jboss-jca.jar"/>
-        <!--include name="lib/jboss-jsr77.jar"/-->
-        <!--include name="lib/jboss-management.jar"/-->
-      	<include name="lib/jboss-remoting.jar"/>
-      	<include name="lib/jboss-serialization.jar"/>
-        <include name="lib/jbossmq.jar"/>
-        <include name="lib/jbosssx.jar"/>
-        <include name="lib/jboss-transaction.jar"/>
-        <include name="lib/jmx-adaptor-plugin.jar"/>
-        <include name="lib/jnpserver.jar"/>
-        <include name="lib/jpl-pattern.jar"/>
-        <include name="lib/jpl-util.jar"/>
-        <include name="lib/log4j.jar"/>
-        <include name="lib/mail.jar"/>
-      </zipfileset>
-      <zipfileset dir="${fop.home}/build" prefix="${dist.standalone.config}/lib">
+      <zipfileset dir="${fop.home}/build" prefix="${dist.db.config}/lib">
         <include name="fop.jar"/>
       </zipfileset>
-      <zipfileset dir="${fop.home}" prefix="${dist.standalone.config}">
+      <zipfileset dir="${fop.home}" prefix="${dist.db.config}">
         <include name="lib/avalon-framework-cvs-20020806.jar"/>
         <include name="lib/batik.jar"/>
       </zipfileset>
@@ -364,9 +281,9 @@
     </antcall>
   </target>
   <target name="opt-arr" depends="fixcrlf">  	
-    <property name="dist.standalone.config" value="server/${dist.jboss.conf}"/>
+    <property name="dist.db.config" value="server/default"/>
     <zip destfile="${target.dir}/upgrade-dcm4chee-arr-${db.name}-${arr-version}.zip">
-	  <zipfileset dir="${jboss.server.home}" prefix="${dist.standalone.config}">
+	  <zipfileset dir="${jboss.server.home}" prefix="${dist.db.config}">
 	    <include name="deploy/ejb3.deployer/**"/>
 	  	<include name="deploy/jboss-aop-jdk50.deployer/**"/>
 	  	<include name="deploy/jbossws.sar/**"/>
@@ -381,7 +298,7 @@
 	  	<include name="lib/hibernate3.jar"/>
 	  	<include name="lib/javassist.jar"/>
 	  </zipfileset>
-      <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.standalone.config}/deploy">
+      <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.db.config}/deploy">
         <include name="dcm4chee-arr-${db.name}-*.ear"/>
       </zipfileset>
       <zipfileset dir="${dcm4chee-arr.entities}/target/hibernate3/sql" prefix="sql">
@@ -430,18 +347,18 @@
     </antcall>
   </target>
   <target name="opt-auditlog" depends="fixcrlf">  	
-    <property name="dist.standalone.config" value="server/${dist.jboss.conf}"/>
+    <property name="dist.db.config" value="server/default"/>
     <zip destfile="${target.dir}/upgrade-dcm4chee-auditlog-${db.name}-${audit-version}.zip">
-      <zipfileset dir="${dcm4chee-audit.login}/src/main/config/${db.name}" prefix="${dist.standalone.config}">
+      <zipfileset dir="${dcm4chee-audit.login}/src/main/config/${db.name}" prefix="${dist.db.config}">
         <include name="conf/login-config.xml"/>
       </zipfileset>
-      <zipfileset dir="${dcm4chee-audit.login}/target" prefix="${dist.standalone.config}/lib">
+      <zipfileset dir="${dcm4chee-audit.login}/target" prefix="${dist.db.config}/lib">
         <include name="*.jar"/>
       </zipfileset>
-        <zipfileset dir="${dcm4chee-audit.logger}/src/main/config" prefix="${dist.standalone.config}/conf">
+        <zipfileset dir="${dcm4chee-audit.logger}/src/main/config" prefix="${dist.db.config}/conf">
           <include name="dcm4chee-audit-attribute-change.xml"/>
         </zipfileset>
-      <zipfileset dir="${dcm4chee-audit.logger}/target" prefix="${dist.standalone.config}/deploy">
+      <zipfileset dir="${dcm4chee-audit.logger}/target" prefix="${dist.db.config}/deploy">
         <include name="*.sar"/>
       </zipfileset>
       <zipfileset dir="${target.dir}" filemode="755">
