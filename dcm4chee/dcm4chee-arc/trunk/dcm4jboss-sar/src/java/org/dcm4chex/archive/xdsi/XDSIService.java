@@ -118,7 +118,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
+//import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -149,8 +149,6 @@ public class XDSIService extends ServiceMBeanSupport {
     private String autoPublishDocTitle;
     
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
-
-    private DocumentBuilderFactory dbFactory;
 
 	private String testPath;
 	
@@ -1208,23 +1206,23 @@ public class XDSIService extends ServiceMBeanSupport {
 		try {
 		    NodeList nl;
 		    NodeList errors;
-	            try {
+//	            try {
 	                SOAPBody body = response.getSOAPBody();
 	                log.debug("SOAPBody:"+body );
 	                nl = body.getElementsByTagName("RegistryResponse");
 	                errors = body.getElementsByTagName("RegistryError");
-	            } catch ( Throwable t) {
-                        log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage!");
-                        log.debug("SOAPBody Failure:",t);
-	                JAXMStreamSource src = (JAXMStreamSource) response.getSOAPPart().getContent();
-	                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	                dbFactory.setNamespaceAware(true);
-	                DocumentBuilder builder = dbFactory.newDocumentBuilder();
-	                Document d = builder.parse( src.getInputStream() );
-	                nl = d.getElementsByTagName("RegistryResponse");
-                        log.debug("Fallback RegistryResponse NodeList:"+nl);
-                        errors = d.getElementsByTagName("RegistryError");
-	            }
+//	            } catch ( Throwable t) {
+//                        log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage!");
+//                        log.debug("SOAPBody Failure:",t);
+//	                JAXMStreamSource src = (JAXMStreamSource) response.getSOAPPart().getContent();
+//	                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+//	                dbFactory.setNamespaceAware(true);
+//	                DocumentBuilder builder = dbFactory.newDocumentBuilder();
+//	                Document d = builder.parse( src.getInputStream() );
+//	                nl = d.getElementsByTagName("RegistryResponse");
+//                        log.debug("Fallback RegistryResponse NodeList:"+nl);
+//                        errors = d.getElementsByTagName("RegistryError");
+//	            }
 			if ( nl.getLength() != 0  ) {
 				Node n = nl.item(0);
 				String status = n.getAttributes().getNamedItem("status").getNodeValue();

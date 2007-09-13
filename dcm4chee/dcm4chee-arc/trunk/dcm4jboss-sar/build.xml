@@ -31,7 +31,7 @@
 	<property name="dcm4chee-ejb.src" value="${dcm4chee-ejb.home}/src"/>		
 
    <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>		
+	<property name="jboss.home" value="${user.home}/jboss-4.2.1.GA"/>		
 	<property name="jboss.server" value="${jboss.home}/server"/>		
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.server.home}/deploy"/>		
@@ -44,8 +44,6 @@
 		<pathelement location="${dcm4chee-ejb.target}/hsql/deploy/dcm4chee-ejb-hsql.jar"/>
 		<pathelement location="${lib.dir}/commons-compress-20050911.jar"/>
 		<pathelement location="${lib.dir}/commons-net-1.4.1.jar"/>
-		<pathelement location="${lib.dir}/saaj-impl.jar"/>
-		<pathelement location="${lib.dir}/saaj-api.jar"/>
 		<pathelement location="${lib.dir}/dcm4che-audit-2.0.11.jar"/>
 		<pathelement location="${jboss.home}/bin/"/>
 		<pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar"/>
