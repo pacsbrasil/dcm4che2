@@ -62,8 +62,6 @@ cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/monitoring-service.xml \
   "$JBOSS_SERV"/deploy/properties-service.xml \
   "$JBOSS_SERV"/deploy/quartz-ra.rar \
-  "$JBOSS_SERV"/deploy/schedule-manager-service.xml \
-  "$JBOSS_SERV"/deploy/scheduler-service.xml \
   "$JBOSS_SERV"/deploy/sqlexception-service.xml \
   "$DCM4CHEE_SERV"/deploy
 
@@ -72,7 +70,6 @@ cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/jboss-aop-jdk50.deployer \
   "$JBOSS_SERV"/deploy/jboss-bean.deployer \
   "$JBOSS_SERV"/deploy/jbossws.sar \
-  "$JBOSS_SERV"/deploy/uuid-key-generator.sar \
   "$DCM4CHEE_SERV"/deploy
 
 cp -v "$JBOSS_SERV"/deploy/jboss-web.deployer/context.xml \
