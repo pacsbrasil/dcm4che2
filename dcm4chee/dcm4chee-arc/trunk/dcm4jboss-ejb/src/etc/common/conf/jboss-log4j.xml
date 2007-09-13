@@ -15,8 +15,6 @@
  -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
-   
-   <renderer renderedClass="org.dcm4che.data.Dataset" renderingClass="org.dcm4che.log.DatasetRenderer" />
 
    <!-- ================================= -->
    <!-- Preserve messages in a local file -->
@@ -31,7 +29,7 @@
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+         <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
       </layout>
    </appender>
    -->
@@ -42,7 +40,7 @@
      <param name="File" value="${jboss.server.log.dir}/server.log"/>
      <param name="Append" value="false"/>
      <param name="MaxFileSize" value="10000KB"/>
-     <param name="MaxBackupIndex" value="10"/>
+     <param name="MaxBackupIndex" value="1"/>
 
      <layout class="org.apache.log4j.PatternLayout">
        <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
@@ -69,8 +67,7 @@
 	   </filter>
 	   <filter class="org.apache.log4j.varia.DenyAllFilter" />
    </appender>
-   -->
-
+   --> 
    <!-- ============================== -->
    <!-- Append messages to the console -->
    <!-- ============================== -->
@@ -81,10 +78,11 @@
       <param name="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p %X{calling}->%X{called} [%c{1}] %m%n"/>
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
       </layout>
    </appender>
-
+  
    <!-- ====================== -->
    <!-- More Appender examples -->
    <!-- ====================== -->
@@ -167,7 +165,7 @@
       </layout>
    </appender>
    -->
-   
+
    <!-- ==================== -->
    <!-- Audit Trail Messages -->
    <!-- ==================== -->
@@ -187,7 +185,7 @@
      <priority value="INFO" />
      <appender-ref ref="AUDITLOG"/>
    </category>
-   
+
    <!-- ================ -->
    <!-- Limit categories -->
    <!-- ================ -->
@@ -242,29 +240,20 @@
       <priority value="WARN"/>
    </category>
 
-   <!-- Limit the org.hibernate category to INFO as its DEBUG is verbose -->
-   <category name="org.hibernate">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit JBoss categories -->
+   <!-- Limit JBoss categories
    <category name="org.jboss">
       <priority value="INFO"/>
    </category>
+   -->
 
    <!-- Limit the JSR77 categories -->
    <category name="org.jboss.management">
       <priority value="INFO"/>
    </category>
-   
-   <!-- Limit the freebXML categories (used in XDS) -->
-   <category name="org.freebxml">
-      <priority value="INFO"/>
-   </category>
 
    <!-- Enable JBossWS message tracing
    <category name="jbossws.SOAPMessage">
-    <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+    <priority value="TRACE"/>
    </category>
    -->
 
@@ -276,7 +265,7 @@
 
    <!-- Show the evolution of the DataSource pool in the logs [inUse/Available/Max]
    <category name="org.jboss.resource.connectionmanager.JBossManagedConnectionPool">
-     <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+     <priority value="TRACE"/>
    </category>
    -->
 
@@ -285,11 +274,16 @@
       | by the JBoss internals to diagnose low level details. This example
       | turns on TRACE level msgs for the org.jboss.ejb.plugins package and its
       | subpackages. This will produce A LOT of logging output.
+      |
+      | Note: since jboss AS 4.2.x, the trace level is supported natively by
+      | log4j, so although the custom org.jboss.logging.XLevel priority will
+      | still work, there is no need to use it. The two examples that follow
+      | will both enable trace logging.
    <category name="org.jboss.system">
      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
    <category name="org.jboss.ejb.plugins">
-     <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+     <priority value="TRACE"/>
    </category>
    -->
   
