@@ -1,14 +1,14 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem xcopy needed JBOSS components into DCM4CHEE installation
+rem copy needed JBOSS components into DCM4CHEE installation
 rem -------------------------------------------------------------------------
 
 if "%OS%" == "Windows_NT"  setlocal
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
 
-set DCM4CHEE_HOME="%DIRNAME%"\..
-set DCM4CHEE_SERV="%DCM4CHEE_HOME%"\server\default
+set DCM4CHEE_HOME=%DIRNAME%..
+set DCM4CHEE_SERV=%DCM4CHEE_HOME%\server\default
 
 if exist "%DCM4CHEE_SERV%" goto found_dcm4chee
 echo Could not locate %DCM4CHEE_SERV%. Please check that you are in the
@@ -21,123 +21,131 @@ echo "Usage: install_jboss <path-to-jboss-4.2.1.GA-installation-directory>"
 goto end
 
 :found_arg1
-set JBOSS_HOME="%1"
-set JBOSS_SERV="%JBOSS_HOME%"\server\default
+set JBOSS_HOME=%1
+set JBOSS_SERV=%JBOSS_HOME%\server\default
 
-if exist "%JBOSS_HOME%\bin\run.jar" goto found_jboss
+if exist "%JBOSS_SERV" goto found_jboss
 echo Could not locate jboss-4.2.1.GA in %JBOSS_HOME%.
 goto end
 
 :found_jboss
-xcopy "%JBOSS_HOME%"\bin\run.bat \
-  "%JBOSS_HOME%"\bin\run.jar \
-  "%JBOSS_HOME%"\bin\run.sh \
-  "%JBOSS_HOME%"\bin\shutdown.bat \
-  "%JBOSS_HOME%"\bin\shutdown.jar \
-  "%JBOSS_HOME%"\bin\shutdown.sh \
-  "%JBOSS_HOME%"\bin\twiddle.bat \
-  "%JBOSS_HOME%"\bin\twiddle.jar \
-  "%JBOSS_HOME%"\bin\twiddle.sh \
-  "%DCM4CHEE_HOME%"\bin
+set JBOSS_BIN=%JBOSS_HOME%\bin
+set DCM4CHEE_BIN=%DCM4CHEE_HOME%\bin
 
-md "%DCM4CHEE_HOME%"\client
-xcopy "%JBOSS_HOME%"\client\jbossall-client.jar "%DCM4CHEE_HOME%"\client
+copy "%JBOSS_BIN%\run.bat" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\run.jar" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\run.sh" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\shutdown.bat" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\shutdown.jar" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\shutdown.sh" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\twiddle.bat" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\twiddle.jar" "%DCM4CHEE_BIN%"
+copy "%JBOSS_BIN%\twiddle.sh" "%DCM4CHEE_BIN%"
 
-xcopy /S "%JBOSS_HOME%"\lib "%DCM4CHEE_HOME%"
+md "%DCM4CHEE_HOME%\client"
+copy "%JBOSS_HOME%\client\jbossall-client.jar" "%DCM4CHEE_HOME%\client"
 
-xcopy "%JBOSS_SERV%"\conf\jbossjta-properties.xml \
-  "%JBOSS_SERV%"\conf\jboss-service.xml \
-  "%JBOSS_SERV%"\conf\jndi.properties \
-  "%DCM4CHEE_SERV%"\conf
-xcopy /S "%JBOSS_SERV%"\conf\props \
-  "%JBOSS_SERV%"\conf\xmdesc \
-  "%DCM4CHEE_SERV%"\conf
+xcopy /S "%JBOSS_HOME%\lib" "%DCM4CHEE_HOME%\lib\"
 
-xcopy "%JBOSS_SERV%"\lib\* "%DCM4CHEE_SERV%"\lib
+set JBOSS_CONF=%JBOSS_SERV%\conf
+set DCM4CHEE_CONF=%DCM4CHEE_SERV%\conf
+copy "%JBOSS_CONF%\jbossjta-properties.xml" "%DCM4CHEE_CONF%"
+copy "%JBOSS_CONF%\jboss-service.xml" "%DCM4CHEE_CONF%"
+copy "%JBOSS_CONF%\jndi.properties" "%DCM4CHEE_CONF%"
+xcopy /S "%JBOSS_CONF%\conf\props" "%DCM4CHEE_CONF%\props\"
+xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
-xcopy "%JBOSS_SERV%"\deploy\bsh-deployer.xml \
-  "%JBOSS_SERV%"\deploy\cache-invalidation-service.xml \
-  "%JBOSS_SERV%"\deploy\client-deployer-service.xml \
-  "%JBOSS_SERV%"\deploy\ear-deployer.xml \
-  "%JBOSS_SERV%"\deploy\ejb3-interceptors-aop.xml \
-  "%JBOSS_SERV%"\deploy\jboss-ha-local-jdbc.rar \
-  "%JBOSS_SERV%"\deploy\jboss-ha-xa-jdbc.rar \
-  "%JBOSS_SERV%"\deploy\jbossjca-service.xml \
-  "%JBOSS_SERV%"\deploy\jboss-local-jdbc.rar \
-  "%JBOSS_SERV%"\deploy\jboss-xa-jdbc.rar \
-  "%JBOSS_SERV%"\deploy\jmx-invoker-service.xml \
-  "%JBOSS_SERV%"\deploy\jsr88-service.xml \
-  "%JBOSS_SERV%"\deploy\mail-service.xml \
-  "%JBOSS_SERV%"\deploy\monitoring-service.xml \
-  "%JBOSS_SERV%"\deploy\properties-service.xml \
-  "%JBOSS_SERV%"\deploy\quartz-ra.rar \
-  "%JBOSS_SERV%"\deploy\sqlexception-service.xml \
-  "%DCM4CHEE_SERV%"\deploy
+copy "%JBOSS_SERV%\lib\*" "%DCM4CHEE_SERV%\lib"
 
-xcopy /S "%JBOSS_SERV%"\deploy\ejb3.deployer \
-  "%JBOSS_SERV%"\deploy\http-invoker.sar \
-  "%JBOSS_SERV%"\deploy\jboss-aop-jdk50.deployer \
-  "%JBOSS_SERV%"\deploy\jboss-bean.deployer \
-  "%JBOSS_SERV%"\deploy\jbossws.sar \
-  "%DCM4CHEE_SERV%"\deploy
+set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
+set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
 
-xcopy "%JBOSS_SERV%"\deploy\jboss-web.deployer\context.xml \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\jasper-jdt.jar \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\jbossweb-extras.jar \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\jbossweb.jar \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\jbossweb-service.jar \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\jstl.jar \
-  "%DCM4CHEE_SERV%"\deploy\jboss-web.deployer
+copy "%JBOSS_DEPLOY%\bsh-deployer.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\cache-invalidation-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\client-deployer-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\ear-deployer.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\ejb3-interceptors-aop.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jboss-ha-local-jdbc.rar" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jboss-ha-xa-jdbc.rar" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jbossjca-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jboss-local-jdbc.rar" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jboss-xa-jdbc.rar" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jmx-invoker-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jsr88-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\mail-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\monitoring-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\properties-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\quartz-ra.rar" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\sqlexception-service.xml" "%DCM4CHEE_DEPLOY%"
+
+xcopy /S "%JBOSS_DEPLOY%\ejb3.deployer" "%DCM4CHEE_DEPLOY%\ejb3.deployer\"
+xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
+xcopy /S "%JBOSS_DEPLOY%\jboss-aop-jdk50.deployer" "%DCM4CHEE_DEPLOY%\jboss-aop-jdk50.deployer\"
+xcopy /S "%JBOSS_DEPLOY%\jboss-bean.deployer" "%DCM4CHEE_DEPLOY%\jboss-bean.deployer\"
+xcopy /S "%JBOSS_DEPLOY%\jbossws.sar" "%DCM4CHEE_DEPLOY%\jbossws.sar\"
+
+set JBOSS_WEB=%JBOSS_DEPLOY%\jboss-web.deployer
+set DCM4CHEE_WEB=%DCM4CHEE_DEPLOY%\jboss-web.deployer
+
+copy "%JBOSS_WEB%\context.xml" "%DCM4CHEE_WEB%"
+copy "%JBOSS_WEB%\jasper-jdt.jar" "%DCM4CHEE_WEB%"
+copy "%JBOSS_WEB%\jbossweb-extras.jar" "%DCM4CHEE_WEB%"
+copy "%JBOSS_WEB%\jbossweb.jar" "%DCM4CHEE_WEB%"
+copy "%JBOSS_WEB%\jbossweb-service.jar" "%DCM4CHEE_WEB%"
+copy "%JBOSS_WEB%\jstl.jar" "%DCM4CHEE_WEB%"
+
+xcopy /S "%JBOSS_WEB%\conf" "%DCM4CHEE_WEB%\conf\"
+xcopy /S "%JBOSS_WEB%\jsf-libs" "%DCM4CHEE_WEB%\jsf-libs\"
+xcopy /S "%JBOSS_WEB%\META-INF" "%DCM4CHEE_WEB%\META-INF\"
+xcopy /S "%JBOSS_WEB%\ROOT.war" "%DCM4CHEE_WEB%\ROOT.war\"
+
+set JBOSS_JMS=%JBOSS_DEPLOY%\jms
+set DCM4CHEE_JMS=%DCM4CHEE_DEPLOY%\jms
+
+copy "%JBOSS_JMS%\jms-ds.xml" "%DCM4CHEE_JMS%"
+copy "%JBOSS_JMS%\jms-ra.rar" "%DCM4CHEE_JMS%"
+copy "%JBOSS_JMS%\jvm-il-service.xml" "%DCM4CHEE_JMS%"
+copy "%JBOSS_JMS%\uil2-service.xml" "%DCM4CHEE_JMS%"
   
-xcopy /S "%JBOSS_SERV%"\deploy\jboss-web.deployer\conf \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\jsf-libs \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\META-INF \
-  "%JBOSS_SERV%"\deploy\jboss-web.deployer\ROOT.war \
-  "%DCM4CHEE_SERV%"\deploy\jboss-web.deployer
+set JBOSS_JMX_CONSOLE=%JBOSS_DEPLOY%\jmx-console.war
+set DCM4CHEE_JMX_CONSOLE=%DCM4CHEE_DEPLOY%\jmx-console.war
 
-xcopy "%JBOSS_SERV%"\deploy\jms\jms-ds.xml \
-  "%JBOSS_SERV%"\deploy\jms\jms-ra.rar \
-  "%JBOSS_SERV%"\deploy\jms\jvm-il-service.xml \
-  "%JBOSS_SERV%"\deploy\jms\uil2-service.xml \
-  "%DCM4CHEE_SERV%"\deploy\jms
+copy "%JBOSS_JMX_CONSOLE%\checkJNDI.jsp" "%DCM4CHEE_JMX_CONSOLE%"
+copy "%JBOSS_JMX_CONSOLE%\displayMBeans.jsp" "%DCM4CHEE_JMX_CONSOLE%"
+copy "%JBOSS_JMX_CONSOLE%\displayOpResult.jsp" "%DCM4CHEE_JMX_CONSOLE%"
+copy "%JBOSS_JMX_CONSOLE%\index.jsp" "%DCM4CHEE_JMX_CONSOLE%"
+copy "%JBOSS_JMX_CONSOLE%\jboss.css" "%DCM4CHEE_JMX_CONSOLE%"
+copy "%JBOSS_JMX_CONSOLE%\style_master.css" "%DCM4CHEE_JMX_CONSOLE%"
 
-xcopy "%JBOSS_SERV%"\deploy\jmx-console.war\checkJNDI.jsp \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\displayMBeans.jsp \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\displayOpResult.jsp \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\index.jsp \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\jboss.css \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\style_master.css \
-  "%DCM4CHEE_SERV%"\deploy\jmx-console.war
-  
-xcopy /S "%JBOSS_SERV%"\deploy\jmx-console.war\cluster \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\images \
-  "%JBOSS_SERV%"\deploy\jmx-console.war\META-INF \
-  "%DCM4CHEE_SERV%"\deploy\jmx-console.war
-  
-xcopy /S "%JBOSS_SERV%"\deploy\jmx-console.war\WEB-INF\classes \
-  "%DCM4CHEE_SERV%"\deploy\jmx-console.war\WEB-INF
+xcopy /S "%JBOSS_JMX_CONSOLE%\cluster" "%DCM4CHEE_JMX_CONSOLE%\cluster\"
+xcopy /S "%JBOSS_JMX_CONSOLE%\images" "%DCM4CHEE_JMX_CONSOLE%\images\"
+xcopy /S "%JBOSS_JMX_CONSOLE%\META-INF" "%DCM4CHEE_JMX_CONSOLE%\META-INF\"
 
-xcopy "%JBOSS_SERV%"\deploy\management\console-mgr.sar\*.jar \
-  "%DCM4CHEE_SERV%"\deploy\management\console-mgr.sar
+xcopy /S "%JBOSS_JMX_CONSOLE%\WEB-INF\classes" "%DCM4CHEE_JMX_CONSOLE%\WEB-INF\classes\"
 
-xcopy /S "%JBOSS_SERV%"\deploy\management\console-mgr.sar\META-INF \
-  "%DCM4CHEE_SERV%"\deploy\management\console-mgr.sar
+set JBOSS_CONSOLE_MGR=%JBOSS_DEPLOY%\management\console-mgr.sar
+set DCM4CHEE_CONSOLE_MGR=%DCM4CHEE_DEPLOY%\management\console-mgr.sar
 
-xcopy "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\*.html \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\*.jar \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\*.js \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\*.jsp \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\*.xml \
-  "%DCM4CHEE_SERV%"\deploy\management\console-mgr.sar\web-console.war
-  
-xcopy /S "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\css \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\images \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\img \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\META-INF \
-  "%DCM4CHEE_SERV%"\deploy\management\console-mgr.sar\web-console.war
-  
-xcopy /S "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\WEB-INF\classes \
-  "%JBOSS_SERV%"\deploy\management\console-mgr.sar\web-console.war\WEB-INF\tlds \
-  "%DCM4CHEE_SERV%"\deploy\management\console-mgr.sar\web-console.war\WEB-INF
+copy "%JBOSS_CONSOLE_MGR%\*.jar" "%DCM4CHEE_CONSOLE_MGR%"
+
+xcopy /S "%JBOSS_CONSOLE_MGR%\META-INF" "%DCM4CHEE_CONSOLE_MGR%\META-INF\"
+
+set JBOSS_WEB_CONSOLE=%JBOSS_CONSOLE_MGR%\web-console.war
+set DCM4CHEE_WEB_CONSOLE=%DCM4CHEE_CONSOLE_MGR%\web-console.war
+
+copy "%JBOSS_WEB_CONSOLE%\*.html" "%DCM4CHEE_WEB_CONSOLE%"
+copy "%JBOSS_WEB_CONSOLE%\*.jar" "%DCM4CHEE_WEB_CONSOLE%"
+copy "%JBOSS_WEB_CONSOLE%\*.js" "%DCM4CHEE_WEB_CONSOLE%"
+copy "%JBOSS_WEB_CONSOLE%\*.jsp" "%DCM4CHEE_WEB_CONSOLE%"
+copy "%JBOSS_WEB_CONSOLE%\*.xml" "%DCM4CHEE_WEB_CONSOLE%"
+
+xcopy /S "%JBOSS_WEB_CONSOLE%\css" "%DCM4CHEE_WEB_CONSOLE%\css\"
+xcopy /S "%JBOSS_WEB_CONSOLE%\images" "%DCM4CHEE_WEB_CONSOLE%\images\"
+xcopy /S "%JBOSS_WEB_CONSOLE%\img" "%DCM4CHEE_WEB_CONSOLE%\img\"
+xcopy /S "%JBOSS_WEB_CONSOLE%\META-INF" "%DCM4CHEE_WEB_CONSOLE%\META-INF\"
+
+xcopy /S "%JBOSS_WEB_CONSOLE%\WEB-INF\classes" "%DCM4CHEE_WEB_CONSOLE%\WEB-INF\classes\"
+xcopy /S "%JBOSS_WEB_CONSOLE%\WEB-INF\tlds" "%DCM4CHEE_WEB_CONSOLE%\WEB-INF\tlds\"
 
 :end
+if "%OS%" == "Windows_NT" endlocal
