@@ -3,22 +3,13 @@
         <property file="../build.properties"/>
 
 	<!-- Override with your JBoss dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.0.5.GA" />
-	<property name="jboss.lib.dir" value="${jboss.home}/lib"/>
-	<property name="jboss-jmx.jar" value="${jboss.lib.dir}/jboss-jmx.jar"/>
-	<property name="jboss.server.lib.dir" value="${jboss.home}/server/default/lib"/>
-	<property name="log4j.jar" value="${jboss.server.lib.dir}/log4j.jar"/>
-	<property name="mail.jar" value="${jboss.server.lib.dir}/mail.jar"/>
-	<property name="servlet-api.jar" value="${jboss.server.lib.dir}/javax.servlet.jar"/>
+	<property name="jboss.home" value="${user.home}/jboss-4.2.1.GA" />
+	<property name="jboss.server.home" value="${jboss.home}/server/default"/>
 	
   <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
 	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
 
-	<!-- Override with your dcm4chee-sar working directory -->
-	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
-	<property name="dcm4chee-sar.lib" value="${dcm4chee-sar.home}/lib" />
-	
 	<property name="target.dir" value="target"/>
 	<property name="product" value="${ant.project.name}"/>
 	<property name="war.file" value="${target.dir}/deploy/${product}.war"/>
@@ -39,14 +30,13 @@
 	<property name="xmbean.deploy.dir" value="${deploy.root}/conf/xmdesc"/>
 
 	<path id="master-classpath">
-		<pathelement location="${jboss.lib.dir}/jboss-system.jar"/>
-		<pathelement location="${jboss-jmx.jar}"/>
-		<pathelement location="${servlet-api.jar}"/>
-		<pathelement location="${dcm4chee-sar.lib}/saaj-impl.jar"/>
-		<pathelement location="${dcm4chee-sar.lib}/saaj-api.jar"/>
-		<pathelement location="${log4j.jar}"/>
-		<pathelement location="${mail.jar}"/>
 		<pathelement location="${dcm4che.jar}"/>
+		<fileset dir="${jboss.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${jboss.server.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
 	</path>
 
 	<property name="debug" value="on"/>

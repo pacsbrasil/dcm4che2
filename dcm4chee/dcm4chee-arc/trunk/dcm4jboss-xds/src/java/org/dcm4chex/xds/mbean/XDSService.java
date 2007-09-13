@@ -90,7 +90,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
+// import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -413,18 +413,18 @@ public class XDSService extends ServiceMBeanSupport {
 			Map attachments = getAttachments(message);
 			NodeList nl;
 			Node leafRegistryObjectList;
-	                try {
+//	                try {
 	                    SOAPBody body = message.getSOAPBody();
 	                    log.debug("SOAPBody:"+body );
 	                    nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
                             leafRegistryObjectList = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
-	                } catch ( Throwable t) {
-	                    log.warn("Retrieve of SOAPBody failed! Try to get ExtrinsicObject directly from SOAPMessage!");
-	                    Document d = getDocumentFromMessage(message);
-	                    d.getDocumentElement();
-	                    nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
-	                    leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
-	                }
+//	                } catch ( Throwable t) {
+//	                    log.warn("Retrieve of SOAPBody failed! Try to get ExtrinsicObject directly from SOAPMessage!");
+//	                    Document d = getDocumentFromMessage(message);
+//	                    d.getDocumentElement();
+//	                    nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
+//	                    leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
+//	                }
 	        if(nl.getLength() < 1 ) {
                 if ( attachments.isEmpty() ) {
                     log.debug("No ExtrinsicObject found! But we have nothing to store (no Attachment) -> forward message to registry!");
@@ -719,18 +719,18 @@ public class XDSService extends ServiceMBeanSupport {
 		try {
 			NodeList nl;
 			NodeList errors;
-	                try {
+//	                try {
 	                    SOAPBody body = response.getSOAPBody();
 	                    log.debug("SOAPBody:"+body );
 	                    nl = body.getElementsByTagName("RegistryResponse");
                             errors = body.getElementsByTagName("RegistryError");
-	                } catch ( Throwable t) {
-	                    log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage");
-	                    Document d = getDocumentFromMessage( response );
-	                    nl = d.getElementsByTagName(responseTag);
-                            errors = d.getElementsByTagName("RegistryError");
-                            log.debug("Fallback RegistryResponse NodeList:"+nl);
-	                }
+//	                } catch ( Throwable t) {
+//	                    log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage");
+//	                    Document d = getDocumentFromMessage( response );
+//	                    nl = d.getElementsByTagName(responseTag);
+//                            errors = d.getElementsByTagName("RegistryError");
+//                            log.debug("Fallback RegistryResponse NodeList:"+nl);
+//	                }
 			if ( nl.getLength() != 0  ) {
 				Node n = nl.item(0);
 				String status = n.getAttributes().getNamedItem("status").getNodeValue();
@@ -758,12 +758,12 @@ public class XDSService extends ServiceMBeanSupport {
 		}
 	}
 	
-	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
-		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
-        DocumentBuilder builder = dbFactory.newDocumentBuilder();
-        Document d = builder.parse( src.getInputStream() );
-        return d;
-	}
+//	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
+//		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
+//        DocumentBuilder builder = dbFactory.newDocumentBuilder();
+//        Document d = builder.parse( src.getInputStream() );
+//        return d;
+//	}
 	/**
 	 * @param message
 	 * @return
@@ -868,9 +868,11 @@ public class XDSService extends ServiceMBeanSupport {
     public List getRegistryObjects(SOAPMessage response, String responseTag) {
         ArrayList l = new ArrayList();
         try {
-            NodeList nl;
-            Document d = getDocumentFromMessage( response );
-            nl = d.getElementsByTagName(responseTag);
+            SOAPBody body = response.getSOAPBody();
+            log.debug("SOAPBody:"+body );
+            NodeList nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
+//            Document d = getDocumentFromMessage( response );
+//            nl = d.getElementsByTagName(responseTag);
             if ( nl.getLength() != 0  ) {
                 Element e = (Element) nl.item(0);
                 NodeList nlChilds = e.getElementsByTagName("ExtrinsicObject");
