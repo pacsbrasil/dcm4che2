@@ -24,7 +24,7 @@ goto end
 set JBOSS_HOME=%1
 set JBOSS_SERV=%JBOSS_HOME%\server\default
 
-if exist "%JBOSS_SERV" goto found_jboss
+if exist "%JBOSS_SERV%" goto found_jboss
 echo Could not locate jboss-4.2.1.GA in %JBOSS_HOME%.
 goto end
 
