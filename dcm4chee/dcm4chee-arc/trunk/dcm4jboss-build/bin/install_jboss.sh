@@ -20,8 +20,7 @@ if [ ! -f "$JBOSS_HOME"/bin/run.jar ]; then
   exit 1
 fi
 
-cp -v "$JBOSS_HOME"/bin/run.bat \
-  "$JBOSS_HOME"/bin/run.jar \
+cp -v "$JBOSS_HOME"/bin/run.jar \
   "$JBOSS_HOME"/bin/run.sh \
   "$JBOSS_HOME"/bin/shutdown.bat \
   "$JBOSS_HOME"/bin/shutdown.jar \
