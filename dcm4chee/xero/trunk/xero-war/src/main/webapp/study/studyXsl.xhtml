@@ -16,9 +16,9 @@
 </head>
 <body style="background: black; color: white;">
  <xsl:if test="/documents/debug='true'">
-   Results doc name=<xsl:value-of select="$docName"></xsl:value-of> <br />
-   Patient Ident=<xsl:value-of select="$patientIdent"></xsl:value-of> <br />
-   Study UID=<xsl:value-of select="$studyUID"></xsl:value-of> <br />
+   Results doc name=<xsl:value-of select="$docName" /> <br />
+   Patient Ident=<xsl:value-of select="$patientIdent" /> <br />
+   Study UID=<xsl:value-of select="$studyUID" /> <br />
  </xsl:if>
    
  <form target="displayFrame" method="GET" action="displayFrame.seam">
@@ -31,12 +31,12 @@
      <xsl:for-each select="$patientNode/se:study">
 	   <option>
 	    <xsl:attribute name="xml:space">preserve</xsl:attribute>
-	    <xsl:attribute name="value"><xsl:value-of select="@StudyInstanceUID"></xsl:value-of></xsl:attribute>
+	    <xsl:attribute name="value"><xsl:value-of select="@StudyInstanceUID" /></xsl:attribute>
 	   	<xsl:if test="@StudyInstanceUID=$studyUID"><xsl:attribute name="selected">true</xsl:attribute></xsl:if>
-        <xsl:value-of select="@StudyDateTime"></xsl:value-of>
-        <xsl:if test="@AccessionNumber!=''">Acc#<xsl:value-of select="@AccessionNumber"></xsl:value-of></xsl:if>
-        <xsl:value-of select="@ModalitiesInStudy"></xsl:value-of>
-        <xsl:value-of select="@StudyDescription"></xsl:value-of>
+        <xsl:value-of select="@StudyDateTime" />
+        <xsl:if test="@AccessionNumber!=''">Acc#<xsl:value-of select="@AccessionNumber" /></xsl:if>
+        <xsl:value-of select="@ModalitiesInStudy" />
+        <xsl:value-of select="@StudyDescription" />
       </option>
      </xsl:for-each>
    </select>

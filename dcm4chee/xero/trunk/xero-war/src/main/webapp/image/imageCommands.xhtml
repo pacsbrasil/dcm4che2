@@ -1,72 +1,132 @@
 <!-- Contains information about the user preferences and settings applied to study and lower level
      commands.  Other files define preferences for other areas.
   -->
-<preference xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<xul:preference 
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"   
+  xmlns="http://www.w3.org/1999/xhtml"
+>
   <!-- Defines the study level toolbar contents.  This is a toolbar intended to be defined
      per-study, but that doesn't mean it can't apply things to individual images
     -->
-  <toolbar id='studyToolbar'>
-   <navSeriesButton id="prevSeries" dir="-1" label="&lt;Series" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
-   <changeMode id="wlBtn" mode="windowLevel" label="Window Level" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  />
-   <changeMode id="zpBtn" mode="zoomPan" label="Zoom/Pan" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"  />
-   <changeMode id="emBtn" mode="editMarkup" label="Edit" oncommand="/xero/image/action/Mode.seam?mode=editMarkup"  />
-   <changeMode id="cmBtn" mode="createMarkup" label="Create" oncommand="/xero/image/action/Mode.seam?mode=createMarkup"  />
-   <button id="layoutSe2x2" label="Se 2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml" />
-   <button id="layoutIm5x5" label="Im 5x5" oncommand="/xero/image/action/Layout.seam?layout=layoutIm5x5.xml" />
-   <button id="layoutPrint" label="Print" oncommand="/xero/image/action/Layout.seam?layout=layoutPrint.xml" />
-   <button id="layoutDebug" label="Debug" oncommand="/xero/image/action/Layout.seam?layout=layout.xml&amp;debug=true" />
+  <xul:toolbar id='studyToolbar'>
+   <xul:navSeriesButton id="prevSeries" dir="-1" label="&lt;Series" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
+   <xul:changeMode id="wlBtn" mode="windowLevel" label="Window Level" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  />
+   <xul:changeMode id="zpBtn" mode="zoomPan" label="Zoom/Pan" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"  />
+   <xul:changeMode id="emBtn" mode="editMarkup" label="Edit" oncommand="/xero/image/action/Mode.seam?mode=editMarkup"  />
+   <xul:changeMode id="cmBtn" mode="createMarkup" label="Create" oncommand="/xero/image/action/Mode.seam?mode=createMarkup"  />
+   <xul:button id="layoutSe2x2" label="Se 2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml" />
+   <xul:button id="layoutIm5x5" label="Im 5x5" oncommand="/xero/image/action/Layout.seam?layout=layoutIm5x5.xml" />
+   <xul:button id="layoutPrint" label="Print" oncommand="/xero/image/action/Layout.seam?layout=layoutPrint.xml"/>
+   <xul:button id="layoutDebug" label="Debug" oncommand="/xero/image/action/Layout.seam?layout=layout.xml&amp;debug=true" />
 
-   <text label="Apply to:" />
-   <applyLevel level="SERIES">
-     <button id="seriesLevel" label="Series" oncommand="/xero/image/image.seam?applyLevel=series" />
-   </applyLevel>
-   <applyLevel level="IMAGE">
-     <button id="imageLevel" label="Image" oncommand="/xero/image/image.seam?applyLevel=image"/>
-   </applyLevel>
+   <xul:text label="Apply to:" />
+   <xul:applyLevel level="SERIES">
+     <xul:button id="seriesLevel" label="Series" oncommand="/xero/image/image.seam?applyLevel=series" />
+   </xul:applyLevel>
+   <xul:applyLevel level="IMAGE">
+     <xul:button id="imageLevel" label="Image" oncommand="/xero/image/image.seam?applyLevel=image"/>
+   </xul:applyLevel>
 
-   <navSeriesButton id="nextSeries" dir="1" label="Series>" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
-  </toolbar>
+   <xul:navSeriesButton id="nextSeries" dir="1" label="Series>" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
+  </xul:toolbar>
   
+  <!-- This copy of the toolbar is being updated to use YUI controls etc to display, and
+       to be able to refresh just the display area.
+    -->
+  <xul:toolbar id='displayToolbar'>
+   <xul:navSeriesButton id="prevSeries" dir="-1" label="&lt;Series" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
+   <xul:changeMode id="wlBtn" mode="windowLevel" label="Window Level" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  />
+   <xul:changeMode id="zpBtn" mode="zoomPan" label="Zoom/Pan" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"  />
+   <xul:changeMode id="emBtn" mode="editMarkup" label="Edit" oncommand="/xero/image/action/Mode.seam?mode=editMarkup"  />
+   <xul:changeMode id="cmBtn" mode="createMarkup" label="Create" oncommand="/xero/image/action/Mode.seam?mode=createMarkup"  />
+   <button type="button" onclick="alert('You pressed '+this);">Press me!</button>
+   <button type="button" onclick="menuRender();">Render Menu</button>
+   <span id="splitLayout" class="yuibutton">
+     <span class="first-child">
+       <button id="splitLayoutBut" type="button"  name="splitLayoutBut" value="Ser 2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml" ajaxUpdate="display">Ser TXT 2x2</button>
+     </span>
+   </span>
+   <div id="menuLayout" class="yuimenu" style="background: black; color: white;">
+     <div class="bd">
+       <ul class="first-of-type">
+         <li class="yuimenuitem"><a id="layoutSe2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml">Se 2x2</a></li>
+         <li class="yuimenuitem"><a id="layoutIm5x5" oncommand="/xero/image/action/Layout.seam?layout=layoutIm5x5.xml">Im 5x5</a></li>
+	     <li class="yuimenuitem"><a id="layoutPrint" oncommand="/xero/image/action/Layout.seam?layout=layoutPrint.xml">Print</a></li>
+ 	     <li class="yuimenuitem"><a id="layoutDebug" oncommand="/xero/image/action/Layout.seam?layout=layout.xml&amp;debug=true">Debug</a></li>
+       </ul>
+     </div>
+   </div>
+   
+   <xul:text label="Apply to:" />
+   <xul:applyLevel level="SERIES">
+     <xul:button id="seriesLevel" label="Series" oncommand="/xero/image/image.seam?applyLevel=series" />
+   </xul:applyLevel>
+   <xul:applyLevel level="IMAGE">
+     <xul:button id="imageLevel" label="Image" oncommand="/xero/image/image.seam?applyLevel=image"/>
+   </xul:applyLevel>
+
+   <xul:navSeriesButton id="nextSeries" dir="1" label="Series>" oncommand="/xero/image/action/Navigate.seam?applyLevel=series"/>
+   <script>
+      var butLayout, menuLayout;
+      function menuRender(){
+        if(!document.body ) {
+	        alert("Setting body in document, since it isn't set yet.");
+	        document.body = document.firstChild.lastChild;
+        }
+        if( menuLayout ) {
+          menuLayout.show();
+        } else {
+          alert("Starting to convert basicmenu, document="+document+" document.body="+document.body);
+          menuLayout = new YAHOO.widget.Menu("menuLayout", {monitorresize: false });
+          menuLayout.render();
+          butLayout = new YAHOO.widget.Button("splitLayout", {type: "split", menu: menuLayout });
+          alert("Done converting menu.");
+        }
+        return false;
+      };
+   </script>
+  </xul:toolbar>
+
   <!-- Defines the series level toolbar.  Can't affect the study level display.  
     -->
-  <toolbar id='seriesToolbar'>
-   <navImgButton id="previousImage" dir="-1" label="&lt;Image"  oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=-1" />
+  <xul:toolbar id='seriesToolbar'>
+   <xul:navImgButton id="previousImage" dir="-1" label="&lt;Image"  oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=-1" />
 
    
-   <navImgButton id="nextImage" label="Image>"  dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=1" />
- </toolbar>
+   <xul:navImgButton id="nextImage" label="Image>"  dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=1" />
+ </xul:toolbar>
 
- <toolbar id="imgToolbar">
-    <modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1&amp;size=MAGNIFY">
-     <region />
-    </modeButton>
-    <modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1&amp;size=MAGNIFY">
-     <region />
-    </modeButton>
- </toolbar>
+ <xul:toolbar id="imgToolbar">
+    <xul:modeButton id="zpPlus" mode="zoomPan" label="Zoom +" oncommand="/xero/image/action/ZoomPan.seam?relZoom=1&amp;size=MAGNIFY">
+     <xul:region />
+    </xul:modeButton>
+    <xul:modeButton id="zpMin" mode="zoomPan" label="-" oncommand="/xero/image/action/ZoomPan.seam?relZoom=-1&amp;size=MAGNIFY">
+     <xul:region />
+    </xul:modeButton>
+ </xul:toolbar>
    
   <!-- Contains overlay information for how items are handled, and what extra views are present
        in the image area.
     -->
-  <overlay id='imageOverlay'>
-    <imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
-      <windowLevel />
-    </imageHandler>
+  <xul:overlay id='imageOverlay'>
+    <xul:imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
+      <xul:windowLevel />
+    </xul:imageHandler>
     
-    <imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
+    <xul:imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
     
-    <imageHandler mode="createMarkup" handler="markupCreate" />
+    <xul:imageHandler mode="createMarkup" handler="markupCreate" />
     
-  </overlay>
+  </xul:overlay>
   
-  <overlay id='imageHover'>
-    <imageHover handler="imageHoverHandler" oncommand="/xero/image/action/ImageHover.seam?hover=true" />
+  <xul:overlay id='imageHover'>
+    <xul:imageHover handler="imageHoverHandler" oncommand="/xero/image/action/ImageHover.seam?hover=true" />
     
-    <imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
-      <windowLevel />
-    </imageHandler>
+    <xul:imageHandler mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
+      <xul:windowLevel />
+    </xul:imageHandler>
     
-    <imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
+    <xul:imageHandler mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
     
-  </overlay>
-</preference>
+  </xul:overlay>
+</xul:preference>

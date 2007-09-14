@@ -120,6 +120,9 @@
      <copy todir="${stableServer}/server/default/deploy/xero.ear" preservelastmodified="true">
         <fileset dir="xero-ear/target/xero" excludes="xero.war" />
      </copy>
+     <copy todir="${stableServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
+        <fileset dir="xero-war/target/xero" excludes="xero.war" />
+     </copy>
      <copy todir="${stableServer}/server/default/conf">
         <fileset dir="conf" includes="**/*" />
      </copy>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xsl
+   pageConfig="#{PageConfig.report}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/report"
+   xmlns:c="http://java.sun.com/jstl/core"
+   m:xsl="/xero/report/reportXsl.xsl"
+>
+
+<xsl:import href="/xsl/sr_html.xsl" />
+
+<xsl:variable name="cid" select="/documents/@conversationId" />
+
+<x:template name="imageWadoXero" match="item" mode="imageref">
+  <xsl:param name="objectUID" select="attr[@tag='00081155']" />
+  <xsl:param name="frameNo" select="attr[@tag='00081160']" />
+  <xsl:param name="seriesDoc">/xero/image/image.xml?containsObjectUID=<xsl:value-of select='$objectUID' /><xsl:if test="$frameNo">&amp;containsFrameNumber=<xsl:value-of select="$frameNo" /></xsl:if></xsl:param>
+  <xsl:param name="seriesDocNode" select="document($seriesDoc)" />
+  <xsl:param name="pid" select="$seriesDocNode/se:results/se:patient/@PatientIdentifier" />
+  <xsl:param name="studyUID" select="$seriesDocNode/se:results/se:patient/se:study/@StudyInstanceUID" />
+  <xsl:param name="seriesUID" select="$seriesDocNode/se:results/se:patient/se:study/se:series/@SeriesInstanceUID" />
+  <xsl:param name="position" select="$seriesDocNode/se:results/se:patient/se:study/se:series/se:image/@Position" />
+  <a>
+    <xsl:attribute name="href">/xero/image/action/Navigate.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$pid" />&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" />&amp;position=<xsl:value-of select="$position" /></xsl:attribute>
+  	Image 
+    <img>
+	  <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$objectUID"/>&amp;rows=128</xsl:attribute>
+    </img>
+  </a>
+  <br/>
+</x:template>
+	
+<x:template name="displayHtml" match="/">
+  <xsl:param name="objectUID" select="/documents/layout/@objectUID" />
+  <xsl:param name="reportURL" select="concat('/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',$objectUID,'&amp;contentType=text%2Fxml')" />
+  <xsl:param name="reportXML" select="document($reportURL)" />
+  <xsl:apply-templates select="$reportXML/dataset"/>
+</x:template>
+
+</x:xsl>

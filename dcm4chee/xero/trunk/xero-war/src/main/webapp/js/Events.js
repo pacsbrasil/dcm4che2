@@ -100,6 +100,10 @@ function addEvent(elm, evType, fn, useCapture) {
  * @param func is the function to all.
  */
 function addLoadEvent(func) {
+	if( typeof(YAHOO)!=='undefined' ) {
+		YAHOO.util.Event.onContentReady("body", func);
+		return;
+	}
 	var oldonload = window.onload;
 	if (typeof window.onload != 'function') {
 		window.onload = func;

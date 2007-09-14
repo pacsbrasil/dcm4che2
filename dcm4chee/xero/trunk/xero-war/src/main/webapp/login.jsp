@@ -28,7 +28,7 @@
  </tr>
  <tr>
   <td background="/dcm4chee-web/white48.jpg">
-    <img src="/dcm4chee-web/white48.jpg" width="10px" height="24px"><img src="/dcm4chee-web/logo.gif" alt="DCM4CHEE">
+    <img src="/dcm4chee-web/white48.jpg" width="10px" height="24px"><img src="/dcm4chee-web/logo.gif" alt="DCM4CHEE"> Xero
   </td>
  </tr>
  <tr>

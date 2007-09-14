@@ -10,6 +10,8 @@
   xmlns:c="http://java.sun.com/jstl/core"
   xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="http://www.w3.org/1999/xhtml"
   m:includeXsl="/image/baseImageXsl.xhtml"
 >
 
@@ -125,8 +127,6 @@
  <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth]"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter]"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
  
- <xsl:message>count custNode=<xsl:value-of select="concat($wWidth,',',$wCenter)" /></xsl:message>
-
  <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
   <xsl:attribute name="style"><xsl:value-of select="concat('left:',$orx,';top:',$ory,';width:',$brx - $orx,';height:',$bry - $ory,';')" /></xsl:attribute>
@@ -235,6 +235,66 @@
   </xsl:if>  
   <xsl:value-of select="@label" />
  </a>
+</x:template>
+
+<!-- Adds command handling to this object -->
+<x:template name="oncommandHandle">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:if test="@oncommand">
+   <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+    <xsl:with-param name="loc" select="$loc" />
+    <xsl:with-param name="node" select="." />
+   </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode">
+    <xsl:with-param name="loc" select="$loc" />
+    <xsl:with-param name="node" select="$node" />
+   </xsl:apply-templates></xsl:attribute>
+   <xsl:attribute name="onclick">return displayXslt.action("<xsl:value-of select="@id" />");</xsl:attribute>
+ </xsl:if>
+</x:template>
+
+<x:template name="textElementCopy" mode="newlayout" match="text()">
+  <xsl:copy />
+</x:template>
+
+<!-- Layout a YUI based button -->
+<x:template name="inputButton" mode="newlayout" match="h:input[@type='button']|h:button|h:select|h:option|h:script|h:span|h:div|h:ul|h:li|h:a">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:copy>
+   <xsl:copy-of select="@*" />
+   <xsl:call-template name="oncommandHandle">
+     <xsl:with-param name="loc" select="$loc" />
+     <xsl:with-param name="node" select="$node" />
+   </xsl:call-template>
+   <xsl:apply-templates mode="newlayout">
+     <xsl:with-param name="loc" select="$loc" />
+     <xsl:with-param name="node" select="$node" />
+   </xsl:apply-templates>
+ </xsl:copy>
+</x:template>
+
+<x:template name="toolbarDiv" mode="newlayout" match="h:div[@class='toolbar'][@ref]">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+   
+ <xsl:param name="toolbarId" select='./@ref' />
+ <xsl:param name="thisToolbar" select="$toolbarNode/xul:toolbar[@id=$toolbarId]" />
+   
+ <xsl:copy>
+  <xsl:attribute name="style">float: left;
+   <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+   <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
+   <xsl:value-of select="@style" />
+  </xsl:attribute>
+
+  <!-- Generate the toolbar from the toolbar layout information -->
+  <xsl:apply-templates select="$thisToolbar/*" mode="newlayout">
+   <xsl:with-param name="loc" select="$loc" />
+   <xsl:with-param name="node" select="$node" />
+  </xsl:apply-templates>
+    
+ </xsl:copy>
 </x:template>
 
 <x:template name="changeMode" mode="newlayout" match="xul:changeMode">

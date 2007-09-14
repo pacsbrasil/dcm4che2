@@ -74,6 +74,14 @@
     <param name="jsEnabled" value="#{JavaScriptModel.javaScriptEnabled}" />
   </page>
   
+  <page view-id="/report/report.xhtml">
+    <param name="pid" value="#{ActionStudyLevel.pid}" />
+    <param name="studyUID" value="#{ActionStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{ActionStudyLevel.seriesUID}" />
+    <param name="objectUID" value="#{ActionStudyLevel.objectUID}" />
+    <begin-conversation join="true" />
+  </page>
+  
   <page view-id="/image/image.xhtml">
     <param name="pid" value="#{DisplayStudyLevel.pid}" />
     <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
@@ -100,9 +108,6 @@
     <begin-conversation join="true" />
   </page>
 
-  <page view-id="/image/action/Navigate.xhtml" action="#{Navigate.action}">
-  </page>
-  
   <page view-id="/image/action/Mode.xhtml" action="#{DisplayMode.action}">
     <navigation>
       <redirect view-id="/image/image.xhtml" />

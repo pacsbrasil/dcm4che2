@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.search.study;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +63,10 @@ public class PagedImageFilter implements Filter<ResultsType> {
    static public final String POSITION_KEY = "Position";
 
    static public final String COUNT_KEY = "Count";
+   
+   static public final String CONTAINS_OBJECT_UID="containsObjectUID";
+   
+   static public final String CONTAINS_FRAME_NUMBER="containsFrameNumber";
 
    static public final int DEFAULT_COUNT = 64;
 
@@ -76,7 +81,9 @@ public class PagedImageFilter implements Filter<ResultsType> {
    public ResultsType filter(FilterItem filterItem, Map<String, Object> params) {
 	  int position = 0;
 	  int count = 0;
-	  Object[] page = MemoryCacheFilterBase.removeFromQuery(params,POSITION_KEY,COUNT_KEY);
+	  Object[] page = MemoryCacheFilterBase.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
+	  String objectUID = null;
+	  String frameNo = null;
 	  if (page[0]!=null) {
 		 position = Integer.parseInt((String) page[0]);
 		 // A negative position might be specified by offset logic, so just
@@ -89,13 +96,62 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 }
 		 log.debug("Paged image filter return items from " + position + "," + count);
 	  }
+	  else if( page[2]!=null ) {
+		 objectUID = (String) page[2];
+		 frameNo = (String) page[3];
+		 log.debug("Looking for study/series containing "+objectUID+" frame "+frameNo);
+		 Map<String,Object> newQueryParams = new HashMap<String,Object>(params);
+		 newQueryParams.put("SOPInstanceUID", objectUID);
+		 newQueryParams.put(MemoryCacheFilterBase.KEY_NAME, "SOPInstanceUID="+objectUID);
+		 ResultsType results = (ResultsType) filterItem.callNextFilter(newQueryParams);
+		 params.remove("SOPInstanceUID");
+		 if( results==null ) return null;
+		 assert results.getPatient().size()==1;
+		 PatientType patient = results.getPatient().get(0);
+		 assert patient.getStudy().size()==1;
+		 StudyType study = patient.getStudy().get(0);
+		 assert study.getSeries().size()==1;
+		 SeriesType series = study.getSeries().get(0);
+		 String seriesUID = series.getSeriesInstanceUID();
+		 params.put("SeriesInstanceUID", seriesUID);
+		 params.put(MemoryCacheFilterBase.KEY_NAME, "SeriesInstanceUID="+seriesUID);
+		 log.debug("Looking for series UID "+seriesUID);
+	  }
+	  else {
+		 log.debug("Not looking for paging image results - probably an ad-hoc query.");
+	  }
 	  ResultsType results = (ResultsType) filterItem.callNextFilter(params);
+	  if( objectUID!=null && results!=null ) {
+		 position = findPosition(results,objectUID,frameNo);
+		 log.debug("Found position "+position);
+		 if( position>=0 ) count = 5;
+	  }
 	  if (results == null)
 		 return results;
-	  if (count > 0) {
+	  if (count > 0 ) {
 		 results = decimate(results, position, count);
 	  }
 	  return results;
+   }
+
+   /** Finds the position that the given object is at */
+   private int findPosition(ResultsType results, String objectUID, String frameNo) {
+	  String key = objectUID;
+	  if( frameNo!=null ) key = key+","+frameNo;
+	  Object result = ((ResultsBean) results).getChildren().get(key);
+	  if( result==null && frameNo!=null ) {
+		 result = ((ResultsBean) results).getChildren().get(objectUID);
+	  }
+	  if( result==null || !(result instanceof ImageBean)) return -1;
+	  ImageBean image = (ImageBean) result;
+	  int posn = image.getPosition();
+	  if( frameNo!=null ) {
+		 int frameNoI = Integer.parseInt(frameNo);
+		 assert image.getNumberOfFrames() >= frameNoI;
+		 assert frameNoI>=1;
+		 return posn-1+frameNoI;
+	  }
+	  return posn;
    }
 
    /**

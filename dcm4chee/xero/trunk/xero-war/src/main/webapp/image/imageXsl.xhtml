@@ -51,6 +51,7 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
   
 <x:template name="displayHtml" match="/"><html style="background: black; color: white; " xmlns="http://www.w3.org/1999/xhtml">
   <head>
+	
     <x:callTemplates from="#{pageConfig}" mode="meta" />
     <title>Xero Image Frame</title>
     <x:callTemplates from="#{pageConfig}" mode="script" />
@@ -60,13 +61,13 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     onmouseout="return imageHandler.mouseOut(event);"
     onmouseup="return imageHandler.mouseUp(event);"
   >
-   <div id="body">
+   <form id="body" name="body" method="post" action="#">
     <xsl:if test="/documents/debug='true'">
      <button onclick="ttrace(document.getElementsByTagName('body')[0].innerHTML);">Body</button>
 	 <button onclick="ttrace('Source='+displayXslt.asString(displayXslt.currentXml));">Source</button>
     </xsl:if>
     <x:callTemplates from="#{pageConfig}" mode="body" />
-   </div>
+   </form>
   </body>
 </html>
 </x:template>

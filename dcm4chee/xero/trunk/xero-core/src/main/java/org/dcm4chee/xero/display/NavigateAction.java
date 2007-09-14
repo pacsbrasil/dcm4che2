@@ -56,9 +56,6 @@ public class NavigateAction {
    @In(value = "ConversationStudyModel", create = true)
    ConversationStudyModel studyModel;
 
-   @In(value = "DisplayMode", create = true)
-   DisplayMode mode;
-
    @In(value = "ActionStudyLevel")
    StudyLevel actionStudyLevel;
 
@@ -71,17 +68,18 @@ public class NavigateAction {
      * handle patient level navigation.
      */
    public String action() {
-	  DisplayMode.ApplyLevel applyLevel;
-	  if (mode != null)
-		 applyLevel = mode.getApplyLevel();
-	  else
-		 applyLevel = DisplayMode.ApplyLevel.SERIES;
-	  if (applyLevel == DisplayMode.ApplyLevel.SERIES) {
-		 studyModel.setDisplayStudyLevel(actionStudyLevel);
-	  } else if (applyLevel == DisplayMode.ApplyLevel.IMAGE) {
+	  if (position!=null) {
+		 if( dir==null ) dir = 0;
 		 NavigateMacro macro = new NavigateMacro(Integer.toString(position+dir));
 		 log.info("Navigating to image "+macro);
 		 studyModel.apply(DisplayMode.ApplyLevel.SERIES, macro);
+		 if( studyModel.getDisplayStudyLevel().getStudyUID()!=actionStudyLevel.getStudyUID() ) {
+			log.info("Navigating patient/study/series as well as image position.");
+			studyModel.setDisplayStudyLevel(actionStudyLevel);
+		 }
+	  }
+	  else if (actionStudyLevel.getSeriesUID()!=null) {
+		 studyModel.setDisplayStudyLevel(actionStudyLevel);
 	  } else {
 		 log.warn("Unknown study level for navigation.");
 		 return "failure";

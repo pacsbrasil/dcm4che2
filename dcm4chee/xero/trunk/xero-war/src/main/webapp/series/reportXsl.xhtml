@@ -11,7 +11,7 @@
     <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series/se:report">
       <span>
          <a target="imageFrame">
-            <xsl:attribute name="href">/wado?requestType=WADO&amp;studyUID=<xsl:value-of select="ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
+            <xsl:attribute name="href">/xero/report/report.seam?cid=<xsl:value-of select='$cid' />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
 	        <xsl:value-of select="@conceptMeaning" />
 	        <xsl:if test="@conceptMeaning=''">
 	        Report
