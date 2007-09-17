@@ -5,6 +5,6 @@
         <property name="jndiPattern">${ear}/#{ejbName}/local</property>
     </component>
     
-    <component class="org.jboss.seam.core.Ejb" installed="false"/>
+    <!--component class="org.jboss.seam.core.Ejb" installed="false"/-->
 
 </components>

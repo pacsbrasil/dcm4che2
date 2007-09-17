@@ -45,7 +45,7 @@ import javax.ejb.Local;
  * @since 29.07.2006
  */
 @Local
-interface AuditRecordList {
+public interface AuditRecordList {
 
     int getPageSize();
     void setPageSize(int pageSize);

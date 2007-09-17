@@ -59,8 +59,7 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import javax.persistence.PersistenceUnit;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che2.audit.message.AuditLogUsedMessage;
@@ -68,6 +67,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.arr.entities.AuditRecord;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
@@ -82,9 +82,9 @@ import org.jboss.seam.annotations.Factory;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Logger;
 import org.jboss.seam.annotations.Name;
-import org.jboss.seam.annotations.RequestParameter;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
+import org.jboss.seam.annotations.web.RequestParameter;
 import org.jboss.seam.log.Log;
 
 /**
@@ -125,9 +125,18 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     @Resource (mappedName="queue/ARRIncoming")
     private transient Queue queue;
     
+/* [#JBSEAM-1787] Injecting a Hibernate session with @PersistenceContext
+                  causes ClassCastException with the Seam Interceptor
     @PersistenceContext(unitName="dcm4chee-arr",
             type=PersistenceContextType.EXTENDED)
     private transient Session session;
+    
+    Workaround:  Inject a SessionFactory with @PersistenceUnit
+    and use SessionFactory#getCurrentSession.
+*/   
+    @PersistenceUnit(unitName="dcm4chee-arr")
+    private transient SessionFactory sessionFactory;
+
 
     @In
     private transient FacesContext facesContext;
@@ -544,6 +553,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     @SuppressWarnings("unchecked")
     private void updateResults() {
+    	Session session = sessionFactory.getCurrentSession();
         Criteria recordsCriteria = buildCriteria(session
                 .createCriteria(AuditRecord.class));
 

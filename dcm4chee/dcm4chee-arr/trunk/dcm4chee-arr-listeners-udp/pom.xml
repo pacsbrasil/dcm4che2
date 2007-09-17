@@ -9,31 +9,31 @@
   <name>UDP Listener of ARR</name>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-listeners-udp</artifactId>
-  <version>3.0.2</version>
+  <version>3.0.3</version>
   <packaging>sar</packaging>
   <dependencies>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-j2ee</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-system</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-jmx</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-common</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

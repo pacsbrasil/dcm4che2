@@ -8,42 +8,42 @@
   <name>Receiver MDB for ARR</name>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-listeners-mdb</artifactId>
-  <version>3.0.2</version>
+  <version>3.0.3</version>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-entities-${db}</artifactId>
-      <version>3.0.2</version>
+      <version>3.0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>1.2.8</version>
+      <version>1.2.14</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-j2ee</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-ejb3x</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>ejb3-persistence</artifactId>
-      <version>4.0.5.GA</version>
+      <version>4.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>hibernate</groupId>
       <artifactId>hibernate-annotations</artifactId>
-      <version>3.2.0.GA</version>
+      <version>3.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
