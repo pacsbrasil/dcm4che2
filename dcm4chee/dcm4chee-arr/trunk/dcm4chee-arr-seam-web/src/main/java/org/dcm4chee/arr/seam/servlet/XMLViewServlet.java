@@ -48,6 +48,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.UserTransaction;
 
 import org.dcm4chee.arr.entities.AuditRecord;
 
@@ -62,14 +63,17 @@ public class XMLViewServlet extends HttpServlet {
 
     private static final String ENTITY_MANAGER_FACTORY =
             "java:/EntityManagerFactories/dcm4chee-arr";
+    private static final String USER_TRANSACTION = "java:comp/UserTransaction";
 
     private EntityManagerFactory emf;
+    private UserTransaction utx;
     
     public void init() throws ServletException {
         try {
             InitialContext jndiCtx = new InitialContext();
             try {
                 emf = (EntityManagerFactory) jndiCtx.lookup(ENTITY_MANAGER_FACTORY);
+                utx = (UserTransaction) jndiCtx.lookup(USER_TRANSACTION);
             } finally {
                 jndiCtx.close();
             }
@@ -99,11 +103,16 @@ public class XMLViewServlet extends HttpServlet {
         }
     }
 
-    private AuditRecord findAuditRecord(Integer pk) {
+    private AuditRecord findAuditRecord(Integer pk) throws ServletException {
         EntityManager entityManager = emf.createEntityManager();
         try {
-            return entityManager.find(AuditRecord.class, pk);
-        } finally {
+        	utx.begin();
+            AuditRecord record = entityManager.find(AuditRecord.class, pk);
+            utx.commit();
+			return record;
+        } catch (Exception e) {
+			throw new ServletException(e);
+		} finally {
             entityManager.close();
         }
     }
