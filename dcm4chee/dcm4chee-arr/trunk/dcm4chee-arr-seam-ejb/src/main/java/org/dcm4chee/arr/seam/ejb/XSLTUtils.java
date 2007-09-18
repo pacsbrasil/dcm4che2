@@ -58,10 +58,10 @@ import javax.xml.transform.stream.StreamSource;
 public class XSLTUtils {
 
     private static final String SUMMARY_XSL = "arr-summary.xsl";
-    private static final String DETAIL_XSL = "arr-detail.xsl";
+    private static final String DETAILS_XSL = "arr-details.xsl";
     
     private static Templates summaryTpl;
-    private static Templates detailTpl;
+    private static Templates detailsTpl;
     private static SAXTransformerFactory tf;
 
     public static String toSummary(byte[] xmldata) {
@@ -78,9 +78,9 @@ public class XSLTUtils {
         }
     }
     
-    public static void renderDetail(byte[] xmldata, Writer out) {
+    public static void renderDetails(byte[] xmldata, Writer out) {
         try {
-            render(detailTpl(), xmldata, out);
+            render(detailsTpl(), xmldata, out);
         } catch (Exception e) {
             renderErrorMessage(e, out);
         }
@@ -110,11 +110,11 @@ public class XSLTUtils {
         return summaryTpl;
     }
     
-    private static Templates detailTpl() throws TransformerException {
-        if (detailTpl == null) {
-            detailTpl = loadTemplates(DETAIL_XSL);
+    private static Templates detailsTpl() throws TransformerException {
+        if (detailsTpl == null) {
+            detailsTpl = loadTemplates(DETAILS_XSL);
         }
-        return detailTpl;
+        return detailsTpl;
     }
     
     private static Templates loadTemplates(String name)
