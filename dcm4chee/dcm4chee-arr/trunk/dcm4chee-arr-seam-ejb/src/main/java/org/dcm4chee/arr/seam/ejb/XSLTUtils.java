@@ -39,11 +39,11 @@
 package org.dcm4chee.arr.seam.ejb;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -58,39 +58,77 @@ import javax.xml.transform.stream.StreamSource;
 public class XSLTUtils {
 
     private static final String SUMMARY_XSL = "arr-summary.xsl";
+    private static final String DETAIL_XSL = "arr-detail.xsl";
+    
     private static Templates summaryTpl;
+    private static Templates detailTpl;
     private static SAXTransformerFactory tf;
 
+    public static String toSummary(byte[] xmldata) {
+        StringWriter writer = new StringWriter(512);
+        renderSummary(xmldata, writer);
+        return writer.toString();        
+    }
+
+    public static void renderSummary(byte[] xmldata, Writer out) {
+        try {
+            render(summaryTpl(), xmldata, out);
+        } catch (Exception e) {
+            renderErrorMessage(e, out);
+        }
+    }
+    
+    public static void renderDetail(byte[] xmldata, Writer out) {
+        try {
+            render(detailTpl(), xmldata, out);
+        } catch (Exception e) {
+            renderErrorMessage(e, out);
+        }
+    }
+    
+    private static void renderErrorMessage(Exception e, Writer out) {
+        PrintWriter pw = (out instanceof PrintWriter) ?
+                (PrintWriter) out : new PrintWriter(out);
+        pw.print("<u>");
+        pw.print(e.getMessage());
+        pw.print("</u> <pre>");
+        e.printStackTrace(pw);
+        pw.print("</pre>");
+    }
+    
+    private static void render(Templates tpl, byte[] xmldata, Writer out)
+            throws TransformerException {
+        tpl.newTransformer().transform(
+                new StreamSource(new ByteArrayInputStream(xmldata)),
+                new StreamResult(out));
+    }
+   
+    private static Templates summaryTpl() throws TransformerException {
+        if (summaryTpl == null) {
+            summaryTpl = loadTemplates(SUMMARY_XSL);
+        }
+        return summaryTpl;
+    }
+    
+    private static Templates detailTpl() throws TransformerException {
+        if (detailTpl == null) {
+            detailTpl = loadTemplates(DETAIL_XSL);
+        }
+        return detailTpl;
+    }
+    
+    private static Templates loadTemplates(String name)
+            throws TransformerException  {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return transfomerFactory().newTemplates(
+                new StreamSource(cl.getResource(name).toString()));
+    }
+    
     private static SAXTransformerFactory transfomerFactory() {
 	if (tf == null) {
 	    tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 	}
 	return tf;
     }
-
-    public static String toSummary(byte[] xmldata) {
-	try {
-	    if (summaryTpl == null) {
-		summaryTpl = loadTemplates(SUMMARY_XSL);
-	    }
-	    return transform(summaryTpl.newTransformer(), xmldata);
-	} catch (Exception e) {
-	    return e.getMessage();
-	}
-    }
-
-    private static String transform(Transformer tr, byte[] xmldata)
-	    throws TransformerException {
-	StringWriter out = new StringWriter(512);
-	tr.transform(new StreamSource(new ByteArrayInputStream(xmldata)),
-		new StreamResult(out));
-	return out.toString();
-    }
-
-    private static Templates loadTemplates(String name)
-	    throws TransformerException  {
-	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	return transfomerFactory().newTemplates(
-		new StreamSource(cl.getResource(name).toString()));
-    }
+    
 }

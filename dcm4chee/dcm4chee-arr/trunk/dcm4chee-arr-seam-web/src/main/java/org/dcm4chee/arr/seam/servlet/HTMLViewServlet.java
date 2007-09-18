@@ -38,21 +38,14 @@
 
 package org.dcm4chee.arr.seam.servlet;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4chee.arr.entities.AuditRecord;
+import org.dcm4chee.arr.seam.ejb.XSLTUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,41 +54,14 @@ import org.dcm4chee.arr.entities.AuditRecord;
  */
 public class HTMLViewServlet extends XMLViewServlet {
 
-    private static final long serialVersionUID = -3823698611577286637L;
-
-    private static final String DETAILS_XSL = "arr-details.xsl";
-
-    private Templates tpl;
-
-    public void init() throws ServletException {
-        super.init();
-        try {
-            SAXTransformerFactory tf = (SAXTransformerFactory)
-                    TransformerFactory.newInstance();
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            StreamSource src = new StreamSource(
-                    cl.getResource(DETAILS_XSL).toString());
-            tpl = tf.newTemplates(src);
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }
-    }
+    private static final long serialVersionUID = 8172550888198233975L;
 
     protected void writeTo(AuditRecord rec, HttpServletResponse rsp)
             throws IOException, ServletException {
         rsp.setContentType("text/html; charset=UTF-8");
-        ServletOutputStream out = rsp.getOutputStream();
-        try {
-            Transformer tr = tpl.newTransformer();
-            StreamSource src = new StreamSource(
-                    new ByteArrayInputStream(rec.getXmldata()));
-            StreamResult rslt = new StreamResult(out);
-            tr.transform(src, rslt);
-        } catch (TransformerException e) {
-            throw new ServletException(e);
-        } finally {
-            out.close();
-        }
+        PrintWriter out = rsp.getWriter();
+        XSLTUtils.renderDetail(rec.getXmldata(), out);
+        out.close();
     }
 
 }
