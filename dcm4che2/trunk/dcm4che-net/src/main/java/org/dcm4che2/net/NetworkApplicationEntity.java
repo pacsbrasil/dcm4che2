@@ -108,6 +108,7 @@ public class NetworkApplicationEntity {
     private List reuseAssocationFromAETitle = Collections.EMPTY_LIST;
     private NetworkConnection[] networkConnection = {};
     private TransferCapability[] transferCapability = {};
+    private boolean offerDefaultTSInSeparatePC;
     private UserIdentity userIdentity;
     private Device device;
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
@@ -443,6 +444,15 @@ public class NetworkApplicationEntity {
     public final void setTransferCapability(
             TransferCapability[] transferCapability) {
         this.transferCapability = transferCapability;
+    }
+
+    public final boolean isOfferDefaultTransferSyntaxInSeparatePresentationContext() {
+        return offerDefaultTSInSeparatePC;
+    }
+
+    public final void setOfferDefaultTransferSyntaxInSeparatePresentationContext(
+            boolean offerDefaultTSInSeparatePC) {
+        this.offerDefaultTSInSeparatePC = offerDefaultTSInSeparatePC;
     }
 
     /**
@@ -980,16 +990,18 @@ public class NetworkApplicationEntity {
             Map.Entry e = (Entry) iter.next();
             String cuid = (String) e.getKey();
             LinkedHashSet ts = (LinkedHashSet) e.getValue();
-            if (ts.remove(UID.ExplicitVRLittleEndian)) {
-                ts2.add(UID.ExplicitVRLittleEndian);
-            }
-            if (ts.remove(UID.ImplicitVRLittleEndian)) {
-                ts2.add(UID.ImplicitVRLittleEndian);
-            }
-            if (ts2.isEmpty()) {
-                iter.remove();
-                cuid2ts2.add(e);
-                continue;
+            if (offerDefaultTSInSeparatePC) {
+                if (ts.remove(UID.ExplicitVRLittleEndian)) {
+                    ts2.add(UID.ExplicitVRLittleEndian);
+                }
+                if (ts.remove(UID.ImplicitVRLittleEndian)) {
+                    ts2.add(UID.ImplicitVRLittleEndian);
+                }
+                if (ts2.isEmpty()) {
+                    iter.remove();
+                    cuid2ts2.add(e);
+                    continue;
+                }
             }
             PresentationContext pctx = new PresentationContext();
             pctx.setPCID(aarq.nextPCID());
