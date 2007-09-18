@@ -63,16 +63,19 @@ public class XMLViewServlet extends HttpServlet {
 
     private static final String ENTITY_MANAGER_FACTORY =
             "java:/EntityManagerFactories/dcm4chee-arr";
+
     private static final String USER_TRANSACTION = "java:comp/UserTransaction";
 
     private EntityManagerFactory emf;
+
     private UserTransaction utx;
-    
+
     public void init() throws ServletException {
         try {
             InitialContext jndiCtx = new InitialContext();
             try {
-                emf = (EntityManagerFactory) jndiCtx.lookup(ENTITY_MANAGER_FACTORY);
+                emf = (EntityManagerFactory)
+                        jndiCtx.lookup(ENTITY_MANAGER_FACTORY);
                 utx = (UserTransaction) jndiCtx.lookup(USER_TRANSACTION);
             } finally {
                 jndiCtx.close();
@@ -106,13 +109,13 @@ public class XMLViewServlet extends HttpServlet {
     private AuditRecord findAuditRecord(Integer pk) throws ServletException {
         EntityManager entityManager = emf.createEntityManager();
         try {
-        	utx.begin();
+            utx.begin();
             AuditRecord record = entityManager.find(AuditRecord.class, pk);
             utx.commit();
-			return record;
+            return record;
         } catch (Exception e) {
-			throw new ServletException(e);
-		} finally {
+            throw new ServletException(e);
+        } finally {
             entityManager.close();
         }
     }
