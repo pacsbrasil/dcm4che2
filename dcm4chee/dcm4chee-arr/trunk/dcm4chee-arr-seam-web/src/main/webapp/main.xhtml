@@ -310,8 +310,7 @@
             </h:panelGroup>
           </h:panelGroup>
         </div>
-        <h:dataTable border="1" value="#{records}" var="rec"
-          columnClasses="outcome, action, ">
+        <h:dataTable border="1" value="#{records}" var="rec">
           <h:column>
             <f:facet name="header">
               <h:outputText value="O"  title="Event Outcome"/>
@@ -344,12 +343,13 @@
           <h:column>
             <f:facet name="header">Summary</f:facet>
             <h:outputText escape="false" value="#{rec.summary}"/>
-            <f:verbatim><br/></f:verbatim>
+          </h:column>
+          <h:column>
             <h:outputLink value="htmlview">
                <f:param name="pk" value="#{rec.pk}"/>
                <h:outputText value="Details"/>
             </h:outputLink>
-            <f:verbatim> | </f:verbatim>
+            <f:verbatim><br/></f:verbatim>
             <h:outputLink value="xmlview">
                <f:param name="pk" value="#{rec.pk}"/>
                <h:outputText value="XML"/>
