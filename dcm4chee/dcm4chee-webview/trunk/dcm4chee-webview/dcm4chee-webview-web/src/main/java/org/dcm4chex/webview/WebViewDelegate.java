@@ -48,6 +48,8 @@ import javax.management.ObjectName;
 
 import org.dcm4che2.data.DicomObject;
 import org.jboss.mx.util.MBeanServerLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -65,6 +67,8 @@ public class WebViewDelegate {
     private ObjectName webviewName;
     
     private Boolean ignorePR, selectPR;
+    
+    static Logger log = LoggerFactory.getLogger(WebViewDelegate.class);
     
     private void init() throws MalformedObjectNameException, NullPointerException {
         WebViewDelegate.server = MBeanServerLocator.locate();
@@ -168,7 +172,7 @@ public class WebViewDelegate {
         if ( seriesUID != null || studyUID != null || iuid != null ) {
             return getLaunchProperties(studyUID, seriesUID, iuid);
         } else {
-            return getErrorProperties("Missing query parameter!", "WARNING");
+            return getErrorProperties("Missing query parameter!", "WARNING", new IllegalArgumentException("Missing iuid, seriesUID or studyUID as query parameter"));
         }
     }
         
@@ -185,7 +189,7 @@ public class WebViewDelegate {
                     new Object[] { accNr, ignorePR, selectPR },
                     new String[] { String.class.getName(), Boolean.class.getName(), Boolean.class.getName() });
         } catch (Exception e) {
-            return getErrorProperties("Failed to get LaunchProperties for Accession Number! Exception:"+e, "ERROR");
+            return getErrorProperties("Failed to get LaunchProperties for Accession Number! Exception:", "ERROR", e);
         }
     }
     public Properties getLaunchPropertiesForManifest(String url) {
@@ -196,8 +200,8 @@ public class WebViewDelegate {
                     new Object[] { url },
                     new String[] { String.class.getName() });
         } catch (Exception e) {
-            e.printStackTrace();
-            return getErrorProperties("Failed to get LaunchProperties for manifest (URL:"+url+"! Exception:"+e, "ERROR");
+            log.error("Failed to get LaunchProperties for Manifest!", e);
+            return getErrorProperties("Failed to get LaunchProperties for manifest (URL:"+url+"! Exception:", "ERROR", e);
         }
     }
     public Properties getLaunchProperties(String studyUID, String seriesUID, String iuid) {
@@ -209,7 +213,7 @@ public class WebViewDelegate {
                     new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
                                    Boolean.class.getName(), Boolean.class.getName() });
         } catch (Exception e) {
-            return getErrorProperties("Failed to get LaunchProperties for UIDs! Exception:"+e, "ERROR");
+            return getErrorProperties("Failed to get LaunchProperties for UIDs! Exception:", "ERROR", e);
         }
     }
     
@@ -221,7 +225,7 @@ public class WebViewDelegate {
                     new Object[] { keys, ignorePR, selectPR },
                     new String[] { DicomObject.class.getName(), Boolean.class.getName(), Boolean.class.getName() });
         } catch (Exception e) {
-            return getErrorProperties("Failed to get LaunchProperties for Query Dataset! Exception:"+e, "ERROR");
+            return getErrorProperties("Failed to get LaunchProperties for Query Dataset! Exception:", "ERROR", e);
         }
     }
     
@@ -233,14 +237,16 @@ public class WebViewDelegate {
                     new Object[] { studyUID, seriesUID, instanceUID },
                     new String[] { String.class.getName(),String.class.getName(),String.class.getName() });
         } catch (Exception e) {
-            return getErrorProperties("Failed to get LaunchProperties for PresentationState! Exception:"+e, "ERROR");
+            return getErrorProperties("Failed to get LaunchProperties for PresentationState! Exception:", "ERROR", e);
         }
     }
      
-   private Properties getErrorProperties(String msg, String severity) {
+   private Properties getErrorProperties(String msg, String severity, Exception e) {
+       log.error("msg", e);
        Properties p = new Properties();
        p.setProperty("launchMode", "error");
-       p.setProperty("MESSAGE", msg != null ? msg : "Unknown Error!");
+       p.setProperty("MESSAGE", msg != null ? msg+e.getMessage() : 
+           e.getMessage() != null ? e.getMessage() : "Unknown Error!");
        p.setProperty("SEVERITY", severity != null ? severity : "ERROR");
        return p;
    }
