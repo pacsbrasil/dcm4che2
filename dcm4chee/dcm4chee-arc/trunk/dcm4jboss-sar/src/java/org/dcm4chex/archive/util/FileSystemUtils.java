@@ -100,7 +100,7 @@ public class FileSystemUtils {
     private static Method jdk6getFreeSpace;
     static {
         try {
-            jdk6getFreeSpace = File.class.getMethod("getFreeSpace", null);
+            jdk6getFreeSpace = File.class.getMethod("getFreeSpace", (Class[]) null);
         } catch (Exception e) {
             jdk6getFreeSpace = null;
         }        
@@ -149,7 +149,8 @@ public class FileSystemUtils {
     public static long freeSpace(String path) throws IOException {
         if (jdk6getFreeSpace != null) {
             try {
-                Long l = (Long) jdk6getFreeSpace.invoke(new File(path), null);
+                Long l = (Long) jdk6getFreeSpace.invoke(
+                		new File(path), (Object[]) null);
                 return l.longValue();
             } catch (Exception e) {
                 // Should not happen
