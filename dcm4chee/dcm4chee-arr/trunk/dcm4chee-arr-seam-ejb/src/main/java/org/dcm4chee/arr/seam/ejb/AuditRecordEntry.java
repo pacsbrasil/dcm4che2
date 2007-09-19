@@ -74,23 +74,27 @@ public class AuditRecordEntry {
     }
 
     public String getEventAction() {
-        return auditRecord.getEventAction();
+        return "action-" + auditRecord.getEventAction();
     }
 
     public Date getEventDateTime() {
         return auditRecord.getEventDateTime();
     }
 
-    public Code getEventID() {
-        return auditRecord.getEventID();
+    public String getEventID() {
+        return meaningOf(auditRecord.getEventID());
     }
 
-    public int getEventOutcome() {
-        return auditRecord.getEventOutcome();
+    private static String meaningOf(Code code) {
+        return code != null ? code.getMeaning() : "";
     }
 
-    public Code getEventType() {
-        return auditRecord.getEventType();
+    public String getEventOutcome() {
+        return "outcome-" + auditRecord.getEventOutcome();
+    }
+
+    public String getEventType() {
+        return meaningOf(auditRecord.getEventType());
     }
 
     public Collection<ParticipantObject> getParticipantObjects() {
@@ -109,8 +113,8 @@ public class AuditRecordEntry {
         return auditRecord.getSourceID();
     }
 
-    public int getSourceType() {
-        return auditRecord.getSourceType();
+    public String getSourceType() {
+        return "source-type-" + auditRecord.getSourceType();
     }
 
     public byte[] getXmldata() {

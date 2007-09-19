@@ -312,36 +312,45 @@
         </div>
         <h:dataTable border="1" value="#{records}" var="rec">
           <h:column>
+            <f:facet name="header">Event/Receive&#160;Time</f:facet>
+            <h:outputFormat  escape="false"
+                value="{0,date,yyyy-MM-dd HH:mm:ss}&lt;br/&gt;{1,date,yyyy-MM-dd HH:mm:ss}">
+              <f:param value="#{rec.eventDateTime}"/>
+              <f:param value="#{rec.receiveDateTime}"/>
+            </h:outputFormat>
+          </h:column>
+          <h:column>
             <f:facet name="header">
               <h:outputText value="O"  title="Event Outcome"/>
             </f:facet>
-            <h:graphicImage title="#{rec.eventOutcome>0
-               ? (rec.eventOutcome>4
-                 ? (rec.eventOutcome>8
-                   ? messages.majorFailure 
-                   : messages.seriousFailure)
-                 : messages.minorFailure)
-               : messages.success}"
-              url="img/outcome-#{rec.eventOutcome}.gif"/>
+            <h:graphicImage title="#{messages[rec.eventOutcome]}"
+              url="img/#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
             <f:facet name="header">
               <h:outputText value="A" title="Event Action"/>
             </f:facet>
             <h:graphicImage title="#{messages[rec.eventAction]}"
-              url="img/action-#{rec.eventAction}.gif"/>
+              url="img/#{rec.eventAction}.gif"/>
           </h:column>
           <h:column>
-            <f:facet name="header">Event/Receive Time</f:facet>
-            <h:outputFormat  escape="false"
-                value="{0,date,yyyy-MM-dd HH:mm:ss}&lt;br/&gt;
-                       {1,date,yyyy-MM-dd HH:mm:ss}">
-              <f:param value="#{rec.eventDateTime}"/>
-              <f:param value="#{rec.receiveDateTime}"/>
-            </h:outputFormat>
+            <f:facet name="header">Event ID: Type</f:facet>
+            <h:outputText escape="false"
+              value="&lt;strong&gt;#{rec.eventID}:&lt;/strong&gt; #{rec.eventType}"/>
           </h:column>
           <h:column>
-            <f:facet name="header">Summary</f:facet>
+            <f:facet name="header">Source ID</f:facet>
+            <h:outputText value="#{rec.enterpriseSiteID}"
+              title="Enterprise Site ID"/>
+            <f:verbatim><br/></f:verbatim>
+            <h:outputText value="#{rec.sourceID}"
+              title="Source ID"/>
+            <f:verbatim><br/></f:verbatim>
+            <h:outputText value="#{messages[rec.sourceType]}"
+              title="Source Type"/>
+          </h:column>
+          <h:column>
+            <f:facet name="header">Participants</f:facet>
             <h:outputText escape="false" value="#{rec.summary}"/>
           </h:column>
           <h:column>

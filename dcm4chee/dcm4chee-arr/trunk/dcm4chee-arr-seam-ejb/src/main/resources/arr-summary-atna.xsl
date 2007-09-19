@@ -5,28 +5,9 @@
     <xsl:apply-templates select="*"/>
   </xsl:template>
   <!-- =========================================== -->
-  <!-- EventIdentification                         -->
-  <!-- =========================================== -->
-  <xsl:template match="EventIdentification">
-    <strong>
-      <xsl:value-of select="EventID/@displayName"/>
-    </strong>
-    <xsl:apply-templates select="EventTypeCode"/>
-  </xsl:template>
-  <xsl:template match="EventTypeCode">
-    <xsl:choose>
-      <xsl:when test="position()=1">(</xsl:when>
-      <xsl:otherwise>,&#32;</xsl:otherwise>
-    </xsl:choose>
-    <xsl:value-of select="@displayName"/>
-    <xsl:if test="position()=last()">)</xsl:if>
-  </xsl:template>
-  <!-- =========================================== -->
   <!-- Active Participant                          -->
   <!-- =========================================== -->
   <xsl:template match="ActiveParticipant">
-    <xsl:text>,&#32;</xsl:text>
-    <br/>
     <strong>
       <xsl:if test="@UserIsRequestor!='false'">
         <xsl:text>Req.</xsl:text>
@@ -54,6 +35,7 @@
       </xsl:choose>
       <xsl:value-of select="@NetworkAccessPointID"/>
     </xsl:if>
+    <xsl:text>,&#32;</xsl:text>
   </xsl:template>
   <xsl:template match="RoleIDCode">
     <xsl:choose>
@@ -64,24 +46,9 @@
     <xsl:if test="position()=last()">)</xsl:if>
   </xsl:template>
   <!-- =========================================== -->
-  <!-- AuditSourceIdentification                   -->
-  <!-- =========================================== -->
-  <xsl:template match="AuditSourceIdentification">
-    <xsl:text>,&#32;</xsl:text>
-    <br/>
-    <strong>Audit&#160;Source:&#160;</strong>
-    <xsl:text>ID=</xsl:text>
-    <xsl:value-of select="@AuditSourceID"/>
-    <xsl:if test="@AuditEnterpriseSiteID">
-      <xsl:text>, Site=</xsl:text>
-      <xsl:value-of select="@AuditEnterpriseSiteID"/>
-    </xsl:if>
-  </xsl:template>
-  <!-- =========================================== -->
   <!-- ParticipantObjectIdentification             -->
   <!-- =========================================== -->
   <xsl:template match="ParticipantObjectIdentification">
-    <xsl:text>,&#32;</xsl:text>
     <br/>
     <strong>Object</strong>
     <xsl:choose>
@@ -122,8 +89,8 @@
     <xsl:text>=</xsl:text>
     <xsl:value-of select="@ParticipantObjectID"/>
     <xsl:if test="@ParticipantObjectName">
-      <xsl:text>,&#32;Name=</xsl:text>
       <xsl:value-of select="@ParticipantObjectName"/>
+      <xsl:text>,&#32;Name=</xsl:text>
     </xsl:if>
     <xsl:apply-templates
       select="ParticipantObjectDetail[@type='AlertDescription']"/>
