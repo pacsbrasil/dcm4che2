@@ -705,8 +705,8 @@ public abstract class PatientBean implements EntityBean {
         if (opidsq == null) {
             opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
         }
-        for (int n = 0; n < nopidsq.countItems(); n++) {
-            Dataset nopid = nopidsq.getItem();
+        for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+            Dataset nopid = nopidsq.getItem(i);
             String pid = nopid.getString(Tags.PatientID);
             String issuer = nopid.getString(Tags.IssuerOfPatientID);
             if (!containsPID(pid, issuer, opidsq)) {
@@ -731,8 +731,8 @@ public abstract class PatientBean implements EntityBean {
         DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
         boolean update = false;
         if (opidsq != null) {
-            for (int n = 0; n < opidsq.countItems(); n++) {
-                Dataset opid = opidsq.getItem();
+            for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+                Dataset opid = opidsq.getItem(i);
                 String pid = opid.getString(Tags.PatientID);
                 String issuer = opid.getString(Tags.IssuerOfPatientID);
                 if (nopidsq == null || !containsPID(pid, issuer, nopidsq)) {
@@ -755,8 +755,8 @@ public abstract class PatientBean implements EntityBean {
             }
         }
         if (nopidsq != null) {
-            for (int n = 0; n < nopidsq.countItems(); n++) {
-                Dataset nopid = nopidsq.getItem();
+            for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+                Dataset nopid = nopidsq.getItem(i);
                 String pid = nopid.getString(Tags.PatientID);
                 String issuer = nopid.getString(Tags.IssuerOfPatientID);
                 if (opidsq == null || !containsPID(pid, issuer, opidsq)) {
@@ -768,8 +768,8 @@ public abstract class PatientBean implements EntityBean {
             }
             if (update) {
                 opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
-                for (int n = 0; n < nopidsq.countItems(); n++) {
-                    opidsq.addItem(nopidsq.getItem());
+                for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+                    opidsq.addItem(nopidsq.getItem(i));
                 }
             }
         }
@@ -780,8 +780,8 @@ public abstract class PatientBean implements EntityBean {
     }
     
     private boolean containsPID(String pid, String issuer, DcmElement opidsq) {
-        for (int n = 0; n < opidsq.countItems(); n++) {
-            Dataset opid = opidsq.getItem(n);
+        for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+            Dataset opid = opidsq.getItem(i);
             if (opid.getString(Tags.PatientID)
                     .equals(pid)
                 && opid.getString(Tags.IssuerOfPatientID)
