@@ -97,7 +97,7 @@
             <f:selectItem itemValue="D" itemLabel="Delete"/>
             <f:selectItem itemValue="E" itemLabel="Execute"/>
           </h:selectManyListbox>
-          <h:outputLabel for="eventOutcome">Outcome:</h:outputLabel>
+          <h:outputLabel for="eventOutcome">Event Outcome:</h:outputLabel>
           <h:selectManyListbox id="eventOutcome"
             value="#{auditRecordList.eventOutcomes}" size="3">
             <f:selectItem itemValue="" itemLabel="Any"/>
@@ -339,7 +339,7 @@
               url="img/#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
-            <f:facet name="header">Source ID</f:facet>
+            <f:facet name="header">Audit Source</f:facet>
             <h:outputText value="#{rec.enterpriseSiteID}"
               title="Enterprise Site ID"/>
             <f:verbatim><br/></f:verbatim>
