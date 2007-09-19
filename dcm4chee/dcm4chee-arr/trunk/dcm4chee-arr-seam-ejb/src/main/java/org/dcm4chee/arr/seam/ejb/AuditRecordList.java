@@ -144,7 +144,7 @@ public interface AuditRecordList {
     String getObjectName();
     void setObjectName(String name);
     
-    String find();
+    void find();
     void selectPage();
     
     void destroy();

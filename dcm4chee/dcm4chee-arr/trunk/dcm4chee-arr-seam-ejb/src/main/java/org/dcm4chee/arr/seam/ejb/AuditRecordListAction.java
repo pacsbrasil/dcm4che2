@@ -59,7 +59,7 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
-import javax.persistence.PersistenceUnit;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che2.audit.message.AuditLogUsedMessage;
@@ -67,7 +67,6 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.arr.entities.AuditRecord;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
@@ -125,18 +124,8 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     @Resource (mappedName="queue/ARRIncoming")
     private transient Queue queue;
     
-/* [#JBSEAM-1787] Injecting a Hibernate session with @PersistenceContext
-                  causes ClassCastException with the Seam Interceptor
-    @PersistenceContext(unitName="dcm4chee-arr",
-            type=PersistenceContextType.EXTENDED)
+    @PersistenceContext(unitName="dcm4chee-arr")
     private transient Session session;
-    
-    Workaround:  Inject a SessionFactory with @PersistenceUnit
-    and use SessionFactory#getCurrentSession.
-*/   
-    @PersistenceUnit(unitName="dcm4chee-arr")
-    private transient SessionFactory sessionFactory;
-
 
     @In
     private transient FacesContext facesContext;
@@ -480,11 +469,10 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     }
 
     @Factory("records")
-    public String find() {
+    public void find() {
         curPage = 1;
         updateResults();
         sendAuditLogUsedMessage();
-        return ("browse");
     }
 
     private void sendAuditLogUsedMessage() {
@@ -553,7 +541,6 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     @SuppressWarnings("unchecked")
     private void updateResults() {
-    	Session session = sessionFactory.getCurrentSession();
         Criteria recordsCriteria = buildCriteria(session
                 .createCriteria(AuditRecord.class));
 
@@ -561,8 +548,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
                 .setProjection(Projections.rowCount())
                 .list().iterator().next()).intValue();
         int from = getFirstResult();
-        int to = Math.max(0, Math.min(count, getFirstResult() + pageSize));
-
+        // int to = Math.max(0, Math.min(count, getFirstResult() + pageSize));
         // log.info(String.format("Found total %d records. Displaying from %d to
         // %d", count, (from+1), to));
 
