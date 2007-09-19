@@ -781,7 +781,7 @@ public abstract class PatientBean implements EntityBean {
     
     private boolean containsPID(String pid, String issuer, DcmElement opidsq) {
         for (int n = 0; n < opidsq.countItems(); n++) {
-            Dataset opid = opidsq.getItem();
+            Dataset opid = opidsq.getItem(n);
             if (opid.getString(Tags.PatientID)
                     .equals(pid)
                 && opid.getString(Tags.IssuerOfPatientID)
