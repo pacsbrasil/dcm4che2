@@ -214,14 +214,14 @@
 <x:template name="inactiveButtonLayout" mode="inactiveLayout" match="xul:button">
  <xsl:param name="loc" />
  <xsl:param name="node" />
- <b><xsl:value-of select="@label" /></b>
+ <button type="button" disabled="true" ><xsl:value-of select="@label" /></button>
 </x:template>
 
 <x:template name="buttonLayout" mode="newlayout" match="xul:button">
  <xsl:param name="loc" />
  <xsl:param name="node" />
  <xsl:param name="buttonId" select="concat(@id,generate-id($node))" />
- <a>
+ <button type="button">
   <xsl:attribute name="id"><xsl:value-of select="$buttonId" /></xsl:attribute>
   <xsl:if test="@oncommand">
    <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
@@ -234,7 +234,7 @@
    <xsl:attribute name="onclick">return displayXslt.action("<xsl:value-of select="$buttonId" />");</xsl:attribute>
   </xsl:if>  
   <xsl:value-of select="@label" />
- </a>
+ </button>
 </x:template>
 
 <!-- Adds command handling to this object -->
