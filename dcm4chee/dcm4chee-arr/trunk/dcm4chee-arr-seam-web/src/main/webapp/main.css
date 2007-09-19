@@ -1,25 +1,17 @@
-#filter  { position:absolute; top:5; left:5; width:21em }
-#list, #info  { 
-	position:relative;
-	left:23.5em; 
-}
-#details, #xml  { 
-	border:1px solid #CCC;
-	background-color:#E9E9E9 
-}
+#filter  { float:left; width:21em }
+#list  { margin-left:23.5em }
 select, fieldset  { width:100% }
 body, div, span, td, th, caption  { 
 	
 	font-family:'Trebuchet MS', Verdana, Arial, Sans-Serif;
-	font-size:small
+	font-size:small 
 }
-.selected  { background-color:#E9E9E9 }
 table  { 
 	border:1px solid #CCC;
 	border-collapse:collapse; border-spacing:0px;
 	width:100%; text-align:left 
 }
-td  { border:1px solid #CCC }
+td  { border:1px solid #CCC; vertical-align:top }
 thead tr th  { 
 	padding:2px; color:#030;
 	background-color:#E0E0E0 

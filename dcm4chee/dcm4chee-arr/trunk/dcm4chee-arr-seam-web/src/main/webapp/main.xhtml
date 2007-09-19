@@ -13,14 +13,16 @@
   <body>
   	<div id="filter">
     <h:form>
-      <h:panelGrid bgcolor="#CCCCCC" columns="2">
-        <h:outputLink value="http://www.dcm4che.org">
-          <h:graphicImage url="img/logo.gif" border="0"/>
-        </h:outputLink>
-        <h:commandButton value="Search >>" action="#{auditRecordList.find}"/>
-        <h:outputLabel for="pageSize">Page Size:</h:outputLabel>
-        <h:inputText id="pageSize" value="#{auditRecordList.pageSize}"/>
-      </h:panelGrid>
+      <fieldset>
+        <h:panelGrid columns="2">
+          <h:outputLink value="http://www.dcm4che.org">
+            <h:graphicImage url="img/logo.gif" border="0"/>
+          </h:outputLink>
+          <h:commandButton value="Search >>" action="#{auditRecordList.find}"/>
+          <h:outputLabel for="pageSize">Page Size:</h:outputLabel>
+          <h:inputText id="pageSize" value="#{auditRecordList.pageSize}"/>
+        </h:panelGrid>
+      </fieldset>
       <fieldset>
         <legend>Event</legend>
         <h:panelGrid columns="2">
@@ -308,7 +310,8 @@
             </h:panelGroup>
           </h:panelGroup>
         </div>
-        <h:dataTable border="1" value="#{records}" var="rec">
+        <h:dataTable border="1" value="#{records}" var="rec"
+          columnClasses="outcome, action, ">
           <h:column>
             <f:facet name="header">
               <h:outputText value="O"  title="Event Outcome"/>
@@ -330,15 +333,12 @@
               url="img/action-#{rec.eventAction}.gif"/>
           </h:column>
           <h:column>
-            <f:facet name="header">Receive Date/Time</f:facet>
-            <h:outputFormat value="{0,date,yyyy-MM-dd HH:mm:ss}">
-              <f:param value="#{rec.receiveDateTime}"/>
-            </h:outputFormat>
-          </h:column>
-          <h:column>
-            <f:facet name="header">Event Date/Time</f:facet>
-            <h:outputFormat value="{0,date,yyyy-MM-dd HH:mm:ss}">
+            <f:facet name="header">Event/Receive Time</f:facet>
+            <h:outputFormat  escape="false"
+                value="{0,date,yyyy-MM-dd HH:mm:ss}&lt;br/&gt;
+                       {1,date,yyyy-MM-dd HH:mm:ss}">
               <f:param value="#{rec.eventDateTime}"/>
+              <f:param value="#{rec.receiveDateTime}"/>
             </h:outputFormat>
           </h:column>
           <h:column>
