@@ -1,6 +1,5 @@
 DROP TABLE roles;
 DROP TABLE users;
-DROP TABLE audit_record_old;
 DROP TABLE rel_dev_proto;
 DROP TABLE device;
 DROP TABLE rel_hpdef_reason;

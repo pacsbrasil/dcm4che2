@@ -3,14 +3,9 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
   <property name="version" value="2.12.0"/>
-  <property name="arr-version" value="3.0.3"/>
   <property name="audit-version" value="2.12.0"/>
   <property name="dist.jboss.conf" value="default"/>
   <property name="target.dir" value="${basedir}/target"/>
-  <!-- Override with your dcm4chee-arr 3.x location -->
-  <property name="dcm4chee-arr.home" value="${user.home}/dcm4chee/dcm4chee-arr"/>
-  <property name="dcm4chee-arr.entities" value="${dcm4chee-arr.home}/dcm4chee-arr-entities"/>
-  <property name="dcm4chee-arr.ear" value="${dcm4chee-arr.home}/dcm4chee-arr-ear"/>
   <!-- Override with your dcm4chee-audit 3.x location -->
   <property name="dcm4chee-audit.home" value="${user.home}/dcm4chee/dcm4chee-audit"/>
   <property name="dcm4chee-audit.login" value="${dcm4chee-audit.home}/dcm4chee-audit-login"/>
@@ -27,7 +22,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-web" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="clean"/>
-    <ant inheritAll="false" dir="../dcm4jboss-arr" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-cdw" target="clean"/>
   </target>
   <target name="jar">
@@ -43,8 +37,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-xds" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds" target="war"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="sar"/>
-    <ant inheritAll="false" dir="../dcm4jboss-arr" target="jar"/>
-    <ant inheritAll="false" dir="../dcm4jboss-arr" target="war"/>
     <ant inheritAll="false" dir="../dcm4jboss-cdw" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-cdw" target="sar"/>
   </target>
@@ -159,13 +151,11 @@
       <zipfileset dir="${target.dir}" prefix="${dist.db}">
         <include name="bin/*"/>
       	<exclude name="bin/*.sh"/>
-      	<exclude name="bin/uninstall-dcm4chee-arr-old.bat"/>
       	<exclude name="bin/uninstall-dcm4chee-auditlog-old.bat"/>
         <include name="doc/**"/>
       </zipfileset>
       <zipfileset dir="${target.dir}" prefix="${dist.db}" filemode="755">
         <include name="bin/*.sh"/>
-       	<exclude name="bin/uninstall-dcm4chee-arr-old.sh"/>
        	<exclude name="bin/uninstall-dcm4chee-auditlog-old.sh"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-hl7" prefix="${dist.db.config}">
@@ -215,20 +205,6 @@
         <include name="lib/relaxngDatatype.jar"/>
         <include name="lib/xsdlib.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-arr/target/common" prefix="${dist.db.config}">
-        <include name="lib/*"/>
-        <include name="deploy/*"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-arr/target/${db.name}" prefix="${dist.db.config}">
-        <include name="lib/*"/>
-        <include name="deploy/*"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-arr/src/etc" prefix="${dist.db.config}">
-        <include name="conf/**"/>
-        <exclude name="conf/standardjboss.xml"/>
-        <exclude name="conf/standardjbosscmp-jdbc.xml"/>
-        <include name="deploy/**"/>
-      </zipfileset>
       <zipfileset dir="../dcm4jboss-cdw/target" prefix="${dist.db.config}">
         <include name="lib/*"/>
         <include name="deploy/*"/>
@@ -247,72 +223,6 @@
       </zipfileset>
     </zip>
   </target>
-	
-  <target name="dist-arr"
-  	depends="opt-arr-hsql,opt-arr-psql,opt-arr-mysql,opt-arr-mssql,opt-arr-oracle,opt-arr-db2"/>
-  <target name="opt-arr-hsql">
-    <antcall target="opt-arr">
-      <param name="db.name" value="hsql"/>
-    </antcall>
-  </target>
-  <target name="opt-arr-mysql">
-    <antcall target="opt-arr">
-      <param name="db.name" value="mysql"/>
-    </antcall>
-  </target>
-  <target name="opt-arr-mssql">
-    <antcall target="opt-arr">
-      <param name="db.name" value="mssql"/>
-    </antcall>
-  </target>
-  <target name="opt-arr-psql">
-    <antcall target="opt-arr">
-      <param name="db.name" value="psql"/>
-    </antcall>
-  </target>
-  <target name="opt-arr-oracle">
-    <antcall target="opt-arr">
-      <param name="db.name" value="oracle"/>
-    </antcall>
-  </target>
-  <target name="opt-arr-db2">
-    <antcall target="opt-arr">
-      <param name="db.name" value="db2"/>
-    </antcall>
-  </target>
-  <target name="opt-arr" depends="fixcrlf">  	
-    <property name="dist.db.config" value="server/default"/>
-    <zip destfile="${target.dir}/upgrade-dcm4chee-arr-${db.name}-${arr-version}.zip">
-	  <zipfileset dir="${jboss.server.home}" prefix="${dist.db.config}">
-	    <include name="deploy/ejb3.deployer/**"/>
-	  	<include name="deploy/jboss-aop-jdk50.deployer/**"/>
-	  	<include name="deploy/jbossws.sar/**"/>
-	  	<include name="deploy/ear-deployer.xml"/>
-	  	<include name="deploy/ejb3-interceptors-aop.xml"/>
-	  	<!--include name="deploy/usertx-service.xml"/-->
-	  	<include name="lib/antlr-2.7.6.jar"/>
-	  	<include name="lib/cglib.jar"/>
-	  	<include name="lib/ejb3-persistence.jar"/>
-	  	<include name="lib/hibernate-annotations.jar"/>
-	  	<include name="lib/hibernate-entitymanager.jar"/>
-	  	<include name="lib/hibernate3.jar"/>
-	  	<include name="lib/javassist.jar"/>
-	  </zipfileset>
-      <zipfileset dir="${dcm4chee-arr.ear}/target" prefix="${dist.db.config}/deploy">
-        <include name="dcm4chee-arr-${db.name}-*.ear"/>
-      </zipfileset>
-      <zipfileset dir="${dcm4chee-arr.entities}/target/hibernate3/sql" prefix="sql">
-        <include name="dcm4chee-arr-${db.name}.ddl"/>
-      </zipfileset>      
-      <zipfileset dir="${target.dir}" filemode="755">
-    	<include name="bin/uninstall-dcm4chee-arr-old.sh"/>
-      </zipfileset>
-      <zipfileset dir="${target.dir}">
-      	<include name="bin/uninstall-dcm4chee-arr-old.bat"/>
-      </zipfileset>
-    </zip>  	     
-  </target>		
-
 	
   <target name="dist-auditlog"
   	depends="opt-auditlog-hsql,opt-auditlog-psql,opt-auditlog-mysql,opt-auditlog-mssql,opt-auditlog-oracle,opt-auditlog-db2"/>
