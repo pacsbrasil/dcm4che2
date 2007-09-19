@@ -44,8 +44,8 @@
     <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Hname">
-    <xsl:value-of select="normalize-space(.)"/>
     <xsl:text>,&#32;</xsl:text>
+    <xsl:value-of select="normalize-space(.)"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="Import">
     <xsl:apply-templates mode="ActiveParticipant" select="*"/>
@@ -192,8 +192,8 @@
     <xsl:value-of select="normalize-space(.)"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="PatientName">
-    <xsl:value-of select="normalize-space(.)"/>
     <xsl:text>,&#32;name=</xsl:text>
+    <xsl:value-of select="normalize-space(.)"/>
   </xsl:template>
   <xsl:template mode="ParticipantObjectIdentification" match="PatientRecord">
     <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
