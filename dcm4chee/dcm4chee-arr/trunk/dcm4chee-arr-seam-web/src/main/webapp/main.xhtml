@@ -87,15 +87,6 @@
             <f:selectItem itemValue="110133^DCM"
               itemLabel="Audit Recording Stopped"/>
           </h:selectManyListbox>
-          <h:outputLabel for="eventOutcome">Outcome:</h:outputLabel>
-          <h:selectManyListbox id="eventOutcome"
-            value="#{auditRecordList.eventOutcomes}" size="3">
-            <f:selectItem itemValue="" itemLabel="Any"/>
-            <f:selectItem itemValue="0" itemLabel="Success"/>
-            <f:selectItem itemValue="4" itemLabel="Minor failure"/>
-            <f:selectItem itemValue="8" itemLabel="Serious failure"/>
-            <f:selectItem itemValue="12" itemLabel="Major failure"/>
-          </h:selectManyListbox>
           <h:outputLabel for="eventAction">Event Action:</h:outputLabel>
           <h:selectManyListbox id="eventAction"
             value="#{auditRecordList.eventActions}" size="3">
@@ -105,6 +96,15 @@
             <f:selectItem itemValue="U" itemLabel="Update"/>
             <f:selectItem itemValue="D" itemLabel="Delete"/>
             <f:selectItem itemValue="E" itemLabel="Execute"/>
+          </h:selectManyListbox>
+          <h:outputLabel for="eventOutcome">Outcome:</h:outputLabel>
+          <h:selectManyListbox id="eventOutcome"
+            value="#{auditRecordList.eventOutcomes}" size="3">
+            <f:selectItem itemValue="" itemLabel="Any"/>
+            <f:selectItem itemValue="0" itemLabel="Success"/>
+            <f:selectItem itemValue="4" itemLabel="Minor failure"/>
+            <f:selectItem itemValue="8" itemLabel="Serious failure"/>
+            <f:selectItem itemValue="12" itemLabel="Major failure"/>
           </h:selectManyListbox>
         </h:panelGrid>
       </fieldset>
@@ -320,11 +320,9 @@
             </h:outputFormat>
           </h:column>
           <h:column>
-            <f:facet name="header">
-              <h:outputText value="O"  title="Event Outcome"/>
-            </f:facet>
-            <h:graphicImage title="#{messages[rec.eventOutcome]}"
-              url="img/#{rec.eventOutcome}.gif"/>
+            <f:facet name="header">Event ID: Type</f:facet>
+            <h:outputText escape="false"
+              value="&lt;strong&gt;#{rec.eventID}:&lt;/strong&gt; #{rec.eventType}"/>
           </h:column>
           <h:column>
             <f:facet name="header">
@@ -334,9 +332,11 @@
               url="img/#{rec.eventAction}.gif"/>
           </h:column>
           <h:column>
-            <f:facet name="header">Event ID: Type</f:facet>
-            <h:outputText escape="false"
-              value="&lt;strong&gt;#{rec.eventID}:&lt;/strong&gt; #{rec.eventType}"/>
+            <f:facet name="header">
+              <h:outputText value="O"  title="Event Outcome"/>
+            </f:facet>
+            <h:graphicImage title="#{messages[rec.eventOutcome]}"
+              url="img/#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
             <f:facet name="header">Source ID</f:facet>
