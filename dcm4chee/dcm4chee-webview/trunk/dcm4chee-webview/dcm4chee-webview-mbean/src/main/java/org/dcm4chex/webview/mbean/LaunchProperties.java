@@ -324,11 +324,15 @@ public class LaunchProperties {
         p.setProperty("launchMode", "study_select");
         DicomObject obj;
         String desc;
+        Map map;
         for ( Iterator iter = results.iterateStudies() ; iter.hasNext() ; ) {
-            obj = (DicomObject) ((List) ((Map) iter.next()).values().iterator().next() ).get(0);
-            desc = obj.getString(Tag.PatientName)+"("+obj.getString(Tag.PatientBirthDate)+") Descr:"+
-                obj.getString(Tag.StudyDescription)+" UID:"+obj.getString(Tag.StudyInstanceUID);
-            p.setProperty( obj.getString(Tag.StudyInstanceUID), desc);
+            map = ((Map) iter.next());
+            if ( ! map.isEmpty()) {
+                obj = (DicomObject) ((List) map.values().iterator().next() ).get(0);
+                desc = obj.getString(Tag.PatientName)+"("+obj.getString(Tag.PatientBirthDate)+") Descr:"+
+                    obj.getString(Tag.StudyDescription)+" UID:"+obj.getString(Tag.StudyInstanceUID);
+                p.setProperty( obj.getString(Tag.StudyInstanceUID), desc);
+            }
         }
         return p;
     }

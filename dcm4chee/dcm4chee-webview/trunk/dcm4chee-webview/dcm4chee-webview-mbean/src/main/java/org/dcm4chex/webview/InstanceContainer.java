@@ -107,7 +107,7 @@ public class InstanceContainer {
      * @param instance The DicomObject to add.
      */
     public void add(DicomObject instance) {
-        if ( !instance.getString(Tag.SeriesInstanceUID).equals(lastSeriesIuid) ) {
+         if ( !instance.getString(Tag.SeriesInstanceUID).equals(lastSeriesIuid) ) {
             lastSeriesIuid = instance.getString(Tag.SeriesInstanceUID);
             if ( !instance.getString(Tag.StudyInstanceUID).equals(lastStudyIuid) ) {
                 lastStudyIuid = instance.getString(Tag.StudyInstanceUID);
@@ -116,6 +116,7 @@ public class InstanceContainer {
             if ( lastSeriesMap == null ) {
                 lastSeriesMap = new LinkedHashMap();
                 mapStudies.put(lastStudyIuid, lastSeriesMap);
+                lastInstanceList = null;
             } else {
                 lastInstanceList = (List) lastSeriesMap.get(lastSeriesIuid);
             }
