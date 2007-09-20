@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 <server>
   <mbean code="org.dcm4chee.audit.logger.AuditLogger"
-    name="dcm4chee.archive:service=AuditLogger"
+    name="dcm4chee.arr:service=AuditLogger"
     xmbean-dd="xmdesc/dcm4chee-auditlog-xmbean.xml">
     <depends>dcm4chee.arr:service=UDPListener</depends>
   </mbean>

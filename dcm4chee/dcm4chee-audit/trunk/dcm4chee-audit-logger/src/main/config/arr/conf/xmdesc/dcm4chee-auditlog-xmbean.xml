@@ -84,11 +84,11 @@
     setMethod="setLocalAETitles">
     <description><![CDATA[List of AE titles supported by this application,
     separated by \(backslash).<br/>
-    <b>Default:</b> <code>DCM4CHEE</code>]]></description>
+    <b>Default:</b> <code>-</code>]]></description>
     <name>LocalAETitles</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="DCM4CHEE"/>
+      <value value="-"/>
     </descriptors>
   </attribute>
   <attribute access="read-write" getMethod="isEnableDNSLookups"
