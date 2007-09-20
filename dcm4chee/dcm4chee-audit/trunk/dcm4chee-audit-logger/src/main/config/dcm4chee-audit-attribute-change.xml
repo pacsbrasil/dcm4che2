@@ -13,6 +13,7 @@ type           Event Type Code
 <mbean name="dcm4chee.archive:service=AE">
 <attribute name="PortNumbers" type="Network"/>
 <attribute name="DontSaveIP"/>
+<attribute name="MaxCacheSize"/>
 <attribute name="AuditLoggerName"/>
 <attribute name="EchoServiceName"/>
 </mbean>
@@ -243,6 +244,12 @@ type           Event Type Code
 <attribute name="MppsScpServiceName"/>
 <attribute name="AuditLoggerName"/>
 </mbean>
+<mbean name="dcm4chee.archive:service=DicomSecurity">
+<attribute name="SecurityDomain"/>
+<attribute name="RejectIfNoUserIdentity"/>
+<attribute name="DefaultUserID"/>
+<attribute name="DefaultPassword"/>
+</mbean>
 <mbean name="dcm4chee.archive:service=DcmServer">
 <attribute name="TCPPort" type="Network"/>
 <attribute name="SecurityProtocol" type="Security"/>
@@ -256,6 +263,7 @@ type           Event Type Code
 <attribute name="ReceiveBufferSize"/>
 <attribute name="MaximumDICOMClients"/>
 <attribute name="MaximumIdleThreads"/>
+<attribute name="DicomSecurityServiceName"/>
 <attribute name="TLSConfigName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=DeviceService"/>
@@ -363,6 +371,7 @@ type           Event Type Code
 <attribute name="TimerIDCheckFilesToPurge"/>
 <attribute name="TimerIDCheckFreeDiskSpace"/>
 <attribute name="PurgeStudyQueueName"/>
+<attribute name="TarRetrieverName"/>
 <attribute name="AEServiceName"/>
 <attribute name="JMSServiceName"/>
 <attribute name="SchedulerServiceName"/>
@@ -382,6 +391,9 @@ type           Event Type Code
 <mbean name="dcm4chee.archive:service=GPWLScp">
 <attribute name="CalledAETitles"/>
 <attribute name="CallingAETitles"/>
+<attribute name="GeneratePatientID"/>
+<attribute name="IssuerOfPatientIDGeneratedPatientID"/>
+<attribute name="SupplementIssuerOfPatientID"/>
 <attribute name="AcceptedSOPClasses"/>
 <attribute name="AcceptedTransferSyntax"/>
 <attribute name="MaximumPDULength"/>
@@ -406,6 +418,8 @@ type           Event Type Code
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Service,type=ADT">
 <attribute name="MessageTypes"/>
+<attribute name="PixUpdateNotificationMessageType"/>
+<attribute name="IssuersOfOnlyOtherPatientIDs"/>
 <attribute name="PidStylesheet"/>
 <attribute name="MrgStylesheet"/>
 <attribute name="IgnoreDeleteErrors"/>
@@ -427,6 +441,7 @@ type           Event Type Code
 <attribute name="MessageTypes"/>
 <attribute name="SRStylesheet"/>
 <attribute name="PDFStylesheet"/>
+<attribute name="ObxIgnoreStati"/>
 <attribute name="StorePriority"/>
 <attribute name="ExportManagerName"/>
 <attribute name="HL7ServerName"/>
@@ -446,6 +461,7 @@ type           Event Type Code
 <attribute name="JMSServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=HL7Server">
+<attribute name="CharsetName"/>
 <attribute name="Port" type="Network"/>
 <attribute name="ProtocolName" type="Security"/>
 <attribute name="SoTimeout"/>
@@ -591,6 +607,9 @@ type           Event Type Code
 <mbean name="dcm4chee.archive:service=MPPSScp">
 <attribute name="CalledAETitles"/>
 <attribute name="CallingAETitles"/>
+<attribute name="GeneratePatientID"/>
+<attribute name="IssuerOfPatientIDGeneratedPatientID"/>
+<attribute name="SupplementIssuerOfPatientID"/>
 <attribute name="AcceptedTransferSyntax"/>
 <attribute name="CoerceConfigDirectory"/>
 <attribute name="MaximumPDULength"/>
@@ -635,11 +654,6 @@ type           Event Type Code
 <attribute name="MaxResults"/>
 <attribute name="Priority"/>
 <attribute name="TLSConfigName"/>
-</mbean>
-<mbean name="dcm4chee.archive:service=PIXUpdateNotification">
-<attribute name="MessageTypes"/>
-<attribute name="IssuersOfOnlyOtherPatientIDs"/>
-<attribute name="HL7ServerName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=PIXQuery">
 <attribute name="PIXManager"/>
@@ -698,13 +712,15 @@ type           Event Type Code
 <mbean name="dcm4chee.archive:service=QueryRetrieveScp">
 <attribute name="CalledAETitles"/>
 <attribute name="CallingAETitles"/>
+<attribute name="SupplementIssuerOfPatientID"/>
 <attribute name="SendWithDefaultTransferSyntaxToAETitles"/>
 <attribute name="SendNoPixelDataToAETitles"/>
 <attribute name="IgnoreUnsupportedSOPClassFailures"/>
 <attribute name="PIXQueryCallingAETitles"/>
 <attribute name="PIXQueryIssuersOfPatientID"/>
 <attribute name="PIXQueryDefaultIssuerOfPatientID"/>
-<attribute name="PIXQueryOnWildCardMatching"/>
+<attribute name="CoerceRequestPatientIds"/>
+<attribute name="CoerceRequestPatientIdsAETitles"/>
 <attribute name="IgnorableSOPClasses"/>
 <attribute name="RequestStorageCommitFromAETitles"/>
 <attribute name="NoMatchForNoValue"/>
@@ -749,13 +765,14 @@ type           Event Type Code
 <attribute name="PixQueryServiceName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=RIDService">
-<attribute name="ImageQuality"/>
 <attribute name="CacheRoot"/>
 <attribute name="DirectoryTree"/>
-<attribute name="WaveformCorrection"/>
 <attribute name="DeleterThresholds"/>
 <attribute name="PreferredFreeSpace"/>
 <attribute name="FreeDiskSpaceInterval"/>
+<attribute name="ImageQuality"/>
+<attribute name="ImageWriterClass"/>
+<attribute name="WaveformCorrection"/>
 <attribute name="ECGSopCuids"/>
 <attribute name="SRSopCuids"/>
 <attribute name="RadiologyConceptNames"/>
@@ -819,14 +836,12 @@ type           Event Type Code
 <attribute name="CallingAETitles"/>
 <attribute name="WarnForCoercedAETitles"/>
 <attribute name="AcceptMismatchAffectedSOPInstanceUIDCallingAETiles"/>
+<attribute name="UpdateStudyAccessTimeCallingAETitles"/>
 <attribute name="AcceptMissingPatientID"/>
 <attribute name="AcceptMissingPatientName"/>
-<attribute name="AdditionalCheckIfDuplicatedPatientID"/>
-<attribute name="AcceptPatientID"/>
-<attribute name="IgnorePatientID"/>
-<attribute name="IgnorePatientIDAETitles"/>
 <attribute name="GeneratePatientID"/>
-<attribute name="IssuerOfPatientIDRules"/>
+<attribute name="IssuerOfPatientIDGeneratedPatientID"/>
+<attribute name="SupplementIssuerOfPatientID"/>
 <attribute name="StudyDateInFilePath"/>
 <attribute name="YearInFilePath"/>
 <attribute name="MonthInFilePath"/>
@@ -939,22 +954,23 @@ type           Event Type Code
 <attribute name="LRUCacheSize"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=TLSConfig">
-<attribute name="EnabledProtocols"/>
+<attribute name="EnabledProtocols" type="Security"/>
 <attribute name="SupportedProtocols"/>
-<attribute name="NeedClientAuthentication"/>
-<attribute name="KeyStoreURL"/>
-<attribute name="KeyStorePassword"/>
-<attribute name="TrustStoreURL"/>
-<attribute name="TrustStorePassword"/>
+<attribute name="NeedClientAuthentication" type="Security"/>
+<attribute name="KeyStoreURL" type="Security"/>
+<attribute name="KeyStorePassword" type="Security"/>
+<attribute name="TrustStoreURL" type="Security"/>
+<attribute name="TrustStorePassword" type="Security"/>
 <attribute name="AuditLoggerName"/>
 </mbean>
 <mbean name="dcm4chee.archive:service=WADOService">
-<attribute name="ImageQuality"/>
 <attribute name="CacheRoot"/>
 <attribute name="DirectoryTree"/>
 <attribute name="DeleterThresholds"/>
 <attribute name="PreferredFreeSpace"/>
 <attribute name="FreeDiskSpaceInterval"/>
+<attribute name="ImageQuality"/>
+<attribute name="ImageWriterClass"/>
 <attribute name="useClientRedirect"/>
 <attribute name="useRedirectCaching"/>
 <attribute name="UseTransferSyntaxOfFileAsDefault"/>
@@ -991,8 +1007,8 @@ type           Event Type Code
 <attribute name="ForceSQLQuery"/>
 <attribute name="ProxyHost" type="Network"/>
 <attribute name="ProxyPort" type="Network"/>
-<attribute name="KeystoreURL"/>
-<attribute name="KeystorePassword"/>
+<attribute name="KeyStoreURL"/>
+<attribute name="KeyStorePassword"/>
 <attribute name="TrustStoreURL"/>
 <attribute name="TrustStorePassword"/>
 <attribute name="AllowedUrlHost"/>
@@ -1013,8 +1029,8 @@ type           Event Type Code
 <attribute name="DocRepositoryAET"/>
 <attribute name="ProxyHost" type="Network"/>
 <attribute name="ProxyPort" type="Network"/>
-<attribute name="KeystoreURL"/>
-<attribute name="KeystorePassword"/>
+<attribute name="KeyStoreURL"/>
+<attribute name="KeyStorePassword"/>
 <attribute name="TrustStoreURL"/>
 <attribute name="TrustStorePassword"/>
 <attribute name="AllowedUrlHost"/>
@@ -1038,5 +1054,17 @@ type           Event Type Code
 <attribute name="AuditLoggerName"/>
 <attribute name="IANScuServiceName"/>
 <attribute name="KeyObjectServiceName"/>
+</mbean>
+<mbean name="dcm4chee.archive:service=XDSQueryService">
+<attribute name="XDSQueryURI"/>
+<attribute name="ProxyHost" type="Network"/>
+<attribute name="ProxyPort" type="Network"/>
+<attribute name="KeyStoreURL"/>
+<attribute name="KeyStorePassword"/>
+<attribute name="TrustStoreURL"/>
+<attribute name="TrustStorePassword"/>
+<attribute name="AllowedUrlHost"/>
+<attribute name="AffinityDomain"/>
+<attribute name="PixQueryServiceName"/>
 </mbean>
 </mbeans>

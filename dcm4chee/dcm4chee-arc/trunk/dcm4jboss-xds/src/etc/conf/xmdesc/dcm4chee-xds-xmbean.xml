@@ -68,23 +68,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getKeystoreURL"
-      setMethod="setKeystoreURL">
+      getMethod="getKeyStoreURL"
+      setMethod="setKeyStoreURL">
       <description>URL of keystore containing certificate to identify this Document Source,
          when running in TLS mode.
       </description>
-      <name>KeystoreURL</name>
+      <name>KeyStoreURL</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="conf/identity.p12" />
       </descriptors>
    </attribute>
    <attribute access="write-only"
-      setMethod="setKeystorePassword">
+      setMethod="setKeyStorePassword">
       <description>The password for access to keystore,
       specified by attribute TrustStoreURL.
       </description>
-      <name>KeystorePassword</name>
+      <name>KeyStorePassword</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="secret" />

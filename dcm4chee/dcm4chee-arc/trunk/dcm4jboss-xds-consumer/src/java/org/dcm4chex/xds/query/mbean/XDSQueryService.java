@@ -130,19 +130,19 @@ public class XDSQueryService extends ServiceMBeanSupport {
 	/**
 	 * @param keyStorePassword The keyStorePassword to set.
 	 */
-	public void setKeystorePassword(String keyStorePassword) {
+	public void setKeyStorePassword(String keyStorePassword) {
 		this.keystorePassword = keyStorePassword;
 	}
 	/**
 	 * @return Returns the keyStoreURL.
 	 */
-	public String getKeystoreURL() {
+	public String getKeyStoreURL() {
 		return keystoreURL;
 	}
 	/**
 	 * @param keyStoreURL The keyStoreURL to set.
 	 */
-	public void setKeystoreURL(String keyStoreURL) {
+	public void setKeyStoreURL(String keyStoreURL) {
 		this.keystoreURL = keyStoreURL;
 	}
 	/**

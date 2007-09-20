@@ -3,7 +3,7 @@
   Allow user to adjust build properties without modifying this build script.
   -->
   <property file="build.properties"/>
-  <property name="jboss.home" value="${user.home}/jboss-4.0.5.GA"/>
+  <property name="jboss.home" value="${user.home}/jboss-4.2.1.GA"/>
   <property name="jboss.dtd" value="${jboss.home}/docs/dtd"/>
   <property name="target-config.dir" value="../../target/config"/>
   <property name="dcm4chee-arr.home" value="../../../../dcm4chee-arr"/>
@@ -18,6 +18,8 @@
     value="${dcm4jboss-all.home}/dcm4jboss-wado/src/etc/conf/xmdesc"/>
   <property name="dcm4jboss-xds.xmdesc"
     value="${dcm4jboss-all.home}/dcm4jboss-xds/src/etc/conf/xmdesc"/>
+  <property name="dcm4jboss-xds-consumer.xmdesc"
+    value="${dcm4jboss-all.home}/dcm4jboss-xds-consumer/src/etc/META-INF"/>
   <property name="dcm4jboss-cdw.xmdesc"
     value="${dcm4jboss-all.home}/dcm4jboss-cdw/src/etc/conf/xmdesc"/>
   <target name="config">
@@ -56,6 +58,11 @@
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-contentedit-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=ContentEditService"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-dcmsec-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=DicomSecurity"/>
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
@@ -304,11 +311,6 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
-      <param name="xmbean.file" value="dcm4chee-pixnotif-xmbean.xml"/>
-      <param name="mbean" value="dcm4chee.archive:service=PIXUpdateNotification"/>
-    </antcall>
-    <antcall target="xslt">
-      <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-prefetch-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=Prefetch"/>
     </antcall>
@@ -331,6 +333,11 @@
       <param name="xmdesc.dir" value="${dcm4jboss-xds.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-xds-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=XDSService"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-xds-consumer.xmdesc}"/>
+      <param name="xmbean.file" value="jboss-service.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=XDSQueryService"/>
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-cdw.xmdesc}"/>
@@ -396,7 +403,7 @@ type           Event Type Code
 -->
 <mbeans>
 ]]></header>
-      <fileset dir="${target-config.dir}" includes="*-xmbean.xml"/>
+      <fileset dir="${target-config.dir}" includes="*-xmbean.xml,jboss-service.xml"/>
       <footer><![CDATA[</mbeans>]]></footer>
     </concat>
   </target>
