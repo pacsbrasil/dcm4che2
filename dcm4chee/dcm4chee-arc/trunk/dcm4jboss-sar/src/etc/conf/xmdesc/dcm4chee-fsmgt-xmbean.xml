@@ -221,9 +221,9 @@ accessed studies.</description>
    <attribute access="read-write"
       getMethod="isFlushStudiesOnMedia"
       setMethod="setFlushStudiesOnMedia">
-      <description>Enables the deletion studies in local cache that are
+      <description>Enables the deletion of studies in local cache that are
       stored on media (offline storage). Database entries for the studies are not
-      be removed. 
+      removed. 
       </description>
       <name>DeleteLocalStudiesStoredOnMedia</name>
       <type>boolean</type>
@@ -232,11 +232,24 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isFlushOnNearline"
+      setMethod="setFlushOnNearline">
+      <description>Enables the deletion of studies in local cache that have a valid copy
+      stored on a nearline filesystem (even if the filesystem is not read-only).
+      Database entries for the studies are not removed.
+      </description>
+      <name>DeleteLocalStudiesAvailableNearline</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isFlushOnROFsAvailable"
       setMethod="setFlushOnROFsAvailable">
-      <description>Enables the deletion studies in local cache that have a valid copy
+      <description>Enables the deletion of studies in local cache that have a valid copy
       stored on a read only filesystem. Database entries for the studies are not
-      be removed. 
+      removed. 
       </description>
       <name>DeleteLocalStudiesCopyAvailable</name>
       <type>boolean</type>
