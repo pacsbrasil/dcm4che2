@@ -15,6 +15,7 @@
     <name>UDPListener</name>
   </constructor>
   <attribute access="read-write" getMethod="getPort" setMethod="setPort">
+    <!-- Network -->
     <description>UDP port for listening for audit messages.</description>
     <name>Port</name>
     <type>int</type>
@@ -24,6 +25,7 @@
   </attribute>
   <attribute access="read-write" getMethod="getLocalAddress"
     setMethod="setLocalAddress">
+    <!-- Network -->
     <description>Local interface for UDP listener to bind. 0.0.0.0 means any
       available.</description>
     <name>LocalAddress</name>
