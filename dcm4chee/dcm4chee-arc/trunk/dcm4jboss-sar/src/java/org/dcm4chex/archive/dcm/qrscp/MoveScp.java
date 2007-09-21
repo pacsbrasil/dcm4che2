@@ -75,7 +75,7 @@ import org.jboss.logging.Logger;
  * @since 31.08.2003
  */
 public class MoveScp extends DcmServiceBase implements AssociationListener{
-    private final QueryRetrieveScpService service;
+    protected final QueryRetrieveScpService service;
 	private final Logger log;
     private PerfMonDelegate perfMon;
 

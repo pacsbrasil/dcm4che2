@@ -175,8 +175,11 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
     
-    private String timerIDCheckPendingSeriesStored;
+    protected StoreScp getScp() {
+    	return scp;
+    }
 
+    private String timerIDCheckPendingSeriesStored;
 
     public final String getCheckPendingSeriesStoredInterval() {
         return RetryIntervalls
