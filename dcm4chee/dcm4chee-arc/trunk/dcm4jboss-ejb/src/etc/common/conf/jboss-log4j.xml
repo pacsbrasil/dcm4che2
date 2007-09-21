@@ -326,7 +326,6 @@
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
-      <appender-ref ref="AUDITLOG"/>
    </root>
 
    <!-- Clustering logging -->
