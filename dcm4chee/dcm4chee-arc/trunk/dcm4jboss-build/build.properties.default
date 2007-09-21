@@ -1,8 +1,8 @@
 #Override with your dcm4chee-arr-3.x location
 dcm4chee-arr.home=${user.home}/dcm4chee/dcm4chee-arr
 
-#Override with your dcm4chee-audit-3.x location
-dcm4chee-audit.home=${user.home}/dcm4chee/dcm4chee-audit
+#Override with your local Maven2 repository
+m2.repos=${user.home}/.m2/repository
 
 #Override with your FOP dist location
 fop.home=${user.home}/fop-0.20.5
