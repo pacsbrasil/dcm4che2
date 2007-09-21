@@ -60,6 +60,7 @@
    </attribute>
 
    <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
+      <!-- Network -->     
       <description>Proxy host if http access use http proxy.
       </description>
       <name>ProxyHost</name>
@@ -69,6 +70,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getProxyPort" setMethod="setProxyPort">
+      <!-- Network -->     
       <description>Proxy port if http access use http proxy.
       </description>
       <name>ProxyPort</name>
@@ -80,6 +82,7 @@
    <attribute access="read-write"
       getMethod="getKeyStoreURL"
       setMethod="setKeyStoreURL">
+      <!-- Security -->     
       <description>URL of keystore containing certificate to identify this Document Source,
          when running in TLS mode.
       </description>
@@ -91,6 +94,7 @@
    </attribute>
    <attribute access="write-only"
       setMethod="setKeyStorePassword">
+      <!-- Security -->     
       <description>The password for access to keystore,
       specified by attribute TrustStoreURL.
       </description>
@@ -103,6 +107,7 @@
    <attribute access="read-write"
       getMethod="getTrustStoreURL"
       setMethod="setTrustStoreURL">
+      <!-- Security -->     
       <description>URL of trust store containing accepted certificates,
          when running in TLS mode.
       </description>
@@ -114,6 +119,7 @@
    </attribute>
    <attribute access="write-only"
       setMethod="setTrustStorePassword">
+      <!-- Security -->     
       <description>The password for access to trust store,
       specified by attribute TrustStoreURL.
       </description>

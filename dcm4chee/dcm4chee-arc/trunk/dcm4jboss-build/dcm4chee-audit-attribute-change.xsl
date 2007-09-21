@@ -8,6 +8,13 @@
     </mbean>
   </xsl:template>
   <xsl:template match="attribute">
-    <attribute name="{name}"/>
+    <attribute name="{name}">
+      <xsl:variable name="type" select="normalize-space(comment())"/>
+      <xsl:if test="$type='Network' or $type='Security' or $type='Hardware'">
+        <xsl:attribute name="type">
+          <xsl:value-of select="$type"/>
+        </xsl:attribute>
+      </xsl:if>
+     </attribute>
   </xsl:template>
 </xsl:stylesheet>

@@ -22,6 +22,7 @@
    <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
+     <!-- Network -->
       <description>Port that listens for TCP communication.
       </description>
       <name>TCPPort</name>
@@ -33,6 +34,7 @@
    <attribute access="read-write"
       getMethod="getProtocolName"
       setMethod="setProtocolName">
+     <!-- Security -->
       <description><![CDATA[Enable Transport Security Layer (TLS) mode:
       <br>
       <b>dicom</b>&#8212;<br>

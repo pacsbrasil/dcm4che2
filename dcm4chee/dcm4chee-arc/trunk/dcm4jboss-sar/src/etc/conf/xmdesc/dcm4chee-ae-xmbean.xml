@@ -30,6 +30,7 @@
       <type>java.lang.String</type>
    </attribute>
    <attribute access="read-write" getMethod="getPortNumbers" setMethod="setPortNumbers">
+     <!-- Network -->
       <description>Port numbers for AE auto configuration.&lt;br&gt;
       			   The method getAE(title, hostname) use this list to find a DICOM service hosted by hostname.&lt;br&gt;
       			   'NONE' will disable auto AE configuration!

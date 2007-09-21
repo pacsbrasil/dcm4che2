@@ -22,6 +22,7 @@
    <attribute access="read-write"
       getMethod="getEnabledProtocols"
       setMethod="setEnabledProtocols">
+      <!-- Security -->     
       <description><![CDATA[Comma separated list of protocol versions enabled
       for use on this connection. See <b>SupportedProtocols</b> for possible
       values. Default: TLSv1,SSLv3]]>
@@ -43,6 +44,7 @@
    <attribute access="read-write"
       getMethod="isNeedClientAuth"
       setMethod="setNeedClientAuth">
+      <!-- Security -->     
       <description><![CDATA[Set to <tt>true</tt> if client authentication is
       required, or <tt>false</tt> if no client authentication is desired.]]>
       </description>
@@ -55,6 +57,7 @@
    <attribute access="read-write"
       getMethod="getKeyStoreURL"
       setMethod="setKeyStoreURL">
+      <!-- Security -->     
       <description>URL of key store containing key used in SSL handshake,
          when running in TLS mode.
       </description>
@@ -66,6 +69,7 @@
    </attribute>
    <attribute access="write-only"
       setMethod="setKeyStorePassword">
+      <!-- Security -->     
       <description>The password for access to key store,
       specified by attribute KeyStoreURL.
       </description>
@@ -78,6 +82,7 @@
    <attribute access="read-write"
       getMethod="getTrustStoreURL"
       setMethod="setTrustStoreURL">
+      <!-- Security -->     
       <description>URL of trust store containing accepted certificates,
          when running in TLS mode.
       </description>
@@ -89,6 +94,7 @@
    </attribute>
    <attribute access="write-only"
       setMethod="setTrustStorePassword">
+      <!-- Security -->     
       <description>The password for access to trust store,
       specified by attribute TrustStoreURL.
       </description>

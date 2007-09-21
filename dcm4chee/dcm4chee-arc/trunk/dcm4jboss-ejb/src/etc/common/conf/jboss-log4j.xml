@@ -169,8 +169,7 @@
    <!-- ==================== -->
    <!-- Audit Trail Messages -->
    <!-- ==================== -->
-   <!-- Only used for emitting RFC-3881 compliant Audit messages by (optional)
-        dcm4chee-audit-3.x module -->
+   <!-- Used for emitting RFC-3881 compliant Audit messages -->
    <appender name="AUDITLOG" class="org.dcm4che2.audit.log4j.net.SyslogAppender">
      <param name="Facility" value="AUTHPRIV"/>
      <param name="SyslogHost" value="localhost:4000"/>
@@ -327,6 +326,7 @@
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
+      <appender-ref ref="AUDITLOG"/>
    </root>
 
    <!-- Clustering logging -->

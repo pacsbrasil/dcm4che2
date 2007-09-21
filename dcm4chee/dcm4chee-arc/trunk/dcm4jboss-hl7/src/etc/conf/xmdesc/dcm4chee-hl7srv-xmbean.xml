@@ -39,6 +39,7 @@
    <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
+     <!-- Network -->
       <description>TCP listening port. This is the most important value in
       the service, and by default is set to 2575.
       </description>
@@ -51,6 +52,7 @@
    <attribute access="read-write"
       getMethod="getProtocolName"
       setMethod="setProtocolName">
+     <!-- Security -->
       <description><![CDATA[Enable Transport Security Layer (TLS) mode:<ul>
       <li><tt>mllp</tt> - plain <i>Minimal Lower Level Protocol</i>; <b>no</b> TLS</li>
       <li><tt>mllp-tls</tt> - accept TLS connections; offer AES or DES encryption</li>
