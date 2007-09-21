@@ -24,6 +24,8 @@
     <attr tag="00120042"/> <!-- Clinical Trial Subject Reading ID -->        
     <attr tag="0040050A"/> <!-- Specimen Accession Number -->        
     <attr tag="00400550"/> <!-- Specimen Seq --> 
+    <!-- Added for IMPAX support -->
+    <attr tag="00310020"/> <!-- Agfa Global Patient ID -->   
   </patient>
   <study>
     <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -49,6 +51,16 @@
     <attr tag="00120051"/> <!-- Clinical Trial Time Point Description -->
     <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
     <attr tag="00200010"/> <!-- Study ID -->
+    <!-- Added for IMPAX support -->
+    <attr tag="00380300"/> <!-- Current Patient Location -->
+    <attr tag="00401008"/> <!-- Confidentiality Code -->
+    <attr tag="00081050"/> <!-- Performing Physician's Name -->
+    <attr tag="00321030"/> <!-- Reason For Study -->
+    <attr tag="00321032"/> <!-- Requesting Physician -->
+    <attr tag="00324000"/> <!-- Study Comments -->
+    <attr tag="0032000C"/> <!-- Study Priority ID -->
+    <attr tag="0032000A"/> <!-- Study Status ID -->
+    <attr tag="00081120"/> <!-- Referenced Patient Sequence -->      
   </study>
   <series>
     <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -119,7 +131,6 @@
         <attr tag="00080064"/> <!-- Conversion Type -->
         <attr tag="00081115"/> <!-- Referenced Series Sequence -->
         <attr tag="00081140"/> <!-- Referenced Image Sequence -->
-        <attr tag="00082111"/> <!-- Derivation Description -->
         <attr tag="00082112"/> <!-- Source Image Sequence -->
         <attr tag="00082144"/> <!-- Recommended Display Frame Rate -->
         <attr tag="00180010"/> <!-- Contrast/Bolus Agent -->
