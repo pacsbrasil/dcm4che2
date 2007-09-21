@@ -7,31 +7,18 @@
   <property name="target.dir" value="${basedir}/target"/>
   <property name="target.conf" value="${target.dir}/conf"/>
   <property name="target.audit-conf" value="${target.dir}/audit-conf"/>
-  <!-- Override with your dcm4chee-arr 3.x location -->
-  <property name="dcm4chee-arr.home"
-    value="${user.home}/dcm4chee/dcm4chee-arr"/>
-  <property name="dcm4chee-arr-listeners-udp.home"
-    value="${dcm4chee-arr.home}/dcm4chee-arr-listeners-udp"/>
-  <property name="dcm4chee-arr-listeners-udp.xmdesc"
-    value="${dcm4chee-arr-listeners-udp.home}/src/main/resources/xmdesc"/>
-  <property name="dcm4jboss-cdw.xmdesc"
-    value="../dcm4jboss-cdw/src/etc/conf/xmdesc"/>
-  <property name="dcm4jboss-hl7.xmdesc"
-    value="../dcm4jboss-hl7/src/etc/conf/xmdesc"/>
-  <property name="dcm4jboss-sar.xmdesc"
-    value="../dcm4jboss-sar/src/etc/conf/xmdesc"/>
-  <property name="dcm4jboss-wado.xmdesc"
-    value="../dcm4jboss-wado/src/etc/conf/xmdesc"/>
-  <property name="dcm4jboss-xds.xmdesc"
-    value="../dcm4jboss-xds/src/etc/conf/xmdesc"/>
-  <property name="dcm4jboss-xds-consumer.xmdesc" 
-    value="../dcm4jboss-xds-consumer/src/etc/META-INF"/>
+	
   <!-- Override with your local Maven2 repository location -->
   <property name="m2.repos" value="${user.home}/.m2/repository"/>
   <property name="dcm4chee-audit-login.lib" 
     value="${m2.repos}/dcm4che/dcm4chee-audit-login/${audit-version}"/>
   <property name="dcm4chee-audit-logger.lib" 
     value="${m2.repos}/dcm4che/dcm4chee-audit-logger/${audit-version}"/>
+
+  <!-- Override with your JBoss server bundle dist location -->
+  <property name="jboss.home" value="${user.home}/jboss-4.2.1.GA"/>
+  <property name="jboss.dtd" value="${jboss.home}/docs/dtd"/>
+	
   <!-- Override with your FOP dist location -->
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
   <target name="clean">
@@ -264,11 +251,18 @@
   <target name="audit-conf">
     <mkdir dir="${target.conf}"/>
     <mkdir dir="${target.audit-conf}"/>
-    <antcall target="xslt">
-      <param name="xmdesc.dir" value="${dcm4chee-arr-listeners-udp.xmdesc}"/>
-      <param name="xmbean.file" value="dcm4chee-arr-udplistener-xmbean.xml"/>
-      <param name="mbean" value="dcm4chee.arr:service=UDPListener"/>
-    </antcall>
+    <property name="dcm4jboss-cdw.xmdesc"
+      value="../dcm4jboss-cdw/src/etc/conf/xmdesc"/>
+    <property name="dcm4jboss-hl7.xmdesc"
+      value="../dcm4jboss-hl7/src/etc/conf/xmdesc"/>
+    <property name="dcm4jboss-sar.xmdesc"
+      value="../dcm4jboss-sar/src/etc/conf/xmdesc"/>
+    <property name="dcm4jboss-wado.xmdesc"
+      value="../dcm4jboss-wado/src/etc/conf/xmdesc"/>
+    <property name="dcm4jboss-xds.xmdesc"
+      value="../dcm4jboss-xds/src/etc/conf/xmdesc"/>
+    <property name="dcm4jboss-xds-consumer.xmdesc" 
+      value="../dcm4jboss-xds-consumer/src/etc/META-INF"/>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-auditlog-xmbean.xml"/>
@@ -651,10 +645,18 @@ type           Event Type Code
 "Hardware"     "Hardware Configuration"
 <other>        "Software Configuration"
 -->
-<mbeans>
+<mbeans>  	
+<mbean name="dcm4chee.arr:service=UDPListener">
+<attribute name="Port" type="Network"/>
+<attribute name="LocalAddress" type="Network"/>
+<attribute name="MaxMessageSize"/>
+<attribute name="ReceiveBufferSize"/>
+<attribute name="EnableDNSLookups"/>
+</mbean>
 ]]></header>
       <fileset dir="${target.audit-conf}"/>
-      <footer><![CDATA[</mbeans>]]></footer>
+      <footer><![CDATA[</mbeans>
+]]></footer>
     </concat>
   </target>
   <target name="xslt">
