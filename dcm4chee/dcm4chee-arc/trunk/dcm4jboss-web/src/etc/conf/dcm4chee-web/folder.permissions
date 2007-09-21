@@ -8,8 +8,8 @@
 # e.g. 'folder.*=delete,export_tf' 
 
 # add_worklist currently hides "Add Series" function in Web Folder  
-# folder.*=edit,move,delete,*export,add_worklist,edit.newStudyUID,xds_consumer
-folder.*=edit,move,delete,*export,edit.newStudyUID
+# folder.*=edit,move,delete,*export,add_worklist,edit.newStudyUID,xds_consumer,mergepat
+folder.*=edit,move,delete,*export,edit.newStudyUID,mergepat
 folder.*export=export_tf,export_xds
 
 # Application - Role Mapping

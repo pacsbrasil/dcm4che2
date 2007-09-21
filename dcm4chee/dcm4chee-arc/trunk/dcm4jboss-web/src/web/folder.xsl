@@ -20,6 +20,7 @@
 <xsl:param name="folder.edit" select="'false'"/>
 <xsl:param name="folder.move" select="'false'"/>
 <xsl:param name="folder.add_worklist" select="'false'"/>
+<xsl:param name="folder.mergepat" select="'false'"/>
 
 <xsl:template match="model">
 	<form action="foldersubmit.m" method="post" name="myForm" accept-charset="UTF-8" > 
@@ -102,6 +103,8 @@
 								<img src="images/addpat.gif" alt="Add Patient" border="0" title="Add new Patient"/>		
 							</a>
 						</td>
+					</xsl:if>
+					<xsl:if test="$folder.mergepat='true'">
 						<td class="folder_header" width="40">
 							<input type="image" value="Merge" name="merge" src="images/merge.gif" alt="merge" border="0"
 								title="Merge selected Patients" onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
