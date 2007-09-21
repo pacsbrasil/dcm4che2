@@ -40,13 +40,17 @@ package org.dcm4chee.audit.logger;
 
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.AttributeChangeNotification;
 import javax.management.AttributeChangeNotificationFilter;
+import javax.management.MBeanServerNotification;
+import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.security.jacc.PolicyContext;
@@ -73,28 +77,54 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class AuditLogger extends ServiceMBeanSupport {
 
+	private static final String MBEAN_SERVER_DELEGATE = 
+			"JMImplementation:type=MBeanServerDelegate";
     private static final String REGISTER_ACNL = 
-            "Register Attribute Change Notification Listener to ";
+            "Register ACN Listener to ";
+    private static final String DEFER_REGISTER_ACNL = 
+        	"Defer to register ACN Listener to ";
     private static final String UNREGISTER_ACNL = 
-            "Unregister Attribute Change Notification Listener from ";
+            "Unregister ACN Listener from ";
     private static final String FAILED_TO_REGISTER_ACNL = 
-            "Failed to register Attribute Change Notification Listener to ";
+            "Failed to register ACN Listener to ";
     private static final String FAILED_TO_UNREGISTER_ACNL = 
-            "Failed to unregister Attribute Change Notification Listener from ";
+            "Failed to unregister ACN Listener from ";
     private static final String WEB_REQUEST_KEY = 
             "javax.servlet.http.HttpServletRequest";
-    private static String[] TYPES = { "Network", "Security", "Hardware" };
-    private static AuditEvent.TypeCode[] TYPE_CODES = {
+    private static final String[] TYPES = { "Network", "Security", "Hardware" };
+    private static final AuditEvent.TypeCode[] TYPE_CODES = {
             SecurityAlertMessage.SOFTWARE_CONFIGURATION,
             SecurityAlertMessage.NETWORK_CONFIGURATION,
             SecurityAlertMessage.SECURITY_CONFIGURATION,
             SecurityAlertMessage.HARDWARE_CONFIGURATION
     };
     
+    private static final NotificationFilter REG_NOTIF_FILTER =
+    	new NotificationFilter() {
 
+			private static final long serialVersionUID = 6373294028145260060L;
+
+			public boolean isNotificationEnabled(Notification notif) {
+    			return notif.getType().equals(
+    					MBeanServerNotification.REGISTRATION_NOTIFICATION);
+    		}
+    	};
+    
+    private static final NotificationFilter UNREG_NOTIF_FILTER =
+    	new NotificationFilter() {
+
+			private static final long serialVersionUID = 6373294028145260060L;
+
+			public boolean isNotificationEnabled(Notification notif) {
+    			return notif.getType().equals(
+    					MBeanServerNotification.UNREGISTRATION_NOTIFICATION);
+    		}
+    	};
+    
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
     private String aclConfURL;
-    private HashSet acnSources = new HashSet();
+    private HashMap notRegisteredAcnSources;
+    private HashMap registeredAcnSources = new HashMap();   
 
     public boolean isIHEYr4() {
         return false;
@@ -238,25 +268,33 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     public final void setAttributeChangeConfigurationURL(String url)
             throws Exception {
-        parseACLConfig(url, new RegisterACL(true));
+        HashMap tmp = new HashMap();
+        SAXParser p = SAXParserFactory.newInstance().newSAXParser();
+        p.parse(url, new ConfigHandler(tmp));
         this.aclConfURL = url;
-        if (getState() == STARTED) {
-            unregisterACL();
-            parseACLConfig(url, new RegisterACL(false));
-        }
+        boolean started = getState() == STARTED;
+		if (started) {
+            unregisterAcnListeners();
+		}
+        this.notRegisteredAcnSources = tmp;
+		if (started) {
+            registerAcnListeners();
+		}
     }
 
     protected void startService() throws Exception {
+    	registerMBeanServerListeners();
+        registerAcnListeners();
         auditApplicationActivity(ApplicationActivityMessage.APPLICATION_START);
-        parseACLConfig(aclConfURL, new RegisterACL(false));
     }
 
-    protected void stopService() {
+	protected void stopService() {
+        unregisterAcnListeners();
+        unregisterMBeanServerListeners();
         auditApplicationActivity(ApplicationActivityMessage.APPLICATION_STOP);
-        unregisterACL();
     }
 
-    private void auditApplicationActivity(AuditEvent.TypeCode type) {
+	private void auditApplicationActivity(AuditEvent.TypeCode type) {
         ApplicationActivityMessage msg = new ApplicationActivityMessage(type);
         msg.addApplication(AuditMessage.getProcessID(),
                 AuditMessage.getLocalAETitles(),
@@ -271,6 +309,38 @@ public class AuditLogger extends ServiceMBeanSupport {
         return p != null ? p.getName() : System.getProperty("user.name");
     }
 
+    private final NotificationListener regl = new NotificationListener() {
+
+		public void handleNotification(Notification notif, Object handback) {
+			MBeanServerNotification mbsn = (MBeanServerNotification) notif;
+			ObjectName source = mbsn.getMBeanName();
+			AttributeChangeNotificationFilter[] acnf =
+					(AttributeChangeNotificationFilter[])
+					notRegisteredAcnSources.remove(source);
+			if (acnf != null) {
+				(registerAcnListener(source, acnf) 
+						? registeredAcnSources 
+						: notRegisteredAcnSources)
+						.put(source, acnf);
+			}
+		}    	
+    };
+    
+    private final NotificationListener unregl = new NotificationListener() {
+
+		public void handleNotification(Notification notif, Object handback) {
+			MBeanServerNotification mbsn = (MBeanServerNotification) notif;
+			ObjectName source = mbsn.getMBeanName();
+			AttributeChangeNotificationFilter[] acnf =
+					(AttributeChangeNotificationFilter[])
+					registeredAcnSources.remove(source);
+			if (acnf != null) {
+				unregisterAcnListener(source);
+				notRegisteredAcnSources.put(source, acnf);
+			}
+		}    	
+    };
+    
     private final NotificationListener acnl = new NotificationListener() {
 
         public void handleNotification(Notification notif, Object handback) {
@@ -309,22 +379,16 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     }
     
-    private static void parseACLConfig(String uri, DefaultHandler dh)
-            throws Exception {
-        SAXParser p = SAXParserFactory.newInstance().newSAXParser();
-        p.parse(uri, dh);
-    }
-    
-    private class RegisterACL extends DefaultHandler {
+    private static class ConfigHandler extends DefaultHandler {
 
-        private boolean validate; 
+        private final HashMap sources;
         private ObjectName source;
         private AttributeChangeNotificationFilter[] acnf = 
                 new AttributeChangeNotificationFilter[4];
         private List types = Arrays.asList(TYPES);
         
-        public RegisterACL(boolean validate) {
-            this.validate = validate;
+        public ConfigHandler(HashMap sources) {
+            this.sources = sources;
         }
         
         public void startElement(String uri, String localName, 
@@ -346,44 +410,116 @@ public class AuditLogger extends ServiceMBeanSupport {
             }
         }
 
-        public void endElement(String uri, String localName, String qName)
+
+		private boolean hasAcnf() {
+			return acnf[0] != null || acnf[1] != null
+					|| acnf[2] != null || acnf[3] != null;
+		}
+		
+		public void endElement(String uri, String localName, String qName)
                 throws SAXException {
-            if (!validate) {
-                if (qName.equals("mbean")) {
-                    for (int i = 0; i < acnf.length; i++) {
-                        if (acnf[i] != null) {                        
-                            try {
-                                if (log.isDebugEnabled()) {
-                                    log.debug(REGISTER_ACNL + source);
-                                }
-                                server.addNotificationListener(source, acnl,
-                                        acnf[i], TYPE_CODES[i]);
-                                acnSources.add(source);
-                            } catch (Exception e) {
-                                log.error(FAILED_TO_REGISTER_ACNL + source, e);
-                            }
-                            acnf[i] = null;
-                        }
-                    }
-                    source = null;
-                }
+			if (qName.equals("mbean")) {
+				if (hasAcnf()) {
+					sources.put(source, acnf);
+					acnf = new AttributeChangeNotificationFilter[4];
+				}
+				source = null;
+			}
+        }
+    }
+    
+    private void registerAcnListeners() {
+        for (Iterator iter = notRegisteredAcnSources.entrySet().iterator();
+        		iter.hasNext();) {
+        	Map.Entry entry = (Map.Entry) iter.next();
+            ObjectName source = (ObjectName) entry.getKey();
+            AttributeChangeNotificationFilter[] acnf =
+            	(AttributeChangeNotificationFilter[]) entry.getValue();
+            if (registerAcnListener(source, acnf)) {
+            	registeredAcnSources.put(source, acnf);
+            	iter.remove();
             }
         }
     }
 
-    private void unregisterACL() {
-        for (Iterator iter = acnSources.iterator(); iter.hasNext();) {
-            ObjectName source = (ObjectName) iter.next();
-            try {
-                if (log.isDebugEnabled()) {
-                    log.debug(UNREGISTER_ACNL + source);
-                }
-                server.removeNotificationListener(source, acnl);
-                iter.remove();
-            } catch (Exception e) {
-                log.warn(FAILED_TO_UNREGISTER_ACNL + source, e);
-            }
-        }    
+
+    private void registerMBeanServerListeners() throws Exception {
+    	ObjectName serverDelegate = new ObjectName(MBEAN_SERVER_DELEGATE);
+		server.addNotificationListener(serverDelegate, regl,
+				REG_NOTIF_FILTER, null);
+
+		server.addNotificationListener(serverDelegate, unregl,
+				UNREG_NOTIF_FILTER, null);
+	}
+
+    private void unregisterMBeanServerListeners() {
+    	ObjectName serverDelegate;
+		try {
+			serverDelegate = new ObjectName(MBEAN_SERVER_DELEGATE);
+		} catch (MalformedObjectNameException e) {
+			throw new RuntimeException(e);
+		}
+    	try {
+    		server.removeNotificationListener(serverDelegate, regl);
+    	} catch (Exception e) {
+    		log.warn(e.getMessage(), e);
+    	}
+    	try {
+    		server.removeNotificationListener(serverDelegate, unregl);
+    	} catch (Exception e) {
+    		log.warn(e.getMessage(), e);
+    	}
+	}
+    
+	private boolean registerAcnListener(ObjectName source,
+			AttributeChangeNotificationFilter[] acnf) {
+		if (!server.isRegistered(source)) {
+			if (log.isDebugEnabled()) {
+				log.debug(DEFER_REGISTER_ACNL + source);
+			}
+			return false;
+		}
+		if (log.isDebugEnabled()) {
+			log.debug(REGISTER_ACNL + source);
+		}
+		int registered = 0;
+		for (int i = 0; i < acnf.length; i++) {
+			if (acnf[i] != null) {                        
+				try {
+					server.addNotificationListener(source, acnl,
+							acnf[i], TYPE_CODES[i]);
+					registered++;
+				} catch (Exception e) {
+					log.warn(FAILED_TO_REGISTER_ACNL + source, e);
+					if (registered == 0) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+    private void unregisterAcnListeners() {
+        for (Iterator iter = registeredAcnSources.keySet().iterator();
+        		iter.hasNext();) {
+            unregisterAcnListener((ObjectName) iter.next());
+        }
+        notRegisteredAcnSources.putAll(registeredAcnSources);
+        registeredAcnSources.clear();
     }
+
+	private void unregisterAcnListener(ObjectName source) {
+		if (server.isRegistered(source)) {
+			try {
+			    if (log.isDebugEnabled()) {
+			        log.debug(UNREGISTER_ACNL + source);
+			    }
+			    server.removeNotificationListener(source, acnl);
+			} catch (Exception e) {
+			    log.warn(FAILED_TO_UNREGISTER_ACNL + source, e);
+			}
+		}
+	}
 
 }
