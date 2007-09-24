@@ -1094,8 +1094,6 @@
   <element tag="(0028,9454)" name="Mask Selection Mode" vr="CS" vm="1" key="MaskSelectionMode" />
   <element tag="(0028,9474)" name="LUT Function" vr="CS" vm="1" key="LUTFunction" />
 
-  <element tag="(0031,0020)" name="Agfa Global Patient ID" vr="LO" vm="1" key="AgfaGlobalPatientID" />
-
   <element tag="(0032,000A)" name="Study Status ID" vr="CS" vm="1" key="StudyStatusID" />
   <element tag="(0032,000C)" name="Study Priority ID" vr="CS" vm="1" key="StudyPriorityID" />
   <element tag="(0032,0012)" name="Study ID Issuer" vr="LO" vm="1" key="StudyIDIssuer" />
