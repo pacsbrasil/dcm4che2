@@ -1093,19 +1093,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 FileDTO dto;
                 for (int i = 0; i < fileDTOs.length; ++i) {
                     dto = fileDTOs[i];
-                    if (retrieveAET.equals(dto.getRetrieveAET())) {
-                        if ( dto.getDirectoryPath().startsWith("tar:") ) {
-                            FileDTO dto1;
-                            for ( int j = i+1 ; j < fileDTOs.length; ++i ) {
-                                dto1 = fileDTOs[j];
-                                if ( !dto1.getDirectoryPath().startsWith("tar:") &&
-                                     retrieveAET.equals(dto1.getRetrieveAET())  ) {
-                                    return getFile(dto1); //found an online file!
-                                }
-                            }
-                        }
+                    if (retrieveAET.equals(dto.getRetrieveAET()))
                         return getFile(dto);
-                    }
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }
