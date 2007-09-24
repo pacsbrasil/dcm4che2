@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server>
+<!-- $Id: dcm4chee-ae-service.xml 4950 2007-09-04 09:42:54Z gunterze $ -->
+<server>
+	<classpath codebase="lib" archives="dcm4chee.jar" />
+	<mbean
+		code="org.dcm4chex.archive.mbean.MigrateOldAuditRecordRepositoryService"
+		name="dcm4chee.archive:service=MigrateOldARR"
+		xmbean-dd="xmdesc/dcm4chee-migratearr-xmbean.xml">
+		<depends>dcm4chee.archive:service=AuditLogger</depends>
+	</mbean>
+</server>

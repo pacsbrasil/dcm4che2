@@ -49,21 +49,21 @@ import java.sql.SQLException;
 public class QueryOldARRCmd extends BaseReadCmd {
     public static final class Record {
         public final long pk;
-        public final byte[] message;
+        public final String xml_data;
 
-        public Record(final long pk, final byte[] message) {
+        public Record(final long pk, String xml_data) {
             this.pk = pk;
-            this.message = message;
+            this.xml_data = xml_data;
         }
     };
 
     public static final int transactionIsolationLevel = 0;
 
-    public QueryOldARRCmd(long minPk) throws SQLException {
+    public QueryOldARRCmd(long skipUntilPk) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, JdbcProperties.getInstance()
                         .getProperty("QueryOldARRCmd"));
-        ((PreparedStatement) stmt).setLong(1, minPk);
+        ((PreparedStatement) stmt).setLong(1, skipUntilPk);
         execute();
     }
 
@@ -71,7 +71,7 @@ public class QueryOldARRCmd extends BaseReadCmd {
         try {
             int count = 0;
             while (count < result.length && next()) {
-                result[count++] = new Record(rs.getLong(1), getBytes(2));
+                result[count++] = new Record(rs.getLong(1), rs.getString(2));
             }
             return count;
         } finally {

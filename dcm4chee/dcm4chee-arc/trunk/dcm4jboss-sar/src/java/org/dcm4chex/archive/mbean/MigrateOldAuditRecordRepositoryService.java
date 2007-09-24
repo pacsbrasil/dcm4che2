@@ -37,8 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
+import javax.management.Attribute;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.jdbc.QueryOldARRCmd;
@@ -51,17 +50,34 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Sep 24, 2007
  * 
  */
-public class MigrateOldAuditRecordRepositoryService extends ServiceMBeanSupport {
+public class MigrateOldAuditRecordRepositoryService
+        extends ServiceMBeanSupport {
 
-    long startWith = 0;
-    int blockSize = 100;
-    int numberOfBlocks = 1;
+    private int recordByPass;
+    private long lastEmittedPk;
 
-    public String emitAuditMessages() throws SQLException {
-        long ms0 = System.currentTimeMillis();
+    public final int getRecordsByPass() {
+        return recordByPass;
+    }
+
+    public final void setRecordsByPass(int recordByPass) {
+        this.recordByPass = recordByPass;
+    }
+
+    public final long getLastEmittedPk() {
+        return lastEmittedPk;
+    }
+    
+    public final void setLastEmittedPk(long lastEmittedPk) {
+        this.lastEmittedPk = lastEmittedPk;
+    }
+    
+    public String emitAuditMessages(int n) throws Exception {
         int count = 0;
-        for (int i = 0; i < numberOfBlocks; ++i) {
-            int emitted = emitNextBlockOfAuditMessages();
+        long ms0 = System.currentTimeMillis();
+        while (count < n) {
+            int emitted = emitBlockOfAuditMessage(
+                    Math.min(n - count, recordByPass));
             if (emitted == 0) {
                 break;
             }
@@ -71,21 +87,25 @@ public class MigrateOldAuditRecordRepositoryService extends ServiceMBeanSupport 
         return "Sent " + count + " Audit messages in " + (ms / 1000.f) + " s.";
     }
 
-    public int emitNextBlockOfAuditMessages() throws SQLException {
-        QueryOldARRCmd cmd = new QueryOldARRCmd(startWith);
-        Record[] result = new Record[blockSize];
+    private int emitBlockOfAuditMessage(int n) throws Exception {
+        log.info("Prepare sending " + n + " Audit messages");
+        Record[] result = new Record[n];
+        QueryOldARRCmd cmd = new QueryOldARRCmd(lastEmittedPk);
         int fetched = cmd.fetch(result);
-        for (int i = 0; i < result.length; i++) {
-            Record rec = result[i];
-            String msg;
-            try {
-                msg = new String(rec.message, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
+        long lastEmittedPk = 0;
+        try {
+            for (int i = 0; i < result.length; i++) {
+                Record rec = result[i];
+                Logger.getLogger("auditlog").info(rec.xml_data);
+                lastEmittedPk = rec.pk;
             }
-            Logger.getLogger("auditlog").info(msg);
-
+            log.info("Sent " + fetched + " Audit messages");
+            return fetched;
+        } finally {
+            if (lastEmittedPk > 0) {
+                server.setAttribute(serviceName, new Attribute(
+                        "lastEmittedPk", new Long(lastEmittedPk)));
+            }
         }
-        return fetched;
     }
 }
