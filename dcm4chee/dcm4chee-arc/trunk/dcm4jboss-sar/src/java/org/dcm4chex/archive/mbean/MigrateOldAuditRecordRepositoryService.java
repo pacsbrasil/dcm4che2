@@ -49,44 +49,43 @@ import org.jboss.system.ServiceMBeanSupport;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Sep 24, 2007
- *
+ * 
  */
-public class MigrateOldAuditRecordRepositoryService 
-		extends ServiceMBeanSupport {
-	
-	long startWith = 0;
-	int blockSize = 100;
-	int numberOfBlocks = 1;
-	
-	public String emitAuditMessages() throws SQLException {
-		long ms0 = System.currentTimeMillis();
-		int count = 0;
-		for (int i = 0; i < numberOfBlocks; ++i) {
-			int emitted = emitNextBlockOfAuditMessages();
-			if (emitted == 0) {
-				break;
-			}
-			count += emitted;
-		}
-		long ms = System.currentTimeMillis() - ms0;
-		return "Sent " + count + " Audit messages in " + (ms/1000.f) + " s.";
-	}
+public class MigrateOldAuditRecordRepositoryService extends ServiceMBeanSupport {
 
-	public int emitNextBlockOfAuditMessages() throws SQLException {
-		QueryOldARRCmd cmd = new QueryOldARRCmd(startWith);
-		Record[] result = new Record[blockSize];
-		int fetched = cmd.fetch(result );
-		for (int i = 0; i < result.length; i++) {
-			Record rec = result[i];
-			String msg;
-			try {
-				msg = new String(rec.message, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
-			}
-			Logger.getLogger("auditlog").info(msg);
-			
-		}
-		return fetched;
-	}
+    long startWith = 0;
+    int blockSize = 100;
+    int numberOfBlocks = 1;
+
+    public String emitAuditMessages() throws SQLException {
+        long ms0 = System.currentTimeMillis();
+        int count = 0;
+        for (int i = 0; i < numberOfBlocks; ++i) {
+            int emitted = emitNextBlockOfAuditMessages();
+            if (emitted == 0) {
+                break;
+            }
+            count += emitted;
+        }
+        long ms = System.currentTimeMillis() - ms0;
+        return "Sent " + count + " Audit messages in " + (ms / 1000.f) + " s.";
+    }
+
+    public int emitNextBlockOfAuditMessages() throws SQLException {
+        QueryOldARRCmd cmd = new QueryOldARRCmd(startWith);
+        Record[] result = new Record[blockSize];
+        int fetched = cmd.fetch(result);
+        for (int i = 0; i < result.length; i++) {
+            Record rec = result[i];
+            String msg;
+            try {
+                msg = new String(rec.message, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+            Logger.getLogger("auditlog").info(msg);
+
+        }
+        return fetched;
+    }
 }

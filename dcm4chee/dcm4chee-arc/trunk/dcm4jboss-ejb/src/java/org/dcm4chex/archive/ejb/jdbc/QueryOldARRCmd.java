@@ -44,37 +44,38 @@ import java.sql.SQLException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Sep 24, 2007
- *
+ * 
  */
 public class QueryOldARRCmd extends BaseReadCmd {
-	public static final class Record {
-		public final long pk;
-		public final byte[] message;
-		public Record(final long pk, final byte[] message) {
-			this.pk = pk;
-			this.message = message;
-		}
-	};
+    public static final class Record {
+        public final long pk;
+        public final byte[] message;
 
-	public static final int transactionIsolationLevel = 0;
+        public Record(final long pk, final byte[] message) {
+            this.pk = pk;
+            this.message = message;
+        }
+    };
 
-	public QueryOldARRCmd(long minPk) throws SQLException {
-		super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel,
-				JdbcProperties.getInstance().getProperty("QueryOldARRCmd"));
-		((PreparedStatement) stmt).setLong(1, minPk);
-		execute();
- 	}
-	
-	public int fetch(Record[] result) throws SQLException {	
-		try {
-			int count = 0;
-			while (count < result.length && next()) {
-				result[count++] = new Record(rs.getLong(1), getBytes(2));
-			}
-			return count;
-		} finally {
-			close();
-		}
-	}
+    public static final int transactionIsolationLevel = 0;
+
+    public QueryOldARRCmd(long minPk) throws SQLException {
+        super(JdbcProperties.getInstance().getDataSource(),
+                transactionIsolationLevel, JdbcProperties.getInstance()
+                        .getProperty("QueryOldARRCmd"));
+        ((PreparedStatement) stmt).setLong(1, minPk);
+        execute();
+    }
+
+    public int fetch(Record[] result) throws SQLException {
+        try {
+            int count = 0;
+            while (count < result.length && next()) {
+                result[count++] = new Record(rs.getLong(1), getBytes(2));
+            }
+            return count;
+        } finally {
+            close();
+        }
+    }
 }
