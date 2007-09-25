@@ -115,6 +115,9 @@ public class FileDataSource implements DataSource {
 		this.excludePrivate = excludePrivate;
 	}
     
+	public File getFile() {
+		return file;
+	}
 	public Dataset getMergeAttrs() {
 		return mergeAttrs;
 	}
