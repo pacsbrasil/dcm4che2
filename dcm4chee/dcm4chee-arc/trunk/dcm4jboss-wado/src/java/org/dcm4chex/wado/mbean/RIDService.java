@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -65,6 +66,7 @@ import org.xml.sax.SAXException;
  */
 public class RIDService extends AbstractCacheService  {
 
+	private static final String NONE = "NONE";
 	private RIDSupport support = new RIDSupport( this );
 	private float waveformCorrection = 1f;
 	
@@ -190,8 +192,31 @@ public class RIDService extends AbstractCacheService  {
     public void setSRSopCuids( String cuids ) {
         support.setSRSopCuids( toUidMap(cuids) );
     }
-    
+
+    /**
+     * Returns a String with all defined SOP Class UIDs that are used to find SR documents.
+     * <p>
+     * The uids are separated with '|'.
+     * 
+     * @return SOP Class UIDs to find Structured Reports.
+     */
+    public String getEncapsulatedDocumentSopCuids() {
+        return toString(support.getEncapsulatedDocumentSopCuids());
+    }
+
+    /**
+     * Set a list of SOP Class UIDs that are used to find encapsulated documents.
+     * <p>
+     * The UIDs are separated with '|'.
+     * 
+     * @param sopCuids String with SOP class UIDs separated with '|'
+     */
+    public void setEncapsulatedDocumentSopCuids( String cuids ) {
+        support.setEncapsulatedDocumentSopCuids( toUidMap(cuids) );
+    }
+
     private Map toUidMap(String cuids) {
+    	if ( NONE.equalsIgnoreCase(cuids)) return null;
         StringTokenizer st = new StringTokenizer(cuids, "\r\n;");
         String uid,name;
         Map map = new TreeMap();
@@ -211,7 +236,7 @@ public class RIDService extends AbstractCacheService  {
     }
 
     private String toString(Map uids) {
-        if ( uids == null || uids.isEmpty() ) return "";
+        if ( uids == null || uids.isEmpty() ) return NONE;
         StringBuffer sb = new StringBuffer( uids.size() << 5);//StringBuffer initial size: nrOfUIDs x 32
         Iterator iter = uids.keySet().iterator();
         while ( iter.hasNext() ) {
