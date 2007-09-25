@@ -70,7 +70,6 @@ cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/http-invoker.sar \
   "$JBOSS_SERV"/deploy/jboss-aop-jdk50.deployer \
   "$JBOSS_SERV"/deploy/jboss-bean.deployer \
-  "$JBOSS_SERV"/deploy/jbossws.sar \
   "$DCM4CHEE_SERV"/deploy
 
 cp -v "$JBOSS_SERV"/deploy/jboss-web.deployer/context.xml \
