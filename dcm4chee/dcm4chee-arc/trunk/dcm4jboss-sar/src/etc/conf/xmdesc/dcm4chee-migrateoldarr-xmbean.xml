@@ -2,9 +2,9 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-	<description><![CDATA[Audit Record Repository 2.x Migration Service.
-        Used to re-emit audit messages received by dcm4chee-arr-2.x,
-	    in particular to dcm4chee-arr-3.x.]]>
+	<description><![CDATA[<b>Audit Record Repository 2.x Migration Service</b>.
+        Used to re-emit audit messages received by dcm4chee-arr-2.x to another
+	    - in particular to dcm4chee-arr-3.x - <i>Audit Record Repository</i>.]]>
 	</description>
 	<descriptors>
 		<persistence persistPolicy="OnUpdate" />
@@ -46,7 +46,7 @@
   <attribute access="read-write" getMethod="getLastEmittedPk"
       setMethod="setLastEmittedPk">
       <description><![CDATA[Primary Key of last successfully emitted Audit
-      Records by former invocation of <i>emitAuditRecords()</i>]]>
+      Records by former invocation of <i>emitAuditRecords()</i>.]]>
       </description>
       <name>LastEmittedPk</name>
       <type>long</type>
@@ -61,7 +61,7 @@
 	<operation impact="ACTION">
 		<description><![CDATA[Emit specified number of Audit Records in order
 		of their primary keys, starting with the Audit Record which primary key
-		exceeds <i>LastEmittedPk</i> ]]></description>
+		exceeds <i>LastEmittedPk</i>.]]></description>
 		<name>emitAuditRecords</name>
 		<parameter>
 			<description>Maximal number of Audit Records to emit</description>
