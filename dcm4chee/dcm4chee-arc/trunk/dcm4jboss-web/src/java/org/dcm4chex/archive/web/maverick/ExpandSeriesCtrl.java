@@ -75,6 +75,8 @@ public class ExpandSeriesCtrl extends ExpandStudyCtrl {
 	                        .get(i)));
 	            folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
 	                    .setInstances(instances);
+	        } catch (Exception x) {
+	        	folderForm.gotoCurrentPage();
 	        } finally {
 	            try {
 	                cm.remove();
@@ -82,8 +84,12 @@ public class ExpandSeriesCtrl extends ExpandStudyCtrl {
 	            }
 	        }
         } else {
+        	try {
             folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
-        }
+        	} catch (Exception x) {
+        		folderForm.gotoCurrentPage();
+        	}
+       }
         return SUCCESS;
     }
 

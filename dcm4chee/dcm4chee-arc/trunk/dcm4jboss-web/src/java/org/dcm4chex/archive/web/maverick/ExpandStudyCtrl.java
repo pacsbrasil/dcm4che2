@@ -76,6 +76,8 @@ public class ExpandStudyCtrl extends ExpandPatientCtrl {
 	            for (int i = 0, n = series.size(); i < n; i++)
 	                series.set(i, new SeriesModel((Dataset) series.get(i)));
 	            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
+	        } catch (Exception x) {
+	        	folderForm.gotoCurrentPage();
 	        } finally {
 	            try {
 	                cm.remove();
@@ -83,7 +85,11 @@ public class ExpandStudyCtrl extends ExpandPatientCtrl {
 	            }
 	        }
         } else {
-            folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
+        	try {
+        		folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
+	        } catch (Exception x) {
+	        	folderForm.gotoCurrentPage();
+	        }
         }
         return SUCCESS;
     }

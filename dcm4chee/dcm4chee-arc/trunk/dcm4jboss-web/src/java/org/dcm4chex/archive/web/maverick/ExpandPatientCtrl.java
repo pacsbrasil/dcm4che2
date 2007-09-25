@@ -78,6 +78,8 @@ public class ExpandPatientCtrl extends Dcm4cheeFormController {
 	            for (int i = 0, n = studies.size(); i < n; i++)
 	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
 	            folderForm.getPatientByPk(patPk).setStudies(studies);
+	        } catch (Exception x) {
+	        	folderForm.gotoCurrentPage();
 	        } finally {
 	            try {
 	                cm.remove();
@@ -85,7 +87,11 @@ public class ExpandPatientCtrl extends Dcm4cheeFormController {
 	            }
 	        }
         } else {
-            folderForm.getPatientByPk(patPk).getStudies().clear();
+        	try {
+        		folderForm.getPatientByPk(patPk).getStudies().clear();
+	        } catch (Exception x) {
+	        	folderForm.gotoCurrentPage();
+	        }        		
         }
         return SUCCESS;
     }
