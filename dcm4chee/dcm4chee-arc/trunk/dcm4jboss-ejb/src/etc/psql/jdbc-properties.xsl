@@ -12,6 +12,7 @@
 <xsl:text>datasource-mapping=</xsl:text>
 <xsl:value-of select="jbosscmp-jdbc/defaults/datasource-mapping"/>
 <xsl:text>
+datasource-type=1
 AddUserCmd=INSERT INTO users (user_id,passwd) VALUES(?,?)
 UpdatePasswordForUserCmd=UPDATE users SET passwd=? WHERE user_id=?
 RemoveUserCmd=DELETE FROM users WHERE user_id=?

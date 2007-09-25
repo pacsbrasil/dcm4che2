@@ -60,14 +60,9 @@ public class JdbcProperties extends Properties {
     public static final int ORACLE = 4;
     public static final int MSSQL = 5;
 
-    private static final String HSQL_VAL = "Hypersonic SQL";
-    private static final String PSQL_VAL = "PostgreSQL 8.0";
-    private static final String MYSQL_VAL = "mySQL";
-    private static final String DB2_VAL = "DB2";
-    private static final String ORACLE_VAL = "Oracle9i";
-    private static final String MSSQL_VAL = "MS SQLSERVER2000";
     private static final String DATASOURCE_KEY = "datasource";
-    private static final String DS_MAPPING_KEY = "datasource-mapping";
+    private static final String DS_TYPE_KEY = "datasource-type";
+    
     private static final JdbcProperties instance = new JdbcProperties();
 
     private final String datasource;
@@ -111,33 +106,10 @@ public class JdbcProperties extends Properties {
                 JdbcProperties.class.getResourceAsStream("Jdbc.properties");
             load(in);
             in.close();
-            database = toDatabase(super.getProperty(DS_MAPPING_KEY));
+            database = Integer.parseInt(super.getProperty(DS_TYPE_KEY));
             datasource = super.getProperty(DATASOURCE_KEY);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load jdbc properties", e);
         }
-    }
-
-    private static int toDatabase(String mapping) {
-        if (HSQL_VAL.equals(mapping)) {
-            return HSQL;
-        }
-        if (PSQL_VAL.equals(mapping)) {
-            return PSQL;
-        }
-        if (MYSQL_VAL.equals(mapping)) {
-            return MYSQL;
-        }
-        if (DB2_VAL.equals(mapping)) {
-            return DB2;
-        }
-        if (ORACLE_VAL.equals(mapping)) {
-            return ORACLE;
-        }
-        if (MSSQL_VAL.equals(mapping)) {
-            return MSSQL;
-        }
-        throw new IllegalArgumentException(
-            DS_MAPPING_KEY + "=" + mapping);
     }
 }
