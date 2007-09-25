@@ -410,8 +410,8 @@ public class Patient extends EntityBase {
         }
 
 
-        for (int n = 0; n < nopidsq.countItems(); n++) {
-            Dataset nopid = nopidsq.getItem();
+        for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+            Dataset nopid = nopidsq.getItem(i);
             String pid = nopid.getString(Tags.PatientID);
             String issuer = nopid.getString(Tags.IssuerOfPatientID);
             if (!containsPID(pid, issuer, opidsq)) {
@@ -427,8 +427,8 @@ public class Patient extends EntityBase {
 
     public static boolean containsPID(String pid, String issuer,
             DcmElement opidsq) {
-        for (int n = 0; n < opidsq.countItems(); n++) {
-            Dataset opid = opidsq.getItem();
+        for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+            Dataset opid = opidsq.getItem(i);
             if (opid.getString(Tags.PatientID).equals(pid)
                     && opid.getString(Tags.IssuerOfPatientID).equals(issuer)) {
                 return true;

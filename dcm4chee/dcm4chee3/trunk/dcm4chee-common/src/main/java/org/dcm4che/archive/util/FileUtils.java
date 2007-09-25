@@ -74,7 +74,7 @@ public class FileUtils {
 
     public static final long GIGA = 1000000000L;
 
-    public static final long MAX_TIMES_CREATE_FILE = 1000;
+    public static final long MAX_TIMES_CREATE_FILE = 10;
 
     public static final long INTERVAL_CREATE_FILE = 250; // ms
 
@@ -145,7 +145,7 @@ public class FileUtils {
                 success = false;
 
                 // Maybe other thread is trying to do the same thing
-                // Let's wait for 100 ms - this rarely happens
+                // Let's wait for INTERVAL_CREATE_FILE ms - this rarely happens
                 try {
                     Thread.sleep(INTERVAL_CREATE_FILE);
                 }

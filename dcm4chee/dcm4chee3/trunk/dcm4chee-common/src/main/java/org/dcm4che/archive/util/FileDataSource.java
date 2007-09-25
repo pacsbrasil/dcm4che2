@@ -75,11 +75,11 @@ public class FileDataSource implements DataSource {
     private final byte[] buffer;
 
     /** if true use Dataset.writeFile instead of writeDataset */
-    private boolean writeFile = false;
+    private boolean writeFile;
 
-    private boolean withoutPixeldata = false;
+    private boolean withoutPixeldata;
 
-    private boolean excludePrivate = false;
+    private boolean excludePrivate;
 
     // buffer == null => send no Pixeldata
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
@@ -125,6 +125,10 @@ public class FileDataSource implements DataSource {
         this.excludePrivate = excludePrivate;
     }
 
+    public File getFile() {
+        return file;
+    }
+
     public Dataset getMergeAttrs() {
         return mergeAttrs;
     }
@@ -156,7 +160,7 @@ public class FileDataSource implements DataSource {
                 if (tsUID != null) {
                     if (tsUID.equals(UIDs.ExplicitVRLittleEndian)
                             || !tsUID.equals(tsOrig)) { // can only decompress
-                                                        // here!
+                        // here!
                         tsUID = UIDs.ExplicitVRLittleEndian;
                         ds.setFileMetaInfo(DcmObjectFactory.getInstance()
                                 .newFileMetaInfo(ds, tsUID));

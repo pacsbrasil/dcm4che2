@@ -370,8 +370,8 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
         DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
         boolean update = false;
         if (opidsq != null) {
-            for (int n = 0; n < opidsq.countItems(); n++) {
-                Dataset opid = opidsq.getItem();
+            for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+                Dataset opid = opidsq.getItem(i);
                 String pid = opid.getString(Tags.PatientID);
                 String issuer = opid.getString(Tags.IssuerOfPatientID);
                 if (nopidsq == null
@@ -390,8 +390,8 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
         }
 
         if (nopidsq != null) {
-            for (int n = 0; n < nopidsq.countItems(); n++) {
-                Dataset nopid = nopidsq.getItem();
+            for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+                Dataset nopid = nopidsq.getItem(i);
                 String pid = nopid.getString(Tags.PatientID);
                 String issuer = nopid.getString(Tags.IssuerOfPatientID);
                 if (opidsq == null || !Patient.containsPID(pid, issuer, opidsq)) {
@@ -403,8 +403,8 @@ public class PatientDAOImpl extends BaseDAOImpl<Patient> implements PatientDAO {
             }
             if (update) {
                 opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
-                for (int n = 0; n < nopidsq.countItems(); n++) {
-                    opidsq.addItem(nopidsq.getItem());
+                for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+                    opidsq.addItem(nopidsq.getItem(i));
                 }
             }
         }
