@@ -9,6 +9,6 @@
 	<classpathentry path="JBOSS_HOME/server/default/lib/log4j.jar" kind="var"/>
 	<classpathentry path="JBOSS_HOME/server/default/lib/mail.jar" kind="var"/>
 	<classpathentry path="/dcm4che14" combineaccessrules="false" kind="src"/>
-	<classpathentry path="JBOSS_HOME/server/default/lib/jboss-saaj.jar" kind="var"/>
+	<classpathentry path="/dcm4jboss-sar/lib/saaj-api.jar" kind="lib"/>
 	<classpathentry path="target/classes" kind="output"/>
 </classpath>
