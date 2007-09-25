@@ -142,7 +142,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     private int count = 0;
     
-    private boolean orderByEventDateTime = false;
+    private boolean orderByEventDateTime = true;
 
     private String dateTimeRange = today();
 
