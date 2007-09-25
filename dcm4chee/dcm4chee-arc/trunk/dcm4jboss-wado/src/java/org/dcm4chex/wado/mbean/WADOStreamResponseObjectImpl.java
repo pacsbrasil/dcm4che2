@@ -59,10 +59,15 @@ public class WADOStreamResponseObjectImpl extends BasicWADOResponseObject {
 
 	private InputStream stream;
 	private static final int BUF_LEN = 65536;
+	private long maxLen = -1L;
 
 	public WADOStreamResponseObjectImpl( InputStream is, String contentType, int retCode, String errMsg ) {
 		super(contentType,retCode,errMsg);
 		this.stream = is;
+	}
+	public WADOStreamResponseObjectImpl( InputStream is, long maxLen, String contentType, int retCode, String errMsg ) {
+		this( is, contentType,retCode,errMsg);
+		this.maxLen = maxLen;
 	}
 	
 	/* (non-Javadoc)
@@ -77,9 +82,19 @@ public class WADOStreamResponseObjectImpl extends BasicWADOResponseObject {
 				in = new BufferedInputStream( stream, BUF_LEN );
 			}
 			byte[] buf = new byte[BUF_LEN];
+			long totLen = 0L;
+			boolean checkLen = maxLen > 0;
 			try {
 				int len = in.read( buf );
 				while ( len > 0 ) {
+					if ( checkLen ) {
+						totLen += len;
+						if (totLen > maxLen ) {
+							int diff = (int)(totLen-maxLen);
+							out.write( buf, 0, len-diff );
+							break;
+						}
+					}
 					out.write( buf, 0, len );
 					len = in.read( buf );
 				}
