@@ -33,6 +33,7 @@
     	<class>org.dcm4che.archive.entity.StudyOnFileSystem</class>
         <class>org.dcm4che.archive.entity.User</class>
         <class>org.dcm4che.archive.entity.VerifyingObserver</class>
+        <exclude-unlisted-classes />
     </persistence-unit>
     
 </persistence>
