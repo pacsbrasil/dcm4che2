@@ -1257,6 +1257,89 @@
 		</xsl:apply-templates>
 </xsl:template>
 
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.EncapsulatedModel']">
+	<tr>
+<table class="instance_line" width="100%" cellpadding="1" cellspacing="0" border="0">		 
+		<colgroup>
+			<col width="4%"/>
+			<col width="15%"/>
+			<col width="6%"/>
+			<col width="15%"/>
+			<col width="15%"/>
+			<col width="5%"/>
+			<col width="16%"/>
+			<col width="18"/>
+			<col width="4%"/>
+			<col width="2%"/>
+		</colgroup>
+ 
+		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		  <td align="right" rowspan="{$rowspan}">
+			<xsl:choose>
+				<xsl:when test="$rowspan=1">
+	  				<a title="Show files" href="expandInstance.m?expand=true&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+						<img src="images/plus.gif" border="0" alt="+"/>
+              		                                            </a>				
+				</xsl:when>
+				<xsl:otherwise>
+	  			        <a title="Hide Instances" href="expandInstance.m?expand=false&amp;patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}">
+					<img src="images/minus.gif" border="0" alt="-"/>
+                                                                              </a>				
+				</xsl:otherwise>
+			</xsl:choose>
+                                </td>
+		<td title="Content Datetime" >
+    	                    <xsl:value-of select="contentDateTime"/>&#160;
+		</td>
+		<td title="Instance Number" >
+  		    <xsl:value-of select="instanceNumber"/>&#160;
+    	</td>
+    	<td title="Document Title" >
+  			<xsl:value-of select="documentTitle"/>&#160;
+		</td>
+		<td title="Mime Type" >
+      		<xsl:value-of select="mimeType"/>&#160;
+    	</td>
+		<td title="Number of Files" >
+			<xsl:value-of select="numberOfFiles"/>&#160;
+		</td>
+	  	<td title="Retrieve AETs" >
+			<xsl:value-of select="retrieveAETs"/>&#160;
+    	</td>
+	  	<td title="SopIUID" >
+			<xsl:value-of select="sopIUID"/>&#160;
+    	</td>
+		<xsl:choose>
+			<xsl:when test="availability='ONLINE'" >			
+				<td class="instance_mark" align="right" >
+					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType={mimeType}" target="SRview" >
+						<img src="images/sr_pdf.gif" alt="View Document" border="0" title="View Document"/>		
+					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/attrs.gif" alt="attrs" border="0" title="Show DICOM attributes"/>		
+					</a>
+				</td>
+			</xsl:when>
+			<xsl:otherwise>
+				<td class="instance_mark" align="right" >
+					<img src="images/invalid.gif" alt="Document not online" border="0" title="Document not online"/>		
+				</td>
+			</xsl:otherwise>
+		</xsl:choose>				
+		<td class="instance_mark" align="right">
+			<input type="checkbox" name="stickyInst" value="{pk}">
+				<xsl:if test="/model/stickyInstances/item = pk">
+					<xsl:attribute name="checked"/>
+				</xsl:if>
+			</input>
+		</td>
+</table>
+	</tr>
+		<xsl:apply-templates select="files/item">
+			<xsl:sort data-type="number" order="descending" select="pk"/>
+		</xsl:apply-templates>
+</xsl:template>
+
 <xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.FileDTO']">
 <xsl:variable name="line_name">
 	<xsl:choose>

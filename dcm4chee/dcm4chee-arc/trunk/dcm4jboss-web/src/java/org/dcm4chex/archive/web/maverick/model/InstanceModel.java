@@ -43,6 +43,7 @@ package org.dcm4chex.archive.web.maverick.model;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -60,7 +61,10 @@ public class InstanceModel extends AbstractModel {
 
 	private List files = null;
 	
+	protected static Logger log = Logger.getLogger(InstanceModel.class);
+			
     public static Object valueOf(Dataset ds) {
+    	log.info("InstanceModel ds:");log.info(ds);
         String cuid = ds.getString(Tags.SOPClassUID);
         if (UIDs.GrayscaleSoftcopyPresentationStateStorage.equals(cuid))
                 return new PresentationStateModel(ds);
@@ -77,6 +81,9 @@ public class InstanceModel extends AbstractModel {
         	return new WaveformModel(ds);
         if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) 
         	return new StructuredReportModel(ds);
+        if ( ds.getString(Tags.MIMETypeOfEncapsulatedDocument) != null) {
+        	return new EncapsulatedModel(ds);
+        }
         return new ImageModel(ds);
     }
 
