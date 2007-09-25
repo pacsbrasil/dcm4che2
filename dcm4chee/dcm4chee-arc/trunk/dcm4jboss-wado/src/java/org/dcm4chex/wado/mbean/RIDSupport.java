@@ -100,6 +100,7 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.wado.common.RIDRequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.WADOSupport.ImageCachingException;
@@ -144,6 +145,7 @@ public class RIDSupport {
     private static MBeanServer server;
     private Map ecgSopCuids = new TreeMap();
     private Map srSopCuids = new TreeMap();
+    private Map docSopCuids = new TreeMap();
 	private String ridSummaryXsl;
 	
 	private boolean useXSLInstruction;
@@ -237,7 +239,24 @@ public class RIDSupport {
             srSopCuids = cuids;
         }
     }
-	
+
+    /**
+     * @return Returns the sopCuids.
+     */
+    public Map getEncapsulatedDocumentSopCuids() {
+        return docSopCuids;
+    }
+    /**
+     * @param sopCuids The sopCuids to set.
+     */
+    public void setEncapsulatedDocumentSopCuids(Map cuids) {
+        if ( cuids == null ) {
+        	docSopCuids.clear();
+        } else {
+        	docSopCuids = cuids;
+        }
+    }
+    
 	/**
 	 * @return Returns the encapsulatedPDFSupport.
 	 */
@@ -516,16 +535,18 @@ public class RIDSupport {
 	public WADOResponseObject getRIDDocument(RIDRequestObject reqObj) {
 		String uid = reqObj.getParam("documentUID");
 		try {
-            List instances = getContentManager().listInstanceInfos( new String[] {uid}, false);
-            if ( ! instances.isEmpty() ) {
+			Dataset ds = getDicomObjectForDocument(uid);
+            if ( ds != null ) {
                 WADOResponseObject response;
-                Dataset ds = (Dataset) instances.get(0);
                 log.info("Found Dataset:");log.info(ds);
 				String cuid = ds.getString( Tags.SOPClassUID );
 				if ( getECGSopCuids().values().contains( cuid ) ) {
 					response = getECGSupport().getECGDocument( reqObj, ds );
-				} else if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) {
+				} else if ( encapsulatedPDFSupport && UIDs.EncapsulatedPDFStorage.equals(cuid)) {
 					response = getEncapsulatedPDF( reqObj );
+				} else if ( getEncapsulatedDocumentSopCuids().values().contains( cuid )) {
+					response = getEncapsulatedDocument( reqObj );
+					logExport(reqObj, ds, "XDS Document Retrieve");
 				} else {
 					response = getDocument( reqObj );
 				}
@@ -547,54 +568,60 @@ public class RIDSupport {
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
 		}
 	}
+
+	private Dataset getDicomObjectForDocument(String uid) throws FinderException,
+			RemoteException, Exception {
+		List instances = getContentManager().listInstanceInfos( new String[] {uid}, false);
+		return instances.isEmpty() ? null : (Dataset) instances.get(0);
+	}
 	
-        private boolean isAuditLogIHEYr4() {
-            if (auditLogName == null) {
-                return false;
-            }
-            if (auditLogIHEYr4 == null) {
-                try {
-                    this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                            auditLogName, "IHEYr4");
-                } catch (Exception e) {
-                    log.warn("JMX failure: ", e);
-                    this.auditLogIHEYr4 = Boolean.FALSE;
-                }
-            }
-            return auditLogIHEYr4.booleanValue();
+    private boolean isAuditLogIHEYr4() {
+        if (auditLogName == null) {
+            return false;
         }
-        
-        private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
-            if (isAuditLogIHEYr4()) return;
+        if (auditLogIHEYr4 == null) {
             try {
-                HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(), AuditMessage.isEnableDNSLookups());
-                String user = userInfo.getUserId();
-                String host = userInfo.getHostName();
-                DataExportMessage msg = new DataExportMessage();
-                msg.setOutcomeIndicator( AuditEvent.OutcomeIndicator.SUCCESS );
-                msg.addExporterProcess(AuditMessage.getProcessID(), 
-                        AuditMessage.getLocalAETitles(),
-                        AuditMessage.getProcessName(), false,
-                        AuditMessage.getLocalHostName());
-                msg.addDataRepository(reqObj.getRequest().getRequestURL().toString());
-                msg.addDestinationMedia(host, null, mediaType, user == null, host );
-                if (user != null) {
-                    ActiveParticipant ap = ActiveParticipant.createActivePerson(user, null, user, null, true);
-                    msg.addActiveParticipant(ap);
-                    
-                }
-                msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
-                ParticipantObjectDescription desc = new ParticipantObjectDescription();
-                SOPClass sopClass = new SOPClass(ds.getString(Tags.SOPClassUID));
-                sopClass.setNumberOfInstances(1);
-                desc.addSOPClass(sopClass);
-                msg.addStudy(ds.getString(Tags.StudyInstanceUID), desc);
-                msg.validate();
-                Logger.getLogger("auditlog").info(msg);
+                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
+                        auditLogName, "IHEYr4");
             } catch (Exception e) {
-                log.warn("Audit Log failed:", e);
-            }		
-    	}
+                log.warn("JMX failure: ", e);
+                this.auditLogIHEYr4 = Boolean.FALSE;
+            }
+        }
+        return auditLogIHEYr4.booleanValue();
+    }
+    
+    private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
+        if (isAuditLogIHEYr4()) return;
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(), AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            String host = userInfo.getHostName();
+            DataExportMessage msg = new DataExportMessage();
+            msg.setOutcomeIndicator( AuditEvent.OutcomeIndicator.SUCCESS );
+            msg.addExporterProcess(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(), false,
+                    AuditMessage.getLocalHostName());
+            msg.addDataRepository(reqObj.getRequest().getRequestURL().toString());
+            msg.addDestinationMedia(host, null, mediaType, user == null, host );
+            if (user != null) {
+                ActiveParticipant ap = ActiveParticipant.createActivePerson(user, null, user, null, true);
+                msg.addActiveParticipant(ap);
+                
+            }
+            msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
+            ParticipantObjectDescription desc = new ParticipantObjectDescription();
+            SOPClass sopClass = new SOPClass(ds.getString(Tags.SOPClassUID));
+            sopClass.setNumberOfInstances(1);
+            desc.addSOPClass(sopClass);
+            msg.addStudy(ds.getString(Tags.StudyInstanceUID), desc);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception e) {
+            log.warn("Audit Log failed:", e);
+        }		
+	}
 
 	/**
 	 * @param reqObj
@@ -644,7 +671,8 @@ public class RIDSupport {
 				if ( resp != null ) return resp; 
 				contentType = CONTENT_TYPE_PDF; //cant be rendered as image (SR) make PDF instead.
 			} else if ( ! contentType.equals( CONTENT_TYPE_PDF) ) {
-				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
+				if ( this.docSopCuids.isEmpty() ) //if no encapsulated document cuid defined, we accept only jpeg and pdf.
+					return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
 			}
 		}
 		if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_PDF } ) == null ) {
@@ -822,13 +850,44 @@ public class RIDSupport {
 	        DataInputStream dis = new DataInputStream(is);
 	        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
 	        parser.parseDcmFile(null,Tags.EncapsulatedDocument);
-	        return new WADOStreamResponseObjectImpl(is, CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
+	        long len = parser.getReadLength();
+	        return new WADOStreamResponseObjectImpl(is, len, CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
 		} catch ( Exception x ) {
 			log.error("Error getting encapsulated PDF!", x);
 			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
 		}
 	}
 	
+	private WADOResponseObject getEncapsulatedDocument( RIDRequestObject reqObj ) {
+
+		try {
+	        FileDataSource fds = (FileDataSource) server.invoke(fileSystemMgtName,
+	                "getDatasourceOfInstance",
+	                new Object[] { reqObj.getParam("documentUID") },
+	                new String[] { String.class.getName() } );
+	        
+			InputStream is = new BufferedInputStream( new FileInputStream(fds.getFile()) );
+			Dataset ds = fds.getMergeAttrs();
+			String mime = ds.getString(Tags.MIMETypeOfEncapsulatedDocument);
+			if (mime == null) {
+				mime = "application.octet-stream";
+			}
+			log.info("Mime type of encapsulated document:"+mime);
+			if ( checkContentType( reqObj, new String[]{mime}) == null ) 
+				return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "The Display actor doesnt accept mime type of requested document:"+mime+"!");
+	        DataInputStream dis = new DataInputStream(is);
+	        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+	        Dataset attrs = dof.newDataset();
+	        parser.setDcmHandler( attrs.getDcmHandler() );
+	        parser.parseDcmFile(null,Tags.EncapsulatedDocument);
+	        long len = parser.getReadLength();
+	        log.debug("read length of encapsulated document:"+len);
+	        return new WADOStreamResponseObjectImpl(is, len, mime, HttpServletResponse.SC_OK, null);
+		} catch ( Exception x ) {
+			log.error("Error getting encapsulated PDF!", x);
+			return new WADOStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
+		}
+	}
 	
 	/**
 	 * @param patientID patient id in form patientID^^^issuerOfPatientID
