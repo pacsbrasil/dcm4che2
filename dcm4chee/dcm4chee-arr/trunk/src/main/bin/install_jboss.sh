@@ -70,21 +70,8 @@ cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/http-invoker.sar \
   "$JBOSS_SERV"/deploy/jboss-aop-jdk50.deployer \
   "$JBOSS_SERV"/deploy/jboss-bean.deployer \
+  "$JBOSS_SERV"/deploy/jboss-web.deployer \
   "$DCM4CHEE_SERV"/deploy
-
-cp -v "$JBOSS_SERV"/deploy/jboss-web.deployer/context.xml \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/jasper-jdt.jar \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/jbossweb-extras.jar \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/jbossweb.jar \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/jbossweb-service.jar \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/jstl.jar \
-  "$DCM4CHEE_SERV"/deploy/jboss-web.deployer
-  
-cp -v -R "$JBOSS_SERV"/deploy/jboss-web.deployer/conf \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/jsf-libs \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/META-INF \
-  "$JBOSS_SERV"/deploy/jboss-web.deployer/ROOT.war \
-  "$DCM4CHEE_SERV"/deploy/jboss-web.deployer
 
 cp -v "$JBOSS_SERV"/deploy/jms/jms-ds.xml \
   "$JBOSS_SERV"/deploy/jms/jms-ra.rar \

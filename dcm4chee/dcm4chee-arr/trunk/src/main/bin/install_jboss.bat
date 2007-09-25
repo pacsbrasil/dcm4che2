@@ -81,21 +81,7 @@ xcopy /S "%JBOSS_DEPLOY%\ejb3.deployer" "%DCM4CHEE_DEPLOY%\ejb3.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-aop-jdk50.deployer" "%DCM4CHEE_DEPLOY%\jboss-aop-jdk50.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-bean.deployer" "%DCM4CHEE_DEPLOY%\jboss-bean.deployer\"
-
-set JBOSS_WEB=%JBOSS_DEPLOY%\jboss-web.deployer
-set DCM4CHEE_WEB=%DCM4CHEE_DEPLOY%\jboss-web.deployer
-
-copy "%JBOSS_WEB%\context.xml" "%DCM4CHEE_WEB%"
-copy "%JBOSS_WEB%\jasper-jdt.jar" "%DCM4CHEE_WEB%"
-copy "%JBOSS_WEB%\jbossweb-extras.jar" "%DCM4CHEE_WEB%"
-copy "%JBOSS_WEB%\jbossweb.jar" "%DCM4CHEE_WEB%"
-copy "%JBOSS_WEB%\jbossweb-service.jar" "%DCM4CHEE_WEB%"
-copy "%JBOSS_WEB%\jstl.jar" "%DCM4CHEE_WEB%"
-
-xcopy /S "%JBOSS_WEB%\conf" "%DCM4CHEE_WEB%\conf\"
-xcopy /S "%JBOSS_WEB%\jsf-libs" "%DCM4CHEE_WEB%\jsf-libs\"
-xcopy /S "%JBOSS_WEB%\META-INF" "%DCM4CHEE_WEB%\META-INF\"
-xcopy /S "%JBOSS_WEB%\ROOT.war" "%DCM4CHEE_WEB%\ROOT.war\"
+xcopy /S "%JBOSS_DEPLOY%\jboss-web.deployer" "%DCM4CHEE_DEPLOY%\jboss-web.deployer\"
 
 set JBOSS_JMS=%JBOSS_DEPLOY%\jms
 set DCM4CHEE_JMS=%DCM4CHEE_DEPLOY%\jms

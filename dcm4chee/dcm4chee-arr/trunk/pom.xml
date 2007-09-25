@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr</artifactId>
-  <version>1</version>
+  <version>3.0.3</version>
   <packaging>pom</packaging>
   <name>Audit Record Repository</name>
   <properties>
@@ -16,6 +16,30 @@
     <module>dcm4chee-arr-seam-web</module>
     <module>dcm4chee-arr-ear</module>
   </modules>
+  <dependencies>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4chee-audit-logger</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4chee-audit-login</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>    
+    </plugins>
+  </build>
   <repositories>
     <repository>
       <id>dcm4che</id>
