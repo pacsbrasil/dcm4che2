@@ -523,6 +523,19 @@ class MD5CheckService {}
 class md5CheckService {}
 
 /**
+ */
+class MigrateOldARRService {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.MigrateOldARRService
+ * @opt !hide
+ */
+class migrateOldARRService {}
+
+/**
  * @depend - - - MPPSScp
  * @depend - - - HL7Send
  * @depend - - - Templates

@@ -59,11 +59,15 @@ public class QueryOldARRCmd extends BaseReadCmd {
 
     public static final int transactionIsolationLevel = 0;
 
-    public QueryOldARRCmd(long skipUntilPk) throws SQLException {
+    public QueryOldARRCmd(long skipUntilPk, int limit) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, JdbcProperties.getInstance()
                         .getProperty("QueryOldARRCmd"));
-        ((PreparedStatement) stmt).setLong(1, skipUntilPk);
+        int limitPos = Integer.parseInt(JdbcProperties.getInstance()
+                .getProperty("QueryOldARRCmdLimitPos"));
+        PreparedStatement ps = ((PreparedStatement) stmt);
+		ps.setLong(3-limitPos, skipUntilPk);
+		ps.setInt(limitPos, limit);
         execute();
     }
 

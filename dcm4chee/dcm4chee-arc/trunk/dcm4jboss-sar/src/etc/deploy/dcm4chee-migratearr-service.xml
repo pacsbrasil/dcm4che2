@@ -7,6 +7,5 @@
 		code="org.dcm4chex.archive.mbean.MigrateOldAuditRecordRepositoryService"
 		name="dcm4chee.archive:service=MigrateOldARR"
 		xmbean-dd="xmdesc/dcm4chee-migratearr-xmbean.xml">
-		<depends>dcm4chee.archive:service=AuditLogger</depends>
 	</mbean>
 </server>

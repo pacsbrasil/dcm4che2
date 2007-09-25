@@ -21,7 +21,8 @@ RemoveRoleFromUserCmd=DELETE FROM roles WHERE user_id=? AND roles=?
 QueryUsersCmd=SELECT user_id FROM users
 QueryPasswordForUserCmd=SELECT passwd FROM users WHERE user_id=?
 QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=?
-QueryOldARRCmd=SELECT pk,xml_data FROM audit_record_old WHERE pk>? ORDER BY pk
+QueryOldARRCmd=SELECT pk,xml_data FROM audit_record_old WHERE pk>? ORDER BY pk LIMIT ?
+QueryOldARRCmdLimitPos=2
 </xsl:text>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Patient']" mode="fk">
 <xsl:with-param name="fk" select="'merge_fk'"/>

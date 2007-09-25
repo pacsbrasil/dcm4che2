@@ -53,15 +53,31 @@ import org.jboss.system.ServiceMBeanSupport;
 public class MigrateOldAuditRecordRepositoryService
         extends ServiceMBeanSupport {
 
-    private int recordByPass;
+    private int emissionInterval;
+    private int recordsByPass;
     private long lastEmittedPk;
 
-    public final int getRecordsByPass() {
-        return recordByPass;
+	public final int getEmissionInterval() {
+		return emissionInterval;
+	}
+
+	public final void setEmissionInterval(int emissionInterval) {
+		if (emissionInterval < 0) {
+			throw new IllegalArgumentException(
+					"emissionInterval: " + emissionInterval);
+		}
+		this.emissionInterval = emissionInterval;
+	}
+
+	public final int getRecordsByPass() {
+        return recordsByPass;
     }
 
     public final void setRecordsByPass(int recordByPass) {
-        this.recordByPass = recordByPass;
+		if (recordByPass < 0) {
+			throw new IllegalArgumentException("recordByPass: " + recordByPass);
+		}
+        this.recordsByPass = recordByPass;
     }
 
     public final long getLastEmittedPk() {
@@ -72,12 +88,12 @@ public class MigrateOldAuditRecordRepositoryService
         this.lastEmittedPk = lastEmittedPk;
     }
     
-    public String emitAuditMessages(int n) throws Exception {
+    public String emitAuditRecords(int num) throws Exception {
         int count = 0;
         long ms0 = System.currentTimeMillis();
-        while (count < n) {
-            int emitted = emitBlockOfAuditMessage(
-                    Math.min(n - count, recordByPass));
+        while (count < num) {
+            int emitted = emitBlockOfAuditRecords(
+                    Math.min(num - count, recordsByPass));
             if (emitted == 0) {
                 break;
             }
@@ -87,24 +103,27 @@ public class MigrateOldAuditRecordRepositoryService
         return "Sent " + count + " Audit messages in " + (ms / 1000.f) + " s.";
     }
 
-    private int emitBlockOfAuditMessage(int n) throws Exception {
-        log.info("Prepare sending " + n + " Audit messages");
-        Record[] result = new Record[n];
-        QueryOldARRCmd cmd = new QueryOldARRCmd(lastEmittedPk);
+    private int emitBlockOfAuditRecords(int limit) throws Exception {
+        log.info("Prepare sending " + limit + " Audit messages");
+        Record[] result = new Record[limit];
+        QueryOldARRCmd cmd = new QueryOldARRCmd(lastEmittedPk, limit);
         int fetched = cmd.fetch(result);
         long lastEmittedPk = 0;
+        int sent = 0;
         try {
-            for (int i = 0; i < result.length; i++) {
-                Record rec = result[i];
+            while (sent < fetched) {
+                Record rec = result[sent];
                 Logger.getLogger("auditlog").info(rec.xml_data);
                 lastEmittedPk = rec.pk;
+                ++sent;
+                Thread.sleep(emissionInterval);
             }
-            log.info("Sent " + fetched + " Audit messages");
-            return fetched;
+            return sent;
         } finally {
-            if (lastEmittedPk > 0) {
+            if (sent > 0) {
+            	log.info("Sent " + sent + " Audit messages");
                 server.setAttribute(serviceName, new Attribute(
-                        "lastEmittedPk", new Long(lastEmittedPk)));
+                        "LastEmittedPk", new Long(lastEmittedPk)));
             }
         }
     }

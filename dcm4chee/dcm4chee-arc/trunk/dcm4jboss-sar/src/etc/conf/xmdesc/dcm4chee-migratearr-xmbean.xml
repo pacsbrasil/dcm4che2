@@ -24,7 +24,8 @@
 	<!-- Attributes -->
 	<attribute access="read-write" getMethod="getRecordsByPass"
 		setMethod="setRecordsByPass">
-		<description><![CDATA[Number of Audit Records emitted in one pass.]]>
+		<description><![CDATA[Number of Audit Records fetched from the database and
+		emitted in one pass.]]>
 		</description>
 		<name>RecordsByPass</name>
 		<type>int</type>
@@ -32,17 +33,27 @@
 			<value value="100" />
 		</descriptors>
 	</attribute>
-    <attribute access="read-write" getMethod="getLastEmittedPk"
-        setMethod="setLastEmittedPk">
-        <description><![CDATA[Primary Key of last successfully emitted Audit
-        Records by former invocation of <i>emitAuditRecords()</i>]]>
-        </description>
-        <name>LastEmittedPk</name>
-        <type>long</type>
-        <descriptors>
-            <value value="0" />
-        </descriptors>
-    </attribute>
+	<attribute access="read-write" getMethod="getEmissionInterval"
+		setMethod="setEmissionInterval">
+		<description><![CDATA[Delay in ms between emission of Audit Records.]]>
+		</description>
+		<name>EmissionInterval</name>
+		<type>int</type>
+		<descriptors>
+			<value value="100" />
+		</descriptors>
+	</attribute>
+  <attribute access="read-write" getMethod="getLastEmittedPk"
+      setMethod="setLastEmittedPk">
+      <description><![CDATA[Primary Key of last successfully emitted Audit
+      Records by former invocation of <i>emitAuditRecords()</i>]]>
+      </description>
+      <name>LastEmittedPk</name>
+      <type>long</type>
+      <descriptors>
+          <value value="-1" />
+      </descriptors>
+  </attribute>
 
 	&defaultAttributes;
 
@@ -54,7 +65,7 @@
 		<name>emitAuditRecords</name>
 		<parameter>
 			<description>Maximal number of Audit Records to emit</description>
-			<name>n</name>
+			<name>num</name>
 			<type>int</type>
 		</parameter>
 		<return-type>java.lang.String</return-type>
