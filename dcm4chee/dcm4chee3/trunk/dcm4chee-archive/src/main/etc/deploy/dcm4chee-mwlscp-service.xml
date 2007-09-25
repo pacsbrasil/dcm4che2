@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-mwlscp-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-mwlscp-service.xml 3323 2007-05-08 13:04:04Z javawilli $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
-  <mbean code="org.dcm4che.archive.dcm.mwlscp.MWLFindScpService"
+  <mbean code="org.dcm4chex.archive.dcm.mwlscp.MWLFindScpService"
     name="dcm4chee.archive:service=MWLFindScp"
     xmbean-dd="xmdesc/dcm4chee-mwlscp-xmbean.xml">
     <depends optional-attribute-name="AEServiceName"

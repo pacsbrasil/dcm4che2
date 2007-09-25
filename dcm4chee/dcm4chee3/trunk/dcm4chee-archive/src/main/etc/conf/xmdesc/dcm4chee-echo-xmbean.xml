@@ -9,7 +9,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4che.archive.mbean.EchoService</class>
+   <class>org.dcm4chex.archive.mbean.EchoService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -142,7 +142,7 @@
      <parameter>
        <description>AE configuration to test. The AE configuration consists of a host, port, and protocol (dicom or dicom-tls with various TLS Ciphersuites combinations).</description>
        <name>AEData</name>
-       <type>org.dcm4che.archive.entity.AE</type>
+       <type>org.dcm4chex.archive.ejb.interfaces.AEDTO</type>
      </parameter>
      <parameter>
        <description>number of times to repeat the request</description>
@@ -164,7 +164,7 @@
      <parameter>
        <description>AE title to test</description>
        <name>AEData</name>
-       <type>org.dcm4che.archive.entity.AE</type>
+       <type>org.dcm4chex.archive.ejb.interfaces.AEDTO</type>
      </parameter>
      <return-type>boolean</return-type>
    </operation>

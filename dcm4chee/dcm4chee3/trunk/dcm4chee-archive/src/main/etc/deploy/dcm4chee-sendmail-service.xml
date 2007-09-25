@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-sendmail-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-sendmail-service.xml 3327 2007-05-09 13:49:53Z gunterze $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
   <mbean code="org.jboss.mq.server.jmx.Queue"
@@ -7,7 +7,7 @@
     <depends optional-attribute-name="DestinationManager"
       >jboss.mq:service=DestinationManager</depends>
   </mbean>
-  <mbean code="org.dcm4che.archive.mbean.SendMailService"
+  <mbean code="org.dcm4chex.archive.mbean.SendMailService"
     name="dcm4chee.archive:service=Sendmail"
     xmbean-dd="xmdesc/dcm4chee-sendmail-xmbean.xml">
     <depends optional-attribute-name="JMSServiceName"

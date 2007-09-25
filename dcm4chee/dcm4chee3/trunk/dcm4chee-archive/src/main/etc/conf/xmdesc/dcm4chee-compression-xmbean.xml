@@ -14,7 +14,7 @@ StorageSCP and QueryRetrieveSCP  services. (For details, see the MaxConcurrentCo
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4che.archive.mbean.CompressionService</class>
+   <class>org.dcm4chex.archive.mbean.CompressionService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -172,7 +172,7 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
       <name>compress</name>
       <parameter>
         <name>fileDTO</name>
-        <type>org.dcm4che.archive.ejb.interfaces.FileDTO</type>
+        <type>org.dcm4chex.archive.ejb.interfaces.FileDTO</type>
       </parameter>
       <return-type>boolean</return-type>
    </operation>

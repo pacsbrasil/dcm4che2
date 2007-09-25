@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-routeonpps-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-routeonpps-service.xml 3310 2007-05-06 23:42:06Z gunterze $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
 
-  <mbean code="org.dcm4che.archive.dcm.movescu.RouteOnPPSService" 
+  <mbean code="org.dcm4chex.archive.dcm.movescu.RouteOnPPSService" 
 	     name="dcm4chee.archive:service=RouteOnPPS"
 	     xmbean-dd="xmdesc/dcm4chee-routeonpps-xmbean.xml">
     <depends optional-attribute-name="GpwlScpServiceName"

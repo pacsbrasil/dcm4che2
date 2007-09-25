@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-stgcmt-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-stgcmt-service.xml 3342 2007-05-13 16:19:20Z gunterze $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
   <mbean code="org.jboss.mq.server.jmx.Queue"
@@ -7,7 +7,7 @@
     <depends optional-attribute-name="DestinationManager"
       >jboss.mq:service=DestinationManager</depends>
   </mbean>
-  <mbean code="org.dcm4che.archive.dcm.stgcmt.StgCmtScuScpService"
+  <mbean code="org.dcm4chex.archive.dcm.stgcmt.StgCmtScuScpService"
     name="dcm4chee.archive:service=StgCmtScuScp"
     xmbean-dd="xmdesc/dcm4chee-stgcmt-xmbean.xml">
     <depends optional-attribute-name="AEServiceName"

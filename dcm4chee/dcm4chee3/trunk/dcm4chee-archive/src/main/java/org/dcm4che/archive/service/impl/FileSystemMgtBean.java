@@ -98,34 +98,43 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.6 $ $Date: 2007/07/15 16:27:08 $
  * @since 12.09.2004
  */
-//EJB3
+// EJB3
 @Stateless
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 // Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class FileSystemMgtBean implements FileSystemMgtLocal, FileSystemMgtRemote {
+public class FileSystemMgtBean implements FileSystemMgtLocal,
+        FileSystemMgtRemote {
 
     private static Logger log = Logger.getLogger(FileSystemMgtBean.class);
 
     private static final int[] IAN_PAT_TAGS = { Tags.SpecificCharacterSet,
             Tags.PatientName, Tags.PatientID };
 
-    @EJB private PatientDAO patientDAO;
+    @EJB
+    private PatientDAO patientDAO;
 
-    @EJB private StudyDAO studyDAO;
+    @EJB
+    private StudyDAO studyDAO;
 
-    @EJB private SeriesDAO seriesDAO;
+    @EJB
+    private SeriesDAO seriesDAO;
 
-    @EJB private InstanceDAO instanceDAO;
+    @EJB
+    private InstanceDAO instanceDAO;
 
-    @EJB private StudyOnFileSystemDAO sofDAO;
+    @EJB
+    private StudyOnFileSystemDAO sofDAO;
 
-    @EJB private FileDAO fileDAO;
+    @EJB
+    private FileDAO fileDAO;
 
-    @EJB private PrivateFileDAO privFileDAO;
+    @EJB
+    private PrivateFileDAO privFileDAO;
 
-    @EJB private FileSystemDAO fileSystemDAO;
+    @EJB
+    private FileSystemDAO fileSystemDAO;
 
     /**
      * @see org.dcm4che.archive.service.FileSystemMgt#deletePrivateFile(java.lang.Long)
@@ -584,17 +593,19 @@ public class FileSystemMgtBean implements FileSystemMgtLocal, FileSystemMgtRemot
             }
         }
     }
-    
+
     public boolean isStudyAbleToBeReleased(Study study,
             boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal, boolean flushOnROFs, int validFileStatus) {
+            boolean flushExternal, boolean flushOnNearline,
+            boolean flushOnROFs, int validFileStatus) {
         boolean release = (flushExternal
                 && studyDAO.isStudyExternalRetrievable(study) || flushOnMedia
-                && studyDAO.isStudyAvailableOnMedia(study) || flushOnROFs
+                && studyDAO.isStudyAvailableOnMedia(study) || flushOnNearline
+                && studyDAO.isStudyAvailable(study, Availability.NEARLINE) || flushOnROFs
                 && studyDAO.isStudyAvailableOnROFs(study, validFileStatus));
         deleteUncommited = (deleteUncommited && studyDAO
                 .findNumberOfCommitedInstances(study) == 0);
-        
+
         return (release || deleteUncommited);
     }
 
@@ -715,11 +726,13 @@ public class FileSystemMgtBean implements FileSystemMgtLocal, FileSystemMgtRemot
 
         return ian;
     }
-    
+
     /**
      * Delete a {@link StudyOnFileSystem} record in the database.
      * 
-     * @param sof The primary key of the {@link StudyOnFileSystem} to be deleted.
+     * @param sof
+     *            The primary key of the {@link StudyOnFileSystem} to be
+     *            deleted.
      * 
      * @throws ContentDeleteException
      */
@@ -793,7 +806,7 @@ public class FileSystemMgtBean implements FileSystemMgtLocal, FileSystemMgtRemot
         }
         return fileDTOs;
     }
-    
+
     private static final Comparator DESC_FILE_PK = new Comparator() {
 
         /**

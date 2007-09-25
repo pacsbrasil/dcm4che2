@@ -117,8 +117,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
-
 /**
  * @author franz.willer@gwi-ag.com
  * @version $Revision: 1.2 $ $Date: 2007-05-18 10:07:06 -0500 (Fri, 18 May 2007) $
@@ -507,14 +505,14 @@ public class XDSIService extends MBeanServiceBase {
      * @param keyStorePassword
      *            The keyStorePassword to set.
      */
-    public void setKeystorePassword(String keyStorePassword) {
+    public void setKeyStorePassword(String keyStorePassword) {
         this.keystorePassword = keyStorePassword;
     }
 
     /**
      * @return Returns the keyStoreURL.
      */
-    public String getKeystoreURL() {
+    public String getKeyStoreURL() {
         return keystoreURL;
     }
 
@@ -522,7 +520,7 @@ public class XDSIService extends MBeanServiceBase {
      * @param keyStoreURL
      *            The keyStoreURL to set.
      */
-    public void setKeystoreURL(String keyStoreURL) {
+    public void setKeyStoreURL(String keyStoreURL) {
         this.keystoreURL = keyStoreURL;
     }
 
@@ -1422,34 +1420,33 @@ public class XDSIService extends MBeanServiceBase {
         try {
             NodeList nl;
             NodeList errors;
-            try {
-                SOAPBody body = response.getSOAPBody();
-                log.debug("SOAPBody:" + body);
-                nl = body.getElementsByTagName("RegistryResponse");
-                errors = body.getElementsByTagName("RegistryError");
-            }
-            catch (Throwable t) {
-                log
-                        .warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage!");
-                log.debug("SOAPBody Failure:", t);
-                JAXMStreamSource src = (JAXMStreamSource) response
-                        .getSOAPPart().getContent();
-                DocumentBuilderFactory dbFact = DocumentBuilderFactory
-                        .newInstance();
-                dbFact.setNamespaceAware(true);
-                DocumentBuilder builder = dbFact.newDocumentBuilder();
-                Document d = builder.parse(src.getInputStream());
-                nl = d.getElementsByTagName("RegistryResponse");
-                log.debug("Fallback RegistryResponse NodeList:" + nl);
-                errors = d.getElementsByTagName("RegistryError");
-            }
+            // try {
+            SOAPBody body = response.getSOAPBody();
+            log.debug("SOAPBody:" + body);
+            nl = body.getElementsByTagName("RegistryResponse");
+            errors = body.getElementsByTagName("RegistryError");
+            // } catch ( Throwable t) {
+            // log.warn("Retrieve of SOAPBody failed! Try to get
+            // RegistryResponse directly from SOAPMessage!");
+            // log.debug("SOAPBody Failure:",t);
+            // JAXMStreamSource src = (JAXMStreamSource)
+            // response.getSOAPPart().getContent();
+            // DocumentBuilderFactory dbFactory =
+            // DocumentBuilderFactory.newInstance();
+            // dbFactory.setNamespaceAware(true);
+            // DocumentBuilder builder = dbFactory.newDocumentBuilder();
+            // Document d = builder.parse( src.getInputStream() );
+            // nl = d.getElementsByTagName("RegistryResponse");
+            // log.debug("Fallback RegistryResponse NodeList:"+nl);
+            // errors = d.getElementsByTagName("RegistryError");
+            // }
             if (nl.getLength() != 0) {
                 Node n = nl.item(0);
                 String status = n.getAttributes().getNamedItem("status")
                         .getNodeValue();
                 log.info("XDSI: SOAP response status." + status);
                 if ("Failure".equals(status)) {
-                    StringBuilder sb = new StringBuilder();
+                    StringBuffer sb = new StringBuffer();
                     Node errNode;
                     for (int i = 0, len = errors.getLength(); i < len; i++) {
                         sb.setLength(0);

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-md5check-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-md5check-service.xml 3341 2007-05-12 17:19:22Z gunterze $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
-  <mbean code="org.dcm4che.archive.mbean.MD5CheckService"
+  <mbean code="org.dcm4chex.archive.mbean.MD5CheckService"
     name="dcm4chee.archive:service=MD5CheckService"
     xmbean-dd="xmdesc/dcm4chee-md5check-xmbean.xml">
     <depends optional-attribute-name="SchedulerServiceName"

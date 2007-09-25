@@ -93,7 +93,7 @@ public interface FileSystemMgt {
             int limit) throws PersistenceException;
 
     /**
-     * @throws PersistenceException
+     * @throws PerstenceException
      * 
      */
     public FileDTO[] findFilesByStatusAndFileSystem(String dirPath, int status,
@@ -253,14 +253,16 @@ public interface FileSystemMgt {
      * @param deleteUncommited
      * @param flushOnMedia
      * @param flushExternal
+     * @param flushOnNearline
      * @param flushOnROFs
      * @param validFileStatus
      * @return boolean True if the study can be released.
      */
     public boolean isStudyAbleToBeReleased(Study study,
             boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal, boolean flushOnROFs, int validFileStatus);
-    
+            boolean flushExternal, boolean flushOnNearline,
+            boolean flushOnROFs, int validFileStatus);
+
     /**
      * Release a study on spcific file system.
      * 
@@ -272,11 +274,13 @@ public interface FileSystemMgt {
             boolean deleteUncommited, boolean deleteEmptyPatient,
             Collection filesToPurge) throws EJBException,
             ContentDeleteException, PersistenceException;
-    
+
     /**
      * Delete a {@link StudyOnFileSystem} record in the database.
      * 
-     * @param sof The primary key of the {@link StudyOnFileSystem} to be deleted.
+     * @param sof
+     *            The primary key of the {@link StudyOnFileSystem} to be
+     *            deleted.
      * 
      * @throws ContentDeleteException
      */

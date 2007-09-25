@@ -18,7 +18,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4che.archive.dcm.movescu.ForwardService</class>
+   <class>org.dcm4chex.archive.dcm.movescu.ForwardService</class>
 
    <constructor>
       <description>The default constructor</description>

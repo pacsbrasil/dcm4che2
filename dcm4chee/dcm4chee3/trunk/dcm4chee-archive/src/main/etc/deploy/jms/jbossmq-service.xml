@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- $Id: jbossmq-service.xml,v 1.1 2007/06/20 15:57:44 asd Exp $ -->
+<!-- $Id: jbossmq-service.xml 38187 2005-11-16 23:55:44Z adrian $ -->
 
 <server>
 

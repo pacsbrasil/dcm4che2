@@ -11,7 +11,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
    </descriptors>
 
-   <class>org.dcm4che.archive.dcm.DcmServerService</class>
+   <class>org.dcm4chex.archive.dcm.DcmServerService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -22,6 +22,7 @@
    <attribute access="read-write"
       getMethod="getPort"
       setMethod="setPort">
+     <!-- Network -->
       <description>Port that listens for TCP communication.
       </description>
       <name>TCPPort</name>
@@ -31,8 +32,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLocalAddress"
+      setMethod="setLocalAddress">
+      <description>Local interface IP address to listen for TCP communication.  0.0.0.0 indicates all active interfaces.
+      </description>
+      <name>LocalAddress</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="0.0.0.0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getProtocolName"
       setMethod="setProtocolName">
+     <!-- Security -->
       <description><![CDATA[Enable Transport Security Layer (TLS) mode:
       <br>
       <b>dicom</b>&#8212;<br>
@@ -172,6 +185,14 @@
       <type>int</type>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDicomSecurityServiceName"
+      setMethod="setDicomSecurityServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>DicomSecurityServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally. Do NOT modify.
@@ -203,5 +224,14 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   
+   	<operation impact="INFO">
+		<description>get UserIdentityNegotiator</description>
+		<name>userIdentityNegotiator</name>
+		<return-type>
+			org.dcm4che.net.UserIdentityNegotiator
+		</return-type>
+	</operation>
+   
 </mbean>
     

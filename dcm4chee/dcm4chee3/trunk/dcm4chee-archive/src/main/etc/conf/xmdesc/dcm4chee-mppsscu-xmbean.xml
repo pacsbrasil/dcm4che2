@@ -12,7 +12,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4che.archive.dcm.mppsscu.MPPSScuService</class>
+   <class>org.dcm4chex.archive.dcm.mppsscu.MPPSScuService</class>
 
    <constructor>
       <description>The default constructor</description>

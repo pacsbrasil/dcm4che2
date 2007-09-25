@@ -73,7 +73,7 @@ import org.dcm4che.net.PDU;
  * @author Gunter.Zeilinger@tiani.com
  */
 public class MoveScp extends DcmServiceBase implements AssociationListener {
-    private final QueryRetrieveScpService service;
+    protected final QueryRetrieveScpService service;
 
     private final Logger log;
 

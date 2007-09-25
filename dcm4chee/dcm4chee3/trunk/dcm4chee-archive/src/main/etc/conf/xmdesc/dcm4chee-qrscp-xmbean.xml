@@ -11,7 +11,7 @@ QueryRetrieveScp service.</description>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4che.archive.dcm.qrscp.QueryRetrieveScpService</class>
+   <class>org.dcm4chex.archive.dcm.qrscp.QueryRetrieveScpService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -43,6 +43,20 @@ QueryRetrieveScp service.</description>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ANY"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSupplementIssuerOfPatientID"
+      setMethod="setSupplementIssuerOfPatientID">
+      <description><![CDATA[Supplement received C-FIND RQ identifier containing
+          a <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
+          for <i>Issuer Of Patient ID</i>, if such is associated with the
+          C-FIND SCU AE by its AE Configuration entry.]]>
+      </description>
+      <name>SupplementIssuerOfPatientID</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

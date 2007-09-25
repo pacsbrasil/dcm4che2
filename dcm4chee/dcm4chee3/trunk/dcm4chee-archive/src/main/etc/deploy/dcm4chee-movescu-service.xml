@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-movescu-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-movescu-service.xml 3340 2007-05-12 16:00:31Z gunterze $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
   
@@ -10,7 +10,7 @@
      </depends>
   </mbean>
    
-  <mbean code="org.dcm4che.archive.dcm.movescu.MoveScuService" 
+  <mbean code="org.dcm4chex.archive.dcm.movescu.MoveScuService" 
 	     name="dcm4chee.archive:service=MoveScu"
 	     xmbean-dd="xmdesc/dcm4chee-movescu-xmbean.xml">
     <depends>dcm4chee.archive:service=QueryRetrieveScp</depends>

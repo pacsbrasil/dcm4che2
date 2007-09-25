@@ -2,513 +2,167 @@
 <!DOCTYPE mbean PUBLIC
    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
-
 <mbean>
-   <description><![CDATA[Audit Logger.
-   Used/Required by various other services to transmit Audit Records to an
-   Audit Record Repository using BSD Syslog Protocol, according IHE ITI 
-   Audit Trail and Node Authentication Profile and the Radiology Audit Trail
-   Option described in <a
-   href='http://www.ihe.net/Technical_Framework/upload/IHE_TF_Suppl_Radiology_Audit_Trail_Option_TI_2005-04-14.pdf'
-   >RAD TF-3 5.1</a>.
-   The Audit Record Repository can be provided by a standalone, third-party application, or by <a 
-   href='http://localhost:8080/jmx-console/HtmlAdaptor?action=inspectMBean&name=dcm4chee.audit%3Aservice%3DAuditRecordRepository'
-   >dcm4chee's Audit Record Repository Service</a>.
+  <description><![CDATA[Audit Logger. Identifies Audit Source in emitted Audit
+   Log Messages formatted according the new RFC-3881 based schema of the
+   IHE ITI Audit Trail and Node Authentication Profile.
    ]]></description>
-
-   <descriptors>
-      <persistence persistPolicy="OnUpdate"/>
-      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
-   </descriptors>
-
-   <class>org.dcm4che.archive.mbean.AuditLoggerService</class>
-
-   <constructor>
-      <description>The default constructor</description>
-      <name>AuditLoggerService</name>
-   </constructor>
-
-   <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getActorName"
-      setMethod="setActorName">
-      <description>Actor Name in audit log messages.
-      </description>
-      <name>ActorName</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="DCM4CHEE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSyslogHost"
-      setMethod="setSyslogHost">
-      <description>Hostname of audit record repository.
-      </description>
-      <name>AuditRepositoryHostname</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="localhost" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSyslogPort"
-      setMethod="setSyslogPort">
-      <description>UDP port of the audit record repository.
-      </description>
-      <name>AuditRepositoryPort</name>
-      <type>int</type>
-      <descriptors>
-         <value value="4000" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getFacility"
-      setMethod="setFacility">
-      <description>Facility used for the audit record repository. Possible values are:
-      kern, user, mail, daemon, auth, syslog, lpr, news, ucp, cron, authpriv,
-      ftp, local0, local1, local2, local3, local4, local5, local6, local7 
-      </description>
-      <name>AuditRepositoryFacility</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="authpriv" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isStrictIHEYr4"
-      setMethod="setStrictIHEYr4">
-      <description>Limit message format to IHE Year 4 XML schema.
-          Skip proprietary extensions. 
-      </description>
-      <name>StrictIHEYr4</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getSupressLogForAETs"
-      setMethod="setSupressLogForAETs">
-      <description>Audit logs for DICOM Storage, Query and Retrieve
-      are supressed if this list contains the AE title of the initator of the
-      operation. Separate multiple AE titles with a \ (backslash). 
-      NONE = Do not supress audit logs according the initiator AE title.
-      </description>
-      <name>SupressLogForAETitles</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="DCM4CHEE" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isDisableHostLookup"
-      setMethod="setDisableHostLookup">
-      <description>Disable reverse DNS lookup to get Host name for remote
-        application. => Use only IP to identify remote hosts in emitted
-        Audit messages.
-      </description>
-      <name>DisableHostLookup</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogActorConfig"
-      setMethod="setLogActorConfig">
-      <description>Emit ActorConfig audit messages.
-      </description>
-      <name>LogActorConfig</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogPatientRecord"
-      setMethod="setLogPatientRecord">
-      <description>Emit PatientRecord audit messages.
-      </description>
-      <name>LogPatientRecord</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogProcedureRecord"
-      setMethod="setLogProcedureRecord">
-      <description>Emit LogProcedureRecord audit messages.
-      </description>
-      <name>LogProcedureRecord</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogStudyDeleted"
-      setMethod="setLogStudyDeleted">
-      <description>Emit LogStudyDeleted audit messages.
-      </description>
-      <name>LogStudyDeleted</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogActorStartStop"
-      setMethod="setLogActorStartStop">
-      <description>Emit ActorStartStop audit messages.
-      </description>
-      <name>LogActorStartStop</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogBeginStoringInstances"
-      setMethod="setLogBeginStoringInstances">
-      <description>Emit BeginStoringInstances Audit Messages.
-      </description>
-      <name>LogBeginStoringInstances</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogDicomQuery"
-      setMethod="setLogDicomQuery">
-      <description>Emit DicomQuery audit messages.
-      </description>
-      <name>LogDicomQuery</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogInstancesSent"
-      setMethod="setLogInstancesSent">
-      <description>Emit InstancesSent audit messages.
-      </description>
-      <name>LogInstancesSent</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogInstancesStored"
-      setMethod="setLogInstancesStored">
-      <description>Emit InstancesStored audit messages.
-      </description>
-      <name>LogInstancesStored</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogSecurityAlert"
-      setMethod="setLogSecurityAlert">
-      <description>Emit SecurityAlert audit messages.
-      </description>
-      <name>LogSecurityAlert</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogUserAuthenticated"
-      setMethod="setLogUserAuthenticated">
-      <description>Emit UserAuthenticated audit messages.
-      </description>
-      <name>LogUserAuthenticated</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isLogExport"
-      setMethod="setLogExport">
-      <description>Emit Export audit messages.
-      </description>
-      <name>LogExport</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
+  <descriptors>
+    <persistence persistPolicy="OnUpdate"/>
+    <persistence-manager
+      value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
+  </descriptors>
+  <class>org.dcm4chee.audit.logger.AuditLogger</class>
+  <constructor>
+    <description>The default constructor</description>
+    <name>AuditLogger</name>
+  </constructor>
+  <!-- Attributes -->
+  <attribute access="read-write" getMethod="getAuditSourceID"
+    setMethod="setAuditSourceID">
+    <description><![CDATA[Identifier of this application as source where
+    the event originated.<br/>
+    <b>Format:</b> Unique identifier text string, at least within the Audit
+    Enterprise Site ID<br/>
+    <b>Default:</b> host name]]></description>
+    <name>AuditSourceID</name>
+    <type>java.lang.String</type>
+  </attribute>
+  <attribute access="read-write" getMethod="getAuditEnterpriseSiteID"
+    setMethod="setAuditEnterpriseSiteID">
+    <description><![CDATA[Logical source location within the healthcare
+      enterprise network, e.g., a hospital or other provider location within a
+      multi-entity provider group.<br/>
+      <b>Format:</b> Unique identifier text string within the healthcare
+      enterprise. May be unvalued (='-') when the audit-generating application
+      is uniquely identified by Audit Source ID.<br/>
+      <b>Default:</b> <code>-</code>]]></description>
+    <name>AuditEnterpriseSiteID</name>
+    <type>java.lang.String</type>
+  </attribute>
+  <attribute access="read-write" getMethod="getAuditSourceTypeCodes"
+    setMethod="setAuditSourceTypeCodes">
+    <description><![CDATA[Code specifying the type of source where event originated.<br/>
+    <b>Format/Values:</b><ul>
+    <li><code>1</code> - End-user interface</li>
+    <li><code>2</code> - Data acquisition device or instrument</li>
+    <li><code>3</code> - Web server process tier in a multi-tier system</li>
+    <li><code>4</code> - Application server process tier in a multi-tier system</li>
+    <li><code>5</code> - Database server process tier in a multi-tier system</li>
+    <li><code>6</code> - Security server, e.g., a domain controller</li>
+    <li><code>7</code> - ISO level 1-3 network component</li>
+    <li><code>8</code> - ISO level 4-6 operating software</li>
+    <li><code>9</code> - External source, other or unknown type</li>
+    </ul>
+    Multiple values separated by comma (',') can be specified.<br/>
+    <b>Default:</b> <code>4</code>]]></description>
+    <name>AuditSourceTypeCodes</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="4"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-only" getMethod="getProcessID">
+    <description><![CDATA[Used to identify this application instance as
+    <i>Active Participant</i> in emitted Audit Messages. Initialized from
+    <i>System Property</i> <code>app.pid</code> or alternatively by
+    <code>java.lang.management.RuntimeMXBean#getName()</code>.
+    ]]></description>
+    <name>ProcessID</name>
+    <type>java.lang.String</type>
+  </attribute>
+  <attribute access="read-write" getMethod="getProcessName"
+    setMethod="setProcessName">
+    <description><![CDATA[Used to identify this application as
+    <i>Active Participant</i> in emitted Audit Messages.<br/>
+    <b>Format:</b> Text string<br/>
+    <b>Default:</b> <i>System Property</i> <code>app.name</code>]]></description>
+    <name>ProcessName</name>
+    <type>java.lang.String</type>
+  </attribute>
+  <attribute access="read-write" getMethod="getLocalAETitles"
+    setMethod="setLocalAETitles">
+    <description><![CDATA[List of AE titles supported by this application,
+    separated by \(backslash).<br/>
+    <b>Default:</b> <code>DCM4CHEE</code>]]></description>
+    <name>LocalAETitles</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="DCM4CHEE"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isEnableDNSLookups"
+    setMethod="setEnableDNSLookups">
+    <description><![CDATA[Enables reverse DNS lookups to identify remote hosts
+    by their host name - instead of their IP address - in emitted Audit Messages.<br/>
+    <b>Default:</b> <code>false</code>]]></description>
+    <name>EnableDNSLookups</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isIncludeXMLDeclaration"
+    setMethod="setIncludeXMLDeclaration">
+    <description><![CDATA[Determines, if emitted Audit Messages starts with 
+     <code><?xml version="1.0" encoding="UTF-8"?></code> or if the XML
+     declaration is skipped.<br/>
+     <b>Default:</b> <code>false</code>]]></description>
+    <name>IncludeXMLDeclaration</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isTimezonedDateTime"
+    setMethod="setTimezonedDateTime">
+    <description><![CDATA[Determines, if the Event Date/Time in emitted Audit
+    Messages includes the time-zone offset to Coordinated Universal Time (UTC).<br/>
+    <b>Default:</b> <code>true</code>]]></description>
+    <name>TimezonedDateTime</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isUtcDateTime"
+    setMethod="setUtcDateTime">
+    <description><![CDATA[Determines, if the Event Date/Time in the emitted
+    Audit Messages is given as Coordinated Universal Time (UTC).<br/>
+    <b>Default:</b> <code>false</code>]]></description>
+    <name>UtcDateTime</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="getAttributeChangeConfigurationURL"
+    setMethod="setAttributeChangeConfigurationURL">
+    <description><![CDATA[URL of configuration file, which contains the list of
+    service attributes, for which changes are audited by Security Alert
+    messages.<br/>
+    <b>Default:</b> <code>resource:dcm4chee-audit-attribute-change.xml</code>]]></description>
+    <name>AttributeChangeConfigurationURL</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="resource:dcm4chee-audit-attribute-change.xml"/>
+    </descriptors>
+  </attribute>
   <attribute access="read-only" getMethod="isIHEYr4">
-    <description>Used to distinguish this Audit Logger Service, which creates
-    Audit Messages according the Provisional XML Schema definition of the IHE
-    Basic Security Integration Profile, from the succeeding RFC 3881 compliant
-    Audit Logger Service.</description>
+    <description><![CDATA[Used to distinguish this RFC 3881 compliant Audit Logger
+    Service from the preceding Audit Logger Service, which creates Audit Messages
+    according the Provisional XML Schema definition of the IHE Basic Security
+    Integration Profile.]]></description>
     <name>IHEYr4</name>
     <type>boolean</type>
   </attribute>
-     &defaultAttributes;
-
-   <!-- Operations -->
-   &defaultOperations;
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logUserAuthenticated</name>
-      <parameter>
-        <description>User Name</description>
-        <name>userName</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Action</description>
-        <name>action</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logActorConfig</name>
-      <parameter>
-        <description>Description</description>
-        <name>desc</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Configuration Type</description>
-        <name>type</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logStudyDeleted</name>
-      <parameter>
-        <description>Patient ID</description>
-        <name>patid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Patient Name</description>
-        <name>patname</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Study Instance UID</description>
-        <name>suid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Number of Deleted Instances</description>
-        <name>numInsts</name>
-        <type>java.lang.Integer</type>
-      </parameter>
-      <parameter>
-        <description>Description</description>
-        <name>description</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logPatientRecord</name>
-      <parameter>
-        <description>Object Action:  Create|Modify|Access|Delete</description>
-        <name>action</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Patient ID</description>
-        <name>patid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Patient Name</description>
-        <name>patname</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Description</description>
-        <name>description</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logProcedureRecord</name>
-      <parameter>
-        <description>Object Action:  Create|Modify|Access|Delete</description>
-        <name>action</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Patient ID</description>
-        <name>patid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Patient Name</description>
-        <name>patname</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Placer Order Number</description>
-        <name>placerOrderNo</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Filler Order Number</description>
-        <name>fillerOrderNo</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Study Instance UID</description>
-        <name>suid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Accession Number</description>
-        <name>accNo</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Description</description>
-        <name>description</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logInstancesStored</name>
-      <parameter>
-        <name>node</name>
-        <type>org.dcm4che.auditlog.RemoteNode</type>
-      </parameter>
-      <parameter>
-        <name>action</name>
-        <type>org.dcm4che.auditlog.InstancesAction</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logInstancesSent</name>
-      <parameter>
-        <name>node</name>
-        <type>org.dcm4che.auditlog.RemoteNode</type>
-      </parameter>
-      <parameter>
-        <name>action</name>
-        <type>org.dcm4che.auditlog.InstancesAction</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logDicomQuery</name>
-      <parameter>
-        <name>keys</name>
-        <type>org.dcm4che.data.Dataset</type>
-      </parameter>
-      <parameter>
-        <name>node</name>
-        <type>org.dcm4che.auditlog.RemoteNode</type>
-      </parameter>
-      <parameter>
-        <name>cuid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logSecurityAlert</name>
-      <parameter>
-        <name>alertType</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>socket</name>
-        <type>java.net.Socket</type>
-      </parameter>
-      <parameter>
-        <name>aet</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>description</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logExport</name>
-      <parameter>
-        <name>username</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>patients</name>
-        <type>[Lorg.dcm4che.auditlog.Patient;</type>
-      </parameter>
-      <parameter>
-        <name>mediaType</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>mediaID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>dest</name>
-        <type>org.dcm4che.auditlog.Destination</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Used internally</description>
-      <name>logExport</name>
-      <parameter>
-        <name>patId</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>patName</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>mediaType</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>studyInstanceUIDs</name>
-        <type>java.util.Set</type>
-      </parameter>
-      <parameter>
-        <name>ip</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>host</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>aet</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
-   
+  <!-- Operations -->
+  <operation>
+    <description><![CDATA[Emits Application Start Audit Message.]]></description>
+    <name>start</name>
+  </operation>
+  <operation>
+    <description><![CDATA[Emits Application Stop Audit Message.]]></description>
+    <name>stop</name>
+  </operation>
 </mbean>

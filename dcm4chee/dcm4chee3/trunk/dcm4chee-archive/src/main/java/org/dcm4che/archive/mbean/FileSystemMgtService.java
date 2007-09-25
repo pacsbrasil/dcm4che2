@@ -125,7 +125,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
-    
+
     private ObjectName tarRetrieverName;
 
     private ObjectName aeServiceName;
@@ -146,6 +146,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     private boolean flushExternalRetrievable;
 
     private boolean flushOnMedia;
+
+    private boolean flushOnNearline;
 
     private boolean flushOnROFsAvailable;
 
@@ -218,7 +220,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     };
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
-    
+
     public final ObjectName getTarRetrieverName() {
         return tarRetrieverName;
     }
@@ -502,6 +504,25 @@ public class FileSystemMgtService extends MBeanServiceBase implements
      */
     public void setFlushOnROFsAvailable(boolean flushOnROAvailable) {
         this.flushOnROFsAvailable = flushOnROAvailable;
+    }
+
+    /**
+     * @return Returns the flushOnNearline.
+     */
+    public boolean isFlushOnNearline() {
+        return flushOnNearline;
+    }
+
+    /**
+     * Set the freeDiskSpace policy flushOnNearline.
+     * <p>
+     * Set this policy active if studies must be on nearline media for deletion.
+     * 
+     * @param flushOnNearline
+     *            The value to set.
+     */
+    public void setFlushOnNearline(boolean flushOnNearline) {
+        this.flushOnNearline = flushOnNearline;
     }
 
     /**
@@ -1060,7 +1081,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         }
         return true;
     }
-    
+
     File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
         return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
                 new Object[] { fsID, fileID }, new String[] {
@@ -1178,16 +1199,16 @@ public class FileSystemMgtService extends MBeanServiceBase implements
             long maxSizeToDel = freeSize - available;
             if (maxSizeToDel > 0) {
                 freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
-                        flushExternalRetrievable, flushOnROFsAvailable,
-                        validFileStatus, maxSizeToDel,
+                        flushExternalRetrievable, flushOnNearline,
+                        flushOnROFsAvailable, validFileStatus, maxSizeToDel,
                         limitNumberOfFilesPerTask);
             }
             else if (studyCacheTimeout > 0L) {
                 long accessedBefore = System.currentTimeMillis()
                         - studyCacheTimeout;
                 releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
-                        flushExternalRetrievable, flushOnROFsAvailable,
-                        validFileStatus, accessedBefore);
+                        flushExternalRetrievable, flushOnNearline,
+                        flushOnROFsAvailable, validFileStatus, accessedBefore);
             }
             else {
                 return;
@@ -1200,41 +1221,45 @@ public class FileSystemMgtService extends MBeanServiceBase implements
     }
 
     private void freeDiskSpace(String retrieveAET, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, boolean checkOnRO,
-            int validFileStatus, long maxSizeToDel, int deleteStudiesLimit)
-            throws Exception {
+            boolean checkOnMedia, boolean checkExternal,
+            boolean checkOnNearline, boolean checkOnRO, int validFileStatus,
+            long maxSizeToDel, int deleteStudiesLimit) throws Exception {
         Map ians = new HashMap();
         log.info("Free Disk Space: try to release "
                 + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
 
         releaseStudies(retrieveAET, ians, checkUncommited, checkOnMedia,
-                checkExternal, checkOnRO, validFileStatus, maxSizeToDel,
-                deleteStudiesLimit);
+                checkExternal, checkOnNearline, checkOnRO, validFileStatus,
+                maxSizeToDel, deleteStudiesLimit);
     }
 
     private void releaseStudies(String retrieveAET, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, boolean checkOnRO,
-            int validFileStatus, long accessedBefore) throws Exception {
+            boolean checkOnMedia, boolean checkExternal,
+            boolean checkOnNearline, boolean checkOnRO, int validFileStatus,
+            long accessedBefore) throws Exception {
         Timestamp tsBefore = new Timestamp(accessedBefore);
         log.info("Releasing studies not accessed since " + tsBefore);
         Map ians = new HashMap();
         releaseStudies(retrieveAET, ians, checkUncommited, checkOnMedia,
-                checkExternal, checkOnRO, validFileStatus, Long.MAX_VALUE,
-                new Timestamp(accessedBefore));
+                checkExternal, checkOnNearline, checkOnRO, validFileStatus,
+                Long.MAX_VALUE, new Timestamp(accessedBefore));
     }
 
     private long releaseStudies(String retrieveAET, Map ians,
             boolean checkUncommited, boolean checkOnMedia,
-            boolean checkExternal, boolean checkOnRO, int validFileStatus,
-            long maxSizeToDel, Timestamp tsBefore) throws Exception {
+            boolean checkExternal, boolean checkOnNearline, boolean checkOnRO,
+            int validFileStatus, long maxSizeToDel, Timestamp tsBefore)
+            throws Exception {
 
-        Collection c = newFileSystemMgt().getStudiesOnFsByLastAccess(retrieveAET, tsBefore);
+        Collection c = newFileSystemMgt().getStudiesOnFsByLastAccess(
+                retrieveAET, tsBefore);
         if (log.isDebugEnabled()) {
             log.debug("Release studies on filesystem(s) accessed before "
                     + tsBefore + " :" + c.size());
             log.debug(" checkUncommited: " + checkUncommited);
             log.debug(" checkOnMedia: " + checkOnMedia);
             log.debug(" checkExternal: " + checkExternal);
+            log.debug(" checkOnNearline: " + checkOnNearline);
             log.debug(" checkCopyAvailable: " + checkOnRO);
             if (maxSizeToDel != Long.MAX_VALUE)
                 log.debug(" maxSizeToDel: " + maxSizeToDel);
@@ -1245,7 +1270,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
             StudyOnFileSystem studyOnFs = (StudyOnFileSystem) iter.next();
 
             sizeToDelete += releaseStudy(studyOnFs, checkUncommited,
-                    checkOnMedia, checkExternal, checkOnRO, validFileStatus);
+                    checkOnMedia, checkExternal, checkOnNearline, checkOnRO,
+                    validFileStatus);
         }
 
         log.info("Released " + (sizeToDelete / 1000000.f) + "MB of DiskSpace");
@@ -1254,13 +1280,15 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     private long releaseStudies(String retrieveAET, Map ians,
             boolean checkUncommited, boolean checkOnMedia,
-            boolean checkExternal, boolean checkOnRO, int validFileStatus,
-            long maxSizeToDel, int deleteStudiesLimit) throws Exception {
+            boolean checkExternal, boolean checkOnNearline, boolean checkOnRO,
+            int validFileStatus, long maxSizeToDel, int deleteStudiesLimit)
+            throws Exception {
         if (log.isDebugEnabled()) {
             log.debug("Release oldest studies on " + retrieveAET);
             log.debug(" checkUncommited: " + checkUncommited);
             log.debug(" checkOnMedia: " + checkOnMedia);
             log.debug(" checkExternal: " + checkExternal);
+            log.debug(" checkOnNearline: " + checkOnNearline);
             log.debug(" checkCopyAvailable: " + checkOnRO);
             log.debug(" maxSizeToDel: " + maxSizeToDel);
             log.debug(" deleteStudyBatchSize: " + deleteStudiesLimit);
@@ -1273,8 +1301,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         long sizeDeleted = 0L;
         for (; sizeDeleted < maxSizeToDel;) {
 
-            Collection c = newFileSystemMgt().getStudiesOnFsAfterAccessTime(retrieveAET,
-                    tsAfter, deleteStudiesLimit);
+            Collection c = newFileSystemMgt().getStudiesOnFsAfterAccessTime(
+                    retrieveAET, tsAfter, deleteStudiesLimit);
             if (c.size() == 0)
                 break;
 
@@ -1286,7 +1314,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
                     && sizeDeleted < maxSizeToDel;) {
                 StudyOnFileSystem studyOnFs = (StudyOnFileSystem) iter.next();
                 long size = releaseStudy(studyOnFs, checkUncommited,
-                        checkOnMedia, checkExternal, checkOnRO, validFileStatus);
+                        checkOnMedia, checkExternal, checkOnNearline,
+                        checkOnRO, validFileStatus);
                 if (size != 0)
                     sizeDeleted += size;
                 else
@@ -1322,15 +1351,15 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     private long releaseStudy(StudyOnFileSystem studyOnFs,
             boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal, boolean flushOnROFs, int validFileStatus)
-            throws Exception {
+            boolean flushExternal, boolean flushOnNearline,
+            boolean flushOnROFs, int validFileStatus) throws Exception {
         FileSystemMgt fsMgt = newFileSystemMgt();
-        
+
         long size = 0L;
         Study study = studyOnFs.getStudy();
         boolean release = fsMgt.isStudyAbleToBeReleased(study,
-                deleteUncommited, flushOnMedia, flushExternal, flushOnROFs,
-                validFileStatus);
+                deleteUncommited, flushOnMedia, flushExternal, flushOnNearline,
+                flushOnROFs, validFileStatus);
 
         if (release) {
 
@@ -1355,7 +1384,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         }
         return size;
     }
-    
+
     private void releaseStudy(PurgeStudyOrder order) throws Exception {
         FileSystemMgt fsmgt = newFileSystemMgt();
 
@@ -1540,8 +1569,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public boolean updateFileSystemStatus(String dirPath, String status)
             throws PersistenceException {
-        if (!newFileSystemMgt().updateFileSystemStatus(dirPath, FileSystemStatus
-                .toInt(status))) {
+        if (!newFileSystemMgt().updateFileSystemStatus(dirPath,
+                FileSystemStatus.toInt(status))) {
             return false;
         }
         checkStorageFileSystem();
@@ -1629,7 +1658,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public boolean updateFileSystemRetrieveAET(String dirPath,
             String retrieveAET) throws PersistenceException {
-        return updateFileSystemRetrieveAET(dirPath, retrieveAET, newFileSystemMgt());
+        return updateFileSystemRetrieveAET(dirPath, retrieveAET,
+                newFileSystemMgt());
     }
 
     private boolean updateFileSystemRetrieveAET(String dirPath,
@@ -1646,7 +1676,8 @@ public class FileSystemMgtService extends MBeanServiceBase implements
 
     public int updateDerivedFields(String dirPath, boolean retr_aet,
             boolean availability) throws PersistenceException {
-        return updateDerivedFields(dirPath, retr_aet, availability, newFileSystemMgt());
+        return updateDerivedFields(dirPath, retr_aet, availability,
+                newFileSystemMgt());
     }
 
     private int updateDerivedFields(String dirPath, boolean retr_aet,

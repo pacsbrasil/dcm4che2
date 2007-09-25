@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: dcm4chee-contentedit-service.xml,v 1.3 2007/07/11 04:25:31 asd Exp $ -->
+<!-- $Id: dcm4chee-contentedit-service.xml 3316 2007-05-07 14:31:33Z javawilli $ -->
 <server>
   <classpath codebase="lib" archives="dcm4chee.jar"/>
-  <mbean code="org.dcm4che.archive.mbean.ContentEditService"
+  <mbean code="org.dcm4chex.archive.mbean.ContentEditService"
     name="dcm4chee.archive:service=ContentEditService"
     xmbean-dd="xmdesc/dcm4chee-contentedit-xmbean.xml" >
 	  <depends optional-attribute-name="AuditLoggerName"

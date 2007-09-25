@@ -9,7 +9,7 @@
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4che.archive.mbean.SendMailService</class>
+   <class>org.dcm4chex.archive.mbean.SendMailService</class>
 
    <constructor>
       <description>The default constructor</description>
@@ -18,6 +18,7 @@
 
    <!-- Attributes -->
    <attribute access="read-write" getMethod="getSmtpHost" setMethod="setSmtpHost">
+      <!-- Network -->
       <description>The SMTP host name of your mail server.
       </description>
       <name>SmtpHost</name>
@@ -27,6 +28,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getSmtpPort" setMethod="setSmtpPort">
+      <!-- Network -->
       <description>The SMTP port of your mail server (default is 25).
       </description>
       <name>SmtpPort</name>
