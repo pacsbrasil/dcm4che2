@@ -94,8 +94,6 @@
 	<property name="src.java" value="${basedir}/src/java"/>
 	<property name="src.res" value="${basedir}/src/resources"/>
 	<property name="src.etc" value="${basedir}/src/etc"/>
-	<property name="etc.db2" value="${src.etc}/db2"/>
-	<property name="etc.oracle" value="${src.etc}/oracle"/>
 	<property name="test.dir" value="${basedir}/test"/>
 	<property name="test.java" value="${test.dir}/java"/>
 	<property name="test.web-inf" value="${test.dir}/WEB-INF"/>
@@ -438,7 +436,7 @@
                 <exclude name="**/util/**"/>
             </fileset>
         </jar>
-        <style style="${src.etc}/jdbc-properties.xsl"
+        <style style="${src.etc}/${db.name}/jdbc-properties.xsl"
              in="${target.meta-inf}-${db.name}/jbosscmp-jdbc.xml"
              out="${target.res}-${db.name}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
         >
