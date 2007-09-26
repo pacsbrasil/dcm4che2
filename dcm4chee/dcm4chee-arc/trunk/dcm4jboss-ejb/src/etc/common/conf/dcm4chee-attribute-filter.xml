@@ -68,6 +68,7 @@
         <attr tag="0040A491"/> <!-- Completion Flag -->
         <attr tag="0040A493"/> <!-- Verification Flag -->
         <attr tag="0040A525"/> <!-- Identical Documents Sequence -->
+        <attr tag="00420012"/> <!-- MIME Type of Encapsulated Document -->
         <attr tag="00700080"/> <!-- Content Label -->
         <attr tag="00700081"/> <!-- Content Description -->
         <attr tag="00700082"/> <!-- Presentation Creation Date -->
