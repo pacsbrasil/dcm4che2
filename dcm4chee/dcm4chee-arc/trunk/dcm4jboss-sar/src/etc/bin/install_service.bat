@@ -29,7 +29,7 @@ if exist "%VM%" goto found_vm
 set VM=%JAVA_HOME%\jre\bin\%1\jvm.dll
 if exist "%VM%" goto found_vm
 echo Could not locate %VM%. Please check that JAVA_HOME is set to your
-echo JDK 1.4 installation directory
+echo JDK 1.5 installation directory
 goto eof
 
 :found_vm
