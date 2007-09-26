@@ -54,12 +54,8 @@ copy "%JBOSS_CONF%\jndi.properties" "%DCM4CHEE_CONF%"
 xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
-echo on
-echo jboss-saaj.jar > excludefile.txt
-echo excludefile.txt >> excludefile.txt
-xcopy /S /EXCLUDE:excludefile.txt "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
-del excludefile.txt
-echo off
+xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
+del "%DCM4CHEE_SERV%\lib\jboss-saaj.jar"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy

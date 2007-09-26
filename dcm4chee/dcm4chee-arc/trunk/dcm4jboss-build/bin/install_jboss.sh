@@ -44,8 +44,8 @@ cp -v -R "$JBOSS_SERV"/conf/props \
   "$DCM4CHEE_SERV"/conf
 
 mkdir "$DCM4CHEE_SERV"/lib
-find "$JBOSS_SERV"/lib -type f -not -name jboss-sar.jar -exec \
-cp -v '{}' "$DCM4CHEE_SERV"/lib ';'
+cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
+rm "$DCM4CHEE_SERV"/lib/jboss-saaj.jar
 
 cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/cache-invalidation-service.xml \
