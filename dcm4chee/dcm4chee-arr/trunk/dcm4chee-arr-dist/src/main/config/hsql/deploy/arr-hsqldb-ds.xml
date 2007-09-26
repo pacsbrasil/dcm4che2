@@ -9,7 +9,7 @@
 
       <!-- The jndi name of the DataSource, it is prefixed with java:/ -->
       <!-- Datasources are not available outside the virtual machine -->
-      <jndi-name>ARR_DS</jndi-name>
+      <jndi-name>arrDS</jndi-name>
 
       <!-- For server mode db, allowing other processes to use hsqldb over tcp.
       This requires the org.jboss.jdbc.HypersonicDatabase mbean.
@@ -68,8 +68,9 @@
         <application-managed-security/>
       -->
 
-      <!-- Use the security domain defined in conf/login-config.xml -->
+      <!-- Use the security domain defined in conf/login-config.xml
       <security-domain>HsqlDbRealm</security-domain>
+       -->
 
       <!-- Use the security domain defined in conf/login-config.xml or the
            getConnection(user, pw) for logins. The security domain takes precedence.
@@ -85,7 +86,7 @@
       </metadata>
 
       <!-- When using in-process (standalone) mode -->
-      <depends>jboss:service=Hypersonic,database=localDB</depends>
+      <depends>jboss:service=Hypersonic,database=arrdb</depends>
       <!-- Uncomment when using hsqldb in server mode
       <depends>jboss:service=Hypersonic</depends>
       -->
@@ -105,8 +106,8 @@
 
    <!-- For hsqldb accessed from jboss only, in-process (standalone) mode --> 
    <mbean code="org.jboss.jdbc.HypersonicDatabase" 
-     name="jboss:service=Hypersonic,database=localDB">
-     <attribute name="Database">localDB</attribute>
+     name="jboss:service=Hypersonic,database=arrdb">
+     <attribute name="Database">arrdb</attribute>
      <attribute name="InProcessMode">true</attribute>
    </mbean>
    

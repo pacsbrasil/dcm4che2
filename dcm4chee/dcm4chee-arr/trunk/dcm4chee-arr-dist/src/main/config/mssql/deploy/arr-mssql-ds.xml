@@ -4,7 +4,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>ARR_DS</jndi-name>
+    <jndi-name>arrDS</jndi-name>
     <connection-url>jdbc:jtds:sqlserver://localhost:1433;DatabaseName=arrdb</connection-url>
     <driver-class>net.sourceforge.jtds.jdbc.Driver</driver-class>
     <user-name>arr</user-name>
