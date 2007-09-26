@@ -4,7 +4,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>OracleDS</jndi-name>
+    <jndi-name>ARR_DS</jndi-name>
     <connection-url>jdbc:oracle:thin:@localhost:1521:arrdb</connection-url>
 	<!--
 
