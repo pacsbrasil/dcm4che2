@@ -20,7 +20,7 @@ goto eof
 
 :install
 if not "%JAVA_HOME%" == "" goto found_javahome
-echo set JAVA_HOME to your JDK 1.4 installation directory
+echo set JAVA_HOME to your JDK 1.5 installation directory
 goto eof
 
 :found_javahome
