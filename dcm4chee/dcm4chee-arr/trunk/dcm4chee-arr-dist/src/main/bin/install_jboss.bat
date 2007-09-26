@@ -51,10 +51,13 @@ set DCM4CHEE_CONF=%DCM4CHEE_SERV%\conf
 copy "%JBOSS_CONF%\jbossjta-properties.xml" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\jboss-service.xml" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\jndi.properties" "%DCM4CHEE_CONF%"
-xcopy /S "%JBOSS_CONF%\conf\props" "%DCM4CHEE_CONF%\props\"
+copy "%JBOSS_CONF%\standardjboss.xml" "%DCM4CHEE_CONF%"
+copy "%JBOSS_CONF%\standardjbosscmp-jdbc.xml" "%DCM4CHEE_CONF%"
+xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
-xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\" /EXCLUDE:jboss-saaj.jar
+xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
+del "%DCM4CHEE_SERV%\lib\jboss-saaj.jar"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy

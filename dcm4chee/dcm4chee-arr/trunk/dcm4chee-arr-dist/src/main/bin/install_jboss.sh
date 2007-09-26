@@ -38,14 +38,16 @@ cp -v -R "$JBOSS_HOME"/lib "$DCM4CHEE_HOME"
 cp -v "$JBOSS_SERV"/conf/jbossjta-properties.xml \
   "$JBOSS_SERV"/conf/jboss-service.xml \
   "$JBOSS_SERV"/conf/jndi.properties \
+  "$JBOSS_SERV"/conf/standardjboss.xml \
+  "$JBOSS_SERV"/conf/standardjbosscmp-jdbc.xml \
   "$DCM4CHEE_SERV"/conf
 cp -v -R "$JBOSS_SERV"/conf/props \
   "$JBOSS_SERV"/conf/xmdesc \
   "$DCM4CHEE_SERV"/conf
 
 mkdir "$DCM4CHEE_SERV"/lib
-find "$JBOSS_SERV"/lib -type f -not -name jboss-sar.jar -exec \
-cp -v '{}' "$DCM4CHEE_SERV"/lib ';'
+cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
+rm "$DCM4CHEE_SERV"/lib/jboss-saaj.jar
 
 cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/cache-invalidation-service.xml \

@@ -6,7 +6,7 @@
     <version>1</version>
   </parent>
   <groupId>dcm4che</groupId>
-  <artifactId>dcm4chee-arr-${db}</artifactId>
+  <artifactId>dcm4chee-arr-dist-${db}</artifactId>
   <packaging>pom</packaging>
   <version>3.0.3</version>
   <name>Assemble Distribution for ARR</name>
@@ -32,14 +32,25 @@
       <artifactId>dcm4che-audit</artifactId>
       <version>2.0.11</version>
     </dependency>
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>8.2-506.jdbc3</version>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.0.5</version>
+    </dependency>
   </dependencies>
   <build>
+    <finalName>dcm4chee-arr-${db}-${version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <descriptors>
-            <descriptor>src/main/assembly/bin.xml</descriptor>
+            <descriptor>src/main/assembly/${db}/bin.xml</descriptor>
           </descriptors>
         </configuration>
       </plugin>    

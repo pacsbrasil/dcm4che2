@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# dcm4chee Control Script
+# dcm4chee-arr Control Script
 #
 # To use this script
 # run it as root - it will switch to the specified user
@@ -8,8 +8,8 @@
 #
 # Here is a little (and extremely primitive)
 # startup/shutdown script for SuSE systems. It assumes
-# that JBoss lives in /usr/local/dcm4chee, it's run by user
-# 'pacs' and JDK binaries are in /usr/java/jdk/bin. All
+# that JBoss lives in /usr/local/dcm4chee-arr, it's run by user
+# 'arr' and JDK binaries are in /usr/java/jdk/bin. All
 # this can be changed in the script itself.
 #
 # Either amend this script for your requirements
@@ -18,15 +18,15 @@
 #
 ### BEGIN INIT INFO
 # Provides:       dcm4chee
-# Required-Start: $PACS_DB
+# Required-Start: $ARR_DB
 # Required-Stop:
 # Default-Start: 3 5
 # Default-Stop: 0 1 2 6
-# Description: Start the DCM4CHEE DICOM Image Manager
+# Description: Start the DCM4CHEE Audit Record Repository
 ### END INIT INFO
 
 #define where jboss is - this is the directory containing directories log, bin, conf etc
-JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee"}
+JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee-arr"}
 
 #make java is on your path
 JAVAPTH=${JAVAPTH:-"/usr/java/jdk/bin"}

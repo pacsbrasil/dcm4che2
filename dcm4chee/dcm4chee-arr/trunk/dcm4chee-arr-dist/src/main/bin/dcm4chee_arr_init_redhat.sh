@@ -1,16 +1,16 @@
 #!/bin/sh
 #
-# dcm4chee Control Script
+# dcm4chee-arr Control Script
 #
 # chkconfig: 3 80 20
-# description: Start the DCM4CHEE DICOM Image Manager
+# description: Start the DCM4CHEE Audit Record Repository
 #
 # To use this script run it as root - it will switch to the specified user
 # It loses all console output - use the log.
 #
 # Here is a little (and extremely primitive) startup/shutdown script
-# for RedHat systems. It assumes that dcm4chee lives in /usr/local/dcm4chee,
-# it's run by user 'pacs' and JDK binaries are in /usr/java/jdk/bin.
+# for RedHat systems. It assumes that dcm4chee lives in /usr/local/dcm4chee-arr,
+# it's run by user 'arr' and JDK binaries are in /usr/java/jdk/bin.
 # All this can be changed in the script itself. 
 #
 # Either modify this script for your requirements or just ensure that
@@ -20,10 +20,10 @@
 . /etc/rc.d/init.d/functions
 
 #define where jboss is - this is the directory containing directories log, bin, conf etc
-JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee"}
+JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee-arr"}
 
 #define the user under which jboss will run, or use 'RUNASIS' to run as the current user
-JBOSS_USER=${JBOSS_USER:-"pacs"}
+JBOSS_USER=${JBOSS_USER:-"arr"}
 
 #make sure java is in your path
 JAVAPTH=${JAVAPTH:-"/usr/java/jdk/bin"}

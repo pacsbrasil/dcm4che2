@@ -13,9 +13,9 @@ if "%1" == "server" goto install
 if "%1" == "client" goto install
 echo "Usage: %0 server|client|uninstall"
 echo Options:
-echo   client    install dcm4chee service, using client hotspot vm
-echo   server    install dcm4chee service, using server hotspot vm
-echo   uninstall uninstall dcm4chee service
+echo   client    install dcm4chee-arr service, using client hotspot vm
+echo   server    install dcm4chee-arr service, using server hotspot vm
+echo   uninstall uninstall dcm4chee-arr service
 goto eof
 
 :install
@@ -45,17 +45,14 @@ set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
 rem With Sun JVMs reduce the RMI GCs to once per hour
 set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000
 
-rem Set java.library.path to find native jai-imageio components 
-set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%DIRNAME%
-
 rem Set app.name and app.pid used in emitted audit log messages
-set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee -Dapp.pid=%RANDOM%
+set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee-arr -Dapp.pid=%RANDOM%
 
-JavaService.exe -install dcm4chee "%VM%" %JAVA_OPTS% "-Djava.class.path=%TOOLS_JAR%;%RUNJAR%"  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out "%DIRNAME%\out.txt" -err "%DIRNAME%\err.txt"
+JavaService.exe -install dcm4chee-arr "%VM%" %JAVA_OPTS% "-Djava.class.path=%TOOLS_JAR%;%RUNJAR%"  -start org.jboss.Main -stop org.jboss.Main -method systemExit  -out "%DIRNAME%\out.txt" -err "%DIRNAME%\err.txt"
 goto eof
 
 :uninstall
-JavaService.exe -uninstall dcm4chee
+JavaService.exe -uninstall dcm4chee-arr
 goto eof
 
 :eof
