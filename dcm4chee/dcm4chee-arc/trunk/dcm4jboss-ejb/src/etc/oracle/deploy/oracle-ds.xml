@@ -14,7 +14,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>OracleDS</jndi-name>
+    <jndi-name>pacsDS</jndi-name>
     <connection-url>jdbc:oracle:thin:@localhost:1521:pacsdb</connection-url>
 	<!--
 

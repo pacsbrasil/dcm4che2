@@ -98,7 +98,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required">
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/pacsDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
              <module-option name = "hashEncoding">base64</module-option>
@@ -115,7 +115,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/pacsDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
              <module-option name = "hashEncoding">base64</module-option>
@@ -132,7 +132,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/pacsDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
              <module-option name = "hashEncoding">base64</module-option>
@@ -156,7 +156,7 @@ $Revision$
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required" >
              <module-option name = "password-stacking">useFirstPass</module-option>
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/pacsDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
              <module-option name = "hashEncoding">base64</module-option>
@@ -174,7 +174,7 @@ $Revision$
        <authentication>
           <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
              flag = "required">
-             <module-option name = "dsJndiName">java:/DefaultDS</module-option>
+             <module-option name = "dsJndiName">java:/pacsDS</module-option>
              <module-option name = "principalsQuery">select passwd from users where user_id=?</module-option>
              <module-option name = "rolesQuery">select roles, 'Roles' from roles where user_id=?</module-option>
              <module-option name = "hashEncoding">base64</module-option>

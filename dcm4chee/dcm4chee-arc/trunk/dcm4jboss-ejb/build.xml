@@ -12,10 +12,7 @@
     <!--property name="datasource.mapping" value="mySQL"/-->
     <!--property name="datasource.mapping" value="PostgreSQL 8.0"/-->
 	<property name="datasource.mapping" value="Hypersonic SQL"/>
-    <!--property name="datasource.name" value="java:/DefaultDS"/-->
-    <!--property name="datasource.name" value="java:/MySqlDS"/-->
-    <!--property name="datasource.name" value="java:/PostgresDS"/-->
-	<property name="datasource.name" value="java:/DefaultDS"/>
+	<property name="datasource.name" value="java:/pacsDS"/>
 
     <!-- Override with your dcm4che dist location -->
 	<property name="dcm4che.home" value="../dcm4che14/build"/>		
@@ -194,9 +191,6 @@
     	</copy>
     	<replace dir="${target.meta-inf-psql}">
   			<replacefilter
-  				token="DefaultDS"
-  				value="PostgresDS"/>
-  			<replacefilter
   				token="Hypersonic SQL"
   				value="PostgreSQL 8.0"/>
   			<replacefilter
@@ -211,9 +205,6 @@
     	</copy>
     	<replace dir="${target.meta-inf-mysql}">
   			<replacefilter
-  				token="DefaultDS"
-  				value="MySqlDS"/>
-  			<replacefilter
   				token="Hypersonic SQL"
   				value="mySQL"/>
   			<replacefilter
@@ -227,9 +218,6 @@
 	    		<fileset dir="${target.meta-inf-hsql}"/>
 	    	</copy>
 	    	<replace dir="${target.meta-inf-mssql}">
-	  			<replacefilter
-	  				token="DefaultDS"
-	  				value="MSSQLDS"/>
 	  			<replacefilter
 	  				token="Hypersonic SQL"
 	  				value="MS SQLSERVER2000"/>
@@ -246,9 +234,6 @@
     	</copy>
     	<replace dir="${target.meta-inf-oracle}">
   			<replacefilter
-  				token="DefaultDS"
-  				value="OracleDS"/>
-  			<replacefilter
   				token="Hypersonic SQL"
   				value="Oracle9i"/>
   			<replacefilter
@@ -262,9 +247,6 @@
     		<fileset dir="${target.meta-inf-hsql}"/>
     	</copy>
     	<replace dir="${target.meta-inf-db2}">
-  			<replacefilter
-  				token="DefaultDS"
-  				value="DB2DS"/>
   			<replacefilter
   				token="Hypersonic SQL"
   				value="DB2"/>
