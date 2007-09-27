@@ -59,6 +59,7 @@ import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.session.AEManagerBean;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
+import org.dcm4chex.archive.notif.AetChanged;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBean;
 import org.jboss.system.ServiceMBeanSupport;
@@ -360,7 +361,7 @@ public class AEService extends ServiceMBeanSupport {
     private void notifyAETchange(String oldTitle, String newTitle) {
         long eventID = this.getNextNotificationSequenceNumber();
         Notification notif = new Notification(this.getClass().getName(), this, eventID );
-        notif.setUserData(new String[] {oldTitle, newTitle} );
+        notif.setUserData(new AetChanged(oldTitle, newTitle) );
         log.debug("send AE Title changed notif:"+notif);
         this.sendNotification( notif );
     }

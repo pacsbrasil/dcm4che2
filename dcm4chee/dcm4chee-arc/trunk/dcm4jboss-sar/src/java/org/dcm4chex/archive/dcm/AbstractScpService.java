@@ -53,6 +53,7 @@ import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
@@ -86,6 +87,8 @@ import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.notif.AetChanged;
+import org.dcm4chex.archive.notif.CallingAetChanged;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
@@ -149,17 +152,25 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
 
+    private static final NotificationFilterSupport callingAETsChangeFilter = new NotificationFilterSupport();
+    static {
+        callingAETsChangeFilter.enableType(CallingAetChanged.class.getName());
+    }
+    private static final NotificationFilterSupport aetChangeFilter = new NotificationFilterSupport();
+    static {
+        aetChangeFilter.enableType(AetChanged.class.getName());
+    }
+    
     private final NotificationListener callingAETChangeListener = 
         new NotificationListener() {
             public void handleNotification(Notification notif, Object handback) {
                 try {
-                    log.debug("Handle callingAET change notification!");
-                    log.info("Sequence Number:"+notif.getSequenceNumber());
-                    String[][] userData = (String[][]) notif.getUserData();
-                    if ( areCalledAETsAffected(userData[0])) {
-                        String newCallingAETs = userData[1] == null ? ANY 
-                                                : userData[1].length == 0 ? CONFIGURED_AETS
-                                                : StringUtils.toString(userData[1],'\\');
+                    CallingAetChanged userData = (CallingAetChanged) notif.getUserData();
+                    if ( areCalledAETsAffected(userData.getAffectedCalledAETs())) {
+                        String[] newCallingAets = userData.getNewCallingAETs();
+                        String newCallingAETs = newCallingAets == null ? ANY 
+                                                : newCallingAets.length == 0 ? CONFIGURED_AETS
+                                                : StringUtils.toString(newCallingAets,'\\');
                         log.debug("newCallingAETs:"+newCallingAETs);
                         server.setAttribute(serviceName, new Attribute("CallingAETitles", newCallingAETs));
                     }
@@ -186,9 +197,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             	if ( callingAETs != null || callingAETs.length == 0 ) {
                     try {
                         log.debug("Handle AE Title change notification!");
-                        String[] userData = (String[]) notif.getUserData();
-                        String removeAET = userData[0];
-                        String addAET = userData[1];
+                        AetChanged userData = (AetChanged) notif.getUserData();
+                        String removeAET = userData.getOldAET();
+                        String addAET = userData.getNewAET();
                         AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
                         for (int i = 0; i < calledAETs.length; ++i) {
                             AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
@@ -590,8 +601,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
-        server.addNotificationListener(dcmServerName, callingAETChangeListener, null, null);
-        server.addNotificationListener(aeServiceName, aetChangeListener, null, null);
+        server.addNotificationListener(dcmServerName, callingAETChangeListener, callingAETsChangeFilter, null);
+        server.addNotificationListener(aeServiceName, aetChangeListener, aetChangeFilter, null);
         enableService();
     }
 
