@@ -16,6 +16,8 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
+   <renderer renderedClass="org.dcm4che.data.Dataset" renderingClass="org.dcm4che.log.DatasetRenderer" />
+
    <!-- ================================= -->
    <!-- Preserve messages in a local file -->
    <!-- ================================= -->
