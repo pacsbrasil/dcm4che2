@@ -831,6 +831,9 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
 					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/save.gif" alt="attrs" border="0" title="DICOM Objekt speichern"/>		
+					</a>
 				</xsl:when>
 				<xsl:otherwise>
 					<img src="images/invalid.gif" alt="Image not online" border="0" title="Bild n. verfuegbar"/>		
@@ -920,6 +923,9 @@
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen" />		
+					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/save.gif" alt="speichern" border="0" title="DICOM Objekt speichern"/>		
 					</a>
 				</xsl:when>
 				<xsl:otherwise>
@@ -1025,6 +1031,9 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
 					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/save.gif" alt="speichern" border="0" title="DICOM Objekt speichern"/>		
+					</a>
 				</td>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1105,6 +1114,9 @@
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attributes anzeigen"/>		
+					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/save.gif" alt="speichern" border="0" title="DICOM Objekt speichern"/>		
 					</a>
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF nach XDS Repository"/>		
@@ -1193,6 +1205,9 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
 					</a>
+					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
+						<img src="images/save.gif" alt="speichern" border="0" title="DICOM Objekt speichern"/>		
+					</a>
 				</td>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1262,10 +1277,12 @@
 			<xsl:value-of select="md5String"/>
     	</td>
 	  	<td title="XML">
-	  		&#160;
 	    	<xsl:if test="position()=1 and ../../availability='ONLINE'">
 				<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;useOrig=true&amp;studyUID=1&amp;seriesUID=1&amp;objectUID={../../sopIUID}" target="_blank" >
-					<img src="images/attrs.gif" alt="XML" border="0" title="Original DICOM Attribute anzeigen"/>		
+					<img src="images/attrs.gif" alt="Attribute anzeigen" border="0" title="Original DICOM Attribute anzeigen"/>		
+				</a>
+				<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom&amp;useOrig=true&amp;studyUID={../../../../../../studyIUID}&amp;seriesUID={../../../../seriesIUID}&amp;objectUID={../../sopIUID}" target="_blank" >
+					<img src="images/save.gif" alt="speichern" border="0" title="Original DICOM Objekt speichern (ohne Abgleich mit DB)"/>		
 				</a>
 			</xsl:if>
 		</td>
@@ -1289,7 +1306,7 @@
 	  			<td class="xds_docs_nav" title="XDS Dokumente" colspan="7">
 	  				XDS Dokumente:&#160;&#160;
 					<a href="xdsQuery.m?queryType=findDocuments&amp;patPk={pk}" >
-						<img src="images/search.gif" alt="XML" border="0" title="Suche nach XDS Dokumenten"/>		
+						<img src="images/search.gif" alt="query" border="0" title="Suche nach XDS Dokumenten"/>		
 					</a>
     			</td>
     		</tr>
@@ -1352,7 +1369,7 @@
     		<xsl:choose>
     			<xsl:when test="mimeType='application/dicom'">
     				<a href="showManifest.m?url={URL}&amp;documentID={id}" target="xdsManifest" >
-						<img src="images/image.gif" alt="XML" border="0" title="XDSI Manifest oeffnen"/>		
+						<img src="images/image.gif" alt="open manifest" border="0" title="XDSI Manifest oeffnen"/>		
 					</a>
 					<xsl:if test="/model/webViewer='true'">
 	                    <a href="/dcm4chee-webview/webviewer.jsp?manifestURL={URL}" >
@@ -1363,12 +1380,12 @@
     			</xsl:when>
     			<xsl:when test="mimeType='application/pdf'">
     				<a href="{URI}" target="xdsdoc" >
-						<img src="images/sr_pdf.gif" alt="XML" border="0" title="PDF Dokument oeffnen"/>		
+						<img src="images/sr_pdf.gif" alt="open PDF" border="0" title="PDF Dokument oeffnen"/>		
 					</a>
     			</xsl:when>
     			<xsl:otherwise>
     				<a href="{URI}" target="xdsdoc" >
-						<img src="images/sr.gif" alt="XML" border="0" title="XDS Dokument oeffnen"/>		
+						<img src="images/sr.gif" alt="open XDS document" border="0" title="XDS Dokument oeffnen"/>		
 					</a>
     			</xsl:otherwise>
     		</xsl:choose>
