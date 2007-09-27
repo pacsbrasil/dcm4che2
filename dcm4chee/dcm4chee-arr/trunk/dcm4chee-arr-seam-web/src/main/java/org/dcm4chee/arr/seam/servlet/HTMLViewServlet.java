@@ -60,7 +60,7 @@ public class HTMLViewServlet extends XMLViewServlet {
             throws IOException, ServletException {
         rsp.setContentType("text/html; charset=UTF-8");
         PrintWriter out = rsp.getWriter();
-        XSLTUtils.renderDetails(rec.getXmldata(), out);
+        XSLTUtils.render(XSLTUtils.DETAILS, rec.getXmldata(), out);
         out.close();
     }
 

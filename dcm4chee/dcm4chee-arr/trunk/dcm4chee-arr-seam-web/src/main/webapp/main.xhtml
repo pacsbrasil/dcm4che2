@@ -320,9 +320,10 @@
             </h:outputFormat>
           </h:column>
           <h:column>
-            <f:facet name="header">Event ID: Type</f:facet>
-            <h:outputText escape="false"
-              value="&lt;strong&gt;#{rec.eventID}:&lt;/strong&gt; #{rec.eventType}"/>
+            <f:facet name="header">Event ID (Type)</f:facet>
+            <h:outputText title="Event ID" value="#{rec.eventID}"/>
+            <h:outputText title="Event Type" value=" (#{rec.eventType})"
+              rendered="#{!empty rec.eventType}"/>
           </h:column>
           <h:column>
             <f:facet name="header">
@@ -341,8 +342,11 @@
           <h:column>
             <f:facet name="header">Audit Source</f:facet>
             <h:outputText value="#{rec.enterpriseSiteID}"
-              title="Enterprise Site ID"/>
-            <f:verbatim><br/></f:verbatim>
+              title="Enterprise Site ID"
+              rendered="#{!empty rec.enterpriseSiteID}"/>
+            <f:verbatim rendered="#{!empty rec.enterpriseSiteID}">
+              <br/>
+            </f:verbatim>
             <h:outputText value="#{rec.sourceID}"
               title="Source ID"/>
             <f:verbatim><br/></f:verbatim>
@@ -350,8 +354,12 @@
               title="Source Type"/>
           </h:column>
           <h:column>
-            <f:facet name="header">Participants</f:facet>
-            <h:outputText escape="false" value="#{rec.summary}"/>
+            <f:facet name="header">Active Participants</f:facet>
+            <h:outputText escape="false" value="#{rec.activeParticipants}"/>
+          </h:column>
+          <h:column>
+            <f:facet name="header">Participant Objects</f:facet>
+            <h:outputText escape="false" value="#{rec.participantObjects}"/>
           </h:column>
           <h:column>
             <h:outputLink value="htmlview">

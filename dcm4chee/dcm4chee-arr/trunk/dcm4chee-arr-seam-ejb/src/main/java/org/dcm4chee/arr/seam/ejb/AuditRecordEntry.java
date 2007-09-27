@@ -38,13 +38,10 @@
 
 package org.dcm4chee.arr.seam.ejb;
 
-import java.util.Collection;
 import java.util.Date;
 
-import org.dcm4chee.arr.entities.ActiveParticipant;
 import org.dcm4chee.arr.entities.AuditRecord;
 import org.dcm4chee.arr.entities.Code;
-import org.dcm4chee.arr.entities.ParticipantObject;
 import org.jboss.seam.annotations.Name;
 
 /**
@@ -61,13 +58,9 @@ public class AuditRecordEntry {
         this.auditRecord = auditRecord;
     }
 
-    public String getSummary() {
-        return XSLTUtils.toSummary(auditRecord.getXmldata());
+    public String getActiveParticipants() {
+        return XSLTUtils.render(XSLTUtils.USER, auditRecord.getXmldata());
     }    
-
-    public Collection<ActiveParticipant> getActiveParticipants() {
-        return auditRecord.getActiveParticipants();
-    }
 
     public String getEnterpriseSiteID() {
         return auditRecord.getEnterpriseSiteID();
@@ -97,8 +90,8 @@ public class AuditRecordEntry {
         return meaningOf(auditRecord.getEventType());
     }
 
-    public Collection<ParticipantObject> getParticipantObjects() {
-        return auditRecord.getParticipantObjects();
+    public String getParticipantObjects() {
+        return XSLTUtils.render(XSLTUtils.OBJECT, auditRecord.getXmldata());
     }
 
     public int getPk() {

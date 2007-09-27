@@ -42,6 +42,7 @@ import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerException;
@@ -57,30 +58,23 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class XSLTUtils {
 
-    private static final String SUMMARY_XSL = "arr-summary.xsl";
-    private static final String DETAILS_XSL = "arr-details.xsl";
+    public static final String USER = "arr-user.xsl";
+    public static final String OBJECT = "arr-object.xsl";
+    public static final String DETAILS = "arr-details.xsl";
     
-    private static Templates summaryTpl;
-    private static Templates detailsTpl;
+    private static HashMap<String,Templates> templates =
+            new HashMap<String,Templates>(4);
     private static SAXTransformerFactory tf;
 
-    public static String toSummary(byte[] xmldata) {
+    public static String render(String name, byte[] xmldata) {
         StringWriter writer = new StringWriter(512);
-        renderSummary(xmldata, writer);
+        render(name, xmldata, writer);
         return writer.toString();        
     }
 
-    public static void renderSummary(byte[] xmldata, Writer out) {
+    public static void render(String name, byte[] xmldata, Writer out) {
         try {
-            render(summaryTpl(), xmldata, out);
-        } catch (Exception e) {
-            renderErrorMessage(e, out);
-        }
-    }
-    
-    public static void renderDetails(byte[] xmldata, Writer out) {
-        try {
-            render(detailsTpl(), xmldata, out);
+            render(getTemplates(name), xmldata, out);
         } catch (Exception e) {
             renderErrorMessage(e, out);
         }
@@ -103,18 +97,14 @@ public class XSLTUtils {
                 new StreamResult(out));
     }
    
-    private static Templates summaryTpl() throws TransformerException {
-        if (summaryTpl == null) {
-            summaryTpl = loadTemplates(SUMMARY_XSL);
+    private static Templates getTemplates(String name)
+            throws TransformerException {
+        Templates tpl = (Templates) templates.get(name);
+        if (tpl == null) {
+            tpl = loadTemplates(name);
+            templates.put(name, tpl);
         }
-        return summaryTpl;
-    }
-    
-    private static Templates detailsTpl() throws TransformerException {
-        if (detailsTpl == null) {
-            detailsTpl = loadTemplates(DETAILS_XSL);
-        }
-        return detailsTpl;
+        return tpl;
     }
     
     private static Templates loadTemplates(String name)

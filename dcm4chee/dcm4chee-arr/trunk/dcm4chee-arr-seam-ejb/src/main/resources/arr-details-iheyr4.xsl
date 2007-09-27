@@ -1,354 +1,542 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template match="IHEYr4">
-    <xsl:apply-templates mode="EventIdentification" select="*"/>
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-    <xsl:apply-templates mode="AuditSourceIdentification" select="*"/>
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr bgcolor="#eeeeee">
+        <td>Host</td>
+        <td width="10"/>
+        <td>Time</td>
+        <td width="10"/>
+        <td>Parameters</td>
+      </tr>
+      <tr>
+        <td height="15"/>
+      </tr>
+      <tr>
+        <tr>
+          <td/>
+        </tr>
+        <td valign="top">
+          <xsl:apply-templates select="Host"/>
+        </td>
+        <td width="10"/>
+        <td valign="top">
+          <xsl:apply-templates select="TimeStamp"/>
+        </td>
+        <td width="10"/>
+        <td>
+          <div class="level">
+            <xsl:apply-templates
+              select="Import|InstancesStored|ProcedureRecord|ActorStartStop|ActorConfig|Export|DICOMInstancesDeleted|PatientRecord|OrderRecord|BeginStoringInstances|InstancesSent|DICOMInstancesUsed|StudyDeleted|DicomQuery|SecurityAlert|UserAuthenticated|AuditLogUsed|NetworkEntry"
+            />
+          </div>
+        </td>
+      </tr>
+    </table>
   </xsl:template>
-  <!-- =========================================== -->
-  <!-- EventIdentification                         -->
-  <!-- =========================================== -->
-  <xsl:template mode="EventIdentification" match="ActorConfig">
-    <strong>Application Activity</strong>
-    <xsl:apply-templates mode="EventTypeCode" select="*"/>    
+  <!-- events -->
+  <!--(Import | InstancesStored | ProcedureRecord | ActorStartStop | ActorConfig | Export | DICOMInstancesDeleted | PatientRecord |
+	OrderRecord | BeginStoringInstances | InstancesSent | DICOMInstancesUsed | StudyDeleted | DicomQuery | SecurityAlert |
+	UserAuthenticated | AuditLogUsed | NetworkEntry)-->
+  <!-- Import -->
+  <xsl:template match="Import">
+    <span class="event">Import</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="MediaDescriptionType"/>
+    <xsl:apply-templates select="User"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="ActorStartStop">
-    <strong>Application Activity</strong>
-    <xsl:apply-templates mode="EventTypeCode" select="*"/>
+  <xsl:template match="MediaDescriptionType">
+    <b>MediaDescriptionType:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="MediaDescriptionType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="AuditLogUsed">
-    <strong>Audit Log Used</strong>
+  <xsl:template match="User">
+    <b>User:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="UserType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="BeginStoringInstances">
-    <strong>Begin Transferring DICOM Instances</strong>
+  <!-- InstancesStored -->
+  <xsl:template match="InstancesStored">
+    <span class="event">InstancesStored</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="RemoteNode"/>
+    <xsl:apply-templates select="InstanceActionDescription"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="DICOMInstancesDeleted">
-    <strong>DICOM Instances Accessed</strong>
+  <xsl:template match="RemoteNode">
+    <b>RemoteNode:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="RemoteNodeType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="DICOMInstancesUsed">
-    <strong>DICOM Instances Accessed</strong>
+  <xsl:template match="InstanceActionDescription">
+    <b>InstanceActionDescription:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="InstancesActionType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="DicomQuery">
-    <strong>Query</strong>
+  <!-- ProcedureRecord -->
+  <xsl:template match="ProcedureRecord">
+    <span class="event">ProcedureRecord</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="ObjectAction"/>
+    <xsl:if test="PlacerOrderNumber">
+      <b>PlacerOrderNum: </b>
+      <span class="num">
+        <xsl:value-of select="PlacerOrderNumber"/>
+      </span>
+      <br/>
+    </xsl:if>
+    <xsl:if test="FillerOrderNumber">
+      <b>FillerOrderNum: </b>
+      <span class="num">
+        <xsl:value-of select="FillerOrderNumber"/>
+      </span>
+      <br/>
+    </xsl:if>
+    <xsl:apply-templates select="SUID"/>
+    <xsl:apply-templates select="AccessionNumber"/>
+    <xsl:apply-templates select="Patient"/>
+    <xsl:apply-templates select="Description"/>
+    <xsl:apply-templates select="User"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="Export">
-    <strong>Export</strong>
+  <!-- ActorStartStop -->
+  <xsl:template match="ActorStartStop">
+    <span class="event">ActorStartStop</span>
+    <br/>
+    <br/>
+    <xsl:if test="ActorName">
+      <b>ActorName: </b>
+      <xsl:value-of select="ActorName"/>
+      <br/>
+    </xsl:if>
+    <xsl:apply-templates select="ApplicationAction"/>
+    <xsl:apply-templates select="User"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="Import">
-    <strong>Import</strong>
+  <!-- ActorConfig -->
+  <xsl:template match="ActorConfig">
+    <span class="event">ActorConfig</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="Description"/>
+    <xsl:apply-templates select="User"/>
+    <xsl:if test="ConfigType">
+      <b>ConfigType:</b>
+      <br/>
+      <xsl:value-of select="ConfigType"/>
+      <br/>
+    </xsl:if>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="InstancesSent">
-    <strong>DICOM Instances Transferred</strong>
-    <xsl:apply-templates mode="EventTypeCode" select="*"/>
+  <!-- Export -->
+  <xsl:template match="Export">
+    <span class="event">Export</span>
+    <br/>
+    <br/>
+    <xsl:call-template name="MediaDescriptionType"/>
+    <xsl:apply-templates select="User"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="InstancesStored">
-    <strong>DICOM Instances Transferred</strong>
+  <!-- DICOMInstancesDeleted -->
+  <xsl:template match="DICOMInstancesDeleted">
+    <span class="event-important">DICOMInstancesUsed</span>
+    <br/>
+    <br/>
+    <xsl:call-template name="InstancesActionType"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="NetworkEntry">
-    <strong>NetworkEntry</strong>
-    <xsl:apply-templates mode="EventTypeCode" select="*"/>
+  <!-- PatientRecord -->
+  <xsl:template match="PatientRecord">
+    <span class="event">PatientRecord</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="ObjectAction"/>
+    <xsl:apply-templates select="Patient"/>
+    <xsl:apply-templates select="Description"/>
+    <xsl:apply-templates select="User"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="OrderRecord">
-    <strong>Order Record</strong>
+  <xsl:template match="Patient">
+    <b>Patient:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="PatientType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="PatientRecord">
-    <strong>Patient Record</strong>
+  <!-- OrderRecord -->
+  <xsl:template match="OrderRecord">
+    <span class="event">OrderRecord</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="ObjectAction"/>
+    <xsl:apply-templates select="Patient"/>
+    <xsl:apply-templates select="User"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="ProcedureRecord">
-    <strong>Procedure Record</strong>
+  <!-- BeginStoringInstances -->
+  <xsl:template match="BeginStoringInstances">
+    <span class="event">BeginStoringInstances</span>
+    <br/>
+    <br/>
+    <xsl:call-template name="BeginStoringInstancesType"/>
+    <xsl:apply-templates select="Rnode"/>
+    <xsl:apply-templates select="InstanceActionDescription"/>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="SecurityAlert">
-    <strong>Security Alert</strong>
-    <xsl:apply-templates mode="EventTypeCode" select="*"/>
+  <xsl:template match="Rnode">
+    <b>Rnode:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="RemoteNodeType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="StudyDeleted">
-    <strong>DICOM Study Deleted</strong>
+  <xsl:template match="RNode">
+    <b>RNode:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="RemoteNodeType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="UserAuthenticated">
-    <strong>User Authentication</strong>
-    <xsl:apply-templates mode="EventTypeCode" select="*"/>
+  <xsl:template match="InstanceActionDescription">
+    <b>InstanceActionDescription:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="InstancesActionType"/>
+    </div>
   </xsl:template>
-  <xsl:template mode="EventIdentification" match="*"/>
-  <!-- =========================================== -->
-  <!-- EventIdentification / EventTypeCode         -->
-  <!-- =========================================== -->
-  <xsl:template mode="EventTypeCode" match="Action">
-    <xsl:variable name="action" select="normalize-space(.)"/>
+  <!-- InstancesSent -->
+  <xsl:template match="InstancesSent">
+    <span class="event">InstancesSent</span>
+    <br/>
+    <br/>
+    <xsl:call-template name="BeginStoringInstancesType"/>
+    <xsl:apply-templates select="RNode"/>
+    <xsl:apply-templates select="InstanceActionDescription"/>
+  </xsl:template>
+  <!-- DICOMInstancesUsed -->
+  <xsl:template match="DICOMInstancesUsed">
+    <span class="event">DICOMInstancesUsed</span>
+    <br/>
+    <br/>
+    <xsl:call-template name="InstancesActionType"/>
+  </xsl:template>
+  <!-- StudyDeleted -->
+  <xsl:template match="StudyDeleted">
+    <span class="event-important">StudyDeleted</span>
+    <br/>
+    <br/>
+    <xsl:call-template name="InstancesActionType"/>
+    <xsl:apply-templates select="Description"/>
+  </xsl:template>
+  <!-- DICOMQuery -->
+  <xsl:template match="DicomQuery">
+    <span class="event">DicomQuery</span>
+    <br/>
+    <br/>
+    <!--xsl:apply-templates select="Keys"/-->
+    <xsl:apply-templates select="Requestor"/>
+    <xsl:apply-templates select="CUID"/>
+  </xsl:template>
+  <xsl:template match="Requestor">
+    <b>Requestor:</b>
+    <br/>
+    <div class="level">
+      <xsl:call-template name="RemoteNodeType"/>
+    </div>
+  </xsl:template>
+  <!-- SecurityAlert -->
+  <xsl:template match="SecurityAlert">
+    <span class="event-alert">SecurityAlert</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="AlertType"/>
+    <xsl:apply-templates select="User"/>
+    <xsl:apply-templates select="Description"/>
+  </xsl:template>
+  <!-- UserAuthenticated -->
+  <xsl:template match="UserAuthenticated">
+    <span class="event">UserAuthenticated</span>
+    <br/>
+    <br/>
+    <xsl:if test="LocalUsername">
+      <b>LocalUsername: </b>
+      <xsl:value-of select="LocalUsername"/>
+      <br/>
+    </xsl:if>
+    <xsl:apply-templates select="Action"/>
+  </xsl:template>
+  <!-- AuditLogUsed -->
+  <xsl:template match="AuditLogUsed">
+    <span class="event">AuditLogUsed</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="Usage"/>
+    <xsl:apply-templates select="User"/>
+  </xsl:template>
+  <!-- NetworkEntry -->
+  <xsl:template match="NetworkEntry">
+    <span class="event">NetworkEntry</span>
+    <br/>
+    <br/>
+    <xsl:apply-templates select="MachineAction"/>
+  </xsl:template>
+  <!-- Matching templates are used for special handling of basic elements -->
+  <xsl:template match="Host">
+    <span class="host">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  <xsl:template match="TimeStamp">
+    <!-- make timestamp into a pretty link -->
+    <xsl:variable name="timezone-found">
+      <xsl:choose>
+        <xsl:when
+          test="contains(.,'z') or contains(.,'Z') or contains(substring-after(.,'T'),'-') or contains(.,'+')"
+          >true</xsl:when>
+        <xsl:otherwise>false</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:choose>
-      <xsl:when test="$action='Failure'">(Login)</xsl:when>
+      <xsl:when test=". != ''">
+        <!--<a href="arr-list.do?to={$time}&amp;from={$time}">-->
+        <span class="time">
+          <xsl:value-of select="."/>
+        </span>
+        <xsl:if test="$timezone-found = 'false'">
+          <br/>
+          <i>(no TZ, local assumed)</i>
+        </xsl:if>
+        <!--</a>-->
+      </xsl:when>
+      <xsl:otherwise>[empty]</xsl:otherwise>
+    </xsl:choose>
+    <br/>
+  </xsl:template>
+  <xsl:template match="IP">
+    <b>IP: </b>
+    <span class="ip">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  <xsl:template match="AET">
+    <b>AET: </b>
+    <xsl:value-of select="."/>
+    <br/>
+  </xsl:template>
+  <xsl:template match="Hname">
+    <b>Hname: </b>
+    <xsl:value-of select="."/>
+    <br/>
+  </xsl:template>
+  <xsl:template match="MachineAction">
+    <b>MachineAction: </b>
+    <xsl:value-of select="."/>
+    <br/>
+  </xsl:template>
+  <xsl:template match="ObjectAction">
+    <b>ObjectAction: </b>
+    <xsl:choose>
+      <xsl:when test=". = 'Create'">
+        <span style="font-style: italic">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
+      <xsl:when test=". = 'Access'">
+        <span style="font-style: italic">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
+      <xsl:when test=". = 'Modify'">
+        <span style="font-style: italic">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
+      <xsl:when test=". = 'Delete'">
+        <span style="font-style: italic">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
       <xsl:otherwise>
-        <xsl:text>(</xsl:text>
-        <xsl:value-of select="$action"/>
-        <xsl:text>)</xsl:text>
+        <span style=""> [Invalid or unspecified]</span>
       </xsl:otherwise>
     </xsl:choose>
+    <br/>
   </xsl:template>
-  <xsl:template mode="EventTypeCode" match="AlertType">
-    <xsl:variable name="alert" select="normalize-space(.)"/>
+  <xsl:template match="CUID">
+    <b>CUID: </b>
+    <span class="id">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  <xsl:template match="SUID">
+    <b>SUID: </b>
+    <span class="id">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  <xsl:template match="MPPSUID">
+    <b>MPPSUID: </b>
+    <span class="id">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  <!--xsl:template match="Keys">
+    <form name="frmviewdcm" action="arr-viewdcm.do" method="post">
+      <input type="hidden" name="base64" value="{.}"/>
+      <b>Keys: </b>
+      <input type="submit" name="submit" value="view..."/>
+    </form>
+  </xsl:template-->
+  <xsl:template match="AccessionNumber">
+    <b>AccessionNumber: </b>
+    <span class="num">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  <xsl:template match="ApplicationAction">
+    <b>ApplicationAction:</b>
     <xsl:choose>
-      <xsl:when test="$alert='NodeAuthenticationFailure'">(Node Authentication)</xsl:when>
+      <xsl:when test=". = 'Start'">
+        <span style="font-style: italic">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
+      <xsl:when test=". = 'Stop'">
+        <span style="font-style: italic">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
       <xsl:otherwise>
-        <xsl:text>(</xsl:text>
-        <xsl:value-of select="$alert"/>
-        <xsl:text>)</xsl:text>
+        <span style=""> [Invalid or unspecified]</span>
       </xsl:otherwise>
     </xsl:choose>
+    <br/>
   </xsl:template>
-  <xsl:template mode="EventTypeCode" match="ApplicationAction">
-    <xsl:text>(Application&#160;</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-    <xsl:text>)</xsl:text>
+  <xsl:template match="PatientID">
+    <b>PatientID: </b>
+    <span class="id">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
   </xsl:template>
-  <xsl:template mode="EventTypeCode" match="ConfigType">
-    <xsl:variable name="config" select="normalize-space(.)"/>
+  <xsl:template match="PatientName">
+    <b>PatientName: </b>
+    <xsl:value-of select="."/>
+    <br/>
+  </xsl:template>
+  <xsl:template match="AlertType">
+    <b>AlertType: </b>
+    <xsl:value-of select="."/>
+    <br/>
+  </xsl:template>
+  <xsl:template match="Action">
+    <b>Action:</b>
     <xsl:choose>
-      <xsl:when test="$config='Networking'">(Network Configuration)</xsl:when>
+      <xsl:when test=". = 'Login'">
+        <span style="color: green">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
+      <xsl:when test=". = 'Logout'">
+        <span style="color: black">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
+      <xsl:when test=". = 'Failure'">
+        <span style="color: red">
+          <xsl:value-of select="."/>
+        </span>
+      </xsl:when>
       <xsl:otherwise>
-        <xsl:text>(</xsl:text>
-        <xsl:value-of select="$config"/>
-        <xsl:text>&#160;Configuration)</xsl:text>
+        <span style=""> [Invalid or unspecified]</span>
       </xsl:otherwise>
     </xsl:choose>
+    <br/>
   </xsl:template>
-  <xsl:template mode="EventTypeCode" match="MachineAction">
-    <xsl:text>(</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-    <xsl:text>)</xsl:text>
+  <xsl:template match="Description">
+    <b>Description: </b>
+    <xsl:value-of select="."/>
+    <br/>
   </xsl:template>
-  <xsl:template mode="EventTypeCode" match="*"/>
-  <!-- =========================================== -->
-  <!-- Active Participant                          -->
-  <!-- =========================================== -->
-  <xsl:template mode="ActiveParticipant" match="ActorConfig">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <!-- The 5.4 xml schema provides no definition for the content for these -->
+  <xsl:template match="Usage">
+    <b>Usage: </b>
+    <xsl:value-of select="."/>
+    <br/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="ActorName">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User:&#160;</strong>
-    <xsl:value-of select="normalize-space(.)"/>
+  <!-- used instead of declaring an empty UsageType named template -->
+  <xsl:template match="LocalUser">
+    <b>LocalUser: </b>
+    <xsl:value-of select="."/>
+    <br/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="ActorStartStop">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template match="LocalPrinter">
+    <b>LocalPrinter: </b>
+    <xsl:value-of select="."/>
+    <br/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="AET">
-    <xsl:text>, AETITLE=</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
+  <!-- Named templates are used for aggregate types -->
+  <xsl:template name="MediaDescriptionType">
+    <xsl:if test="MediaID">
+      <b>MediaID: </b>
+      <xsl:value-of select="MediaID"/>
+      <br/>
+    </xsl:if>
+    <xsl:if test="MediaType">
+      <b>MediaType: </b>
+      <xsl:value-of select="MediaType"/>
+      <br/>
+    </xsl:if>
+    <xsl:apply-templates select="SUID"/>
+    <xsl:apply-templates select="Patient"/>
+    <xsl:apply-templates select="Destination"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="AuditLogUsed">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template match="Destination">
+    <xsl:call-template name="PrinterType"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="BeginStoringInstances">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template name="UserType">
+    <xsl:apply-templates select="LocalUser"/>
+    <xsl:apply-templates select="RemoteNode"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="Destination">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template name="PrinterType">
+    <xsl:apply-templates select="LocalPrinter"/>
+    <xsl:apply-templates select="Node"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="DICOMInstancesDeleted">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template match="Node">
+    <xsl:call-template name="RemoteNodeType"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="DICOMInstancesUsed">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template name="RemoteNodeType">
+    <xsl:apply-templates select="IP"/>
+    <xsl:apply-templates select="Hname"/>
+    <xsl:apply-templates select="AET"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="DicomQuery">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template name="RetrieveInstancesType"/>
+  <xsl:template name="BeginStoringInstancesType"/>
+  <xsl:template name="InstancesActionType">
+    <!-- renamed, called InstancesAction in xsd -->
+    <xsl:apply-templates select="ObjectAction"/>
+    <xsl:apply-templates select="AccessionNumber"/>
+    <xsl:apply-templates select="SUID"/>
+    <xsl:apply-templates select="Patient"/>
+    <xsl:apply-templates select="User"/>
+    <xsl:apply-templates select="CUID"/>
+    <xsl:if test="NumberOfInstances">
+      <b>NumberOfInstances: </b>
+      <xsl:value-of select="NumberOfInstances"/>
+      <br/>
+    </xsl:if>
+    <xsl:apply-templates select="MPPSUID"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="Export">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
+  <xsl:template name="PatientType">
+    <xsl:apply-templates select="PatientID"/>
+    <xsl:apply-templates select="PatientName"/>
   </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="Hname">
-    <xsl:text>,&#32;</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="Import">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="InstanceActionDescription">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="InstancesSent">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="InstancesStored">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Req.User:&#160;</strong>
-    <xsl:apply-templates mode="ActiveParticipant" select="RemoteNode"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="IP">
-    <xsl:text>node=</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="LocalPrinter">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User</strong>
-    <xsl:text>(Destination Media):&#160;</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="LocalUser">
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="LocalUsername">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Req.User:&#160;</strong>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="MediaID">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User:&#160;</strong>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="NetworkEntry">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User:&#160;</strong>
-    <xsl:value-of select="normalize-space(../Host)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="Node">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User:&#160;</strong>
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="OrderRecord">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="PatientRecord">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="ProcedureRecord">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="RemoteNode">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="Requestor">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Req.User:&#160;</strong>
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="RNode">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User:&#160;</strong>
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="SecurityAlert">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-    <xsl:text>,&#32;</xsl:text>
-    <strong>User:&#160;</strong>
-    <xsl:value-of select="normalize-space(../Host)"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="StudyDeleted">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="User">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Req.User:&#160;</strong>
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="UserAuthenticated">
-    <xsl:apply-templates mode="ActiveParticipant" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ActiveParticipant" match="*"/>
-  <!-- =========================================== -->
-  <!-- Active Participant / RoleIDCode             -->
-  <!-- =========================================== -->
-  <!-- =========================================== -->
-  <!-- AuditSourceIdentification                   -->
-  <!-- =========================================== -->
-  <xsl:template mode="AuditSourceIdentification" match="Host">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Audit&#160;Source:&#160;</strong>
-    <xsl:value-of select="normalize-space(../Host)"/>
-  </xsl:template>
-  <xsl:template mode="AuditSourceIdentification" match="*"/>
-  <!-- =========================================== -->
-  <!-- ParticipantObjectIdentification             -->
-  <!-- =========================================== -->
-  <xsl:template mode="ParticipantObjectIdentification"
-    match="BeginStoringInstances">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification"
-    match="DICOMInstancesDeleted">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification"
-    match="DICOMInstancesUsed">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <!--
-  <xsl:template mode="ParticipantObjectIdentification" match="DicomQuery">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Report:&#160;</strong>
-    <span title="SOP Class UID"><xsl:value-of select="CUID"/> </span>
-  </xsl:template>
-  -->
-  <xsl:template mode="ParticipantObjectIdentification" match="Export">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="Import">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification"
-    match="InstanceActionDescription">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="InstancesSent">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="InstancesStored">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="OrderRecord">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="Patient">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Patient:&#160;</strong>
-    <xsl:apply-templates mode="ParticipantObjectIdentification"
-      select="PatientID"/>
-    <xsl:apply-templates mode="ParticipantObjectIdentification"
-      select="PatientName"/>
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="SUID"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="PatientID">
-    <xsl:text>id=</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="PatientName">
-    <xsl:text>,&#32;name=</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="PatientRecord">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="ProcedureRecord">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="SecurityAlert">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Security&#160;Resource:&#160;</strong>
-    <xsl:value-of select="normalize-space(../Host)"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="StudyDeleted">
-    <xsl:apply-templates mode="ParticipantObjectIdentification" select="*"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="AccessionNumber">
-    <xsl:text>,&#32;</xsl:text>
-    <strong title="Accession Number">Acc.No:&#160;</strong>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="SUID">
-    <xsl:text>,&#32;</xsl:text>
-    <strong>Study:&#160;</strong>
-    <xsl:text>uid=</xsl:text>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
-  <xsl:template mode="ParticipantObjectIdentification" match="NumberOfInstances">
-    <xsl:text>,&#32;</xsl:text>
-    <strong title="Number of Instances">NoI:&#160;</strong>
-    <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>  <xsl:template mode="ParticipantObjectIdentification" match="*"/>
-  <!-- =========================================== -->
-  <!-- Discard everything else                     -->
-  <!-- =========================================== -->
-  <xsl:template match="*"/>
 </xsl:stylesheet>
