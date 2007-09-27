@@ -49,6 +49,7 @@ import org.dcm4che2.iod.module.lut.RescaleLut;
 import org.dcm4che2.iod.module.lut.VoiLutModule;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.macro.WindowLevelMacro;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.MacroItems;
@@ -56,7 +57,6 @@ import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
-import org.dcm4chee.xero.search.study.WindowLevelMacro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

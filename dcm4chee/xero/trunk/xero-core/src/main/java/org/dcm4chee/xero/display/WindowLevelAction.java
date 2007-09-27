@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
-import org.dcm4chee.xero.search.study.WindowLevelMacro;
+import org.dcm4chee.xero.search.macro.WindowLevelMacro;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;

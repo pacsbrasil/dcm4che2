@@ -35,34 +35,61 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.search.macro;
 
 import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-public class RegionMacro implements Macro {
-   public static final QName Q_PRESENTATION_SIZE_MODE = new QName(null, "size");
-   public static final QName Q_TOP_LEFT = new QName(null,"topLeft");
-   public static final QName Q_BOTTOM_RIGHT = new QName(null,"bottomRight");
-   public static final QName Q_MAGNIFY = new QName(null,"magnify");
-   private PresentationSizeMode presentationSizeMode;
-   private String topLeft, bottomRight;
-   private float magnify;
+import org.dcm4chee.xero.search.study.Macro;
+
+
+/** Represents a window level default - other window levels are represented by other macros */
+public class WindowLevelMacro implements Macro {
+   public static final QName Q_WINDOW_CENTER = new QName(null,"windowCenter");
+   public static final QName Q_WINDOW_WIDTH = new QName(null,"windowWidth");
+   public static final QName Q_WINDOW_EXPLANATION = new QName(null,"windowExplanation");
+   private float center, width;
+   private String explanation;
    
-   public RegionMacro(PresentationSizeMode presentationSizeMode, String topLeft, String bottomRight, float magnify) {
-	  this.presentationSizeMode = presentationSizeMode;
-	  this.topLeft = topLeft;
-	  this.bottomRight = bottomRight;
-	  this.magnify = magnify;
-   }
-   
-   public int updateAny(Map<QName, String> attrs) {
-	 attrs.put(Q_PRESENTATION_SIZE_MODE, presentationSizeMode.toString());
-	 attrs.put(Q_TOP_LEFT, topLeft);
-	 attrs.put(Q_BOTTOM_RIGHT, bottomRight);
-	 attrs.put(Q_MAGNIFY,Float.toString(magnify));
-	 return 4;
+   public WindowLevelMacro(float center, float width, String reason) {
+	  this.width = width;
+	  this.center = center;
+	  this.explanation = reason;
    }
 
+   public float getCenter() {
+      return center;
+   }
+
+   public void setCenter(float center) {
+      this.center = center;
+   }
+
+   public String getExplanation() {
+      return explanation;
+   }
+
+   public void setExplanation(String reason) {
+      this.explanation = reason;
+   }
+
+   public float getWidth() {
+      return width;
+   }
+
+   public void setWidth(float width) {
+      this.width = width;
+   }
+
+   public int updateAny(Map<QName, String> attrs) {
+	 attrs.put(Q_WINDOW_CENTER, Float.toString(center));
+	 attrs.put(Q_WINDOW_WIDTH,Float.toString(width));
+	 attrs.put(Q_WINDOW_EXPLANATION,explanation);
+	 return 3;
+   }
+
+   public String toString() {
+	  return "WL(C:"+center+",W:"+width+",E:"+explanation+")";
+   }
 }

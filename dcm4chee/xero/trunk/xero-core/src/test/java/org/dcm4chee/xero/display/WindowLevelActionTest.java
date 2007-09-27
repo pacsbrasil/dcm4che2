@@ -1,7 +1,7 @@
 package org.dcm4chee.xero.display;
 
+import org.dcm4chee.xero.search.macro.WindowLevelMacro;
 import org.dcm4chee.xero.search.study.ImageBean;
-import org.dcm4chee.xero.search.study.WindowLevelMacro;
 import org.testng.annotations.Test;
 
 public class WindowLevelActionTest extends DisplayVars

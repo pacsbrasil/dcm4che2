@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
-import org.dcm4chee.xero.search.study.RegionMacro;
+import org.dcm4chee.xero.search.macro.RegionMacro;
 import org.dcm4chee.xero.search.study.PresentationSizeMode;
 import org.dcm4chee.xero.wado.WadoImage;
 import org.jboss.seam.annotations.In;
