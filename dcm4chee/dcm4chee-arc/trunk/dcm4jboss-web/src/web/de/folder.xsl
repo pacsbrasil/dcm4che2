@@ -296,10 +296,9 @@
 				<font size="1">
 					Geschlecht:</font>
     	</td>
-			<td>
-			</td>
-			</tr>
-	</table>	
+		<td></td>
+	</tr>
+</table>	
 	
 	<table class="folder_overview" border="0" cellspacing="0" cellpadding="0" width="100%">
 		<colgroup>
@@ -309,32 +308,11 @@
 			<col width="10%"/><!-- Modalities -->
 			<col width="26%"/><!-- Study Desc -->
 			<col width="9%"/><!-- Acc No --><!-- 73 -->
-			<xsl:choose>
-				<xsl:when test="$folder.edit='true' and /model/webViewer='true'">
-		    		<col width="11%"/><!-- Ref. Physician -->
-				</xsl:when>
-	            <xsl:when test="$folder.edit='true'">    
-				    <col width="13%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="15%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="17%"/>
-				</xsl:otherwise>
-			</xsl:choose><!-- 16 -->
+    		<col width="11%"/><!-- Ref. Physician -->
 		    <col width="4%"/><!-- Study Status ID -->
 			<col width="2%"/><!-- No. of Series -->
 		    <col width="2%"/><!-- No. of Instances -->
-		    
-			<xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- Webviewer -->
-			</xsl:if>
-			<xsl:if test="$folder.edit='true'">
-				<col width="2%"/><!-- add -->
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
+			<col width="8%"/><!-- Webviewer, add, inspect, edit, sticky -->
 		</colgroup>
 		<tr>
 			<td class="study_mark" >
@@ -379,79 +357,27 @@
 				<font size="1">
 					Status:</font>
 			</td>
-			<td>
-				<font size="1">
-					NoS:</font>
+			<td align="right">
+				<font size="1">NoS:</font>
 			</td>
-			<td>
-				<font size="1">
-					NoI:</font>
+			<td align="right">
+				<font size="1">NoI:</font>
 			</td>
-			<xsl:if test="/model/webViewer='true'">
-				<td>&#160;</td>
-			</xsl:if>
-			<xsl:if test="$folder.edit='true'">
-				<td>&#160;</td>
-				<td>&#160;</td>
-			</xsl:if>
-			<td>&#160;
-			</td>
+			<td>&#160;</td>
 		</tr>
 	</table>
 	
 	<table class="folder_overview" border="0" cellspacing="0" cellpadding="0" width="100%">
 		<colgroup>
-			<col width="5%"/><!-- margin -->
-			<col width="12%"/><!-- date/time -->
+			<col width="5%"/><!-- left margin -->
+			<col width="12%"/><!-- Date/Time -->
 			<col width="12%"/><!-- Series No -->
 			<col width="10%"/><!-- Modality -->
 			<col width="35%"/><!-- Series Desc. -->
 			<col width="10%"/><!-- Vendor/Model -->
-			<xsl:choose>
-				<xsl:when test="$folder.edit='true' and /model/webViewer='true'">
-		    		<col width="6%"/><!-- PPS Status -->
-				</xsl:when>
-	            <xsl:when test="$folder.edit='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="10%"/>
-				</xsl:otherwise>
-			</xsl:choose>
-			<col width="2%"/><!-- spacer -->
-            <xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- web viewer -->
-			</xsl:if>
-            <xsl:if test="$folder.edit='true'">
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
-			
-			<xsl:choose>
-				<xsl:when test="$folder.edit='true' and /model/webViewer='true'">
-		    		<col width="6%"/><!-- PPS Status -->
-				</xsl:when>
-	            <xsl:when test="$folder.edit='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="10%"/>
-				</xsl:otherwise>
-			</xsl:choose>
-			<col width="2%"/><!-- spacer -->
-            <xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- web viewer -->
-			</xsl:if>
-            <xsl:if test="$folder.edit='true'">
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
+    		<col width="6%"/><!-- PPS Status -->
+    		<col width="2%"/><!-- NOI -->
+			<col width="8%"/><!-- web viewer, edit, inspect, sticky -->
 		</colgroup>
 		<tr>
 			<td class="series_mark" >
@@ -492,18 +418,10 @@
 				<font size="1">
 					PPS Status:</font>
 			</td>
-			<td>
-				<font size="1">
-					NoI:</font>
+			<td align="right">
+				<font size="1">NoI:</font>
 			</td>
-			<td>&#160;</td>
-            <xsl:if test="/model/webViewer='true'">
-				<td>&#160;</td>
-			</xsl:if>
-            <xsl:if test="$folder.edit='true'">
-				<td>&#160;</td>
-			</xsl:if>
-			<td align="right" valign="bottom">&#160;
+			<td align="right">
 				<img src="images/plus.gif" alt="Select all Studies" onclick="selectAll( document.myForm,'stickyStudy', true)" />
 				<img src="images/minus.gif" alt="Deselect all" onclick="selectAll( document.myForm,'sticky', false)" />
 			</td>
@@ -518,24 +436,12 @@
       <table class="patient_line" width="100%" cellpadding="0" cellspacing="0" border="0">
 		<colgroup>
 			<col width="1%"/>
-			<col width="26%"/>
-			<col width="10%"/>
-			<xsl:if test="$folder.xds_consumer='false'">
-				<col width="17%"/>
-			</xsl:if>
-			<xsl:if test="$folder.xds_consumer='true'">
-				<col width="12%"/>
-				<col width="5%"/>
-			</xsl:if>
-		    <xsl:if test="$folder.edit='true'">
-			    <col width="45%"/>
-			    <col width="2%"/>
-			    <col width="2%"/>
-		    </xsl:if>
-		    <xsl:if test="$folder.edit!='true'">
-            	<col width="49%"/>
-		    </xsl:if>
-			<col width="2%"/>
+			<col width="26%"/><!-- pat name -->
+			<col width="10%"/><!-- pat id -->
+			<col width="12%"/><!-- pat birthdate -->
+			<col width="5%"/><!--  patient sex  -->
+		    <col width="38%"/>
+			<col width="8%"/><!-- xds, add, inspect, edit, sticky -->
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 			<td class="patient_mark" align="right" rowspan="{$rowspan}">
@@ -572,8 +478,9 @@
             		<xsl:value-of select="patientSex"/>&#160;
 				</strong>
       		</td>
-  			<xsl:if test="$folder.xds_consumer='true'">
-				<td class="patient_mark" align="right" >
+      		<td>&#160;</td>
+			<td class="patient_mark" align="right" >
+	  			<xsl:if test="$folder.xds_consumer='true'">
 					<xsl:text>XDS</xsl:text>
 					<xsl:choose>
 						<xsl:when test="showXDS='false'">
@@ -587,21 +494,18 @@
 	              			</a>				
 						</xsl:otherwise>
 					</xsl:choose>
-				</td>
-			</xsl:if>
-		    <xsl:if test="$folder.edit='true'">
-			    <td class="study_mark" align="right">
+				</xsl:if>
+			    <xsl:if test="$folder.edit='true'">
 					<a href="studyEdit.m?patPk={pk}&amp;studyPk=-1">
 						<img src="images/add.gif" alt="Add Study" border="0" title="Hinzuf. Studie"/>		
 					</a>
-			    </td>
-			    <td class="patient_mark" align="right">
 					<a href="patientEdit.m?pk={pk}">
 						<img src="images/edit.gif" alt="Edit Patient" border="0" title="Aendern Patienteninformationen"/>		
 					</a>
-			    </td>
-			</xsl:if>
-			<td class="patient_mark" align="right">
+					<a href="inspectDicomHeader.m?patPk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Patienten Attribute in DB"/>		
+					</a>
+				</xsl:if>
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
 						<xsl:attribute name="checked"/>
@@ -636,33 +540,13 @@
 			<col width="12%"/><!-- StudyID -->
 			<col width="10%"/><!-- Modalities -->
 			<col width="26%"/><!-- Study Desc -->
-			<col width="9%"/><!-- Acc No -->
-			<xsl:choose>
-				<xsl:when test="$folder.edit='true' and /model/webViewer='true'">
-		    		<col width="11%"/><!-- Ref. Physician -->
-				</xsl:when>
-	            <xsl:when test="$folder.edit='true'">    
-				    <col width="13%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="15%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="17%"/>
-				</xsl:otherwise>
-			</xsl:choose><!-- 16 -->
+			<col width="9%"/><!-- Acc No --><!-- 73 -->
+    		<col width="11%"/><!-- Ref. Physician -->
 		    <col width="4%"/><!-- Study Status ID -->
 			<col width="2%"/><!-- No. of Series -->
 		    <col width="2%"/><!-- No. of Instances -->
-		    
-			<xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- Webviewer -->
-			</xsl:if>
-			<xsl:if test="$folder.edit='true'">
-				<col width="2%"/><!-- add -->
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
+			<col width="8%"/><!-- Webviewer, add, inspect, edit, sticky -->
+
 		</colgroup>
 			<td class="study_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
@@ -722,8 +606,8 @@
       		<td title="Number of Instances" align="center">
 				<xsl:value-of select="numberOfInstances"/>&#160;
 			</td>
-			<xsl:if test="/model/webViewer='true'">
-    			    <td class="study_mark" align="right">
+		    <td class="study_mark" align="right">
+    			<xsl:if test="/model/webViewer='true'">
     			          <xsl:choose>
     			                  <xsl:when test="modalitiesInStudy='SR'"><!-- no webviewer action for SR! -->
     			                  </xsl:when>
@@ -736,10 +620,8 @@
     			                      </a>
     			                  </xsl:otherwise>
     			          </xsl:choose>
-    			    </td>
-			</xsl:if>
-	        <xsl:if test="$folder.edit='true'">    
-			    <td class="series_mark" align="right">
+			   </xsl:if>
+	           <xsl:if test="$folder.edit='true'">    
 	      			<xsl:choose>
 						<xsl:when test="$folder.add_worklist='false'">
 							<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
@@ -752,20 +634,19 @@
 							</a>
 						</xsl:otherwise>
 					</xsl:choose>
-				    </td>
-				    <td class="study_mark" align="right">
 					<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
 						<img src="images/edit.gif" alt="Edit Study" border="0" title="Aendern Studien Attribute"/>		
 					</a>
-			    </td>
-	       	</xsl:if>
-			<td class="study_mark" align="right">
-				<input type="checkbox" name="stickyStudy" value="{pk}">
-					<xsl:if test="/model/stickyStudies/item = pk">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-			</td>
+					<a href="inspectDicomHeader.m?patPk={../../pk}&amp;studyPk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Studien Attribute in DB"/>		
+					</a>
+	       	   </xsl:if>
+			<input type="checkbox" name="stickyStudy" value="{pk}">
+				<xsl:if test="/model/stickyStudies/item = pk">
+					<xsl:attribute name="checked"/>
+				</xsl:if>
+			</input>
+		</td>
 	</table>
 </tr>
 	<xsl:apply-templates select="series/item">
@@ -784,28 +665,9 @@
 			<col width="35%"/><!-- Series Desc. -->
 			<col width="10%"/><!-- Vendor/Model -->
 			
-			<xsl:choose>
-				<xsl:when test="$folder.edit='true' and /model/webViewer='true'">
-		    		<col width="6%"/><!-- PPS Status -->
-				</xsl:when>
-	            <xsl:when test="$folder.edit='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-	            <xsl:when test="/model/webViewer='true'">    
-				    <col width="8%"/>
-				</xsl:when>
-				<xsl:otherwise>
-				    <col width="10%"/>
-				</xsl:otherwise>
-			</xsl:choose>
-			<col width="2%"/><!-- spacer -->
-            <xsl:if test="/model/webViewer='true'">
-				<col width="2%"/><!-- web viewer -->
-			</xsl:if>
-            <xsl:if test="$folder.edit='true'">
-				<col width="2%"/><!-- edit -->
-			</xsl:if>
-			<col width="2%"/><!-- sticky -->
+    		<col width="6%"/><!-- PPS Status -->
+    		<col width="2%"/><!-- NOI -->
+			<col width="8%"/><!-- web viewer, edit, inspect, sticky -->
 		</colgroup>
 		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
 		  <td class="series_mark" align="right" rowspan="{$rowspan}">
@@ -863,9 +725,8 @@
 		<td title="Number of Instances" align="center">
 			<xsl:value-of select="numberOfInstances"/>
 		</td>
-		<td>&#160;</td>
-        <xsl:if test="/model/webViewer='true'">
-		    <td class="series_mark" align="right">
+	    <td class="series_mark" align="right">
+           <xsl:if test="/model/webViewer='true'">
 	            <xsl:choose>
 	                <xsl:when test="modality != 'SR' and modality != 'PR' and modality != 'KO' and modality != 'AU' ">
 	                      <a href="/dcm4chee-webview/webviewer.jsp?seriesUID={seriesIUID}" >
@@ -879,25 +740,22 @@
 							<img src="images/webview_ko.gif" alt="View Key Object" border="0" title="Anzeige Key Objekt im Webviewer"/>		
 						</a>
 					</xsl:when>
-					<xsl:otherwise>&#160;</xsl:otherwise>
 	            </xsl:choose>
-	    	</td>
      	</xsl:if>
-
-           <xsl:if test="$folder.edit='true'">
-                <td class="series_mark" align="right">
-					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
+        <xsl:if test="$folder.edit='true'">
+ 					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
 						<img src="images/edit.gif" alt="Edit Series" border="0" title="Aendern Serien Attribute"/>		
 					</a>
-    	        </td>
-            </xsl:if>
-            <td class="series_mark" align="right">
-				<input type="checkbox" name="stickySeries" value="{pk}">
-					<xsl:if test="/model/stickySeries/item = pk">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-			</td>
+					<a href="inspectDicomHeader.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Serien Attributes in DB"/>		
+					</a>
+        </xsl:if>
+		<input type="checkbox" name="stickySeries" value="{pk}">
+			<xsl:if test="/model/stickySeries/item = pk">
+				<xsl:attribute name="checked"/>
+			</xsl:if>
+		</input>
+		</td>
       </table>
 	</tr>
 		<xsl:apply-templates select="instances/item">
@@ -966,6 +824,9 @@
 				<xsl:when test="availability='ONLINE'" >			
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
 						<img src="images/image.gif" alt="View image" border="0" title="Anzeige Bild"/>		
+					</a>
+					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Instance Attribute in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
@@ -1054,6 +915,9 @@
 							<img src="images/webview_pr.gif" alt="View Presentation State" border="0" title="Presentation State im Webviewer anzeigen"/>		
 						</a>
 					</xsl:if>
+					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Instance Attribute in DB"/>		
+					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen" />		
 					</a>
@@ -1155,6 +1019,9 @@
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF nach XDS Repository"/>		
 					</a>
+					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Instance Attribute in DB"/>		
+					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		
 					</a>
@@ -1232,6 +1099,9 @@
 				<xsl:when test="availability='ONLINE'" >			
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
 						<img src="images/waveform.gif" alt="View waveform" border="0" title="Anzeige waveform"/>		
+					</a>
+					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Instance Attribute in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attributes anzeigen"/>		
@@ -1316,6 +1186,9 @@
 				<td class="instance_mark" align="right" >
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType={mimeType}" target="document" >
 						<img src="images/sr_pdf.gif" alt="Dokument anzeigen" border="0" title="Dokument anzeigen"/>		
+					</a>
+					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Instance Attribute in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
 						<img src="images/attrs.gif" alt="attrs" border="0" title="DICOM Attribute anzeigen"/>		

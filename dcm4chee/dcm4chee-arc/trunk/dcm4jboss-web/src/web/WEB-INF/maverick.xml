@@ -150,6 +150,12 @@ default-transform-type="xslt">
         <controller class="org.dcm4chex.archive.web.maverick.SeriesUpdateCtrl" />    
 	    <view type="redirect" path="folder.m" name="success"/>
      </command>
+     
+    <command name="inspectDicomHeader">
+        <controller class="org.dcm4chex.archive.web.maverick.InspectDicomHeaderCtrl" />    
+	    <view name="inspect" type="redirect" path="dcmview.jsp"/>
+	    <view name="error" type="redirect" path="folder.m" />
+     </command>
 
 	<!-- ****** trashfolder related commands ******-->
 

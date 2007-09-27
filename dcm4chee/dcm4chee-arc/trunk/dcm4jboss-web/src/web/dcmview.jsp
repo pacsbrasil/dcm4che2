@@ -26,7 +26,9 @@
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 		Templates stylesheet = tf.newTemplates(new StreamSource("resource:dicom_html.xsl"));
 		TransformerHandler th = tf.newTransformerHandler(stylesheet);
-		//OutputStream out = response.getOutputStream();
+		String title = (String) request.getSession().getAttribute("titleOfdataset2view");
+		if ( title != null )
+			th.getTransformer().setParameter("title", title);
 		th.setResult( new StreamResult(out));
 		ds.writeDataset2( th, dict, null, Integer.MAX_VALUE, null);
 		out.flush();

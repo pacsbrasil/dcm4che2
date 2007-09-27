@@ -4,11 +4,13 @@
 		doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
 		encoding="UTF-8"/>
+		
+    <xsl:param name="title">DICOM dataset</xsl:param>
 	
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>DICOM dataset</title>
+				<title><xsl:value-of select="$title" /></title>
 				<link rel="stylesheet" type="text/css" href="dcm-style.css"/>
 			</head>
 			<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" link="#FF0000" alink="#FF0000" vlink="#FF0000">
