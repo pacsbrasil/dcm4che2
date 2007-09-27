@@ -43,21 +43,26 @@ import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Unwrap;
 
-@Name("browserVersion")
-public class Browser {
+@Name("browser")
+public class BrowserVersion {
 	@In
 	FacesContext facesContext;
 	
 	@Unwrap
-	public float getBrowser() {
+	public String getBrowser() {
 		String userAgent = (String) facesContext.getExternalContext().getRequestHeaderMap().get("USER-AGENT");
-		System.out.println("User agent="+userAgent);
-		if( userAgent.indexOf("MSIE 7")>=0 ) {
-			return 7.0f;
+		if( userAgent.indexOf("MSIE")>=0 ) {
+			return "MSIE";
 		}
-		if( userAgent.indexOf("MSIE 6")>=0 ) {
-			return 6.0f;
+		if( userAgent.indexOf("Firefox")>=0 ) {
+			return "Firefox";
 		}
-		return 1.0f;
+		if( userAgent.indexOf("AppleWebKit")>=0 ) {
+			return "Safari";
+		}
+		if( userAgent.indexOf("Opera")>=0 ) {
+			return "Opera";
+		}
+		return userAgent;
 	}
 }
