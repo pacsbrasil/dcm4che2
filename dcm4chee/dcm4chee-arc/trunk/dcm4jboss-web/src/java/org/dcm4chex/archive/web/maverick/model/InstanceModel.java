@@ -61,10 +61,7 @@ public class InstanceModel extends AbstractModel {
 
 	private List files = null;
 	
-	protected static Logger log = Logger.getLogger(InstanceModel.class);
-			
     public static Object valueOf(Dataset ds) {
-    	log.info("InstanceModel ds:");log.info(ds);
         String cuid = ds.getString(Tags.SOPClassUID);
         if (UIDs.GrayscaleSoftcopyPresentationStateStorage.equals(cuid))
                 return new PresentationStateModel(ds);
