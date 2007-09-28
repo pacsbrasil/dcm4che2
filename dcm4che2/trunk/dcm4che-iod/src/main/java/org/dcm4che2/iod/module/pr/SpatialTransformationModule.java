@@ -38,6 +38,8 @@
 package org.dcm4che2.iod.module.pr;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
 
 /**
@@ -54,4 +56,20 @@ public class SpatialTransformationModule extends Module {
 	}
 	
 	
+	/** This gets the regular rotation of the object */
+	public int getRotation() {
+		return dcmobj.getInt(Tag.ImageRotation);
+	}
+	
+	public void setRotation(int rotation) {
+		dcmobj.putInt(Tag.ImageRotation, VR.IS, rotation);
+	}
+	
+	public boolean isHorizontalFlip() {
+		return "Y".equalsIgnoreCase(dcmobj.getString(Tag.ImageHorizontalFlip));
+	}
+	
+	public void setHorizontalFlip(boolean flip) {
+	   dcmobj.putString(Tag.ImageHorizontalFlip, VR.CS, (flip ? "Y" : "N"));
+	}
 }

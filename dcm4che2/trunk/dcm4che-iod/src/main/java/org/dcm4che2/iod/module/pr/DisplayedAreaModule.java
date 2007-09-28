@@ -38,8 +38,12 @@
 
 package org.dcm4che2.iod.module.pr;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
+import org.dcm4che2.iod.module.macro.ImageSOPInstanceReference;
 
 /**
  * C.10.4 IOD for Displayed Area information.
@@ -54,5 +58,68 @@ public class DisplayedAreaModule extends Module {
 		super(dcmobj);
 	}
 	
+	public static DisplayedAreaModule[] toDisplayedAreaModules(DicomObject dcmobj) {
+		DicomElement sq = dcmobj.get(Tag.DisplayedAreaSelectionSequence);
+        if (sq == null || !sq.hasItems()) {
+            return null;
+        }
+        DisplayedAreaModule[] a = new DisplayedAreaModule[sq.countItems()];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = new DisplayedAreaModule(sq.getDicomObject(i));
+        }
+        return a;
+	}
 	
+	/** Gets the image sop instance references, null if none (means to apply everywhere). */
+	public ImageSOPInstanceReference[] getImageSOPInstanceReferences() {
+		return ImageSOPInstanceReference.toImageSOPInstanceReferences(dcmobj.get(Tag.ReferencedImageSequence));
+	}
+	
+    public int[] getDisplayedAreaTopLeftHandCorner() {
+    	return dcmobj.getInts(Tag.DisplayedAreaTopLeftHandCorner);
+    }
+    
+    public void setDisplayedAreaTopLeftHandCorner(int[] tlhc) {
+    	dcmobj.putInts(Tag.DisplayedAreaTopLeftHandCorner, VR.IS, tlhc);
+    }
+    
+    public int[] getDisplayedAreaBottomRightHandCorner() {
+    	return dcmobj.getInts(Tag.DisplayedAreaBottomRightHandCorner);
+    }
+    
+    public void setDisplayedAreaBottomrRightHandCorner(int[] brhc) {
+    	dcmobj.putInts(Tag.DisplayedAreaBottomRightHandCorner, VR.IS, brhc);
+    }
+    
+    public String getPresentationSizeMode() {
+    	return dcmobj.getString(Tag.PresentationSizeMode);
+    }
+    
+    public void setPresentationSizeMode(String mode) {
+    	dcmobj.putString(Tag.PresentationSizeMode, VR.CS, mode);
+    }
+    
+    public float[] getPresentationPixelSpacing() {
+    	return dcmobj.getFloats(Tag.PresentationPixelSpacing);
+    }
+    
+    public void setPresentationPixelSpacing(float[] spacing) {
+    	dcmobj.putFloats(Tag.PresentationPixelSpacing, VR.DS, spacing);
+    }
+    
+    public int[] getPresentationPixelAspectRatio() {
+    	return dcmobj.getInts(Tag.PresentationPixelAspectRatio);
+    }
+    
+    public void setPresentationPixelAspectRatio(int[] aspect) {
+    	dcmobj.putInts(Tag.PresentationPixelSpacing, VR.IS, aspect);
+    }
+    
+    public float getPresentationPixelMagnificationRatio() {
+    	return dcmobj.getFloat(Tag.PresentationPixelMagnificationRatio);
+    }
+    
+    public void setPresentationPixelMagnificationRatio(float magnify) {
+    	dcmobj.putFloat(Tag.PresentationPixelMagnificationRatio, VR.DS, magnify);
+    }
 }
