@@ -54,13 +54,13 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.dcm4che.archive.entity.AE;
 import org.dcm4che.archive.exceptions.UnknownAETException;
+import org.dcm4che.archive.notif.AetChanged;
 import org.dcm4che.archive.service.AEManager;
 import org.dcm4che.archive.service.AEManagerLocal;
 import org.dcm4che.archive.util.ejb.EJBReferenceCache;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
-import org.jboss.system.ServiceMBean;
 
 /**
  * <description>
@@ -378,7 +378,7 @@ public class AEService extends MBeanServiceBase {
         long eventID = this.getNextNotificationSequenceNumber();
         Notification notif = new Notification(this.getClass().getName(), this,
                 eventID);
-        notif.setUserData(new String[] { oldTitle, newTitle });
+        notif.setUserData(new AetChanged(oldTitle, newTitle) );
         log.debug("send AE Title changed notif:" + notif);
         this.sendNotification(notif);
     }

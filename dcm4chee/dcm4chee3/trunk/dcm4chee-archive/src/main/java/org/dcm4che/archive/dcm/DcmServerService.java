@@ -46,6 +46,7 @@ import javax.management.ObjectName;
 import org.dcm4che.archive.mbean.DicomSecurityDelegate;
 import org.dcm4che.archive.mbean.MBeanServiceBase;
 import org.dcm4che.archive.mbean.TLSConfigDelegate;
+import org.dcm4che.archive.notif.CallingAetChanged;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -230,11 +231,10 @@ public class DcmServerService extends MBeanServiceBase {
     public void notifyCallingAETchange(String[] affectedCalledAETs,
             String[] newCallingAETs) {
         long eventID = this.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(this.getClass().getName(), this,
-                eventID);
-        notif
-                .setUserData(new String[][] { affectedCalledAETs,
-                        newCallingAETs });
+        Notification notif = new Notification(
+                CallingAetChanged.class.getName(), this, eventID);
+        notif.setUserData(new CallingAetChanged(affectedCalledAETs,
+                newCallingAETs));
         log.debug("send callingAET changed notif:" + notif);
         this.sendNotification(notif);
     }
