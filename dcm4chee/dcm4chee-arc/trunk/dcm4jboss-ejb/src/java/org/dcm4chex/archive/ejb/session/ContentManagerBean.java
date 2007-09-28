@@ -186,6 +186,15 @@ public abstract class ContentManagerBean implements SessionBean {
      * @throws FinderException 
      * @ejb.interface-method
      */
+    public Dataset getPatient(long pk) throws FinderException {
+        PatientLocal pat = patHome.findByPrimaryKey(pk);
+        return pat.getAttributes(true);
+        
+    }
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
     public Dataset getPatientByID(String pid, String issuer) throws FinderException  {
         PatientLocal pat = this.getPatientLocal(pid, issuer);
         if ( pat == null) {
