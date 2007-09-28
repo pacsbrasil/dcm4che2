@@ -47,7 +47,6 @@ cp -v -R "$JBOSS_SERV"/conf/props \
 
 mkdir "$DCM4CHEE_SERV"/lib
 cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
-rm "$DCM4CHEE_SERV"/lib/jboss-saaj.jar
 
 cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/cache-invalidation-service.xml \
@@ -73,6 +72,7 @@ cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/jboss-aop-jdk50.deployer \
   "$JBOSS_SERV"/deploy/jboss-bean.deployer \
   "$JBOSS_SERV"/deploy/jboss-web.deployer \
+  "$JBOSS_SERV"/deploy/jbossws.sar \
   "$DCM4CHEE_SERV"/deploy
 
 cp -v "$JBOSS_SERV"/deploy/jms/jms-ds.xml \
