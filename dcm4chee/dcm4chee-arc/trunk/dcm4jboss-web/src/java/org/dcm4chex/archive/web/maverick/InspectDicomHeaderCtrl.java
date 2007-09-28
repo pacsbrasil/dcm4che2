@@ -42,6 +42,9 @@ package org.dcm4chex.archive.web.maverick;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
@@ -79,6 +82,7 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
 	    FolderForm  form = FolderForm.getFolderForm(getCtx());
 	    Dataset ds = DcmObjectFactory.getInstance().newDataset();
 	    StringBuffer sb = new StringBuffer();
+	    ContentManager cm = null;
 		try {
 			if ( instancePk != -1 ) {
 				ds.putAll(form.getInstanceByPk(patPk, studyPk, seriesPk, instancePk).toDataset());
@@ -89,11 +93,14 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
 				sb.append("SERIES,");
 			}
 			if ( ( showAll || ds.isEmpty() ) &&  studyPk != -1 ) {
-				ds.putAll(form.getStudyByPk(patPk, studyPk).toDataset());
+			        cm = lookupContentManager();
+				ds.putAll( cm.getStudy(studyPk));
 				sb.append("STUDY,");
 			}
 			if ( showAll || ds.isEmpty() ) {
-				ds.putAll(form.getPatientByPk(patPk).toDataset());
+			        if ( cm == null )
+			            cm = lookupContentManager();
+				ds.putAll(cm.getPatient(patPk));
 				sb.append("PATIENT,");
 			}
             getCtx().getRequest().getSession().setAttribute("dataset2view", ds);
@@ -125,4 +132,12 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
 		}
 		return msg;
 	}
+	
+	private ContentManager lookupContentManager() throws Exception {
+	    ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+	         .getFactory().lookup(ContentManagerHome.class,
+	               ContentManagerHome.JNDI_NAME);
+	    return home.create();
+	}
+	
 }
