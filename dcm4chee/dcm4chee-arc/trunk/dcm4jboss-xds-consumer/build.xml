@@ -10,10 +10,6 @@
 
 	<property name="lib.dir" value="lib"/>
 	
-	<!-- Override with your dcm4chee-sar working directory -->
-	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
-	<property name="dcm4chee-sar.lib" value="${dcm4chee-sar.home}/lib" />
-
     <property name="target.dir" value="target"/>
 	<property name="product" value="${ant.project.name}"/>
 	<property name="jar.file" value="${target.dir}/lib/${product}.jar"/>
@@ -33,12 +29,10 @@
 		</fileset>
 		<fileset dir="${jboss.server.home}/lib">
 			<include name="*.jar"/>
-		    <exclude name="jboss-saaj.jar"/>
 		</fileset>
 		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
 		</fileset>
-		<pathelement location="${dcm4chee-sar.lib}/saaj-api.jar"/>
 	</path>
 
 	<property name="debug" value="on"/>

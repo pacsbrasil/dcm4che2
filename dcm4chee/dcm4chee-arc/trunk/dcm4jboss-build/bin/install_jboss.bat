@@ -55,7 +55,6 @@ xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
 xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
-del "%DCM4CHEE_SERV%\lib\jboss-saaj.jar"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
@@ -82,6 +81,7 @@ xcopy /S "%JBOSS_DEPLOY%\ejb3.deployer" "%DCM4CHEE_DEPLOY%\ejb3.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-aop-jdk50.deployer" "%DCM4CHEE_DEPLOY%\jboss-aop-jdk50.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-bean.deployer" "%DCM4CHEE_DEPLOY%\jboss-bean.deployer\"
+xcopy /S "%JBOSS_DEPLOY%\jbossws.sar" "%DCM4CHEE_DEPLOY%\jbossws.sar\"
 
 set JBOSS_WEB=%JBOSS_DEPLOY%\jboss-web.deployer
 set DCM4CHEE_WEB=%DCM4CHEE_DEPLOY%\jboss-web.deployer
