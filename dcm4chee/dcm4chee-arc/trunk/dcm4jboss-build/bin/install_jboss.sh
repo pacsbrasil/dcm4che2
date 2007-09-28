@@ -45,6 +45,7 @@ cp -v -R "$JBOSS_SERV"/conf/props \
 
 mkdir "$DCM4CHEE_SERV"/lib
 cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
+rm "$DCM4CHEE_SERV"/lib/jboss-saaj.jar
 
 cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/cache-invalidation-service.xml \

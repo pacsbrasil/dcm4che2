@@ -55,6 +55,7 @@ xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
 xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
+del "%DCM4CHEE_SERV%\lib\jboss-saaj.jar"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
