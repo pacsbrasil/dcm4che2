@@ -120,7 +120,7 @@ import org.dcm4chex.archive.util.Convert;
  *             transaction-type="Supports"
  *
  * @ejb.finder signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1 ORDER BY i.pk"
  *             transaction-type="Supports"
  *
  * @jboss.query signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
@@ -128,7 +128,7 @@ import org.dcm4chex.archive.util.Convert;
  *              eager-load-group="*"
  *
  * @ejb.finder signature="java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.seriesIuid = ?1"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.seriesIuid = ?1 ORDER BY i.pk"
  *             transaction-type="Supports"
  *
  * @jboss.query signature="java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"

@@ -62,6 +62,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -76,6 +77,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.transaction-type  type="Container"
  * @ejb.transaction type="Required"
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
+ * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance" 
  */
 
 public abstract class MPPSEmulatorBean implements SessionBean {
@@ -95,13 +97,16 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSID };
 
     private SeriesLocalHome seriesHome;
+    private InstanceLocalHome instanceHome;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            seriesHome = (SeriesLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Series");
+            seriesHome = 
+                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+            instanceHome =
+                (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -176,7 +181,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
         return mpps;
     }
     
-    private void addSeries(SeriesLocal series, HashMap mppsMap, String sourceAET) {
+    private void addSeries(SeriesLocal series, HashMap mppsMap, String sourceAET) throws FinderException {
         final StudyLocal study = series.getStudy();
         final String suid = study.getStudyIuid();
         final String md = series.getModality();
@@ -268,7 +273,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
         // TODO put references to non-images into separate
         // Referenced Non- Image Composite SOP Instance Sequence 
         DcmElement refImageSq = seriesItem.putSQ(Tags.RefImageSeq);
-        Collection c = series.getInstances();
+        Collection c = instanceHome.findBySeriesPk(series.getPk());
         for (Iterator it = c.iterator(); it.hasNext();) {
             InstanceLocal inst = (InstanceLocal) it.next();
             Dataset refSOP = refImageSq.addNewItem();
