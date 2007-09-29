@@ -220,7 +220,7 @@
     <xsl:apply-templates mode="ActiveParticipant" select="*"/>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="AET">
-    <xsl:attribute name="AlternativeUserID">AETITLE=<xsl:value-of select="."/>
+    <xsl:attribute name="AlternativeUserID">AETITLES=<xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="AuditLogUsed">
@@ -265,7 +265,9 @@
     </ActiveParticipant>
   </xsl:template>
   <xsl:template mode="ActiveParticipant" match="IP">
-    <xsl:attribute name="UserID">node</xsl:attribute>
+    <xsl:attribute name="UserID">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
     <xsl:attribute name="NetworkAccessPointID">
       <xsl:value-of select="."/>
     </xsl:attribute>
