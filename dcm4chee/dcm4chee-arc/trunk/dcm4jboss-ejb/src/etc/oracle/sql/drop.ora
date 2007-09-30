@@ -64,7 +64,6 @@ DROP SEQUENCE gppps_pk_seq;
 DROP SEQUENCE hp_pk_seq;
 DROP SEQUENCE hpdef_pk_seq;
 DROP SEQUENCE device_pk_seq;
-DROP SEQUENCE audit_record_old_pk_seq;
 DROP SEQUENCE priv_patient_pk_seq;
 DROP SEQUENCE priv_study_pk_seq;
 DROP SEQUENCE priv_series_pk_seq;
