@@ -107,7 +107,7 @@ $Revision$
        </authentication>
     </application-policy>
 
-    <application-policy name = "dcm4chee-arr">
+    <application-policy name = "dcm4chee">
        <authentication>
           <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
              flag="required">

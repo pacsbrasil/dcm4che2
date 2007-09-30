@@ -3,7 +3,7 @@
 
 <jboss-web>
 
-   <security-domain>java:/jaas/dcm4chee-arr</security-domain>
+   <security-domain>java:/jaas/dcm4chee</security-domain>
 
    <!-- Resource Environment References -->
    <!--
