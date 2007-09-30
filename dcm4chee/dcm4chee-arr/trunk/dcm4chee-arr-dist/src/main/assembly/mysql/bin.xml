@@ -6,35 +6,36 @@
   <baseDirectory>dcm4chee-arr-${db}-${version}</baseDirectory>
   <fileSets>
     <fileSet>
-      <directory>src/main/bin</directory>
-      <outputDirectory>bin</outputDirectory>
+      <directory>src/main</directory>
+      <outputDirectory/>
       <includes>
-        <include>*.sh</include>
+        <include>*.txt</include>
+        <include>bin/*.bat</include>
+       </includes>
+       <lineEnding>crlf</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>src/main</directory>
+      <outputDirectory/>
+      <includes>
+        <include>bin/*.sh</include>
       </includes>
       <lineEnding>lf</lineEnding>
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
-      <directory>src/main/bin</directory>
-      <outputDirectory>bin</outputDirectory>
+      <directory>src/main</directory>
+      <outputDirectory/>
       <includes>
-         <include>run.conf</include>
+        <include>bin/run.conf</include>
       </includes>
      <lineEnding>lf</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>src/main/bin</directory>
-      <outputDirectory>bin</outputDirectory>
+      <directory>src/main</directory>
+      <outputDirectory/>
       <includes>
-        <include>*.bat</include>
-       </includes>
-       <lineEnding>crlf</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>src/main/bin</directory>
-      <outputDirectory>bin</outputDirectory>
-      <includes>
-        <include>*.exe</include>
+        <include>bin/JavaService.exe</include>
       </includes>
     </fileSet>
     <fileSet>
