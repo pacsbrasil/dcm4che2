@@ -17,7 +17,7 @@ The dcm4chee Audit Record Repostory (dcm4chee-arr) uses
 which sources are not included by dcm4chee-arr, but provided as separate
 package dcm4chee-audit at http://sourceforge.net/projects/dcm4che . Follow
 the build instructions included in dcm4chee-audit, to build and install these
-artefacts in your local Maven Repository (default: ~/-m2/repository) for usage
+artefacts in your local Maven Repository (default: ~/.m2/repository) for usage
 by following build task for the Audit Record Repository.
 
 After that,
