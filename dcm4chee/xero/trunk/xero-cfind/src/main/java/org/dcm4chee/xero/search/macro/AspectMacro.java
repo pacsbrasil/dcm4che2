@@ -42,34 +42,24 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
-import org.dcm4chee.xero.search.study.PresentationSizeMode;
 
-public class RegionMacro implements Macro {
-   public static final QName Q_PRESENTATION_SIZE_MODE = new QName(null, "size");
-   public static final QName Q_TOP_LEFT = new QName(null,"topLeft");
-   public static final QName Q_BOTTOM_RIGHT = new QName(null,"bottomRight");
-   public static final QName Q_MAGNIFY = new QName(null,"magnify");
-   private PresentationSizeMode presentationSizeMode;
-   private String topLeft, bottomRight;
-   private float magnify;
+/**
+ * Add the aspect ratio for the Y component.  This is a value by which you MULTIPLY the y sizes to
+ * get normalized Y sizes.
+ * @author bwallace
+ *
+ */
+public class AspectMacro implements Macro {
+   public static final QName Q_ASPECT = new QName("aspect");
+
+   float aspect;
    
-   public RegionMacro(String presentationSizeMode, int[] topLeft, int[] bottomRight, float magnify) {
-	  this(PresentationSizeMode.fromValue(presentationSizeMode), ""+topLeft[0]+","+topLeft[1],""+bottomRight[0]+","+bottomRight[1],magnify);
-   }
-   
-   public RegionMacro(PresentationSizeMode presentationSizeMode, String topLeft, String bottomRight, float magnify) {
-	  this.presentationSizeMode = presentationSizeMode;
-	  this.topLeft = topLeft;
-	  this.bottomRight = bottomRight;
-	  this.magnify = magnify;
+   public AspectMacro(float aspect) {
+	  this.aspect = aspect;
    }
    
    public int updateAny(Map<QName, String> attrs) {
-	 attrs.put(Q_PRESENTATION_SIZE_MODE, presentationSizeMode.toString());
-	 attrs.put(Q_TOP_LEFT, topLeft);
-	 attrs.put(Q_BOTTOM_RIGHT, bottomRight);
-	 if( magnify!=0f ) attrs.put(Q_MAGNIFY,Float.toString(magnify));
-	 return 4;
+	  attrs.put(Q_ASPECT, Float.toString(aspect));
+	  return 1;
    }
-
 }

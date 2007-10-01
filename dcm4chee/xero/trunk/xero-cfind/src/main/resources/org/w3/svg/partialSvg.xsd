@@ -1053,7 +1053,7 @@
     <attributeGroup ref="svg:langSpaceAttrs"/>
 
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
     <attributeGroup ref="svg:PresentationAttributes-All"/>
     <attribute name="viewBox" type="svg:ViewBoxSpecType" use="optional"/>
@@ -1085,7 +1085,7 @@
     <attributeGroup ref="svg:testAttrs"/>
     <attributeGroup ref="svg:langSpaceAttrs"/>
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
     <attributeGroup ref="svg:PresentationAttributes-All"/>
     <attribute name="transform" type="svg:TransformListType" use="optional"/>
@@ -1107,7 +1107,7 @@
     <attributeGroup ref="svg:PresentationAttributes-Color"/>
     <attributeGroup ref="svg:langSpaceAttrs"/>
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
     <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
 
@@ -1138,7 +1138,7 @@
     <attributeGroup ref="svg:testAttrs"/>
     <attributeGroup ref="svg:langSpaceAttrs"/>
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
 
     <attributeGroup ref="svg:PresentationAttributes-All"/>
@@ -1164,7 +1164,7 @@
     <attributeGroup ref="svg:testAttrs"/>
     <attributeGroup ref="svg:langSpaceAttrs"/>
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
     <attributeGroup ref="svg:PresentationAttributes-All"/>
     <attribute name="transform" type="svg:TransformListType" use="optional"/>
@@ -1177,7 +1177,7 @@
     <attributeGroup ref="svg:testAttrs"/>
     <attributeGroup ref="svg:langSpaceAttrs"/>
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
     <attributeGroup ref="svg:PresentationAttributes-Color"/>
     <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>
@@ -1209,7 +1209,7 @@
     <attributeGroup ref="svg:testAttrs"/>
     <attributeGroup ref="svg:langSpaceAttrs"/>
     <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="svg:ClassListType" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
     <attribute name="style" type="svg:StyleSheetType" use="optional"/>
     <attributeGroup ref="svg:PresentationAttributes-Color"/>
     <attributeGroup ref="svg:PresentationAttributes-FillStroke"/>

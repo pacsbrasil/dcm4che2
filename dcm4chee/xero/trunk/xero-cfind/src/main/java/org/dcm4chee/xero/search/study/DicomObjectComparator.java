@@ -57,8 +57,15 @@ public class DicomObjectComparator implements Comparator<DicomObjectType> {
 		Integer i1 = o1.getInstanceNumber();
 		Integer i2 = o2.getInstanceNumber();
 		if( i1==null || i2==null ) {
-			log.error("Instance values are null.");
-			return 0;
+			log.debug("Instance values are null.");
+			if( i2!=null ) return -1;
+			if( i1!=null ) return 1;
+			if( o1 instanceof GspsType && o2 instanceof GspsType ) {
+			   GspsType g1 = (GspsType) o1;
+			   GspsType g2 = (GspsType) o2;
+			   if( g1.getContentLabel()!=null ) return g1.getContentLabel().compareTo(g2.getContentLabel());
+			}
+			return o1.getSOPInstanceUID().compareTo(o2.getSOPInstanceUID());
 		}
 		int ret = o1.getInstanceNumber() - o2.getInstanceNumber();
 		if( ret!=0 ) return ret;

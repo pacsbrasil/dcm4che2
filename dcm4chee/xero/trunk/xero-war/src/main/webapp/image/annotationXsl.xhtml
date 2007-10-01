@@ -81,19 +81,37 @@
 <x:template name="addUse">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:message>SVG use nodes not display <xsl:value-of select="count($node/svg:use[@class!='DISPLAY' or count(@class)=0])" /></xsl:message>
  <c:choose>
    <c:when test="#{browser=='MSIE'}">
-	 <xsl:for-each select="$node/svg:use">
+	 <xsl:for-each select="$node/svg:use[@class!='DISPLAY' or count(@class)=0]">
 	   <xsl:apply-templates mode="svg" select=".">
 	     <xsl:with-param name="loc" select="$loc" />
 	   </xsl:apply-templates>
 	 </xsl:for-each>
    </c:when>
    <c:otherwise>
-     <xsl:copy-of select="$node/svg:use" />
+     <xsl:copy-of select="$node/svg:use[@class!='DISPLAY' or count(@class)=0]" />
    </c:otherwise>
  </c:choose>
 </x:template>
 
+<!-- Adds the SVG use section to the image. -->
+<x:template name="addUseDisplay">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <c:choose>
+   <c:when test="#{browser=='MSIE'}">
+	 <xsl:for-each select="$node/svg:use[@class='DISPLAY']">
+	   <xsl:apply-templates mode="svg" select=".">
+	     <xsl:with-param name="loc" select="$loc" />
+	   </xsl:apply-templates>
+	 </xsl:for-each>
+   </c:when>
+   <c:otherwise>
+     <xsl:copy-of select="$node/svg:use[@class='DISPLAY']" />
+   </c:otherwise>
+ </c:choose>
+</x:template>
 
 </x:xsl>

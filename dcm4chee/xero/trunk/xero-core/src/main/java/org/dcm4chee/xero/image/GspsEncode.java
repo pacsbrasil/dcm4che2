@@ -46,6 +46,8 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.iod.module.macro.ImageSOPInstanceReference;
+import org.dcm4che2.iod.module.pr.DisplayedAreaModule;
+import org.dcm4che2.iod.module.pr.SpatialTransformationModule;
 import org.dcm4che2.iod.module.pr.DisplayShutterModule;
 import org.dcm4che2.iod.module.pr.GraphicAnnotationModule;
 import org.dcm4che2.iod.module.pr.GraphicLayerModule;
@@ -53,10 +55,15 @@ import org.dcm4che2.iod.module.pr.GraphicObject;
 import org.dcm4che2.iod.module.pr.TextObject;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.macro.AspectMacro;
+import org.dcm4chee.xero.search.macro.FlipRotateMacro;
+import org.dcm4chee.xero.search.macro.PixelSpacingMacro;
+import org.dcm4chee.xero.search.macro.RegionMacro;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsType;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageBeanMultiFrame;
+import org.dcm4chee.xero.search.study.Macro;
 import org.dcm4chee.xero.search.study.MacroItems;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -187,6 +194,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 		 GspsType gspsType = addGspsTypeToStudy(results, study, dcmobj);
 		 log.debug("Parsing DICOM object.");
+		 addDisplayAreaRotate(dcmobj, study, images);
 		 addMinMaxPixelInfo(dcmobj, images);
 		 addAnnotationToResults(dcmobj, gspsType, study, images);
 		 addShutterToResults(dcmobj, gspsType, study, images);
@@ -195,6 +203,63 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  }
 	  log.info("All GSPS time took:" + (System.currentTimeMillis() - startTime) + " ms");
 	  return results;
+   }
+
+   /** Adds display area, rotation and flip information to the image data */
+   private void addDisplayAreaRotate(DicomObject dcmobj, StudyBean study, Map<String, MacroItems> images) {
+	  DisplayedAreaModule[] dams = DisplayedAreaModule.toDisplayedAreaModules(dcmobj);
+	  SpatialTransformationModule spat = new SpatialTransformationModule(dcmobj);
+	  FlipRotateMacro flipRotateMacro = null;
+	  if (spat.getRotation() != 0 || spat.isHorizontalFlip()) {
+		 flipRotateMacro = new FlipRotateMacro(spat.getRotation(), spat.isHorizontalFlip());
+		 addMacro(study, images, flipRotateMacro, null);
+	  }
+
+	  for (DisplayedAreaModule dam : dams) {
+		 String presentationMode = dam.getPresentationSizeMode();
+		 int[] tlhc = dam.getDisplayedAreaTopLeftHandCorner();
+		 int[] brhc = dam.getDisplayedAreaBottomRightHandCorner();
+		 float[] spacing = dam.getPresentationPixelSpacing();
+		 int[] aspectPair = dam.getPresentationPixelAspectRatio();
+		 float aspect = 1.0f;
+		 ImageSOPInstanceReference[] sops = dam.getImageSOPInstanceReferences();
+		 if (spacing != null) {
+			if (spacing[0] != spacing[1]) {
+			   aspect = spacing[0] / spacing[1];
+			}
+			PixelSpacingMacro spacingMacro = new PixelSpacingMacro(spacing);
+			addMacro(study, images, spacingMacro, sops);
+		 } else if (aspectPair != null && aspectPair[0] != aspectPair[1]) {
+			aspect = aspectPair[0] / (float) aspectPair[1];
+		 }
+
+		 if (aspect != 1.0f) {
+			AspectMacro aspectMacro = new AspectMacro(aspect);
+			addMacro(study, images, aspectMacro, sops);
+		 }
+		 ImageBean exemplar = null;
+		 if (sops != null) {
+			for (ImageSOPInstanceReference sop : sops) {
+			   Object obj = study.getChildById(sop.getReferencedSOPInstanceUID());
+			   if (obj != null && obj instanceof ImageBean) {
+				  exemplar = (ImageBean) obj;
+				  break;
+			   }
+			}
+		 } else {
+			String uid = images.keySet().iterator().next();
+			exemplar = (ImageBean) study.getChildById(uid);
+		 }
+		 // It isn't clear how else to get an exemplar, so skip the test for
+            // default if we don't have one.
+		 if (exemplar != null && "SCALE TO FIT".equalsIgnoreCase(presentationMode) && tlhc[0] == 1 && tlhc[1] == 1
+			   && brhc[1] == exemplar.getColumns() && brhc[0] == exemplar.getRows()) {
+			// Don't both adding this - it is a complete default item
+			continue;
+		 }
+		 RegionMacro region = new RegionMacro(presentationMode, tlhc, brhc, dam.getPresentationPixelMagnificationRatio());
+		 addMacro(study, images, region, sops);
+	  }
    }
 
    /**
@@ -289,35 +354,47 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 // there can be multiple
 		 // graphic annotation modules for one layer, applying to different
 		 // image sets.
-		 GType g = getG(gspsType, "a" + id);
+		 GType gimg = getG(gspsType, "ai" + id);
+		 GType gdisp = getG(gspsType, "ad" + id);
+		 gdisp.setClazz("DISPLAY");
 		 id++;
 		 String rgb = toRGB(gral.getGraphicLayerRecommendedDisplayGrayscaleValue(), gral.getFloatLab(), gral
 			   .getGraphicLayerRecommendedDisplayRGBValueRET());
 		 log.info("Graphic layer recommended display grayscale value is " + gral.getGraphicLayerRecommendedDisplayGrayscaleValue()
 			   + " rgb is " + rgb + " for layer " + gral.getGraphicLayer() + " description " + gral.getGraphicLayerDescription());
 		 // To not fill, over-ride these values in children.
-		 g.setStyle("fill: " + rgb + "; stroke: " + rgb + ";");
-		 g.setColor(rgb);
+		 gimg.setStyle("fill: " + rgb + "; stroke: " + rgb + ";");
+		 gdisp.setStyle("fill: " + rgb + "; stroke: " + rgb + ";");
+		 gimg.setColor(rgb);
+		 gdisp.setColor(rgb);
 		 GraphicObject[] gos = gran.getGraphicObjects();
 		 if (gos != null) {
 			for (GraphicObject go : gos) {
-			   addGraphicObject(g, go);
+			   boolean isDisp = ("DISPLAY".equalsIgnoreCase(go.getGraphicAnnotationUnits()));
+			   addGraphicObject(isDisp ? gdisp : gimg, go, isDisp ? 1000 : 1);
 			}
 		 }
 
 		 TextObject[] txos = gran.getTextObjects();
 		 if (txos != null) {
 			for (TextObject txo : txos) {
-			   addTextObject(g, txo);
+			   addTextObject(gdisp, gimg, txo);
 			}
 		 }
 
-		 // TODO - check to see which objects to add this to - only add them
-		 // to specified images.
-		 Use use = new Use();
-		 use.setHref("#" + g.getId());
-		 use.setId(ResultsBean.createId("u"));
-		 addUse(study, images, use, gran.getImageSOPInstanceReferences());
+		 if (gimg.getChildren().size() > 0) {
+			Use use = new Use();
+			use.setHref("#" + gimg.getId());
+			use.setId(ResultsBean.createId("u"));
+			addUse(study, images, use, gran.getImageSOPInstanceReferences());
+		 }
+		 if (gdisp.getChildren().size() > 0) {
+			Use use = new Use();
+			use.setClazz("DISPLAY");
+			use.setHref("#" + gdisp.getId());
+			use.setId(ResultsBean.createId("u"));
+			addUse(study, images, use, gran.getImageSOPInstanceReferences());
+		 }
 	  }
    }
 
@@ -346,7 +423,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 int[] frames = imageRef.getReferencedFrameNumber();
 		 if (image.getNumberOfFrames() == 1 || frames == null || image.getNumberOfFrames() == frames.length) {
 			// Single-frame case, or multi-frame referencing every element, AND
-            // the gsps references every frame (implied but not tested here)
+			// the gsps references every frame (implied but not tested here)
 			MacroItems macros = images.get(image.getSOPInstanceUID());
 			if (macros == null)
 			   continue;
@@ -354,7 +431,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 } else {
 			// Multi-frame case, referencing a sub-set of images.
 			// 2 cases, either GSPS references only a sub-set of frames, or it
-            // references all frames.
+			// references all frames.
 			MacroItems allFrames = images.get(imageRef.getReferencedSOPInstanceUID());
 			boolean subset = allFrames == null;
 			for (int j = 0; j < frames.length; j++) {
@@ -366,9 +443,62 @@ public class GspsEncode implements Filter<ResultsBean> {
 			   if (macros == null) {
 				  log.warn("Frame doesn't seem to be in scope for GSPS.");
 				  continue; // Must be a frame not referenced by this GSPS -
-                            // must not be in scope
+				  // must not be in scope
 			   }
 			   macros.addElement(use);
+			}
+		 }
+	  }
+   }
+
+   /**
+     * Adds a macro to all the referenced images image sop instance references.
+     * 
+     * @param study
+     * @param images
+     * @param macro
+     * @param imageSOPInstanceReferences,
+     *            if null, apply to all images in images.
+     */
+   private void addMacro(StudyBean study, Map<String, MacroItems> images, Macro macro,
+		 ImageSOPInstanceReference[] imageSOPInstanceReferences) {
+	  if (imageSOPInstanceReferences == null || imageSOPInstanceReferences.length == 0) {
+		 for (MacroItems macros : images.values()) {
+			macros.addMacro(macro);
+		 }
+		 return;
+	  }
+	  for (int i = 0; i < imageSOPInstanceReferences.length; i++) {
+		 ImageSOPInstanceReference imageRef = imageSOPInstanceReferences[i];
+		 ImageBean image = (ImageBean) study.getChildById(imageRef.getReferencedSOPInstanceUID());
+		 if (image == null)
+			continue;
+		 int[] frames = imageRef.getReferencedFrameNumber();
+		 if (image.getNumberOfFrames() == 1 || frames == null || image.getNumberOfFrames() == frames.length) {
+			// Single-frame case, or multi-frame referencing every element, AND
+			// the gsps references every frame (implied but not tested here)
+			MacroItems macros = images.get(image.getSOPInstanceUID());
+			if (macros == null)
+			   continue;
+			macros.addMacro(macro);
+		 } else {
+			// Multi-frame case, referencing a sub-set of images.
+			// 2 cases, either GSPS references only a sub-set of frames, or it
+			// references all frames.
+			MacroItems allFrames = images.get(imageRef.getReferencedSOPInstanceUID());
+			boolean subset = allFrames == null;
+			for (int j = 0; j < frames.length; j++) {
+			   MacroItems macros;
+			   if (subset)
+				  macros = images.get(image.getSOPInstanceUID() + "," + frames[j]);
+			   else
+				  macros = image.getFrameMacroItems(frames[j]);
+			   if (macros == null) {
+				  log.warn("Frame doesn't seem to be in scope for GSPS.");
+				  continue; // Must be a frame not referenced by this GSPS -
+				  // must not be in scope
+			   }
+			   macros.addMacro(macro);
 			}
 		 }
 	  }
@@ -378,7 +508,7 @@ public class GspsEncode implements Filter<ResultsBean> {
      * Adds the text object txo to svg:g. TODO add child elements for bounding
      * box and anchor point display.
      */
-   protected void addTextObject(GType g, TextObject txo) {
+   protected void addTextObject(GType gdisp, GType gimg, TextObject txo) {
 	  TextType text = new TextType();
 	  String unformatted = txo.getUnformattedTextValue();
 	  text.setContent(unformatted);
@@ -388,24 +518,34 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 return;
 
 	  float[] topLeft = txo.getBoundingBoxTopLeftHandCorner();
+	  GType g = gimg;
+	  int pixScale = 1;
 	  if (topLeft != null) {
+		 if( "DISPLAY".equalsIgnoreCase(txo.getBoundingBoxAnnotationUnits()) ) {
+			g = gdisp;
+			pixScale = 1000;
+		 }
 		 float[] bottomRight = txo.getBoundingBoxBottomRightHandCorner();
-		 float x = topLeft[X_OFFSET];
-		 float y = topLeft[Y_OFFSET];
-		 text.setX(Integer.toString((int) topLeft[X_OFFSET]));
-		 text.setY(Integer.toString((int) topLeft[Y_OFFSET]));
+		 float x = topLeft[X_OFFSET] * pixScale;
+		 float y = topLeft[Y_OFFSET] * pixScale;
+		 text.setX(Integer.toString((int) topLeft[X_OFFSET] * pixScale));
+		 text.setY(Integer.toString((int) topLeft[Y_OFFSET] * pixScale));
 		 int rotation = toRotation(topLeft, bottomRight);
 		 if (rotation != 0)
 			text.setTransform("rotate(" + rotation + "," + x + ',' + y + ")");
-		 float xlen = Math.abs(bottomRight[X_OFFSET] - topLeft[X_OFFSET]);
+		 float xlen = Math.abs(bottomRight[X_OFFSET] - topLeft[X_OFFSET]) * pixScale;
 		 // At least 5 pixels are needed, otherwise don't bother trying to
 		 // figure out font size.
 		 if (xlen > 5)
 			text.setFontSize(Float.toString(xlen * 2 / lineLen));
 	  } else {
+		 if( "DISPLAY".equalsIgnoreCase(txo.getAnchorPointAnnotationUnits()) ) {
+			g = gdisp;
+			pixScale = 1000;
+		 }
 		 float[] anchor = txo.getAnchorPoint();
-		 text.setX(Float.toString(anchor[X_OFFSET]));
-		 text.setY(Float.toString(anchor[Y_OFFSET]));
+		 text.setX(Float.toString(anchor[X_OFFSET]*pixScale));
+		 text.setY(Float.toString(anchor[Y_OFFSET]*pixScale));
 		 // Specify some default font size.
 		 text.setFontSize("12");
 	  }
@@ -417,31 +557,33 @@ public class GspsEncode implements Filter<ResultsBean> {
      * objects: POINT, POLYLINE, INTERPOLATED, CIRCLE and ELLIPSE Each one of
      * these needs to be handled separately.
      */
-   protected void addGraphicObject(GType g, GraphicObject go) {
+   protected void addGraphicObject(GType g, GraphicObject go, float pixSize) {
 	  String type = go.getGraphicType();
 	  if (type.equalsIgnoreCase(GraphicObject.POLYLINE)) {
-		 addPolyline(g, go);
+		 addPolyline(g, go, pixSize);
 	  } else if (type.equalsIgnoreCase(GraphicObject.CIRCLE)) {
-		 addCircle(g, go);
+		 addCircle(g, go, pixSize);
 	  } else if (type.equalsIgnoreCase(GraphicObject.ELLIPSE)) {
-		 addEllipse(g, go);
+		 addEllipse(g, go, pixSize);
 	  } else if (type.equalsIgnoreCase(GraphicObject.POINT)) {
-		 addPoint(g, go);
+		 addPoint(g, go, pixSize);
 	  } else if (type.equalsIgnoreCase(GraphicObject.INTERPOLATED)) {
 		 // TODO replace this with something better.
-		 addPolyline(g, go);
+		 addPolyline(g, go, pixSize);
 	  } else {
 		 log.warn("Unsupported graphic object type:" + type);
 	  }
    }
 
    /** Adds an ellipse SVG to the graphic object */
-   protected void addEllipse(GType g, GraphicObject go) {
+   protected void addEllipse(GType g, GraphicObject go, float pixSize) {
 	  float[] points = go.getGraphicData();
 	  if (points == null || points.length != 8) {
 		 log.warn("Invalid ellipse data provided in graphic object.");
 		 return;
 	  }
+	  for (int i = 0; i < points.length; i++)
+		 points[i] *= pixSize;
 
 	  float cx = (points[ELLIPSE_MAJOR_X1] + points[ELLIPSE_MAJOR_X2]) / 2;
 	  float cy = (points[ELLIPSE_MAJOR_Y1] + points[ELLIPSE_MAJOR_Y2]) / 2;
@@ -548,23 +690,27 @@ public class GspsEncode implements Filter<ResultsBean> {
      * Adds a point SVG to the graphic object, as a circle of radius 0.5
      * centered on the given position.
      */
-   protected void addPoint(GType g, GraphicObject go) {
+   protected void addPoint(GType g, GraphicObject go, float pixSize) {
 	  float[] points = go.getGraphicData();
 	  if (points == null || points.length != 2) {
 		 log.warn("Invalid point data provided in graphic object.");
 		 return;
 	  }
+	  for (int i = 0; i < points.length; i++)
+		 points[i] *= pixSize;
 	  PathType circle = createEllipsePath(points[0], points[1], 0.5f, 0.5f, 0f);
 	  g.getChildren().add(circle);
    }
 
    /** Adds a circle SVG to the graphic object */
-   protected void addCircle(GType g, GraphicObject go) {
+   protected void addCircle(GType g, GraphicObject go, float pixSize) {
 	  float[] points = go.getGraphicData();
 	  if (points == null || points.length != 4) {
 		 log.warn("Invalid circle data provided in graphic object.");
 		 return;
 	  }
+	  for (int i = 0; i < points.length; i++)
+		 points[i] *= pixSize;
 	  float r = length(points, 0, 2);
 	  PathType circle = createEllipsePath(points[0], points[1], r, r, 0f);
 	  circle.setPrType("Circle");
@@ -583,12 +729,14 @@ public class GspsEncode implements Filter<ResultsBean> {
      * @param go
      *            to add the polyline from.
      */
-   protected void addPolyline(GType g, GraphicObject go) {
+   protected void addPolyline(GType g, GraphicObject go, float pixSize) {
 	  float[] points = go.getGraphicData();
 	  if (points == null || points.length < 2) {
 		 log.warn("Invalid polyline provided in graphic object.");
 		 return;
 	  }
+	  for (int i = 0; i < points.length; i++)
+		 points[i] *= pixSize;
 	  PathType path = new PathType();
 	  StringBuffer d = new StringBuffer();
 	  d.append("M").append((int) points[0]).append(',').append((int) points[1]);

@@ -42,34 +42,48 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
-import org.dcm4chee.xero.search.study.PresentationSizeMode;
 
-public class RegionMacro implements Macro {
-   public static final QName Q_PRESENTATION_SIZE_MODE = new QName(null, "size");
-   public static final QName Q_TOP_LEFT = new QName(null,"topLeft");
-   public static final QName Q_BOTTOM_RIGHT = new QName(null,"bottomRight");
-   public static final QName Q_MAGNIFY = new QName(null,"magnify");
-   private PresentationSizeMode presentationSizeMode;
-   private String topLeft, bottomRight;
-   private float magnify;
+public class FlipRotateMacro implements Macro {
+   public static final QName Q_HORIZONTAL_FLIP = new QName("horizontalFlip");
+   public static final QName Q_ROTATION = new QName("rotation");
+   public static final QName Q_SIN = new QName("sin");
+   public static final QName Q_COS = new QName("cos");
    
-   public RegionMacro(String presentationSizeMode, int[] topLeft, int[] bottomRight, float magnify) {
-	  this(PresentationSizeMode.fromValue(presentationSizeMode), ""+topLeft[0]+","+topLeft[1],""+bottomRight[0]+","+bottomRight[1],magnify);
-   }
+   private int rotation;
+   private boolean horizontalFlip;
    
-   public RegionMacro(PresentationSizeMode presentationSizeMode, String topLeft, String bottomRight, float magnify) {
-	  this.presentationSizeMode = presentationSizeMode;
-	  this.topLeft = topLeft;
-	  this.bottomRight = bottomRight;
-	  this.magnify = magnify;
+   public FlipRotateMacro(int rotation, boolean horizontalFlip) {
+	  this.rotation = rotation;
+	  this.horizontalFlip = horizontalFlip;
    }
    
    public int updateAny(Map<QName, String> attrs) {
-	 attrs.put(Q_PRESENTATION_SIZE_MODE, presentationSizeMode.toString());
-	 attrs.put(Q_TOP_LEFT, topLeft);
-	 attrs.put(Q_BOTTOM_RIGHT, bottomRight);
-	 if( magnify!=0f ) attrs.put(Q_MAGNIFY,Float.toString(magnify));
-	 return 4;
+	  int ret = 0;
+	  float cos,sin;
+	  if( rotation!=0 ) {
+		 attrs.put(Q_ROTATION, Integer.toString(rotation));
+		 if( rotation==90 ) {
+			cos = 0f; sin=1f;
+		 }
+		 else if( rotation==180 ) {
+			cos = -1f; sin=0f;
+		 }
+		 else if( rotation==270 ) {
+			cos = 0f; sin=-1f;
+		 }
+		 else {
+			cos = (float) Math.cos(rotation*Math.PI/180);
+			sin = (float) Math.sin(rotation*Math.PI/180);
+		 }
+		 attrs.put(Q_COS,Float.toString(cos));
+		 attrs.put(Q_SIN,Float.toString(sin));
+		 ret+=3;
+	  }
+	  if( horizontalFlip ) {
+		 attrs.put(Q_HORIZONTAL_FLIP,"TRUE");
+		 ret++;
+	  }
+	  return ret;
    }
 
 }

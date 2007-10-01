@@ -41,15 +41,29 @@ import java.util.Comparator;
 
 /** 
  * Compares two series - used to order the series.  Designed to order
- * the series in increasing values.
+ * the series by increasing series number, putting GSPS, reports etc after everything else.
  * @author bwallace
  */
 public class SeriesComparator implements Comparator<SeriesType> {
+   /** Indicate if the given series a non-image containing */
+   public static boolean isNonImageSeries(SeriesType ser) {
+	  String mod = ser.getModality();
+	  if( "PR".equals(mod) || "KO".equals(mod) || "SR".equals(mod) ) return true;
+	  return false;
+   }
 
 	/**
 	 * Compare two series by series number.
 	 */
 	public int compare(SeriesType ser1, SeriesType ser2) {
+	    if( isNonImageSeries(ser1) ) {
+	       if( !isNonImageSeries(ser2) ) {
+	    	  return 2;
+	       }
+	    }
+	    else if( isNonImageSeries(ser2) ) {
+	       return -2;
+	    }
 		Integer sn1 = ser1.getSeriesNumber();
 		Integer sn2 = ser2.getSeriesNumber();
 		// Put series without series numbers at the end.

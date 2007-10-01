@@ -52,6 +52,8 @@ import org.dcm4chee.xero.search.study.ResultsType;
 import org.dcm4chee.xero.search.study.SeriesComparator;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class sorts the images by instance number, and adds the position information into the image level data.
@@ -59,6 +61,7 @@ import org.dcm4chee.xero.search.study.StudyType;
  *
  */
 public class SortImageFilter implements Filter<ResultsType>{
+   private static final Logger log = LoggerFactory.getLogger(SortImageFilter.class);
 
 	/** Sort the returned results, by series number and by image number.
 	 * @param filterItem contains information about the other filters, including the next filter.

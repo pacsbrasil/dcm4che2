@@ -36,22 +36,23 @@
 
 <!-- Display the series images -->
 <x:template name="seriesImages" m:images.body="seriesImages" m:images.body.priority="500">
-    <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series[se:image/@Rows>0]">
-      <xsl:sort select="@SeriesNumber" />
-      <span xml:space="preserve"><xsl:value-of select="@SeriesNumber" />
-        <xsl:value-of select="@SeriesDescription" />
-        <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
-     </span>
-      <center>
-         <a target="imageFrame">
-           <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
-           <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
-           <img height="128">
-            <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
-           </img>
-         </a>
-      </center>
-    </xsl:for-each>
+ <xsl:message>series nodes, viewable <xsl:value-of select="concat(count($docNode/se:results/se:patient/se:study/se:series),',',count($docNode/se:results/se:patient/se:study/se:series[@Viewable>0]))" /></xsl:message>
+ <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series[@Viewable>0]">
+   <span xml:space="preserve"><xsl:value-of select="@SeriesNumber" />
+     <xsl:value-of select="@SeriesDescription" />
+     <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
+   </span>
+   <center>
+      <a target="imageFrame">
+        <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
+        <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
+        <img height="128">
+         <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
+         <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
+        </img>
+      </a>
+   </center>
+ </xsl:for-each>
 </x:template>
 
 <!-- Display the html page for the series tray -->

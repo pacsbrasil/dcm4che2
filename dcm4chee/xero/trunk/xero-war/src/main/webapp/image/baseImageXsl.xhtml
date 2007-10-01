@@ -113,11 +113,6 @@
  <xsl:param name="cy" select="number(substring-before($cxr,','))" />
  <xsl:param name="cyr" select="substring-after($cxr,',')" />
  <xsl:param name="s" select="number(substring-before($cyr,','))" /> 
-  <!-- The next line will be MUCH easier to write with min/max functions available. -->
- <xsl:param name="orx"><xsl:choose><xsl:when test="$cx - $w div (2 * $s) &lt; 0">0</xsl:when><xsl:otherwise><xsl:value-of select="$cx - $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
- <xsl:param name="ory"><xsl:choose><xsl:when test="$cy - $h div (2 * $s) &lt; 0">0</xsl:when><xsl:otherwise><xsl:value-of select="$cy - $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
- <xsl:param name="brx"><xsl:choose><xsl:when test="$cx + $w div (2 * $s) >= @Columns"><xsl:value-of select="@Columns" /></xsl:when><xsl:otherwise><xsl:value-of select="$cx + $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
- <xsl:param name="bry"><xsl:choose><xsl:when test="$cy + $h div (2 * $s) >= @Rows"><xsl:value-of select="@Rows" /></xsl:when><xsl:otherwise><xsl:value-of select="$cy + $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
 
  <xsl:param name="studyUID" select="ancestor-or-self::*/@StudyInstanceUID[last()]" />
  <xsl:param name="seriesUID" select="parent::*/@SeriesInstanceUID" />
@@ -128,6 +123,11 @@
  <xsl:param name="custNode" select="$custStudy | $custSeries | ($custSeries/se:image[@SOPInstanceUID=$objectUID][count(@frame)=0 or @frame=$frame])" />
  <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth]"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter]"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
+ 
+ <xsl:param name="orx"><xsl:choose><xsl:when test="$cx - $w div (2 * $s) &lt; 0">0</xsl:when><xsl:otherwise><xsl:value-of select="$cx - $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="ory"><xsl:choose><xsl:when test="$cy - $h div (2 * $s) &lt; 0">0</xsl:when><xsl:otherwise><xsl:value-of select="$cy - $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="brx"><xsl:choose><xsl:when test="$cx + $w div (2 * $s) >= @Columns"><xsl:value-of select="@Columns" /></xsl:when><xsl:otherwise><xsl:value-of select="$cx + $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="bry"><xsl:choose><xsl:when test="$cy + $h div (2 * $s) >= @Rows"><xsl:value-of select="@Rows" /></xsl:when><xsl:otherwise><xsl:value-of select="$cy + $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
  
  <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
@@ -260,7 +260,6 @@
 </x:template>
 
 <x:template name="copyText" mode="newlayout" match="text()">
-  <xsl:message>Copying <xsl:value-of select="." /></xsl:message>
   <xsl:copy />
 </x:template>
 
@@ -319,7 +318,6 @@
    
  <xsl:param name="toolbarId" select='./@toolbarRef' />
  <xsl:param name="thisToolbar" select="$toolbarNode/h:div[@id=$toolbarId]" />
- <xsl:message>Matched a toolbar div</xsl:message>
    
  <xsl:copy>
   <xsl:copy-of select="$thisToolbar/@*" />
@@ -440,6 +438,7 @@
   <xsl:with-param name="loc" select="$loc" />
   <xsl:with-param name="node" select="$node" />
  </xsl:call-template> 
+ 
  <xsl:call-template name="imageGroup">
    <xsl:with-param name="loc" select='$loc' />
    <xsl:with-param name="node" select="$node" />
@@ -461,6 +460,8 @@
  
  <xsl:param name="orx" select="$cx - $w div (2 * $s)" />
  <xsl:param name="ory" select="$cy - $h div (2 * $s)" />
+ 
+ <xsl:message>w,h,cx,cy,s,orx,ory=<xsl:value-of select="concat($w,',',$h,',',$cx,',',$cy,',',$s,',',$orx,',',$ory)" /></xsl:message>
  <!-- Include the VML attributes all the time as they are easier to parse than viewbox -->
  <xsl:attribute name="coordorigin"><xsl:value-of select="concat($orx,',',$ory)" /></xsl:attribute>
  <xsl:attribute name="coordsize"><xsl:value-of select="concat($w div $s,',',$h div $s)" /></xsl:attribute>
@@ -468,6 +469,8 @@
  <!-- Don't bother including the viewBox if it isn't SVG rendering. -->
  <c:if test="${browser!='MSIE'}">
   <xsl:attribute name="viewBox"><xsl:value-of select="concat($orx,',',$ory,',',$w div $s,',',$h div $s)" /></xsl:attribute>
+  <xsl:attribute name="x">-<xsl:value-of select="$w div 2" /></xsl:attribute>
+  <xsl:attribute name="y">-<xsl:value-of select="$h div 2" /></xsl:attribute>
  </c:if>
  <!-- Also include width/height for JavaScript to use. -->
 </x:template>
@@ -503,11 +506,15 @@
  </xsl:if>
 </x:template>
 
-<!-- Renders the image group, including overlays etc - calls the image, shutter etc groups. -->
+<!-- Renders the image group, centered at 0,0 to provide a centered display, and include overlays etc - calls the image, shutter etc groups. 
+  The returned object is the object that has the pan translation applied to it, and it is applied in image coordinates, not display coordinates.
+  -->
 <x:template name="imageGroup" m:imageGroup.viewport="imageGroup">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
+  <xsl:attribute name="class">imageGroup</xsl:attribute>
   <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
   <!-- TODO this should come from meta-data as a defined list, at least for the non-attribute portions. -->
   <xsl:call-template name="addCoordAttributes"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
@@ -519,6 +526,7 @@
 </x:template>
 
 <!-- 
+DISA=Displayed area, ie choose magnify, scale to fit or true size.
 Change image display to depend on 5 values:
 w, h are the pixel value width and height of the view port
 cx, cy are the center x and center y positions of the image in image coordinates
@@ -540,25 +548,41 @@ If no mode is specified, then calculate magnify as the smallest area that will c
 and cx,cy = width /2, height/2
 
  -->
-<x:template name="imageRegion">
+<x:template name="imageDISA">
  <xsl:param name="loc" />
  <xsl:param name="node" />
- <xsl:param name="seriesUID" select="$node/parent::*/@SeriesInstanceUID" />
- <xsl:param name="objectUID" select="$node/@SOPInstanceUID" />
- <xsl:param name="custNode" select="($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
+ <xsl:param name="custNode" />
+
+ <xsl:param name="w" select="number(substring-before($loc,','))" />
+ <xsl:param name="wrest" select="substring-after($loc,',')" />
+ <xsl:param name="h" select="number(substring-before($wrest,','))" />
  <xsl:param name="sizeNode" select="$custNode[@size][last()]" />
+ <xsl:param name="gspsSizeNode" select="$node[@size]" />
+ 
  <xsl:choose>
   <xsl:when test="count($sizeNode)>0">
+   <xsl:message>Found override size node - type <xsl:value-of select="$sizeNode/@size" /></xsl:message>
    <xsl:apply-templates mode="imageSize" select="$sizeNode">
     <xsl:with-param name="cur" select="current()" />
     <xsl:with-param name="loc" select="$loc" />
     <xsl:with-param name="node" select="$node" />
+    <xsl:with-param name="custNode" select='$custNode' />
+   </xsl:apply-templates>
+  </xsl:when>
+  <xsl:when test="count($gspsSizeNode)>0">
+   <xsl:message>Found gsps size node - type <xsl:value-of select="$gspsSizeNode/@size" /></xsl:message>
+   <xsl:apply-templates mode="imageSize" select="$gspsSizeNode">
+    <xsl:with-param name="cur" select="current()" />
+    <xsl:with-param name="loc" select="$loc" />
+    <xsl:with-param name="node" select="$node" />
+    <xsl:with-param name="custNode" select='$custNode' />
    </xsl:apply-templates>
   </xsl:when>
   <xsl:otherwise>
    <xsl:call-template name="defaultImageSize">
     <xsl:with-param name="loc" select="$loc" />
     <xsl:with-param name="node" select="$node" />
+    <xsl:with-param name="custNode" select='$custNode' />
    </xsl:call-template>
   </xsl:otherwise>
  </xsl:choose>
@@ -571,6 +595,7 @@ and cx,cy = width /2, height/2
  <xsl:param name="wrest" select="substring-after($loc,',')" />
  <xsl:param name="h" select="number(substring-before($wrest,','))" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:param name="s"><xsl:choose>
    <xsl:when test="$w * $node/@Rows > @h * $node/@Columns"><xsl:value-of select="$w div $node/@Columns" /></xsl:when>
    <xsl:otherwise><xsl:value-of select="$h div $node/@Rows" /></xsl:otherwise>
@@ -578,6 +603,7 @@ and cx,cy = width /2, height/2
  <xsl:call-template name="imageViewport">
   <xsl:with-param name="loc" select="concat($loc,$node/@Columns div 2,',',$node/@Rows div 2,',',$s,',')" />
   <xsl:with-param name="node" select="$node" />
+  <xsl:with-param name="custNode" select='$custNode' />
  </xsl:call-template>
 </x:template>
 
@@ -585,13 +611,14 @@ and cx,cy = width /2, height/2
      while the zoom is figured out so that the given region fits correctly.  Values can be outside
      the image area.
  --> 
-<x:template name="scaleToFit" mode="imageSize" match="*[@size='SCALE TO FIT']">
+<x:template name="scaleToFit" mode="imageSize" match="*[@size='SCALE_TO_FIT']">
  <xsl:param name="cur" />
  <xsl:param name="loc" />
  <xsl:param name="w" select="number(substring-before($loc,','))" />
  <xsl:param name="wrest" select="substring-after($loc,',')" />
  <xsl:param name="h" select="number(substring-before($wrest,','))" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
 
  <xsl:param name="left" select="number(substring-before(@topLeft,','))" />
  <xsl:param name="top" select="number(substring-after(@topLeft,','))" />
@@ -600,27 +627,26 @@ and cx,cy = width /2, height/2
  <xsl:param name="cx" select="($left+$right) div 2" />
  <xsl:param name="cy" select="($bottom+$top) div 2" />
  <xsl:param name="sx" select="$w div ( $right - $left)" />
- <xsl:param name="sy" select="$h div ( $bottom - $top)" />
+ <xsl:param name="sy" select="$h div ($bottom - $top)" />
+ <xsl:message>Scale to fit mode - region <xsl:value-of select="concat($left,',',$top,',',$right,',',$bottom)" /></xsl:message>
  <xsl:choose>
   <xsl:when test="$sx > $sy">
    <xsl:apply-templates mode="imageViewport" select="$cur">
     <xsl:with-param name="loc" select="concat($loc,$cx,',',$cy,',',$sy,',')" />
     <xsl:with-param name="node" select="$node" />
+    <xsl:with-param name="custNode" select='$custNode' />
    </xsl:apply-templates>
   </xsl:when>
   <xsl:otherwise>
    <xsl:apply-templates mode="imageViewport" select="$cur">
     <xsl:with-param name="loc" select="concat($loc,$cx,',',$cy,',',$sx,',')" />
     <xsl:with-param name="node" select="$node" />
+    <xsl:with-param name="custNode" select='$custNode' />
    </xsl:apply-templates>
   </xsl:otherwise>
  </xsl:choose>
 </x:template>
  
-<!-- For scale to fit, the center in image pixels is just the center of the pixel values,
-     while the zoom is figured out so that the given region fits correctly.  Values can be outside
-     the image area.
- --> 
 <x:template name="magnify" mode="imageSize" match="*[@size='MAGNIFY']">
  <xsl:param name="cur" />
  <xsl:param name="loc" />
@@ -628,6 +654,7 @@ and cx,cy = width /2, height/2
  <xsl:param name="wrest" select="substring-after($loc,',')" />
  <xsl:param name="h" select="number(substring-before($wrest,','))" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
 
  <xsl:param name="left" select="number(substring-before(@topLeft,','))" />
  <xsl:param name="top" select="number(substring-after(@topLeft,','))" />
@@ -636,9 +663,36 @@ and cx,cy = width /2, height/2
  <xsl:param name="cx" select="($left+$right) div 2" />
  <xsl:param name="cy" select="($bottom+$top) div 2" />
  <xsl:param name="s" select="@magnify" />
+ <xsl:message>Magnify mode - region <xsl:value-of select="concat($left,',',$top,',',$right,',',$bottom,'Scale=',$s)" /></xsl:message>
  <xsl:apply-templates mode="imageViewport" select="$cur">
   <xsl:with-param name="loc" select="concat($loc,$cx,',',$cy,',',$s,',')" />
   <xsl:with-param name="node" select="$node" />
+  <xsl:with-param name="custNode" select='$custNode' />
+ </xsl:apply-templates>
+</x:template>
+
+<x:template name="trueSize" mode="imageSize" match="*[@size='TRUE_SIZE']">
+ <xsl:param name="cur" />
+ <xsl:param name="loc" />
+ <xsl:param name="w" select="number(substring-before($loc,','))" />
+ <xsl:param name="wrest" select="substring-after($loc,',')" />
+ <xsl:param name="h" select="number(substring-before($wrest,','))" />
+ <xsl:param name="node" />
+ <xsl:param name="custNode" />
+
+ <xsl:param name="left" select="number(substring-before(@topLeft,','))" />
+ <xsl:param name="top" select="number(substring-after(@topLeft,','))" />
+ <xsl:param name="right" select="number(substring-before(@bottomRight,','))" />
+ <xsl:param name="bottom" select="number(substring-after(@bottomRight,','))" />
+ <xsl:param name="cx" select="($left+$right) div 2" />
+ <xsl:param name="cy" select="($bottom+$top) div 2" />
+ <xsl:param name="s" select="@spacingX div $documentsNode/screenPitch" />
+ <xsl:message>True Size mode - region <xsl:value-of select="concat($left,',',$top,',',$right,',',$bottom,' scale=',$s)" /></xsl:message>
+ <xsl:message>Screen pitch=<xsl:value-of select="concat($documentsNode/screenPitch,' image pitch=',@spacingX)" /></xsl:message>
+ <xsl:apply-templates mode="imageViewport" select="$cur">
+  <xsl:with-param name="loc" select="concat($loc,$cx,',',$cy,',',$s,',')" />
+  <xsl:with-param name="node" select="$node" />
+  <xsl:with-param name="custNode" select='$custNode' />
  </xsl:apply-templates>
 </x:template>
  
@@ -661,6 +715,59 @@ and cx,cy = width /2, height/2
  </xsl:if>
 </x:template>
 
+<x:template name="imageDisplayRel">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:param name="custNode" />
+ <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
+  <xsl:attribute name="class">imageDisplayRel</xsl:attribute>
+  <xsl:attribute name="style">width: 100%; height: 100%;</xsl:attribute>
+  <xsl:attribute name="preserveAspectRatio">none</xsl:attribute>
+  <xsl:attribute name="viewBox">0,0,1000,1000</xsl:attribute>
+  <xsl:attribute name="coordsize">1000,1000</xsl:attribute>
+  <xsl:attribute name="coordorigin">0,0</xsl:attribute>
+  <xsl:call-template name="addUseDisplay"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
+ </xsl:element>
+</x:template>
+
+<!-- Handles the spatial transformation.  This causes the "display area" to change size/shape/rotation to fit the next nested area. -->
+<x:template name="imageSPAT">
+ <xsl:param name="loc" />
+ <xsl:param name="node" />
+ <xsl:param name="custNode" />
+
+ <xsl:param name="w" select="number(substring-before($loc,','))" />
+ <xsl:param name="wrest" select="substring-after($loc,',')" />
+ <xsl:param name="h" select="number(substring-before($wrest,','))" />
+
+ <xsl:param name="rotation"><xsl:choose><xsl:when test="$custNode/ancestor-or-self::*/@rotation"><xsl:value-of select="$custNode/ancestor-or-self::*/@rotation[last()]" /></xsl:when><xsl:when test="$node/ancestor-or-self::*/@rotation"><xsl:value-of select="$node/ancestor-or-self::*/@rotation[last()]" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="cos"><xsl:choose><xsl:when test="$custNode/ancestor-or-self::*/@cos"><xsl:value-of select="$custNode/ancestor-or-self::*/@cos[last()]" /></xsl:when><xsl:when test="$node/ancestor-or-self::*/@cos"><xsl:value-of select="$node/ancestor-or-self::*/@cos[last()]" /></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="sin"><xsl:choose><xsl:when test="$custNode/ancestor-or-self::*/@sin"><xsl:value-of select="$custNode/ancestor-or-self::*/@sin[last()]" /></xsl:when><xsl:when test="$node/ancestor-or-self::*/@sin"><xsl:value-of select="$node/ancestor-or-self::*/@sin[last()]" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="flip"><xsl:choose><xsl:when test="$custNode/ancestor-or-self::*/@horizontalFlip"><xsl:value-of select="$custNode/ancestor-or-self::*/@horizontalFlip[last()]" /></xsl:when><xsl:when test="$node/ancestor-or-self::*/@horizontalFlip"><xsl:value-of select="$node/ancestor-or-self::*/@horizontalFlip[last()]" /></xsl:when><xsl:otherwise>FALSE</xsl:otherwise></xsl:choose></xsl:param>
+ <xsl:param name="aspect"><xsl:choose><xsl:when test="$custNode/ancestor-or-self::*/@aspect"><xsl:value-of select="$custNode/ancestor-or-self::*/@aspect[last()]" /></xsl:when><xsl:when test="$node/ancestor-or-self::*/@aspect"><xsl:value-of select="$node/ancestor-or-self::*/@aspect[last()]" /></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:param>
+ 
+ <xsl:param name="wSPAT" select="$w" />
+ <xsl:param name="hSPAT" select="$h div $aspect" />
+ <xsl:param name="locSPAT" select="concat($wSPAT,',',$hSPAT,',')" />
+ 
+ <xsl:message>Rotation, cos, sin, flip, aspect=<xsl:value-of select="concat($rotation,',',$cos,',',$sin,',',$flip,',',$aspect,',',$wSPAT,',',$hSPAT)" /></xsl:message>
+ 
+ <xsl:element name="#{browser=='MSIE'?'v:group':'svg:g'}">
+  <xsl:attribute name="id">SPAT-<xsl:value-of select="@id" /></xsl:attribute>
+  <xsl:attribute name="class">SPAT</xsl:attribute>
+  <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+  <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+  <xsl:attribute name="coordsize"><xsl:value-of select="$locSPAT" /></xsl:attribute>
+  <xsl:attribute name="transform">translate(<xsl:value-of select="concat($w div 2,',', $h div 2)" />)<xsl:if test="$flip='TRUE'"> scale(-1,1)</xsl:if><xsl:if test="$rotation!=0"> rotate(<xsl:value-of select="$rotation" />)</xsl:if><xsl:if test="$aspect!=1"> scale(1,<xsl:value-of select="$aspect" />)</xsl:if></xsl:attribute>
+  <xsl:call-template name="imageDISA">
+   <xsl:with-param name="loc" select="$locSPAT" />
+   <xsl:with-param name="node" select="$node" />
+   <xsl:with-param name="custNode" select='$custNode' />
+  </xsl:call-template> 
+ </xsl:element>
+  
+</x:template>
+
 <x:template name="imageLayout" mode="newlayout" match="se:image">
    <xsl:param name="loc" />
    <xsl:param name="node" />
@@ -668,21 +775,38 @@ and cx,cy = width /2, height/2
    <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
    <xsl:param name="offset" select="$viewStart+@offset" />
    <xsl:param name="imageNode" select="$node/se:image[@Position=$offset]" />
+   <xsl:param name="studyUID" select="$node/parent::se:study/@StudyInstanceUID" />
+   <xsl:param name="seriesUID" select="$node/@SeriesInstanceUID" />
+   <xsl:param name="objectUID" select="$imageNode/@SOPInstanceUID" />
+   <xsl:param name="custNode" select="($documentsNode//se:study[@StudyInstanceUID=$studyUID])|($documentsNode//se:series[@SeriesInstanceUID=$seriesUID])|($documentsNode//se:image[@SOPInstanceUID=$objectUID])" />
  
    <div>
     <xsl:attribute name="id">dimg<xsl:value-of select="@id" /></xsl:attribute>
     <xsl:attribute name="style">float: left;
      <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
      overflow: hidden;
-     <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
      <xsl:value-of select="@style" />
     </xsl:attribute>
     
 	<xsl:if test="$imageNode">
-	 <xsl:call-template name="imageRegion">
-	  <xsl:with-param name="loc" select="$loc" />
-	  <xsl:with-param name="node" select="$imageNode" />
-	 </xsl:call-template>
+     <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
+      <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+      <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+      <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
+
+      <xsl:call-template name="imageSPAT">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$imageNode" />
+       <xsl:with-param name="custNode" select='$custNode' />
+      </xsl:call-template> 
+      
+      <xsl:call-template name="imageDisplayRel">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$imageNode" />
+       <xsl:with-param name="custNode" select='$custNode' />
+      </xsl:call-template> 
+      
+     </xsl:element>
     </xsl:if>
    </div>
 </x:template>
@@ -727,7 +851,7 @@ and cx,cy = width /2, height/2
    </xsl:choose></xsl:param>
    <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
    <xsl:param name="seriesNode" select="($seriesNodeForUID | $seriesNodeForUID/following-sibling::se:series)[1+$offset]" />
-
+   <xsl:message>Series start <xsl:value-of select="$seriesUID" /> offset <xsl:value-of select="$seriesUID" /></xsl:message>
    <div>
       <xsl:attribute name="id"><xsl:value-of select="./@id" /></xsl:attribute>
       <xsl:call-template name="switchSeriesToImageDoc">
@@ -745,6 +869,7 @@ and cx,cy = width /2, height/2
    <xsl:param name="studyNode" select="$node/se:study[$offset]" />
    <xsl:param name="seriesDoc" select="document(concat('/xero/series/series.xml?gsps=*&amp;StudyInstanceUID=',$studyNode/@StudyInstanceUID))/se:results" />
    <xsl:param name="newStudyNode" select="$seriesDoc/se:patient/se:study[@StudyInstanceUID=$studyNode/@StudyInstanceUID]" />
+   <xsl:message>Series doc <xsl:value-of select="concat('/xero/series/series.xml?gsps=*&amp;StudyInstanceUID=',$studyNode/@StudyInstanceUID)" /></xsl:message>
    <xsl:apply-templates mode="newlayout" select="*">
     <xsl:with-param name="loc" select="$loc" />
     <xsl:with-param name="node" select="$newStudyNode" />
