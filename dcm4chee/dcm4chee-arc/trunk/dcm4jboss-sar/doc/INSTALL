@@ -20,8 +20,8 @@ Imaging Image I/O Tools 1.1. The binary distribution packages of dcm4chee
 2.12.x already includes necessary JARs and native libraries for Windows and
 Linux i586. For Linux-amd64 or Solaris, you have to download the SW package
 from Sun [https://jai-imageio.dev.java.net/binary-builds.html] yourself and
-replace the Linux version of libclib_jiio.so in dcm4chee-xxx-2.12.x/bin/ from the JAI
-Image IO package for Linux-amd64 or Solaris.
+replace the Linux version of libclib_jiio.so in dcm4chee-xxx-2.12.x/bin/native
+from the JAI Image IO package for Linux-amd64 or Solaris.
 
 Installation Procedure:
 
@@ -113,8 +113,8 @@ exception messages:
   JAVA_OPTS: -Dprogram.name=run.sh -server -Xms128m -Xmx512m
    -Dsun.rmi.dgc.client.gcInterval=3600000
    -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.awt.headless=true
-   -Djava.library.path=. -Dapp.name=dcm4chee -Dapp.pid=8593
-   -Djava.net.preferIPv4Stack=true
+   -Dapp.name=dcm4chee -Dapp.pid=8593 -Djava.net.preferIPv4Stack=true
+   -Djava.library.path=/home/gunter/dcm4chee-psql-2.12.0/bin/native
 
   CLASSPATH: /home/gunter/dcm4chee-psql-2.12.0/bin/run.jar:
    /usr/lib/j2sdk1.5-sun/lib/tools.jar
