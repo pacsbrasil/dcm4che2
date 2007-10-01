@@ -255,10 +255,6 @@
  </xsl:if>
 </x:template>
 
-<x:template name="textElementCopy" mode="newlayout" match="text()">
-  <xsl:copy />
-</x:template>
-
 <x:template name="copyText" mode="newlayout" match="text()">
   <xsl:copy />
 </x:template>
@@ -283,6 +279,8 @@
 <c:if test="#{browser=='MSIE'}">
  <c:if test="#{browserVersion &lt; 7.0}">
  <x:template name="fixHoverIE" mode="newlayout" match="h:li[h:ul]">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
   <xsl:copy>
    <xsl:copy-of select="@*" />
 
@@ -291,17 +289,29 @@
      <a>
       <xsl:attribute name="href">#</xsl:attribute>
       <xsl:copy-of select="h:a/@*" />
-      <xsl:apply-templates mode="newlayout" select="h:a/*|h:a/text()" />
+      <xsl:apply-templates mode="newlayout" select="h:a/*|h:a/text()" >
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$node" />
+      </xsl:apply-templates>
       <table border="0" cellpadding="0" cellspacing="0"><tr><td>
-        <xsl:apply-templates mode="newlayout" select="h:ul" />
+        <xsl:apply-templates mode="newlayout" select="h:ul" >
+         <xsl:with-param name="loc" select="$loc" />
+         <xsl:with-param name="node" select="$node" />
+        </xsl:apply-templates>
       </td></tr></table>
      </a>
     </xsl:when>
     <xsl:otherwise>
      <a href="#">
-      <xsl:apply-templates mode="newlayout" select="h:*[name()!='ul']|text()" />
+      <xsl:apply-templates mode="newlayout" select="h:*[name()!='ul']|text()" >
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$node" />
+      </xsl:apply-templates>
       <table border="0" cellpadding="0" cellspacing="0"><tr><td>
-        <xsl:apply-templates mode="newlayout" select="h:ul" />
+        <xsl:apply-templates mode="newlayout" select="h:ul" >
+         <xsl:with-param name="loc" select="$loc" />
+         <xsl:with-param name="node" select="$node" />
+        </xsl:apply-templates>
       </td></tr></table>
      </a>
     </xsl:otherwise>
