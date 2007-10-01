@@ -218,8 +218,9 @@ public class DicomInputStream extends FilterInputStream implements
             if (header[0] == 'D' && header[1] == 'I' && header[2] == 'C'
                     && header[3] == 'M') {
                 preamble = b;
-                expectFmiEnd = true;
-                return TransferSyntax.ExplicitVRLittleEndian;
+                b = header;
+                mark(6);
+                readFully(b, 0, 6);
             }
         } catch (IOException ignore) {
         }
