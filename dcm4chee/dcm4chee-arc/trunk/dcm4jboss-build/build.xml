@@ -113,9 +113,9 @@
         <include name="lib/jai_imageio.jar"/>
         <include name="lib/clibwrapper_jiio.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4che14" prefix="${dist.db}">
-        <include name="bin/libclib_jiio.so"/>
-        <include name="bin/clib_jiio*.dll"/>
+      <zipfileset dir="../dcm4che14/bin" prefix="${dist.db}/bin/native">
+        <include name="libclib_jiio.so"/>
+        <include name="clib_jiio*.dll"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/target/common"
         prefix="${dist.db.config}">
