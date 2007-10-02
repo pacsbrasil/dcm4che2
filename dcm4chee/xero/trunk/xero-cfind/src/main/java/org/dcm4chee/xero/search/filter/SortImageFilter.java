@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class SortImageFilter implements Filter<ResultsType>{
+   @SuppressWarnings("unused")
    private static final Logger log = LoggerFactory.getLogger(SortImageFilter.class);
 
 	/** Sort the returned results, by series number and by image number.
