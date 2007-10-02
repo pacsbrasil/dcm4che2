@@ -78,6 +78,8 @@ public class NetworkConnection {
 
     public static final int DEFAULT = 0;
     
+    public static final int ONLY_ACTIVE = -1;
+    
     private static final String[] TLS_NULL = { "SSL_RSA_WITH_NULL_SHA" };
     
     private static final String[] TLS_3DES_EDE_CBC = { 
@@ -95,7 +97,7 @@ public class NetworkConnection {
 
     private String hostname;
 
-    private int port;
+    private int port = ONLY_ACTIVE;
 
     private String[] tlsCipherSuite = {};
 
@@ -236,16 +238,23 @@ public class NetworkConnection {
     }
 
     /**
-     * The TCP port that the AE is listening on. (This may be missing for a
-     * network connection that only initiates associations.)
+     * The TCP port that the AE is listening on.
      * 
-     * @param port
-     *            An int containing the port number.
+     * A valid port value is between 0 and 65535, or {@link #ONLY_ACTIVE} for
+     * network connection that only initiates associations.
+     * 
+     * A port number of <code>zero</code> will let the system pick up an
+     * ephemeral port.
+     * 
+     * @param port The port number
      */
     public final void setPort(int port) {
+        if (port < ONLY_ACTIVE || port > 0xFFFF) {
+            throw new IllegalArgumentException("port out of range:" + port);
+        }
         this.port = port;
     }
-
+    
     /**
      * The TLS CipherSuites that are supported on this particular connection.
      * TLS CipherSuites shall be described using an RFC-2246 string
@@ -316,7 +325,7 @@ public class NetworkConnection {
     }
 
     public boolean isListening() {
-        return port > 0;
+        return port != ONLY_ACTIVE;
     }
 
     public boolean isTLS() {
@@ -516,6 +525,19 @@ public class NetworkConnection {
                 (addr != null && addr.isLoopbackAddress()) ? null : addr, 0);
     }
 
+    /**
+     * Returns server socket associated with this Network Connection, bound to
+     * the TCP port, listening for connect requests. Returns <code>null</code>
+     * if this network connection only initiates associations or was not yet
+     * bound by {@link #bind}.
+     * 
+     * @return server socket associated with this Network Connection or
+     *         <code>null</code>
+     */
+    public final ServerSocket getServer() {
+        return server;
+    }
+    
     /**
      * Create a socket as an SCU and connect to a peer network connection (the
      * SCP).
