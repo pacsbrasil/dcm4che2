@@ -87,7 +87,6 @@ public class Device
     private NetworkApplicationEntity[] networkAE = {};
 
     private SSLContext sslContext;
-    private SecureRandom random;
     private AssociationReaper reaper;
 
     /**
@@ -570,7 +569,7 @@ public class Device
     }
 
     /**
-     * Get the <code>NetworkConnection</code> object associated with this
+     * Set the <code>NetworkConnection</code> object associated with this
      * device. This will coincide with the TCP port used by the device.
      * 
      * @param networkConnection A<code>NetworkConnection</code> object.
@@ -621,6 +620,27 @@ public class Device
     }
 
     /**
+     * Set the secure socket layer context associated with this device.
+     * Alternatively you may initialize the secure socket layer context by
+     * {@link #initTLS}.
+     * 
+     * @param sslContext initialized <code>SSLContext</code>
+     */
+    public final void setSSLContext(SSLContext sslContext) {
+        this.sslContext = sslContext;
+    }
+    
+    /**
+     * Get the secure socket layer context set by {@link #setSSLContext} or
+     * initialized by {@link #initTLS}.
+     * 
+     * @return The initialized <code>SSLContext</code>.
+     */
+    public final SSLContext getSSLContext() {
+        return sslContext;
+    }
+    
+    /**
      * Initialize transport layer security (TLS) for network interactions using
      * the device's certificate (as returned by
      * <code>getThisNodeCertificate()</code>).
@@ -670,11 +690,10 @@ public class Device
         TrustManagerFactory tmf = TrustManagerFactory
                 .getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(trust);
-        if (random == null)
-            random = SecureRandom.getInstance("SHA1PRNG");
         if (sslContext == null)
             sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), random);
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(),
+                new SecureRandom());
     }
 
     /**
@@ -704,21 +723,6 @@ public class Device
             NetworkConnection c = networkConnection[i];
             c.unbind();
         }
-    }
-
-    /**
-     * Get the secure socket layer context which was created by calling
-     * <code>initTLS(...)</code>.
-     * 
-     * @return The initialized <code>SSLContext</code>.
-     * @throws IllegalStateException if the TLS context has not been
-     *             initialized.
-     */
-    final SSLContext getSSLContext()
-    {
-        if (sslContext == null)
-            throw new IllegalStateException("TLS Context not initialized!");
-        return sslContext;
     }
 
     /**

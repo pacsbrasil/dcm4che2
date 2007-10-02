@@ -50,6 +50,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -716,7 +717,10 @@ public class NetworkConnection {
     }
 
     private Socket createTLSSocket() throws IOException {
-        SSLSocketFactory sf = device.getSSLContext().getSocketFactory();
+        SSLContext sslContext = device.getSSLContext();
+        if (sslContext == null)
+            throw new IllegalStateException("TLS Context not initialized!");
+        SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
         s.setEnabledProtocols(tlsProtocol);
         s.setEnabledCipherSuites(tlsCipherSuite);
@@ -724,8 +728,10 @@ public class NetworkConnection {
     }
 
     private ServerSocket createTLSServerSocket() throws IOException {
-        SSLServerSocketFactory ssf = device.getSSLContext()
-                .getServerSocketFactory();
+        SSLContext sslContext = device.getSSLContext();
+        if (sslContext == null)
+            throw new IllegalStateException("TLS Context not initialized!");
+        SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
         ss.setEnabledProtocols(tlsProtocol);
         ss.setEnabledCipherSuites(tlsCipherSuite);
