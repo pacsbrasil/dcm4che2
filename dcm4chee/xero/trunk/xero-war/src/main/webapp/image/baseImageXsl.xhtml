@@ -765,7 +765,7 @@ and cx,cy = width /2, height/2
  <xsl:element name="#{browser=='MSIE'?'v:group':'svg:g'}">
   <xsl:attribute name="id">SPAT-<xsl:value-of select="@id" /></xsl:attribute>
   <xsl:attribute name="class">SPAT</xsl:attribute>
-  <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+  <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template><xsl:if test="$flip='TRUE'">flip: x;</xsl:if><xsl:if test="$rotation!=0">rotation: <xsl:value-of select="$rotation" />;</xsl:if></xsl:attribute>
   <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
   <xsl:attribute name="coordsize"><xsl:value-of select="$locSPAT" /></xsl:attribute>
   <xsl:attribute name="transform">translate(<xsl:value-of select="concat($w div 2,',', $h div 2)" />)<xsl:if test="$flip='TRUE'"> scale(-1,1)</xsl:if><xsl:if test="$rotation!=0"> rotate(<xsl:value-of select="$rotation" />)</xsl:if><xsl:if test="$aspect!=1"> scale(1,<xsl:value-of select="$aspect" />)</xsl:if></xsl:attribute>
