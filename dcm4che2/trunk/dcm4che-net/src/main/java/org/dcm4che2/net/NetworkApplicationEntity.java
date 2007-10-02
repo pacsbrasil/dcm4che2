@@ -902,7 +902,7 @@ public class NetworkApplicationEntity {
                         + " and remote AE " + remoteAET);
     }
 
-    private AAssociateRQ makeAAssociateRQ(UserIdentity userIdentity,
+    protected AAssociateRQ makeAAssociateRQ(UserIdentity userIdentity,
             NetworkApplicationEntity remoteAE) throws ConfigurationException {
         AAssociateRQ aarq = new AAssociateRQ();
         aarq.setCallingAET(aeTitle);
