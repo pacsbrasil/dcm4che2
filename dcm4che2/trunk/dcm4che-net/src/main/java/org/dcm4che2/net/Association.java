@@ -130,7 +130,7 @@ public class Association implements Runnable {
 
     private long idleTimeout = Long.MAX_VALUE;
 
-    private Association(Socket socket, NetworkConnection connector,
+    protected Association(Socket socket, NetworkConnection connector,
             boolean requestor) throws IOException {
         if (socket == null)
             throw new NullPointerException("socket");
@@ -153,9 +153,9 @@ public class Association implements Runnable {
         return name;
     }
 
-    static Association request(Socket socket, NetworkConnection connector,
-            NetworkApplicationEntity ae, UserIdentity userIdentity)
-            throws IOException {
+    public static Association request(Socket socket,
+            NetworkConnection connector, NetworkApplicationEntity ae,
+            UserIdentity userIdentity) throws IOException {
         Association a = new Association(socket, connector, true);
         a.setApplicationEntity(ae);
         a.setUserIdentity(userIdentity);
@@ -163,7 +163,7 @@ public class Association implements Runnable {
         return a;
     }
 
-    static Association accept(Socket socket, NetworkConnection connector)
+    public static Association accept(Socket socket, NetworkConnection connector)
             throws IOException {
         Association a = new Association(socket, connector, false);
         a.setState(State.STA2);
