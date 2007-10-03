@@ -748,26 +748,27 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  float topX = cx - sx;
 	  float topY = cy - sy;
 	  StringBuffer d = new StringBuffer("M");
-	  d.append(topX).append(",").append(topY);
+	  d.append((int) topX).append(",").append((int) topY);
 
 	  StringBuffer v = new StringBuffer(d);
-	  d.append(" A").append(rx).append(',').append(ry);
+	  d.append(" A").append((int) rx).append(',').append((int) ry);
 	  d.append(" 0 1,0 ");
-	  d.append(cx + sx).append(',').append(cy + sy);
-	  d.append(" A").append(rx).append(',').append(ry);
+	  d.append((int) (cx + sx)).append(',').append((int) (cy + sy));
+	  d.append(" A").append((int) rx).append(',').append((int) ry);
 	  d.append(" 0 1,0 ");
-	  d.append(topX).append(',').append(topY);
+	  d.append((int) topX).append(',').append((int) topY);
 
 	  // TODO fix this for arbitrary rotations around cx,cy
-	  v.append(" at ").append(cx - rx).append(',');
-	  v.append(cy - ry).append(' ');
-	  v.append(cx + rx).append(',');
-	  v.append(cy + ry).append(' ');
-	  v.append(topX).append(',').append(topY).append(' ');
-	  v.append(topX).append(',').append(topY);
+	  v.append(" at ").append((int) (cx - rx)).append(',');
+	  v.append((int) (cy - ry)).append(' ');
+	  v.append((int) (cx + rx)).append(',');
+	  v.append((int) (cy + ry)).append(' ');
+	  v.append((int) topX).append(',').append((int) topY).append(' ');
+	  v.append((int) topX).append(',').append((int) topY);
 
 	  circle.setD(d.toString());
 	  circle.setPath(v.toString());
+	  circle.setId(ResultsBean.createId("el"));
 	  return circle;
    }
 
@@ -783,7 +784,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  }
 	  for (int i = 0; i < points.length; i++)
 		 points[i] *= pixSize;
-	  PathType circle = createEllipsePath(points[0], points[1], 0.5f, 0.5f, 0f);
+	  PathType circle = createEllipsePath(points[0], points[1], 1f, 1f, 0f);
 	  g.getChildren().add(circle);
    }
 
@@ -836,6 +837,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  if (!go.getGraphicFilled()) {
 		 path.setStyle("fill: none;");
 		 path.setFill("false");
+		 path.setStrokeWidth("2");
 	  }
 	  g.getChildren().add(path);
    }
@@ -1001,6 +1003,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  path.setStyle("fill:" + rgb + ";");
 	  path.setId(ResultsBean.createId("shre"));
 	  path.setD(d.toString());
+	  path.setStrokeWidth("5");
 
 	  g.getChildren().add(path);
    }
@@ -1057,7 +1060,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  path.setId(ResultsBean.createId("shcr"));
 	  path.setD(d.toString());
 	  path.setPath(v.toString());
-
+	  path.setStrokeWidth("4");
 	  g.getChildren().add(path);
    }
 
