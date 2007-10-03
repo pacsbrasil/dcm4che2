@@ -840,6 +840,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             fsDTO = fsmgt.getFileSystem(dirPath);
         } while (!checkStorageFileSystemStatus(fsDTO)
                 || !checkStorageFileSystem(fsDTO, false));
+        // reload from database to get most recent data before updating it
+		storageFileSystem = fsmgt.getFileSystem(storageFileSystem.getPk());
         storageFileSystem.setStatus(FileSystemStatus.RW);
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
         fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
