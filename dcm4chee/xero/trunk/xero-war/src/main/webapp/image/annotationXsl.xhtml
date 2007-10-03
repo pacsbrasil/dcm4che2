@@ -56,13 +56,17 @@
 
 <x:template name="iesvgCopyText" mode="svg" match="svg:text">
   <xsl:param name="rot"><xsl:choose><xsl:when test="starts-with(@transform,'rotate(')"><xsl:value-of select="substring-after(substring-before(@transform,','),'rotate(')" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="x1" select="@x" />
+  <xsl:param name="y1" select="@y" />
   <xsl:param name="x2"><xsl:choose><xsl:when test="$rot=90 or $rot=270"><xsl:value-of select="@x" /></xsl:when><xsl:when test="$rot=180"><xsl:value-of select="@x - @textLength" /></xsl:when><xsl:otherwise><xsl:value-of select="@x + @textLength" /></xsl:otherwise></xsl:choose></xsl:param>
   <xsl:param name="y2"><xsl:choose><xsl:when test="$rot=0 or $rot=180"><xsl:value-of select="@y" /></xsl:when><xsl:when test="$rot=270"><xsl:value-of select="@y - @textLength" /></xsl:when><xsl:otherwise><xsl:value-of select="@y + @textLength" /></xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="path" select="concat('m',floor($x1),',',floor($y1),' l',floor($x2),',',floor($y2))" />
   <v:shapeType filled='t' stroked='f' fillcolor="white">
-    <xsl:copy-of select="@*" />
-    <xsl:attribute name="path">M<xsl:value-of select="concat(@x,',',@y)" /> L<xsl:value-of select="concat($x2,',',$y2)" /></xsl:attribute>
+    <xsl:copy-of select="@id" />
+    <xsl:attribute name="path"><xsl:value-of select="$path" /></xsl:attribute>
     <v:path textpathok="True" />
     <v:textpath on="True">
+      <xsl:attribute name="style">font-size: <xsl:value-of select="@font-size div 2.3" />;</xsl:attribute>
       <xsl:attribute name="string"><xsl:value-of select="text()" /></xsl:attribute>
     </v:textpath>
   </v:shapeType>
@@ -121,7 +125,7 @@
    <c:when test="#{browser=='MSIE'}">
 	 <xsl:for-each select="$node/svg:use[@class='DISPLAY']">
 	   <xsl:apply-templates mode="svg" select=".">
-	     <xsl:with-param name="loc" select="$loc" />
+	     <xsl:with-param name="loc">1000,1000,</xsl:with-param>
 	   </xsl:apply-templates>
 	 </xsl:for-each>
    </c:when>

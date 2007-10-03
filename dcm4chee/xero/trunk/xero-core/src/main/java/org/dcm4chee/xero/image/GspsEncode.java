@@ -119,7 +119,7 @@ import org.w3.svg.Use;
  * 
  */
 public class GspsEncode implements Filter<ResultsBean> {
-   private static final float WIDTH_CORRECTION = 0.5f;
+   private static final float WIDTH_CORRECTION = 0.48f;
 
    private static final float HEIGHT_CORRECTION = 1.5f;
 
@@ -590,6 +590,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			pixScale = 1000;
 		 }
 		 TextType text = new TextType();
+		 text.setTextLength(Integer.toString(MIN_FONT_SIZE));
 		 text.setId(ResultsBean.createId("t"));
 		 text.setContent("*");
 		 text.setX(Integer.toString((int) (anchor[X_OFFSET]*pixScale)));
