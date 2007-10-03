@@ -41,6 +41,7 @@
   <xsl:param name="id"><xsl:value-of select="substring(@xlink:href,2)"/></xsl:param>
   <xsl:for-each select="ancestor::se:results/descendant::svg:g[@id=$id]/*">
     <xsl:element name="v:shape">
+      <xsl:attribute name="class">VML_COPY_USE</xsl:attribute>
       <xsl:attribute name="type">#<xsl:value-of select="@id" /></xsl:attribute>
       <xsl:attribute name="style"><xsl:value-of select="concat('width: ',$cols,'; height: ',$rows,';')" /></xsl:attribute>
       <xsl:attribute name="coordsize"><xsl:value-of select="concat($cols,' ',$rows)" /></xsl:attribute>
@@ -49,6 +50,22 @@
       </xsl:if>
     </xsl:element>
   </xsl:for-each>
+</x:template>
+
+<!-- Match text elements, and convert them into VML shape types. -->
+
+<x:template name="iesvgCopyText" mode="svg" match="svg:text">
+  <xsl:param name="rot"><xsl:choose><xsl:when test="starts-with(@transform,'rotate(')"><xsl:value-of select="substring-after(substring-before(@transform,','),'rotate(')" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="x2"><xsl:choose><xsl:when test="$rot=90 or $rot=270"><xsl:value-of select="@x" /></xsl:when><xsl:when test="$rot=180"><xsl:value-of select="@x - @textLength" /></xsl:when><xsl:otherwise><xsl:value-of select="@x + @textLength" /></xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="y2"><xsl:choose><xsl:when test="$rot=0 or $rot=180"><xsl:value-of select="@y" /></xsl:when><xsl:when test="$rot=270"><xsl:value-of select="@y - @textLength" /></xsl:when><xsl:otherwise><xsl:value-of select="@y + @textLength" /></xsl:otherwise></xsl:choose></xsl:param>
+  <v:shapeType filled='t' stroked='f' fillcolor="white">
+    <xsl:copy-of select="@*" />
+    <xsl:attribute name="path">M<xsl:value-of select="concat(@x,',',@y)" /> L<xsl:value-of select="concat($x2,',',$y2)" /></xsl:attribute>
+    <v:path textpathok="True" />
+    <v:textpath on="True">
+      <xsl:attribute name="string"><xsl:value-of select="text()" /></xsl:attribute>
+    </v:textpath>
+  </v:shapeType>
 </x:template>
 
 </c:if>

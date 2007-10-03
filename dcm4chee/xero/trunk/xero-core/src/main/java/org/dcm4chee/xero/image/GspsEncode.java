@@ -119,6 +119,10 @@ import org.w3.svg.Use;
  * 
  */
 public class GspsEncode implements Filter<ResultsBean> {
+   private static final float WIDTH_CORRECTION = 0.5f;
+
+   private static final float HEIGHT_CORRECTION = 1.5f;
+
    private static final int X_OFFSET = 0;
 
    private static final int Y_OFFSET = 1;
@@ -138,6 +142,8 @@ public class GspsEncode implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(GspsEncode.class);
 
    private static final ICC_ColorSpace lab = new ICC_ColorSpace(ICC_Profile.getInstance(ICC_ColorSpace.CS_sRGB));
+
+   private static final int MIN_FONT_SIZE = 24;
 
    /**
      * This class adds information about the GSPS objects to the filter results.
@@ -251,7 +257,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			exemplar = (ImageBean) study.getChildById(uid);
 		 }
 		 // It isn't clear how else to get an exemplar, so skip the test for
-            // default if we don't have one.
+		 // default if we don't have one.
 		 if (exemplar != null && "SCALE TO FIT".equalsIgnoreCase(presentationMode) && tlhc[0] == 1 && tlhc[1] == 1
 			   && brhc[1] == exemplar.getColumns() && brhc[0] == exemplar.getRows()) {
 			// Don't both adding this - it is a complete default item
@@ -320,22 +326,6 @@ public class GspsEncode implements Filter<ResultsBean> {
      * @param dcmobj
      * @param gspsType
      * @param images
-     *            d.append(" A").append(radius).append(',').append(radius);
-     *            d.append(" 0 1,0 ");
-     *            d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] +
-     *            radius); d.append("
-     *            A").append(radius).append(',').append(radius); d.append(" 0
-     *            1,0 ");
-     *            d.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] -
-     *            radius);
-     * 
-     * v.append(" at ").append(center[X_OFFSET] - radius).append(',');
-     * v.append(center[Y_OFFSET] - radius).append(' ');
-     * v.append(center[X_OFFSET] + radius).append(',');
-     * v.append(center[Y_OFFSET] + radius).append(' ');
-     * v.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] -
-     * radius).append(' ');
-     * v.append(center[X_OFFSET]).append(',').append(center[Y_OFFSET] - radius);
      */
    @SuppressWarnings( { "unchecked", "deprecation" })
    protected void addAnnotationToResults(DicomObject dcmobj, GspsType gspsType, StudyBean study, Map<String, MacroItems> images) {
@@ -509,15 +499,14 @@ public class GspsEncode implements Filter<ResultsBean> {
      * box and anchor point display.
      */
    protected void addTextObject(GType gdisp, GType gimg, TextObject txo) {
-	  TextType text = new TextType();
 	  String unformatted = txo.getUnformattedTextValue();
-	  text.setContent(unformatted);
-	  // TODO handle multi-line text blocks.
-	  int lineLen = unformatted.length();
-	  if (lineLen == 0)
+ 	  String[] lines = convertToLines(unformatted);
+ 	  int maxLen = lineLength(lines);
+	  if ( maxLen <=0 )
 		 return;
 
 	  float[] topLeft = txo.getBoundingBoxTopLeftHandCorner();
+	  float[] anchor = txo.getAnchorPoint();
 	  GType g = gimg;
 	  int pixScale = 1;
 	  if (topLeft != null) {
@@ -526,30 +515,124 @@ public class GspsEncode implements Filter<ResultsBean> {
 			pixScale = 1000;
 		 }
 		 float[] bottomRight = txo.getBoundingBoxBottomRightHandCorner();
-		 float x = topLeft[X_OFFSET] * pixScale;
-		 float y = topLeft[Y_OFFSET] * pixScale;
-		 text.setX(Integer.toString((int) topLeft[X_OFFSET] * pixScale));
-		 text.setY(Integer.toString((int) topLeft[Y_OFFSET] * pixScale));
 		 int rotation = toRotation(topLeft, bottomRight);
-		 if (rotation != 0)
-			text.setTransform("rotate(" + rotation + "," + x + ',' + y + ")");
-		 float xlen = Math.abs(bottomRight[X_OFFSET] - topLeft[X_OFFSET]) * pixScale;
-		 // At least 5 pixels are needed, otherwise don't bother trying to
-		 // figure out font size.
-		 if (xlen > 5)
-			text.setFontSize(Float.toString(xlen * 2 / lineLen));
+		 int offset = X_OFFSET;
+		 
+		 // Get the size of the text box we are working with...
+		 if( rotation==90 || rotation==270 ) offset = Y_OFFSET;
+		 float boxWidth = (bottomRight[offset] - topLeft[offset]) * pixScale;
+		 offset = 1-offset;
+		 float boxHeight = (bottomRight[offset]-topLeft[offset]) * pixScale;
+		 
+		 // Figure out the font size, in pixels/unit lengths
+		 int fontSizeW =  (int) Math.abs(boxWidth / maxLen);
+		 int fontSizeH = (int) Math.abs(boxHeight / (lines.length*HEIGHT_CORRECTION));
+		 if( fontSizeW > fontSizeH ) fontSizeW = fontSizeH;
+		 if( fontSizeW < MIN_FONT_SIZE ) fontSizeW = MIN_FONT_SIZE;
+
+		 String just = txo.getBoundingBoxTextHorizontalJustification();
+		 boolean isCenter = "CENTER".equalsIgnoreCase(just);
+		 boolean isRight = "RIGHT".equalsIgnoreCase(just);
+		 float linePosOffset = fontSizeW*HEIGHT_CORRECTION;
+		 if( boxHeight<0 ) linePosOffset = -linePosOffset;
+		 for(int i=0; i<lines.length; i++ ) {
+			float x = 0;
+			int lineLen = lines[i].length();
+			if( lineLen==0 ) continue;
+			if( isCenter ) {
+			   x = (boxWidth - lineLen*fontSizeW*WIDTH_CORRECTION)/2;
+			}
+			else if( isRight ) {
+			   x = boxWidth - lineLen*fontSizeW*WIDTH_CORRECTION;
+			}
+			float y = (i+1) * linePosOffset;
+			if( rotation==90 || rotation==270 ) {
+			   float xy = x;
+			   x = y;
+			   y = xy;
+			}
+			x += topLeft[X_OFFSET]*pixScale;
+			y += topLeft[Y_OFFSET]*pixScale;
+			TextType text = new TextType();
+			text.setId(ResultsBean.createId("t"));
+			text.setContent(lines[i]);
+			text.setX(Integer.toString((int) x));
+			text.setY(Integer.toString((int) y));
+			text.setTextLength(Integer.toString((int) (lineLen * fontSizeW*WIDTH_CORRECTION)));
+			text.setLengthAdjust("spacingAndGlyphs");
+		    if (rotation != 0)
+			  text.setTransform("rotate(" + rotation + "," + (int)x + ',' + (int)y + ")");
+			text.setFontSize(Integer.toString(fontSizeW));
+ 		    g.getChildren().add(text);
+		 }
 	  } else {
 		 if( "DISPLAY".equalsIgnoreCase(txo.getAnchorPointAnnotationUnits()) ) {
 			g = gdisp;
 			pixScale = 1000;
 		 }
-		 float[] anchor = txo.getAnchorPoint();
-		 text.setX(Float.toString(anchor[X_OFFSET]*pixScale));
-		 text.setY(Float.toString(anchor[Y_OFFSET]*pixScale));
-		 // Specify some default font size.
-		 text.setFontSize("12");
+		 for(int i=0; i<lines.length; i++ ) {
+			TextType text = new TextType();
+			text.setId(ResultsBean.createId("t"));
+			text.setContent(lines[i]);
+			text.setTextLength(Integer.toString((int) (MIN_FONT_SIZE * lines[i].length() * WIDTH_CORRECTION)));
+			text.setX(Float.toString(anchor[X_OFFSET]*pixScale+MIN_FONT_SIZE));
+			text.setY(Float.toString(anchor[Y_OFFSET]*pixScale + i*MIN_FONT_SIZE*HEIGHT_CORRECTION));
+			text.setFontSize(Integer.toString(MIN_FONT_SIZE));
+ 		    g.getChildren().add(text);
+		 }
 	  }
-	  g.getChildren().add(text);
+	  if( txo.getAnchorPointVisibility() ) {
+		 // Need to render the anchor point
+		 g = gimg;
+		 pixScale = 1;
+		 if( "DISPLAY".equalsIgnoreCase(txo.getAnchorPointAnnotationUnits()) ) {
+			g = gdisp;
+			pixScale = 1000;
+		 }
+		 TextType text = new TextType();
+		 text.setId(ResultsBean.createId("t"));
+		 text.setContent("*");
+		 text.setX(Integer.toString((int) (anchor[X_OFFSET]*pixScale)));
+		 text.setY(Integer.toString((int) (anchor[Y_OFFSET]*pixScale)));
+		 text.setFontSize(Integer.toString(MIN_FONT_SIZE));
+		 g.getChildren().add(text);
+	  }
+   }
+
+   /** Get the maximum line length of the set of lines provided */
+   public static int lineLength(String[] lines) {
+	  int ret = lines[0].length();
+	  for (int i = 1; i < lines.length; i++) {
+		 if (ret < lines[i].length())
+			ret = lines[i].length();
+	  }
+	  return ret;
+   }
+
+   /**
+     * Converts a string contain LF, CR/LF, LF/CR or CR into a set of lines by
+     * themselves.
+     * 
+     * @param unformatted
+     * @return Array of strings, one per line.
+     */
+   public static String[] convertToLines(String unformatted) {
+	  int lfPos = unformatted.indexOf('\n');
+	  int crPos = unformatted.indexOf('\r');
+	  if (crPos < 0 && lfPos < 0) {
+		 return new String[] { unformatted };
+	  }
+	  String regex;
+	  if (lfPos == -1)
+		 regex = "\r";
+	  else if (crPos == -1)
+		 regex = "\n";
+	  else if (crPos < lfPos)
+		 regex = "\r\n";
+	  else
+		 regex = "\n\r";
+	  String[] ret = unformatted.split(regex);
+	  return ret;
    }
 
    /**
@@ -615,16 +698,17 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  float x2 = bottomRight[X_OFFSET];
 	  float y1 = topLeft[Y_OFFSET];
 	  float y2 = bottomRight[Y_OFFSET];
+	  log.info("toRotation x1=" + x1 + " y1=" + y1 + " x2=" + x2 + " y2=" + y2);
 	  if (x1 < x2) {
 		 if (y1 < y2) {
 			return 0;
 		 }
-		 return 90;
+		 return 270;
 	  } else {
-		 if (y1 < y2) {
+		 if (y1 > y2) {
 			return 180;
 		 }
-		 return 270;
+		 return 90;
 	  }
    }
 
