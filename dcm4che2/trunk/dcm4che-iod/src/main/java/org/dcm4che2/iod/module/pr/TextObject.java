@@ -40,6 +40,7 @@ package org.dcm4che2.iod.module.pr;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.iod.module.Module;
 
 /**
@@ -92,5 +93,13 @@ public class TextObject extends Module {
 	   
 	   public String getBoundingBoxAnnotationUnits() {
 		   return dcmobj.getString(Tag.BoundingBoxAnnotationUnits);
+	   }
+	   
+	   public String getBoundingBoxTextHorizontalJustification() {
+		   return dcmobj.getString(Tag.BoundingBoxTextHorizontalJustification);
+	   }
+	   
+	   public void setBoundingBoxTextHorizontalJustification(String justification) {
+		   dcmobj.putString(Tag.BoundingBoxTextHorizontalJustification, VR.CS, justification);
 	   }
 }
