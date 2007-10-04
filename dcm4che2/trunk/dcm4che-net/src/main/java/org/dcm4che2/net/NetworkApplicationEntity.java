@@ -984,33 +984,32 @@ public class NetworkApplicationEntity {
     
     private int initPCwithUncompressedLETS(AAssociateRQ aarq,
             LinkedHashMap cuid2ts, int freePc, ArrayList cuid2ts2) {
-        ArrayList ts2 = new ArrayList(2);
-        for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
+         for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
                 && iter.hasNext();) {
             Map.Entry e = (Entry) iter.next();
             String cuid = (String) e.getKey();
             LinkedHashSet ts = (LinkedHashSet) e.getValue();
-            if (offerDefaultTSInSeparatePC) {
-                if (ts.remove(UID.ExplicitVRLittleEndian)) {
-                    ts2.add(UID.ExplicitVRLittleEndian);
-                }
-                if (ts.remove(UID.ImplicitVRLittleEndian)) {
-                    ts2.add(UID.ImplicitVRLittleEndian);
-                }
-                if (ts2.isEmpty()) {
-                    iter.remove();
-                    cuid2ts2.add(e);
-                    continue;
-                }
+            boolean implicitVR = ts.remove(UID.ImplicitVRLittleEndian);
+            boolean explicitVR = ts.remove(UID.ExplicitVRLittleEndian);
+            if (!implicitVR && !explicitVR) {
+                continue;                
             }
             PresentationContext pctx = new PresentationContext();
             pctx.setPCID(aarq.nextPCID());
             pctx.setAbstractSyntax(cuid);
-            for (Iterator tsiter = ts2.iterator(); tsiter.hasNext();) {
-                pctx.addTransferSyntax((String) tsiter.next());
+            pctx.addTransferSyntax(implicitVR ? UID.ImplicitVRLittleEndian
+                    : UID.ExplicitVRLittleEndian);
+            if (implicitVR && explicitVR) {
+                if (offerDefaultTSInSeparatePC && freePc > 0) {
+                    aarq.addPresentationContext(pctx);
+                    pctx = new PresentationContext();
+                    pctx.setPCID(aarq.nextPCID());
+                    pctx.setAbstractSyntax(cuid);
+                    --freePc;
+                }
+                pctx.addTransferSyntax(UID.ExplicitVRLittleEndian);
             }
             aarq.addPresentationContext(pctx);
-            ts2.clear();
             if (ts.isEmpty()) {
                 iter.remove();
             } else {
