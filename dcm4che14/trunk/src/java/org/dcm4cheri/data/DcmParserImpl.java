@@ -84,7 +84,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             ByteBuffer.wrap(b12).order(ByteOrder.LITTLE_ENDIAN);
 //    private boolean explicitVR = false;
     private DcmDecodeParam decodeParam = DcmDecodeParam.IVR_LE;
-    private int maxAlloc = 0x4000000; // 64MB
         
     private DataInput in = null;
     private DcmHandler handler = null;
@@ -566,10 +565,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                         throw new DcmParseException(logMsg()
                         		+ ", value length [" + (rLen&0xffffffffL)
                         		+ "] exceeds maximal supported length[2^31-1]");
-                    if (rTag != Tags.PixelData && rLen > maxAlloc) {
-                        throw new DcmParseException(logMsg()
-                        		+ ", MaxAlloc:" + maxAlloc);                    	
-                    }
                     readValue();
                     lread += rLen;
                 }
@@ -728,7 +723,13 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private byte[] readBytes(int len) throws IOException {
         if (len == 0)
             return b0;
-        byte[] retval = new byte[len];
+        byte[] retval;
+		try {
+			retval = new byte[len];
+		} catch (OutOfMemoryError e) {
+            throw new DcmParseException(logMsg()
+            		+ ", out of memory allocating byte[]");                    	
+		}
         in.readFully(retval, 0, len);
         rPos += len;
         if (unBuf != null)
