@@ -43,10 +43,6 @@
 	  <dependencySet>
             <outputDirectory>lib</outputDirectory>
             <scope>runtime</scope>
-            <excludes>
-              <exclude>commons-lang:commons-lang</exclude>
-              <exclude>commons-logging:commons-logging</exclude>
-            </excludes>
           </dependencySet>
         </dependencySets>
       </binaries>
