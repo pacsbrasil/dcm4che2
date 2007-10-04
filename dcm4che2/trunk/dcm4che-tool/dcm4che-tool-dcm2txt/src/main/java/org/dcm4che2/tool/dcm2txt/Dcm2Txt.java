@@ -179,7 +179,7 @@ public class Dcm2Txt implements DicomInputHandler {
     public boolean readValue(DicomInputStream in) throws IOException {
             switch (in.tag()) {
             case Tag.Item:
-                if (in.sq().vr() != VR.SQ) {
+                if (in.sq().vr() != VR.SQ && in.valueLength() != -1) {
                     outFragment(in);
                 } else {
                     outItem(in);                    
