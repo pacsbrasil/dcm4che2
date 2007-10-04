@@ -933,10 +933,9 @@ public class NetworkApplicationEntity {
             log.info("Not all of " + cuid2ts.size() + " common Transfer "
                     + "Capabilities can be offered in Association request");
         }
-        ArrayList cuid2ts2 = new ArrayList();
-        freePc = initPCwithUncompressedLETS(aarq, cuid2ts, freePc, cuid2ts2);
-        initPCwith1TS(aarq, freePc, cuid2ts2);
-        initPCwithRemainingTS(aarq, cuid2ts2);
+        freePc = initPCwithUncompressedLETS(aarq, cuid2ts, freePc);
+        initPCwith1TS(aarq, cuid2ts, freePc);
+        initPCwithRemainingTS(aarq, cuid2ts);
         for (Iterator iter = scp.iterator(); iter.hasNext();) {
             String cuid = (String) iter.next();
             aarq.addRoleSelection(new RoleSelection(cuid , scu.contains(cuid), true));
@@ -982,8 +981,8 @@ public class NetworkApplicationEntity {
         }
     }
     
-    private int initPCwithUncompressedLETS(AAssociateRQ aarq,
-            LinkedHashMap cuid2ts, int freePc, ArrayList cuid2ts2) {
+    private int initPCwithUncompressedLETS(AAssociateRQ aarq, Map cuid2ts,
+            int freePc) {
          for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
                 && iter.hasNext();) {
             Map.Entry e = (Entry) iter.next();
@@ -1016,13 +1015,13 @@ public class NetworkApplicationEntity {
                 --freePc;
             }
         }
-        cuid2ts2.addAll(cuid2ts.entrySet());
         return freePc;
     }
 
-    private void initPCwith1TS(AAssociateRQ aarq, int freePc, ArrayList cuid2ts2) {
-        while (freePc > 0 && !cuid2ts2.isEmpty()) {
-            for (Iterator iter = cuid2ts2.iterator(); freePc > 0 && iter.hasNext();) {
+    private void initPCwith1TS(AAssociateRQ aarq, Map cuid2ts, int freePc) {
+        while (freePc > 0 && !cuid2ts.isEmpty()) {
+            for (Iterator iter = cuid2ts.entrySet().iterator(); 
+                    freePc > 0 && iter.hasNext();) {
                 Map.Entry e = (Entry) iter.next();
                 String cuid = (String) e.getKey();
                 LinkedHashSet ts = (LinkedHashSet) e.getValue();
@@ -1042,8 +1041,8 @@ public class NetworkApplicationEntity {
         }
     }
     
-    private void initPCwithRemainingTS(AAssociateRQ aarq, ArrayList cuid2ts2) {
-        for (Iterator iter = cuid2ts2.iterator(); iter.hasNext() 
+    private void initPCwithRemainingTS(AAssociateRQ aarq, Map cuid2ts) {
+        for (Iterator iter = cuid2ts.entrySet().iterator(); iter.hasNext() 
                 && aarq.getNumberOfPresentationContexts() < 128;) {
             Map.Entry e = (Entry) iter.next();
             String cuid = (String) e.getKey();
