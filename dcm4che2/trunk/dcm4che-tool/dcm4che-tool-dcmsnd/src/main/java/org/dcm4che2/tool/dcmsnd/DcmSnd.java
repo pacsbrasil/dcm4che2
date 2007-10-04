@@ -275,6 +275,11 @@ public class DcmSnd extends StorageCommitmentService {
     public final void setUserIdentity(UserIdentity userIdentity) {
         ae.setUserIdentity(userIdentity);
     }
+    
+    public final void setOfferDefaultTransferSyntaxInSeparatePresentationContext(
+            boolean enable) {
+        ae.setOfferDefaultTransferSyntaxInSeparatePresentationContext(enable);
+    }
 
     public final void setStorageCommitment(boolean stgcmt) {
         this.stgcmt = stgcmt;
@@ -369,6 +374,10 @@ public class DcmSnd extends StorageCommitmentService {
                 "set AET, local address and listening port of local Application Entity");
         opts.addOption(OptionBuilder.create("L"));
 
+        opts.addOption("ts1", false, "offer Default Transfer Syntax in " +
+                "separate Presentation Context. By default offered with\n" +
+                "Explicit VR Little Endian TS in one PC.");
+        
         OptionBuilder.withArgName("username");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -570,6 +579,8 @@ public class DcmSnd extends StorageCommitmentService {
                 dcmsnd.setLocalHost(callingAETHost[0]);
             }
         }
+        dcmsnd.setOfferDefaultTransferSyntaxInSeparatePresentationContext(
+                cl.hasOption("ts1"));
         if (cl.hasOption("username")) {
             String username = (String) cl.getOptionValue("username");
             UserIdentity userId;
