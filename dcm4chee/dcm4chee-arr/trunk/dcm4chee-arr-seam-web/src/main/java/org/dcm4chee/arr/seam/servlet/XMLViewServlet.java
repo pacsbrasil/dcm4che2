@@ -41,16 +41,15 @@ package org.dcm4chee.arr.seam.servlet;
 import java.io.IOException;
 
 import javax.naming.InitialContext;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
 
 import org.dcm4chee.arr.entities.AuditRecord;
+import org.dcm4chee.arr.seam.ejb.AuditRecordAccessLocal;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,30 +60,6 @@ public class XMLViewServlet extends HttpServlet {
 
     private static final long serialVersionUID = 230759458252187964L;
 
-    private static final String ENTITY_MANAGER_FACTORY =
-            "java:/EntityManagerFactories/dcm4chee-arr";
-
-    private static final String USER_TRANSACTION = "java:comp/UserTransaction";
-
-    private EntityManagerFactory emf;
-
-    private UserTransaction utx;
-
-    public void init() throws ServletException {
-        try {
-            InitialContext jndiCtx = new InitialContext();
-            try {
-                emf = (EntityManagerFactory)
-                        jndiCtx.lookup(ENTITY_MANAGER_FACTORY);
-                utx = (UserTransaction) jndiCtx.lookup(USER_TRANSACTION);
-            } finally {
-                jndiCtx.close();
-            }
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }
-    }
-
     protected void doPost(HttpServletRequest rq, HttpServletResponse rsp)
             throws ServletException, IOException {
         doGet(rq, rsp);
@@ -92,7 +67,7 @@ public class XMLViewServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest rq, HttpServletResponse rsp)
             throws ServletException, IOException {
-        writeTo(findAuditRecord(new Integer(rq.getParameter("pk"))), rsp);
+        writeTo(findAuditRecord(Integer.parseInt(rq.getParameter("pk"))), rsp);
     }
 
     protected void writeTo(AuditRecord rec, HttpServletResponse rsp)
@@ -106,17 +81,22 @@ public class XMLViewServlet extends HttpServlet {
         }
     }
 
-    private AuditRecord findAuditRecord(Integer pk) throws ServletException {
-        EntityManager entityManager = emf.createEntityManager();
+    private AuditRecord findAuditRecord(int pk) throws ServletException {
+        InitialContext jndiCtx = null;
         try {
-            utx.begin();
-            AuditRecord record = entityManager.find(AuditRecord.class, pk);
-            utx.commit();
-            return record;
+            jndiCtx = new InitialContext();
+            AuditRecordAccessLocal dao = (AuditRecordAccessLocal)
+                    jndiCtx.lookup("java:comp/env/ejb/AuditRecordAccess");
+            return dao.findAuditRecord(pk);
         } catch (Exception e) {
             throw new ServletException(e);
         } finally {
-            entityManager.close();
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
         }
     }
 
