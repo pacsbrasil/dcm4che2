@@ -169,14 +169,17 @@
       <description><![CDATA[
         List of Transfer Syntaxes for Video SOP Classes that Store SCP
         service accepts. Order defines selection preference. Use either the 
-        Transfer Syntaxes UID value or following defined symbolic names: 
+        Transfer Syntaxes UID value or following defined symbolic names:
+        JPEGBaseline,
         MPEG2        
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForVideoSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MPEG2"/>
+         <value value="
+           JPEGBaseline
+           MPEG2"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
