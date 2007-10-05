@@ -100,6 +100,8 @@
            UltrasoundMultiframeImageStorageRetired
            UltrasoundImageStorageRetired
            XRayAngiographicBiPlaneImageStorageRetired
+           VLImageStorageRetired
+           VLMultiframeImageStorageRetired
            "/>
       </descriptors>
    </attribute>
@@ -196,6 +198,7 @@
            HemodynamicWaveformStorage
            CardiacElectrophysiologyWaveformStorage
            BasicVoiceAudioWaveformStorage
+           StructuredReportAudioStorageRetired
            "/>
       </descriptors>
    </attribute>
@@ -243,6 +246,9 @@
            KeyObjectSelectionDocument
            ChestCADSR
            XRayRadiationDoseSR
+           StructuredReportTextStorageRetired
+           StructuredReportDetailStorageRetired
+           StructuredComprehensiveStorageRetired
            "/>
       </descriptors>
    </attribute>
@@ -310,6 +316,8 @@
            StandaloneModalityLUTStorage
            StandaloneVOILUTStorage
            StandalonePETCurveStorage
+           AgfaAttributePresentationState
+           SiemensCSANonImageStorage
            "/>
       </descriptors>
    </attribute>
