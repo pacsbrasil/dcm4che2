@@ -80,6 +80,7 @@ public interface DirRecord
     public static final String VALUE_MAP = "VALUE MAP";
     public static final String HL7_STRUC_DOC = "HL7 STRUC DOC";
     public static final String STEREOMETRIC = "STEREOMETRIC";
+    public static final String PRIVATE = "PRIVATE";
 
     public void reload() throws IOException, DcmValueException;
     

@@ -140,7 +140,7 @@ public abstract class DirBuilderFactory {
     public static String getRecordType(String classUID) {
         String type = (String) REC_TYPE_MAP.get(classUID);
         if (type == null) {
-            throw new UnsupportedOperationException("classUID:" + classUID);
+            return DirRecord.PRIVATE;
         }
         return type;
     }
