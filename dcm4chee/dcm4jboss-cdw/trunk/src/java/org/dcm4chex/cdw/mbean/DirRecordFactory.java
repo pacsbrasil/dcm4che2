@@ -47,6 +47,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.media.DirRecord;
 import org.dcm4che.srom.Content;
 import org.dcm4chex.cdw.common.ConfigurationException;
 import org.xml.sax.Attributes;
@@ -64,10 +65,14 @@ class DirRecordFactory {
 
     private HashMap filterForType = new HashMap();
 
+	private String privateRecordUID;
+
     private class MyHandler extends DefaultHandler {
 
-        private static final String TYPE = "type";
-
+		private static final String TYPE = "type";
+        
+		private static final String PRIVATE_RECORD_UID = "privateRecordUID";
+		
         private static final String RECORD = "record";
 
         private static final String TAG = "tag";
@@ -84,6 +89,9 @@ class DirRecordFactory {
                 attrs.add(attributes.getValue(TAG));
             } else if (qName.equals(RECORD)) {
                 type = attributes.getValue(TYPE);
+                if (type.equals(DirRecord.PRIVATE)) {
+                	privateRecordUID = attributes.getValue(PRIVATE_RECORD_UID);
+                }
             }
         }
 
@@ -126,6 +134,9 @@ class DirRecordFactory {
                 }
             }
             if (dstSq.isEmpty()) keys.remove(Tags.ContentSeq);
+        }
+        if (type.equals(DirRecord.PRIVATE)) {
+        	keys.putUI(Tags.PrivateRecordUID, privateRecordUID);
         }
         return keys;
     }

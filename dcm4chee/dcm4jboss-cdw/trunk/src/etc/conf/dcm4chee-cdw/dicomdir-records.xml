@@ -395,4 +395,15 @@
     <!-- Instance Number -->
     <attr tag="(0020,0013)"/>
   </record>
+  <!-- Private Directory Record -->
+  <record type="PRIVATE" privateRecordUID="1.2.40.0.13.1.1.3.10">
+    <!-- Specific Character Set -->
+    <attr tag="(0008,0005)"/>
+    <!-- Content Date -->
+    <attr tag="(0008,0023)"/>
+    <!-- Content Time -->
+    <attr tag="(0008,0033)"/>
+    <!-- Instance Number -->
+    <attr tag="(0020,0013)"/>
+  </record>
 </records>
