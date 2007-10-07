@@ -57,6 +57,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
+import org.dcm4che.archive.dao.InstanceDAO;
 import org.dcm4che.archive.dao.SeriesDAO;
 import org.dcm4che.archive.entity.Instance;
 import org.dcm4che.archive.entity.Series;
@@ -102,6 +103,8 @@ public class MPPSEmulatorBean implements MPPSEmulatorLocal, MPPSEmulatorRemote {
             Tags.PPSStartTime, Tags.PPSID };
 
     @EJB private SeriesDAO seriesDAO;
+    
+    @EJB private InstanceDAO instanceDAO;
 
     /** 
      * @see org.dcm4che.archive.service.MPPSEmulator#generateMPPS(java.lang.String, long)
@@ -258,7 +261,7 @@ public class MPPSEmulatorBean implements MPPSEmulatorLocal, MPPSEmulatorRemote {
         // TODO put references to non-images into separate
         // Referenced Non- Image Composite SOP Instance Sequence
         DcmElement refImageSq = seriesItem.putSQ(Tags.RefImageSeq);
-        Collection c = series.getInstances();
+        Collection c = instanceDAO.findBySeriesPk(series.getPk());
         for (Iterator it = c.iterator(); it.hasNext();) {
             Instance inst = (Instance) it.next();
             Dataset refSOP = refImageSq.addNewItem();
@@ -284,6 +287,20 @@ public class MPPSEmulatorBean implements MPPSEmulatorLocal, MPPSEmulatorRemote {
      */
     public void setSeriesDAO(SeriesDAO seriesDAO) {
         this.seriesDAO = seriesDAO;
+    }
+
+    /**
+     * @return the instanceDAO
+     */
+    public InstanceDAO getInstanceDAO() {
+        return instanceDAO;
+    }
+
+    /**
+     * @param instanceDAO the instanceDAO to set
+     */
+    public void setInstanceDAO(InstanceDAO instanceDAO) {
+        this.instanceDAO = instanceDAO;
     }
 
 }

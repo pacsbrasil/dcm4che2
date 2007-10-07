@@ -3,7 +3,7 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Win32
 rem -------------------------------------------------------------------------
 
-rem $Id: run.bat 4989 2007-09-14 10:40:54Z gunterze $
+rem $Id: run.bat 5215 2007-10-01 08:36:49Z gunterze $
 
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT"  setlocal
@@ -88,9 +88,6 @@ set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
 
 rem With Sun JVMs reduce the RMI GCs to once per hour
 set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000
-
-rem Set java.library.path to find native jai-imageio components 
-set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%DIRNAME%
 
 rem Set app.name and app.pid used in emitted audit log messages
 set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee -Dapp.pid=%RANDOM%

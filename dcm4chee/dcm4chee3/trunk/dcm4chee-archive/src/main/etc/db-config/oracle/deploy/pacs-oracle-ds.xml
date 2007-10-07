@@ -6,7 +6,7 @@
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
-<!-- $Id: oracle-ds.xml 1742 2005-05-22 21:53:40Z gunterze $ -->
+<!-- $Id: pacs-oracle-ds.xml 5173 2007-09-26 21:04:41Z gunterze $ -->
 <!-- ==================================================================== -->
 <!--  Datasource config for Oracle originally from Steven Coy             -->
 <!-- ==================================================================== -->
@@ -14,7 +14,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>OracleDS</jndi-name>
+    <jndi-name>pacsDS</jndi-name>
     <connection-url>jdbc:oracle:thin:@localhost:1521:pacsdb</connection-url>
 	<!--
 

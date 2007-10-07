@@ -6,17 +6,17 @@
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
-<!-- $Id: db2-ds.xml 1742 2005-05-22 21:53:40Z gunterze $ -->
+<!-- $Id: db2-ds.xml 5207 2007-09-29 11:02:25Z gunterze $ -->
 
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>DB2DS</jndi-name>
-    <connection-url>jdbc:db2://localhost:50000/tiani</connection-url>
+    <jndi-name>pacsDS</jndi-name>
+    <connection-url>jdbc:db2://localhost:50000/pacsdb</connection-url>
     <driver-class>com.ibm.db2.jcc.DB2Driver</driver-class>
     <!--driver-class>COM.ibm.db2.jdbc.app.DB2Driver</driver-class -->
-    <user-name>tiani</user-name>
-    <password>tiani</password>
+    <user-name>pacs</user-name>
+    <password>pacs</password>
     <min-pool-size>0</min-pool-size>
         <!-- sql to call when connection is created
         <new-connection-sql>some arbitrary sql</new-connection-sql>

@@ -2,14 +2,14 @@
 
 <!-- The Hypersonic embedded database JCA connection factory config -->
 
-<!-- $Id: hsqldb-ds.xml 2783 2006-09-22 09:15:56Z gunterze $ -->
+<!-- $Id: pacs-hsqldb-ds.xml 5177 2007-09-26 21:07:43Z gunterze $ -->
 
 <datasources>
    <local-tx-datasource>
 
       <!-- The jndi name of the DataSource, it is prefixed with java:/ -->
       <!-- Datasources are not available outside the virtual machine -->
-      <jndi-name>DefaultDS</jndi-name>
+      <jndi-name>pacsDS</jndi-name>
 
       <!-- For server mode db, allowing other processes to use hsqldb over tcp.
       This requires the org.jboss.jdbc.HypersonicDatabase mbean.
@@ -22,7 +22,7 @@
       <!-- For in-process persistent db, saved when jboss stops.
       The org.jboss.jdbc.HypersonicDatabase mbean is required for proper db shutdown
       -->
-      <connection-url>jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB</connection-url>
+      <connection-url>jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}pacsdb</connection-url>
 
       <!-- The driver class -->
       <driver-class>org.hsqldb.jdbcDriver</driver-class>
@@ -68,8 +68,9 @@
         <application-managed-security/>
       -->
 
-      <!-- Use the security domain defined in conf/login-config.xml -->
+      <!-- Use the security domain defined in conf/login-config.xml
       <security-domain>HsqlDbRealm</security-domain>
+      -->
 
       <!-- Use the security domain defined in conf/login-config.xml or the
            getConnection(user, pw) for logins. The security domain takes precedence.
@@ -85,7 +86,7 @@
       </metadata>
 
       <!-- When using in-process (standalone) mode -->
-      <depends>jboss:service=Hypersonic,database=localDB</depends>
+      <depends>jboss:service=Hypersonic,database=pacsdb</depends>
       <!-- Uncomment when using hsqldb in server mode
       <depends>jboss:service=Hypersonic</depends>
       -->
@@ -105,8 +106,8 @@
 
    <!-- For hsqldb accessed from jboss only, in-process (standalone) mode --> 
    <mbean code="org.jboss.jdbc.HypersonicDatabase" 
-     name="jboss:service=Hypersonic,database=localDB">
-     <attribute name="Database">localDB</attribute>
+     name="jboss:service=Hypersonic,database=pacsdb">
+     <attribute name="Database">pacsdb</attribute>
      <attribute name="InProcessMode">true</attribute>
    </mbean>
    

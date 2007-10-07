@@ -2,7 +2,7 @@
 <!--
   The JBoss service configuration file for the EJB deployer service.
   
-  $Id: ejb-deployer.xml 4986 2007-09-13 14:08:01Z gunterze $
+  $Id: ejb-deployer.xml 5178 2007-09-26 21:09:16Z gunterze $
 -->
 <server>
 
@@ -45,7 +45,7 @@
   -->
   <mbean code="org.jboss.ejb.txtimer.DatabasePersistencePolicy" name="jboss.ejb:service=EJBTimerService,persistencePolicy=database">
     <!-- DataSourceBinding ObjectName -->
-    <depends optional-attribute-name="DataSource">jboss.jca:service=DataSourceBinding,name=MySqlDS</depends>
+    <depends optional-attribute-name="DataSource">jboss.jca:service=DataSourceBinding,name=pacsDS</depends>
     <!-- The plugin that handles database persistence -->
     <attribute name="DatabasePersistencePlugin">org.jboss.ejb.txtimer.GeneralPurposeDatabasePersistencePlugin</attribute>
     <!-- The timers table name -->

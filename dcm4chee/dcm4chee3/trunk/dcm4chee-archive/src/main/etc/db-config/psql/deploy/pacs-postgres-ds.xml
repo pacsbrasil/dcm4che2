@@ -6,7 +6,7 @@
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
-<!-- $Id: postgres-ds.xml 2783 2006-09-22 09:15:56Z gunterze $ -->
+<!-- $Id: pacs-postgres-ds.xml 5174 2007-09-26 21:05:41Z gunterze $ -->
 <!-- ==================================================================== -->
 <!--  Datasource config for Postgres                                      -->
 <!-- ==================================================================== -->
@@ -14,7 +14,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>PostgresDS</jndi-name>
+    <jndi-name>pacsDS</jndi-name>
     <connection-url>jdbc:postgresql://localhost/pacsdb</connection-url>
     <driver-class>org.postgresql.Driver</driver-class>
     <user-name>postgres</user-name>

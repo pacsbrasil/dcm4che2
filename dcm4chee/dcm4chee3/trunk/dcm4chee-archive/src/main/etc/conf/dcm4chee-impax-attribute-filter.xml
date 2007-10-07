@@ -131,6 +131,7 @@
         <attr tag="00080064"/> <!-- Conversion Type -->
         <attr tag="00081115"/> <!-- Referenced Series Sequence -->
         <attr tag="00081140"/> <!-- Referenced Image Sequence -->
+        <attr tag="00082111"/> <!-- Derivation Description -->
         <attr tag="00082112"/> <!-- Source Image Sequence -->
         <attr tag="00082144"/> <!-- Recommended Display Frame Rate -->
         <attr tag="00180010"/> <!-- Contrast/Bolus Agent -->
@@ -228,6 +229,7 @@
         <attr tag="0040A491"/> <!-- Completion Flag -->
         <attr tag="0040A493"/> <!-- Verification Flag -->
         <attr tag="0040A525"/> <!-- Identical Documents Sequence -->
+        <attr tag="00420012"/> <!-- MIME Type of Encapsulated Document -->
         <attr tag="00540010"/> <!-- Energy Window Vector -->
         <attr tag="00540011"/> <!-- Number of Energy Windows -->
         <attr tag="00540020"/> <!-- Detector Vector -->

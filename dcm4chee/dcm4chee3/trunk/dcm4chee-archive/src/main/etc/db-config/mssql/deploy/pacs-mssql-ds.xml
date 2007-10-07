@@ -6,7 +6,7 @@
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
-<!-- $Id: mssql-ds.xml 2153 2005-12-14 14:58:44Z gunterze $ -->
+<!-- $Id: pacs-mssql-ds.xml 5176 2007-09-26 21:06:47Z gunterze $ -->
 
   <!-- ======================================================================-->
   <!-- New ConnectionManager setup for Microsoft SQL Server 2000  driver     -->
@@ -16,7 +16,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>MSSQLDS</jndi-name>
+    <jndi-name>pacsDS</jndi-name>
     <connection-url>jdbc:jtds:sqlserver://localhost:1433;DatabaseName=pacsdb</connection-url>
     <driver-class>net.sourceforge.jtds.jdbc.Driver</driver-class>
     <user-name>pacs</user-name>

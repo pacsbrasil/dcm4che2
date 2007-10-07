@@ -826,7 +826,7 @@ public class FileSystemMgtService extends MBeanServiceBase implements
         return storageFileSystem;
     }
 
-    private synchronized boolean switchStorageFileSystem(FileSystemMgt fsMgt,
+    private synchronized boolean switchStorageFileSystem(FileSystemMgt fsmgt,
             FileSystemDTO fsDTO) throws PersistenceException, IOException {
         if (storageFileSystem.getPk() != fsDTO.getPk()) {
             log
@@ -845,12 +845,14 @@ public class FileSystemMgtService extends MBeanServiceBase implements
                         + " - no alternative storage directory available");
                 return false;
             }
-            fsDTO = fsMgt.getFileSystem(dirPath);
+            fsDTO = fsmgt.getFileSystem(dirPath);
         } while (!checkStorageFileSystemStatus(fsDTO)
                 || !checkStorageFileSystem(fsDTO, false));
+        // reload from database to get most recent data before updating it
+        storageFileSystem = fsmgt.getFileSystem(storageFileSystem.getPk());
         storageFileSystem.setStatus(FileSystemStatus.RW);
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
-        fsMgt.updateFileSystem2(storageFileSystem, fsDTO);
+        fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
         storageFileSystem = fsDTO;
         if (onSwitchStorageFSCmd != null) {
             final String cmd = makeOnSwitchStorageFSCmd(dirPath0.replace('/',
