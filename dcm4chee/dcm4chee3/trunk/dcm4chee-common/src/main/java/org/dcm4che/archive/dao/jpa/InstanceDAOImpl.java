@@ -131,7 +131,7 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
         List<Instance> instances = null;
 
         Query query = em
-                .createQuery("select instance from Instance as instance where instance.series.pk=:fk");
+                .createQuery("select instance from Instance as instance where instance.series.pk=:fk order by instance.pk");
         query.setParameter("fk", seriesPk);
         instances = query.getResultList();
 
@@ -151,7 +151,7 @@ public class InstanceDAOImpl extends BaseDAOImpl<Instance> implements
         List<Instance> instances = null;
 
         Query query = em
-                .createQuery("select instance from Instance i join i.series ser where ser.seriesIuid =:uid");
+                .createQuery("select i from Instance i join i.series ser where ser.seriesIuid =:uid order by i.pk");
         query.setParameter("uid", seriesIuid);
         instances = query.getResultList();
 

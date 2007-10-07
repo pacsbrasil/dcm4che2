@@ -198,6 +198,7 @@
     
     <bean name="mppsEmulationManager" class="org.dcm4che.archive.service.impl.MPPSEmulatorBean" >
         <property name="seriesDAO" ref="seriesDAO"/>
+        <property name="instanceDAO" ref="instanceDAO"/>
     </bean>
     
     <bean name="mppsManager" class="org.dcm4che.archive.service.impl.MPPSManagerBean" >
