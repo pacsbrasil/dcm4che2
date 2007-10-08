@@ -288,21 +288,6 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
-      <description>Reload Stylesheets</description>
-      <name>reloadStylesheets</name>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Get precompiled stylesheet</description>
-      <name>getTemplates</name>
-      <parameter>
-        <description>stylesheet URI</description>
-        <name>uri</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>javax.xml.transform.Templates</return-type>
-   </operation>
-   <operation impact="ACTION">
       <description>Register HL7 Service</description>
       <name>registerService</name>
       <parameter>
