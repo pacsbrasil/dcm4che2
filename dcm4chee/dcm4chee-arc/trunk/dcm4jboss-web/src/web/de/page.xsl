@@ -191,7 +191,7 @@
 				<td width="40%"></td>
 			</tr>
 		 </table>
-		 <table>
+		 <table class="folder_header" border="0" cellspacing="0" cellpadding="0" width="100%">
 		 	<tr>
 			  	<xsl:apply-templates select="model"/>
 		     </tr>
