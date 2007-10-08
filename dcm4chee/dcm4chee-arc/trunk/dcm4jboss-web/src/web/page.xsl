@@ -190,7 +190,9 @@
 		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Logout</a></td>
 				<td width="40%"></td> 
 		     </tr>
-		     <tr>
+		 </table>
+		 <table>
+		 	<tr>
 			  	<xsl:apply-templates select="model"/>
 		     </tr>
 	     </table>
