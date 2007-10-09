@@ -104,11 +104,13 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public final void setTransferSyntax(TransferSyntax ts) {
+        if (ts.deflated() && !(out instanceof DeflaterOutputStream))
+            out = new DeflaterOutputStream(out);
         this.ts = ts;
     }
 
     public final void setTransferSyntax(String tsuid) {
-        this.ts = TransferSyntax.valueOf(tsuid);
+        setTransferSyntax(TransferSyntax.valueOf(tsuid));
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
@@ -236,13 +238,16 @@ public class DicomOutputStream extends FilterOutputStream {
      */
     public void writeDataset(DicomObject attrs, TransferSyntax transferSyntax)
             throws IOException {
+        setTransferSyntax(transferSyntax);
         if (transferSyntax.deflated())
             out = new DeflaterOutputStream(out);
         this.ts = transferSyntax;
         writeElements(attrs.datasetIterator(), includeGroupLength,
                 createItemInfo(attrs));
-        if (transferSyntax.deflated())
+        if (out instanceof DeflaterOutputStream) {
             ((DeflaterOutputStream) out).finish();
+           
+        }
     }
 
     private ItemInfo createItemInfo(DicomObject attrs) {
