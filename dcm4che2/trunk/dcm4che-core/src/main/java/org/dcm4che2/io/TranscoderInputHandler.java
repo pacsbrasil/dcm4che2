@@ -101,29 +101,16 @@ public class TranscoderInputHandler implements DicomInputHandler
     throws IOException
     {
         final DicomElement sq = in.sq();
-        VR sqvr = sq.vr();
-        if (sqvr == VR.SQ) {
-            transcodeDatasetItem(in);
-        } else if (in.valueLength() == -1) { // sqvr == VR.UN
-            TransferSyntax prevTS = out.getTransferSyntax();
-            out.setTransferSyntax(TransferSyntax.ImplicitVRLittleEndian);
-            transcodeDatasetItem(in);
-            out.setTransferSyntax(prevTS);
+        final VR sqvr = sq.vr();
+        final int vallen = in.valueLength();
+        if (vallen == -1 || sqvr == VR.SQ) {
+            out.writeHeader(Tag.Item, null, -1);
+            in.readValue(in);
+            out.writeHeader(Tag.ItemDelimitationItem, null, 0);
         } else {
-            transcodeDataFragmentItem(in, sqvr);
+            out.writeHeader(Tag.Item, null, in.valueLength());
+            transcodeValue(in, sqvr);
         }
-    }
-
-    private void transcodeDatasetItem(DicomInputStream in) throws IOException {
-        out.writeHeader(Tag.Item, null, -1);
-        in.readValue(in);
-        out.writeHeader(Tag.ItemDelimitationItem, null, 0);
-    }
-
-    private void transcodeDataFragmentItem(DicomInputStream in, VR sqvr)
-            throws IOException {
-        out.writeHeader(Tag.Item, null, in.valueLength());
-        transcodeValue(in, sqvr);
     }
 
     private void transcodeAttribute(DicomInputStream in) 
@@ -135,9 +122,14 @@ public class TranscoderInputHandler implements DicomInputHandler
         final DicomObject attrs = in.getDicomObject();
         if (vallen == -1 || vr == VR.SQ) {
             out.writeHeader(tag, vr, -1);
+            TransferSyntax prevTS = out.getTransferSyntax();
+            if (vr == VR.UN) {
+                out.setTransferSyntax(TransferSyntax.ImplicitVRLittleEndian);
+            }
             in.readValue(in);
             attrs.remove(tag);
             out.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+            out.setTransferSyntax(prevTS);
         } else if (!TagUtils.isGroupLengthElement(tag)) {
             out.writeHeader(tag, vr, vallen);
             if (tag == Tag.SpecificCharacterSet
