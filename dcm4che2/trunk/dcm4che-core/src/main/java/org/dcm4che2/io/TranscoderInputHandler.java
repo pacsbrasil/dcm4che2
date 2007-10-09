@@ -104,7 +104,7 @@ public class TranscoderInputHandler implements DicomInputHandler
         VR sqvr = sq.vr();
         if (sqvr == VR.SQ) {
             transcodeDatasetItem(in);
-        } else if (sqvr == VR.UN && in.valueLength() == -1) {
+        } else if (in.valueLength() == -1) { // sqvr == VR.UN
             TransferSyntax prevTS = out.getTransferSyntax();
             out.setTransferSyntax(TransferSyntax.ImplicitVRLittleEndian);
             transcodeDatasetItem(in);
