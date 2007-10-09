@@ -100,6 +100,8 @@ public class DicomInputStream extends FilterInputStream implements
 
     private long vallenLimit = 40000000L;
 
+    private boolean stopAtFmiEnd;
+
     public DicomInputStream(RandomAccessFile raf) throws IOException {
         this(new RAFInputStreamAdapter(raf));
         pos = raf.getFilePointer();
@@ -350,12 +352,68 @@ public class DicomInputStream extends FilterInputStream implements
         readDicomObject(dest, -1);
         return dest;
     }
+    
+    /**
+     * Read File Meta Information from this stream into <code>DicomObject</code>.
+     * <p>
+     * If there is no File Meta Information on current stream position, the
+     * method returns without changing the stream position. Otherwise the stream
+     * will be parsed until the end of the File Meta Information is detected and
+     * File Meta Information elements are put into <code>dest</code>.
+     * 
+     * @param dest
+     *            <code>DicomObject</code> into which File Meta Information is
+     *            read.
+     * @throws EOFException
+     *             if this stream reaches the end before the end of the File
+     *             Meta Information is detected.
+     * @throws IOException
+     *             if an I/O error occurs.
+     */
+     public void readFileMetaInformation(DicomObject dest) throws IOException {
+        if (!expectFmiEnd) {
+            return;
+        }
+        stopAtFmiEnd = true;
+        try {
+            readDicomObject(dest, -1);           
+        } finally {
+            stopAtFmiEnd = false;            
+        }
+        
+    }
+
+    /**
+     * Read File Meta Information from this stream.
+     * <p>
+     * If there is no File Meta Information on current stream position,
+     * <code>null</code> is returned. Otherwise the stream will be parsed
+     * until the end of the File Meta Information is detected and a
+     * <code>DicomObject</code> containing the File Meta Information is
+     * returned.
+     * 
+     * @return File Meta Information or <code>null</code>
+     * @throws EOFException
+     *             if this stream reaches the end before the end of the File
+     *             Meta Information is detected.
+     * @throws IOException
+     *             if an I/O error occurs.
+     */
+    public DicomObject readFileMetaInformation() throws IOException {
+        if (!expectFmiEnd) {
+            return null;
+        }
+        DicomObject dest = new BasicDicomObject();
+        readFileMetaInformation(dest);
+        return dest;
+    }
 
     private void parse(int len, int endTag) throws IOException {
         long endPos = len == -1 ? Long.MAX_VALUE : pos + (len & 0xffffffffL);
         boolean quit = false;
         int tag0 = 0;
         while (!quit && tag0 != endTag && pos < endPos) {
+            mark(12);
             try {
                 tag0 = readHeader();
             } catch (EOFException e) {
@@ -370,6 +428,10 @@ public class DicomInputStream extends FilterInputStream implements
                 }
                 vr = null;
                 vallen = 0;
+            }
+            if (stopAtFmiEnd && !expectFmiEnd) {
+                reset();
+                return;
             }
             TransferSyntax prevTs = ts;
             if (TagUtils.hasVR(tag) && (vr == null || vr == VR.UN)) {
@@ -389,6 +451,9 @@ public class DicomInputStream extends FilterInputStream implements
                     log.warn("Missing (0002,0010) Transfer Syntax in " +
                                 "File Meta Information");
                 this.expectFmiEnd = false;
+                if (stopAtFmiEnd) {
+                    return;
+                }
             }
         }
     }
