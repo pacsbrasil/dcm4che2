@@ -38,6 +38,9 @@
 
 package org.dcm4che2.io;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -77,6 +80,10 @@ public class DicomOutputStream extends FilterOutputStream {
 
     public DicomOutputStream(OutputStream out) {
         super(out);
+    }
+
+    public DicomOutputStream(File f) throws IOException {
+        this(new BufferedOutputStream(new FileOutputStream(f)));
     }
 
     public DicomOutputStream(RandomAccessFile raf) throws IOException {
