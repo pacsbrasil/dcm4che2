@@ -87,6 +87,7 @@ public class Dcm2Jpg {
     private boolean autoWindowing;
     private DicomObject prState;
     private short[] pval2gray;
+    private String fileExt = ".jpg";
 
     private void setWindowCenter(float center) {
         this.center = center;        
@@ -104,14 +105,18 @@ public class Dcm2Jpg {
         this.autoWindowing = autoWindowing;
     }
 
-    private void setPresentationState(DicomObject prState) {
+    private final void setPresentationState(DicomObject prState) {
         this.prState = prState;        
     }
     
-    private void setPValue2Gray(short[] pval2gray) {
+    private final void setPValue2Gray(short[] pval2gray) {
         this.pval2gray = pval2gray;
     }
     
+    public final void setFileExt(String fileExt) {
+        this.fileExt = fileExt;
+    }
+
     public void convert(File src, File dest) throws IOException {
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         ImageReader reader = (ImageReader) iter.next();
@@ -153,7 +158,7 @@ public class Dcm2Jpg {
         int count = 0;
         for (int i = optind, n = args.size() - 1; i < n; ++i) {
             File src = new File((String) args.get(i));
-            count += mconvert(src, new File(destDir, src.getName()));
+            count += mconvert(src, new File(destDir, src.getName() + fileExt ));
         }
         return count;
     }
@@ -183,22 +188,25 @@ public class Dcm2Jpg {
         }
         if (cl.hasOption("pv2gray")) {
             dcm2jpg.setPValue2Gray(loadPVal2Gray(
-                    new File((String) cl.getOptionValue("pv2gray"))));
+                    new File(cl.getOptionValue("pv2gray"))));
         }        
         if (cl.hasOption("c")) {
             dcm2jpg.setWindowCenter(
-                    parseFloat((String) cl.getOptionValue("c"),
+                    parseFloat(cl.getOptionValue("c"),
                             "illegal argument of option -c"));
         }
         if (cl.hasOption("w")) {
             dcm2jpg.setWindowWidth(
-                    parseFloat((String) cl.getOptionValue("w"),
+                    parseFloat(cl.getOptionValue("w"),
                             "illegal argument of option -w"));
         }
         if (cl.hasOption("sigmoid")) {
             dcm2jpg.setVoiLutFunction(DicomImageReadParam.SIGMOID);
         }
-        dcm2jpg.setAutoWindowing(!cl.hasOption("noauto"));     
+        dcm2jpg.setAutoWindowing(!cl.hasOption("noauto"));
+        if (cl.hasOption("jpgext")) {
+            dcm2jpg.setFileExt(cl.getOptionValue("jpgext"));
+        }
         final List argList = cl.getArgList();
         int argc = argList.size();
 
@@ -297,6 +305,12 @@ public class Dcm2Jpg {
         OptionBuilder.withDescription(
                 "file path of P-Value to gray value map");
         opts.addOption(OptionBuilder.create("pv2gray"));
+        OptionBuilder.withArgName(".xxx");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "jpeg file extension used with destination directory argument,"
+                + " default: '.jpg'.");
+        opts.addOption(OptionBuilder.create("jpgext"));
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
                 "print the version information and exit");
