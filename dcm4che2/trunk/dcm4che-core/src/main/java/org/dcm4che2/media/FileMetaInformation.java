@@ -51,7 +51,7 @@ import org.dcm4che2.data.VR;
  */
 
 public class FileMetaInformation {
-    private static final int VERS_01 = 1;
+    public static final int VERSION_01 = 1;
     protected final DicomObject dcmobj;
     public FileMetaInformation(DicomObject dcmobj) {
         if (dcmobj == null) {
@@ -61,7 +61,12 @@ public class FileMetaInformation {
     }
 
     public FileMetaInformation() {
-        this(new BasicDicomObject());
+        this.dcmobj = new BasicDicomObject();
+    }
+    
+    public FileMetaInformation(String cuid, String iuid, String tsuid) {
+        this.dcmobj = new BasicDicomObject();
+        init(cuid, iuid, tsuid);
     }
     
     public final DicomObject getDicomObject() {
@@ -77,10 +82,14 @@ public class FileMetaInformation {
     }
 
     public void init() {
-        setFileMetaInformationVersion(VERS_01);
-        setMediaStorageSOPClassUID(getSOPClassUID());
-        setMediaStorageSOPInstanceUID(getSOPInstanceUID());
-        setTransferSyntaxUID(UID.ExplicitVRLittleEndian);
+        init(getSOPClassUID(), getSOPInstanceUID(), UID.ExplicitVRLittleEndian);
+    }
+
+    public final void init(String cuid, String iuid, String tsuid) {
+        setFileMetaInformationVersion(VERSION_01);
+        setMediaStorageSOPClassUID(cuid);
+        setMediaStorageSOPInstanceUID(iuid);
+        setTransferSyntaxUID(tsuid);
         setImplementationClassUID(Implementation.classUID());
         setImplementationVersionName( Implementation.versionName());
     }
