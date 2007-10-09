@@ -158,14 +158,32 @@ public class Dcm2Jpg {
         int count = 0;
         for (int i = optind, n = args.size() - 1; i < n; ++i) {
             File src = new File((String) args.get(i));
-            count += mconvert(src, new File(destDir, src.getName() + fileExt ));
+            count += mconvert(src, new File(destDir, src2dest(src)));
         }
         return count;
     }
 
+    private String src2dest(File src) {
+        String srcname = src.getName();
+        return src.isFile() ? srcname + this.fileExt : srcname;
+    }
+
     public int mconvert(File src, File dest) throws IOException {
+        if (!src.exists()) {
+            System.err.println("WARNING: No such file or directory: " + src
+                    + " - skipped.");                
+            return 0;
+        }
         if (src.isFile()) {
-            convert(src, dest);
+            try {
+                convert(src, dest);
+            } catch (Exception e) {
+                System.err.println("WARNING: Failed to convert " + src + ":");
+                e.printStackTrace(System.err);
+                System.out.print('F');
+                return 0;
+            }
+            System.out.print('.');
             return 1;
         }
         File[] files = src.listFiles();
@@ -174,7 +192,7 @@ public class Dcm2Jpg {
         }
         int count = 0;
         for (int i = 0; i < files.length; ++i) {
-            count += mconvert(files[i], new File(dest, files[i].getName()));
+            count += mconvert(files[i], new File(dest, src2dest(files[i])));
         }
         return count;
     }
