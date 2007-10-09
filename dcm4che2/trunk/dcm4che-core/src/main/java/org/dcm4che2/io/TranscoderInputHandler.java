@@ -43,6 +43,7 @@ import java.io.IOException;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.TagUtils;
 
@@ -100,20 +101,31 @@ public class TranscoderInputHandler implements DicomInputHandler
     throws IOException
     {
         final DicomElement sq = in.sq();
-        final VR sqvr = sq.vr();
-        if (sqvr == VR.SQ)
-        {
-            out.writeHeader(Tag.Item, null, -1);
-            in.readValue(in);
-            out.writeHeader(Tag.ItemDelimitationItem, null, 0);
-        }
-        else
-        {
-            out.writeHeader(Tag.Item, null, in.valueLength());
-            transcodeValue(in, sqvr);
+        VR sqvr = sq.vr();
+        if (sqvr == VR.SQ) {
+            transcodeDatasetItem(in);
+        } else if (sqvr == VR.UN && in.valueLength() == -1) {
+            TransferSyntax prevTS = out.getTransferSyntax();
+            out.setTransferSyntax(TransferSyntax.ImplicitVRLittleEndian);
+            transcodeDatasetItem(in);
+            out.setTransferSyntax(prevTS);
+        } else {
+            transcodeDataFragmentItem(in, sqvr);
         }
     }
-    
+
+    private void transcodeDatasetItem(DicomInputStream in) throws IOException {
+        out.writeHeader(Tag.Item, null, -1);
+        in.readValue(in);
+        out.writeHeader(Tag.ItemDelimitationItem, null, 0);
+    }
+
+    private void transcodeDataFragmentItem(DicomInputStream in, VR sqvr)
+            throws IOException {
+        out.writeHeader(Tag.Item, null, in.valueLength());
+        transcodeValue(in, sqvr);
+    }
+
     private void transcodeAttribute(DicomInputStream in) 
     throws IOException
     {
