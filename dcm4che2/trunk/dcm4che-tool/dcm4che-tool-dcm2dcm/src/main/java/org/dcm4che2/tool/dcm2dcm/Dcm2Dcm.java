@@ -87,7 +87,7 @@ public class Dcm2Dcm {
         opts.addOption(null, "no-fmi", false,
                 "Encode result without File Meta Information. At default, "
                         + " File Meta Information is included.");
-        opts.addOption("e", "explicit-vr", false,
+        opts.addOption("e", "explicit", false,
                 "Encode result with Explicit VR Little Endian Transfer Syntax. "
                         + "At default, Implicit VR Little Endian is used.");
         opts.addOption("b", "big-endian", false,
