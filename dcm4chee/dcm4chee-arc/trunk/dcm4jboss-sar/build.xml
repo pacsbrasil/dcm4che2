@@ -6,7 +6,13 @@
         <property file="../build.properties"/>
 	
 	<property name="version" value="2.12.1"/>
-	<property name="javac.debug" value="on"/>
+
+    <property name="javac.debug" value="on"/>
+    <property name="javac.deprecation" value="off"/>
+    <property name="javac.optimize" value="on"/>
+    <property name="javac.source" value="1.4"/>
+    <property name="javac.target" value="1.4"/>
+
 
 	<property name="bin.dir" value="${basedir}/bin"/>
 	<property name="lib.dir" value="${basedir}/lib"/>
@@ -75,19 +81,21 @@
         <mkdir dir="${target.deploy}"/>
    </target>
 
-   	<!-- =================================================================== -->
-   	<!-- Compiles the source code                                            -->
-   	<!-- =================================================================== -->   
-   	<target name="compile" depends="prepare">
-		<javac
-        	destdir="${target.classes}"
-			debug="${javac.debug}"
-         	deprecation="off"
-         	optimize="on"
-         	classpathref="base.path"
-      	>
-         	<src path="${src.java}"/>
-      	</javac>
+    <!-- =================================================================== -->
+    <!-- Compiles the source code                                            -->
+    <!-- =================================================================== -->   
+    <target name="compile" depends="prepare">
+        <javac
+           destdir="${target.classes}"
+           classpathref="base.path"
+           debug="${javac.debug}"
+           deprecation="${javac.deprecation}"
+           optimize="${javac.optimize}"
+           source="${javac.source}"
+           target="${javac.target}"
+        >
+            <src path="${src.java}"/>
+        </javac>
    	</target>
 
    	<!-- =================================================================== -->

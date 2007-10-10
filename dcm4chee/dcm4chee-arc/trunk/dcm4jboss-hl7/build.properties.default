@@ -1,3 +1,10 @@
+#javac options
+javac.debug=on
+javac.deprecation=off
+javac.optimize=on
+javac.source=1.4
+javac.target=1.4
+
 #Override with your dcm4che dist location
 dcm4che.home=../dcm4che14/build
 

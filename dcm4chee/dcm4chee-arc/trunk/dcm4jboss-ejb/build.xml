@@ -6,7 +6,10 @@
         <property file="../build.properties" />
 
 	<property name="version" value="2.12.1"/>
-	<property name="javac.debug" value="on"/>	
+	<property name="javac.deprecation" value="off"/>
+	<property name="javac.optimize" value="on"/>
+	<property name="javac.source" value="1.4"/>
+	<property name="javac.target" value="1.4"/>
 
     <!--property name="datasource.mapping" value="Hypersonic SQL"/-->
     <!--property name="datasource.mapping" value="mySQL"/-->
@@ -260,22 +263,24 @@
    	<!-- Compiles the source code                                            -->
    	<!-- =================================================================== -->
    
-   	<target name="compile" depends="ejbdoclet">
-	  <tstamp>
-	    <format property="TODAY" pattern="yyyy-MM-dd"/>
-	  </tstamp>
+	<target name="compile" depends="ejbdoclet">
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MM-dd"/>
+		</tstamp>
 		<mkdir dir="${target.dir}/classes"/>
 		<javac
-        	destdir="${target.classes}"
+			destdir="${target.classes}"
 			debug="${javac.debug}"
-         	deprecation="off"
-         	optimize="on"
-         	classpathref="base.path"
-      	>
-        	<src path="${target.java}"/>
-         	<src path="${src.java}"/>
-      	</javac>
-   	</target>
+			deprecation="${javac.deprecation}"
+			optimize="${javac.optimize}"
+			source="${javac.source}"
+			target="${javac.target}"
+			classpathref="base.path"
+		>
+		<src path="${target.java}"/>
+		<src path="${src.java}"/>
+		</javac>
+	</target>
 
    	<target name="compile-test" depends="compile">
 		<javac
