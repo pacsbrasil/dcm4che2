@@ -25,13 +25,13 @@ as installation directory.
 from http://labs.jboss.com/jbossas/downloads and extract it into a different
 directory.
 
-3. Move to the dcm4chee-arr-xxx-3.0.3/bin directory and execute the
+3. Move to the dcm4chee-arr-xxx-3.0.x/bin directory and execute the
 install_jboss.bat or install_jboss.sh script, as appropriate for your operating
 system, with the path of your JBoss AS installation directory as parameter.
 
 4. [4.-7. are not necessary with Hypersonic SQL] Install the Database SW - if
 not already done. You also have to copy an apropriate JDBC Driver for the
-Database o dcm4chee-arr-xxx-3.0.3/server/default/lib/ - except for MySQL and
+Database o dcm4chee-arr-xxx-3.0.x/server/default/lib/ - except for MySQL and
 PostgreSQL, which binary distribution packages of dcm4chee-arr already contains
 a JDBC driver. Also ensure, that DB access via TCP/IP socket is enabled.
 E.g. PostgresSQL:
@@ -42,7 +42,7 @@ host    all         all         127.0.0.1/32          trust
 
 5. Create the audit record repository database instance: arrdb, and grant
 sufficient privileges to the DB user, configured in the datasource descriptor 
-dcm4chee-arr-xxx-3.0.3/server/default/deploy/arr-xxx-ds.xml.
+dcm4chee-arr-xxx-3.0.x/server/default/deploy/arr-xxx-ds.xml.
 
 E.g.: PostgreSQL
 > export PGUSER=postgres
@@ -55,7 +55,7 @@ mysql> grant all on arrdb.* to 'arr'@'localhost' identified by 'arr';
 mysql> \q
 
 6. [Optional] Initialize the database using create DDL script
-dcm4chee-arr-xxx-3.0.3/sql/dcm4chee-arr-xxx.ddl
+dcm4chee-arr-xxx-3.0.x/sql/dcm4chee-arr-xxx.ddl
 
 E.g.: PostgreSQL
 > psql pacsdb -f dcm4chee-arr-psql-3.0.3/sql/dcm4chee-arr-psql.dll
@@ -69,17 +69,17 @@ of the application.
 7. Adjust the Database connection configuration (host, port, DB name, user
 password) of the archive:
 
-dcm4chee-arr-xxx-3.0.3/server/default/deploy/arr-xxxx-ds.xml
+dcm4chee-arr-xxx-3.0.x/server/default/deploy/arr-xxxx-ds.xml
 
 according your Database configuration. 
 
 8. Set environment variable JAVA_HOME to the JDK location.
 
 9. Adjust maximum allocation of heap memory: 
-[Windows]: dcm4chee-arr-xxx-3.0.3/bin/run.bat:
+[Windows]: dcm4chee-arr-xxx-3.0.x/bin/run.bat:
 rem Sun JVM memory allocation pool parameters. Modify as appropriate.
 set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
-[Linux/Unix]: dcm4chee-arr-xxx-3.0.3/bin/run.conf
+[Linux/Unix]: dcm4chee-arr-xxx-3.0.x/bin/run.conf
 # Specify options to pass to the Java VM.
 if [ "x$JAVA_OPTS" = "x" ]; then
    JAVA_OPTS="-Xms128m -Xmx512m ..
@@ -89,10 +89,11 @@ according available RAM and memory requirements of other processes on this node.
 E.g.: if only 512 MB RAM are available, you should decrease the default
 value -Xmx512m to (e.g.) -Xmx300.
 
-10. To test your installation, move to the dcm4chee-arr-xxx-3.0.3/bin directory
+10. To test your installation, move to the dcm4chee-arr-xxx-3.0.x/bin directory
 and execute the run.bat or run.sh script, as appropriate for your operating
-system. Your output should look like the following and contain no error or
-exception messages:
+system. To enable remote access to jboss services and web interface, you have
+to invoke the start script with parameter '-b 0.0.0.0'! Your output should look
+like the following and contain no error or exception messages:
 
 =========================================================================
 

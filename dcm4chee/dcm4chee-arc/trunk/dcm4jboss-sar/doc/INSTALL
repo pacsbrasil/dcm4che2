@@ -99,8 +99,9 @@ by your platform. E.g. GNU Linux:
 
 10. To test your installation, move to the dcm4chee-xxx-2.12.x/bin directory
 and execute the run.bat or run.sh script, as appropriate for your operating
-system. Your output should look like the following and contain no error or
-exception messages:
+system. To enable remote access to jboss services and web interface, you have
+to invoke the start script with parameter '-b 0.0.0.0'! Your output should look
+like the following and contain no error or exception messages:
 
 =========================================================================
 
@@ -233,9 +234,10 @@ dcm4chee-arr-xxx-3.0.x/sql/dcm4chee-arr-xxx.ddl. Otherwise, the database will
 be initialized automatically at first startup of the application.
 
 3b. If the Audit Record Repository shall share the database instance already
-used by the archive, you have to modify database name, user and password in
-the datasource descriptor arr-xxx-ds.xml, to match with the values specified
-in the datasource descriptor pacs-xxx-ds.xml for the archive database.
+used by the archive, you have to modify database name - but NOT the JNDI name!
+-, user and password in the datasource descriptor arr-xxx-ds.xml, to match with
+the values specified in the datasource descriptor pacs-xxx-ds.xml for the
+archive database.
 Optionally, you may update the database with dcm4chee-arr specific tables using
 modified create DDL script dcm4chee-arr-xxx-3.0.x/sql/dcm4chee-arr-xxx.ddl:
 you have to remove or comment out the creation of already exisiting 'code'

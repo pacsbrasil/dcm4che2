@@ -17,10 +17,10 @@ if "%1" == "uninstall" goto uninstall
 if "%1" == "server" goto install
 if "%1" == "client" goto install
 echo "Usage: %0 server|client|uninstall"
-echo Options:
-echo   client    install dcm4chee-arr service, using client hotspot vm
-echo   server    install dcm4chee-arr service, using server hotspot vm
-echo   uninstall uninstall dcm4chee-arr service
+echo "Options:"
+echo "  client    install DCM4CHEE Audit Record Repository with client hotspot vm"
+echo "  server    install DCM4CHEE Audit Record Repository with server hotspot vm"
+echo "  uninstall uninstall DCM4CHEE Audit Record Repository"
 goto eof
 
 :install
@@ -59,11 +59,20 @@ set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee-arr -Dapp.pid=%RANDOM%
 rem Setup the java endorsed dirs
 set JAVA_OPTS=%JAVA_OPTS% -Djava.endorsed.dirs=%JBOSS_HOME%\lib\endorsed
 
-JavaService.exe -install dcm4chee-arr "%VM%" %JAVA_OPTS% "-Djava.class.path=%TOOLS_JAR%;%RUNJAR%"  -start org.jboss.Main -stop org.jboss.Main -method systemExit -out "%JBOSS_HOME%\bin\out.txt" -err "%JBOSS_HOME%\bin\err.txt" -current "%JBOSS_HOME%\bin"
+rem Enable remote access to jboss services and web interface
+set START_PARAMS=-params -b 0.0.0.0
+
+JavaService.exe -install "DCM4CHEE Audit Record Repository" "%VM%"^
+  %JAVA_OPTS% "-Djava.class.path=%TOOLS_JAR%;%RUNJAR%"^
+  -start org.jboss.Main %START_PARAMS%^
+  -stop org.jboss.Main -method systemExit^
+  -out "%JBOSS_HOME%\bin\out.txt"^
+  -err "%JBOSS_HOME%\bin\err.txt"^
+  -current "%JBOSS_HOME%\bin"
 goto eof
 
 :uninstall
-JavaService.exe -uninstall dcm4chee-arr
+JavaService.exe -uninstall "DCM4CHEE Audit Record Repository"
 goto eof
 
 :eof
