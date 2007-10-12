@@ -40,7 +40,6 @@ package org.dcm4che2.data;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -429,7 +428,7 @@ public abstract class VR
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return toBytes(Integer.parseInt(val), bigEndian);
+            return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
         public byte[] toBytes(String[] val, boolean bigEndian,
@@ -461,7 +460,7 @@ public abstract class VR
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return StringUtils.int2strs(toInts(val, bigEndian));
+            return StringUtils.ints2strs(toInts(val, bigEndian));
         }
 
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
@@ -507,7 +506,7 @@ public abstract class VR
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return toBytes((int) Long.parseLong(val), bigEndian);
+            return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
         public byte[] toBytes(String[] val, boolean bigEndian,
@@ -611,6 +610,23 @@ public abstract class VR
                     : ByteUtils.tags2bytesLE(val);
         }
 
+        public byte[] toBytes(String val, boolean bigEndian,
+                SpecificCharacterSet cs)
+        {           
+            return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
+        }
+
+        public byte[] toBytes(String[] val, boolean bigEndian,
+                SpecificCharacterSet cs)
+        {
+            int[] t = new int[val.length];
+            for (int i = 0; i < val.length; i++)
+            {
+                t[i] = Tag.toTag(val[i]);
+            }
+            return toBytes(t, bigEndian);
+        }
+        
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -629,6 +645,21 @@ public abstract class VR
                     : ByteUtils.bytesLE2tags(val);
         }
 
+        public String toString(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs)
+        {
+            if (val == null || val.length == 0)
+                return null;
+            return StringUtils.intToHex(toInt(val, bigEndian));
+        }
+
+        public String[] toStrings(byte[] val, boolean bigEndian,
+                SpecificCharacterSet cs)
+        {
+            int[] ints = toInts(val, bigEndian);
+            return StringUtils.intsToHex(ints);
+        }
+        
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -980,7 +1011,7 @@ public abstract class VR
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return toBytes(Float.parseFloat(val), bigEndian);
+            return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
         public byte[] toBytes(String[] val, boolean bigEndian,
@@ -1089,7 +1120,7 @@ public abstract class VR
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return toBytes(Double.parseDouble(val), bigEndian);
+            return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
         public byte[] toBytes(String[] val, boolean bigEndian,
@@ -1507,7 +1538,7 @@ public abstract class VR
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return StringUtils.int2strs(toInts(val, bigEndian));
+            return StringUtils.ints2strs(toInts(val, bigEndian));
         }
 
         protected void toChars(byte[] val, boolean bigEndian,
@@ -1580,7 +1611,7 @@ public abstract class VR
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
-            return StringUtils.int2strs(toInts(val, bigEndian));
+            return StringUtils.ints2strs(toInts(val, bigEndian));
         }
 
         protected void toChars(byte[] val, boolean bigEndian,

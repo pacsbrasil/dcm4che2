@@ -151,7 +151,7 @@ public class StringUtils {
 		return trim(ss, '\0', '\0', ' ');
     }
 
-    public static String[] int2strs(int[] val) {
+    public static String[] ints2strs(int[] val) {
         if (val == null || val.length == 0)
             return EMPTY_STRING_ARRAY;
         String[] ss = new String[val.length];
@@ -247,6 +247,17 @@ public class StringUtils {
         return new String(ch);
     }
 
+    public static String[] intsToHex(int[] val) {
+        if (val == null || val.length == 0)
+            return EMPTY_STRING_ARRAY;
+        String[] ss = new String[val.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = intToHex(val[i]);
+        }
+        return ss;
+    }
+    
+    
     public static String shortToHex(int val) {
         char[] ch = new char[4];
         shortToHex(val, ch, 0);
