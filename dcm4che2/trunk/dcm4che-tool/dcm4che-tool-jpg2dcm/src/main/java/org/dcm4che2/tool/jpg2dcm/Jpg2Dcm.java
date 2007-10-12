@@ -300,13 +300,13 @@ public class Jpg2Dcm {
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "Augment default configuration with DICOM attributes");
+                "Augment default configuration with specified configuration file");
         opts.addOption(OptionBuilder.create("c"));
         
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "Configuration file specifying DICOM attribute values, replacing default configuration");
+                "Replacing default configuration by specified configuration file");
         opts.addOption(OptionBuilder.create("C"));
         
         OptionBuilder.withArgName("uid");
