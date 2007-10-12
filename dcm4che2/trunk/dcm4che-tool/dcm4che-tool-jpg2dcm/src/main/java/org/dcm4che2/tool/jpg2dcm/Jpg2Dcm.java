@@ -84,10 +84,18 @@ public class Jpg2Dcm {
     private static final String DESCRIPTION = 
         "Encapsulate JPEG Image into DICOM Object.\nOptions:";
     private static final String EXAMPLE = 
-        "jpg2dcm -c jpg2dcm.cfg report.jpg report.dcm\n" +
-        "=> Encapulate JEPG Image image.jpg into DICOM Object stored to " +
-        "image.dcm using DICOM Attribute values specified in Configuration " +
-        "file jpg2dcm.cfg.";
+        "\nExamples:\n> jpg2dcm image.jpg image.dcm\n" +
+        "=> Encapulate JPEG Image image.jpg into DICOM Secondary Capture Image " +
+        "Object stored to image.dcm, including mandatory DICOM attributes " +
+        "according default configuration.\n" +
+        "> jpg2dcm -c patattrs.cfg image.jpg image.dcm\n" +
+        "=> Encapulate JPEG Image homer.jpg into DICOM Image Object stored to " +
+        "homer.dcm, augmenting default configuration by configuration file " +
+        "homer.cfg.\n" +
+        "> jpg2dcm -C mpg2dcm.cfg -ts 1.2.840.10008.1.2.4.100 video.mpg video.dcm\n" +
+        "=> Encapulate MPEG2 Video video.mpg into DICOM Video Object stored to " +
+        "video.dcm, replacing default configuration by configuration file " +
+        "mpg2dcm.cfg.\n";
     
     private String charset = "ISO_IR 100";
     private int bufferSize = 8192;
@@ -118,8 +126,9 @@ public class Jpg2Dcm {
     }
 
     
-    private void loadConfiguration(File cfgFile) throws IOException {
-        Properties tmp = new Properties(cfg);
+    private void loadConfiguration(File cfgFile, boolean augment)
+            throws IOException {
+        Properties tmp = augment ? new Properties(cfg) : new Properties();
         InputStream in = new BufferedInputStream(new FileInputStream(cfgFile));
         try {
             tmp.load(in);
@@ -136,7 +145,14 @@ public class Jpg2Dcm {
             attrs.putString(Tag.SpecificCharacterSet, VR.CS, charset);
             for (Enumeration en = cfg.propertyNames(); en.hasMoreElements();) {
                 String key = (String) en.nextElement();
-                attrs.putString(Tag.toTagPath(key), null, cfg.getProperty(key));           
+                int[] tagPath = Tag.toTagPath(key);                
+                int last = tagPath.length-1;
+                VR vr = attrs.vrOf(tagPath[last]);
+                if (vr == VR.SQ) {
+                    attrs.putSequence(tagPath);
+                } else {
+                    attrs.putString(tagPath, vr, cfg.getProperty(key));
+                }
             }
             if (missingImagePixelAttr(attrs)) {
                 detectImagePixelAttrs(attrs, jpgInput);
@@ -244,7 +260,10 @@ public class Jpg2Dcm {
                 jpg2Dcm.setBufferSize(Integer.parseInt(cl.getOptionValue("bs")));
             }
             if (cl.hasOption("c")) {
-                jpg2Dcm.loadConfiguration(new File(cl.getOptionValue("c")));
+                jpg2Dcm.loadConfiguration(new File(cl.getOptionValue("c")), true);
+            }
+            if (cl.hasOption("C")) {
+                jpg2Dcm.loadConfiguration(new File(cl.getOptionValue("C")), false);
             }
             if (cl.hasOption("uid")) {
                 UIDUtils.setUseHostAddress(false);
@@ -281,8 +300,14 @@ public class Jpg2Dcm {
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "Configuration file specifying DICOM attribute values");
+                "Augment default configuration with DICOM attributes");
         opts.addOption(OptionBuilder.create("c"));
+        
+        OptionBuilder.withArgName("file");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "Configuration file specifying DICOM attribute values, replacing default configuration");
+        opts.addOption(OptionBuilder.create("C"));
         
         OptionBuilder.withArgName("uid");
         OptionBuilder.hasArg();
