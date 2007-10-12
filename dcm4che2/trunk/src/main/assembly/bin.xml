@@ -360,7 +360,23 @@
         <include>jpg2dcm.cfg</include>
       </includes>
       <lineEnding>dos</lineEnding>
-      <outputDirectory>etc</outputDirectory>
+      <outputDirectory>etc/jpg2dcm</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-jpg2dcm/src/main/config</directory>
+      <includes>
+        <include>homer.cfg</include>
+        <include>mpg2dcm.cfg</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>etc/jpg2dcm</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-jpg2dcm/src/main/config</directory>
+      <includes>
+        <include>homer.jpg</include>
+      </includes>
+      <outputDirectory>etc/jpg2dcm</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-jpg2dcm/src/bin</directory>
