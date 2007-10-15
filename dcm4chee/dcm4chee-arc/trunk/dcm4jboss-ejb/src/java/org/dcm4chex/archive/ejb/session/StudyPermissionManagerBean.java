@@ -1,0 +1,133 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ *
+ * The Initial Developer of the Original Code is
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * See listed authors below.
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+package org.dcm4chex.archive.ejb.session;
+
+import java.rmi.RemoteException;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
+import javax.ejb.SessionBean;
+import javax.ejb.SessionContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocalHome;
+
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Oct 15, 2007
+ * 
+ * @ejb.bean name="StudyPermissionManager" type="Stateless" view-type="remote"
+ *           jndi-name="ejb/StudyPermissionManager"
+ * @ejb.ejb-ref ejb-name="StudyPermission" view-type="local"
+ *              ref-name="ejb/StudyPermission"
+ */
+public abstract class StudyPermissionManagerBean implements SessionBean {
+
+	private StudyPermissionLocalHome studyPemissionHome;
+
+	public void setSessionContext(SessionContext ctx) throws EJBException,
+			RemoteException {
+		Context jndiCtx = null;
+		try {
+			jndiCtx = new InitialContext();
+			studyPemissionHome = (StudyPermissionLocalHome) jndiCtx
+					.lookup("java:comp/env/ejb/StudyPermission");
+		} catch (NamingException e) {
+			throw new EJBException(e);
+		} finally {
+			if (jndiCtx != null) {
+				try {
+					jndiCtx.close();
+				} catch (NamingException ignore) {
+				}
+			}
+		}
+	}
+
+	public void unsetSessionContext() {
+		studyPemissionHome = null;
+	}
+	
+	/**
+	 * @ejb.interface-method
+     */
+	public StudyPermissionDTO grant(String suid, String action, String role)  {
+		StudyPermissionLocal studyPermission;
+		try {
+			studyPermission = studyPemissionHome.create(suid, action, role);			
+		} catch (CreateException e) {
+			try {
+				studyPermission = studyPemissionHome.find(suid, action, role);
+			} catch (FinderException e1) {
+				throw new EJBException(e);
+			}
+		}
+		return studyPermission.toDTO();
+	}
+	
+	/**
+	 * @ejb.interface-method
+     */
+	public boolean deny(StudyPermissionDTO dto)  {
+		try {
+			if (dto.getPk() != -1) {
+				studyPemissionHome.remove(new Long(dto.getPk()));
+			} else {
+				StudyPermissionLocal studyPermission = studyPemissionHome.find(
+						dto.getStudyIuid(), dto.getAction(), dto.getRole());
+				studyPermission.remove();
+			}
+			return true;
+		} catch (ObjectNotFoundException onfe) {
+			return false;
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		} catch (RemoveException e) {
+			throw new EJBException(e);
+		}
+	}
+	
+}
