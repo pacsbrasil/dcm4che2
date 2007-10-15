@@ -2,7 +2,7 @@
 
 ALTER TABLE patient MODIFY pat_id VARCHAR2(255);
 
-ALTER TABLE ae ADD user_id VARCHAR2(255)
+ALTER TABLE ae ADD user_id VARCHAR2(255),
                ADD passwd VARCHAR2(255);
 
 ALTER TABLE series ADD station_name VARCHAR2(255);
