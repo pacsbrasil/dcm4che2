@@ -38,14 +38,11 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.sql.Timestamp;
-
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -76,61 +73,38 @@ public abstract class StudyPermissionBean implements EntityBean{
     
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="study_iuid"
+     */
+    public abstract String getStudyIuid();
+    public abstract void setStudyIuid(String uid);
+    
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="action"
      */
     public abstract String getAction();
     public abstract void setAction(String action);
-    
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="valid_from"
-     */
-    public abstract java.sql.Timestamp getValidFrom();
-    public abstract void setValidFrom(java.sql.Timestamp from);
-    
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="valid_until"
-     */
-    public abstract java.sql.Timestamp getValidUntil();
-    public abstract void setValidUntil(java.sql.Timestamp until);
-    
+        
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="roles"
      */
     public abstract String getRole();
     public abstract void setRole(String role);
-    
-    /**
-     * @ejb.relation name="study-permission"
-     *               role-name="permission-for-study"
-     *               cascade-delete="yes"
-     * @jboss.relation fk-column="study_fk" related-pk-field="pk"
-     */
-    public abstract StudyLocal getStudy();    
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setStudy(StudyLocal Study);
 
     /**
      * @ejb.create-method
      */
-    public Long ejbCreate(String action, String role, Timestamp validFrom,
-            Timestamp validUntil, StudyLocal study)
+    public Long ejbCreate(String siud, String action, String role)
             throws CreateException {
+    	setStudyIuid(siud);
         setAction(action);
         setRole(role);
-        setValidFrom(validFrom);
-        setValidUntil(validUntil);
-       return null;
+        return null;
     }
     
-    public void ejbPostCreate(String action, String role, Timestamp validFrom,
-            Timestamp validUntil, StudyLocal study) throws CreateException {
-        setStudy(study);
+    public void ejbPostCreate(String siud, String action, String role)
+    		throws CreateException {
         log.info("Created " + prompt());
     }
 
@@ -141,14 +115,9 @@ public abstract class StudyPermissionBean implements EntityBean{
     
     private String prompt() {
         return "StudyPermission[pk=" + getPk() 
-        + ", study-iuid=" + studyIuid()
+        + ", study-iuid=" + getStudyIuid()
         + ", action=" + getAction()
         + ", role=" + getRole()
         + "]";
-    }
-
-    private String studyIuid() {
-        StudyLocal study = getStudy();
-        return study != null ? study.getStudyIuid() : "null";
     }
 }

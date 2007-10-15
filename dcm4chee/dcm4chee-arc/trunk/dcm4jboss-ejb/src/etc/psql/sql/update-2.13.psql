@@ -1,0 +1,12 @@
+-- Update DB from dcm4chee-2.12.x to dcm4chee-2.13.x
+
+DROP TABLE study_permission;
+CREATE TABLE study_permission (
+	pk              SERIAL NOT NULL CONSTRAINT study_permission_pk PRIMARY KEY,
+	study_iuid      TEXT NOT NULL,
+	action          TEXT NOT NULL,
+	roles           TEXT NOT NULL
+);
+CREATE INDEX sty_perm_sty_iuid ON study_permission(study_iuid);
+CREATE INDEX sty_perm_action ON study_permission(action);
+CREATE INDEX sty_perm_roles ON study_permission(roles);

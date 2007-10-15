@@ -465,14 +465,6 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setProcedureCodes(java.util.Collection codes);
     
     /**
-     * @ejb.interface-method
-     * @ejb.relation name="study-permission"
-     *               role-name="study-with-permissions"
-     */
-    public abstract java.util.Collection getStudyPermissions();
-    public abstract void setStudyPermissions(java.util.Collection permissions);   
-
-    /**
      * Create study.
      *
      * @ejb.create-method

@@ -124,18 +124,13 @@ CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
 CREATE TABLE study_permission (
 	pk              INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	study_fk        INTEGER,
+	study_iuid      VARCHAR(250) BINARY NOT NULL,
 	action          VARCHAR(250) BINARY NOT NULL,
-	roles           VARCHAR(250) BINARY NOT NULL,
-	valid_from      DATETIME NOT NULL,
-	valid_until     DATETIME NOT NULL,
-FOREIGN KEY (study_fk) REFERENCES study(pk)
+	roles           VARCHAR(250) BINARY NOT NULL
 ) ENGINE=INNODB;
-CREATE INDEX sty_perm_study_fk ON study_permission(study_fk);
+CREATE INDEX sty_perm_sty_iud ON study_permission(study_iuid(64));
 CREATE INDEX sty_perm_action ON study_permission(action(1));
 CREATE INDEX sty_perm_roles ON study_permission(roles(16));
-CREATE INDEX sty_perm_from ON study_permission(valid_from);
-CREATE INDEX sty_perm_until ON study_permission(valid_until);
 
 CREATE TABLE mpps (
 	pk          		INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
