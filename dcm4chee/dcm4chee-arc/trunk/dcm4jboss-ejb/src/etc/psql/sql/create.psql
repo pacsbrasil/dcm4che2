@@ -128,9 +128,7 @@ CREATE TABLE study_permission (
 	action          TEXT NOT NULL,
 	roles           TEXT NOT NULL
 );
-CREATE INDEX sty_perm_sty_iuid ON study_permission(study_iuid);
-CREATE INDEX sty_perm_action ON study_permission(action);
-CREATE INDEX sty_perm_roles ON study_permission(roles);
+CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid, action, roles);
 
 CREATE TABLE mpps (
 	pk          		SERIAL NOT NULL CONSTRAINT mpps_pk PRIMARY KEY,

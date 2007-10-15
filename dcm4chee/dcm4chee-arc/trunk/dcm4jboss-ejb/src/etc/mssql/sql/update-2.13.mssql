@@ -7,6 +7,4 @@ CREATE TABLE study_permission (
 	action          VARCHAR(255) NOT NULL,
 	roles           VARCHAR(255) NOT NULL
 );
-CREATE INDEX sty_perm_sty_iuid ON study_permission(study_iud);
-CREATE INDEX sty_perm_action ON study_permission(action);
-CREATE INDEX sty_perm_roles ON study_permission(roles);
+CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid, action, roles);

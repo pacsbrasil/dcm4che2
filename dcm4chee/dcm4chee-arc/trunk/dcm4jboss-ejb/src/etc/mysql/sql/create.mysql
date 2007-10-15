@@ -128,9 +128,7 @@ CREATE TABLE study_permission (
 	action          VARCHAR(250) BINARY NOT NULL,
 	roles           VARCHAR(250) BINARY NOT NULL
 ) ENGINE=INNODB;
-CREATE INDEX sty_perm_sty_iud ON study_permission(study_iuid(64));
-CREATE INDEX sty_perm_action ON study_permission(action(1));
-CREATE INDEX sty_perm_roles ON study_permission(roles(16));
+CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid(64), action(1), roles(16));
 
 CREATE TABLE mpps (
 	pk          		INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
