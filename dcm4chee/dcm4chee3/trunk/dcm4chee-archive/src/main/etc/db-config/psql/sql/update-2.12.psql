@@ -2,8 +2,8 @@
 
 ALTER TABLE patient ALTER pat_id DROP NOT NULL;
 
-ALTER TABLE ae ADD user_id TEXT;
-ALTER TABLE ae ADD passwd TEXT;
+ALTER TABLE ae ADD user_id TEXT,
+               ADD passwd TEXT;
 
 ALTER TABLE series ADD station_name TEXT;
 

@@ -164,9 +164,6 @@ public class Study extends EntityBase {
     @OneToMany(mappedBy = "study")
     private Set<Series> series;
 
-    @OneToMany(mappedBy = "study")
-    private Set<StudyPermission> studyPermissions;
-
     @CollectionOfElements(fetch = FetchType.EAGER)
     @JoinTable(name = "series", joinColumns = @JoinColumn(name = "study_fk"))
     @Column(name = "institution", insertable = false, updatable = false)
@@ -709,21 +706,6 @@ public class Study extends EntityBase {
      */
     public void setStudyCustomAttribute3(String studyCustomAttribute3) {
         this.studyCustomAttribute3 = studyCustomAttribute3;
-    }
-
-    /**
-     * @return the studyPermissions
-     */
-    public Set<StudyPermission> getStudyPermissions() {
-        return studyPermissions;
-    }
-
-    /**
-     * @param studyPermissions
-     *            the studyPermissions to set
-     */
-    public void setStudyPermissions(Set<StudyPermission> studyPermissions) {
-        this.studyPermissions = studyPermissions;
     }
 
 }

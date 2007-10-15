@@ -39,12 +39,8 @@
 
 package org.dcm4che.archive.entity;
 
-import java.sql.Timestamp;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -58,21 +54,14 @@ public class StudyPermission extends EntityBase {
 
     private static final long serialVersionUID = 8164450587441995636L;
 
+    @Column(name = "study_iuid", nullable = false)
+    private String studyIuid;
+
     @Column(name = "action", nullable = false)
     private String action;
 
-    @Column(name = "valid_from", nullable = false)
-    private Timestamp validFrom;
-
-    @Column(name = "valid_until", nullable = false)
-    private Timestamp validUntil;
-
     @Column(name = "roles", nullable = false)
     private String role;
-
-    @ManyToOne(targetEntity = org.dcm4che.archive.entity.Study.class)
-    @JoinColumn(name = "study_fk", nullable = false)
-    private Study study;
 
     /**
      * 
@@ -80,12 +69,10 @@ public class StudyPermission extends EntityBase {
     public StudyPermission() {
     }
 
-    public StudyPermission(String action, String role, Timestamp validFrom,
-            Timestamp validUntil) {
+    public StudyPermission(String suid, String action, String role) {
+        setStudyIuid(suid);
         setAction(action);
         setRole(role);
-        setValidFrom(validFrom);
-        setValidUntil(validUntil);
     }
 
     /**
@@ -119,59 +106,33 @@ public class StudyPermission extends EntityBase {
     }
 
     /**
-     * @return the study
+     * @return the studyIuid
      */
-    public Study getStudy() {
-        return study;
+    public String getStudyIuid() {
+        return studyIuid;
     }
 
     /**
-     * @param study
-     *            the study to set
+     * @param studyIuid
+     *            the studyIuid to set
      */
-    public void setStudy(Study study) {
-        this.study = study;
-    }
-
-    /**
-     * @return the validFrom
-     */
-    public Timestamp getValidFrom() {
-        return validFrom;
-    }
-
-    /**
-     * @param validFrom
-     *            the validFrom to set
-     */
-    public void setValidFrom(Timestamp validFrom) {
-        this.validFrom = validFrom;
-    }
-
-    /**
-     * @return the validUntil
-     */
-    public Timestamp getValidUntil() {
-        return validUntil;
-    }
-
-    /**
-     * @param validUntil
-     *            the validUntil to set
-     */
-    public void setValidUntil(Timestamp validUntil) {
-        this.validUntil = validUntil;
+    public void setStudyIuid(String studyIuid) {
+        this.studyIuid = studyIuid;
     }
 
     public String toString() {
         return new StringBuilder("StudyPermission[pk=").append(getPk()).append(
-                ", study-iuid=").append(studyIuid()).append(", action=")
-                .append(getAction()).append(", role=").append(getRole())
-                .append("]").toString();
+                ", suid=").append(getStudyIuid()).append(", action=").append(
+                getAction()).append(", role=").append(getRole()).append("]")
+                .toString();
     }
 
-    private String studyIuid() {
-        Study parentStudy = getStudy();
-        return parentStudy != null ? parentStudy.getStudyIuid() : "null";
+    public StudyPermissionDTO toDTO() {
+        StudyPermissionDTO dto = new StudyPermissionDTO();
+        dto.setPk(getPk().longValue());
+        dto.setStudyIuid(getStudyIuid());
+        dto.setAction(getAction());
+        dto.setRole(getRole());
+        return dto;
     }
 }

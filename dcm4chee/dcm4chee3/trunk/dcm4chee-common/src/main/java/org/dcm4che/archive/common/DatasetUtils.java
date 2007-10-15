@@ -85,6 +85,8 @@ public class DatasetUtils {
             ds = DcmObjectFactory.getInstance().newDataset();
         try {
             ds.readFile(bin, null, -1);
+            // reset File Meta Information for Serialisation
+            ds.setFileMetaInfo(null);
         }
         catch (IOException e) {
             throw new IllegalArgumentException("" + e);

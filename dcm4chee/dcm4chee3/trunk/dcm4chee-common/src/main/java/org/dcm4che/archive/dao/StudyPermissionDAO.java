@@ -38,11 +38,8 @@
 
 package org.dcm4che.archive.dao;
 
-import java.sql.Timestamp;
-
 import javax.ejb.Local;
 
-import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.entity.StudyPermission;
 
 /**
@@ -54,7 +51,6 @@ import org.dcm4che.archive.entity.StudyPermission;
 public interface StudyPermissionDAO extends DAO<StudyPermission> {
     public static final String JNDI_NAME = "dcm4cheeArchive/StudyPermissionDAOImpl/local";
 
-    public StudyPermission create(String action, String role,
-            Timestamp validFrom, Timestamp validUntil, Study study)
+    public StudyPermission create(String suid, String action, String role)
             throws ContentCreateException;
 }

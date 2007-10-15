@@ -38,15 +38,12 @@
 
 package org.dcm4che.archive.dao.jpa;
 
-import java.sql.Timestamp;
-
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.dcm4che.archive.dao.ContentCreateException;
 import org.dcm4che.archive.dao.StudyPermissionDAO;
-import org.dcm4che.archive.entity.Study;
 import org.dcm4che.archive.entity.StudyPermission;
 
 /**
@@ -78,13 +75,10 @@ public class StudyPermissionDAOImpl extends BaseDAOImpl<StudyPermission>
      *      java.lang.String, java.sql.Timestamp, java.sql.Timestamp,
      *      org.dcm4che.archive.entity.Study)
      */
-    public StudyPermission create(String action, String role,
-            Timestamp validFrom, Timestamp validUntil, Study study)
+    public StudyPermission create(String suid, String action, String role)
             throws ContentCreateException {
-        StudyPermission sp = new StudyPermission(action, role, validFrom,
-                validUntil);
+        StudyPermission sp = new StudyPermission(suid, action, role);
         save(sp);
-        sp.setStudy(study);
         if (logger.isInfoEnabled()) {
             logger.info("Created " + sp);
         }

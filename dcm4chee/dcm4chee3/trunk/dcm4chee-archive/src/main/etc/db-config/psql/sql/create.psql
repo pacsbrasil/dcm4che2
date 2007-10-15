@@ -124,18 +124,11 @@ CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
 CREATE TABLE study_permission (
 	pk              SERIAL NOT NULL CONSTRAINT study_permission_pk PRIMARY KEY,
-	study_fk        INTEGER,
+	study_iuid      TEXT NOT NULL,
 	action          TEXT NOT NULL,
-	roles           TEXT NOT NULL,
-	valid_from      TIMESTAMP NOT NULL,
-	valid_until     TIMESTAMP NOT NULL,
-FOREIGN KEY (study_fk) REFERENCES study(pk)
+	roles           TEXT NOT NULL
 );
-CREATE INDEX sty_perm_study_fk ON study_permission(study_fk);
-CREATE INDEX sty_perm_action ON study_permission(action);
-CREATE INDEX sty_perm_roles ON study_permission(roles);
-CREATE INDEX sty_perm_from ON study_permission(valid_from);
-CREATE INDEX sty_perm_until ON study_permission(valid_until);
+CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid, action, roles);
 
 CREATE TABLE mpps (
 	pk          		SERIAL NOT NULL CONSTRAINT mpps_pk PRIMARY KEY,

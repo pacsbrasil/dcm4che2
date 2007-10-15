@@ -132,9 +132,15 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
     @EJB private PrivateInstanceDAO privInstanceDAO;
 
     @EJB private MPPSDAO mppsDAO;
+    
+    public Dataset getPatient(long pk) throws PersistenceException {
+        Patient pat = patDAO.findByPrimaryKey(new Long(pk));
+        return pat.getAttributes(true);
+    }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#getPatientByID(java.lang.String, java.lang.String)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#getPatientByID(java.lang.String,
+     *      java.lang.String)
      */
     public Dataset getPatientByID(String pid, String issuer)
             throws PersistenceException {

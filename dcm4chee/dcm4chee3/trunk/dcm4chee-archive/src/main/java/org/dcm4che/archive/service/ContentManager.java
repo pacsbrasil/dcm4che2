@@ -60,6 +60,16 @@ import org.dcm4che.data.Dataset;
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
 public interface ContentManager {
+    
+    /**
+     * Get a patient record from the database.
+     * 
+     * @param pk
+     *            The primary key of the patient record.
+     * @return A {@link Dataset} containing the patient attributes.
+     * @throws PersistenceException
+     */
+    public Dataset getPatient(long pk) throws PersistenceException;
 
     /**
      * @throws PersistenceException
