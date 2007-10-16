@@ -38,8 +38,11 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -62,16 +65,23 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocal find(java.lang.String suid, java.lang.String action, java.lang.String role)"
  *             strategy="on-find" eager-load-group="*"
  * 
- * @ejb.finder signature="java.util.Collection findByStudyAndAction(java.lang.String suid, java.lang.String action)"
+ * @ejb.finder signature="java.util.Collection findByStudyIuidAndAction(java.lang.String suid, java.lang.String action)"
  *             query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE p.studyIuid = ?1 AND p.action = ?2"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByStudyAndAction(java.lang.String suid, java.lang.String action)"
+ * @jboss.query signature="java.util.Collection findByStudyIuidAndAction(java.lang.String suid, java.lang.String action)"
  *             strategy="on-find" eager-load-group="*"
  * 
- * @ejb.finder signature="java.util.Collection findByStudy(java.lang.String suid)"
+ * @ejb.finder signature="java.util.Collection findByStudyIuid(java.lang.String suid)"
  *             query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE p.studyIuid = ?1"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByStudy(java.lang.String suid)"
+ * @jboss.query signature="java.util.Collection findByStudyIuid(java.lang.String suid)"
+ *             strategy="on-find" eager-load-group="*"
+ * 
+ * @ejb.finder signature="java.util.Collection findByPatientPk(Long pk)"
+ *             query="SELECT OBJECT(sp) FROM Patient p, IN(p.studies) s, StudyPermission sp
+ *             WHERE p.pk = ?1 AND s.studyIuid = sp.studyIuid"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientPk(Long pk)"
  *             strategy="on-find" eager-load-group="*"
  */
 public abstract class StudyPermissionBean implements EntityBean{
@@ -150,4 +160,46 @@ public abstract class StudyPermissionBean implements EntityBean{
         + ", role=" + getRole()
         + "]";
     }
+    
+    
+    /**
+     * @ejb.home-method
+     */
+    public Collection ejbHomeSelectStudyIuidsByPatientPk(Long pk) 
+    		throws FinderException {
+    	return ejbSelectStudyIuids(pk);
+    }
+
+    /**
+     * @ejb.home-method
+     */
+    public Collection ejbHomeSelectStudyIuidsByPatientId(String pid, String issuer) 
+    		throws FinderException {
+    	return issuer != null ? ejbSelectStudyIuids(pid, issuer)
+    			              : ejbSelectStudyIuids(pid);
+    }
+
+    /**
+	 * @ejb.select query="SELECT s.studyIuids FROM Patient p, IN(p.studies) s
+	 *             WHERE p.pk = ?1"
+	 */
+	public abstract Collection ejbSelectStudyIuids(Long pk)
+			throws FinderException;
+	
+    /**
+	 * @ejb.select query="SELECT s.studyIuids FROM Patient p, IN(p.studies) s
+	 *             WHERE p.patientId = ?1"
+	 */
+	public abstract Collection ejbSelectStudyIuids(String pid)
+			throws FinderException;
+	
+	/**
+	 * @ejb.select query="SELECT s.studyIuids FROM Patient p, IN(p.studies) s
+	 *             WHERE p.patientId = ?1 AND (p.issuerOfPatientId IS NULL OR
+	 *             p.issuerOfPatientId = ?2)"
+	 */
+	public abstract Collection ejbSelectStudyIuids(String pid, String issuer)
+			throws FinderException;
+
+    
 }

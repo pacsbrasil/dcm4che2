@@ -38,6 +38,9 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -61,19 +64,20 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocalHome;
  * 
  * @ejb.bean name="StudyPermissionManager" type="Stateless" view-type="remote"
  *           jndi-name="ejb/StudyPermissionManager"
+ *           
  * @ejb.ejb-ref ejb-name="StudyPermission" view-type="local"
  *              ref-name="ejb/StudyPermission"
  */
 public abstract class StudyPermissionManagerBean implements SessionBean {
 
-	private StudyPermissionLocalHome studyPemissionHome;
+	private StudyPermissionLocalHome studyPermissionHome;
 
 	public void setSessionContext(SessionContext ctx) throws EJBException,
 			RemoteException {
 		Context jndiCtx = null;
 		try {
 			jndiCtx = new InitialContext();
-			studyPemissionHome = (StudyPermissionLocalHome) jndiCtx
+			studyPermissionHome = (StudyPermissionLocalHome) jndiCtx
 					.lookup("java:comp/env/ejb/StudyPermission");
 		} catch (NamingException e) {
 			throw new EJBException(e);
@@ -88,35 +92,84 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 	}
 
 	public void unsetSessionContext() {
-		studyPemissionHome = null;
+		studyPermissionHome = null;
 	}
 	
 	/**
 	 * @ejb.interface-method
      */
-	public StudyPermissionDTO grant(String suid, String action, String role)  {
-		StudyPermissionLocal studyPermission;
+	public Collection findByPatientPk(Long pk) {
 		try {
-			studyPermission = studyPemissionHome.create(suid, action, role);			
-		} catch (CreateException e) {
-			try {
-				studyPermission = studyPemissionHome.find(suid, action, role);
-			} catch (FinderException e1) {
-				throw new EJBException(e);
-			}
+			return toDTOs(studyPermissionHome.findByPatientPk(pk));
+		} catch (FinderException e) {
+			throw new EJBException(e);
 		}
-		return studyPermission.toDTO();
 	}
 	
 	/**
 	 * @ejb.interface-method
      */
-	public boolean deny(StudyPermissionDTO dto)  {
+	public Collection findByStudyIuid(String suid) {
+		try {
+			return toDTOs(studyPermissionHome.findByStudyIuid(suid));
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+	}
+		
+	/**
+	 * @ejb.interface-method
+     */
+	public Collection findByStudyIuidAndAction(String suid, String action) {
+		try {
+			return toDTOs(studyPermissionHome
+					.findByStudyIuidAndAction(suid, action));
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+	}
+		
+	private Collection toDTOs(Collection c) {
+		ArrayList dtos = new ArrayList(c.size());
+		for (Iterator iter = c.iterator(); iter.hasNext();) {
+			dtos.add(((StudyPermissionLocal) iter.next()).toDTO());			
+		}
+		return dtos;
+	}
+
+	/**
+	 * @ejb.interface-method
+     */
+	public boolean grant(String suid, String action, String role)  {
+		try {
+			studyPermissionHome.find(suid, action, role);
+			return false;
+		} catch (ObjectNotFoundException onfe) {
+			try {
+				studyPermissionHome.create(suid, action, role);
+			} catch (CreateException e) {
+				try {
+					studyPermissionHome.find(suid, action, role);
+					return false;				
+				} catch (FinderException e1) {
+					throw new EJBException(e);
+				}
+			}
+			return true;
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+	}
+	
+	/**
+	 * @ejb.interface-method
+     */
+	public boolean revoke(StudyPermissionDTO dto)  {
 		try {
 			if (dto.getPk() != -1) {
-				studyPemissionHome.remove(new Long(dto.getPk()));
+				studyPermissionHome.remove(new Long(dto.getPk()));
 			} else {
-				StudyPermissionLocal studyPermission = studyPemissionHome.find(
+				StudyPermissionLocal studyPermission = studyPermissionHome.find(
 						dto.getStudyIuid(), dto.getAction(), dto.getRole());
 				studyPermission.remove();
 			}
@@ -130,4 +183,86 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 		}
 	}
 	
+	/**
+	 * @ejb.interface-method
+     */
+	public int grantPatient(long patPk, String action, String role)  {
+		Collection c;
+		try {
+			c = studyPermissionHome.selectStudyIuidsByPatientPk(new Long(patPk));
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+		return grant(c, action, role);
+	}
+	
+	/**
+	 * @ejb.interface-method
+     */
+	public int revokePatient(long patPk, String action, String role)  {
+		Collection c;
+		try {
+			c = studyPermissionHome.selectStudyIuidsByPatientPk(new Long(patPk));
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+		return revoke(c, action, role);
+	}
+	
+	/**
+	 * @ejb.interface-method
+     */
+	public int grantPatient(String pid, String issuer, String action,
+			String role)  {
+		Collection c;
+		try {
+			c = studyPermissionHome.selectStudyIuidsByPatientId(pid, issuer);
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+		return grant(c, action, role);
+	}
+
+	private int grant(Collection suids, String action, String role) {
+		int count = 0;
+		for (Iterator iter = suids.iterator(); iter.hasNext();) {
+			if (grant((String) iter.next(), action, role)) {
+				++count;			
+			}
+		}
+		return count;
+	}
+	
+	/**
+	 * @ejb.interface-method
+     */
+	public int revokePatient(String pid, String issuer, String action,
+			String role)  {
+		Collection c;
+		try {
+			c = studyPermissionHome.selectStudyIuidsByPatientId(pid, issuer);
+		} catch (FinderException e) {
+			throw new EJBException(e);
+		}
+		return revoke(c, action, role);
+	}
+
+	private int revoke(Collection suids, String action, String role)  {
+		int count = 0;
+		for (Iterator iter = suids.iterator(); iter.hasNext();) {
+			try {
+				StudyPermissionLocal studyPermission = studyPermissionHome
+						.find((String) iter.next(), action, role);
+				studyPermission.remove();
+				++count;
+			} catch (ObjectNotFoundException e) {
+			} catch (FinderException e) {
+				throw new EJBException(e);
+			} catch (RemoveException e) {
+				throw new EJBException(e);
+			}
+		}
+		return count;
+	}
+
 }
