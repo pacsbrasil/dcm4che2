@@ -181,7 +181,7 @@ public abstract class StudyPermissionBean implements EntityBean {
      */
     public Collection ejbHomeSelectStudyIuidsByPatientId(String pid,
             String issuer) throws FinderException {
-        return issuer != null
+        return issuer != null && issuer.length() != 0
                 ? ejbSelectStudyIuids(pid, issuer)
                 : ejbSelectStudyIuids(pid);
     }
