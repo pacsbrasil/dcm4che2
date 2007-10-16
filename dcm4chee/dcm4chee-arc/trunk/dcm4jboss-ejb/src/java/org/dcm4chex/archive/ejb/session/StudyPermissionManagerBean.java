@@ -168,15 +168,29 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         try {
             if (dto.getPk() != -1) {
                 studyPermissionHome.remove(new Long(dto.getPk()));
+                return true;
             } else {
-                StudyPermissionLocal studyPermission = studyPermissionHome
-                        .find(dto.getStudyIuid(), dto.getAction(), dto
-                                .getRole());
-                studyPermission.remove();
+                return revoke(dto.getStudyIuid(), dto.getAction(),
+                        dto.getRole());
             }
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean revoke(String suid, String action, String role)  {
+        try {
+            StudyPermissionLocal studyPermission;
+            try {
+                studyPermission = studyPermissionHome.find(suid, action, role);
+            } catch (ObjectNotFoundException onfe) {
+                return false;
+            }
+            studyPermission.remove();
             return true;
-        } catch (ObjectNotFoundException onfe) {
-            return false;
         } catch (FinderException e) {
             throw new EJBException(e);
         } catch (RemoveException e) {
@@ -253,16 +267,8 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
     private int revoke(Collection suids, String action, String role) {
         int count = 0;
         for (Iterator iter = suids.iterator(); iter.hasNext();) {
-            try {
-                StudyPermissionLocal studyPermission = studyPermissionHome
-                        .find((String) iter.next(), action, role);
-                studyPermission.remove();
+            if (revoke((String) iter.next(), action, role)) {;
                 ++count;
-            } catch (ObjectNotFoundException e) {
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            } catch (RemoveException e) {
-                throw new EJBException(e);
             }
         }
         return count;
