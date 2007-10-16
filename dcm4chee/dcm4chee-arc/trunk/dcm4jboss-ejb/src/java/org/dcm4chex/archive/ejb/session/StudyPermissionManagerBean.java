@@ -186,7 +186,7 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
      */
-	public int grantPatient(long patPk, String action, String role)  {
+	public int grantForPatient(long patPk, String action, String role)  {
 		Collection c;
 		try {
 			c = studyPermissionHome.selectStudyIuidsByPatientPk(new Long(patPk));
@@ -199,7 +199,7 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
      */
-	public int revokePatient(long patPk, String action, String role)  {
+	public int revokeForPatient(long patPk, String action, String role)  {
 		Collection c;
 		try {
 			c = studyPermissionHome.selectStudyIuidsByPatientPk(new Long(patPk));
@@ -212,7 +212,7 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
      */
-	public int grantPatient(String pid, String issuer, String action,
+	public int grantForPatient(String pid, String issuer, String action,
 			String role)  {
 		Collection c;
 		try {
@@ -236,7 +236,7 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 	/**
 	 * @ejb.interface-method
      */
-	public int revokePatient(String pid, String issuer, String action,
+	public int revokeForPatient(String pid, String issuer, String action,
 			String role)  {
 		Collection c;
 		try {
