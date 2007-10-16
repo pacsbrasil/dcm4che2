@@ -64,205 +64,208 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocalHome;
  * 
  * @ejb.bean name="StudyPermissionManager" type="Stateless" view-type="remote"
  *           jndi-name="ejb/StudyPermissionManager"
- *           
+ * 
  * @ejb.ejb-ref ejb-name="StudyPermission" view-type="local"
  *              ref-name="ejb/StudyPermission"
  */
 public abstract class StudyPermissionManagerBean implements SessionBean {
 
-	private StudyPermissionLocalHome studyPermissionHome;
+    private StudyPermissionLocalHome studyPermissionHome;
 
-	public void setSessionContext(SessionContext ctx) throws EJBException,
-			RemoteException {
-		Context jndiCtx = null;
-		try {
-			jndiCtx = new InitialContext();
-			studyPermissionHome = (StudyPermissionLocalHome) jndiCtx
-					.lookup("java:comp/env/ejb/StudyPermission");
-		} catch (NamingException e) {
-			throw new EJBException(e);
-		} finally {
-			if (jndiCtx != null) {
-				try {
-					jndiCtx.close();
-				} catch (NamingException ignore) {
-				}
-			}
-		}
-	}
+    public void setSessionContext(SessionContext ctx) throws EJBException,
+            RemoteException {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            studyPermissionHome = (StudyPermissionLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/StudyPermission");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
 
-	public void unsetSessionContext() {
-		studyPermissionHome = null;
-	}
-	
-	/**
-	 * @ejb.interface-method
-     */
-	public Collection findByPatientPk(Long pk) {
-		try {
-			return toDTOs(studyPermissionHome.findByPatientPk(pk));
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-	}
-	
-	/**
-	 * @ejb.interface-method
-     */
-	public Collection findByStudyIuid(String suid) {
-		try {
-			return toDTOs(studyPermissionHome.findByStudyIuid(suid));
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-	}
-		
-	/**
-	 * @ejb.interface-method
-     */
-	public Collection findByStudyIuidAndAction(String suid, String action) {
-		try {
-			return toDTOs(studyPermissionHome
-					.findByStudyIuidAndAction(suid, action));
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-	}
-		
-	private Collection toDTOs(Collection c) {
-		ArrayList dtos = new ArrayList(c.size());
-		for (Iterator iter = c.iterator(); iter.hasNext();) {
-			dtos.add(((StudyPermissionLocal) iter.next()).toDTO());			
-		}
-		return dtos;
-	}
+    public void unsetSessionContext() {
+        studyPermissionHome = null;
+    }
 
-	/**
-	 * @ejb.interface-method
+    /**
+     * @ejb.interface-method
      */
-	public boolean grant(String suid, String action, String role)  {
-		try {
-			studyPermissionHome.find(suid, action, role);
-			return false;
-		} catch (ObjectNotFoundException onfe) {
-			try {
-				studyPermissionHome.create(suid, action, role);
-			} catch (CreateException e) {
-				try {
-					studyPermissionHome.find(suid, action, role);
-					return false;				
-				} catch (FinderException e1) {
-					throw new EJBException(e);
-				}
-			}
-			return true;
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-	}
-	
-	/**
-	 * @ejb.interface-method
-     */
-	public boolean revoke(StudyPermissionDTO dto)  {
-		try {
-			if (dto.getPk() != -1) {
-				studyPermissionHome.remove(new Long(dto.getPk()));
-			} else {
-				StudyPermissionLocal studyPermission = studyPermissionHome.find(
-						dto.getStudyIuid(), dto.getAction(), dto.getRole());
-				studyPermission.remove();
-			}
-			return true;
-		} catch (ObjectNotFoundException onfe) {
-			return false;
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		} catch (RemoveException e) {
-			throw new EJBException(e);
-		}
-	}
-	
-	/**
-	 * @ejb.interface-method
-     */
-	public int grantForPatient(long patPk, String action, String role)  {
-		Collection c;
-		try {
-			c = studyPermissionHome.selectStudyIuidsByPatientPk(new Long(patPk));
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-		return grant(c, action, role);
-	}
-	
-	/**
-	 * @ejb.interface-method
-     */
-	public int revokeForPatient(long patPk, String action, String role)  {
-		Collection c;
-		try {
-			c = studyPermissionHome.selectStudyIuidsByPatientPk(new Long(patPk));
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-		return revoke(c, action, role);
-	}
-	
-	/**
-	 * @ejb.interface-method
-     */
-	public int grantForPatient(String pid, String issuer, String action,
-			String role)  {
-		Collection c;
-		try {
-			c = studyPermissionHome.selectStudyIuidsByPatientId(pid, issuer);
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-		return grant(c, action, role);
-	}
+    public Collection findByPatientPk(Long pk) {
+        try {
+            return toDTOs(studyPermissionHome.findByPatientPk(pk));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
 
-	private int grant(Collection suids, String action, String role) {
-		int count = 0;
-		for (Iterator iter = suids.iterator(); iter.hasNext();) {
-			if (grant((String) iter.next(), action, role)) {
-				++count;			
-			}
-		}
-		return count;
-	}
-	
-	/**
-	 * @ejb.interface-method
+    /**
+     * @ejb.interface-method
      */
-	public int revokeForPatient(String pid, String issuer, String action,
-			String role)  {
-		Collection c;
-		try {
-			c = studyPermissionHome.selectStudyIuidsByPatientId(pid, issuer);
-		} catch (FinderException e) {
-			throw new EJBException(e);
-		}
-		return revoke(c, action, role);
-	}
+    public Collection findByStudyIuid(String suid) {
+        try {
+            return toDTOs(studyPermissionHome.findByStudyIuid(suid));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
 
-	private int revoke(Collection suids, String action, String role)  {
-		int count = 0;
-		for (Iterator iter = suids.iterator(); iter.hasNext();) {
-			try {
-				StudyPermissionLocal studyPermission = studyPermissionHome
-						.find((String) iter.next(), action, role);
-				studyPermission.remove();
-				++count;
-			} catch (ObjectNotFoundException e) {
-			} catch (FinderException e) {
-				throw new EJBException(e);
-			} catch (RemoveException e) {
-				throw new EJBException(e);
-			}
-		}
-		return count;
-	}
+    /**
+     * @ejb.interface-method
+     */
+    public Collection findByStudyIuidAndAction(String suid, String action) {
+        try {
+            return toDTOs(studyPermissionHome.findByStudyIuidAndAction(suid,
+                    action));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private Collection toDTOs(Collection c) {
+        ArrayList dtos = new ArrayList(c.size());
+        for (Iterator iter = c.iterator(); iter.hasNext();) {
+            dtos.add(((StudyPermissionLocal) iter.next()).toDTO());
+        }
+        return dtos;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean grant(String suid, String action, String role) {
+        try {
+            studyPermissionHome.find(suid, action, role);
+            return false;
+        } catch (ObjectNotFoundException onfe) {
+            try {
+                studyPermissionHome.create(suid, action, role);
+            } catch (CreateException e) {
+                try {
+                    studyPermissionHome.find(suid, action, role);
+                    return false;
+                } catch (FinderException e1) {
+                    throw new EJBException(e);
+                }
+            }
+            return true;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean revoke(StudyPermissionDTO dto) {
+        try {
+            if (dto.getPk() != -1) {
+                studyPermissionHome.remove(new Long(dto.getPk()));
+            } else {
+                StudyPermissionLocal studyPermission = studyPermissionHome
+                        .find(dto.getStudyIuid(), dto.getAction(), dto
+                                .getRole());
+                studyPermission.remove();
+            }
+            return true;
+        } catch (ObjectNotFoundException onfe) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int grantForPatient(long patPk, String action, String role) {
+        Collection c;
+        try {
+            c = studyPermissionHome
+                    .selectStudyIuidsByPatientPk(new Long(patPk));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return grant(c, action, role);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int revokeForPatient(long patPk, String action, String role) {
+        Collection c;
+        try {
+            c = studyPermissionHome
+                    .selectStudyIuidsByPatientPk(new Long(patPk));
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return revoke(c, action, role);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int grantForPatient(String pid, String issuer, String action,
+            String role) {
+        Collection c;
+        try {
+            c = studyPermissionHome.selectStudyIuidsByPatientId(pid, issuer);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return grant(c, action, role);
+    }
+
+    private int grant(Collection suids, String action, String role) {
+        int count = 0;
+        for (Iterator iter = suids.iterator(); iter.hasNext();) {
+            if (grant((String) iter.next(), action, role)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int revokeForPatient(String pid, String issuer, String action,
+            String role) {
+        Collection c;
+        try {
+            c = studyPermissionHome.selectStudyIuidsByPatientId(pid, issuer);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return revoke(c, action, role);
+    }
+
+    private int revoke(Collection suids, String action, String role) {
+        int count = 0;
+        for (Iterator iter = suids.iterator(); iter.hasNext();) {
+            try {
+                StudyPermissionLocal studyPermission = studyPermissionHome
+                        .find((String) iter.next(), action, role);
+                studyPermission.remove();
+                ++count;
+            } catch (ObjectNotFoundException e) {
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            } catch (RemoveException e) {
+                throw new EJBException(e);
+            }
+        }
+        return count;
+    }
 
 }
