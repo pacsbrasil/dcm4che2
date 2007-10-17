@@ -46,53 +46,53 @@ import java.io.Serializable;
  * 
  */
 public class StudyPermissionDTO implements Serializable {
-	
-	private static final long serialVersionUID = 5173487532314776157L;
 
-	public static final String QUERY_ACTION = "Q";
+    private static final long serialVersionUID = 5173487532314776157L;
 
-	private long pk = -1L;
-	private String studyIuid;
-	private String action;
-	private String role;
-	
-	public final long getPk() {
-		return pk;
-	}
-	
-	public final void setPk(long pk) {
-		this.pk = pk;
-	}
-	
-	public final String getStudyIuid() {
-		return studyIuid;
-	}
-	
-	public final void setStudyIuid(String studyIuid) {
-		this.studyIuid = studyIuid;
-	}
-	
-	public final String getAction() {
-		return action;
-	}
-	
-	public final void setAction(String action) {
-		this.action = action;
-	}
-	
-	public final String getRole() {
-		return role;
-	}
-	
-	public final void setRole(String role) {
-		this.role = role;
-	}
+    public static final String QUERY_ACTION = "Q";
+
+    private long pk = -1L;
+
+    private String studyIuid;
+
+    private String action;
+
+    private String role;
+
+    public final long getPk() {
+        return pk;
+    }
+
+    public final void setPk(long pk) {
+        this.pk = pk;
+    }
+
+    public final String getStudyIuid() {
+        return studyIuid;
+    }
+
+    public final void setStudyIuid(String studyIuid) {
+        this.studyIuid = studyIuid;
+    }
+
+    public final String getAction() {
+        return action;
+    }
+
+    public final void setAction(String action) {
+        this.action = action;
+    }
+
+    public final String getRole() {
+        return role;
+    }
+
+    public final void setRole(String role) {
+        this.role = role;
+    }
 
     public String prompt() {
-        return "StudyPermission[pk=" + pk 
-        + ", suid=" + studyIuid
-        + ", action=" + action
-        + ", role=" + role
-        + "]";
+        return "StudyPermission[pk=" + pk + ", suid=" + studyIuid + ", action="
+                + action + ", role=" + role + "]";
     }
 }
