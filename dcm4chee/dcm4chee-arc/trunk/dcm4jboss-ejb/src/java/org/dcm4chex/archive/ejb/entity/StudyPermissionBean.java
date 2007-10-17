@@ -60,31 +60,23 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
- * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocal
- *             find(java.lang.String suid, java.lang.String action,
- *             java.lang.String role)" query="SELECT OBJECT(p) FROM
- *             StudyPermission AS p WHERE p.studyIuid = ?1 AND p.action = ?2 AND
- *             p.role = ?3" transaction-type="Supports"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocal find(java.lang.String suid, java.lang.String action, java.lang.String role)"
+ *             query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE p.studyIuid = ?1 AND p.action = ?2 AND p.role = ?3" transaction-type="Supports"
  * 
- * @ejb.finder signature="java.util.Collection
- *             findByStudyIuidAndAction(java.lang.String suid, java.lang.String
- *             action)" query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE
- *             p.studyIuid = ?1 AND p.action = ?2" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection
- *              findByStudyIuidAndAction(java.lang.String suid, java.lang.String
- *              action)" strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByStudyIuidAndAction(java.lang.String suid, java.lang.String action)"
+ *             query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE p.studyIuid = ?1 AND p.action = ?2" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByStudyIuidAndAction(java.lang.String suid, java.lang.String action)"
+ *              strategy="on-find" eager-load-group="*"
  * 
- * @ejb.finder signature="java.util.Collection findByStudyIuid(java.lang.String
- *             suid)" query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE
- *             p.studyIuid = ?1" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByStudyIuid(java.lang.String
- *              suid)" strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByStudyIuid(java.lang.String suid)"
+ *             query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE p.studyIuid = ?1" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByStudyIuid(java.lang.String suid)"
+ *              strategy="on-find" eager-load-group="*"
  * 
- * @ejb.finder signature="java.util.Collection findByPatientPk(Long pk)"
- *             query="SELECT OBJECT(sp) FROM Patient p, IN(p.studies) s,
- *             StudyPermission sp WHERE p.pk = ?1 AND s.studyIuid =
- *             sp.studyIuid" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByPatientPk(Long pk)"
+ * @ejb.finder signature="java.util.Collection findByPatientPk(java.lang.Long pk)"
+ *             query="SELECT OBJECT(sp) FROM Patient p, IN(p.studies) s, StudyPermission sp WHERE p.pk = ?1 AND s.studyIuid = sp.studyIuid"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientPk(java.lang.Long pk)"
  *              strategy="on-find" eager-load-group="*"
  */
 public abstract class StudyPermissionBean implements EntityBean {
@@ -184,23 +176,19 @@ public abstract class StudyPermissionBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT s.studyIuids FROM Patient p, IN(p.studies) s
-     *             WHERE p.pk = ?1"
+     * @ejb.select query="SELECT s.studyIuid FROM Patient p, IN(p.studies) s WHERE p.pk = ?1"
      */
     public abstract Collection ejbSelectStudyIuids(Long pk)
             throws FinderException;
 
     /**
-     * @ejb.select query="SELECT s.studyIuids FROM Patient p, IN(p.studies) s
-     *             WHERE p.patientId = ?1"
+     * @ejb.select query="SELECT s.studyIuid FROM Patient p, IN(p.studies) s WHERE p.patientId = ?1"
      */
     public abstract Collection ejbSelectStudyIuids(String pid)
             throws FinderException;
 
     /**
-     * @ejb.select query="SELECT s.studyIuids FROM Patient p, IN(p.studies) s
-     *             WHERE p.patientId = ?1 AND (p.issuerOfPatientId IS NULL OR
-     *             p.issuerOfPatientId = ?2)"
+     * @ejb.select query="SELECT s.studyIuid FROM Patient p, IN(p.studies) s WHERE p.patientId = ?1 AND (p.issuerOfPatientId IS NULL OR p.issuerOfPatientId = ?2)"
      */
     public abstract Collection ejbSelectStudyIuids(String pid, String issuer)
             throws FinderException;

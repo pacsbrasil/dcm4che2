@@ -91,7 +91,7 @@ public class StudyPermissionDTO implements Serializable {
         this.role = role;
     }
 
-    public String prompt() {
+    public String toString() {
         return "StudyPermission[pk=" + pk + ", suid=" + studyIuid + ", action="
                 + action + ", role=" + role + "]";
     }
