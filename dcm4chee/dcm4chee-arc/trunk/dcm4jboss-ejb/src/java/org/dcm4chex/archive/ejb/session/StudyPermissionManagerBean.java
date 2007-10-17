@@ -129,6 +129,20 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         }
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean hasPermission(String suid, String action, String role) {
+        try {
+            studyPermissionHome.find(suid, action, role);
+            return true;
+        } catch (ObjectNotFoundException onfe) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+    
     private Collection toDTOs(Collection c) {
         ArrayList dtos = new ArrayList(c.size());
         for (Iterator iter = c.iterator(); iter.hasNext();) {
@@ -141,22 +155,16 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public boolean grant(String suid, String action, String role) {
-        try {
-            studyPermissionHome.find(suid, action, role);
+        if (hasPermission(suid, action, role)) {
             return false;
-        } catch (ObjectNotFoundException onfe) {
-            try {
-                studyPermissionHome.create(suid, action, role);
-            } catch (CreateException e) {
-                try {
-                    studyPermissionHome.find(suid, action, role);
-                    return false;
-                } catch (FinderException e1) {
-                    throw new EJBException(e);
-                }
-            }
+        }
+        try {
+            studyPermissionHome.create(suid, action, role);
             return true;
-        } catch (FinderException e) {
+        } catch (CreateException e) {
+            if (hasPermission(suid, action, role)) {
+                return false;
+            }
             throw new EJBException(e);
         }
     }
