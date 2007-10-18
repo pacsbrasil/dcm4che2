@@ -172,6 +172,19 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public int grant(String suid, String[] actions, String role) {
+        int count = 0;
+        for (int i = 0; i < actions.length; i++) {
+            if (grant(suid, actions[i], role)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public boolean revoke(StudyPermissionDTO dto) {
         try {
             if (dto.getPk() != -1) {
@@ -209,7 +222,20 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int grantForPatient(long patPk, String action, String role) {
+    public int revoke(String suid, String[] actions, String role) {
+        int count = 0;
+        for (int i = 0; i < actions.length; i++) {
+            if (revoke(suid, actions[i], role)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public int grantForPatient(long patPk, String[] actions, String role) {
         Collection c;
         try {
             c = studyPermissionHome
@@ -217,13 +243,13 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return grant(c, action, role);
+        return grant(c, actions, role);
     }
 
     /**
      * @ejb.interface-method
      */
-    public int revokeForPatient(long patPk, String action, String role) {
+    public int revokeForPatient(long patPk, String[] actions, String role) {
         Collection c;
         try {
             c = studyPermissionHome
@@ -231,13 +257,13 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return revoke(c, action, role);
+        return revoke(c, actions, role);
     }
 
     /**
      * @ejb.interface-method
      */
-    public int grantForPatient(String pid, String issuer, String action,
+    public int grantForPatient(String pid, String issuer, String[] actions,
             String role) {
         Collection c;
         try {
@@ -245,15 +271,13 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return grant(c, action, role);
+        return grant(c, actions, role);
     }
 
-    private int grant(Collection suids, String action, String role) {
+    private int grant(Collection suids, String[] actions, String role) {
         int count = 0;
         for (Iterator iter = suids.iterator(); iter.hasNext();) {
-            if (grant((String) iter.next(), action, role)) {
-                ++count;
-            }
+            count += grant((String) iter.next(), actions, role);
         }
         return count;
     }
@@ -261,7 +285,7 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int revokeForPatient(String pid, String issuer, String action,
+    public int revokeForPatient(String pid, String issuer, String[] actions,
             String role) {
         Collection c;
         try {
@@ -269,15 +293,13 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return revoke(c, action, role);
+        return revoke(c, actions, role);
     }
 
-    private int revoke(Collection suids, String action, String role) {
+    private int revoke(Collection suids, String[] actions, String role) {
         int count = 0;
         for (Iterator iter = suids.iterator(); iter.hasNext();) {
-            if (revoke((String) iter.next(), action, role)) {;
-                ++count;
-            }
+            count += revoke((String) iter.next(), actions, role);
         }
         return count;
     }

@@ -47,10 +47,42 @@ import java.io.Serializable;
  */
 public class StudyPermissionDTO implements Serializable {
 
-    private static final long serialVersionUID = 5173487532314776157L;
+    private static final long serialVersionUID = 1042463933021834047L;
 
+    /**
+     * Action value for permission to query attributes of the Study and
+     * included Series and Instance entities.
+     */
     public static final String QUERY_ACTION = "Q";
+    
+    /**
+     * Action value for permission to active retrieve or passive receive
+     * Instances of the Study.
+     */
+    public static final String READ_ACTION = "R";
+    
+    /**
+     * Action value for permission to retrieve Instances of the Study to
+     * another application entity.
+     */
+    public static final String EXPORT_ACTION = "E";
+    
+    /**
+     * Action value for permission to store Instances to an already existing
+     * Study.
+     */
+    public static final String APPEND_ACTION = "A";
 
+    /**
+     * Action value to modify attributes of the Study and included Series.
+     */
+    public static final String UPDATE_ACTION = "U";
+
+    /**
+     * Action value to delete the whole Study or individual Series or Instances.
+     */
+    public static final String DELETE_ACTION = "D";
+    
     private long pk = -1L;
 
     private String studyIuid;
