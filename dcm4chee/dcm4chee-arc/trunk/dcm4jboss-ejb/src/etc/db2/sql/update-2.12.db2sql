@@ -3,7 +3,7 @@
 CONNECT TO pacsdb;
 SET CURRENT SCHEMA pacsdb;
 
-ALTER TABLE ae ADD user_id VARCHAR(254),
+ALTER TABLE ae ADD user_id VARCHAR(254)
                ADD passwd VARCHAR(254);
 
 ALTER TABLE series ADD station_name VARCHAR(254);

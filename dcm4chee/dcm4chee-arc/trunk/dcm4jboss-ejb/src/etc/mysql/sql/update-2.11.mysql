@@ -1,30 +1,30 @@
 -- Update DB from dcm4chee-2.10.x to dcm4chee-2.11.x
 
-ALTER TABLE ae ADD pat_id_issuer VARCHAR(250) BINARY,
-               ADD ae_desc VARCHAR(250) BINARY;
+ALTER TABLE ae ADD (pat_id_issuer VARCHAR(250) BINARY,
+                    ae_desc VARCHAR(250) BINARY);
 
-ALTER TABLE patient ADD pat_custom1 VARCHAR(250) BINARY,
-                    ADD pat_custom2 VARCHAR(250) BINARY,
-                    ADD pat_custom3 VARCHAR(250) BINARY;
+ALTER TABLE patient ADD (pat_custom1 VARCHAR(250) BINARY,
+                         pat_custom2 VARCHAR(250) BINARY,
+                         pat_custom3 VARCHAR(250) BINARY);
 
 CREATE INDEX pat_custom1 ON patient(pat_custom1(64));
 CREATE INDEX pat_custom2 ON patient(pat_custom2(64));
 CREATE INDEX pat_custom3 ON patient(pat_custom3(64));
 
-ALTER TABLE study ADD study_custom1 VARCHAR(250) BINARY,
-                  ADD study_custom2 VARCHAR(250) BINARY,
-                  ADD study_custom3 VARCHAR(250) BINARY;
+ALTER TABLE study ADD (study_custom1 VARCHAR(250) BINARY,
+                       study_custom2 VARCHAR(250) BINARY,
+                       study_custom3 VARCHAR(250) BINARY);
 
 CREATE INDEX study_custom1 ON study(study_custom1(64));
 CREATE INDEX study_custom2 ON study(study_custom2(64));
 CREATE INDEX study_custom3 ON study(study_custom3(64));
 
-ALTER TABLE series ADD body_part VARCHAR(250) BINARY,
-                   ADD laterality VARCHAR(250) BINARY,
-                   ADD series_desc VARCHAR(250) BINARY,
-                   ADD series_custom1 VARCHAR(250) BINARY,
-                   ADD series_custom2 VARCHAR(250) BINARY,
-                   ADD series_custom3 VARCHAR(250) BINARY;
+ALTER TABLE series ADD (body_part VARCHAR(250) BINARY,
+                        laterality VARCHAR(250) BINARY,
+                        series_desc VARCHAR(250) BINARY,
+                        series_custom1 VARCHAR(250) BINARY,
+                        series_custom2 VARCHAR(250) BINARY,
+                        series_custom3 VARCHAR(250) BINARY);
 
 CREATE INDEX body_part ON series(body_part);
 CREATE INDEX laterality ON series(laterality);
@@ -33,9 +33,9 @@ CREATE INDEX series_custom1 ON series(series_custom1(64));
 CREATE INDEX series_custom2 ON series(series_custom2(64));
 CREATE INDEX series_custom3 ON series(series_custom3(64));
 
-ALTER TABLE instance ADD inst_custom1 VARCHAR(250) BINARY,
-                     ADD inst_custom2 VARCHAR(250) BINARY,
-                     ADD inst_custom3 VARCHAR(250) BINARY;
+ALTER TABLE instance ADD (inst_custom1 VARCHAR(250) BINARY,
+                          inst_custom2 VARCHAR(250) BINARY,
+                          inst_custom3 VARCHAR(250) BINARY);
 CREATE INDEX inst_custom1 ON instance(inst_custom1(64));
 CREATE INDEX inst_custom2 ON instance(inst_custom2(64));
 CREATE INDEX inst_custom3 ON instance(inst_custom3(64));

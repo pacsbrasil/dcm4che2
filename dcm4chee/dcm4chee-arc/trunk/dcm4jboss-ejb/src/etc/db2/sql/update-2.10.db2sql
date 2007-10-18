@@ -4,9 +4,9 @@
 CONNECT TO tiani;
 SET CURRENT SCHEMA TIANI;
 
-ALTER TABLE series_req ADD req_service VARCHAR(254),
-                       ADD req_physician VARCHAR(254),
-                       ADD req_phys_i_name VARCHAR(254),
+ALTER TABLE series_req ADD req_service VARCHAR(254)
+                       ADD req_physician VARCHAR(254)
+                       ADD req_phys_i_name VARCHAR(254)
                        ADD req_phys_p_name VARCHAR(254);
 CREATE INDEX ser_req_service ON series_req(req_service);
 CREATE INDEX ser_req_phys ON series_req(req_physician);
