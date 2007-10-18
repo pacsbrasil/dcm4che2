@@ -41,6 +41,9 @@ package org.dcm4chex.archive.common;
 
 import java.io.Serializable;
 
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -51,8 +54,17 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 
-    private static final long serialVersionUID = -8664338212703072265L;
+    private static final long serialVersionUID = -704838487760321831L;
 
+    public static final NotificationFilter NOTIF_FILTER =
+            new NotificationFilter() {		
+        private static final long serialVersionUID = 7625954422409724162L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return SeriesStored.class.getName().equals(notif.getType());
+        }
+    };
+    
     private final Dataset patAttrs;
     private final Dataset studyAttrs;
     private final Dataset seriesAttrs;

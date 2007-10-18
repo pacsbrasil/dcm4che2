@@ -41,6 +41,9 @@ package org.dcm4chex.archive.notif;
 
 import java.io.Serializable;
 
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+
 import org.dcm4che.data.Dataset;
 
 /**
@@ -50,15 +53,25 @@ import org.dcm4che.data.Dataset;
  */
 public class StudyDeleted implements Serializable {
 
-	private static final long serialVersionUID = 3256722883605704752L;
-	
-	private final Dataset ian;
+    private static final long serialVersionUID = 1482944669273087613L;
+    
+    public static final NotificationFilter NOTIF_FILTER =
+            new NotificationFilter() {
+        
+        private static final long serialVersionUID = 1297300734265860374L;
 
-	public StudyDeleted(Dataset ian) {
-		this.ian = ian;
-	}
+        public boolean isNotificationEnabled(Notification notif) {
+            return StudyDeleted.class.getName().equals(notif.getType());
+        }
+    };
+    
+    private final Dataset ian;
 
-	public final Dataset getInstanceAvailabilityNotification() {
-		return ian;
-	}
+    public StudyDeleted(Dataset ian) {
+        this.ian = ian;
+    }
+
+    public final Dataset getInstanceAvailabilityNotification() {
+        return ian;
+    }
 }

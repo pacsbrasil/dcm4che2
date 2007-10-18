@@ -48,7 +48,6 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
-import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -106,17 +105,6 @@ public class IANScuService extends AbstractScuService implements
             UIDs.BasicStudyContentNotification };
     
     private static final UIDGenerator uidGen = UIDGenerator.getInstance();
-
-    private static final NotificationFilterSupport seriesStoredFilter = 
-        new NotificationFilterSupport();
-
-    private static final NotificationFilterSupport studyDeletedFilter = 
-        new NotificationFilterSupport();
-    
-    static {
-        seriesStoredFilter.enableType(SeriesStored.class.getName());
-        studyDeletedFilter.enableType(StudyDeleted.class.getName());
-    }
 
     private final NotificationListener seriesStoredListener = 
         new NotificationListener() {
@@ -298,9 +286,9 @@ public class IANScuService extends AbstractScuService implements
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.addNotificationListener(fileSystemMgtName,
-                studyDeletedListener, studyDeletedFilter, null);
+                studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
         server.addNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
 
@@ -308,9 +296,9 @@ public class IANScuService extends AbstractScuService implements
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.removeNotificationListener(fileSystemMgtName,
-                studyDeletedListener, studyDeletedFilter, null);
+                studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
         server.removeNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
