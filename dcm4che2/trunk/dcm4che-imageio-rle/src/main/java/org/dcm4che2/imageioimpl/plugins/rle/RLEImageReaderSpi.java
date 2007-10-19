@@ -54,7 +54,8 @@ import javax.imageio.spi.ImageReaderSpi;
 public class RLEImageReaderSpi extends ImageReaderSpi {
 
     private static String[] formatNames = { "rle", "RLE" };
-    private static final String[] MIMETypes = { "application/x-dicom-rle" };
+    private static String[] entensions = {""};
+    private static String[] MIMETypes = { "" };
     private static String vendor;
     private static String version;
     static {
@@ -69,7 +70,7 @@ public class RLEImageReaderSpi extends ImageReaderSpi {
 
     
     public RLEImageReaderSpi() {
-        super(vendor, version, formatNames, null, MIMETypes,
+        super(vendor, version, formatNames, entensions, MIMETypes,
                 "org.dcm4che2.imageioimpl.plugins.rle.RLEImageReader",
                 STANDARD_INPUT_TYPE, null, false, null, null, null,
                 null, false, null, null, null, null);
