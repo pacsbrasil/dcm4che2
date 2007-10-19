@@ -40,7 +40,7 @@
  </v:image>
 </x:template>
 
-<x:template name="vmlPath" mode="vml" match="svg:path">
+<x:template name="vmlPath" mode="vml" match="svg:path|svg:text">
   <xsl:param name="node" />
   <xsl:param name="cols" select="$node/@Columns" />
   <xsl:param name="rows" select="$node/@Rows" />
@@ -68,17 +68,20 @@
 </x:template>
 
 <!-- Match text elements, and convert them into VML shape types. -->
-
 <x:template name="iesvgCopyText" mode="svg" match="svg:text">
-  <xsl:param name="rot"><xsl:choose><xsl:when test="starts-with(@transform,'rotate(')"><xsl:value-of select="substring-after(substring-before(@transform,','),'rotate(')" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
-  <xsl:param name="x1" select="@x" />
-  <xsl:param name="y1" select="@y" />
-  <xsl:param name="x2"><xsl:choose><xsl:when test="$rot=90 or $rot=270"><xsl:value-of select="@x" /></xsl:when><xsl:when test="$rot=180"><xsl:value-of select="@x - @textLength" /></xsl:when><xsl:otherwise><xsl:value-of select="@x + @textLength" /></xsl:otherwise></xsl:choose></xsl:param>
-  <xsl:param name="y2"><xsl:choose><xsl:when test="$rot=0 or $rot=180"><xsl:value-of select="@y" /></xsl:when><xsl:when test="$rot=270"><xsl:value-of select="@y - @textLength" /></xsl:when><xsl:otherwise><xsl:value-of select="@y + @textLength" /></xsl:otherwise></xsl:choose></xsl:param>
-  <xsl:param name="path" select="concat('m',floor($x1),',',floor($y1),' l',floor($x2),',',floor($y2))" />
+  <xsl:param name="rot"><xsl:choose><xsl:when test="contains(@transform,'rotate(')"><xsl:value-of select="substring-before(substring-after(@transform,'rotate('),',')" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <!-- TODO Fix the flipping of text - undo it somehow -->
+  <xsl:param name="flip"><xsl:choose><xsl:when test="contains(@transform,'scale')">1</xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="nflip" select="1 - $flip" />
+  <xsl:param name="x1" select="floor(@x)" />
+  <xsl:param name="y1" select="floor(@y)" />
+  <xsl:param name="x2"><xsl:choose><xsl:when test="$rot=90 or $rot=270"><xsl:value-of select="floor(@x)" /></xsl:when><xsl:when test="$rot=180"><xsl:value-of select="floor(@x - @textLength)" /></xsl:when><xsl:otherwise><xsl:value-of select="floor(@x + @textLength)" /></xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="y2"><xsl:choose><xsl:when test="$rot=0 or $rot=180"><xsl:value-of select="floor(@y)" /></xsl:when><xsl:when test="$rot=270"><xsl:value-of select="floor(@y - @textLength)" /></xsl:when><xsl:otherwise><xsl:value-of select="floor(@y + @textLength)" /></xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="path" select="concat('m',$x1 * $nflip + $x2 * $flip,',',$y1 * $nflip + $y2 * $flip,' l',$x2 * $nflip + $x1 * $flip,',',$y2 * $nflip + $y1 * $flip)" />
   <v:shapeType filled='t' stroked='f' fillcolor="white">
     <xsl:copy-of select="@id" />
     <xsl:attribute name="path"><xsl:value-of select="$path" /></xsl:attribute>
+    <xsl:attribute name="style"><xsl:if test="$flip = 1">flip: x;</xsl:if></xsl:attribute>
     <v:path textpathok="True" />
     <v:textpath on="True">
       <xsl:attribute name="style">font-size: <xsl:value-of select="@font-size div 2.3" />;</xsl:attribute>
