@@ -35,6 +35,8 @@ wado.wl.priority=6000
 wado.memcache=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 wado.memcache.priority=5000
 wado.src=${org.dcm4chee.xero.wado.DicomImageFilter}
+wado.dicom.inherit=dicom
+wado.dicom.priority=-100
 wado.fileLocation.inherit=fileLocation
 
 fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}

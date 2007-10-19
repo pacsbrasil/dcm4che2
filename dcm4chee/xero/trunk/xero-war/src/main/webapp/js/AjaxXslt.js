@@ -58,7 +58,7 @@ XsltAjax.prototype.STATUS_OK = 200;
 XsltAjax.prototype.debug=debug;
 // Use for expensive debugging statements only - set to 3 normally.
 XsltAjax.prototype.profile=info;
-XsltAjax.prototype.logLevel=3;
+XsltAjax.prototype.logLevel=1;
 XsltAjax.prototype.info=info
 
 /**

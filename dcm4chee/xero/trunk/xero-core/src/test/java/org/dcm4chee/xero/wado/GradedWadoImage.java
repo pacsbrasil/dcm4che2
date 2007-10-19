@@ -54,18 +54,16 @@ public class GradedWadoImage extends FixedItem<WadoImage> {
 	 * @return WadoImage containing the specified image, on -1..1
 	 */
 	static WadoImage createImage() {
-		BufferedImage bi = new BufferedImage(256, 256, BufferedImage.TYPE_USHORT_GRAY);
+		BufferedImage bi = new BufferedImage(256, 256, BufferedImage.TYPE_BYTE_GRAY);
 		WritableRaster wr = bi.getRaster();
 		int[] iArray = new int[1];
 		for(int i=0; i<256; i++ ) {
 			for(int j=0; j<256; j++ ) {
-				iArray[0] = (j << 8) + i;
+				iArray[0] = i;
 				wr.setPixel(i,j, iArray);
 			}
 		}
-		WadoImage wi = new WadoImage(bi, "-1.0", "1.0f");
-		wi.setParameter(WadoImage.WINDOW_CENTER, 0.5d);
-		wi.setParameter(WadoImage.WINDOW_WIDTH, 1.0d);
+		WadoImage wi = new WadoImage(null,8,bi);
 		return wi;
 	}
 

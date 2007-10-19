@@ -20,7 +20,6 @@
 >
 
 <x:template name="svgCopy" mode="svg" match="*">
-  <xsl:message>SVG Copying node <xsl:value-of select="name(.)" /> id=<xsl:value-of select="@id" /></xsl:message>
   <xsl:copy>
     <xsl:copy-of select="@*" />
     <xsl:apply-templates mode="svg"/>
@@ -33,22 +32,39 @@
   <xsl:apply-templates mode="svg" />
 </x:template>
 
+<x:template name="vmlImage" mode="vml" match="svg:image[count(@class)=0 or @class!='ImageOverlay']">
+  <v:image>
+    <xsl:copy-of select="@*" />
+    <xsl:attribute name="src"><xsl:value-of select="@xlink:href" /></xsl:attribute>
+    <xsl:attribute name="style"><xsl:value-of select="concat('width: ',@width,'px; height: ',@height,'px; ',@style)" /></xsl:attribute>
+ </v:image>
+</x:template>
+
+<x:template name="vmlPath" mode="vml" match="svg:path">
+  <xsl:param name="node" />
+  <xsl:param name="cols" select="$node/@Columns" />
+  <xsl:param name="rows" select="$node/@Rows" />
+  <xsl:element name="v:shape">
+    <xsl:attribute name="type">#<xsl:value-of select="@id" /></xsl:attribute>
+    <xsl:attribute name="style"><xsl:value-of select="concat('width: ',$cols,'; height: ',$rows,';')" /> left: -1; top: -1;</xsl:attribute>
+    <xsl:attribute name="coordsize"><xsl:value-of select="concat($cols,' ',$rows)" /></xsl:attribute>
+    <xsl:if test="$mode='editMarkup'">
+      <xsl:attribute name="onmousedown">return markupEdit.mouseDown(window.event);</xsl:attribute>
+    </xsl:if>
+  </xsl:element>
+</x:template>
+
 <!-- Iterate over all the shapes references from the svg:g element. -->
 <x:template name="ieUseShape" mode="svg"  xmlns:xlink="http://www.w3.org/1999/xlink" match="svg:use">
   <xsl:param name="loc" />
-  <xsl:param name="cols" select="../@Columns" />
-  <xsl:param name="rows" select="../@Rows" />
+  <xsl:param name="imageNode" select=".." />
+  <xsl:param name="cols" select="$imageNode/@Columns" />
+  <xsl:param name="rows" select="$imageNode/@Rows" />
   <xsl:param name="id"><xsl:value-of select="substring(@xlink:href,2)"/></xsl:param>
-  <xsl:for-each select="ancestor::se:results/descendant::svg:g[@id=$id]/*">
-    <xsl:element name="v:shape">
-      <xsl:attribute name="type">#<xsl:value-of select="@id" /></xsl:attribute>
-      <xsl:attribute name="style"><xsl:value-of select="concat('width: ',$cols,'; height: ',$rows,';')" /> left: -1; top: -1;</xsl:attribute>
-      <xsl:attribute name="coordsize"><xsl:value-of select="concat($cols,' ',$rows)" /></xsl:attribute>
-      <xsl:if test="$mode='editMarkup'">
-        <xsl:attribute name="onmousedown">return markupEdit.mouseDown(window.event);</xsl:attribute>
-      </xsl:if>
-    </xsl:element>
-  </xsl:for-each>
+  <xsl:apply-templates select="ancestor::se:results/descendant::svg:g[@id=$id]/*" mode="vml">
+    <xsl:with-param name="loc" select="$loc" />
+    <xsl:with-param name="node" select="$imageNode" />
+  </xsl:apply-templates>
 </x:template>
 
 <!-- Match text elements, and convert them into VML shape types. -->
@@ -95,12 +111,19 @@
   </xsl:element>
 </x:template>
 
+<!-- Avoids copying image overlays that are of class ImageOverlay as those are image specific -->
+<x:template name="svgImage" match="svg:image" mode="svg">
+ <xsl:if test="count(@class)=0 or @class!='ImageOverlay'">
+  <c:if test="#{browser!='MSIE'}">
+   <xsl:copy-of select="." />
+  </c:if>
+ </xsl:if>
+</x:template>
 
 <!-- Adds the SVG use section to the image. -->
 <x:template name="addUse">
  <xsl:param name="loc" />
  <xsl:param name="node" />
- <xsl:message>SVG use nodes not display <xsl:value-of select="count($node/svg:use[@class!='DISPLAY' or count(@class)=0])" /></xsl:message>
  <c:choose>
    <c:when test="#{browser=='MSIE'}">
 	 <xsl:for-each select="$node/svg:use[@class!='DISPLAY' or count(@class)=0]">
@@ -113,6 +136,25 @@
      <xsl:copy-of select="$node/svg:use[@class!='DISPLAY' or count(@class)=0]" />
    </c:otherwise>
  </c:choose>
+ <xsl:apply-templates mode="svgOverlay" select="$node/svg:use[@class='Overlay']">
+  <xsl:with-param name="loc" select="$loc" />
+  <xsl:with-param name="node" select="$node" />
+ </xsl:apply-templates>
+</x:template>
+
+<!-- Copies in the individual overlays and modifies them to add the object UID -->
+<x:template name="imageOverlaySvg" mode="svgOverlay"  xmlns:xlink="http://www.w3.org/1999/xlink" match="svg:use[@class='Overlay']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="id"><xsl:value-of select="substring(@xlink:href,2)"/></xsl:param>
+  <xsl:for-each select="ancestor::se:results/descendant::svg:g[@id=$id]/svg:image[@class='ImageOverlay']">
+    <xsl:element name="#{browser=='MSIE'?'v:image' : 'svg:image'}">
+      <xsl:copy-of select="@*" />
+      <xsl:attribute name="xlink:href"><xsl:value-of select="concat(@xlink:href,'&amp;objectUID=',$node/@SOPInstanceUID)" /></xsl:attribute>
+      <xsl:attribute name="src"><xsl:value-of select="concat(@xlink:href,'&amp;objectUID=',$node/@SOPInstanceUID)" /></xsl:attribute>
+      <xsl:attribute name="style"><xsl:value-of select="concat('width: ',@width,'px; height: ',@height,'px; ',@style)" /></xsl:attribute>
+   </xsl:element>
+  </xsl:for-each>
 </x:template>
 
 <!-- Adds the SVG use section to the image. -->

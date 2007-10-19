@@ -39,6 +39,8 @@ package org.dcm4chee.xero.wado;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -46,16 +48,18 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.image.ColorModelFactory;
-import org.dcm4che.image.ColorModelParam;
-import org.dcm4che.imageio.plugins.DcmImageReadParam;
-import org.dcm4che.imageio.plugins.DcmMetadata;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.image.ColorModelFactory;
+import org.dcm4che2.image.OverlayUtils;
+import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -63,133 +67,170 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class takes a URL to either a file location or another WADO service, and uses it to read an image, providing the raw, buffered
- * image data (without modalty LUT/rescale slope & intercept, and without window levelling).  It DOES handle the region encoding and resolution 
- * (rows/cols) fields, as this needs to be done as part of the initial read.
+ * This class takes a URL to either a file location or another WADO service, and
+ * uses it to read an image, providing the raw, buffered image data (without
+ * modalty LUT/rescale slope & intercept, and without window levelling). It DOES
+ * handle the region encoding and resolution (rows/cols) fields, as this needs
+ * to be done as part of the initial read.
+ * 
  * @author bwallace
  */
 public class DicomImageFilter implements Filter<WadoImage> {
-	public static final String COLOR_MODEL_PARAM = "ColorModelParam";
-	private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);
-	private ColorModelFactory colorModelFactory = ColorModelFactory.getInstance();
+   public static final String FRAME_NUMBER = "frameNumber";
 
-	static boolean first = true;
-	public DicomImageFilter() {
-	   if( first ) ImageIO.scanForPlugins();
-	   first = false;
-	}
-	
-	/** Read the raw DICOM image object 
-	 * @return WADO image.
-	 */
-	public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
-		URL location = (URL) filterItem.callNamedFilter("fileLocation", params);
-		if (location == null)
-			return null;
-		WadoImage ret = null;
-		Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
-		if (!it.hasNext())
-			throw new UnsupportedOperationException(
-					"The DICOM image I/O filter must be available to read images.");
-		log.debug("Found DICOM image reader - trying to read image now.");
-		ImageReader reader = (ImageReader) it.next();
-		DcmImageReadParam param = (DcmImageReadParam) reader.getDefaultReadParam();
-		//param.setAutoWindowing(true);
-		ImageInputStream in = null;
-		String strFrame = (String) params.get("frameNumber");
-		int frame = 0;
-		if( strFrame!=null ) frame = Integer.parseInt(strFrame)-1; 
-		try {
-			String surl = location.toString();
-			if (surl.startsWith("file:") ) {
-				String fileName = location.getFile();
-				log.info("Reading DICOM image from local cache file "+surl);
-				in = new FileImageInputStream(new File(fileName));
-			} else {
-				// TODO change to FileCacheInputStream once we can configure the locaiton.
-				log.info("Reading DICOM image from remote WADO url:"+surl);
-				in = new MemoryCacheImageInputStream(location.openStream());
-			}
-			reader.setInput(in);
-			int width = reader.getWidth(0);
-			int height = reader.getHeight(0);
-			updateParamFromRegion(param, params, width, height);
-			BufferedImage bi = reader.read(frame,param);
-			ret = new WadoImage(bi,null,null);
-            Dataset data = ((DcmMetadata) reader.getStreamMetadata())
-            .getDataset();
-            // It would be nice to get this from the underlying image data, but it isn't clear
-            // how to do that.
-            try {
-            	ColorModelParam cmParam = colorModelFactory.makeParam(data);
-            	ret.setParameter(COLOR_MODEL_PARAM, cmParam);
-            } catch(UnsupportedOperationException e) {
-            	log.warn("Can't make color model parameter for some images.");
-            }
-		} catch (IOException e) {
-			log.error("Caught I/O exception reading image.", e);
-		}
-		// This might happen if the instance UID under request comes from
-		// another
-		// system and needs to be read in another way.
-		if (ret == null)
-			return (WadoImage) filterItem.callNextFilter(params);
-		return ret;
-	}
-	
-	/** Compute the source, sub-sampling and destination regions appropriately from the
-	 * region, rows and cols in params.  
-	 * @param read
-	 * @param params
-	 * @param width
-	 * @param height
-	 */
-	protected void updateParamFromRegion(DcmImageReadParam read, Map<String,Object> params, int width, int height) {
-		String region = (String) params.get("region");
-		String sRows = (String) params.get("rows");
-		String sCols = (String) params.get("cols");
-		int xOffset = 0;
-		int yOffset = 0;
-		int sWidth = width;
-		int sHeight = height;
+   public static final String COLOR_MODEL_PARAM = "ColorModelParam";
 
-		if( region!=null ) {
-			// Figure out the sub-region to use
-			double[] dregion = WadoImage.splitRegion(region);
-			xOffset = (int) (dregion[0] * width);
-			yOffset = (int) (dregion[1] * height);
-			sWidth = (int) ((dregion[2] - dregion[0] ) * width);
-			sHeight = (int) ((dregion[3] - dregion[1]) * height);
-			Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
-			read.setSourceRegion(rect);
-			log.info("Source region "+rect);
-		}
-		
-		if( sRows==null && sCols==null ) return;
+   private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);
 
-		// Now figure out the size of the final region
-		int subsampleX = 1;
-		int subsampleY = 1;
-		if( sCols!=null ) {
-			subsampleX = sWidth / Integer.parseInt(sCols);
-			subsampleY = subsampleX;
-		}
-		if( sRows!=null ) {
-			subsampleY = sHeight / Integer.parseInt(sRows);
-			if( sCols==null ) subsampleX = subsampleY;
-		}
-		// Can't over-sample the data...
-		if( subsampleX<1 ) subsampleX = 1;
-		if( subsampleY<1 ) subsampleY = 1;
-		if( subsampleX==1 && subsampleY==1 ) return;
-		log.info("Sub-sampling "+subsampleX+","+subsampleY + " sHeight="+sHeight);
-		read.setSourceSubsampling(subsampleX, subsampleY, 0,0);
-	}
+   public static String PREFERRED_DICOM_READER = "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader";
 
-	/** Get the default priority for this filter. */
-	@MetaData
-	public int getPriority() {
-		return 0;
-	}
+   static boolean first = true;
+
+   public DicomImageFilter() {
+	  if (first)
+		 ImageIO.scanForPlugins();
+	  first = false;
+   }
+
+   /**
+     * Read the raw DICOM image object
+     * 
+     * @return WADO image.
+     */
+   public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
+	  URL location = (URL) filterItem.callNamedFilter("fileLocation", params);
+	  if (location == null)
+		 return null;
+	  WadoImage ret = null;
+	  Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
+	  if (!it.hasNext())
+		 throw new UnsupportedOperationException("The DICOM image I/O filter must be available to read images.");
+	  log.info("Found DICOM image reader - trying to read image now.");
+	  ImageReader reader = (ImageReader) it.next();
+	  while (it.hasNext() && !PREFERRED_DICOM_READER.equals(reader.getClass().getName())) {
+		 reader = (ImageReader) it.next();
+	  }
+	  if (!PREFERRED_DICOM_READER.equals(reader.getClass().getName())) {
+		 throw new RuntimeException("Couldn't find image reader class " + PREFERRED_DICOM_READER);
+	  }
+
+	  ImageReadParam param = reader.getDefaultReadParam();
+	  if (param instanceof DicomImageReadParam) {
+		 DicomImageReadParam dParam = (DicomImageReadParam) param;
+		 dParam.setOverlayRGB((String) params.get("rgb"));
+	  }
+	  // param.setAutoWindowing(true);
+	  ImageInputStream in = null;
+	  String strFrame = (String) params.get(FRAME_NUMBER);
+	  int frame = 0;
+	  if (strFrame != null) {
+		 frame = Integer.parseInt(strFrame) - 1;
+		 // Overlays are specified as the actual overlay number, not as an
+            // offset value.
+		 if ((frame & 0x60000000) != 0)
+			frame++;
+	  }
+	  try {
+		 String surl = location.toString();
+		 if (surl.startsWith("file:")) {
+			String fileName = location.getFile();
+			log.info("Reading DICOM image from local cache file " + surl);
+			in = new FileImageInputStream(new File(fileName));
+		 } else {
+			// TODO change to FileCacheInputStream once we can configure the
+			// location.
+			log.info("Reading DICOM image from remote WADO url:" + surl);
+			in = new MemoryCacheImageInputStream(location.openStream());
+		 }
+		 reader.setInput(in);
+		 int width = reader.getWidth(0);
+		 int height = reader.getHeight(0);
+		 updateParamFromRegion(param, params, width, height);
+		 BufferedImage bi;
+		 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
+		 DicomObject ds = streamData.getDicomObject();
+		 if( OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
+			// This object can't be window levelled, so just get it as
+			// a buffered image directly.
+			bi = reader.read(frame, param);
+		 } else {
+			WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
+			ColorModel cm = ColorModelFactory.createColorModel(ds);
+			bi = new BufferedImage(cm, r, false, null);
+		 }
+
+		 ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), bi);
+	  } catch (IOException e) {
+		 log.error("Caught I/O exception reading image.", e);
+	  }
+	  // This might happen if the instance UID under request comes from
+	  // another
+	  // system and needs to be read in another way.
+	  if (ret == null)
+		 return (WadoImage) filterItem.callNextFilter(params);
+	  return ret;
+   }
+
+   /**
+     * Compute the source, sub-sampling and destination regions appropriately
+     * from the region, rows and cols in params.
+     * 
+     * @param read
+     * @param params
+     * @param width
+     * @param height
+     */
+   protected void updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
+	  String region = (String) params.get("region");
+	  String sRows = (String) params.get("rows");
+	  String sCols = (String) params.get("cols");
+	  int xOffset = 0;
+	  int yOffset = 0;
+	  int sWidth = width;
+	  int sHeight = height;
+
+	  if (region != null) {
+		 // Figure out the sub-region to use
+		 double[] dregion = WadoImage.splitRegion(region);
+		 xOffset = (int) (dregion[0] * width);
+		 yOffset = (int) (dregion[1] * height);
+		 sWidth = (int) ((dregion[2] - dregion[0]) * width);
+		 sHeight = (int) ((dregion[3] - dregion[1]) * height);
+		 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
+		 read.setSourceRegion(rect);
+		 log.info("Source region " + rect);
+	  }
+
+	  if (sRows == null && sCols == null)
+		 return;
+
+	  // Now figure out the size of the final region
+	  int subsampleX = 1;
+	  int subsampleY = 1;
+	  if (sCols != null) {
+		 subsampleX = sWidth / Integer.parseInt(sCols);
+		 subsampleY = subsampleX;
+	  }
+	  if (sRows != null) {
+		 subsampleY = sHeight / Integer.parseInt(sRows);
+		 if (sCols == null)
+			subsampleX = subsampleY;
+	  }
+	  // Can't over-sample the data...
+	  if (subsampleX < 1)
+		 subsampleX = 1;
+	  if (subsampleY < 1)
+		 subsampleY = 1;
+	  if (subsampleX == 1 && subsampleY == 1)
+		 return;
+	  log.info("Sub-sampling " + subsampleX + "," + subsampleY + " sHeight=" + sHeight);
+	  read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
+   }
+
+   /** Get the default priority for this filter. */
+   @MetaData
+   public int getPriority() {
+	  return 0;
+   }
 
 }

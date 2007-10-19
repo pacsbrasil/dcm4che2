@@ -9,6 +9,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterList;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.testng.annotations.Test;
 
 /** Tests the dicom file location filter */
@@ -27,6 +28,7 @@ public class DicomFileLocationFilterTest {
 		assert (fl != null);
 		FilterItem fi = new FilterItem(wado);
 		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(MemoryCacheFilter.KEY_NAME,filename);
 		URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
 		assert url != null;
 		File f = new File(url.getFile());

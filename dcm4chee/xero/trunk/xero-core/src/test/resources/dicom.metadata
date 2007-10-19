@@ -9,6 +9,10 @@ image.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
 image.fileLocation.priority=-1
 image.image=${org.dcm4chee.xero.wado.DicomImageFilter}
 
+wlimage.inherit=image
+wlimage.wl=${org.dcm4chee.xero.wado.WLFilter}
+wlimage.wl.priority=25
+
 fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
 fileLocation.fileLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
 fileLocation.fileLocation.priority=5

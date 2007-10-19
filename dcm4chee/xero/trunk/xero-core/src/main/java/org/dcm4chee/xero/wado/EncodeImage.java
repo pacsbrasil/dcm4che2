@@ -74,6 +74,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			"seriesUID",
 			"objectUID",
 			"frameNumber",
+			"rgb", // Could be re-calculated fairly easily, but right now it isn't worthwhile.
 			"region",
 			"rows",
 			"columns",

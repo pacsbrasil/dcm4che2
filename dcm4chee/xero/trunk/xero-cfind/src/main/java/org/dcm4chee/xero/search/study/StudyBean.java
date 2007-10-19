@@ -111,10 +111,15 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  getSeries().addAll(study.getSeries());
    }
 
-   /** Gets additional attributes and child elements defined in other objects */
+   /** Gets additional attributes and child elements defined in other objects.
+    * Shares the macro items with any parent items that have one, so as to only
+    * update local information once for all child clones. */
    public MacroItems getMacroItems() {
-	  if (macroItems == null)
-		 macroItems = new MacroItems();
+	  if (macroItems == null) {
+		 if( this.originalStudy!=null ) 
+			this.macroItems = this.originalStudy.getMacroItems();
+		 else macroItems = new MacroItems();
+	  }
 	  return macroItems;
    }
 

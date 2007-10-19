@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.metadata.servlet;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -94,8 +95,14 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 					context = JAXBContext.newInstance(data.getClass());
 				}
 				Marshaller m = context.createMarshaller();
+				m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 				response.setContentType("text/xml");
-				m.marshal(data, response.getOutputStream());			
+				String xml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
+				//String pretty="<?xml-stylesheet type=\"text/xsl\" href=\"/xero/pretty.xsl\"?>\n";
+				OutputStream os = response.getOutputStream();
+				os.write(xml.getBytes());
+				//os.write(pretty.getBytes());
+				m.marshal(data, os);			
 			} catch (JAXBException e) {
 				throw new RuntimeException(e);
 			} catch (IOException e) {

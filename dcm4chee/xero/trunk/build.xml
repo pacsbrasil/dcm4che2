@@ -21,6 +21,7 @@
         <fileset dir="xero-ear/target/xero">
            <include name="el-*.jar" />
            <include name="slf4j*.jar" />
+           <include name="dcm4che-*.jar" />
         </fileset>
      </copy>
   </target>
@@ -133,7 +134,11 @@
            <include name="ejb3-persistence.jar" />
            <include name="cglib.jar" />
         </fileset>
-        <fileset dir="xero-ear/target/xero" includes="el-*.jar" />
+        <fileset dir="xero-ear/target/xero">
+           <include name="el-*.jar" />
+           <include name="slf4j*.jar" />
+           <include name="dcm4che-*.jar" />
+        </fileset>
      </copy>
      <copy todir="${stableServer}/server/default/deploy">
        <fileset dir="${jbossSeamDir}/server/default/deploy">

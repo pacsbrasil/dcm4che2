@@ -42,11 +42,7 @@ import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.iod.module.lut.ILut;
-import org.dcm4che2.iod.module.lut.LutModule;
-import org.dcm4che2.iod.module.lut.ModalityLutModule;
-import org.dcm4che2.iod.module.lut.RescaleLut;
-import org.dcm4che2.iod.module.lut.VoiLutModule;
+import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.macro.WindowLevelMacro;
@@ -71,8 +67,6 @@ import org.slf4j.LoggerFactory;
 public class MinMaxPixelInfo implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(MinMaxPixelInfo.class);
 
-   private static MinMaxPixelMacro huMinMax = new MinMaxPixelMacro(-1024f, 3072f);
-
    /** Update any image beans with min/max pixel range information */
    public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
@@ -87,6 +81,8 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 				  ImageBean ib = (ImageBean) dot;
 				  // If it has already had information added, eg from GSPS,
 				  // then don't update it again (ie don't read the header.)
+				  if (ib.getGspsUID() != null)
+					 continue;
 				  if (ib.getMacroItems().findMacro(MinMaxPixelMacro.class) != null)
 					 continue;
 				  log.info("MinMaxPixelInfo on " + ib.getSOPInstanceUID());
@@ -108,7 +104,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
      */
    protected void updateImage(FilterItem fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
-        // create a new one
+	  // create a new one
 	  Map<String, Object> newParams = new HashMap<String, Object>(params);
 	  newParams.put("objectUID", ib.getSOPInstanceUID());
 	  DicomObject dobj = (DicomObject) fi.callNamedFilter("dicom", newParams);
@@ -116,71 +112,51 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 		 log.warn("Could not read dicom header for this object.");
 		 return;
 	  }
-	  MinMaxPixelMacro minMax = updatePixelRange(dobj, ib);
+	  Integer frame = ib.getFrame();
+	  MinMaxPixelMacro minMax = updatePixelRange(dobj,frame!=null ? frame : 0,ib.getMacroItems());
 	  if (minMax != null)
-		 updateWindowLevel(dobj, ib, minMax);
+		 updateWindowLevel(dobj, null, frame!=null ? frame : 0, ib.getMacroItems());
    }
 
-   /**
-     * This method takes an existing dicom object, and reads the appropriate
-     * min/max pixel values and adds the information to the image bean.
-     */
-   public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, ImageBean ib) {
-	  return updatePixelRange(dobj, ib.getMacroItems());
+   public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, int frame, MacroItems macros) {
+	  return updatePixelRange(dobj, null, frame, macros);
    }
 
-   public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, MacroItems macros) {
-	  LutModule lm = new LutModule(dobj);
-	  String modality = dobj.getString(Tag.Modality);
-	  // It is harder to handle more samples, as then we need to know about
-        // the mode - so, ignore this for now.
-	  if (lm.getSamplesPerPixel() != 1)
-		 return null;
-
-	  ModalityLutModule mlm = lm.getModalityLutModule();
-	  ILut lut = mlm.getModalityLut();
-	  // TODO Make the CT comparison a bit less strict - this is to strong a condition, but 
-	  // the right one involves testing the top level rescale slope/intercept AND the lower level
-	  // ones for enhanced multi-frame.
-	  if ("HU".equalsIgnoreCase(mlm.getRescaleType()) || "CT".equalsIgnoreCase(modality)) {
-		 log.debug("Min/max pixel is for houndsfield units.");
-		 macros.addMacro(huMinMax);
-		 return huMinMax;
-	  }
-	  if (lut == null) {
-		 log.debug("No modality LUT found for " + dobj.getString(Tag.SOPInstanceUID));
-		 lut = new RescaleLut(1, 0, "Identity");
-	  }
-	  float minPixelValue = lut.lookup(lm.minPossibleStoredValue());
-	  float maxPixelValue = lut.lookup(lm.maxPossibleStoredValue());
+   public static MinMaxPixelMacro updatePixelRange(DicomObject img, DicomObject pr, int frame, MacroItems macros) {
+	  float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, null);
+	  float minPixelValue = cw[0]-cw[1]/2f;
+	  float maxPixelValue = cw[0]+cw[1]/2f;
 	  MinMaxPixelMacro minMax = new MinMaxPixelMacro(minPixelValue, maxPixelValue);
 	  macros.addMacro(minMax);
+	  log.info("Added " + minMax + " to " + macros);
 	  return minMax;
    }
 
    /**
      * This method updates the header with VOI window level defaults (if any)
-     * using the first VOI LUT found, or a window level such that the entire
-     * image data is shown. TODO Change this to provide a voi lut name when
-     * there is a provided VOI Lut.
+     * using the first VOI LUT found.
      * 
      * @param minMax
+     * @return The window level macro item added, or null if none.
      */
-   public static void updateWindowLevel(DicomObject dobj, ImageBean ib, MinMaxPixelMacro minMax) {
-	  VoiLutModule voi = new VoiLutModule(dobj);
-	  float[] centers = voi.getWindowCenter();
-	  float[] widths = voi.getWindowWidth();
-	  WindowLevelMacro wl;
-	  if (centers == null || widths == null) {
-		 wl = new WindowLevelMacro((minMax.getMaxPixel() + minMax.getMinPixel() + 1) / 2, minMax.getMaxPixel()
-			   - minMax.getMinPixel() + 1, "Pixel Range WL");
-	  } else {
-		 String[] explanations = voi.getWindowCenterWidthExplanations();
-		 String explanation = "";
-		 if (explanations != null && explanations.length > 0)
-			explanation = explanations[0];
-		 wl = new WindowLevelMacro(centers[0], widths[0], explanation);
+   public static WindowLevelMacro updateWindowLevel(DicomObject img, DicomObject pr, int frame, MacroItems macros) {
+	  String uid = img.getString(Tag.SOPInstanceUID);
+	  DicomObject voiObj = VOIUtils.selectVoiItemFromPr(uid,pr,frame);
+	  if( voiObj==null ) {
+		 log.warn("No VOI Object found - not setting window level info.");
+		 return null;
 	  }
-	  ib.getMacroItems().addMacro(wl);
+	  float center = voiObj.getInt(Tag.WindowCenter);
+	  float width = voiObj.getInt(Tag.WindowWidth);
+
+	  WindowLevelMacro wl;
+	  if (width==0f) {
+		 log.debug("Image has no window width/center provided, not specifying WL.");
+		 return null;
+	  } else {
+		 wl = new WindowLevelMacro(center, width, "");
+	     macros.addMacro(wl);
+	     return wl;
+	  }
    }
 }

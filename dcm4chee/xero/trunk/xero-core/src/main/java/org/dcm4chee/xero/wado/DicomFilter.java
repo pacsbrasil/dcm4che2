@@ -3,6 +3,7 @@ package org.dcm4chee.xero.wado;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
@@ -80,4 +81,12 @@ public class DicomFilter implements Filter<DicomObject> {
 	  return 25;
    }
 
+   public static DicomObject readHeader(FilterItem filterItem, Map<String, Object> params, String uid)
+   {
+		  // This might come from a different series or even study, so don't
+		  // assume anything here.
+		  Map<String, Object> newParams = new HashMap<String, Object>();
+		  newParams.put("objectUID", uid);
+		  return (DicomObject) filterItem.callNamedFilter("dicom", newParams);
+   }
 }

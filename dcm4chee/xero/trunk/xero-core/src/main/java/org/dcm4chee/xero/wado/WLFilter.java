@@ -42,18 +42,15 @@ import static org.dcm4chee.xero.wado.WadoImage.WINDOW_WIDTH;
 
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ByteLookupTable;
 import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.IndexColorModel;
-import java.awt.image.LookupOp;
+import java.awt.image.DataBuffer;
 import java.util.Map;
 
-import org.dcm4che.image.ColorModelFactory;
-import org.dcm4che.image.ColorModelParam;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.image.LookupTable;
+import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,87 +65,108 @@ import org.slf4j.LoggerFactory;
 public class WLFilter implements Filter<WadoImage> {
    private static Logger log = LoggerFactory.getLogger(WLFilter.class);
 
-   private static final ColorModelFactory cmFactory = ColorModelFactory.getInstance();
-
    ColorSpace csGray = ColorSpace.getInstance(ColorSpace.CS_GRAY);
 
    public static final double MIN_WIDTH = 0.0001;
 
+   /**
+    * Used to specify a presentation UID to apply to an image
+    */
+   public static String PRESENTATION_UID = "presentationUID";
+   
+   /** Used to flag inverting the image display to true/false.  Modifes the value
+    * in the GSPS or image.
+    */
+   public static String INVERT = "invert";
+   
+   private static short[] pval2out_inverse = new short[256];
+   static {
+	 for(int i=0; i<256; i++ )pval2out_inverse[i] = (short) ((255-i) << 8); 
+   };
+
    public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
-	  log.info("DicomWLFilter");
-	  Object[] values = MemoryCacheFilterBase.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER);
+	  Object[] values = MemoryCacheFilterBase.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if (wi == null) {
-		 log.info("No wado image found.");
+		 log.debug("No wado image found.");
 		 return null;
+	  }
+	  if (wi.getDicomObject() == null) {
+		 log.debug("Skipping window levelling as no dicom object header found.");
+		 return wi;
 	  }
 
 	  long start = System.currentTimeMillis();
 	  BufferedImage bi = wi.getValue();
-	  ColorModel cm = bi.getColorModel();
-	  ColorModelParam cmParam = (ColorModelParam) wi.getParameter(DicomImageFilter.COLOR_MODEL_PARAM);
 
+	  short[] pval2out = null;
+	  if( "true".equalsIgnoreCase((String) values[3]) ) {
+		 pval2out = pval2out_inverse;
+	  }
+	  
 	  // The lookup op, either computed by hand, or retrieved from the colour
-        // model.
-	  double minValue = wi.getMinValue();
-	  double maxValue = wi.getMaxValue();
-	  LookupOp op;
-	  double windowWidth = wi.getWindowWidth();
-	  double windowCenter = wi.getWindowCenter();
+	  // model.
+	  float windowWidth = 0;
+	  float windowCenter = 0;
+	  String func = null;
 	  try {
-		 if (values[0] != null)
-			windowWidth = Double.parseDouble((String) values[0]);
-		 if (values[1] != null)
-			windowCenter = Double.parseDouble((String) values[1]);
+		 if (values[0] != null && values[1] != null) {
+			windowWidth = Float.parseFloat((String) values[0]);
+			windowCenter = Float.parseFloat((String) values[1]);
+			func = LookupTable.LINEAR;
+		 }
 	  } catch (NumberFormatException nfe) {
 		 log.debug("Caught number format exception, ignoring and using default values:" + nfe);
 	  }
-	  log.debug("WL  W:" + windowWidth + " C:" + windowCenter + " pixel range: [" + minValue + "-" + maxValue + ")");
-
-	  if (cm instanceof IndexColorModel) {
-		 if (cmParam == null) {
-			log.warn("Can't window level indexed colour model images.");
-			return wi;
-		 }
-		 if (!cmParam.isMonochrome()) {
-			log.warn("Can't window level indexed colour images.");
-			return wi;
-		 }
-		 ColorModel newCm = new ComponentColorModel(csGray, false, false, ColorModel.OPAQUE, bi.getRaster().getTransferType());
-		 bi = new BufferedImage(newCm, bi.getRaster(), false, null);
-		 if (values[0] != null && values[1] != null) {
-			ColorModelParam newCmParam = cmParam.update((float) windowCenter, (float) windowWidth, cmParam.isInverse());
-			cm = cmFactory.getColorModel(newCmParam);
-		 }
-		 op = computeLookupOp((IndexColorModel) cm);
-	  } else {
-		 // This isn't indexed - might as well use the regular transform
-		 int bits = getBitsPerPixel(bi);
-		 if (bits == 0) {
-			log.warn("Image cannot be window levelled, as it has different bit lengths: " + params.get(MemoryCacheFilter.KEY_NAME));
-			return wi;
-
-		 }
-		 op = computeLookupOp(bits, windowWidth, windowCenter, minValue, maxValue);
+	  log.debug("WL  W:" + windowWidth + " C:" + windowCenter + ")");
+	  
+	  DicomObject img = wi.getDicomObject();
+	  DicomObject pr = null;
+	  if( values[2]!=null ) {
+		 pr = DicomFilter.readHeader(filterItem, params, (String) values[2]);
+		 if( pr==null ) log.warn("Coudn't find presentation state "+values[2]);
 	  }
+
+	  LookupTable lut;
+
+	  int frame = 1;
+	  String sFrame = (String) params.get(DicomImageFilter.FRAME_NUMBER);
+	  if( sFrame!=null ) {
+		 frame = Integer.parseInt(sFrame);
+	  }
+	  
+	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
+	  if( func==null && !VOIUtils.containsVOIAttributes(voiObj)) {
+		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
+		 windowCenter = cw[0];
+		 windowWidth = cw[1];
+		 func = LookupTable.LINEAR;
+	  }
+
+	  lut = LookupTable.createLutForImageWithPR(wi.getDicomObject(), pr, frame, windowCenter, windowWidth, func, 8, pval2out);
+	
+	  //if (lut != null) {
+		// for (int i = 0; i < lut.length(); i += 1 + (lut.length() / 10)) {
+		//	int v = i + lut.getOffset();
+		//	System.out.println("LUT maps " + v + " to " + lut.lookup(v));
+		// }
+	  //} else {
+		// System.out.println("Null LUT.");
+	  //}
+
+	  DataBuffer srcData = bi.getRaster().getDataBuffer();
 	  BufferedImage dest = createCompatible8BitImage(bi);
-	  op.filter(bi, dest);
+	  // Can't window level if a custom type is being used.
+	  if( dest==null ) return wi;
+	  DataBuffer destData = dest.getRaster().getDataBuffer();
+	  if (lut != null)
+		 lut.lookup(srcData, destData);
+
 	  WadoImage ret = wi.clone();
 	  ret.setValue(dest);
 	  long dur = System.currentTimeMillis() - start;
 	  log.info("Window levelling took " + dur + " ms");
 	  return ret;
-   }
-
-   /**
-     * This version of compute lookup op generates a table based on the indexed
-     * colour model.
-     */
-   private LookupOp computeLookupOp(IndexColorModel model) {
-	  byte[] lut = new byte[model.getMapSize()];
-	  log.info("Getting a window level lookup table from an indexed colour model, size " + lut.length);
-	  model.getReds(lut);
-	  return new LookupOp(new ByteLookupTable(0, lut), null);
    }
 
    /**
@@ -185,72 +203,14 @@ public class WLFilter implements Filter<WadoImage> {
      *            levelled image from.
      */
    protected BufferedImage createCompatible8BitImage(BufferedImage src) {
+	  int type = src.getType();
 	  if (src.getColorModel().getNumComponents() == 1) {
 		 return new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-	  } else {
-		 return new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+	  } else if( type==BufferedImage.TYPE_INT_RGB || type==BufferedImage.TYPE_3BYTE_BGR ) {
+		 return new BufferedImage(src.getWidth(), src.getHeight(), src.getType());
 	  }
+	  log.warn("Unsupported buffered image type "+type);
+	  return null;
    }
 
-   /**
-     * Computes a lookupOp for the window level, based on the given window
-     * width/center values, and the min/max values. The assumption is that 0
-     * corresponds to minValue and that 2^n-1 corresponds to max value. This
-     * will still work fine if min and max are exchanged, for a negative type
-     * image. The assumption is that the OUTPUT is always 0..255
-     * 
-     * @param bits
-     *            is how many bits in the source image
-     * @param windowWidth
-     * @param windowCenter
-     * @param minVlaue
-     *            is the minimum pixel input value
-     * @param maxValue
-     *            is the maximum pixel input value
-     * @return a lookup table to use to apply window level to the image.
-     */
-   LookupOp computeLookupOp(int bits, double windowWidth, double windowCenter, double minValue, double maxValue) {
-	  if (windowWidth < MIN_WIDTH)
-		 windowWidth = MIN_WIDTH;
-	  if (bits < 0 || bits > 16)
-		 throw new UnsupportedOperationException("Number of bits must be between 1 and 16, but is " + bits);
-	  byte[] data = new byte[1 << bits];
-	  // Multiply by this value to convert from pixel values to raw ushort
-        // internal values
-	  double pixWidthConvert = data.length / (maxValue - minValue);
-	  // Compute the start and end rather than center and width
-	  double winStart = windowCenter - windowWidth / 2;
-	  double winEnd = winStart + windowWidth;
-
-	  // The raw values - in terms of the ushort values, but still doubles.
-	  double winStartRaw = (winStart - minValue) * pixWidthConvert;
-	  double winEndRaw = (winEnd - minValue) * pixWidthConvert;
-	  double winWidthRaw = windowWidth * pixWidthConvert;
-
-	  int start = Math.max((int) winStartRaw, 0);
-	  // The item AFTER the last one.
-	  int end = Math.min((int) winEndRaw + 1, data.length);
-
-	  log.debug("winStart=" + winStart + " winEnd=" + winEnd);
-	  log.debug("bits=" + bits + " start=" + start + " end=" + end + " winStartRaw=" + winStartRaw + " winWidthRaw=" + winWidthRaw
-			+ " pixWidthConvert=" + pixWidthConvert);
-	  log.debug("window level W:" + windowWidth + " C:" + windowCenter + " pixel range:[" + minValue + "," + maxValue + ")");
-	  for (int i = start; i < end; i++) {
-		 double value = 256.0 * (i - winStartRaw) / winWidthRaw;
-		 if (value < 0)
-			value = 0;
-		 else if (value > 255)
-			value = 255;
-		 // Convert to integer first
-		 int ivalue = (int) value;
-		 // Convert to byte after converting to integer becausing the
-		 // underlying value is unsigned.
-		 data[i] = (byte) ivalue;
-		 // if( i % 64 == 0 ) System.out.println("Mapping "+i+" to "+ivalue);
-	  }
-	  for (int i = end; i < data.length; i++) {
-		 data[i] = (byte) 255;
-	  }
-	  return new LookupOp(new ByteLookupTable(0, data), null);
-   }
 }

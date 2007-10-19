@@ -39,6 +39,7 @@ package org.dcm4chee.xero.wado;
 
 import java.awt.image.BufferedImage;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.display.ZoomPanAction;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
@@ -53,12 +54,10 @@ import org.dcm4chee.xero.metadata.filter.FilterReturn;
 public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem {
 	public static String WINDOW_CENTER = "windowCenter";
 	public static String WINDOW_WIDTH = "windowWidth";
-	/** The current pixel range from min being darkest to max being brightest.
-	 * corresponding to 0 and 2^n-1
-	 */
-	public static String MIN_VALUE = "minValue";
-	public static String MAX_VALUE = "maxValue";
 
+	private DicomObject ds;
+	private int stored;
+	
 	/** Create a wado image on the given buffered image object
 	 * For images where 1 is black, minValue will be 1, and maxValue 0.
 	 * minValue and maxValue should be the min/max AFTER the previous lookup table is applied,
@@ -68,46 +67,19 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 	 * @param minValue is the minimum pixel value, corresponding to ushort internal value 0
 	 * @param maxVluae is the maximum pixel value, corresponding to ushort 2^n-1  
      */
-	public WadoImage(BufferedImage value, String minValue,
-			String maxValue) {
+	public WadoImage(DicomObject ds, int stored, BufferedImage value) {
 		super(value);
-		setParameter(MIN_VALUE, minValue);
-		setParameter(MAX_VALUE, maxValue);
+		this.ds = ds;
+		this.stored = stored;
 	}
 
 	/** Used for clone operations */
 	protected WadoImage(WadoImage fr) {
 		super(fr);
+		this.ds = fr.ds;
+		this.stored = fr.stored;
 	}
 
-	/** Get the window width */
-	public double getWindowWidth() {
-		double d = getParameter(WINDOW_WIDTH,Double.NaN);
-		if( Double.isNaN(d) ) return getMaxValue()-getMinValue();
-		return d;
-	}
-
-	/** Get the window center */
-	public double getWindowCenter() {
-		double d = getParameter(WINDOW_CENTER,Double.NaN);
-		if( Double.isNaN(d) ) return (getMaxValue()+getMinValue())/2;
-		return d;
-	}
-
-	/**
-	 * The min value corresponds to the 0 pixel value - however, it does not
-	 * need to be an integer.
-	 * 
-	 * @return
-	 */
-	public double getMinValue() {
-		return getParameter(MIN_VALUE,0.0);
-	}
-
-	/** The max value corresponds to 2^bits-1 for the pixel values. */
-	public double getMaxValue() {
-		return getParameter(MAX_VALUE,1.0);
-	}
 
 	/** Clone this object */
 	public WadoImage clone() {
@@ -165,4 +137,33 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 		if( start<region.length() ) throw new IllegalArgumentException("Too many arguments in "+region);
 		return ret;
 	}
+
+	/** Splits region into sub-parts */
+	public static float[] splitFloat(String region, int size) {
+		ZoomPanAction.log.info("Trying to split '"+region+"'");
+		float ret[] = new float[size];
+		int start = 0;		
+		region = region.trim();
+		for(int i=0; i<ret.length; i++ ) {
+			if( start>=region.length() ) throw new IllegalArgumentException("Too few arguments in "+region);
+			int end = region.indexOf(',',start);
+			if( end<0 ) end = region.length();
+			ret[i] = Float.parseFloat(region.substring(start,end));
+			start = end+1;
+		}
+		if( start<region.length() ) throw new IllegalArgumentException("Too many arguments in "+region);
+		return ret;
+	}
+
+   /** Returns the dicom object associated with this image */
+   public DicomObject getDicomObject() {
+      return ds;
+   }
+
+   /** Returns the number of bits stored for this image.  May not agree with the header value
+    * if this is computed based on other factors to get the right value.
+    */
+   public int getStored() {
+      return stored;
+   }
 }

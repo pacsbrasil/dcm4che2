@@ -99,7 +99,7 @@ public class FilterReturn<T> {
 		return parameterMap.get(key);
 	}
 
-	/** Gets a parameter, with a default */
+	/** Gets a double parameter, with a default */
 	public double getParameter(String key, double def) {
 		Object ovalue = getParameter(key);
 		if( ovalue==null ) return def;
@@ -107,6 +107,21 @@ public class FilterReturn<T> {
 			return ((Number) ovalue).doubleValue();
 		if (ovalue instanceof String) {
 			return Double.parseDouble((String) ovalue);
+		}
+		else {
+			log.warn("Unknown type to convert "+ovalue.getClass().getName());
+			return def;
+		}
+	}
+
+	/** Gets a float parameter, with a default */
+	public float getParameter(String key, float def) {
+		Object ovalue = getParameter(key);
+		if( ovalue==null ) return def;
+		if (ovalue instanceof Number)
+			return ((Number) ovalue).floatValue();
+		if (ovalue instanceof String) {
+			return Float.parseFloat((String) ovalue);
 		}
 		else {
 			log.warn("Unknown type to convert "+ovalue.getClass().getName());
