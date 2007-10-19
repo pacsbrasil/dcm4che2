@@ -827,6 +827,22 @@ class StudyMgtScu {}
 class studyMgtScu {}
 
 /**
+ * @depend - - - HL7Server
+ * @depend - - - StoreScp
+ * @depend - - - MPPSScp
+ */
+class StudyPermission {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.StudyPermission
+ * @opt !hide
+ */
+class studyPermission {}
+
+/**
  * @depend - - - TLSConfig
  * @depend - - - Scheduler
  */

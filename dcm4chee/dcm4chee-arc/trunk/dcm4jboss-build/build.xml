@@ -557,6 +557,11 @@
       <param name="mbean" value="dcm4chee.archive:service=Prefetch"/>
     </antcall>
     <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-permission-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=StudyPermission"/>
+    </antcall>
+    <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-wado.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-rid-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=RIDService"/>

@@ -24,6 +24,7 @@
    <attribute access="read-write"
       getMethod="isUpdateOnHl7Received"
       setMethod="setUpdateOnHl7Received">
+     <!-- Security -->
       <description><![CDATA[Activates grant/revoke of study permissions on
       receive of HL7 messages according specified <i>Hl7ReceivedStylesheet</i>.]]>
       </description>
@@ -36,6 +37,7 @@
    <attribute access="read-write"
       getMethod="getHl7ReceivedStylesheet"
       setMethod="setHl7ReceivedStylesheet">
+     <!-- Security -->
       <description><![CDATA[Stylesheet defining study permissions to
       grant/revoke on receive of HL7 messages. A relative path name is resolved
       relative to <i>archive-install-directory</i>/server/default/.]]>
@@ -49,6 +51,7 @@
    <attribute access="read-write"
       getMethod="isUpdateOnMppsCreate"
       setMethod="setUpdateOnMppsCreate">
+     <!-- Security -->
       <description><![CDATA[Activates grant/revoke of study permissions on
       receive of MPPS N-CREATE requests according specified
       <i>MppsCreateStylesheet</i>.]]>
@@ -62,6 +65,7 @@
    <attribute access="read-write"
       getMethod="getMppsCreateStylesheet"
       setMethod="setMppsCreateStylesheet">
+     <!-- Security -->
       <description><![CDATA[Stylesheet defining study permissions to
       grant/revoke on receive of MPPS N-CREATE requests. A relative path name is
       resolved relative to <i>archive-install-directory</i>/server/default/.]]>
@@ -75,6 +79,7 @@
    <attribute access="read-write"
       getMethod="isUpdateOnSeriesStored"
       setMethod="setUpdateOnSeriesStored">
+     <!-- Security -->
       <description><![CDATA[Activates grant/revoke of study permissions on
       Series Stored events according specified <i>SeriesStoredStylesheet</i>.]]>
       </description>
@@ -87,6 +92,7 @@
    <attribute access="read-write"
       getMethod="getSeriesStoredStylesheet"
       setMethod="setSeriesStoredStylesheet">
+     <!-- Security -->
       <description><![CDATA[Stylesheet defining study permissions to
       grant/revoke on Series Stored events. A relative path name is resolved
       relative to <i>archive-install-directory</i>/server/default/.]]>
