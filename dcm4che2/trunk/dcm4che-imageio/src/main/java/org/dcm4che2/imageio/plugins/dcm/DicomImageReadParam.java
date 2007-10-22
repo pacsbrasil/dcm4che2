@@ -59,6 +59,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private DicomObject voiLut;
     private DicomObject prState;
     private short[] pval2gray;
+    String overlayRGB = null;
      
     public final boolean isAutoWindowing() {
         return autoWindowing;
@@ -115,4 +116,24 @@ public class DicomImageReadParam extends ImageReadParam {
     public final void setPValue2Gray(short[] pval2gray) {
         this.pval2gray = pval2gray;
     }
+
+	/** Get the 6 digit hex string that specifies the RGB colour to use for the overlay */
+	public String getOverlayRGB() {
+		return overlayRGB;
+	}
+
+	/** Sets the 6 digit hex string that specifies the RGB colour to use for the overlay. */
+	public void setOverlayRGB(String overlayRGB) {
+		if( overlayRGB==null ) {
+			this.overlayRGB = null;
+			return;
+		}
+		overlayRGB = overlayRGB.trim();
+		if( overlayRGB.startsWith("#") ) overlayRGB = overlayRGB.substring(1,overlayRGB.length());
+		if( overlayRGB.isEmpty() ) {
+			this.overlayRGB = null;
+			return;
+		}
+		this.overlayRGB = overlayRGB;
+	}
 }

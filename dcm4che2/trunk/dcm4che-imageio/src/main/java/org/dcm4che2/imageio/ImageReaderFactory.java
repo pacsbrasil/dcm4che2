@@ -47,7 +47,6 @@ import org.dcm4che2.data.ConfigurationError;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.image.ColorModelFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
