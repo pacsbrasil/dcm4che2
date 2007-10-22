@@ -37,7 +37,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.sql.SQLException;
@@ -56,89 +55,94 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2006-09-04 14:27:57 +0200 (Mon, 04 Sep
+ *          2006) $
  * @since Jan 26, 2006
  */
 class VMFFindScp extends FindScp {
-	
-	public VMFFindScp(QueryRetrieveScpService service) {
-		super(service, true);
-	}
 
-	protected MultiDimseRsp newMultiCFindRsp(Dataset rqData) throws SQLException {
-		if (!"IMAGE".equals(rqData.getString(Tags.QueryRetrieveLevel)))			
-			return super.newMultiCFindRsp(rqData);
-		final String studyIUID = rqData.getString(Tags.StudyInstanceUID);
-		final String[] seriesIUIDs = rqData.getStrings(Tags.SeriesInstanceUID);
-		if (seriesIUIDs == null || seriesIUIDs.length == 0)
-			throw new IllegalArgumentException("Missing Series Instance UID");
-		return new VMFMultiCFindRsp(studyIUID, seriesIUIDs);
-	}
+    public VMFFindScp(QueryRetrieveScpService service) {
+        super(service, true);
+    }
 
-	private class VMFMultiCFindRsp implements MultiDimseRsp {
-		private int next = 0;
-		private boolean canceled = false;
-		private final Dataset keys;
-		private final String[] seriesIUIDs;
-		
+    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData)
+            throws SQLException {
+        if (!"IMAGE".equals(rqData.getString(Tags.QueryRetrieveLevel)))
+            return super.newMultiCFindRsp(rqData);
+        final String studyIUID = rqData.getString(Tags.StudyInstanceUID);
+        final String[] seriesIUIDs = rqData.getStrings(Tags.SeriesInstanceUID);
+        if (seriesIUIDs == null || seriesIUIDs.length == 0)
+            throw new IllegalArgumentException("Missing Series Instance UID");
+        return new VMFMultiCFindRsp(studyIUID, seriesIUIDs);
+    }
 
-		public VMFMultiCFindRsp(String studyIUID, String[] seriesIUIDs) {
-	       	keys = DcmObjectFactory.getInstance().newDataset();
-        	keys.putUI(Tags.StudyInstanceUID, studyIUID);
-			this.seriesIUIDs = seriesIUIDs;
-		}
+    private class VMFMultiCFindRsp implements MultiDimseRsp {
+        private int next = 0;
+
+        private boolean canceled = false;
+
+        private final Dataset keys;
+
+        private final String[] seriesIUIDs;
+
+        public VMFMultiCFindRsp(String studyIUID, String[] seriesIUIDs) {
+            keys = DcmObjectFactory.getInstance().newDataset();
+            keys.putUI(Tags.StudyInstanceUID, studyIUID);
+            this.seriesIUIDs = seriesIUIDs;
+        }
 
         public DimseListener getCancelListener() {
             return new DimseListener() {
 
                 public void dimseReceived(Association assoc, Dimse dimse) {
-                    canceled  = true;
+                    canceled = true;
                 }
             };
         }
 
         public Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-        throws DcmServiceException {
-        	rspCmd.putUS(Tags.Status, Status.Cancel);
-        	while (next < seriesIUIDs.length) {
-            	if (canceled) 
-            		return null;
-        		keys.putUI(Tags.SeriesInstanceUID, seriesIUIDs[next++]);
-        		try {
-					QueryCmd queryCmd = QueryCmd.createInstanceQuery(keys,
-							false, service.isNoMatchForNoValue());
-					try {
-						queryCmd.execute();
-						if (!queryCmd.next())
-							continue;
-						final Dataset dataset = queryCmd.getDataset();                        
-						VMFBuilder builder = new VMFBuilder(service, dataset,
-                                service.getVMFConfig(dataset.getString(Tags.SOPClassUID)));
-//						builder.addFrame(dataset);
-						while (queryCmd.next()) {
-							if (canceled)
-								return null;
-							builder.addFrame(queryCmd.getDataset());
-						}
-						if (canceled)
-							return null;
-						rspCmd.putUS(Tags.Status, Status.Pending);
-						return builder.getResult();
-					} finally {
-						queryCmd.close();
-					}
-				} catch (Exception e) {
-	                throw new DcmServiceException(Status.UnableToProcess, e);
-				}
-        	}
-    		rspCmd.putUS(Tags.Status, Status.Success);
-    		return null;
+                throws DcmServiceException {
+            rspCmd.putUS(Tags.Status, Status.Cancel);
+            while (next < seriesIUIDs.length) {
+                if (canceled)
+                    return null;
+                keys.putUI(Tags.SeriesInstanceUID, seriesIUIDs[next++]);
+                try {
+                    QueryCmd queryCmd = QueryCmd.createInstanceQuery(keys,
+                            false, service.isNoMatchForNoValue());
+                    try {
+                        queryCmd.execute();
+                        if (!queryCmd.next())
+                            continue;
+                        final Dataset dataset = queryCmd.getDataset();
+                        VMFBuilder builder = new VMFBuilder(service, dataset,
+                                service.getVMFConfig(dataset
+                                        .getString(Tags.SOPClassUID)));
+                        // builder.addFrame(dataset);
+                        while (queryCmd.next()) {
+                            if (canceled)
+                                return null;
+                            builder.addFrame(queryCmd.getDataset());
+                        }
+                        if (canceled)
+                            return null;
+                        rspCmd.putUS(Tags.Status, Status.Pending);
+                        return builder.getResult();
+                    } finally {
+                        queryCmd.close();
+                    }
+                } catch (Exception e) {
+                    throw new DcmServiceException(Status.UnableToProcess, e);
+                }
+            }
+            rspCmd.putUS(Tags.Status, Status.Success);
+            return null;
         }
 
         public void release() {
-			// TODO Auto-generated method stub
-			
-		}
+            // TODO Auto-generated method stub
 
-	}
+        }
+
+    }
 }
