@@ -31,7 +31,9 @@ cp -v "$JBOSS_HOME"/bin/run.jar \
   "$DCM4CHEE_HOME"/bin
 
 mkdir "$DCM4CHEE_HOME"/client
-cp -v "$JBOSS_HOME"/client/jbossall-client.jar "$DCM4CHEE_HOME"/client
+cp -v "$JBOSS_HOME"/client/jbossall-client.jar \
+  "$JBOSS_HOME"/client/getopt.jar \
+  "$DCM4CHEE_HOME"/client
 
 cp -v -R "$JBOSS_HOME"/lib "$DCM4CHEE_HOME"
 

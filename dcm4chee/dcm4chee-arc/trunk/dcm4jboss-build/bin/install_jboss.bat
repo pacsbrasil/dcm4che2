@@ -43,6 +43,7 @@ copy "%JBOSS_BIN%\twiddle.sh" "%DCM4CHEE_BIN%"
 
 md "%DCM4CHEE_HOME%\client"
 copy "%JBOSS_HOME%\client\jbossall-client.jar" "%DCM4CHEE_HOME%\client"
+copy "%JBOSS_HOME%\client\getopt.jar" "%DCM4CHEE_HOME%\client"
 
 xcopy /S "%JBOSS_HOME%\lib" "%DCM4CHEE_HOME%\lib\"
 
