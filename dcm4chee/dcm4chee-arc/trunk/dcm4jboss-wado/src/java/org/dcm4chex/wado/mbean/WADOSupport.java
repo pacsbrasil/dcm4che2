@@ -223,7 +223,7 @@ public class WADOSupport {
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
             dsQ.putUI(Tags.SOPClassUID);
             dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-            cmd = QueryCmd.create(dsQ, true, true);
+            cmd = QueryCmd.create(dsQ, true, true, null);
             cmd.execute();
             if (cmd.next()) {
                 objectDs = cmd.getDataset();

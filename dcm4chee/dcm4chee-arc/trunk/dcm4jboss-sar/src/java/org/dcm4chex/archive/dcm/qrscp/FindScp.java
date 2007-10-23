@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.management.ObjectName;
+import javax.security.auth.Subject;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -80,9 +81,25 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
     private static final String RESULT_XML = "-cfindrsp.xml";
+    
+    private static final MultiDimseRsp NO_MATCH_RSP = new MultiDimseRsp(){
+
+        public DimseListener getCancelListener() {
+            return null;
+        }
+
+        public Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd)
+                throws DcmServiceException {
+            rspCmd.putUS(Tags.Status, Status.Success);
+            return null;
+        }
+
+        public void release() {           
+        }
+    };
 
     protected final QueryRetrieveScpService service;
-    
+            
     private final boolean filterResult;
 
 	protected final Logger log;
@@ -106,8 +123,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
-        Association as = assoc.getAssociation();
-        String callingAET = as.getCallingAET();
+        Association a = assoc.getAssociation();
+        String callingAET = a.getCallingAET();
         try {
         	perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
         	
@@ -119,7 +136,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             	log.debug(rqData);
             }
             
-            Association a = assoc.getAssociation();
             service.logDIMSE(a, QUERY_XML, rqData);
             service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
                     rqData);
@@ -130,10 +146,21 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             service.supplementIssuerOfPatientID(rqData, callingAET);
             if (!isUniversalMatching(rqData.getString(Tags.PatientID))
-                    && service.isPixQueryCallingAET(a.getCallingAET())) {
+                    && service.isPixQueryCallingAET(callingAET)) {
                 pixQuery(rqData);
             }
-            MultiDimseRsp rsp = newMultiCFindRsp(rqData);
+            MultiDimseRsp rsp;
+            if (service.hasUnrestrictedQueryPermissions(callingAET)) {
+                rsp = newMultiCFindRsp(rqData, null);
+            } else {
+                Subject subject = (Subject) a.getProperty("user");
+                if (subject != null) {
+                    rsp = newMultiCFindRsp(rqData, subject);                    
+                } else {
+                    log.info("Missing user identification -> no records returned");
+                    rsp = NO_MATCH_RSP;
+                }
+            }
             perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
             return rsp;
         } catch (Exception e) {
@@ -222,9 +249,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         return true;
     }
 
-    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData) throws SQLException {
+    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData, Subject subject)
+            throws SQLException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
-                service.isNoMatchForNoValue() );
+                service.isNoMatchForNoValue(), subject);
         queryCmd.execute();
 		return new MultiCFindRsp(queryCmd);
 	}
@@ -238,8 +266,11 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 	        MultiDimseRsp mdr)
 	    throws IOException, DcmServiceException {
 	        try {
-	            assoc.addCancelListener(rspCmd.getMessageIDToBeingRespondedTo(),
-	                mdr.getCancelListener());
+	            DimseListener cl = mdr.getCancelListener();
+                    if (cl != null) {
+                        assoc.addCancelListener(
+                                rspCmd.getMessageIDToBeingRespondedTo(), cl);
+                    }
 	            
             	do {
                 	perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_RESP_OUT);
@@ -257,6 +288,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 	            mdr.release();
 	        }
    	}
+    
+    
 
 	protected class MultiCFindRsp implements MultiDimseRsp {
 

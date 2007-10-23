@@ -135,6 +135,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private String[] sendWithDefaultTransferSyntaxToAETitles = null;
 
     private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
+    
+    private String[] unrestrictedQueryPermissionsToAETitles = null;
 
     private Map ignorableSOPClasses = new LinkedHashMap();
 
@@ -373,6 +375,25 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 (coerceRequestPatientIdsAETs == null || Arrays.asList(coerceRequestPatientIdsAETs).contains(aet));
     }
     
+    public final String getUnrestrictedQueryPermissionsToAETitles() {
+        return unrestrictedQueryPermissionsToAETitles == null ? ANY
+                : StringUtils.toString(
+                        unrestrictedQueryPermissionsToAETitles, '\\');
+    }
+
+    public final void setUnrestrictedQueryPermissionsToAETitles(String s) {
+        String trim = s.trim();
+        this.unrestrictedQueryPermissionsToAETitles = 
+                trim.equalsIgnoreCase(ANY) ? null 
+                        : StringUtils.split(trim, '\\');
+    }
+
+    final boolean hasUnrestrictedQueryPermissions(String aet) {
+        return unrestrictedQueryPermissionsToAETitles == null 
+                || Arrays.asList(unrestrictedQueryPermissionsToAETitles)
+                        .contains(aet);
+    }
+        
     public final boolean isNoMatchForNoValue() {
         return noMatchForNoValue;
     }

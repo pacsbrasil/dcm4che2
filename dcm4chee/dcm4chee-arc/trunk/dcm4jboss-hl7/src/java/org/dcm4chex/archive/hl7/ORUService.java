@@ -44,7 +44,6 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
@@ -253,7 +252,7 @@ public class ORUService extends AbstractHL7Service
         keys.putUI(Tags.StudyInstanceUID);
         QueryCmd query = null;
         try {
-            query = QueryCmd.createStudyQuery(keys, false, true);
+            query = QueryCmd.createStudyQuery(keys, false, true, null);
             query.execute();
             if (!query.next()) {
                 log.warn("No Study with given Accession Number: " 

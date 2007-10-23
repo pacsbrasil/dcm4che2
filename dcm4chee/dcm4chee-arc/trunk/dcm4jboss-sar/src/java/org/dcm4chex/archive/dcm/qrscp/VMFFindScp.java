@@ -41,6 +41,8 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.sql.SQLException;
 
+import javax.security.auth.Subject;
+
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -65,15 +67,15 @@ class VMFFindScp extends FindScp {
         super(service, true);
     }
 
-    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData)
+    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData, Subject subject)
             throws SQLException {
         if (!"IMAGE".equals(rqData.getString(Tags.QueryRetrieveLevel)))
-            return super.newMultiCFindRsp(rqData);
+            return super.newMultiCFindRsp(rqData, subject);
         final String studyIUID = rqData.getString(Tags.StudyInstanceUID);
         final String[] seriesIUIDs = rqData.getStrings(Tags.SeriesInstanceUID);
         if (seriesIUIDs == null || seriesIUIDs.length == 0)
             throw new IllegalArgumentException("Missing Series Instance UID");
-        return new VMFMultiCFindRsp(studyIUID, seriesIUIDs);
+        return new VMFMultiCFindRsp(studyIUID, seriesIUIDs, subject);
     }
 
     private class VMFMultiCFindRsp implements MultiDimseRsp {
@@ -85,10 +87,14 @@ class VMFFindScp extends FindScp {
 
         private final String[] seriesIUIDs;
 
-        public VMFMultiCFindRsp(String studyIUID, String[] seriesIUIDs) {
+        private final Subject subject;
+
+        public VMFMultiCFindRsp(String studyIUID, String[] seriesIUIDs,
+                Subject subject) {
             keys = DcmObjectFactory.getInstance().newDataset();
             keys.putUI(Tags.StudyInstanceUID, studyIUID);
             this.seriesIUIDs = seriesIUIDs;
+            this.subject = subject;
         }
 
         public DimseListener getCancelListener() {
@@ -109,7 +115,7 @@ class VMFFindScp extends FindScp {
                 keys.putUI(Tags.SeriesInstanceUID, seriesIUIDs[next++]);
                 try {
                     QueryCmd queryCmd = QueryCmd.createInstanceQuery(keys,
-                            false, service.isNoMatchForNoValue());
+                            false, service.isNoMatchForNoValue(), subject);
                     try {
                         queryCmd.execute();
                         if (!queryCmd.next())

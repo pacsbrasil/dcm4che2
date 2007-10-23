@@ -43,6 +43,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import javax.security.auth.Subject;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -52,7 +55,9 @@ import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
@@ -147,63 +152,70 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private boolean coercePatientIds = false;
 
+    protected final Subject subject;
+
     public void setCoercePatientIds( boolean coercePatientIds ) {
         this.coercePatientIds = coercePatientIds;
     }
     
     public static QueryCmd create(Dataset keys, boolean filterResult,
-            boolean noMatchForNoValue) throws SQLException {
+            boolean noMatchForNoValue, Subject subject) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if ("IMAGE".equals(qrLevel))
-            return createInstanceQuery(keys, filterResult, noMatchForNoValue);
+            return createInstanceQuery(keys, filterResult, noMatchForNoValue,
+                    subject);
         if ("SERIES".equals(qrLevel))
-            return createSeriesQuery(keys, filterResult, noMatchForNoValue);
+            return createSeriesQuery(keys, filterResult, noMatchForNoValue,
+                    subject);
         if ("STUDY".equals(qrLevel))
-            return createStudyQuery(keys, filterResult, noMatchForNoValue);
+            return createStudyQuery(keys, filterResult, noMatchForNoValue,
+                    subject);
         if ("PATIENT".equals(qrLevel))
-            return createPatientQuery(keys, filterResult, noMatchForNoValue);
+            return createPatientQuery(keys, filterResult, noMatchForNoValue,
+                    subject);
         throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
     }
 
     public static PatientQueryCmd createPatientQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue)
+            boolean filterResult, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult,
-                noMatchForNoValue);
+                noMatchForNoValue, subject);
         cmd.init();
         return cmd;
     }
 
     public static StudyQueryCmd createStudyQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue)
+            boolean filterResult, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult,
-                noMatchForNoValue);
+                noMatchForNoValue, subject);
         cmd.init();
         return cmd;
     }
 
     public static SeriesQueryCmd createSeriesQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue)
+            boolean filterResult, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult,
-                noMatchForNoValue);
+                noMatchForNoValue, subject);
         cmd.init();
         return cmd;
     }
 
     public static ImageQueryCmd createInstanceQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue)
+            boolean filterResult, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
-                noMatchForNoValue);
+                noMatchForNoValue, subject);
         cmd.init();
         return cmd;
     }
 
     protected QueryCmd(Dataset keys, boolean filterResult,
-            boolean noMatchForNoValue) throws SQLException {
+            boolean noMatchForNoValue, Subject subject) throws SQLException {
         super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
+        this.subject = subject;
         matchingKeys.add(Tags.QueryRetrieveLevel);
     }
 
@@ -371,6 +383,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         matchingKeys.add(fieldTags);
     }
 
+
+    protected void addStudyPermissionMatch() {
+        if (subject != null) {
+            sqlBuilder.addSingleValueMatch(null, "StudyPermission.action",
+                    false, StudyPermissionDTO.QUERY_ACTION);
+            sqlBuilder.addListOfStringMatch(null, "StudyPermission.role",
+                    false, SecurityUtils.rolesOf(subject));
+        }
+    }
+
+    
     protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
                 .getStrings(Tags.ModalitiesInStudy));
@@ -622,13 +645,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class PatientQueryCmd extends QueryCmd {
 
         PatientQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue) throws SQLException {
-            super(keys, filterResult, noMatchForNoValue);
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
+            super(keys, filterResult, noMatchForNoValue, subject);
         }
 
         protected void init() {
             super.init();
             addPatientMatch();
+            if (subject != null) {
+                sqlBuilder.addQueryPermissionNestedMatch(
+                        SecurityUtils.rolesOf(subject));
+            }
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -649,14 +677,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class StudyQueryCmd extends QueryCmd {
 
         StudyQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue) throws SQLException {
-            super(keys, filterResult, noMatchForNoValue);
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
+            super(keys, filterResult, noMatchForNoValue, subject);
         }
 
         protected void init() {
             super.init();
             addPatientMatch();
             addStudyMatch();
+            addStudyPermissionMatch();
             addNestedSeriesMatch();
         }
 
@@ -670,11 +700,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient", "Study" };
+            return subject == null
+                    ? new String[] { "Patient", "Study" }
+                    : new String[] { "Patient", "Study", "StudyPermission" };
         }
 
         protected String[] getRelations() {
-            return new String[] { "Patient.pk", "Study.patient_fk" };
+            return subject == null 
+                    ? new String[] { "Patient.pk", "Study.patient_fk" }
+                    : new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.studyIuid", "StudyPermission.studyIuid"};
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -697,14 +732,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class SeriesQueryCmd extends QueryCmd {
 
         SeriesQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue) throws SQLException {
-            super(keys, filterResult, noMatchForNoValue);
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
+            super(keys, filterResult, noMatchForNoValue, subject);
         }
 
         protected void init() {
             super.init();
             addPatientMatch();
             addStudyMatch();
+            addStudyPermissionMatch();
             addSeriesMatch();
         }
 
@@ -721,12 +758,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient", "Study", "Series" };
+            return subject == null
+                    ? new String[] { "Patient", "Study", "Series" }
+                    : new String[] { "Patient", "Study", "StudyPermission",
+                            "Series" };
         }
 
         protected String[] getRelations() {
-            return new String[] { "Patient.pk", "Study.patient_fk", "Study.pk",
-                    "Series.study_fk" };
+            return subject == null 
+                    ? new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.pk", "Series.study_fk" }
+                    : new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.studyIuid", "StudyPermission.studyIuid",
+                            "Study.pk", "Series.study_fk"};
         }
 
         protected String[] getLeftJoin() {
@@ -754,14 +798,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class ImageQueryCmd extends QueryCmd {
 
         ImageQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue) throws SQLException {
-            super(keys, filterResult, noMatchForNoValue);
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
+            super(keys, filterResult, noMatchForNoValue, subject);
         }
 
         protected void init() {
             super.init();
             addPatientMatch();
             addStudyMatch();
+            addStudyPermissionMatch();
             addSeriesMatch();
             addInstanceMatch();
         }
@@ -779,7 +825,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return new String[] { "Patient", "Study", "Series", "Instance" };
+            return subject == null
+                    ? new String[] { "Patient", "Study", "Series", "Instance" }
+                    : new String[] { "Patient", "Study", "StudyPermission",
+                                "Series", "Instance" };
         }
 
         protected String[] getLeftJoin() {
@@ -798,8 +847,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getRelations() {
-            return new String[] { "Patient.pk", "Study.patient_fk", "Study.pk",
-                    "Series.study_fk", "Series.pk", "Instance.series_fk" };
+            return subject == null 
+                    ? new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.pk", "Series.study_fk", "Series.pk",
+                            "Instance.series_fk" }
+                    : new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.studyIuid", "StudyPermission.studyIuid",
+                            "Study.pk", "Series.study_fk", "Series.pk",
+                            "Instance.series_fk"};
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -844,5 +899,4 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 && (item.containsValue(Tags.VerificationDateTime)
                         || item.containsValue(Tags.VerifyingObserverName));
     }
-
 }

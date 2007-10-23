@@ -524,6 +524,52 @@ abstract class Match
         }
     }
 
+    static class QueryPermissionNestedMatch extends Match
+    {
+        private final String[] roles;
+        public QueryPermissionNestedMatch(String[] roles)
+            {
+            super(null, "StudyPermission.role", false);
+            this.roles = roles;
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return false;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            JdbcProperties jp = JdbcProperties.getInstance();
+            sb.append("exists (SELECT 1 FROM ");
+            sb.append(jp.getProperty("Study"));
+            sb.append(", ");
+            sb.append(jp.getProperty("StudyPermission"));
+            sb.append(" WHERE ");
+            sb.append(jp.getProperty("Patient.pk"));
+            sb.append(" = ");
+            sb.append(jp.getProperty("Study.patient_fk"));
+            sb.append(" AND ");
+            sb.append(jp.getProperty("Study.studyIuid"));
+            sb.append(" = ");
+            sb.append(jp.getProperty("StudyPermission.studyIuid"));
+            sb.append(" AND ");
+            sb.append(jp.getProperty("StudyPermission.action"));
+            sb.append(" = 'Q' AND ");
+            sb.append(column);
+            if (roles.length == 1) {
+                sb.append(" = \'").append(roles[0]).append('\'');
+            } else {
+                sb.append(" IN ('").append(roles[0]);
+                for (int i = 1; i < roles.length; i++) {
+                    sb.append("\', \'").append(roles[i]);
+                }
+                sb.append("\')");
+            }
+            sb.append(')');
+        }
+    }
+    
     static class Node extends Match
     {
         private List matches = new ArrayList();

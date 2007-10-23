@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -123,7 +122,7 @@ public class FileCopyService extends AbstractFileCopyService {
         queryDs.putCS(Tags.QueryRetrieveLevel, "SERIES");
         queryDs.putUI(Tags.StudyInstanceUID, studyIUID);
         queryDs.putUI(Tags.SeriesInstanceUID);
-        QueryCmd cmd = QueryCmd.create(queryDs, true, false);
+        QueryCmd cmd = QueryCmd.create(queryDs, true, false, null);
         cmd.execute();
         while ( cmd.next() ) {
             if ( ! copyFilesOfSeries(cmd.getDataset().getString(Tags.SeriesInstanceUID) ) ) {
@@ -139,7 +138,7 @@ public class FileCopyService extends AbstractFileCopyService {
         queryDs.putUI(Tags.StudyInstanceUID);
         queryDs.putUI(Tags.SeriesInstanceUID, seriesIUID);
         queryDs.putUI(Tags.SOPInstanceUID);
-        QueryCmd cmd = QueryCmd.create(queryDs, true, false);
+        QueryCmd cmd = QueryCmd.create(queryDs, true, false, null);
         cmd.execute();
         Dataset ds = null;
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
