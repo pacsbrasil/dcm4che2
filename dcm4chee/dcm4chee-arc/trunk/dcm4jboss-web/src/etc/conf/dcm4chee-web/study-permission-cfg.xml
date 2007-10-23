@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dcm4chee-study-permission-cfg SYSTEM "dcm4chee-study-permission-cfg.dtd">
+<dcm4chee-study-permission-cfg>
+    <roles>
+        <role name="admin" descr="Admin role"/> 
+        <role name="user" descr="Guest user role"/> 
+        <role name="test" descr="Web test user role"/> 
+    </roles>
+    <actions>
+        <action name="Q" descr="Query"/> 
+        <action name="R" descr="Read"/> 
+        <action name="E" descr="Export"/> 
+        <action name="A" descr="Append"/> 
+        <action name="U" descr="Update"/> 
+        <action name="D" descr="Delete"/> 
+    </actions>
+</dcm4chee-study-permission-cfg>
+    

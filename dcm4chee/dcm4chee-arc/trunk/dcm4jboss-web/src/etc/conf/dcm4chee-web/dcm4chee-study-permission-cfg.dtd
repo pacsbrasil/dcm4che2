@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+This is the XML DTD for the dcm4chee study permission config (WEB) descriptor.
+
+<dcm4chee-study-permission-cfg>
+    <roles>
+        <role name="admin" descr="Admin role"/> 
+        <role name="user" descr="Guest user role"/> 
+    </roles>
+    <actions>
+        <action name="Q" descr="Query"/> 
+        <action name="R" descr="Read"/> 
+        <action name="E" descr="Export"/> 
+        <action name="A" descr="Append"/> 
+        <action name="U" descr="Update"/> 
+        <action name="D" descr="Delete"/> 
+    </actions>
+</dcm4chee-study-permission-cfg>
+
+-->
+
+<!ELEMENT dcm4chee-study-permission-cfg (roles,actions)>
+
+<!ELEMENT roles (role+)>
+<!ELEMENT role EMPTY>
+<!ATTLIST role name CDATA #IMPLIED>
+<!ATTLIST role descr CDATA #IMPLIED>
+
+<!ELEMENT actions (action+)>
+<!ELEMENT action EMPTY>
+<!ATTLIST action name CDATA #IMPLIED>
+<!ATTLIST action descr CDATA #IMPLIED>
+

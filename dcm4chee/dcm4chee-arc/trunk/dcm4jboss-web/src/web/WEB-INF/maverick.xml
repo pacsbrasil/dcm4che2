@@ -412,6 +412,16 @@ default-transform-type="xslt">
     	  <transform path="arr.xsl" />
 	    </view>
      </command>
+
+    <!-- ****** Study Permission related commands ******-->
+
+    <command name="studyPermission">
+        <controller class="org.dcm4chex.archive.web.maverick.permission.StudyPermissionCtrl" />    
+	    <view name="success">
+    	  <transform path="permission/permission_list.xsl" />
+	    </view>
+	    <view name="cancel" type="redirect" path="folder.m" />        
+     </command>
      
   </commands>
 </maverick>

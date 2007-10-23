@@ -507,6 +507,9 @@
 					<a href="inspectDicomHeader.m?patPk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Patient attributes in DB"/>		
 					</a>
+					<a href="studyPermission.m?patName={patientName}&amp;patPk={pk}">
+						<img src="images/permission.gif" alt="permissions" border="0" title="Show Study Permissions for Patient"/>		
+					</a>
 				</xsl:if>
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
@@ -638,6 +641,9 @@
 					</a>
 					<a href="inspectDicomHeader.m?patPk={../../pk}&amp;studyPk={pk}" target="studyAtrrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Study attributes in DB"/>		
+					</a>
+					<a href="studyPermission.m?patName={../../patientName}&amp;studyIUID={studyIUID}">
+						<img src="images/permission.gif" alt="permissions" border="0" title="Show Study Permissions"/>		
 					</a>
     	       	</xsl:if>
 				<input type="checkbox" name="stickyStudy" value="{pk}">
