@@ -8,3 +8,6 @@ CREATE TABLE study_permission (
 	roles           VARCHAR(250) BINARY NOT NULL
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid(64), action(1), roles(16));
+
+INSERT INTO roles VALUES('admin','Doctor');
+INSERT INTO roles VALUES('user','Doctor');
