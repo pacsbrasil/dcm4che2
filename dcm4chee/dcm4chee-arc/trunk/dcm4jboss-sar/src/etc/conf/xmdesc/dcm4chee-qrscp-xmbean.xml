@@ -178,6 +178,21 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getUnrestrictedQueryPermissionsToAETitles"
+      setMethod="setUnrestrictedQueryPermissionsToAETitles">
+      <description><![CDATA[AE Titles of C-FIND SCUs with Query Permissions
+      on all archived Studies, independent of Study Permissions to roles
+      of the user associated to the active association.
+      Separate multiple values by \(backslash).
+      ANY = Disable restrication of queries according granted Study Permissions.]]>
+      </description>
+      <name>UnrestrictedQueryPermissionsToAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getIgnorableSOPClasses"
       setMethod="setIgnorableSOPClasses">
       <description><![CDATA[
