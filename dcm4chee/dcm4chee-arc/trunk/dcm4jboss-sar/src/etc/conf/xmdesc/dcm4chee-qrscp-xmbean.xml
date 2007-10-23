@@ -184,7 +184,7 @@ QueryRetrieveScp service.</description>
       on all archived Studies, independent of Study Permissions to roles
       of the user associated to the active association.
       Separate multiple values by \(backslash).
-      ANY = Disable restrication of queries according granted Study Permissions.]]>
+      ANY = Disable restriction of queries according granted Study Permissions.]]>
       </description>
       <name>UnrestrictedQueryPermissionsToAETitles</name>
       <type>java.lang.String</type>
