@@ -304,4 +304,15 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         return count;
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public int countStudiesOfPatient(Long patPk) {
+        try {
+            return studyPermissionHome.selectStudyIuidsByPatientPk(patPk).size();
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+    
 }
