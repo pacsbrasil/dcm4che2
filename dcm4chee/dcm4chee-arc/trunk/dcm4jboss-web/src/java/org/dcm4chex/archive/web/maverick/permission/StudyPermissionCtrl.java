@@ -39,24 +39,19 @@
 
 package org.dcm4chex.archive.web.maverick.permission;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.ejb.CreateException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.hl7.StudyPermissionDelegate;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.web.conf.StudyPermissionConfig;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 import org.infohazard.maverick.flow.ControllerContext;
@@ -185,10 +180,9 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     
     protected String perform() throws Exception {
     	initStudyPermissionDelegate(getCtx());
-    	log.info("perform called: suid:"+suid+" patPk:"+patPk);
         if ( this.patPk == null && (suid == null || suid.trim().length() == 0) ) {
         	log.info("Missing SUID or patPk! suid:"+suid+" patPk:"+patPk);
-            this.popupMsg = "Can't open Study Permission overview! StudyInstance UID or patient Pk required!";
+            this.popupMsg = "Can not open Study Permission overview! StudyInstance UID or patient Pk required!";
             return CANCEL;
         }
         if ( cmdAdd != null ) {
@@ -229,12 +223,12 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     private boolean checkParams(String cmd) {
         if ( role == null || role.trim().length() == 0 ) {
         	log.info("Missing role!");
-            this.popupMsg = "Can't "+cmd+"Permission! Missing role!";
+            this.popupMsg = "Can not "+cmd+" Permission! Missing role!";
             return false;
         }
         if ( action == null || action.trim().length() == 0 ) {
         	log.info("Missing action!");
-            this.popupMsg = "Can't "+cmd+"Permission! Missing action!";
+            this.popupMsg = "Can not "+cmd+" Permission! Missing action!";
             return false;
         }
         return true;
