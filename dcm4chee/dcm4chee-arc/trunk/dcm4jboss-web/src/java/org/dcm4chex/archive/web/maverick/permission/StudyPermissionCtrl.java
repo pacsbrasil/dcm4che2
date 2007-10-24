@@ -49,15 +49,18 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
-import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
-import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
+import org.dcm4chex.archive.hl7.StudyPermissionDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.web.conf.StudyPermissionConfig;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.infohazard.maverick.flow.ControllerContext;
+import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * 
@@ -84,11 +87,10 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     private String patName;
     
     private static StudyPermissionConfig permissionCfg;
+    private StudyPermissionDelegate delegate;
     
     private String popupMsg = null;
     
-    private StudyPermissionManager mgr;
-
     private static Logger log = Logger.getLogger(StudyPermissionCtrl.class);
     
     protected String getCtrlName() {
@@ -171,7 +173,7 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
      */
     public int getCountStudies() throws Exception {
     	if ( patPk != null ) {
-    		return getStudyPermissionManager().countStudiesOfPatient(patPk);
+    		return delegate.countStudiesOfPatient(patPk);
     	} else {
     		return 1;
     	}
@@ -182,6 +184,7 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     }    
     
     protected String perform() throws Exception {
+    	initStudyPermissionDelegate(getCtx());
     	log.info("perform called: suid:"+suid+" patPk:"+patPk);
         if ( this.patPk == null && (suid == null || suid.trim().length() == 0) ) {
         	log.info("Missing SUID or patPk! suid:"+suid+" patPk:"+patPk);
@@ -202,9 +205,13 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     private void removePermission() throws Exception {
         if ( checkParams("remove") ) {
         	if ( suid != null ) {
-        		getStudyPermissionManager().revoke(suid, action, role);
+        		StudyPermissionDTO dto = new StudyPermissionDTO();
+        		dto.setStudyIuid(suid);
+        		dto.setRole(role);
+        		dto.setAction(action);
+        		delegate.revoke(dto);
         	} else {
-        		getStudyPermissionManager().revokeForPatient(patPk.longValue(), new String[]{action}, role);
+        		delegate.revokeForPatient(patPk.longValue(), action, role);
         	}
         }
     }
@@ -212,9 +219,9 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     private void addPermission() throws Exception {
         if ( checkParams("add") ) {
         	if ( suid != null ) {
-        		getStudyPermissionManager().grant(suid, action, role);
+        		delegate.grant(suid, action, role);
         	} else {
-        		getStudyPermissionManager().grantForPatient(patPk.longValue(), new String[]{action}, role);
+        		delegate.grantForPatient(patPk.longValue(), action, role);
         	}
         }
     }
@@ -233,19 +240,18 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
         return true;
     }
 
-    private void query() throws HomeFactoryException, CreateException,
-            RemoteException {
+    private void query() throws Exception {
     	Collection studyPermissions;
     	if ( patPk != null) {
     		if ( suid != null ) {
     			log.warn("Both Study Instance UID and Patient Pk are requested! Study Instance UID will be ignored!");
     			suid = null;
     		}
-    		log.info("getStudyPermissionManager().findByPatientPk("+patPk+")");
-    		studyPermissions = getStudyPermissionManager().findByPatientPk(patPk);
+    		log.info("delegate.findByPatientPk("+patPk+")");
+    		studyPermissions = delegate.findByPatientPk(patPk.longValue());
     	} else {
-    		log.info("getStudyPermissionManager().findByStudyIuid("+suid+")");
-    		studyPermissions = getStudyPermissionManager().findByStudyIuid(suid);
+    		log.info("delegate.findByStudyIuid("+suid+")");
+    		studyPermissions = delegate.findByStudyIuid(suid);
     	}
         StudyPermissionDTO dto;
         Map actions;
@@ -266,17 +272,12 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
         }
     }
 
-    private StudyPermissionManager getStudyPermissionManager()
-            throws HomeFactoryException, CreateException, RemoteException {
-        if ( mgr == null ) {
-            StudyPermissionManagerHome home =
-                    (StudyPermissionManagerHome) EJBHomeFactory.getFactory().lookup(
-                            StudyPermissionManagerHome.class,
-                            StudyPermissionManagerHome.JNDI_NAME);
-            mgr = home.create();
-        }
-        return mgr;
+    private StudyPermissionDelegate initStudyPermissionDelegate(ControllerContext ctx) throws MalformedObjectNameException, NullPointerException {
+    	if ( delegate == null ) {
+    		delegate = new StudyPermissionDelegate( MBeanServerLocator.locate() );
+    		String s = ctx.getServletConfig().getInitParameter("studyPermissionServiceName");
+    		delegate.setStudyPermissionServiceName(new ObjectName(s));
+    	}
+    	return delegate;
     }
-
-
 }

@@ -258,6 +258,13 @@
 			<param-name>webViewerWindowName</param-name>
 			<param-value>webView</param-value>
 		</init-param>
+		<!-- 
+			Name of Study Permission Service.
+		-->
+		<init-param>
+			<param-name>studyPermissionServiceName</param-name>
+			<param-value>dcm4chee.archive:service=StudyPermission</param-value>
+		</init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>
