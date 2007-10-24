@@ -768,10 +768,8 @@ public class DcmSnd implements PollDirSrv.Handler {
         pollPeriod =
             1000L * Integer.parseInt(cfg.getProperty("poll-period", "5"));
         pollDirSrv = PollDirSrvFactory.getInstance().newPollDirSrv(this);
-        pollDirSrv.setOpenRetryPeriod(
-            1000L
-                * Integer.parseInt(cfg.getProperty("poll-retry-open", "60"))
-                * 1000L);
+        pollDirSrv.setOpenRetryPeriod(Integer.parseInt(cfg.getProperty(
+                "poll-retry-open", "60")) * 1000L);
         pollDirSrv.setDeltaLastModified(
             1000L
                 * Integer.parseInt(
