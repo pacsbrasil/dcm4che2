@@ -14,6 +14,14 @@ servletFilter.rename.priority=2000
 servletFilter.searchCondition.priority=-1000
 servletFilter.source.priority=0
 
+# Need to be able to find the files
+fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
+fileLocation.fileLocationMgt=${org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
+fileLocation.fileLocationMgt.priority=1000
+fileLocation.wadoLocation=${org.dcm4chee.xero.search.filter.DicomFileLocationFilter}
+fileLocation.wadoLocation.priority=100
+fileLocation.priority=-1
+
 #Now, add a study filter that provides study searches. 
 studyFilter.inherit=servletFilter
 studyFilter.source=${org.dcm4chee.xero.search.study.StudySearch}
@@ -23,6 +31,7 @@ studyFilter.emptyFilter.priority=1000
 
 # And also have a filter for series and/or images or the complete study.
 imageFilter.inherit=servletFilter
+imageFilter.fileLocation.inherit=fileLocation
 imageFilter.source=${org.dcm4chee.xero.search.study.ImageSearch}
 imageFilter.searchCondition=${org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 imageFilter.emptyFilter=${org.dcm4chee.xero.search.EmptyQueryParameterFilter}
@@ -33,6 +42,8 @@ imageFilter.cacheFilter=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 imageFilter.cacheFilter.priority=400
 imageFilter.pagedFilter=${org.dcm4chee.xero.search.study.PagedImageFilter}
 imageFilter.pagedFilter.priority=500
+imageFilter.addFileLocation=${org.dcm4chee.xero.search.filter.AddFileLocationFilter}
+imageFilter.addFileLocation.priority=550
 
 seriesFilter.inherit=servletFilter
 seriesFilter.seriesSource=${org.dcm4chee.xero.search.study.SeriesSearch}

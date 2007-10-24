@@ -66,12 +66,14 @@ import org.slf4j.LoggerFactory;
  */
 public class MinMaxPixelInfo implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(MinMaxPixelInfo.class);
+   
+   public static final String MIN_MAX_PIXEL = "pixelInfo";
 
    /** Update any image beans with min/max pixel range information */
    public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
-	  if (ret == null)
-		 return null;
+	  if (ret == null || !("true".equalsIgnoreCase((String) params.get(MIN_MAX_PIXEL))))
+		 return ret;
 	  for (PatientType pt : ret.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
 			for (SeriesType set : st.getSeries()) {

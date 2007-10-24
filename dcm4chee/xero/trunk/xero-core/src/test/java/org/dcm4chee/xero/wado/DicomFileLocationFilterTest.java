@@ -10,6 +10,7 @@ import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterList;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.filter.DicomFileLocationFilter;
 import org.testng.annotations.Test;
 
 /** Tests the dicom file location filter */

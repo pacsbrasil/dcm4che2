@@ -39,19 +39,3 @@ wado.dicom.inherit=dicom
 wado.dicom.priority=-100
 wado.fileLocation.inherit=fileLocation
 
-fileLocation=${org.dcm4chee.xero.metadata.filter.FilterList}
-fileLocation.fileLocationMgt=${org.dcm4chee.xero.wado.FileLocationMgtFilter}
-fileLocation.fileLocationMgt.priority=1000
-fileLocation.wadoLocation=${org.dcm4chee.xero.wado.DicomFileLocationFilter}
-fileLocation.wadoLocation.priority=100
-fileLocation.priority=-1
-
-wadoDcm=${org.dcm4chee.xero.metadata.filter.FilterList}
-wadoDcm.encode=${org.dcm4chee.xero.wado.EncodeImage}
-wadoDcm.encode.priority=9999
-wadoDcm.wl=${org.dcm4chee.xero.wado.WLFilter}
-wadoDcm.wl.priority=6000
-wadoDcm.memcache=${org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
-wadoDcm.memcache.priority=5000
-wadoDcm.src=${org.dcm4chee.xero.wado.DicomImageFilter}
-wadoDcm.fileLocation.inherit=fileLocation
