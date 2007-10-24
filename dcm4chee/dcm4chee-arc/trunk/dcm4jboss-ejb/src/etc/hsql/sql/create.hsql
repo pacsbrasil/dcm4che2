@@ -129,7 +129,7 @@ CREATE TABLE study_permission (
 	action          VARCHAR(256) NOT NULL,
 	roles           VARCHAR(256) NOT NULL
 );
-CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid, action, roles);
+CREATE UNIQUE INDEX study_perm_idx ON study_permission(study_iuid, action, roles);
 
 CREATE TABLE mpps (
 	pk          		IDENTITY PRIMARY KEY,

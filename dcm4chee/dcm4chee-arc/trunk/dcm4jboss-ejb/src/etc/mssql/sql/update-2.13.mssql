@@ -7,7 +7,7 @@ CREATE TABLE study_permission (
 	action          VARCHAR(255) NOT NULL,
 	roles           VARCHAR(255) NOT NULL
 );
-CREATE UNIQUE INDEX study_permission ON study_permission(study_iuid, action, roles);
+CREATE UNIQUE INDEX study_perm_idx ON study_permission(study_iuid, action, roles);
 
 INSERT INTO roles VALUES('admin','Doctor');
 INSERT INTO roles VALUES('user','Doctor');
