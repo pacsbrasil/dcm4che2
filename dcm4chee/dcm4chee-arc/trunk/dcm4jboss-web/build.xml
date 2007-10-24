@@ -37,6 +37,10 @@
 	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.home}/target/lib/dcm4chee.jar" />
 	
+	<!-- Override with your dcm4chee-hl7 working directory -->
+	<property name="dcm4chee-hl7.home" value="../dcm4jboss-hl7" />
+	<property name="dcm4chee-hl7.jar" value="${dcm4chee-hl7.home}/target/lib/dcm4chee-hl7.jar" />
+	
 	<property name="deploy.root" value="${jboss.home}/server/pacs"/>
 	<property name="war.deploy.dir" value="${deploy.root}/deploy"/>
 	<property name="conf.deploy.dir" value="${deploy.root}/conf"/>
@@ -58,6 +62,7 @@
 		<pathelement location="${dcm4che.jar}"/>
 		<pathelement location="${dcm4chee-ejb-client.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
+		<pathelement location="${dcm4chee-hl7.jar}"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>
