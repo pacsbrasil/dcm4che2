@@ -148,4 +148,11 @@ public class StudyPermissionDelegate {
                         String.class.getName(), String.class.getName() });
         return i.intValue();
     }
+    
+    public int countStudiesOfPatient(Long patPk) throws Exception {
+        Integer i = (Integer) server.invoke(studyPermissionServiceName,
+                "countStudiesOfPatient", new Object[] { patPk },
+                new String[] { Long.class.getName() });
+        return i.intValue();
+    }
 }

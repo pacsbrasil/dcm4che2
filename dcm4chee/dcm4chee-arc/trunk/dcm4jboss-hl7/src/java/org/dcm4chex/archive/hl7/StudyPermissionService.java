@@ -245,6 +245,10 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         return getStudyPermissionManager().revokeForPatient(
                 pid, issuer, StringUtils.split(actions,','), role);
     }
+    
+    public int countStudiesOfPatient(Long patPk) throws Exception {
+        return getStudyPermissionManager().countStudiesOfPatient(patPk);
+    }
 
     protected void startService() throws Exception {
         server.addNotificationListener(hl7ServerName,
