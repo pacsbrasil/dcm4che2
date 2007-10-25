@@ -175,13 +175,20 @@ public class DecompressCmd extends CodecCmd {
             log.info("start decompression of image: " + rows + "x" + columns
                     + "x" + frames);
             t1 = System.currentTimeMillis();
-            SegmentedImageInputStream siis = new SegmentedImageInputStream(iis,
-                    itemParser);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
             bi = createBufferedImage();
             for (int i = 0; i < frames; ++i) {
+                SegmentedImageInputStream siis;
                 log.debug("start decompression of frame #" + (i + 1));
+                if (frames > 1) {
+                    ItemParser.Item item = itemParser.getItem(i);
+                    siis = new SegmentedImageInputStream(iis,
+                            new long[] { item.startPos },
+                            new int[] { item.length });                    
+                } else {
+                    siis = new SegmentedImageInputStream(iis, itemParser);
+                }
                 reader.setInput(siis);
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
@@ -195,7 +202,6 @@ public class DecompressCmd extends CodecCmd {
                 } else {
                     reader.reset();
                 }
-                itemParser.seekNextFrame(siis);
                 write(bi.getRaster(), out, byteOrder);
             }
             itemParser.seekFooter();
