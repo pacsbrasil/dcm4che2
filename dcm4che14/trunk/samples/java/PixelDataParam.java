@@ -1,6 +1,5 @@
 
 
-import java.awt.Dimension;
 import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
@@ -11,7 +10,6 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.util.Arrays;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
@@ -111,26 +109,16 @@ class PixelDataParam {
         return numberOfFrames;
     }
 
+    public final boolean isMultiFrame() {
+        return numberOfFrames > 1;
+    }
+
     public final int getFrameLength() {
         return frameLength;
     }
 
     public int getPixelDataLength() {
         return frameLength * numberOfFrames;
-    }
-
-    public final Dimension[] createImageDimensionArray() {
-        Dimension[] a = new Dimension[numberOfFrames];
-        Arrays.fill(a, new Dimension(columns, rows));
-        return a;
-    }
-
-    private static int[] createOffsetArray(int numBands) {
-        int[] bandOffsets = new int[numBands];
-        for (int i = 0; i < numBands; i++) {
-            bandOffsets[i] = i;
-        }
-        return bandOffsets;
     }
 
     private SampleModel getSampleModel() {

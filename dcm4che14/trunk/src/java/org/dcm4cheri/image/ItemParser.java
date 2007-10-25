@@ -61,25 +61,32 @@ public class ItemParser implements StreamSegmentMapper {
 
     private static final Logger log = Logger.getLogger(ItemParser.class);
 
-    private static final class Item {
+    public static final class Item {
         
-        int offset;
+        public final int offset;
 
-        long startPos;
+        public final long startPos;
 
-        int length;
-
-        final int nextOffset() {
+        public final int length;
+        
+        public Item(int offset, long startPos, int length) {
+            this.offset = offset;
+            this.startPos = startPos;
+            this.length = length;
+        }
+        
+        public final int nextOffset() {
             return offset + length;
         }
 
-        final long nextItemPos() {
+        public final long nextItemPos() {
             return startPos + length;
         }
         
         public String toString() {
             return "Item[off=" + offset + ", pos=" + startPos + ", len=" + length + "]";
         }
+
     }
 
     private final ArrayList items = new ArrayList();
@@ -103,12 +110,12 @@ public class ItemParser implements StreamSegmentMapper {
         return items.size();
     }
 
-    public int getOffsetOfDataFragment(int index) {
+    public Item getItem(int index) {
         while (items.size() <= index)
             if (next() == null)
                 throw new IndexOutOfBoundsException(
                         "index:" + index + " >= size:" + items.size());
-        return ((Item) items.get(index)).offset;
+        return (Item) items.get(index);
     }
     
     private Item next() {
@@ -122,11 +129,10 @@ public class ItemParser implements StreamSegmentMapper {
                 log.debug("Read "+ Tags.toString(parser.getReadTag())
                         + " #" + parser.getReadLength());
 	        if (parser.getReadTag() == Tags.Item) {
-	            Item item = new Item();
-	            item.startPos = iis.getStreamPosition();
-	            item.length = parser.getReadLength();
-	            if (!items.isEmpty())
-	                item.offset = last().nextOffset();
+	            Item item = new Item(
+                            items.isEmpty() ? 0 : last().nextOffset(),
+                            iis.getStreamPosition(), 
+                            parser.getReadLength());
 	            items.add(item);
 	            return item;
 	        }

@@ -95,12 +95,12 @@ public class DcmImageReader extends ImageReader {
 
     private ImageInputStream stream = null;
 
-    private SegmentedImageInputStream itemStream = null;
-
     private ImageReader decompressor = null;
 
     private ItemParser itemParser = null;
 
+    private SegmentedImageInputStream itemStream = null;
+    
     // The image to be written.
     private BufferedImage theImage = null;
 
@@ -113,7 +113,9 @@ public class DcmImageReader extends ImageReader {
 
     private Dataset theDataset = null;
 
-    private long[] frameStartPos = null;
+    private long frame1StartPos;
+
+    private int frameLength;
 
     private int width = -1;
 
@@ -122,6 +124,8 @@ public class DcmImageReader extends ImageReader {
     private int planes = 0;
 
     private int samplesPerPixel = 1;
+    
+    private int numberOfFrames = 0;
 
     private String pmi = null;
 
@@ -185,13 +189,13 @@ public class DcmImageReader extends ImageReader {
 
     public int getNumImages(boolean allowSearch) throws IOException {
         readMetadata();
-        return frameStartPos.length;
+        return numberOfFrames;
     }
 
     private void checkIndex(int imageIndex) {
-        if (imageIndex >= frameStartPos.length) {
+        if (imageIndex >= numberOfFrames) {
             throw new IndexOutOfBoundsException("index: " + imageIndex
-                    + ", frames: " + frameStartPos.length);
+                    + ", frames: " + numberOfFrames);
         }
     }
 
@@ -238,7 +242,7 @@ public class DcmImageReader extends ImageReader {
         theParser.parseDcmFile(fileFormat, Tags.PixelData);
         this.theMetadata = new DcmMetadataImpl(theDataset);
         if (theParser.getReadTag() != Tags.PixelData) {
-            this.frameStartPos = new long[0];
+            this.numberOfFrames = 0;
         } else {
             initParams();
         }
@@ -266,8 +270,7 @@ public class DcmImageReader extends ImageReader {
                 + this.pmi + " for size " + this.width + "," + this.height);
         this.planes = theDataset.getInt(Tags.PlanarConfiguration, 0);
         this.aspectRatio = width * pixelRatio() / height;
-
-        this.frameStartPos = new long[theDataset.getInt(Tags.NumberOfFrames, 1)];
+        this.numberOfFrames = theDataset.getInt(Tags.NumberOfFrames, 1);
 
         int rLen = theParser.getReadLength();
         if (rLen == -1) {
@@ -277,14 +280,14 @@ public class DcmImageReader extends ImageReader {
                     || ts.equals(UIDs.JPEGExtended);
             this.decompressor = f.getReaderForTransferSyntax(ts);
             this.itemParser = new ItemParser(theParser);
-            this.itemStream = new SegmentedImageInputStream(stream, itemParser);
+            if (numberOfFrames == 1) {
+                this.itemStream =
+                    new SegmentedImageInputStream(stream, itemParser);
+            }
             return;
         }
-        frameStartPos[0] = theParser.getStreamPosition();
-        int frameLength = rLen / frameStartPos.length;
-        for (int i = 1; i < frameStartPos.length; ++i) {
-            frameStartPos[i] = frameStartPos[i - 1] + frameLength;
-        }
+        this.frame1StartPos = theParser.getStreamPosition();
+        this.frameLength = rLen / numberOfFrames;
 
         if (this.samplesPerPixel > 1) {
             if (alloc == 16) {
@@ -413,21 +416,10 @@ public class DcmImageReader extends ImageReader {
                             .getSubsamplingYOffset());
             decompressorReadParam.setDestinationOffset(readParam
                     .getDestinationOffset());
-            if (imageIndex > 0 && frameStartPos[imageIndex] == 0) {
-                if (itemParser.getNumberOfDataFragments() == frameStartPos.length) {
-                    for (int i = 1; i < frameStartPos.length; ++i)
-                        frameStartPos[i] = itemParser
-                                .getOffsetOfDataFragment(i);
-                } else {
-                    for (int i = 0; i < imageIndex; ++i)
-                        if (frameStartPos[i + 1] == 0)
-                            decompress(i, decompressorReadParam);
-                }
-            }
             return adjustBufferedImage(decompress(imageIndex,
                     decompressorReadParam), readParam);
         }
-        stream.seek(this.frameStartPos[imageIndex]);
+        stream.seek(frame1StartPos + imageIndex * frameLength);
 
         this.theTile = theImage.getWritableTile(0, 0);
 
@@ -624,7 +616,14 @@ public class DcmImageReader extends ImageReader {
     private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
             throws IOException {
         log.debug("Start decompressing frame#" + (imageIndex + 1));
-        itemStream.seek(this.frameStartPos[imageIndex]);
+        if (numberOfFrames == 1) {
+            itemStream.seek(0);
+        } else {
+            ItemParser.Item item = itemParser.getItem(imageIndex);
+            itemStream = new SegmentedImageInputStream(stream,
+                    new long[] { item.startPos },
+                    new int[] { item.length });
+        }
         decompressor.setInput(itemStream);
         BufferedImage bi = decompressor.read(0, readParam);
         // workaround for Bug in J2KImageReader and
@@ -636,11 +635,6 @@ public class DcmImageReader extends ImageReader {
             decompressor = f.getReaderForTransferSyntax(ts);
         } else {
             decompressor.reset();
-        }
-        final int nextIndex = imageIndex + 1;
-        if (nextIndex < frameStartPos.length && frameStartPos[nextIndex] == 0) {
-            this.frameStartPos[nextIndex] = itemParser
-                    .seekNextFrame(itemStream);
         }
         log.debug("Finished decompressed frame#" + (imageIndex + 1));
         return bi;
@@ -797,7 +791,6 @@ public class DcmImageReader extends ImageReader {
         theParser = null;
         theMetadata = null;
         theDataset = null;
-        frameStartPos = null;
         pmi = null;
         cmParam = null;
 

@@ -126,7 +126,6 @@ public class Transcoder {
     private int frameIndex = 0;
     private boolean truncatePostPixelData = false;
     private ItemParser itemParser;
-    private SegmentedImageInputStream siis;
 
     /**
      * if true, input stream is directly copied into output stream without pixel
@@ -277,7 +276,6 @@ public class Transcoder {
         iis.setByteOrder(decodeParam.byteOrder);
         if (decodeParam.encapsulated) {
             itemParser = new ItemParser(parser);
-            siis = new SegmentedImageInputStream(iis, itemParser);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(dsIn.getFileMetaInfo()
                     .getTransferSyntaxUID());
@@ -500,12 +498,20 @@ public class Transcoder {
     public void readNextFrame() throws IOException {
         log.debug("reading frame #" + (frameIndex + 1));
         if (decodeParam.encapsulated) {
+            SegmentedImageInputStream siis;
+            if (pixelDataParam.isMultiFrame()) {
+                ItemParser.Item item = itemParser.getItem(frameIndex);
+                siis = new SegmentedImageInputStream(iis,
+                        new long[] { item.startPos },
+                        new int[] { item.length });
+            } else {
+                siis = new SegmentedImageInputStream(iis, itemParser);
+            }
             reader.setInput(siis);
             ImageReadParam param = reader.getDefaultReadParam();
             if (bi != null)
                 param.setDestination(bi);
             bi = reader.read(0, param);
-            itemParser.seekNextFrame(siis);
         } else {
             DataBuffer db = bi.getRaster().getDataBuffer();
             switch (db.getDataType()) {
