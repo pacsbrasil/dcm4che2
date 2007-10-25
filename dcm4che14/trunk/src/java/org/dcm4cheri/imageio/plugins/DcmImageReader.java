@@ -80,23 +80,25 @@ import org.dcm4cheri.image.ItemParser;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
 /**
- *
- * @author  gunter.zeilinger@tiani.com
+ * 
+ * @author gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
 public class DcmImageReader extends ImageReader {
 
     private static final Logger log = Logger.getLogger(DcmImageReader.class);
-    
-    private static final String J2KIMAGE_READER = 
-		"com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
-    
+
+    private static final String J2KIMAGE_READER = "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
+
     private static final ColorModelFactory cmFactory = ColorModelFactory
             .getInstance();
 
     private ImageInputStream stream = null;
+
     private SegmentedImageInputStream itemStream = null;
+
     private ImageReader decompressor = null;
+
     private ItemParser itemParser = null;
 
     // The image to be written.
@@ -104,35 +106,59 @@ public class DcmImageReader extends ImageReader {
 
     // The image's tile.
     private WritableRaster theTile = null;
-    private DcmParser theParser = null;
-    private DcmMetadataImpl theMetadata = null;
-    private Dataset theDataset = null;
-    private long[] frameStartPos = null;
-    private int width = -1;
-    private int height = -1;
-    private int planes = 0;
-	private int samplesPerPixel = 1;
-    private String pmi = null;
-    private boolean ybr2rgb = false;
-	private ColorModelParam cmParam;
 
+    private DcmParser theParser = null;
+
+    private DcmMetadataImpl theMetadata = null;
+
+    private Dataset theDataset = null;
+
+    private long[] frameStartPos = null;
+
+    private int width = -1;
+
+    private int height = -1;
+
+    private int planes = 0;
+
+    private int samplesPerPixel = 1;
+
+    private String pmi = null;
+
+    private boolean ybr2rgb = false;
+
+    private ColorModelParam cmParam;
 
     private int dataType = 0;
+
     private int stored = 0;
+
     private float aspectRatio = 0;
+
     private int sourceXOffset;
 
     private int sourceYOffset;
+
     private int sourceWidth;
+
     private int sourceHeight;
+
     private int sourceXSubsampling;
+
     private int sourceYSubsampling;
+
     private int subsamplingXOffset;
+
     private int subsamplingYOffset;
+
     private int destXOffset;
+
     private int destYOffset;
+
     private int destWidth;
+
     private int totDestWidth;
+
     private int totDestHeight;
 
     public DcmImageReader(ImageReaderSpi originatingProvider) {
@@ -234,8 +260,10 @@ public class DcmImageReader extends ImageReader {
         this.width = theDataset.getInt(Tags.Columns, 0);
         this.height = theDataset.getInt(Tags.Rows, 0);
         this.samplesPerPixel = theDataset.getInt(Tags.SamplesPerPixel, 1);
-        this.pmi = theDataset.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
-        log.debug("Samples per pixel is "+this.samplesPerPixel +" " + this.pmi + " for size "+this.width+","+this.height);
+        this.pmi = theDataset.getString(Tags.PhotometricInterpretation,
+                "MONOCHROME2");
+        log.debug("Samples per pixel is " + this.samplesPerPixel + " "
+                + this.pmi + " for size " + this.width + "," + this.height);
         this.planes = theDataset.getInt(Tags.PlanarConfiguration, 0);
         this.aspectRatio = width * pixelRatio() / height;
 
@@ -245,7 +273,8 @@ public class DcmImageReader extends ImageReader {
         if (rLen == -1) {
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             String ts = theDataset.getFileMetaInfo().getTransferSyntaxUID();
-            this.ybr2rgb = ts.equals(UIDs.JPEGBaseline) || ts.equals(UIDs.JPEGExtended);
+            this.ybr2rgb = ts.equals(UIDs.JPEGBaseline)
+                    || ts.equals(UIDs.JPEGExtended);
             this.decompressor = f.getReaderForTransferSyntax(ts);
             this.itemParser = new ItemParser(theParser);
             this.itemStream = new SegmentedImageInputStream(stream, itemParser);
@@ -297,23 +326,23 @@ public class DcmImageReader extends ImageReader {
     private static final ColorSpace sRGB = ColorSpace
             .getInstance(ColorSpace.CS_sRGB);
 
-    private static final ColorSpace CS_YBR_FULL = 
-            SimpleYBRColorSpace.createYBRFullColorSpace();
-    
-    private static final ColorSpace CS_YBR_PARTIAL = 
-            SimpleYBRColorSpace.createYBRPartialColorSpace();
+    private static final ColorSpace CS_YBR_FULL = SimpleYBRColorSpace
+            .createYBRFullColorSpace();
+
+    private static final ColorSpace CS_YBR_PARTIAL = SimpleYBRColorSpace
+            .createYBRPartialColorSpace();
 
     private static final ImageTypeSpecifier YBR_FULL_PLANE = ImageTypeSpecifier
-            .createBanded(CS_YBR_FULL, new int[] { 0, 1, 2 }, new int[] { 0, 0, 0 },
-                    DataBuffer.TYPE_BYTE, false, false);
+            .createBanded(CS_YBR_FULL, new int[] { 0, 1, 2 }, new int[] { 0, 0,
+                    0 }, DataBuffer.TYPE_BYTE, false, false);
 
     private static final ImageTypeSpecifier YBR_FULL_PIXEL = ImageTypeSpecifier
             .createInterleaved(CS_YBR_FULL, new int[] { 0, 1, 2 },
                     DataBuffer.TYPE_BYTE, false, false);
 
     private static final ImageTypeSpecifier YBR_PARTIAL_PLANE = ImageTypeSpecifier
-            .createBanded(CS_YBR_PARTIAL, new int[] { 0, 1, 2 }, new int[] { 0, 0, 0 },
-                    DataBuffer.TYPE_BYTE, false, false);
+            .createBanded(CS_YBR_PARTIAL, new int[] { 0, 1, 2 }, new int[] { 0,
+                    0, 0 }, DataBuffer.TYPE_BYTE, false, false);
 
     private static final ImageTypeSpecifier YBR_PARTIAL_PIXEL = ImageTypeSpecifier
             .createInterleaved(CS_YBR_PARTIAL, new int[] { 0, 1, 2 },
@@ -335,24 +364,26 @@ public class DcmImageReader extends ImageReader {
             throws IOException {
         readMetadata();
         checkIndex(imageIndex);
-        return Collections.singletonList(getImageTypeSpecifier(
-        		param != null ? param.getPValToDDL() : null)).iterator();
+        return Collections.singletonList(
+                getImageTypeSpecifier(param != null ? param.getPValToDDL()
+                        : null)).iterator();
     }
-    
+
     private ImageTypeSpecifier getImageTypeSpecifier(byte[] pv2dll) {
         if (this.samplesPerPixel == 3) {
             if (!ybr2rgb) {
                 if (pmi.startsWith("YBR_FULL"))
                     return this.planes != 0 ? YBR_FULL_PLANE : YBR_FULL_PIXEL;
                 if (pmi.startsWith("YBR_PARTIAL"))
-                    return this.planes != 0 ? YBR_PARTIAL_PLANE : YBR_PARTIAL_PIXEL;
+                    return this.planes != 0 ? YBR_PARTIAL_PLANE
+                            : YBR_PARTIAL_PIXEL;
             }
             return this.planes != 0 ? RGB_PLANE : RGB_PIXEL;
         }
-    	return new ImageTypeSpecifier(cmFactory.getColorModel(
-    					this.cmParam = cmFactory.makeParam(theDataset, pv2dll)),
-    					new PixelInterleavedSampleModel(
-    							this.dataType, 1, 1, 1, 1, new int[] { 0 }));
+        return new ImageTypeSpecifier(cmFactory
+                .getColorModel(this.cmParam = cmFactory.makeParam(theDataset,
+                        pv2dll)), new PixelInterleavedSampleModel(
+                this.dataType, 1, 1, 1, 1, new int[] { 0 }));
     }
 
     public ImageReadParam getDefaultReadParam() {
@@ -371,27 +402,30 @@ public class DcmImageReader extends ImageReader {
         this.theImage = getDestination(param, imageTypes, this.width,
                 this.height);
         if (decompressor != null) {
-            ImageReadParam decompressorReadParam = decompressor.getDefaultReadParam();
+            ImageReadParam decompressorReadParam = decompressor
+                    .getDefaultReadParam();
             decompressorReadParam.setDestination(theImage);
             decompressorReadParam.setSourceRegion(readParam.getSourceRegion());
-            decompressorReadParam.setSourceSubsampling(
-                    readParam.getSourceXSubsampling(), 
-                    readParam.getSourceYSubsampling(),
-                    readParam.getSubsamplingXOffset(),
-                    readParam.getSubsamplingYOffset());
-            decompressorReadParam.setDestinationOffset(
-                    readParam.getDestinationOffset());
+            decompressorReadParam.setSourceSubsampling(readParam
+                    .getSourceXSubsampling(),
+                    readParam.getSourceYSubsampling(), readParam
+                            .getSubsamplingXOffset(), readParam
+                            .getSubsamplingYOffset());
+            decompressorReadParam.setDestinationOffset(readParam
+                    .getDestinationOffset());
             if (imageIndex > 0 && frameStartPos[imageIndex] == 0) {
                 if (itemParser.getNumberOfDataFragments() == frameStartPos.length) {
                     for (int i = 1; i < frameStartPos.length; ++i)
-	                    frameStartPos[i] = itemParser.getOffsetOfDataFragment(i);                   
+                        frameStartPos[i] = itemParser
+                                .getOffsetOfDataFragment(i);
                 } else {
                     for (int i = 0; i < imageIndex; ++i)
-	                    if (frameStartPos[i+1] == 0)
-	                        decompress(i, decompressorReadParam);
+                        if (frameStartPos[i + 1] == 0)
+                            decompress(i, decompressorReadParam);
                 }
             }
-            return adjustBufferedImage(decompress(imageIndex, decompressorReadParam), readParam);
+            return adjustBufferedImage(decompress(imageIndex,
+                    decompressorReadParam), readParam);
         }
         stream.seek(this.frameStartPos[imageIndex]);
 
@@ -443,130 +477,158 @@ public class DcmImageReader extends ImageReader {
         } else {
             readWordSamples(1, ((DataBufferUShort) db).getData());
         }
-        
+
         return adjustBufferedImage(this.theImage, readParam);
     }
 
-	private BufferedImage adjustBufferedImage(BufferedImage bi,
-			DcmImageReadParam readParam) {
-		final boolean autoWindowing = cmParam != null
-			&& cmParam.isMonochrome() 
-			&& cmParam.getNumberOfWindows() == 0
-			&& readParam.isAutoWindowing();
-		if (!autoWindowing && !readParam.isMaskPixelData())
-			return bi;
-		final WritableRaster raster = bi.getRaster();
-		DataBuffer db = raster.getDataBuffer();
-		if (db instanceof DataBufferUShort)
-          return adjustUShortBufferedImage(bi, readParam, autoWindowing, raster, db);
-		else if (db instanceof DataBufferByte)
-	          return adjustByteBufferedImage(bi, readParam, autoWindowing, raster, db);
-		else return bi;
-	}
+    private BufferedImage adjustBufferedImage(BufferedImage bi,
+            DcmImageReadParam readParam) {
+        final boolean autoWindowing = cmParam != null && cmParam.isMonochrome()
+                && cmParam.getNumberOfWindows() == 0
+                && readParam.isAutoWindowing();
+        if (!autoWindowing && !readParam.isMaskPixelData())
+            return bi;
+        final WritableRaster raster = bi.getRaster();
+        DataBuffer db = raster.getDataBuffer();
+        if (db instanceof DataBufferUShort)
+            return adjustUShortBufferedImage(bi, readParam, autoWindowing,
+                    raster, db);
+        else if (db instanceof DataBufferByte)
+            return adjustByteBufferedImage(bi, readParam, autoWindowing,
+                    raster, db);
+        else
+            return bi;
+    }
 
-	/**
-	 * Adjusts the window level automatically for byte data, also performing the masking if appropriate.
-	 * @param bi
-	 * @param readParam
-	 * @param autoWindowing
-	 * @param raster
-	 * @param db
-	 * @return buffered image with a modified window level.
-	 */
-	private BufferedImage adjustByteBufferedImage(BufferedImage bi, DcmImageReadParam readParam, final boolean autoWindowing, final WritableRaster raster, DataBuffer db) {
-		byte[] data = ((DataBufferByte) db).getData();
+    /**
+     * Adjusts the window level automatically for byte data, also performing the
+     * masking if appropriate.
+     * 
+     * @param bi
+     * @param readParam
+     * @param autoWindowing
+     * @param raster
+     * @param db
+     * @return buffered image with a modified window level.
+     */
+    private BufferedImage adjustByteBufferedImage(BufferedImage bi,
+            DcmImageReadParam readParam, final boolean autoWindowing,
+            final WritableRaster raster, DataBuffer db) {
+        byte[] data = ((DataBufferByte) db).getData();
         final int mask = -1 >>> (32 - stored);
         if (!autoWindowing) {
-	        for (int i = 0; i < data.length; i++)
-	            data[i] &= mask;
-	        return bi;
+            for (int i = 0; i < data.length; i++)
+                data[i] &= mask;
+            return bi;
         }
-        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ?
-        		0 : ~mask;
+        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ? 0
+                : ~mask;
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         int val;
-        int signBit = 1 << (stored-1);
+        int signBit = 1 << (stored - 1);
         if (readParam.isMaskPixelData()) {
-	        for (int i = 0; i < data.length; i++) {
-	            data[i] &= mask;
-	            // The extra &= is required because the one above is on SHORT data type not int.
-	            val = (data[i] & mask);
-	            if( (val & signBit) !=0 ) val |= sign;
-	            if (val < min) min = val;
-	            if (val > max) max = val;	            	
-	        }
+            for (int i = 0; i < data.length; i++) {
+                data[i] &= mask;
+                // The extra &= is required because the one above is on SHORT
+                // data type not int.
+                val = (data[i] & mask);
+                if ((val & signBit) != 0)
+                    val |= sign;
+                if (val < min)
+                    min = val;
+                if (val > max)
+                    max = val;
+            }
         } else {
-	        for (int i = 0; i < data.length; i++) {
-	            val = (data[i] & mask);
-	            if( (val & signBit) == signBit ) val |= sign;
-	            if (val < min) min = val;
-	            if (val > max) max = val;	            	
-	        }        	
+            for (int i = 0; i < data.length; i++) {
+                val = (data[i] & mask);
+                if ((val & signBit) == signBit)
+                    val |= sign;
+                if (val < min)
+                    min = val;
+                if (val > max)
+                    max = val;
+            }
         }
         final float w = (max - min) * cmParam.getRescaleSlope();
         final float c = ((max + min) / 2) * cmParam.getRescaleSlope()
-        								+ cmParam.getRescaleIntercept();
-        log.debug("auto c,w="+c+","+w+" min,max="+min+","+max+" mask="+mask+" sign="+sign);
-        ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam.isInverse()));
-		return new BufferedImage(cm, raster, false, null);
-	}
+                + cmParam.getRescaleIntercept();
+        log.debug("auto c,w=" + c + "," + w + " min,max=" + min + "," + max
+                + " mask=" + mask + " sign=" + sign);
+        ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam
+                .isInverse()));
+        return new BufferedImage(cm, raster, false, null);
+    }
 
-	/**
-	 * Does auto windowing level and mask on unsigned unsigned short images.
-	 * @param bi
-	 * @param readParam
-	 * @param autoWindowing
-	 * @param raster
-	 * @param db
-	 * @return Auto-window levelled image.
-	 */
-	private BufferedImage adjustUShortBufferedImage(BufferedImage bi, DcmImageReadParam readParam, final boolean autoWindowing, final WritableRaster raster, DataBuffer db) {
-		short[] data = ((DataBufferUShort) db).getData();
+    /**
+     * Does auto windowing level and mask on unsigned unsigned short images.
+     * 
+     * @param bi
+     * @param readParam
+     * @param autoWindowing
+     * @param raster
+     * @param db
+     * @return Auto-window levelled image.
+     */
+    private BufferedImage adjustUShortBufferedImage(BufferedImage bi,
+            DcmImageReadParam readParam, final boolean autoWindowing,
+            final WritableRaster raster, DataBuffer db) {
+        short[] data = ((DataBufferUShort) db).getData();
         final int mask = -1 >>> (32 - stored);
         if (!autoWindowing) {
-	        for (int i = 0; i < data.length; i++)
-	            data[i] &= mask;
-	        return bi;
+            for (int i = 0; i < data.length; i++)
+                data[i] &= mask;
+            return bi;
         }
-        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ?
-        		0 : ~mask;
+        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ? 0
+                : ~mask;
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         int val;
-        int signBit = 1 << (stored-1);
+        int signBit = 1 << (stored - 1);
         if (readParam.isMaskPixelData()) {
-	        for (int i = 0; i < data.length; i++) {
-	            data[i] &= mask;
-	            // The extra &= is required because the one above is on SHORT data type not int.
-	            val = (data[i] & mask);
-	            if( (val & signBit) !=0 ) val |= sign;
-	            if (val < min) min = val;
-	            if (val > max) max = val;	            	
-	        }
+            for (int i = 0; i < data.length; i++) {
+                data[i] &= mask;
+                // The extra &= is required because the one above is on SHORT
+                // data type not int.
+                val = (data[i] & mask);
+                if ((val & signBit) != 0)
+                    val |= sign;
+                if (val < min)
+                    min = val;
+                if (val > max)
+                    max = val;
+            }
         } else {
-	        for (int i = 0; i < data.length; i++) {
-	            val = (data[i] & mask);
-	            if( (val & signBit) == signBit ) val |= sign;
-	            if (val < min) min = val;
-	            if (val > max) max = val;	            	
-	        }        	
+            for (int i = 0; i < data.length; i++) {
+                val = (data[i] & mask);
+                if ((val & signBit) == signBit)
+                    val |= sign;
+                if (val < min)
+                    min = val;
+                if (val > max)
+                    max = val;
+            }
         }
         final float w = (max - min) * cmParam.getRescaleSlope();
         final float c = ((max + min) / 2) * cmParam.getRescaleSlope()
-        								+ cmParam.getRescaleIntercept();
-        log.debug("auto w,c="+w+","+c+" min,max="+min+","+max+" mask="+mask+" sign="+sign);
-        ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam.isInverse()));
-		return new BufferedImage(cm, raster, false, null);
-	}
+                + cmParam.getRescaleIntercept();
+        log.debug("auto w,c=" + w + "," + c + " min,max=" + min + "," + max
+                + " mask=" + mask + " sign=" + sign);
+        ColorModel cm = cmFactory.getColorModel(cmParam.update(c, w, cmParam
+                .isInverse()));
+        return new BufferedImage(cm, raster, false, null);
+    }
 
-	private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
+    private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
             throws IOException {
-        log.debug("Start decompressing frame#" + (imageIndex+1));
+        log.debug("Start decompressing frame#" + (imageIndex + 1));
         itemStream.seek(this.frameStartPos[imageIndex]);
         decompressor.setInput(itemStream);
         BufferedImage bi = decompressor.read(0, readParam);
-        // workaround for Bug in J2KImageReader and J2KImageReaderCodecLib.setInput()
+        // workaround for Bug in J2KImageReader and
+        // J2KImageReaderCodecLib.setInput()
         if (decompressor.getClass().getName().startsWith(J2KIMAGE_READER)) {
             decompressor.dispose();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
@@ -577,9 +639,10 @@ public class DcmImageReader extends ImageReader {
         }
         final int nextIndex = imageIndex + 1;
         if (nextIndex < frameStartPos.length && frameStartPos[nextIndex] == 0) {
-            this.frameStartPos[nextIndex] = itemParser.seekNextFrame(itemStream);
+            this.frameStartPos[nextIndex] = itemParser
+                    .seekNextFrame(itemStream);
         }
-        log.debug("Finished decompressed frame#" + (imageIndex+1));
+        log.debug("Finished decompressed frame#" + (imageIndex + 1));
         return bi;
     }
 
@@ -718,8 +781,8 @@ public class DcmImageReader extends ImageReader {
     }
 
     /**
-     * Remove all settings including global settings such as
-     * <code>Locale</code>s and listeners, as well as stream settings.
+     * Remove all settings including global settings such as <code>Locale</code>s
+     * and listeners, as well as stream settings.
      */
     public void reset() {
         super.reset();
@@ -745,6 +808,6 @@ public class DcmImageReader extends ImageReader {
         decompressor = null;
         ybr2rgb = false;
         itemStream = null;
-        itemParser = null;        
+        itemParser = null;
     }
 }
