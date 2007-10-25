@@ -49,7 +49,7 @@
 				<xsl:sort select="/model/rolesWithActions/item" />
 			</xsl:apply-templates>
 		</table>
-		<form action="studyPermission.m?studyIUID={studyIUID}&amp;patPk={patPk}" method="post" accept-charset="UTF-8" >
+		<form action="studyPermission.m?studyIUID={studyIUID}&amp;patPk={patPk}&amp;patName={patName}" name="permForm" method="post" accept-charset="UTF-8" >
 			<input size="10" name="role" type="text" value="" />
 			&#160;
 			<input size="10" name="action" type="text" value="" />
@@ -86,20 +86,23 @@
 		<xsl:choose>
 			<xsl:when test="$countPermissions = /model/countStudies">
 				<a title="remove permission for {$role}:{.}" 
-					href="studyPermission.m?studyIUID={/model/studyIUID}&amp;remove=true&amp;role={$role}&amp;action={$action}&amp;patPk={/model/patPk}&amp;patName={/model/patName}">
+					href="#"
+					onClick="document.permForm.role.value='{$role}'; document.permForm.action.value='{$action}'; document.permForm.remove.click(); return false;">
 	   				<img src="images/granted.gif" alt="granted" border="0" />
 	   			</a>
 	   		</xsl:when>
 			<xsl:when test="$countPermissions > 0">
 				<a title="remove permission for {$role}:{.}" 
-					href="studyPermission.m?studyIUID={/model/studyIUID}&amp;add=true&amp;role={$role}&amp;action={$action}&amp;patPk={/model/patPk}&amp;patName={/model/patName}">
+					href="#"
+					onClick="document.permForm.role.value='{$role}'; document.permForm.action.value='{$action}'; document.permForm.remove.click(); return false;">
 	   				<img src="images/granted_part.gif" alt="some studies granted" border="0" />
 	   			</a>
 	   			<xsl:value-of select="$countPermissions" />/<xsl:value-of select="/model/countStudies"/>
 	   		</xsl:when>
 			<xsl:otherwise>
 				<a title="add permission for {$role}:{.}" 
-					href="studyPermission.m?studyIUID={/model/studyIUID}&amp;add=true&amp;role={$role}&amp;action={$action}&amp;patPk={/model/patPk}&amp;patName={/model/patName}">
+					href="#"
+					onClick="document.permForm.role.value='{$role}'; document.permForm.action.value='{$action}'; document.permForm.add.click(); return false;">
 		   			<img src="images/denied.gif" alt="denied" border="0" />
 	   			</a>
 	   		</xsl:otherwise>
@@ -124,12 +127,14 @@
 	   		<td><xsl:value-of select="$action" /></td>
 	   		<td titel="Remove this grant">
 				<a title="remove this permission" 
-					href="studyPermission.m?studyIUID={/model/studyIUID}&amp;remove=true&amp;role={$role}&amp;action={$action}&amp;patPk={/model/patPk}&amp;patName={/model/patName}">
+					href="#"
+					onClick="document.permForm.role.value='{$role}'; document.permForm.action.value='{$action}'; document.permForm.remove.click(); return false;">
 	   				<img src="images/delete.gif" alt="del" border="0" />
 	   			</a>
 	   			<xsl:if test="$countPermissions &lt; /model/countStudies">
 					<a title="add this permission to all studies of this patient" 
-						href="studyPermission.m?studyIUID={/model/studyIUID}&amp;add=true&amp;role={$role}&amp;action={$action}&amp;patPk={/model/patPk}&amp;patName={/model/patName}">
+						href="#"
+						onClick="document.permForm.role.value='{$role}'; document.permForm.action.value='{$action}'; document.permForm.add.click(); return false;">
 		   				<img src="images/expand_grant.gif" alt="add" border="0" />
 		   			</a>
 	   			</xsl:if>
