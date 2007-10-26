@@ -50,142 +50,193 @@ import org.slf4j.LoggerFactory;
 @Name("ZoomPan")
 @Scope(ScopeType.EVENT)
 public class ZoomPanAction {
-	private static final double ZOOM_EXPONENT = 1.25;
-	private static final double LOG_ZOOM_EXPONENT = Math.log(ZOOM_EXPONENT);
+   private static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class);
 
-	public static final Logger log = LoggerFactory.getLogger(ZoomPanAction.class); 
+   @In(value = "SessionStudyModel", create = true)
+   StudyModel studyModel;
 
-	@In(value="SessionStudyModel", create=true)
-	StudyModel studyModel;
-	
-	@In(value="DisplayMode", create=true)
-	DisplayMode mode;
+   @In(value = "DisplayMode", create = true)
+   DisplayMode mode;
 
-	/** Amount to change zoom by */
-	int relZoom = 0;
-	int panX = 0, panY = 0;
-	
-	/** The presentation mode */
-	private PresentationSizeMode presentationSizeMode;
-	
-	private String region;
-	/** These are the internal display size information from the client, retrieved from region. */
-	protected int width, height, cx, cy;
-	/** Scale is a factor to convert image pixels into display pixels, converts image pixels to display pixels. */
-	float magnify, updatedMagnify;
+   /** Amount to change zoom by */
+   float relZoom;
 
-	public void setRelZoom(int rzoom) {
-		this.relZoom = rzoom;
-		log.info("Relative zoomPan set to "+getRelZoom());
-	}
-	
-	public int getRelZoom() {
-		return this.relZoom;
-	}
-	
-	/**
-	 * Computes the updated manification amount.
-	 */
-	protected float updateMagnify() {
-		if( getRelZoom()==0 ) {
-			log.info("Relative zoom is zero, so using original magnify.");
-			return magnify;
-		}
-		if( magnify < 0.0001 ) {
-			log.error("Display scale must be larger than 0.0001.");
-			magnify = 1.0f;
-		}
-		double zoom = Math.log( magnify ) / LOG_ZOOM_EXPONENT;
-		int izoom = getRelZoom() + (int) Math.round(zoom);
-		log.info("Updated izoom is "+izoom);
-		if( izoom < -250 ) izoom = -250;
-		else if( izoom >= 250 ) izoom = 250;		
-		updatedMagnify = (float) Math.pow(ZOOM_EXPONENT,izoom);
-		log.info("zoomPan getZoom scale="+magnify+" dbl zoom="+zoom+" updatedMagnify="+updatedMagnify);
-		return updatedMagnify;
-	}
-		
-	/** Sets the region to a specific value */
-	public void setRegion(String region) {
-		if( region==null ) throw new IllegalArgumentException("Region must not be null.");
-		this.region = region.trim();
-		log.info("Setting region to "+region + " on "+this);
-		double[] dRegion = WadoImage.splitDouble(this.region,5);
-		width = (int) dRegion[0];
-		height = (int) dRegion[1];
-		cx = (int) dRegion[2];
-		cy = (int) dRegion[3];
-		magnify = (float) dRegion[4];
-		updatedMagnify = magnify;
-		if( magnify < 0.0001 ) {
-			log.error("Mangification provided is too small.");
-			magnify = 1.0f;
-		}
-	}
-	
-	/**
-	 * Returns the top left corner of the area to display.
-	 * @return top left corner as a comma-separated value.
-	 */
-	public String getTopLeft() {
-	  int left = (int) (cx - width / (2 * updatedMagnify));
-	  int top = (int) (cy - height / (2 * updatedMagnify));
-	  return Integer.toString(left)+","+Integer.toString(top);
-	}
-	
-	/**
-	 * Returns the bottom right corner of the area to display.
-	 * @return bottom right corner as a comma-separated value.
-	 */
-	public String getBottomRight() {
-		int right = (int) (cx + width / (2 * updatedMagnify));
-		int bottom = (int) (cy + height / (2 * updatedMagnify));
-		return Integer.toString(right)+","+Integer.toString(bottom);
-	}
-	
-	/**
-	 * Pans in the X direction.  Affects the region value.
-	 * @param pixels amount to zoom by relative to the current displayed size (+1 will zoom an entire page width to the right)
-	 */
-	public void setPanX(int pixels) {
-		this.panX = pixels;
-	}
-	
-	/**
-	 * Pans in the Y direction.  Affects teh region value.
-	 * @param pixels amount to zoom by relative to the current displayed size (+1 will zoom an entire page width downwards.)
-	 */
-	public void setPanY(int pixels) {
-		this.panY = pixels;
-	}
-	
-	/**
-	 * Gets the region string for the sub-region of the image to display
-	 * @return region width,height,cx,cy,scale
-	 */
-	public String getRegion() {
-		return region;
-	}
-	
-	/** Applies the pan/zoom to the given study, series or image. This maybe used by GSPS or as a temporary change.*/
-	public String action() {
-	    updateMagnify();
-		log.info("Zoom pan action size="+getPresentationSizeMode()+" Region="+getRegion()+" relZoom="+relZoom+" pan X,y="+panX+","+panY + " on "+this);
-		
-	    DisplayMode.ApplyLevel applyLevel;
-	    if( mode!=null ) applyLevel = mode.getApplyLevel();
-	    else applyLevel = DisplayMode.ApplyLevel.SERIES;
-	    RegionMacro macro = new RegionMacro(getPresentationSizeMode(), getTopLeft(), getBottomRight(), updatedMagnify);
-	    studyModel.apply(applyLevel,macro);
-	    log.info("Done zoom/pan action.");
-		return "success";
-	}
+   int panX = 0, panY = 0;
 
-	public PresentationSizeMode getPresentationSizeMode() {
-		return presentationSizeMode;
-	}
+   /** The overall image size, and the area being displayed */
+   String topLeft, bottomRight;
 
-	public void setPresentationSizeMode(PresentationSizeMode presentationSizeMode) {
-		this.presentationSizeMode = presentationSizeMode;
-	}
+   int rows = 512, columns = 512;
+
+   /** The presentation mode */
+   private PresentationSizeMode presentationSizeMode;
+
+   /**
+     * These are the internal display size information from the client,
+     * retrieved from region.
+     */
+   protected int width, height, cx, cy;
+
+   /**
+     * Scale is a factor to convert image pixels into display pixels, converts
+     * image pixels to display pixels.
+     */
+   float magnify=1f;
+
+   public void setRelZoom(float rzoom) {
+	  this.relZoom = rzoom;
+	  log.info("Relative zoomPan set to " + getRelZoom());
+   }
+
+   public float getRelZoom() {
+	  return this.relZoom;
+   }
+
+   /** Updates the width, height, cx, cy and computes the magnify amount */
+   void updateRegion() {
+	  float[] topLeftF = WadoImage.splitFloat(getTopLeft(), 2);
+	  float[] botRightF = WadoImage.splitFloat(getBottomRight(), 2);
+	  width = (int) Math.abs(botRightF[0] - topLeftF[0]);
+	  height = (int) Math.abs(botRightF[1] - topLeftF[1]);
+	  cx = panX + (int) Math.abs(botRightF[0] + topLeftF[0]) / 2;
+	  cy = panY + (int) Math.abs(botRightF[1] + topLeftF[1]) / 2;
+	  // Trim to some minimum values
+	  if (width < 16)
+		 width = 16;
+	  if (height < 16)
+		 height = 16;
+	  if (cx < 1)
+		 cx = 1;
+	  if (cy < 1)
+		 cy = 1;
+	  if (cx > columns)
+		 cx = columns;
+	  if (cy > rows)
+		 cy = rows;
+	  magnify = columns / (float) width;
+	  if (magnify < 0.0001f)
+		 magnify = 0.0001f;
+	  if( relZoom ==0 ) relZoom = magnify;
+	  topLeft = null;
+	  bottomRight =null;
+   }
+
+   /**
+     * Returns the top left corner of the area to display.
+     * 
+     * @return top left corner as a comma-separated value.
+     */
+   public String getTopLeft() {
+	  if( topLeft!=null ) return topLeft;
+	  validateRegion();
+	  int left = (int) (cx - columns/ (2 * relZoom));
+	  int top = (int) (cy - rows / (2 * relZoom));
+	  return Integer.toString(left) + "," + Integer.toString(top);
+   }
+
+   /** Checks to see that the various values are reasonable and valid posisble values */
+   void validateRegion() {
+	  // Guess 512x512 if nothing provided
+	  if( rows < 16 ) rows = 512;
+	  if( columns < 16 ) columns = 512;
+	  if( cx < 1 ) cx = 1;
+	  if( cy < 1 ) cy = 1;
+	  if( cx > columns) cx = columns;
+	  if( cy > rows ) cy = rows;
+	  if( relZoom<0.0001f ) {
+		 if( magnify<0.0001f ) magnify = 0.0001f;
+		 relZoom = magnify;
+	  }
+   }
+   /**
+     * Returns the bottom right corner of the area to display.
+     * 
+     * @return bottom right corner as a comma-separated value.
+     */
+   public String getBottomRight() {
+	  if (bottomRight != null)
+		 return bottomRight;
+	  validateRegion();
+	  int right = (int) (cx + columns / (2 * relZoom));
+	  int bottom = (int) (cy + rows / (2 * relZoom));
+	  bottomRight = Integer.toString(right) + "," + Integer.toString(bottom);
+	  return bottomRight;
+   }
+
+   /**
+     * Pans in the X direction. Affects the region value.
+     * 
+     * @param pixels
+     *            amount to zoom by relative to the current displayed size (+1
+     *            will zoom an entire page width to the right)
+     */
+   public void setPanX(int pixels) {
+	  this.panX = pixels;
+   }
+
+   /**
+     * Pans in the Y direction. Affects teh region value.
+     * 
+     * @param pixels
+     *            amount to zoom by relative to the current displayed size (+1
+     *            will zoom an entire page width downwards.)
+     */
+   public void setPanY(int pixels) {
+	  this.panY = pixels;
+   }
+
+   /**
+     * Applies the pan/zoom to the given study, series or image. This maybe used
+     * by GSPS or as a temporary change.
+     */
+   public String action() {
+	  String startTL = getTopLeft();
+	  String startBR = getBottomRight();
+	  updateRegion();
+	  log.info("Zoom pan action size=" + getPresentationSizeMode() + " cols,rows="+columns+","+rows+" tl,br=" + getTopLeft()
+			+","+getBottomRight()+ " relZoom=" + relZoom + " pan X,y="
+			+ panX + "," + panY + " on " + this + " original tl,br="+startTL+","+startBR);
+
+	  DisplayMode.ApplyLevel applyLevel;
+	  if (mode != null)
+		 applyLevel = mode.getApplyLevel();
+	  else
+		 applyLevel = DisplayMode.ApplyLevel.SERIES;
+	  RegionMacro macro = new RegionMacro(getPresentationSizeMode(), getTopLeft(), getBottomRight(), 1.0f/relZoom);
+	  studyModel.apply(applyLevel, macro);
+	  log.info("Done zoom/pan action.");
+	  return "success";
+   }
+
+   public PresentationSizeMode getPresentationSizeMode() {
+	  return presentationSizeMode;
+   }
+
+   public void setPresentationSizeMode(PresentationSizeMode presentationSizeMode) {
+	  this.presentationSizeMode = presentationSizeMode;
+   }
+
+   public int getColumns() {
+	  return columns;
+   }
+
+   public void setColumns(int columns) {
+	  this.columns = columns;
+   }
+
+   public int getRows() {
+	  return rows;
+   }
+
+   public void setRows(int rows) {
+	  this.rows = rows;
+   }
+
+   public void setBottomRight(String bottomRight) {
+	  this.bottomRight = bottomRight;
+   }
+
+   public void setTopLeft(String topLeft) {
+	  this.topLeft = topLeft;
+   }
 }

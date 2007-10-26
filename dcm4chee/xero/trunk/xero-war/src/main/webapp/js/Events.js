@@ -132,7 +132,7 @@ function encodeURL(url) {
   return url.replace(/&/g,'&amp;');
 };
 
-var level = 1;
+var __XERO_DBG_LVL = 1;
 
 /** Test to see if the trace library is available. */
 function ttrace(msg) {
@@ -158,25 +158,25 @@ function dumpObj(msg,obj) {
 };
 
 function debug(msg) {
-	if( level<=0) {
+	if( __XERO_DBG_LVL<=0) {
 		ttrace(msg);
 	};
 };
 
 function info(msg) {
-	if( level<=1) {
+	if( __XERO_DBG_LVL<=1) {
 		ttrace(msg);
 	};
 };
 
 function warn(msg) {
-	if( level<=2) {
+	if( __XERO_DBG_LVL<=2) {
 		ttrace(msg);
 	};
 };
 
 function error(msg) {
-	if( level <=3 ) {
+	if( __XERO_DBG_LVL <=3 ) {
 		alert("Error:"+msg);
 		ttrace(msg);
 	};

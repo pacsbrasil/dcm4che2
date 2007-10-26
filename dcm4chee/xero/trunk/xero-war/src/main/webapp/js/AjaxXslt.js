@@ -58,7 +58,7 @@ XsltAjax.prototype.STATUS_OK = 200;
 XsltAjax.prototype.debug=debug;
 // Use for expensive debugging statements only - set to 3 normally.
 XsltAjax.prototype.profile=info;
-XsltAjax.prototype.logLevel=1;
+XsltAjax.prototype.logLevel=3;
 XsltAjax.prototype.info=info
 
 /**
@@ -405,7 +405,13 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    var updateModel = this.updateModel[actionName];
    
    var postUpdate = "action="+actionName+"&"+postArgs;
-   var actionIdItem = document.getElementById(actionName);
+   var actionIdItem;
+   if( actionName.getAttribute ) {
+   	 actionIdItem = actionName;
+   }
+   else {
+   	 actionIdItem = document.getElementById(actionName)
+   };
    var actionHref;
    if( updateModel ) {
       this.debug("Post update to "+actionName+" on id "+items); 

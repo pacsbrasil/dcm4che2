@@ -94,6 +94,7 @@ function zpUpdateModel(x,y) {
     this.height = getHeightFromNode(this.svgNode);
     this.debug("rows,columns="+this.rows+","+this.columns);
     this.debug("width,height="+this.width+","+this.height);
+    this.origScale = this.scale*this.szx/this.width;
 
     return true;
  };
@@ -106,9 +107,12 @@ function zpGetUpdatedUrlQuery(isDone)
 }
 
 function zpEndAction() {
-	var cx = this.orx + this.width / (2*this.scale);
-	var cy = this.ory + this.height / (2*this.scale);
-    displayXslt.action(this.actionId,"&region="+this.width+","+this.height+","+cx+","+cy+","+this.scale);
+	var panx = Math.round(this.orx - this.origOrx);
+	var pany = Math.round(this.ory - this.origOry);
+	var extraArgs = "&panX="+panx+"&panY="+pany;
+	this.debug("ZP End args="+extraArgs);
+    displayXslt.action(this.actionId,extraArgs);
+    
 };
 
 /**
@@ -134,6 +138,7 @@ function initZoomPan() {
 	ZoomPan.prototype.endAction = zpEndAction;
 	ZoomPan.prototype.updateModel = zpUpdateModel;
 	ZoomPan.prototype.noImageUpdates = true;
+	ZoomPan.prototype.debug = info;
 	zoomPanHandler=new ZoomPan();
 };
 

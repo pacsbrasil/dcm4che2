@@ -40,7 +40,6 @@ package org.dcm4chee.xero.wado;
 import java.awt.image.BufferedImage;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4chee.xero.display.ZoomPanAction;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
 
@@ -123,7 +122,6 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 
 	/** Splits region into sub-parts */
 	public static double[] splitDouble(String region, int size) {
-		ZoomPanAction.log.info("Trying to split '"+region+"'");
 		double ret[] = new double[size];
 		int start = 0;		
 		region = region.trim();
@@ -140,7 +138,6 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 
 	/** Splits region into sub-parts */
 	public static float[] splitFloat(String region, int size) {
-		ZoomPanAction.log.info("Trying to split '"+region+"'");
 		float ret[] = new float[size];
 		int start = 0;		
 		region = region.trim();

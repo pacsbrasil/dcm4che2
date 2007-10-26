@@ -74,16 +74,19 @@
 <x:template name="copyHtml" mode="newlayout" match="h:*">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:if test="count(@mode)=0 or @mode=$mode or @mode=concat('-',$mode)">
   <xsl:copy>
    <xsl:copy-of select="@*" />
    <xsl:call-template name="oncommandHandle">
      <xsl:with-param name="loc" select="$loc" />
      <xsl:with-param name="node" select="$node" />
+     <xsl:with-param name="custNode" select="$custNode" />
    </xsl:call-template>
    <xsl:apply-templates mode="newlayout">
      <xsl:with-param name="loc" select="$loc" />
      <xsl:with-param name="node" select="$node" />
+     <xsl:with-param name="custNode" select="$custNode" />
    </xsl:apply-templates>
   </xsl:copy>
  </xsl:if>
@@ -108,6 +111,7 @@
   </xsl:copy>
  </xsl:if>
 </x:template>
+
 
 <x:template name="vboxLayout" match="xul:vbox" mode="newlayout">
  <xsl:param name="loc" />
@@ -202,24 +206,41 @@
 
 <x:template name="defaultHrefArgs">&amp;cid=<xsl:value-of select="$cid" /></x:template>
 
+<x:template name="regionHref" mode="hrefArgsNode" match="h:a[@class='zpSlider']"><xsl:param name="loc" /><xsl:param name="node" /><xsl:param name="custNode" /><xsl:variable name="topLeft"><xsl:choose><xsl:when test="$custNode/@topLeft"><xsl:value-of select="$custNode/@topLeft[last()]" /></xsl:when><xsl:when test="$node/@topLeft"><xsl:value-of select="$node/@topLeft" /></xsl:when><xsl:otherwise>1,1</xsl:otherwise></xsl:choose></xsl:variable><xsl:variable name="bottomRight"><xsl:choose><xsl:when test="$custNode/@bottomRight"><xsl:value-of select="$custNode/@bottomRight[last()]" /></xsl:when><xsl:when test="$node/@bottomRight"><xsl:value-of select="$node/@bottomRight" /></xsl:when><xsl:otherwise><xsl:value-of select="concat($node/@Columns,',',$node/@Rows)" /></xsl:otherwise></xsl:choose></xsl:variable>&amp;topLeft=<xsl:value-of select="concat($topLeft,'&amp;bottomRight=',$bottomRight,'&amp;rows=',$node/@Rows,'&amp;columns=',$node/@Columns,'&amp;relZoom=',@zoom)" /></x:template>
+
+<x:template name="panHref" mode="hrefArgsNode" match="h:div[@mode='zoomPan']"><xsl:param name="loc" /><xsl:param name="node" /><xsl:param name="custNode" /><xsl:variable name="topLeft"><xsl:choose><xsl:when test="$custNode/@topLeft"><xsl:value-of select="$custNode/@topLeft[last()]" /></xsl:when><xsl:when test="$node/@topLeft"><xsl:value-of select="$node/@topLeft" /></xsl:when><xsl:otherwise>1,1</xsl:otherwise></xsl:choose></xsl:variable><xsl:variable name="bottomRight"><xsl:choose><xsl:when test="$custNode/@bottomRight"><xsl:value-of select="$custNode/@bottomRight[last()]" /></xsl:when><xsl:when test="$node/@bottomRight"><xsl:value-of select="$node/@bottomRight" /></xsl:when><xsl:otherwise><xsl:value-of select="concat($node/@Columns,',',$node/@Rows)" /></xsl:otherwise></xsl:choose></xsl:variable>&amp;topLeft=<xsl:value-of select="concat($topLeft,'&amp;bottomRight=',$bottomRight,'&amp;rows=',$node/@Rows,'&amp;columns=',$node/@Columns)" /></x:template>
+
+<!-- Enable/highlight the active zoom element -->
+<x:template name="highlightZoom" mode="newlayout" match="se:highlightZoom">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <xsl:variable name="topLeft"><xsl:choose><xsl:when test="$custNode/@topLeft"><xsl:value-of select="$custNode/@topLeft[last()]" /></xsl:when><xsl:when test="$node/@topLeft"><xsl:value-of select="$node/@topLeft" /></xsl:when><xsl:otherwise>1,1</xsl:otherwise></xsl:choose></xsl:variable>
+  <xsl:variable name="bottomRight"><xsl:choose><xsl:when test="$custNode/@bottomRight"><xsl:value-of select="$custNode/@bottomRight[last()]" /></xsl:when><xsl:when test="$node/@bottomRight"><xsl:value-of select="$node/@bottomRight" /></xsl:when><xsl:otherwise><xsl:value-of select="concat($node/@Columns,',',$node/@Rows)" /></xsl:otherwise></xsl:choose></xsl:variable>
+  <xsl:variable name="compZoom" select="$node/@Columns div (substring-before($bottomRight,',') - substring-before($topLeft,','))" />
+  <xsl:variable name="zoom" select="../@zoom" />
+  <xsl:if test=" 0.5 > ($zoom - $compZoom)  and 0.5 > ($compZoom - $zoom)">
+    <xsl:attribute name="style">background: gray;<xsl:value-of select="../@style" /></xsl:attribute>
+  </xsl:if>
+</x:template>
+  
 <!-- Adds command handling to this object -->
 <x:template name="oncommandHandle">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" select="/.." />
  <xsl:if test="@oncommand">
    <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
     <xsl:with-param name="loc" select="$loc" />
     <xsl:with-param name="node" select="." />
-   </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode"  select="current()">
+    <xsl:with-param name="custNode" select="$custNode" />
+   </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode" select="current()" >
     <xsl:with-param name="loc" select="$loc" />
     <xsl:with-param name="node" select="$node" />
+    <xsl:with-param name="custNode" select="$custNode" />
    </xsl:apply-templates></xsl:attribute>
-   <xsl:attribute name="onmousedown">return displayXslt.action("<xsl:value-of select="@id" />");</xsl:attribute>
+   <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
  </xsl:if>
-</x:template>
-
-<x:template name="copyText" mode="newlayout" match="text()">
-  <xsl:copy />
 </x:template>
 
 <!-- Over-write some handling for IE 6 -->
@@ -309,6 +330,7 @@
 <x:template name="imageToolbar">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:param name="refId" select='./@ref' />
  <xsl:param name="w" select="substring-before($loc,',')" />
  <xsl:param name="wrest" select="substring-after($loc,',')" />
@@ -316,6 +338,7 @@
  <xsl:apply-templates select="$toolbarNode/*[@id=$refId]/*" mode="newlayout">
   <xsl:with-param name="loc" select="$loc" />
   <xsl:with-param name="node" select="$node" />
+  <xsl:with-param name="custNode" select="$custNode" />
  </xsl:apply-templates>
 </x:template>
 
@@ -324,12 +347,14 @@
 <x:template name="imageOverlay">         
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:param name="overlayId" select='./@overlay' />
  <xsl:param name="overlayNode" select="$toolbarNode/*[@id=$overlayId]" />
  <xsl:if test="count($overlayNode)>0">
   <xsl:apply-templates select="$overlayNode/*" mode="newlayout">
    <xsl:with-param name="loc" select="$loc" />
    <xsl:with-param name="node" select="$node" />
+   <xsl:with-param name="custNode" select="$custNode" />
   </xsl:apply-templates>
  </xsl:if>
 </x:template>
@@ -366,6 +391,7 @@
 <x:template name="addImage">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:element name="#{browser=='MSIE'?'v:image':'svg:image'}">
   <xsl:attribute name="preserveAspectRatio">none</xsl:attribute>
   <xsl:attribute name="id">img<xsl:value-of select="@id" /></xsl:attribute>
@@ -373,6 +399,7 @@
   <xsl:call-template name="imageOverlay">
    <xsl:with-param name="loc" select="$loc" />
    <xsl:with-param name="node" select="$node" />
+   <xsl:with-param name="custNode" select="$custNode" />
   </xsl:call-template>
  </xsl:element>
 </x:template>
@@ -400,7 +427,7 @@
 <x:template name="imageViewport" mode="imageViewport" match="se:image">
  <xsl:param name="loc" />
  <xsl:param name="node" />
- <xsl:param name="custNode" />
+ <xsl:param name="custNode" select="/.."/>
  <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
   <xsl:attribute name="class">imageGroup</xsl:attribute>
   <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
@@ -408,7 +435,7 @@
   <xsl:call-template name="addCoordAttributes"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
   <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
   <xsl:call-template name="addLowResImage"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
-  <xsl:call-template name="addImage"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
+  <xsl:call-template name="addImage"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /><xsl:with-param name="custNode" select="$custNode" /></xsl:call-template>
   <xsl:call-template name="addUse"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$node" /></xsl:call-template>
  </xsl:element>
 </x:template>
@@ -581,6 +608,7 @@ and cx,cy = width /2, height/2
 <x:template name="imageHandlerLayout" mode="newlayout" match="h:div[@class='imageHandler']">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" />
  <xsl:if test="@mode=$mode">
    <xsl:if test="@oncommand">
     <xsl:attribute name="action"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
@@ -589,6 +617,7 @@ and cx,cy = width /2, height/2
     </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode" select="current()">
      <xsl:with-param name="loc" select="$loc" />
      <xsl:with-param name="node" select="$node" />
+     <xsl:with-param name="custNode" select="$custNode" />
     </xsl:apply-templates></xsl:attribute>
    </xsl:if>  
    <xsl:if test="@handler">
@@ -646,7 +675,6 @@ and cx,cy = width /2, height/2
    <xsl:with-param name="custNode" select='$custNode' />
   </xsl:call-template> 
  </xsl:element>
-  
 </x:template>
 
 <x:template name="imageLayout" mode="newlayout" match="se:image">
@@ -671,26 +699,30 @@ and cx,cy = width /2, height/2
     
 	<xsl:if test="$imageNode">
 	 <div style="width:1024px; height: 1024px; position: relative;">
-     <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
-      <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
-      <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
-      <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
+      <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
+       <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+       <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+       <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
 
-      <xsl:call-template name="imageSPAT">
-       <xsl:with-param name="loc" select="$loc" />
+       <xsl:call-template name="imageSPAT">
+        <xsl:with-param name="loc" select="$loc" />
+        <xsl:with-param name="node" select="$imageNode" />
+        <xsl:with-param name="custNode" select='$custNode' />
+       </xsl:call-template> 
+      
+       <xsl:call-template name="imageDisplayRel">
+        <xsl:with-param name="loc" select="$loc" />
+        <xsl:with-param name="node" select="$imageNode" />
+        <xsl:with-param name="custNode" select='$custNode' />
+       </xsl:call-template> 
+      
+      
+      </xsl:element>
+      <xsl:call-template name="imageToolbar">
+       <xsl:with-param name="loc" select="$loc"/>
        <xsl:with-param name="node" select="$imageNode" />
-       <xsl:with-param name="custNode" select='$custNode' />
-      </xsl:call-template> 
-      
-      <xsl:call-template name="imageDisplayRel">
-       <xsl:with-param name="loc" select="$loc" />
-       <xsl:with-param name="node" select="$imageNode" />
-       <xsl:with-param name="custNode" select='$custNode' />
-      </xsl:call-template> 
-      
-      
-     </xsl:element>
-     <xsl:call-template name="imageToolbar"><xsl:with-param name="loc" select="$loc"/><xsl:with-param name="node" select="$imageNode" /></xsl:call-template>
+       <xsl:with-param name="custNode" select="$custNode" />
+      </xsl:call-template>
      </div>
     </xsl:if>
    </div>

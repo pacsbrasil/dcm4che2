@@ -148,7 +148,12 @@
     <param name="relZoom" value="#{ZoomPan.relZoom}" />
     <param name="panX" value="#{ZoomPan.panX}" />
     <param name="panY" value="#{ZoomPan.panY}" />
-    <param name="region" value="#{ZoomPan.region}" />
+    
+    <param name="rows" value="#{ZoomPan.rows}" />
+    <param name="columns" value="#{ZoomPan.columns}" />
+    <param name="topLeft" value="#{ZoomPan.topLeft}" />
+    <param name="bottomRight" value="#{ZoomPan.bottomRight}" />
+    
     <param name="size" value="#{ZoomPan.presentationSizeMode}" />
     <navigation>
       <redirect view-id="/image/image.xhtml" />

@@ -57,14 +57,14 @@
 
  <div id="imgToolbar">
    <div mode="zoomPan">
-    <a id="zp1" class="zpSlider" zoom="128" style="position:absolute; top:10px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp2" class="zpSlider" zoom="64" style="position:absolute; top:27px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp3" class="zpSlider" zoom="32" style="position:absolute; top:44px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp4" class="zpSlider" zoom="16" style="position:absolute; top:61px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp5" class="zpSlider" zoom="8" style="position:absolute; top:78px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp6" class="zpSlider" zoom="4" style="position:absolute; top:95px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp7" class="zpSlider" zoom="2" style="position:absolute; top:112px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
-    <a id="zp8" class="zpSlider" zoom="1" style="position:absolute; top:129px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY"><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp2" class="zpSlider" zoom="64" style="position:absolute; top:27px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp3" class="zpSlider" zoom="32" style="position:absolute; top:44px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp4" class="zpSlider" zoom="16" style="position:absolute; top:61px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp5" class="zpSlider" zoom="8" style="position:absolute; top:78px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp6" class="zpSlider" zoom="4" style="position:absolute; top:95px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp7" class="zpSlider" zoom="2" style="position:absolute; top:112px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp8" class="zpSlider" zoom="1" style="position:absolute; top:129px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
+    <a id="zp9" class="zpSlider" zoom="0.5" style="position:absolute; top:146px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
   </div>
  </div>
    
@@ -74,7 +74,7 @@
   <div id='imageOverlay'>
     <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />
     
-    <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
+    <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
     
     <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
     
