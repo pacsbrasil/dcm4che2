@@ -7,6 +7,11 @@
    <version>1.0-SNAPSHOT</version>
    <name>Xero</name>
    <url>http://www.dcm4che.org/xero</url>
+
+   <scm>
+      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero/trunk</developerConnection>
+   </scm>
+
    <modules>
       <module>metadata</module>
       <module>xero-cfind</module>
@@ -61,7 +66,15 @@
            <source>1.6</source>
            <target>1.6</target>
          </configuration>
-       </plugin>
+      </plugin>
+
+      <plugin>
+         <artifactId>maven-release-plugin</artifactId>
+         <configuration>
+            <tagBase>https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero/tags</tagBase>
+         </configuration>
+      </plugin>
+
      </plugins>
    </build>
 
