@@ -42,13 +42,21 @@ package org.dcm4chex.archive.web.maverick.admin;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.util.Base64;
+import org.dcm4chex.archive.web.conf.WebRolesConfig;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
 
 
@@ -60,11 +68,13 @@ import org.dcm4chex.archive.web.maverick.BasicFormModel;
 public class UserAdminModel extends BasicFormModel {
 
 	private List userList = null;
-	private DCMUser editUser = null;
+	
+	private WebRolesConfig webRoles; 
 	
 	private UserAdminDelegate delegate = new UserAdminDelegate();
 
 	private static final String USERMODEL_ATTR_NAME = "UserAdminModel";
+    private static final String RESOURCE_BUNDLE_WEB_ROLES = "web_roles";
 
 	private static Logger log = Logger.getLogger(UserAdminModel.class.getName());
 
@@ -79,6 +89,7 @@ public class UserAdminModel extends BasicFormModel {
 	 */
 	private UserAdminModel(HttpServletRequest request) {
 		super(request);
+		webRoles = new WebRolesConfig();
 	}
 	
 	/**
@@ -94,13 +105,17 @@ public class UserAdminModel extends BasicFormModel {
 	public static final UserAdminModel getModel( HttpServletRequest request ) {
 		UserAdminModel model = (UserAdminModel) request.getSession().getAttribute(USERMODEL_ATTR_NAME);
 		if (model == null) {
-				model = new UserAdminModel(request);
-				request.getSession().setAttribute(USERMODEL_ATTR_NAME, model);
+			model = new UserAdminModel(request);
+			request.getSession().setAttribute(USERMODEL_ATTR_NAME, model);
 		}
 		return model;
 	}
 
 	public String getModelName() { return "UserAdmin"; }
+	
+    public WebRolesConfig getWebRoles() {
+    	return webRoles;
+    }
 	
 	/**
 	 * Get list of users.
@@ -129,102 +144,104 @@ public class UserAdminModel extends BasicFormModel {
 	 * 
 	 * @return User object if user is created or null.
 	 */
-	public DCMUser createUser( DCMUser user, String passwd ) {
+	public DCMUser createUser( String userID, String passwd, String[] roles ) {
+		DCMUser user = new DCMUser(userID,null);
 		if ( getUserList().contains( user ) ) {
 			log.warn("Cant create user! UserID "+user.getUserID()+" already exists!");
 			setPopupMsg("admin.user_exists", user.getUserID());
-			editUser = user;
 			return null;
 		} else {
-			String userID = user.getUserID();
 			try {
+				for ( int i = 0 ; i < roles.length ; i++ ) {
+					user.addRole(roles[i]);
+				}
 				String hashedPasswd = Base64.byteArrayToBase64(this.createPasswordHash(passwd));
-				delegate.addUser(user.getUserID(), hashedPasswd, user.roles());
+				delegate.addUser(userID, hashedPasswd, user.getRoles());
 			} catch (Exception e) {
-				log.error("Cant create new user "+userID+" with roles "+user.roles(), e);
+				log.error("Cant create new user "+userID+" with roles "+user.getRoles(), e);
 				this.setPopupMsg("admin.err_create", new String[]{userID,e.getMessage()});
 				return null;
 			}
-			log.info("User "+user+" created! roles:"+user.roles());
+			log.info("User "+user+" created! roles:"+user.getRoles());
 		}
 		return user;
 	}
 
-	/**
-	 * Update an existing user.
-	 * 
-	 * @param oldUserID UserID of the user to change.
-	 * @param userID new userID.
-	 * @param roles The roles that should be assigned to the user.
-	 * 
-	 * @return the new user object of the changed user or null.
-	 */
-	public DCMUser updateUser( int userHash, DCMUser user ) {
-		DCMUser qUser = DCMUser.getQueryUser(userHash );
-		int idx = getUserList().indexOf(qUser);
-		if ( idx == -1 ) {
-			log.error("User doesnt exist! UserID "+user.getUserID());
-			return null;
-		} else {
-			String userID = ((DCMUser)getUserList().get(idx)).getUserID();
-			Collection roles = user.roles();
-			try {
-				delegate.updateUser(userID, roles);
-			} catch (Exception e) {
-				log.error("Cant update user "+userID+" with roles "+roles, e);
-				this.setPopupMsg( "admin.err_update", new String[]{userID,e.getMessage()});
-				return null;
-			}
-			log.info("User "+userID+" updated:"+user);
-		}
-		return user;
-	}
 	
-	public boolean changePassword(String user, String oldPasswd, String newPasswd){
+	public boolean changePassword(String userID, String oldPasswd, String newPasswd){
 		try {
 			final String oldHashedPasswd = Base64.byteArrayToBase64(this.createPasswordHash(oldPasswd));
 			final String newHashedPasswd = Base64.byteArrayToBase64(this.createPasswordHash(newPasswd));
-			if ( delegate.changePasswordForUser(user, oldHashedPasswd, newHashedPasswd) ) {
-				log.info("Password changed of user "+user );
+			if ( delegate.changePasswordForUser(userID, oldHashedPasswd, newHashedPasswd) ) {
+				log.info("Password changed of user "+userID );
 				return true;
 			}
 		} catch (Exception e) {
-			log.error("Cant change password for user "+user);
+			log.error("Cant change password for user "+userID);
 		}
-		this.setPopupMsg( "admin.err_chgpwd",user);
+		this.setPopupMsg( "admin.err_chgpwd",userID);
+		return false;
+	}
+
+	public boolean removeRoles(String userID, String[] roles){
+		try {
+			DCMUser user = getUser(userID);
+			for ( int i = 0 ; i < roles.length ; i++ ) {
+				user.removeRole(roles[i]);
+			}
+			delegate.updateUser(userID, checkDependencies(user) );
+			log.debug("Roles removed from user "+userID );
+			return true;
+		} catch (Exception e) {
+			log.error("Cant remove roles from user "+userID);
+		}
+		this.setPopupMsg( "admin.err_update",userID);
+		return false;
+	}
+	public boolean addRoles(String userID, String[] roles){
+		try {
+			DCMUser user = getUser(userID);
+			for ( int i = 0 ; i < roles.length ; i++ ) {
+				user.addRole(roles[i]);
+			}
+			delegate.updateUser(userID, checkDependencies(user) );
+			log.debug("Roles added to user "+userID );
+			return true;
+		} catch (Exception e) {
+			log.error("Cant add roles to user "+userID);
+		}
+		this.setPopupMsg( "admin.err_update",userID);
 		return false;
 	}
 	
+	private Collection checkDependencies(DCMUser user) {
+		String role,d;
+		Collection roles = user.getRoles();
+		HashSet missing = new HashSet();
+		for ( Iterator iter = roles.iterator() ; iter.hasNext() ; ) {
+			role = (String) iter.next();
+			d = webRoles.getDependencyForRole( role );
+			if ( d != null && !roles.contains(d) ) {
+				missing.add(d);
+			}
+		}
+		log.info("Add missing dependencies:"+missing);
+		for ( Iterator iter = missing.iterator() ; iter.hasNext() ; ) {
+			user.addRole((String) iter.next() );
+		}
+		return user.getRoles();
+	}
+
 	/**
 	 * Returns the user object for given userID or null if user doesnt exist.
 	 * 
 	 * @param userID
 	 * @return user object or null.
 	 */
-	public DCMUser getUser( int userHash ) {
-		return (DCMUser) getUserList().get( getUserList().indexOf( DCMUser.getQueryUser(userHash) ) );
+	public DCMUser getUser( String userID ) {
+		return (DCMUser) userList.get( getUserList().indexOf( new DCMUser(userID, null) ) );
 	}
 
-	/**
-	 * Returns the 'edit' user.
-	 * <p>
-	 * This is the current user for update or create. This user can be used to prefill the 
-	 * fields for userID and roles.
-	 * 
-	 * @return
-	 */
-	public DCMUser getEditUser() {
-		return editUser;
-	}
-	
-	public void selectEditUser( String userHash ) {
-		editUser = userHash == null ? null : getUser( Integer.parseInt(userHash) );
-	}
-	
-	public void setEditUser( DCMUser user ) {
-		editUser = user;
-	}
-	
 	/**
 	 * Deletes given user.
 	 * 
@@ -232,8 +249,7 @@ public class UserAdminModel extends BasicFormModel {
 	 * 
 	 * @return true if user is deleted, false otherwise.
 	 */
-	public boolean deleteUser( int userHash ) {
-		String userID = getUser( userHash ).getUserID();
+	public boolean deleteUser( String userID ) {
 		try {
 			delegate.removeUser( userID );
 		} catch (Exception e) {

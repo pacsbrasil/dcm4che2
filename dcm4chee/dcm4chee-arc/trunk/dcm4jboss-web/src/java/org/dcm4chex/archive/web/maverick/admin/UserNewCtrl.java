@@ -55,9 +55,6 @@ public class UserNewCtrl extends UserAdminCtrl
 			log.warn("Illegal access to UserNewCtrl! User "+this.getCtx().getRequest().getUserPrincipal()+" is not in role WebAdmin!");
 			return "error";
 		}
-		if ( getCtx().getRequest().getParameter("newUser") != null ) { //set from button 'new user'
-			model.selectEditUser(null); //reset editUser
-		}
 		return SUCCESS;
 	}
 

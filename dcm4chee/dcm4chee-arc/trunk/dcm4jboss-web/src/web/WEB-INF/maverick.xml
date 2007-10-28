@@ -340,14 +340,6 @@ default-transform-type="xslt">
         <view ref="error" />
      </command>
  
-    <command name="user_edit">
-        <controller class="org.dcm4chex.archive.web.maverick.admin.UserEditCtrl" />    
-	    <view name="success">
-    	  <transform path="admin/user_edit.xsl" />
-	    </view>
-      <view ref="error" />
-     </command>
-
     <command name="user_editsubmit">
         <controller class="org.dcm4chex.archive.web.maverick.admin.UserEditSubmitCtrl" />    
 	    <view name="success" type="redirect" path="useradmin_console.m"/>
@@ -361,13 +353,6 @@ default-transform-type="xslt">
     	  <transform path="admin/user_new.xsl" />
 	    </view>
       <view ref="error" />
-     </command>
-
-
-    <command name="user_delete">
-    	<controller class="org.dcm4chex.archive.web.maverick.admin.UserDeleteCtrl" />    
-	    <view name="success" type="redirect" path="useradmin_console.m"/>
-	    <view ref="error" />
      </command>
 
 	<!-- ****** Teaching file related commands ******-->

@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.web.maverick.admin;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 
@@ -55,6 +57,7 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	private String passwd1 = null;
 	private DCMUser user = new DCMUser("",null);
 	private String cancelPar = null;
+	private String cmd;
 	
 	private static Logger log = Logger.getLogger(UserEditSubmitCtrl.class.getName());
 	
@@ -73,7 +76,8 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	/**
 	 * @param newPar The newPar to set.
 	 */
-	public void setNew(String newPar) {
+	public void setCmd(String cmd) {
+		this.cmd = cmd;
 	}
 	/**
 	 * @param passwd The passwd to set.
@@ -88,42 +92,6 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 		this.passwd1 = passwd1;
 	}
 	/**
-	 * @param role true means that this role is assigned to this user.
-	 */
-	public void setWebUser(boolean role) {
-		user.setRole( DCMUser.WEBUSER, role);
-	}
-	/**
-	 * @param role true means that this role is assigned to this user.
-	 */
-	public void setWebAdmin(boolean role) {
-		user.setRole( DCMUser.WEBADMIN, role);
-	}
-	/**
-	 * @param role true means that this role is assigned to this user.
-	 */
-	public void setJBossAdmin(boolean role) {
-		user.setRole( DCMUser.JBOSSADMIN, role);
-	}
-	/**
-	 * @param role true means that this role is assigned to this user.
-	 */
-	public void setArrUser(boolean role) {
-		user.setRole( DCMUser.ARRUSER, role);
-	}
-	/**
-	 * @param role true means that this role is assigned to this user.
-	 */
-	public void setMcmUser(boolean role) {
-		user.setRole( DCMUser.MCMUSER, role);
-	}
-	/**
-	 * @param role true means that this role is assigned to this user.
-	 */
-	public void setDatacareUser(boolean role) {
-		user.setRole( DCMUser.DATACARE_USER, role);
-	}
-	/**
 	 * @param userID The userID to set.
 	 */
 	public void setUserID(String userID) {
@@ -133,41 +101,46 @@ public class UserEditSubmitCtrl extends Dcm4cheeFormController
 	
 	protected String perform() throws Exception
 	{
-		UserAdminModel model = UserAdminModel.getModel(this.getCtx().getRequest());
+		HttpServletRequest req = getCtx().getRequest();
+		UserAdminModel model = UserAdminModel.getModel(req);
 		model.clearPopupMsg();
 		if ( !model.isAdmin()) {
-			log.warn("Illegal access to UserEditSubmitCtrl! User "+this.getCtx().getRequest().getUserPrincipal()+"is not in role WebAdmin!");
+			log.warn("Illegal access to UserEditSubmitCtrl! User "+req.getUserPrincipal()+" is not in role WebAdmin!");
 			return "error";
 		}
 		if ( cancelPar == null ) {
-			if ( userHash != null ) {
-				model.updateUser( Integer.parseInt(userHash), user );
-			} else {
-				String userID = user.getUserID();
-				if ( userID == null || userID.trim().length() < 3 ) {
-					model.setEditUser(user);
-					model.setPopupMsg("admin.err_edit_userid", userID);
-					return "passwd_mismatch";
-				}
-				if ( passwd.equals(passwd1)) {
-					if ( passwd.trim().length() > 2 ) {
-						if ( model.createUser(user, passwd ) == null ) {
-							return "passwd_mismatch";
-						}
-					} else {
-						model.setEditUser(user);
-						model.setPopupMsg("admin.err_chgpwd_short",userID);
-						return "passwd_mismatch";
-						
-					}
-				} else {
-					model.setEditUser(user);
-					model.setPopupMsg("admin.err_chgpwd_newpwd",userID);
-					return "passwd_mismatch";
-				}
+			String userID = req.getParameter("userID");
+			String[] roles = req.getParameterValues("role");
+			log.info("cmd:"+cmd);
+			if ( "addRole".equals(cmd)) {
+				model.addRoles(userID, roles);
+			} else if ( "removeRole".equals(cmd)) {
+				model.removeRoles(userID, roles);
+			} else if ( "deleteUser".equals(cmd)) {
+				model.deleteUser(userID);
+			} else if ( "Create".equals(cmd)) {
+				return createUser(model, userID, roles);
 			}
 		}
 		return SUCCESS;
+	}
+	private String createUser(UserAdminModel model, String userID, String[] roles) {
+		if ( passwd.equals(passwd1)) {
+			if ( passwd.trim().length() > 2 ) {
+				if ( model.createUser(userID, passwd, roles ) == null ) {
+					return "passwd_mismatch";
+				} else {
+					return SUCCESS;
+				}
+			} else {
+				model.setPopupMsg("admin.err_chgpwd_short",userID);
+				return "passwd_mismatch";
+				
+			}
+		} else {
+			model.setPopupMsg("admin.err_chgpwd_newpwd",userID);
+			return "passwd_mismatch";
+		}
 	}
 
 }

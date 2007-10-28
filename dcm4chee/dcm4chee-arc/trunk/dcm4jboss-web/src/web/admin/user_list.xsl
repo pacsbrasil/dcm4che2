@@ -9,109 +9,89 @@
 <xsl:template match="model">
 
 		<table width="70%" border="0" bordercolor="#ffffff" cellspacing="5" cellpadding="0">
-		<tr>	<center>
+		<tr>	
 			<td>
 				<tr>
 					<td width="15%"><h2>User ID</h2></td>
 					<td colspan="5" width="75%"><h2>Roles</h2></td>
-					<td colspan="2" width="10%" align="center"><a href="user_new.m?newUser=new"><img src="images/addpat.gif" alt="add new user" border="0"/></a></td>
+					<td colspan="2" width="10%" align="center"><a href="user_new.m"><img src="images/addpat.gif" alt="add new user" border="0"/></a></td>
 				</tr>
-					<xsl:apply-templates select="userList/item">
-						<xsl:sort data-type="text" order="ascending" select="userID"/>
+				<tr>
+				    <td title="User ID" valign="top" >&#160;</td>
+					<xsl:apply-templates select="/model/webRoles/roles/item" mode="role-header">
+						<xsl:sort data-type="text" order="ascending" select="name"/>
 					</xsl:apply-templates>
-			</td>	</center>
+				</tr>
+				<xsl:apply-templates select="userList/item">
+					<xsl:sort data-type="text" order="ascending" select="userID"/>
+				</xsl:apply-templates>
+			</td>
 		</tr>
 		</table>
 		<DL>
-		<DT>WebUser:</DT>
-		<DD>A user in this role is allowed to use this web interface.</DD>
-		<DT>McmUser:</DT>
-		<DD>This role is used to allow access to the Media Creation Console (Offline Storage).</DD>
-		<DT>DatacareUser:</DT>
-		<DD>A user in this role has Datacare rights (edit/merge/delete) in the web interface.</DD>
-		<DT>WebAdmin:</DT>
-		<DD>This role is used to allow access to AET and User management.</DD>
-		<DD>The user must be also in role WebUser!</DD>
-		<DT>Admin:</DT>
-		<DD>This role is used to allow configuration access via JMX console.</DD>
-		<DT>AuditRep:</DT>
-		<DD>Members of this role are allowed to access the Audit Repository.</DD>
+			<xsl:apply-templates select="webRoles/roles/item" mode="description">
+				<xsl:sort data-type="text" order="ascending" select="name"/>
+			</xsl:apply-templates>
 		</DL>
 
 
 </xsl:template>
 
-	<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.admin.DCMUser']">
-		<tr>
-	        <td title="User ID" valign="top" >
-				<xsl:value-of select="userID"/>
-			</td>
-																	
-	        <td title="WebUser">
-				WebUser<input type="checkbox" name="webUser" value="true" disabled="true">
-					<xsl:if test="webUser = 'true'">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-	        </td>
-		    
-	        <td title="McmUser">
-				McMUser<input type="checkbox" name="mcmUser" value="true" disabled="true">
-					<xsl:if test="mcmUser = 'true'">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-	        </td>
-																	
-	        <td title="Datacare">
-				Datacare<input type="checkbox" name="datacareUser" value="true" disabled="true">
-					<xsl:if test="datacareUser = 'true'">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-	        </td>
-																	
-	        <td title="WebAdmin">
-				WebAdmin<input type="checkbox" name="webAdmin" value="true" disabled="true">
-					<xsl:if test="webAdmin = 'true'">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-	        </td>
-																	
-	        <td title="Admin">
-				Admin<input type="checkbox" name="jBossAdmin" value="true" disabled="true">
-					<xsl:if test="JBossAdmin = 'true'">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-	        </td>
-	        <td title="AuditRep">
-				AuditRep<input type="checkbox" name="arrUser" value="true" disabled="true">
-					<xsl:if test="arrUser = 'true'">
-						<xsl:attribute name="checked"/>
-					</xsl:if>
-				</input>
-	        </td>
-			<td align="center" valign="top" >
-				<a href="user_edit.m?userHash={userHash}">
-					<img src="images/edit.gif" alt="edit" border="0"/>		
-				</a>
-	        </td>
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.admin.DCMUser']">
+	<tr>
+        <td title="User ID" valign="top" >
+			<xsl:value-of select="userID"/>
+		</td>
+		<xsl:apply-templates select="/model/webRoles/roles/item" mode="role-info">
+			<xsl:sort data-type="text" order="ascending" select="name"/>
+			<xsl:with-param name="userID" select="userID"/>
+		</xsl:apply-templates>
+																
+		<td align="left" valign="top" >
+				<a href="user_editsubmit.m?userID={userID}&amp;cmd=deleteUser" 
+					onclick="return confirm('Are you sure you want to delete?')">
+				<img src="images/delete.gif" alt="delete" border="0"/>							
+				</a>					
+		</td>
+		<xsl:if test="/model/currentUser=userID">
 			<td align="left" valign="top" >
-					<a href="user_delete.m?userHash={userHash}" onclick="return confirm('Are you sure you want to delete?')">
-					<img src="images/delete.gif" alt="delete" border="0"/>							
-					</a>					
+				<a href="useradmin_console.m?chgpwd='true'">
+				 Password							
+				</a>					
 			</td>
-			<xsl:if test="/model/currentUser=userID">
-				<td align="left" valign="top" >
-					<a href="useradmin_console.m?chgpwd='true'">
-					 Password							
-					</a>					
-				</td>
-			</xsl:if>
-		</tr>
-	</xsl:template>
+		</xsl:if>
+	</tr>
+</xsl:template>
+
+<xsl:template match="item" mode="role-header">
+      <td title="{descr}"><xsl:value-of select="name" />&#160;</td>
+</xsl:template>
+
+<xsl:template match="item" mode="role-info">
+   	<xsl:param name="userID" />
+   	<xsl:variable name="role" select="name" />
+      <td title="{name}">
+		<xsl:choose>
+			<xsl:when test="/model/userList/item[userID=$userID]/roles[item=$role]">
+				<a title="Remove {$role} from user {$userID}" 
+					href="user_editsubmit.m?userID={$userID}&amp;cmd=removeRole&amp;role={$role}">
+	   				<img src="images/granted_xxs.gif" alt="granted" border="0" />
+	   			</a>
+	   		</xsl:when>
+			<xsl:otherwise>
+				<a title="Add {$role} to user {$userID}" 
+					href="user_editsubmit.m?userID={$userID}&amp;cmd=addRole&amp;role={$role}">
+	   				<img src="images/denied_xxs.gif" alt="denied" border="0" />
+	   			</a>
+	   		</xsl:otherwise>
+	   	</xsl:choose>&#160;
+      </td>
+</xsl:template>
+
+<xsl:template match="item" mode="description">
+	<DT><xsl:value-of select="name" /></DT>
+	<DD><xsl:value-of select="descr" /></DD>
+</xsl:template>
  
 </xsl:stylesheet>
 

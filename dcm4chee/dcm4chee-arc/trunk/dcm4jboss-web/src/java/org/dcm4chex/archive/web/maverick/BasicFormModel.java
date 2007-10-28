@@ -154,4 +154,8 @@ public abstract class BasicFormModel {
             Locale.setDefault(defaultLocale);
         }
     }
+    
+    public Locale currentLocale() {
+    	return locale;
+    }
 }

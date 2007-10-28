@@ -97,10 +97,6 @@ public class DCMUser {
 	public void addRole( String role ) {
 		if ( ! roles.contains(role ) ) {
 			roles.add(role);
-			if ( (role.equals(WEBADMIN) || role.equals(MCMUSER) || role.equals(DATACARE_USER)) 
-					&& !roles.contains(WEBUSER) ) {
-				roles.add(WEBUSER);//ensures that WebAdmin or McmUser is also WebUser (to get the web pages)
-			}
 		}
 	}
 
@@ -116,46 +112,10 @@ public class DCMUser {
 	 * 
 	 * @return Get list of all roles assigned to this user.
 	 */
-	public Collection roles() { //Dont use getter to avoid marshalling from maverick.
+	public Collection getRoles() { 
 		return roles;
 	}
 	
-	/**
-	 * @return Returns true if this user is in role WEBUSER.
-	 */
-	public boolean isWebUser() {
-		return roles.contains(WEBUSER);
-	}
-	/**
-	 * @return Returns true if this user is in role WEBADMIN.
-	 */
-	public boolean isWebAdmin() {
-		return roles.contains(WEBADMIN);
-	}
-	/**
-	 * @return Returns true if this user is in role JBOSSADMIN.
-	 */
-	public boolean isJBossAdmin() {
-		return roles.contains(JBOSSADMIN);
-	}
-	/**
-	 * @return Returns true if this user is in role ARRUSER.
-	 */
-	public boolean isArrUser() {
-		return roles.contains(ARRUSER);
-	}
-	/**
-	 * @return Returns true if this user is in role MCMUSER.
-	 */
-	public boolean isMcmUser() {
-		return roles.contains(MCMUSER);
-	}
-	/**
-	 * @return Returns true if this user is in role DATACARE_USER.
-	 */
-	public boolean isDatacareUser() {
-		return roles.contains(DATACARE_USER);
-	}
 	/**
 	 * @return Returns the userID.
 	 */
