@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.image;
+package org.dcm4chee.xero.search.filter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +45,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.macro.MinMaxPixelMacro;
 import org.dcm4chee.xero.search.macro.WindowLevelMacro;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;

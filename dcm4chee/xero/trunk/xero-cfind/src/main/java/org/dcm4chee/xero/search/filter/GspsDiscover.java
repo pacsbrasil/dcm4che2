@@ -1,4 +1,4 @@
-package org.dcm4chee.xero.image;
+package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
 import java.util.HashMap;

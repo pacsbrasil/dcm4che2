@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.image;
+package org.dcm4chee.xero.search.filter;
 
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
@@ -60,6 +60,8 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.macro.AspectMacro;
 import org.dcm4chee.xero.search.macro.FlipRotateMacro;
+import org.dcm4chee.xero.search.macro.GspsEncoded;
+import org.dcm4chee.xero.search.macro.MinMaxPixelMacro;
 import org.dcm4chee.xero.search.macro.PixelSpacingMacro;
 import org.dcm4chee.xero.search.macro.RegionMacro;
 import org.dcm4chee.xero.search.macro.WindowLevelMacro;
