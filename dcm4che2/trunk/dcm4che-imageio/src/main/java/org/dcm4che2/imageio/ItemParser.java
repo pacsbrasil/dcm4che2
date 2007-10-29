@@ -49,7 +49,6 @@ import org.dcm4che2.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.media.imageio.stream.SegmentedImageInputStream;
 import com.sun.media.imageio.stream.StreamSegment;
 import com.sun.media.imageio.stream.StreamSegmentMapper;
 
@@ -62,13 +61,19 @@ public class ItemParser implements StreamSegmentMapper {
 
     private static final Logger log = LoggerFactory.getLogger(ItemParser.class);
 
-    private static final class Item {
+    public static final class Item {
 
-        int offset;
+        public final int offset;
 
-        long startPos;
+        public final long startPos;
 
-        int length;
+        public final int length;
+        
+        public Item(int offset, long startPos, int length) {
+            this.offset = offset;
+            this.startPos = startPos;
+            this.length = length;
+        }
 
         final int nextOffset() {
             return offset + length;
@@ -108,12 +113,12 @@ public class ItemParser implements StreamSegmentMapper {
         return items.size();
     }
 
-    public int getOffsetOfDataFragment(int index) {
+    public Item getItem(int index) {
         while (items.size() <= index)
             if (next() == null)
                 throw new IndexOutOfBoundsException("index:" + index
                         + " >= size:" + items.size());
-        return ((Item) items.get(index)).offset;
+        return (Item) items.get(index);
     }
 
     private Item next() {
@@ -127,11 +132,10 @@ public class ItemParser implements StreamSegmentMapper {
                 log.debug("Read " + TagUtils.toString(dis.tag()) + " #"
                         + dis.valueLength());
             if (dis.tag() == Tag.Item) {
-                Item item = new Item();
-                item.startPos = iis.getStreamPosition();
-                item.length = dis.valueLength();
-                if (!items.isEmpty())
-                    item.offset = last().nextOffset();
+                Item item = new Item(
+                        items.isEmpty() ? 0 : last().nextOffset(),
+                        iis.getStreamPosition(),
+                        dis.valueLength());
                 items.add(item);
                 return item;
             }
@@ -176,18 +180,6 @@ public class ItemParser implements StreamSegmentMapper {
         if (log.isDebugEnabled())
             log.debug("return StreamSegment[start=" + seg.getStartPos()
                     + ", len=" + seg.getSegmentLength() + "]");
-    }
-
-    public long seekNextFrame(SegmentedImageInputStream siis)
-            throws IOException {
-        Item item = last();
-        long pos = siis.getStreamPosition();
-        int i = items.size() - 1;
-        while (item.offset >= pos)
-            item = (Item) items.get(--i);
-        siis.seek(item.nextOffset());
-        iis.seek(item.nextItemPos());
-        return item.nextOffset();
     }
 
     public void seekFooter() throws IOException {

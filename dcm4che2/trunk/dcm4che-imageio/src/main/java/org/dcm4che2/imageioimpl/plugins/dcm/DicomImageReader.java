@@ -130,15 +130,11 @@ public class DicomImageReader extends ImageReader {
 
     private boolean compressed;
 
-    private long[] frameOffsets;
-
     private DicomStreamMetaData streamMetaData;
 
     private ImageReader reader;
 
     private ItemParser itemParser;
-
-    private SegmentedImageInputStream itemStream;
 
     protected DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
@@ -184,13 +180,11 @@ public class DicomImageReader extends ImageReader {
         pixelDataPos = 0L;
         pixelDataLen = 0;
         compressed = false;
-        frameOffsets = null;
         if (reader != null) {
             reader.dispose();
             reader = null;
         }
         itemParser = null;
-        itemStream = null;
     }
 
     public ImageReadParam getDefaultReadParam() {
@@ -260,7 +254,6 @@ public class DicomImageReader extends ImageReader {
             width = ds.getInt(Tag.Columns);
             height = ds.getInt(Tag.Rows);
             frames = ds.getInt(Tag.NumberOfFrames, 1);
-            frameOffsets = new long[frames];
             allocated = ds.getInt(Tag.BitsAllocated, 8);
             stored = ds.getInt(Tag.BitsStored, allocated);
             banded = ds.getInt(Tag.PlanarConfiguration) != 0;
@@ -288,10 +281,10 @@ public class DicomImageReader extends ImageReader {
         String ts = ds.getString(Tag.TransferSyntaxUID);
         this.reader = f.getReaderForTransferSyntax(ts);
         this.itemParser = new ItemParser(dis, iis);
-        this.itemStream = new SegmentedImageInputStream(iis, itemParser);
     }
 
     private void initRawImageReader() throws IIOException {
+        long[] frameOffsets = new long[frames];
         int frameLen = width * height * samples * (allocated >> 3);
         frameOffsets[0] = pixelDataPos;
         for (int i = 1; i < frameOffsets.length; i++) {
@@ -366,7 +359,6 @@ public class DicomImageReader extends ImageReader {
         if (compressed) {
             ImageReadParam param1 = reader.getDefaultReadParam();
             copyReadParam(param, param1);
-            seekFrame(imageIndex, param1);
             return decompressRaster(imageIndex, param1);
         } else {
             return reader.readRaster(imageIndex, param);
@@ -398,7 +390,6 @@ public class DicomImageReader extends ImageReader {
         if (compressed) {
             ImageReadParam param1 = reader.getDefaultReadParam();
             copyReadParam(param, param1);
-            seekFrame(imageIndex, param1);
             bi = decompress(imageIndex, param1);
         } else {
             bi = reader.read(imageIndex, param);
@@ -432,25 +423,9 @@ public class DicomImageReader extends ImageReader {
         dst.setDestinationOffset(src.getDestinationOffset());
     }
 
-    private void seekFrame(int imageIndex, ImageReadParam param)
-            throws IOException {
-        if (imageIndex > 0 && frameOffsets[imageIndex] == 0) {
-            if (itemParser.getNumberOfDataFragments() == frameOffsets.length) {
-                for (int i = 1; i < frameOffsets.length; ++i)
-                    frameOffsets[i] = itemParser.getOffsetOfDataFragment(i);
-            } else {
-                for (int i = 0; i < imageIndex; ++i)
-                    if (frameOffsets[i + 1] == 0) {
-                        decompressRaster(i, param);
-                    }
-            }
-        }
-    }
-
     private BufferedImage decompress(int imageIndex, ImageReadParam param)
             throws IOException {
-        itemStream.seek(this.frameOffsets[imageIndex]);
-        reader.setInput(itemStream);
+        reader.setInput(itemStream(imageIndex));
         BufferedImage bi = reader.read(0, param);
         postDecompress(imageIndex + 1);
         return bi;
@@ -461,17 +436,24 @@ public class DicomImageReader extends ImageReader {
         if (!reader.canReadRaster()) {
             return decompress(imageIndex, param).getData();
         }
-        itemStream.seek(this.frameOffsets[imageIndex]);
-        reader.setInput(itemStream);
+        reader.setInput(itemStream(imageIndex));
         Raster raster = reader.readRaster(0, param);
         postDecompress(imageIndex + 1);
         return raster;
     }
 
-    private void postDecompress(int nextIndex) throws IOException {
-        if (nextIndex < frameOffsets.length && frameOffsets[nextIndex] == 0) {
-            this.frameOffsets[nextIndex] = itemParser.seekNextFrame(itemStream);
+    private SegmentedImageInputStream itemStream(int imageIndex) {
+        if (frames > 1) {
+            ItemParser.Item item = itemParser.getItem(imageIndex);
+            return new SegmentedImageInputStream(iis,
+                    new long[] { item.startPos },
+                    new int[] { item.length });
+        } else {
+            return new SegmentedImageInputStream(iis, itemParser);
         }
+    }
+
+    private void postDecompress(int nextIndex) throws IOException {
         // workaround for Bug in J2KImageReader and
         // J2KImageReaderCodecLib.setInput()
         if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
