@@ -109,10 +109,6 @@ class PixelDataParam {
         return numberOfFrames;
     }
 
-    public final boolean isMultiFrame() {
-        return numberOfFrames > 1;
-    }
-
     public final int getFrameLength() {
         return frameLength;
     }

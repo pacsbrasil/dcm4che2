@@ -498,16 +498,7 @@ public class Transcoder {
     public void readNextFrame() throws IOException {
         log.debug("reading frame #" + (frameIndex + 1));
         if (decodeParam.encapsulated) {
-            SegmentedImageInputStream siis;
-            if (pixelDataParam.isMultiFrame()) {
-                ItemParser.Item item = itemParser.getItem(frameIndex);
-                siis = new SegmentedImageInputStream(iis,
-                        new long[] { item.startPos },
-                        new int[] { item.length });
-            } else {
-                siis = new SegmentedImageInputStream(iis, itemParser);
-            }
-            reader.setInput(siis);
+            reader.setInput(itemStream());
             ImageReadParam param = reader.getDefaultReadParam();
             if (bi != null)
                 param.setDestination(bi);
@@ -543,6 +534,17 @@ public class Transcoder {
                     + ", cstype=" + cs.getType() + "]");
         }
         ++frameIndex;
+    }
+
+    private SegmentedImageInputStream itemStream() {
+        if (pixelDataParam.getNumberOfFrames() > 1) {
+            ItemParser.Item item = itemParser.getItem(frameIndex);
+            return new SegmentedImageInputStream(iis,
+                    new long[] { item.startPos },
+                    new int[] { item.length });
+        } else {
+            return new SegmentedImageInputStream(iis, itemParser);
+        }
     }
 
     private static String classNameOf(Object o) {

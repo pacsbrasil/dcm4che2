@@ -99,8 +99,6 @@ public class DcmImageReader extends ImageReader {
 
     private ItemParser itemParser = null;
 
-    private SegmentedImageInputStream itemStream = null;
-    
     // The image to be written.
     private BufferedImage theImage = null;
 
@@ -280,10 +278,6 @@ public class DcmImageReader extends ImageReader {
                     || ts.equals(UIDs.JPEGExtended);
             this.decompressor = f.getReaderForTransferSyntax(ts);
             this.itemParser = new ItemParser(theParser);
-            if (numberOfFrames == 1) {
-                this.itemStream =
-                    new SegmentedImageInputStream(stream, itemParser);
-            }
             return;
         }
         this.frame1StartPos = theParser.getStreamPosition();
@@ -616,15 +610,7 @@ public class DcmImageReader extends ImageReader {
     private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
             throws IOException {
         log.debug("Start decompressing frame#" + (imageIndex + 1));
-        if (numberOfFrames == 1) {
-            itemStream.seek(0);
-        } else {
-            ItemParser.Item item = itemParser.getItem(imageIndex);
-            itemStream = new SegmentedImageInputStream(stream,
-                    new long[] { item.startPos },
-                    new int[] { item.length });
-        }
-        decompressor.setInput(itemStream);
+        decompressor.setInput(itemStream(imageIndex));
         BufferedImage bi = decompressor.read(0, readParam);
         // workaround for Bug in J2KImageReader and
         // J2KImageReaderCodecLib.setInput()
@@ -638,6 +624,17 @@ public class DcmImageReader extends ImageReader {
         }
         log.debug("Finished decompressed frame#" + (imageIndex + 1));
         return bi;
+    }
+
+    private SegmentedImageInputStream itemStream(int imageIndex) {
+        if (numberOfFrames > 1) {
+            ItemParser.Item item = itemParser.getItem(imageIndex);
+            return new SegmentedImageInputStream(stream,
+                    new long[] { item.startPos },
+                    new int[] { item.length });
+        } else {
+            return new SegmentedImageInputStream(stream, itemParser);
+        }
     }
 
     private void readByteSamples(int samples, byte[] dest) throws IOException {
@@ -800,7 +797,6 @@ public class DcmImageReader extends ImageReader {
             decompressor.dispose();
         decompressor = null;
         ybr2rgb = false;
-        itemStream = null;
         itemParser = null;
     }
 }
