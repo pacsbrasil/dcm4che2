@@ -86,6 +86,8 @@ public class MWLFilter extends ModalityBaseFilterModel {
         dsSPS.putAE( Tags.ScheduledStationAET );
         dsSPS.putSH( Tags.SPSID );
         dsSPS.putCS( Tags.Modality );
+        dsSPS.putDA(Tags.SPSStartDate);
+        dsSPS.putTM(Tags.SPSStartTime);
         dsSPS.putPN( Tags.ScheduledPerformingPhysicianName );
         String d = new SimpleDateFormat(DATE_FORMAT).format(new Date());
         try {
