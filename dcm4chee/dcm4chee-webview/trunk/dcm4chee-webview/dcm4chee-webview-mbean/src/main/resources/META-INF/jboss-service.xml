@@ -237,6 +237,19 @@
       	<value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getInstanceComparatorClass" setMethod="setInstanceComparatorClass">
+      <description><![CDATA[Class name of an optional Instance Comparator to sort instances.<br/>
+      		The class must implement org.dcm4chex.webview.InstanceComparator!<br/>
+      		The org.dcm4chex.webview.InstanceNumberComparator sorts the instance by instance number
+      		(numerical if both arguments are numerical or as String)<br/>
+      		Use NONE to disable sorting feature (get instances in the order of receiving).
+      ]]> </description>
+      <name>InstanceComparatorClass</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
 
    <!-- Operations -->
 

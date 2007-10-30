@@ -39,7 +39,7 @@
 
 package org.dcm4chex.webview;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
@@ -61,7 +61,7 @@ public class WebViewerProperties implements CustomLaunchProperties {
      */
     public void addCustomProperties(Properties p, Map queryResult) {
         if ( queryResult.isEmpty()) return;
-        DicomObject dcm = (DicomObject)((List) queryResult.values().iterator().next()).get(0);
+        DicomObject dcm = (DicomObject)((Collection) queryResult.values().iterator().next()).iterator().next();
         String patientName = dcm.getString(Tag.PatientName);
         if ( patientName == null ) patientName ="";
      	String firstName = "";

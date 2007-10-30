@@ -40,11 +40,13 @@
 package org.dcm4chex.webview;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -72,7 +74,7 @@ public class InstanceContainer {
     private String lastStudyIuid;
     private String lastSeriesIuid;
     private Map lastSeriesMap;
-    private List lastInstanceList;
+    private Collection lastInstanceList;
 
     /**
      * Creates a new empty container.
@@ -118,7 +120,7 @@ public class InstanceContainer {
                 mapStudies.put(lastStudyIuid, lastSeriesMap);
                 lastInstanceList = null;
             } else {
-                lastInstanceList = (List) lastSeriesMap.get(lastSeriesIuid);
+                lastInstanceList = (Set) lastSeriesMap.get(lastSeriesIuid);
             }
             if ( lastInstanceList == null ) {
                 lastInstanceList = new ArrayList();

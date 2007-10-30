@@ -43,9 +43,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -59,6 +59,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chex.webview.CustomLaunchProperties;
+import org.dcm4chex.webview.InstanceComparator;
 import org.dcm4chex.webview.InstanceContainer;
 import org.dcm4chex.webview.UIDQuery;
 import org.jboss.system.ServiceMBeanSupport;
@@ -302,7 +303,20 @@ public class WebViewService extends ServiceMBeanSupport {
         launchProperties.setResult2appletParameterMap( parseParameterList(result2ParameterMap));
     }
     
-    public Properties getLaunchPropertiesForAccNr(String accNr, Boolean ignorePR, Boolean selectPR) {
+    public String getInstanceComparatorClass() {
+    	InstanceComparator ic = launchProperties.getInstanceComparatorClass();
+		return ic == null ? "NONE" : ic.getClass().getName();
+	}
+	public void setInstanceComparatorClass(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+		if ( className == null || "NONE".equalsIgnoreCase(className)) {
+			launchProperties.setInstanceComparatorClass(null);
+		}else {
+			Class cl = Class.forName(className);
+			launchProperties.setInstanceComparatorClass((InstanceComparator) cl.newInstance());
+		}
+	}
+	
+	public Properties getLaunchPropertiesForAccNr(String accNr, Boolean ignorePR, Boolean selectPR) {
         DicomObject keys = new BasicDicomObject();
         keys.putString(Tag.AccessionNumber, VR.SH, accNr);
         //put attributes that are needed for study selection when result refers to multible studies!
@@ -331,7 +345,7 @@ public class WebViewService extends ServiceMBeanSupport {
         if ( results.isEmpty() ) {
             log.info("Can't find PresentationState Object:"+instanceUID);
         } else {
-            DicomObject prObj = (DicomObject) ((List) results.iterateSeries().next()).get(0);
+            DicomObject prObj = (DicomObject) ((Collection) results.iterateSeries().next()).iterator().next();
             if ( launchProperties.getPresentationStateCUIDs().containsValue( prObj.getString(Tag.SOPClassUID) ) ) {
                 instances = getPresentationStateInstanceContainer(prObj);
             } else {
@@ -387,10 +401,20 @@ public class WebViewService extends ServiceMBeanSupport {
             keys.putNull(Tag.ContentLabel, VR.CS);
             keys.putNull(Tag.ContentCreatorName, VR.PN);
         }
+        addReturnAttributes( keys, launchProperties.getInstanceComparatorClass());
         InstanceContainer results = new UIDQuery(callingAET, calledAET, host, port).query(keys);
         return launchProperties.getProperties(results, ignorePRflag, selectPRflag);
     }
-    
+
+    private void addReturnAttributes(DicomObject keys, InstanceComparator instanceComparator) {
+    	if ( instanceComparator == null ) return;
+        int[] tags = instanceComparator.getTags();
+        if ( tags ==null ) return;
+        for ( int i = 0 ; i < tags.length ; i++ ) {
+            if ( ! keys.contains(tags[i])) keys.putNull(tags[i], null);
+        }
+    }
+
     public Properties getLaunchPropertiesForManifest(String manifestURL) throws MalformedURLException, IOException {
         DicomObject manifest = loadManifest( new URL(manifestURL) );
         if ( manifest == null ) {

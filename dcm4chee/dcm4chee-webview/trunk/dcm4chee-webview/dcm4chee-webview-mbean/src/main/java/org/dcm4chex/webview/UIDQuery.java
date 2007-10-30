@@ -41,6 +41,7 @@ package org.dcm4chex.webview;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -89,7 +90,7 @@ public class UIDQuery {
     private NetworkConnection conn = new NetworkConnection();
 
     private Association assoc;
-
+    
     static Logger log = LoggerFactory.getLogger(UIDQuery.class);
     
     public UIDQuery(String calling, String called, String host, int port) {
@@ -137,6 +138,7 @@ public class UIDQuery {
         }
         return l;
     }
+
 
     private void configureTransferCapability() {
         TransferCapability[] tc = new TransferCapability[2];

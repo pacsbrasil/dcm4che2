@@ -39,6 +39,8 @@
 
 package org.dcm4chex.webview.mbean;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +50,7 @@ import java.util.Properties;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chex.webview.CustomLaunchProperties;
+import org.dcm4chex.webview.InstanceComparator;
 import org.dcm4chex.webview.InstanceContainer;
 
 /**
@@ -77,6 +80,8 @@ public class LaunchProperties {
     private String[] paraPresentationStates = new String[]{null,"","","",";",""};
     private CustomLaunchProperties customProps = null;
 
+    private InstanceComparator instanceComparator = null;
+    
     public LaunchProperties() {
     }
     
@@ -179,6 +184,14 @@ public class LaunchProperties {
         setListConfigString( paraSeriesInstances, cfg );
     }
     
+    public InstanceComparator getInstanceComparatorClass() {
+		return instanceComparator;
+	}
+	public void setInstanceComparatorClass(InstanceComparator instanceComparator) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+		this.instanceComparator = instanceComparator;
+	}
+
+    
     private String toListConfigString(String[] sa) {
         if ( sa == null || sa[0] == null) return "NONE";
         return sa[0]+"|"+sa[1]+"|"+sa[2]+"|"+sa[3]+"|"+sa[4]+"|"+sa[5];
@@ -258,7 +271,7 @@ public class LaunchProperties {
         }
         Map mapSeries = results.getSeriesMap(); //get map with all series
         p.setProperty(PROP_LAUNCH_MODE, "applet");
-        addParameterFromResult(p, (DicomObject)((List) mapSeries.values().iterator().next()).get(0));
+        addParameterFromResult(p, (DicomObject)((Collection) mapSeries.values().iterator().next()).iterator().next() );
         
         StringBuffer sbSeries = new StringBuffer();
         StringBuffer sbPR = null;
@@ -275,13 +288,16 @@ public class LaunchProperties {
         Properties prProps = new Properties();
         for (  Iterator iter = mapSeries.values().iterator(); iter.hasNext() ; ){
             seriess = (List) iter.next();
+            if (instanceComparator != null)
+            	Collections.sort(seriess, instanceComparator);
             sbSeries.setLength(0);
+            Iterator iterInstances = seriess.iterator();
+            dcm = (DicomObject) iterInstances.next();
             if (paraSeriesInstances[0] != null) {
-                appendDescription( sbSeries, paraSeriesInstances, (DicomObject) seriess.get(0), i);
+                appendDescription( sbSeries, paraSeriesInstances, dcm, i);
             }
             imgSeries = false;
-            for ( int j = 0 ; j < seriess.size() ; j++) {
-                dcm = (DicomObject) seriess.get(j);
+            while (  dcm != null ) {
                 cuid = dcm.getString(Tag.SOPClassUID);
                 if ( noSelect && (imageCUIDs == null || imageCUIDs.values().contains(cuid)) ) {
                     sbSeries.append(dcm.getString(Tag.SOPInstanceUID)).append(paraSeriesInstances[4]);//list seperator
@@ -298,6 +314,7 @@ public class LaunchProperties {
                         sbPR.append(dcm.getString(Tag.SOPInstanceUID)).append(paraPresentationStates[4]);//list seperator
                     }
                 }
+                dcm = iterInstances.hasNext() ? (DicomObject) iterInstances.next() : null;
             }
             if ( imgSeries ) {
                 sbSeries.append(paraSeriesInstances[5]);//postfix
@@ -328,7 +345,7 @@ public class LaunchProperties {
         for ( Iterator iter = results.iterateStudies() ; iter.hasNext() ; ) {
             map = ((Map) iter.next());
             if ( ! map.isEmpty()) {
-                obj = (DicomObject) ((List) map.values().iterator().next() ).get(0);
+                obj = (DicomObject) ((Collection) map.values().iterator().next() ).iterator().next();
                 desc = obj.getString(Tag.PatientName)+"("+obj.getString(Tag.PatientBirthDate)+") Descr:"+
                     obj.getString(Tag.StudyDescription)+" UID:"+obj.getString(Tag.StudyInstanceUID);
                 p.setProperty( obj.getString(Tag.StudyInstanceUID), desc);
