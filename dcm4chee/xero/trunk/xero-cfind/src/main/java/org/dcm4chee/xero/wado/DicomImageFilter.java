@@ -41,18 +41,13 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -82,8 +77,6 @@ public class DicomImageFilter implements Filter<WadoImage> {
 
    private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);
 
-   public static String PREFERRED_DICOM_READER = "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader";
-
    static boolean first = true;
 
    public DicomImageFilter() {
@@ -102,64 +95,42 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  if (location == null)
 		 return null;
 	  WadoImage ret = null;
-	  Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
-	  if (!it.hasNext())
-		 throw new UnsupportedOperationException("The DICOM image I/O filter must be available to read images.");
-	  log.info("Found DICOM image reader - trying to read image now.");
-	  ImageReader reader = (ImageReader) it.next();
-	  while (it.hasNext() && !PREFERRED_DICOM_READER.equals(reader.getClass().getName())) {
-		 reader = (ImageReader) it.next();
-	  }
-	  if (!PREFERRED_DICOM_READER.equals(reader.getClass().getName())) {
-		 throw new RuntimeException("Couldn't find image reader class " + PREFERRED_DICOM_READER);
-	  }
 
+	  ImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
 	  ImageReadParam param = reader.getDefaultReadParam();
-	  if (param instanceof DicomImageReadParam) {
-		 DicomImageReadParam dParam = (DicomImageReadParam) param;
-		 dParam.setOverlayRGB((String) params.get("rgb"));
-	  }
+	  DicomImageReadParam dParam = (DicomImageReadParam) param;
+	  dParam.setOverlayRGB((String) params.get("rgb"));
+
 	  // param.setAutoWindowing(true);
-	  ImageInputStream in = null;
 	  String strFrame = (String) params.get(FRAME_NUMBER);
 	  int frame = 0;
 	  if (strFrame != null) {
 		 frame = Integer.parseInt(strFrame) - 1;
 		 // Overlays are specified as the actual overlay number, not as an
-            // offset value.
+		 // offset value.
 		 if ((frame & 0x60000000) != 0)
 			frame++;
 	  }
 	  try {
-		 String surl = location.toString();
-		 if (surl.startsWith("file:")) {
-			String fileName = location.getFile();
-			log.info("Reading DICOM image from local cache file " + surl);
-			in = new FileImageInputStream(new File(fileName));
-		 } else {
-			// TODO change to FileCacheInputStream once we can configure the
-			// location.
-			log.info("Reading DICOM image from remote WADO url:" + surl);
-			in = new MemoryCacheImageInputStream(location.openStream());
-		 }
-		 reader.setInput(in);
-		 int width = reader.getWidth(0);
-		 int height = reader.getHeight(0);
-		 updateParamFromRegion(param, params, width, height);
-		 BufferedImage bi;
-		 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
-		 DicomObject ds = streamData.getDicomObject();
-		 if( OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
-			// This object can't be window levelled, so just get it as
-			// a buffered image directly.
-			bi = reader.read(frame, param);
-		 } else {
-			WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
-			ColorModel cm = ColorModelFactory.createColorModel(ds);
-			bi = new BufferedImage(cm, r, false, null);
-		 }
+		 synchronized (reader) {
+			int width = reader.getWidth(0);
+			int height = reader.getHeight(0);
+			updateParamFromRegion(param, params, width, height);
+			BufferedImage bi;
+			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
+			DicomObject ds = streamData.getDicomObject();
+			if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
+			   // This object can't be window levelled, so just get it as
+			   // a buffered image directly.
+			   bi = reader.read(frame, param);
+			} else {
+			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
+			   ColorModel cm = ColorModelFactory.createColorModel(ds);
+			   bi = new BufferedImage(cm, r, false, null);
+			}
 
-		 ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), bi);
+			ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), bi);
+		 }
 	  } catch (IOException e) {
 		 log.error("Caught I/O exception reading image.", e);
 	  }

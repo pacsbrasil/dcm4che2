@@ -35,57 +35,58 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.wado;
+package org.dcm4chee.xero.metadata;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterList;
-import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.easymock.EasyMock;
-import org.testng.annotations.Test;
-
-/** Tests that images can be encoded as JPEGs, GIF and PNG files.
- * Indirectly tests window levelling as well.  Uses the GradedWadoImage as an
- * image source.
- *
- * @author bwallace
- *
+/**
+ * Creates instances of the given class as the value, assigning the meta-data to
+ * the class if it implements MetaDataUser
  */
-public class EncodeImageTest {
-	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata"); 
-
-	@Test
-	public void testJpegEncoding() throws Exception
-	{
-		assert mdb!=null;
-		MetaDataBean mdbEncode = mdb.get("encode");
-		assert mdbEncode!=null;
-		FilterList<?> fl = (FilterList<?>) mdbEncode.getValue();
-		assert fl!=null;
-		FilterItem fi = new FilterItem(mdbEncode);
-		Map<String,Object> map = new HashMap<String,Object>();
-		map.put("contentType", "image/jpeg");
-		ServletResponseItem sri = (ServletResponseItem) fl.filter(fi,map);
-		assert sri!=null;
-		HttpServletResponse mock = EasyMock.createMock(HttpServletResponse.class);
-		mock.setContentType("image/jpeg");
-		CaptureServletOutputStream csos = new CaptureServletOutputStream();
-		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
-		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
-		EasyMock.replay(mock);
-		sri.writeResponse(null,mock);
-		EasyMock.verify(mock);
-		csos.close();
-		byte[] data = csos.getByteArrayOutputStream().toByteArray();
-		assert data!=null;
-		// Not sure how big it should be, but it had better have some length. 
-		assert data.length>16;
+public class ReferenceValueProvider implements ValueProvider, PreConfigMetaData<Object> {
+    private static Logger log = LoggerFactory.getLogger(ReferenceValueProvider.class);
+    
+	public Object convertValue(MetaDataBean mdb, Object sourceValue) {
+		return ((MetaDataBean) sourceValue).getValue();
 	}
+
+	public Object preConvertValue(MetaDataBean mdb, Object sourceValue) {
+		if (!(sourceValue instanceof String))
+			return null;
+		String sourceValueStr = ((String) sourceValue).trim();
+		if (!sourceValueStr.startsWith("${ref:"))
+			return null;
+		if (!sourceValueStr.endsWith("}"))
+			return null;
+		String refName = sourceValueStr.substring(6,
+				sourceValueStr.length() - 1);
+		MetaDataBean root = mdb.getRoot();
+		assert root!=mdb;
+		MetaDataBean pathFromRoot = root.getForPath(refName);
+		assert pathFromRoot!=root;
+		if( pathFromRoot==null ) {
+		   log.error("Didn't find referenced value "+refName);
+		   return null;
+		}
+		pathFromRoot.initChildren();
+		if( pathFromRoot.instanceValue==null ) {
+		   log.warn("Referenced value "+refName+" has no instance value.");
+		   return null;
+		}
+		
+		log.info("Found reference to "+refName + " from "+mdb.getPath());
+		return pathFromRoot;
+	}
+
+	public MetaDataProvider getExtraMetaDataProvider(MetaDataBean mdb, Object convertedValue, Object originalValue) {
+		return null;
+	}
+
+	/** A ref is a pure copy using the original meta-data, NOT using the localized meta-data,
+	 * so make it use the meta-data from the other object.
+	 */
+    public Object getConfigMetaData(MetaDataBean mdb) {
+	  return ((MetaDataBean) mdb.instanceValue).getValueConfig();
+    }
 }
- 

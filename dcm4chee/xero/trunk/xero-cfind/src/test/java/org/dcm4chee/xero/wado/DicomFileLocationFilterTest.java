@@ -17,11 +17,8 @@ import org.testng.annotations.Test;
 public class DicomFileLocationFilterTest {
 	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata"); 
 
-	public static Object callFilter(String mdbName, String filename) {
-		return callFilter(mdbName,filename,true);		
-	}
 	/** Call the dicom.metadata named filter, providing the given filename */
-	public static Object callFilter(String mdbName, String filename, boolean headerOnly) {
+	public static Object callFilter(String mdbName, String filename) {
 		assert mdb != null;
 		MetaDataBean wado = mdb.get(mdbName);
 		assert wado != null;
@@ -35,7 +32,6 @@ public class DicomFileLocationFilterTest {
 		File f = new File(url.getFile());
 		assert f.canRead();
 		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, url);
-		if( !headerOnly ) params.put(DicomFilter.DICOM_FULL_READ,"true");
 		return fl.filter(fi, params);
 	}
 	

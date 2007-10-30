@@ -41,7 +41,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This provider knows how to inherit values from another meta-data instance.
@@ -54,7 +56,7 @@ public class InheritProvider implements MetaDataProvider {
 	
 	private static final MetaDataProvider inheritProvider = new InheritProvider();
 	
-	static Logger log = Logger.getLogger(InheritProvider.class.getName());
+	static Logger log = LoggerFactory.getLogger(InheritProvider.class);
 
 	/**
 	 * Reads the existing meta-data for the given inherited path to find
@@ -62,7 +64,7 @@ public class InheritProvider implements MetaDataProvider {
 	 */
 	public Map<String, Object> getMetaData(String path,
 			MetaDataBean existingMetaData) {
-		Map<String, Object> ret = new HashMap<String, Object>();
+		Map<String,  Object> ret = new HashMap<String, Object>();
 		Set<String> alreadyInherited = new HashSet<String>();
 		alreadyInherited.add(existingMetaData.path);
 		addMetaData(path, "", existingMetaData, ret, alreadyInherited);
@@ -91,7 +93,7 @@ public class InheritProvider implements MetaDataProvider {
 			if(inheritParent!=null) {
 				MetaDataBean mdbInherit = inheritParent.getForPath(childPath);
 				if( mdbInherit!=null && !alreadyInherited.contains(mdbInherit.path)) {
-					log.fine("Inheriting from "+mdbInherit.path+" into "+path+" parent inherit "+inheritFrom + " at level "+mdb.path);
+					log.info("Inheriting from "+mdbInherit.path+" into "+path+" parent inherit "+inheritFrom + " at level "+mdb.path);
 					alreadyInherited.add(mdbInherit.path);
 					inheritFrom(path,mdbInherit,ret);
 					addMetaData(path,"",mdbInherit, ret,alreadyInherited);
@@ -126,11 +128,11 @@ public class InheritProvider implements MetaDataProvider {
 	 */
 	protected void inheritFrom(String path, MetaDataBean mdb, Map<String, Object> ret) {
 		Map<String, MetaDataBean> children = mdb.getChildren();
-		Object instanceValue = mdb.instanceValue;
+		Object rawValue = mdb.rawValue;
 		// This is actually the only real inherited value at this level - 
 		// everything else is just another nested meta-data bean.
-		if (instanceValue != null && !ret.containsKey(path)) {
-			ret.put(path, instanceValue);
+		if (rawValue != null && !ret.containsKey(path)) {
+			ret.put(path, rawValue);
 		}
 		if (children != null) {
 			for (Map.Entry<String, MetaDataBean> me : children.entrySet()) {

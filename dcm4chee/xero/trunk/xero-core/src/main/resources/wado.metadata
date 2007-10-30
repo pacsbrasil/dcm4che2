@@ -1,3 +1,3 @@
-metaDataProvider.prop=${org.dcm4chee.xero.metadata.PropertyProvider}
+metaDataProvider.prop=${class:org.dcm4chee.xero.metadata.PropertyProvider}
 metaDataProvider.prop.cfind=xero-cfind.metadata
 

@@ -197,7 +197,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  for (Map.Entry<String, StudyBean> me : gspsUids.entrySet()) {
 		 String gspsUid = me.getKey();
 		 StudyBean study = me.getValue();
-		 DicomObject dcmobj = DicomFilter.readHeader(filterItem, params, gspsUid);
+		 DicomObject dcmobj = DicomFilter.filterDicomObject(filterItem, params, gspsUid);
 		 if (dcmobj == null) {
 			log.warn("Couldn't read GSPS for uid " + gspsUid);
 			continue;

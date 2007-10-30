@@ -123,7 +123,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  DicomObject img = wi.getDicomObject();
 	  DicomObject pr = null;
 	  if( values[2]!=null ) {
-		 pr = DicomFilter.readHeader(filterItem, params, (String) values[2]);
+		 pr = DicomFilter.filterDicomObject(filterItem, params, (String) values[2]);
 		 if( pr==null ) log.warn("Coudn't find presentation state "+values[2]);
 	  }
 

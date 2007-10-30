@@ -144,12 +144,17 @@ class ImageServletResponseItem implements ServletResponseItem {
 
 	/** Write the response to the provided stream.  Sets the content type and writes to the
 	 * output stream.
-	 * @param arg0 unused
+	 * @param httpRequest unused
 	 * @param response that the image is written to.  Also sets the content type.
 	 */
-	public void writeResponse(HttpServletRequest arg0, HttpServletResponse response) 
+	public void writeResponse(HttpServletRequest httpRequest, HttpServletResponse response) 
 	throws IOException 
 	{
+	    if( wadoImage==null ) {
+	       response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found.");
+	       log.warn("Image not found.");
+	       return;
+	    }
 		long start = System.currentTimeMillis();
 		response.setContentType(contentType);
 		ImageOutputStream ios = ImageIO.createImageOutputStream(response.getOutputStream());

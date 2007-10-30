@@ -35,57 +35,56 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.wado;
+package org.dcm4chee.xero.metadata;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterList;
-import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.easymock.EasyMock;
 import org.testng.annotations.Test;
 
-/** Tests that images can be encoded as JPEGs, GIF and PNG files.
- * Indirectly tests window levelling as well.  Uses the GradedWadoImage as an
- * image source.
- *
+/**
+ * Tests the instance value provider
  * @author bwallace
  *
  */
-public class EncodeImageTest {
-	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata"); 
+public class ReferenceValueProviderTest {
+	static MetaDataBean mdb = StaticMetaData.getMetaData("ReferenceValueProvider.metadata"); 
 
 	@Test
-	public void testJpegEncoding() throws Exception
-	{
-		assert mdb!=null;
-		MetaDataBean mdbEncode = mdb.get("encode");
-		assert mdbEncode!=null;
-		FilterList<?> fl = (FilterList<?>) mdbEncode.getValue();
-		assert fl!=null;
-		FilterItem fi = new FilterItem(mdbEncode);
-		Map<String,Object> map = new HashMap<String,Object>();
-		map.put("contentType", "image/jpeg");
-		ServletResponseItem sri = (ServletResponseItem) fl.filter(fi,map);
-		assert sri!=null;
-		HttpServletResponse mock = EasyMock.createMock(HttpServletResponse.class);
-		mock.setContentType("image/jpeg");
-		CaptureServletOutputStream csos = new CaptureServletOutputStream();
-		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
-		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
-		EasyMock.replay(mock);
-		sri.writeResponse(null,mock);
-		EasyMock.verify(mock);
-		csos.close();
-		byte[] data = csos.getByteArrayOutputStream().toByteArray();
-		assert data!=null;
-		// Not sure how big it should be, but it had better have some length. 
-		assert data.length>16;
+	public void testStringSame() {
+	   assert mdb!=null;
+	   Object v = mdb.getValue("value1");
+	   assert v!=null;
+	   Object vSame = mdb.getValue("valueSameAs1");
+	   assert vSame!=null;
+	   assert vSame==v;
+	}
+
+	@Test
+	public void testInheritSame() {
+	   assert mdb!=null;
+	   Object v = mdb.getValue("value1");
+	   assert v!=null;
+	   Object vSame = mdb.getValue("valueSameAs1H");
+	   assert vSame!=null;
+	   System.out.println(vSame);
+	   assert vSame==v;
+	}
+
+	@Test
+	public void testObjectSame() {
+	   assert mdb!=null;
+	   Object v = mdb.getValue("value.two");
+	   assert v!=null;
+	   Object vSame = mdb.getValue("valueSameAsTwo");
+	   assert vSame!=null;
+	   assert vSame==v;
+	}
+
+	@Test
+	public void testObjectDifferent() {
+	   assert mdb!=null;
+	   Object v = mdb.getValue("value.two");
+	   assert v!=null;
+	   Object vSame = mdb.getValue("valueDifferentFromTwo");
+	   assert vSame!=null;
+	   assert vSame!=v;
 	}
 }
- 

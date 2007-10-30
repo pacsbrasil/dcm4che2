@@ -37,14 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates instances of the given class as the value, assigning the meta-data to
  * the class if it implements MetaDataUser
  */
 public class InstanceValueProvider implements ValueProvider {
-    private static Logger log = Logger.getLogger(InstanceValueProvider.class.getName());
+    private static Logger log = LoggerFactory.getLogger(InstanceValueProvider.class);
     
 	public Object convertValue(MetaDataBean mdb, Object sourceValue) {
 		return sourceValue;
@@ -56,17 +57,27 @@ public class InstanceValueProvider implements ValueProvider {
 		String sourceValueStr = ((String) sourceValue).trim();
 		if (!sourceValueStr.startsWith("${"))
 			return null;
+		if( (!sourceValueStr.startsWith("${class:")) && sourceValueStr.indexOf(":")>=0 ) {
+		   return null;
+		}
 		if (!sourceValueStr.endsWith("}"))
 			return null;		
-		String className = sourceValueStr.substring(2,
-				sourceValueStr.length() - 1);
+		String className;
+		if( sourceValueStr.startsWith("${class:") ) {
+		   className = sourceValueStr.substring(8,
+					sourceValueStr.length() - 1);
+		} else {
+		   log.warn("Deprecated naming convention used:"+sourceValueStr+" prefer to start with class:");
+		   className = sourceValueStr.substring(2,
+					sourceValueStr.length() - 1);
+		}
 		try {
 			Class clazz = Class.forName(className);
-			log.fine("Found class for meta-data value "+className);
+			log.debug("Found class for meta-data value "+className);
 			Object instance = clazz.newInstance();
 			return instance;
 		} catch (ClassNotFoundException e) {
-			log.fine("No class found for "+className);
+			log.warn("No class found for "+className);
 			return null;
 		} catch (InstantiationException e) {
 			e.printStackTrace();

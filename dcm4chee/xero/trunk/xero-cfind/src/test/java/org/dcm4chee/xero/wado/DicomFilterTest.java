@@ -1,7 +1,12 @@
 package org.dcm4chee.xero.wado;
 
+import java.io.IOException;
+
+import javax.imageio.ImageReader;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.testng.annotations.Test;
@@ -16,10 +21,10 @@ public class DicomFilterTest {
 	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata");
 
 	@Test
-	public void imageHeaderReadTest() {
+	public void imageHeaderReadTest() throws IOException {
 		Object dobj = callFilter("wado", "org/dcm4chee/xero/wado/CR3S1IM1.dcm");
 		assert dobj != null;
-		DicomObject dicom = (DicomObject) dobj;
+		DicomObject dicom = ((DicomStreamMetaData) ((ImageReader) dobj).getStreamMetadata()).getDicomObject();
 		assert dicom.contains(Tag.PixelData) == false;
 		assert dicom.getString(Tag.PhotometricInterpretation).equals(
 				"MONOCHROME1");
@@ -27,10 +32,10 @@ public class DicomFilterTest {
 	}
 
 	@Test
-	public void koHeaderReadTest() {
+	public void koHeaderReadTest() throws IOException {
 		Object dobj = callFilter("wado", "org/dcm4chee/xero/wado/ko_513_mr.dcm");
 		assert dobj != null;
-		DicomObject dicom = (DicomObject) dobj;
+		DicomObject dicom = ((DicomStreamMetaData) ((ImageReader) dobj).getStreamMetadata()).getDicomObject();
 		assert dicom.contains(Tag.PixelData) == false;
 		assert dicom.getString(Tag.Modality).equals("KO");
 		String refUid = dicom.getString(new int[] {

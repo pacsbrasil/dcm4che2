@@ -54,6 +54,7 @@ import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
+import org.dcm4chee.xero.wado.DicomFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,9 +109,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
    protected void updateImage(FilterItem fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
 	  // create a new one
-	  Map<String, Object> newParams = new HashMap<String, Object>(params);
-	  newParams.put("objectUID", ib.getSOPInstanceUID());
-	  DicomObject dobj = (DicomObject) fi.callNamedFilter("dicom", newParams);
+	  DicomObject dobj = DicomFilter.filterDicomObject(fi,params,ib.getSOPInstanceUID());
 	  if (dobj == null) {
 		 log.warn("Could not read dicom header for this object.");
 		 return;

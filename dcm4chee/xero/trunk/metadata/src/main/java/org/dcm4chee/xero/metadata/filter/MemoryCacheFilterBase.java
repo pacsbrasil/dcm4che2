@@ -94,7 +94,7 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 		if( okey instanceof String ) return (String) okey;
 		if( okey instanceof String[] ) throw new IllegalArgumentException("Memory cache key must be single valued.");
 		if( okey==null ) {
-			log.warn("Memory cache must have a key value.");
+			log.warn("Memory cache can't cache a null key value, when looking for key "+paramKeyName);
 			return null;
 		}
 		return okey.toString();
