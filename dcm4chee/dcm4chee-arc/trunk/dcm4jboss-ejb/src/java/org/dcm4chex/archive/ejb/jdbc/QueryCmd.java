@@ -216,7 +216,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             boolean noMatchForNoValue, Subject subject) throws SQLException {
         super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
         this.subject = subject;
+        if (!keys.contains(Tags.SpecificCharacterSet)) {
+            keys.putCS(Tags.SpecificCharacterSet);
+        }
         matchingKeys.add(Tags.QueryRetrieveLevel);
+    }
+
+    protected void addAdditionalReturnKeys() {
+        keys.putAE(Tags.RetrieveAET);
+        keys.putSH(Tags.StorageMediaFileSetID);
+        keys.putUI(Tags.StorageMediaFileSetUID);
+        keys.putCS(Tags.InstanceAvailability);
     }
 
     protected void init() {
@@ -540,14 +550,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         if (!otherPatientIDMatchNotSupported)
             addOtherPatientSeq(ds, keys);
         adjustDataset(ds, keys);
-        if (!filterResult)
-            return ds;
-        keys.putCS(Tags.SpecificCharacterSet);
-        keys.putAE(Tags.RetrieveAET);
-        keys.putSH(Tags.StorageMediaFileSetID);
-        keys.putUI(Tags.StorageMediaFileSetUID);
-        keys.putCS(Tags.InstanceAvailability);
-        return ds.subSet(keys);
+        return filterResult ? ds.subSet(keys) : ds;
     }
 
     private void addOtherPatientSeq(Dataset ds, Dataset keys)
@@ -680,6 +683,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            addAdditionalReturnKeys();
         }
 
         protected void init() {
@@ -735,6 +739,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            addAdditionalReturnKeys();
         }
 
         protected void init() {
@@ -801,6 +806,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            addAdditionalReturnKeys();
         }
 
         protected void init() {
