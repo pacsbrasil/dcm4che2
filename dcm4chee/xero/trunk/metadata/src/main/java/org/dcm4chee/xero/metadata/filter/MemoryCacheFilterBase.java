@@ -66,9 +66,8 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 	public static final String CACHE_SIZE="cacheSize";
 
 	/** The default cache size - should probably come from meta-data
-	 * TODO Change this to some appropriate value 
 	 */
-    public static final long DEFAULT_INITIAL_SIZE_BYTES = 1024l*1024*10;
+    public static final long DEFAULT_INITIAL_SIZE_BYTES = 1024l*1024;
 	
 	protected String paramKeyName = KEY_NAME;
 	
@@ -124,7 +123,7 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
     	Object[] ret = new Object[removals.length];
     	String queryStr = (String) map.get(MemoryCacheFilter.KEY_NAME);
     	if (queryStr == null)
-    		throw new IllegalArgumentException("Initiale query string must not be null.");
+    		throw new IllegalArgumentException("Initial query string must not be null.");
     	boolean removed = false;
     	StringBuffer sb = new StringBuffer(queryStr);
     	int i=0;

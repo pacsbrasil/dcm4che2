@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -17,6 +15,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
+import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReaderSpi;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.CacheItemImpl;
 import org.dcm4chee.xero.metadata.filter.Filter;
@@ -35,6 +34,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DicomFilter implements Filter<Object> {
    private static final Logger log = LoggerFactory.getLogger(DicomFilter.class);
+   
+   DicomImageReaderSpi dicomImageReaderSpi = new DicomImageReaderSpi();
 
    public static String PREFERRED_DICOM_READER = "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader";
 
@@ -58,17 +59,10 @@ public class DicomFilter implements Filter<Object> {
 	  if (location == null)
 		 return null;
 	  try {
-		 Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
-		 if (!it.hasNext())
-			throw new UnsupportedOperationException("The DICOM image I/O filter must be available to read images.");
-		 log.info("Found DICOM image reader - trying to read image now.");
-		 ImageReader reader = (ImageReader) it.next();
-		 while (it.hasNext() && !PREFERRED_DICOM_READER.equals(reader.getClass().getName())) {
-			reader = (ImageReader) it.next();
-		 }
-		 if (!PREFERRED_DICOM_READER.equals(reader.getClass().getName())) {
-			throw new UnsupportedOperationException("Couldn't find image reader class " + PREFERRED_DICOM_READER);
-		 }
+		 // Creating it directly rather than iterating over the ImageIO list means that multiple instances
+		 // can be in memory at once, which is rather handy for a stand-alone WAR that can
+		 // use either a provided version of the library or an included version.
+		 ImageReader reader = dicomImageReaderSpi.createReaderInstance();
 		 String surl = location.toString();
 		 ImageInputStream in;
 		 if (surl.startsWith("file:")) {
@@ -82,9 +76,8 @@ public class DicomFilter implements Filter<Object> {
 			in = new MemoryCacheImageInputStream(location.openStream());
 		 }
 		 reader.setInput(in);
-		 DicomObject dobj = ((DicomStreamMetaData) reader.getStreamMetadata()).getDicomObject();
-		 log.info("Dicom object "+dobj.getString(Tag.SOPInstanceUID)+ " size is "+dobj.size());
-		 params.put(CacheItemImpl.CACHE_SIZE, Long.toString(1024+dobj.size()));
+		 // We don't have any reliable size information right now.   
+		 params.put(CacheItemImpl.CACHE_SIZE, "2048");
 		 return reader;
 	  } catch (IOException e) {
 		 log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);

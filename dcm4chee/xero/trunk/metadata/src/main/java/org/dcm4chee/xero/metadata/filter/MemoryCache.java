@@ -146,7 +146,7 @@ public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 	}
 	
 	/** Put the item into the cache, as long as the size is no more than
-	 * 1/2 of the first level cache size.
+	 * 1/5 of the first level cache size.
 	 */
 	@Override
 	public V put(K key, V value) {
@@ -156,7 +156,7 @@ public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
 		}
 		InternalKey<K, V> putItem = new InternalKey<K, V>(key, value);
 		long size = putItem.getSize();
-		if (putItem.getSize() < (cacheSizes[0] / 2)) {
+		if (putItem.getSize() < (cacheSizes[0] / 5)) {
 			findMap.put(key, putItem);
 			lruSets[putItem.getLevel()].add(putItem);
 			currentSizes[putItem.getLevel()] += putItem.getSize();

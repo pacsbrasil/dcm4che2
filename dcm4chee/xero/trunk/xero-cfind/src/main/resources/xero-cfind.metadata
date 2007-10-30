@@ -32,6 +32,8 @@ dicom.fileLocation.priority=-1
 dicom.dicom=${class:org.dcm4chee.xero.wado.DicomFilter}
 dicom.dicom.priority=100
 dicom.memcache=${class:org.dcm4chee.xero.metadata.filter.ParamSizeMemoryCacheFilter}
+# About 1000 open readers at any given time, maximum.  Probably increase for production use.
+dicom.memcache.cacheSize=2000000
 dicom.memcache.priority=200
 dicom.memcache.queryStr=objectUID
 
@@ -51,6 +53,8 @@ imageFilter.emptyFilter.priority=450
 imageFilter.sortFilter=${class:org.dcm4chee.xero.search.filter.SortImageFilter}
 imageFilter.sortFilter.priority=25
 imageFilter.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+# Cache 1 mb of data at time - probably too small for production usage.
+imageFilter.cacheFilter.cacheSize=1000000
 imageFilter.cacheFilter.priority=400
 imageFilter.pagedFilter=${class:org.dcm4chee.xero.search.study.PagedImageFilter}
 imageFilter.pagedFilter.priority=500
@@ -76,6 +80,7 @@ seriesFilter.source=${class:org.dcm4chee.xero.search.study.ImageSearch}
 seriesFilter.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 seriesFilter.emptyFilter.inherit=studyFilter.emptyFilter
 seriesFilter.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+seriesFilter.cacheFilter.cacheSize=1000000
 seriesFilter.cacheFilter.priority=400
 
 #Filters for image,series and study meta-data.
@@ -84,7 +89,7 @@ seriesFilter.singleImagePerSeriesFilter.priority=15
 seriesFilter.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
 seriesFilter.gsps.priority=20
 
-seriesFilter.cacheFilter=OVERRIDE TO NULL
+#seriesFilter.cacheFilter=OVERRIDE TO NULL
 
 # Wado filters.
 wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
@@ -93,6 +98,8 @@ wado.encode.priority=9999
 wado.wl=${class:org.dcm4chee.xero.wado.WLFilter}
 wado.wl.priority=6000
 wado.memcache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+# 10 megabytes by default.
+wado.memcache.cacheSize=10240000
 wado.memcache.priority=5000
 wado.src=${class:org.dcm4chee.xero.wado.DicomImageFilter}
 wado.dicom=${ref:dicom}

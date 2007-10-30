@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 
@@ -77,14 +76,6 @@ public class DicomImageFilter implements Filter<WadoImage> {
 
    private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);
 
-   static boolean first = true;
-
-   public DicomImageFilter() {
-	  if (first)
-		 ImageIO.scanForPlugins();
-	  first = false;
-   }
-
    /**
      * Read the raw DICOM image object
      * 
@@ -97,6 +88,10 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  WadoImage ret = null;
 
 	  ImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
+	  if( reader==null ) {
+		 log.warn("Couldn't find reader for DICOM object.");
+		 return null;
+	  }
 	  ImageReadParam param = reader.getDefaultReadParam();
 	  DicomImageReadParam dParam = (DicomImageReadParam) param;
 	  dParam.setOverlayRGB((String) params.get("rgb"));
