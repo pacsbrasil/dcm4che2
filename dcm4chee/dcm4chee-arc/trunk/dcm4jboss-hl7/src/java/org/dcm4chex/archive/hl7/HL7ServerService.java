@@ -364,6 +364,11 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         while (mllpDriver.hasMoreInput()) {
             int msglen = 0;
             int read = 0;
+            int msgNo = ++numberOfReceivedMessages;
+            if (log.isDebugEnabled()) {
+                log.debug("Receiving message #" + msgNo +
+                                " from " + s);
+            }
             do {
                 msglen += read;
                 if (msglen == bb.length) {
@@ -371,7 +376,10 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                 }
                 read = mllpIn.read(bb, msglen, bb.length - msglen);
             } while (read > 0);
-            int msgNo = ++numberOfReceivedMessages;
+            if (log.isDebugEnabled()) {
+                log.debug("Received message  #" + msgNo + "of" + msglen +
+                                " bytes from " + s);
+            }
             if (fileReceivedHL7) {
                 fileReceivedHL7(bb, msglen, new File(logDir, 
                         new DecimalFormat("'hl7-'000000'.hl7'").format(msgNo)));
@@ -411,7 +419,15 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                 mllpDriver.discardPendingOutput();
                 ack(hl7in.getDocument(), hl7out, suppressErrorResponse ? null : e);
             }
+            if (log.isDebugEnabled()) {
+                log.debug("Sending response message #" + msgNo +
+                                " to " + s);
+            }
             mllpDriver.turn();
+            if (log.isDebugEnabled()) {
+                log.debug("Sent response message #" + msgNo +
+                                " to " + s);
+            }
         }
     }
 
