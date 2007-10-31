@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.filter;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;

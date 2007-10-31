@@ -18,12 +18,7 @@
     
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
-      <artifactId>xero-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4chee.xero</groupId>
-      <artifactId>metadata</artifactId>
+      <artifactId>xero-cfind</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>

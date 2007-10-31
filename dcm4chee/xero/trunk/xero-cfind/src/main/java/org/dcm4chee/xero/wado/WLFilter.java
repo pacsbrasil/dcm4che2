@@ -121,6 +121,10 @@ public class WLFilter implements Filter<WadoImage> {
 	  log.debug("WL  W:" + windowWidth + " C:" + windowCenter + ")");
 	  
 	  DicomObject img = wi.getDicomObject();
+	  if( img==null ) {
+		 log.error("Dicom object must not be null for window-level to work.");
+		 return wi;
+	  }
 	  DicomObject pr = null;
 	  if( values[2]!=null ) {
 		 pr = DicomFilter.filterDicomObject(filterItem, params, (String) values[2]);
@@ -136,6 +140,9 @@ public class WLFilter implements Filter<WadoImage> {
 	  }
 	  
 	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
+	  if( voiObj==null ){
+		 throw new NullPointerException("voiObj should not be null.");
+	  }
 	  if( func==null && !VOIUtils.containsVOIAttributes(voiObj)) {
 		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
 		 windowCenter = cw[0];
