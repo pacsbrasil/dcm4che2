@@ -147,7 +147,7 @@ public class VOIUtils {
     			if( frameObj!=null ) {
     				DicomObject voiObj = frameObj.getNestedDicomObject(Tag.FrameVOILUTSequence);
     				if( voiObj!=null ) {
-    					return voi;
+    					return voiObj;
     				}
     			}
     		}
