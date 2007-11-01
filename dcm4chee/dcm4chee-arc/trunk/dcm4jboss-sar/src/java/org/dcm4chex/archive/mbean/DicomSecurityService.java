@@ -178,8 +178,7 @@ public class DicomSecurityService extends ServiceMBeanSupport
             }
         }
         Subject subject = new Subject();
-        if (!securityManager.isValid(
-                new SimplePrincipal(userId), passwd, subject)) {
+        if (!isValid(userId, passwd, subject)) {
             throw new AAssociateRJException(
                     AAssociateRJ.REJECTED_PERMANENT,
                     AAssociateRJ.SERVICE_PROVIDER_ACSE,
@@ -194,5 +193,10 @@ public class DicomSecurityService extends ServiceMBeanSupport
         AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
+    }
+    
+    public boolean isValid(String userId, String passwd, Subject subject) {
+        return securityManager.isValid(
+                new SimplePrincipal(userId), passwd, subject);
     }
 }

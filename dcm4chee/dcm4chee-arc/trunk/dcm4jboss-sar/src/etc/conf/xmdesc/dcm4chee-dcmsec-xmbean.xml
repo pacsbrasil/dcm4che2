@@ -94,6 +94,23 @@
 			org.dcm4che.net.UserIdentityNegotiator
 		</return-type>
 	</operation>
+	<operation impact="INFO">
+		<description>Validate password for user and populate subject</description>
+		<name>isValid</name>
+     <parameter>
+       <name>userID</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <name>password</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <name>subject</name>
+       <type>javax.security.auth.Subject</type>
+     </parameter>
+     <return-type>boolean</return-type>
+	</operation>
 
 	&defaultOperations;
 </mbean>

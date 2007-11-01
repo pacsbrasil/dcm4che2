@@ -46,6 +46,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,6 +75,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -166,6 +168,10 @@ public class StoreScpService extends AbstractScpService {
      */
     private Map otherCUIDS = new LinkedHashMap();
 
+    private String timerIDCheckPendingSeriesStored;
+
+    private String[] unrestrictedAppendPermissionsToAETitles;
+
     private ObjectName fileSystemMgtName;
     private ObjectName mwlScuServiceName;
 
@@ -178,8 +184,6 @@ public class StoreScpService extends AbstractScpService {
     protected StoreScp getScp() {
     	return scp;
     }
-
-    private String timerIDCheckPendingSeriesStored;
 
     public final String getCheckPendingSeriesStoredInterval() {
         return RetryIntervalls
@@ -338,6 +342,25 @@ public class StoreScpService extends AbstractScpService {
         this.mwlScuServiceName = mwlScuServiceName;
     }
 
+    public final String getUnrestrictedAppendPermissionsToAETitles() {
+        return unrestrictedAppendPermissionsToAETitles == null ? ANY
+                : StringUtils.toString(
+                        unrestrictedAppendPermissionsToAETitles, '\\');
+    }
+
+    public final void setUnrestrictedAppendPermissionsToAETitles(String s) {
+        String trim = s.trim();
+        this.unrestrictedAppendPermissionsToAETitles = 
+                trim.equalsIgnoreCase(ANY) ? null 
+                        : StringUtils.split(trim, '\\');
+    }
+
+    final boolean hasUnrestrictedAppendPermissions(String aet) {
+        return unrestrictedAppendPermissionsToAETitles == null 
+                || Arrays.asList(unrestrictedAppendPermissionsToAETitles)
+                        .contains(aet);
+    }
+    
     public String getCoerceWarnCallingAETs() {
         return scp.getCoerceWarnCallingAETs();
     }

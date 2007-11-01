@@ -684,6 +684,7 @@ class ppsScu {}
 /**
  * @depend - - - AE
  * @depend - - - DcmServer
+ * @depend - - - DicomSecurity
  * @depend - - - TLSConfig
  * @depend - - - AuditLogger
  * @depend - - - FileSystemMgt

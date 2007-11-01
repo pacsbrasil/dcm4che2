@@ -40,10 +40,12 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.management.ObjectName;
+import javax.security.auth.Subject;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -61,6 +63,8 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
@@ -74,7 +78,18 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  * @since 31.08.2003
  */
-public class MoveScp extends DcmServiceBase implements AssociationListener{
+public class MoveScp extends DcmServiceBase implements AssociationListener {
+    
+    private static final String MISSING_USER_ID_ERR_MSG =
+        "Missing user identification of requestor";
+    private static final String MISSING_DEST_USER_ID_ERR_MSG =
+        "Missing or invalid user identification of destination";
+    private static final String NO_EXPORT_PERMISSION_ERR_MSG =
+        "No permission to export Study";
+    private static final String NO_READ_PERMISSION_ERR_MSG =
+        "No permission to read Study";
+
+    
     protected final QueryRetrieveScpService service;
 	private final Logger log;
     private PerfMonDelegate perfMon;
@@ -87,6 +102,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
 
     public void c_move(ActiveAssociation assoc, Dimse rq) throws IOException {
         Command rqCmd = rq.getCommand();
+        Association a = assoc.getAssociation();
         try {            
             Dataset rqData = rq.getDataset();
             if(log.isDebugEnabled()) {
@@ -94,20 +110,22 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
             	log.debug(rqData);
             }
             
-            checkMoveRQ(assoc.getAssociation(), rq.pcid(), rqCmd, rqData);
+            checkMoveRQ(a, rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
+            boolean thirdPartyMove = !dest.equals(a.getCallingAET());
             AEDTO aeData = null;
             FileInfo[][] fileInfos = null;
             try {
                	perfMon.start(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
             	perfMon.setProperty(assoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
 
-    			InetAddress host = dest.equals( assoc.getAssociation().getCallingAET()) ? assoc.getAssociation().getSocket().getInetAddress() : null;
-                aeData = service.queryAEData(dest, host);
+                aeData = service.queryAEData(dest, 
+                        thirdPartyMove ? null : a.getSocket().getInetAddress());
                 fileInfos = RetrieveCmd.create(rqData).getFileInfos();
 
                 perfMon.setProperty(assoc, rq, PerfPropertyEnum.NUM_OF_RESULTS, String.valueOf(fileInfos.length));
                 perfMon.stop(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
+                checkPermission(a, thirdPartyMove, aeData, fileInfos);
                 
 	            new Thread( createMoveTask(service,
 	                    assoc,
@@ -118,11 +136,13 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
 	                    aeData,
 	                    dest))
 	                .start();
+            } catch (DcmServiceException e) {
+                throw e;
             } catch (UnknownAETException e) {
                 throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);
-                throw new DcmServiceException(Status.UnableToProcess, e);
+                throw new DcmServiceException(Status.UnableToCalculateNumberOfMatches, e);
             } catch (Throwable e) {
                 service.getLog().error("Unexpected exception:", e);
                 throw new DcmServiceException(Status.UnableToProcess, e);
@@ -135,8 +155,62 @@ public class MoveScp extends DcmServiceBase implements AssociationListener{
                 e.getStatus());
             e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
-            assoc.getAssociation().write(rsp);
+            a.write(rsp);
         }
+    }
+
+    private void checkPermission(Association a, boolean thirdPartyMove, 
+            AEDTO ae, FileInfo[][] fileInfos) throws Exception {
+        boolean checkExportPermissions = thirdPartyMove
+                && !service.hasUnrestrictedExportPermissions(a.getCallingAET());
+        boolean checkReadPermissions =
+                !service.hasUnrestrictedReadPermissions(ae.getTitle());
+        if (!checkExportPermissions && !checkReadPermissions) {
+            return;
+        }
+        HashSet suids = new HashSet();
+        for (int i = 0; i < fileInfos.length; i++) {
+            suids.add(fileInfos[i][0].studyIUID);
+        }
+        Subject subject = (Subject) a.getProperty("user");
+        StudyPermissionManager studyPermissionManager =
+                service.getStudyPermissionManager(a);
+        if (checkExportPermissions) {
+            if (subject == null) {
+                throw new DcmServiceException(
+                        Status.UnableToPerformSuboperations,
+                        MISSING_USER_ID_ERR_MSG);
+            }
+            for (Iterator iter = suids.iterator(); iter.hasNext();) {
+                 if (!studyPermissionManager.hasPermission((String) iter.next(),
+                         StudyPermissionDTO.EXPORT_ACTION, subject)) {
+                    throw new DcmServiceException(
+                            Status.UnableToPerformSuboperations,
+                            NO_EXPORT_PERMISSION_ERR_MSG);
+                 }
+            }
+        }
+        if (checkReadPermissions) {
+            if (subject == null || thirdPartyMove) {
+                subject = new Subject();
+                String userId = ae.getUserID();
+                String passwd = ae.getPassword();
+                if (userId == null || userId.length() == 0
+                        || !service.dicomSecurity().isValid(userId, passwd, subject)) {
+                    throw new DcmServiceException(
+                            Status.UnableToPerformSuboperations,
+                            MISSING_DEST_USER_ID_ERR_MSG);
+                }
+            }
+            for (Iterator iter = suids.iterator(); iter.hasNext();) {
+                if (!studyPermissionManager.hasPermission((String) iter.next(),
+                        StudyPermissionDTO.READ_ACTION, subject)) {
+                   throw new DcmServiceException(
+                           Status.UnableToPerformSuboperations,
+                           NO_READ_PERMISSION_ERR_MSG);
+                }
+           }
+       }
     }
     
     protected MoveTask createMoveTask( QueryRetrieveScpService service,

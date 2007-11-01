@@ -84,6 +84,8 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
@@ -871,4 +873,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
     }
+
+    public StudyPermissionManager getStudyPermissionManager(Association a)
+            throws Exception {
+        StudyPermissionManager mgt = (StudyPermissionManager)
+        a.getProperty(StudyPermissionManagerHome.JNDI_NAME);
+        if (mgt == null) {
+            mgt = ((StudyPermissionManagerHome) EJBHomeFactory.getFactory()
+                    .lookup(StudyPermissionManagerHome.class,
+                            StudyPermissionManagerHome.JNDI_NAME)).create();
+            a.putProperty(StudyPermissionManagerHome.JNDI_NAME, mgt);
+        }
+        return mgt;
+    }
+
 }

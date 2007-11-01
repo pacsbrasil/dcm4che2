@@ -37,15 +37,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
+import javax.security.auth.Subject;
 
 import org.dcm4che.net.UserIdentityNegotiator;
-import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
-import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -78,5 +74,18 @@ public class DicomSecurityDelegate {
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
+    }
+
+    public boolean isValid(String userId, String passwd, Subject subject) {
+        try {
+            Boolean b = (Boolean) service.getServer().invoke(
+                    dicomSecurityServiceName, "isValid",
+                    new Object[] { userId, passwd, subject },
+                    new String[] { String.class.getName(), 
+                            String.class.getName(), Subject.class.getName()});
+            return b.booleanValue();
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }        
     }
 }

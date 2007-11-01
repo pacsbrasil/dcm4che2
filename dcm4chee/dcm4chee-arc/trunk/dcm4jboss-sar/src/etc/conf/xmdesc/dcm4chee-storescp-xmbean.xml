@@ -50,6 +50,22 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getUnrestrictedAppendPermissionsToAETitles"
+      setMethod="setUnrestrictedAppendPermissionsToAETitles">
+      <description><![CDATA[AE Titles of C-STORE SCUs with Append Permissions
+      on all archived Studies, independent of Study Permissions to roles
+      of the user associated to the active association.
+      Separate multiple values by \(backslash).
+      ANY = Disable restriction of storage to existing Studies according
+      granted Study Permissions.]]>
+      </description>
+      <name>UnrestrictedAppendPermissionsToAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getCoerceWarnCallingAETs"
       setMethod="setCoerceWarnCallingAETs">
       <description>List of the AE titles for the Storage SCUs for which

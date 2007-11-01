@@ -496,6 +496,20 @@ public abstract class StorageBean implements SessionBean {
    		final StudyLocal study = studyHome.findByStudyIuid(iuid);
    		study.updateDerivedFields(true, true, false, true, true, true);
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int numberOfStudyRelatedInstances(String iuid) {
+        try {
+            StudyLocal study = studyHome.findByStudyIuid(iuid);
+            return study.getNumberOfStudyRelatedInstances();
+        } catch (ObjectNotFoundException onfe) {
+            return -1;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
     
     /**
      * @ejb.interface-method

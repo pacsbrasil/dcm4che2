@@ -62,6 +62,7 @@ import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.management.ObjectName;
+import javax.security.auth.Subject;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -97,6 +98,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
@@ -113,6 +115,16 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
+    private static final int MISSING_USER_ID_ERR_STATUS = 0xA7E0;
+
+    private static final String MISSING_USER_ID_ERR_MSG =
+            "Missing user identification for appending existing Study";
+    
+    private static final int NO_APPEND_PERMISSION_ERR_STATUS = 0xA7E1;
+
+    private static final String NO_APPEND_PERMISSION_ERR_MSG =
+            "No permission to append existing Study";
+    
     private static final String STORE_XSL = "cstorerq.xsl";
 
     private static final String STORE_XML = "-cstorerq.xml";
@@ -402,6 +414,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 parser.parseDataset(decParam, -1);
             }
             String iuid = checkSOPInstanceUID(rqCmd, ds, callingAET);
+            checkAppendPermission(assoc, ds);
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
             if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
                     && !containsLocal(duplicates))) {
@@ -611,6 +624,34 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 deleteFailedStorage(file);
             }
             throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
+    }
+
+    private void checkAppendPermission(Association a, Dataset ds)
+            throws Exception {
+        if (service.hasUnrestrictedAppendPermissions(a.getCallingAET())) {            
+            return;
+        }
+        // only check on first instance of a series received in the same association
+        String seriuid = ds.getString(Tags.SeriesInstanceUID);
+        String prevseriud = (String) a.getProperty(SERIES_IUID);
+        if (seriuid.equals(prevseriud)) {
+            return;
+        }
+        String suid = ds.getString(Tags.StudyInstanceUID);
+        if (getStorage(a).numberOfStudyRelatedInstances(suid) == -1) {
+            return;
+        } 
+
+        Subject subject = (Subject) a.getProperty("user");
+        if (subject == null) {
+            throw new DcmServiceException(MISSING_USER_ID_ERR_STATUS,
+                    MISSING_USER_ID_ERR_MSG);
+        }
+        if (!service.getStudyPermissionManager(a).hasPermission(
+                suid, StudyPermissionDTO.APPEND_ACTION, subject)) {
+            throw new DcmServiceException(NO_APPEND_PERMISSION_ERR_STATUS,
+                    NO_APPEND_PERMISSION_ERR_MSG);
         }
     }
 

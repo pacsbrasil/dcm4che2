@@ -13,6 +13,8 @@
       >dcm4chee.archive:service=TLSConfig</depends>
     <depends optional-attribute-name="DcmServerName"
       >dcm4chee.archive:service=DcmServer</depends>
+    <depends optional-attribute-name="DicomSecurityServiceName"
+      >dcm4chee.archive:service=DicomSecurity</depends>
     <depends optional-attribute-name="FileSystemMgtName"
       >dcm4chee.archive:service=FileSystemMgt</depends>
     <depends optional-attribute-name="StgCmtScuScpName"

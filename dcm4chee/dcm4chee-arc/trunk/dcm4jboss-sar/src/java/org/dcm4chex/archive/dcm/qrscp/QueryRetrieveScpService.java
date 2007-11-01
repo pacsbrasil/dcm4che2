@@ -84,6 +84,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
+import org.dcm4chex.archive.mbean.DicomSecurityDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -138,6 +139,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     private String[] unrestrictedQueryPermissionsToAETitles = null;
 
+    private String[] unrestrictedReadPermissionsToAETitles = null;
+
+    private String[] unrestrictedExportPermissionsToAETitles = null;
+    
     private Map ignorableSOPClasses = new LinkedHashMap();
 
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
@@ -151,6 +156,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private ObjectName pixQueryServiceName;
     
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
+
+    private DicomSecurityDelegate dicomSecurity =
+            new DicomSecurityDelegate(this);
 
     private boolean sendPendingMoveRSP = true;
 
@@ -229,6 +237,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     	dicomFindScp = createFindScp();
     }
     
+    DicomSecurityDelegate dicomSecurity() {
+        return dicomSecurity;
+    }
+    
     protected MoveScp createMoveScp() {
         return new MoveScp(this);
     }
@@ -263,6 +275,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         tlsConfig.setTLSConfigName(tlsConfigName);
     }
 
+    public final ObjectName getDicomSecurityServiceName() {
+        return dicomSecurity.getDicomSecurityServiceName();
+    }
+
+    public final void setDicomSecurityServiceName(ObjectName serviceName) {
+        this.dicomSecurity.setDicomSecurityServiceName(serviceName);
+    }
+    
     public final int getReceiveBufferSize() {
         return tlsConfig.getReceiveBufferSize();
     }
@@ -391,6 +411,44 @@ public class QueryRetrieveScpService extends AbstractScpService {
     final boolean hasUnrestrictedQueryPermissions(String aet) {
         return unrestrictedQueryPermissionsToAETitles == null 
                 || Arrays.asList(unrestrictedQueryPermissionsToAETitles)
+                        .contains(aet);
+    }
+        
+    public final String getUnrestrictedReadPermissionsToAETitles() {
+        return unrestrictedReadPermissionsToAETitles == null ? ANY
+                : StringUtils.toString(
+                        unrestrictedReadPermissionsToAETitles, '\\');
+    }
+
+    public final void setUnrestrictedReadPermissionsToAETitles(String s) {
+        String trim = s.trim();
+        this.unrestrictedReadPermissionsToAETitles = 
+                trim.equalsIgnoreCase(ANY) ? null 
+                        : StringUtils.split(trim, '\\');
+    }
+
+    final boolean hasUnrestrictedReadPermissions(String aet) {
+        return unrestrictedReadPermissionsToAETitles == null 
+                || Arrays.asList(unrestrictedReadPermissionsToAETitles)
+                        .contains(aet);
+    }
+        
+    public final String getUnrestrictedExportPermissionsToAETitles() {
+        return unrestrictedExportPermissionsToAETitles == null ? ANY
+                : StringUtils.toString(
+                        unrestrictedExportPermissionsToAETitles, '\\');
+    }
+
+    public final void setUnrestrictedExportPermissionsToAETitles(String s) {
+        String trim = s.trim();
+        this.unrestrictedExportPermissionsToAETitles = 
+                trim.equalsIgnoreCase(ANY) ? null 
+                        : StringUtils.split(trim, '\\');
+    }
+
+    final boolean hasUnrestrictedExportPermissions(String aet) {
+        return unrestrictedExportPermissionsToAETitles == null 
+                || Arrays.asList(unrestrictedExportPermissionsToAETitles)
                         .contains(aet);
     }
         

@@ -52,7 +52,9 @@ import javax.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.auth.Subject;
 
+import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocalHome;
@@ -141,6 +143,19 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public boolean hasPermission(String suid, String action, Subject subject) {
+        String[] roles = SecurityUtils.rolesOf(subject);
+        for (int i = 0; i < roles.length; i++) {
+            if (hasPermission(suid, action, roles[i])) {
+                return true;                
+            }
+        }
+        return false;
     }
     
     private Collection toDTOs(Collection c) {

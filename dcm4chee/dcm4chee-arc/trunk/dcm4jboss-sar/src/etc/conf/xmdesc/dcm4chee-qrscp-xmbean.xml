@@ -193,6 +193,52 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getUnrestrictedReadPermissionsToAETitles"
+      setMethod="setUnrestrictedReadPermissionsToAETitles">
+      <description><![CDATA[AE Titles of Move Destinations with Read Permissions
+      on all archived Studies, independent of Study Permissions to roles
+      of the user associated with the AE.<br/>
+      Separate multiple values by \(backslash).
+      ANY = Disable restriction of retrieve to Move Destinations according
+      granted Study Read Permissions.<br/>
+      Attention: For successful Media Creation by the archive, the AE Title of
+      the Media Creation Service (default: CDRECORD) have to be included in the
+      configured list.<br/>
+      Note: If the Move Destination differs from the AE requesting the retrieve
+      (= C-MOVE SCU), the associated user is defined by the AE configuration
+      entry. If the C-MOVE SCU also acts as Move Destination, the user
+      identification may be also provided by C-MOVE SCU by User Identity
+      Negotiation.
+      ]]>
+      </description>
+      <name>UnrestrictedReadPermissionsToAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getUnrestrictedExportPermissionsToAETitles"
+      setMethod="setUnrestrictedExportPermissionsToAETitles">
+      <description><![CDATA[AE Titles of C-MOVE SCUs with Export Permissions
+      on all archived Studies, independent of Study Permissions to roles
+      of the user associated to the request association.  
+      Separate multiple values by \(backslash).
+      ANY = Disable restriction of queries according granted Study Permissions.<br/>
+      Attention: For successful auto-forwarding of received objects as for
+      manual DICOM export using the Web Interface, the Calling AE Title of the
+      internal Move SCU Service (default: DCM4CHEE) have to be included in the
+      configured list.<br/>
+      Note: If the C-MOVE SCU also acts as Move Destination, no Export
+      Permission - but still Read Permission - is needed to retrieve a Study.]]>
+      </description>
+      <name>UnrestrictedExportPermissionsToAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getIgnorableSOPClasses"
       setMethod="setIgnorableSOPClasses">
       <description><![CDATA[
@@ -722,6 +768,14 @@ QueryRetrieveScp service.</description>
       <description>Used internally. Do NOT modify.
       </description>
       <name>DcmServerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDicomSecurityServiceName"
+      setMethod="setDicomSecurityServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>DicomSecurityServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
