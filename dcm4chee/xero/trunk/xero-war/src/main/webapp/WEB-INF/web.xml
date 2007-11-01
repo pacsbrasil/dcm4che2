@@ -196,30 +196,12 @@
       </init-param>
       <init-param>
 	      <param-name>filter</param-name>
-    	  <param-value>wado</param-value>
+    	  <param-value>baseImg</param-value>
       </init-param>
    </servlet>
    <servlet-mapping>
      <servlet-name>WADO</servlet-name>
      <url-pattern>/wlwado</url-pattern>
-   </servlet-mapping>
-    
-   <!-- DEV WADO servlet to use for testing window levelling performance. -->
-   <servlet>
-     <servlet-name>DEVWADO</servlet-name>
-      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
-      <init-param>
-	      <param-name>metaData</param-name>
-    	  <param-value>/wado.metadata</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>filter</param-name>
-    	  <param-value>wadoDcm</param-value>
-      </init-param>
-   </servlet>
-   <servlet-mapping>
-     <servlet-name>DEVWADO</servlet-name>
-     <url-pattern>/devwado</url-pattern>
    </servlet-mapping>
 
    <!-- JSF and Facelets Configuration -->    

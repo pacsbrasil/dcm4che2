@@ -133,6 +133,20 @@ public class FilterItem implements Comparable<FilterItem> {
 		 }
 		 return namedFilter.filter.filter(namedFilter, params);
 	 }
+	
+	/** Indicates if the given filter is available in this filter list. */
+	public boolean contains(String filterName) {
+		 FilterListConfig fl = (FilterListConfig) metaData.getParent().getValueConfig();
+		 if( fl==null ) {
+			 log.warn("Parent "+metaData.getParent().getPath()+" did not have a filter list configuration item.");
+			 return false;
+		 }
+		 FilterItem namedFilter = fl.getNamedFilter(filterName);
+		 if( namedFilter==null ) {
+			 return false;			 
+		 }
+		 return true;
+	}
 
 	/** Return the next filters name/metadata path, if any */
 	public String getNextFilterName() {

@@ -143,4 +143,21 @@ public class FileLocationMgtFilter implements Filter<URL> {
 	  return location;
    }
 
+   /** Finds the location of the given object by calling the fileLocation filter. */
+   public static URL filterURL(FilterItem filterItem, Map<String, Object> params, String uid) {
+	  Map<String, Object> newParams;
+	  if (uid == null) {
+		 // This case is used for filters where the request is directly for as single instance 
+		 // object.
+		 newParams = params;
+	  } else {
+		 // This request is used for filters where the request is for some other objects, and the
+		 // UID is required.
+		 newParams = new HashMap<String, Object>();
+		 newParams.put("objectUID", uid);
+	  }
+	  Object ret = filterItem.callNamedFilter("fileLocation", newParams);
+	  return (URL) ret;
+   }
+
 }

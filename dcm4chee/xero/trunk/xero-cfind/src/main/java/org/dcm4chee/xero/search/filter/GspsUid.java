@@ -31,14 +31,16 @@ public class GspsUid  implements Filter<ResultsBean> {
 
 	public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 		String gspsName = (String) params.get(GspsDiscover.GSPS_KEY);
-		if( gspsName==null ) {
+		Object presentationUID = params.get("presentationUID");
+		if( gspsName==null && presentationUID==null) {
 			log.debug("Not applying GSPS Uid lookup.");
 			return (ResultsBean) filterItem.callNextFilter(params);
 		}
-		log.debug("Looking for GSPS "+gspsName);
+		log.debug("Looking for GSPS "+gspsName+" presentation UIDs "+presentationUID);
 		ResultsBean rb = (ResultsBean) filterItem.callNextFilter(params);
 		if( rb==null ) return null;
-		ResultsBean gspsResults = GspsDiscover.queryForGsps(filterItem,rb);
+		// This can be restricted to a specific set of UID's
+		ResultsBean gspsResults = GspsDiscover.queryForGsps(filterItem,rb, presentationUID);
 		if( gspsResults==null ) return rb;
 		
 		Map<String,GspsBean> uidToGsps = new HashMap<String,GspsBean>();
@@ -48,7 +50,7 @@ public class GspsUid  implements Filter<ResultsBean> {
 					for(DicomObjectType dot : se.getDicomObject()) {
 						if( ! (dot instanceof GspsBean) ) continue;
 						GspsBean gsps = (GspsBean) dot;
-						if( !gsps.getContentLabel().equals(gspsName)) continue;
+						if( gspsName!=null && !gsps.getContentLabel().equals(gspsName)) continue;
 						log.debug("Add GSPS "+gsps.getSOPInstanceUID() + " to  gspsResults map.");
 						for(String uid : gsps.getReferencedSOPInstance() ) {
 							GspsBean oldGsps = uidToGsps.get(uid);
