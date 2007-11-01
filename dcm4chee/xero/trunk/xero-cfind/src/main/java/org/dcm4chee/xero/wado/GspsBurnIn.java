@@ -40,11 +40,10 @@ package org.dcm4chee.xero.wado;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
@@ -52,11 +51,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -69,12 +64,9 @@ import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3.svg.PathType;
+import org.w3.svg.GType;
 import org.w3.svg.SvgType;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.w3.svg.Use;
 
 /**
  * This class burns in GSPS information into the image. This may cause the image
@@ -89,6 +81,9 @@ import org.xml.sax.XMLReader;
 public class GspsBurnIn implements Filter<WadoImage> {
    private static final Logger log = LoggerFactory.getLogger(GspsBurnIn.class);
 
+   /**
+    * Burn in GSPS elements if any are found and relevant to the given image.
+    */
    public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
 	  String presentationUID = (String) params.get("presentationUID");
 	  if (presentationUID == null) {
@@ -114,6 +109,10 @@ public class GspsBurnIn implements Filter<WadoImage> {
 
 	  WadoImage wi = filterWadoImage(filterItem, params, image);
 	  String svg = generateSvg(image, gsps);
+	  if( svg==null ) {
+		 log.info("No overlay data - returning raw image.");
+		 return wi;
+	  }
 	  BufferedImage biSrc = wi.getValue();
 
 	  BufferedImage biBurn = transcodeImage(biSrc, svg);
@@ -126,13 +125,16 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  return ret;
    }
 
+   /**
+    * Transcode the image on top of the existing image, and return a new buffered image
+    * containing the combination of the two.
+    * @param biSrc
+    * @param svg
+    * @return
+    */
    private BufferedImage transcodeImage(BufferedImage biSrc, String svg) {
 	  try {
-		 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		 DocumentBuilder db = dbf.newDocumentBuilder();
 		 ByteArrayInputStream bais = new ByteArrayInputStream(svg.getBytes("UTF-8"));
-		 //InputSource is = new InputSource( bais );
-		 //Document doc = db.parse(is);
 		 TranscoderInput input = new TranscoderInput(bais);
 		 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		 TranscoderOutput output = new TranscoderOutput(baos);
@@ -142,49 +144,103 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  } catch (TranscoderException e) {
 		e.printStackTrace();
 		throw new RuntimeException(e);
-	  } catch (ParserConfigurationException e) {
-		throw new RuntimeException(e);
 	  } catch (UnsupportedEncodingException e) {
 		throw new RuntimeException(e);
-	  } catch (IOException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e);
-	  }
+	  } 
    }
 
+   /** Find the WADO image relavant for the given GSPS area/region.
+    * 
+    * @param filterItem
+    * @param params
+    * @param image
+    * @return
+    */
    private WadoImage filterWadoImage(FilterItem filterItem, Map<String, Object> params, ImageBean image) {
 	  return (WadoImage) filterItem.callNextFilter(params);
    }
 
+   /** Generate the overall SVG object from the image and GSPS information.  If the gsps contains 
+    * no annotations, return null as it is not necessary to run the SVG conversion in that case.
+    * @param image
+    * @param gsps
+    * @return
+    */
    private String generateSvg(ImageBean image, GspsBean gsps) {
-	  SvgType svg = new SvgType();
+	  List<Object> elems = image.getOtherElements();
+	  if( elems==null || elems.size()==0 ) return null;
+	  SvgType gspsSvg = gsps.getSvg();
+	  Map<String, GType> used = selectG(gspsSvg);
+	  if( used.isEmpty() ) return null;
+	  
+	  SvgType svg = createSvgFromImport(elems, used);
+	  
+	  if( svg==null || svg.getChildren().size()==0 ) return null;
+	  
 	  svg.setHeight(Integer.toString(image.getRows())+"px");
 	  svg.setWidth(Integer.toString(image.getColumns())+"px");
 	  svg.setViewBox("0 0 " + image.getColumns() + " " + image.getRows());
-	  PathType path = new PathType();
-	  path.setD("M 100 100 L 300 100 L 200 300 z");
-	  path.setFill("red");
-	  path.setStroke("blue");
-	  path.setStrokeWidth("3");
-	  svg.getChildren().add(path);
 	  try {
 		 JAXBContext context = JAXBContext.newInstance(SvgType.class);
 		 Marshaller marshaller = context.createMarshaller();
 		 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		 dbf.setNamespaceAware(true);
-		 Document doc = dbf.newDocumentBuilder().newDocument();
 		 StringWriter sow = new StringWriter();
 		 marshaller.marshal(new JAXBElement<SvgType>(new QName("http://www.w3.org/2000/svg", "svg"), SvgType.class, svg), sow);
 		 String strSvg = sow.toString();
 		 log.info("SVG=" + strSvg);
+		 // Would prefer to return this as a DOMDocument, but Batik barfs on it if you try.
 		 return strSvg;
 	  } catch (JAXBException e) {
 		 e.printStackTrace();
 		 return null;
-	  } catch (ParserConfigurationException e) {
-		 e.printStackTrace();
-		 return null;
 	  }
+   }
+
+   /**
+    * Create the SVG from the use/importted GSPS objects.
+    * @param elems
+    * @param used
+    * @return
+    */
+   private SvgType createSvgFromImport(List<Object> elems, Map<String, GType> used) {
+	  SvgType svg = new SvgType();
+	  for(Object elem : elems) {
+		 if( elem instanceof Use ) {
+			Use use = (Use) elem;
+			GType g = used.get(use.getHref().substring(1));
+			if( g==null ) {
+			   log.warn("Use key not found:"+use.getHref() );
+			   continue;
+			}
+			if( "DISPLAY".equalsIgnoreCase(g.getClazz())) {
+			   log.warn("DISPLAY values not handled yet.");
+			   continue;
+			}
+			svg.getChildren().add(g);
+		 }
+	  }
+	  return svg;
+   }
+
+   /**
+    * Select the G children elements from the GSPS object, putting them into teh return map
+    * by id.
+    * @param gspsSvg
+    * @return
+    */
+   private Map<String, GType> selectG(SvgType gspsSvg) {
+	  Map<String, GType> used = new HashMap<String,GType>();
+	  for(Object child : gspsSvg.getChildren()) {
+		 if(child instanceof GType) {
+			GType g = (GType) child;
+			used.put(g.getId(), g);
+		 }
+		 else {
+			log.warn("Unknown child of SVG type "+child.getClass());
+		 }
+	  }
+	  return used;
    }
 
 }

@@ -401,10 +401,10 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 log.info("Graphic layer recommended display grayscale value is " + gral.getGraphicLayerRecommendedDisplayGrayscaleValue()
 			   + " rgb is " + rgb + " for layer " + gral.getGraphicLayer() + " description " + gral.getGraphicLayerDescription());
 		 // To not fill, over-ride these values in children.
-		 gimg.setStyle("fill: " + rgb + "; stroke: " + rgb + ";");
-		 gdisp.setStyle("fill: " + rgb + "; stroke: " + rgb + ";");
-		 gimg.setColor(rgb);
-		 gdisp.setColor(rgb);
+		 gimg.setFill(rgb);
+		 gimg.setStroke(rgb);
+		 gdisp.setFill(rgb);
+		 gdisp.setStroke(rgb);
 		 GraphicObject[] gos = gran.getGraphicObjects();
 		 if (gos != null) {
 			for (GraphicObject go : gos) {
@@ -789,8 +789,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  }
 	  PathType ellipse = createEllipsePath(cx, cy, rx, ry, rotation);
 	  if (!go.getGraphicFilled()) {
-		 ellipse.setStyle("fill: none;");
-		 ellipse.setFill("false");
+		 ellipse.setFill("none");
 	  }
 	  g.getChildren().add(ellipse);
    }
@@ -912,8 +911,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  PathType circle = createEllipsePath(points[0], points[1], r, r, 0f);
 	  circle.setPrType("Circle");
 	  if (!go.getGraphicFilled()) {
-		 circle.setStyle("fill: none;");
-		 circle.setFill("false");
+		 circle.setFill("none");
 	  }
 	  g.getChildren().add(circle);
    }
@@ -946,8 +944,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  path.setD(d.toString());
 	  path.setId(ResultsBean.createId("p"));
 	  if (!go.getGraphicFilled()) {
-		 path.setStyle("fill: none;");
-		 path.setFill("false");
+		 path.setFill("none");
 		 path.setStrokeWidth("2");
 	  }
 	  g.getChildren().add(path);
@@ -1249,7 +1246,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(), null);
 	  path.setColor(rgb);
-	  path.setStyle("fill:" + rgb + ";");
+	  path.setFill(rgb);
 	  path.setId(ResultsBean.createId("shre"));
 	  path.setD(d.toString());
 	  path.setStrokeWidth("5");
@@ -1304,8 +1301,8 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  v.append(center[1]).append(',').append(center[0] - radius).append(' ');
 	  v.append(center[1]).append(',').append(center[0] - radius);
 	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(), null);
-	  path.setColor(rgb);
-	  path.setStyle("fill:" + rgb + ";");
+	  path.setStroke(rgb);
+	  path.setFill(rgb);
 	  path.setId(ResultsBean.createId("shcr"));
 	  path.setD(d.toString());
 	  path.setPath(v.toString());
@@ -1340,9 +1337,11 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  } else {
 		 r = g = b = (pGray >> 8);
 	  }
+	  r &= 0xFF;
+	  g &= 0xFF;
+	  b &= 0xFF;
 	  int conv = (r << 16) | (g << 8) | b | 0x1000000;
 	  String ret = "#" + Integer.toHexString(conv).substring(1);
-	  log.info("Returning colour " + ret);
 	  return ret;
    }
 

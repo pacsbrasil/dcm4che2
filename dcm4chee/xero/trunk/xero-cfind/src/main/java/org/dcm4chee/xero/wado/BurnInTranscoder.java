@@ -40,9 +40,10 @@ package org.dcm4chee.xero.wado;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 
+import org.apache.batik.transcoder.DefaultErrorHandler;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderOutput;
-import org.apache.batik.transcoder.image.JPEGTranscoder;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +54,8 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class BurnInTranscoder extends JPEGTranscoder {
-   private static Logger log = LoggerFactory.getLogger(BurnInTranscoder.class);
+public class BurnInTranscoder extends PNGTranscoder {
+   static Logger log = LoggerFactory.getLogger(BurnInTranscoder.class);
    BufferedImage image;
    BufferedImage srcImageRaw;
    
@@ -63,6 +64,7 @@ public class BurnInTranscoder extends JPEGTranscoder {
 	  this.srcImageRaw = srcImageRaw;
 	  addTranscodingHint(KEY_WIDTH, new Float(srcImageRaw.getWidth()));
 	  addTranscodingHint(KEY_HEIGHT, new Float(srcImageRaw.getHeight()));
+	  setErrorHandler(NoErrorHandler.instance);
    }
 
    /** Create an image with the source being the provided raw src.  Always creates a new image object,
@@ -70,7 +72,7 @@ public class BurnInTranscoder extends JPEGTranscoder {
     */
    @Override
    public BufferedImage createImage(int width, int height) {
-	  BufferedImage ret = super.createImage(width,height);
+	  BufferedImage ret = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 	  int type = srcImageRaw.getType();
 	  int[] rgba = new int[width];
 	  if( type==BufferedImage.TYPE_BYTE_GRAY ) {
@@ -111,4 +113,18 @@ public class BurnInTranscoder extends JPEGTranscoder {
       return image;
    }
 
+}
+
+class NoErrorHandler extends DefaultErrorHandler {
+   public static final NoErrorHandler instance = new NoErrorHandler();
+   @Override
+   public void error(TranscoderException arg0) throws TranscoderException {
+	  BurnInTranscoder.log.error(arg0.toString());
+   }
+
+   @Override
+   public void warning(TranscoderException arg0) throws TranscoderException {
+	  BurnInTranscoder.log.warn(arg0.toString());
+   }
+   
 }
