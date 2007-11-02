@@ -265,6 +265,24 @@
 			<param-name>studyPermissionServiceName</param-name>
 			<param-value>dcm4chee.archive:service=StudyPermission</param-value>
 		</init-param>
+		<!-- 
+			Enable/Disable StudyPermissionCheck for WEB folder.
+			true: restrict Webfolder to studies according Query permission of current user.
+			false: no restriction.
+		-->
+		<init-param>
+			<param-name>enableStudyPermissionCheck</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<!-- 
+			Disable StudyPermissionCheck for dedicated user(s).
+			List of users (seperated by ',') that should see all studies (e.g. to configure Study Permissions Roles.
+			default: admin
+		-->
+		<init-param>
+			<param-name>disableStudyPermissionCheckForUser</param-name>
+			<param-value>admin</param-value>
+		</init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>

@@ -207,12 +207,17 @@ public class FolderSubmitCtrl extends FolderCtrl {
             	folderForm.setPopupMsg("folder.err_date", new String[]{folderForm.getStudyDateRange(),"yyyy/mm/dd"} );
             	return FOLDER;
             }
+            String[] studyRoles = getUsersStudyPermissionRoles();
+            if ( studyRoles != null && studyRoles.length < 1 ) {
+            	folderForm.setPopupMsg("folder.err_noStudyPermission", (String[]) null );
+            	return FOLDER;
+            }
             if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies()));
+                folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), studyRoles ));
                 queryAETList(folderForm);
             }
             List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
-					folderForm.isNoMatchForNoValue(), folderForm.getOffset(), folderForm.getLimit());
+					folderForm.isNoMatchForNoValue(), studyRoles, folderForm.getOffset(), folderForm.getLimit());
             folderForm.setStudies(studyList);
         } finally {
             try {
@@ -222,6 +227,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
         return FOLDER;
     }
+    
     /**
      * @param folderForm
      * @param allowedAets

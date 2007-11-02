@@ -39,16 +39,20 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.web.conf.StudyPermissionConfig;
+import org.dcm4chex.archive.web.conf.WebRolesConfig;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsFactory;
 import org.infohazard.maverick.ctl.Throwaway2;
@@ -64,7 +68,9 @@ import org.infohazard.maverick.flow.ControllerContext;
  */
 public class Dcm4cheeFormController extends Throwaway2
 {
-    public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
+    private static final String WEB_USER_STUDY_ROLES_ATTR_NAME = "webUserStudyRoles";
+
+	public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
 				"offline_storage","mwl_console","mpps_console",
 				"gpwl_console","gppps_console","user_admin","audit_repository"};	
 	
@@ -173,7 +179,7 @@ public class Dcm4cheeFormController extends Throwaway2
 		}
 		if ( perm == null ) {
 			perm = f.getFolderPermissions(getCtx().getRequest().getUserPrincipal().getName());
-			getCtx().getRequest().getSession().setAttribute("folderPermissions",perm);
+			req.getSession().setAttribute("folderPermissions",perm);
 		}
 		return perm;
 	}
@@ -224,5 +230,56 @@ public class Dcm4cheeFormController extends Throwaway2
         return getPermissions().getMethodsForApp(FolderPermissions.STATION_AET_GROUP+"."+group);
     }
     
-    
+    /**
+     * Return list of StudyPermission relevant roles for current user.
+     * <p>
+     * Therefore check all for all web roles: is user in this role and is this role defined in StudyPermissionRoles.
+     * </p>
+     * Return null if Study Permission Check is disabled.<br/>
+     * This can either be general (web.xml: init parameter enableStudyPermissionCheck=false) or for dedicated users
+     * (web.xml: init parameter disableStudyPermissionCheckForUser=<username>[,<username1>])
+     *   
+     * @return list of Study permission relevant roles or null if study permission check is disabled
+     */
+    protected String[] getUsersStudyPermissionRoles() {
+    	if ( isStudyPermissionCheckDisabled() )
+    		return null;
+    	HttpServletRequest req = getCtx().getRequest();
+    	String[] roles = (String[]) req.getSession().getAttribute(WEB_USER_STUDY_ROLES_ATTR_NAME);
+    	Map studyPermRoles = new StudyPermissionConfig().getRoles();
+    	if ( roles == null ) {
+    		Set set = new HashSet(studyPermRoles.size());
+    		String role;
+    		for ( Iterator iter = new WebRolesConfig().roleNames().iterator() ; iter.hasNext() ; ) {
+    			role = (String) iter.next();
+    			if (req.isUserInRole(role) && studyPermRoles.containsKey(role) ) {
+    				set.add(role);
+    			}
+    		}
+    		log.debug("UserStudyRoles:"+set);
+    		roles = (String[]) set.toArray( new String[set.size()]);
+			req.getSession().setAttribute(WEB_USER_STUDY_ROLES_ATTR_NAME, roles);
+    	}
+    	return roles;
+	}
+
+	private boolean isStudyPermissionCheckDisabled() {
+		ControllerContext ctx = getCtx();
+		if ( "false".equals(ctx.getServletConfig().getInitParameter("enableStudyPermissionCheck") ) ) {
+			log.debug("StudyPermission check is disabled!");
+			return true;
+		}
+		String disableUser = ctx.getServletConfig().getInitParameter("disableStudyPermissionCheckForUser");
+		if (disableUser == null || disableUser.trim().length() < 1 || "NONE".equalsIgnoreCase( disableUser ))
+			return false;
+		String user = ctx.getRequest().getUserPrincipal().getName();
+		StringTokenizer st = new StringTokenizer(disableUser, ",");
+		while ( st.hasMoreElements() ) {
+			if ( user.equals(st.nextToken()) ) {
+				log.debug("StudyPermission check is disabled for user "+user+"!");
+				return true;
+			}
+		}
+		return false;
+	}
 }

@@ -65,6 +65,10 @@ public class WebRolesConfig extends DefaultHandler {
     	loadFrom(CONFIG_URL);
     }
 
+    public Collection roleNames() {
+    	return roles.keySet();
+    }
+
     public Collection getRoles() {
     	return roles.values();
     }
