@@ -68,7 +68,6 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Attribute;
 import javax.management.Notification;
-import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -142,12 +141,6 @@ public class ExportManagerService extends AbstractScuService implements
 
     private static final String[] NONE = {};
 
-    private static final NotificationFilterSupport seriesStoredFilter = new NotificationFilterSupport();
-
-    static {
-        seriesStoredFilter.enableType(SeriesStored.class.getName());
-    }
-
     private ObjectName storeScpServiceName;
 
     private String queueName;
@@ -159,7 +152,7 @@ public class ExportManagerService extends AbstractScuService implements
     private String[] delayReasons = NONE;
 
     private String[][] personNames = null;
-
+    
     private File dispConfigFile;
 
     private Hashtable configs = new Hashtable();
@@ -383,12 +376,12 @@ public class ExportManagerService extends AbstractScuService implements
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName, this,
-                seriesStoredFilter, null);
+                SeriesStored.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName, this,
-                seriesStoredFilter, null);
+                SeriesStored.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
 
