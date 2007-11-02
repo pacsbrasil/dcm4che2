@@ -50,6 +50,9 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.common.SecurityUtils;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
+import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -70,21 +73,28 @@ public class QueryStudiesCmd extends BaseReadCmd {
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
             "Study.availability", "Study.filesetId", "Study.studyStatusId"};
 
-    private static final String[] ENTITY = {"Patient"};
-
     private static final String[] LEFT_JOIN = { 
         "Study", null, "Patient.pk", "Study.patient_fk",};
     private static final String[] LEFT_JOIN_WITH_SERIES = { 
         "Study", null, "Patient.pk", "Study.patient_fk", 
         "Series", null, "Study.pk", "Series.study_fk"};
+    private static final String[] LEFT_JOIN_WITH_STUDY_PERMISSION = { 
+        "Study", null, "Patient.pk", "Study.patient_fk", 
+        "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
+    private static final String[] LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION = { 
+        "Study", null, "Patient.pk", "Study.patient_fk",
+        "Series", null, "Study.pk", "Series.study_fk", 
+        "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
 
 	private boolean hideMissingStudies;
     
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
+	private boolean checkPermissions = true;
+
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, String[] roles)
     	throws SQLException {
-    	this(filter, hideMissingStudies, false );
+    	this(filter, hideMissingStudies, false, roles );
     }
     /**
      * Creates a new QueryStudiesCmd object with given filter.
@@ -100,18 +110,15 @@ public class QueryStudiesCmd extends BaseReadCmd {
      * 
      * @throws SQLException
      */
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue)
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, String[] roles)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
-
+        checkPermissions = roles != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
-    	sqlBuilder.setFrom(ENTITY);
-        if ( filter.containsValue(Tags.SeriesInstanceUID) ) {
-            sqlBuilder.setLeftJoin(LEFT_JOIN_WITH_SERIES);
-        } else {            
-            sqlBuilder.setLeftJoin(LEFT_JOIN);
-        }
+    	sqlBuilder.setFrom(getTables());
+        sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID)));
+    	sqlBuilder.setRelations(getRelations());
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
@@ -140,11 +147,46 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addCallingAETsNestedMatch(false,
                 filter.getStrings(PrivateTags.CallingAET));
     	this.hideMissingStudies = hideMissingStudies;	
-        if ( this.hideMissingStudies ) {
+        if ( this.hideMissingStudies && ! checkPermissions) {
         	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
     	}
-        	
+        if ( checkPermissions ) {
+        	if ( roles.length < 1 ) {
+        		throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
+        	}
+        	if ( hideMissingStudies ) {
+        		sqlBuilder.addSingleValueMatch(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION);
+        		sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
+        	} else {
+	        	Node node = sqlBuilder.addNodeMatch("or", false);
+	        	node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
+	        	Node node1 = new Match.Node("and", false);
+	        	node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION));
+	        	node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
+	        	node.addMatch(node1);
+        	}
+        }
     }
+    
+    protected String[] getTables() {
+    	return new String[] { "Patient" };
+    }
+
+    protected String[] getLeftJoin(boolean withSeries) {
+    	if ( withSeries ) {
+            return checkPermissions
+            	? LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION
+                : QueryStudiesCmd.LEFT_JOIN_WITH_SERIES;
+    	} else {
+    		return checkPermissions
+    			? LEFT_JOIN_WITH_STUDY_PERMISSION
+    			: QueryStudiesCmd.LEFT_JOIN;
+    	}
+    }
+    protected String[] getRelations() {
+    	return null;
+    }
+
 
     public int count() throws SQLException {
         try {
