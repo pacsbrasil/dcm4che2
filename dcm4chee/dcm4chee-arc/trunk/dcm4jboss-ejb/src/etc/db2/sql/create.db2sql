@@ -636,7 +636,7 @@ CREATE TABLE device (
 	station_aet     VARCHAR(254) NOT NULL,
 	modality		VARCHAR(254) NOT NULL
 );
-CREATE UNIQUE INDEX station_name ON device(station_name);
+CREATE UNIQUE INDEX dev_station_name ON device(station_name);
 
 CREATE TABLE rel_dev_proto (
 	device_fk      INTEGER,
