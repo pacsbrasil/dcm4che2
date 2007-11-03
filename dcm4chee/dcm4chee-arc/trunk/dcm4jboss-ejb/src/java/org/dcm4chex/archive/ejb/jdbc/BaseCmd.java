@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,6 +52,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -57,6 +60,22 @@ import org.apache.log4j.Logger;
  */
 public abstract class BaseCmd {
     protected static final Logger log = Logger.getLogger(BaseCmd.class);
+    protected static final Method defineColumnType;
+    static {
+        if (JdbcProperties.getInstance().getDatabase()
+                == JdbcProperties.ORACLE) {
+            try {
+                Class clazz = Class.forName("oracle.jdbc.OracleStatement");
+                defineColumnType = clazz.getMethod("defineColumnType",
+                        new Class[] { int.class, int.class });
+            } catch (Exception e){
+                throw new ConfigurationException(e);
+            }
+        } else {
+            defineColumnType = null;
+        }
+    }
+
     protected DataSource ds;
     protected Connection con;
     protected Statement stmt;
@@ -101,6 +120,25 @@ public abstract class BaseCmd {
 	     }
 
         open();
+    }
+    
+    protected void defineColumnType(int index, int type) throws SQLException {
+        if (defineColumnType == null) {
+            return;
+        }
+        try {
+            defineColumnType.invoke(stmt, new Object[] {
+                Integer.valueOf(index), Integer.valueOf(type)});
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getTargetException();
+            if (cause instanceof SQLException) {
+                throw (SQLException) cause;                    
+            } else {
+                throw new SQLException(cause);
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e);                
+        }
     }
     
     public void open() throws SQLException 

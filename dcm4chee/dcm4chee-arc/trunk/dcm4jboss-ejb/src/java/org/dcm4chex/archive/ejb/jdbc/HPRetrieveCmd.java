@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +66,8 @@ public class HPRetrieveCmd extends BaseReadCmd {
     public HPRetrieveCmd(Dataset keys) throws SQLException {
 		super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
 		sqlBuilder.setSelect(SELECT);
 		sqlBuilder.setFrom(FROM);
 		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1,

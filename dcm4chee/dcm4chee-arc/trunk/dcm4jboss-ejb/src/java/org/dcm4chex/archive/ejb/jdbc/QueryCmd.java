@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,7 +66,7 @@ import org.dcm4chex.archive.ejb.jdbc.Match.Node;
  * @version $Revision$ $Date$
  */
 public abstract class QueryCmd extends BaseDSQueryCmd {
-
+    
     private static final int[] MATCHING_PATIENT_KEYS = new int[] {
             Tags.PatientID, 
             Tags.IssuerOfPatientID, 
@@ -651,6 +652,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -683,6 +686,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
             addAdditionalReturnKeys();
         }
 
@@ -739,6 +745,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(3, Types.LONGVARBINARY);
             addAdditionalReturnKeys();
         }
 
@@ -806,6 +816,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(3, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
             addAdditionalReturnKeys();
         }
 

@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +79,9 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+        defineColumnType(3, Types.LONGVARBINARY);
+        defineColumnType(5, Types.LONGVARBINARY);
     	this.hideMissingStudies = hideMissingStudies;
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);

@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,6 +96,9 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, String[] roles)
     	throws SQLException {
     	this(filter, hideMissingStudies, false, roles );
+        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+        defineColumnType(2, Types.LONGVARBINARY);
+        defineColumnType(4, Types.LONGVARBINARY);
     }
     /**
      * Creates a new QueryStudiesCmd object with given filter.
