@@ -16,7 +16,9 @@ This is the XML DTD for the dcm4chee web roles config (WEB) descriptor.
 
 <!ELEMENT roles (role+)>
 <!ELEMENT role EMPTY>
-<!ATTLIST role name CDATA #IMPLIED>
-<!ATTLIST role descr CDATA #IMPLIED>
+<!ATTLIST role name CDATA #REQUIRED>
+<!ATTLIST role display CDATA #IMPLIED>
+<!ATTLIST role type CDATA #IMPLIED>
+<!ATTLIST role descr CDATA #REQUIRED>
 <!ATTLIST role dependency CDATA #IMPLIED>
 

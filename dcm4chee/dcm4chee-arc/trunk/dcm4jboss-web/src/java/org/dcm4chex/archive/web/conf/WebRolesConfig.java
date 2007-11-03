@@ -41,8 +41,10 @@ package org.dcm4chex.archive.web.conf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.SAXParserFactory;
 
@@ -59,12 +61,18 @@ import org.xml.sax.helpers.DefaultHandler;
 public class WebRolesConfig extends DefaultHandler {
     private static final String CONFIG_URL = "resource:dcm4chee-web/dcm4chee-webroles-cfg.xml";
 
+	public static final String DEFAULT_ROLE_TYPE = "WebUser";
+
     private final Map roles = new HashMap();
+    private final Set types = new HashSet();
    
     public WebRolesConfig() {
     	loadFrom(CONFIG_URL);
     }
 
+    public Collection getTypes() {
+    	return types;
+    }
     public Collection roleNames() {
     	return roles.keySet();
     }
@@ -112,17 +120,31 @@ public class WebRolesConfig extends DefaultHandler {
     
     public class WebRole {
     	String name;
+    	String displayName;
+    	String type;
     	String descr;
     	String dependency;
     	
 		public WebRole(Attributes attrs) {
         	name = attrs.getValue("name");
+        	displayName = attrs.getValue("display");
+        	type = attrs.getValue("type");
+        	if ( type == null )
+        		type = DEFAULT_ROLE_TYPE;
+        	types.add(type);
         	descr = attrs.getValue("descr");
         	dependency = attrs.getValue("dependency");
     	}
 
 		public String getName() {
 			return name;
+		}
+		public String getDisplayName() {
+			return displayName == null ? name : displayName;
+		}
+
+		public String getType() {
+			return type;
 		}
 
 		public String getDescr() {

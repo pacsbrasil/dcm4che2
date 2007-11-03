@@ -4,10 +4,14 @@
     <roles>
         <role name="WebUser" descr="A user in this role is allowed to use this web interface."/> 
         <role name="WebAdmin" dependency="WebUser" descr="This role is used to allow access to AET and User management."/> 
-        <role name="DatacareUser" dependency="WebUser" descr="A user in this role has Datacare rights (edit/merge/delete) in the web interface."/> 
+        <role name="DatacareUser" display="Datacare" dependency="WebUser" descr="A user in this role has Datacare rights (edit/merge/delete) in the web interface."/> 
         <role name="McmUser" dependency="WebUser" descr="This role is used to allow access to the Media Creation Console (Offline Storage)."/> 
-        <role name="JBossAdmin" descr="This role is used to allow configuration access via JMX console."/> 
-        <role name="AuditLogUser" descr="Members of this role are allowed to access the Audit Repository."/> 
+        <role name="JBossAdmin" display="JMX" descr="This role is used to allow configuration access via JMX console."/> 
+        <role name="AuditLogUser" display="AuditLog" descr="Members of this role are allowed to access the Audit Repository."/> 
+<!-- Edit and Uncomment for adding Study Permission roles to User Administration.         
+        <role name="admin" display="Study Admin" type="StudyPermission" descr="Sample Study Permission Role: admin."/> 
+        <role name="user" display="Study user" type="StudyPermission" descr="Sample Study Permission Role: user."/> 
+-->
     </roles>
 </dcm4chee-webroles-cfg>
     
