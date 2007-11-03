@@ -179,6 +179,10 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     }    
     
     protected String perform() throws Exception {
+		if ( getPermissions().getPermissionsForApp("offline_storage").isEmpty() ) {
+			popupMsg="Access denied";
+			return CANCEL;
+		}
     	initStudyPermissionDelegate(getCtx());
         if ( this.patPk == null && (suid == null || suid.trim().length() == 0) ) {
         	log.info("Missing SUID or patPk! suid:"+suid+" patPk:"+patPk);

@@ -21,6 +21,7 @@
 <xsl:param name="folder.move" select="'false'"/>
 <xsl:param name="folder.add_worklist" select="'false'"/>
 <xsl:param name="folder.mergepat" select="'false'"/>
+<xsl:param name="folder.study_permission" select="'false'"/>
 
 <xsl:template match="model">
 	<form action="foldersubmit.m" method="post" name="myForm" accept-charset="UTF-8" > 
@@ -505,9 +506,11 @@
 					<a href="inspectDicomHeader.m?patPk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Patienten Attribute in DB"/>		
 					</a>
-					<a href="studyPermission.m?patName={patientName}&amp;patPk={pk}">
-						<img src="images/permission.gif" alt="permissions" border="0" title="Zeige Studien Permissions fuer Patient"/>		
-					</a>
+					<xsl:if test="$folder.study_permission='true'">
+						<a href="studyPermission.m?patName={patientName}&amp;patPk={pk}">
+							<img src="images/permission.gif" alt="permissions" border="0" title="Zeige Studien Permissions fuer Patient"/>		
+						</a>
+					</xsl:if>
 				</xsl:if>
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
@@ -625,27 +628,25 @@
     			          </xsl:choose>
 			   </xsl:if>
 	           <xsl:if test="$folder.edit='true'">    
-	      			<xsl:choose>
-						<xsl:when test="$folder.add_worklist='false'">
-							<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
-								<img src="images/add.gif" alt="Add Series" border="0" title="Hinzuf. Serie"/>		
-							</a>
-						</xsl:when>
-						<xsl:otherwise>
-							<a href="addWorklist.m?studyPk={pk}">
-								<img src="images/worklist.gif" alt="Add worklist item" border="0" title="Hinzuf. Worklist Eintrag"/>		
-							</a>
-						</xsl:otherwise>
-					</xsl:choose>
+					<xsl:if test="$folder.add_worklist='true'">
+						<a href="addWorklist.m?studyPk={pk}">
+							<img src="images/worklist.gif" alt="Add worklist item" border="0" title="Hinzuf. Worklist Eintrag"/>		
+						</a>
+					</xsl:if>
+					<a href="seriesEdit.m?patPk={../../pk}&amp;studyPk={pk}&amp;seriesPk=-1">
+						<img src="images/add.gif" alt="Add Series" border="0" title="Hinzuf. Serie"/>		
+					</a>
 					<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
 						<img src="images/edit.gif" alt="Edit Study" border="0" title="Aendern Studien Attribute"/>		
 					</a>
 					<a href="inspectDicomHeader.m?patPk={../../pk}&amp;studyPk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Zeige Studien Attribute in DB"/>		
 					</a>
-					<a href="studyPermission.m?patName={../../patientName}&amp;studyIUID={studyIUID}">
-						<img src="images/permission.gif" alt="permissions" border="0" title="Zeige Studien Permissions"/>		
-					</a>
+					<xsl:if test="$folder.study_permission='true'">
+						<a href="studyPermission.m?patName={../../patientName}&amp;studyIUID={studyIUID}">
+							<img src="images/permission.gif" alt="permissions" border="0" title="Zeige Studien Permissions"/>		
+						</a>
+					</xsl:if>
 	       	   </xsl:if>
 			<input type="checkbox" name="stickyStudy" value="{pk}">
 				<xsl:if test="/model/stickyStudies/item = pk">
