@@ -911,7 +911,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 && (rqAttrs.containsValue(Tags.RequestedProcedureID)
                         || rqAttrs.containsValue(Tags.SPSID)
                         || rqAttrs.containsValue(Tags.RequestingService)
-                        || rqAttrs.containsValue(Tags.RequestingPhysician));
+                        || rqAttrs.containsValue(Tags.RequestingPhysician)
+                        || rqAttrs.containsValue(Tags.StudyInstanceUID));
     }
 
     protected boolean isMatchVerifyingObserver() {
