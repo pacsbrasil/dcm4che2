@@ -10,6 +10,8 @@
     <!--driver-class>COM.ibm.db2.jdbc.app.DB2Driver</driver-class -->
     <user-name>arr</user-name>
     <password>arr</password>
+    <!-- set CURRENT SCHEMA; otherwise DB2 takes the user name as schema name! -->
+    <connection-property name="currentSchema">ARRDB</connection-property>
     <min-pool-size>0</min-pool-size>
         <!-- sql to call when connection is created
         <new-connection-sql>some arbitrary sql</new-connection-sql>
