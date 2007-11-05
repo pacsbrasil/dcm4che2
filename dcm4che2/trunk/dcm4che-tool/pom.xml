@@ -29,5 +29,6 @@
     <module>dcm4che-tool-rgb2ybr</module>
     <module>dcm4che-tool-txt2dcmsr</module>
     <module>dcm4che-tool-xml2dcm</module>
+    <module>dcm4che-tool-chess3d</module>
   </modules>
 </model>
