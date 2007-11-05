@@ -12,13 +12,11 @@
 <datasources>
   <local-tx-datasource>
     <jndi-name>pacsDS</jndi-name>
-    <connection-url>jdbc:db2://localhost:50000/pacsdb</connection-url>
+    <connection-url>jdbc:db2://localhost:50000/pacsdb:currentSchema=PACSDB;</connection-url>
     <driver-class>com.ibm.db2.jcc.DB2Driver</driver-class>
     <!--driver-class>COM.ibm.db2.jdbc.app.DB2Driver</driver-class -->
     <user-name>pacs</user-name>
     <password>pacs</password>
-    <!-- set CURRENT SCHEMA; otherwise DB2 takes the user name as schema name! -->
-    <connection-property name="currentSchema">PACSDB</connection-property>
     <min-pool-size>0</min-pool-size>
         <!-- sql to call when connection is created
         <new-connection-sql>some arbitrary sql</new-connection-sql>
