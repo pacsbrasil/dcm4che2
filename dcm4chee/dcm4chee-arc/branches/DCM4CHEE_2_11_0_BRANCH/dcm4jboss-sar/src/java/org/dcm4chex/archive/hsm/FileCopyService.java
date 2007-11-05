@@ -281,7 +281,7 @@ public class FileCopyService extends AbstractFileCopyService {
             }
             int tarPathLen = tarPath.length();
             File tarFile = new File(absTarOutgoingDir,
-                    tarPath.substring(tarPathLen - 21));
+                    new File(tarPath).getName());
             try {
                 log.info("M-WRITE " + tarFile);
                 mkTar(fileInfos, tarFile);
@@ -387,7 +387,13 @@ public class FileCopyService extends AbstractFileCopyService {
     private String mkTarPath(String filePath) {
         int len = filePath.length();
         StringBuffer sb = new StringBuffer(len + 4);
-        sb.append(filePath).append(".tar").setCharAt(len - 9, '-');
+      //Fix for shorter filenames! 
+      //TODO: Fix reason of shortened filename! should be 8 chars!        
+        sb.append(filePath).append(".tar");
+        int pos = len - 9;
+        if ( sb.charAt(pos) != '/') 
+              pos = sb.lastIndexOf("/");
+        sb.setCharAt(pos, '-');
         return sb.toString();
     }
 }
