@@ -366,6 +366,17 @@
       </parameter>
       <return-type>int</return-type>
    </operation>   
+   <operation impact="ACTION">
+      <description><![CDATA[Return total number of studies for given patient.]]>
+      </description>
+      <name>countStudiesOfPatient</name>
+      <parameter>
+        <description>Patient Pk</description>
+        <name>patPk</name>
+        <type>java.lang.Long</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>   
    
 </mbean>
     
