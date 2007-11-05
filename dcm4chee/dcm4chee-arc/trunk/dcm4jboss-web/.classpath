@@ -12,5 +12,6 @@
 	<classpathentry path="lib/commons-beanutils.jar" kind="lib"/>
 	<classpathentry path="lib/maverick.jar" kind="lib"/>
 	<classpathentry path="lib/jdom.jar" kind="lib"/>
+	<classpathentry path="/dcm4jboss-hl7" combineaccessrules="false" kind="src"/>
 	<classpathentry path="target/classes" kind="output"/>
 </classpath>
