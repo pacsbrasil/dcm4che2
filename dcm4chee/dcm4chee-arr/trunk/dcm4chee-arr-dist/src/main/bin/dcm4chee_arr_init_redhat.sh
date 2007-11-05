@@ -16,9 +16,6 @@
 # Either modify this script for your requirements or just ensure that
 # the following variables are set correctly before calling the script.
 
-# dcm4chee startup/shutdown for RedHat
-. /etc/rc.d/init.d/functions
-
 #define where jboss is - this is the directory containing directories log, bin, conf etc
 JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee-arr"}
 
