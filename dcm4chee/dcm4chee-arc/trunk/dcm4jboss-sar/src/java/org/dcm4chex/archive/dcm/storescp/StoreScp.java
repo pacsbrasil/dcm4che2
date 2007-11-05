@@ -115,13 +115,13 @@ import org.jboss.logging.Logger;
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
 
-    private static final int MISSING_USER_ID_ERR_STATUS = 0xA7E0;
+    private static final int MISSING_USER_ID_ERR_STATUS = 0xCE10;
+
+    private static final int NO_APPEND_PERMISSION_ERR_STATUS = 0xCE24;
 
     private static final String MISSING_USER_ID_ERR_MSG =
             "Missing user identification for appending existing Study";
     
-    private static final int NO_APPEND_PERMISSION_ERR_STATUS = 0xA7E1;
-
     private static final String NO_APPEND_PERMISSION_ERR_MSG =
             "No permission to append existing Study";
     
