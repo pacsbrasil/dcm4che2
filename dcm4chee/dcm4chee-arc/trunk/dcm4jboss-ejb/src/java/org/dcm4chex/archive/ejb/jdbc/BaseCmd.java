@@ -134,7 +134,9 @@ public abstract class BaseCmd {
             if (cause instanceof SQLException) {
                 throw (SQLException) cause;                    
             } else {
-                throw new SQLException(cause);
+                SQLException sqlEx = new SQLException();
+                sqlEx.initCause(cause);
+                throw sqlEx;
             }
         } catch (Throwable e) {
             throw new RuntimeException(e);                
