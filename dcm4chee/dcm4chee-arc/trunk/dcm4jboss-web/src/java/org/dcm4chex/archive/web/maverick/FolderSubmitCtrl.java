@@ -44,14 +44,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
@@ -78,6 +80,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	private static final String XDSI_EXPORT = "xdsi_export";
 	
     private static final int MOVE_PRIOR = 0;
+    private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
     
     private static ContentEditDelegate delegate = null;
 	private static AEDelegate aeDelegate = null;
@@ -134,16 +137,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
             	return logout();
-            
-            if ( log.isDebugEnabled() ) {
-		        log.debug( "UserPrincipal:"+rq.getUserPrincipal().getName() );
-		        log.debug( "UserPrincipal is in role "+DCMUser.WEBADMIN+":"+rq.isUserInRole(DCMUser.WEBADMIN) );
-		        log.debug( "UserPrincipal is in role "+DCMUser.MCMUSER+":"+rq.isUserInRole(DCMUser.MCMUSER) );
-		        log.debug( "UserPrincipal is in role "+DCMUser.DATACARE_USER+":"+rq.isUserInRole(DCMUser.DATACARE_USER) );
-		        log.debug( "UserPrincipal is in role "+DCMUser.JBOSSADMIN+":"+rq.isUserInRole(DCMUser.JBOSSADMIN) );
-		        log.debug( "UserPrincipal is in role "+DCMUser.ARRUSER+":"+rq.isUserInRole(DCMUser.ARRUSER) );
-            }
-        	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
+            rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if ( (folderForm.getTotal() < 1 && !"true".equals(getCtx().getServletConfig().getInitParameter("startWithoutQuery" ) ) )
                     || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { 
@@ -191,40 +185,30 @@ public class FolderSubmitCtrl extends FolderCtrl {
     }
 
     private String query(boolean newQuery) throws Exception {
-
-        ContentManager cm = lookupContentManager();
-
+        FolderForm folderForm = (FolderForm) getForm();
+        StudyFilterModel filter;
+        String[] allowedAets = getAEFilterPermissions();
         try {
-            FolderForm folderForm = (FolderForm) getForm();
-            StudyFilterModel filter;
-        	String[] allowedAets = getAEFilterPermissions();
-            try {
-            	filter = folderForm.getStudyFilter();
-            	if ( ! folderForm.isFilterAET() ) { //only if not filter a single AET!
-            		filter.setCallingAETs( allowedAets );
-            	}
-            } catch ( NumberFormatException x ) {
-            	folderForm.setPopupMsg("folder.err_date", new String[]{folderForm.getStudyDateRange(),"yyyy/mm/dd"} );
-            	return FOLDER;
+            filter = folderForm.getStudyFilter();
+            if ( ! folderForm.isFilterAET() ) { //only if not filter a single AET!
+            	filter.setCallingAETs( allowedAets );
             }
-            String[] studyRoles = getUsersStudyPermissionRoles();
-            if ( studyRoles != null && studyRoles.length < 1 ) {
-            	folderForm.setPopupMsg("folder.err_noStudyPermission", (String[]) null );
-            	return FOLDER;
-            }
-            if (newQuery) {
-                folderForm.setTotal(cm.countStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), studyRoles ));
-                queryAETList(folderForm);
-            }
-            List studyList = cm.listStudies(filter.toDataset(), !folderForm.isShowWithoutStudies(), 
-					folderForm.isNoMatchForNoValue(), studyRoles, folderForm.getOffset(), folderForm.getLimit());
-            folderForm.setStudies(studyList);
-        } finally {
-            try {
-                cm.remove();
-            } catch (Exception e) {
-            }
+        } catch ( NumberFormatException x ) {
+            folderForm.setPopupMsg("folder.err_date", new String[]{folderForm.getStudyDateRange(),"yyyy/mm/dd"} );
+            return FOLDER;
         }
+        Subject subject = isStudyPermissionCheckDisabled() ? null : 
+                (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
+        if (newQuery) {
+                folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
+                        !folderForm.isShowWithoutStudies(), subject).count() );
+                queryAETList(folderForm);
+        }
+        List studyList = new QueryStudiesCmd(filter.toDataset(), 
+                    !folderForm.isShowWithoutStudies(), 
+                    folderForm.isNoMatchForNoValue(), 
+                    subject).list(folderForm.getOffset(), folderForm.getLimit());
+        folderForm.setStudies(studyList);
         return FOLDER;
     }
     
