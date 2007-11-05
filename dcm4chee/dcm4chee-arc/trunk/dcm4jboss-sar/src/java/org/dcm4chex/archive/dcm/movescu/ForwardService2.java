@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.util.Calendar;
 
 import javax.management.Notification;
-import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
@@ -74,12 +73,6 @@ public class ForwardService2 extends ServiceMBeanSupport {
 
     private static final String FORWARD_XSL = "forward.xsl";
 
-    private static final NotificationFilterSupport seriesStoredFilter = 
-            new NotificationFilterSupport();
-    static {
-        seriesStoredFilter.enableType(SeriesStored.class.getName());
-    }
-    
     private final NotificationListener seriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             ForwardService2.this.onSeriesStored((SeriesStored) notif.getUserData());
@@ -127,12 +120,12 @@ public class ForwardService2 extends ServiceMBeanSupport {
     
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
     }
     
     private void onSeriesStored(final SeriesStored stored) {

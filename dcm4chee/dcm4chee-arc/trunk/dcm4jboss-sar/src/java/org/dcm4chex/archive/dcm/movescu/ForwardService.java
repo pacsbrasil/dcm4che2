@@ -64,16 +64,14 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ForwardService extends ServiceMBeanSupport {
 
-    private static final NotificationFilterSupport seriesStoredFilter = new NotificationFilterSupport();
+    private static final NotificationFilterSupport seriesUpdatedFilter =
+            new NotificationFilterSupport();
 
-    private static final NotificationFilterSupport seriesUpdatedFilter = new NotificationFilterSupport();
+    private static final NotificationFilterSupport patientUpdatedFilter =
+            new NotificationFilterSupport();
 
-    private static final NotificationFilterSupport patientUpdatedFilter = new NotificationFilterSupport();
-    static {
-        seriesStoredFilter.enableType(SeriesStored.class.getName());
-    }
-
-    private final NotificationListener seriesStoredListener = new NotificationListener() {
+    private final NotificationListener seriesStoredListener =
+            new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             SeriesStored seriesStored = (SeriesStored) notif.getUserData();
             Map param = new HashMap();
@@ -231,7 +229,7 @@ public class ForwardService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.addNotificationListener(editContentServiceName,
                 seriesUpdatedListener, seriesUpdatedFilter, null);
         server.addNotificationListener(editContentServiceName,
@@ -240,7 +238,7 @@ public class ForwardService extends ServiceMBeanSupport {
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
-                seriesStoredListener, seriesStoredFilter, null);
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.removeNotificationListener(editContentServiceName,
                 seriesUpdatedListener, seriesUpdatedFilter, null);
         server.removeNotificationListener(editContentServiceName,
