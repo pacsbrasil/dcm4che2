@@ -80,18 +80,30 @@ import org.jboss.logging.Logger;
  */
 public class MoveScp extends DcmServiceBase implements AssociationListener {
     
-    private static final String MISSING_USER_ID_ERR_MSG =
-        "Missing user identification of requestor";
-    private static final String MISSING_DEST_USER_ID_ERR_MSG =
-        "Missing or invalid user identification of destination";
-    private static final String NO_EXPORT_PERMISSION_ERR_MSG =
-        "No permission to export Study";
+    private static final int MISSING_USER_ID_OF_MOVE_SCU_ERR_STATUS = 0xCE10;
+    
+    private static final int MISSING_USER_ID_OF_STORE_SCP_ERR_STATUS = 0xCE12;
+    
+    private static final int NO_READ_PERMISSION_ERR_STATUS = 0xCE20;
+    
+    private static final int NO_EXPORT_PERMISSION_ERR_STATUS = 0xCE22;
+    
+    private static final String MISSING_USER_ID_OF_MOVE_SCU_ERR_MSG =
+            "Missing user identification of Move originator";
+    
+    private static final String MISSING_USER_ID_OF_STORE_SCP_ERR_MSG =
+            "Missing or invalid user identification of Move destination";
+    
     private static final String NO_READ_PERMISSION_ERR_MSG =
-        "No permission to read Study";
-
+            "Move destination has no permission to read Study";
+   
+    private static final String NO_EXPORT_PERMISSION_ERR_MSG =
+            "Move originator has no permission to export Study";
     
     protected final QueryRetrieveScpService service;
-	private final Logger log;
+	
+    private final Logger log;
+    
     private PerfMonDelegate perfMon;
 
     public MoveScp(QueryRetrieveScpService service) {
@@ -178,14 +190,14 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
         if (checkExportPermissions) {
             if (subject == null) {
                 throw new DcmServiceException(
-                        Status.UnableToPerformSuboperations,
-                        MISSING_USER_ID_ERR_MSG);
+                        MISSING_USER_ID_OF_MOVE_SCU_ERR_STATUS,
+                        MISSING_USER_ID_OF_MOVE_SCU_ERR_MSG);
             }
             for (Iterator iter = suids.iterator(); iter.hasNext();) {
                  if (!studyPermissionManager.hasPermission((String) iter.next(),
                          StudyPermissionDTO.EXPORT_ACTION, subject)) {
                     throw new DcmServiceException(
-                            Status.UnableToPerformSuboperations,
+                            NO_EXPORT_PERMISSION_ERR_STATUS,
                             NO_EXPORT_PERMISSION_ERR_MSG);
                  }
             }
@@ -198,15 +210,15 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
                 if (userId == null || userId.length() == 0
                         || !service.dicomSecurity().isValid(userId, passwd, subject)) {
                     throw new DcmServiceException(
-                            Status.UnableToPerformSuboperations,
-                            MISSING_DEST_USER_ID_ERR_MSG);
+                            MISSING_USER_ID_OF_STORE_SCP_ERR_STATUS,
+                            MISSING_USER_ID_OF_STORE_SCP_ERR_MSG);
                 }
             }
             for (Iterator iter = suids.iterator(); iter.hasNext();) {
                 if (!studyPermissionManager.hasPermission((String) iter.next(),
                         StudyPermissionDTO.READ_ACTION, subject)) {
                    throw new DcmServiceException(
-                           Status.UnableToPerformSuboperations,
+                           NO_READ_PERMISSION_ERR_STATUS,
                            NO_READ_PERMISSION_ERR_MSG);
                 }
            }
