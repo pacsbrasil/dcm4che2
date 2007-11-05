@@ -56,6 +56,7 @@ import javax.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.auth.Subject;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -248,9 +249,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public int countStudies(Dataset filter, boolean hideWithoutStudies, String[] roles) {
+    public int countStudies(Dataset filter, boolean hideWithoutStudies, Subject subject) {
         try {
-       		return new QueryStudiesCmd(filter, hideWithoutStudies, roles).count();
+       		return new QueryStudiesCmd(filter, hideWithoutStudies, subject).count();
         } catch (SQLException e) {
             throw new EJBException(e);
         }
@@ -361,9 +362,9 @@ public abstract class ContentManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public List listStudies(Dataset filter, boolean hideWithoutStudies, boolean noMatchForNoValue, String[] roles, int offset, int limit) {
+    public List listStudies(Dataset filter, boolean hideWithoutStudies, boolean noMatchForNoValue, Subject subject, int offset, int limit) {
         try {
-       		return new QueryStudiesCmd(filter, hideWithoutStudies, noMatchForNoValue, roles).list(offset, limit);
+       		return new QueryStudiesCmd(filter, hideWithoutStudies, noMatchForNoValue, subject).list(offset, limit);
         } catch (SQLException e) {
             throw new EJBException(e);
         }

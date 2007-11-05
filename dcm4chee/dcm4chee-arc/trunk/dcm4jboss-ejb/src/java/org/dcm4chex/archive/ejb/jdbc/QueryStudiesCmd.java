@@ -44,6 +44,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.security.auth.Subject;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
@@ -93,9 +95,9 @@ public class QueryStudiesCmd extends BaseReadCmd {
 
 	private boolean checkPermissions = true;
 
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, String[] roles)
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, Subject subject)
     	throws SQLException {
-    	this(filter, hideMissingStudies, false, roles );
+    	this(filter, hideMissingStudies, false, subject );
         // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
         defineColumnType(2, Types.LONGVARBINARY);
         defineColumnType(4, Types.LONGVARBINARY);
@@ -114,11 +116,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
      * 
      * @throws SQLException
      */
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, String[] roles)
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
-        checkPermissions = roles != null;
+        checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(getTables());
         sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID)));
@@ -155,20 +157,21 @@ public class QueryStudiesCmd extends BaseReadCmd {
         	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
     	}
         if ( checkPermissions ) {
-        	if ( roles.length < 1 ) {
-        		throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
-        	}
-        	if ( hideMissingStudies ) {
-        		sqlBuilder.addSingleValueMatch(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION);
-        		sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
-        	} else {
-	        	Node node = sqlBuilder.addNodeMatch("or", false);
-	        	node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
-	        	Node node1 = new Match.Node("and", false);
-	        	node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION));
-	        	node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
-	        	node.addMatch(node1);
-        	}
+            String[] roles = SecurityUtils.rolesOf(subject);
+            if ( roles.length < 1 ) {
+        	throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
+            }
+            if ( hideMissingStudies ) {
+                sqlBuilder.addSingleValueMatch(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION);
+        	sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
+            } else {
+    	       	Node node = sqlBuilder.addNodeMatch("or", false);
+    	       	node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
+    	       	Node node1 = new Match.Node("and", false);
+    	       	node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION));
+    	       	node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
+    	       	node.addMatch(node1);
+            }
         }
     }
     
