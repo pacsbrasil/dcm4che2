@@ -445,7 +445,7 @@
 		    <col width="38%"/>
 			<col width="8%"/><!-- xds, add, inspect, edit, sticky -->
 		</colgroup>
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::studies/item)"/>
 			<td class="patient_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="showStudies='false'">
@@ -538,7 +538,7 @@
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.model.StudyModel']">
 <tr>
 	<table class="study_line" width="100%" cellpadding="0" cellspacing="0" border="0">
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::series/item)"/>
 		<colgroup>
 			<col width="2%"/><!-- margin -->
 			<col width="14%"/><!-- Date/time -->
@@ -674,7 +674,7 @@
     		<col width="2%"/><!-- NOI -->
 			<col width="8%"/><!-- web viewer, edit, inspect, sticky -->
 		</colgroup>
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::instances/item)"/>
 		  <td class="series_mark" align="right" rowspan="{$rowspan}">
 				<xsl:choose>
 					<xsl:when test="$rowspan=1">
@@ -783,7 +783,7 @@
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::files/item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
@@ -875,7 +875,7 @@
 			<col width="2%"/>
 			<col width="2%"/>
 		</colgroup>
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::files/item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
@@ -969,7 +969,7 @@
 			<col width="2%"/>
 		</colgroup>
  
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::files/item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
@@ -1076,7 +1076,7 @@
 			<col width="20%"/>
 			<col width="2%"/>
 		</colgroup>
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::files/item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
@@ -1162,7 +1162,7 @@
 			<col width="2%"/>
 		</colgroup>
  
-		<xsl:variable name="rowspan" select="1+count(descendant::item)"/>
+		<xsl:variable name="rowspan" select="1+count(descendant::files/item)"/>
 		  <td align="right" rowspan="{$rowspan}">
 			<xsl:choose>
 				<xsl:when test="$rowspan=1">
