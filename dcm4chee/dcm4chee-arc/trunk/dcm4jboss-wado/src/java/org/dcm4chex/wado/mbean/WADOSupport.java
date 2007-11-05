@@ -509,16 +509,13 @@ public class WADOSupport {
         String imageQuality = req.getImageQuality();
 
         try {
-            boolean[] readDicom = new boolean[] { false };
             File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
-                    frameNumber, region, windowWidth, windowCenter, imageQuality,
-                    readDicom);
+                    frameNumber, region, windowWidth, windowCenter, imageQuality);
             if (file != null) {
                 WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
                         new FileInputStream(file), CONTENT_TYPE_JPEG,
                         HttpServletResponse.SC_OK, null);
-                if (readDicom[0])
-                    resp.setPatInfo(this.getPatientInfo(req));
+                resp.setPatInfo(this.getPatientInfo(req));
                 return resp;
             } else {
                 return new WADOStreamResponseObjectImpl(null,
@@ -581,8 +578,7 @@ public class WADOSupport {
      */
     public File getJpg(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, String frameNumber, String region,
-            String windowWidth, String windowCenter, String imageQuality,
-            boolean[] readDicom)
+            String windowWidth, String windowCenter, String imageQuality)
             throws IOException, NeedRedirectionException, NoImageException,
             ImageCachingException {
         int frame = 0;
@@ -603,8 +599,6 @@ public class WADOSupport {
         if (file == null) {
             File dicomFile = getDICOMFile(studyUID, seriesUID, instanceUID);
             if (dicomFile != null) {
-                if (readDicom != null)
-                    readDicom[0] = true;
                 bi = getImage(dicomFile, frame, rows, columns, region,
                         windowWidth, windowCenter);
             } else {
