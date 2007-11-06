@@ -171,8 +171,10 @@ class echoService {}
 
 /**
  * @depend - - - AuditLogger
- * @depend - - - TLSConfig
+ * @depend - - - IANScu
  * @depend - - - StoreScp
+ * @depend - - - Templates
+ * @depend - - - TLSConfig
  * @depend - - - ExportManagerQueue
  * @depend - - - JMS
  */

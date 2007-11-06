@@ -97,7 +97,27 @@
          <value value="conf/dcm4chee-tce.conf"/>
       </descriptors>
    </attribute>
-    <attribute access="read-write" getMethod="getPersonNameMapping" setMethod="setPersonNameMapping">
+   <attribute access="read-write"
+      getMethod="getAutoExportConfigDir"
+      setMethod="setAutoExportConfigDir">
+      <description><![CDATA[Directory where configuration files defining
+      auto-export rules are located: if XSL stylesheet "export.xsl" exists in
+      this directory or in a sub-directory equal to the AE Title of the
+      Performing Station AE Title in received MPPS COMPLETED messages,
+      objects referenced in the MPPS message will be exported according the
+      export rules in the stylesheet.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>AutoExportConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-ae"/>
+      </descriptors>
+   </attribute>
+    <attribute access="read-write"
+      getMethod="getPersonNameMapping"
+      setMethod="setPersonNameMapping">
       <description><![CDATA[Mapping login user name to Person Name to get Observer Person.<br>
         Separate each mapping with newline or semicolon.<br>
       	Format: <user>:<PersonName> (e.g. Smith^John or Smith^John^^Dr^)<br>
@@ -284,11 +304,19 @@
       <type>java.lang.String</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStoreScpServiceName"
-      setMethod="setStoreScpServiceName">
+      getMethod="getAuditLoggerName"
+      setMethod="setAuditLoggerName">
       <description>Used internally. Do NOT modify.
       </description>
-      <name>StoreScpServiceName</name>
+      <name>AuditLoggerName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+     getMethod="getIANScuServiceName"
+     setMethod="setIANScuServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>IANScuServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
@@ -300,19 +328,27 @@
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally. Do not modify.
       </description>
       <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;

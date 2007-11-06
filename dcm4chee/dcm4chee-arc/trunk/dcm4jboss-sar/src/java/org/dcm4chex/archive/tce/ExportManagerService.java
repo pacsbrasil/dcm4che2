@@ -70,6 +70,12 @@ import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
@@ -89,6 +95,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDDictionary;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.media.DirBuilderFactory;
+import org.dcm4che.media.DirRecord;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.ActiveAssociation;
@@ -109,6 +117,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.dcm.AbstractScuService;
+import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -120,18 +129,23 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.JMSDelegate;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since Dec 19, 2005
  */
-public class ExportManagerService extends AbstractScuService implements
-        NotificationListener, MessageListener, DimseListener {
+public class ExportManagerService extends AbstractScuService
+        implements MessageListener, DimseListener {
+    
+    private static final String EXPORT_XSL = "export.xsl";
 
     private static final String PERSON_OBSERVER_NAME_CODE = "121008";
 
@@ -143,6 +157,8 @@ public class ExportManagerService extends AbstractScuService implements
 
     private ObjectName storeScpServiceName;
 
+    private ObjectName ianScuServiceName;
+    
     private String queueName;
 
     private int concurrency = 1;
@@ -174,6 +190,24 @@ public class ExportManagerService extends AbstractScuService implements
     private int lastFilesetIDSeqno;
 
     private String mediaIDPrefix;
+
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
+    
+    public final String getAutoExportConfigDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setAutoExportConfigDir(String path) {
+        templates.setConfigDir(path);
+    }
+
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
 
     public final int getBufferSize() {
         return bufferSize;
@@ -331,6 +365,14 @@ public class ExportManagerService extends AbstractScuService implements
     public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
         this.storeScpServiceName = storeScpServiceName;
     }
+    
+    public final ObjectName getIANScuServiceName() {
+        return ianScuServiceName;
+    }
+
+    public final void setIANScuServiceName(ObjectName ianScuServiceName) {
+        this.ianScuServiceName = ianScuServiceName;
+    }    
 
     public final ObjectName getAuditLoggerName() {
         return auditLogger.getAuditLoggerName();
@@ -375,18 +417,30 @@ public class ExportManagerService extends AbstractScuService implements
 
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
-        server.addNotificationListener(storeScpServiceName, this,
+        server.addNotificationListener(storeScpServiceName,
+                seriesStoredListener,
                 SeriesStored.NOTIF_FILTER, null);
+        server.addNotificationListener(ianScuServiceName,
+                ianListener, IANScuService.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
-        server.removeNotificationListener(storeScpServiceName, this,
-                SeriesStored.NOTIF_FILTER, null);
+        server.removeNotificationListener(storeScpServiceName,
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+        server.removeNotificationListener(ianScuServiceName,
+                ianListener, IANScuService.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
+    
+    private final NotificationListener seriesStoredListener =
+        new NotificationListener() {
+            public void handleNotification(Notification notif, Object handback) {
+                SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+                ExportManagerService.this.onSeriesStored(seriesStored);
+            }
+    };
 
-    public void handleNotification(Notification notif, Object handback) {
-        SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+    private void onSeriesStored(SeriesStored seriesStored) {
         Dataset ian = seriesStored.getIAN();
         String suid = ian.getString(Tags.StudyInstanceUID);
         for (int i = 1; i < exportSelectorTitles.length; i++, i++)
@@ -704,7 +758,8 @@ public class ExportManagerService extends AbstractScuService implements
         for (int i = 0, n = contentSeq.countItems(); i < n; i++) {
             Dataset item = contentSeq.getItem(i);
             Dataset conceptName = item.getItem(Tags.ConceptNameCodeSeq);
-            if (PERSON_OBSERVER_NAME_CODE.equals(conceptName.getString(Tags.CodeValue))
+            if (conceptName != null
+                    && PERSON_OBSERVER_NAME_CODE.equals(conceptName.getString(Tags.CodeValue))
                     && "DCM".equals(conceptName.getString(Tags.CodingSchemeDesignator))) {
                 return item.getString(Tags.PersonName);
             }
@@ -1257,4 +1312,207 @@ public class ExportManagerService extends AbstractScuService implements
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         return home.create();
     }
+
+    private final NotificationListener ianListener = 
+        new NotificationListener() {
+            public void handleNotification(Notification notif, Object handback) {
+                ExportManagerService.this.onIAN((Dataset) notif.getUserData());
+            }
+
+        };
+
+    private void onIAN(final Dataset mpps) {
+        String aet = mpps.getString(Tags.PerformedStationAET);
+        Templates tpl = templates.getTemplatesForAET(aet, EXPORT_XSL);
+        if (tpl == null) {
+            return;
+        }
+        SAXTransformerFactory tf = (SAXTransformerFactory)
+                TransformerFactory.newInstance();
+        TransformerHandler th;
+        try {
+            th = tf.newTransformerHandler(tpl);
+        } catch (TransformerConfigurationException e) {
+            throw new ConfigurationException(e);
+        }
+        th.setResult(new SAXResult(new DefaultHandler(){
+            public void startElement(String uri, String localName,
+                    String qName, Attributes attrs) {
+                if (qName.equals("export")) {
+                    try {
+                        storeExportSelection(
+                                createManifest(mpps, 
+                                        attrs.getValue("code"),
+                                        attrs.getValue("designator"),
+                                        attrs.getValue("meaning"),
+                                        attrs.getValue("disposition")),
+                                Command.MEDIUM);
+                    } catch (Exception e) {
+                        logExportError(mpps, e);
+                    }
+                }
+            }}));
+        try {
+            mpps.writeDataset2(th, null, null, 64, null);
+        } catch (IOException e) {
+            logExportError(mpps, e);
+        }
+    }
+
+    private void logExportError(final Dataset mpps, Exception e) {
+        log.error("scheduling export triggered by MPPS[uid="
+                + mpps.getString(Tags.SOPInstanceUID)
+                + "] of Study[uid="
+                + getScheduledStepAttribute(mpps, Tags.StudyInstanceUID)
+                + "] fails: ", e);
+    }
+
+    private static String getScheduledStepAttribute(Dataset mpps, int tag) {
+        Dataset ssa = mpps.getItem(Tags.ScheduledStepAttributesSeq);
+        return ssa != null ? ssa.getString(tag) : null;
+        
+    }
+    
+    private static Dataset createManifest(Dataset mpps, String code,
+            String designator, String meaning, String disposition) {
+        UIDGenerator uidGen = UIDGenerator.getInstance();
+        Dataset manifest = DcmObjectFactory.getInstance().newDataset();
+        initKOCommonModule(manifest, mpps, uidGen);
+        initKOPatientModule(manifest, mpps);
+        initKOStudyModule(manifest, mpps);
+        initKOSeriesModule(manifest, uidGen);
+        initKODocumentModule(manifest, mpps);
+        initKOContentModule(manifest, mpps, code, designator, meaning,
+                disposition);
+        return manifest;
+    }
+
+    private static void initKOCommonModule(Dataset manifest, Dataset mpps,
+            UIDGenerator uidGen) {
+        manifest.putCS(Tags.SpecificCharacterSet,
+                mpps.getString(Tags.SpecificCharacterSet));
+        manifest.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
+        manifest.putUI(Tags.SOPInstanceUID, uidGen.createUID());
+    }
+
+    private static void initKOPatientModule(Dataset manifest, Dataset mpps) {
+        manifest.putPN(Tags.PatientName,
+                mpps.getString(Tags.PatientName));
+        manifest.putLO(Tags.PatientID,
+                mpps.getString(Tags.PatientID));
+        manifest.putLO(Tags.IssuerOfPatientID,
+                mpps.getString(Tags.IssuerOfPatientID));
+        manifest.putDA(Tags.PatientBirthDate,
+                mpps.getString(Tags.PatientBirthDate));
+        manifest.putCS(Tags.PatientSex,
+                mpps.getString(Tags.PatientSex));
+    }
+
+    private static void initKOStudyModule(Dataset manifest, Dataset mpps) {
+        manifest.putUI(Tags.StudyInstanceUID,
+                getScheduledStepAttribute(mpps, Tags.StudyInstanceUID));
+        manifest.putDA(Tags.StudyDate);
+        manifest.putTM(Tags.StudyTime);
+        manifest.putPN(Tags.ReferringPhysicianName);
+        manifest.putSH(Tags.StudyID, mpps.getString(Tags.StudyID));
+        manifest.putSH(Tags.AccessionNumber,
+                getScheduledStepAttribute(mpps, Tags.AccessionNumber));
+    }
+
+    private static void initKOSeriesModule(Dataset manifest,
+            UIDGenerator uidGen) {
+        manifest.putCS(Tags.Modality, "KO");
+        manifest.putUI(Tags.SeriesInstanceUID, uidGen.createUID());
+        manifest.putIS(Tags.SeriesNumber, 0);
+        manifest.putSQ(Tags.RefPPSSeq);
+        manifest.putLO(Tags.Manufacturer);
+    }
+
+    private static void initKODocumentModule(Dataset manifest, Dataset mpps) {
+        Date now = new Date();
+        manifest.putIS(Tags.InstanceNumber, 1);
+        manifest.putDA(Tags.ContentDate, now);
+        manifest.putTM(Tags.ContentTime, now);
+        DcmElement evidenceSeq =
+                manifest.putSQ(Tags.CurrentRequestedProcedureEvidenceSeq);
+        Dataset evidenceSeqItem = evidenceSeq.addNewItem();
+        evidenceSeqItem.putUI(Tags.StudyInstanceUID,
+                getScheduledStepAttribute(mpps, Tags.StudyInstanceUID));
+        DcmElement refSeriesSeq = evidenceSeqItem.putSQ(Tags.RefSeriesSeq);
+        DcmElement perfSeriesSeq = mpps.get(Tags.PerformedSeriesSeq);
+        for (int i = 0, n = perfSeriesSeq.countItems(); i < n; i++) {
+            Dataset perfSeriesItem = perfSeriesSeq.getItem(i);
+            Dataset refSeriesItem = refSeriesSeq.addNewItem();
+            refSeriesItem.putUI(Tags.SeriesInstanceUID,
+                    perfSeriesItem.getString(Tags.SeriesInstanceUID));
+            DcmElement refSOPSeq = refSeriesItem.putSQ(Tags.RefSOPSeq);
+            copyRefSOPSeq(perfSeriesItem.get(Tags.RefImageSeq), refSOPSeq);
+            copyRefSOPSeq(
+                    perfSeriesItem.get(Tags.RefNonImageCompositeSOPInstanceSeq),
+                    refSOPSeq);
+        }
+    }
+
+    private static void copyRefSOPSeq(DcmElement srcSeq, DcmElement dstSeq) {
+        if (srcSeq == null) return;
+        for (int i = 0, n = srcSeq.countItems(); i < n; i++) {
+            dstSeq.addItem(srcSeq.getItem(i));
+        }      
+    }
+
+    private static void initKOContentModule(Dataset manifest, Dataset mpps, 
+            String code, String designator, String meaning, String disposition) {
+        manifest.putCS(Tags.ValueType, "CONTAINER");
+        manifest.putCS(Tags.ContinuityOfContent, "SEPARATE");
+        addConceptNameCode(manifest, code, designator, meaning);
+        DcmElement contentSeq = manifest.putSQ(Tags.ContentSeq);
+        if (disposition != null && disposition.length() != 0) {
+            Dataset koDescription = addContentItem(contentSeq, "TEXT");
+            addConceptNameCode(koDescription,
+                    "113012", "DCM", "Key Object Description");
+            koDescription.putUT(Tags.TextValue, disposition);
+        }
+        DcmElement perfSeriesSeq = mpps.get(Tags.PerformedSeriesSeq);
+        for (int i = 0, n = perfSeriesSeq.countItems(); i < n; i++) {
+            Dataset perfSeriesItem = perfSeriesSeq.getItem(i);
+            addKORefs(contentSeq, perfSeriesItem.get(Tags.RefImageSeq));
+            addKORefs(contentSeq, 
+                    perfSeriesItem.get(Tags.RefNonImageCompositeSOPInstanceSeq));
+        }
+    }
+
+    private static void addKORefs(DcmElement contentSeq, DcmElement refSOPSeq) {
+        if (refSOPSeq == null) return;
+        for (int i = 0, n = refSOPSeq.countItems(); i < n; i++) {
+            Dataset refSOPItem = refSOPSeq.getItem(i);
+            String cuid = refSOPItem.getString(Tags.RefSOPClassUID);
+            String iuid = refSOPItem.getString(Tags.RefSOPInstanceUID);
+            Dataset koRefSOPItem = addContentItem(contentSeq, toKORefTyp(cuid))
+                        .putSQ(Tags.RefSOPSeq).addNewItem();
+            koRefSOPItem.putUI(Tags.RefSOPClassUID, cuid);
+            koRefSOPItem.putUI(Tags.RefSOPInstanceUID, iuid);
+        }      
+    }
+
+    private static String toKORefTyp(String cuid) {
+        String recType = DirBuilderFactory.getRecordType(cuid);
+        return recType == DirRecord.IMAGE
+                || recType == DirRecord.WAVEFORM ? recType : "COMPOSITE";
+    }
+
+    private static Dataset addContentItem(DcmElement contentSeq, String type) {
+        Dataset item = contentSeq.addNewItem();
+        item.putCS(Tags.RelationshipType, "CONTAINS");
+        item.putCS(Tags.ValueType, type);
+        return item;
+    }
+
+    private static void addConceptNameCode(Dataset ds, String code,
+            String designator, String meaning) {
+        Dataset item = ds.putSQ(Tags.ConceptNameCodeSeq).addNewItem();
+        item.putLO(Tags.CodeValue, code);
+        item.putLO(Tags.CodingSchemeDesignator, designator);
+        item.putLO(Tags.CodeMeaning, meaning);
+    }
+
 }
