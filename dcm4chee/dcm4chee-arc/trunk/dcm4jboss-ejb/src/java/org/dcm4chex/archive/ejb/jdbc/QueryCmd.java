@@ -154,7 +154,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private boolean coercePatientIds = false;
 
     protected final Subject subject;
-
+    protected String filterAction = StudyPermissionDTO.QUERY_ACTION;
+    
     public void setCoercePatientIds( boolean coercePatientIds ) {
         this.coercePatientIds = coercePatientIds;
     }
@@ -209,6 +210,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             throws SQLException {
         final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
                 noMatchForNoValue, subject);
+        cmd.init();
+        return cmd;
+    }
+    public static ImageQueryCmd createReadPermissionInstanceQuery(Dataset keys,
+    		boolean filterResult, boolean noMatchForNoValue, Subject subject)
+    		throws SQLException {
+        final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
+                noMatchForNoValue, subject);
+        cmd.filterAction = StudyPermissionDTO.READ_ACTION;
         cmd.init();
         return cmd;
     }
@@ -398,13 +408,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     protected void addStudyPermissionMatch() {
         if (subject != null) {
             sqlBuilder.addSingleValueMatch(null, "StudyPermission.action",
-                    false, StudyPermissionDTO.QUERY_ACTION);
+                    false, filterAction);
             sqlBuilder.addListOfStringMatch(null, "StudyPermission.role",
                     false, SecurityUtils.rolesOf(subject));
         }
     }
 
-    
     protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
                 .getStrings(Tags.ModalitiesInStudy));
