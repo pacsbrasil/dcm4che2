@@ -167,6 +167,9 @@ CREATE TABLE series (
 	institution		VARCHAR(256),
 	station_name    VARCHAR(256),
 	department		VARCHAR(256),
+	perf_physician  VARCHAR(256),
+	perf_phys_i_name  VARCHAR(256),
+	perf_phys_p_name  VARCHAR(256),
 	pps_start		TIMESTAMP,
 	pps_iuid		VARCHAR(256),
 	series_custom1	VARCHAR(256),
@@ -197,6 +200,9 @@ CREATE INDEX series_desc ON series(series_desc);
 CREATE INDEX institution ON series(institution);
 CREATE INDEX station_name ON series(station_name);
 CREATE INDEX department ON series(department);
+CREATE INDEX perf_physician ON series(perf_physician);
+CREATE INDEX perf_phys_i_name ON series(perf_phys_i_name);
+CREATE INDEX perf_phys_p_name ON series(perf_phys_p_name);
 CREATE INDEX series_pps_start ON series(pps_start);
 CREATE INDEX series_pps_iuid ON series (pps_iuid);
 CREATE INDEX series_custom1 ON series(series_custom1);

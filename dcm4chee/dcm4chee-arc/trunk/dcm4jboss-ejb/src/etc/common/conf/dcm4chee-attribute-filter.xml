@@ -32,6 +32,7 @@
         <attr tag="00081010"/> <!-- Station Name -->
         <attr tag="0008103E"/> <!-- Series Description -->
         <attr tag="00081040"/> <!-- Institutional Department Name -->
+        <attr tag="00081050"/> <!-- Performing Physician Name -->
         <attr tag="00081090"/> <!-- Manufacturer Model Name -->
         <attr tag="00081111"/> <!-- Referenced Performed Procedure Step Sequence -->
         <attr tag="00180015"/> <!-- Body Part Examined -->

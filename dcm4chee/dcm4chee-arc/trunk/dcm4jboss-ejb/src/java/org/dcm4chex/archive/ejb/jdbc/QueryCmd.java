@@ -97,6 +97,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.StationName,
             Tags.SeriesDescription,
             Tags.InstitutionalDepartmentName,
+            Tags.PerformingPhysicianName,
             Tags.BodyPartExamined,
             Tags.Laterality,
             Tags.PPSStartDate,
@@ -440,6 +441,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
                 type2, SqlBuilder.toUpperCase(keys
                         .getString(Tags.InstitutionalDepartmentName)));
+        sqlBuilder.addPNMatch(new String[] { "Series.performingPhysicianName",
+                "Series.performingPhysicianIdeographicName",
+                "Series.performingPhysicianPhoneticName" }, type2,
+                keys.getString(Tags.PerformingPhysicianName));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);

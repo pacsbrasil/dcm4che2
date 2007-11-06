@@ -58,6 +58,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
@@ -254,6 +255,24 @@ public abstract class SeriesBean implements EntityBean {
     public abstract String getStationName();
     public abstract void setStationName(String name);
 
+    /**
+     * @ejb.persistence column-name="perf_physician"
+     */
+    public abstract String getPerformingPhysicianName();
+    public abstract void setPerformingPhysicianName(String name);
+
+    /**
+     * @ejb.persistence column-name="perf_phys_i_name"
+     */
+    public abstract String getPerformingPhysicianIdeographicName();
+    public abstract void setPerformingPhysicianIdeographicName(String name);
+
+    /**
+     * @ejb.persistence column-name="perf_phys_p_name"
+     */
+    public abstract String getPerformingPhysicianPhoneticName();
+    public abstract void setPerformingPhysicianPhoneticName(String name);
+    
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pps_start"
@@ -700,6 +719,18 @@ public abstract class SeriesBean implements EntityBean {
         setInstitutionalDepartmentName(
                 toUpperCase(ds.getString(Tags.InstitutionalDepartmentName)));
         setStationName(toUpperCase(ds.getString(Tags.StationName)));
+        PersonName pn = ds.getPersonName(Tags.PerformingPhysicianName);
+        if (pn != null) {
+            setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                setPerformingPhysicianPhoneticName(ppn.toComponentGroupString(false));
+             }
+        }
         try {
             setPpsStartDateTime(
                     ds.getDateTime(Tags.PPSStartDate, Tags.PPSStartTime));
