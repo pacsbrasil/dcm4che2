@@ -69,6 +69,9 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -92,18 +95,11 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
-import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
-import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -133,6 +129,8 @@ public class WADOSupport {
 
     public static final String CONTENT_TYPE_PLAIN = "text/plain";
 
+    private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
+    
     private static Logger log = Logger.getLogger(WADOService.class.getName());
 
     private static final AuditLoggerFactory alf = AuditLoggerFactory
@@ -213,17 +211,27 @@ public class WADOSupport {
      *            The WADO request object.
      * 
      * @return The WADO response object.
+     * @throws PolicyContextException 
      */
-    public WADOResponseObject getWADOObject(WADORequestObject req) {
+    public WADOResponseObject getWADOObject(WADORequestObject req) throws PolicyContextException {
         log.info("Get WADO object for " + req.getObjectUID());
         Dataset objectDs = null;
         QueryCmd cmd = null;
+        Subject subject = null;
+        try {
+			subject = (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
+		} catch (PolicyContextException e) {
+			if ( req.getRemoteUser() != null )
+				throw e;
+			log.info("PolicyContext Exception occured! ("+e.getMessage()+") Ignored because request is not authenticated");
+			log.debug("Exception details:",e);
+		}
         try {
             Dataset dsQ = dof.newDataset();
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
             dsQ.putUI(Tags.SOPClassUID);
             dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-            cmd = QueryCmd.create(dsQ, true, true, null);
+            cmd = QueryCmd.createReadPermissionInstanceQuery(dsQ, true, true, subject);
             cmd.execute();
             if (cmd.next()) {
                 objectDs = cmd.getDataset();
@@ -610,17 +618,13 @@ public class WADOSupport {
                             rows, columns, region, windowWidth, windowCenter,
                             imageQuality, suffix);
                 } catch (Exception x) {
-                    log
-                            .error(
-                                    "Error caching image file! Return image without caching!",
-                                    x);
+                    log.error("Error caching image file! Return image without caching!", x);
                     throw new ImageCachingException(bi);
                 }
             } else {
                 throw new NoImageException();
             }
         }
-
         return file;
     }
 
@@ -1196,12 +1200,11 @@ public class WADOSupport {
         if (!isAuditLogIHEYr4())
             return;
         Dataset ds = resp.getPatInfo();
-        Patient patient = alf.newPatient(ds.getString(Tags.PatientID), ds
-                .getString(Tags.PatientName));
-        String remoteHost = disableDNS ? req.getRemoteAddr() : req
-                .getRemoteHost();
-        RemoteNode rnode = alf.newRemoteNode(req.getRemoteAddr(), remoteHost,
-                null);
+        Patient patient = alf.newPatient(ds.getString(Tags.PatientID),
+                ds.getString(Tags.PatientName));
+        String remoteHost = disableDNS ? req.getRemoteAddr() : 
+                req.getRemoteHost();
+        RemoteNode rnode = alf.newRemoteNode(req.getRemoteAddr(), remoteHost, null);
         String suid = ds.getString(Tags.StudyInstanceUID);
         try {
             server.invoke(auditLogName, "logInstancesSent", new Object[] {

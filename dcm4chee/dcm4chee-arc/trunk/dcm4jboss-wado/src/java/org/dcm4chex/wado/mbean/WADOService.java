@@ -47,6 +47,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.management.ObjectName;
+import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -413,15 +414,15 @@ public class WADOService extends AbstractCacheService {
      *            The request parameters packed in an value object.
      * 
      * @return The value object containing the retrieved object or an error.
+     * @throws Exception 
      */
-    public WADOResponseObject getWADOObject(WADORequestObject reqVO) {
+    public WADOResponseObject getWADOObject(WADORequestObject reqVO) throws Exception {
         WADOResponseObject resp = support.getWADOObject(reqVO);
         if (support.isAuditLogEnabled(reqVO)) {
             if (support.isAuditLogIHEYr4() && resp.getPatInfo() != null) {
                 support.logInstancesSent(reqVO, resp);
             } else {
-                log
-                        .debug("Suppress (IHEYr4) audit log! No patient info available!");
+                log.debug("Suppress (IHEYr4) audit log! No patient info available!");
             }
             logExport(reqVO, resp);
         } else {
@@ -441,8 +442,7 @@ public class WADOService extends AbstractCacheService {
             String destHost = userInfo.getHostName();
             InstancesTransferredMessage msg = new InstancesTransferredMessage(
                     InstancesTransferredMessage.EXECUTE);
-            msg
-                    .setOutcomeIndicator(resp.getReturnCode() == HttpServletResponse.SC_OK ? AuditEvent.OutcomeIndicator.SUCCESS
+            msg.setOutcomeIndicator(resp.getReturnCode() == HttpServletResponse.SC_OK ? AuditEvent.OutcomeIndicator.SUCCESS
                             : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
             msg.addSourceProcess(AuditMessage.getProcessID(), AuditMessage
                     .getLocalAETitles(), AuditMessage.getProcessName(),
