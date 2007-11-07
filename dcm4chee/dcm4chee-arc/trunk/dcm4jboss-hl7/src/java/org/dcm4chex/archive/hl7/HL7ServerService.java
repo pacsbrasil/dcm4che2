@@ -213,6 +213,30 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     public void setProtocolName(String protocolName) {
         this.protocol = MLLP_Protocol.valueOf(protocolName);
     }
+    
+    public final int getReceiveBufferSize() {
+        return hl7srv.getReceiveBufferSize();        
+    }
+    
+    public final void setReceiveBufferSize(int size) {
+        hl7srv.setReceiveBufferSize(size);
+    }
+
+    public final int getSendBufferSize() {
+        return hl7srv.getSendBufferSize();        
+    }
+    
+    public final void setSendBufferSize(int size) {
+        hl7srv.setSendBufferSize(size);
+    }
+        
+    public final boolean isTcpNoDelay() {
+        return hl7srv.isTcpNoDelay();
+    }
+
+    public final void setTcpNoDelay(boolean on) {
+        hl7srv.setTcpNoDelay(on);
+    }
 
     public int getMaxClients() {
         return hl7srv.getMaxClients();
