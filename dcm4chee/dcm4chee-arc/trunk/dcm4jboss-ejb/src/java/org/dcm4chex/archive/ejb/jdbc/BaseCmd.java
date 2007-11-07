@@ -53,6 +53,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.jboss.resource.adapter.jdbc.WrappedStatement;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -127,8 +128,10 @@ public abstract class BaseCmd {
             return;
         }
         try {
-            defineColumnType.invoke(stmt, new Object[] {
-                Integer.valueOf(index), Integer.valueOf(type)});
+            WrappedStatement wstmt = (WrappedStatement) stmt;            
+            defineColumnType.invoke(wstmt.getUnderlyingStatement(),
+                    new Object[] { Integer.valueOf(index),
+                        Integer.valueOf(type)});
         } catch (InvocationTargetException e) {
             Throwable cause = e.getTargetException();
             if (cause instanceof SQLException) {
