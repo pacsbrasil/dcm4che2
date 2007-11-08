@@ -1584,6 +1584,12 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                         prevAET, newAET)) {
                     ++count;
                 }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Service: " + otherServiceNames[i]
+                      + " not registered -> cannot update AETitle in attribute: "
+                      + otherServiceNames[i] + "#" + otherServiceAETAttrs[i]);
+                }
             }
         }
         server.invoke(aeServiceName, "updateAETitle", 
