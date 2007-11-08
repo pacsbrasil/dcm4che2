@@ -508,7 +508,7 @@
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Patient attributes in DB"/>		
 					</a>
 					<xsl:if test="$folder.study_permission='true'">
-						<a href="studyPermission.m?patName={patientName}&amp;patPk={pk}">
+						<a href="studyPermission.m?patPk={pk}">
 							<img src="images/permission.gif" alt="permissions" border="0" title="Show Study Permissions for Patient"/>		
 						</a>
 					</xsl:if>
@@ -641,7 +641,7 @@
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Study attributes in DB"/>		
 					</a>
 					<xsl:if test="$folder.study_permission='true'">
-						<a href="studyPermission.m?patName={../../patientName}&amp;studyIUID={studyIUID}">
+						<a href="studyPermission.m?studyIUID={studyIUID}&amp;patPk={../../pk}">
 							<img src="images/permission.gif" alt="permissions" border="0" title="Show Study Permissions"/>		
 						</a>
 					</xsl:if>

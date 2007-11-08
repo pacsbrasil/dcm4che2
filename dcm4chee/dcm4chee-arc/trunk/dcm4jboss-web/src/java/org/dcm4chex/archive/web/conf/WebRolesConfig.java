@@ -65,6 +65,7 @@ public class WebRolesConfig extends DefaultHandler {
 
     private final Map roles = new HashMap();
     private final Set types = new HashSet();
+    private final Map actions = new HashMap();
    
     public WebRolesConfig() {
     	loadFrom(CONFIG_URL);
@@ -73,16 +74,19 @@ public class WebRolesConfig extends DefaultHandler {
     public Collection getTypes() {
     	return types;
     }
-    public Collection roleNames() {
-    	return roles.keySet();
-    }
 
     public Collection getRoles() {
     	return roles.values();
     }
+    public Map getActions() {
+        return actions;
+    }
     
     public WebRole getRole(String name ) {
     	return (WebRole) roles.get(name);
+    }
+    public void addRole(String name, String descr) {
+    	roles.put(name, new WebRole(name, descr));
     }
     public String getDependencyForRole( String name ) {
     	return getRole(name).getDependency();
@@ -100,15 +104,12 @@ public class WebRolesConfig extends DefaultHandler {
     public void startElement(String uri, String localName, String qName,
             Attributes attrs) throws SAXException {
         if (qName.equals("role")) {
-        	if ( attrs.getValue("name") == null )
-        		throw new SAXException("missing name attribute");
-        	if ( attrs.getValue("descr") == null )
-        		throw new SAXException("missing descr attribute");
             roles.put( attrs.getValue("name"), new WebRole( attrs ) );
+        } else if (qName.equals("action")) {
+            actions.put( attrs.getValue("name"), attrs.getValue("descr") );
         }
     }
     
- 
     public void endElement(String uri, String localName, String qName) throws SAXException {
     }
 
@@ -116,6 +117,9 @@ public class WebRolesConfig extends DefaultHandler {
     	if (roles.isEmpty()) {
             throw new SAXException("missing role element ");    		
     	}
+        if (actions.isEmpty()) {
+            throw new SAXException("missing action element");                   
+        }
     }
     
     public class WebRole {
@@ -135,6 +139,10 @@ public class WebRolesConfig extends DefaultHandler {
         	descr = attrs.getValue("descr");
         	dependency = attrs.getValue("dependency");
     	}
+		public WebRole(String name, String descr ) {
+			this.name = name;
+			this.descr = descr;
+		}
 
 		public String getName() {
 			return name;

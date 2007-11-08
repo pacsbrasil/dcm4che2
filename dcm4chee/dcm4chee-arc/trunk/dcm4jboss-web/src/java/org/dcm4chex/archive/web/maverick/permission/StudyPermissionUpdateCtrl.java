@@ -43,8 +43,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
-import org.dcm4chex.archive.web.maverick.FolderForm;
-import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
 /**
  * 
@@ -52,14 +50,17 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  * @version $Revision: 2531 $ $Date: 2006-06-20 16:49:49 +0200 (Di, 20 Jun 2006) $
  * @since 19.10.2007
  */
-public class StudyPermissionCtrl extends Dcm4cheeFormController {
+public class StudyPermissionUpdateCtrl extends Dcm4cheeFormController {
 
-    public static final String CANCEL = "cancel";
-    
-    private StudyPermissionModel model;
-    
-    private static Logger log = Logger.getLogger(StudyPermissionCtrl.class);
-    
+    private static final String CANCEL = "cancel";
+
+	private StudyPermissionModel model;
+
+    private static Logger log = Logger.getLogger(StudyPermissionUpdateCtrl.class);
+
+    protected String getCtrlName() {
+	return "study_permission_update";
+    }
     protected StudyPermissionModel getModel() {
         return model;
     }
@@ -72,30 +73,43 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
         }
         return model;
     }
-    protected String getCtrlName() {
-	return "study_permission";
-    }
 
     
-    protected String perform() {
-    	try {
-    		getModel().clearPopupMsg();
-	        HttpServletRequest req = getCtx().getRequest();
-	        if ( req.getParameter("init") != null)
-	        	getModel().initWebRolesConfig();
-	        String suid = req.getParameter("studyIUID");
-	        String patPk = req.getParameter("patPk");
-	        getModel().setFilter(suid, getPatientModel(patPk) );
-	        return getModel().query() ? SUCCESS : CANCEL;
-    	} catch (Exception x) {
-    		return CANCEL;
-    	}
+    protected String perform() throws Exception {
+        log.info("perform called!");
+        HttpServletRequest req = getCtx().getRequest();
+        String cmd = nullEmptyValue(req.getParameter("cmd"));
+        StudyPermissionModel model = StudyPermissionModel.getModel(getCtx());
+        if ( cmd == null ) {
+            model.setPopupMsg("folder.study_permission_missingAttr", "cmd");
+            return SUCCESS;
+        } else if ( "cancel".equalsIgnoreCase(cmd) ) {
+            return CANCEL;
+        }
+        String role = nullEmptyValue(req.getParameter("role"));
+        String action = nullEmptyValue(req.getParameter("action"));
+        if ( role == null && action == null ) {
+            model.setPopupMsg("folder.study_permission_missingAttr", "role, action");
+            return SUCCESS;
+        }
+        if ( "add".equalsIgnoreCase(cmd) ) {
+        	if ( action == null ) {
+        		model.addRole(role);
+        	} else if ( role == null ) {
+        		model.addAction(action);
+        	} else {
+        		model.addPermission(role, action);
+        	}
+        } else if ( "remove".equalsIgnoreCase(cmd) ) {
+            model.removePermission(role, action);
+        } else {
+            model.setPopupMsg("folder.study_permission_unknown_cmd", cmd);
+        }
+        return SUCCESS;
     }
-
-    private PatientModel getPatientModel(String patPk) {
-        return patPk == null ? null :
-            new PatientModel(FolderForm.getFolderForm(getCtx()).getPatientByPk(
-                Long.parseLong(patPk)).toDataset() );
+    
+    private String nullEmptyValue( String value ) {
+    	return ( value == null || value.trim().length() < 1 ) ? null : value;
     }
 
 }

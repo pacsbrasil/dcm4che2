@@ -51,7 +51,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.web.conf.StudyPermissionConfig;
 import org.dcm4chex.archive.web.conf.WebRolesConfig;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsFactory;

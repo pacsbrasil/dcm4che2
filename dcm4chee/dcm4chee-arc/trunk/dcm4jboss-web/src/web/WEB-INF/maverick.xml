@@ -407,6 +407,11 @@ default-transform-type="xslt">
 	    </view>
 	    <view name="cancel" type="redirect" path="folder.m" />        
      </command>
+    <command name="studyPermissionUpdate">
+        <controller class="org.dcm4chex.archive.web.maverick.permission.StudyPermissionUpdateCtrl" />    
+		<view name="success" type="redirect" path="studyPermission.m"/>
+		<view name="cancel" type="redirect" path="folder.m"/>
+     </command>
      
   </commands>
 </maverick>
