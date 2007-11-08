@@ -85,6 +85,12 @@
 				        </td>
 					</tr>
 					<tr>				        
+						<td width="50">FS Group ID</td>														
+				        <td title="File System Group ID">
+			                <input size="25" name="fileSystemGroupID" type="text" value=""/>
+				        </td>
+					</tr>
+					<tr>				        
 						<td width="50">Description</td>														
 				        <td title="Description">
 			                <input size="25" name="description" type="text" value=""/>

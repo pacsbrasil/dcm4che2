@@ -57,7 +57,6 @@ import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
-import org.dcm4chex.archive.ejb.session.AEManagerBean;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.notif.AetChanged;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -236,7 +235,7 @@ public class AEService extends ServiceMBeanSupport {
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
             AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null,
-            		null, null, null);
+            		null, null, null, null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -273,7 +272,7 @@ public class AEService extends ServiceMBeanSupport {
      */
     public void updateAE(long pk, String title, String host, int port,
             String cipher, String issuer, String user, String passwd,
-            String desc, boolean checkHost)
+            String fsGroupID, String desc, boolean checkHost)
             throws Exception {
         if (checkHost) {
             try {
@@ -287,7 +286,7 @@ public class AEService extends ServiceMBeanSupport {
         AEManager aeManager = aeMgr();
         if (pk == -1) {
         	AEDTO newAE = new AEDTO(-1, title, host, port, cipher,
-            		issuer, user, passwd, desc);
+            		issuer, user, passwd, fsGroupID, desc);
             aeManager.newAE(newAE);
             logActorConfig("Add AE " + newAE + " cipher:"
                     + newAE.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -305,7 +304,7 @@ public class AEService extends ServiceMBeanSupport {
                 oldAET = oldAE.getTitle();
             }
             AEDTO newAE = new AEDTO(pk, title, host, port, cipher,
-            		issuer, user, passwd, desc);
+            		issuer, user, passwd, fsGroupID, desc);
             aeManager.updateAE(newAE);
             logActorConfig("Modify AE " + oldAE + " -> " + newAE,
             		SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -315,9 +314,10 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public void addAE(String title, String host, int port, String cipher,
-            String issuer, String user, String passwd, String desc,
-            boolean checkHost) throws Exception {
-        updateAE(-1, title, host, port, cipher, issuer, user, passwd, desc, checkHost);
+            String issuer, String user, String passwd, String fsGroupID,
+            String desc, boolean checkHost) throws Exception {
+        updateAE(-1, title, host, port, cipher, issuer, user, passwd, fsGroupID,
+                desc, checkHost);
     }
 
     public void removeAE(String titles) throws Exception {

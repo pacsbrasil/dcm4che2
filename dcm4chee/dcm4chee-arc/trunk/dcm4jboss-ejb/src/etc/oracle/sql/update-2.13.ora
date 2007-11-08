@@ -9,6 +9,8 @@ CREATE TABLE study_permission (
 );
 CREATE UNIQUE INDEX study_perm_idx ON study_permission(study_iuid, action, roles);
 
+ALTER TABLE ae ADD fs_group_id VARCHAR2(255);
+
 ALTER TABLE series ADD (perf_physician NVARCHAR2(255),
                         perf_phys_i_name NVARCHAR2(255),
                         perf_phys_p_name NVARCHAR2(255));

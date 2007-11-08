@@ -87,11 +87,14 @@ public abstract class AEManagerBean implements SessionBean {
     private static final int MAX_MAX_CACHE_SIZE = 1000;
     private static int maxCacheSize = 20;
     private static Map aeCache = Collections.synchronizedMap(
-    		new LinkedHashMap(32, 0.75f, true) {
-				protected boolean removeEldestEntry(Map.Entry eldest) {
-					return size() > maxCacheSize;
-				}
-			});
+            new LinkedHashMap(32, 0.75f, true) {
+
+                private static final long serialVersionUID = -5477659896294241869L;
+
+                protected boolean removeEldestEntry(Map.Entry eldest) {
+                    return size() > maxCacheSize;
+                }
+            });
     
     public void setSessionContext(SessionContext ctx) throws EJBException,
             RemoteException {
@@ -209,6 +212,7 @@ public abstract class AEManagerBean implements SessionBean {
             ae.setIssuerOfPatientID(modAE.getIssuerOfPatientID());
             ae.setUserID(modAE.getUserID());
             ae.setPassword(modAE.getPassword());
+            ae.setFileSystemGroupID(modAE.getFileSystemGroupID());
             ae.setDescription(modAE.getDescription());
        } catch (FinderException e) {
             ctx.setRollbackOnly();
@@ -228,6 +232,7 @@ public abstract class AEManagerBean implements SessionBean {
                 newAE.getIssuerOfPatientID(),
                 newAE.getUserID(),
                 newAE.getPassword(),
+                newAE.getFileSystemGroupID(),
                 newAE.getDescription());
     }
 

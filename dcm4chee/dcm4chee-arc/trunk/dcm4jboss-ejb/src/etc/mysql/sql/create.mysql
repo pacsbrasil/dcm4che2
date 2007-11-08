@@ -7,6 +7,7 @@ CREATE TABLE ae (
 	pat_id_issuer	VARCHAR(250) BINARY,
 	user_id			VARCHAR(250) BINARY,
 	passwd			VARCHAR(250) BINARY,
+	fs_group_id		VARCHAR(250) BINARY,
 	ae_desc			VARCHAR(250) BINARY
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX aet ON ae(aet(64));

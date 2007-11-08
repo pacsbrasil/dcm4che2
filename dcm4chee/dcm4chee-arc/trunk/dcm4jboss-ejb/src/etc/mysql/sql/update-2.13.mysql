@@ -9,6 +9,8 @@ CREATE TABLE study_permission (
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX study_perm_idx ON study_permission(study_iuid(64), action(1), roles(16));
 
+ALTER TABLE ae ADD fs_group_id VARCHAR(250) BINARY;
+
 ALTER TABLE series ADD (perf_physician   VARCHAR(250) BINARY,
                         perf_phys_i_name VARCHAR(250) BINARY,
                         perf_phys_p_name VARCHAR(250) BINARY);

@@ -1516,7 +1516,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws RemoteException, CreateException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
-        dto.setGroupId(groupId);
+        dto.setFileSystemGroupID(groupId);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(availability);
         dto.setStatus(status);
@@ -1529,7 +1529,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws RemoteException, FinderException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
-        dto.setGroupId(availability + _STORAGE);
+        dto.setFileSystemGroupID(availability + _STORAGE);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(Availability.toInt(availability));
         dto.setStatus(FileSystemStatus.toInt(status));
@@ -1797,7 +1797,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws FinderException, CreateException, RemoteException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
-        dto.setGroupId(groupId);
+        dto.setFileSystemGroupID(groupId);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(availability);
         dto.setStatus(status);

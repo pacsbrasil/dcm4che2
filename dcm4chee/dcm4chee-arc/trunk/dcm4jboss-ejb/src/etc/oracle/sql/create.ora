@@ -8,6 +8,7 @@ CREATE TABLE ae (
 	pat_id_issuer	VARCHAR2(255),
 	user_id			VARCHAR2(255),
 	passwd			VARCHAR2(255),
+	fs_group_id		VARCHAR2(255),
 	ae_desc			VARCHAR2(255)
 );
 CREATE UNIQUE INDEX aet ON ae(aet);

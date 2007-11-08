@@ -88,7 +88,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *             strategy="on-find" eager-load-group="*"
  *
  * @ejb.finder signature="java.util.Collection findByGroupId(java.lang.String id)"
- *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupId = ?1"
+ *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.fileSystemGroupID = ?1"
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByGroupId(java.lang.String id)"
  *             strategy="on-find" eager-load-group="*"
@@ -225,8 +225,8 @@ public abstract class FileSystemBean implements EntityBean {
             + getPk()
             + ", dirpath="
             + getDirectoryPath()
-            + ", groupId="
-            + getGroupId()
+            + ", groupID="
+            + getFileSystemGroupID()
             + ", retrieveAET="
             + getRetrieveAET()
             + ", availability="
@@ -268,12 +268,12 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="fs_group_id"
      */
-    public abstract String getGroupId();
+    public abstract String getFileSystemGroupID();
 
     /**
      * @ejb.interface-method
      */ 
-    public abstract void setGroupId(String id);
+    public abstract void setFileSystemGroupID(String id);
 
     /**
      * @ejb.interface-method
@@ -362,7 +362,7 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public void fromDTO(FileSystemDTO dto) {
         setDirectoryPath(dto.getDirectoryPath());
-        setGroupId(dto.getGroupId());
+        setFileSystemGroupID(dto.getFileSystemGroupID());
         setRetrieveAET(dto.getRetrieveAET());
         setAvailability(dto.getAvailability());
         setStatus(dto.getStatus());
@@ -375,7 +375,7 @@ public abstract class FileSystemBean implements EntityBean {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setPk(getPk().longValue());
         dto.setDirectoryPath(getDirectoryPath());
-        dto.setGroupId(getGroupId());
+        dto.setFileSystemGroupID(getFileSystemGroupID());
         dto.setRetrieveAET(getRetrieveAET());
         dto.setAvailability(getAvailability());
         dto.setStatus(getStatus());

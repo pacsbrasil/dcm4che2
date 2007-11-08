@@ -58,7 +58,7 @@ public class FileSystemDTO implements Serializable {
 
     private String directoryPath;
 
-    private String groupId;
+    private String groupID;
 
     private String retrieveAET;
 
@@ -73,7 +73,7 @@ public class FileSystemDTO implements Serializable {
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
         sb.append(", ").append(directoryPath);
-        sb.append(", groupId=").append(groupId);
+        sb.append(", groupID=").append(groupID);
         sb.append(", aet=").append(retrieveAET);
         sb.append(", ").append(Availability.toString(availability));
         sb.append(", ").append(FileSystemStatus.toString(status));
@@ -104,12 +104,12 @@ public class FileSystemDTO implements Serializable {
         this.directoryPath = directoryPath;
     }
 
-    public final String getGroupId() {
-        return groupId;
+    public final String getFileSystemGroupID() {
+        return groupID;
     }
 
-    public final void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public final void setFileSystemGroupID(String groupID) {
+        this.groupID = groupID;
     }
 
     public final String getRetrieveAET() {

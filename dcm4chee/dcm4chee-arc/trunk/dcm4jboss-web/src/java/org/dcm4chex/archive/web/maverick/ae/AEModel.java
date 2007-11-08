@@ -74,6 +74,8 @@ public class AEModel extends BasicFormModel {
     
     private String passwd;
     
+    private String fileSystemGroupID;
+    
     private String description;
 
     private int port = -1;
@@ -152,15 +154,19 @@ public class AEModel extends BasicFormModel {
         this.issuerOfPatientID = issuerOfPatientID;
     }
     
-	public final void setUserID(String userID) {
-		this.userID = userID;
-	}
+    public final void setUserID(String userID) {
+        this.userID = userID;
+    }
 
-	public final void setPassword(String passwd) {
-		this.passwd = passwd;
-	}
+    public final void setPassword(String passwd) {
+        this.passwd = passwd;
+    }
 
-	public final void setDescription(String description) {
+    public final void setFileSystemGroupID(String fileSystemGroupID) {
+        this.fileSystemGroupID = fileSystemGroupID;
+    }
+
+    public final void setDescription(String description) {
         this.description = description;
     }
 
@@ -177,7 +183,7 @@ public class AEModel extends BasicFormModel {
         }
         return new AEDTO(pk, this.title, this.hostName, this.port,
                 this.cipherSuites, this.issuerOfPatientID, this.userID,
-                this.passwd, this.description);
+                this.passwd, this.fileSystemGroupID, this.description);
     }
 
     public void setAE(AEDTO ae) {
@@ -189,6 +195,7 @@ public class AEModel extends BasicFormModel {
         issuerOfPatientID = ae.getIssuerOfPatientID();
         userID = ae.getUserID();
         passwd = ae.getPassword();
+        fileSystemGroupID = ae.getFileSystemGroupID();
         description = ae.getDescription();
     }
 
@@ -201,6 +208,7 @@ public class AEModel extends BasicFormModel {
         issuerOfPatientID = null;
         userID = null;
         passwd = null;
+        fileSystemGroupID = null;
         description = null;
     }
 

@@ -74,6 +74,7 @@ public class AEDTO implements Serializable {
     private final String issuer;
     private final String userID;
     private final String passwd;
+    private final String fsGroupID;
     private final String desc;
 
     // Constructors --------------------------------------------------
@@ -86,6 +87,7 @@ public class AEDTO implements Serializable {
         String issuer,
         String userID,
         String passwd,
+        String fsGroupID,
         String desc) {
         this.pk = pk;
         this.title = title;
@@ -95,6 +97,7 @@ public class AEDTO implements Serializable {
         this.issuer = issuer;
         this.userID = userID;
         this.passwd = passwd;
+        this.fsGroupID = fsGroupID;
         this.desc = desc;
     }
 
@@ -166,6 +169,10 @@ public class AEDTO implements Serializable {
     
     public String getPassword() {
         return passwd;        
+    }
+    
+    public final String getFileSystemGroupID() {
+        return fsGroupID;
     }
     
     public String getDescription() {

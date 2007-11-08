@@ -151,7 +151,7 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setIssuerOfPatientID(String issuer);
-    
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="user_id"
@@ -173,6 +173,17 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setPassword(String passwd);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="fs_group_id"
+     */
+    public abstract String getFileSystemGroupID();
+
+    /**
+     * @ejb.interface-method
+     */ 
+    public abstract void setFileSystemGroupID(String id);
     
     /**
      * @ejb.interface-method
@@ -190,7 +201,7 @@ public abstract class AEBean implements EntityBean {
      */
     public Long ejbCreate(String title, String hostname, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String desc)
+            String fsGroupID, String desc)
             throws CreateException {
         if (log.isDebugEnabled()) {
             log.debug("create AEBean(" + title + ")");
@@ -202,13 +213,14 @@ public abstract class AEBean implements EntityBean {
         setIssuerOfPatientID(issuer);
         setUserID(user);
         setPassword(passwd);
+        setFileSystemGroupID(fsGroupID);
         setDescription(desc);
         return null;
     }
 
     public void ejbPostCreate(String title, String host, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String desc)
+            String fsGroupID, String desc)
             throws CreateException {
     }
 
@@ -226,6 +238,7 @@ public abstract class AEBean implements EntityBean {
                 getIssuerOfPatientID(),
                 getUserID(),
                 getPassword(),
+                getFileSystemGroupID(),
                 getDescription());
     }
     
