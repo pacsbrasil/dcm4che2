@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ParamSizeMemoryCacheFilter<T> extends MemoryCacheFilterBase<CacheItemImpl<T>> implements Filter<T>
 {
-	private static Logger log = LoggerFactory.getLogger(MemoryCacheFilterBase.class);
+	private static Logger log = LoggerFactory.getLogger(ParamSizeMemoryCacheFilter.class);
 
 	/** Cache a CacheItemImpl instead of the actual item */
 	@Override
@@ -21,7 +21,7 @@ public class ParamSizeMemoryCacheFilter<T> extends MemoryCacheFilterBase<CacheIt
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		String key = computeKey(params);
 		CacheItemImpl<T> item = (key!=null ? cache.get(key) : null);
-		log.info("Looking for key "+key+" item "+item);
+		log.info(cacheName+" looking for key "+key+" item "+item);
 		if( item==null ) {
 			T newValue = (T) filterItem.callNextFilter(params);
 			if( newValue!=null ) item = new CacheItemImpl<T>(newValue,params);

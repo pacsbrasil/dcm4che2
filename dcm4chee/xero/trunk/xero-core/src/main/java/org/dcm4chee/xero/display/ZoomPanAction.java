@@ -37,9 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.display;
 
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.macro.RegionMacro;
 import org.dcm4chee.xero.search.study.PresentationSizeMode;
-import org.dcm4chee.xero.wado.WadoImage;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -94,8 +94,8 @@ public class ZoomPanAction {
 
    /** Updates the width, height, cx, cy and computes the magnify amount */
    void updateRegion() {
-	  float[] topLeftF = WadoImage.splitFloat(getTopLeft(), 2);
-	  float[] botRightF = WadoImage.splitFloat(getBottomRight(), 2);
+	  float[] topLeftF = FilterUtil.splitFloat(getTopLeft(), 2);
+	  float[] botRightF = FilterUtil.splitFloat(getBottomRight(), 2);
 	  width = (int) Math.abs(botRightF[0] - topLeftF[0]);
 	  height = (int) Math.abs(botRightF[1] - topLeftF[1]);
 	  cx = panX + (int) Math.abs(botRightF[0] + topLeftF[0]) / 2;

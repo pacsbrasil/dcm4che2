@@ -191,6 +191,11 @@
    <!-- ================ -->
 
    <!-- Limit the org.dcm4che.xero to INFO -->
+   <category name="org.dcm4che2">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.dcm4che.xero to INFO -->
    <category name="org.dcm4chee.xero">
       <priority value="INFO"/>
    </category>

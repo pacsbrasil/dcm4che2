@@ -72,4 +72,20 @@ public class RegionMacro implements Macro {
 	 return 4;
    }
 
+   public String getBottomRight() {
+      return bottomRight;
+   }
+
+   public float getMagnify() {
+      return magnify;
+   }
+
+   public PresentationSizeMode getPresentationSizeMode() {
+      return presentationSizeMode;
+   }
+
+   public String getTopLeft() {
+      return topLeft;
+   }
+
 }

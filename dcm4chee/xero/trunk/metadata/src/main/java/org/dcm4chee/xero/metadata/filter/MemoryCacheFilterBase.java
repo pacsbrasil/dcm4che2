@@ -71,6 +71,8 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 	
 	protected String paramKeyName = KEY_NAME;
 	
+	protected String cacheName;
+	
 	MemoryCache<String, T> cache = new MemoryCache<String,T>();
 
 	/** Create a memory cache filter item with a 10 mb initial size, 2 level
@@ -89,7 +91,7 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 	protected String computeKey(Map<String,?> params) {
 		if( params==null ) throw new IllegalArgumentException("Params to filter and compute key should not be null.");		
 		Object okey = params.get(paramKeyName);
-		log.info("Looking for key in "+paramKeyName+" found "+okey);
+		log.debug("Looking for key in "+paramKeyName+" found "+okey);
 		if( okey instanceof String ) return (String) okey;
 		if( okey instanceof String[] ) throw new IllegalArgumentException("Memory cache key must be single valued.");
 		if( okey==null ) {
@@ -111,7 +113,8 @@ public class MemoryCacheFilterBase<T extends CacheItem> implements MetaDataUser 
 		log.info("Setting key name for parameter to "+keyName);
 		if( keyName!=null ) paramKeyName = keyName;
 		String cacheSize = (String) metaDataBean.getValue(CACHE_SIZE);
-		if( cacheSize!=null ) setCacheSizes(Long.parseLong(cacheSize)); 
+		if( cacheSize!=null ) setCacheSizes(Long.parseLong(cacheSize));
+		cacheName = metaDataBean.getPath();
 	}
 
    /**

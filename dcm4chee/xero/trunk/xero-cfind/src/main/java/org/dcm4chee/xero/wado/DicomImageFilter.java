@@ -60,6 +60,9 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
+
 /**
  * This class takes a URL to either a file location or another WADO service, and
  * uses it to read an image, providing the raw, buffered image data (without
@@ -147,9 +150,10 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * @param height
      */
    protected void updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
-	  String region = (String) params.get("region");
-	  String sRows = (String) params.get("rows");
-	  String sCols = (String) params.get("cols");
+	  float[] region = getFloats(params,"region",null);
+	  int rows = getInt(params,"rows");
+	  int cols = getInt(params,"cols");
+	  log.info("DicomImageFilter rows="+rows+" cols="+cols);
 	  int xOffset = 0;
 	  int yOffset = 0;
 	  int sWidth = width;
@@ -157,29 +161,28 @@ public class DicomImageFilter implements Filter<WadoImage> {
 
 	  if (region != null) {
 		 // Figure out the sub-region to use
-		 double[] dregion = WadoImage.splitRegion(region);
-		 xOffset = (int) (dregion[0] * width);
-		 yOffset = (int) (dregion[1] * height);
-		 sWidth = (int) ((dregion[2] - dregion[0]) * width);
-		 sHeight = (int) ((dregion[3] - dregion[1]) * height);
+		 xOffset = (int) (region[0] * width);
+		 yOffset = (int) (region[1] * height);
+		 sWidth = (int) ((region[2] - region[0]) * width);
+		 sHeight = (int) ((region[3] - region[1]) * height);
 		 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
 		 read.setSourceRegion(rect);
 		 log.info("Source region " + rect);
 	  }
 
-	  if (sRows == null && sCols == null)
+	  if (rows == 0 && cols == 0)
 		 return;
 
 	  // Now figure out the size of the final region
 	  int subsampleX = 1;
 	  int subsampleY = 1;
-	  if (sCols != null) {
-		 subsampleX = sWidth / Integer.parseInt(sCols);
+	  if (cols != 0) {
+		 subsampleX = sWidth / cols;
 		 subsampleY = subsampleX;
 	  }
-	  if (sRows != null) {
-		 subsampleY = sHeight / Integer.parseInt(sRows);
-		 if (sCols == null)
+	  if (rows != 0) {
+		 subsampleY = sHeight / rows;
+		 if (cols == 0)
 			subsampleX = subsampleY;
 	  }
 	  // Can't over-sample the data...

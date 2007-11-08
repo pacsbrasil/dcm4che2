@@ -95,6 +95,10 @@ public class WLFilter implements Filter<WadoImage> {
 		 log.debug("Skipping window levelling as no dicom object header found.");
 		 return wi;
 	  }
+	  if( "raw".equals(values[0]) || "raw".equals(values[1])) {
+		 log.info("Skipping window level as the RAW image is being requested.");
+		 return wi;
+	  }
 
 	  long start = System.currentTimeMillis();
 	  BufferedImage bi = wi.getValue();

@@ -86,4 +86,11 @@ public class FlipRotateMacro implements Macro {
 	  return ret;
    }
 
+   public int getRotation() {
+	  return rotation;
+   }
+   
+   public boolean getFlip() {
+	  return horizontalFlip;
+   }
 }

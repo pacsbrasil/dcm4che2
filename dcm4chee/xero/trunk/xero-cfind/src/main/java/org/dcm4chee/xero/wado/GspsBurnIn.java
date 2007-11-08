@@ -58,7 +58,11 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.dcm4chee.xero.search.SearchFilterUtils;
+import org.dcm4chee.xero.search.macro.AspectMacro;
+import org.dcm4chee.xero.search.macro.FlipRotateMacro;
+import org.dcm4chee.xero.search.macro.RegionMacro;
 import org.dcm4chee.xero.search.study.GspsBean;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -67,6 +71,11 @@ import org.slf4j.LoggerFactory;
 import org.w3.svg.GType;
 import org.w3.svg.SvgType;
 import org.w3.svg.Use;
+
+import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase.removeFromQuery;
+
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.splitFloat;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
 
 /**
  * This class burns in GSPS information into the image. This may cause the image
@@ -82,8 +91,8 @@ public class GspsBurnIn implements Filter<WadoImage> {
    private static final Logger log = LoggerFactory.getLogger(GspsBurnIn.class);
 
    /**
-    * Burn in GSPS elements if any are found and relevant to the given image.
-    */
+     * Burn in GSPS elements if any are found and relevant to the given image.
+     */
    public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
 	  String presentationUID = (String) params.get("presentationUID");
 	  if (presentationUID == null) {
@@ -108,8 +117,8 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  }
 
 	  WadoImage wi = filterWadoImage(filterItem, params, image);
-	  String svg = generateSvg(image, gsps);
-	  if( svg==null ) {
+	  String svg = generateSvg(image, gsps, wi);
+	  if (svg == null) {
 		 log.info("No overlay data - returning raw image.");
 		 return wi;
 	  }
@@ -126,12 +135,13 @@ public class GspsBurnIn implements Filter<WadoImage> {
    }
 
    /**
-    * Transcode the image on top of the existing image, and return a new buffered image
-    * containing the combination of the two.
-    * @param biSrc
-    * @param svg
-    * @return
-    */
+     * Transcode the image on top of the existing image, and return a new
+     * buffered image containing the combination of the two.
+     * 
+     * @param biSrc
+     * @param svg
+     * @return
+     */
    private BufferedImage transcodeImage(BufferedImage biSrc, String svg) {
 	  try {
 		 ByteArrayInputStream bais = new ByteArrayInputStream(svg.getBytes("UTF-8"));
@@ -142,44 +152,146 @@ public class GspsBurnIn implements Filter<WadoImage> {
 		 transcoder.transcode(input, output);
 		 return transcoder.getImage();
 	  } catch (TranscoderException e) {
-		e.printStackTrace();
-		throw new RuntimeException(e);
+		 e.printStackTrace();
+		 throw new RuntimeException(e);
 	  } catch (UnsupportedEncodingException e) {
-		throw new RuntimeException(e);
-	  } 
+		 throw new RuntimeException(e);
+	  }
    }
 
-   /** Find the WADO image relavant for the given GSPS area/region.
-    * 
-    * @param filterItem
-    * @param params
-    * @param image
-    * @return
-    */
+   /**
+     * Find the WADO image relavant for the given GSPS area/region.
+     * 
+     * @param filterItem
+     * @param params
+     * @param image
+     * @return
+     */
    private WadoImage filterWadoImage(FilterItem filterItem, Map<String, Object> params, ImageBean image) {
-	  return (WadoImage) filterItem.callNextFilter(params);
+	  int imgRows = image.getRows();
+	  int imgCols = image.getColumns();
+	  float left = 0;
+	  float right = 1;
+	  float top = 0;
+	  float bottom = 1;
+
+	  int destRows = getInt(params, "rows");
+	  int destCols = getInt(params, "cols");
+	  float aspect = 1;
+	  AspectMacro aspectMacro = (AspectMacro) image.getMacroItems().findMacro(AspectMacro.class);
+	  if (aspectMacro != null) {
+		 aspect = aspectMacro.getAspect();
+		 log.info("Aspect=" + aspect);
+	  }
+
+	  int cols = imgCols;
+	  int rows = (int) (imgRows * aspect);
+
+	  boolean flip = getFlip(image);
+	  int rot = getRotation(image);
+
+	  // The rows and columns are the destination rows and columns for the
+	  // provided region.
+	  RegionMacro regionMacro = (RegionMacro) image.getMacroItems().findMacro(RegionMacro.class);
+	  if (regionMacro != null) {
+		 log.info("topLeft=" + regionMacro.getTopLeft() + " bottomRight=" + regionMacro.getBottomRight() + " imgCols,imgRows="
+			   + imgCols + "," + imgRows);
+		 float[] topLeft = splitFloat(regionMacro.getTopLeft(), 2);
+		 float[] bottomRight = splitFloat(regionMacro.getBottomRight(), 2);
+		 // Lots of systems encode topLeft as 1,1, even when they mean 0,0
+		 if (topLeft[0] == 1)
+			topLeft[0] = 0;
+		 if (topLeft[1] == 1)
+			topLeft[1] = 0;
+		 left = topLeft[0] / imgCols;
+		 top = topLeft[1] / imgRows;
+		 right = bottomRight[0] / imgCols;
+		 bottom = bottomRight[1] / imgRows;
+		 if( left<0 ) left = 0;
+		 if( top<0 ) top = 0;
+		 if( right>1 ) right = 1;
+		 if( bottom>1 ) bottom = 1;
+		 cols = (int) (imgCols * (right - left));
+		 rows = (int) (imgRows * (bottom - top) * aspect);
+	  }
+	  if (destRows > 0 && destRows < rows) {
+		 cols = (int) (destRows * cols / rows);
+		 rows = destRows;
+		 log.info("Cutting number of columns/rows to " + cols + "," + rows);
+	  }
+	  // The second one can also be done if both values are provided, and
+	  // it makes the destination area smaller.
+	  if (destCols > 0 && destCols < cols) {
+		 rows = (int) (destCols * rows / cols);
+		 cols = destCols;
+		 log.info("Cutting number of columns/rows to " + cols + "," + rows);
+	  }
+	  log.info("Final cols,rows = " + cols + "," + rows);
+
+	  String region = "" + left + "," + top + "," + right + "," + bottom;
+	  log.info("Burning in region " + region);
+	  removeFromQuery(params, "region", "fip", "rotation", "rows", "cols");
+	  StringBuffer queryStr = new StringBuffer((String) params.get(MemoryCacheFilterBase.KEY_NAME));
+	  params.put("region", region);
+	  params.put("rows", rows);
+	  params.put("cols", cols);
+	  queryStr.append("&region=").append(region).append("&rows=").append(rows).append("&cols=").append(cols);
+	  if (flip) {
+		 params.put("flip", true);
+		 queryStr.append("&flip=true");
+		 log.info("Flipping returned image.");
+	  }
+	  if (rot != 0) {
+		 params.put("rotation", rot);
+		 queryStr.append("&rotation=").append(rot);
+		 log.info("Rotating returned image " + rot);
+	  }
+	  params.put(MemoryCacheFilterBase.KEY_NAME, queryStr.toString());
+
+	  WadoImage ret = (WadoImage) filterItem.callNextFilter(params);
+	  return ret;
    }
 
-   /** Generate the overall SVG object from the image and GSPS information.  If the gsps contains 
-    * no annotations, return null as it is not necessary to run the SVG conversion in that case.
-    * @param image
-    * @param gsps
-    * @return
-    */
-   private String generateSvg(ImageBean image, GspsBean gsps) {
+   /**
+     * Generate the overall SVG object from the image and GSPS information. If
+     * the gsps contains no annotations, return null as it is not necessary to
+     * run the SVG conversion in that case.
+     * 
+     * @param image
+     * @param gsps
+     * @return
+     */
+   private String generateSvg(ImageBean image, GspsBean gsps, WadoImage wadoImage) {
 	  List<Object> elems = image.getOtherElements();
-	  if( elems==null || elems.size()==0 ) return null;
+	  if (elems == null || elems.size() == 0)
+		 return null;
 	  SvgType gspsSvg = gsps.getSvg();
 	  Map<String, GType> used = selectG(gspsSvg);
-	  if( used.isEmpty() ) return null;
-	  
-	  SvgType svg = createSvgFromImport(elems, used);
-	  
-	  if( svg==null || svg.getChildren().size()==0 ) return null;
-	  
-	  svg.setHeight(Integer.toString(image.getRows())+"px");
-	  svg.setWidth(Integer.toString(image.getColumns())+"px");
-	  svg.setViewBox("0 0 " + image.getColumns() + " " + image.getRows());
+	  if (used.isEmpty())
+		 return null;
+
+	  GType svgImage = createSvgFromImport(elems, used, null);
+	  GType svgDisplay = createSvgFromImport(elems, used, "DISPLAY");
+
+	  if ((svgImage == null || svgImage.getChildren().size() == 0) && (svgDisplay == null || svgDisplay.getChildren().size() == 0))
+		 return null;
+	  SvgType svg = new SvgType();
+	  svg.getChildren().add(svgImage);
+	  svg.getChildren().add(svgDisplay);
+
+	  int width = wadoImage.getValue().getWidth();
+	  int height = wadoImage.getValue().getHeight();
+	  svg.setWidth(Integer.toString(width) + "px");
+	  svg.setHeight(Integer.toString(height) + "px");
+	  svg.setViewBox("0,0," + width + "," + height);
+
+	  svgDisplay.setTransform("scale(" + (width / 1000.0) + "," + (height / 1000.0) + ")");
+
+	  String transform = (String) wadoImage.getParameter(ScaleFilter.SVG_TRANSFORM);
+	  if (transform != null) {
+		 svgImage.setTransform(transform);
+	  }
+
 	  try {
 		 JAXBContext context = JAXBContext.newInstance(SvgType.class);
 		 Marshaller marshaller = context.createMarshaller();
@@ -189,7 +301,8 @@ public class GspsBurnIn implements Filter<WadoImage> {
 		 marshaller.marshal(new JAXBElement<SvgType>(new QName("http://www.w3.org/2000/svg", "svg"), SvgType.class, svg), sow);
 		 String strSvg = sow.toString();
 		 log.info("SVG=" + strSvg);
-		 // Would prefer to return this as a DOMDocument, but Batik barfs on it if you try.
+		 // Would prefer to return this as a DOMDocument, but Batik barfs on
+		 // it if you try.
 		 return strSvg;
 	  } catch (JAXBException e) {
 		 e.printStackTrace();
@@ -197,24 +310,40 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  }
    }
 
+   /** Get the rotation from the image bean object */
+   public static int getRotation(ImageBean image) {
+	  FlipRotateMacro flipRotateMacro = (FlipRotateMacro) image.getMacroItems().findMacro(FlipRotateMacro.class);
+	  if (flipRotateMacro == null)
+		 return 0;
+	  return flipRotateMacro.getRotation();
+   }
+
+   /** Get the flip from the image bean object */
+   public static boolean getFlip(ImageBean image) {
+	  FlipRotateMacro flipRotateMacro = (FlipRotateMacro) image.getMacroItems().findMacro(FlipRotateMacro.class);
+	  if (flipRotateMacro == null)
+		 return false;
+	  return flipRotateMacro.getFlip();
+   }
+
    /**
-    * Create the SVG from the use/importted GSPS objects.
-    * @param elems
-    * @param used
-    * @return
-    */
-   private SvgType createSvgFromImport(List<Object> elems, Map<String, GType> used) {
-	  SvgType svg = new SvgType();
-	  for(Object elem : elems) {
-		 if( elem instanceof Use ) {
+     * Create the SVG from the use/importted GSPS objects.
+     * 
+     * @param elems
+     * @param used
+     * @return
+     */
+   private GType createSvgFromImport(List<Object> elems, Map<String, GType> used, String clazz) {
+	  GType svg = new GType();
+	  for (Object elem : elems) {
+		 if (elem instanceof Use) {
 			Use use = (Use) elem;
 			GType g = used.get(use.getHref().substring(1));
-			if( g==null ) {
-			   log.warn("Use key not found:"+use.getHref() );
+			if (g == null) {
+			   log.warn("Use key not found:" + use.getHref());
 			   continue;
 			}
-			if( "DISPLAY".equalsIgnoreCase(g.getClazz())) {
-			   log.warn("DISPLAY values not handled yet.");
+			if (!(g.getClazz() == clazz || clazz != null && clazz.equalsIgnoreCase(g.getClazz()))) {
 			   continue;
 			}
 			svg.getChildren().add(g);
@@ -224,20 +353,20 @@ public class GspsBurnIn implements Filter<WadoImage> {
    }
 
    /**
-    * Select the G children elements from the GSPS object, putting them into teh return map
-    * by id.
-    * @param gspsSvg
-    * @return
-    */
+     * Select the G children elements from the GSPS object, putting them into
+     * teh return map by id.
+     * 
+     * @param gspsSvg
+     * @return
+     */
    private Map<String, GType> selectG(SvgType gspsSvg) {
-	  Map<String, GType> used = new HashMap<String,GType>();
-	  for(Object child : gspsSvg.getChildren()) {
-		 if(child instanceof GType) {
+	  Map<String, GType> used = new HashMap<String, GType>();
+	  for (Object child : gspsSvg.getChildren()) {
+		 if (child instanceof GType) {
 			GType g = (GType) child;
 			used.put(g.getId(), g);
-		 }
-		 else {
-			log.warn("Unknown child of SVG type "+child.getClass());
+		 } else {
+			log.warn("Unknown child of SVG type " + child.getClass());
 		 }
 	  }
 	  return used;

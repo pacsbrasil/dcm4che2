@@ -62,4 +62,8 @@ public class AspectMacro implements Macro {
 	  attrs.put(Q_ASPECT, Float.toString(aspect));
 	  return 1;
    }
+   
+   public float getAspect() {
+	  return aspect;
+   }
 }

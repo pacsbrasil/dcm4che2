@@ -77,7 +77,8 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			"rgb", // Could be re-calculated fairly easily, but right now it isn't worthwhile.
 			"region",
 			"rows",
-			"columns",
+			"cols",
+			"presentationUID",
 	};
 	
 	/** Filter the image by returning an JPEG type image object

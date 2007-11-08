@@ -42,6 +42,7 @@ import java.awt.image.BufferedImage;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 
 /**
  * A wado image is a buffered image return object that includes methods to
@@ -117,42 +118,10 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 	/** Splits region into sub-parts 
 	 */
 	public static double[] splitRegion(String region) {
-		return splitDouble(region,4);
+		return FilterUtil.splitDouble(region,4);
 	}
 
-	/** Splits region into sub-parts */
-	public static double[] splitDouble(String region, int size) {
-		double ret[] = new double[size];
-		int start = 0;		
-		region = region.trim();
-		for(int i=0; i<ret.length; i++ ) {
-			if( start>=region.length() ) throw new IllegalArgumentException("Too few arguments in "+region);
-			int end = region.indexOf(',',start);
-			if( end<0 ) end = region.length();
-			ret[i] = Double.parseDouble(region.substring(start,end));
-			start = end+1;
-		}
-		if( start<region.length() ) throw new IllegalArgumentException("Too many arguments in "+region);
-		return ret;
-	}
-
-	/** Splits region into sub-parts */
-	public static float[] splitFloat(String region, int size) {
-		float ret[] = new float[size];
-		int start = 0;		
-		region = region.trim();
-		for(int i=0; i<ret.length; i++ ) {
-			if( start>=region.length() ) throw new IllegalArgumentException("Too few arguments in "+region);
-			int end = region.indexOf(',',start);
-			if( end<0 ) end = region.length();
-			ret[i] = Float.parseFloat(region.substring(start,end));
-			start = end+1;
-		}
-		if( start<region.length() ) throw new IllegalArgumentException("Too many arguments in "+region);
-		return ret;
-	}
-
-   /** Returns the dicom object associated with this image */
+	/** Returns the dicom object associated with this image */
    public DicomObject getDicomObject() {
       return ds;
    }
