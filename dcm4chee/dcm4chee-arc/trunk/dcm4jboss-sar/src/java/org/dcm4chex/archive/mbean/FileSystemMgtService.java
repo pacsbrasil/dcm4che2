@@ -1579,9 +1579,11 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws Exception {
         int count = 0;
         for (int i = 0; i < otherServiceNames.length; i++) {
-            if (updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
-                    prevAET, newAET)) {
-                ++count;
+            if (server.isRegistered(otherServiceNames[i])) {
+                if (updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
+                        prevAET, newAET)) {
+                    ++count;
+                }
             }
         }
         server.invoke(aeServiceName, "updateAETitle", 
