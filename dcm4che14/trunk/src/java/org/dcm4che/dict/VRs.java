@@ -83,6 +83,8 @@ public class VRs  {
      */
     public static final int NONE = 0x0000;
     
+    public static final int UN_SIEMENS = 0x3F3F;
+    
     public static final int AE = 0x4145;
     
     public static final int AS = 0x4153;
@@ -139,6 +141,7 @@ public class VRs  {
         
     public static boolean isLengthField16Bit(int vr) {
         switch (vr) {
+            case UN_SIEMENS:
             case AE: case AS: case AT: case CS: case DA: case DS: case DT:
             case FL: case FD: case IS: case LO: case LT: case PN: case SH:
             case SL: case SS: case ST: case TM: case UI: case UL: case US:

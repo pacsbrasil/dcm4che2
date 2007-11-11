@@ -334,6 +334,13 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                     rVR = (bb12.get(4) << 8) | (bb12.get(5) & 0xff);
                     if (VRs.isLengthField16Bit(rVR)) {
                         rLen = bb12.getShort(6) & 0xffff;
+                        if (rVR == VRs.UN_SIEMENS) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Replace invalid VR '??' of "
+                                        + Tags.toString(rTag) + " by 'UN'");
+                            }
+                            rVR = VRs.UN;
+                        }
                     } else {
                         in.readFully(b12, 8, 4);
                         rPos += 4;
