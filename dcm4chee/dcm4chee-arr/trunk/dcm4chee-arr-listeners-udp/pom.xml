@@ -15,25 +15,25 @@
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-j2ee</artifactId>
-      <version>4.2.1.GA</version>
+      <version>4.2.2.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-system</artifactId>
-      <version>4.2.1.GA</version>
+      <version>4.2.2.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-jmx</artifactId>
-      <version>4.2.1.GA</version>
+      <version>4.2.2.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-common</artifactId>
-      <version>4.2.1.GA</version>
+      <version>4.2.2.GA</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
