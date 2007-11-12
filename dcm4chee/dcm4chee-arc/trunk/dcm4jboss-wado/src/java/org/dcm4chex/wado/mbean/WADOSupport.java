@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,6 +98,9 @@ import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
@@ -213,19 +217,15 @@ public class WADOSupport {
      * @return The WADO response object.
      * @throws PolicyContextException 
      */
-    public WADOResponseObject getWADOObject(WADORequestObject req) throws PolicyContextException {
+    public WADOResponseObject getWADOObject(WADORequestObject req) throws Exception {
         log.info("Get WADO object for " + req.getObjectUID());
         Dataset objectDs = null;
         QueryCmd cmd = null;
-        Subject subject = null;
-        try {
-			subject = (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
-		} catch (PolicyContextException e) {
-			if ( req.getRemoteUser() != null )
-				throw e;
-			log.info("PolicyContext Exception occured! ("+e.getMessage()+") Ignored because request is not authenticated");
-			log.debug("Exception details:",e);
-		}
+        if ( ! hasPermission(req) ) {
+            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Permission denied for:"+req.getObjectUID());
+        }
         try {
             Dataset dsQ = dof.newDataset();
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
@@ -309,6 +309,14 @@ public class WADOSupport {
         }
         return resp;
     }
+
+	private boolean hasPermission(WADORequestObject req)
+			throws PolicyContextException, RemoteException, Exception {
+		if ( req.getRemoteUser() == null ) //not authorized -> all permitted
+			return true;
+		Subject subject = (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
+		return getStudyPermissionManager().hasPermission(req.getStudyUID(), StudyPermissionDTO.READ_ACTION, subject);
+	}
 
     /**
      * @param contentTypes
@@ -1240,6 +1248,14 @@ public class WADOSupport {
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         return home.create();
     }
+    
+    private StudyPermissionManager getStudyPermissionManager() throws Exception {
+    	StudyPermissionManagerHome home = (StudyPermissionManagerHome) EJBHomeFactory.getFactory().lookup(
+                StudyPermissionManagerHome.class,
+                StudyPermissionManagerHome.JNDI_NAME);
+    	return home.create();
+    }
+    
 
     /**
      * Inner exception class to handle WADO redirection.
