@@ -11,12 +11,12 @@
 	<div align="center" style="font-size : 22px;" >
 		<xsl:text>Permission list for </xsl:text>
 		<xsl:choose>
-			<xsl:when test="patient/patientID">
-				<xsl:text>all studies of patient </xsl:text><xsl:value-of select="patient/patientName" /><xsl:text>:</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
+			<xsl:when test="string(studyIUID)">
 				<xsl:text>Study IUID:</xsl:text><xsl:value-of select="studyIUID" />
 				<xsl:text>(patient: </xsl:text><xsl:value-of select="patient/patientName" />):
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>all studies of patient </xsl:text><xsl:value-of select="patient/patientName" /><xsl:text>:</xsl:text>
 			</xsl:otherwise>
 		</xsl:choose>
 	</div>
