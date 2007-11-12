@@ -63,6 +63,10 @@ public abstract class BasicWADOResponseObject implements WADOResponseObject {
 		errorMessage = errMsg;
 	}
 	
+	public long length() {
+		return -1L;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.wado.common.WADOResponseObject#getContentType()
 	 */

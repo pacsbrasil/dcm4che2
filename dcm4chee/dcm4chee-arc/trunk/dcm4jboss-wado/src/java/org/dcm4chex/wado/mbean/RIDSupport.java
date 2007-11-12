@@ -713,7 +713,7 @@ public class RIDSupport {
 					outFile = renderSRFile( inFile, outFile );
 				}
 			}
-			return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),contentType, HttpServletResponse.SC_OK, null);
+			return new WADOStreamResponseObjectImpl( new FileInputStream( outFile ),outFile.length(), contentType, HttpServletResponse.SC_OK, null);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

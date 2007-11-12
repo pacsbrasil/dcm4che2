@@ -199,6 +199,9 @@ public class RIDServlet extends HttpServlet {
 		try {
 			if ( respObject != null ) {
 				response.setContentType( respObject.getContentType() );
+				long len = respObject.length();
+				if ( len != -1 ) 
+					response.setContentLength((int)len);
 				try {
 					delegate.getLogger().info("respObject execute");
 					//respObject.execute( System.out );

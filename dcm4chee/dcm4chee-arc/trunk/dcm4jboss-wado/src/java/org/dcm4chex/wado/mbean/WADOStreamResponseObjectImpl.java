@@ -70,6 +70,10 @@ public class WADOStreamResponseObjectImpl extends BasicWADOResponseObject {
 		this.maxLen = maxLen;
 	}
 	
+	public long length() {
+		return maxLen;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.wado.common.WADOResponseObject#getFile()
 	 */

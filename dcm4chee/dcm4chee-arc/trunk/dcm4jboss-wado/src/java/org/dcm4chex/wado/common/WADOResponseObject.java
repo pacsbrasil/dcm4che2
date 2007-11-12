@@ -66,6 +66,11 @@ public interface WADOResponseObject {
 	void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException;
 	
 	/**
+	 * Returns the contentLength or -1 (unknown) of this response. 
+	 * @return
+	 */
+	long length();
+	/**
 	 * Returns the content type that should be set in the response.
 	 * 
 	 * @return a content type like 'image/jpeg'

@@ -251,7 +251,7 @@ public class ECGSupport {
 	        t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
 	        out.close();
 			tmpFile.delete();
-			return new WADOStreamResponseObjectImpl(new FileInputStream( outFile ), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
+			return new WADOStreamResponseObjectImpl(new FileInputStream( outFile ), outFile.length(), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
 		} catch ( Throwable t ) {
 			try {
 				if ( out != null ) out.close();
