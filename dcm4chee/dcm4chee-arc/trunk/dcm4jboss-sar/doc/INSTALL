@@ -207,12 +207,30 @@ or
 and adjust it according your installation location of the archive and the JDK
 and under which user the archive application shall run.
 
+
+DEPLOY DCM4CHEE MEDIA CREATOR 2.x with DCM4CHEE ARCHIVE:
+========================================================
+Starting with dcm4chee-2.13.0, Media Creator 2.x (dcm4chee-cdw-2.x) is
+no longer included in the binary distribution package of the archive
+application, but provided in a separate binary distribution package, also
+available at http://sourceforge.net/projects/dcm4che .
+
+You may deploy dcm4chee-cdw-2.x in the same JBoss instance as dcm4che archive:
+
+1. Download and extract the binary distribution package of dcm4chee-cdw-2.x.
+
+2. Move to the dcm4chee-xxx-2.12.x/bin directory and execute the
+install_cdw.bat or install_cdw.sh script, as appropriate for your operating
+system, with the path of the dcm4chee-cdw-2.x installation directory as
+parameter.
+
+
 DEPLOY DCM4CHEE AUDIT RECORD REPOSITORY 3.x with DCM4CHEE ARCHIVE:
 ==================================================================
 Starting with dcm4chee-2.12.0, the binary distribution package of the archive
 application does NOT longer include dcm4chee Audit Record Repository 2.x
 (dcm4chee-arr-2.x).
-There are now separate binary distribution packages for dcm4chee Audit Record
+There are now a separate binary distribution packages for dcm4chee Audit Record
 Repository 3.0.x (dcm4chee-arr-3.0.x) available at
 http://sourceforge.net/projects/dcm4che .
 You may deploy dcm4chee-arr-3.0.x in the same JBoss instance as dcm4che archive:

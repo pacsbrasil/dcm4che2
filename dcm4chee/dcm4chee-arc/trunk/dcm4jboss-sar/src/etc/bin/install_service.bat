@@ -71,7 +71,8 @@ JavaService.exe -install "DCM4CHEE Image Archive" "%VM%"^
   -stop org.jboss.Main -method systemExit^
   -out "%JBOSS_HOME%\bin\out.txt"^
   -err "%JBOSS_HOME%\bin\err.txt"^
-  -current "%JBOSS_HOME%\bin"
+  -current "%JBOSS_HOME%\bin"^
+  -path "%JBOSS_HOME%\bin"
 goto eof
 
 :uninstall
