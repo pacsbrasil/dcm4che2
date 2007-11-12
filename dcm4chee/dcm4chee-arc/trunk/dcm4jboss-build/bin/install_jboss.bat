@@ -33,7 +33,6 @@ set JBOSS_BIN=%JBOSS_HOME%\bin
 set DCM4CHEE_BIN=%DCM4CHEE_HOME%\bin
 
 copy "%JBOSS_BIN%\run.jar" "%DCM4CHEE_BIN%"
-copy "%JBOSS_BIN%\run.sh" "%DCM4CHEE_BIN%"
 copy "%JBOSS_BIN%\shutdown.bat" "%DCM4CHEE_BIN%"
 copy "%JBOSS_BIN%\shutdown.jar" "%DCM4CHEE_BIN%"
 copy "%JBOSS_BIN%\shutdown.sh" "%DCM4CHEE_BIN%"
