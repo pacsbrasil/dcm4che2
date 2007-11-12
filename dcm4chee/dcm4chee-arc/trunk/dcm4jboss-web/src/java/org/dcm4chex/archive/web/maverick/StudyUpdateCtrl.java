@@ -45,6 +45,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
@@ -177,8 +178,13 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
  
     private void executeUpdate() {
         try {
-            StudyModel study = FolderForm.getFolderForm(getCtx())
-                    .getStudyByPk(patPk, studyPk);
+        	FolderForm form = FolderForm.getFolderForm(getCtx());
+        	StudyModel study = form.getStudyByPk(patPk, studyPk);
+            if ( !this.isStudyPermissionCheckDisabled() && 
+            		!form.hasPermission(study.getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION) ) {
+            	form.setExternalPopupMsg("folder.update_denied", new String[]{study.getStudyIUID()} );
+            	return;
+            }
             //updating data model
             StringBuffer sb = new StringBuffer();
             boolean modified = false;            
@@ -219,7 +225,6 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             }
             if (modified) {
 	            FolderSubmitCtrl.getDelegate().updateStudy(study.toDataset());
-	            FolderForm form = FolderForm.getFolderForm(getCtx());
 	            PatientModel pat = form.getPatientByPk(patPk);
 	            AuditLoggerDelegate.logProcedureRecord(getCtx(),
 	                    AuditLoggerDelegate.MODIFY,
