@@ -11,7 +11,7 @@ and install:
 
 - Ant 1.7.0 [http://ant.apache.org]
 
-- JBoss Application Server 4.2.1.GA [http://labs.jboss.com/jbossas/downloads]
+- JBoss Application Server 4.2.2.GA [http://labs.jboss.com/jbossas/downloads]
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
 
@@ -21,7 +21,7 @@ and add the $ANT_HOME/bin directory to your PATH.
 The build script (dcm4jboss-all/dcm4jboss-cdw/build.xml) assumes following
 locations of JBoss and Apache FOP:
 
-jboss.home=${user.home}/jboss-4.2.1.GA
+jboss.home=${user.home}/jboss-4.2.2.GA
 fop.home=${user.home}/fop-0.20.5
 
 Instead of modifying the build scripts directly, you may adjust these values
