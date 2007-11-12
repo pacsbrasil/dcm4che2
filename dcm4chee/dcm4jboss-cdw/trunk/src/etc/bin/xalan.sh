@@ -21,4 +21,15 @@ if [ ! -x "$JAVACMD" ] ; then
   exit
 fi
 
-$JAVACMD org.apache.xalan.xslt.Process "$@"
+DIRNAME=`dirname $0`
+# Setup JBOSS_HOME
+if [ "x$JBOSS_HOME" = "x" ]; then
+    # get the full path (without any relative bits)
+    JBOSS_HOME=`cd $DIRNAME/..; pwd`
+fi
+
+# Setup the java endorsed dirs
+JBOSS_ENDORSED_DIRS="$JBOSS_HOME/lib/endorsed"
+
+$JAVACMD -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
+         org.apache.xalan.xslt.Process "$@"

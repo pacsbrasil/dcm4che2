@@ -21,18 +21,25 @@ if [ ! -x "$JAVACMD" ] ; then
   exit
 fi
 
+DIRNAME=`dirname $0`
+# Setup JBOSS_HOME
+if [ "x$JBOSS_HOME" = "x" ]; then
+    # get the full path (without any relative bits)
+    JBOSS_HOME=`cd $DIRNAME/..; pwd`
+fi
+
+# Setup the java endorsed dirs
+JBOSS_ENDORSED_DIRS="$JBOSS_HOME/lib/endorsed"
+
 if [ -n "$CLASSPATH" ] ; then
   LOCALCLASSPATH=$CLASSPATH
 fi
 
-BIN_DIR=`dirname $0`
-LIB_DIR=${BIN_DIR}/../lib
+LIB_DIR=${JBOSS_HOME}/server/default/lib
 LOCALCLASSPATH=${LIB_DIR}/fop.jar
 LOCALCLASSPATH=${LIB_DIR}/avalon-framework-cvs-20020806.jar:$LOCALCLASSPATH
-LOCALCLASSPATH=${LIB_DIR}/batik.jar:$LOCALCLASSPATH
-LOCALCLASSPATH=${LIB_DIR}/jimi-1.0.jar:$LOCALCLASSPATH
-LOCALCLASSPATH=${LIB_DIR}/jai_core.jar:$LOCALCLASSPATH
-LOCALCLASSPATH=${LIB_DIR}/jai_codec.jar:$LOCALCLASSPATH
 
-$JAVACMD -classpath "$LOCALCLASSPATH" $FOP_OPTS org.apache.fop.apps.Fop -c ${BIN_DIR}/fopcfg.xml "$@"
+$JAVACMD -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
+         -classpath "$LOCALCLASSPATH" org.apache.fop.apps.Fop \
+         -c ${JBOSS_HOME}/bin/fopcfg.xml "$@"
 

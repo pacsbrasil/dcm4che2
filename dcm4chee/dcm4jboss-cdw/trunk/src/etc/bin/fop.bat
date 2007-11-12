@@ -1,14 +1,23 @@
-@ECHO OFF
+@if not "%ECHO%" == ""  echo %ECHO%
+@if "%OS%" == "Windows_NT"  setlocal
 
-rem %~dp0 is the expanded pathname of the current script under NT
-set BINDIR=.
-if "%OS%"=="Windows_NT" set BINDIR=%~dp0
-set LIBDIR=%BINDIR%\..\lib
+set DIRNAME=.\
+if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
+set PROGNAME=run.bat
+if "%OS%" == "Windows_NT" set PROGNAME=%~nx0%
+
+pushd %DIRNAME%..
+set JBOSS_HOME=%CD%
+popd
+
+rem Setup the java endorsed dirs
+set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
+
+set LIBDIR=%JBOSS_HOME%\server\default\lib
 
 set LOCALCLASSPATH=%LIBDIR%\fop.jar
 set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\avalon-framework-cvs-20020806.jar
-set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\batik.jar
-set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\jimi-1.0.jar
-set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\jai_core.jar
-set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\jai_codec.jar
-java -cp "%LOCALCLASSPATH%" org.apache.fop.apps.Fop -c %BINDIR%\fopcfg.xml %1 %2 %3 %4 %5 %6 %7 %8
+
+java "-Djava.endorsed.dirs=%JBOSS_ENDORSED_DIRS%" ^
+     --classpath "%LOCALCLASSPATH%" org.apache.fop.apps.Fop ^
+     -c %JBOSS_HOME%\bin\fopcfg.xml %*

@@ -1,10 +1,12 @@
 @echo off
 setlocal
-rem Set maximum size of the memory allocation pool
-rem default value of 64MB may not be sufficient for dcm4chee-cdw
-set JAVA_OPTS=-Xmx100m
-set DIRNAME=.
-set RUNJAR=%DIRNAME%run.jar
+set DIRNAME=%~dp0
+set PROGNAME=%~nx0%
+pushd %DIRNAME%..
+set JBOSS_HOME=%CD%
+popd
+
+set RUNJAR=%JBOSS_HOME%\bin\run.jar
 if exist "%RUNJAR%" goto found_runjar
 echo Could not locate %RUNJAR%. Please check that you are in the
 echo bin directory when running this script.
@@ -15,15 +17,15 @@ if "%1" == "uninstall" goto uninstall
 if "%1" == "server" goto install
 if "%1" == "client" goto install
 echo "Usage: %0 server|client|uninstall"
-echo Options:
-echo   client    install "DICOM CD Writer" service, using client hotspot vm
-echo   server    install "DICOM CD Writer" service, using server hotspot vm
-echo   uninstall uninstall "DICOM CD Writer" service
+echo "Options:"
+echo "  client    install DCM4CHEE Image Archive with client hotspot vm"
+echo "  server    install DCM4CHEE Image Archive with server hotspot vm"
+echo "  uninstall uninstall DCM4CHEE Image Archive service"
 goto eof
 
 :install
 if not "%JAVA_HOME%" == "" goto found_javahome
-echo set JAVA_HOME to your JDK 1.4 installation directory
+echo set JAVA_HOME to your JDK 1.5 installation directory
 goto eof
 
 :found_javahome
@@ -32,7 +34,7 @@ if exist "%VM%" goto found_vm
 set VM=%JAVA_HOME%\jre\bin\%1\jvm.dll
 if exist "%VM%" goto found_vm
 echo Could not locate %VM%. Please check that JAVA_HOME is set to your
-echo JDK 1.4 installation directory
+echo JDK 1.5 installation directory
 goto eof
 
 :found_vm
@@ -42,11 +44,39 @@ echo Could not locate %TOOLS_JAR%. Unexpected results may occur.
 echo Make sure that JAVA_HOME points to a JDK and not a JRE.
 
 :install
-JavaService.exe -install "DICOM CD Writer" "%VM%" %JAVA_OPTS% -Djava.class.path=%TOOLS_JAR%;%RUNJAR%  -start org.jboss.Main -stop org.jboss.Main -method systemExit -current %DIRNAME%
+rem Setup JBoss specific properties
+set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME%
+
+rem JVM memory allocation pool parameters. Modify as appropriate.
+set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
+
+rem With Sun JVMs reduce the RMI GCs to once per hour
+set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000
+
+rem Set java.library.path to find native jai-imageio components 
+set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%JBOSS_HOME%\bin\native
+
+rem Set app.name and app.pid used in emitted audit log messages
+set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee -Dapp.pid=%RANDOM%
+
+rem Setup the java endorsed dirs
+set JAVA_OPTS=%JAVA_OPTS% -Djava.endorsed.dirs=%JBOSS_HOME%\lib\endorsed
+
+rem Enable remote access to jboss services and web interface
+set START_PARAMS=-params -b 0.0.0.0
+
+JavaService.exe -install "DCM4CHEE Media Creator" "%VM%"^
+  %JAVA_OPTS% "-Djava.class.path=%TOOLS_JAR%;%RUNJAR%"^
+  -start org.jboss.Main %START_PARAMS%^
+  -stop org.jboss.Main -method systemExit^
+  -out "%JBOSS_HOME%\bin\out.txt"^
+  -err "%JBOSS_HOME%\bin\err.txt"^
+  -current "%JBOSS_HOME%\bin"^
+  -path "%JBOSS_HOME%\bin"
 goto eof
 
 :uninstall
-JavaService.exe -uninstall "DICOM CD Writer"
+JavaService.exe -uninstall "DCM4CHEE Media Creator"
 goto eof
 
 :eof
