@@ -2,7 +2,7 @@
 m2.repos=${user.home}/.m2/repository
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-4.2.1.GA
+jboss.home=${user.home}/jboss-4.2.2.GA
 
 #Override with your FOP dist location
 fop.home=${user.home}/fop-0.20.5

@@ -8,7 +8,7 @@ DCM4CHEE_HOME="$DIRNAME"/..
 DCM4CHEE_SERV="$DCM4CHEE_HOME"/server/default
 
 if [ x$1 = x ]; then
-  echo "Usage: $0 <path-to-jboss-4.2.1.GA-installation-directory>"
+  echo "Usage: $0 <path-to-jboss-4.2.2.GA-installation-directory>"
   exit 1
 fi
 
@@ -16,7 +16,7 @@ JBOSS_HOME="$1"
 JBOSS_SERV="$JBOSS_HOME"/server/default
 
 if [ ! -f "$JBOSS_HOME"/bin/run.jar ]; then
-  echo Could not locate jboss-4.2.1.GA in "$JBOSS_HOME"
+  echo Could not locate jboss-4.2.2.GA in "$JBOSS_HOME"
   exit 1
 fi
 
@@ -46,7 +46,6 @@ cp -v -R "$JBOSS_SERV"/conf/props \
 
 mkdir "$DCM4CHEE_SERV"/lib
 cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
-rm "$DCM4CHEE_SERV"/lib/jboss-saaj.jar
 
 cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/cache-invalidation-service.xml \

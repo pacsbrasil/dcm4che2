@@ -17,7 +17,7 @@ goto end
 
 :found_dcm4chee
 if not [%1] == [] goto found_arg1
-echo "Usage: install_jboss <path-to-jboss-4.2.1.GA-installation-directory>"
+echo "Usage: install_jboss <path-to-jboss-4.2.2.GA-installation-directory>"
 goto end
 
 :found_arg1
@@ -25,7 +25,7 @@ set JBOSS_HOME=%1
 set JBOSS_SERV=%JBOSS_HOME%\server\default
 
 if exist "%JBOSS_SERV%" goto found_jboss
-echo Could not locate jboss-4.2.1.GA in %JBOSS_HOME%.
+echo Could not locate jboss-4.2.2.GA in %JBOSS_HOME%.
 goto end
 
 :found_jboss
@@ -55,7 +55,6 @@ xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
 xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
-del "%DCM4CHEE_SERV%\lib\jboss-saaj.jar"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
