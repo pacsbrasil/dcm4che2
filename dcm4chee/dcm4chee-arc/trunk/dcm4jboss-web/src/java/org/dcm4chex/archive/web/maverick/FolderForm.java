@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -83,6 +85,8 @@ public class FolderForm extends BasicFolderForm {
     private StudyFilterModel studyFilter = null;
 
     private List aets;
+    
+    private Map grantedStudyActions;
 
     private String destination;
 
@@ -298,6 +302,13 @@ public class FolderForm extends BasicFolderForm {
     public final void setAets(List aets) {
         this.aets = aets;
     }
+    
+    public final Map getGrantedStudyActions() {
+    	return this.grantedStudyActions;
+    }
+    public final void setGrantedStudyActions(Map granted) {
+    	this.grantedStudyActions = granted;
+    }
 
     public final String getDestination() {
         return destination;
@@ -396,4 +407,9 @@ public class FolderForm extends BasicFolderForm {
 		getFolderForm(ctx).setExternalPopupMsg(msgId, args);
 	}
 
+	public boolean hasPermission(String suid, String action) {
+		Collection l = (Collection) this.grantedStudyActions.get(suid);
+		log.info("hasPermission: studyIUID:"+suid+" actions:"+l);
+		return l == null ? false : l.contains(action);
+	}
 }

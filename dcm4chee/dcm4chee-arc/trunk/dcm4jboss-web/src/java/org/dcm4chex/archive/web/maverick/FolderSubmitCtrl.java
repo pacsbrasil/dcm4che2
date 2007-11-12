@@ -41,9 +41,13 @@ package org.dcm4chex.archive.web.maverick;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +56,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryStudyPermissionCmd;
+import org.dcm4chex.archive.hl7.StudyPermissionDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
@@ -66,6 +73,7 @@ import org.dcm4chex.archive.web.maverick.xdsi.XDSConsumerModel;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIExportDelegate;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIModel;
 import org.infohazard.maverick.flow.ControllerContext;
+import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * 
@@ -89,6 +97,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
 	private TeachingFileDelegate tfDelegate;
 	private XDSIExportDelegate xdsiDelegate;
 
+	private StudyPermissionDelegate studyPermissionDelegate;
 
 
     public static ContentEditDelegate getDelegate() {
@@ -208,11 +217,22 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     !folderForm.isShowWithoutStudies(), 
                     folderForm.isNoMatchForNoValue(), 
                     subject).list(folderForm.getOffset(), folderForm.getLimit());
+        if (subject != null) {
+        	folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
+        }
         folderForm.setStudies(studyList);
         return FOLDER;
     }
     
-    /**
+    private Map queryGrantedStudyActions(List studyList, Subject subject) throws Exception {
+    	String[] studyIUIDs = new String[studyList.size()];
+    	int i = 0;
+    	for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; i++) {
+    		studyIUIDs[i] = ((Dataset) iter.next() ).getString(Tags.StudyInstanceUID);
+    	}
+		return new QueryStudyPermissionCmd().getGrantedActionsForStudies(studyIUIDs, subject);
+	}
+	/**
      * @param folderForm
      * @param allowedAets
      */
@@ -235,6 +255,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
 	private String send() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
+		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
+    		folderForm.setPopupMsg("folder.export_denied",(String)null);
+    		return FOLDER;
+		}
         List patients = folderForm.getPatients();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
@@ -327,6 +351,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
     private String delete() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
+		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.DELETE_ACTION, true) ) {
+    		folderForm.setPopupMsg("folder.deletion_denied",(String)null);
+    		return FOLDER;
+		}
         deletePatients(folderForm.getPatients());
         query(true);
         folderForm.removeStickies();
@@ -337,7 +365,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private void deletePatients(List patients)
             throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
-        for (int i = 0, n = patients.size(); i < n; i++) {
+        pat_loop: for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
                 List studies = listStudiesOfPatient(pat.getPk());
@@ -352,8 +380,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 }
                 AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
                         .getPatientID(), pat.getPatientName(), null);
-            } else
+            } else {
                 deleteStudies( pat );
+            }
         }
     }
 
@@ -487,6 +516,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private String exportTF() {
 		FolderForm folderForm = (FolderForm) getForm();
     	try {
+    		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
+        		folderForm.setPopupMsg("folder.export_denied",(String)null);
+        		return FOLDER;
+    		}
     		if ( tfDelegate == null ) {
     			tfDelegate = new TeachingFileDelegate();
     			tfDelegate.init(getCtx());
@@ -516,6 +549,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private String exportXDSI() {
 		FolderForm folderForm = (FolderForm) getForm();
     	try {
+    		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
+        		folderForm.setPopupMsg("folder.export_denied",(String)null);
+        		return FOLDER;
+    		}
     		xdsiDelegate = XDSIExportDelegate.getInstance(getCtx());
         	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
 					 folderForm.getStickyStudies(),
@@ -533,6 +570,66 @@ public class FolderSubmitCtrl extends FolderCtrl {
 		return XDSI_EXPORT;
     }
     
+    private boolean checkStickiesForStudyPermission(String action, boolean updateStickies) throws Exception {
+    	if ( this.isStudyPermissionCheckDisabled() )
+    		return true;
+    	boolean allPermitted = true;
+        FolderForm folderForm = (FolderForm) getForm();
+        pat_loop: for (Iterator iter = folderForm.getPatients().iterator() ; iter.hasNext() ;) {
+            PatientModel pat = (PatientModel) iter.next();
+            if (folderForm.isSticky(pat)) {
+                List studies = listStudiesOfPatient(pat.getPk());
+                for (int j = 0, m = studies.size(); j < m; j++) {
+                    Dataset study = (Dataset) studies.get(j);
+                    if ( !folderForm.hasPermission(study.getString(Tags.StudyInstanceUID), action)) {
+                    	log.warn("sticky of patient "+pat.getPatientID()+" not allowed! Action:"+action+" denied for study "+study.getString(Tags.StudyInstanceUID));
+                    	if ( updateStickies ) {
+                    		folderForm.getStickyPatients().remove(String.valueOf(pat.getPk()));
+                    		allPermitted = false;
+                    		continue pat_loop;
+                    	} else { 
+                    		return false;
+                    	}
+                    }
+                }
+            } else {
+                List studies = pat.getStudies();
+                for (int i = 0, n = studies.size(); i < n; i++) {
+                    StudyModel study = (StudyModel) studies.get(i);
+                    if (folderForm.isSticky(study) || isChildChecked(study, folderForm) ) {
+                        if ( !folderForm.hasPermission(study.getStudyIUID(), action)) {
+                        	log.warn("Deletion of study "+study.getStudyIUID()+ "denied!");
+                        	if ( updateStickies ) {
+                        		folderForm.removeStickies(study);
+                        		allPermitted = false;
+                        	} else {
+                        		return false;
+                        	}
+                        }
+                    }
+                }
+            	
+            }
+        }
+        return allPermitted;
+    	
+    }
+
+    private boolean isChildChecked(StudyModel study, FolderForm folderForm) {
+        for (Iterator iter = study.getSeries().iterator() ; iter.hasNext() ;) {
+        	SeriesModel series = (SeriesModel) iter.next();
+            if (folderForm.isSticky( series ) ) {
+            	return true;
+            }
+            for ( Iterator iter2 = series.getInstances().iterator() ; iter2.hasNext() ; ) {
+                if (folderForm.isSticky( (InstanceModel) iter2.next() ) ) {
+                	return true;
+                }
+            }
+        }
+		return false;
+	}
+
     /**
 	 * 
 	 */
@@ -569,5 +666,4 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
         return aeDelegate;
     }
-	
 }

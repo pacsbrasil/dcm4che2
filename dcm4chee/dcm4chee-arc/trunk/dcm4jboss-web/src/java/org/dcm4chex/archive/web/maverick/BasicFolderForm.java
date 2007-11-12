@@ -378,47 +378,38 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     public void removeStickies() {
         PatientModel patient;
-        StudyModel study;
-        SeriesModel series;
-        InstanceModel instance;
         for (Iterator patient_iter = patients.iterator(); patient_iter
                 .hasNext();) {
             patient = (PatientModel) patient_iter.next();
             if (stickyPatients.contains(String.valueOf(patient.getPk()))) {
-                patient_iter.remove();
                 stickyPatients.remove(String.valueOf(patient.getPk()));
-            } else
-                for (Iterator study_iter = patient.getStudies().iterator(); study_iter
-                        .hasNext();) {
-                    study = (StudyModel) study_iter.next();
-                    if (stickyStudies.contains(String.valueOf(study.getPk()))) {
-                        study_iter.remove();
-                        stickyStudies.remove(String.valueOf(study.getPk()));
-                    } else
-                        for (Iterator series_iter = study.getSeries()
-                                .iterator(); series_iter.hasNext();) {
-                            series = (SeriesModel) series_iter.next();
-                            if (stickySeries.contains(String.valueOf(series
-                                    .getPk()))) {
-                                series_iter.remove();
-                                stickySeries.remove(String.valueOf(series
-                                        .getPk()));
-                            } else
-                                for (Iterator instance_iter = series
-                                        .getInstances().iterator(); instance_iter
-                                        .hasNext();) {
-                                    instance = (InstanceModel) instance_iter
-                                            .next();
-                                    if (isSticky(instance)) {
-                                        instance_iter.remove();
-                                        stickyInstances.remove(String
-                                                .valueOf(instance.getPk()));
-                                    }
-                                }
-                        }
-                }
+            }
+            for (Iterator study_iter = patient.getStudies().iterator(); study_iter
+                    .hasNext();) {
+				removeStickies((StudyModel) study_iter.next());
+            }
         }
     }
+
+	public void removeStickies(StudyModel study) {
+        if (stickyStudies.contains(String.valueOf(study.getPk()))) {
+            stickyStudies.remove(String.valueOf(study.getPk()));
+        }
+		SeriesModel series;
+		InstanceModel instance;
+		for (Iterator series_iter = study.getSeries().iterator(); series_iter.hasNext();) {
+		    series = (SeriesModel) series_iter.next();
+		    if (stickySeries.contains(String.valueOf(series.getPk()))) {
+		        stickySeries.remove(String.valueOf(series.getPk()));
+		    }
+	        for (Iterator instance_iter = series.getInstances().iterator(); instance_iter.hasNext();) {
+	            instance = (InstanceModel) instance_iter.next();
+	            if (isSticky(instance)) {
+	                stickyInstances.remove(String.valueOf(instance.getPk()));
+	            }
+	        }
+		}
+	}
 
 
 }
