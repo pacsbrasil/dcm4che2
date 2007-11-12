@@ -1245,7 +1245,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  log.info("Set rect shutter path to " + d);
 
 	  String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(), null);
-	  path.setColor(rgb);
+	  path.setStroke(rgb);
 	  path.setFill(rgb);
 	  path.setId(ResultsBean.createId("shre"));
 	  path.setD(d.toString());
