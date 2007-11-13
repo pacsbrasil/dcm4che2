@@ -90,7 +90,8 @@ public class WebRolesConfig extends DefaultHandler {
     	roles.put(name, new WebRole(name, descr));
     }
     public String getDependencyForRole( String name ) {
-    	return getRole(name).getDependency();
+    	WebRole role = getRole(name);
+    	return role == null ? null : role.getDependency();
     }
 
     public void loadFrom(String url) throws ConfigurationException {
