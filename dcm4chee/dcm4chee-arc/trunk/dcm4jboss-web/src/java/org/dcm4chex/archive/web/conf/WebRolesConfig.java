@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,9 +64,9 @@ public class WebRolesConfig extends DefaultHandler {
 
 	public static final String DEFAULT_ROLE_TYPE = "WebUser";
 
-    private final Map roles = new HashMap();
+    private final Map roles = new LinkedHashMap();
     private final Set types = new HashSet();
-    private final Map actions = new HashMap();
+    private final Map actions = new LinkedHashMap();
    
     public WebRolesConfig() {
     	loadFrom(CONFIG_URL);
