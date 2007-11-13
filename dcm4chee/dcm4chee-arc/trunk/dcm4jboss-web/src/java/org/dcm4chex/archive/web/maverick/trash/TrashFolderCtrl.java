@@ -178,9 +178,8 @@ public class TrashFolderCtrl extends FolderCtrl {
     private String delete() throws Exception {
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         deletePatients(folderForm.getPatients());
-        query(true);
         folderForm.removeStickies();
-        
+        query(true);
         return TRASH;
     }
 
@@ -254,9 +253,8 @@ public class TrashFolderCtrl extends FolderCtrl {
         } else {
         	undeletePatients(folderForm.getPatients());
         }
-        query(true);
         folderForm.removeStickies();
-        
+        query(true);
         return TRASH;
     }
 

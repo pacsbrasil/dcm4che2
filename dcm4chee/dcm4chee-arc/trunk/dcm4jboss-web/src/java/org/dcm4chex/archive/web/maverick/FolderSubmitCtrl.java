@@ -356,8 +356,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
     		return FOLDER;
 		}
         deletePatients(folderForm.getPatients());
-        query(true);
         folderForm.removeStickies();
+        query(true);
         
         return FOLDER;
     }
