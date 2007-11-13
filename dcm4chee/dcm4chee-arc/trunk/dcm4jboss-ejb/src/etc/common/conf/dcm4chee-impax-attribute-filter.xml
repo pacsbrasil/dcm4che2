@@ -132,6 +132,11 @@
         <attr tag="00081140"/> <!-- Referenced Image Sequence -->
         <attr tag="00082111"/> <!-- Derivation Description -->
         <attr tag="00082112"/> <!-- Source Image Sequence -->
+        <attr tag="00082120"/> <!-- Stage Name -->
+        <attr tag="00082122"/> <!-- Stage Number -->
+        <attr tag="00082124"/> <!-- Number of Stages -->
+        <attr tag="00082127"/> <!-- View Name -->
+        <attr tag="00082128"/> <!-- View Number -->
         <attr tag="00082144"/> <!-- Recommended Display Frame Rate -->
         <attr tag="00180010"/> <!-- Contrast/Bolus Agent -->
         <attr tag="00180020"/> <!-- Scanning Sequence -->
