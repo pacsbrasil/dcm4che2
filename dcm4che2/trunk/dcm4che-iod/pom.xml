@@ -1,4 +1,4 @@
-<model>
+<project>
   <parent>
     <artifactId>dcm4che</artifactId>
     <groupId>dcm4che</groupId>
@@ -22,4 +22,4 @@
       <scope>compile</scope>
     </dependency>
   </dependencies>
-</model>
+</project>

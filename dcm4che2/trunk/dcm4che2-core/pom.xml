@@ -1,4 +1,4 @@
-<model>
+<project>
   <parent>
     <artifactId>dcm4che</artifactId>
     <groupId>dcm4che</groupId>
@@ -11,4 +11,4 @@
     <module>dcm4che2-core-main</module>
     <module>dcm4che2-core-test-dictionary</module>
   </modules>
-</model>
+</project>
