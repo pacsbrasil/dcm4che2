@@ -122,6 +122,9 @@ default-transform-type="xslt">
 	    <view name="success">
     	  <transform path="study_edit.xsl" />
 	    </view>
+	    <view name="view">
+    	  <transform path="study_view.xsl" />
+	    </view>
      </command>
  
      <command name="addWorklist">
@@ -143,6 +146,9 @@ default-transform-type="xslt">
         <controller class="org.dcm4chex.archive.web.maverick.SeriesEditCtrl" />    
 	    <view name="success">
     	  <transform path="series_edit.xsl" />
+	    </view>
+	    <view name="view">
+    	  <transform path="series_view.xsl" />
 	    </view>
      </command>
 

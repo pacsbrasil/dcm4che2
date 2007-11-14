@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
@@ -52,11 +53,11 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
 public class SeriesEditCtrl extends Dcm4cheeFormController {
 
     private long patPk;
-
     private long studyPk;
-
     private long seriesPk;
 
+    private StudyModel study;
+    
     public final long getPatPk() {
         return patPk;
     }
@@ -87,8 +88,7 @@ public class SeriesEditCtrl extends Dcm4cheeFormController {
     }
 
     public StudyModel getStudy() {
-        return FolderForm.getFolderForm(getCtx()).getStudyByPk(
-                patPk, studyPk);
+        return getStudyModel();
     }
     
     public SeriesModel getSeries() {
@@ -96,10 +96,24 @@ public class SeriesEditCtrl extends Dcm4cheeFormController {
                 .getSeriesByPk(patPk, studyPk, seriesPk);
     }
 
+    public boolean isUpdateAllowed() {
+    	return studyPk == -1 ? true :
+    		FolderForm.getFolderForm(getCtx()).hasPermission(getStudyModel().getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION);
+    }
+    
+    protected String perform() throws Exception {
+        return isUpdateAllowed() ? SUCCESS : "view";
+    }
+    
     private SeriesModel newSeries() {
     	SeriesModel seriesModel = new SeriesModel();
     	seriesModel.setSpecificCharacterSet("ISO_IR 100");
     	return seriesModel;
     }
     
+    private StudyModel getStudyModel() {
+    	if ( study == null)
+    		study = FolderForm.getFolderForm(getCtx()).getStudyByPk(patPk, studyPk);
+    	return study;
+    }
 }

@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.web.maverick;
 
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
 
@@ -53,6 +54,8 @@ public class StudyEditCtrl extends Dcm4cheeFormController {
     private long patPk;
 
     private long studyPk;
+    
+    private StudyModel study;
 
     public final long getPatPk() {
         return patPk;
@@ -71,12 +74,20 @@ public class StudyEditCtrl extends Dcm4cheeFormController {
     }
 
     public PatientModel getPatient() {
-        return FolderForm.getFolderForm(getCtx()).getPatientByPk(
-                patPk);
+        return FolderForm.getFolderForm(getCtx()).getPatientByPk(patPk);
     }
 
     public StudyModel getStudy() {
-		return studyPk == -1 ? newStudy() : FolderForm.getFolderForm(getCtx()).getStudyByPk(patPk, studyPk);
+		return getStudyModel();
+    }
+    
+    public boolean isUpdateAllowed() {
+    	return studyPk == -1 ? true :
+    		FolderForm.getFolderForm(getCtx()).hasPermission(getStudyModel().getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION);
+    }
+
+    protected String perform() throws Exception {
+        return isUpdateAllowed() ? SUCCESS : "view";
     }
     
     private StudyModel newStudy() {
@@ -86,4 +97,9 @@ public class StudyEditCtrl extends Dcm4cheeFormController {
     	return studyModel;
     }
 
+    private StudyModel getStudyModel() {
+    	if ( study == null)
+    		study = studyPk == -1 ? newStudy() : FolderForm.getFolderForm(getCtx()).getStudyByPk(patPk, studyPk);
+    	return study;
+    }
 }

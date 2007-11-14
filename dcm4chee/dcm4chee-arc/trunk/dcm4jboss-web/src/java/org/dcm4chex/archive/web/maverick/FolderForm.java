@@ -408,6 +408,7 @@ public class FolderForm extends BasicFolderForm {
 	}
 
 	public boolean hasPermission(String suid, String action) {
+		if ( grantedStudyActions == null ) return false;
 		Collection l = (Collection) this.grantedStudyActions.get(suid);
 		log.info("hasPermission: studyIUID:"+suid+" actions:"+l);
 		return l == null ? false : l.contains(action);
