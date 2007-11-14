@@ -38,12 +38,14 @@
 	<div align="center" style="background-color: #eeeeee;" >
 		<form action="studyPermissionUpdate.m" name="permForm" method="post" accept-charset="UTF-8" >
 			<br/>&#160;<br/>
-			role:&#160;<input size="10" name="role" type="text" value="" />
-			&#160;
-			action:&#160;<input size="10" name="action" type="text" value="" />
-			&#160;
-			<input type="submit" name="cmd" value="Add"/>
-			<br/>&#160;<br/>
+			<xsl:if test="/model/studyPermissionCheckDisabled='true' or /model/grantPrivileg='true'" >
+				role:&#160;<input size="10" name="role" type="text" value="" />
+				&#160;
+				action:&#160;<input size="10" name="action" type="text" value="" />
+				&#160;
+				<input type="submit" name="cmd" value="Add"/>
+				<br/>&#160;<br/>
+			</xsl:if>
 			<input type="submit" name="cmd" value="Cancel"/>
 			<br/>&#160;<br/>
 		</form>
@@ -57,38 +59,66 @@
 </xsl:template>
 
 <xsl:template match="item" mode="role_line">
+   	<xsl:variable name="updateAllAllowed" select="/model/studyPermissionCheckDisabled='true' or /model/grantPrivileg='true'" />
 	<tr>
 		<th title="Role:{name}({descr})"><xsl:value-of select="displayName" /></th>
-		<xsl:apply-templates select="/model/rolesConfig/actions/item" mode="action_line">
+		<xsl:apply-templates select="/model/rolesConfig/actions/item" mode="action_line_edit">
 			<xsl:with-param name="role" select="name"/>
+			<xsl:with-param name="updateAllAllowed" select="$updateAllAllowed"/>
 		</xsl:apply-templates>	
 	</tr>
 </xsl:template>
 
-<xsl:template match="item" mode="action_line">
+<xsl:template match="item" mode="action_line_edit">
    	<xsl:param name="role" />
+  	<xsl:param name="updateAllAllowed" />
    	<xsl:variable name="action" select="@key" />
    	<xsl:variable name="countPermissions" select="count(/model/rolesWithActions/item[@key=$role]/item[@key=$action]/item)" />
+   	<xsl:variable name="updateThisAllowed" select="$updateAllAllowed or (/model/grantOwnPrivileg and /model/grantedActions[item=$action])" />
 	<td title="{$role}:{.}" align="center">
+		<xsl:if test="/model/grantOwnPrivileg and $updateThisAllowed!='true'" >
+			<xsl:attribute name="bgcolor">#eeeeee</xsl:attribute>
+		</xsl:if>
 		<xsl:choose>
 			<xsl:when test="$countPermissions = /model/countStudies">
-				<a title="remove permission for {$role}:{.}" 
-					href="studyPermissionUpdate.m?cmd=remove&amp;role={$role}&amp;action={$action}" >
-	   				<img src="images/granted.gif" alt="granted" border="0" />
-	   			</a>
+				<xsl:choose>
+					<xsl:when test="$updateThisAllowed">
+						<a title="remove permission for {$role}:{.}" 
+							href="studyPermissionUpdate.m?cmd=remove&amp;role={$role}&amp;action={$action}" >
+		   					<img src="images/granted.gif" alt="granted" border="0" />
+		   				</a>
+			   		</xsl:when>
+					<xsl:otherwise>
+	   					<img src="images/granted.gif" alt="granted" border="0" />
+			   		</xsl:otherwise>
+			   	</xsl:choose>
 	   		</xsl:when>
 			<xsl:when test="$countPermissions > 0">
-				<a title="remove permission for {$role}:{.}" 
-					href="studyPermissionUpdate.m?cmd=remove&amp;role={$role}&amp;action={$action}">
-	   				<img src="images/granted_part.gif" alt="some studies granted" border="0" />
-	   			</a>
+				<xsl:choose>
+					<xsl:when test="$updateThisAllowed">
+						<a title="remove permission for {$role}:{.}" 
+							href="studyPermissionUpdate.m?cmd=remove&amp;role={$role}&amp;action={$action}">
+			   				<img src="images/granted_part.gif" alt="some studies granted" border="0" />
+			   			</a>
+			   		</xsl:when>
+					<xsl:otherwise>
+	   					<img src="images/granted_part.gif" alt="some studies granted" border="0" />
+			   		</xsl:otherwise>
+			   	</xsl:choose>
 	   			<xsl:value-of select="$countPermissions" />/<xsl:value-of select="/model/countStudies"/>
 	   		</xsl:when>
 			<xsl:otherwise>
-				<a title="add permission for {$role}:{.}" 
-					href="studyPermissionUpdate.m?cmd=add&amp;role={$role}&amp;action={$action}" >
-		   			<img src="images/denied.gif" alt="denied" border="0" />
-	   			</a>
+				<xsl:choose>
+					<xsl:when test="$updateThisAllowed">
+						<a title="add permission for {$role}:{.}" 
+							href="studyPermissionUpdate.m?cmd=add&amp;role={$role}&amp;action={$action}" >
+				   			<img src="images/denied.gif" alt="denied" border="0" />
+			   			</a>
+			   		</xsl:when>
+					<xsl:otherwise>
+	   					<img src="images/denied.gif" alt="denied" border="0" />
+			   		</xsl:otherwise>
+			   	</xsl:choose>
 	   		</xsl:otherwise>
 	   	</xsl:choose>&#160;
 	</td>

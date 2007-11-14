@@ -67,7 +67,7 @@ public class StudyPermissionUpdateCtrl extends Dcm4cheeFormController {
     
     protected Object makeFormBean() {
         try {
-            model = StudyPermissionModel.getModel(getCtx());
+            model = StudyPermissionModel.getModel(getCtx(), this);
         } catch (Exception e) {
             log.error("Failed to create StudyPermissionModel!");
         }
@@ -77,35 +77,39 @@ public class StudyPermissionUpdateCtrl extends Dcm4cheeFormController {
     
     protected String perform() throws Exception {
         log.info("perform called!");
-        HttpServletRequest req = getCtx().getRequest();
-        String cmd = nullEmptyValue(req.getParameter("cmd"));
-        StudyPermissionModel model = StudyPermissionModel.getModel(getCtx());
-        if ( cmd == null ) {
-            model.setPopupMsg("folder.study_permission_missingAttr", "cmd");
-            return SUCCESS;
-        } else if ( "cancel".equalsIgnoreCase(cmd) ) {
-            return CANCEL;
+        try {
+	        HttpServletRequest req = getCtx().getRequest();
+	        String cmd = nullEmptyValue(req.getParameter("cmd"));
+	        StudyPermissionModel model = StudyPermissionModel.getModel(getCtx(), this);
+	        if ( cmd == null ) {
+	            model.setPopupMsg("folder.study_permission_missingAttr", "cmd");
+	            return SUCCESS;
+	        } else if ( "cancel".equalsIgnoreCase(cmd) ) {
+	            return CANCEL;
+	        }
+	        String role = nullEmptyValue(req.getParameter("role"));
+	        String action = nullEmptyValue(req.getParameter("action"));
+	        if ( role == null && action == null ) {
+	            model.setPopupMsg("folder.study_permission_missingAttr", "role, action");
+	            return SUCCESS;
+	        }
+	        if ( "add".equalsIgnoreCase(cmd) ) {
+	        	if ( action == null ) {
+	        		model.addRole(role);
+	        	} else if ( role == null ) {
+	        		model.addAction(action);
+	        	} else {
+	        		model.addPermission(role, action);
+	        	}
+	        } else if ( "remove".equalsIgnoreCase(cmd) ) {
+	            model.removePermission(role, action);
+	        } else {
+	            model.setPopupMsg("folder.study_permission_unknown_cmd", cmd);
+	        }
+	        return SUCCESS;
+        } catch (Exception x) {
+        	return CANCEL;
         }
-        String role = nullEmptyValue(req.getParameter("role"));
-        String action = nullEmptyValue(req.getParameter("action"));
-        if ( role == null && action == null ) {
-            model.setPopupMsg("folder.study_permission_missingAttr", "role, action");
-            return SUCCESS;
-        }
-        if ( "add".equalsIgnoreCase(cmd) ) {
-        	if ( action == null ) {
-        		model.addRole(role);
-        	} else if ( role == null ) {
-        		model.addAction(action);
-        	} else {
-        		model.addPermission(role, action);
-        	}
-        } else if ( "remove".equalsIgnoreCase(cmd) ) {
-            model.removePermission(role, action);
-        } else {
-            model.setPopupMsg("folder.study_permission_unknown_cmd", cmd);
-        }
-        return SUCCESS;
     }
     
     private String nullEmptyValue( String value ) {

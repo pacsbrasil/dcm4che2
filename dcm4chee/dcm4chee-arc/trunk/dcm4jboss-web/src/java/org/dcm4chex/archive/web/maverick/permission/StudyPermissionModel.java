@@ -42,9 +42,12 @@ package org.dcm4chex.archive.web.maverick.permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -55,7 +58,10 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.hl7.StudyPermissionDelegate;
 import org.dcm4chex.archive.web.conf.WebRolesConfig;
 import org.dcm4chex.archive.web.maverick.BasicFormModel;
+import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.dcm4chex.archive.web.maverick.FolderForm;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
+import org.dcm4chex.archive.web.maverick.model.StudyModel;
 import org.infohazard.maverick.flow.ControllerContext;
 import org.jboss.mx.util.MBeanServerLocator;
 
@@ -80,7 +86,14 @@ public class StudyPermissionModel extends BasicFormModel {
     private String suid;
     private PatientModel patient;
     private int countStudies;
-
+    
+    private boolean studyPermissionCheckDisabled;
+    private boolean grantPrivileg;
+    private boolean grantOwnPrivileg;
+    
+    private Map grantedStudyActions;
+    private Set grantedActions;
+    
     private StudyPermissionModel(ControllerContext ctx) throws Exception {
     	super(ctx.getRequest());
     	initWebRolesConfig();
@@ -91,15 +104,24 @@ public class StudyPermissionModel extends BasicFormModel {
 		webRoles = new WebRolesConfig();
 	}
 	
-    public static final StudyPermissionModel getModel( ControllerContext ctx ) throws Exception {
+    public static final StudyPermissionModel getModel(ControllerContext ctx, Dcm4cheeFormController ctrl) throws Exception {
         HttpServletRequest request = ctx.getRequest();
-	StudyPermissionModel model = (StudyPermissionModel) request.getSession().getAttribute(STUDY_PERMISSION_ATTR_NAME);
-	if (model == null) {
-	    model = new StudyPermissionModel(ctx);
-	    request.getSession().setAttribute(STUDY_PERMISSION_ATTR_NAME, model);
-	}
-	return model;
+		StudyPermissionModel model = (StudyPermissionModel) request.getSession().getAttribute(STUDY_PERMISSION_ATTR_NAME);
+		if (model == null) {
+		    model = new StudyPermissionModel(ctx);
+		    request.getSession().setAttribute(STUDY_PERMISSION_ATTR_NAME, model);
+		}
+		model.initActiveUserPermissions(ctx, ctrl);
+		return model;
     }
+
+	private void initActiveUserPermissions(ControllerContext ctx, Dcm4cheeFormController ctrl) {
+		HttpServletRequest request = ctx.getRequest();
+		this.studyPermissionCheckDisabled = ctrl.isStudyPermissionCheckDisabled();
+	    this.grantPrivileg = request.isUserInRole("GrantPrivileg");
+	    this.grantOwnPrivileg = request.isUserInRole("GrantOwnPrivileg");
+	    this.grantedStudyActions = FolderForm.getFolderForm(ctx).getGrantedStudyActions();
+	}
 
     public String getModelName() { return STUDY_PERMISSION_ATTR_NAME; }
 	
@@ -125,7 +147,23 @@ public class StudyPermissionModel extends BasicFormModel {
     }
     
 	
-    private StudyPermissionDelegate initStudyPermissionDelegate(ControllerContext ctx) throws MalformedObjectNameException, NullPointerException {
+    public boolean isStudyPermissionCheckDisabled() {
+		return studyPermissionCheckDisabled;
+	}
+
+	public boolean isGrantPrivileg() {
+		return grantPrivileg;
+	}
+
+	public boolean isGrantOwnPrivileg() {
+		return grantOwnPrivileg;
+	}
+
+    public Set getGrantedActions() {
+        return this.grantedActions;
+    }
+	
+	private StudyPermissionDelegate initStudyPermissionDelegate(ControllerContext ctx) throws MalformedObjectNameException, NullPointerException {
         if ( delegate == null ) {
             delegate = new StudyPermissionDelegate( MBeanServerLocator.locate() );
             String s = ctx.getServletConfig().getInitParameter("studyPermissionServiceName");
@@ -142,8 +180,26 @@ public class StudyPermissionModel extends BasicFormModel {
         }
     	this.suid = suid;
     	this.patient = patModel;
+	    if ( !studyPermissionCheckDisabled && !grantPrivileg && grantOwnPrivileg ) {
+	    	if ( suid != null ) {
+	    		this.grantedActions = (Set) this.grantedStudyActions.get(suid);
+	    	} else {
+	    		this.grantedActions = new HashSet();
+	    		Set actions;
+	    		StudyModel study;
+	    		for ( Iterator iter = patient.getStudies().iterator() ; iter.hasNext() ; ) {
+	    			 study = (StudyModel) iter.next();
+	    			 actions = (Set) this.grantedStudyActions.get( study.getStudyIUID() );
+	    			 if ( actions != null )
+	    				 this.grantedActions.addAll(actions);
+	    		}
+	    	}
+	    } else {
+	    	this.grantedActions = null;
+	    }
         return true;
     }
+    
     public boolean query() throws Exception {
 		permissions.clear();
 		Collection studyPermissions;
@@ -228,5 +284,4 @@ public class StudyPermissionModel extends BasicFormModel {
         addRole(role);
         addAction(action);
     }
-    
 }

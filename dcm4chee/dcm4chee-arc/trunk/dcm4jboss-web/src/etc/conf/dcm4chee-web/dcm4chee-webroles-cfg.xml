@@ -8,6 +8,8 @@
         <role name="McmUser" dependency="WebUser" descr="This role is used to allow access to the Media Creation Console (Offline Storage)."/> 
         <role name="JBossAdmin" descr="This role is used to allow configuration access via JMX console."/> 
         <role name="AuditLogUser" descr="Members of this role are allowed to access the Audit Repository."/> 
+        <role name="GrantPrivileg" descr="Members of this role are allowed to grant Study Permissions."/> 
+        <role name="GrantOwnPrivileg" descr="Members of this role are allowed to grant Study Permissions."/> 
         <role name="Doctor" type="StudyPermission" descr="Sample Study Permission Role."/> 
     </roles>
     <actions>

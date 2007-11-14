@@ -66,7 +66,7 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
     
     protected Object makeFormBean() {
         try {
-            model = StudyPermissionModel.getModel(getCtx());
+            model = StudyPermissionModel.getModel(getCtx(), this);
         } catch (Exception e) {
             log.error("Failed to create StudyPermissionModel!");
         }
@@ -85,17 +85,18 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
 	        	getModel().initWebRolesConfig();
 	        String suid = req.getParameter("studyIUID");
 	        String patPk = req.getParameter("patPk");
-	        getModel().setFilter(suid, getPatientModel(patPk) );
+	        getModel().setFilter(suid, getPatientModel(patPk));
 	        return getModel().query() ? SUCCESS : CANCEL;
     	} catch (Exception x) {
+    		log.warn("Open StudyPermission failed!",x);
     		return CANCEL;
     	}
     }
 
     private PatientModel getPatientModel(String patPk) {
         return patPk == null ? null :
-            new PatientModel(FolderForm.getFolderForm(getCtx()).getPatientByPk(
-                Long.parseLong(patPk)).toDataset() );
+            FolderForm.getFolderForm(getCtx()).getPatientByPk(
+                Long.parseLong(patPk));
     }
 
 }
