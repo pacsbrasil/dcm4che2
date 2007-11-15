@@ -40,6 +40,7 @@ package org.dcm4che2.tool.jpg2dcm;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,22 +48,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -81,25 +75,86 @@ public class Jpg2Dcm {
 
     private static final String USAGE = 
         "jpg2dcm [Options] <jpgfile> <dcmfile>";
+    
     private static final String DESCRIPTION = 
         "Encapsulate JPEG Image into DICOM Object.\nOptions:";
-    private static final String EXAMPLE = 
-        "\nExamples:\n> jpg2dcm image.jpg image.dcm\n" +
-        "=> Encapulate JPEG Image image.jpg into DICOM Secondary Capture Image " +
-        "Object stored to image.dcm, including mandatory DICOM attributes " +
-        "according default configuration.\n" +
-        "> jpg2dcm -c patattrs.cfg image.jpg image.dcm\n" +
-        "=> Encapulate JPEG Image homer.jpg into DICOM Image Object stored to " +
-        "homer.dcm, augmenting default configuration by configuration file " +
-        "homer.cfg.\n" +
-        "> jpg2dcm -C mpg2dcm.cfg -ts 1.2.840.10008.1.2.4.100 video.mpg video.dcm\n" +
-        "=> Encapulate MPEG2 Video video.mpg into DICOM Video Object stored to " +
-        "video.dcm, replacing default configuration by configuration file " +
-        "mpg2dcm.cfg.\n";
     
+    private static final String EXAMPLE = 
+        "--\nExample 1: Encapulate JPEG Image verbatim with default values " +
+        "for mandatory DICOM attributes into DICOM Secondary Capture Image:" +
+        "\n$ jpg2dcm image.jpg image.dcm" +
+        "\n--\nExample 2: Encapulate JPEG Image without application segments " +
+        "and additional DICOM attributes to mandatory defaults into DICOM " +
+        "Image Object:" +
+        "\n$ jpg2dcm --no-appn -c patattrs.cfg homer.jpg image.dcm" +
+        "\n--\nExample 3: Encapulate MPEG2 Video with specified DICOM " +
+        "attributes into DICOM Video Object:" +
+        "\n$ jpg2dcm --mpeg -C mpg2dcm.cfg video.mpg video.dcm";
+
+    private static final String LONG_OPT_CHARSET = "charset";
+    
+    private static final String OPT_CHARSET_DESC =
+        "Specific Character Set code string, ISO_IR 100 by default";
+    
+    private static final String OPT_AUGMENT_CONFIG_DESC =
+        "Specifies DICOM attributes included additional to mandatory defaults";
+    
+    private static final String OPT_REPLACE_CONFIG_DESC =
+        "Specifies DICOM attributes included instead of mandatory defaults";
+    
+    private static final String LONG_OPT_TRANSFER_SYNTAX = "transfer-syntax";
+    
+    private static final String OPT_TRANSFER_SYNTAX_DESC =
+        "Transfer Syntax; 1.2.840.10008.1.2.4.50 (JPEG Baseline) by default.";
+    
+    private static final String LONG_OPT_MPEG = "mpeg";
+
+    private static final String OPT_MPEG_DESC =
+        "Same as --transfer-syntax 1.2.840.10008.1.2.4.100 (MPEG2).";
+    
+    private static final String LONG_OPT_UID_PREFIX = "uid-prefix";
+    
+    private static final String OPT_UID_PREFIX_DESC =
+        "Generate UIDs with given prefix, 1.2.40.0.13.1.<host-ip> by default.";
+    
+    private static final String LONG_OPT_NO_APPN = "no-appn";
+    
+    private static final String OPT_NO_APPN_DESC =
+        "Exclude application segments APPn from JPEG stream; " +
+        "encapsulate JPEG stream verbatim by\ndefault.";
+    
+    private static final String OPT_HELP_DESC =
+        "Print this message";
+    
+    private static final String OPT_VERSION_DESC =
+        "Print the version information and exit";
+
+    private static int FF = 0xff;
+
+    private static int SOF = 0xc0;
+
+    private static int DHT = 0xc4;
+
+    private static int DAC = 0xcc;
+
+    private static int SOI = 0xd8;
+
+    private static int SOS = 0xda;
+    
+    private static int APP = 0xe0;    
+
     private String charset = "ISO_IR 100";
-    private int bufferSize = 8192;
+    
     private String transferSyntax = UID.JPEGBaseline1;
+    
+    private byte[] buffer = new byte[8192];
+
+    private int jpgHeaderLen;
+    
+    private int jpgLen;
+    
+    private boolean noAPPn = false;
+    
     private Properties cfg = new Properties();
 
     public Jpg2Dcm() {
@@ -114,18 +169,15 @@ public class Jpg2Dcm {
         this.charset = charset;
     }
 
-    public final void setBufferSize(int bufferSize) {
-        if (bufferSize < 64) {
-            throw new IllegalArgumentException("bufferSize: " + bufferSize);
-        }
-        this.bufferSize = bufferSize;
-    }
-
     private final void setTransferSyntax(String uid) {
         this.transferSyntax = uid;
     }
 
     
+    private final void setNoAPPn(boolean noAPPn) {
+        this.noAPPn = noAPPn;
+    }
+
     private void loadConfiguration(File cfgFile, boolean augment)
             throws IOException {
         Properties tmp = augment ? new Properties(cfg) : new Properties();
@@ -138,8 +190,11 @@ public class Jpg2Dcm {
         cfg = tmp;
     }
     
-    public void convert(File jpgFile, File dcmFile) throws IOException { 
-        FileImageInputStream jpgInput = new FileImageInputStream(jpgFile);
+    public void convert(File jpgFile, File dcmFile) throws IOException {
+        jpgHeaderLen = 0;
+        jpgLen = (int) jpgFile.length();
+        DataInputStream jpgInput = new DataInputStream(
+                new BufferedInputStream(new FileInputStream(jpgFile)));
         try {
             DicomObject attrs = new BasicDicomObject();
             attrs.putString(Tag.SpecificCharacterSet, VR.CS, charset);
@@ -154,9 +209,13 @@ public class Jpg2Dcm {
                     attrs.putString(tagPath, vr, cfg.getProperty(key));
                 }
             }
-            if (missingImagePixelAttr(attrs)) {
-                detectImagePixelAttrs(attrs, jpgInput);
+            if (noAPPn || missingRowsColumnsSamplesPMI(attrs)) {
+                readHeader(attrs, jpgInput);
             }
+            ensureUS(attrs, Tag.BitsAllocated, 8);
+            ensureUS(attrs, Tag.BitsStored, attrs.getInt(Tag.BitsAllocated));
+            ensureUS(attrs, Tag.HighBit, attrs.getInt(Tag.BitsStored) - 1);
+            ensureUS(attrs, Tag.PixelRepresentation, 0);
             ensureUID(attrs, Tag.StudyInstanceUID);
             ensureUID(attrs, Tag.SeriesInstanceUID);
             ensureUID(attrs, Tag.SOPInstanceUID);
@@ -171,12 +230,11 @@ public class Jpg2Dcm {
                 dos.writeDicomFile(attrs);
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 dos.writeHeader(Tag.Item, null, 0);
-                int jpgLen = (int) jpgFile.length();
                 dos.writeHeader(Tag.Item, null, (jpgLen+1)&~1);
-                byte[] b = new byte[bufferSize];
+                dos.write(buffer, 0, jpgHeaderLen);
                 int r;
-                while ((r = jpgInput.read(b)) > 0) {
-                    dos.write(b, 0, r);
+                while ((r = jpgInput.read(buffer)) > 0) {
+                    dos.write(buffer, 0, r);
                 }
                 if ((jpgLen&1) != 0) {
                     dos.write(0);
@@ -190,49 +248,81 @@ public class Jpg2Dcm {
         }
     }    
 
-    private boolean missingImagePixelAttr(DicomObject attrs) {
+    private boolean missingRowsColumnsSamplesPMI(DicomObject attrs) {
         return !(attrs.containsValue(Tag.Rows) 
                 && attrs.containsValue(Tag.Columns)
                 && attrs.containsValue(Tag.SamplesPerPixel)
                 && attrs.containsValue(Tag.PhotometricInterpretation)
-                && attrs.containsValue(Tag.BitsAllocated)
-                && attrs.containsValue(Tag.BitsStored)
-                && attrs.containsValue(Tag.HighBit)
-                && attrs.containsValue(Tag.PixelRepresentation)
                 );
     }
 
-    private void detectImagePixelAttrs(DicomObject attrs, ImageInputStream iis)
-    throws IOException {
-        Iterator iter = ImageIO.getImageReaders(iis);
-        if (!iter.hasNext()) {
-            throw new IOException("Failed to detect image format");
-        }                
-        ImageReader reader = (ImageReader) iter.next();
-        reader.setInput(iis);
-        ensureUS(attrs, Tag.Rows, reader.getHeight(0));
-        ensureUS(attrs, Tag.Columns, reader.getWidth(0));
-        if (!(attrs.containsValue(Tag.SamplesPerPixel)
-                && attrs.containsValue(Tag.PhotometricInterpretation))) {
-            ImageTypeSpecifier type =
-                (ImageTypeSpecifier) reader.getImageTypes(0).next();
-            if (type.getNumBands() == 3) {
-                attrs.putInt(Tag.SamplesPerPixel, VR.US, 3);
-                attrs.putString(Tag.PhotometricInterpretation, VR.CS, 
-                        "YBR_FULL_422");
-                attrs.putInt(Tag.PlanarConfiguration, VR.US, 0);
-            } else {
-                attrs.putInt(Tag.SamplesPerPixel, VR.US, 1);
-                attrs.putString(Tag.PhotometricInterpretation, VR.CS, 
-                        "MONOCHROME2");                
-            }
+    private void readHeader(DicomObject attrs, DataInputStream jpgInput)
+            throws IOException {
+        if (jpgInput.read() != FF || jpgInput.read() != SOI 
+                || jpgInput.read() != FF) {
+            throw new IOException(
+                    "JPEG stream does not start with FF D8 FF");
         }
-        ensureUS(attrs, Tag.BitsAllocated, 8);
-        ensureUS(attrs, Tag.BitsStored, attrs.getInt(Tag.BitsAllocated));
-        ensureUS(attrs, Tag.HighBit, attrs.getInt(Tag.BitsStored) - 1);
-        ensureUS(attrs, Tag.PixelRepresentation, 0);
-        reader.dispose();
-        iis.seek(0);
+        int marker = jpgInput.read();
+        int segmLen;
+        boolean seenSOF = false;
+        buffer[0] = (byte) FF;
+        buffer[1] = (byte) SOI;
+        buffer[2] = (byte) FF;
+        buffer[3] = (byte) marker;
+        jpgHeaderLen = 4;
+        while (marker != SOS) {
+            segmLen = jpgInput.readUnsignedShort();
+            if (buffer.length < jpgHeaderLen + segmLen + 2) {
+                growBuffer(jpgHeaderLen + segmLen + 2);
+            }
+            buffer[jpgHeaderLen++] = (byte) (segmLen >>> 8);
+            buffer[jpgHeaderLen++] = (byte) segmLen;
+            jpgInput.readFully(buffer, jpgHeaderLen, segmLen - 2);
+            if ((marker & 0xf0) == SOF && marker != DHT && marker != DAC) {
+                seenSOF = true;
+                int p = buffer[jpgHeaderLen] & 0xff;
+                int y = ((buffer[jpgHeaderLen+1] & 0xff) << 8)
+                       | (buffer[jpgHeaderLen+2] & 0xff);
+                int x = ((buffer[jpgHeaderLen+3] & 0xff) << 8)
+                       | (buffer[jpgHeaderLen+4] & 0xff);
+                int nf = buffer[jpgHeaderLen+5] & 0xff;
+                attrs.putInt(Tag.SamplesPerPixel, VR.US, nf);
+                attrs.putString(Tag.PhotometricInterpretation, VR.CS,
+                        nf == 3 ? "YBR_FULL_422" : "MONOCHROME2");
+                attrs.putInt(Tag.Rows, VR.US, y);
+                attrs.putInt(Tag.Columns, VR.US, x);
+                attrs.putInt(Tag.BitsAllocated, VR.US, p > 8 ? 16 : 8);
+                attrs.putInt(Tag.BitsStored, VR.US, p);
+                attrs.putInt(Tag.HighBit, VR.US, p-1);
+                attrs.putInt(Tag.PixelRepresentation, VR.US, 0);
+            }
+            if (noAPPn & (marker & 0xf0) == APP) {
+                jpgLen -= segmLen + 2;
+                jpgHeaderLen -= 4;
+            } else {
+                jpgHeaderLen += segmLen - 2;
+            }
+            if (jpgInput.read() != FF) {
+                throw new IOException("Missing SOS segment in JPEG stream");
+            }
+            marker = jpgInput.read();
+            buffer[jpgHeaderLen++] = (byte) FF;
+            buffer[jpgHeaderLen++] = (byte) marker;
+        }
+        if (!seenSOF) {
+            throw new IOException("Missing SOF segment in JPEG stream");
+        }
+    }
+
+    private void growBuffer(int minSize) {
+        int newSize = buffer.length << 1;
+        while (newSize < minSize) {
+            newSize <<= 1;
+        }
+        byte[] tmp = new byte[newSize];
+        System.arraycopy(buffer, 0, tmp, 0, jpgHeaderLen);
+        buffer = tmp;
     }
 
     private void ensureUID(DicomObject attrs, int tag) {
@@ -250,14 +340,8 @@ public class Jpg2Dcm {
         try {
             CommandLine cl = parse(args);
             Jpg2Dcm jpg2Dcm = new Jpg2Dcm();
-            if (cl.hasOption("ts")) {
-                jpg2Dcm.setTransferSyntax(cl.getOptionValue("ts"));
-            }
-            if (cl.hasOption("cs")) {
-                jpg2Dcm.setCharset(cl.getOptionValue("cs"));
-            }
-            if (cl.hasOption("bs")) {
-                jpg2Dcm.setBufferSize(Integer.parseInt(cl.getOptionValue("bs")));
+            if (cl.hasOption(LONG_OPT_CHARSET)) {
+                jpg2Dcm.setCharset(cl.getOptionValue(LONG_OPT_CHARSET));
             }
             if (cl.hasOption("c")) {
                 jpg2Dcm.loadConfiguration(new File(cl.getOptionValue("c")), true);
@@ -265,10 +349,19 @@ public class Jpg2Dcm {
             if (cl.hasOption("C")) {
                 jpg2Dcm.loadConfiguration(new File(cl.getOptionValue("C")), false);
             }
-            if (cl.hasOption("uid")) {
+            if (cl.hasOption(LONG_OPT_UID_PREFIX)) {
                 UIDUtils.setUseHostAddress(false);
-                UIDUtils.setRoot(cl.getOptionValue("uid"));
+                UIDUtils.setRoot(cl.getOptionValue(LONG_OPT_UID_PREFIX));
             }
+            if (cl.hasOption(LONG_OPT_MPEG)) {
+                jpg2Dcm.setTransferSyntax(UID.MPEG2);
+            }
+            if (cl.hasOption(LONG_OPT_TRANSFER_SYNTAX)) {
+                jpg2Dcm.setTransferSyntax(
+                        cl.getOptionValue(LONG_OPT_TRANSFER_SYNTAX));
+            }
+            jpg2Dcm.setNoAPPn(cl.hasOption(LONG_OPT_NO_APPN));
+            
             List argList = cl.getArgList();
             File jpgFile = new File((String) argList.get(0));
             File dcmFile = new File((String) argList.get(1));
@@ -285,48 +378,44 @@ public class Jpg2Dcm {
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
         
-        OptionBuilder.withArgName("charset");
+        OptionBuilder.withArgName("code");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "Specific Character Set, ISO_IR 100 by default");
-        opts.addOption(OptionBuilder.create("cs"));
+        OptionBuilder.withDescription(OPT_CHARSET_DESC);
+        OptionBuilder.withLongOpt(LONG_OPT_CHARSET);
+        opts.addOption(OptionBuilder.create());
 
-        OptionBuilder.withArgName("size");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "Buffer size used for copying JPEG to DICOM file, 8192 by default");
-        opts.addOption(OptionBuilder.create("bs"));
-        
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "Augment default configuration with specified configuration file");
+        OptionBuilder.withDescription(OPT_AUGMENT_CONFIG_DESC);
         opts.addOption(OptionBuilder.create("c"));
         
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "Replacing default configuration by specified configuration file");
+        OptionBuilder.withDescription(OPT_REPLACE_CONFIG_DESC);
         opts.addOption(OptionBuilder.create("C"));
+                
+        OptionBuilder.withArgName("prefix");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(OPT_UID_PREFIX_DESC);
+        OptionBuilder.withLongOpt(LONG_OPT_UID_PREFIX);
+        opts.addOption(OptionBuilder.create());
         
         OptionBuilder.withArgName("uid");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription(
-                "Transfer Syntax; 1.2.840.10008.1.2.4.50 (JPEG Baseline) by default.");
-        opts.addOption(OptionBuilder.create("ts"));
-
-        OptionBuilder.withArgName("prefix");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("Generate UIDs with given prefix," +
-                "1.2.40.0.13.1.<host-ip> by default.");
-        opts.addOption(OptionBuilder.create("uid"));
+        OptionBuilder.withDescription(OPT_TRANSFER_SYNTAX_DESC);
+        OptionBuilder.withLongOpt(LONG_OPT_TRANSFER_SYNTAX);
+        opts.addOption(OptionBuilder.create());
         
-        opts.addOption("h", "help", false, "print this message");
-        opts.addOption("V", "version", false,
-                "print the version information and exit");
+        opts.addOption(null, LONG_OPT_MPEG, false, OPT_MPEG_DESC);
+
+        opts.addOption(null, LONG_OPT_NO_APPN, false, OPT_NO_APPN_DESC);
+        
+        opts.addOption("h", "help", false, OPT_HELP_DESC);
+        opts.addOption("V", "version", false, OPT_VERSION_DESC);
+        
         CommandLine cl = null;
         try {
-            cl = new GnuParser().parse(opts, args);
+            cl = new PosixParser().parse(opts, args);
         } catch (ParseException e) {
             exit("jpg2dcm: " + e.getMessage());
         }
