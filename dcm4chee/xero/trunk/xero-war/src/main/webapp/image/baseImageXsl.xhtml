@@ -185,7 +185,7 @@
  <xsl:param name="brx"><xsl:choose><xsl:when test="$cx + $w div (2 * $s) >= @Columns"><xsl:value-of select="@Columns" /></xsl:when><xsl:otherwise><xsl:value-of select="$cx + $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="bry"><xsl:choose><xsl:when test="$cy + $h div (2 * $s) >= @Rows"><xsl:value-of select="@Rows" /></xsl:when><xsl:otherwise><xsl:value-of select="$cy + $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
  
- <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wlwado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if><xsl:if test="@gspsUID">&amp;presentationUID=<xsl:value-of select="@gspsUID" /></xsl:if></xsl:attribute>
+ <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="round(($bry - $ory) * $s)" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if><xsl:if test="@gspsUID">&amp;presentationUID=<xsl:value-of select="@gspsUID" /></xsl:if></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
   <xsl:attribute name="style"><xsl:value-of select="concat('left:',$orx,';top:',$ory,';width:',$brx - $orx,';height:',$bry - $ory,';')" /></xsl:attribute>
  </c:if>
@@ -726,7 +726,7 @@ and cx,cy = width /2, height/2
    <div>
     <xsl:attribute name="id">dimg<xsl:value-of select="@id" /></xsl:attribute>
     <xsl:attribute name="style">float: left;
-     <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+     <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template><c:if test="#{browser=='MSIE'}">overflow: hidden;</c:if>
      <xsl:value-of select="@style" />
     </xsl:attribute>
     

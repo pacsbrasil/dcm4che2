@@ -86,8 +86,14 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  // Size can't change per-image, so just get the overall sizes.
 	  int width, height;
 	  try {
+		 // If no image has been read yet, the size will be zero, so read the metadata to get this.
+		 dir.getStreamMetadata();
 		 width = dir.getWidth(0);
 		 height = dir.getHeight(0);
+		 if( width<=0 || height<=0 ) {
+			log.error("Image width/height is zero.");
+			 return (WadoImage) filterItem.callNextFilter(params);
+		 }
 	  } catch (IOException e) {
 		 log.warn("Couldnt't read DICOM image.");
 		 return null;
@@ -105,10 +111,13 @@ public class ScaleFilter implements Filter<WadoImage> {
 
 	  float scaleX = width / (float) fCols;
 	  float scaleY = height / (float) fRows;
-	  if (scaleX <= 1 && scaleY <= 1 && rot==0 && !flip) {
-		 log.info("Just calling next filter - no scaling being applied.");
+	  if ((scaleX <= 1 && scaleY <= 1 && rot==0 && !flip) || scaleX<=0 || scaleY<=0) {
+		 log.debug("Just calling next filter - no scaling being applied.");
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  }
+	  // Don't request anything bigger than the current image size.
+	  if( scaleX<1 ) scaleX = 1;
+	  if( scaleY<1 ) scaleY = 1;
 	  int nCols = (int) ((width / (int) scaleX) * (region[2] - region[0]));
 	  int nRows = (int) ((height / (int) scaleY) * (region[3] - region[1]));
 	  removeFromQuery(params, "rows", "cols", "rotation", "flip");
@@ -122,7 +131,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if (wi == null)
 		 return null;
-	  log.info("Got wado image from next filter.");
+	  log.debug("Got wado image from next filter.");
 	  BufferedImage bi = wi.getValue();
 	  int nWidth = bi.getWidth();
 	  int nHeight = bi.getHeight();
@@ -158,10 +167,10 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  if( bounds.getMinX()!=0 || bounds.getMinY()!=0 ) {
 		 transform = "translate("+(bounds.getMinX())+","+(bounds.getMinY())+") "+transform;
 	  }
-	  log.info("Transform is "+transform);
+	  log.debug("Transform is "+transform);
 	  AffineTransform firstAffine = AffineTransform.getTranslateInstance(-bounds.getMinX(), -bounds.getMinY());
 	  firstAffine.concatenate(affine);
-	  log.info("Overall affine transform="+firstAffine);
+	  log.debug("Overall affine transform="+firstAffine);
 	  
 	  AffineTransformOp scale = new AffineTransformOp(firstAffine, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 	  biScale = scale.filter(bi, biScale);

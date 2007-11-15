@@ -66,7 +66,7 @@ public class KeyObjectMacro implements Macro {
 
    public int updateAny(Map<QName, String> attrs) {
 	  attrs.put(Q_KEY, keyObject);
-	  log.info("Added koUID attribute "+keyObject);
+	  log.debug("Added koUID attribute "+keyObject);
 	  return 1;
    }
 

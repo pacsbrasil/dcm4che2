@@ -72,7 +72,7 @@ imageSource.gspsUid=${class:org.dcm4chee.xero.search.filter.GspsUid}
 imageSource.gspsUid.priority=100
 imageSource.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 # Cache 1 mb of data at time - probably too small for production usage.
-imageSource.cacheFilter.cacheSize=1000000
+imageSource.cacheFilter.cacheSize=10000000
 imageSource.cacheFilter.priority=400
 imageSource.emptyFilter=${class:org.dcm4chee.xero.search.EmptyQueryParameterFilter}
 imageSource.emptyFilter.priority=450
@@ -98,7 +98,7 @@ seriesFilter.source=${class:org.dcm4chee.xero.search.study.ImageSearch}
 seriesFilter.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 seriesFilter.emptyFilter.inherit=studyFilter.emptyFilter
 seriesFilter.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
-seriesFilter.cacheFilter.cacheSize=1000000
+seriesFilter.cacheFilter.cacheSize=3000000
 seriesFilter.cacheFilter.priority=400
 
 #Filters for image,series and study meta-data.
@@ -112,7 +112,7 @@ seriesFilter.gsps.priority=20
 # Base Wado filters - used by both Xero and full WADO implementation
 imageCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 # 10 megabytes by default.
-imageCache.cacheSize=10240000
+imageCache.cacheSize=10124124
 
 baseImg=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 baseImg.encode=${class:org.dcm4chee.xero.wado.EncodeImage}
