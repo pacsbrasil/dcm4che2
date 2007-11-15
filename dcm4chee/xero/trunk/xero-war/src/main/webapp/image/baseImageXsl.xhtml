@@ -727,12 +727,12 @@ and cx,cy = width /2, height/2
     <xsl:attribute name="id">dimg<xsl:value-of select="@id" /></xsl:attribute>
     <xsl:attribute name="style">float: left;
      <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
-     overflow: hidden;
      <xsl:value-of select="@style" />
     </xsl:attribute>
     
 	<xsl:if test="$imageNode">
-	 <div style=" position: relative;">
+	 <div>
+	  <xsl:attribute name="style">position: relative;<xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
       <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
        <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
        <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>

@@ -38,25 +38,49 @@
  <xsl:value-of select="$node/@StudyDescription" /> <br />
 </x:template>
 
-<!-- Display the series images -->
+<!-- Display the series images that are key images-->
+<x:template name="keyImages" m:keyImages.body="keyImages" m:keyImages.body.priority="550">
+ <xsl:param name="node" />
+ <xsl:for-each select="$node/se:series[se:image/@koUID]">
+  <div style="float: left; background: black;">
+   <span xml:space="preserve"><img src="/xero/img/key.png" style="width: 32px; height: 32px;" /><xsl:value-of select="@SeriesNumber" />
+     <xsl:value-of select="@SeriesDescription" />
+     <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
+   </span>
+   <br />
+   <xsl:variable name="images" select="(se:image[count(../se:image[@koUID])>5][@koUID][1]) | (se:image[5 >= count(../se:image[@koUID]) ][@koUID])" />
+   <xsl:for-each select="$images">
+    <a target="imageFrame">
+      <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
+      <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
+     <img style="height:128px; vertical-align: top;">
+       <xsl:attribute name="src">/xero/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
+       <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
+      </img>
+    </a>
+   </xsl:for-each>
+  </div>
+ </xsl:for-each>
+</x:template>
+
+<!-- Display the series images that are key images-->
 <x:template name="seriesImages" m:images.body="seriesImages" m:images.body.priority="500">
  <xsl:param name="node" />
- <xsl:message>series nodes, viewable <xsl:value-of select="concat(count($docNode/se:results/se:patient/se:study/se:series),',',count($docNode/se:results/se:patient/se:study/se:series[@Viewable>0]))" /></xsl:message>
- <xsl:for-each select="$node/se:series[@Viewable>0]">
+ <xsl:for-each select="$node/se:series[se:image][count(se:image/@koUID)=0]">
+  <div style="float: left; width: 132px; background: black;">
    <span xml:space="preserve"><xsl:value-of select="@SeriesNumber" />
      <xsl:value-of select="@SeriesDescription" />
      <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
    </span>
-   <center>
-      <a target="imageFrame">
-        <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
-        <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
-        <img height="128">
-         <xsl:attribute name="src">/xero/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
-         <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
-        </img>
-      </a>
-   </center>
+   <a target="imageFrame">
+     <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
+     <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
+     <img style="height:128px; vertical-align: top;">
+      <xsl:attribute name="src">/xero/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
+      <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
+     </img>
+   </a>
+  </div>
  </xsl:for-each>
 </x:template>
 
