@@ -203,6 +203,10 @@
      <servlet-name>WADO</servlet-name>
      <url-pattern>/wlwado</url-pattern>
    </servlet-mapping>
+   <servlet-mapping>
+     <servlet-name>WADO</servlet-name>
+     <url-pattern>/wado</url-pattern>
+   </servlet-mapping>
 
    <!-- JSF and Facelets Configuration -->    
    <servlet>

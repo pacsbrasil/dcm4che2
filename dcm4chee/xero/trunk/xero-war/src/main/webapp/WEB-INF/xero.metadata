@@ -69,6 +69,7 @@ Modality.DX=DX
 Modality.IO=Dental
 Modality.PX=Pano
 Modality.XC=XC
+Modality.XA=Angio
 inputs.DateTime.template=rawInput
 inputs.Date.template=rawInput
 

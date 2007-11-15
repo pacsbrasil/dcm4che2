@@ -53,10 +53,21 @@ public class ImageBeanMultiFrame extends ImageBean {
    MacroItems[] frameItems;
 
    /** Construct this object, complete with child frames. */
-   public ImageBeanMultiFrame(DicomObject dcmObj) {
-	  super(dcmObj);
+   public ImageBeanMultiFrame(SeriesBean seriesBean, DicomObject dcmObj) {
+	  super(seriesBean, dcmObj);
    }
    
+   private ImageBeanMultiFrame(SeriesBean seriesBean, MacroItems[] frameItems) {
+	  super(seriesBean);
+	  this.frameItems = frameItems;
+   }
+   
+   /** Clone a multi-frame instance */
+   @Override
+   public ImageBean clone(ImageBean dest) {
+	  if( dest==null ) dest = new ImageBeanMultiFrame(seriesBean, frameItems);
+	  return super.clone(dest);
+   }
    
    /** Read additional attributes from the dicom object */   
    @Override

@@ -160,4 +160,24 @@
     </navigation>
   </page>
   
+  <page view-id="/series/action/*">
+    <!-- TODO Change this to use the ActionStudyLevel once the display level is modified for multi-study and to use the action/display study level info -->
+    <param name="pid" value="#{DisplayStudyLevel.pid}" />
+    <param name="studyUID" value="#{DisplayStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{DisplayStudyLevel.seriesUID}" />
+
+    <begin-conversation join="true" />
+  </page>
+  
+  <page view-id="/series/action/SelectKo.xhtml" action="#{SelectKo.action}">
+    <param name="pid" value="#{ActionStudyLevel.pid}" />
+    <param name="studyUID" value="#{ActionStudyLevel.studyUID}" />
+    <param name="seriesUID" value="#{ActionStudyLevel.seriesUID}" />
+
+    <param name="koUID" value="#{SelectKo.koUid}" />
+    <navigation>
+      <redirect view-id="/study/displayFrame.xhtml" />
+    </navigation>
+  </page>
+
 </pages>

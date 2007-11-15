@@ -175,11 +175,11 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 newPatient.getStudy().clear();
 		 ret.getPatient().add(newPatient);
 		 for (StudyType study : patient.getStudy()) {
-			StudyType newStudy = new StudyBean(ret.getChildren(), (StudyBean) study);
+			StudyBean newStudy = new StudyBean(ret.getChildren(), (StudyBean) study);
 			newStudy.getSeries().clear();
 			newPatient.getStudy().add(newStudy);
 			for (SeriesType series : study.getSeries()) {
-			   newStudy.getSeries().add(decimate(ret.getChildren(), series, position, count));
+			   newStudy.getSeries().add(decimate(newStudy, series, position, count));
 			}
 		 }
 	  }
@@ -201,7 +201,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
      * @return Decimated copy of this object - or the original object if
      *         decimation not required.
      */
-   public SeriesType decimate(Map<Object, Object> children, SeriesType series, int position, int count) {
+   public SeriesType decimate(StudyBean newStudy, SeriesType series, int position, int count) {
 	  List<DicomObjectType> original = series.getDicomObject();
 	  int size = original.size();
 	  if (size == 0)
@@ -211,7 +211,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  if (!(lastObj instanceof ImageBean))
 		 return series;
 
-	  SeriesType ret = new SeriesBean(children, series);
+	  SeriesType ret = new SeriesBean(newStudy, series);
 	  List<DicomObjectType> modified = ret.getDicomObject();
 	  int startPos = findPosition(modified, position);
 	  int endPos = findPosition(modified, position + count - 1);

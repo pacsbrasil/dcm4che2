@@ -193,7 +193,7 @@ public class MetaDataServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		long modifiedTime = getModifiedTimeAllowed() / 1000;
-		long startTime = System.currentTimeMillis();
+		long startTime = System.nanoTime();
 		try {
 			resp.setHeader("Cache-Control", "max-age="
 					+ Long.toString(modifiedTime));
@@ -203,11 +203,19 @@ public class MetaDataServlet extends HttpServlet {
 			log.info("MetaData Servlet with expiry " + modifiedTime
 					+ " s called for " + req.getRequestURI()
 					+ " with parameters " + req.getQueryString() + " took "
-					+ (System.currentTimeMillis() - startTime) + " ms");
+					+ nanoTimeToString(System.nanoTime()-startTime));
 		}
 	}
 
-	/** Returns the amount of time allowed for modifications. */
+	/** Returns a string representation of the time duration dur */
+	public static String nanoTimeToString(long dur) {
+	   if( dur<=5e3 ) return dur+" ns";
+	   if( dur<=5e6 ) return (dur/1000)+" us";
+	   if( dur<=5e9 ) return (dur/1000000)+" ms";
+	   return (dur/1000000000) +" s";
+   }
+
+   /** Returns the amount of time allowed for modifications. */
 	protected long getModifiedTimeAllowed() {
 		return modifiedTimeAllowed;
 	}

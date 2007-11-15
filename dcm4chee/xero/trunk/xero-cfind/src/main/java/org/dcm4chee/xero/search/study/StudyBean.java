@@ -179,7 +179,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 		 if (children.containsKey(seriesUID)) {
 			((SeriesBean) children.get(seriesUID)).addResult(data);
 		 } else {
-			SeriesBean child = new SeriesBean(children, data);
+			SeriesBean child = new SeriesBean(this, data);
 			children.put(child.getId(), child);
 			getSeries().add(child);
 		 }

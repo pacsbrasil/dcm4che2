@@ -60,21 +60,21 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
    MacroItems macroItems;
 
    @XmlTransient
-   protected Map<Object, Object> children;
+   protected StudyBean parent;
 
    @XmlTransient
    private Integer numberOfSeriesRelatedInstances;
 
-   public SeriesBean(Map<Object, Object> children) {
-	  this.children = children;
+   public SeriesBean(StudyBean parent) {
+	  this.parent = parent;
    }
 
    /**
      * Construct a series bean object from another series type object. Does NOT
      * fill in the child map at this time.
      */
-   public SeriesBean(Map<Object, Object> children, SeriesType series) {
-	  this.children = children;
+   public SeriesBean(StudyBean newParent, SeriesType series) {
+	  this.parent = newParent;
 	  setModality(series.getModality());
 	  setSeriesDescription(series.getSeriesDescription());
 	  setSeriesInstanceUID(series.getSeriesInstanceUID());
@@ -97,8 +97,8 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
      *            is the Dicom object to copy series and possibly image level
      *            data from.
      */
-   public SeriesBean(Map<Object, Object> children, DicomObject data) {
-	  this.children = children;
+   public SeriesBean(StudyBean parent, DicomObject data) {
+	  this.parent = parent;;
 	  initAttributes(data);
 	  addResult(data);
    }
@@ -121,7 +121,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  String sopInstanceUID = data.getString(Tag.SOPInstanceUID);
 	  if (sopInstanceUID == null)
 		 return;
-	  if (children.containsKey(sopInstanceUID)) {
+	  if (getChildren().containsKey(sopInstanceUID)) {
 		 log.debug("Series " + getSeriesInstanceUID() + " already contains a child " + sopInstanceUID);
 	  } else {
 		 DicomObjectType dobj = createChildByModality(data);
@@ -130,28 +130,31 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 			log.warn("No object created for child " + sopInstanceUID + " of modality " + modality);
 			return;
 		 }
-		 children.put(localModel.getId(), dobj);
+		 getChildren().put(localModel.getId(), dobj);
 		 getDicomObject().add(dobj);
 	  }
    }
 
    /** Create different types of children based on the modality of the series */
    protected DicomObjectType createChildByModality(DicomObject data) {
+	  if( modality.equals("ECG") ) {
+		 log.warn("Unsupported modality "+modality);
+		 return null;
+	  }
 	  if (modality.equals("SR")) {
 		 return new ReportBean(data);
 	  }
 	  if (modality.equals("KO")) {
-		 log.warn("Modality KO objects not yet defined (Key Object).");
-		 return null;
+		 return new KeyObjectBean(this,data);
 	  }
 	  if (modality.equals("PR")) {
 		 return new GspsBean(data);
 	  }
 	  int frameCount = data.getInt(Tag.NumberOfFrames);
 	  if (frameCount > 1) {
-		 return new ImageBeanMultiFrame(data);
+		 return new ImageBeanMultiFrame(this,data);
 	  } else
-		 return new ImageBean(data);
+		 return new ImageBean(this,data);
    }
 
    /** Figure out how many bytes this consumes */
@@ -177,7 +180,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
      * cusotized data.
      */
    public boolean clearEmpty() {
-	  boolean emptyChildren = ResultsBean.clearEmpty(children, getDicomObject());
+	  boolean emptyChildren = ResultsBean.clearEmpty(getChildren(), getDicomObject());
 	  return emptyChildren && (macroItems == null || macroItems.clearEmpty());
    }
 
@@ -212,6 +215,20 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 			image.clearMacro(clazz);
 		 }
 	  }
+   }
+   
+   /** Returns the children map */
+   public Map<Object, Object> getChildren() {
+	  if( parent==null ) return null;
+	  return parent.children;
+   }
+   
+   /** Returns the original parent study containing this object, in which this is
+    * registered as a child. May not return the path thorugh which this series was accessed
+    * if this series is multiply accessible.
+    */
+   public StudyBean getStudyBean() {
+	  return parent;
    }
 
    /** Get the attributes from the macro items that are included in this object. */

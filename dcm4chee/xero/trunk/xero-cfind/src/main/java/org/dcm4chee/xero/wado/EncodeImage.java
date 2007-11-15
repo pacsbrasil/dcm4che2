@@ -53,6 +53,7 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * EncodeImage transforms a WadoImage object into a JPEG, PNG or any other
@@ -156,7 +157,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 	       log.warn("Image not found.");
 	       return;
 	    }
-		long start = System.currentTimeMillis();
+		long start = System.nanoTime();
 		response.setContentType(contentType);
 		ImageOutputStream ios = ImageIO.createImageOutputStream(response.getOutputStream());
 		writer.setOutput(ios);			
@@ -164,8 +165,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 		writer.write(null,iioimage,imageWriteParam);
 		ios.close();
 		response.getOutputStream().close();
-		long dur = System.currentTimeMillis() - start;
-		log.info("Encoding image took "+dur+" ms");
+		log.info("Encoding image took "+nanoTimeToString(System.nanoTime()-start));
 	}
 	
 }

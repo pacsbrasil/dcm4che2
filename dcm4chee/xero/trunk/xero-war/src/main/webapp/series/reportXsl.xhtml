@@ -8,24 +8,29 @@
 >
 <!-- Display available reports. -->
 <x:template name="reportView" m:body="reportView" m:body.priority="750">
-    <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series/se:report">
-      <span>
-         <a target="imageFrame">
-            <xsl:attribute name="href">/xero/report/report.seam?cid=<xsl:value-of select='$cid' />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
-	        <xsl:value-of select="@conceptMeaning" />
-	        <xsl:if test="@conceptMeaning=''">
-	        Report
-	        </xsl:if>	        
-         </a>
-         <xsl:if test="@completion!=''">
-         <xsl:value-of select="@completion" /> <br />
-         </xsl:if>
-         <xsl:if test="@verification!=''">
-         <xsl:value-of select="@verification" /><br />
-         </xsl:if>
-     </span>
-     <br />
-   </xsl:for-each>
+  <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series/se:report">
+   <xsl:variable name="name" select="@conceptMeaning" />
+   <xsl:variable name="curSOP" select="@SOPInstanceUID" />
+   <xsl:variable name="firstSOP" select="($docNode/se:results/se:patient/se:study/se:series/se:report[@conceptMeaning=$name]/@SOPInstanceUID)[1]" />
+   <xsl:if test="$firstSOP = $curSOP" >
+    <span>
+       <a target="imageFrame">
+          <xsl:attribute name="href">/xero/report/report.seam?cid=<xsl:value-of select='$cid' />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
+       <xsl:value-of select="@conceptMeaning" />
+       <xsl:if test="@conceptMeaning=''">
+       Report
+       </xsl:if>	        
+       </a>
+       <xsl:if test="@completion!=''">
+       <xsl:value-of select="@completion" /> <br />
+      </xsl:if>
+       <xsl:if test="@verification!=''">
+       <xsl:value-of select="@verification" /><br />
+       </xsl:if>
+    </span>
+    <br />
+   </xsl:if>
+ </xsl:for-each>
 </x:template>
 
 </x:xsl>

@@ -50,19 +50,19 @@ public class ImageBeanFrame extends ImageBean {
    @XmlTransient
    int frame;
    @XmlTransient
-   ImageBeanMultiFrame parent;
+   ImageBeanMultiFrame parentImage;
    
    /** Create a single frame object for a specific frame of a multi-frame object.
     * If there is no multi-frame object instantiated, just pass null, and this will work as a regular
     * image bean, albeit with the frame number set.
     */
    public ImageBeanFrame(ImageBeanMultiFrame image, int frame) {
-	  this.parent = image;
+	  super(image.getSeriesBean());
+	  this.parentImage = image;
 	  this.frame = frame;
 	  this.sopInstanceUID = image.getSOPInstanceUID();
 	  this.instanceNumber = image.getInstanceNumber();
 	  this.gspsUID = image.getGspsUID();
-	  this.children = image.children;
 	  if (image.position != null)
 		 this.position = image.position + frame - 1;
 	  this.rows = image.rows;
@@ -70,14 +70,26 @@ public class ImageBeanFrame extends ImageBean {
    }
    
    /** Create a single frame object with the given sop instance and frame number */
-   public ImageBeanFrame(String objectUID, int frame) {
-	  this.parent = null;
+   public ImageBeanFrame(SeriesBean seriesBean, String objectUID, int frame) {
+	  super(seriesBean);
+	  this.seriesBean = null;
 	  this.frame = frame;
 	  this.sopInstanceUID = objectUID;
    }
    
-   public ImageBeanFrame() {
+   private ImageBeanFrame() {
+	  super(null);
 	  // Should only be used by JAXB.
+   }
+
+   /** Copy this frame instance */
+   @Override
+   public ImageBean clone(ImageBean dest) {
+	  if( dest==null ) {
+		 if( parentImage!=null ) dest = new ImageBeanFrame(parentImage, frame);
+		 else dest = new ImageBeanFrame(seriesBean, sopInstanceUID, frame);
+	  }
+	  return super.clone(dest);
    }
 
    /** Return the frame number */
@@ -99,15 +111,15 @@ public class ImageBeanFrame extends ImageBean {
    /** Gets all the attributes from the parent, multi-frame object, and secondly from this specific object */
    @Override
    public Map<QName, String> getOtherAttributes() {
-	  if( parent==null ) return super.getOtherAttributes();
+	  if( parentImage==null ) return super.getOtherAttributes();
 	  Map<QName,String> ret = null;
-	  if( parent.macroItems!=null ) {
-		    ret = parent.getMacroItems().getAnyAttributes();
+	  if( parentImage.macroItems!=null ) {
+		    ret = parentImage.getMacroItems().getAnyAttributes();
 	  }
-	  if( parent.frameItems[frame-1]!=null ) {
-		 if( ret==null ) ret = parent.frameItems[frame-1].getAnyAttributes();
+	  if( parentImage.frameItems[frame-1]!=null ) {
+		 if( ret==null ) ret = parentImage.frameItems[frame-1].getAnyAttributes();
 		 else {
-			Map<QName,String> ret2 = parent.frameItems[frame-1].getAnyAttributes();
+			Map<QName,String> ret2 = parentImage.frameItems[frame-1].getAnyAttributes();
 			if( ret2!=null ) ret.putAll(ret2);
 		 }
 	  }
@@ -117,15 +129,15 @@ public class ImageBeanFrame extends ImageBean {
    /** Gets all the elements first from the parent root object, and secondly from this specific object */
    @Override
    public List<Object> getOtherElements() {
-	  if( parent==null ) return super.getOtherElements();
+	  if( parentImage==null ) return super.getOtherElements();
 	  List<Object> ret = null;
-	  if( parent.macroItems!=null ) {
-		    ret = parent.getMacroItems().getOtherElements();
+	  if( parentImage.macroItems!=null ) {
+		    ret = parentImage.getMacroItems().getOtherElements();
 	  }
-	  if( parent.frameItems[frame-1]!=null ) {
-		 if( ret==null ) ret = parent.frameItems[frame-1].getOtherElements();
+	  if( parentImage.frameItems[frame-1]!=null ) {
+		 if( ret==null ) ret = parentImage.frameItems[frame-1].getOtherElements();
 		 else {
-			List<Object> ret2 = parent.frameItems[frame-1].getOtherElements();
+			List<Object> ret2 = parentImage.frameItems[frame-1].getOtherElements();
 			if( ret2!=null ) ret.addAll(ret2);
 		 }
 	  }
@@ -135,8 +147,8 @@ public class ImageBeanFrame extends ImageBean {
    /** Gets the macro items for THIS frame - does not include the parent items */
    @Override
    public MacroItems getMacroItems() {
-	  if( parent==null ) return super.getMacroItems();
-	  return parent.getFrameMacroItems(frame);
+	  if( seriesBean==null ) return super.getMacroItems();
+	  return parentImage.getFrameMacroItems(frame);
    }
 
    

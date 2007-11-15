@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * This class takes a URL to either a file location or another WADO service, and
@@ -91,7 +92,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  WadoImage ret = null;
 
 	  ImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
-	  if( reader==null ) {
+	  if (reader == null) {
 		 log.warn("Couldn't find reader for DICOM object.");
 		 return null;
 	  }
@@ -122,7 +123,9 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			   // a buffered image directly.
 			   bi = reader.read(frame, param);
 			} else {
+			   long start = System.nanoTime();
 			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
+			   log.info("Time to decompress image only is "+nanoTimeToString(System.nanoTime()-start));
 			   ColorModel cm = ColorModelFactory.createColorModel(ds);
 			   bi = new BufferedImage(cm, r, false, null);
 			}
@@ -150,10 +153,10 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * @param height
      */
    protected void updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
-	  float[] region = getFloats(params,"region",null);
-	  int rows = getInt(params,"rows");
-	  int cols = getInt(params,"cols");
-	  log.info("DicomImageFilter rows="+rows+" cols="+cols);
+	  float[] region = getFloats(params, "region", null);
+	  int rows = getInt(params, "rows");
+	  int cols = getInt(params, "cols");
+	  log.debug("DicomImageFilter rows=" + rows + " cols=" + cols);
 	  int xOffset = 0;
 	  int yOffset = 0;
 	  int sWidth = width;
@@ -167,7 +170,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 sHeight = (int) ((region[3] - region[1]) * height);
 		 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
 		 read.setSourceRegion(rect);
-		 log.info("Source region " + rect);
+		 log.debug("Source region " + rect);
 	  }
 
 	  if (rows == 0 && cols == 0)
@@ -192,7 +195,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 subsampleY = 1;
 	  if (subsampleX == 1 && subsampleY == 1)
 		 return;
-	  log.info("Sub-sampling " + subsampleX + "," + subsampleY + " sHeight=" + sHeight);
+	  log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sHeight=" + sHeight);
 	  read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
    }
 

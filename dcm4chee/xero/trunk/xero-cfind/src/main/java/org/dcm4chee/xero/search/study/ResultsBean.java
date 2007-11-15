@@ -58,107 +58,128 @@ import org.dcm4chee.xero.search.ResultFromDicom;
  * @author bwallace
  * 
  */
-@XmlRootElement(name="results")
+@XmlRootElement(name = "results")
 public class ResultsBean extends ResultsType implements ResultFromDicom, CacheItem {
 
-	@XmlTransient
-	private Map<Object, Object> children = new HashMap<Object, Object>();
+   @XmlTransient
+   private Map<Object, Object> children = new HashMap<Object, Object>();
 
-	/** Create an empty results */
-	public ResultsBean() {
-	}
+   @XmlTransient
+   MacroItems macroItems;
 
-	/**
-	 * Create a results based on the provided query. This will have various
-	 * types of objects in it, to whatever depth is required to represent the
-	 * provided data. That is, if the data only includes down to series level
-	 * data, then only series level will be provided. At each level, the UID for
-	 * that level must be available for lookup/usage.
-	 * @throws InterruptedException 
-	 * @throws IOException 
-	 */
-	public ResultsBean(DimseRSP rsp) throws IOException, InterruptedException {
-		addResults(rsp);
-	}
+   /** Create an empty results */
+   public ResultsBean() {
+   }
 
-	/**
-	 * Create a copy of the results - probably for later modification.
-	 * Shallow copy of children.
-	 * @param results
-	 */
-	public ResultsBean(ResultsType results) {
-	  getPatient().addAll(results.getPatient());	
-	}
+   /**
+     * Create a results based on the provided query. This will have various
+     * types of objects in it, to whatever depth is required to represent the
+     * provided data. That is, if the data only includes down to series level
+     * data, then only series level will be provided. At each level, the UID for
+     * that level must be available for lookup/usage.
+     * 
+     * @throws InterruptedException
+     * @throws IOException
+     */
+   public ResultsBean(DimseRSP rsp) throws IOException, InterruptedException {
+	  addResults(rsp);
+   }
 
-	/* (non-Javadoc)
-	 * @see org.dcm4chee.xero.search.study.ResultsFromDicom#addResults(org.dcm4che2.net.DimseRSP)
-	 */
-	public void addResults(DimseRSP rsp) throws IOException, InterruptedException {
-		while (rsp.next()) {
-			DicomObject cmd = rsp.getCommand();
-			if (CommandUtils.isPending(cmd)) {
-				DicomObject data = rsp.getDataset();
-				addResult(data);
+   /**
+     * Create a copy of the results - probably for later modification. Shallow
+     * copy of children.
+     * 
+     * @param results
+     */
+   public ResultsBean(ResultsType results) {
+	  getPatient().addAll(results.getPatient());
+   }
+
+   /*
+     * (non-Javadoc)
+     * 
+     * @see org.dcm4chee.xero.search.study.ResultsFromDicom#addResults(org.dcm4che2.net.DimseRSP)
+     */
+   public void addResults(DimseRSP rsp) throws IOException, InterruptedException {
+	  while (rsp.next()) {
+		 DicomObject cmd = rsp.getCommand();
+		 if (CommandUtils.isPending(cmd)) {
+			DicomObject data = rsp.getDataset();
+			addResult(data);
+		 }
+	  }
+   }
+
+   /** Add a single result to the results list */
+   public void addResult(DicomObject data) {
+	  PatientIdentifier pi = new PatientIdentifier(data);
+	  if (children.containsKey(pi)) {
+		 ResultFromDicom pb = (ResultFromDicom) children.get(pi);
+		 pb.addResult(data);
+	  } else {
+		 PatientBean pb = new PatientBean(children, data);
+		 pb.setPatientIdentifier(pi.toString());
+		 children.put(pb.getId(), pb);
+		 getPatient().add(pb);
+	  }
+   }
+
+   /** Figure out how many bytes this consumes */
+   public long getSize() {
+	  // Some amount of space for this item
+	  long ret = 128;
+	  for (PatientType patient : getPatient()) {
+		 ret += ((CacheItem) patient).getSize();
+	  }
+	  return ret;
+   }
+
+   /** Clear an arbitrary list of objects that implement LocalModel */
+   public static boolean clearEmpty(Map<Object, Object> children, List<?> list) {
+	  for (int i = 0; i < list.size(); i++) {
+		 Object obj = list.get(i);
+		 if (obj instanceof LocalModel) {
+			boolean empty = ((LocalModel) obj).clearEmpty();
+			if (empty) {
+			   list.remove(i);
+			   children.remove(((LocalModel) obj).getId());
+			   i--;
 			}
-		}
-	}
-	
-	/** Add a single result to the results list */
-	public void addResult(DicomObject data) {
-		PatientIdentifier pi = new PatientIdentifier(data);
-		if( children.containsKey(pi) ) {
-			ResultFromDicom pb = (ResultFromDicom) children.get(pi);
-			pb.addResult(data);
-		}
-		else {
-			PatientBean pb = new PatientBean(children,data);
-			pb.setPatientIdentifier(pi.toString());
-			children.put(pb.getId(),pb);
-			getPatient().add(pb);
-		}
-	}
+		 }
+	  }
+	  return list.isEmpty();
+   }
 
-	/** Figure out how many bytes this consumes */
-	public long getSize() {
-		// Some amount of space for this item
-		long ret = 128;
-		for(PatientType patient : getPatient()) {
-			ret += ((CacheItem) patient).getSize();
-		}
-		return ret;
-	}
+   /**
+     * Returns a map of the id to child object for any object contained in this
+     * hierarchy. This is needed for fast updates where objects can be spread
+     * out in the tree.
+     */
+   public Map<Object, Object> getChildren() {
+	  return children;
+   }
 
-	/** Clear an arbitrary list of objects that implement LocalModel */
-	public static boolean clearEmpty(Map<Object,Object> children, List<?> list) {
-		for(int i=0; i<list.size(); i++ ) {
-			Object obj = list.get(i);
-			if( obj instanceof LocalModel ) {
-				boolean empty = ((LocalModel) obj).clearEmpty();
-				if( empty ) {
-					list.remove(i);
-					children.remove(((LocalModel) obj).getId() );
-					i--;
-				}
-			}
-		}
-		return list.isEmpty();
-	}
+   /** Gets additional attributes and child elements defined in other objects.
+    * Shares the macro items with any parent items that have one, so as to only
+    * update local information once for all child clones. */
+   public MacroItems getMacroItems() {
+	  if (macroItems == null) {
+		 macroItems = new MacroItems();
+	  }
+	  return macroItems;
+   }
 
-	/** Returns a map of the id to child object for any object contained in this hierarchy. 
-	 * This is needed for fast updates where objects can be spread out in the tree.
-	 */
-	public Map<Object, Object> getChildren() {
-		return children;
-	}
-	
-	static long counter = (int) (Math.random()*Long.MAX_VALUE);
-	
-	/** Creates a new unique id for an instance value 
-	 * @todo implement this as something more than a simple counter.
-	 */
-	public static synchronized String createId(String baseName) {
-		counter++;
-		if( baseName==null ) return "id"+counter;
-		return baseName+counter;
-	}
+   static long counter = (int) (Math.random() * Long.MAX_VALUE);
+
+   /**
+     * Creates a new unique id for an instance value
+     * 
+     * @todo implement this as something more than a simple counter.
+     */
+   public static synchronized String createId(String baseName) {
+	  counter++;
+	  if (baseName == null)
+		 return "id" + counter;
+	  return baseName + counter;
+   }
 }

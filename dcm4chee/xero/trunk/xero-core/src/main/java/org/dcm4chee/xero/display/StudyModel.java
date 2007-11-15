@@ -207,7 +207,7 @@ public class StudyModel {
 	  if (ret != null)
 		 return ret;
 	  StudyBean study = getStudy();
-	  ret = new SeriesBean(children);
+	  ret = new SeriesBean(study);
 	  ret.setSeriesInstanceUID(seriesUid);
 	  study.getSeries().add(ret);
 	  children.put(ret.getId(), ret);
@@ -232,9 +232,9 @@ public class StudyModel {
 		 return ret;
 	  SeriesBean series = getSeries();
 	  if (frame != null && frame != 0) {
-		 ret = new ImageBeanFrame(objectUid, frame);
+		 ret = new ImageBeanFrame(series, objectUid, frame);
 	  } else {
-		 ret = new ImageBean();
+		 ret = new ImageBean(series);
 	     ret.setSOPInstanceUID(objectUid);
 	  }
 	  series.getDicomObject().add(ret);

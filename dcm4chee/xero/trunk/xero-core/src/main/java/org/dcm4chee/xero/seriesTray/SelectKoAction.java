@@ -35,51 +35,49 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.seriesTray;
 
-import java.util.Comparator;
+import org.dcm4chee.xero.display.StudyModel;
+import org.dcm4chee.xero.search.macro.KeyObjectMacro;
+import org.dcm4chee.xero.search.study.StudyBean;
+import org.jboss.seam.ScopeType;
+import org.jboss.seam.annotations.In;
+import org.jboss.seam.annotations.Name;
+import org.jboss.seam.annotations.Scope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** 
- * Compares two series - used to order the series.  Designed to order
- * the series by increasing series number, putting GSPS, reports etc after everything else.
- * @author bwallace
- */
-public class SeriesComparator implements Comparator<SeriesType> {
-   /** Indicate if the given series a non-image containing */
-   public static boolean isNonImageSeries(SeriesType ser) {
-	  String mod = ser.getModality();
-	  if( "PR".equals(mod) || "KO".equals(mod) || "SR".equals(mod) ) return true;
-	  return false;
+@Name("SelectKo")
+@Scope(ScopeType.EVENT)
+public class SelectKoAction {
+   private static Logger log = LoggerFactory.getLogger(SelectKoAction.class);
+
+   @In(value = "ConversationStudyModel", create = true)
+   StudyModel studyModel;
+
+   String koUid;
+
+   /** Return the content name of the GSPS to apply */
+   public String getKoUid() {
+	  return koUid;
    }
 
-	/**
-	 * Compare two series by series number.
-	 */
-	public int compare(SeriesType ser1, SeriesType ser2) {
-	   boolean ser1NonImage = isNonImageSeries(ser1);
-	   boolean ser2NonImage = isNonImageSeries(ser2);
-	    if( ser1NonImage ) {
-	       if( !ser2NonImage ) {
-	    	  return 2;
-	       }
-	    }
-	    else if( ser2NonImage ) {
-	       return -2;
-	    }
-		Integer sn1 = ser1.getSeriesNumber();
-		Integer sn2 = ser2.getSeriesNumber();
-		// Put series without series numbers at the end.
-		if( sn1==null && sn2!=null ) return 1;
-		if( sn2==null && sn1!=null ) return -1;
-		if( sn1==null && sn2==null ) return 0;
-		// Use reverse order for non image related series.
-		int ret = sn1-sn2;
-		if( ret==0 ) {
-		   // TODO - when we have real SR report creators with multiple instances at
-		   // various statii, use a better comparator.
-		   ret = ser1.getSeriesInstanceUID().compareTo(ser2.getSeriesInstanceUID());
-		}
-		if( ser1NonImage && ser2NonImage ) return -ret;
-		return ret;
-	}
+   /** Set the content name of the GSPS to apply */
+   public void setKoUid(String koUid) {
+	  this.koUid = koUid;
+	  log.info("Setting KO UID to " + koUid);
+   }
+
+   /** Change the applied GSPS */
+   public void action() {
+	  log.info("action called to set koUID to " + getKoUid());
+	  StudyBean studyBean = studyModel.getStudy();
+	  if (koUid == null) {
+		 KeyObjectMacro kom = (KeyObjectMacro) studyBean.getMacroItems().findMacro(KeyObjectMacro.class);
+		 if( kom!=null ) studyBean.getMacroItems().removeMacro(kom);
+	  } else {
+		 KeyObjectMacro kom = new KeyObjectMacro(koUid);
+		 studyBean.getMacroItems().addMacro(kom);
+	  }
+   }
 }

@@ -82,6 +82,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  }
 	  DicomImageReader dir = DicomFilter.filterDicomImageReader(filterItem, params, null);
+	  if( dir==null ) return null;
 	  // Size can't change per-image, so just get the overall sizes.
 	  int width, height;
 	  try {

@@ -54,7 +54,7 @@ public class TestMacroMixIn
    
    @Test
    public void testWindowLevelImage() {
-	  ImageBean image = new ImageBean();
+	  ImageBean image = new ImageBean(null);
 	  assert image.getOtherAttributes()==null;
 	  image.addMacro(new WindowLevelMacro(128,256,"Full 8 bit WL"));
 	  assert image.getOtherAttributes()!=null;

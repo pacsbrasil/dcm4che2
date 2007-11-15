@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 public class TimeFilter  implements Filter{
 	static Logger log = LoggerFactory.getLogger(TimeFilter.class);
@@ -58,11 +59,12 @@ public class TimeFilter  implements Filter{
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) request;
-		long start = System.currentTimeMillis();
+		long start = System.nanoTime();
 		filterChain.doFilter(request,response);
-		long dur = System.currentTimeMillis() - start;
+		long dur = System.nanoTime() - start;
 		String msg = "The request "+ req.getRequestURI()
-		+ " with parameters " + req.getQueryString() + " took "+dur+" ms.";
+		+ " with parameters " + req.getQueryString() + " took "+nanoTimeToString(dur);
+		dur = dur/1000000;
 		if( dur < 10 ) {
 			log.debug(msg);
 		}

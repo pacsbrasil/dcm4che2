@@ -1,3 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="seriesTrayXsl.seam"?>
-<ui:include src="seriesSource.xhtml" xmlns:ui="http://java.sun.com/jsf/facelets"/>
+<x:source xmlns:x="http://www.dcm4che.org/xero/jsf" pageConfig="#{PageConfig.seriesTray}"
+  xmlns:c="http://java.sun.com/jstl/core"
+  xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/seriesTray"
+  m:xsl="/xero/series/seriesTrayXsl.seam"
+>
+   <cycle>#{cycleUrl}</cycle>
+   <PatientIdentifier>#{DisplayStudyLevel.pid}</PatientIdentifier>
+   <StudyInstanceUID>#{DisplayStudyLevel.studyUID}</StudyInstanceUID>
+   <series>/xero/series/series.xml?StudyInstanceUID=#{DisplayStudyLevel.studyUID}</series>
+   <SeriesInstanceUID>#{DisplayStudyLevel.seriesUID}</SeriesInstanceUID>
+   
+   Conversational study model patient XML is
+   <layout doc="#{ConversationStudyModel.url}" xmlns:se="http://www.dcm4chee.org/xero/search/study/">
+    <h:outputText value="#{ConversationStudyModel.patientXml}" escape="false" />
+   </layout>
+ 
+  Session Patient XML is 
+  <h:outputText value="#{SessionStudyModel.patientXml}" escape="false" />
+  Done patient XML.
+</x:source>

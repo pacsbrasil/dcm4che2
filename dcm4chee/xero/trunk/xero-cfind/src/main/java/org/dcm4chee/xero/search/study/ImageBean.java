@@ -58,28 +58,51 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    private static final Logger log = LoggerFactory.getLogger(ImageBean.class);
 
    @XmlTransient
-   protected Map<Object, Object> children;
+   protected SeriesBean seriesBean;
 
    /** Used to define the DICOM macro tables included in this object */
    @XmlTransient
    MacroItems macroItems;
 
    /**
-     * Create an empty image bean object.
+     * Create an empty image bean object.  
+     * @deprecated Not recommended for use except through JAXB deserialization.
      */
-   public ImageBean() {
+   private ImageBean() {
    };
 
+   /**
+    * Create an iamge bean with a specified parent.
+    * @param series
+    */
+   public ImageBean(SeriesBean series) {
+	  this.seriesBean = series;
+   }
+   
    /**
      * Create an image bean from the given dicom data
      * 
      * @param data
      *            to use for the DICOM information
      */
-   public ImageBean(DicomObject data) {
+   public ImageBean(SeriesBean seriesBean, DicomObject data) {
+	  this(seriesBean);
 	  initAttributes(data);
    }
 
+   /** Make a clone of this image into the given image, or create a new one if necessary.
+    * Copies any macros by reference.
+    */
+   public ImageBean clone(ImageBean image) {
+	  if( image==null ) image = new ImageBean(seriesBean);
+	  image.columns = this.columns;
+	  image.rows = this.rows;
+	  image.sopInstanceUID = this.sopInstanceUID;
+	  image.instanceNumber = this.instanceNumber;
+	  image.macroItems = getMacroItems();
+	  return image;
+   }
+   
    /**
      * Initialize the image level attributes by copying the DicomObject's image
      * level data for Columns, Rows, SOP Instance UID and Instance Number.
@@ -105,6 +128,16 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 			&& (macroItems == null || macroItems.clearEmpty());
    }
 
+   /** Get the series that this originally belonged to. */
+   public SeriesBean getSeriesBean()
+   {
+	  return seriesBean;
+   }
+   
+   public void setSeriesBean(SeriesBean series) {
+	  this.seriesBean = series;
+   }
+   
    /** Return the id for this element, in this case the SOP Instance UID */
    public String getId() {
 	 return getSOPInstanceUID();

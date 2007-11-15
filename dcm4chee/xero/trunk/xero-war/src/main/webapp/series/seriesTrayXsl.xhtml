@@ -11,12 +11,15 @@
    m:Event.script="../js/Events.js"   m:Event.script.priority="1000"
 >
 
-<xsl:variable name="docName" select="/documents/series"/>
+<xsl:variable name="tStudyUID" select="/documents/StudyInstanceUID/text()" />
+<xsl:variable name="docName"><xsl:value-of select="/documents/series" /><xsl:if test="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID][@koUID]">&amp;koUID=<xsl:value-of select="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID]/@koUID" /></xsl:if></xsl:variable>
+
 <ui:include src="seriesVars.xhtml" />
 
 <!-- Display the series tray debugging information -->
 <x:template name="seriesTrayDebug" m:debug.body="seriesTrayDebug" m:debug.body.priority="1000">
     <xsl:if test="/documents/debug='true'">
+       ko info <xsl:if test="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID][@koUID]">&amp;koUID=<xsl:value-of select="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID]/@koUID" /></xsl:if> <br />
        docName=<xsl:value-of select="$docName"/> <br />
        #children patientNode=<xsl:value-of select="count($patientNode)" /><br />
        #children studyNode=<xsl:value-of select="count($studyNode)" /><br />
@@ -29,15 +32,17 @@
 
 <!-- Display the series tray header information -->
 <x:template name="seriesTrayHeader" m:header.body="seriesTrayHeader" m:header.body.priority="950" >
-    <xsl:value-of select="$docNode/se:results/se:patient/@PatientName" /> <br />
-    <xsl:value-of select="$docNode/se:results/se:patient/@PatientID" /> <br />
-    <xsl:value-of select="$docNode/se:results/se:patient/se:study/@StudyDescription" /> <br />
+ <xsl:param name="node" />
+ <xsl:value-of select="$node/../@PatientName" /> <br />
+ <xsl:value-of select="$node/../@PatientID" /> <br />
+ <xsl:value-of select="$node/@StudyDescription" /> <br />
 </x:template>
 
 <!-- Display the series images -->
 <x:template name="seriesImages" m:images.body="seriesImages" m:images.body.priority="500">
+ <xsl:param name="node" />
  <xsl:message>series nodes, viewable <xsl:value-of select="concat(count($docNode/se:results/se:patient/se:study/se:series),',',count($docNode/se:results/se:patient/se:study/se:series[@Viewable>0]))" /></xsl:message>
- <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series[@Viewable>0]">
+ <xsl:for-each select="$node/se:series[@Viewable>0]">
    <span xml:space="preserve"><xsl:value-of select="@SeriesNumber" />
      <xsl:value-of select="@SeriesDescription" />
      <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
@@ -47,7 +52,7 @@
         <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
         <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
         <img height="128">
-         <xsl:attribute name="src">/xero/wlwado?requestType=WADO&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" />&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
+         <xsl:attribute name="src">/xero/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
          <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
         </img>
       </a>
@@ -65,7 +70,9 @@
 </head>
 <body style="background: black; color: white; ">
   <div id="body">
-    <x:callTemplates from="#{pageConfig}" mode="body" />
+    <x:callTemplates from="#{pageConfig}" mode="body" >
+      <xsl:with-param name="node" select="$studyNode" />
+    </x:callTemplates>
   </div>
 </body>
 </html>
