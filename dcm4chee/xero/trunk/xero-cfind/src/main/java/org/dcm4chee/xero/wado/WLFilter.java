@@ -54,6 +54,7 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * This class applies the DICOM window level operation directly to the pixel
@@ -100,7 +101,7 @@ public class WLFilter implements Filter<WadoImage> {
 		 return wi;
 	  }
 
-	  long start = System.currentTimeMillis();
+	  long start = System.nanoTime();
 	  BufferedImage bi = wi.getValue();
 
 	  short[] pval2out = null;
@@ -175,8 +176,8 @@ public class WLFilter implements Filter<WadoImage> {
 
 	  WadoImage ret = wi.clone();
 	  ret.setValue(dest);
-	  long dur = System.currentTimeMillis() - start;
-	  log.info("Window levelling took " + dur + " ms");
+	  long dur = System.nanoTime() - start;
+	  log.info("Window levelling took " + nanoTimeToString(dur));
 	  return ret;
    }
 

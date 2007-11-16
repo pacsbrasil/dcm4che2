@@ -11,20 +11,21 @@
   <div class="menu" id='studyToolbar'>
    <ul>
     <li><se:series offset="-1"><a id="prevSeries" dir="-1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">&lt;Series</a></se:series></li>
-    <li><a id="wlBtn" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  ><img src="/xero/img/wl.png" alt="[Window Level]" height="22"/></a></li>
-    <li><a id="zpBtn" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"><img src="/xero/img/zoomPan.png" alt="[Zoom/Pan]"  height="22"/></a></li>
-    <li><a id="cmBtn" oncommand="/xero/image/action/Mode.seam?mode=createMarkup" ><img src="/xero/img/polyCaliper.png" alt="[Poly Caliper]"  height="22"/></a>
+    <li><a id="wlBtn" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  ><img class="icon" src="/xero/img/wl.png" alt="[Window Level]"/></a></li>
+    <li><a id="zpBtn" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"><img class="icon" src="/xero/img/zoomPan.png" alt="[Zoom/Pan]" /></a></li>
+    <li><a id="keyBtn" oncommand="/xero/image/action/Mode.seam?mode=key"><img class="icon" src="/xero/img/key.png" alt="[Key Image]" /></a></li>
+    <li><a id="cmBtn" oncommand="/xero/image/action/Mode.seam?mode=createMarkup" ><img class="icon" src="/xero/img/polyCaliper.png" alt="[Poly Caliper]"/></a>
      <ul>
-	    <li><a id="emBtn" oncommand="/xero/image/action/Mode.seam?mode=editMarkup" ><img src="/xero/img/editMarkup.png" alt="[Edit Markup]"  height="22"/> Edit</a></li>	 
+	    <li><a id="emBtn" oncommand="/xero/image/action/Mode.seam?mode=editMarkup" ><img class="icon" src="/xero/img/editMarkup.png" alt="[Edit Markup]"/> Edit</a></li>	 
 	 </ul>
 	</li>
-    <li><a id="cineBtn" mode="cine" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img src="/xero/img/cine.png" alt="[CINE]"  height="22"/></a></li>
+    <li><a id="cineBtn" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img class="icon" src="/xero/img/cine.png" alt="[CINE]"/></a></li>
 
-    <li><img src="/xero/img/layoutSe2x2.png" alt="[Se2x2]" height="22"/>
+    <li><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/>
      <ul>
-      <li><a id="layoutSe2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml" ><img src="/xero/img/layoutSe2x2.png" alt="[Se2x2]" height="22"/></a></li>
-      <li><a id="layout1x1" oncommand="/xero/image/action/Layout.seam?layout=layout1x1.xml" ><img src="/xero/img/layout1x1.png" alt="[1x1]" height="22"/></a></li>
-      <li><a id="layoutIm5x5" oncommand="/xero/image/action/Layout.seam?layout=layoutIm5x5.xml" ><img src="/xero/img/layoutIm5x5.png" alt="[Im5x5]" height="22"/></a></li>
+      <li><a id="layoutSe2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml" ><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/></a></li>
+      <li><a id="layout1x1" oncommand="/xero/image/action/Layout.seam?layout=layout1x1.xml" ><img class="icon" src="/xero/img/layout1x1.png" alt="[1x1]"/></a></li>
+      <li><a id="layoutIm5x5" oncommand="/xero/image/action/Layout.seam?layout=layoutIm5x5.xml" ><img class="icon" src="/xero/img/layoutIm5x5.png" alt="[Im5x5]"/></a></li>
 	  <li><a id="layoutPrint" target="Print" oncommand="/xero/image/action/Layout.seam?layout=layoutPrint.xml">Print</a></li>
 	  <li><a id="layoutDebug" oncommand="/xero/image/action/Layout.seam?layout=layout.xml&amp;debug=true" >Debug</a></li>
 	 </ul>
@@ -37,6 +38,7 @@
       <li><a id="imageLevel" oncommand="/xero/image/image.seam?applyLevel=image">Image</a></li>
      </ul>
     </li>
+    <li><a id="saveBtn" oncommand="/xero/image/action/Save.seam"><img class="icon" src="/xero/img/save.png" /></a></li>
     <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
     
     <li><a id="viewBody" onclick="alert('HTML page is '+document.getElementsByTagName('body')[0].innerHTML);" >Body</a></li>

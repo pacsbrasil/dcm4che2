@@ -12,7 +12,8 @@
 >
 
 <xsl:variable name="tStudyUID" select="/documents/StudyInstanceUID/text()" />
-<xsl:variable name="docName"><xsl:value-of select="/documents/series" /><xsl:if test="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID][@koUID]">&amp;koUID=<xsl:value-of select="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID]/@koUID" /></xsl:if></xsl:variable>
+<xsl:variable name="startKO"><xsl:choose><xsl:when test="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID][@koUID]">&amp;koUID=<xsl:value-of select="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID]/@koUID" /></xsl:when><xsl:otherwise>&amp;koUID=*</xsl:otherwise></xsl:choose></xsl:variable>
+<xsl:variable name="docName"><xsl:value-of select="concat(/documents/series,$startKO)" /></xsl:variable>
 
 <ui:include src="seriesVars.xhtml" />
 

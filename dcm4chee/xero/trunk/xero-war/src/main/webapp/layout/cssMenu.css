@@ -20,6 +20,8 @@ iframe { width:0; height:0 }
 ul { margin-left:20px; }       /* kill default 50px left padding and set 20px */
 li { margin-bottom:0em; }          /* set default inter-item vertical spacing */
 
+img.icon { height: 20px; border: thin solid #6f9f6f; }
+
 a { color: white; }
 
 a.disabled { color: gray; }
@@ -31,6 +33,7 @@ a.active { background: gray; }
 .menu {
 	position:relative;        /* establish a menu-relative positioning context */
 	float:left;                                     /* play nicely with others */
+	z-index:100;
 	margin:0;
 	padding:0;
 	border:0;

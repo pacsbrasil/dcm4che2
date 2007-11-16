@@ -51,82 +51,105 @@ import org.dcm4chee.xero.search.study.ImageBeanMultiFrame;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
 import org.dcm4chee.xero.search.study.KeySelection;
 import org.dcm4chee.xero.search.study.MacroMixIn;
+import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.StudyBean;
+import org.dcm4chee.xero.search.study.StudyType;
 import org.dcm4chee.xero.wado.DicomFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This filter adds an indication of whether an image is a key object.
- * It takes a single koUID=X as a parameter, and adds that key object to the set of 
- * key objects in the return value.  It then marks all images that are found that exist
- * in the key object set with the key object, including the GSPS UID if any.  Thus, this
- * filter should run AFTER the GspsUid filter.
- * Some specific handling:
- * 	1. If an image is found more than once, with a different GSPS UID, then it will be "cloned"
- *     to a new UID.
- *  2. If an image has no GSPS, then whatever GSPS the user applies by default will be shown.
- *  
- *  This is not the filter to use to display the key object set as a series tray level display,
- *  @see{KeyObjectSeries} for a filter at the series level.
+ * This filter adds an indication of whether an image is a key object. It takes
+ * a single koUID=X as a parameter, and adds that key object to the set of key
+ * objects in the return value. It then marks all images that are found that
+ * exist in the key object set with the key object, including the GSPS UID if
+ * any. Thus, this filter should run AFTER the GspsUid filter. Some specific
+ * handling: 1. If an image is found more than once, with a different GSPS UID,
+ * then it will be "cloned" to a new UID. 2. If an image has no GSPS, then
+ * whatever GSPS the user applies by default will be shown.
+ * 
+ * This is not the filter to use to display the key object set as a series tray
+ * level display,
+ * 
+ * @see{KeyObjectSeries} for a filter at the series level.
  * @author bwallace
- *
+ * 
  */
-public class KeyObjectFilter  implements Filter<ResultsBean> {
-	private static final Logger log = LoggerFactory.getLogger(KeyObjectFilter.class);
-	public static final String KEY_UID = "koUID";
+public class KeyObjectFilter implements Filter<ResultsBean> {
+   private static final Logger log = LoggerFactory.getLogger(KeyObjectFilter.class);
+
+   public static final String KEY_UID = "koUID";
 
    public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 	  String koUid = (String) params.get(KEY_UID);
-	  if( koUid==null || koUid.isEmpty() ) {
+	  if (koUid == null || koUid.isEmpty()) {
 		 return (ResultsBean) filterItem.callNextFilter(params);
 	  }
 	  ResultsBean ret = addKeyObjectMacro(filterItem, params, koUid);
-	  if( ret==null ) return null;
-	  
+	  if (ret == null)
+		 return null;
+
 	  return ret;
    }
 
-
    /**
-    * Gets the default search return, and then calls the key object macro assignment.
-    * @param filterItem
-    * @param params
-    * @param koUid
-    * @return
-    */
+     * Gets the default search return, and then calls the key object macro
+     * assignment.
+     * 
+     * @param filterItem
+     * @param params
+     * @param koUid
+     * @return
+     */
    protected ResultsBean addKeyObjectMacro(FilterItem filterItem, Map<String, Object> params, String koUid) {
 	  // Don't remove the koUID as it is part of the cache key still
 	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
-	  if( ret==null ) return null;
-	  KeyObjectMacro kom = (KeyObjectMacro) ret.getMacroItems().findMacro(KeyObjectMacro.class);
-	  if( kom!=null ) {
-		 if( kom.getKeyObject().equals(koUid) ) {
-			log.error("Looking for different key object "+koUid+" but already found a key object:"+kom.getKeyObject());
+	  if (ret == null)
+		 return null;
+	  for (int patientI = 0; patientI<ret.getPatient().size(); patientI++) {
+		 PatientType patient = ret.getPatient().get(patientI);
+		 for (StudyType studyType : patient.getStudy()) {
+			StudyBean study = (StudyBean) studyType;
+			String studyKo = findKeyObject(study, koUid);
+			if (studyKo == null)
+			   continue;
+			KeyObjectMacro kom = (KeyObjectMacro) ret.getMacroItems().findMacro(KeyObjectMacro.class);
+			if (kom != null) {
+			   if (kom.getKeyObject().equals(studyKo)) {
+				  log.error("Looking for different key object " + koUid + " but already found a key object:" + kom.getKeyObject());
+			   }
+			   return ret;
+			}
+
+			log.info("Adding key object information for studyKo=" + studyKo);
+			KeyObjectBean kob = queryForKO(filterItem, params, studyKo, ret);
+			if (kob == null) {
+			   kom = new KeyObjectMacro("ERROR:Not found " + koUid);
+			   log.warn("Key object " + studyKo + " not found.");
+			   study.getMacroItems().addMacro(kom);
+			   continue;
+			}
+			kom = new KeyObjectMacro(studyKo);
+			study.getMacroItems().addMacro(kom);
+
+			List<KeySelection> missing = assignKeyObjectMacro(ret, kom, kob.getKeySelection());
+			if (missing != null && !missing.isEmpty()) {
+			   handleMissingItems(filterItem, params, ret, kom, missing);
+			}
 		 }
-		 return ret;
-	  }
-	  
-	  log.info("Adding key object information for koUID="+koUid);
-	  KeyObjectBean kob = queryForKO(filterItem, params, koUid, ret);
-	  if( kob==null ) {
-		 kom = new KeyObjectMacro("ERROR:Not found "+koUid);
-		 log.warn("Key object "+koUid+" not found.");
-		 ret.getMacroItems().addMacro(kom);
-		 return ret;
-	  }
-	  kom = new KeyObjectMacro(koUid);
-	  ret.getMacroItems().addMacro(kom);
-	  
-	  List<KeySelection> missing = assignKeyObjectMacro(ret, kom, kob.getKeySelection());
-	  if( missing!=null && !missing.isEmpty() ) {
-		 handleMissingItems(filterItem, params,ret, kom, missing);
 	  }
 	  return ret;
    }
-   
+
+   /** Returns the key object to use for the given study */
+   private String findKeyObject(StudyBean study, String koUid) {
+	  if( ! koUid.equals("*") ) return koUid;
+	  KeyObjectBean kob = (KeyObjectBean) study.searchStudy(koUid, "KO");
+	  if( kob==null ) return null;
+	  return kob.getSOPInstanceUID();
+   }
 
    /** Assigns the key object macro instance for the listed selection */
    public static List<KeySelection> assignKeyObjectMacro(ResultsBean ret, KeyObjectMacro kom, List<KeySelection> selection) {
@@ -134,46 +157,51 @@ public class KeyObjectFilter  implements Filter<ResultsBean> {
 
 	  // Setup series map for this object.
 	  KeyObjectBean kob = (KeyObjectBean) ret.getChildren().get(kom.getKeyObject());
+	  if( kob==null ) throw new NullPointerException("Key object bean should not be null.");
 	  StudyBean study = kob.getSeriesBean().getStudyBean();
-	  Map<String,SeriesBean> availSeries = new HashMap<String,SeriesBean>();
-	  for(Object set : study.getSeries()) {
+	  Map<String, SeriesBean> availSeries = new HashMap<String, SeriesBean>();
+	  for (Object set : study.getSeries()) {
 		 SeriesBean se = (SeriesBean) set;
-		 availSeries.put(se.getSeriesInstanceUID(),se);
+		 availSeries.put(se.getSeriesInstanceUID(), se);
 	  }
-	  
-	  for(KeySelection key : selection) {
+
+	  for (KeySelection key : selection) {
 		 MacroMixIn mmi = (MacroMixIn) ret.getChildren().get(key.getObjectUid());
-		 if( mmi==null ) {
-			if( missing==null ) missing = new ArrayList<KeySelection>();
-			log.info("Missing child "+key.getObjectUid());
+		 if (mmi == null) {
+			if (missing == null)
+			   missing = new ArrayList<KeySelection>();
+			log.info("Missing child " + key.getObjectUid());
 			missing.add(key);
 			continue;
 		 }
-		 if(key.getFrame()!=0 ) {
+		 if (key.getFrame() != 0) {
 			ImageBeanMultiFrame image = (ImageBeanMultiFrame) mmi;
 			mmi = image.getImageFrame(key.getFrame());
 		 }
 		 // Might have already added one of these - if so, don't do it again.
-		 if( mmi.getMacroItems().findMacro(KeyObjectMacro.class)!=null ) continue;
+		 if (mmi.getMacroItems().findMacro(KeyObjectMacro.class) != null)
+			continue;
 		 mmi.getMacroItems().addMacro(kom);
-		 
-		 // TODO: Fix: Can only move images over to the right study, not other types of objects.
+
+		 // TODO: Fix: Can only move images over to the right study, not
+            // other types of objects.
 		 // at least at the moment.
-		 if( mmi instanceof ImageBean ) {
+		 if (mmi instanceof ImageBean) {
 			ImageBean image = (ImageBean) mmi;
 			SeriesBean imgSeries = image.getSeriesBean();
 			SeriesBean series = availSeries.get(imgSeries.getSeriesInstanceUID());
 			// Identity comparison is acceptable here.
-			if( series==null ) {
-			   series = new SeriesBean(study,imgSeries);
+			if (series == null) {
+			   series = new SeriesBean(study, imgSeries);
 			   series.getDicomObject().clear();
 			   series.setViewable(null);
 			   study.getSeries().add(series);
-			   log.info("Creating new synthetic series for key objects in "+study.getStudyInstanceUID()+" for series "+series.getSeriesInstanceUID());			   
-			   ret.getChildren().put("ko"+imgSeries.getSeriesInstanceUID(), series);
-			   availSeries.put(series.getSeriesInstanceUID(),series);
+			   log.info("Creating new synthetic series for key objects in " + study.getStudyInstanceUID() + " for series "
+					 + series.getSeriesInstanceUID());
+			   ret.getChildren().put("ko" + imgSeries.getSeriesInstanceUID(), series);
+			   availSeries.put(series.getSeriesInstanceUID(), series);
 			}
-			if( series!=imgSeries ) {
+			if (series != imgSeries) {
 			   log.info("Adding existing image to synthetic series.");
 			   ImageBean addImage = image.clone(null);
 			   addImage.setSeriesBean(series);
@@ -181,7 +209,7 @@ public class KeyObjectFilter  implements Filter<ResultsBean> {
 			   series.getDicomObject().add(addImage);
 			}
 		 }
-		 if( key.getGspsUid()!=null ) {
+		 if (key.getGspsUid() != null) {
 			ImageBean image = (ImageBean) mmi;
 			image.setGspsUID(key.getGspsUid());
 		 }
@@ -190,27 +218,28 @@ public class KeyObjectFilter  implements Filter<ResultsBean> {
    }
 
    /** Handle any missing items - by default, does nothing */
-   protected void handleMissingItems(FilterItem filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom, List<KeySelection> missing) {
+   protected void handleMissingItems(FilterItem filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
+		 List<KeySelection> missing) {
    }
 
    /**
-    * This method queries for the specified KO object, adding it to the result.
-    * Only one key object can be specified at a time.  The object will be returned,
-    * as well as being added to the results bean object.
-    */
-  public static KeyObjectBean queryForKO(FilterItem filterItem, Map<String,Object> params, String koUid, ResultsBean rb) {
+     * This method queries for the specified KO object, adding it to the result.
+     * Only one key object can be specified at a time. The object will be
+     * returned, as well as being added to the results bean object.
+     */
+   public static KeyObjectBean queryForKO(FilterItem filterItem, Map<String, Object> params, String koUid, ResultsBean rb) {
 	  DicomObject dobj = DicomFilter.filterDicomObject(filterItem, null, koUid);
-	  if( dobj==null ) return null;
+	  if (dobj == null)
+		 return null;
 	  KeyObjectBean kob = (KeyObjectBean) rb.getChildren().get(koUid);
-	  if( kob==null ) {
+	  if (kob == null) {
 		 rb.addResult(dobj);
 		 kob = (KeyObjectBean) rb.getChildren().get(koUid);
-		 assert kob!=null;
-	  }
-	  else {
+		 assert kob != null;
+	  } else {
 		 kob.initKeySelection(dobj);
 	  }
 	  return kob;
-  }
+   }
 
 }

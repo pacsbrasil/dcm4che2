@@ -65,7 +65,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 
    /** Finds the most recent GSPS matching the given content names */
    private GspsType findMostRecentGsps(StudyType st, ResultsBean gspsResults, String gspsNames) {
-	  log.info("Looking for GSPS for study " + st.getStudyInstanceUID());
+	  log.debug("Looking for GSPS for study " + st.getStudyInstanceUID());
 	  StudyBean gspsSb = (StudyBean) gspsResults.getChildren().get(st.getStudyInstanceUID());
 	  if (gspsSb == null) {
 		 log.debug("Didn't find any GSPS objects for study.");

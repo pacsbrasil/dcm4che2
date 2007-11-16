@@ -85,6 +85,7 @@ import org.w3.svg.PathType;
 import org.w3.svg.SvgType;
 import org.w3.svg.TextType;
 import org.w3.svg.Use;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * This class enocdes GSPS as XML in either VML or SVG formats. This class will
@@ -183,7 +184,7 @@ public class GspsEncode implements Filter<ResultsBean> {
      */
    public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 	  ResultsBean results = (ResultsBean) filterItem.callNextFilter(params);
-	  long startTime = System.currentTimeMillis();
+	  long startTime = System.nanoTime();
 
 	  if (results == null)
 		 return null;
@@ -203,7 +204,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			continue;
 		 }
 
-		 long startItem = System.currentTimeMillis();
+		 long startItem = System.nanoTime();
 		 Map<String, ImageBean> images = initImagesForGsps(gspsUid, dcmobj, study);
 
 		 GspsType gspsType = addGspsTypeToStudy(results, study, dcmobj);
@@ -212,10 +213,10 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 addMinMaxPixelInfo(dcmobj, images);
 		 addShutterToResults(dcmobj, gspsType, images);
 		 addAnnotationToResults(dcmobj, gspsType, images);
-		 long dur = System.currentTimeMillis() - startItem;
-		 log.info("Processing 1 GSPS took " + dur + " ms");
+		 long dur = System.nanoTime() - startItem;
+		 log.info("Processing 1 GSPS took " + nanoTimeToString(dur));
 	  }
-	  log.info("All GSPS time took:" + (System.currentTimeMillis() - startTime) + " ms");
+	  log.info("All GSPS time took:" + nanoTimeToString(System.nanoTime() - startTime));
 	  return results;
    }
 

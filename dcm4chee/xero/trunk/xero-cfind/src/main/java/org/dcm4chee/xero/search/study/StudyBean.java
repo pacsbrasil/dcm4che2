@@ -248,4 +248,51 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 		seriesB.clearMacro(clazz);
 	  }
    }
+   
+   /**
+    * Searches the leaf nodes for the latest item matching the given modality.
+    * @param key
+    * @param modality
+    * @return
+    */
+   public DicomObjectType searchStudy(String key, String modality) {
+	  SearchableDicomObject ret = null;
+	  for (SeriesType series : getSeries()) {
+		 if (! series.getModality().equals(modality) )
+			continue;
+		 for (DicomObjectType dot : series.getDicomObject()) {
+			if( !(dot instanceof SearchableDicomObject) )
+			   continue;
+			SearchableDicomObject sdo = (SearchableDicomObject) dot;
+			if( betterMatch(key,sdo,ret) ) {
+			   ret = sdo;
+			}
+		 }
+	  }
+	  return (DicomObjectType) ret;
+   }
+   
+   /**
+    * Figures out whether sdo1 is a better match than sdo2 or not
+    * Currently only handles * or an exact match.
+    * @TODO Add better position based matching that will match multiple items.
+    * @param key
+    * @param sdo1
+    * @param sdo2
+    * @return
+    */
+   public static boolean betterMatch(String key, SearchableDicomObject sdo1, SearchableDicomObject sdo2) {
+	  boolean sdo1Match = key.equals("*") | key.equals(sdo1.getContentName()) || key.equals(sdo1.getSOPInstanceUID());
+	  if( !sdo1Match ) return false;
+	  if( sdo2==null ) return true;
+	  Date d1 = sdo1.getContentDate();
+	  Date d2 = sdo2.getContentDate();
+	  int cmp=0;
+	  if( d1!=null && d2!=null ) cmp = d1.compareTo(d2);
+	  if( cmp!=0 ) return cmp>0;
+	  cmp = sdo1.getContentName().compareTo(sdo2.getContentName());
+	  if( cmp!=0 ) return cmp>0;
+	  cmp = sdo1.getSOPInstanceUID().compareTo(sdo2.getSOPInstanceUID());
+	  return cmp>0;
+   }
 }

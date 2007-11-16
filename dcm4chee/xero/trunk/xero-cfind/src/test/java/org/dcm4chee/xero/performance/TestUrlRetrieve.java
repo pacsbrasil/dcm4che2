@@ -63,6 +63,7 @@ import org.dcm4chee.xero.search.study.StudyType;
 import org.dcm4chee.xero.search.study.ResultsType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * This class supports testing URL retrieval, in a varying number of threads.
@@ -119,7 +120,7 @@ public class TestUrlRetrieve {
 		 return;
 	  }
 	  CountDownLatch latch = new CountDownLatch(runnables.size());
-	  long totalStart = System.currentTimeMillis();
+	  long totalStart = System.nanoTime();
 	  if (rate == 0) {
 		 Executor executor = Executors.newFixedThreadPool(threadCount);
 		 for (TimeRunnable r : runnables) {
@@ -138,13 +139,13 @@ public class TestUrlRetrieve {
 	  }
 	  long subItems = 0;
 	  latch.await();
-	  long totalDur = System.currentTimeMillis() - totalStart;
+	  long totalDur = System.nanoTime() - totalStart;
 	  for (TimeRunnable tru : runnables) {
 		 totalTime += tru.dur;
 		 subItems += tru.subItems;
 	  }
 	  System.out.println("Level " + level + " " + (totalTime / runnables.size()) + " ms avg " + " for " + runnables.size()
-			+ " overall items, overall total average=" + (totalDur / runnables.size()));
+			+ " overall items, overall total average=" + nanoTimeToString(totalDur / runnables.size()));
    }
 
    static class TimeRunnable implements Runnable {
@@ -161,13 +162,13 @@ public class TestUrlRetrieve {
 	  }
 
 	  public void run() {
-		 long start = System.currentTimeMillis();
+		 long start = System.nanoTime();
 		 try {
 			subItems = runLoadUrl();
 		 } catch (Exception e) {
 			e.printStackTrace();
 		 }
-		 dur = System.currentTimeMillis() - start;
+		 dur = System.nanoTime() - start;
 		 latch.countDown();
 	  }
 
@@ -246,7 +247,7 @@ public class TestUrlRetrieve {
 		 seriesRet.runnables.add(new SeriesRun(uid));
 	  }
 
-	  long overallStart = System.currentTimeMillis();
+	  long overallStart = System.nanoTime();
 	  studyRet.testAndPrintResults();
 	  seriesRet.testAndPrintResults();
 	  imageRet.testAndPrintResults();
@@ -255,7 +256,7 @@ public class TestUrlRetrieve {
 	  actionRet.testAndPrintResults();
 	  thumbRet.testAndPrintResults();
 	  wadoRet.testAndPrintResults();
-	  System.out.println("Total time for all operations "+(System.currentTimeMillis()-overallStart));
+	  System.out.println("Total time for all operations "+nanoTimeToString(System.nanoTime()-overallStart));
 	  System.exit(0);
    }
 

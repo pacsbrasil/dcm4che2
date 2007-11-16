@@ -38,9 +38,14 @@
 package org.dcm4chee.xero.search.study;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAnyAttribute;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -50,7 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Provides information about a key object type object. */
-public class KeyObjectBean extends KeyObjectType implements LocalModel<String> {
+public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, MacroMixIn, SearchableDicomObject {
    static Logger log = LoggerFactory.getLogger(KeyObjectBean.class);
 
    /**
@@ -63,7 +68,14 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String> {
    
    @XmlTransient
    SeriesBean parent;
-
+   
+   @XmlTransient
+   MacroItems macroItems;
+   
+   /** Contains both the date and time for the content date/time */
+   @XmlTransient 
+   Date contentDate;
+   
    /** Initialize the key object bean */
    public KeyObjectBean(SeriesBean series, DicomObject dobj) {
 	  this.parent = series;
@@ -84,6 +96,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String> {
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
 	  setCompletion(data.getString(Tag.CompletionFlag));
 	  setVerification(data.getString(Tag.VerificationFlag));
+	  setContentDate(data.getDate(Tag.ContentDate,Tag.ContentTime));
 	  initConcept(data.get(Tag.ConceptNameCodeSequence));
 	  initKeySelection(data);
    }
@@ -179,4 +192,45 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String> {
    public List<KeySelection> getKeySelection() {
 	  return keySelection;
    }
+
+   /** Gets additional attributes and child elements defined in other objects */
+   public MacroItems getMacroItems() {
+	  if (macroItems == null)
+		 macroItems = new MacroItems();
+	  return macroItems;
+   }
+   
+   
+   /** Get the attributes from the macro items that are included in this object. */
+   @XmlAnyAttribute
+   public Map<QName, String> getOtherAttributes() {
+	  Map<QName, String> ret = null;
+	  if (macroItems != null)
+		 ret = macroItems.getAnyAttributes();
+	  if( log.isDebugEnabled() ) log.debug("Getting other attributes="+ret);
+	  return ret;
+   }
+
+   /** Add other elements from the macro items */
+   @XmlAnyElement(lax=true)
+   public List<Object> getOtherElements() {
+	  if( this.macroItems==null ) return null;
+	  return this.macroItems.getOtherElements();
+   }
+
+   /** Returns the date the content was created */
+   public Date getContentDate() {
+      return contentDate;
+   }
+
+   public void setContentDate(Date contentDate) {
+      this.contentDate = contentDate;
+   }
+
+   /** The content name is the concept meaning for key objects */
+   public String getContentName() {
+	  return conceptMeaning;
+   }
+
+
 }

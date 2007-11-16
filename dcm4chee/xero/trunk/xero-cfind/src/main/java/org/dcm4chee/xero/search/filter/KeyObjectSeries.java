@@ -53,38 +53,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This filter is a series level filter that adds any key images to the return result, even
- * if they come from another study.  This organizes them into the primary study.
+ * This filter is a series level filter that adds any key images to the return
+ * result, even if they come from another study. This organizes them into the
+ * primary study.
+ * 
  * @author bwallace
  * 
  */
 public class KeyObjectSeries extends KeyObjectFilter {
    private static final Logger log = LoggerFactory.getLogger(KeyObjectSeries.class);
+
    private static final String[] EMPTY_STRING_ARR = new String[0];
 
    /**
-    * Does a secondary query to add the missing items to the return result, and ensures they are
-    * marked as key objects as well.
-    */
+     * Does a secondary query to add the missing items to the return result, and
+     * ensures they are marked as key objects as well.
+     */
    @Override
-   protected void handleMissingItems(FilterItem filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom, List<KeySelection> missing) {
-	  Map<String,Object> newParams = new HashMap<String,Object>();
+   protected void handleMissingItems(FilterItem filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
+		 List<KeySelection> missing) {
+	  Map<String, Object> newParams = new HashMap<String, Object>();
 	  Set<String> uids = new HashSet<String>(newParams.size());
 	  StringBuffer queryStr = new StringBuffer("&koUID=").append(params.get(KEY_UID));
-	  for(KeySelection key : missing) {
-		 if( uids.contains(key.getObjectUid()) ) continue;
+	  for (KeySelection key : missing) {
+		 if (uids.contains(key.getObjectUid()))
+			continue;
 		 uids.add(key.getObjectUid());
 		 queryStr.append("&SOPInstanceUID=").append(key.getObjectUid());
 	  }
 	  String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
-	  log.info("Querying for "+uidArr.length+" additional images: "+queryStr);
+	  log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
 	  newParams.put("SOPInstanceUID", uidArr);
-	  newParams.put(MemoryCacheFilterBase.KEY_NAME,queryStr.toString());
+	  newParams.put(MemoryCacheFilterBase.KEY_NAME, queryStr.toString());
 	  newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
-	  filterItem.callNamedFilter("source",newParams);
+	  filterItem.callNamedFilter("source", newParams);
 	  List<KeySelection> stillMissing = assignKeyObjectMacro(ret, kom, missing);
-	  if( stillMissing!=null && !stillMissing.isEmpty()) {
-		 log.warn("Could not find "+stillMissing.size()+" items referenced in key object.");
+	  if (stillMissing != null && !stillMissing.isEmpty()) {
+		 log.warn("Could not find " + stillMissing.size() + " items referenced in key object.");
 	  }
    }
 
