@@ -144,6 +144,13 @@
     </navigation>
   </page>
   
+  <page view-id="/image/action/KeyImageSelect.xhtml" action="#{KeyImageSelect.action}">
+	<param name="select" value="#{KeyImageSelect.select}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
   <page view-id="/image/action/ZoomPan.xhtml" action="#{ZoomPan.action}">
     <param name="relZoom" value="#{ZoomPan.relZoom}" />
     <param name="panX" value="#{ZoomPan.panX}" />

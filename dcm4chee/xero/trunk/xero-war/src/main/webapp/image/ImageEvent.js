@@ -42,6 +42,10 @@ function imageEventEmpty() { }
  * Create an ImageEvent base object
  */
 function ImageEvent() {
+}
+
+ImageEvent.prototype.init = function() {
+  if( this.body ) return;
   this.body = document.getElementById("body");
 }
 
@@ -52,6 +56,7 @@ function ImageEvent() {
  */
 ImageEvent.prototype.mouseDown = function (evt) {
   if( this.mousing ) return;
+  this.init();
   this.debugMouse("Mouse down.");
   if( evt==null ) evt = window.event;
   if( !isLeftMouse(evt) ) return;
@@ -298,7 +303,25 @@ ImageEvent.prototype.getImageUrl = function(rem) {
 	return url;
 };
 
-// Sometimes the page likes seeing this well defined early on - so create them, even though they
-// might be invalid. 
+// The imageEvent is a default click handler
 var imageEvent = new ImageEvent();
+// imageHandler is the current image handler - sometimes set when another item
+// is clicked on and wants to affect the base image handler.
 var imageHandler = imageEvent;
+
+
+/** Defines a click handler that just calls the action indicated. */
+function ClickHandler() {
+}
+
+ClickHandler.prototype = imageEvent;
+
+ClickHandler.prototype.startLeft = function(x,y) {
+    if( evt.preventDefault ) {
+       evt.preventDefault();
+    };
+    displayXslt.action(this.imageNode);    
+	return false;	
+};
+
+var clickHandler = new ClickHandler();

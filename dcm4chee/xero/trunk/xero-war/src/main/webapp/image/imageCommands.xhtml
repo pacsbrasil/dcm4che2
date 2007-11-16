@@ -11,15 +11,15 @@
   <div class="menu" id='studyToolbar'>
    <ul>
     <li><se:series offset="-1"><a id="prevSeries" dir="-1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">&lt;Series</a></se:series></li>
-    <li><a id="wlBtn" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  ><img class="icon" src="/xero/img/wl.png" alt="[Window Level]"/></a></li>
-    <li><a id="zpBtn" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"><img class="icon" src="/xero/img/zoomPan.png" alt="[Zoom/Pan]" /></a></li>
-    <li><a id="keyBtn" oncommand="/xero/image/action/Mode.seam?mode=key"><img class="icon" src="/xero/img/key.png" alt="[Key Image]" /></a></li>
-    <li><a id="cmBtn" oncommand="/xero/image/action/Mode.seam?mode=createMarkup" ><img class="icon" src="/xero/img/polyCaliper.png" alt="[Poly Caliper]"/></a>
+    <li><a id="wlBtn" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  ><img class="icon" src="/xero/img/wl.png" alt="[Window Level]" active="windowLevel"/></a></li>
+    <li><a id="zpBtn" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"><img class="icon" src="/xero/img/zoomPan.png" alt="[Zoom/Pan]"  active="zoomPan"/></a></li>
+    <li><a id="keyBtn" oncommand="/xero/image/action/Mode.seam?mode=key"><img class="icon" src="/xero/img/key.png" alt="[Key Image]" active="key"/></a></li>
+    <li><a id="cmBtn" oncommand="/xero/image/action/Mode.seam?mode=createMarkup" ><img class="icon" src="/xero/img/polyCaliper.png" alt="[Poly Caliper]" active="createMarkup"/></a>
      <ul>
-	    <li><a id="emBtn" oncommand="/xero/image/action/Mode.seam?mode=editMarkup" ><img class="icon" src="/xero/img/editMarkup.png" alt="[Edit Markup]"/> Edit</a></li>	 
+	    <li><a id="emBtn" oncommand="/xero/image/action/Mode.seam?mode=editMarkup" ><img class="icon" src="/xero/img/editMarkup.png" alt="[Edit Markup]" active="editMarkup"/> Edit</a></li>	 
 	 </ul>
 	</li>
-    <li><a id="cineBtn" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img class="icon" src="/xero/img/cine.png" alt="[CINE]"/></a></li>
+    <li><a id="cineBtn" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img class="icon" src="/xero/img/cine.png" alt="[CINE]" active="cine"/></a></li>
 
     <li><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/>
      <ul>
@@ -77,6 +77,8 @@
     <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />
     
     <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
+    
+    <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="/xero/image/action/KeyImageSelect.seam?" />
     
     <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
     

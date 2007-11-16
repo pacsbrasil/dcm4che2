@@ -22,6 +22,8 @@ li { margin-bottom:0em; }          /* set default inter-item vertical spacing */
 
 img.icon { height: 20px; border: thin solid #6f9f6f; }
 
+img.active { border: thin solid #6fff6f; }
+
 a { color: white; }
 
 a.disabled { color: gray; }

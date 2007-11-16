@@ -125,22 +125,12 @@ function wlUpdateOtherDisplay(isDone) {
 	this.debugValue("WL W:"+Math.round(this.windowWidth)+" C:"+Math.round(this.windowCenter));
 };
 
-var windowLevelHandler = new ImageEvent();
 
-/** Initialize the window level */
-function initWindowLevel() {
-	WindowLevelBase.prototype = new ImageEvent();
-	WindowLevelBase.prototype.updateModel = wlUpdateModel;
-	WindowLevelBase.prototype.getUpdatedUrlQuery = wlGetUpdatedUrlQuery;
-	WindowLevelBase.prototype.updateOtherDisplay = wlUpdateOtherDisplay;
-	WindowLevelBase.prototype.startLeft = wlStartLeft;
-	WindowLevelBase.prototype.endAction = wlEndAction;
+WindowLevelBase.prototype = imageEvent;
+WindowLevelBase.prototype.updateModel = wlUpdateModel;
+WindowLevelBase.prototype.getUpdatedUrlQuery = wlGetUpdatedUrlQuery;
+WindowLevelBase.prototype.updateOtherDisplay = wlUpdateOtherDisplay;
+WindowLevelBase.prototype.startLeft = wlStartLeft;
+WindowLevelBase.prototype.endAction = wlEndAction;
 	
-	var t = displayXslt.itemsToUpdate;
-	t.windowLevel=["image","imageToolbar"];
-	
-    windowLevelHandler = new WindowLevelBase();
-};
-
-addLoadEvent(initWindowLevel);
- 
+var  windowLevelHandler = new WindowLevelBase(); 
