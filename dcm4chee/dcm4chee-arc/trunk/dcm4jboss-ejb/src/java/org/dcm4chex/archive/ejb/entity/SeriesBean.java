@@ -712,7 +712,7 @@ public abstract class SeriesBean implements EntityBean {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
-        setBodyPartExamined(ds.getString(Tags.Laterality));
+        setBodyPartExamined(ds.getString(Tags.BodyPartExamined));
         setLaterality(ds.getString(Tags.Laterality));
         setSeriesDescription(toUpperCase(ds.getString(Tags.SeriesDescription)));
         setInstitutionName(toUpperCase(ds.getString(Tags.InstitutionName)));
