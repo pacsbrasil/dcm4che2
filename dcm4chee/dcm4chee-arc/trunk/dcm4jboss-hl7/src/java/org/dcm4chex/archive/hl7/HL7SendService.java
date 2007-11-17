@@ -325,6 +325,11 @@ public class HL7SendService extends ServiceMBeanSupport implements
             if (acTimeout > 0) {
                 s.setSoTimeout(acTimeout);
             }
+            if (!mllpDriver.hasMoreInput()) {
+                throw new IOException("Receiver " + receiver
+                        + " closed socket " + s
+                        + " during waiting on response.");
+            }
             return readMessage(mllpDriver.getInputStream());
         } finally {
             if (soCloseDelay > 0)
