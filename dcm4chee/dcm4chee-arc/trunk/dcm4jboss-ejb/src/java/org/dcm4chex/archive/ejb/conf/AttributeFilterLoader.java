@@ -57,16 +57,15 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 class AttributeFilterLoader extends DefaultHandler {
     private static final int[] INST_SUPPL_TAGS = { Tags.RetrieveAET,
-        Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
-        Tags.StorageMediaFileSetUID };    
+            Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
+            Tags.StorageMediaFileSetUID };
     private final ArrayList tagList = new ArrayList();
     private final ArrayList vrList = new ArrayList();
-    private final ArrayList noCoerceList = new ArrayList(); 
+    private final ArrayList noCoerceList = new ArrayList();
     private final ArrayList fieldTagList = new ArrayList();
     private final ArrayList fieldList = new ArrayList();
-//    private String cuid;
+    // private String cuid;
     private AttributeFilter filter;
-
 
     public static void loadFrom(String url) throws ConfigurationException {
         AttributeFilterLoader h = new AttributeFilterLoader();
@@ -98,33 +97,32 @@ class AttributeFilterLoader extends DefaultHandler {
                 }
             }
         } else if (qName.equals("instance")) {
-        	String cuid = attributes.getValue("cuid");
-            filter = new AttributeFilter(
-            		attributes.getValue("tsuid"),
-            		"true".equalsIgnoreCase(attributes.getValue("exclude")),
-            		"true".equalsIgnoreCase(attributes.getValue("excludePrivate")));
+            String cuid = attributes.getValue("cuid");
+            filter = new AttributeFilter(attributes.getValue("tsuid"), "true"
+                    .equalsIgnoreCase(attributes.getValue("exclude")), "true"
+                    .equalsIgnoreCase(attributes.getValue("excludePrivate")));
             if (AttributeFilter.instanceFilters.put(cuid, filter) != null) {
                 throw new SAXException(
-                		"more than one instance element with cuid=" + cuid);
+                        "more than one instance element with cuid=" + cuid);
             }
         } else if (qName.equals("series")) {
             if (AttributeFilter.seriesFilter != null) {
                 throw new SAXException("more than one series element");
             }
             AttributeFilter.seriesFilter = filter = new AttributeFilter(
-            		attributes.getValue("tsuid"), false, false);
+                    attributes.getValue("tsuid"), false, false);
         } else if (qName.equals("study")) {
             if (AttributeFilter.studyFilter != null) {
                 throw new SAXException("more than one study element");
             }
             AttributeFilter.studyFilter = filter = new AttributeFilter(
-            		attributes.getValue("tsuid"), false, false);
+                    attributes.getValue("tsuid"), false, false);
         } else if (qName.equals("patient")) {
             if (AttributeFilter.patientFilter != null) {
                 throw new SAXException("more than one patient element");
             }
             AttributeFilter.patientFilter = filter = new AttributeFilter(
-            		attributes.getValue("tsuid"), false, false);
+                    attributes.getValue("tsuid"), false, false);
         }
     }
 
@@ -134,33 +132,33 @@ class AttributeFilterLoader extends DefaultHandler {
             return;
         }
         boolean inst = qName.equals("instance");
-        if (inst || qName.equals("series")
-                || qName.equals("study")
+        if (inst || qName.equals("series") || qName.equals("study")
                 || qName.equals("patient")) {
             int[] tags = parseInts(tagList);
             int[] vrs = parseVRs(vrList);
             if (inst && filter.isExclude()) {
                 if (AttributeFilter.patientFilter == null) {
-                    throw new SAXException("missing patient before instance element");                    
+                    throw new SAXException(
+                            "missing patient before instance element");
                 }
                 if (AttributeFilter.studyFilter == null) {
-                    throw new SAXException("missing study before instance element");                    
+                    throw new SAXException(
+                            "missing study before instance element");
                 }
                 if (AttributeFilter.seriesFilter == null) {
-                    throw new SAXException("missing series before instance element");                    
+                    throw new SAXException(
+                            "missing series before instance element");
                 }
-                tags = merge(INST_SUPPL_TAGS,
-                		AttributeFilter.patientFilter.getTags(),
-                		AttributeFilter.studyFilter.getTags(),
-                		AttributeFilter.seriesFilter.getTags(), tags);
-                vrs = merge(new int[]{},
-                		AttributeFilter.patientFilter.getVRs(),
-                		AttributeFilter.studyFilter.getVRs(),
-                		AttributeFilter.seriesFilter.getVRs(), vrs);
+                tags = merge(INST_SUPPL_TAGS, AttributeFilter.patientFilter
+                        .getTags(), AttributeFilter.studyFilter.getTags(),
+                        AttributeFilter.seriesFilter.getTags(), tags);
+                vrs = merge(new int[] {}, AttributeFilter.patientFilter
+                        .getVRs(), AttributeFilter.studyFilter.getVRs(),
+                        AttributeFilter.seriesFilter.getVRs(), vrs);
             }
             filter.setTags(tags);
             filter.setFieldTags(parseInts(fieldTagList));
-            filter.setFields((String[]) fieldList.toArray(new String[]{}));
+            filter.setFields((String[]) fieldList.toArray(new String[] {}));
             filter.setNoCoercion(parseInts(noCoerceList));
             filter.setVRs(vrs);
             tagList.clear();
@@ -172,9 +170,9 @@ class AttributeFilterLoader extends DefaultHandler {
         }
     }
 
-
     private int[] merge(int[] a, int[] b, int[] c, int[] d, int[] e) {
-        int[] dst = new int[a.length + b.length + c.length + d.length + e.length];
+        int[] dst = new int[a.length + b.length + c.length + d.length
+                + e.length];
         System.arraycopy(a, 0, dst, 0, a.length);
         System.arraycopy(b, 0, dst, a.length, b.length);
         System.arraycopy(c, 0, dst, a.length + b.length, c.length);
@@ -203,18 +201,18 @@ class AttributeFilterLoader extends DefaultHandler {
     }
 
     public void endDocument() throws SAXException {
-    	if (AttributeFilter.patientFilter == null) {
-            throw new SAXException("missing patient element");    		
-    	}
-    	if (AttributeFilter.studyFilter == null) {
-            throw new SAXException("missing study element");    		
-    	}
-    	if (AttributeFilter.seriesFilter == null) {
-            throw new SAXException("missing series element");    		
-    	}
-    	if (AttributeFilter.instanceFilters.get(null) == null) {
-            throw new SAXException("missing instance element");    		
-    	}
+        if (AttributeFilter.patientFilter == null) {
+            throw new SAXException("missing patient element");
+        }
+        if (AttributeFilter.studyFilter == null) {
+            throw new SAXException("missing study element");
+        }
+        if (AttributeFilter.seriesFilter == null) {
+            throw new SAXException("missing series element");
+        }
+        if (AttributeFilter.instanceFilters.get(null) == null) {
+            throw new SAXException("missing instance element");
+        }
     }
 
 }
