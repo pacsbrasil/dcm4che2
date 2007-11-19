@@ -477,7 +477,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
 
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,

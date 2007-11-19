@@ -64,6 +64,8 @@ public final class AttributeFilter {
     private final String tsuid;
     private final boolean exclude;
     private final boolean excludePrivate;
+    private final boolean overwrite;
+    private final boolean merge;
     private boolean noFilter = false;
     
     static {
@@ -83,7 +85,7 @@ public final class AttributeFilter {
         return studyFilter;
     }
 
-    public static AttributeFilter getSeriesAttributeFilter(String cuid) {
+    public static AttributeFilter getSeriesAttributeFilter() {
         return seriesFilter;
     }
     
@@ -95,10 +97,13 @@ public final class AttributeFilter {
 		return filter;
     }
 
-    AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate) {
+    AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate,
+            boolean overwrite, boolean merge) {
         this.tsuid = tsuid;
         this.exclude = exclude;
         this.excludePrivate = excludePrivate;
+        this.overwrite = overwrite;
+        this.merge = merge;
     }
     
     final void setNoCoercion(int[] noCoercion) {
@@ -163,6 +168,14 @@ public final class AttributeFilter {
     
     public final String getTransferSyntaxUID() {
         return tsuid;
+    }
+
+    public final boolean isOverwrite() {
+        return overwrite;
+    }
+
+    public final boolean isMerge() {
+        return merge;
     }
 
     public Dataset filter(Dataset ds) {

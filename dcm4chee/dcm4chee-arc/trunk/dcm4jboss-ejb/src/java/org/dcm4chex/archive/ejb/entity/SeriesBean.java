@@ -468,8 +468,7 @@ public abstract class SeriesBean implements EntityBean {
         if ( oldAttrs == null ) {
             setAttributes( newAttrs );
         } else {
-            String cuid = newAttrs.getString(Tags.SOPClassUID);
-            AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+            AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
             if ( AttrUtils.mergeAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
                 setAttributes(oldAttrs);
             }
@@ -688,8 +687,7 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public void setAttributes(Dataset ds) {
-        String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
@@ -754,12 +752,23 @@ public abstract class SeriesBean implements EntityBean {
      */
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
     throws DcmServiceException {
-        Dataset attrs = getAttributes(false);
-        String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
-        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
+        if (filter.isOverwrite()) {
+            Dataset attrs;
+            if (filter.isMerge()) {
+                attrs = getAttributes(false);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
+            } else {
+                attrs = filter.filter(ds);
+            }
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        } else {
+            Dataset attrs = getAttributes(false);
+            AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
+            if (filter.isMerge()
+                    && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
+                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            }
         }
     }
 

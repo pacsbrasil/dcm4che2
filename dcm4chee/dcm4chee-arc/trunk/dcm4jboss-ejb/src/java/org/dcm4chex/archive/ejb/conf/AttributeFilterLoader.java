@@ -98,32 +98,36 @@ class AttributeFilterLoader extends DefaultHandler {
             }
         } else if (qName.equals("instance")) {
             String cuid = attributes.getValue("cuid");
-            filter = new AttributeFilter(attributes.getValue("tsuid"), "true"
-                    .equalsIgnoreCase(attributes.getValue("exclude")), "true"
-                    .equalsIgnoreCase(attributes.getValue("excludePrivate")));
-            if (AttributeFilter.instanceFilters.put(cuid, filter) != null) {
+            if (AttributeFilter.instanceFilters.containsKey(cuid)) {
                 throw new SAXException(
                         "more than one instance element with cuid=" + cuid);
             }
+            AttributeFilter.instanceFilters.put(cuid,
+                    filter = makeFilter(attributes));
         } else if (qName.equals("series")) {
             if (AttributeFilter.seriesFilter != null) {
                 throw new SAXException("more than one series element");
             }
-            AttributeFilter.seriesFilter = filter = new AttributeFilter(
-                    attributes.getValue("tsuid"), false, false);
+            AttributeFilter.seriesFilter = filter = makeFilter(attributes);
         } else if (qName.equals("study")) {
             if (AttributeFilter.studyFilter != null) {
                 throw new SAXException("more than one study element");
             }
-            AttributeFilter.studyFilter = filter = new AttributeFilter(
-                    attributes.getValue("tsuid"), false, false);
+            AttributeFilter.studyFilter = filter = makeFilter(attributes);
         } else if (qName.equals("patient")) {
             if (AttributeFilter.patientFilter != null) {
                 throw new SAXException("more than one patient element");
             }
-            AttributeFilter.patientFilter = filter = new AttributeFilter(
-                    attributes.getValue("tsuid"), false, false);
+            AttributeFilter.patientFilter = filter = makeFilter(attributes);
         }
+    }
+
+    private AttributeFilter makeFilter(Attributes attributes) {
+        String strategy = attributes.getValue("update-strategy");
+        return new AttributeFilter(attributes.getValue("tsuid"), 
+                "true".equalsIgnoreCase(attributes.getValue("exclude")),
+                "true".equalsIgnoreCase(attributes.getValue("excludePrivate")),
+                strategy.startsWith("overwrite"), strategy.endsWith("merge"));
     }
 
     public void endElement(String uri, String localName, String qName)
