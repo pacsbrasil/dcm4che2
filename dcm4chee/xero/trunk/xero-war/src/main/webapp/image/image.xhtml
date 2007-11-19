@@ -1,6 +1,11 @@
-<x:source xmlns:x="http://www.dcm4che.org/xero/jsf" pageConfig="#{PageConfig.display}"
-   xmlns:c="http://java.sun.com/jstl/core"
+<x:source 
+  pageConfig="#{PageConfig.display}"
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:c="http://java.sun.com/jstl/core"
   xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/display"
+  m:xsl="/xero/image/imageXsl.xsl"
+  m:docName="/documents/images"
 >
   <!-- Contains the source document references for displaying an image -->
   <cycle>#{cycleUrl}</cycle>

@@ -408,6 +408,7 @@ XsltAjax.prototype.action = function(actionName,postArgs) {
    var actionIdItem;
    if( actionName.getAttribute ) {
    	 actionIdItem = actionName;
+   	 actionName = actionIdItem.id;
    }
    else {
    	 actionIdItem = document.getElementById(actionName)

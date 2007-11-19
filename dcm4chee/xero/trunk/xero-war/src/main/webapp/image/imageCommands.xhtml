@@ -20,6 +20,12 @@
 	 </ul>
 	</li>
     <li><a id="cineBtn" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img class="icon" src="/xero/img/cine.png" alt="[CINE]" active="cine"/></a></li>
+    <li mode="cine"><input id="cineSpeed" mode="cine" type="text" style="width:30px;" value="15" />
+      <ul>
+        <li><a mode="cine" onclick="alert('slower'); return false;"><img class="icon" src="/xero/img/slower.png" alt="slower" /> Slower</a></li>
+		<li><a mode="cine" onclick="alert('faster'); return false;"><img class="icon" src="/xero/img/faster.png" alt="faster" /> Faster</a></li>
+	  </ul>
+	 </li>
 
     <li><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/>
      <ul>
@@ -38,7 +44,8 @@
       <li><a id="imageLevel" oncommand="/xero/image/image.seam?applyLevel=image">Image</a></li>
      </ul>
     </li>
-    <li><a id="saveBtn" oncommand="/xero/image/action/Save.seam"><img class="icon" src="/xero/img/save.png" /></a></li>
+    
+    <li><a id="saveBtn" oncommand="/xero/image/save.seam"><img class="icon" src="/xero/img/save.png" /></a></li>
     <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
     
     <li><a id="viewBody" onclick="alert('HTML page is '+document.getElementsByTagName('body')[0].innerHTML);" >Body</a></li>
@@ -49,12 +56,16 @@
   
   <!-- Defines the series level toolbar.  Can't affect the study level display.  
     -->
-  <div class="menu" id='seriesToolbar'>
-   <a id="previousImage" dir="-1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=-1" >&lt;Image</a>
-
-   
-   <a id="nextImage"  dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image&amp;dir=1" >Image&gt;</a>
-   <a id="playBtn" mode="cine">Play</a>
+  <div class="menu" style="background: black; z-index: 90;" id='seriesToolbar'>
+   <a class="imageNav" dir="0" page="-1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image">&lt;&lt;Image</a>
+   <a class="imageNav" dir="-1" page="0" oncommand="/xero/image/action/Navigate.seam?applyLevel=image">&lt;</a>
+   <span class="imageNumber" />
+   <span mode="cine">
+     <a id="cineStop" onclick="alert('stop'); return false;" oncommand="/xero/image/action/CineStop.seam?"><img class="icon small" src="/xero/img/stop.png" alt="stop" /></a>
+     <a id="cineStart" onclick="alert('play'); return false;" oncommand="/xero/image/action/CineStop.seam?"><img class="small icon" src="/xero/img/play.png" alt="play" /></a>
+   </span>
+   <a class="imageNav" dir="1" page="0" oncommand="/xero/image/action/Navigate.seam?applyLevel=image" >&gt;</a>
+   <a class="imageNav" dir="0" page="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image" >Image&gt;&gt;</a>
  </div>
 
  <div id="imgToolbar">
@@ -70,18 +81,21 @@
   </div>
  </div>
    
-  <!-- Contains overlay information for how items are handled, and what extra views are present
-       in the image area.
+  <!-- Contains layout/overlay information for a default image view with the default toolbar. -->
     -->
   <div id='imageOverlay'>
-    <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />
-    
-    <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
-    
-    <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="/xero/image/action/KeyImageSelect.seam?" />
-    
-    <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
-    
+    <div class="imageArea">
+      <div class="imageSvg">
+        <div class="imageSPAT">
+          <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />    
+          <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
+          <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="/xero/image/action/KeyImageSelect.seam?" />
+          <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
+        </div>
+        <div class="imageDisplayRel" />
+      </div>
+      <div toolbarRef="imgToolbar" />
+    </div>
   </div>
   
   <div id='imageHover'>

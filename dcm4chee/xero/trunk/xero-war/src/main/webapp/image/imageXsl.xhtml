@@ -6,8 +6,6 @@
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:m="http://www.dcm4che.org/xero/metadata/display"
    xmlns:c="http://java.sun.com/jstl/core"
-   m:xsl="imageXsl.xsl"
-   m:docName="/documents/images"
    m:Display.script="ImageEvent.js"
    m:Display.script.priority="950"
    m:WL.script="windowLevel.js"
@@ -20,7 +18,7 @@
 >
 
  <xsl:output method="xml" version="1.0" doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN" />
- <!--  xsl:output method="xml" doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" -->
+ <xsl:strip-space elements="h:*" /> 
 
 <ui:fragment>
 <x:template name="contentTypeMeta" m:Display.meta="contentTypeMeta" m:Display.meta.priority="25">
@@ -66,10 +64,6 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     onmouseup="return imageHandler.mouseUp(event);"
   >
    <form id="body" name="body" method="post" action="#">
-    <xsl:if test="/documents/debug='true'">
-     <button onclick="ttrace(document.getElementsByTagName('body')[0].innerHTML);">Body</button>
-	 <button onclick="ttrace('Source='+displayXslt.asString(displayXslt.currentXml));">Source</button>
-    </xsl:if>
     <x:callTemplates from="#{pageConfig}" mode="body" />
    </form>
   </body>

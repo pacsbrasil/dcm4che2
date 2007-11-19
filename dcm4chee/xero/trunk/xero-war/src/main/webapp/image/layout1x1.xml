@@ -12,8 +12,10 @@
      <xul:hbox id="x1" height="25">
        <se:series id="se0" offset="0" width="25" pageSize="1">
         <xul:vbox>
-         <xul:toolbar ref="seriesToolbar" height="1"/>
-         <se:image id="i0" offset="0" height='15' overlay="imageOverlay" ref="imgToolbar"/>
+         <div toolbarRef="seriesToolbar" height="1"/>
+         <se:image id="i0" offset="0" height='15'>
+           <div toolbarRef="imageOverlay" />
+         </se:image>
         </xul:vbox>
        </se:series>
        <div width="7" />

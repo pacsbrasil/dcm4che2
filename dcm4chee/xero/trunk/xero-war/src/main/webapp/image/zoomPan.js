@@ -111,7 +111,7 @@ function zpEndAction() {
 	var pany = Math.round(this.ory - this.origOry);
 	var extraArgs = "&panX="+panx+"&panY="+pany;
 	this.debug("ZP End args="+extraArgs);
-    displayXslt.action(this.actionId,extraArgs);
+    displayXslt.action(this.imageNode,extraArgs);
     
 };
 

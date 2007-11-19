@@ -116,7 +116,7 @@ function WindowLevelBase() {
 };
 
 function wlEndAction() {
-  displayXslt.action(this.actionId,"windowWidth="+this.windowWidth+"&windowCenter="+this.windowCenter);
+  displayXslt.action(this.imageNode,"windowWidth="+this.windowWidth+"&windowCenter="+this.windowCenter);
 }
 
 /** Updates the width/center information.  Called when an actual update occurs.

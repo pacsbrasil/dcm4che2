@@ -167,6 +167,14 @@
     </navigation>
   </page>
   
+  <page view-id="/image/action/Save.xhtml" action="#{SaveDicom.action}">
+    <param name="name" value="#{SaveDicom.name}" />
+    <param name="description" value="#{SaveDicom.description}" />
+    <navigation>
+      <redirect view-id="/image/image.xhtml" />
+    </navigation>
+  </page>
+  
   <page view-id="/series/action/*">
     <!-- TODO Change this to use the ActionStudyLevel once the display level is modified for multi-study and to use the action/display study level info -->
     <param name="pid" value="#{DisplayStudyLevel.pid}" />

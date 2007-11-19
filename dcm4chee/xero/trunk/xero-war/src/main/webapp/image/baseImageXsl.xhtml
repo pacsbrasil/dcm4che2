@@ -122,6 +122,43 @@
  </xsl:if>
 </x:template>
 
+<x:template name="imageNavEnable" mode="newlayout" match="h:a[@class='imageNav']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <xsl:param name="custSeriesNode" select="$custNode/self::se:series" />
+  <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:variable name="seriesLay" select="$custNode/self::se:series/@pageSize" />  
+  <xsl:variable name="offset" select="$viewStart + @dir + $seriesLay * @page" />
+  <xsl:choose>
+    <xsl:when test="$offset >= 0 and $node/self::se:series/@Viewable >= $offset ">
+	  <xsl:call-template name="copyHtml">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$node" />
+       <xsl:with-param name="custNode" select="$custNode" />
+	  </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
+	  <xsl:call-template name="copyHtmlDisabled">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$node" />
+       <xsl:with-param name="custNode" select="$custNode" />
+	  </xsl:call-template>
+    </xsl:otherwise>
+  </xsl:choose>
+</x:template>
+
+<x:template name="imageNumber" mode="newlayout" match="h:span[@class='imageNumber']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <xsl:param name="custSeriesNode" select="$custNode/self::se:series" />
+  <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:if test="$node/self::se:series/@Viewable > 1">
+    <span><xsl:value-of select="1+$viewStart" /> of <xsl:value-of select="$node/self::se:series/@Viewable" /></span>
+  </xsl:if>
+</x:template>
+
 
 <x:template name="vboxLayout" match="xul:vbox" mode="newlayout">
  <xsl:param name="loc" />
@@ -217,6 +254,18 @@
 
 <x:template name="panHref" mode="hrefArgsNode" match="h:div[@mode='zoomPan']"><xsl:param name="loc" /><xsl:param name="node" /><xsl:param name="custNode" /><xsl:variable name="topLeft"><xsl:choose><xsl:when test="$custNode/@topLeft"><xsl:value-of select="$custNode/@topLeft[last()]" /></xsl:when><xsl:when test="$node/@topLeft"><xsl:value-of select="$node/@topLeft" /></xsl:when><xsl:otherwise>1,1</xsl:otherwise></xsl:choose></xsl:variable><xsl:variable name="bottomRight"><xsl:choose><xsl:when test="$custNode/@bottomRight"><xsl:value-of select="$custNode/@bottomRight[last()]" /></xsl:when><xsl:when test="$node/@bottomRight"><xsl:value-of select="$node/@bottomRight" /></xsl:when><xsl:otherwise><xsl:value-of select="concat($node/@Columns,',',$node/@Rows)" /></xsl:otherwise></xsl:choose></xsl:variable>&amp;topLeft=<xsl:value-of select="concat($topLeft,'&amp;bottomRight=',$bottomRight,'&amp;rows=',$node/@Rows,'&amp;columns=',$node/@Columns)" /></x:template>
 
+<!-- Adds the relative position for image navigation. -->
+<x:template name="imageNav" mode="hrefArgsNode" match="h:a[@class='imageNav']">
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <xsl:param name="custSeriesNode" select="$custNode/self::se:series" />
+  <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:variable name="seriesLay" select="$custNode/self::se:series/@pageSize" />  
+  <xsl:variable name="offset" select="$viewStart + @dir + $seriesLay * @page" />
+  <xsl:value-of select="concat('&amp;position=',$offset)" />
+</x:template>
+
+
 <!-- Enable/highlight the active zoom element -->
 <x:template name="highlightZoom" mode="newlayout" match="se:highlightZoom">
   <xsl:param name="loc" />
@@ -237,15 +286,17 @@
  <xsl:param name="node" />
  <xsl:param name="custNode" select="/.." />
  <xsl:if test="@oncommand">
-   <xsl:attribute name="href"><xsl:value-of select="@oncommand" /><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
-    <xsl:with-param name="loc" select="$loc" />
-    <xsl:with-param name="node" select="." />
-    <xsl:with-param name="custNode" select="$custNode" />
-   </xsl:apply-templates><xsl:apply-templates mode="hrefArgsNode" select="current()" >
-    <xsl:with-param name="loc" select="$loc" />
-    <xsl:with-param name="node" select="$node" />
-    <xsl:with-param name="custNode" select="$custNode" />
-   </xsl:apply-templates></xsl:attribute>
+   <xsl:attribute name="href">
+     <xsl:value-of select="@oncommand" />
+     <xsl:apply-templates mode="hrefArgsNode" select="current()" >
+      <xsl:with-param name="loc" select="$loc" />
+      <xsl:with-param name="node" select="$node" />
+      <xsl:with-param name="custNode" select="$custNode" />
+     </xsl:apply-templates><xsl:call-template name="defaultHrefArgs" /><xsl:apply-templates select="$node" mode="hrefArgsNode">
+      <xsl:with-param name="loc" select="$loc" />
+      <xsl:with-param name="node" select="." />
+      <xsl:with-param name="custNode" select="$custNode" />
+     </xsl:apply-templates></xsl:attribute>
    <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
  </xsl:if>
 </x:template>
@@ -304,18 +355,29 @@
    
  <xsl:param name="toolbarId" select='./@toolbarRef' />
  <xsl:param name="thisToolbar" select="$toolbarNode/h:div[@id=$toolbarId]" />
-   
- <xsl:copy>
-  <xsl:copy-of select="$thisToolbar/@*" />
+ 
+ <xsl:choose>
+   <xsl:when test="count($thisToolbar/@*)=1">
+     <!-- Generate the toolbar from the toolbar layout information -->
+     <xsl:apply-templates select="$thisToolbar/*" mode="newlayout">
+      <xsl:with-param name="loc" select="$loc" />
+      <xsl:with-param name="node" select="$node" />
+      <xsl:with-param name="custNode" select="$custNode" />
+     </xsl:apply-templates>
+   </xsl:when>
+   <xsl:otherwise>
+    <xsl:copy>
+     <xsl:copy-of select="$thisToolbar/@*" />
 
-  <!-- Generate the toolbar from the toolbar layout information -->
-  <xsl:apply-templates select="$thisToolbar/*" mode="newlayout">
-   <xsl:with-param name="loc" select="$loc" />
-   <xsl:with-param name="node" select="$node" />
-   <xsl:with-param name="custNode" select="$custNode" />
-  </xsl:apply-templates>
-    
- </xsl:copy>
+     <!-- Generate the toolbar from the toolbar layout information -->
+     <xsl:apply-templates select="$thisToolbar/*" mode="newlayout">
+      <xsl:with-param name="loc" select="$loc" />
+      <xsl:with-param name="node" select="$node" />
+      <xsl:with-param name="custNode" select="$custNode" />
+     </xsl:apply-templates>    
+    </xsl:copy>
+   </xsl:otherwise>
+ </xsl:choose>  
 </x:template>
 
 <x:template name="styleSize">
@@ -333,22 +395,6 @@
  <xsl:param name="h" select="substring-before($wrest,',')" />
  <xsl:attribute name="width"><xsl:value-of select="$w" /></xsl:attribute>
  <xsl:attribute name="height"><xsl:value-of select="$h" /></xsl:attribute>
-</x:template>
-
-<!-- Renders the image toolbar options. -->
-<x:template name="imageToolbar">
- <xsl:param name="loc" />
- <xsl:param name="node" />
- <xsl:param name="custNode" />
- <xsl:param name="refId" select='./@ref' />
- <xsl:param name="w" select="substring-before($loc,',')" />
- <xsl:param name="wrest" select="substring-after($loc,',')" />
- <xsl:param name="h" select="substring-before($wrest,',')" />
- <xsl:apply-templates select="$toolbarNode/*[@id=$refId]/*" mode="newlayout">
-  <xsl:with-param name="loc" select="$loc" />
-  <xsl:with-param name="node" select="$node" />
-  <xsl:with-param name="custNode" select="$custNode" />
- </xsl:apply-templates>
 </x:template>
 
 <!-- Adds an attributes or child nodes of the image node.  A separate overlay call may need
@@ -403,13 +449,13 @@
  <xsl:param name="custNode" />
  <xsl:element name="#{browser=='MSIE'?'v:image':'svg:image'}">
   <xsl:attribute name="preserveAspectRatio">none</xsl:attribute>
-  <xsl:attribute name="id">img<xsl:value-of select="@id" /></xsl:attribute>
+  <xsl:attribute name="id">img<xsl:value-of select="$custNode/@id[last()]" /></xsl:attribute>
   <xsl:apply-templates select="$node" mode="wadoArgsNode" ><xsl:with-param name="loc" select="$loc" /><xsl:with-param name="node" select="." /><xsl:with-param name="custNode" select="$custNode" /></xsl:apply-templates>
-  <xsl:call-template name="imageOverlay">
+  <xsl:apply-templates mode="newlayout">
    <xsl:with-param name="loc" select="$loc" />
    <xsl:with-param name="node" select="$node" />
    <xsl:with-param name="custNode" select="$custNode" />
-  </xsl:call-template>
+  </xsl:apply-templates>
  </xsl:element>
 </x:template>
 
@@ -435,7 +481,7 @@
 <!-- Renders the image group, centered at 0,0 to provide a centered display, and include overlays etc - calls the image, shutter etc groups. 
   The returned object is the object that has the pan translation applied to it, and it is applied in image coordinates, not display coordinates.
   -->
-<x:template name="imageViewport" mode="imageViewport" match="se:image">
+<x:template name="imageViewport" mode="imageViewport" match="*">
  <xsl:param name="loc" />
  <xsl:param name="node" />
  <xsl:param name="custNode" select="/.."/>
@@ -484,7 +530,6 @@ and cx,cy = width /2, height/2
  <xsl:param name="h" select="number(substring-before($wrest,','))" />
  <xsl:param name="sizeNode" select="$custNode[@size][last()]" />
  <xsl:param name="gspsSizeNode" select="$node[@size]" />
- 
  <xsl:choose>
   <xsl:when test="count($sizeNode)>0">
    <xsl:apply-templates mode="imageSize" select="$sizeNode">
@@ -655,7 +700,6 @@ and cx,cy = width /2, height/2
   <xsl:variable name="custImage" select="$custNode/self::se:image" />
   
   <xsl:if test="$custImage/@koUID='true' or (count($custImage[@koUID])=0 and $node/@koUID!='')">
-   <xsl:message>Image <xsl:value-of select="$node/@SOPInstanceUID" /> is a key object.</xsl:message>
    <c:if test="#{browser=='MSIE'}">
     <v:image style="width:100px; height: 100px; top: 25px; left: 900px;" src="/xero/img/key.png" />
    </c:if>
@@ -666,7 +710,7 @@ and cx,cy = width /2, height/2
 </x:template>
 
 <!-- Render the display relative objects -->
-<x:template name="imageDisplayRel">
+<x:template name="imageDisplayRel" mode="newlayout" match="h:div[@class='imageDisplayRel']">
  <xsl:param name="loc" />
  <xsl:param name="node" />
  <xsl:param name="custNode" />
@@ -683,7 +727,7 @@ and cx,cy = width /2, height/2
 </x:template>
 
 <!-- Handles the spatial transformation.  This causes the "display area" to change size/shape/rotation to fit the next nested area. -->
-<x:template name="imageSPAT">
+<x:template name="imageSPAT" mode="newlayout" match="h:div[@class='imageSPAT']">
  <xsl:param name="loc" />
  <xsl:param name="node" />
  <xsl:param name="custNode" />
@@ -703,7 +747,7 @@ and cx,cy = width /2, height/2
  <xsl:param name="locSPAT" select="concat($wSPAT,',',$hSPAT,',')" />
   
  <xsl:element name="#{browser=='MSIE'?'v:group':'svg:g'}">
-  <xsl:attribute name="id">SPAT-<xsl:value-of select="@id" /></xsl:attribute>
+  <xsl:attribute name="id">SPAT</xsl:attribute>
   <xsl:attribute name="class">SPAT</xsl:attribute>
   <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template><xsl:if test="$flip='TRUE'">flip: x;</xsl:if><xsl:if test="$rotation!=0">rotation: <xsl:value-of select="$rotation" />;</xsl:if></xsl:attribute>
   <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
@@ -717,6 +761,46 @@ and cx,cy = width /2, height/2
  </xsl:element>
 </x:template>
 
+<x:template name="imageSvg" mode="newlayout" match="h:div[@class='imageSvg']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  
+  <div>
+    <xsl:attribute name="style">position: relative;<xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>  
+    <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
+     <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+     <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+     <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
+     <xsl:apply-templates mode="newlayout">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$node" />
+       <xsl:with-param name="custNode" select='$custNode' />
+     </xsl:apply-templates>
+    </xsl:element>      
+  </div>
+</x:template>
+
+<x:template name="imageArea" mode="newlayout" match="h:div[@class='imageArea']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <div>
+    <xsl:attribute name="id">dimg<xsl:value-of select="$custNode/@id[last()]" /></xsl:attribute>
+    <!-- TODO remove all these bits - they should be included as CSS style directly -->
+    <xsl:attribute name="style">float: left;
+     <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template><c:if test="#{browser=='MSIE'}">overflow: hidden;</c:if>
+     <xsl:value-of select="@style" />
+    </xsl:attribute>
+    
+    <xsl:apply-templates mode="newlayout">
+      <xsl:with-param name="loc" select="$loc" />
+      <xsl:with-param name="node" select="$node" />
+      <xsl:with-param name="custNode" select='$custNode' />
+    </xsl:apply-templates>
+  </div>
+</x:template>
+
 <x:template name="imageLayout" mode="newlayout" match="se:image">
    <xsl:param name="loc" />
    <xsl:param name="node" />
@@ -725,48 +809,26 @@ and cx,cy = width /2, height/2
    <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
    <xsl:param name="offset" select="$viewStart+@offset" />
    <xsl:param name="imageNode" select="$node/se:image[@Position=$offset]" />
-   <xsl:param name="studyUID" select="$node/parent::se:study/@StudyInstanceUID" />
-   <xsl:param name="seriesUID" select="$node/@SeriesInstanceUID" />
    <xsl:param name="objectUID" select="$imageNode/@SOPInstanceUID" />
-   <xsl:param name="custImageNode" select="$custNode | ($custNode/se:image[@SOPInstanceUID=$objectUID][count(@frame)=0 or @frame=$node/@frame])" />
+   <xsl:param name="custImageNode" select="current() | $custNode | ($custNode/se:image[@SOPInstanceUID=$objectUID][count(@frame)=0 or @frame=$node/@frame])" />
    
-   <div>
-    <xsl:attribute name="id">dimg<xsl:value-of select="@id" /></xsl:attribute>
-    <xsl:attribute name="style">float: left;
-     <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template><c:if test="#{browser=='MSIE'}">overflow: hidden;</c:if>
-     <xsl:value-of select="@style" />
-    </xsl:attribute>
-    
-	<xsl:if test="$imageNode">
-	 <div>
-	  <xsl:attribute name="style">position: relative;<xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
-      <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
-       <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
-       <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
-       <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
-
-       <xsl:call-template name="imageSPAT">
-        <xsl:with-param name="loc" select="$loc" />
-        <xsl:with-param name="node" select="$imageNode" />
-        <xsl:with-param name="custNode" select='$custImageNode' />
-       </xsl:call-template> 
-      
-       <xsl:call-template name="imageDisplayRel">
-        <xsl:with-param name="loc" select="$loc" />
-        <xsl:with-param name="node" select="$imageNode" />
-        <xsl:with-param name="custNode" select='$custImageNode' />
-       </xsl:call-template> 
-      
-      
-      </xsl:element>
-      <xsl:call-template name="imageToolbar">
-       <xsl:with-param name="loc" select="$loc"/>
+   <xsl:choose>
+     <xsl:when test="count($imageNode)=0">
+	  <xsl:apply-templates mode="disabled">
+       <xsl:with-param name="loc" select="$loc" />
        <xsl:with-param name="node" select="$imageNode" />
-       <xsl:with-param name="custNode" select="$custImageNode" />
-      </xsl:call-template>
-     </div>
-    </xsl:if>
-   </div>
+       <xsl:with-param name="custNode" select='$custImageNode' />
+	  </xsl:apply-templates>
+     </xsl:when>
+     <xsl:otherwise>
+	  <xsl:apply-templates mode="newlayout">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$imageNode" />
+       <xsl:with-param name="custNode" select='$custImageNode' />
+	  </xsl:apply-templates>
+     </xsl:otherwise>
+   </xsl:choose>
+   
 </x:template>
 
 <!-- Changes from the series document to the image document -->
@@ -803,39 +865,39 @@ and cx,cy = width /2, height/2
 
 <!-- Lays out the series nodes. -->
 <x:template name="seriesLayout" mode="newlayout" match="se:series">
-   <xsl:param name="loc" />
-   <xsl:param name="node" />
-   <xsl:param name="custNode"/>
-   <xsl:param name="studyUID" select="$node/@StudyInstanceUID" />
-   <xsl:param name="seriesUID"><xsl:choose>
-     <xsl:when test="$custNode/@viewStart != '' and $node/se:series[se:image][@SeriesInstanceUID=$custNode/@viewStart]"><xsl:value-of select="$custNode/@viewStart" /></xsl:when>
-     <xsl:otherwise><xsl:value-of select="$node/se:series[se:image]/@SeriesInstanceUID" /></xsl:otherwise>
-   </xsl:choose></xsl:param>
-   <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
-   <xsl:param name="seriesNode" select="$node/se:series[se:image][1+current()/@offset + count($seriesNodeForUID/preceding-sibling::se:series[se:image])]" />
-   <xsl:message>Series layout series UID=<xsl:value-of select="$seriesUID" /> count of series node with that uid=<xsl:value-of select="count($seriesNodeForUID)" /> final node selected is <xsl:value-of select="$seriesNode/@SeriesInstanceUID" /></xsl:message>
-   <xsl:choose>
-     <xsl:when test="count($seriesNode)=0">
-       <xsl:apply-templates mode="disabled">
-    	<xsl:with-param name="loc" select="$loc" />
-    	<xsl:with-param name="node" select="$node" />
-    	<xsl:with-param name="custNode" select="$custNode" />
-       </xsl:apply-templates>
-     </xsl:when>
-     <xsl:when test="@pageSize!=0">
-	   <xsl:call-template name="switchSeriesToImageDoc">
-    	<xsl:with-param name="loc" select="$loc" />
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode"/>
+  <xsl:param name="studyUID" select="$node/@StudyInstanceUID" />
+  <xsl:param name="seriesUID"><xsl:choose>
+    <xsl:when test="$custNode/@viewStart != '' and $node/se:series[se:image][@SeriesInstanceUID=$custNode/@viewStart]"><xsl:value-of select="$custNode/@viewStart" /></xsl:when>
+    <xsl:otherwise><xsl:value-of select="$node/se:series[se:image]/@SeriesInstanceUID" /></xsl:otherwise>
+  </xsl:choose></xsl:param>
+  <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
+  <xsl:param name="seriesNode" select="$node/se:series[se:image][1+current()/@offset + count($seriesNodeForUID/preceding-sibling::se:series[se:image])]" />
+  <xsl:message>Series layout series UID specified/start=<xsl:value-of select="$seriesUID" /> count of series node with that uid=<xsl:value-of select="count($seriesNode)" /> final node selected is <xsl:value-of select="$seriesNode/@SeriesInstanceUID" /> at offset <xsl:value-of select="@offset" /></xsl:message>
+  <xsl:choose>
+    <xsl:when test="count($seriesNode)=0">
+      <xsl:apply-templates mode="disabled">
+   	    <xsl:with-param name="loc" select="$loc" />
+     	<xsl:with-param name="node" select="$node" />
+   	    <xsl:with-param name="custNode" select="$custNode | current()" />
+      </xsl:apply-templates>
+    </xsl:when>
+    <xsl:when test="@pageSize!=0">
+	  <xsl:call-template name="switchSeriesToImageDoc">
+        <xsl:with-param name="loc" select="$loc" />
 	    <xsl:with-param name="node" select="$seriesNode" />
-	    <xsl:with-param name="custNode" select="$custNode" />
-	   </xsl:call-template>
-   </xsl:when>
-   <xsl:otherwise>
-     <xsl:apply-templates mode="newlayout">
-       <xsl:with-param name="loc" select="$loc" />
-       <xsl:with-param name="node" select="$seriesNode" />
-       <xsl:with-param name="custNode" select="$custNode" />
-     </xsl:apply-templates>
-   </xsl:otherwise>
+	    <xsl:with-param name="custNode" select="$custNode | current()" />
+	  </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:apply-templates mode="newlayout">
+        <xsl:with-param name="loc" select="$loc" />
+        <xsl:with-param name="node" select="$seriesNode" />
+        <xsl:with-param name="custNode" select="$custNode | current()" />
+      </xsl:apply-templates>
+    </xsl:otherwise>
   </xsl:choose>
 </x:template>
 
@@ -878,8 +940,6 @@ and cx,cy = width /2, height/2
 </x:template>
 
 <x:template name="baseImage" m:body="baseImage" m:body.priority="5">
- <br />
- <br />
  <xsl:apply-templates select="$frameNode/*" mode="newlayout" >
   <xsl:with-param name="loc">1070,710,</xsl:with-param>
   <xsl:with-param name="node" select="document(/documents/layout/@doc)/se:results" />
