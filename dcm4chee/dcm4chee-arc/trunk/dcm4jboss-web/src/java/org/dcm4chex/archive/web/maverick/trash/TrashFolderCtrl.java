@@ -120,6 +120,7 @@ public class TrashFolderCtrl extends FolderCtrl {
             if (rq.getParameter("emptyTrash") != null
                     || rq.getParameter("emptyTrash.x") != null) { 
                 emptyTrash(); 
+                folderForm.removeStickies();
                 query(true);
                 return TRASH;
             }
