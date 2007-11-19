@@ -69,7 +69,7 @@
  </div>
 
  <div id="imgToolbar">
-   <div mode="zoomPan">
+   <div mode="zoomPan" style="position: relative;" >
     <a id="zp2" class="zpSlider" zoom="32" style="position:absolute; top:27px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
     <a id="zp3" class="zpSlider" zoom="16" style="position:absolute; top:44px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
     <a id="zp4" class="zpSlider" zoom="8" style="position:absolute; top:61px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
@@ -94,8 +94,8 @@
         </div>
         <div class="imageDisplayRel" />
       </div>
-      <div toolbarRef="imgToolbar" />
     </div>
+    <div toolbarRef="imgToolbar" />
   </div>
   
   <div id='imageHover'>
