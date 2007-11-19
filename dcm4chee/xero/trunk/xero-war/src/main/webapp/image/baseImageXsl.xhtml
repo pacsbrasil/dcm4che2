@@ -566,9 +566,10 @@ and cx,cy = width /2, height/2
  <xsl:param name="node" />
  <xsl:param name="custNode" />
  <xsl:param name="s"><xsl:choose>
-   <xsl:when test="$w * $node/@Rows > @h * $node/@Columns"><xsl:value-of select="$w div $node/@Columns" /></xsl:when>
-   <xsl:otherwise><xsl:value-of select="$h div $node/@Rows" /></xsl:otherwise>
+   <xsl:when test="$h div $node/@Rows &lt; $w div $node/@Columns"><xsl:value-of select="$h div $node/@Rows" /></xsl:when>
+   <xsl:otherwise><xsl:value-of select="$w div $node/@Columns" /></xsl:otherwise>
   </xsl:choose></xsl:param>
+  <xsl:message>Default scale <xsl:value-of select="concat('w=',$w,' h=',$h,' cols=',$node/@Columns,' rows=',$node/@Rows,' s=',$s)" /></xsl:message>
  <xsl:call-template name="imageViewport">
   <xsl:with-param name="loc" select="concat($loc,$node/@Columns div 2,',',$node/@Rows div 2,',',$s,',')" />
   <xsl:with-param name="node" select="$node" />
