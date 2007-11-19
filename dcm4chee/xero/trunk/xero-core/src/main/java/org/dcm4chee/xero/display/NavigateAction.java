@@ -73,7 +73,7 @@ public class NavigateAction {
 		 NavigateMacro macro = new NavigateMacro(Integer.toString(position+dir));
 		 log.info("Navigating to image "+macro);
 		 studyModel.apply(DisplayMode.ApplyLevel.SERIES, macro);
-		 if( studyModel.getDisplayStudyLevel().getStudyUID()!=actionStudyLevel.getStudyUID() ) {
+		 if( ! studyModel.getDisplayStudyLevel().getStudyUID().equals(actionStudyLevel.getStudyUID()) ) {
 			log.info("Navigating patient/study/series as well as image position.");
 			studyModel.setDisplayStudyLevel(actionStudyLevel);
 		 }
