@@ -82,13 +82,13 @@ public class DocumentSendTest extends TestCase {
     }
     
     public void setUp() throws IOException {
-    	Store2Dcm.getMime2CuidMap().put("default", "1.2.840.10008.5.1.4.1.1.104.1.1");
+    	Store2Dcm.getMime2CuidMap().put("default", Store2Dcm.ENCAPSULATED_DOCUMENT_STORAGE_CUID);
     	if ( skipRemoteTests == null ) {
 	    	skipRemoteTests = !checkStoreSCP();
 	    	if ( ! skipRemoteTests ) {
 	    		setUpTestFile("large.txt", 10240);//10MB
 	    	} else {
-	    		log.warn("DocumentSend Tests are disabled! Check your configuration to eneable this tests!");
+	    		log.warn("DocumentSend Tests are disabled! Check your configuration to enable this tests!");
 	    		promptBasicDicomConfig();
 	    	}
     	}
