@@ -45,6 +45,7 @@ import java.util.List;
 
 import javax.ejb.Local;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.entity.File;
@@ -64,13 +65,35 @@ public interface StudyDAO extends DAO<Study> {
     public static final String JNDI_NAME = "dcm4cheeArchive/StudyDAOImpl/local";
 
     /**
+     * Find a study object by its DICOM UID.
+     * 
      * @param iuid
+     *            A String containing the study instance uid.
      * @return {@link Study}
      * @throws NoResultException
      *             If the series cannot be found.
+     * @throws NonUniqueResultException
+     *             If more than one study was found.
+     * @throws PersistenceException
      */
     public Study findByStudyIuid(String iuid) throws NoResultException,
-            PersistenceException;
+            NonUniqueResultException, PersistenceException;
+
+    /**
+     * Fetch a study and its children (down to the instance level) by its DICOM
+     * UID.
+     * 
+     * @param iuid
+     *            A String containing the study instance uid.
+     * @return {@link Study}
+     * @throws NoResultException
+     *             If the series cannot be found.
+     * @throws NonUniqueResultException
+     *             If more than one study was found.
+     * @throws PersistenceException
+     */
+    public Study deepFetchByStudyIuid(String iuid) throws NoResultException,
+            NonUniqueResultException, PersistenceException;
 
     public List<Study> findByPatientAndAccessionNumber(Long patientFk,
             String accessionNumber);

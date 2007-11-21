@@ -50,6 +50,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
@@ -107,10 +108,25 @@ public class StudyDAOImpl extends BaseDAOImpl<Study> implements StudyDAO {
     /*
      * @see org.dcm4che.archive.dao.StudyDAO#findByStudyUID(java.lang.String)
      */
-    public Study findByStudyIuid(String iuid) throws NoResultException {
+    public Study findByStudyIuid(String iuid) throws NoResultException, NonUniqueResultException, PersistenceException {
         Study study = (Study) em
                 .createQuery(
                         "select study from Study as study where study.studyIuid=:studyUID")
+                .setParameter("studyUID", iuid).getSingleResult();
+        if (study == null) {
+            throw new NoResultException("Study with iuid=" + iuid);
+        }
+
+        return study;
+    }
+
+    /*
+     * @see org.dcm4che.archive.dao.StudyDAO#deepFetchByStudyIuid(java.lang.String)
+     */
+    public Study deepFetchByStudyIuid(String iuid) throws NoResultException, NonUniqueResultException, PersistenceException {
+        Study study = (Study) em
+                .createQuery(
+                        "select study from Study as study inner join fetch study.series ser inner join fetch ser.instances where study.studyIuid=:studyUID")
                 .setParameter("studyUID", iuid).getSingleResult();
         if (study == null) {
             throw new NoResultException("Study with iuid=" + iuid);
