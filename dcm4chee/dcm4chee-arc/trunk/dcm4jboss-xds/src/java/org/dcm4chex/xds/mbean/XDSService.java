@@ -54,6 +54,7 @@ import javax.management.ObjectName;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -76,8 +77,9 @@ import org.dcm4cheri.util.UIDGeneratorImpl;
 import org.dcm4chex.xds.XDSDocumentMetadata;
 import org.dcm4chex.xds.common.SoapBodyProvider;
 import org.dcm4chex.xds.common.XDSResponseObject;
-import org.dcm4chex.xds.mbean.store.RIDStorageImpl;
-import org.dcm4chex.xds.mbean.store.XDSFile;
+import org.dcm4chex.xds.mbean.store.DcmStorageImpl;
+import org.dcm4chex.xds.mbean.store.Storage;
+import org.dcm4chex.xds.mbean.store.StoredDocument;
 import org.dcm4chex.xds.query.SQLQueryObject;
 import org.dcm4chex.xds.query.XDSQueryObject;
 import org.dcm4chex.xds.query.XDSQueryObjectFatory;
@@ -99,7 +101,21 @@ import org.xml.sax.SAXException;
  */
 public class XDSService extends ServiceMBeanSupport {
 
-    private static final String NONE = "NONE";
+    private static final String OBJECT_REF = "ObjectRef";
+
+	private static final String EXTERNAL_IDENTIFIER = "ExternalIdentifier";
+
+	private static final String EXTRINSIC_OBJECT = "ExtrinsicObject";
+
+	private static final String LEAF_REGISTRY_OBJECT_LIST = "LeafRegistryObjectList";
+
+	private static final String SUBMIT_OBJECTS_REQUEST = "SubmitObjectsRequest";
+
+	private static final String NS_URN_RIM_2_1 = "urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1";
+
+	private static final String NS_URN_REGISTRY_2_1 = "urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1";
+
+	private static final String NONE = "NONE";
     
 	private static Logger log = Logger.getLogger(XDSService.class.getName());
 
@@ -122,7 +138,7 @@ public class XDSService extends ServiceMBeanSupport {
 	
 	private String fetchNewPatIDURL;
 	
-	private RIDStorageImpl store = RIDStorageImpl.getInstance();
+	private DcmStorageImpl store = DcmStorageImpl.getInstance();
 
 	private String retrieveURI;
 
@@ -264,14 +280,14 @@ public class XDSService extends ServiceMBeanSupport {
 	/**
 	 * @return Returns the ridServiceName.
 	 */
-	public ObjectName getRidServiceName() {
-		return store.getRidServiceName();
+	public ObjectName getStore2DcmServicename() {
+		return store.getStore2DcmServicename();
 	}
 	/**
 	 * @param ridServiceName The ridServiceName to set.
 	 */
-	public void setRidServiceName(ObjectName ridServiceName) {
-		store.setRidServiceName(ridServiceName);
+	public void setStore2DcmServicename(ObjectName ridServiceName) {
+		store.setStore2DcmServicename(ridServiceName);
 	}
 	
 	/**
@@ -402,35 +418,32 @@ public class XDSService extends ServiceMBeanSupport {
     }
 
 	public XDSResponseObject exportDocument( SOAPMessage message ) throws SOAPException, IOException, ParserConfigurationException, SAXException {
-		List storedFiles = new ArrayList();
+		List storedDocuments = new ArrayList();
 		if ( log.isDebugEnabled()) {
 			log.debug("SOAP message:");
 			this.dumpSOAPMessage(message);
 		}
 		String submissionUID = null;
 		try {
-			File file;
+			StoredDocument storedDoc;
 			Map attachments = getAttachments(message);
-			NodeList nl;
 			Node leafRegistryObjectList;
-//	                try {
-	                    SOAPBody body = message.getSOAPBody();
-	                    log.debug("SOAPBody:"+body );
-	                    nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
-                            leafRegistryObjectList = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
-//	                } catch ( Throwable t) {
-//	                    log.warn("Retrieve of SOAPBody failed! Try to get ExtrinsicObject directly from SOAPMessage!");
-//	                    Document d = getDocumentFromMessage(message);
-//	                    d.getDocumentElement();
-//	                    nl = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
-//	                    leafRegistryObjectList = d.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
-//	                }
-	        if(nl.getLength() < 1 ) {
+            SOAPBody body = message.getSOAPBody();
+            log.debug("SOAPBody:"+body );
+//            nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
+//            leafRegistryObjectList = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
+            leafRegistryObjectList = getLeafRegistryObjectList( getSubmitObjectsRequest(body) );
+            List extrinsicObjects = getExtrinsicObjects(leafRegistryObjectList);
+	        if(extrinsicObjects.size() < 1 ) {
                 if ( attachments.isEmpty() ) {
                     log.debug("No ExtrinsicObject found! But we have nothing to store (no Attachment) -> forward message to registry!");
                     return new SOAPMessageResponse( sendSOAP(message, getXDSRegistryURI()));
                 }
 	        	log.error("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
+	        	log.info("------------------------------------------------------------------------------------- ####");
+				log.info("DEBUGGING SOAP message with missing ExtrinsicObject?:");
+				this.dumpSOAPMessage(message);
+	        	log.info("------------------------------------------------------------------------------------- ####");
 	            throw new Exception("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
 	        }
             if ( attachments.isEmpty() ) {
@@ -439,33 +452,37 @@ public class XDSService extends ServiceMBeanSupport {
             }
 	        XDSDocumentMetadata metadata;
 	        Element el;
-	        for(int i = 0, len = nl.getLength(); i < len; i++) {
-	            el = (Element)nl.item(i);
+	        for(Iterator iter = extrinsicObjects.iterator() ; iter.hasNext() ; ) {
+	            el = (Element)iter.next();
 	            metadata = new XDSDocumentMetadata(el);
 	            if (reassignDocumentUID) {
-	        	metadata.setUniqueID( UIDGeneratorImpl.getInstance().createUID() );
+	            	metadata.setUniqueID( UIDGeneratorImpl.getInstance().createUID() );
 	            }
 	            filterMetadata(metadata);
-	            file = saveDocumentEntry(metadata, attachments);
+	            storedDoc = saveDocumentEntry(metadata, attachments);
 	            metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()));
-	            if ( file != null) {
-	                storedFiles.add(file);
+	            if ( storedDoc != null) {
+	                storedDocuments.add(storedDoc);
 	            }
 	            if ( testPatient!= null) {
 	                log.warn("Change patientID in metadata (urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446) to testPatient! new patientID:"+testPatient);
 	                this.updateExternalIdentifier(el,"urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446",testPatient);
 	            }
 	        }
-		log.info(storedFiles.size()+" Documents saved!");
-		MessageFactory messageFactory = MessageFactory.newInstance();
-		SOAPMessage msg = messageFactory.createMessage();
-		SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
-		SOAPBody soapBody = envelope.getBody();
-		SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName("SubmitObjectsRequest","rs","urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1"));
-		bodyElement.appendChild(bodyElement.getOwnerDocument().importNode(leafRegistryObjectList,true));
-		SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
+	        log.info(storedDocuments.size()+" Documents saved!");
+	        MessageFactory messageFactory = MessageFactory.newInstance();
+	        SOAPMessage msg = messageFactory.createMessage();
+	        msg.getSOAPPart().setContent(message.getSOAPPart().getContent());
+/*	        
+	        SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
+	        SOAPBody soapBody = envelope.getBody();
+	        SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName(SUBMIT_OBJECTS_REQUEST,"rs",NS_URN_REGISTRY_2_1));
+	        Node copy = leafRegistryObjectList.cloneNode(true);
+	        bodyElement.appendChild(copy);
+*/	        
+	        SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
             if ( ! checkResponse( response, "RegistryResponse" ) ) {
-            	deleteFiles(storedFiles);
+            	deleteDocuments(storedDocuments);
             	log.error("Export document(s) failed! see prior messages for reason. SubmissionSet uid:"+submissionUID);
             	return new SOAPMessageResponse(response);
             }
@@ -473,13 +490,55 @@ public class XDSService extends ServiceMBeanSupport {
 			return new SOAPMessageResponse(response);
 		} catch ( Exception x ) {
 			log.error("Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
-			deleteFiles(storedFiles);
+			deleteDocuments(storedDocuments);
 			return new XDSRegistryResponse( false, "Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
 		}
 		
 	}
     
-    public List xdsQuery(XDSQueryObject query) throws SOAPException {
+	private Node getSubmitObjectsRequest(SOAPBody body) {
+    	return getChildNode( body, NS_URN_REGISTRY_2_1, SUBMIT_OBJECTS_REQUEST);
+	}
+	private Node getLeafRegistryObjectList(Node submObjReq) {
+    	return getChildNode(submObjReq, NS_URN_RIM_2_1, LEAF_REGISTRY_OBJECT_LIST);
+	}
+
+    private List getExtrinsicObjects(Node leafRegistryObjectList) {
+		return getChildNodes(leafRegistryObjectList, EXTRINSIC_OBJECT);
+	}
+    private List getExternalIdentifiers(Node extrinsicObject) {
+		return getChildNodes(extrinsicObject, EXTERNAL_IDENTIFIER);
+	}
+	
+	private Node getChildNode(Node node, String namespaceURI, String localName) {
+		if ( node == null ) return null;
+    	NodeList nl =  node.getChildNodes();
+    	Node child;
+    	for ( int i = 0, len = nl.getLength() ; i < len ; i++ ) {
+    		child = nl.item(i);
+    		if ( child.getNodeType() == Node.ELEMENT_NODE ) {
+    			if ( (namespaceURI != null || namespaceURI.equals( child.getNamespaceURI() ) ) &&
+    					localName.equals( child.getLocalName() ) ) {
+    				return child;
+    			}
+    		}    		
+    	}
+    	return null;
+	}
+	
+	private List getChildNodes(Node node, String localName) {
+		ArrayList l = new ArrayList();
+		if ( node == null ) return l;
+		NodeList nl =  node.getChildNodes();
+		for ( int i = 0 ; i < nl.getLength() ; i++ ) {
+			if ( (localName == null || localName.equals(nl.item(i).getLocalName()) ) ) {
+				l.add(nl.item(i));
+			}
+		}
+		return l;
+	}
+	
+	public List xdsQuery(XDSQueryObject query) throws SOAPException {
         SOAPMessage response = sendSOAP(getSOAPMessage(query), this.xdsQueryURI);
         if ( !checkResponse( response, query.getResponseTag() ) ) return null;
         return getRegistryObjects(response, query.getResponseTag() );
@@ -537,11 +596,12 @@ public class XDSService extends ServiceMBeanSupport {
 		
 	}
 	
-	private void updateExternalIdentifier(Element element, String scheme, String value) { 
-		NodeList nl = element.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExternalIdentifier");
+	private void updateExternalIdentifier(Element extrinsicObject, String scheme, String value) { 
+		//NodeList nl = element.getElementsByTagNameNS(NS_URN_RIM_2_1,EXTERNAL_IDENTIFIER);
+		List l = getChildNodes(extrinsicObject, EXTERNAL_IDENTIFIER);
 		NamedNodeMap attributes;
-		for ( int i=0,l=nl.getLength() ; i<l ; i++ ) {
-			attributes = nl.item(i).getAttributes();
+		for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+			attributes = ((Node) iter.next() ).getAttributes();
 			if ( attributes.getNamedItem("identificationScheme").getNodeValue().equals(scheme) ) {
 				attributes.getNamedItem("value").setNodeValue(value);
 			}
@@ -606,26 +666,25 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @param metadata
      * @throws IOException
 	 */
-	private File saveDocumentEntry(XDSDocumentMetadata metadata, Map attachments) throws IOException {
+	private StoredDocument saveDocumentEntry(XDSDocumentMetadata metadata, Map attachments) throws IOException {
 		log.info("Store attachment:"+metadata);
-		XDSFile xdsFile;
+		StoredDocument storedDoc;
 		String id = metadata.getContentID();
 		String uid = metadata.getUniqueID();
-    	xdsFile = store.store(uid, (AttachmentPart)attachments.get(id));
-    	metadata.setHash(xdsFile.getHash());
-    	metadata.setSize(xdsFile.getFileSize());
-		log.info("Attachment ("+uid+") stored in file "+xdsFile+" (size:"+xdsFile.getFileSize()+" hash:"+xdsFile.getHash());
-		return xdsFile.getFile();
+    	storedDoc = store.store(uid, (AttachmentPart)attachments.get(id), metadata);
+    	metadata.setHash(storedDoc.getHash());
+    	metadata.setSize(storedDoc.getSize());
+		log.info("Attachment ("+uid+") stored in file "+storedDoc+" (size:"+storedDoc.getSize()+" hash:"+storedDoc.getHash());
+		return storedDoc;
 	}
 	/**
-	 * @param storedFiles
+	 * @param storedDocuments
 	 */
-	private void deleteFiles(List storedFiles) {
-		File file;
-		for ( Iterator iter = storedFiles.iterator() ; iter.hasNext() ; ) {
-			file = (File) iter.next();
-			file.delete();
-			deleteEmptyDir(file.getParentFile());
+	private void deleteDocuments(List storedDocuments) {
+		StoredDocument doc;
+		for ( Iterator iter = storedDocuments.iterator() ; iter.hasNext() ; ) {
+			doc = (StoredDocument) iter.next();
+			doc.delete();
 		}
 	}
 	/**
@@ -652,14 +711,12 @@ public class XDSService extends ServiceMBeanSupport {
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
             
             conn = connFactory.createConnection();
-    		if ( log.isDebugEnabled()){
-	            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-	            log.debug("send registry request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
-	            log.debug("-------------------------------- request  ----------------------------------");
-	            dumpSOAPMessage(message);
-    		}           
+            log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	        log.info("send registry request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
+	        log.info("-------------------------------- request  ----------------------------------");
+	        dumpSOAPMessage(message);
             SOAPMessage response = conn.call(message, url);
-            log.debug("-------------------------------- response ----------------------------------");
+            log.info("-------------------------------- response ----------------------------------");
             dumpSOAPMessage(response);
             return response;
 		} catch ( Throwable x ) {
@@ -709,53 +766,44 @@ public class XDSService extends ServiceMBeanSupport {
     }
 	
 	
-	/**
-	 * @param response
-	 * @return
-     * @throws SOAPException
-	 */
 	private boolean checkResponse(SOAPMessage response, String responseTag) throws SOAPException {
-		log.info("check RegistryResponse:"+response);
+		log.info("checkResponse:"+response+" \nresponseTag:"+responseTag);
 		try {
-			NodeList nl;
-			NodeList errors;
-//	                try {
-	                    SOAPBody body = response.getSOAPBody();
-	                    log.debug("SOAPBody:"+body );
-	                    nl = body.getElementsByTagName("RegistryResponse");
-                            errors = body.getElementsByTagName("RegistryError");
-//	                } catch ( Throwable t) {
-//	                    log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage");
-//	                    Document d = getDocumentFromMessage( response );
-//	                    nl = d.getElementsByTagName(responseTag);
-//                            errors = d.getElementsByTagName("RegistryError");
-//                            log.debug("Fallback RegistryResponse NodeList:"+nl);
-//	                }
+            SOAPBody body = response.getSOAPBody();
+            log.debug("SOAPBody:"+body );
+            NodeList nl = body.getChildNodes();
 			if ( nl.getLength() != 0  ) {
-				Node n = nl.item(0);
-				String status = n.getAttributes().getNamedItem("status").getNodeValue();
-				log.info("XDS: SOAP response status:"+status);
-				if ( "Failure".equals(status) ) {
-						StringBuffer sb = new StringBuffer();
-					Node errNode;
-					for ( int i = 0, len=errors.getLength(); i < len ; i++ ) {
-					    sb.setLength(0); 
-					    sb.append("Error (").append(i).append("):");
-					    if ( (errNode = errors.item(i)) != null && errNode.getFirstChild() != null ) {
-					        sb.append( errNode.getFirstChild().getNodeValue());
-					    }
-						log.info(sb.toString());
+				for ( int i = 0, len = nl.getLength() ; i < len ; i++ ) {
+					Node n = nl.item(i);
+					if ( n.getNodeType() == Node.ELEMENT_NODE &&
+						 "RegistryResponse".equals(n.getLocalName() ) ) {
+						String status = n.getAttributes().getNamedItem("status").getNodeValue();
+						log.info("XDSI: SOAP response status."+status);
+						if ( "Failure".equals(status) ) {
+							StringBuffer sb = new StringBuffer();
+							NodeList errList = n.getChildNodes().item(0).getChildNodes();
+							Node errNode;
+							for ( int j = 0, lenj = errList.getLength() ; j < lenj ; j++ ) {
+							    sb.setLength(0); 
+							    sb.append("Error (").append(j).append("):");
+							    if ( (errNode = errList.item(j)) != null && errNode.getFirstChild() != null ) {
+							        sb.append( errNode.getFirstChild().getNodeValue());
+							    }
+								log.info(sb.toString());
+							}
+							return false;
+						} else {
+							return true;
+						}
 					}
-					return false;
 				}
 			} else {
-			     log.warn("XDS: SOAP response without RegistryResponse!");
+				log.warn("XDSI: Empty SOAP response!");
 			}
-			return true;
 		} catch ( Exception x ) {
 			log.error("Cant check response!", x);
-			return false;
 		}
+		return false;
 	}
 	
 //	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
@@ -782,7 +830,7 @@ public class XDSService extends ServiceMBeanSupport {
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();
             t.transform(s, new StreamResult(out));
-            log.debug(out.toString());
+            log.info(out.toString());
         } catch (Exception e) {
             log.warn("Failed to log SOAP message", e);
         }
@@ -870,19 +918,15 @@ public class XDSService extends ServiceMBeanSupport {
         try {
             SOAPBody body = response.getSOAPBody();
             log.debug("SOAPBody:"+body );
-            NodeList nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
-//            Document d = getDocumentFromMessage( response );
-//            nl = d.getElementsByTagName(responseTag);
-            if ( nl.getLength() != 0  ) {
-                Element e = (Element) nl.item(0);
-                NodeList nlChilds = e.getElementsByTagName("ExtrinsicObject");
-                log.info("ExtrtinsicObjects:"+nlChilds);
-                if ( nlChilds.getLength() < 1 ) {
-                    nlChilds = e.getElementsByTagName("ObjectRef");
-                    for ( int i = 0, len=nlChilds.getLength() ; i < len ; i++) {
-                        String id = nlChilds.item(i).getAttributes().getNamedItem("id").getNodeValue();
-                        l.add( id );
-                    }
+            List extrinsicObjects = this.getExtrinsicObjects( 
+            		getLeafRegistryObjectList( getSubmitObjectsRequest(body) ) );
+            if ( extrinsicObjects.size() != 0  ) {
+                Node node = (Node) extrinsicObjects.get(0);
+                List objRefs = this.getChildNodes(node, OBJECT_REF);
+                log.debug("ObjectRefs:"+objRefs);
+                for ( Iterator iter = objRefs.iterator() ; iter.hasNext() ; ) {
+                    String id = ((Node) iter.next() ).getAttributes().getNamedItem("id").getNodeValue();
+                    l.add( id );
                 }
             }
         } catch ( Exception x ) {
