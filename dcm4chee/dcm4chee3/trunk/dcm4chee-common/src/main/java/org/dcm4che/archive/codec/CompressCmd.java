@@ -90,17 +90,16 @@ import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
  * @author gunter.zeilinter@tiani.com
  * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
  * @since 11.06.2004
- *
+ * 
  */
 public abstract class CompressCmd extends CodecCmd {
 
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
-            (byte) 0x00, (byte) 0xe0};
+            (byte) 0x00, (byte) 0xe0 };
 
-    private static final int[] GRAY_BAND_OFFSETS = { 0};
+    private static final int[] GRAY_BAND_OFFSETS = { 0 };
 
-    private static final int[] RGB_BAND_OFFSETS = { 0, 1, 2};
-
+    private static final int[] RGB_BAND_OFFSETS = { 0, 1, 2 };
 
     private static class Jpeg2000 extends CompressCmd {
 
@@ -117,7 +116,7 @@ public abstract class CompressCmd extends CodecCmd {
 
         protected void initWriteParam(ImageWriteParam param) {
             if (param instanceof J2KImageWriteParam) {
-                J2KImageWriteParam j2KwParam = (J2KImageWriteParam) param;               
+                J2KImageWriteParam j2KwParam = (J2KImageWriteParam) param;
                 j2KwParam.setWriteCodeStreamOnly(true);
             }
         }
@@ -157,30 +156,31 @@ public abstract class CompressCmd extends CodecCmd {
             param.setCompressionType(JPEG_LS);
         }
     };
-    
+
     public static byte[] compressFile(File inFile, File outFile, String tsuid,
-    		int[] pxdataVR, byte[] buffer)
-    		throws Exception {
+            int[] pxdataVR, byte[] buffer) throws Exception {
         log.info("M-READ file:" + inFile);
-    	InputStream in = new BufferedInputStream(new FileInputStream(inFile));
-    	try {
-    		DcmParser p = DcmParserFactory.getInstance().newDcmParser(in);
-    		final DcmObjectFactory of = DcmObjectFactory.getInstance();
-			Dataset ds = of.newDataset();
-    		p.setDcmHandler(ds.getDcmHandler());
-    		p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-    		if (pxdataVR != null && pxdataVR.length != 0)
-    			pxdataVR[0] = p.getReadVR();
-    		FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
-    		ds.setFileMetaInfo(fmi);
+        InputStream in = new BufferedInputStream(new FileInputStream(inFile));
+        try {
+            DcmParser p = DcmParserFactory.getInstance().newDcmParser(in);
+            final DcmObjectFactory of = DcmObjectFactory.getInstance();
+            Dataset ds = of.newDataset();
+            p.setDcmHandler(ds.getDcmHandler());
+            p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            if (pxdataVR != null && pxdataVR.length != 0)
+                pxdataVR[0] = p.getReadVR();
+            FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
+            ds.setFileMetaInfo(fmi);
             log.info("M-WRITE file:" + outFile);
             MessageDigest md = MessageDigest.getInstance("MD5");
-            DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(outFile), md);
+            DigestOutputStream dos = new DigestOutputStream(
+                    new FileOutputStream(outFile), md);
             BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
                 DcmDecodeParam decParam = p.getDcmDecodeParam();
-    			DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
-                CompressCmd compressCmd = CompressCmd.createCompressCmd(ds, tsuid);
+                DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
+                CompressCmd compressCmd = CompressCmd.createCompressCmd(ds,
+                        tsuid);
                 compressCmd.coerceDataset(ds);
                 ds.writeFile(bos, encParam);
                 ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
@@ -190,25 +190,27 @@ public abstract class CompressCmd extends CodecCmd {
                 in.skip(p.getReadLength() - read);
                 p.parseDataset(decParam, -1);
                 ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
-            } finally {
+            }
+            finally {
                 bos.close();
             }
             return md.digest();
-    	} finally {
-    		in.close();
-    	}
+        }
+        finally {
+            in.close();
+        }
     }
 
     public static CompressCmd createCompressCmd(Dataset ds, String tsuid) {
-    	if (UIDs.JPEG2000Lossless.equals(tsuid)) {
-                return new Jpeg2000(ds, tsuid);
+        if (UIDs.JPEG2000Lossless.equals(tsuid)) {
+            return new Jpeg2000(ds, tsuid);
         }
         if (UIDs.JPEGLSLossless.equals(tsuid)) {
             return new JpegLS(ds, tsuid);
         }
         if (UIDs.JPEGLossless.equals(tsuid)
                 || UIDs.JPEGLossless14.equals(tsuid)) {
-                return new JpegLossless(ds, tsuid);
+            return new JpegLossless(ds, tsuid);
         }
         throw new IllegalArgumentException("tsuid:" + tsuid);
     }
@@ -218,8 +220,8 @@ public abstract class CompressCmd extends CodecCmd {
     protected final String tsuid;
 
     protected CompressCmd(Dataset ds, String tsuid, boolean supportSigned) {
-    	super(ds);
-    	this.tsuid = tsuid;
+        super(ds);
+        this.tsuid = tsuid;
         switch (bitsAllocated) {
         case 8:
             this.dataType = DataBuffer.TYPE_BYTE;
@@ -294,8 +296,10 @@ public abstract class CompressCmd extends CodecCmd {
                 ios.seek(end);
                 ios.flush();
             }
-        } finally {
-            if (w != null) w.dispose();
+        }
+        finally {
+            if (w != null)
+                w.dispose();
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
@@ -323,7 +327,8 @@ public abstract class CompressCmd extends CodecCmd {
             for (int j = 0; j < bank.length; j++) {
                 lo = in.read();
                 hi = in.read();
-                if ((lo | hi) < 0) throw new EOFException();
+                if ((lo | hi) < 0)
+                    throw new EOFException();
                 bank[j] = (short) ((lo & 0xff) + (hi << 8));
             }
         }
@@ -336,19 +341,22 @@ public abstract class CompressCmd extends CodecCmd {
             for (int j = 0; j < bank.length; j++) {
                 hi = in.read();
                 lo = in.read();
-                if ((lo | hi) < 0) throw new EOFException();
+                if ((lo | hi) < 0)
+                    throw new EOFException();
                 bank[j] = (short) ((lo & 0xff) + (hi << 8));
             }
         }
     }
 
     private void read(InputStream in, byte[][] data) throws IOException {
-    	int read;
+        int read;
         for (int i = 0; i < data.length; i++) {
             byte[] bank = data[i];
             for (int toread = bank.length; toread > 0;) {
                 read = in.read(bank, bank.length - toread, toread);
-                if ( read == -1 ) throw new EOFException("Length of pixel matrix is too short!");
+                if (read == -1)
+                    throw new EOFException(
+                            "Length of pixel matrix is too short!");
                 toread -= read;
             }
         }
@@ -359,21 +367,23 @@ public abstract class CompressCmd extends CodecCmd {
             return new PixelInterleavedSampleModel(dataType, columns, rows,
                     samples, columns * samples,
                     samples == 1 ? GRAY_BAND_OFFSETS : RGB_BAND_OFFSETS);
-        } else {
+        }
+        else {
             return new BandedSampleModel(dataType, columns, rows, samples);
         }
     }
 
     private ColorModel getColorModel() {
-        
+
         if (samples == 3) {
             return new ComponentColorModel(ColorSpace
                     .getInstance(ColorSpace.CS_sRGB), new int[] { bitsUsed,
-                    bitsUsed, bitsUsed}, false, false, ColorModel.OPAQUE,
+                    bitsUsed, bitsUsed }, false, false, ColorModel.OPAQUE,
                     dataType);
-        } else {
+        }
+        else {
             return new ComponentColorModel(ColorSpace
-                    .getInstance(ColorSpace.CS_GRAY), new int[] { bitsUsed},
+                    .getInstance(ColorSpace.CS_GRAY), new int[] { bitsUsed },
                     false, false, ColorModel.OPAQUE, dataType);
         }
     }

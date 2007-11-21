@@ -61,13 +61,13 @@ import org.dcm4che.dict.Tags;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision: 1.1 $ $Date: 2007/06/12 21:03:20 $
  * @since 14.03.2005
- *
+ * 
  */
 
 public abstract class CodecCmd {
-	
-	static final Logger log = Logger.getLogger(CodecCmd.class);
-	
+
+    static final Logger log = Logger.getLogger(CodecCmd.class);
+
     static final String YBR_RCT = "YBR_RCT";
 
     static final String JPEG2000 = "jpeg2000";
@@ -79,7 +79,7 @@ public abstract class CodecCmd {
     static final String JPEG_LS = "JPEG-LS";
 
     static int maxConcurrentCodec = 1;
-    
+
     static Semaphore codecSemaphore = new Semaphore(maxConcurrentCodec, true);
 
     public static void setMaxConcurrentCodec(int maxConcurrentCodec) {
@@ -90,14 +90,14 @@ public abstract class CodecCmd {
     public static int getMaxConcurrentCodec() {
         return maxConcurrentCodec;
     }
-    
-	protected final int samples;
 
-	protected final int frames;
+    protected final int samples;
 
-	protected final int rows;
+    protected final int frames;
 
-	protected final int columns;
+    protected final int rows;
+
+    protected final int columns;
 
     protected final int planarConfiguration;
 
@@ -106,18 +106,18 @@ public abstract class CodecCmd {
     protected final int bitsStored;
 
     protected final int pixelRepresentation;
-    
-    protected final int frameLength;    
 
-    protected final int pixelDataLength;  
-    
+    protected final int frameLength;
+
+    protected final int pixelDataLength;
+
     protected final int bitsUsed;
-    
-	protected CodecCmd(Dataset ds) {
+
+    protected CodecCmd(Dataset ds) {
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
         this.frames = ds.getInt(Tags.NumberOfFrames, 1);
         this.rows = ds.getInt(Tags.Rows, 1);
-        this.columns = ds.getInt(Tags.Columns, 1);		
+        this.columns = ds.getInt(Tags.Columns, 1);
         this.bitsAllocated = ds.getInt(Tags.BitsAllocated, 8);
         this.bitsStored = ds.getInt(Tags.BitsStored, bitsAllocated);
         this.bitsUsed = isOverlayInPixelData(ds) ? bitsAllocated : bitsStored;
@@ -125,11 +125,11 @@ public abstract class CodecCmd {
         this.planarConfiguration = ds.getInt(Tags.PlanarConfiguration, 0);
         this.frameLength = rows * columns * samples * bitsAllocated / 8;
         this.pixelDataLength = frameLength * frames;
-	}
+    }
 
     private boolean isOverlayInPixelData(Dataset ds) {
         for (int i = 0; i < 16; ++i) {
-            if (ds.getInt(Tags.OverlayBitPosition + 2*i, 0) != 0) {
+            if (ds.getInt(Tags.OverlayBitPosition + 2 * i, 0) != 0) {
                 return true;
             }
         }
@@ -137,7 +137,7 @@ public abstract class CodecCmd {
     }
 
     public final int getPixelDataLength() {
-    	return pixelDataLength;
+        return pixelDataLength;
     }
 
     protected BufferedImage createBufferedImage() {
@@ -150,18 +150,19 @@ public abstract class CodecCmd {
             bandOffset = new int[] { 0, 1, 2 };
             dataType = DataBuffer.TYPE_BYTE;
             colorSpace = ColorSpace.CS_sRGB;
-        } else {
+        }
+        else {
             pixelStride = 1;
             bandOffset = new int[] { 0 };
-            dataType = bitsAllocated == 8 ? DataBuffer.TYPE_BYTE 
+            dataType = bitsAllocated == 8 ? DataBuffer.TYPE_BYTE
                     : DataBuffer.TYPE_USHORT;
             colorSpace = ColorSpace.CS_GRAY;
         }
         SampleModel sm = new PixelInterleavedSampleModel(dataType, columns,
                 rows, pixelStride, columns * pixelStride, bandOffset);
-        ColorModel cm = new ComponentColorModel(
-                ColorSpace.getInstance(colorSpace), sm.getSampleSize(),
-                false, false, Transparency.OPAQUE, dataType);
+        ColorModel cm = new ComponentColorModel(ColorSpace
+                .getInstance(colorSpace), sm.getSampleSize(), false, false,
+                Transparency.OPAQUE, dataType);
         WritableRaster r = Raster.createWritableRaster(sm, new Point(0, 0));
         return new BufferedImage(cm, r, false, new Hashtable());
     }
