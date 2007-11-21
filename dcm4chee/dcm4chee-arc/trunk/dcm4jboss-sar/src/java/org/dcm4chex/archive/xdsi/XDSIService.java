@@ -900,7 +900,7 @@ public class XDSIService extends ServiceMBeanSupport {
 		if ( mdProps == null ) mdProps = this.metadataProps;
         List files = new QueryFilesCmd(kosIuid).getFileDTOs();
         if ( files == null || files.size() == 0 ) {
-        	
+        	return false;
         }
         FileDTO fileDTO = (FileDTO) files.iterator().next();
 		File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
@@ -914,7 +914,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 	private Dataset queryInstance(String iuid) {
 		try {
-            return getContentManager().getInstanceByIUID(iuid);
+            return getContentManager().getInstanceInfo(iuid, true);
 		} catch (Exception e) {
 			log.error("Query for SOP Instance UID:" + iuid + " failed!", e);
 		}
@@ -1100,23 +1100,28 @@ public class XDSIService extends ServiceMBeanSupport {
         InstanceSorter sorter = new InstanceSorter();
         DcmObjectFactory df = DcmObjectFactory.getInstance();
         DcmElement sq = dsKos.get(Tags.CurrentRequestedProcedureEvidenceSeq);
-        for (int i = 0, n = sq.countItems(); i < n; i++) {
-            Dataset refStudyItem = sq.getItem(i);
-            String suid = refStudyItem.getString(Tags.StudyInstanceUID);
-            DcmElement refSerSeq = refStudyItem.get(Tags.RefSeriesSeq);
-            for (int j = 0, m = refSerSeq.countItems(); j < m; j++) {
-                Dataset refSer = refSerSeq.getItem(j);
-                DcmElement srcRefSOPSeq = refSer.get(Tags.RefSOPSeq);
-                for (int k = 0, l = srcRefSOPSeq.countItems(); k < l; k++) {
-                    Dataset srcRefSOP = srcRefSOPSeq.getItem(k);
-                    Dataset refSOP = df.newDataset();
-                    String cuid = srcRefSOP.getString(Tags.RefSOPClassUID);
-                    refSOP.putUI(Tags.RefSOPClassUID, cuid);
-                    String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
-                    refSOP.putUI(Tags.RefSOPInstanceUID, iuid);
-                    sorter.addInstance(suid, cuid, iuid, null);
-                }
-            }
+        if ( sq != null ) {
+	        for (int i = 0, n = sq.countItems(); i < n; i++) {
+	            Dataset refStudyItem = sq.getItem(i);
+	            String suid = refStudyItem.getString(Tags.StudyInstanceUID);
+	            DcmElement refSerSeq = refStudyItem.get(Tags.RefSeriesSeq);
+	            for (int j = 0, m = refSerSeq.countItems(); j < m; j++) {
+	                Dataset refSer = refSerSeq.getItem(j);
+	                DcmElement srcRefSOPSeq = refSer.get(Tags.RefSOPSeq);
+	                for (int k = 0, l = srcRefSOPSeq.countItems(); k < l; k++) {
+	                    Dataset srcRefSOP = srcRefSOPSeq.getItem(k);
+	                    Dataset refSOP = df.newDataset();
+	                    String cuid = srcRefSOP.getString(Tags.RefSOPClassUID);
+	                    refSOP.putUI(Tags.RefSOPClassUID, cuid);
+	                    String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
+	                    refSOP.putUI(Tags.RefSOPInstanceUID, iuid);
+	                    sorter.addInstance(suid, cuid, iuid, null);
+	                }
+	            }
+	        }
+        } else { //not a manifest! (PDF)
+        	sorter.addInstance(dsKos.getString(Tags.StudyInstanceUID), dsKos.getString(Tags.SOPClassUID),
+        			dsKos.getString(Tags.SOPInstanceUID), null);
         }
 		return sorter;
 	}
@@ -1204,50 +1209,41 @@ public class XDSIService extends ServiceMBeanSupport {
 	private boolean checkResponse(SOAPMessage response) throws SOAPException {
 		log.info("checkResponse:"+response);
 		try {
-		    NodeList nl;
-		    NodeList errors;
-//	            try {
-	                SOAPBody body = response.getSOAPBody();
-	                log.debug("SOAPBody:"+body );
-	                nl = body.getElementsByTagName("RegistryResponse");
-	                errors = body.getElementsByTagName("RegistryError");
-//	            } catch ( Throwable t) {
-//                        log.warn("Retrieve of SOAPBody failed! Try to get RegistryResponse directly from SOAPMessage!");
-//                        log.debug("SOAPBody Failure:",t);
-//	                JAXMStreamSource src = (JAXMStreamSource) response.getSOAPPart().getContent();
-//	                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-//	                dbFactory.setNamespaceAware(true);
-//	                DocumentBuilder builder = dbFactory.newDocumentBuilder();
-//	                Document d = builder.parse( src.getInputStream() );
-//	                nl = d.getElementsByTagName("RegistryResponse");
-//                        log.debug("Fallback RegistryResponse NodeList:"+nl);
-//                        errors = d.getElementsByTagName("RegistryError");
-//	            }
-			if ( nl.getLength() != 0  ) {
-				Node n = nl.item(0);
-				String status = n.getAttributes().getNamedItem("status").getNodeValue();
-				log.info("XDSI: SOAP response status."+status);
-				if ( "Failure".equals(status) ) {
-					StringBuffer sb = new StringBuffer();
-					Node errNode;
-					for ( int i = 0, len=errors.getLength(); i < len ; i++ ) {
-					    sb.setLength(0); 
-					    sb.append("Error (").append(i).append("):");
-					    if ( (errNode = errors.item(i)) != null && errNode.getFirstChild() != null ) {
-					        sb.append( errNode.getFirstChild().getNodeValue());
-					    }
-						log.info(sb.toString());
+            SOAPBody body = response.getSOAPBody();
+            log.debug("SOAPBody:"+body );
+            NodeList nl = body.getChildNodes();
+			if ( nl.getLength() > 0  ) {
+				for ( int i = 0, len = nl.getLength() ; i < len ; i++ ) {
+					Node n = nl.item(i);
+					if ( n.getNodeType() == Node.ELEMENT_NODE &&
+						 "RegistryResponse".equals(n.getLocalName() ) ) {
+						String status = n.getAttributes().getNamedItem("status").getNodeValue();
+						log.info("XDSI: SOAP response status."+status);
+						if ( "Failure".equals(status) ) {
+							StringBuffer sb = new StringBuffer();
+							NodeList errList = n.getChildNodes().item(0).getChildNodes();
+							Node errNode;
+							for ( int j = 0, lenj = errList.getLength() ; j < len ; j++ ) {
+							    sb.setLength(0); 
+							    sb.append("Error (").append(j).append("):");
+							    if ( (errNode = errList.item(j)) != null && errNode.getFirstChild() != null ) {
+							        sb.append( errNode.getFirstChild().getNodeValue());
+							    }
+								log.info(sb.toString());
+							}
+							return false;
+						} else {
+							return true;
+						}
 					}
-					return false;
 				}
 			} else {
-				log.warn("XDSI: SOAP response without RegistryResponse!");
+				log.warn("XDSI: Empty SOAP response!");
 			}
-			return true;
 		} catch ( Exception x ) {
 			log.error("Cant check response!", x);
-			return false;
 		}
+		return false;
 	}
 	/**
 	 * @param message
