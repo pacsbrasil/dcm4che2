@@ -73,17 +73,27 @@ public class XDSDocumentMetadata {
 	
 	private void init() {
 		attributes = metadata.getAttributes();
-		NodeList childs = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExternalIdentifier");
-		firstSlot = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot").item(0);
+		//NodeList childs = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExternalIdentifier");
+		//firstSlot = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot").item(0);
+		firstSlot = null;
+		NodeList nl = metadata.getChildNodes();
+		Node child;
 		String name, scheme;
 		NamedNodeMap attrs;
-		for ( int i = 0, len = childs.getLength() ; i < len ; i++ ){
-			attrs = childs.item(i).getAttributes();
-			scheme = getAttributeValue(attrs,"identificationScheme");
-			if ( UUID.XDSDocumentEntry_uniqueId.equals(scheme) ) {
-				uidNode = attrs.getNamedItem("value");
-			} else if ( UUID.XDSDocumentEntry_patientId.equals(scheme) ) {
-				patientID = getAttributeValue(attrs,"value");
+		for ( int i = 0, len = nl.getLength() ; i < len ; i++ ){
+			child = nl.item(i);
+			if ( child.getNodeType() == Node.ELEMENT_NODE ) {
+				if ( "ExternalIdentifier".equals(child.getNodeName())) {
+					attrs = child.getAttributes();
+					scheme = getAttributeValue(attrs,"identificationScheme");
+					if ( UUID.XDSDocumentEntry_uniqueId.equals(scheme) ) {
+						uidNode = attrs.getNamedItem("value");
+					} else if ( UUID.XDSDocumentEntry_patientId.equals(scheme) ) {
+						patientID = getAttributeValue(attrs,"value");
+					}
+				} else if (firstSlot == null && "Slot".equals(child.getNodeName())) {
+					firstSlot = child;
+				}
 			}
 		}
 		removeSlot("hash");
@@ -184,16 +194,18 @@ public class XDSDocumentMetadata {
 	 * @param object
 	 */
 	public void removeSlot(String name) {
-		NodeList nl = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot");
-		Element e;
+		NodeList nl = metadata.getChildNodes();
+		Node node;
 		Attr attr;
 		for ( int i=0,l=nl.getLength(); i<l ; i++) {
-			e = (Element)nl.item(i);
-			if ( e != null ) {
-				attr = e.getAttributeNode("name");
-				if ( name.equals(attr.getNodeValue()) ) {
-					metadata.removeChild(e);
-					log.warn("Slot "+name+" removed from XDSDocumentEntry!" );
+			node = (Element)nl.item(i);
+			if ( node.getNodeType() == Node.ELEMENT_NODE ) {
+				if ( "Slot".equals(node.getLocalName() ) ) {
+					attr = ((Element) node).getAttributeNode("name");
+					if ( name.equals(attr.getNodeValue()) ) {
+						metadata.removeChild(node);
+						log.warn("Slot "+name+" removed from XDSDocumentEntry!" );
+					}
 				}
 			}
 		}
