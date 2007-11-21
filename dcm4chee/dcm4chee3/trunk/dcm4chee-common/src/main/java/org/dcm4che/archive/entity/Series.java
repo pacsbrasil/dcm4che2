@@ -90,6 +90,9 @@ public class Series extends EntityBase {
 
     @Column(name = "series_no")
     private String seriesNumber;
+    
+    @Column(name = "series_desc")
+    private String seriesDescription;
 
     @Column(name = "modality")
     private String modality;
@@ -701,6 +704,20 @@ public class Series extends EntityBase {
     public String toString() {
         return "Series[pk=" + getPk() + ", uid=" + getSeriesIuid()
                 + ", study->" + getStudy() + "]";
+    }
+
+    /**
+     * @return the seriesDescription
+     */
+    public String getSeriesDescription() {
+        return seriesDescription;
+    }
+
+    /**
+     * @param seriesDescription the seriesDescription to set
+     */
+    public void setSeriesDescription(String seriesDescription) {
+        this.seriesDescription = seriesDescription;
     }
 
 }
