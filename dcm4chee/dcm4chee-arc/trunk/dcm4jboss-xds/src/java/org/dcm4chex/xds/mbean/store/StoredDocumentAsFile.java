@@ -36,22 +36,35 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4chex.xds.mbean.store;
 
 import java.io.File;
-import java.io.IOException;
-
-import javax.xml.soap.AttachmentPart;
-
-import org.dcm4chex.xds.XDSDocumentMetadata;
 
 /**
- * @author franz.willer@gwi-ag.com
- * @version $Revision$ $Date$
- * @since Mar 08, 2006
+ * @author franz.willer
+ *
+ * TODO To change the template for this generated type comment go to
+ * Window - Preferences - Java - Code Style - Code Templates
  */
-public interface Storage {
-	StoredDocument store( String uid, AttachmentPart part, XDSDocumentMetadata metadata) throws IOException;
+public class StoredDocumentAsFile extends AbstractStoredDocument {
+
+	private final File file;
+
+	public StoredDocumentAsFile( File file, byte[] hash) {
+		super(hash);
+		this.file = file;
+	}
 	
-	File get(String uid) throws IOException;
+	public boolean delete() {
+		return file.delete();
+	}
+	
+	public long getSize() {
+		return file.length();
+	}
+	
+	public String getDescription() {
+		return file.toString();
+	}
 }

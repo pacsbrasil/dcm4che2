@@ -54,6 +54,7 @@ import javax.xml.soap.SOAPException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.xds.XDSDocumentMetadata;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -112,7 +113,7 @@ public class StorageImpl implements Storage {
 	public void setDirectoryTree(int[] directoryTree) {
 		this.directoryTree = directoryTree;
 	}
-	public XDSFile store(String uid, AttachmentPart part) throws IOException {
+	public StoredDocument store(String uid, AttachmentPart part, XDSDocumentMetadata metadata) throws IOException {
 		File docFile = getDocFile( uid );
 		if ( docFile == null ) return null;
 		byte[] hash = null;
@@ -121,7 +122,7 @@ public class StorageImpl implements Storage {
 		} catch ( Throwable t ) {
 			throw (IOException) new IOException("Store document (uid:"+uid+") failed! Reason:"+t.getMessage()).initCause(t);
 		}
-		return new XDSFile(docFile, hash);
+		return new StoredDocumentAsFile(docFile, hash);
 	}
 
 	public File get(String uid) {

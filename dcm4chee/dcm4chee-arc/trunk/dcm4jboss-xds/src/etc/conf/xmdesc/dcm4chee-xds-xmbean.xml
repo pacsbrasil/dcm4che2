@@ -26,7 +26,9 @@
       <name>XDSRegistryURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/portals/yr3a/registry"/>
+      	 <value value="http://129.6.24.109:9080/axis2/services/xdsregistrya"/>
+         <!--  <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/portals/yr3a/registry"/> 
+         		NIST year 2007 version (does NOT work with JBOSS SOAP implementation) -->
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getXDSQueryURI" setMethod="setXDSQueryURI">
@@ -229,12 +231,15 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="getRidServiceName"
-      setMethod="setRidServiceName">
+      getMethod="getStore2DcmServicename"
+      setMethod="setStore2DcmServicename">
       <description>Used internally - do NOT modify.
       </description>
-      <name>RidServiceName</name>
+      <name>Store2DcmServicename</name>
       <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=Store2Dcm" />
+      </descriptors>
    </attribute>
 
    <!-- Operations -->
