@@ -710,6 +710,7 @@ StoreSCP service.
            StandalonePETCurveStorage
            AgfaAttributePresentationState
            SiemensCSANonImageStorage
+           TianiEncapsulatedDocumentStorage
            "/>
       </descriptors>
    </attribute>
