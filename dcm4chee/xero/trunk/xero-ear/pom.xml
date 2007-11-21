@@ -42,18 +42,6 @@
                 <artifactId>xero-cfind</artifactId>
                 <includeInApplicationXml>true</includeInApplicationXml>
              </jarModule>
-             <!--
-             <jarModule>
-                <groupId>javax.el</groupId>
-                <artifactId>el-ri</artifactId>
-                <includeInApplicationXml>true</includeInApplicationXml>
-             </jarModule>
-             <jarModule>
-                <groupId>javax.el</groupId>
-                <artifactId>el-ri</artifactId>
-                <includeInApplicationXml>true</includeInApplicationXml>
-             </jarModule>
-             -->
              <webModule>
                <groupId>org.dcm4chee.xero</groupId>
                <artifactId>xero-war</artifactId>

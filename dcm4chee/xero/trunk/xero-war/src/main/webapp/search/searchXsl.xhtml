@@ -26,9 +26,11 @@
 
 <!-- Generates the search toolbar buttons. -->
 <xsl:template name="searchToolbar" >
+  <div style="float: left; width: 220px;">
    <x:button value="Add" action="search.seam"><img src="../img/add.png" alt="Add" /></x:button>
    <x:button value="View" action="search.seam"><img src="../img/viewNow.png" alt="View Now"/></x:button>
    <x:button value="Find" action="search.seam"><img src="../img/find.png" alt="Find"/></x:button>
+ </div>
 </xsl:template>
 
 <xsl:template match="/"><html xmlns="http://www.w3.org/1999/xhtml">
@@ -59,10 +61,11 @@
         <xsl:attribute name="value"><xsl:value-of select="$cid" /></xsl:attribute>
       </input>
       
+      <xsl:call-template name="generateSearchForm" />
       <xsl:call-template name="searchToolbar" />
       
-      <xsl:call-template name="generateSearchForm" />
-
+      <br style="clear: left;"/>
+      
       <table style="width:100%;">
          <xsl:call-template name="renderTableResultsHeader" />
          <xsl:call-template name="renderTableResultsStudy" />

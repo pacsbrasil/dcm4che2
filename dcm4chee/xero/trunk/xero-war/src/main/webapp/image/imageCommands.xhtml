@@ -45,7 +45,7 @@
      </ul>
     </li>
     
-    <li><a id="saveBtn" oncommand="/xero/image/save.seam"><img class="icon" src="/xero/img/save.png" /></a></li>
+    <li><a id="saveBtn" onclick="showModalDialog('/xero/image/save.seam');return false"><img class="icon" src="/xero/img/save.png" /></a></li>
     <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
     
     <li><a id="viewBody" onclick="alert('HTML page is '+document.getElementsByTagName('body')[0].innerHTML);" >Body</a></li>

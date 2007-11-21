@@ -250,3 +250,9 @@ function browserNameFunc() {
 	return navigator.appName;
 };
 var browserName = browserNameFunc();
+
+if( !window.showModalDialog ) {
+	function showModalDialog(surl, title) {
+		window.open(surl, title, "width=300,height=300,dependent=1");
+	};
+}

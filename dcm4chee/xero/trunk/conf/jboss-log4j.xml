@@ -7,7 +7,7 @@
 <!--                                                                       -->
 <!-- ===================================================================== -->
 
-<!-- $Id: log4j.xml,v 1.25 2006/12/22 14:43:30 gunterze Exp $ -->
+<!-- $Id: jboss-log4j.xml 62403 2007-04-18 15:26:43Z dimitris@jboss.org $ -->
 
 <!--
    | For more configuration infromation and examples see the Jakarta Log4j
@@ -15,59 +15,45 @@
  -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
-   
-   <renderer renderedClass="org.dcm4che.data.Dataset" renderingClass="org.dcm4che.log.DatasetRenderer" />
 
    <!-- ================================= -->
    <!-- Preserve messages in a local file -->
    <!-- ================================= -->
 
-   <!-- A time/date based rolling appender
+   <!-- A time/date based rolling appender -->
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       <param name="File" value="${jboss.server.log.dir}/server.log"/>
       <param name="Append" value="false"/>
 
+      <!-- Rollover at midnight each day -->
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
+      <!-- Rollover at the top of each hour
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
+      -->
+
       <layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
          <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+
+         <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
+         <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
+          -->
       </layout>
    </appender>
-   -->
 
-   <!-- A size based file rolling appender -->
+   <!-- A size based file rolling appender
    <appender name="FILE" class="org.jboss.logging.appender.RollingFileAppender">
      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
      <param name="File" value="${jboss.server.log.dir}/server.log"/>
      <param name="Append" value="false"/>
-     <param name="MaxFileSize" value="10000KB"/>
-     <param name="MaxBackupIndex" value="10"/>
+     <param name="MaxFileSize" value="500KB"/>
+     <param name="MaxBackupIndex" value="1"/>
 
      <layout class="org.apache.log4j.PatternLayout">
-       <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
+       <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
      </layout>	    
-   </appender>
-
-   <!-- A File appender filtered by calling or called AET.
-   Multiple values for matching calling AET can be specified, separated by ';'.
-   
-   <appender name="AET_SIEMENS_CT" class="org.jboss.logging.appender.RollingFileAppender">
-     <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-     <param name="File" value="${jboss.server.home.dir}/log/server.log"/>
-     <param name="Append" value="false"/>
-     <param name="MaxFileSize" value="1000KB"/>
-     <param name="MaxBackupIndex" value="10"/>
-
-     <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d %-5p %X{calling}->%X{called} (%t) [%c] %m%n"/>
-     </layout>	    
-     <filter class="org.dcm4che.log.MDCFilter">
-	      <param name="Key" value="calling"/>
-	      <param name="Value" value="SIEMENS_CT"/>
-	      <param name="AcceptOnMatch" value="true"/>
-	   </filter>
-	   <filter class="org.apache.log4j.varia.DenyAllFilter" />
    </appender>
    -->
 
@@ -81,10 +67,11 @@
       <param name="Threshold" value="INFO"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p %X{calling}->%X{called} [%c{1}] %m%n"/>
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
       </layout>
    </appender>
-
+  
    <!-- ====================== -->
    <!-- More Appender examples -->
    <!-- ====================== -->
@@ -168,70 +155,9 @@
    </appender>
    -->
    
-   <!-- Audit Trail Messages -->
-   <!-- Use copy of log4j-1.2.14's SyslogAppender provided by dcm4che-audit-2.x
-   as long JBoss uses a previous version of log4j, which SyslogAppender cannot
-   be configured to send messages to a different port than 514
-   <appender name="AUDIT" class="org.dcm4che2.audit.log4j.net.SyslogAppender">
-     <param name="Facility" value="AUTHPRIV"/>
-     <param name="SyslogHost" value="localhost:4000"/>
-     <layout class="org.apache.log4j.PatternLayout">
-       <param name="ConversionPattern" value="%d{MMM d HH:mm:ss} HOST %m"/>
-     </layout>
-   </appender>
-
-   <category name="audit" additivity="false">
-     <priority value="INFO" />
-     <appender-ref ref="AUDIT"/>
-   </category>
-   -->
-   
    <!-- ================ -->
    <!-- Limit categories -->
    <!-- ================ -->
-
-   <!-- Limit the org.dcm4che.xero to INFO -->
-   <category name="org.dcm4che2">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4che.xero to INFO -->
-   <category name="org.dcm4chee.xero">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4chex.arr to INFO -->
-   <category name="org.dcm4chex.arr">
-      <priority value="INFO"/>
-   </category>
-   
-   <!-- Limit the org.infohazard category to INFO -->
-   <category name="org.infohazard">
-      <priority value="INFO"/>
-   </category>
-   
-   <!-- Limit the org.dcm4chex.archive category to INFO --> 
-   <category name="org.dcm4chex.archive">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.dcm4che2.net">
-      <priority value="WARN" />
-   </category>
-    
-   <!-- Limit the org.dcm4chex.wado to INFO --> 
-   <category name="org.dcm4chex.wado">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4cheri category to INFO -->
-   <category name="org.dcm4cheri">
-      <priority value="WARN"/>
-   </category>
-
-   <category name="PDUDecoder">
-      <priority value="WARN" />
-   </category>
 
    <!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
    <category name="org.apache">
@@ -253,10 +179,11 @@
       <priority value="WARN"/>
    </category>
 
-   <!-- Limit JBoss categories -->
+   <!-- Limit JBoss categories
    <category name="org.jboss">
       <priority value="INFO"/>
    </category>
+   -->
 
    <!-- Limit the JSR77 categories -->
    <category name="org.jboss.management">
@@ -265,7 +192,7 @@
 
    <!-- Enable JBossWS message tracing
    <category name="jbossws.SOAPMessage">
-    <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+    <priority value="TRACE"/>
    </category>
    -->
 
@@ -277,7 +204,7 @@
 
    <!-- Show the evolution of the DataSource pool in the logs [inUse/Available/Max]
    <category name="org.jboss.resource.connectionmanager.JBossManagedConnectionPool">
-     <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+     <priority value="TRACE"/>
    </category>
    -->
 
@@ -286,11 +213,16 @@
       | by the JBoss internals to diagnose low level details. This example
       | turns on TRACE level msgs for the org.jboss.ejb.plugins package and its
       | subpackages. This will produce A LOT of logging output.
+      |
+      | Note: since jboss AS 4.2.x, the trace level is supported natively by
+      | log4j, so although the custom org.jboss.logging.XLevel priority will
+      | still work, there is no need to use it. The two examples that follow
+      | will both enable trace logging.
    <category name="org.jboss.system">
      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
    <category name="org.jboss.ejb.plugins">
-     <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+     <priority value="TRACE"/>
    </category>
    -->
   
@@ -361,5 +293,46 @@
      <appender-ref ref="CLUSTER"/>
    </category>
    -->
+   <!-- ================== -->
+   <!-- Dcm4che categories -->
+   <!-- ================== -->
+
+   <!-- Limit the org.dcm4che.xero to INFO -->
+   <category name="org.dcm4che2">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.dcm4che.xero to INFO -->
+   <category name="org.dcm4chee.xero">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.dcm4chex.arr to INFO -->
+   <category name="org.dcm4chex.arr">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.dcm4chex.archive category to INFO --> 
+   <category name="org.dcm4chex.archive">
+      <priority value="INFO"/>
+   </category>
+
+   <category name="org.dcm4che2.net">
+      <priority value="WARN" />
+   </category>
+    
+   <!-- Limit the org.dcm4chex.wado to INFO --> 
+   <category name="org.dcm4chex.wado">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.dcm4cheri category to INFO -->
+   <category name="org.dcm4cheri">
+      <priority value="WARN"/>
+   </category>
+
+   <category name="PDUDecoder">
+      <priority value="WARN" />
+   </category>
 
 </log4j:configuration>
