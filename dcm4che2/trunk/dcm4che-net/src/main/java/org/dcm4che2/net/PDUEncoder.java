@@ -42,6 +42,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -218,9 +219,9 @@ class PDUEncoder extends PDVOutputStream
     
     private void putASCIIString(String s)
     {
-        int len = s.length();
-        s.getBytes(0, len, buf, pos);
-        pos += len;
+        byte[] bytes = s.getBytes(Charset.forName("US-ASCII"));
+        System.arraycopy(bytes, 0, buf, pos, bytes.length);
+        pos += bytes.length;
     }
 
     private void encodeAET(String aet)

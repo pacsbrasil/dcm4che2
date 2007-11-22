@@ -42,6 +42,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -286,7 +287,7 @@ class PDUDecoder extends PDVInputStream
     {
         if (pos + len > pdulen + 6)
             throw new IndexOutOfBoundsException();
-        final String s = new String(buf, 0, pos, len);
+        final String s = new String(buf, pos, len, Charset.forName("US-ASCII"));
         pos += len;
         return s;
     }
