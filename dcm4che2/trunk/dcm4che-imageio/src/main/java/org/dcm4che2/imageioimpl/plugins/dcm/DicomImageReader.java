@@ -55,7 +55,6 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -283,7 +282,7 @@ public class DicomImageReader extends ImageReader {
         this.itemParser = new ItemParser(dis, iis);
     }
 
-    private void initRawImageReader() throws IIOException {
+    private void initRawImageReader() {
         long[] frameOffsets = new long[frames];
         int frameLen = width * height * samples * (allocated >> 3);
         frameOffsets[0] = pixelDataPos;
@@ -301,7 +300,7 @@ public class DicomImageReader extends ImageReader {
         reader.setInput(riis);
     }
 
-    private ImageTypeSpecifier createImageTypeSpecifier() throws IIOException {
+    private ImageTypeSpecifier createImageTypeSpecifier() {
         ColorModel cm = ColorModelFactory.createColorModel(ds);
         SampleModel sm = createSampleModel();
         return new ImageTypeSpecifier(cm, sm);
@@ -453,7 +452,7 @@ public class DicomImageReader extends ImageReader {
         }
     }
 
-    private void postDecompress(int nextIndex) throws IOException {
+    private void postDecompress(int nextIndex) {
         // workaround for Bug in J2KImageReader and
         // J2KImageReaderCodecLib.setInput()
         if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {

@@ -41,7 +41,6 @@ package org.dcm4che2.data;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 import org.dcm4che2.data.DicomObject.Visitor;
@@ -59,7 +58,7 @@ class ElementSerializer implements Serializable {
         this.attrs = attrs;
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         return attrs;
     }
 

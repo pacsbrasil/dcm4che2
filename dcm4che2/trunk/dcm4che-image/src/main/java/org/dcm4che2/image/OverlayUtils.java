@@ -196,9 +196,8 @@ public class OverlayUtils {
 	 * 
 	 * @param overlayNumber
 	 * @return
-	 * @throws IOException
 	 */
-	public static int getOverlayHeight(DicomObject ds, int overlayNumber) throws IOException {
+	public static int getOverlayHeight(DicomObject ds, int overlayNumber) {
 		overlayNumber &= 0x60FF0000;
 		return ds.getInt(Tag.OverlayRows | overlayNumber);
 	}

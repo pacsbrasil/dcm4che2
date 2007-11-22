@@ -91,7 +91,7 @@ public class SAXWriterTest extends TestCase {
 
     public final void testReadValue() throws IOException,
             TransformerConfigurationException,
-            TransformerFactoryConfigurationError, SAXException {
+            TransformerFactoryConfigurationError {
         File ofile = new File("target/test-out/sr_511_ct-2.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
@@ -110,7 +110,7 @@ public class SAXWriterTest extends TestCase {
 
     public final void testReadValue2() throws IOException,
             TransformerConfigurationException,
-            TransformerFactoryConfigurationError, SAXException {
+            TransformerFactoryConfigurationError {
         File ofile = new File("target/test-out/view400.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
@@ -128,7 +128,7 @@ public class SAXWriterTest extends TestCase {
 
     public final void testReadValue3() throws IOException,
             TransformerConfigurationException,
-            TransformerFactoryConfigurationError, SAXException {
+            TransformerFactoryConfigurationError {
         File ofile = new File("target/test-out/DICOMDIR.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory

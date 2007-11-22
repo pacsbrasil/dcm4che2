@@ -128,7 +128,7 @@ public class DicomInputStream extends FilterInputStream implements
         pos = iis.getStreamPosition();
     }
 
-    public DicomInputStream(InputStream in, String tsuid) throws IOException {
+    public DicomInputStream(InputStream in, String tsuid) {
         this(in, TransferSyntax.valueOf(tsuid));
     }
 
@@ -137,8 +137,7 @@ public class DicomInputStream extends FilterInputStream implements
         this.ts = guessTransferSyntax();
     }
 
-    public DicomInputStream(InputStream in, TransferSyntax ts)
-            throws IOException {
+    public DicomInputStream(InputStream in, TransferSyntax ts) {
         super(in);
         if (ts == null)
             throw new NullPointerException("ts");

@@ -903,7 +903,7 @@ public class NetworkApplicationEntity {
     }
 
     protected AAssociateRQ makeAAssociateRQ(UserIdentity userIdentity,
-            NetworkApplicationEntity remoteAE) throws ConfigurationException {
+            NetworkApplicationEntity remoteAE) {
         AAssociateRQ aarq = new AAssociateRQ();
         aarq.setCallingAET(aeTitle);
         aarq.setCalledAET(remoteAE.getAETitle());
@@ -947,8 +947,7 @@ public class NetworkApplicationEntity {
     }
 
     private void evaluateTC(AAssociateRQ aarq, LinkedHashMap cuid2ts,
-            HashSet scu, HashSet scp, TransferCapability[] remoteTCs)
-            throws ConfigurationException {
+            HashSet scu, HashSet scp, TransferCapability[] remoteTCs) {
         for (int i = 0; i < transferCapability.length; i++) {
             TransferCapability tc = transferCapability[i];
             String cuid = tc.getSopClass();
