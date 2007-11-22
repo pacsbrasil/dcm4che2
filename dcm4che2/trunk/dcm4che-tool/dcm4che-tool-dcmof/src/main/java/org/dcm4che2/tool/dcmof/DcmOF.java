@@ -726,7 +726,7 @@ public class DcmOF {
         try {
             out.writeDicomFile(data);
         } finally {
-            try { if (out != null) out.close(); } catch (IOException e) {}
+            try { out.close(); } catch (IOException e) {}
         }
     }
 
