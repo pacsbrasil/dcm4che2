@@ -145,9 +145,6 @@ public class PhotometricInterpretation {
 	 * @return True unless ss is null.
 	 */
 	public static boolean isValid(String ss) {
-		if (ss != null)
-			return true;
-		else
-			return false;
+		return ss != null;
 	}
 }
