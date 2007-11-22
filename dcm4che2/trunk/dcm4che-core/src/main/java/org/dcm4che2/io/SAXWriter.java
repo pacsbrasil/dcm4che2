@@ -180,8 +180,8 @@ public class SAXWriter implements DicomInputHandler {
             switch (in.tag()) {
             case Tag.Item:
             {
-                final boolean isRoot;
-                if (isRoot = !seenFirst) {
+                final boolean isRoot = !seenFirst;
+                if (isRoot) {
                     seenFirst = true;
                     file = baseDir;
                     ch.startDocument();
