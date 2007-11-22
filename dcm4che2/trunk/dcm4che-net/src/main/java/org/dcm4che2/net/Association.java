@@ -213,10 +213,6 @@ public class Association implements Runnable {
         return state.isReadyForDataReceive();
     }
 
-    private boolean isReadyForDataSend() {
-        return state.isReadyForDataSend();
-    }
-
     void setState(State state) {
         if (this.state == state)
             return;
