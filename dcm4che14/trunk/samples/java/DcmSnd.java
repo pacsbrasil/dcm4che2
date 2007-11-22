@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
@@ -54,13 +55,17 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParseException;
@@ -84,6 +89,7 @@ import org.dcm4che.server.PollDirSrv;
 import org.dcm4che.server.PollDirSrvFactory;
 import org.dcm4che.util.DcmURL;
 import org.dcm4che.util.SSLContextAdapter;
+import org.dcm4che.util.UIDGenerator;
 
 /**
  *
@@ -129,7 +135,6 @@ public class DcmSnd implements PollDirSrv.Handler {
     private byte[] buffer = null;
     private SSLContextAdapter tls = null;
     private String[] cipherSuites = null;
-    private Dataset overwrite = oFact.newDataset();
     private PollDirSrv pollDirSrv = null;
     private File pollDir = null;
     private long pollPeriod = 5000L;
@@ -137,6 +142,12 @@ public class DcmSnd implements PollDirSrv.Handler {
     private int sentCount = 0;
     private long sentBytes = 0L;
     private boolean excludePrivate = false;
+    private boolean random = false;
+    private boolean complete = false;
+    private UIDGenerator uidGen = UIDGenerator.getInstance();
+    private Random rnd = new Random();
+    private Dataset[] datasets = null;
+    private Dataset overwrite = DcmObjectFactory.getInstance().newDataset();
 
     // Static --------------------------------------------------------
     private static final LongOpt[] LONG_OPTS =
@@ -175,14 +186,23 @@ public class DcmSnd implements PollDirSrv.Handler {
             new LongOpt("uid-suffix", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+            new LongOpt("set-random", LongOpt.NO_ARGUMENT, null, 'r'),
+            new LongOpt("set-complete", LongOpt.NO_ARGUMENT, null, 'c'),
             };
 
     private static void set(Configuration cfg, String s) {
         int pos = s.indexOf(':');
-        if (pos == -1) {
-            cfg.put("set." + s, "");
+        if (!Character.isDigit(s.charAt(4))) {
+            if (pos == -1)
+                cfg.put("set.0." + s, "");
+            else
+                cfg.put("set.0." + s.substring(0, pos), s.substring(pos + 1));
         } else {
-            cfg.put("set." + s.substring(0, pos), s.substring(pos + 1));
+            if (pos == -1)
+                cfg.put("set." + s, "");
+            else
+                cfg.put("set." + s.substring(0, pos), s.substring(pos + 1));
+
         }
     }
 
@@ -215,6 +235,12 @@ public class DcmSnd implements PollDirSrv.Handler {
                     break;
                 case 's' :
                     set(cfg, g.getOptarg());
+                    break;
+                case 'r' :
+                    cfg.put("set-random", "true");
+                    break;
+                case 'c' :
+                    cfg.put("set-complete", "true");
                     break;
                 case 'v' :
                     exit(messages.getString("version"), false);
@@ -260,6 +286,8 @@ public class DcmSnd implements PollDirSrv.Handler {
             Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
         this.uidSuffix = cfg.getProperty("uid-suffix");
         this.mode = argc > 1 ? SEND : initPollDirSrv(cfg) ? POLL : ECHO;
+        this.random = "true".equalsIgnoreCase(cfg.getProperty("set-random","false"));
+        this.complete = "true".equalsIgnoreCase(cfg.getProperty("set-complete","false"));
         initAssocParam(cfg, url, mode == ECHO);
         initTLS(cfg);
         initOverwrite(cfg);
@@ -340,7 +368,29 @@ public class DcmSnd implements PollDirSrv.Handler {
             ActiveAssociation active = openAssoc();
             if (active != null) {
                 for (int k = offset; k < args.length; ++k) {
-                    send(active, new File(args[k]));
+                    Dataset ds = null;
+                    if(random)
+                    {
+                        ds = datasets[rnd.nextInt(datasets.length)]; 
+                        if(ds == null) ds = overwrite;
+                        ds.putUI(Tags.StudyInstanceUID,uidGen.createUID());
+                        ds.putUI(Tags.SeriesInstanceUID,uidGen.createUID());
+                    }  
+                    else if(complete)
+                    {
+                           ds = datasets[(k-offset)%datasets.length];
+                           if(ds == null) ds = overwrite;
+                    }
+                    else if(datasets.length > k && datasets[k] != null)
+                    {
+                        ds = datasets[(k-offset)];
+                    }
+                    if(ds != null)
+                    {
+                        log.info("Used dataset for FILE/DIR " + args[k] + " :");
+                        logDataset(ds);
+                    }
+                    send(active, new File(args[k]),ds);
                 }
                 active.release(true);
             }
@@ -370,7 +420,7 @@ public class DcmSnd implements PollDirSrv.Handler {
     }
 
     public boolean process(File file) throws Exception {
-        return sendFile(activeAssociation, file);
+        return sendFile(activeAssociation, file,null);
     }
 
     public void closeSession() {
@@ -385,21 +435,23 @@ public class DcmSnd implements PollDirSrv.Handler {
     }
 
     // Private -------------------------------------------------------
-    private void send(ActiveAssociation active, File file)
+    private void send(ActiveAssociation active, File file,Dataset ds)
         throws InterruptedException, IOException {
         if (!file.isDirectory()) {
             for (int i = 0; i < repeatSingle; ++i) {
-                sendFile(active, file);
+                if(ds != null && random)
+                    ds.putUI(Tags.SOPInstanceUID,uidGen.createUID());
+                sendFile(active, file,ds);
             }
             return;
         }
         File[] list = file.listFiles();
         for (int i = 0; i < list.length; ++i) {
-            send(active, list[i]);
+            send(active, list[i],ds);
         }
     }
 
-    private boolean sendFile(ActiveAssociation active, File file)
+    private boolean sendFile(ActiveAssociation active, File file,Dataset mergeDataset)
         throws InterruptedException, IOException {
         InputStream in = null;
         DcmParser parser = null;
@@ -441,7 +493,7 @@ public class DcmSnd implements PollDirSrv.Handler {
                         new Object[] { file, e }));
                 return false;
             }
-            sendDataset(active, file, parser, ds);
+            sendDataset(active, file, parser, merge(ds,mergeDataset));
             return true;
         } finally {
             if (in != null) {
@@ -462,7 +514,6 @@ public class DcmSnd implements PollDirSrv.Handler {
         if (uidSuffix != null && uidSuffix.length() > 0) {
             applyUIDSuffix(ds);
         }
-        doOverwrite(ds);
         String sopInstUID = ds.getString(Tags.SOPInstanceUID);
         if (sopInstUID == null) {
             log.error(
@@ -543,12 +594,21 @@ public class DcmSnd implements PollDirSrv.Handler {
             Tags.SOPInstanceUID,
             ds.getString(Tags.SOPInstanceUID, "") + uidSuffix);
     }
-
-    private void doOverwrite(Dataset ds) {
-        for (Iterator it = overwrite.iterator(); it.hasNext();) {
-            DcmElement el = (DcmElement) it.next();
-            ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
+    
+    private Dataset merge(Dataset ds, Dataset merge) {
+        if(!complete && !random && datasets.length > 0)
+            merge = datasets[0];
+        if (ds == null) {
+            return merge;
         }
+        if (merge == null) {
+            if(datasets.length == 1)
+                merge = datasets[0];
+            else
+                return ds;
+        }     
+        ds.putAll(merge, Dataset.MERGE_ITEMS);
+        return ds;
     }
 
     private final class MyDataSource implements DataSource {
@@ -735,23 +795,37 @@ public class DcmSnd implements PollDirSrv.Handler {
         assocRQ.addPresContext(aFact.newPresContext(pcid, as, tsUIDs));
     }
 
-    private void initOverwrite(Configuration cfg) {
-        for (Enumeration it = cfg.keys(); it.hasMoreElements();) {
-            String key = (String) it.nextElement();
+    private void initOverwrite(Configuration config) {
+        SortedMap cfg = new TreeMap(config);
+        
+        Vector list = new Vector();
+        for (Iterator it = cfg.keySet().iterator(); it.hasNext();) {
+            String key = (String) it.next();
             if (key.startsWith("set.")) {
+                int subKey = Integer.parseInt(key.substring(4, 5));
+                int tag = Tags.forName(key.substring(6));
+                if (subKey == 0) {
+                    overwrite.putXX(tag, (String)cfg.get(key));
+                    continue;
+                }
+
+                list.setSize(subKey);
+                Dataset ds = (Dataset) list.get(subKey - 1);
+                if (ds == null) {
+                    ds = DcmObjectFactory.getInstance().newDataset();
+                    list.add(subKey - 1, ds);
+                }
                 try {
-                    overwrite.putXX(
-                        Tags.forName(key.substring(4)),
-                        cfg.getProperty(key));
+
+                    ds.putXX(tag, (String)cfg.get(key));
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
-                        "Illegal entry in dcmsnd.cfg - "
-                            + key
-                            + "="
-                            + cfg.getProperty(key));
+                            "Illegal entry in dcmsnd.cfg - " + key + "="
+                                    + cfg.get(key));
                 }
             }
         }
+        datasets = (Dataset[]) list.toArray(new Dataset[0]);
     }
 
     private boolean initPollDirSrv(Configuration cfg) {
@@ -815,5 +889,14 @@ public class DcmSnd implements PollDirSrv.Handler {
                 ex);
         }
     }
-
+    
+    private void logDataset(Dataset ds) {
+        try {
+            StringWriter w = new StringWriter();
+            ds.dumpDataset(w, null);
+            log.info(w.toString());
+        } catch (Exception e) {
+            log.warn("Failed to dump dataset", e);
+        }
+    }
 }
