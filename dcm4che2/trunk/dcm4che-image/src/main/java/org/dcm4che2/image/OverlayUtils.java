@@ -92,7 +92,7 @@ public class OverlayUtils {
 			}
 		}
 		reorderBytes = new ByteLookupTable(8, false, 0, 8, reorder);
-	};
+	}
 
 	private static byte[] rgbArr = new byte[] { (byte) 0xFF, 0 };
 

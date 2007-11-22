@@ -79,7 +79,9 @@ public class StringUtils {
             return new String[]{s};
         int i = 2;
         int l, r = r0;
-        for (; (r = s.indexOf(delim, l = r + 1)) != -1; ++i);
+        for (; (r = s.indexOf(delim, l = r + 1)) != -1; ++i) {
+        	// empty
+        }
         String[] ss = new String[i];
         i = l = 0;
         r = r0;
@@ -95,7 +97,9 @@ public class StringUtils {
         int count = 0;
         for (int off = 0, next; 
             (next = s.indexOf(ch, off)) != -1;
-            off = next+1, count++);
+            off = next+1, count++) {
+        	// empty
+        }
         return count;        
     }
 
