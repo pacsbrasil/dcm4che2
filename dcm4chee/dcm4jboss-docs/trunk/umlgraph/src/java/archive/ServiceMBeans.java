@@ -926,6 +926,21 @@ class templates {}
 
 /**
  * @depend - - - FileSystemMgt
+ * @depend - - - TarRetriever
+ */
+class UpdateAttributes {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.UpdateAttributes
+ * @opt !hide
+ */
+class updateAttributes {}
+
+/**
+ * @depend - - - FileSystemMgt
  * @depend - - - Scheduler
  * @depend - - - StudyInfoService
  */

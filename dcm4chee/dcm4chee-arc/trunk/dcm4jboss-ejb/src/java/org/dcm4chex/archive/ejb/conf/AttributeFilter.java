@@ -39,10 +39,13 @@
 
 package org.dcm4chex.archive.ejb.conf;
 
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 
 /**
  * 
@@ -75,6 +78,16 @@ public final class AttributeFilter {
     // Test Driver
     public static void main(String[] args) {
         AttributeFilterLoader.loadFrom(args[0]);
+    }
+    
+    public static long lastModified() {
+        URLConnection conn;
+        try {
+            conn = new URL(CONFIG_URL).openConnection();
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+        return conn.getLastModified();
     }
     
     public static AttributeFilter getPatientAttributeFilter()  {

@@ -18,6 +18,7 @@ ALTER TABLE series ADD perf_physician VARCHAR(255),
 CREATE INDEX perf_physician ON series(perf_physician);
 CREATE INDEX perf_phys_i_name ON series(perf_phys_i_name);
 CREATE INDEX perf_phys_p_name ON series(perf_phys_p_name);
+CREATE INDEX series_updated ON series(updated_time);
 
 INSERT INTO roles VALUES('admin','Doctor');
 INSERT INTO roles VALUES('user','Doctor');

@@ -61,6 +61,7 @@ CREATE INDEX series_custom3 ON series(series_custom3(64));
 CREATE INDEX series_src_aet ON series (src_aet(64));
 CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);
+CREATE INDEX series_updated ON series(updated_time);
 CREATE INDEX ser_req_series_fk ON series_req(series_fk);
 CREATE INDEX ser_rq_study_iuid ON series_req(study_iuid(64));
 CREATE INDEX ser_req_proc_id ON series_req(req_proc_id(16));

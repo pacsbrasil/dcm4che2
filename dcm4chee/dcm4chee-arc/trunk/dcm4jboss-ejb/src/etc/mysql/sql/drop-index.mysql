@@ -61,6 +61,7 @@ ALTER TABLE series DROP INDEX series_custom3;
 ALTER TABLE series DROP INDEX series_src_aet;
 ALTER TABLE series DROP INDEX series_status;
 ALTER TABLE series DROP INDEX series_created;
+ALTER TABLE series DROP INDEX series_updated;
 ALTER TABLE series_req DROP INDEX ser_req_series_fk;
 ALTER TABLE series_req DROP INDEX ser_rq_study_iuid;
 ALTER TABLE series_req DROP INDEX ser_req_proc_id;

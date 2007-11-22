@@ -211,6 +211,7 @@ CREATE INDEX series_custom3 ON series(series_custom3);
 CREATE INDEX series_src_aet ON series (src_aet);
 CREATE INDEX series_status ON series(series_status);
 CREATE INDEX series_created ON series(created_time);
+CREATE INDEX series_updated ON series(updated_time);
 
 CREATE TABLE series_req (
 	pk              SERIAL NOT NULL CONSTRAINT series_req_pk PRIMARY KEY,
