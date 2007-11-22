@@ -221,6 +221,16 @@
       <priority value="INFO"/>
    </category>
 
+   <!-- Limit the org.dcm4chee category to INFO -->
+   <category name="org.dcm4chee">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.freebxml category to INFO -->
+   <category name="org.freebxml">
+      <priority value="INFO"/>
+   </category>
+
    <!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
    <category name="org.apache">
       <priority value="INFO"/>
