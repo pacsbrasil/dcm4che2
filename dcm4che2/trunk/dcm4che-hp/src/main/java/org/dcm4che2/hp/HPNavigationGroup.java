@@ -113,7 +113,7 @@ public class HPNavigationGroup {
     }
 
     public final void setNavigationDisplaySet(HPDisplaySet displaySet) {
-        if (displaySet != null) {
+        if (displaySet == null) {
             dcmobj.remove(Tag.NavigationDisplaySet);
         } else {
             int dsn = displaySet.getDisplaySetNumber();
