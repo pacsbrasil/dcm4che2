@@ -138,6 +138,8 @@ public class ForwardService2 extends ServiceMBeanSupport {
             ds.putAll(stored.getSeriesAttrs());
             final Calendar cal = Calendar.getInstance();
             try {
+                log.debug("Forward2 transform input:");
+                log.debug(ds);
                 xslt(cal, ds, tpl, new DefaultHandler(){
 
                     public void startElement(String uri, String localName,
