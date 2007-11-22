@@ -219,7 +219,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             URLConnection con = url.openConnection();
             DataInputStream in = new DataInputStream(con.getInputStream());
             try {
-                int len = (int) con.getContentLength();
+                int len = con.getContentLength();
                 byte[] data = new byte[(len + 1) & ~1];
                 in.readFully(data, 0, len);
                 return data;

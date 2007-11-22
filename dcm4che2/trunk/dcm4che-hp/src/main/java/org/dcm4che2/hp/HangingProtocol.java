@@ -756,11 +756,11 @@ public class HangingProtocol {
     }
 
     public static String[] getSupportedHPSelectorCategories() {
-        return (String[]) getSupportedHPCategories(HPSelectorSpi.class);
+        return getSupportedHPCategories(HPSelectorSpi.class);
     }
 
     public static String[] getSupportedHPComparatorCategories() {
-        return (String[]) getSupportedHPCategories(HPComparatorSpi.class);
+        return getSupportedHPCategories(HPComparatorSpi.class);
     }
 
     private static String[] getSupportedHPCategories(Class serviceClass) {

@@ -202,7 +202,7 @@ public class Dcm2Jpg {
         Dcm2Jpg dcm2jpg = new Dcm2Jpg();
         if (cl.hasOption("p")) {
             dcm2jpg.setPresentationState(loadDicomObject(
-                    new File((String) cl.getOptionValue("p"))));
+                    new File(cl.getOptionValue("p"))));
         }
         if (cl.hasOption("pv2gray")) {
             dcm2jpg.setPValue2Gray(loadPVal2Gray(

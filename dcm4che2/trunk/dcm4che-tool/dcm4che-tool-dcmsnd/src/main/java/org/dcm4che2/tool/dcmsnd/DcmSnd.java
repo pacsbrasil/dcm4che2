@@ -569,7 +569,7 @@ public class DcmSnd extends StorageCommitmentService {
             dcmsnd.setRemotePort(toPort(hostPort[1]));
         }
         if (cl.hasOption("L")) {
-            String localAE = (String) cl.getOptionValue("L");
+            String localAE = cl.getOptionValue("L");
             String[] localPort = split(localAE, ':');
             if (localPort[1] != null) {
                 dcmsnd.setLocalPort(toPort(localPort[1]));                
@@ -583,10 +583,10 @@ public class DcmSnd extends StorageCommitmentService {
         dcmsnd.setOfferDefaultTransferSyntaxInSeparatePresentationContext(
                 cl.hasOption("ts1"));
         if (cl.hasOption("username")) {
-            String username = (String) cl.getOptionValue("username");
+            String username = cl.getOptionValue("username");
             UserIdentity userId;
             if (cl.hasOption("passcode")) {
-                String passcode = (String) cl.getOptionValue("passcode");
+                String passcode = cl.getOptionValue("passcode");
                 userId = new UserIdentity.UsernamePasscode(username,
                         passcode.toCharArray());
             } else {
@@ -664,7 +664,7 @@ public class DcmSnd extends StorageCommitmentService {
                 + ((t2 - t1) / dcmsnd.getNumberOfFilesToSend()) + "ms/file)");
         dcmsnd.configureTransferCapability();
         if (cl.hasOption("tls")) {
-            String cipher = (String) cl.getOptionValue("tls");
+            String cipher = cl.getOptionValue("tls");
             if ("NULL".equalsIgnoreCase(cipher)) {
                 dcmsnd.setTlsWithoutEncyrption();
             } else if ("3DES".equalsIgnoreCase(cipher)) {
@@ -680,22 +680,22 @@ public class DcmSnd extends StorageCommitmentService {
             dcmsnd.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
 
             if (cl.hasOption("keystore")) {
-                dcmsnd.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+                dcmsnd.setKeyStoreURL(cl.getOptionValue("keystore"));
             }
             if (cl.hasOption("keystorepw")) {
                 dcmsnd.setKeyStorePassword(
-                        (String) cl.getOptionValue("keystorepw"));
+                        cl.getOptionValue("keystorepw"));
             }
             if (cl.hasOption("keypw")) {
-                dcmsnd.setKeyPassword((String) cl.getOptionValue("keypw"));
+                dcmsnd.setKeyPassword(cl.getOptionValue("keypw"));
             }
             if (cl.hasOption("truststore")) {
                 dcmsnd.setTrustStoreURL(
-                        (String) cl.getOptionValue("truststore"));
+                        cl.getOptionValue("truststore"));
             }
             if (cl.hasOption("truststorepw")) {
                 dcmsnd.setTrustStorePassword(
-                        (String) cl.getOptionValue("truststorepw"));
+                        cl.getOptionValue("truststorepw"));
             }
             try {
                 dcmsnd.initTLS();

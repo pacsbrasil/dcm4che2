@@ -754,7 +754,7 @@ public class HPSelectorFactory {
         Str(int tag, String privateCreator, int valueNumber, int valueTag,
                 String usageFlag, FilterOp filterOp, VR vr, String[] values) {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (String[]) values.clone();
+            this.params = values.clone();
             item.putStrings(valueTag, vr, values);
         }
 
@@ -821,7 +821,7 @@ public class HPSelectorFactory {
         Int(int tag, String privateCreator, int valueNumber, int valueTag,
                 String usageFlag, FilterOp filterOp, VR vr, int[] values) {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (int[]) values.clone();
+            this.params = values.clone();
             item.putInts(valueTag, vr, values);
         }
 
@@ -917,7 +917,7 @@ public class HPSelectorFactory {
         Flt(int tag, String privateCreator, int valueNumber, int valueTag,
                 String usageFlag, FilterOp filterOp, VR vr, float[] values) {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (float[]) values.clone();
+            this.params = values.clone();
             item.putFloats(valueTag, vr, values);
         }
 
@@ -958,7 +958,7 @@ public class HPSelectorFactory {
         Dbl(int tag, String privateCreator, int valueNumber, int valueTag,
                 String usageFlag, FilterOp filterOp, VR vr, double[] values) {
             super(tag, privateCreator, valueNumber, usageFlag, filterOp, vr);
-            this.params = (double[]) values.clone();
+            this.params = values.clone();
             item.putDoubles(valueTag, vr, values);
         }
 

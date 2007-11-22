@@ -82,7 +82,7 @@ public class ImagePlaneSelector extends AbstractHPSelector
 
     public ImagePlaneSelector(ImagePlane[] imagePlanes)
     {
-        this.imagePlanes = (ImagePlane[]) imagePlanes.clone();
+        this.imagePlanes = imagePlanes.clone();
         this.filterOp = new BasicDicomObject();
         filterOp.putString(Tag.FilterbyCategory, VR.CS, "IMAGE_PLANE");
         filterOp.putString(Tag.SelectorAttributeVR, VR.CS, "CS");

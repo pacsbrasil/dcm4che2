@@ -641,7 +641,7 @@ public class DcmQR {
             dcmqr.setRemotePort(toPort(hostPort[1]));
         }
         if (cl.hasOption("L")) {
-            String localAE = (String) cl.getOptionValue("L");
+            String localAE = cl.getOptionValue("L");
             String[] callingAETHost = split(localAE, '@');
             dcmqr.setCalling(callingAETHost[0]);
             if (callingAETHost[1] != null) {
@@ -649,10 +649,10 @@ public class DcmQR {
             }
         }
         if (cl.hasOption("username")) {
-            String username = (String) cl.getOptionValue("username");
+            String username = cl.getOptionValue("username");
             UserIdentity userId;
             if (cl.hasOption("passcode")) {
-                String passcode = (String) cl.getOptionValue("passcode");
+                String passcode = cl.getOptionValue("passcode");
                 userId = new UserIdentity.UsernamePasscode(username,
                         passcode.toCharArray());
             } else {
@@ -714,7 +714,7 @@ public class DcmQR {
         if (cl.hasOption("highprior"))
             dcmqr.setPriority(CommandUtils.HIGH);
         if (cl.hasOption("dest"))
-            dcmqr.setMoveDest((String) cl.getOptionValue("dest"));
+            dcmqr.setMoveDest(cl.getOptionValue("dest"));
         if (cl.hasOption("evalRetrieveAET"))
             dcmqr.setEvalRetrieveAET(true);
         if (cl.hasOption("P"))
@@ -760,7 +760,7 @@ public class DcmQR {
         
 
         if (cl.hasOption("tls")) {
-            String cipher = (String) cl.getOptionValue("tls");
+            String cipher = cl.getOptionValue("tls");
             if ("NULL".equalsIgnoreCase(cipher)) {
                 dcmqr.setTlsWithoutEncyrption();
             } else if ("3DES".equalsIgnoreCase(cipher)) {
@@ -771,22 +771,22 @@ public class DcmQR {
                 exit("Invalid parameter for option -tls: " + cipher);
             }
             if (cl.hasOption("keystore")) {
-                dcmqr.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+                dcmqr.setKeyStoreURL(cl.getOptionValue("keystore"));
             }
             if (cl.hasOption("keystorepw")) {
                 dcmqr.setKeyStorePassword(
-                        (String) cl.getOptionValue("keystorepw"));
+                        cl.getOptionValue("keystorepw"));
             }
             if (cl.hasOption("keypw")) {
-                dcmqr.setKeyPassword((String) cl.getOptionValue("keypw"));
+                dcmqr.setKeyPassword(cl.getOptionValue("keypw"));
             }
             if (cl.hasOption("truststore")) {
                 dcmqr.setTrustStoreURL(
-                        (String) cl.getOptionValue("truststore"));
+                        cl.getOptionValue("truststore"));
             }
             if (cl.hasOption("truststorepw")) {
                 dcmqr.setTrustStorePassword(
-                        (String) cl.getOptionValue("truststorepw"));
+                        cl.getOptionValue("truststorepw"));
             }
             long t1 = System.currentTimeMillis();
             try {

@@ -52,12 +52,12 @@ public abstract class HPCategorySpi
 
     protected HPCategorySpi(String[] categories)
     {
-        this.categories = (String[]) categories.clone();
+        this.categories = categories.clone();
     }
 
     public final String[] getCategories()
     {
-        return (String[]) categories.clone();
+        return categories.clone();
     }
 
     public boolean containsCategory(String category)

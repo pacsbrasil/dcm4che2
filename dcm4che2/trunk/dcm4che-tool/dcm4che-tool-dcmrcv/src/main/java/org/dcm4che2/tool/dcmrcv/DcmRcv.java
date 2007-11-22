@@ -554,7 +554,7 @@ public class DcmRcv extends StorageService {
                     "illegal argument of option -async", 0, 0xffff));
         dcmrcv.initTransferCapability();
         if (cl.hasOption("tls")) {
-            String cipher = (String) cl.getOptionValue("tls");
+            String cipher = cl.getOptionValue("tls");
             if ("NULL".equalsIgnoreCase(cipher)) {
                 dcmrcv.setTlsWithoutEncyrption();
             } else if ("3DES".equalsIgnoreCase(cipher)) {
@@ -570,22 +570,22 @@ public class DcmRcv extends StorageService {
             dcmrcv.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
 
             if (cl.hasOption("keystore")) {
-                dcmrcv.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+                dcmrcv.setKeyStoreURL(cl.getOptionValue("keystore"));
             }
             if (cl.hasOption("keystorepw")) {
                 dcmrcv.setKeyStorePassword(
-                        (String) cl.getOptionValue("keystorepw"));
+                        cl.getOptionValue("keystorepw"));
             }
             if (cl.hasOption("keypw")) {
-                dcmrcv.setKeyPassword((String) cl.getOptionValue("keypw"));
+                dcmrcv.setKeyPassword(cl.getOptionValue("keypw"));
             }
             if (cl.hasOption("truststore")) {
                 dcmrcv.setTrustStoreURL(
-                        (String) cl.getOptionValue("truststore"));
+                        cl.getOptionValue("truststore"));
             }
             if (cl.hasOption("truststorepw")) {
                 dcmrcv.setTrustStorePassword(
-                        (String) cl.getOptionValue("truststorepw"));
+                        cl.getOptionValue("truststorepw"));
             }
             try {
                 dcmrcv.initTLS();

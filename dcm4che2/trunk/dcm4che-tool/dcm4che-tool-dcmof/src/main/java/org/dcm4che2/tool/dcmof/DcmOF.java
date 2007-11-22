@@ -552,7 +552,7 @@ public class DcmOF {
         dcmof.setTransferCapability((TransferCapability[]) tc
                 .toArray(new TransferCapability[tc.size()]));
         if (cl.hasOption("tls")) {
-            String cipher = (String) cl.getOptionValue("tls");
+            String cipher = cl.getOptionValue("tls");
             if ("NULL".equalsIgnoreCase(cipher)) {
                 dcmof.setTlsWithoutEncyrption();
             } else if ("3DES".equalsIgnoreCase(cipher)) {
@@ -568,22 +568,22 @@ public class DcmOF {
             dcmof.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
 
             if (cl.hasOption("keystore")) {
-                dcmof.setKeyStoreURL((String) cl.getOptionValue("keystore"));
+                dcmof.setKeyStoreURL(cl.getOptionValue("keystore"));
             }
             if (cl.hasOption("keystorepw")) {
                 dcmof.setKeyStorePassword(
-                        (String) cl.getOptionValue("keystorepw"));
+                        cl.getOptionValue("keystorepw"));
             }
             if (cl.hasOption("keypw")) {
-                dcmof.setKeyPassword((String) cl.getOptionValue("keypw"));
+                dcmof.setKeyPassword(cl.getOptionValue("keypw"));
             }
             if (cl.hasOption("truststore")) {
                 dcmof.setTrustStoreURL(
-                        (String) cl.getOptionValue("truststore"));
+                        cl.getOptionValue("truststore"));
             }
             if (cl.hasOption("truststorepw")) {
                 dcmof.setTrustStorePassword(
-                        (String) cl.getOptionValue("truststorepw"));
+                        cl.getOptionValue("truststorepw"));
             }
             try {
                 dcmof.initTLS();
