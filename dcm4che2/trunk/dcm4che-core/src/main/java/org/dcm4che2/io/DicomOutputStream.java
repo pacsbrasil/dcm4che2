@@ -300,6 +300,7 @@ public class DicomOutputStream extends FilterOutputStream {
         int sqi = -1;
         while (itr.hasNext()) {
             DicomElement a = (DicomElement) itr.next();
+            assert itemInfo != null;
             if (groupLength1) {
                 int gggg = a.tag() & 0xffff0000;
                 if (gggg != gggg0) {
