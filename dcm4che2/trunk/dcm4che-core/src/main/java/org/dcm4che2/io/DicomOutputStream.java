@@ -300,11 +300,11 @@ public class DicomOutputStream extends FilterOutputStream {
         int sqi = -1;
         while (itr.hasNext()) {
             DicomElement a = (DicomElement) itr.next();
-            assert itemInfo != null;
             if (groupLength1) {
                 int gggg = a.tag() & 0xffff0000;
                 if (gggg != gggg0) {
                     gggg0 = gggg;
+                    assert itemInfo != null;
                     writeGroupLength(gggg, itemInfo.grlen[++gri]);
                 }
             }
@@ -312,6 +312,7 @@ public class DicomOutputStream extends FilterOutputStream {
             int len = a.length();
             if (vr == VR.SQ) {
                 if (len == -1 && explicitSequenceLength) {
+                	assert itemInfo != null;
                     len = itemInfo.sqlen[++sqi];
                 }
                 else if (len == 0 && !explicitSequenceLengthIfZero) {
