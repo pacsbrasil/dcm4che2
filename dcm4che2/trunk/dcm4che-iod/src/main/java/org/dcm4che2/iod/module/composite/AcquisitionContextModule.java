@@ -42,8 +42,6 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 
-;
-
 /**
  * Table C.7.6.14-1 specifies Attributes for description of the conditions
  * present during data acquisition.
