@@ -538,6 +538,7 @@ public class DcmSnd extends StorageCommitmentService {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmsnd: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmSnd.class.getPackage();

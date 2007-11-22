@@ -121,6 +121,7 @@ public class Rgb2Ybr implements DicomInputHandler  {
             cl = new PosixParser().parse(opts, args);
         } catch (ParseException e) {
             exit("rgb2ybr: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Rgb2Ybr.class.getPackage();

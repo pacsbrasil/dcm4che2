@@ -418,6 +418,7 @@ public class Jpg2Dcm {
             cl = new PosixParser().parse(opts, args);
         } catch (ParseException e) {
             exit("jpg2dcm: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Jpg2Dcm.class.getPackage();

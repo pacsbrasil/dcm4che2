@@ -94,6 +94,7 @@ public class Dcm2Txt implements DicomInputHandler {
             cl = new PosixParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcm2txt: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Dcm2Txt.class.getPackage();

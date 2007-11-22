@@ -239,6 +239,7 @@ public class Pdf2Dcm {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("pdf2dcm: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Pdf2Dcm.class.getPackage();

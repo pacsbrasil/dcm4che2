@@ -144,6 +144,7 @@ public class Xml2Dcm {
             cl = new PosixParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcm2xml: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Xml2Dcm.class.getPackage();

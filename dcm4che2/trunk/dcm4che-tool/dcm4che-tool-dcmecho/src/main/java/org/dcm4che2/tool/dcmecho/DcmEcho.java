@@ -344,6 +344,7 @@ public class DcmEcho {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmecho: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmEcho.class.getPackage();

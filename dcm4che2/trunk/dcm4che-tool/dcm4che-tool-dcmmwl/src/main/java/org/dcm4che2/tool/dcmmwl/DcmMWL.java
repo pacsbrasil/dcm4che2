@@ -717,6 +717,7 @@ public class DcmMWL {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmmwl: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmMWL.class.getPackage();

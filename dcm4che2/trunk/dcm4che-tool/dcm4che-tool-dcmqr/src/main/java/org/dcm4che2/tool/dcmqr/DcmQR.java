@@ -609,6 +609,7 @@ public class DcmQR {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmqr: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmQR.class.getPackage();

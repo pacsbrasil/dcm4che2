@@ -401,6 +401,7 @@ public class DcmDir {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmdir: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmDir.class.getPackage();

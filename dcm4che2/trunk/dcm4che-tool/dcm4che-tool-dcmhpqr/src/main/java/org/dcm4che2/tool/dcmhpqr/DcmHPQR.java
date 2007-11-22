@@ -871,6 +871,7 @@ public class DcmHPQR {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmhp: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmHPQR.class.getPackage();

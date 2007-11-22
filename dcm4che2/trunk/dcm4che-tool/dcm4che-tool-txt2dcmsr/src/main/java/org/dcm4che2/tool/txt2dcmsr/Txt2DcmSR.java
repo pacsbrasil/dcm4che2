@@ -279,6 +279,7 @@ public class Txt2DcmSR {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("txt2dcmsr: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Txt2DcmSR.class.getPackage();

@@ -244,29 +244,25 @@ public class DcmWado {
         opts.addOption("V", "version", false,
                 "print the version information and exit");
         CommandLine cl = null;
-        try
-        {
-            cl = new GnuParser().parse(opts, args);
-        } catch (MissingOptionException e)
-        {
-            exit("dcmwado: Missing required option " + e.getMessage());
-        }
-        catch (ParseException e)
-        {
-            exit("dcmwado: " +  e.getMessage());
-        }
-        if (cl.hasOption('V'))
-        {
-            Package p = DcmWado.class.getPackage();
-            System.out.println("dcmwado v" + p.getImplementationVersion());
-            System.exit(0);
-        }
-        if (cl.hasOption('h'))
-        {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
-            System.exit(0);
-        }
+        try {
+			cl = new GnuParser().parse(opts, args);
+		} catch (MissingOptionException e) {
+			exit("dcmwado: Missing required option " + e.getMessage());
+			throw new RuntimeException("unreachable");
+		} catch (ParseException e) {
+			exit("dcmwado: " + e.getMessage());
+			throw new RuntimeException("unreachable");
+		}
+        if (cl.hasOption('V')) {
+			Package p = DcmWado.class.getPackage();
+			System.out.println("dcmwado v" + p.getImplementationVersion());
+			System.exit(0);
+		}
+		if (cl.hasOption('h')) {
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
+			System.exit(0);
+		}
         int narg = cl.getArgList().size();
         if (narg == 0)
             exit("Missing url of WADO server");

@@ -337,6 +337,7 @@ public class Dcm2Jpg {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcm2jpg: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = Dcm2Jpg.class.getPackage();
