@@ -176,48 +176,48 @@ class DicomServiceRegistry
         return (CStoreSCP) getFrom(cstoreSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
-    private CGetSCP getCGetSCP(Association as, DicomObject cmd)
+    private CGetSCP getCGetSCP(DicomObject cmd)
             throws DicomServiceException {
         return (CGetSCP) getFrom(cgetSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
-    private CFindSCP getCFindSCP(Association as, DicomObject cmd)
+    private CFindSCP getCFindSCP(DicomObject cmd)
             throws DicomServiceException {
         return (CFindSCP) getFrom(cfindSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
-    private CMoveSCP getCMoveSCP(Association as, DicomObject cmd)
+    private CMoveSCP getCMoveSCP(DicomObject cmd)
             throws DicomServiceException {
         return (CMoveSCP) getFrom(cmoveSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
-    private CEchoSCP getCEchoSCP(Association as, DicomObject cmd)
+    private CEchoSCP getCEchoSCP(DicomObject cmd)
             throws DicomServiceException {
         return (CEchoSCP) getFrom(cechoSCP, cmd, Tag.AffectedSOPClassUID);
     }
 
-    private NEventReportSCU getNEventReportSCU(Association as, DicomObject cmd)
+    private NEventReportSCU getNEventReportSCU(DicomObject cmd)
             throws DicomServiceException {
         return (NEventReportSCU) getFrom(neventReportSCU, cmd, Tag.AffectedSOPClassUID);
 
     }
 
-    private NGetSCP getNGetSCP(Association as, DicomObject cmd)
+    private NGetSCP getNGetSCP(DicomObject cmd)
             throws DicomServiceException {
         return (NGetSCP) getFrom(ngetSCP, cmd, Tag.RequestedSOPClassUID);
     }
 
-    private NSetSCP getNSetSCP(Association as, DicomObject cmd)
+    private NSetSCP getNSetSCP(DicomObject cmd)
             throws DicomServiceException {
         return (NSetSCP) getFrom(nsetSCP, cmd, Tag.RequestedSOPClassUID);
     }
 
-    private NActionSCP getNActionSCP(Association as, DicomObject cmd)
+    private NActionSCP getNActionSCP(DicomObject cmd)
             throws DicomServiceException {
         return (NActionSCP) getFrom(nactionSCP, cmd, Tag.RequestedSOPClassUID);
     }
 
-    private NCreateSCP getNCreateSCP(Association as, DicomObject cmd)
+    private NCreateSCP getNCreateSCP(DicomObject cmd)
             throws DicomServiceException {
         return (NCreateSCP) getFrom(ncreateSCP, cmd, Tag.AffectedSOPClassUID);
     }
@@ -245,32 +245,32 @@ class DicomServiceRegistry
                 }
                 switch (cmdfield) {
                 case CommandUtils.C_GET_RQ:
-                    getCGetSCP(as, cmd).cget(as, pcid, cmd, dataset);
+                    getCGetSCP(cmd).cget(as, pcid, cmd, dataset);
                     break;
                 case CommandUtils.C_FIND_RQ:
-                    getCFindSCP(as, cmd).cfind(as, pcid, cmd, dataset);
+                    getCFindSCP(cmd).cfind(as, pcid, cmd, dataset);
                     break;
                 case CommandUtils.C_MOVE_RQ:
-                    getCMoveSCP(as, cmd).cmove(as, pcid, cmd, dataset);
+                    getCMoveSCP(cmd).cmove(as, pcid, cmd, dataset);
                     break;
                 case CommandUtils.C_ECHO_RQ:
-                    getCEchoSCP(as, cmd).cecho(as, pcid, cmd);
+                    getCEchoSCP(cmd).cecho(as, pcid, cmd);
                     break;
                 case CommandUtils.N_EVENT_REPORT_RQ:
-                    getNEventReportSCU(as, cmd).neventReport(as, pcid, cmd,
+                    getNEventReportSCU(cmd).neventReport(as, pcid, cmd,
                             dataset);
                     break;
                 case CommandUtils.N_GET_RQ:
-                    getNGetSCP(as, cmd).nget(as, pcid, cmd, dataset);
+                    getNGetSCP(cmd).nget(as, pcid, cmd, dataset);
                     break;
                 case CommandUtils.N_SET_RQ:
-                    getNSetSCP(as, cmd).nset(as, pcid, cmd, dataset);
+                    getNSetSCP(cmd).nset(as, pcid, cmd, dataset);
                     break;
                 case CommandUtils.N_ACTION_RQ:
-                    getNActionSCP(as, cmd).naction(as, pcid, cmd, dataset);
+                    getNActionSCP(cmd).naction(as, pcid, cmd, dataset);
                     break;
                 case CommandUtils.N_CREATE_RQ:
-                    getNCreateSCP(as, cmd).ncreate(as, pcid, cmd,
+                    getNCreateSCP(cmd).ncreate(as, pcid, cmd,
                             dataStream != null ? dataset : null);
                     break;
                 case CommandUtils.N_DELETE_RQ:
