@@ -42,7 +42,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.imageio.IIOException;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
@@ -130,8 +129,7 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
     }
 
     @Override
-    public ImageReader createReaderInstance(Object extension)
-            throws IIOException {
+    public ImageReader createReaderInstance(Object extension) {
         return new DicomImageReader(this);
     }
 }
