@@ -310,15 +310,15 @@ public class DicomImageReader extends ImageReader {
         if (samples == 1) {
             return new PixelInterleavedSampleModel(dataType, width, height, 1,
                     width, OFFSETS_0);
-        } else { // samples == 3
-            if (banded) {
-                return new BandedSampleModel(dataType, width, height, width,
-                        OFFSETS_0_1_2, OFFSETS_0_0_0);
-            } else {
-                return new PixelInterleavedSampleModel(dataType, width, height,
-                        3, width * 3, OFFSETS_0_1_2);
-            }
         }
+
+        // samples == 3
+        if (banded) {
+            return new BandedSampleModel(dataType, width, height, width,
+                    OFFSETS_0_1_2, OFFSETS_0_0_0);
+        }
+        return new PixelInterleavedSampleModel(dataType, width, height, 3,
+                width * 3, OFFSETS_0_1_2);
     }
 
     public int getHeight(int imageIndex) throws IOException {
@@ -359,9 +359,8 @@ public class DicomImageReader extends ImageReader {
             ImageReadParam param1 = reader.getDefaultReadParam();
             copyReadParam(param, param1);
             return decompressRaster(imageIndex, param1);
-        } else {
-            return reader.readRaster(imageIndex, param);
         }
+        return reader.readRaster(imageIndex, param);
     }
 
     /**
@@ -447,9 +446,8 @@ public class DicomImageReader extends ImageReader {
             return new SegmentedImageInputStream(iis,
                     new long[] { item.startPos },
                     new int[] { item.length });
-        } else {
-            return new SegmentedImageInputStream(iis, itemParser);
         }
+        return new SegmentedImageInputStream(iis, itemParser);
     }
 
     private void postDecompress() {

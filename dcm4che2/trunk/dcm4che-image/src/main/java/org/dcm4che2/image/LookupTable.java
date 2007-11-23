@@ -347,27 +347,26 @@ public abstract class LookupTable {
                 }               
             }
             return new ByteLookupTable(inBits, signed, off, outBits, data);
-        } else {
-            short[] data = new short[size];
-            if (pval2out == null) {
-                for (int i = 0; i < size; i++) {
-                    data[i] = (short) (m * i + b);
-                }
-                if (iMax + off == in2) {
-                    data[iMax] = (short) out2;
-                }
-            } else {
-                for (int i = 0; i < size; i++) {
-                    data[i] = (short) ((pval2out[(int) (m * i + b)] & 0xffff)
-                            >>> pval2outShift);
-                }
-                if (iMax + off == in2) {
-                    data[iMax] = (short) ((pval2out[out2] & 0xffff)
-                            >>> pval2outShift);
-                }               
-            }
-            return new ShortLookupTable(inBits, signed, off, outBits, data);
         }
+        short[] data = new short[size];
+        if (pval2out == null) {
+            for (int i = 0; i < size; i++) {
+                data[i] = (short) (m * i + b);
+            }
+            if (iMax + off == in2) {
+                data[iMax] = (short) out2;
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                data[i] = (short) ((pval2out[(int) (m * i + b)] & 0xffff)
+                        >>> pval2outShift);
+            }
+            if (iMax + off == in2) {
+                data[iMax] = (short) ((pval2out[out2] & 0xffff)
+                        >>> pval2outShift);
+            }               
+        }
+        return new ShortLookupTable(inBits, signed, off, outBits, data);
     }
 
     private static LookupTable createSigmoidLut(int inBits, boolean signed,
@@ -394,20 +393,19 @@ public abstract class LookupTable {
                 data[i] = (byte) tmp;
             }
             return new ByteLookupTable(inBits, signed, off, outBits, data);
-        } else {
-            short[] data = new short[size];
-            for (int i = 0; i < size; i++) {
-                int tmp = (int) (outRange / (1 + Math.exp((i - ic) * k)));
-                if (inverse) {
-                    tmp = outMax - tmp;
-                }
-                if (pval2out != null) {
-                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
-                }
-                data[i] = (short) tmp;
-            }
-            return new ShortLookupTable(inBits, signed, off, outBits, data);
         }
+        short[] data = new short[size];
+        for (int i = 0; i < size; i++) {
+            int tmp = (int) (outRange / (1 + Math.exp((i - ic) * k)));
+            if (inverse) {
+                tmp = outMax - tmp;
+            }
+            if (pval2out != null) {
+                tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+            }
+            data[i] = (short) tmp;
+        }
+        return new ShortLookupTable(inBits, signed, off, outBits, data);
     }
     
     /**
@@ -540,18 +538,17 @@ public abstract class LookupTable {
             LookupTable lut = createLut(inBits, signed, voiLut);
             lut.off -= intercept;
             return lut;
-        } else {
-            LookupTable vlut = createLut(32, true, voiLut);
-            float in1 = (vlut.off - intercept) / slope;
-            float in2 = in1 + vlut.length() / slope;
-            int off = (int) Math.floor(Math.min(in1, in2));
-            int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
-            short[] data = new short[len];
-            for (int i = 0; i < data.length; i++) {
-                data[i] = vlut.lookupShort(Math.round(i * slope + intercept));
-            }
-            return new ShortLookupTable(inBits, signed, off, vlut.outBits, data);
         }
+        LookupTable vlut = createLut(32, true, voiLut);
+        float in1 = (vlut.off - intercept) / slope;
+        float in2 = in1 + vlut.length() / slope;
+        int off = (int) Math.floor(Math.min(in1, in2));
+        int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
+        short[] data = new short[len];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = vlut.lookupShort(Math.round(i * slope + intercept));
+        }
+        return new ShortLookupTable(inBits, signed, off, vlut.outBits, data);
     }
 
     /**
@@ -714,11 +711,10 @@ public abstract class LookupTable {
         LookupTable plut = createLut(0, false, pLut);
         if (width == 0) {
             return mlut.combine(plut, outBits, inverse, pval2out);
-        } else {
-            LookupTable vlut = createLut(mlut.outBits, false, plut.inBits, 1,
-                    0, center, width, vlutFct, false, null);
-            return mlut.combine(vlut, plut, outBits, inverse, pval2out);
         }
+        LookupTable vlut = createLut(mlut.outBits, false, plut.inBits, 1,
+                0, center, width, vlutFct, false, null);
+        return mlut.combine(vlut, plut, outBits, inverse, pval2out);
     }
 
     /**
@@ -822,10 +818,9 @@ public abstract class LookupTable {
         if (tableMLut != null) {
             return createLut(stored, signed, outBits, tableMLut, center, width,
                     vlutFct, inverse, pval2out);
-        } else {
-            return createLut(stored, signed, outBits, slope, intercept,
-                    center, width, vlutFct, inverse, pval2out);
         }
+        return createLut(stored, signed, outBits, slope, intercept,
+                center, width, vlutFct, inverse, pval2out);
     }
 
     private static boolean isInverse(DicomObject img) {
@@ -865,10 +860,9 @@ public abstract class LookupTable {
         if (tableMLut != null) {
             return createLut(stored, signed, outBits, tableMLut, voiLut, inverse,
                     pval2out);
-        } else {
-            return createLut(stored, signed, outBits, slope, intercept, voiLut,
-                    inverse, pval2out);
         }
+        return createLut(stored, signed, outBits, slope, intercept, voiLut,
+                inverse, pval2out);
     }
 
     /**
@@ -945,39 +939,32 @@ public abstract class LookupTable {
                     return LookupTable.createLut(stored, signed, outBits,
                             slope, intercept, center, width, vlutFct, inverse,
                             pval2out);
-                } else {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, center, width, vlutFct, pLut,
-                            false, pval2out);
                 }
-            } else {
-                if (pLut == null) {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, voiLut, inverse, pval2out);
-                } else {
-                    return LookupTable.createLut(stored, signed, outBits,
-                            slope, intercept, voiLut, pLut, false, pval2out);
-                }
+                return LookupTable.createLut(stored, signed, outBits,
+                        slope, intercept, center, width, vlutFct, pLut,
+                        false, pval2out);
             }
-        } else {
-            if (voiLut == null) {
-                if (pLut == null) {
-                    return LookupTable.createLut(stored, signed, outBits, mLut,
-                            center, width, vlutFct, inverse, pval2out);
-                } else {
-                    return LookupTable.createLut(stored, signed, outBits, mLut,
-                            center, width, vlutFct, pLut, false, pval2out);
-                }
-            } else {
-                if (pLut == null) {
-                    return LookupTable.createLut(stored, signed, outBits, mLut,
-                            voiLut, inverse, pval2out);
-                } else {
-                    return LookupTable.createLut(stored, signed, outBits, mLut,
-                            voiLut, pLut, false, pval2out);
-                }
+            if (pLut == null) {
+                return LookupTable.createLut(stored, signed, outBits,
+                        slope, intercept, voiLut, inverse, pval2out);
             }
+            return LookupTable.createLut(stored, signed, outBits,
+                    slope, intercept, voiLut, pLut, false, pval2out);
         }
+        if (voiLut == null) {
+            if (pLut == null) {
+                return LookupTable.createLut(stored, signed, outBits, mLut,
+                        center, width, vlutFct, inverse, pval2out);
+            }
+            return LookupTable.createLut(stored, signed, outBits, mLut,
+                    center, width, vlutFct, pLut, false, pval2out);
+        }
+        if (pLut == null) {
+            return LookupTable.createLut(stored, signed, outBits, mLut,
+                    voiLut, inverse, pval2out);
+        }
+        return LookupTable.createLut(stored, signed, outBits, mLut,
+                voiLut, pLut, false, pval2out);
     }
 
 }

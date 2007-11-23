@@ -195,8 +195,7 @@ public class VRMap implements Serializable {
 		if ((tag & 0x00010000) != 0) { // Private Element
 			if ((tag & 0x0000ff00) == 0)
 				return VR.LO; // Private Creator
-			else
-				tag &= 0xffff00ff;
+			tag &= 0xffff00ff;
 		} else {
 			final int ggg00000 = tag & 0xffe00000;
 			if (ggg00000 == 0x50000000 || ggg00000 == 0x60000000)

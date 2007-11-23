@@ -110,17 +110,18 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
                 }
                 int len = ((b[6] & 0xff) << 8)  | (b[7] & 0xff);
                 return (b[1] == b[len + 9]);
-            } else { // little endian
-                if (b[1] != 0) { // expect group tag <= 00FF
-                    return false;
-                }
-                int len = (b[6] & 0xff) | ((b[7] & 0xff) << 8);
-                if (b[0] == b[len + 8]) {
-                    return true;
-                }
-                len = (b[4] & 0xff) | ((b[5] & 0xff) << 8);
-                return (b[0] == b[len + 8]);
             }
+            
+            // little endian
+            if (b[1] != 0) { // expect group tag <= 00FF
+                return false;
+            }
+            int len = (b[6] & 0xff) | ((b[7] & 0xff) << 8);
+            if (b[0] == b[len + 8]) {
+                return true;
+            }
+            len = (b[4] & 0xff) | ((b[5] & 0xff) << 8);
+            return (b[0] == b[len + 8]);
         } catch (IndexOutOfBoundsException e) {
             return false;
         }

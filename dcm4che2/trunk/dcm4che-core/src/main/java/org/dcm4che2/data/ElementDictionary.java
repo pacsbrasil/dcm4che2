@@ -216,8 +216,7 @@ public class ElementDictionary implements Serializable {
 		if ((tag & 0x00010000) != 0) { // Private Element
 			if ((tag & 0x0000ff00) == 0)
 				return PRIVATE_CREATOR;
-			else
-				tag &= 0xffff00ff;
+			tag &= 0xffff00ff;
 		} else if ((tag & 0xffffff00) == 0x00203100)
 			tag &= 0xffffff00; // (0020,31xx) Source Image Ids
 		else {

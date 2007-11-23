@@ -254,13 +254,12 @@ public class IntHashtable {
 			int hash = keyList[i];
 			if (hash == key) {
 				return i;
-			} else {
-				if (values[i] == null) {
-					if (hash == 0) {
-						return firstDeleted >= 0 ? firstDeleted : i;
-					} else if (firstDeleted < 0) {
-						firstDeleted = i;
-					}
+			}
+			if (values[i] == null) {
+				if (hash == 0) {
+					return firstDeleted >= 0 ? firstDeleted : i;
+				} else if (firstDeleted < 0) {
+					firstDeleted = i;
 				}
 			}
 			if (d == 0) {
