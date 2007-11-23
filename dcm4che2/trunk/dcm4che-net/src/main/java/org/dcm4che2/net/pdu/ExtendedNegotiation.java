@@ -54,7 +54,7 @@ public class ExtendedNegotiation
 
     public ExtendedNegotiation(String cuid, byte[] info) {
         this.cuid = cuid;
-        this.info = (byte[]) info.clone();
+        this.info = info.clone();
     }
 
     public final String getSOPClassUID()
@@ -72,12 +72,12 @@ public class ExtendedNegotiation
 
     public final byte[] getInformation()
     {
-        return (byte[]) info.clone();
+        return info.clone();
     }
 
     public final void setInformation(byte[] info)
     {
-        this.info = (byte[]) info.clone();
+        this.info = info.clone();
     }
 
     public int length()

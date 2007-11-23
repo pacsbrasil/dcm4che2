@@ -104,15 +104,15 @@ public class NetworkApplicationEntity {
     private int dimseRspTimeout = 60000;
     private int moveRspTimeout = 600000;
     private int idleTimeout = 60000;
-    private List reuseAssocationToAETitle = Collections.EMPTY_LIST;
-    private List reuseAssocationFromAETitle = Collections.EMPTY_LIST;
+    private List<String> reuseAssocationToAETitle = Collections.emptyList();
+    private List<String> reuseAssocationFromAETitle = Collections.emptyList();
     private NetworkConnection[] networkConnection = {};
     private TransferCapability[] transferCapability = {};
     private boolean offerDefaultTSInSeparatePC;
     private UserIdentity userIdentity;
     private Device device;
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-    private final List pool = new ArrayList();
+    private final List<Association> pool = new ArrayList<Association>();
 
     /**
      * Get the device that is identified by this application entity.
@@ -666,8 +666,8 @@ public class NetworkApplicationEntity {
      *         will be enabled for.
      */
     public final String[] getReuseAssocationFromAETitle() {
-        return (String[]) reuseAssocationFromAETitle.toArray(
-                new String[reuseAssocationFromAETitle.size()]);
+        return reuseAssocationFromAETitle
+                .toArray(new String[reuseAssocationFromAETitle.size()]);
     }
 
     /**
@@ -694,8 +694,8 @@ public class NetworkApplicationEntity {
      *         be enabled for.
      */
     public final String[] getReuseAssocationToAETitle() {
-        return (String[]) reuseAssocationToAETitle.toArray(
-                new String[reuseAssocationToAETitle.size()]);
+        return reuseAssocationToAETitle
+                .toArray(new String[reuseAssocationToAETitle.size()]);
     }
 
     /**
@@ -862,8 +862,8 @@ public class NetworkApplicationEntity {
                 && !(reuseAssocationToAETitle.isEmpty() 
                         && reuseAssocationFromAETitle.isEmpty())) {
             synchronized (pool) {
-                for (Iterator iter = pool.iterator(); iter.hasNext();) {
-                    Association as = (Association) iter.next();
+                for (Iterator<Association> iter = pool.iterator(); iter.hasNext();) {
+                    Association as = iter.next();
                     if (!remoteAET.equals(as.getRemoteAET()))
                         continue;
                     if (userIdentity != as.getUserIdentity()) {
@@ -913,9 +913,9 @@ public class NetworkApplicationEntity {
         aarq.setMaxOpsPerformed(
                 minZeroAsMax(maxOpsPerformed, remoteAE.maxOpsInvoked));
 
-        LinkedHashMap cuid2ts = new LinkedHashMap();
-        HashSet scu = new HashSet();
-        HashSet scp = new HashSet();
+        LinkedHashMap<String, LinkedHashSet<String>> cuid2ts = new LinkedHashMap<String, LinkedHashSet<String>>();
+        HashSet<String> scu = new HashSet<String>();
+        HashSet<String> scp = new HashSet<String>();
         evaluateTC(aarq, cuid2ts, scu, scp, remoteAE.getTransferCapability());
         if (cuid2ts.isEmpty()) {
             log.info("No common Transfer Capability between local AE "
@@ -936,8 +936,8 @@ public class NetworkApplicationEntity {
         freePc = initPCwithUncompressedLETS(aarq, cuid2ts, freePc);
         initPCwith1TS(aarq, cuid2ts, freePc);
         initPCwithRemainingTS(aarq, cuid2ts);
-        for (Iterator iter = scp.iterator(); iter.hasNext();) {
-            String cuid = (String) iter.next();
+        for (Iterator<String> iter = scp.iterator(); iter.hasNext();) {
+            String cuid = iter.next();
             aarq.addRoleSelection(new RoleSelection(cuid , scu.contains(cuid), true));
         }
         if (userIdentity != null) {
@@ -946,13 +946,15 @@ public class NetworkApplicationEntity {
         return aarq;
     }
 
-    private void evaluateTC(AAssociateRQ aarq, LinkedHashMap cuid2ts,
-            HashSet scu, HashSet scp, TransferCapability[] remoteTCs) {
+    private void evaluateTC(AAssociateRQ aarq,
+            LinkedHashMap<String, LinkedHashSet<String>> cuid2ts,
+            HashSet<String> scu, HashSet<String> scp,
+            TransferCapability[] remoteTCs) {
         for (int i = 0; i < transferCapability.length; i++) {
             TransferCapability tc = transferCapability[i];
             String cuid = tc.getSopClass();
-            LinkedHashSet ts1 = new LinkedHashSet(Arrays.asList(tc
-                    .getTransferSyntax()));
+            LinkedHashSet<String> ts1 = new LinkedHashSet<String>(Arrays
+                    .asList(tc.getTransferSyntax()));
             if (remoteTCs.length != 0) {
                 TransferCapability remoteTC = findTC(remoteTCs, cuid, tc
                         .isSCU());
@@ -964,7 +966,7 @@ public class NetworkApplicationEntity {
                     continue;
                 }
             }
-            LinkedHashSet ts = (LinkedHashSet) cuid2ts.get(cuid);
+            LinkedHashSet<String> ts = cuid2ts.get(cuid);
             if (ts == null) {
                 cuid2ts.put(cuid, ts1);
             } else {
@@ -980,7 +982,7 @@ public class NetworkApplicationEntity {
         }
     }
     
-    private int initPCwithUncompressedLETS(AAssociateRQ aarq, Map cuid2ts,
+    private int initPCwithUncompressedLETS(AAssociateRQ aarq, Map<String, LinkedHashSet<String>> cuid2ts,
             int freePc) {
          for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
                 && iter.hasNext();) {
@@ -1017,7 +1019,7 @@ public class NetworkApplicationEntity {
         return freePc;
     }
 
-    private void initPCwith1TS(AAssociateRQ aarq, Map cuid2ts, int freePc) {
+    private void initPCwith1TS(AAssociateRQ aarq, Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
         while (freePc > 0 && !cuid2ts.isEmpty()) {
             for (Iterator iter = cuid2ts.entrySet().iterator(); 
                     freePc > 0 && iter.hasNext();) {
@@ -1040,7 +1042,7 @@ public class NetworkApplicationEntity {
         }
     }
     
-    private void initPCwithRemainingTS(AAssociateRQ aarq, Map cuid2ts) {
+    private void initPCwithRemainingTS(AAssociateRQ aarq, Map<String, LinkedHashSet<String>> cuid2ts) {
         for (Iterator iter = cuid2ts.entrySet().iterator(); iter.hasNext() 
                 && aarq.getNumberOfPresentationContexts() < 128;) {
             Map.Entry e = (Entry) iter.next();

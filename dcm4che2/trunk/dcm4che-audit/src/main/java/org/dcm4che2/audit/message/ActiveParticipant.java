@@ -72,7 +72,7 @@ public class ActiveParticipant extends BaseElement {
                     + "([-\\s]\\d+)*(X\\d+)?(B\\d+)?(C.*)?");
     private static boolean encodeUserIsRequestorTrue = false;
 
-    private ArrayList roleIDCodes = new ArrayList(1);
+    private ArrayList<RoleIDCode> roleIDCodes = new ArrayList<RoleIDCode>(1);
     
     /**
      * Constructs an Active Participant with given user ID. Use 

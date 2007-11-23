@@ -84,19 +84,19 @@ public class UserIdentityRQ {
     }
 
     public final byte[] getPrimaryField() {
-        return (byte[]) primaryField.clone();
+        return primaryField.clone();
     }
 
     public final void setPrimaryField(byte[] primaryField) {
-        this.primaryField = (byte[]) primaryField.clone();
+        this.primaryField = primaryField.clone();
     }
 
     public final byte[] getSecondaryField() {
-        return (byte[]) secondaryField.clone();
+        return secondaryField.clone();
     }
 
     public final void setSecondaryField(byte[] secondaryField) {
-        this.secondaryField = (byte[]) secondaryField.clone();
+        this.secondaryField = secondaryField.clone();
     }
 
     public String getUsername() {

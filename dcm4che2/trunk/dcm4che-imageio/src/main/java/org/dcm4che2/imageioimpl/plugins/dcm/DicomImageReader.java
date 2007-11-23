@@ -302,8 +302,7 @@ public class DicomImageReader extends ImageReader {
                 createImageTypeSpecifier(), frameOffsets, imageDimensions);
         riis.setByteOrder(ds.bigEndian() ? ByteOrder.BIG_ENDIAN
                 : ByteOrder.LITTLE_ENDIAN);
-        reader = (ImageReader) ImageIO.getImageReadersByFormatName("RAW")
-                .next();
+        reader = ImageIO.getImageReadersByFormatName("RAW").next();
         reader.setInput(riis);
     }
 
@@ -345,7 +344,8 @@ public class DicomImageReader extends ImageReader {
     }
 
     @Override
-    public Iterator getImageTypes(int imageIndex) throws IOException {
+    public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
+            throws IOException {
         initImageReader();
         return reader.getImageTypes(0);
     }

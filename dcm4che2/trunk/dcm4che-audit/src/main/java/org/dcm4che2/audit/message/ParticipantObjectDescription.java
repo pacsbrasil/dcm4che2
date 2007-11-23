@@ -55,10 +55,10 @@ import java.util.List;
  */
 public class ParticipantObjectDescription extends BaseElement {
 
-    private final ArrayList mppss = new ArrayList();    
-    private final ArrayList accessions = new ArrayList();    
-    private final ArrayList sopClasses = new ArrayList();    
-    private final ArrayList studies = new ArrayList();    
+    private final ArrayList<BaseElement> mppss = new ArrayList<BaseElement>();
+    private final ArrayList<BaseElement> accessions = new ArrayList<BaseElement>();
+    private final ArrayList<BaseElement> sopClasses = new ArrayList<BaseElement>();
+    private final ArrayList<BaseElement> studies = new ArrayList<BaseElement>();    
     
     public ParticipantObjectDescription() {
         super("ParticipantObjectDescription");
@@ -84,10 +84,10 @@ public class ParticipantObjectDescription extends BaseElement {
         return this;
     }
 
-    private static ArrayList toStringList(List elements, String attrName) {
-        ArrayList list = new ArrayList(elements.size());
-        for (Iterator iter = elements.iterator(); iter.hasNext();) {
-            list.add(((BaseElement) iter.next()).getAttribute(attrName));                
+    private static ArrayList toStringList(List<BaseElement> elements, String attrName) {
+        ArrayList<BaseElement> list = new ArrayList<BaseElement>(elements.size());
+        for (Iterator<BaseElement> iter = elements.iterator(); iter.hasNext();) {
+            list.add((BaseElement) iter.next().getAttribute(attrName));                
         }
         return list;
     }        
@@ -146,7 +146,7 @@ public class ParticipantObjectDescription extends BaseElement {
 
     public static class SOPClass extends BaseElement {
 
-        private final ArrayList instances = new ArrayList();
+        private final ArrayList<BaseElement> instances = new ArrayList<BaseElement>();
 
         public SOPClass(String uid) {
             super("SOPClass", "UID", uid);

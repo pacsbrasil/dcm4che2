@@ -40,11 +40,10 @@
 
 package org.dcm4che2.net;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,20 +63,21 @@ import org.slf4j.LoggerFactory;
 public class AssociationReaper {
     private static final float MILLISECONDS = 1000f;
 
-    private static final Logger log = LoggerFactory.getLogger(AssociationReaper.class);
+    private static final Logger log = LoggerFactory
+            .getLogger(AssociationReaper.class);
 
     private static Timer timer = new Timer(true);
 
-    private Map timerTasks = Collections.synchronizedMap(new HashMap());
-    
+    private Map<Association, TimerTask> timerTasks = new ConcurrentHashMap<Association, TimerTask>();
+
     private final int period;
 
     /**
      * Constructor which sets the max idle test period.
      * 
      * @param period
-     *            An int signifying the time period in milliseconds in which
-     *            associations will be tested for idleness..
+     *                An int signifying the time period in milliseconds in which
+     *                associations will be tested for idleness..
      */
     public AssociationReaper(int period) {
         if (log.isDebugEnabled())
@@ -91,7 +91,7 @@ public class AssociationReaper {
      * Register an <code>Association</code> with this reaper.
      * 
      * @param a
-     *            The Association to register.
+     *                The Association to register.
      */
     public void register(final Association a) {
         log.debug("Start check for idle {}", a);
@@ -103,7 +103,7 @@ public class AssociationReaper {
             }
         };
 
-        TimerTask previous = (TimerTask) timerTasks.put(a, task);
+        TimerTask previous = timerTasks.put(a, task);
         if (previous != null) {
             previous.cancel();
         }
@@ -115,12 +115,12 @@ public class AssociationReaper {
      * Unregister an <code>Association</code> from this reaper.
      * 
      * @param a
-     *            The <code>Association</code> to unregister.
+     *                The <code>Association</code> to unregister.
      */
     public void unregister(Association a) {
         log.debug("Stop check for idle {}", a);
 
-        TimerTask task = (TimerTask) timerTasks.remove(a);
+        TimerTask task = timerTasks.remove(a);
         if (task != null) {
             task.cancel();
         }

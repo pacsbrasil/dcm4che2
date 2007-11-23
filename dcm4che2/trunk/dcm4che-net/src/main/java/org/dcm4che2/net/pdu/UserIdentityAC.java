@@ -48,11 +48,11 @@ public class UserIdentityAC {
     private byte[] serverResponse = {};
 
     public final byte[] getServerResponse() {
-        return (byte[]) serverResponse.clone();
+        return serverResponse.clone();
     }
 
     public final void setServerResponse(byte[] serverResponse) {
-        this.serverResponse = (byte[]) serverResponse.clone();
+        this.serverResponse = serverResponse.clone();
     }
 
     public int length() {

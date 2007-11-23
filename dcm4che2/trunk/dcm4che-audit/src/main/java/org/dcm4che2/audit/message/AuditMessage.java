@@ -97,9 +97,12 @@ public class AuditMessage extends BaseElement {
     private static String[] localAETitles; 
 
     protected final AuditEvent event;
-    protected final ArrayList activeParticipants = new ArrayList(3);
-    protected final ArrayList auditSources = new ArrayList(1);
-    protected final ArrayList participantObjects = new ArrayList(3);
+    protected final ArrayList<BaseElement> activeParticipants = new ArrayList<BaseElement>(
+            3);
+    protected final ArrayList<BaseElement> auditSources = new ArrayList<BaseElement>(
+            1);
+    protected final ArrayList<BaseElement> participantObjects = new ArrayList<BaseElement>(
+            3);
     
     public AuditMessage(AuditEvent event) {
         super("AuditMessage");
@@ -242,13 +245,11 @@ public class AuditMessage extends BaseElement {
     }
 
     public static String[] getLocalAETitles() {
-        return (String[]) 
-                (localAETitles != null ? localAETitles.clone() : null);
+        return (localAETitles != null ? localAETitles.clone() : null);
     }
 
     public static void setLocalAETitles(String[] aets) {
-        AuditMessage.localAETitles = (String[])
-                (aets != null ? aets.clone() : null);
+        AuditMessage.localAETitles = (aets != null ? aets.clone() : null);
     }
     
     public static boolean isEnableDNSLookups() {

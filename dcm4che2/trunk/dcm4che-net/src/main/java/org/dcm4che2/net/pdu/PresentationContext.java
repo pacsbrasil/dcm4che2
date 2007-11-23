@@ -73,7 +73,7 @@ public class PresentationContext
     private int pcid;
     private int result;
     private String abstractSyntax;
-    private Set transferSyntaxes = new LinkedHashSet();
+    private Set<String> transferSyntaxes = new LinkedHashSet<String>();
 
     public final int getPCID()
     {
@@ -115,9 +115,8 @@ public class PresentationContext
         return Collections.unmodifiableSet(transferSyntaxes);
     }
 
-    public String getTransferSyntax()
-    {
-        return (String) transferSyntaxes.iterator().next();
+    public String getTransferSyntax() {
+        return transferSyntaxes.iterator().next();
     }
 
     public final boolean addTransferSyntax(String tsuid)
@@ -170,11 +169,11 @@ public class PresentationContext
         } else
             sb.append(", result = ").append(result).append(" - ")
                     .append(getResultAsString());
-        ArrayList tsuids = new ArrayList(transferSyntaxes);
+        ArrayList<String> tsuids = new ArrayList<String>(transferSyntaxes);
         for (int j = 0, m = tsuids.size(); j < m; j++)
         {
             sb.append("\n    ts = ");
-            promptUID((String) tsuids.get(j), sb);
+            promptUID(tsuids.get(j), sb);
         }
         sb.append("\n    ]");
         return sb;

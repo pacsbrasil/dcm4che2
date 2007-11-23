@@ -49,7 +49,7 @@ import java.util.LinkedHashMap;
  */
 public class InstanceSorter {
     
-    private LinkedHashMap suids = new LinkedHashMap();
+    private LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Object>>> suids = new LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Object>>>();
     
     public void clear() {
         suids.clear();
@@ -57,25 +57,25 @@ public class InstanceSorter {
     
     public Object addInstance(String suid, String cuid, String iuid,
             Object obj) {
-        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        LinkedHashMap<String, LinkedHashMap<String, Object>> cuids = suids.get(suid);
         if (cuids == null) {
-            cuids = new LinkedHashMap();
+            cuids = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
             suids.put(suid, cuids);
         }
-        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
+        LinkedHashMap<String, Object> iuids = cuids.get(cuid);
         if (iuids == null) {
-            iuids = new LinkedHashMap();
+            iuids = new LinkedHashMap<String, Object>();
             cuids.put(cuid, iuids);
         }
         return iuids.put(iuid, obj);
     }
     
-    public Iterator iterateSUIDs() {
+    public Iterator<String> iterateSUIDs() {
         return suids.keySet().iterator();
     }    
 
     public Iterator iterateCUIDs(String suid) {
-        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        LinkedHashMap cuids = suids.get(suid);
         if (cuids == null) {
             return Collections.EMPTY_LIST.iterator();
         }
@@ -83,7 +83,7 @@ public class InstanceSorter {
     }
 
     public Iterator iterateIUIDs(String suid, String cuid) {
-        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        LinkedHashMap cuids = suids.get(suid);
         if (cuids == null) {
             return Collections.EMPTY_LIST.iterator();
         }
@@ -95,7 +95,7 @@ public class InstanceSorter {
     }
     
     public int countInstances(String suid, String cuid) {
-        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        LinkedHashMap cuids = suids.get(suid);
         if (cuids == null) {
             return 0;
         }
@@ -107,7 +107,7 @@ public class InstanceSorter {
     }
     
     public Object getInstance(String suid, String cuid, String iuid) {
-        LinkedHashMap cuids = (LinkedHashMap) suids.get(suid);
+        LinkedHashMap cuids = suids.get(suid);
         if (cuids == null) {
             return null;
         }

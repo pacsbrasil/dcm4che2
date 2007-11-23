@@ -265,7 +265,7 @@ public class NetworkConnection {
      * @return A String array containing the supported cipher suites
      */
     public final String[] getTlsCipherSuite() {
-        return (String[]) tlsCipherSuite.clone();
+        return tlsCipherSuite.clone();
     }
 
     /**
@@ -278,7 +278,7 @@ public class NetworkConnection {
      */
     public final void setTlsCipherSuite(String[] tlsCipherSuite) {
         checkNotNull("tlsCipherSuite", tlsCipherSuite);
-        this.tlsCipherSuite = (String[]) tlsCipherSuite.clone();
+        this.tlsCipherSuite = tlsCipherSuite.clone();
     }
 
     private static void checkNotNull(String name, Object[] a) {
@@ -501,11 +501,11 @@ public class NetworkConnection {
     }
 
     public final String[] getTlsProtocol() {
-        return (String[]) tlsProtocol.clone();
+        return tlsProtocol.clone();
     }
 
     public final void setTlsProtocol(String[] tlsProtocol) {
-        this.tlsProtocol = (String[]) tlsProtocol.clone();
+        this.tlsProtocol = tlsProtocol.clone();
     }
     
     public final void enableSSLv2Hello() {

@@ -122,11 +122,11 @@ public class Association implements Runnable {
 
     private IntHashtable cancelHandlerForMsgId = new IntHashtable();
 
-    private HashMap acceptedPCs = new HashMap();
+    private HashMap<String, Map<String, PresentationContext>> acceptedPCs = new HashMap<String, Map<String, PresentationContext>>();
 
-    private HashMap scuTCs = new HashMap();
+    private HashMap<String, TransferCapability> scuTCs = new HashMap<String, TransferCapability>();
 
-    private HashMap scpTCs = new HashMap();
+    private HashMap<String, TransferCapability> scpTCs = new HashMap<String, TransferCapability>();
 
     private long idleTimeout = Long.MAX_VALUE;
 
@@ -239,19 +239,18 @@ public class Association implements Runnable {
                 continue;
             }
             String as = pcrq.getAbstractSyntax();
-            Map ts2pc = (Map) acceptedPCs.get(as);
+            Map<String, PresentationContext> ts2pc = acceptedPCs.get(as);
             if (ts2pc == null) {
-                ts2pc = new HashMap();
+                ts2pc = new HashMap<String, PresentationContext>();
                 acceptedPCs.put(as, ts2pc);
             }
             ts2pc.put(pc.getTransferSyntax(), pc);
         }
-        for (Iterator iter = acceptedPCs.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry e = (Map.Entry) iter.next();
-            String asuid = (String) e.getKey();
-            Map ts2pc = (Map) e.getValue();
-            String[] tsuids = (String[]) ts2pc.keySet().toArray(
-                    new String[ts2pc.size()]);
+        for (Map.Entry<String, Map<String, PresentationContext>> entry : acceptedPCs
+                .entrySet()) {
+            String asuid = entry.getKey();
+            Map<String, PresentationContext> ts2pc = entry.getValue();
+            String[] tsuids = ts2pc.keySet().toArray(new String[ts2pc.size()]);
             String cuid = asuid; // TODO support of Meta SOP Classes
             ExtendedNegotiation extneg = associateAC
                     .getExtendedNegotiationFor(cuid);
@@ -306,11 +305,11 @@ public class Association implements Runnable {
     }
 
     public TransferCapability getTransferCapabilityAsSCP(String cuid) {
-        return (TransferCapability) scpTCs.get(cuid);
+        return scpTCs.get(cuid);
     }
 
     public TransferCapability getTransferCapabilityAsSCU(String cuid) {
-        return (TransferCapability) scuTCs.get(cuid);
+        return scuTCs.get(cuid);
     }
 
     public AAssociateAC negotiate(AAssociateRQ rq) throws IOException,
@@ -353,7 +352,7 @@ public class Association implements Runnable {
 
     private PresentationContext pcFor(String cuid, String tsuid)
             throws NoPresentationContextException {
-        Map ts2pc = (Map) acceptedPCs.get(cuid);
+        Map ts2pc = acceptedPCs.get(cuid);
         if (ts2pc == null)
             throw new NoPresentationContextException("Abstract Syntax "
                     + UIDDictionary.getDictionary().prompt(cuid)

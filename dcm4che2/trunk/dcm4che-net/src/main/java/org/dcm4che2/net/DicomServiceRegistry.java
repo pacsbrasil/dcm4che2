@@ -70,20 +70,21 @@ import org.slf4j.LoggerFactory;
 class DicomServiceRegistry 
 {
     static Logger log = LoggerFactory.getLogger(DicomServiceRegistry.class);
-    private final HashSet sopCUIDs = new HashSet();
-    private final HashMap cstoreSCP = new HashMap();
-    private final HashMap cgetSCP = new HashMap();
-    private final HashMap cmoveSCP = new HashMap();
-    private final HashMap cfindSCP = new HashMap();
-    private final HashMap cechoSCP = new HashMap(1);
-    private final HashMap neventReportSCU = new HashMap();
-    private final HashMap ngetSCP = new HashMap();
-    private final HashMap nsetSCP = new HashMap();
-    private final HashMap nactionSCP = new HashMap();
-    private final HashMap ncreateSCP = new HashMap();
-    private final HashMap ndeleteSCP = new HashMap();
+    private final HashSet<String> sopCUIDs = new HashSet<String>();
+    private final HashMap<String, DicomService> cstoreSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> cgetSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> cmoveSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> cfindSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> cechoSCP = new HashMap<String, DicomService>(
+            1);
+    private final HashMap<String, DicomService> neventReportSCU = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> ngetSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> nsetSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> nactionSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> ncreateSCP = new HashMap<String, DicomService>();
+    private final HashMap<String, DicomService> ndeleteSCP = new HashMap<String, DicomService>();
 
-    private void registerInto(HashMap registry, DicomService service)
+    private void registerInto(HashMap<String, DicomService> registry, DicomService service)
     {
         final String[] sopClasses = service.getSopClasses();
         for (int i = 0; i < sopClasses.length; i++)
@@ -99,7 +100,7 @@ class DicomServiceRegistry
         }
     }
 
-    private void unregisterFrom(HashMap registry, DicomService service)
+    private void unregisterFrom(HashMap<String, DicomService> registry, DicomService service)
     {
         for (Iterator iter = registry.entrySet().iterator(); iter.hasNext();)
         {
@@ -160,7 +161,7 @@ class DicomServiceRegistry
     }
     
 
-    private Object getFrom(HashMap registry, DicomObject cmd, int tag)
+    private Object getFrom(HashMap<String, DicomService> registry, DicomObject cmd, int tag)
     throws DicomServiceException {
         String cuid = cmd.getString(tag);
         Object scp = registry.get(cuid);

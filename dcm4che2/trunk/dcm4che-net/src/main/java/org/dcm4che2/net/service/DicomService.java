@@ -65,9 +65,8 @@ public abstract class DicomService
      * @param serviceClass The service class of the DicomDevice. For example,
      *            <code>UID.StorageServiceClass</code>. May be null.
      */
-    protected DicomService(String[] sopClasses, String serviceClass)
-    {
-        this.sopClasses = (String[]) sopClasses.clone();
+    protected DicomService(String[] sopClasses, String serviceClass) {
+        this.sopClasses = sopClasses.clone();
         this.serviceClass = serviceClass;
     }
 
@@ -111,7 +110,7 @@ public abstract class DicomService
      */
     public final String[] getSopClasses()
     {
-        return (String[]) sopClasses.clone();
+        return sopClasses.clone();
     }
 
     /**

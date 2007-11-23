@@ -54,7 +54,7 @@ public class CommonExtendedNegotiation
 
     private String sopCUID;
     private String serviceCUID;
-    private final Set relSopCUIDs = new LinkedHashSet();
+    private final Set<String> relSopCUIDs = new LinkedHashSet<String>();
 
     public final String getSOPClassUID()
     {
@@ -76,8 +76,7 @@ public class CommonExtendedNegotiation
         this.serviceCUID = serviceCUID;
     }
 
-    public final Collection getRelatedGeneralSOPClassUIDs()
-    {
+    public final Collection<String> getRelatedGeneralSOPClassUIDs() {
         return Collections.unmodifiableCollection(relSopCUIDs);
     }
 

@@ -54,6 +54,7 @@ import java.util.Iterator;
 import javax.imageio.IIOException;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
@@ -100,7 +101,8 @@ public class RLEImageReader extends ImageReader {
     }
 
     @Override
-    public Iterator getImageTypes(int imageIndex) throws IOException {
+    public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
+            throws IOException {
         return null;
     }
 

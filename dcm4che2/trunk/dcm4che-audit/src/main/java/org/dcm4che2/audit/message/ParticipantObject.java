@@ -57,8 +57,8 @@ public class ParticipantObject extends BaseElement {
     private final IDTypeCode idTypeCode;
     private Name name;
     private Query query;
-    private final ArrayList details = new ArrayList();
-    private final ArrayList descs = new ArrayList();
+    private final ArrayList<BaseElement> details = new ArrayList<BaseElement>();
+    private final ArrayList<BaseElement> descs = new ArrayList<BaseElement>();
     
     public ParticipantObject(String id, IDTypeCode idTypeCode) {
         super("ParticipantObjectIdentification");
@@ -430,11 +430,11 @@ public class ParticipantObject extends BaseElement {
             if (value.length == 0) {
                 throw new IllegalArgumentException("value cannot be empty");
             }
-            this.value = (byte[]) value.clone();
+            this.value = value.clone();
         }
 
         public final byte[] value() {
-            return (byte[]) value.clone();
+            return value.clone();
         }
         
         @Override
@@ -471,7 +471,7 @@ public class ParticipantObject extends BaseElement {
         }
         
         public final byte[] getValue() {
-            return (byte[]) ((byte[]) getAttribute("value")).clone();
+            return ((byte[]) getAttribute("value")).clone();
         }
         
         public final String getValueAsString() {

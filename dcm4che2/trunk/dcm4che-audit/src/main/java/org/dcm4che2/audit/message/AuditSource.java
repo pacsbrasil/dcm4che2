@@ -55,7 +55,8 @@ import java.util.List;
 public class AuditSource extends BaseElement {
 
     private static AuditSource defAuditSource;
-    private final ArrayList auditSourceTypeCodes = new ArrayList(1);
+    private final ArrayList<TypeCode> auditSourceTypeCodes = new ArrayList<TypeCode>(
+            1);
     
     public AuditSource(String id) {
         super("AuditSourceIdentification");

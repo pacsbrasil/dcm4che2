@@ -56,7 +56,8 @@ import java.util.List;
 public class AuditEvent extends BaseElement {
 
     private final ID eventID;
-    private final ArrayList eventTypeCodes = new ArrayList(1);
+    private final ArrayList<TypeCode> eventTypeCodes = new ArrayList<TypeCode>(
+            1);
 
     public AuditEvent(ID eventID, ActionCode action) {
         super("EventIdentification");

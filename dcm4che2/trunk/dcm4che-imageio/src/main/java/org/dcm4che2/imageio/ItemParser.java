@@ -90,7 +90,7 @@ public class ItemParser implements StreamSegmentMapper {
         }
     }
 
-    private final ArrayList items = new ArrayList();
+    private final ArrayList<Item> items = new ArrayList<Item>();
 
     private final DicomInputStream dis;
 
@@ -119,7 +119,7 @@ public class ItemParser implements StreamSegmentMapper {
             if (next() == null)
                 throw new IndexOutOfBoundsException("index:" + index
                         + " >= size:" + items.size());
-        return (Item) items.get(index);
+        return items.get(index);
     }
 
     private Item next() {
@@ -153,7 +153,7 @@ public class ItemParser implements StreamSegmentMapper {
     }
 
     private Item last() {
-        return (Item) items.get(items.size() - 1);
+        return items.get(items.size() - 1);
     }
 
     public StreamSegment getStreamSegment(long pos, int len) {
@@ -174,7 +174,7 @@ public class ItemParser implements StreamSegmentMapper {
         }
         int i = items.size() - 1;
         while (item.offset > pos)
-            item = (Item) items.get(--i);
+            item = items.get(--i);
         seg.setStartPos(item.startPos + pos - item.offset);
         seg.setSegmentLength(Math.min((int) (item.offset + item.length - pos),
                 len));

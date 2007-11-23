@@ -70,11 +70,11 @@ public abstract class AAssociateRQAC {
     protected String applicationContext = UID.DICOMApplicationContextName;
     protected String implClassUID = Implementation.classUID();
     protected String implVersionName = Implementation.versionName();
-    protected final ArrayList pcs = new ArrayList();
+    protected final ArrayList<PresentationContext> pcs = new ArrayList<PresentationContext>();
     protected final IntHashtable pcidMap = new IntHashtable();
-    protected final LinkedHashMap roleSelMap = new LinkedHashMap();
-    protected final LinkedHashMap extNegMap = new LinkedHashMap();
-    protected final LinkedHashMap commonExtNegMap = new LinkedHashMap();
+    protected final LinkedHashMap<String, RoleSelection> roleSelMap = new LinkedHashMap<String, RoleSelection>();
+    protected final LinkedHashMap<String, ExtendedNegotiation> extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
+    protected final LinkedHashMap<String, CommonExtendedNegotiation> commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
 
     public final int getProtocolVersion() {
         return protocolVersion;
@@ -85,7 +85,7 @@ public abstract class AAssociateRQAC {
     }
 
     public final byte[] getReservedBytes() {
-        return (byte[]) reservedBytes.clone();
+        return reservedBytes.clone();
     }
 
     public final void setReservedBytes(byte[] reservedBytes) {
@@ -207,15 +207,15 @@ public abstract class AAssociateRQAC {
     }
 
     public RoleSelection getRoleSelectionFor(String cuid) {
-        return (RoleSelection) roleSelMap.get(cuid);
+        return roleSelMap.get(cuid);
     }
 
     public RoleSelection addRoleSelection(RoleSelection rs) {
-        return (RoleSelection) roleSelMap.put(rs.getSOPClassUID(), rs);
+        return roleSelMap.put(rs.getSOPClassUID(), rs);
     }
 
     public RoleSelection removeRoleSelectionFor(String cuid) {
-        return (RoleSelection) roleSelMap.remove(cuid);
+        return roleSelMap.remove(cuid);
     }
 
     public Collection getExtendedNegotiations() {
@@ -223,16 +223,15 @@ public abstract class AAssociateRQAC {
     }
 
     public ExtendedNegotiation getExtendedNegotiationFor(String cuid) {
-        return (ExtendedNegotiation) extNegMap.get(cuid);
+        return extNegMap.get(cuid);
     }
 
     public ExtendedNegotiation addExtendedNegotiation(ExtendedNegotiation extNeg) {
-        return (ExtendedNegotiation) extNegMap.put(extNeg.getSOPClassUID(),
-                extNeg);
+        return extNegMap.put(extNeg.getSOPClassUID(), extNeg);
     }
 
     public ExtendedNegotiation removeExtendedNegotiationFor(String cuid) {
-        return (ExtendedNegotiation) extNegMap.remove(cuid);
+        return extNegMap.remove(cuid);
     }
 
     public Collection getCommonExtendedNegotiations() {
@@ -240,18 +239,17 @@ public abstract class AAssociateRQAC {
     }
 
     public CommonExtendedNegotiation getCommonExtendedNegotiationFor(String cuid) {
-        return (CommonExtendedNegotiation) commonExtNegMap.get(cuid);
+        return commonExtNegMap.get(cuid);
     }
 
     public CommonExtendedNegotiation addCommonExtendedNegotiation(
             CommonExtendedNegotiation extNeg) {
-        return (CommonExtendedNegotiation) commonExtNegMap.put(extNeg
-                .getSOPClassUID(), extNeg);
+        return commonExtNegMap.put(extNeg.getSOPClassUID(), extNeg);
     }
 
     public CommonExtendedNegotiation removeCommonExtendedNegotiationFor(
             String cuid) {
-        return (CommonExtendedNegotiation) commonExtNegMap.remove(cuid);
+        return commonExtNegMap.remove(cuid);
     }
 
     public int length() {
@@ -308,19 +306,19 @@ public abstract class AAssociateRQAC {
     protected abstract void appendUserIdentity(StringBuffer sb);
 
     private void promptPresentationContext(StringBuffer sb) {
-        ArrayList tmp = new ArrayList(pcs);
+        ArrayList<PresentationContext> tmp = new ArrayList<PresentationContext>(pcs);
         for (int i = 0, n = tmp.size(); i < n; ++i) {
             sb.append("\n  ");
-            ((PresentationContext) tmp.get(i)).toStringBuffer(sb);
+            tmp.get(i).toStringBuffer(sb);
         }
     }
 
     private void promptRoleSelection(StringBuffer sb) {
-        ArrayList tmp = new ArrayList(roleSelMap.values());
+        ArrayList<RoleSelection> tmp = new ArrayList<RoleSelection>(roleSelMap.values());
         final int n = tmp.size();
         sb.append("\n  Role Selection(").append(n).append("):");
         for (int i = 0; i < n; ++i) {
-            RoleSelection rs = (RoleSelection) tmp.get(i);
+            RoleSelection rs = tmp.get(i);
             sb.append("\n    ");
             promptUID(rs.getSOPClassUID(), sb);
             sb.append("\n      SCU/SCP = ");
@@ -336,11 +334,11 @@ public abstract class AAssociateRQAC {
     }
 
     private void promptExtendedNegotiation(StringBuffer sb) {
-        ArrayList tmp = new ArrayList(extNegMap.values());
+        ArrayList<ExtendedNegotiation> tmp = new ArrayList<ExtendedNegotiation>(extNegMap.values());
         final int n = tmp.size();
         sb.append("\n  Extended Negotiation(").append(n).append("):");
         for (int i = 0; i < n; ++i) {
-            ExtendedNegotiation extNeg = (ExtendedNegotiation) tmp.get(i);
+            ExtendedNegotiation extNeg = tmp.get(i);
             sb.append("\n    ");
             promptUID(extNeg.getSOPClassUID(), sb);
             sb.append("\n      info = ");
@@ -349,17 +347,17 @@ public abstract class AAssociateRQAC {
     }
 
     private void promptCommonExtendedNegotiation(StringBuffer sb) {
-        ArrayList tmp = new ArrayList(commonExtNegMap.values());
+        ArrayList<CommonExtendedNegotiation> tmp = new ArrayList<CommonExtendedNegotiation>(
+                commonExtNegMap.values());
         final int n = tmp.size();
         sb.append("\n  Common Extended Negotiation(").append(n).append("):");
         for (int i = 0; i < n; ++i) {
-            CommonExtendedNegotiation extNeg = (CommonExtendedNegotiation) tmp
-                    .get(i);
+            CommonExtendedNegotiation extNeg = tmp.get(i);
             sb.append("\n    ");
             promptUID(extNeg.getSOPClassUID(), sb);
             sb.append("\n      serviceClass = ");
             promptUID(extNeg.getServiceClassUID(), sb);
-            ArrayList uids = new ArrayList(extNeg
+            ArrayList<String> uids = new ArrayList<String>(extNeg
                     .getRelatedGeneralSOPClassUIDs());
             if (uids.isEmpty())
                 return;
@@ -369,7 +367,7 @@ public abstract class AAssociateRQAC {
                     "):");
             for (int j = 0; j < m; j++) {
                 sb.append("\n      ");
-                promptUID((String) uids.get(j), sb);
+                promptUID(uids.get(j), sb);
             }
         }
     }

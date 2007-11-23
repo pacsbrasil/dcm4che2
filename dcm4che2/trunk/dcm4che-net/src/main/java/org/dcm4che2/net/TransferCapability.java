@@ -200,9 +200,8 @@ public class TransferCapability
      * 
      * @return String array containing the transfer syntaxes.
      */
-    public final String[] getTransferSyntax()
-    {
-        return (String[]) transferSyntax.clone();
+    public final String[] getTransferSyntax() {
+        return transferSyntax.clone();
     }
 
     /**
@@ -222,22 +221,14 @@ public class TransferCapability
                 throw new NullPointerException("transferSyntax[" + i + "]");
             }
         }
-        this.transferSyntax = (String[]) transferSyntax.clone();
+        this.transferSyntax = transferSyntax.clone();
     }
 
-    /**
-     * @return
-     */
-    public final byte[] getExtInfo()
-    {
-        return (byte[]) extInfo.clone();
+    public final byte[] getExtInfo() {
+        return extInfo.clone();
     }
 
-    /**
-     * @param info
-     */
-    public final void setExtInfo(byte[] info)
-    {
+    public final void setExtInfo(byte[] info) {
         extInfo = info != null ? (byte[]) info.clone() : NO_EXT_INFO;
     }
 

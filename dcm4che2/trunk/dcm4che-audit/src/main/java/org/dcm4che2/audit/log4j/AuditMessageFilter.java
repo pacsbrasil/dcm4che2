@@ -50,6 +50,7 @@ import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.CodeElement;
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,7 +62,7 @@ public class AuditMessageFilter extends Filter {
     private boolean acceptOnMatch = false;
     private String eventIDToMatch;
     private String eventActionCodesToMatch;
-    private List outcomeIndicatorsToMatch;
+    private List<OutcomeIndicator> outcomeIndicatorsToMatch;
     private String eventTypeCodeToMatch;
     private String userIDToMatch;
     private Boolean userIsRequestorToMatch;
@@ -250,7 +251,7 @@ public class AuditMessageFilter extends Filter {
         if (!stk.hasMoreTokens()) {
             outcomeIndicatorsToMatch = null;
         } else {
-            outcomeIndicatorsToMatch = new ArrayList(stk.countTokens());
+            outcomeIndicatorsToMatch = new ArrayList<OutcomeIndicator>(stk.countTokens());
             do {
                 try {
                     outcomeIndicatorsToMatch.add(
