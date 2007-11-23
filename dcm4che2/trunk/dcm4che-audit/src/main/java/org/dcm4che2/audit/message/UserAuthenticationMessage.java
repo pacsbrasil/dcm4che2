@@ -102,6 +102,7 @@ public class UserAuthenticationMessage extends AuditMessage {
     }
 
     
+    @Override
     public void validate() {
         super.validate();
         ActiveParticipant user = getRequestingActiveParticipants();

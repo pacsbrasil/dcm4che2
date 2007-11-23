@@ -542,11 +542,12 @@ class PDUDecoder extends PDVInputStream
         pcid = -1;
     }
 
-    public DicomObject readDataset() throws IOException
-    {
-        PresentationContext pc = as.getAssociateAC().getPresentationContext(pcid);
+    @Override
+    public DicomObject readDataset() throws IOException {
+        PresentationContext pc = as.getAssociateAC().getPresentationContext(
+                pcid);
         String tsuid = pc.getTransferSyntax();
-        return readDicomObject(TransferSyntax.valueOf(tsuid)); 
+        return readDicomObject(TransferSyntax.valueOf(tsuid));
     }
     
     private DicomObject readDicomObject(TransferSyntax ts)
@@ -634,8 +635,8 @@ class PDUDecoder extends PDVInputStream
         return false;
     }
     
-    public int read() throws IOException
-    {
+    @Override
+    public int read() throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         if (isEOF())
@@ -644,8 +645,8 @@ class PDUDecoder extends PDVInputStream
         return get();
     }
 
-    public int read(byte[] b, int off, int len) throws IOException
-    {
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         if (isEOF())
@@ -656,11 +657,12 @@ class PDUDecoder extends PDVInputStream
         return read;
     }
 
-    public final int available()
-    {
-         return pdvend - pos;
+    @Override
+    public final int available() {
+        return pdvend - pos;
     }
 
+    @Override
     public long skip(long n) throws IOException
     {
         if (th != Thread.currentThread())
@@ -673,48 +675,45 @@ class PDUDecoder extends PDVInputStream
         return skipped;
     }
     
-    public void close() throws IOException
-    {
+    @Override
+    public void close() throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         skipAll();
     }
 
-    public long skipAll() throws IOException
-    {
+    @Override
+    public long skipAll() throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         long n = 0;
-        while (!isEOF())
-        {
+        while (!isEOF()) {
             n += pdvend - pos;
             pos = pdvend;
         }
         return n;
     }
 
-    public void copyTo(OutputStream out, int length) throws IOException
-    {
+    @Override
+    public void copyTo(OutputStream out, int length) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         int remaining = length;
-        while (remaining > 0)
-        {
+        while (remaining > 0) {
             if (isEOF())
                 throw new EOFException("remaining: " + remaining);
             int read = Math.min(remaining, pdvend - pos);
             out.write(buf, pos, read);
             remaining -= read;
             pos += read;
-        }                    
+        }
     }
 
-    public void copyTo(OutputStream out) throws IOException
-    {
+    @Override
+    public void copyTo(OutputStream out) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
-        while (!isEOF())
-        {
+        while (!isEOF()) {
             out.write(buf, pos, pdvend - pos);
             pos = pdvend;
         }

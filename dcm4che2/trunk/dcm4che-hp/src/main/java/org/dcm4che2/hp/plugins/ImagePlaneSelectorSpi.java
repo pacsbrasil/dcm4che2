@@ -60,8 +60,8 @@ public class ImagePlaneSelectorSpi extends HPSelectorSpi
         super(CATEGORIES);
     }
 
-    public void setProperty(String name, Object value)
-    {
+    @Override
+    public void setProperty(String name, Object value) {
         if (!"MinCosine".equals(name))
             throw new IllegalArgumentException("Unsupported property: " + name);
         float tmp = ((Float) value).floatValue();
@@ -70,15 +70,15 @@ public class ImagePlaneSelectorSpi extends HPSelectorSpi
         minCosine = tmp;
     }
 
-    public Object getProperty(String name)
-    {
+    @Override
+    public Object getProperty(String name) {
         if (!"MinCosine".equals(name))
             throw new IllegalArgumentException("Unsupported property: " + name);
         return new Float(minCosine);
     }
 
-    public HPSelector createHPSelector(DicomObject filterOp)
-    {
+    @Override
+    public HPSelector createHPSelector(DicomObject filterOp) {
         ImagePlaneSelector sel = new ImagePlaneSelector(filterOp);
         sel.setMinCosine(minCosine);
         return sel;

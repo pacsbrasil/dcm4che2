@@ -78,6 +78,7 @@ public class CRImage extends Image {
     }
 
 
+    @Override
     public void init() {
         super.init();
         contrastBolusModule.init();
@@ -87,6 +88,7 @@ public class CRImage extends Image {
         voiLUTModule.init();
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         contrastBolusModule.validate(ctx, result);

@@ -69,11 +69,13 @@ public class SpatialFiducials extends Composite {
         this(new BasicDicomObject());
     }
     
+    @Override
     public void init() {
         super.init();
         spatialFiducialsModule.init();
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         spatialFiducialsModule.validate(ctx, result);

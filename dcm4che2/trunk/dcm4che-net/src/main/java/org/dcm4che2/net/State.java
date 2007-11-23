@@ -122,8 +122,8 @@ public class State
     /**
      * @see java.lang.Object#toString()
      */
-    public String toString()
-    {
+    @Override
+    public String toString() {
         return name;
     }
 
@@ -139,8 +139,8 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#abort(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAbort)
          */
-        void abort(Association as, AAbort aa)
-        {
+        @Override
+        void abort(Association as, AAbort aa) {
             // NOOP
         }
     }
@@ -157,9 +157,9 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#receivedAssociateRQ(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateRQ)
          */
+        @Override
         void receivedAssociateRQ(Association as, AAssociateRQ rq)
-                throws IOException
-        {
+                throws IOException {
             as.onAAssociateRQ(rq);
         }
     }
@@ -187,9 +187,9 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#sendAssociateRQ(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateRQ)
          */
+        @Override
         void sendAssociateRQ(Association as, AAssociateRQ rq)
-                throws IOException
-        {
+                throws IOException {
             as.writeAssociationRQ(rq);
         }
     }
@@ -206,18 +206,18 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#receivedAssociateAC(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateAC)
          */
+        @Override
         void receivedAssociateAC(Association as, AAssociateAC ac)
-                throws IOException
-        {
+                throws IOException {
             as.onAssociateAC(ac);
         }
 
         /** 
          * @see org.dcm4che2.net.State#receivedAssociateRJ(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAssociateRJ)
          */
+        @Override
         void receivedAssociateRJ(Association as, AAssociateRJ rj)
-                throws IOException
-        {
+                throws IOException {
             as.onAssociateRJ(rj);
         }
     }
@@ -234,56 +234,56 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#receivedPDataTF(org.dcm4che2.net.Association)
          */
-        void receivedPDataTF(Association as) throws IOException
-        {
+        @Override
+        void receivedPDataTF(Association as) throws IOException {
             as.onPDataTF();
         }
 
         /** 
          * @see org.dcm4che2.net.State#sendPDataTF(org.dcm4che2.net.Association)
          */
-        void sendPDataTF(Association as) throws IOException
-        {
+        @Override
+        void sendPDataTF(Association as) throws IOException {
             as.writePDataTF();
         }
 
         /** 
          * @see org.dcm4che2.net.State#receivedReleaseRQ(org.dcm4che2.net.Association)
          */
-        void receivedReleaseRQ(Association as) throws IOException
-        {
+        @Override
+        void receivedReleaseRQ(Association as) throws IOException {
             as.onReleaseRQ();
         }
 
         /** 
          * @see org.dcm4che2.net.State#sendReleaseRQ(org.dcm4che2.net.Association)
          */
-        void sendReleaseRQ(Association as) throws IOException
-        {
+        @Override
+        void sendReleaseRQ(Association as) throws IOException {
             as.writeReleaseRQ();
         }
 
         /** 
          * @see org.dcm4che2.net.State#isReadyForDataTransfer()
          */
-        boolean isReadyForDataTransfer()
-        {
+        @Override
+        boolean isReadyForDataTransfer() {
             return true;
         }
 
         /** 
          * @see org.dcm4che2.net.State#isReadyForDataSend()
          */
-        boolean isReadyForDataSend()
-        {
+        @Override
+        boolean isReadyForDataSend() {
             return true;
         }
 
         /** 
          * @see org.dcm4che2.net.State#isReadyForDataReceive()
          */
-        boolean isReadyForDataReceive()
-        {
+        @Override
+        boolean isReadyForDataReceive() {
             return true;
         }
 
@@ -301,32 +301,32 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#receivedPDataTF(org.dcm4che2.net.Association)
          */
-        void receivedPDataTF(Association as) throws IOException
-        {
+        @Override
+        void receivedPDataTF(Association as) throws IOException {
             as.onPDataTF();
         }
 
         /** 
          * @see org.dcm4che2.net.State#receivedReleaseRQ(org.dcm4che2.net.Association)
          */
-        void receivedReleaseRQ(Association as) throws IOException
-        {
+        @Override
+        void receivedReleaseRQ(Association as) throws IOException {
             as.onCollisionReleaseRQ();
         }
 
         /** 
          * @see org.dcm4che2.net.State#receivedReleaseRP(org.dcm4che2.net.Association)
          */
-        void receivedReleaseRP(Association as) throws IOException
-        {
+        @Override
+        void receivedReleaseRP(Association as) throws IOException {
             as.onReleaseRP();
         }
 
         /** 
          * @see org.dcm4che2.net.State#isReadyForDataReceive()
          */
-        boolean isReadyForDataReceive()
-        {
+        @Override
+        boolean isReadyForDataReceive() {
             return true;
         }
 
@@ -344,16 +344,16 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#sendPDataTF(org.dcm4che2.net.Association)
          */
-        void sendPDataTF(Association as) throws IOException
-        {
+        @Override
+        void sendPDataTF(Association as) throws IOException {
             as.writePDataTF();
         }
 
         /** 
          * @see org.dcm4che2.net.State#isReadyForDataSend()
          */
-        boolean isReadyForDataSend()
-        {
+        @Override
+        boolean isReadyForDataSend() {
             return true;
         }
 
@@ -384,8 +384,8 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#receivedReleaseRP(org.dcm4che2.net.Association)
          */
-        void receivedReleaseRP(Association as) throws IOException
-        {
+        @Override
+        void receivedReleaseRP(Association as) throws IOException {
             as.onCollisionReleaseRP();
         }
     }
@@ -404,8 +404,8 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#receivedReleaseRP(org.dcm4che2.net.Association)
          */
-        void receivedReleaseRP(Association as) throws IOException
-        {
+        @Override
+        void receivedReleaseRP(Association as) throws IOException {
             as.onReleaseRP();
         }
     }
@@ -431,8 +431,8 @@ public class State
         /** 
          * @see org.dcm4che2.net.State#abort(org.dcm4che2.net.Association, org.dcm4che2.net.pdu.AAbort)
          */
-        void abort(Association as, AAbort aa)
-        {
+        @Override
+        void abort(Association as, AAbort aa) {
             // NOOP
         }
     }

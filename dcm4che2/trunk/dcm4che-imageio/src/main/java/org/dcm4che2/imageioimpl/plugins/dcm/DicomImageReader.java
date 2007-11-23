@@ -139,6 +139,7 @@ public class DicomImageReader extends ImageReader {
         super(originatingProvider);
     }
 
+    @Override
     public void setInput(Object input, boolean seekForwardOnly,
             boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
@@ -154,11 +155,13 @@ public class DicomImageReader extends ImageReader {
         }
     }
 
+    @Override
     public void dispose() {
         super.dispose();
         resetLocal();
     }
 
+    @Override
     public void reset() {
         super.reset();
         resetLocal();
@@ -186,6 +189,7 @@ public class DicomImageReader extends ImageReader {
         itemParser = null;
     }
 
+    @Override
     public ImageReadParam getDefaultReadParam() {
         return new DicomImageReadParam();
     }
@@ -200,6 +204,7 @@ public class DicomImageReader extends ImageReader {
      * This is not an issue if you know the DICOM is up to date, or if you use
      * the DB information as authoritative.
      */
+    @Override
     public IIOMetadata getStreamMetadata() throws IOException {
         readMetaData();
         return streamMetaData;
@@ -209,6 +214,7 @@ public class DicomImageReader extends ImageReader {
      * Gets any image specific meta data. This should return the image specific
      * blocks for enhanced multi-frame, but currently it merely returns null.
      */
+    @Override
     public IIOMetadata getImageMetadata(int imageIndex) throws IOException {
         return null;
     }
@@ -217,6 +223,7 @@ public class DicomImageReader extends ImageReader {
      * Returns the number of regular images in the study. This excludes
      * overlays.
      */
+    @Override
     public int getNumImages(boolean allowSearch) throws IOException {
         readMetaData();
         return frames;
@@ -321,6 +328,7 @@ public class DicomImageReader extends ImageReader {
                 width * 3, OFFSETS_0_1_2);
     }
 
+    @Override
     public int getHeight(int imageIndex) throws IOException {
         readMetaData();
         if (OverlayUtils.isOverlay(imageIndex))
@@ -328,6 +336,7 @@ public class DicomImageReader extends ImageReader {
         return height;
     }
 
+    @Override
     public int getWidth(int imageIndex) throws IOException {
         readMetaData();
         if (OverlayUtils.isOverlay(imageIndex))
@@ -335,11 +344,13 @@ public class DicomImageReader extends ImageReader {
         return width;
     }
 
+    @Override
     public Iterator getImageTypes(int imageIndex) throws IOException {
         initImageReader();
         return reader.getImageTypes(0);
     }
 
+    @Override
     public boolean canReadRaster() {
         return true;
     }
@@ -349,6 +360,7 @@ public class DicomImageReader extends ImageReader {
      * Cannot read overlay data, as it isn't clear what the raster format should
      * be for those.
      */
+    @Override
     public Raster readRaster(int imageIndex, ImageReadParam param)
             throws IOException {
         initImageReader();
@@ -372,6 +384,7 @@ public class DicomImageReader extends ImageReader {
      * param can be used to sepecify GSPS to apply to the image, or to override
      * the default window level values, or to return the raw image.
      */
+    @Override
     public BufferedImage read(int imageIndex, ImageReadParam param)
             throws IOException {
         if (OverlayUtils.isOverlay(imageIndex)) {

@@ -179,10 +179,12 @@ public class ParticipantObject extends BaseElement {
         return this;
     }
     
+    @Override
     protected boolean isEmpty() {
         return false;
     }
         
+    @Override
     protected void outputContent(Writer out) throws IOException {
         idTypeCode.output(out);
         if (name != null) {
@@ -306,6 +308,7 @@ public class ParticipantObject extends BaseElement {
             this.value = value;
         }
         
+        @Override
         public String toString() {
             return value;
         }
@@ -351,6 +354,7 @@ public class ParticipantObject extends BaseElement {
             this.value = value;
         }
         
+        @Override
         public String toString() {
             return value;
         }
@@ -384,6 +388,7 @@ public class ParticipantObject extends BaseElement {
             this.value = value;
         }
         
+        @Override
         public String toString() {
             return value;
         }
@@ -405,10 +410,12 @@ public class ParticipantObject extends BaseElement {
             return value;
         }
 
+        @Override
         protected boolean isEmpty() {
             return false;
         }
 
+        @Override
         protected void outputContent(Writer out) throws IOException {
             outputEscaped(out, value, "'");
         }
@@ -430,10 +437,12 @@ public class ParticipantObject extends BaseElement {
             return (byte[]) value.clone();
         }
         
+        @Override
         protected boolean isEmpty() {
             return false;
         }
         
+        @Override
         protected void outputContent(Writer out) throws IOException {
             out.write(Base64Encoder.encode(value));
         }                    

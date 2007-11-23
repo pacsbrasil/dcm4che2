@@ -142,6 +142,7 @@ public class NetworkConnection {
     /**
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("NetworkConnection[");
         sb.append(addr != null ? addr.toString() : hostname)

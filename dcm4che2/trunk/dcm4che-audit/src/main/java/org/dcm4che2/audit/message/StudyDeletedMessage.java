@@ -81,6 +81,7 @@ public class StudyDeletedMessage extends AuditMessage {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
     
+    @Override
     public void validate() {
         super.validate();
         ActiveParticipant user = getRequestingActiveParticipants();

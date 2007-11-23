@@ -53,19 +53,23 @@ public class DicomStreamMetaData extends IIOMetadata {
     
     private DicomObject dicomObject;
     
+    @Override
     public Node getAsTree(String formatName) {
          throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isReadOnly() {
         return true;
     }
 
+    @Override
     public void mergeTree(String formatName, Node root)
             throws IIOInvalidTreeException {
         throw new IllegalStateException();       
     }
 
+    @Override
     public void reset() {
         throw new IllegalStateException();       
     }

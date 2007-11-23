@@ -57,10 +57,12 @@ public class SRDocumentSeriesModule extends GeneralSeriesModule {
         super(dcmobj);
     }
 
+    @Override
     public void init() {
         setModality(Modality.SR);
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!Modality.SR.equals(getModality())) {

@@ -114,6 +114,7 @@ public class QueryMessage extends AuditMessage {
                 ParticipantObject.createQuerySOPClass(cuid, tsuid, query));
     }
     
+    @Override
     public void validate() {
         super.validate();
         

@@ -92,6 +92,7 @@ class TransferMessageSupport extends AuditMessage {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
 
+    @Override
     public void validate() {
         super.validate();
         

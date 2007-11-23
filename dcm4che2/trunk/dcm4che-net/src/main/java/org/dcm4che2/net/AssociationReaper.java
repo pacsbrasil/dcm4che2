@@ -97,6 +97,7 @@ public class AssociationReaper {
         log.debug("Start check for idle {}", a);
 
         TimerTask task = new TimerTask() {
+            @Override
             public void run() {
                 a.checkIdle(System.currentTimeMillis());
             }

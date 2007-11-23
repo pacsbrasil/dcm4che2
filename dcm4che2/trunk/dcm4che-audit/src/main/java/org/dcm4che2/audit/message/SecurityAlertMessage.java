@@ -198,6 +198,7 @@ public class SecurityAlertMessage extends AuditMessage {
                 ParticipantObject.createAlertSubjectWithNodeID(nodeID, desc));
     }
    
+    @Override
     public void validate() {
         super.validate();
         ActiveParticipant user = getRequestingActiveParticipants();

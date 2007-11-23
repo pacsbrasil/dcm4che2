@@ -62,6 +62,7 @@ public class DXAnatomyImagedModule extends GeneralAnatomy {
         // TODO Auto-generated constructor stub
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result){
         super.validate(ctx, result);
         if (!ImageLaterality.isValid(getImageLaterality())) {

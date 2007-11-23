@@ -61,6 +61,7 @@ public class SpatialFiducialsSeriesModule extends GeneralSeriesModule {
         super(dcmobj);
     }
 
+    @Override
     public void init() {
         setModality(Modality.FID);
     }
@@ -70,6 +71,7 @@ public class SpatialFiducialsSeriesModule extends GeneralSeriesModule {
      * Spatial Fiducials Series Module can and must only be "FID". Using the
      * {@link #init()} method above will automatically set the Modality.
      */
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!Modality.FID.equals(getModality())) {

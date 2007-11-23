@@ -56,6 +56,7 @@ public class AlongAxisComparatorSpi extends HPComparatorSpi {
         super(CATEGORIES);
     }
 
+    @Override
     public HPComparator createHPComparator(DicomObject sortOp) {
         return new AlongAxisComparator(sortOp);
     }

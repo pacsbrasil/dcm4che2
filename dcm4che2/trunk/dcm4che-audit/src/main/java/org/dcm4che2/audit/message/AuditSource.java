@@ -96,10 +96,12 @@ public class AuditSource extends BaseElement {
         return this;        
     }
 
+    @Override
     protected boolean isEmpty() {
         return auditSourceTypeCodes.isEmpty();
     }
         
+    @Override
     protected void outputContent(Writer out) throws IOException {
         outputChilds(out, auditSourceTypeCodes);
     }

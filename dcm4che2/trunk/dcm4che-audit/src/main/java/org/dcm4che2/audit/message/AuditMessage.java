@@ -169,14 +169,17 @@ public class AuditMessage extends BaseElement {
         return obj;
     }
     
+    @Override
     protected boolean isEmpty() {
         return false;
     }
 
+    @Override
     public String toString() {
         return toString(1024);
     }    
     
+    @Override
     public void output(Writer out) throws IOException {
         if (incXMLDecl) {
             out.write(XML_VERSION_1_0_ENCODING_UTF_8);
@@ -190,6 +193,7 @@ public class AuditMessage extends BaseElement {
         }
     }
     
+    @Override
     protected void outputContent(Writer out) throws IOException {
         event.output(out);
         outputChilds(out, activeParticipants);

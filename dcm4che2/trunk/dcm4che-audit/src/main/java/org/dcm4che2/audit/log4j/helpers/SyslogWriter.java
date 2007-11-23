@@ -123,49 +123,53 @@ public class SyslogWriter extends Writer {
     buf.append(c); 
   }
   
-  public void write(char[] charArray, int offset, int len) {
-    buf.append(charArray, offset, len);
-  }
+    @Override
+    public void write(char[] charArray, int offset, int len) {
+        buf.append(charArray, offset, len);
+    }
 
-  public void write(String str) {
-    buf.append(str); 
-  }
+    @Override
+    public void write(String str) {
+        buf.append(str);
+    }
 
   /**
-   * Sends the pending data.
-   */
-  public void flush() throws IOException {
-    if (buf.length() == 0)
-      return;
-    byte[] payload;
-    if(encoding == null) {
-        payload = buf.toString().getBytes();
-      } else {
-        payload = buf.toString().getBytes(encoding);
-      }
-      DatagramPacket packet =
-      new DatagramPacket(payload, payload.length, address, port);
+     * Sends the pending data.
+     */
+    @Override
+    public void flush() throws IOException {
+        if (buf.length() == 0)
+            return;
+        byte[] payload;
+        if (encoding == null) {
+            payload = buf.toString().getBytes();
+        } else {
+            payload = buf.toString().getBytes(encoding);
+        }
+        DatagramPacket packet = new DatagramPacket(payload, payload.length,
+                address, port);
 
-    ds.send(packet);
+        ds.send(packet);
 
-    // clean up for next time
-    buf.setLength(0);
-  }
+        // clean up for next time
+        buf.setLength(0);
+    }
   
   public void reset() {
     buf.setLength(0);
   }
 
   /**
-   * Closes the datagram socket.
-   */
-  public void close() {
-    try {
-      flush();
-    } catch (IOException e) {
-      // should throw it ... can't change method sig. though
+     * Closes the datagram socket.
+     */
+    @Override
+    public void close() {
+        try {
+            flush();
+        } catch (IOException e) {
+            // should throw it ... can't change method sig. though
+        }
+        ds.close();
     }
-    ds.close();
-  }
   
 }

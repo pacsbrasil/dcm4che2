@@ -84,6 +84,7 @@ public class StorageService extends DicomService implements CStoreSCP {
     /** 
      * @deprecated use/overwrite {@link #onCStoreRQ}
      */
+    @Deprecated
     protected void doCStore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws DicomServiceException, IOException {

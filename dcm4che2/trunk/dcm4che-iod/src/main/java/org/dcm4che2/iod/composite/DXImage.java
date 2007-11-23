@@ -159,6 +159,7 @@ public class DXImage extends Image {
         this.acquisitionContextModule = new AcquisitionContextModule(dcmobj);
     }
 
+    @Override
     public void init() {
         super.init();
         contrastBolusModule.init();
@@ -171,6 +172,7 @@ public class DXImage extends Image {
         acquisitionContextModule.init();
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         contrastBolusModule.validate(ctx, result);

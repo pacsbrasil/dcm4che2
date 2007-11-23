@@ -59,6 +59,7 @@ public class UserIdentityAC {
         return 2 + serverResponse.length;
     }
 
+    @Override
     public String toString() {
         return "UserIdentity[serverResponse(" + serverResponse.length + ")]";
     }

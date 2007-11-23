@@ -427,6 +427,7 @@ public class HangingProtocol {
     /**
      * @deprecated use {@link addNewDisplaySet} instead
      */
+    @Deprecated
     public void addDisplaySet(HPDisplaySet displaySet) {
         if (displaySet == null)
             throw new NullPointerException("displaySet");

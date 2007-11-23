@@ -225,10 +225,12 @@ public class ActiveParticipant extends BaseElement {
         return this;
     }
     
+    @Override
     protected boolean isEmpty() {
         return roleIDCodes.isEmpty();
     }
         
+    @Override
     protected void outputContent(Writer out) throws IOException {
         outputChilds(out, roleIDCodes);
     }
@@ -288,6 +290,7 @@ public class ActiveParticipant extends BaseElement {
                     : isTelNo(id) ? TEL_NR : MACHINE_NAME;
         }
 
+        @Override
         public String toString() {
             return value;
         }

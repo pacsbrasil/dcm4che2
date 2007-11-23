@@ -70,6 +70,7 @@ public class AuditMessageFilter extends Filter {
     private String machineNameToMatch;
     private String ipAddressToMatch;
  
+    @Override
     public int decide(LoggingEvent event) {
         Object msg = event.getMessage();
         if (!(msg instanceof AuditMessage)) {

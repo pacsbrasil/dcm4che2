@@ -92,10 +92,12 @@ public final class SimpleYBRColorSpace extends ColorSpace {
         this.toRGB = fromYBR;
     }
 
+    @Override
     public boolean equals(Object o) {
         return o != null && o instanceof SimpleYBRColorSpace;
     }
 
+    @Override
     public float[] toRGB(float[] ybr) {
         float r = (float) Math.max(0.0, Math.min(1.0, toRGB[0] * ybr[0] 
                          + toRGB[1] * ybr[1]
@@ -112,6 +114,7 @@ public final class SimpleYBRColorSpace extends ColorSpace {
         return new float[] {r, g, b};
     }
 
+    @Override
     public float[] fromRGB(float[] rgb) {
         float y = (float) Math.max(0.0, Math.min(1.0, toYBR[0] * rgb[0] 
                         + toYBR[1] * rgb[1]
@@ -128,10 +131,12 @@ public final class SimpleYBRColorSpace extends ColorSpace {
         return new float[] {y, cb, cr};
     }
 
+    @Override
     public float[] toCIEXYZ(float[] colorvalue) {
         return csRGB.toCIEXYZ(toRGB(colorvalue));
     }
 
+    @Override
     public float[] fromCIEXYZ(float[] xyzvalue) {
         return fromRGB(csRGB.fromCIEXYZ(xyzvalue));
     }

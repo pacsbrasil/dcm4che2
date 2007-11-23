@@ -107,10 +107,12 @@ public class AuditEvent extends BaseElement {
         return this;
     }
 
+    @Override
     protected boolean isEmpty() {
         return false;
     }
     
+    @Override
     protected void outputContent(Writer out) throws IOException {
         eventID.output(out);
         outputChilds(out, eventTypeCodes);
@@ -293,6 +295,7 @@ public class AuditEvent extends BaseElement {
             this.value = value;
         }
         
+        @Override
         public String toString() {
             return value;
         }
@@ -337,6 +340,7 @@ public class AuditEvent extends BaseElement {
             this.value = value;
         }
         
+        @Override
         public String toString() {
             return value;
         }

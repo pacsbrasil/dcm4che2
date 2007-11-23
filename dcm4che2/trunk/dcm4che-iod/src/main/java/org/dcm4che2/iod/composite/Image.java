@@ -62,11 +62,13 @@ public class Image extends Composite {
         this.generalImageModule = imageModule;
     }
 
+    @Override
     public void init() {
         super.init();
         generalImageModule.init();
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         generalImageModule.validate(ctx, result);

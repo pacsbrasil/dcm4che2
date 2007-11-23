@@ -81,6 +81,7 @@ class AuditMessageSupport extends AuditMessage {
         return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
+    @Override
     public void validate() {
         super.validate();
         ActiveParticipant user = getRequestingActiveParticipants();

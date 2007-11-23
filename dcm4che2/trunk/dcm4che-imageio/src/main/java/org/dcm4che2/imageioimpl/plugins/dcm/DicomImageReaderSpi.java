@@ -78,10 +78,12 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
                 null, false, null, null, null, null);
     }
 
+    @Override
     public String getDescription(Locale locale) {
         return "DICOM Image Reader";
     }
 
+    @Override
     public boolean canDecodeInput(Object input) throws IOException {
         if (!(input instanceof ImageInputStream)) {
             return false;
@@ -127,6 +129,7 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
         }
     }
 
+    @Override
     public ImageReader createReaderInstance(Object extension)
             throws IIOException {
         return new DicomImageReader(this);

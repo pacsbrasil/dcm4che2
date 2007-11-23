@@ -58,6 +58,7 @@ public class ExtStorageTransferCapability extends TransferCapability {
         super.setExtInfo(new byte[6]);
     }
     
+    @Override
     protected ExtendedNegotiation negotiate(ExtendedNegotiation offered) {
         return extInfo != null ? new ExtendedNegotiation(sopClass, extInfo)
                 : null;

@@ -67,6 +67,7 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
     private int autoCancel;
     private IOException ex;
     
+    @Override
     public synchronized void onDimseRSP(Association as, DicomObject cmd,
             DicomObject data)
     {
@@ -95,6 +96,7 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
         notifyAll();
     }
 
+    @Override
     public synchronized void onClosed(Association as)
     {
         if (!finished)
@@ -109,8 +111,8 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
         this.autoCancel = autoCancel;
     }
     
-    public void cancel(Association a) throws IOException
-    {
+    @Override
+    public void cancel(Association a) throws IOException {
         if (ex != null)
             throw ex;
         if (!finished)

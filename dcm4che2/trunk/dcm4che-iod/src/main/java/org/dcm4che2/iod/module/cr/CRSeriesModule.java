@@ -55,10 +55,12 @@ public class CRSeriesModule extends GeneralSeriesModule {
         super(dcmobj);
     }
 
+    @Override
     public String getBodyPartExamined() {
         return dcmobj.getString(Tag.BodyPartExamined);
     }
     
+    @Override
     public void setBodyPartExamined(String s) {
         dcmobj.putString(Tag.BodyPartExamined, VR.CS, s);
     }

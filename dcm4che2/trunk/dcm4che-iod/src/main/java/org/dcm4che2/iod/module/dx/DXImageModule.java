@@ -74,6 +74,7 @@ public class DXImageModule extends LutModule {
         super(dcmobj);
     }
 
+    @Override
     public void init() {
         super.init();
         ModalityLutModule modalityLutModule = getModalityLutModule();
@@ -82,6 +83,7 @@ public class DXImageModule extends LutModule {
         modalityLutModule.setRescaleType(RescaleType.US);
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!PixelIntensityRelationship

@@ -147,18 +147,17 @@ public class SyslogAppender extends AppenderSkeleton {
   }
 
   /**
-     Release any resources held by this SyslogAppender.
-
-     @since 0.8.4
-   */
-  synchronized
-  public
-  void close() {
-    closed = true;
-    // A SyslogWriter is UDP based and needs no opening. Hence, it
-    // can't be closed. We just unset the variables here.
-    sw = null;
-  }
+     * Release any resources held by this SyslogAppender.
+     * 
+     * @since 0.8.4
+     */
+    @Override
+    synchronized public void close() {
+        closed = true;
+        // A SyslogWriter is UDP based and needs no opening. Hence, it
+        // can't be closed. We just unset the variables here.
+        sw = null;
+    }
 
   /**
      Returns the specified syslog facility as a lower-case String,
@@ -325,6 +324,7 @@ public class SyslogAppender extends AppenderSkeleton {
     this.encoding = encoding;
   }
 
+  @Override
   public
   void append(LoggingEvent event) {
 
@@ -374,25 +374,27 @@ public class SyslogAppender extends AppenderSkeleton {
       sw.write(String.valueOf(n));
   }
   
-/**
-     This method returns immediately as options are activated when they
-     are set.
-  */
-  public
-  void activateOptions() {
-      this.sw = new SyslogWriter(syslogHost, encoding);
-      this.localHostname = getLocalHostname();
-  }
+
+    /**
+     * This method returns immediately as options are activated when they are
+     * set.
+     */
+    @Override
+    public void activateOptions() {
+        this.sw = new SyslogWriter(syslogHost, encoding);
+        this.localHostname = getLocalHostname();
+    }
 
   /**
-     The SyslogAppender requires a layout. Hence, this method returns
-     <code>true</code>.
-
-     @since 0.8.4 */
-  public
-  boolean requiresLayout() {
-    return true;
-  }
+     * The SyslogAppender requires a layout. Hence, this method returns
+     * <code>true</code>.
+     * 
+     * @since 0.8.4
+     */
+    @Override
+    public boolean requiresLayout() {
+        return true;
+    }
 
   /**
     The <b>SyslogHost</b> option is the name of the the syslog host

@@ -72,13 +72,15 @@ public class GeneralImageModule extends ImagePixel {
 		super(dcmobj);
 	}
 
-	public void init() {
+	@Override
+        public void init() {
 		super.init();
 		setSamplesPerPixel(1);
 		setPixelRepresentation(0);
 	}
 
-	public void validate(ValidationContext ctx, ValidationResult result) {
+	@Override
+        public void validate(ValidationContext ctx, ValidationResult result) {
 		super.validate(ctx, result);
 		if (!PresentationLUTShape.isValidSoftCopy(getPresentationLUTShape())) {
 			result.logInvalidValue(Tag.PresentationLUTShape, dcmobj);

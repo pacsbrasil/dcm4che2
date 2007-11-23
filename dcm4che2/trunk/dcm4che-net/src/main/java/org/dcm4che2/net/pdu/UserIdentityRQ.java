@@ -147,6 +147,7 @@ public class UserIdentityRQ {
         return 6 + primaryField.length + secondaryField.length;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(64);
         sb.append("UserIdentity[type = ").append(userIdentityType);

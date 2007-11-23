@@ -57,10 +57,12 @@ public class KODocumentSeriesModule extends GeneralSeriesModule {
         super(dcmobj);
     }
 
+    @Override
     public void init() {
         setModality(Modality.KO);
     }
 
+    @Override
     public void validate(ValidationContext ctx, ValidationResult result) {
         super.validate(ctx, result);
         if (!Modality.KO.equals(getModality())) {

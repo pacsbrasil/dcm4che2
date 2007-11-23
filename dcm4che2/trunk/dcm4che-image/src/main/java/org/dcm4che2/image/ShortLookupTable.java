@@ -53,24 +53,29 @@ public class ShortLookupTable extends LookupTable {
         this.data = data;
     }
 
+    @Override
     public final int length() {
         return data.length;
     }
 
+    @Override
     public final byte lookupByte(int in) {
         return (byte) lookupShort(in);
     }
 
+    @Override
     public final short lookupShort(int in) {
         int tmp = ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
         return tmp <= 0 ? data[0] : tmp >= data.length ? data[data.length - 1]
                 : data[tmp];
     }
 
+    @Override
     public final int lookup(int in) {
         return lookupShort(in) & 0xffff;
     }
 
+    @Override
     public final byte[] lookup(byte[] src, byte[] dst) {
         if (dst == null) {
             dst = new byte[src.length];
@@ -81,6 +86,7 @@ public class ShortLookupTable extends LookupTable {
         return dst;
     }
 
+    @Override
     public final short[] lookup(byte[] src, short[] dst) {
         if (dst == null) {
             dst = new short[src.length];
@@ -91,6 +97,7 @@ public class ShortLookupTable extends LookupTable {
         return dst;
     }
 
+    @Override
     public final int[] lookup(byte[] src, int[] dst, int alpha) {
         if (dst == null) {
             dst = new int[src.length];
@@ -102,6 +109,7 @@ public class ShortLookupTable extends LookupTable {
         return dst;
     }
         
+    @Override
     public final byte[] lookup(short[] src, byte[] dst) {
         if (dst == null) {
             dst = new byte[src.length];
@@ -112,6 +120,7 @@ public class ShortLookupTable extends LookupTable {
         return dst;
     }
 
+    @Override
     public final short[] lookup(short[] src, short[] dst) {
         if (dst == null) {
             dst = new short[src.length];
@@ -122,6 +131,7 @@ public class ShortLookupTable extends LookupTable {
         return dst;
     }
 
+    @Override
     public final int[] lookup(short[] src, int[] dst, int alpha) {
         if (dst == null) {
             dst = new int[src.length];
@@ -143,6 +153,7 @@ public class ShortLookupTable extends LookupTable {
                 outBits, newData) : this;
     }
 
+    @Override
     protected LookupTable scale(int outBits, boolean inverse,
             short[] pval2out) {
         if (outBits == this.outBits && !inverse && pval2out == null) {
@@ -195,6 +206,7 @@ public class ShortLookupTable extends LookupTable {
         return this;
     }
 
+    @Override
     protected LookupTable combine(LookupTable other, int outBits,
             boolean inverse, short[] pval2out) {
         int shift1 = other.inBits - this.outBits;
@@ -246,6 +258,7 @@ public class ShortLookupTable extends LookupTable {
                 newData);
     }
 
+    @Override
     protected LookupTable combine(LookupTable vlut, LookupTable plut,
             int outBits, boolean inverse, short[] pval2out) {
         int shift1 = plut.inBits - vlut.outBits;

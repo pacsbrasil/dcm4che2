@@ -62,6 +62,7 @@ public class InstancesAccessedMessage extends AuditMessageSupport {
         return addParticipantObject(ParticipantObject.createStudy(uid, desc));
     }
     
+    @Override
     public void validate() {
         super.validate();
         ParticipantObject study = null;        

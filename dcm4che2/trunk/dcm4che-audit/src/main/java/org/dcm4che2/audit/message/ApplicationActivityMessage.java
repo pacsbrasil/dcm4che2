@@ -144,6 +144,7 @@ public class ApplicationActivityMessage extends AuditMessage {
                 .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION_LAUNCHER));
     }
 
+    @Override
     public void validate() {
         super.validate();
         ActiveParticipant app = null;

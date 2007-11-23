@@ -83,6 +83,7 @@ public class AuditLogUsedMessage extends AuditMessage {
         return obj;
     }
 
+    @Override
     public void validate() {
         super.validate();
         ActiveParticipant user = getRequestingActiveParticipants();

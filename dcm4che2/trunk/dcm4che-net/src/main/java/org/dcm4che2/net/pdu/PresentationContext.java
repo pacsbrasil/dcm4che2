@@ -180,8 +180,8 @@ public class PresentationContext
         return sb;
     }
 
-    public String toString()
-    {
+    @Override
+    public String toString() {
         return toStringBuffer(new StringBuffer()).toString();
     }
 

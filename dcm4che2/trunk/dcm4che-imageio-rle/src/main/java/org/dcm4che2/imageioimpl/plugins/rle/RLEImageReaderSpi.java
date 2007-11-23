@@ -76,15 +76,18 @@ public class RLEImageReaderSpi extends ImageReaderSpi {
                 null, false, null, null, null, null);
     }
 
+    @Override
     public String getDescription(Locale locale) {
         return "RLE Image Reader";
     }
 
+    @Override
     public boolean canDecodeInput(Object source) throws IOException {
         // never auto-selected by ImageIO
         return false;
     }
 
+    @Override
     public ImageReader createReaderInstance(Object extension)
             throws IIOException {
         return new RLEImageReader(this);

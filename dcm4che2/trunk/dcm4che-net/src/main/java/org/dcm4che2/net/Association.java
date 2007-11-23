@@ -149,6 +149,7 @@ public class Association implements Runnable {
                         socket);
     }
 
+    @Override
     public String toString() {
         return name;
     }

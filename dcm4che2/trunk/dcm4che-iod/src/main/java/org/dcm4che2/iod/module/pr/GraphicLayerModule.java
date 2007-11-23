@@ -116,6 +116,7 @@ public class GraphicLayerModule extends Module {
 	 * @deprecated No recommended to be used any longer.
 	 * @return the RGB value to display as an integer triplet.
 	 */
+	@Deprecated
 	public int[] getGraphicLayerRecommendedDisplayRGBValueRET() {
 		return dcmobj.getInts(Tag.GraphicLayerRecommendedDisplayRGBValueRET);
 	}

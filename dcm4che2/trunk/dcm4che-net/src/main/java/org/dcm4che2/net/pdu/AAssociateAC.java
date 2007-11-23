@@ -47,8 +47,8 @@ public class AAssociateAC extends AAssociateRQAC
 {
     protected UserIdentityAC userIdentity;
 
-    public String toString()
-    {
+    @Override
+    public String toString() {
         return super.toString("A-ASSOCIATE-AC");
     }
 
@@ -61,6 +61,7 @@ public class AAssociateAC extends AAssociateRQAC
         this.userIdentity = userIdentity;
     }
     
+    @Override
     public int userInfoLength() {
         int len = super.userInfoLength();
         if (userIdentity != null)
@@ -69,6 +70,7 @@ public class AAssociateAC extends AAssociateRQAC
     }
 
 
+    @Override
     protected void appendUserIdentity(StringBuffer sb) {
         if (userIdentity != null)
             sb.append("\n  ").append(userIdentity);

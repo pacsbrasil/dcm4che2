@@ -49,8 +49,8 @@ public class AAssociateRQ extends AAssociateRQAC
     protected int pcid = -1;
     protected UserIdentityRQ userIdentity;
 
-    public String toString()
-    {
+    @Override
+    public String toString() {
         return super.toString("A-ASSOCIATE-RQ");
     }
     
@@ -72,6 +72,7 @@ public class AAssociateRQ extends AAssociateRQAC
         this.userIdentity = userIdentity;
     }
 
+    @Override
     public int userInfoLength() {
         int len = super.userInfoLength();
         if (userIdentity != null)
@@ -79,6 +80,7 @@ public class AAssociateRQ extends AAssociateRQAC
         return len;
     }
 
+    @Override
     protected void appendUserIdentity(StringBuffer sb) {
         if (userIdentity != null)
             sb.append("\n  ").append(userIdentity);

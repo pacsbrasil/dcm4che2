@@ -427,23 +427,21 @@ class PDUEncoder extends PDVOutputStream
                     + ", pcid = " + pdvpcid + ", mch = " + (pdvcmd | last) + "]");
     }
 
-    public void write(int b) throws IOException
-    {
+    @Override
+    public void write(int b) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         flushPDataTF();
         put(b);
     }
 
-    public void write(byte[] b, int off, int len)
-    throws IOException
-    {
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         int pos = off;
         int remaining = len;
-        while (remaining > 0)
-        {
+        while (remaining > 0) {
             flushPDataTF();
             int write = Math.min(remaining, free());
             put(b, pos, write);
@@ -460,20 +458,19 @@ class PDUEncoder extends PDVOutputStream
         as.sendPDataTF();
     }
 
-    public void close() throws IOException
-    {
+    @Override
+    public void close() throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         encodePDVHeader(PDVType.LAST);
     }
 
-    public void copyFrom(InputStream in, int len) throws IOException
-    {
+    @Override
+    public void copyFrom(InputStream in, int len) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         int remaining = len;
-        while (remaining > 0)
-        {
+        while (remaining > 0) {
             flushPDataTF();
             int copy = in.read(buf, pos, Math.min(remaining, free()));
             if (copy == -1)
@@ -483,12 +480,11 @@ class PDUEncoder extends PDVOutputStream
         }
     }
 
-    public void copyFrom(InputStream in) throws IOException
-    {
+    @Override
+    public void copyFrom(InputStream in) throws IOException {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
-        for (;;)
-        {
+        for (;;) {
             flushPDataTF();
             int copy = in.read(buf, pos, free());
             if (copy == -1)

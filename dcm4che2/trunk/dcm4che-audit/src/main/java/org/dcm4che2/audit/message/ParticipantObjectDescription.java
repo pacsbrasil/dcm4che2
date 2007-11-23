@@ -131,10 +131,12 @@ public class ParticipantObjectDescription extends BaseElement {
         return this;
     }
 
+    @Override
     protected boolean isEmpty() {
         return false;
     }
     
+    @Override
     protected void outputContent(Writer out) throws IOException {
         outputChilds(out, mppss);
         outputChilds(out, accessions);
@@ -169,10 +171,12 @@ public class ParticipantObjectDescription extends BaseElement {
             return toStringList(instances, "UID");
         }
 
+        @Override
         protected boolean isEmpty() {
             return instances.isEmpty();
         }
         
+        @Override
         protected void outputContent(Writer out) throws IOException {
             outputChilds(out, instances);
         }

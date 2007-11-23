@@ -78,35 +78,43 @@ public class RLEImageReader extends ImageReader {
         super(originator);
     }
 
+    @Override
     public void setInput(Object input, boolean seekForwardOnly, boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
         iis = (ImageInputStream) input;
     }
     
+    @Override
     public int getHeight(int imageIndex) throws IOException {
         return 1;
     }
 
+    @Override
     public int getWidth(int imageIndex) throws IOException {
         return 1;
     }
 
+    @Override
     public int getNumImages(boolean allowSearch) throws IOException {
         return 1;
     }
 
+    @Override
     public Iterator getImageTypes(int imageIndex) throws IOException {
         return null;
     }
 
+    @Override
     public IIOMetadata getStreamMetadata() throws IOException {
         return null;
     }
 
+    @Override
     public IIOMetadata getImageMetadata(int imageIndex) throws IOException {
         return null;
     }
 
+    @Override
     public BufferedImage read(int imageIndex, ImageReadParam param)
             throws IOException {
         if (input == null)
