@@ -130,7 +130,7 @@ public class DicomImageReadParam extends ImageReadParam {
 		}
 		overlayRGB = overlayRGB.trim();
 		if( overlayRGB.startsWith("#") ) overlayRGB = overlayRGB.substring(1,overlayRGB.length());
-		if( overlayRGB.isEmpty() ) {
+		if( overlayRGB.length() == 0 ) {
 			this.overlayRGB = null;
 			return;
 		}

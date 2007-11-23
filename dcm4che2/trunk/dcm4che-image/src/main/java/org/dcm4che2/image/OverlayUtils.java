@@ -158,7 +158,7 @@ public class OverlayUtils {
 		byte[] rArr = rgbArr;
 		byte[] gArr = rgbArr;
 		byte[] bArr = rgbArr;
-		if (rgbs != null && !rgbs.isEmpty()) {
+		if (rgbs != null && rgbs.length() > 0) {
 			if (rgbs.startsWith("#"))
 				rgbs = rgbs.substring(1);
 			int rgb = Integer.parseInt(rgbs, 16);

@@ -42,7 +42,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -219,9 +219,15 @@ class PDUEncoder extends PDVOutputStream
     
     private void putASCIIString(String s)
     {
-        byte[] bytes = s.getBytes(Charset.forName("US-ASCII"));
-        System.arraycopy(bytes, 0, buf, pos, bytes.length);
-        pos += bytes.length;
+    	try {
+            byte[] bytes;
+            bytes = s.getBytes("US-ASCII");
+            System.arraycopy(bytes, 0, buf, pos, bytes.length);
+            pos += bytes.length;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(
+                    "unreachable; US-ASCII is always available", e);
+        }
     }
 
     private void encodeAET(String aet)

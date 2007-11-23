@@ -42,7 +42,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -285,11 +285,17 @@ class PDUDecoder extends PDVInputStream
 
     private String decodeASCIIString(int len)
     {
-        if (pos + len > pdulen + 6)
-            throw new IndexOutOfBoundsException();
-        final String s = new String(buf, pos, len, Charset.forName("US-ASCII"));
-        pos += len;
-        return s;
+    	try {
+            if (pos + len > pdulen + 6)
+                throw new IndexOutOfBoundsException();
+            String s;
+            s = new String(buf, pos, len, "US-ASCII");
+            pos += len;
+            return s;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(
+                    "unreachable; US-ASCII is always available", e);
+        }
     }
     
     private void decodeItem(AAssociateRQAC rqac) throws AAbort
