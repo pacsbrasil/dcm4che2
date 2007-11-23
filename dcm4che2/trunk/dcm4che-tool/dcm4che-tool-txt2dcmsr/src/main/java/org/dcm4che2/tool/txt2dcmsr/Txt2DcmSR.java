@@ -141,7 +141,7 @@ public class Txt2DcmSR {
         DicomElement sq = attrs.get(Tag.toTagPath(cfg.getProperty("")));
         sq.getDicomObject().putBytes(Tag.TextValue, VR.UT, readBytes(txtFile));
         if (paragraphs) {
-            splitParagraphs(attrs, sq);
+            splitParagraphs(sq);
         }
         
         attrs.initFileMetaInformation(transferSyntax);
@@ -155,7 +155,7 @@ public class Txt2DcmSR {
         }
     }    
 
-    private void splitParagraphs(DicomObject attrs, DicomElement sq) {
+    private void splitParagraphs(DicomElement sq) {
         DicomObject item = sq.getDicomObject();
         String txt = item.getString(Tag.TextValue);
         StringTokenizer stk = new StringTokenizer(txt, "\r\n");

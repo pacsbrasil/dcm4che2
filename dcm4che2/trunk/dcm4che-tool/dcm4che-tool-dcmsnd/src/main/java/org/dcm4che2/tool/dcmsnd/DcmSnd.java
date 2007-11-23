@@ -954,7 +954,7 @@ public class DcmSnd extends StorageCommitmentService {
                 DimseRSPHandler rspHandler = new DimseRSPHandler() {
                     public void onDimseRSP(Association as, DicomObject cmd,
                             DicomObject data) {
-                        DcmSnd.this.onDimseRSP(as, cmd, data);
+                        DcmSnd.this.onDimseRSP(cmd);
                     }
                 };
 
@@ -1116,7 +1116,7 @@ public class DcmSnd extends StorageCommitmentService {
         System.err.println(cmd.toString());
     }
 
-    private void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
+    private void onDimseRSP(DicomObject cmd) {
         int status = cmd.getInt(Tag.Status);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
         FileInfo info = (FileInfo) files.get(msgId - 1);

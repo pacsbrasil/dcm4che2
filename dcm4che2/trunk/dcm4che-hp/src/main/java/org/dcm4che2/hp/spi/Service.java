@@ -141,7 +141,7 @@ public final class Service {
      * not already a member of the returned set.
      */
     private static int parseLine(Class service, URL u, BufferedReader r, int lc,
-				 List names, Set returned)
+				 List<String> names, Set<String> returned)
 	throws IOException, ServiceConfigurationError
     {
 	String ln = r.readLine();
@@ -194,12 +194,12 @@ public final class Service {
      *         If an I/O error occurs while reading from the given URL, or
      *         if a configuration-file format error is detected
      */
-    private static Iterator parse(Class service, URL u, Set returned)
+    private static Iterator<String> parse(Class service, URL u, Set<String> returned)
 	throws ServiceConfigurationError
     {
 	InputStream in = null;
 	BufferedReader r = null;
-	ArrayList names = new ArrayList();
+	ArrayList<String> names = new ArrayList<String>();
 	try {
 	    in = u.openStream();
 	    r = new BufferedReader(new InputStreamReader(in, "utf-8"));
@@ -227,8 +227,8 @@ public final class Service {
 	Class service;
 	ClassLoader loader;
 	Enumeration configs = null;
-	Iterator pending = null;
-	Set returned = new TreeSet();
+	Iterator<String> pending = null;
+	Set<String> returned = new TreeSet<String>();
 	String nextName = null;
 
 	private LazyIterator(Class service, ClassLoader loader) {
@@ -257,7 +257,7 @@ public final class Service {
 		}
 		pending = parse(service, (URL)configs.nextElement(), returned);
 	    }
-	    nextName = (String)pending.next();
+	    nextName = pending.next();
 	    return true;
 	}
 

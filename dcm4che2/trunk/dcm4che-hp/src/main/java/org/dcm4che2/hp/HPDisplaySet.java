@@ -55,16 +55,11 @@ import org.dcm4che2.data.VR;
  * 
  */
 public class HPDisplaySet {
-
     private final DicomObject dcmobj;
-
     private HPImageSet imageSet;
-
-    private final List imageBoxes;
-
-    private final List filters;
-
-    private final List cmps;
+    private final List<HPImageBox> imageBoxes;
+    private final List<HPSelector> filters;
+    private final List<HPComparator> cmps;
 
     protected HPDisplaySet(DicomObject dcmobj, HPImageSet imageSet) {
         this.imageSet = imageSet;
@@ -74,17 +69,17 @@ public class HPDisplaySet {
             throw new IllegalArgumentException(
                     "Missing (0072,0300) Image Boxes Sequence");
         int numImageBoxes = imageBoxesSeq.countItems();
-        this.imageBoxes = new ArrayList(numImageBoxes);
+        this.imageBoxes = new ArrayList<HPImageBox>(numImageBoxes);
         for (int i = 0; i < numImageBoxes; i++) {
             imageBoxes.add(createHPImageBox(imageBoxesSeq.getDicomObject(i),
                     numImageBoxes));
         }
         DicomElement filterOpSeq = dcmobj.get(Tag.FilterOperationsSequence);
         if (filterOpSeq == null || filterOpSeq.isEmpty()) {
-            this.filters = new ArrayList(0);
+            this.filters = new ArrayList<HPSelector>(0);
         } else {
             int n = filterOpSeq.countItems();
-            this.filters = new ArrayList(n);
+            this.filters = new ArrayList<HPSelector>(n);
             for (int i = 0; i < n; i++) {
                 filters.add(HPSelectorFactory
                         .createDisplaySetFilter(filterOpSeq.getDicomObject(i)));
@@ -92,10 +87,10 @@ public class HPDisplaySet {
         }
         DicomElement sortingOpSeq = dcmobj.get(Tag.SortingOperationsSequence);
         if (sortingOpSeq == null || sortingOpSeq.isEmpty()) {
-            this.cmps = new ArrayList(0);
+            this.cmps = new ArrayList<HPComparator>(0);
         } else {
             int n = sortingOpSeq.countItems();
-            this.cmps = new ArrayList();
+            this.cmps = new ArrayList<HPComparator>();
             for (int i = 0; i < n; i++) {
                 cmps.add(HPComparatorFactory.createHPComparator(sortingOpSeq
                         .getDicomObject(i)));
@@ -104,9 +99,9 @@ public class HPDisplaySet {
     }
 
     public HPDisplaySet() {
-        imageBoxes = new ArrayList();
-        filters = new ArrayList();
-        cmps = new ArrayList();
+        imageBoxes = new ArrayList<HPImageBox>();
+        filters = new ArrayList<HPSelector>();
+        cmps = new ArrayList<HPComparator>();
         dcmobj = new BasicDicomObject();
         dcmobj.putSequence(Tag.ImageBoxesSequence);
         dcmobj.putSequence(Tag.FilterOperationsSequence);
@@ -150,7 +145,7 @@ public class HPDisplaySet {
         imageBoxesSeq.removeDicomObject(index);
         imageBoxes.remove(index);
         for (; index < imageBoxes.size(); ++index) {
-            ((HPImageBox) imageBoxes.get(index)).setImageBoxNumber(index+1);
+            imageBoxes.get(index).setImageBoxNumber(index+1);
         }
         return true;
     }    
@@ -213,7 +208,7 @@ public class HPDisplaySet {
     
     public boolean contains(DicomObject o, int frame) {
         for (int i = 0, n = filters.size(); i < n; i++) {
-            HPSelector selector = (HPSelector) filters.get(i);
+            HPSelector selector = filters.get(i);
             if (!selector.matches(o, frame))
                 return false;
         }
@@ -223,7 +218,7 @@ public class HPDisplaySet {
     public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2) {
         int result = 0;
         for (int i = 0, n = cmps.size(); result == 0 && i < n; i++) {
-            HPComparator cmp = (HPComparator) cmps.get(i);
+            HPComparator cmp = cmps.get(i);
             result = cmp.compare(o1, frame1, o2, frame2);
         }
         return result;

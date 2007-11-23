@@ -54,17 +54,15 @@ import org.dcm4che2.data.VR;
  * 
  */
 public class HPScrollingGroup {
-    
     private final DicomObject dcmobj;
-
-    private final List displaySets;
+    private final List<HPDisplaySet> displaySets;
 
     public HPScrollingGroup() {
         dcmobj = new BasicDicomObject();
-        displaySets = new ArrayList();
+        displaySets = new ArrayList<HPDisplaySet>();
     }
 
-    public HPScrollingGroup(DicomObject dcmobj, List totDisplaySets) {
+    public HPScrollingGroup(DicomObject dcmobj, List<HPDisplaySet> totDisplaySets) {
         this.dcmobj = dcmobj;
         int[] group = dcmobj.getInts(Tag.DisplaySetScrollingGroup);
         if (group == null)
@@ -74,7 +72,7 @@ public class HPScrollingGroup {
             throw new IllegalArgumentException(
                     "" + dcmobj.get(Tag.DisplaySetScrollingGroup));           
         }
-        this.displaySets = new ArrayList(group.length);
+        this.displaySets = new ArrayList<HPDisplaySet>(group.length);
         for (int j = 0; j < group.length; j++) {
             try {
                 this.displaySets.add(totDisplaySets.get(group[j] - 1));
@@ -117,7 +115,7 @@ public class HPScrollingGroup {
         int[] val = new int[displaySets.size()];
         for (int i = 0; i < val.length; i++) {
             val[i] = 
-                ((HPDisplaySet) displaySets.get(i)).getDisplaySetNumber();
+                displaySets.get(i).getDisplaySetNumber();
         }
         dcmobj.putInts(Tag.DisplaySetScrollingGroup, VR.US, val);
     }

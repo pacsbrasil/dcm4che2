@@ -70,7 +70,8 @@ public class GraphicLayerModule extends Module {
 			return null;
 		}
 		int sqCount = sq.countItems();
-		Map layers = new HashMap(sqCount);
+		Map<String, GraphicLayerModule> layers = new HashMap<String, GraphicLayerModule>(
+				sqCount);
 		for (int i = 0; i < sqCount; i++) {
 			GraphicLayerModule glm=new GraphicLayerModule(sq.getDicomObject(i));
 			layers.put(glm.getGraphicLayer(),glm);

@@ -87,14 +87,14 @@ extends AbstractHPComparator
 
     public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2)
     {
-        Date t1 = toAcqTime(o1, frame1);
-        Date t2 = toAcqTime(o2, frame2);
+        Date t1 = toAcqTime(o1);
+        Date t2 = toAcqTime(o2);
         if (t1 == null || t2 == null)
             return 0;
         return t1.compareTo(t2) * sign;
     }
 
-    private Date toAcqTime(DicomObject o, int frame)
+    private Date toAcqTime(DicomObject o)
     {
         Date t = o.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
         if (t == null)

@@ -65,9 +65,9 @@ public class HPRegistry extends ServiceRegistry
         registerApplicationClasspathSpis(cl);
     }
 
-    private static Iterator getInitialCategories()
+    private static Iterator<Class<?>> getInitialCategories()
     {
-        ArrayList l = new ArrayList(2);
+        ArrayList<Class<?>> l = new ArrayList<Class<?>>(2);
         l.add(HPSelectorSpi.class);
         l.add(HPComparatorSpi.class);
         return l.iterator();

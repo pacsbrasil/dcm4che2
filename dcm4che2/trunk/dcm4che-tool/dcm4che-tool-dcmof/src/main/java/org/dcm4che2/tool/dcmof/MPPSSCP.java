@@ -64,7 +64,7 @@ class MPPSSCP {
         protected DicomObject doNCreate(Association as, int pcid,
                 DicomObject rq, DicomObject data, DicomObject rsp)
                 throws DicomServiceException {
-            return MPPSSCP.this.doNCreate(as, pcid, rq, data, rsp);
+            return MPPSSCP.this.doNCreate(rq, data, rsp);
         }
     };
 
@@ -73,7 +73,7 @@ class MPPSSCP {
 
         protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
                 DicomObject data, DicomObject rsp) throws DicomServiceException {
-            return MPPSSCP.this.doNSet(as, pcid, rq, data, rsp);
+            return MPPSSCP.this.doNSet(rq, data);
         }
     };
 
@@ -97,9 +97,9 @@ class MPPSSCP {
         return nsetscp;
     }
 
-    private DicomObject doNCreate(Association as, int pcid, DicomObject rq,
-            DicomObject data, DicomObject rsp) throws DicomServiceException {
-        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+    private DicomObject doNCreate(DicomObject rq, DicomObject data,
+			DicomObject rsp) throws DicomServiceException {
+		String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
         if (iuid == null)
             iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
         File f = mkFile(iuid);
@@ -121,8 +121,8 @@ class MPPSSCP {
         dcmOF.storeAsDICOM(f, data);
     }
     
-    private DicomObject doNSet(Association as, int pcid, DicomObject rq,
-            DicomObject data, DicomObject rsp) throws DicomServiceException {
+    private DicomObject doNSet(DicomObject rq, DicomObject data)
+			throws DicomServiceException {
         final String iuid = rq.getString(Tag.RequestedSOPInstanceUID);
         File f = mkFile(iuid);
         if (!f.exists()) {

@@ -55,18 +55,16 @@ import org.dcm4che2.data.VR;
  * 
  */
 public class HPImageSet {
-
     private final DicomObject dcmobj;
+    private final List<HPSelector> selectors;
 
-    private final List selectors;
-
-    protected HPImageSet(List selectors, DicomObject dcmobj) {
+    protected HPImageSet(List<HPSelector> selectors, DicomObject dcmobj) {
         this.selectors = selectors;
         this.dcmobj = dcmobj;
     }
 
     protected HPImageSet() {
-        this.selectors = new ArrayList(4);
+        this.selectors = new ArrayList<HPSelector>(4);
         this.dcmobj = new BasicDicomObject();
         DicomObject is = new BasicDicomObject();
         is.putSequence(Tag.ImageSetSelectorSequence);
@@ -87,7 +85,7 @@ public class HPImageSet {
 
     public boolean contains(DicomObject o, int frame) {
         for (int i = 0, n = selectors.size(); i < n; i++) {
-            HPSelector selector = (HPSelector) selectors.get(i);
+            HPSelector selector = selectors.get(i);
             if (!selector.matches(o, frame))
                 return false;
         }

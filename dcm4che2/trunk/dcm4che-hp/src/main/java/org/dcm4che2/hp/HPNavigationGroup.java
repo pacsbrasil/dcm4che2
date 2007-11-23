@@ -54,19 +54,16 @@ import org.dcm4che2.data.VR;
  * 
  */
 public class HPNavigationGroup {
-    
     private final DicomObject dcmobj;
-
     private HPDisplaySet navDisplaySet;
-
-    private final List refDisplaySets;
+    private final List<HPDisplaySet> refDisplaySets;
 
     public HPNavigationGroup() {
         dcmobj = new BasicDicomObject();
-        refDisplaySets = new ArrayList();
+        refDisplaySets = new ArrayList<HPDisplaySet>();
     }
 
-    public HPNavigationGroup(DicomObject dcmobj, List displaySets) {
+    public HPNavigationGroup(DicomObject dcmobj, List<HPDisplaySet> displaySets) {
         this.dcmobj = dcmobj;
         int[] group = dcmobj.getInts(Tag.ReferenceDisplaySets);
         if (group == null)
@@ -79,7 +76,7 @@ public class HPNavigationGroup {
         int nds = dcmobj.getInt(Tag.NavigationDisplaySet);
         if (nds != 0) {
             try {
-                navDisplaySet = (HPDisplaySet) displaySets.get(nds - 1);
+                navDisplaySet = displaySets.get(nds - 1);
             } catch (IndexOutOfBoundsException e) {
                 throw new IllegalArgumentException(
                         "Navigation Display Set does not exists: "
@@ -92,7 +89,7 @@ public class HPNavigationGroup {
                                 + dcmobj.get(Tag.ReferenceDisplaySets));
             }
         }
-        refDisplaySets = new ArrayList(group.length);
+        refDisplaySets = new ArrayList<HPDisplaySet>(group.length);
         for (int j = 0; j < group.length; j++) {
             try {
                 refDisplaySets.add(displaySets.get(group[j] - 1));
@@ -161,9 +158,8 @@ public class HPNavigationGroup {
     private void updateReferenceDisplaySets() {
         int[] val = new int[refDisplaySets.size()];
         for (int i = 0; i < val.length; i++) {
-            val[i] = 
-                ((HPDisplaySet) refDisplaySets.get(i)).getDisplaySetNumber();
-        }
+			val[i] = refDisplaySets.get(i).getDisplaySetNumber();
+		}
         dcmobj.putInts(Tag.ReferenceDisplaySets, VR.US, val);
     }
 

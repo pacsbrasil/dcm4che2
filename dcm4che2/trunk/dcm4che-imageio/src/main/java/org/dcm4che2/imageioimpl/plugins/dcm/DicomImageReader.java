@@ -426,7 +426,7 @@ public class DicomImageReader extends ImageReader {
             throws IOException {
         reader.setInput(itemStream(imageIndex));
         BufferedImage bi = reader.read(0, param);
-        postDecompress(imageIndex + 1);
+        postDecompress();
         return bi;
     }
 
@@ -437,7 +437,7 @@ public class DicomImageReader extends ImageReader {
         }
         reader.setInput(itemStream(imageIndex));
         Raster raster = reader.readRaster(0, param);
-        postDecompress(imageIndex + 1);
+        postDecompress();
         return raster;
     }
 
@@ -452,7 +452,7 @@ public class DicomImageReader extends ImageReader {
         }
     }
 
-    private void postDecompress(int nextIndex) {
+    private void postDecompress() {
         // workaround for Bug in J2KImageReader and
         // J2KImageReaderCodecLib.setInput()
         if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
