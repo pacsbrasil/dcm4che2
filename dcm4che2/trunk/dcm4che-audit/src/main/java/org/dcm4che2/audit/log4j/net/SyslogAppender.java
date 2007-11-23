@@ -131,6 +131,7 @@ public class SyslogAppender extends AppenderSkeleton {
 
   public
   SyslogAppender() {
+      // empty default c'tor
   }
 
   public

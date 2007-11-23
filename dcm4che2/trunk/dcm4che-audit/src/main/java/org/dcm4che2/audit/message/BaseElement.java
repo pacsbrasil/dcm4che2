@@ -183,7 +183,16 @@ class BaseElement {
         return true;
     }
 
+    /**
+     * Allows subclasses to write content to the output.
+     * <em>Note to implementers: {@link #isEmpty()} should also be overridden to return <code>false</code>, otherwise this method will not be called</em>.
+     * 
+     * @param out the writer to write the output to.
+     * @throws IOException if an error occurs.
+     */
+    @SuppressWarnings("unused")
     protected void outputContent(Writer out) throws IOException {
+        // empty
     }
     
     protected void outputChilds(Writer out, List childs) throws IOException {

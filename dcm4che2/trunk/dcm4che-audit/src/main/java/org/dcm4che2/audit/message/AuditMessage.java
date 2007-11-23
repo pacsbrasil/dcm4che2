@@ -40,7 +40,7 @@ package org.dcm4che2.audit.message;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Method;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.TimeZone;
 
 /**
@@ -88,32 +87,13 @@ public class AuditMessage extends BaseElement {
     
     private static String processID;
     static {
-        try {
-            processID = System.getProperty("app.pid");
-        } catch (Exception e) {}
-        
+        processID = System.getProperty("app.pid");
         if (processID == null) {
-            try {
-                Class c1 = Class.forName("java.lang.management.ManagementFactory");
-                Method getRuntime = c1.getMethod("getRuntimeMXBean", null);
-                Object rt = getRuntime.invoke(null, null);
-                Class c2 = Class.forName("java.lang.management.RuntimeMXBean");
-                Method getName = c2.getMethod("getName", null);
-                processID = (String) getName.invoke(rt, null);
-            } catch (Exception e) { // fallback for JDK 1.4
-                int random = Math.abs(new Random().nextInt());
-                processID = "" + random;
-            }
-        }                            
+            processID = ManagementFactory.getRuntimeMXBean().getName();
+        }
     }
     
-    private static String processName;
-    static {
-        try {
-            processName = System.getProperty("app.name");
-        } catch (Exception e) {}
-    }
-    
+    private static String processName = System.getProperty("app.name");
     private static String[] localAETitles; 
 
     protected final AuditEvent event;

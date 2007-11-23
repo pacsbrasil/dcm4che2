@@ -170,6 +170,7 @@ public class ElementDictionary implements Serializable {
 	private transient String privateCreator;
 
 	private ElementDictionary() {
+	    // empty private c'tor.
 	}
 
 	private ElementDictionary(int initialCapacity) {
