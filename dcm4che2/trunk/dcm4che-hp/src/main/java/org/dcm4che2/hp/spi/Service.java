@@ -204,7 +204,9 @@ public final class Service {
 	    in = u.openStream();
 	    r = new BufferedReader(new InputStreamReader(in, "utf-8"));
 	    int lc = 1;
-	    while ((lc = parseLine(service, u, r, lc, names, returned)) >= 0);
+	    while (lc >= 0) {
+	        lc = parseLine(service, u, r, lc, names, returned);
+	    }
 	} catch (IOException x) {
 	    fail(service, ": " + x);
 	} finally {
