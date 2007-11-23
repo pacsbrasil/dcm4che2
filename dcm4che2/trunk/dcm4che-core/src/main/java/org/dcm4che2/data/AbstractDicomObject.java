@@ -40,7 +40,6 @@ package org.dcm4che2.data;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -49,7 +48,7 @@ import org.dcm4che2.util.DateUtils;
 
 abstract class AbstractDicomObject implements DicomObject {
 
-    protected Object writeReplace() throws ObjectStreamException {
+    private Object writeReplace() {
         return new DicomObjectSerializer(this);
     }
 

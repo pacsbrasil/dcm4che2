@@ -95,9 +95,9 @@ implements CFindSCP
         }
     }
 
+    @SuppressWarnings("unused")
     protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd,
-            DicomObject data, DicomObject rsp) throws DicomServiceException
-    {
+            DicomObject data, DicomObject rsp) throws DicomServiceException {
         return new SingleDimseRSP(rsp);
     }
     

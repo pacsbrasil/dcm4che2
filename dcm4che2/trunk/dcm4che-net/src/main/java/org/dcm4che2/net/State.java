@@ -512,12 +512,12 @@ public class State
     /**
      * Send an A-ASSOCIATE-RQ PDU on the association.
      * 
-     * @param as The <code>Association</code> object.
-     * @param rq The <code>AAssociateRQ</code> object.
+     * @param as The {@link Association} object.
+     * @param rq The {@link AAssociateRQ} object.
      * @throws IOException If there was a problem in the network interaction.
      */
-    void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException
-    {
+    @SuppressWarnings("unused")
+    void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException {
         // as.illegalStateForSending("A-ASSOCIATE-RQ");
         throw new IllegalStateException(toString());
     }
