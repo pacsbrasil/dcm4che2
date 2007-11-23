@@ -85,7 +85,7 @@ public class ADTService extends AbstractHL7Service {
     private List issuersOfOnlyOtherPatientIDs;
 
     private boolean ignoreDeleteErrors;
-
+    private boolean handleEmptyMrgAsUpdate;
 
     public final String getPixUpdateNotificationMessageType() {
 		return pixUpdateNotificationMessageType;
@@ -140,20 +140,29 @@ public class ADTService extends AbstractHL7Service {
         this.pidXslPath = path;
     }
 
-	/**
-	 * @return Returns the ignoreNotFound.
-	 */
-	public boolean isIgnoreDeleteErrors() {
-		return ignoreDeleteErrors;
-	}
-	/**
-	 * @param ignoreNotFound The ignoreNotFound to set.
-	 */
-	public void setIgnoreDeleteErrors(boolean ignore) {
-		this.ignoreDeleteErrors = ignore;
-	}
+    /**
+     * @return Returns the ignoreNotFound.
+     */
+    public boolean isIgnoreDeleteErrors() {
+        return ignoreDeleteErrors;
+    }
+    /**
+     * @param ignoreNotFound The ignoreNotFound to set.
+     */
+    public void setIgnoreDeleteErrors(boolean ignore) {
+        this.ignoreDeleteErrors = ignore;
+    }
 	
-	public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+    public boolean isHandleEmptyMrgAsUpdate() {
+        return handleEmptyMrgAsUpdate;
+    }
+
+    public void setHandleEmptyMrgAsUpdate(boolean handleEmptyMrgAsUpdate) {
+        this.handleEmptyMrgAsUpdate = handleEmptyMrgAsUpdate;
+    }
+
+
+    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         try {
         	if (isUpdateNotificationMessage(msh, msg)) {
@@ -180,15 +189,18 @@ public class ADTService extends AbstractHL7Service {
                 Transformer t2 = templates.getTemplates(mrgXslFile).newTransformer();
                 t2.transform(new DocumentSource(msg), new SAXResult(mrg
                         .getSAXHandler2(null)));
-				final String opid = mrg.getString(Tags.PatientID);
-				if (opid == null || opid.trim().length() == 0)
-					throw new HL7Exception("AR",
-							"Missing required MRG-1: Prior Patient ID - Internal");
-				final String opname = mrg.getString(Tags.PatientName);
-                log.info("Merge Patient " + opname + ", PID:" + opid
-                        + " with "+ pname + ", PID:" + pid);
-                update.mergePatient(pat, mrg);
-            } else if ( isDelete(msh) ) {
+		final String opid = mrg.getString(Tags.PatientID);
+		if (opid != null && opid.trim().length() > 0) {
+		    final String opname = mrg.getString(Tags.PatientName);
+	            log.info("Merge Patient " + opname + ", PID:" + opid
+	                     + " with "+ pname + ", PID:" + pid);
+	            update.mergePatient(pat, mrg);
+	            return true;
+		} else if ( !this.handleEmptyMrgAsUpdate ) {
+		    throw new HL7Exception("AR", "Missing required MRG-1: Prior Patient ID - Internal");
+		} 
+            }  
+            if ( isDelete(msh) ) {
             	log.info("Delete Patient "+pat.getString( Tags.PatientName )
 						+ ", PID:"+pat.getString( Tags.PatientID ));
             	try {
@@ -268,12 +280,12 @@ public class ADTService extends AbstractHL7Service {
         return ds;
     } 
 	
-	private boolean isArrived(MSH msh) {
+    private boolean isArrived(MSH msh) {
         return "A10".equals(msh.triggerEvent);
-	}
+    }
 
-	private boolean isMerge(Document msg) {
-		return msg.getRootElement().element("MRG") != null;
+    private boolean isMerge(Document msg) {
+        return msg.getRootElement().element("MRG") != null;
     }
 
     private boolean isDelete(MSH msh) {

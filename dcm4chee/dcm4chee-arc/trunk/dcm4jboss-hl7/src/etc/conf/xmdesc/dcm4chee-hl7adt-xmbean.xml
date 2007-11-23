@@ -109,6 +109,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isHandleEmptyMrgAsUpdate"
+      setMethod="setHandleEmptyMrgAsUpdate">
+      <description><![CDATA[Handle ADT messages with empty MGR segment as update.<br/>
+      		This will allow processing of update/delete/arrived messages wich 
+      		contains an irregular empty MRG segment. (Missing MRG-1: Prior Patient ID)		
+      ]]></description>
+      <name>HandleEmptyMrgAsUpdate</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getHL7ServerName"
       setMethod="setHL7ServerName">
       <description>Used internally - do NOT modify.
