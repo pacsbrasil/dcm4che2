@@ -45,6 +45,7 @@ import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 
 /**
@@ -66,6 +67,7 @@ public abstract class BasicFormModel {
     private Locale locale = Locale.ENGLISH;
     private ResourceBundle[] messages;
 
+    protected Logger log = Logger.getLogger( getClass().getName() );
     
 	protected BasicFormModel( HttpServletRequest request ) {
 		currentUser = request.getUserPrincipal().getName();

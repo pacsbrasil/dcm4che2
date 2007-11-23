@@ -257,6 +257,7 @@ public class MWLModel extends BasicFormPagingModel {
 		
 		if ( newSearch ) setOffset(0);
 		Dataset searchDS = mwlFilter.toDataset();
+		log.debug("Use searchDS:"); log.debug(searchDS);
 		isLocal = MWLConsoleCtrl.getMwlScuDelegate().isLocal();
 		List l = MWLConsoleCtrl.getMwlScuDelegate().findMWLEntries( searchDS );
 		Collections.sort( l, comparator );

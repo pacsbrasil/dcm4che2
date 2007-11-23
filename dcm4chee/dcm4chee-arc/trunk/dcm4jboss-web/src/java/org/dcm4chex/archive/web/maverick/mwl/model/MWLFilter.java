@@ -62,55 +62,121 @@ public class MWLFilter extends ModalityBaseFilterModel {
 	}
     
     public void init() {
-        //requested procedure
-        ds.putSH( Tags.RequestedProcedureID );
-        ds.putUI( Tags.StudyInstanceUID );
-        //imaging service request
-        ds.putSH( Tags.AccessionNumber );
-        ds.putLT( Tags.ImagingServiceRequestComments );
-        ds.putLO( Tags.RequestingService );
-        ds.putPN( Tags.RequestingPhysician );
-        ds.putPN( Tags.ReferringPhysicianName );
-        ds.putLO( Tags.PlacerOrderNumber );
-        ds.putLO( Tags.FillerOrderNumber );
-        //Visit Identification
-        ds.putPN( Tags.PatientName );
-        ds.putLO( Tags.AdmissionID );
-        ds.putLO( Tags.PatientID);
-        //Patient demographic
-        ds.putDA( Tags.PatientBirthDate );
-        ds.putCS( Tags.PatientSex );
-        //Sched. procedure step seq
+    //Sched. procedure step seq
         dsSPS = ds.putSQ(Tags.SPSSeq).addNewItem();
-        dsSPS.putCS(Tags.SPSStatus);
         dsSPS.putAE( Tags.ScheduledStationAET );
-        dsSPS.putSH( Tags.SPSID );
-        dsSPS.putCS( Tags.Modality );
         dsSPS.putDA(Tags.SPSStartDate);
         dsSPS.putTM(Tags.SPSStartTime);
+        dsSPS.putCS( Tags.Modality );
         dsSPS.putPN( Tags.ScheduledPerformingPhysicianName );
+        dsSPS.putLO( Tags.SPSDescription );
+        dsSPS.putSH( Tags.ScheduledStationName );
+        dsSPS.putSH( Tags.SPSLocation );
+    	Dataset dsSpcs = addCodeSQ(ds, Tags.ScheduledProtocolCodeSeq);
+    	{
+    		DcmElement pCtxSq = dsSpcs.putSQ( Tags.ProtocolContextSeq );
+    		Dataset dsPCtxItem = pCtxSq.addNewItem();
+    		dsPCtxItem.putCS( Tags.ValueType );
+    		addCodeSQ(ds, Tags.ConceptNameCodeSeq);
+    		dsPCtxItem.putDT( Tags.DateTime );
+    		dsPCtxItem.putPN( Tags.PersonName );
+    		dsPCtxItem.putUT( Tags.TextValue );
+    		addCodeSQ(ds, Tags.ConceptCodeSeq);
+    		dsPCtxItem.putDS( Tags.NumericValue );
+        	addCodeSQ(ds, Tags.MeasurementUnitsCodeSeq);
+    		//TODO: all other from protocol code SQ 
+    	}
+        dsSPS.putLO( Tags.PreMedication );
+        dsSPS.putSH( Tags.SPSID );
+        dsSPS.putLO( Tags.RequestedContrastAgent );
+        dsSPS.putCS(Tags.SPSStatus);
+        //TODO: All other Attrs from SPS Module
+
         String d = new SimpleDateFormat(DATE_FORMAT).format(new Date());
         try {
             setStartDate( d );
         } catch (ParseException ignore) {}
-        dsSPS.putSH( Tags.ScheduledStationName );
-        //sched. protocol code seq;
-        DcmElement spcs = dsSPS.putSQ( Tags.ScheduledProtocolCodeSeq );
-        Dataset dsSpcs = spcs.addNewItem();
-        dsSpcs.putSH( Tags.CodeValue );
-        dsSpcs.putLO( Tags.CodeMeaning );
-        dsSpcs.putSH( Tags.CodingSchemeDesignator );
-        // or 
-        dsSPS.putLO( Tags.SPSDescription );
-        
-        //Req. procedure code seq
-        DcmElement rpcs = ds.putSQ( Tags.RequestedProcedureCodeSeq );
-        Dataset dsRpcs = rpcs.addNewItem();
-        dsRpcs.putSH( Tags.CodeValue );
-        dsRpcs.putLO( Tags.CodeMeaning );
-        dsRpcs.putSH( Tags.CodingSchemeDesignator );
-        // or 
+
+//Requested Procedure        
+        ds.putSH( Tags.RequestedProcedureID );
         ds.putLO( Tags.RequestedProcedureDescription );
+        {
+            Dataset dsRpcs = ds.putSQ( Tags.RequestedProcedureCodeSeq ).addNewItem();
+            dsRpcs.putSH( Tags.CodeValue );
+            dsRpcs.putLO( Tags.CodeMeaning );
+            dsRpcs.putSH( Tags.CodingSchemeDesignator );
+            dsRpcs.putSH( Tags.CodingSchemeVersion );
+        }
+        ds.putUI( Tags.StudyInstanceUID );
+        {
+            Dataset dsRefStdy = ds.putSQ( Tags.RefStudySeq ).addNewItem();
+            dsRefStdy.putUI( Tags.RefSOPClassUID );
+            dsRefStdy.putUI( Tags.RefSOPInstanceUID );
+        }
+        ds.putSH(Tags.RequestedProcedurePriority);
+        ds.putLO(Tags.PatientTransportArrangements);
+        //other Attrs from requested procedure Module
+        ds.putLO(Tags.ReasonForTheRequestedProcedure);
+        ds.putLT(Tags.RequestedProcedureComments);
+        addCodeSQ(ds, Tags.ReasonforRequestedProcedureCodeSeq);
+        ds.putSQ(Tags.RefStudySeq);
+        ds.putLO(Tags.RequestedProcedureLocation);
+        ds.putLO(Tags.ConfidentialityCode);
+        ds.putSH(Tags.ReportingPriority);
+        ds.putPN(Tags.NamesOfIntendedRecipientsOfResults);
+        ds.putSQ(Tags.IntendedRecipientsOfResultsIdentificationSeq);
+        
+//imaging service request
+        ds.putLT( Tags.ImagingServiceRequestComments );
+        ds.putPN( Tags.RequestingPhysician );
+        ds.putSQ(Tags.RequestingPhysicianIdentificationSeq);
+        ds.putPN( Tags.ReferringPhysicianName );
+        ds.putSQ(Tags.ReferringPhysicianIdentificationSeq);
+        ds.putLO( Tags.RequestingService );
+        ds.putSH( Tags.AccessionNumber );
+        ds.putDA(Tags.IssueDateOfImagingServiceRequest);
+        ds.putTM(Tags.IssueTimeOfImagingServiceRequest);
+        ds.putLO( Tags.PlacerOrderNumber );
+        ds.putLO( Tags.FillerOrderNumber );
+        ds.putPN(Tags.OrderEnteredBy);
+        ds.putSH(Tags.OrderEntererLocation);
+        ds.putSH(Tags.OrderCallbackPhoneNumber);
+        
+//Patient/Visit Identification
+        ds.putPN( Tags.PatientName );
+        ds.putLO( Tags.PatientID);
+        ds.putLO( Tags.AdmissionID );
+//Visit Status
+        ds.putLO(Tags.CurrentPatientLocation);
+        
+//Visit Relationship
+        {
+            Dataset dsRefPat = ds.putSQ( Tags.RefPatientSeq ).addNewItem();
+            dsRefPat.putUI( Tags.RefSOPClassUID );
+            dsRefPat.putUI( Tags.RefSOPInstanceUID );
+        }
+//Patient demographic
+        ds.putDA( Tags.PatientBirthDate );
+        ds.putCS( Tags.PatientSex );
+        ds.putDS( Tags.PatientWeight );
+        ds.putLO( Tags.ConfidentialityPatientData );
+//Patient medical
+        ds.putLO( Tags.PatientState );
+        ds.putUS( Tags.PregnancyStatus );
+        ds.putLO( Tags.MedicalAlerts );
+        ds.putLO( Tags.ContrastAllergies );
+        ds.putLO( Tags.SpecialNeeds );
+    }
+    
+
+	private Dataset addCodeSQ(Dataset ds, int sqTag){
+        DcmElement sq = ds.putSQ( sqTag );
+        Dataset item = sq.addNewItem();
+        item.putSH( Tags.CodeValue );
+        item.putLO( Tags.CodeMeaning );
+        item.putSH( Tags.CodingSchemeDesignator );
+        item.putSH( Tags.CodingSchemeVersion );
+        return item;
     }
 	
 	/**
