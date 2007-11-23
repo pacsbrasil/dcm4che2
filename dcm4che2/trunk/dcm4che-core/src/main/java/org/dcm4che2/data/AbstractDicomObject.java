@@ -48,7 +48,7 @@ import org.dcm4che2.util.DateUtils;
 
 abstract class AbstractDicomObject implements DicomObject {
 
-    private Object writeReplace() {
+    protected Object writeReplace() {
         return new DicomObjectSerializer(this);
     }
 
