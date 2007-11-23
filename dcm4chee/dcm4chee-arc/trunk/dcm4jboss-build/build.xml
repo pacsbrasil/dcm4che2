@@ -5,7 +5,6 @@
   
   <property name="version" value="2.13.0"/>
   <property name="audit-version" value="2.13.0"/>
-  <property name="store2dcm-version" value="2.13.0"/>
   <property name="target.dir" value="${basedir}/target"/>
   <property name="target.conf" value="${target.dir}/conf"/>
   <property name="target.audit-conf" value="${target.dir}/audit-conf"/>
@@ -16,8 +15,6 @@
     value="${m2.repos}/dcm4che/dcm4chee-audit-login/${audit-version}"/>
   <property name="dcm4chee-audit-logger.lib" 
     value="${m2.repos}/dcm4che/dcm4chee-audit-logger/${audit-version}"/>
-  <property name="dcm4chee-xds-store2dcm.sar" 
-    value="${m2.repos}/dcm4che/dcm4chee-xds-store2dcm/${store2dcm-version}"/>
 
   <!-- Override with your JBoss server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-4.2.2.GA"/>
@@ -47,8 +44,8 @@
     <ant inheritAll="false" dir="../dcm4jboss-web" target="war">
 		  <property name="version" value="${version}" />
 	  </ant>
-    <ant inheritAll="false" dir="../dcm4jboss-xds" target="jar"/>
-    <ant inheritAll="false" dir="../dcm4jboss-xds" target="war"/>
+    <!--ant inheritAll="false" dir="../dcm4jboss-xds" target="jar"/-->
+    <!--ant inheritAll="false" dir="../dcm4jboss-xds" target="war"/-->
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="sar"/>
     <!--ant inheritAll="false" dir="../dcm4jboss-cdw" target="jar"/-->
     <!--ant inheritAll="false" dir="../dcm4jboss-cdw" target="sar"/-->
@@ -174,10 +171,6 @@
         prefix="${dist.db.config}/lib">
         <include name="*jar"/>
       </zipfileset>
-      <zipfileset dir="${dcm4chee-xds-store2dcm.sar}"
-        prefix="${dist.db.config}/deploy">
-        <include name="*sar"/>
-      </zipfileset>
       <zipfileset dir="${target.dir}" prefix="${dist.db}">
         <include name="bin/*"/>
       	<exclude name="bin/*.sh"/>
@@ -212,14 +205,6 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-web/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds/target" prefix="${dist.db.config}">
-        <include name="lib/*"/>
-        <include name="deploy/*"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds/src/etc" prefix="${dist.db.config}">
-        <include name="conf/**"/>
-        <include name="deploy/**"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-xds-consumer/target"
         prefix="${dist.db.config}">
