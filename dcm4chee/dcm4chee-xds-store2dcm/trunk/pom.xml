@@ -16,6 +16,19 @@
       <name>dcm4che Repository</name>
       <url>http://www.dcm4che.org/maven2</url>
     </repository>
+    <repository>
+      <id>jboss</id>
+      <name>jboss Repository</name>
+      <url>http://repository.jboss.com/maven2</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots />
+      <id>codehause.maven.snapshots</id>
+      <url>http://snapshots.repository.codehaus.org/</url>
+    </repository>
   </repositories>
   <distributionManagement>
     <repository>
