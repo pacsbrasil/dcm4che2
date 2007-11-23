@@ -173,6 +173,7 @@ public class DcmSnd implements PollDirSrv.Handler {
             new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("uid-suffix", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("merge-config", LongOpt.REQUIRED_ARGUMENT, null, 'm'),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
             };
@@ -191,7 +192,7 @@ public class DcmSnd implements PollDirSrv.Handler {
 
         Configuration cfg =
             new Configuration(DcmSnd.class.getResource("dcmsnd.cfg"));
-
+        String mergeCfg = null;
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -216,6 +217,9 @@ public class DcmSnd implements PollDirSrv.Handler {
                 case 's' :
                     set(cfg, g.getOptarg());
                     break;
+                case 'm' :
+                    mergeCfg = g.getOptarg();
+                    break;
                 case 'v' :
                     exit(messages.getString("version"), false);
                 case 'h' :
@@ -232,13 +236,27 @@ public class DcmSnd implements PollDirSrv.Handler {
         }
         //      listConfig(cfg);
         try {
+            if (mergeCfg != null) {
+                mergeCfg(cfg, mergeCfg);
+            }
             DcmSnd dcmsnd = new DcmSnd(cfg, new DcmURL(args[optind]), argc);
             dcmsnd.execute(args, optind + 1);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             exit(e.getMessage(), true);
         }
     }
 
+    
+    private static void mergeCfg(Configuration cfg, String mergeCfg)
+            throws IOException {
+        InputStream is = new BufferedInputStream(
+                new FileInputStream(mergeCfg));
+        try {
+            cfg.load(is);
+        } finally {
+            is.close();
+        }
+    }
     // Constructors --------------------------------------------------
 
     DcmSnd(Configuration cfg, DcmURL url, int argc) {
