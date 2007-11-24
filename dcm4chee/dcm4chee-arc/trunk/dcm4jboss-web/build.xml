@@ -9,7 +9,7 @@
 	<property name="javac.source" value="1.4"/>
 	<property name="javac.target" value="1.4"/>
 
-	<property name="version" value="DEVELOP-2.13.0"/>
+	<property name="version" value="DEVELOP-2.13.1"/>
 	<property name="vendor" value="Agfa Healthcare"/>
 
 	<!-- Override with your JBoss dist location -->
