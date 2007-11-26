@@ -94,7 +94,7 @@ public class SAXWriter implements DicomInputHandler {
 
     public final void setExclude(int[] exclude) {
         if (exclude != null) {
-            this.exclude = (int[]) exclude.clone();
+            this.exclude = exclude.clone();
             Arrays.sort(exclude);
         } else {
             this.exclude = null;

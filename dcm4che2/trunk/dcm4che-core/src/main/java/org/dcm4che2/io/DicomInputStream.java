@@ -145,7 +145,7 @@ public class DicomInputStream extends FilterInputStream implements
     }
 
     public byte[] getPreamble() {
-        return (byte[]) (preamble == null ? null : preamble.clone());
+        return (preamble == null ? null : preamble.clone());
     }
 
     public final long getStreamPosition() {

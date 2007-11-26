@@ -56,7 +56,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         public Include(DicomObject attrs, int[] tags)
         {
             super(attrs);
-            this.tags = (int[]) tags.clone();
+            this.tags = tags.clone();
             Arrays.sort(this.tags);
         }
 
@@ -75,7 +75,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         public Exclude(DicomObject attrs, int[] tags)
         {
             super(attrs);
-            this.tags = (int[]) tags.clone();
+            this.tags = tags.clone();
             Arrays.sort(this.tags);
         }
 

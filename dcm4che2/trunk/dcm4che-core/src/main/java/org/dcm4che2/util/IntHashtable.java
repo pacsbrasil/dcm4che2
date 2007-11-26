@@ -183,8 +183,8 @@ public class IntHashtable {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		IntHashtable result = (IntHashtable) super.clone();
-		values = (Object[]) values.clone();
-		keyList = (int[]) keyList.clone();
+		values = values.clone();
+		keyList = keyList.clone();
 		sortedKeys = sortedKeys != null ? (int[]) sortedKeys.clone() : null;
 		return result;
 	}

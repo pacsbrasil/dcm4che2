@@ -151,165 +151,165 @@ public class BasicApplicationProfile implements ApplicationProfile {
     private int[] realWorldValueMappingKeys = REAL_WORLD_VALUE_MAPPING_KEYS;
 
     public final int[] getEncapsulatedDocumentKeys() {
-        return (int[]) encapsulatedDocumentKeys.clone();
+        return encapsulatedDocumentKeys.clone();
     }
     
     public final void setEncapsulatedDocumentKeys(int[] encapsulatedDocumentKeys) {
-        this.encapsulatedDocumentKeys = (int[]) encapsulatedDocumentKeys.clone();
+        this.encapsulatedDocumentKeys = encapsulatedDocumentKeys.clone();
     }
     
     public final int[] getFiducialKeys() {
-        return (int[]) fiducialKeys.clone();
+        return fiducialKeys.clone();
     }
     
     public final void setFiducialKeys(int[] fiducialKeys) {
-        this.fiducialKeys = (int[]) fiducialKeys.clone();
+        this.fiducialKeys = fiducialKeys.clone();
     }
     
     public final int[] getHangingProtocolKeys() {
-        return (int[]) hangingProtocolKeys.clone();
+        return hangingProtocolKeys.clone();
     }
     
     public final void setHangingProtocolKeys(int[] hangingProtocolKeys) {
-        this.hangingProtocolKeys = (int[]) hangingProtocolKeys.clone();
+        this.hangingProtocolKeys = hangingProtocolKeys.clone();
     }
     
     public final int[] getHl7StructuredDocumentKeys() {
-        return (int[]) hl7StructuredDocumentKeys.clone();
+        return hl7StructuredDocumentKeys.clone();
     }
     
     public final void setHl7StructuredDocumentKeys(
             int[] hl7StructuredDocumentKeys) {
-        this.hl7StructuredDocumentKeys = (int[]) hl7StructuredDocumentKeys.clone();
+        this.hl7StructuredDocumentKeys = hl7StructuredDocumentKeys.clone();
     }
     
     public final int[] getImageKeys() {
-        return (int[]) imageKeys.clone();
+        return imageKeys.clone();
     }
     
     public final void setImageKeys(int[] imageKeys) {
-        this.imageKeys = (int[]) imageKeys.clone();
+        this.imageKeys = imageKeys.clone();
     }
     
     public final int[] getKeyObjectDocumentKeys() {
-        return (int[]) keyObjectDocumentKeys.clone();
+        return keyObjectDocumentKeys.clone();
     }
     
     public final void setKeyObjectDocumentKeys(int[] keyObjectDocumentKeys) {
-        this.keyObjectDocumentKeys = (int[]) keyObjectDocumentKeys.clone();
+        this.keyObjectDocumentKeys = keyObjectDocumentKeys.clone();
     }
     
     public final int[] getPatientKeys() {
-        return (int[]) patientKeys.clone();
+        return patientKeys.clone();
     }
     
     public final void setPatientKeys(int[] patientKeys) {
-        this.patientKeys = (int[]) patientKeys.clone();
+        this.patientKeys = patientKeys.clone();
     }
     
     public final int[] getPresentationKeys() {
-        return (int[]) presentationKeys.clone();
+        return presentationKeys.clone();
     }
     
     public final void setPresentationKeys(int[] presentationKeys) {
-        this.presentationKeys = (int[]) presentationKeys.clone();
+        this.presentationKeys = presentationKeys.clone();
     }
     
     public final int[] getRawdataKeys() {
-        return (int[]) rawdataKeys.clone();
+        return rawdataKeys.clone();
     }
     
     public final void setRawdataKeys(int[] rawdataKeys) {
-        this.rawdataKeys = (int[]) rawdataKeys.clone();
+        this.rawdataKeys = rawdataKeys.clone();
     }
     
     public final int[] getRealWorldValueMappingKeys() {
-        return (int[]) realWorldValueMappingKeys.clone();
+        return realWorldValueMappingKeys.clone();
     }
     
     public final void setRealWorldValueMappingKeys(
             int[] realWorldValueMappingKeys) {
-        this.realWorldValueMappingKeys = (int[]) realWorldValueMappingKeys.clone();
+        this.realWorldValueMappingKeys = realWorldValueMappingKeys.clone();
     }
     
     public final int[] getRegistrationKeys() {
-        return (int[]) registrationKeys.clone();
+        return registrationKeys.clone();
     }
     
     public final void setRegistrationKeys(int[] registrationKeys) {
-        this.registrationKeys = (int[]) registrationKeys.clone();
+        this.registrationKeys = registrationKeys.clone();
     }
     
     public final int[] getRtDoseKeys() {
-        return (int[]) rtDoseKeys.clone();
+        return rtDoseKeys.clone();
     }
     
     public final void setRtDoseKeys(int[] rtDoseKeys) {
-        this.rtDoseKeys = (int[]) rtDoseKeys.clone();
+        this.rtDoseKeys = rtDoseKeys.clone();
     }
     
     public final int[] getRtPlanKeys() {
-        return (int[]) rtPlanKeys.clone();
+        return rtPlanKeys.clone();
     }
     
     public final void setRtPlanKeys(int[] rtPlanKeys) {
-        this.rtPlanKeys = (int[]) rtPlanKeys.clone();
+        this.rtPlanKeys = rtPlanKeys.clone();
     }
     
     public final int[] getRtStructureSetKeys() {
-        return (int[]) rtStructureSetKeys.clone();
+        return rtStructureSetKeys.clone();
     }
     
     public final void setRtStructureSetKeys(int[] rtStructureSetKeys) {
-        this.rtStructureSetKeys = (int[]) rtStructureSetKeys.clone();
+        this.rtStructureSetKeys = rtStructureSetKeys.clone();
     }
     
     public final int[] getRtTreatmentRecordKeys() {
-        return (int[]) rtTreatmentRecordKeys.clone();
+        return rtTreatmentRecordKeys.clone();
     }
     
     public final void setRtTreatmentRecordKeys(int[] rtTreatmentRecordKeys) {
-        this.rtTreatmentRecordKeys = (int[]) rtTreatmentRecordKeys.clone();
+        this.rtTreatmentRecordKeys = rtTreatmentRecordKeys.clone();
     }
     
     public final int[] getSeriesKeys() {
-        return (int[]) seriesKeys.clone();
+        return seriesKeys.clone();
     }
     
     public final void setSeriesKeys(int[] seriesKeys) {
-        this.seriesKeys = (int[]) seriesKeys.clone();
+        this.seriesKeys = seriesKeys.clone();
     }
     
     public final int[] getSpectroscopyKeys() {
-        return (int[]) spectroscopyKeys.clone();
+        return spectroscopyKeys.clone();
     }
     
     public final void setSpectroscopyKeys(int[] spectroscopyKeys) {
-        this.spectroscopyKeys = (int[]) spectroscopyKeys.clone();
+        this.spectroscopyKeys = spectroscopyKeys.clone();
     }
     
     public final int[] getSrDocumentKeys() {
-        return (int[]) srDocumentKeys.clone();
+        return srDocumentKeys.clone();
     }
     
     public final void setSrDocumentKeys(int[] srDocumentKeys) {
-        this.srDocumentKeys = (int[]) srDocumentKeys.clone();
+        this.srDocumentKeys = srDocumentKeys.clone();
     }
     
     public final int[] getStudyKeys() {
-        return (int[]) studyKeys.clone();
+        return studyKeys.clone();
     }
     
     public final void setStudyKeys(int[] studyKeys) {
-        this.studyKeys = (int[]) studyKeys.clone();
+        this.studyKeys = studyKeys.clone();
     }
     
     public final int[] getWaveformKeys() {
-        return (int[]) waveformKeys.clone();
+        return waveformKeys.clone();
     }
     
     public final void setWaveformKeys(int[] waveformKeys) {
-        this.waveformKeys = (int[]) waveformKeys.clone();
+        this.waveformKeys = waveformKeys.clone();
     }
     
     private DicomObject makeRecord(String type, int[] keys, DicomObject dcmobj) {
