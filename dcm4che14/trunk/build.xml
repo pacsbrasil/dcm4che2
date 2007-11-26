@@ -286,6 +286,14 @@
            <fileset dir="${build.classes.dir}" includes="DcmSnd*,Configuration*"/>
            <fileset dir="${build.res.dir}" includes="DcmSnd*"/>
       </jar>
+     <jar jarfile="${build.bin.dir}/dcmgen.jar">
+                <manifest>
+                 <attribute name="Main-Class" value="DcmGen"/>
+                 <attribute name="Class-Path" value="./ ../lib/dcm4che.jar getopt.jar"/>
+                </manifest>
+           <fileset dir="${build.classes.dir}" includes="DcmGen*,Configuration*"/>
+           <fileset dir="${build.res.dir}" includes="DcmGen*"/>
+      </jar>
       <jar jarfile="${build.bin.dir}/hl7snd.jar">
         	<manifest>
 				<attribute name="Main-Class" value="Hl7Snd"/>
