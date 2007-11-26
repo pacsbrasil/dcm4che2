@@ -47,7 +47,6 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Notification;
-import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -73,11 +72,6 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         implements MessageListener, NotificationListener {
-
-    private static final NotificationFilterSupport seriesStoredFilter = new NotificationFilterSupport();
-    static {
-        seriesStoredFilter.enableType(SeriesStored.class.getName());
-    }
 
     protected ObjectName storeScpServiceName;
 
@@ -222,12 +216,12 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName, this,
-                seriesStoredFilter, null);
+                SeriesStored.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName, this,
-                seriesStoredFilter, null);
+                SeriesStored.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
 
