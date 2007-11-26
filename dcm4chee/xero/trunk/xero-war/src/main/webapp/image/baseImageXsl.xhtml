@@ -2,11 +2,11 @@
 	 The base image contains the code to generate the current image to display.
 -->
 <x:xsl
-  pageConfig="#{PageConfig.display.BaseImage}"
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).baseImageXsl}"
   xmlns:x="http://www.dcm4che.org/xero/jsf"
   xmlns:ui="http://java.sun.com/jsf/facelets"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:m="http://www.dcm4che.org/xero/metadata/display/BaseImage"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/baseImageXsl"
   xmlns:c="http://java.sun.com/jstl/core"
   xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:svg="http://www.w3.org/2000/svg"
@@ -131,7 +131,7 @@
   <xsl:variable name="seriesLay" select="$custNode/self::se:series/@pageSize" />  
   <xsl:variable name="offset" select="$viewStart + @dir + $seriesLay * @page" />
   <xsl:choose>
-    <xsl:when test="$offset >= 0 and $node/self::se:series/@Viewable >= $offset ">
+    <xsl:when test="$offset >= 0 and $node/self::se:series/@Viewable > $offset ">
 	  <xsl:call-template name="copyHtml">
        <xsl:with-param name="loc" select="$loc" />
        <xsl:with-param name="node" select="$node" />
@@ -194,6 +194,7 @@
 <x:template name="imageWado" mode="wadoArgsNode" match="se:image">
  <xsl:param name="loc" />
  <xsl:param name="node" />
+ <xsl:param name="custNode" select="/.." />
  <xsl:param name="w" select="number(substring-before($loc,','))" />
  <xsl:param name="wr" select="substring-after($loc,',')" />
  <xsl:param name="h" select="number(substring-before($wr,','))" />
@@ -206,10 +207,8 @@
 
  <xsl:param name="objectUID" select="@SOPInstanceUID" />
  <xsl:param name="frame" select="@frame" />
- <xsl:param name="custNode" select="/.." />
  <xsl:param name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth]"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter]"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:param>
- <xsl:param name="presentationUID" select="@gspsUID" />
  
  <xsl:param name="orx"><xsl:choose><xsl:when test="$cx - $w div (2 * $s) &lt; 0">0</xsl:when><xsl:otherwise><xsl:value-of select="$cx - $w div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="ory"><xsl:choose><xsl:when test="$cy - $h div (2 * $s) &lt; 0">0</xsl:when><xsl:otherwise><xsl:value-of select="$cy - $h div (2 * $s)" /></xsl:otherwise></xsl:choose></xsl:param>
@@ -765,20 +764,31 @@ and cx,cy = width /2, height/2
 <x:template name="imageSvg" mode="newlayout" match="h:div[@class='imageSvg']">
   <xsl:param name="loc" />
   <xsl:param name="node" />
+  <xsl:param name="custNode" />  
+  <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
+   <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
+   <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
+   <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
+   <xsl:apply-templates mode="newlayout">
+     <xsl:with-param name="loc" select="$loc" />
+     <xsl:with-param name="node" select="$node" />
+     <xsl:with-param name="custNode" select='$custNode' />
+   </xsl:apply-templates>
+  </xsl:element>      
+</x:template>
+
+<x:template name="imageRel" mode="newlayout" match="h:div[@class='imageRel']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
   <xsl:param name="custNode" />
   
   <div>
     <xsl:attribute name="style">position: relative;<xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>  
-    <xsl:element name="#{browser=='MSIE'?'v:group':'svg:svg'}">
-     <xsl:attribute name="style"><xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template></xsl:attribute>
-     <xsl:call-template name="attributeSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
-     <xsl:attribute name="coordsize"><xsl:value-of select="$loc" /></xsl:attribute>
-     <xsl:apply-templates mode="newlayout">
+    <xsl:apply-templates mode="newlayout">
        <xsl:with-param name="loc" select="$loc" />
        <xsl:with-param name="node" select="$node" />
        <xsl:with-param name="custNode" select='$custNode' />
      </xsl:apply-templates>
-    </xsl:element>      
   </div>
 </x:template>
 
@@ -800,6 +810,17 @@ and cx,cy = width /2, height/2
       <xsl:with-param name="custNode" select='$custNode' />
     </xsl:apply-templates>
   </div>
+</x:template>
+
+<!-- This lays out a JPEG image with the correct GSPS applied etc -->
+<x:template name="imageJpeg" mode="newlayout" match="h:div[@class='imageJpeg']">
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <xsl:variable name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth]"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:variable>
+  <xsl:variable name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter]"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:variable>
+  <xsl:element name="img">
+    <xsl:attribute name="src">/wado2/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$node/@SOPInstanceUID" /><xsl:if test="$wCenter!=''">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:if test="$node/@frame!=''">&amp;frameNumber=<xsl:value-of select="$node/@frame" /></xsl:if><xsl:if test="$node/@gspsUID!=''">&amp;presentationUID=<xsl:value-of select="$node/@gspsUID" /></xsl:if>&amp;rows=512</xsl:attribute>
+  </xsl:element>
 </x:template>
 
 <x:template name="imageLayout" mode="newlayout" match="se:image">

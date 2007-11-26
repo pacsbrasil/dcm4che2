@@ -104,9 +104,10 @@ public class XsltFilter implements Filter {
 	  String xsl = request.getRequestURI();
 	  int lastDot = xsl.lastIndexOf('.');
 	  if( lastDot<0 ) throw new IllegalArgumentException("Unknown request - need to be .X for some X");
-	  xsl = "http://localhost:8080/"+xsl.substring(0,lastDot)+"Xsl.xsl";
+	  xsl = "http://"+request.getServerName() + ":"+request.getServerPort()+xsl.substring(0,lastDot)+"Xsl.xsl";
+	  log.info("Looking for XSL "+xsl);
 	  Transformer transformer = transformers.get(xsl);
-	  if (transformer == null) {
+	  if (transformer == null  || "true".equalsIgnoreCase(request.getParameter("refresh")) ) {
 		 URL url = new URL(xsl);
 		 Source styleSource = new StreamSource(url.openStream());
 		 TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -131,10 +132,17 @@ public class XsltFilter implements Filter {
 	  String agent = request.getHeader("USER-AGENT");
 	  // Note that apple web-kit is NOT included, as pages for that browser are conditionally included
 	  // based on need.
+	  log.info("Agent="+agent);
 	  if (agent.indexOf("Opera") >= 0) {
 		 return true;
 	  }
 	  if (agent.indexOf("Konqueror") >=0 ) {
+		 return true;
+	  }
+	  if (agent.indexOf("Mobile") >=0 ) {
+		 return true;
+	  }
+	  if( agent.indexOf("BlackBerry")>=0 ) {
 		 return true;
 	  }
 	  return false;

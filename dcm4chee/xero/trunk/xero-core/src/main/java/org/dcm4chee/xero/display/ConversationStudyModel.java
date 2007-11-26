@@ -113,14 +113,6 @@ public class ConversationStudyModel extends StudyModel {
    }
 
    public String getLayout() {
-	  if( layout==null ) {
-		 if( debugMode!=null && debugMode.isDebug() ) {
-			return "layout.xml";
-		 }
-		 else {
-			return "layoutSe2x2.xml";
-		 }
-	  }
 	  return layout;
    }
 

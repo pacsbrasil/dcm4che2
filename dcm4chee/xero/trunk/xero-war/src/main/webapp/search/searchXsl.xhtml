@@ -1,9 +1,14 @@
 <x:xsl
-   pageConfig="#{PageConfig.search}"
+   pageConfig="#{(pageConfig!=null ? pageConfig : metadata.search).searchXsl}"
    xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/search"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/search/searchXsl"
+   m:includeXsl="/search/searchXsl.xhtml"
+   m:tableXsl.inherit="types.tableXsl"
+   m:typeInput.inherit="types.typeInput"
+   m:typeOutput.inherit="types.typeOutput"
+   m:searchVars.inherit="search.searchVars"
 >
 
 <!-- Converts the patient name into a link, using (Unknown) if empty. -->
@@ -25,13 +30,22 @@
 </xsl:template>
 
 <!-- Generates the search toolbar buttons. -->
-<xsl:template name="searchToolbar" >
-  <div style="float: left; width: 220px;">
-   <x:button value="Add" action="search.seam"><img src="../img/add.png" alt="Add" /></x:button>
-   <x:button value="View" action="search.seam"><img src="../img/viewNow.png" alt="View Now"/></x:button>
-   <x:button value="Find" action="search.seam"><img src="../img/find.png" alt="Find"/></x:button>
+<xsl:template name="searchToolbar" m:searchToolbar.body="searchToolbar" m:searchToolbar.body.priority="900">
+  <div style="float: left; width: 220px;"> 
+   <x:button value="Add" action="search.seam"><img src="/xero/img/add.png" alt="Add" /></x:button>
+   <x:button value="View" action="search.seam"><img src="/xero/img/viewNow.png" alt="View Now"/></x:button>
+   <x:button value="Find" action="search.seam"><img src="/xero/img/find.png" alt="Find"/></x:button>
  </div>
 </xsl:template>
+
+<x:template name="studyTable" m:studyTable.body="studyTable" m:studyTable.body.priority="300">
+  <br style="clear: left;"/>
+      
+  <table style="width:100%;">
+     <xsl:call-template name="renderTableResultsHeader" />
+     <xsl:call-template name="renderTableResultsStudy" />
+  </table>
+</x:template>
 
 <xsl:template match="/"><html xmlns="http://www.w3.org/1999/xhtml">
 <head>    
@@ -60,16 +74,7 @@
         <xsl:attribute name="type">hidden</xsl:attribute>
         <xsl:attribute name="value"><xsl:value-of select="$cid" /></xsl:attribute>
       </input>
-      
-      <xsl:call-template name="generateSearchForm" />
-      <xsl:call-template name="searchToolbar" />
-      
-      <br style="clear: left;"/>
-      
-      <table style="width:100%;">
-         <xsl:call-template name="renderTableResultsHeader" />
-         <xsl:call-template name="renderTableResultsStudy" />
-      </table>
+      <x:callTemplates from="#{pageConfig}" mode="body" />
    </form>
 </body>
 </html>

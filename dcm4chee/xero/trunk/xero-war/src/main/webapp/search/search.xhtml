@@ -1,6 +1,12 @@
-<x:source xmlns:x="http://www.dcm4che.org/xero/jsf"
+<x:source 
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata).search}"
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
   xmlns:h="http://java.sun.com/jsf/html"
-  pageConfig="#{PageConfig.search}"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/search"
+  m:includeSource="/search/search.xhtml"
+  m:xsl="/xero/search/searchXsl.xsl"
+  m:layout.tableColumns="/xero/search/tableColumns.seam"
+  m:layout.searchCommands="/xero/search/searchCommands.seam"
 >
   <cycle>../cycle/cycle.xml</cycle>
   <!-- Contains references to the source documents and criteria values for
@@ -11,10 +17,13 @@
   <!-- The results from the above search.  This will be empty if the search has not
        yet been requested.
     -->
-  <searchResults>../study/study.xml?#{StudySearchCriteria.URLParameters}</searchResults>
+  <searchResults>/xero/study/study.xml?#{StudySearchCriteria.URLParameters}</searchResults>
   <c:if test="#{studySelection!=null}" xmlns:c="http://java.sun.com/jstl/core">
     <!-- Do this as one row without white space because there might be lots of them. -->
     <c:forEach var="studySel" items="#{studySelection}"><study uid="#{studySel}"/></c:forEach>
   </c:if>
-  <tableColumns>tableColumns.seam</tableColumns>
+  
+  <layout tableColumns="#{pageConfig.layout.tableColumns}" searchCommands="#{pageConfig.layout.searchCommands}"/>
+  
+  <tableColumns>#{pageConfig.layout.tableColumns}</tableColumns>
 </x:source>

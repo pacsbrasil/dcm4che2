@@ -1,4 +1,11 @@
-<x:source pageConfig="#{PageConfig.cycle}" xmlns:x="http://www.dcm4che.org/xero/jsf">
+<x:source 
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata).cycle}" 
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/cycle"
+  m:xsl="cycleXsl.xsl"
+  m:tableLayout.inherit="types.tableLayout"
+  m:typeOutput.inherit="types.typeOutput"
+>
   <!-- Contains the source document references for displaying an image -->
   <cycle>#{cycleUrl}</cycle>
   <tableColumns>cycleColumns.seam</tableColumns>

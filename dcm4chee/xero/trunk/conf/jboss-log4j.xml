@@ -14,7 +14,7 @@
    | owebsite: http://jakarta.apache.org/log4j
  -->
 
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="true">
 
    <!-- ================================= -->
    <!-- Preserve messages in a local file -->
@@ -190,6 +190,7 @@
       <priority value="INFO"/>
    </category>
 
+
    <!-- Enable JBossWS message tracing
    <category name="jbossws.SOAPMessage">
     <priority value="TRACE"/>
@@ -257,14 +258,27 @@
      <priority value="INFO" />
      <appender-ref ref="TRAP_LOG"/>
    </category>
+
   
    -->
+
+   <!-- ====================== -->
+   <!-- Limit dcm4che category -->
+   <!-- ====================== -->
+   <category name="org.dcm4che2">
+      <priority value="WARN"/>
+   </category>
+
+   <category name="org.dcm4cheri">
+      <priority value="WARN"/>
+   </category>
 
    <!-- ======================= -->
    <!-- Setup the Root category -->
    <!-- ======================= -->
 
    <root>
+      <priority value="info" />
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
    </root>
@@ -293,46 +307,5 @@
      <appender-ref ref="CLUSTER"/>
    </category>
    -->
-   <!-- ================== -->
-   <!-- Dcm4che categories -->
-   <!-- ================== -->
-
-   <!-- Limit the org.dcm4che.xero to INFO -->
-   <category name="org.dcm4che2">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4che.xero to INFO -->
-   <category name="org.dcm4chee.xero">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4chex.arr to INFO -->
-   <category name="org.dcm4chex.arr">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4chex.archive category to INFO --> 
-   <category name="org.dcm4chex.archive">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.dcm4che2.net">
-      <priority value="WARN" />
-   </category>
-    
-   <!-- Limit the org.dcm4chex.wado to INFO --> 
-   <category name="org.dcm4chex.wado">
-      <priority value="INFO"/>
-   </category>
-
-   <!-- Limit the org.dcm4cheri category to INFO -->
-   <category name="org.dcm4cheri">
-      <priority value="WARN"/>
-   </category>
-
-   <category name="PDUDecoder">
-      <priority value="WARN" />
-   </category>
 
 </log4j:configuration>

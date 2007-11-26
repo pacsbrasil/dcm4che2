@@ -1,9 +1,8 @@
 <x:xsl
-   pageConfig="#{PageConfig.display.zoomPan}"
+   pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).zoomPanXsl}"
    xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/metadata/display/zoomPan"
-   xmlns:md="http://www.dcm4che.org/xero/metadata/display"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/zoomPanXsl"
    m:includeXsl="/image/zoomPanXsl.xhtml"
    xmlns:c="http://java.sun.com/jstl/core"
    m:toolbar="zoomPanToolbar" m:toolbar.priority="0"

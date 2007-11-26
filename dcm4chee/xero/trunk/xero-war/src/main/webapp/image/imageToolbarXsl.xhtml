@@ -1,22 +1,22 @@
 <x:xsl
-   pageConfig="#{PageConfig.display.toolbar}"
+   pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).toolbar}"
    xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/metadata/display/toolbar"
-   xmlns:md="http://www.dcm4che.org/xero/metadata/display"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/toolbar"
+   xmlns:mx="http://www.dcm4che.org/xero/metadata/image/imageXsl"
    m:includeXsl="/image/imageToolbarXsl.xhtml"
    xmlns:c="http://java.sun.com/jstl/core"
-   md:ajaxXslt.script="../js/AjaxXslt.js"
-   md:ajaxXslt.script.priority="980"
-   md:sarissa.script="../js/sarissa.js"
-   md:sarissa.script.priority="1100"
-   m:script="imageToolbarScript.js"
+   mx:ajaxXslt.script="/xero/js/AjaxXslt.js"
+   mx:ajaxXslt.script.priority="980"
+   mx:sarissa.script="/xero/js/sarissa.js"
+   mx:sarissa.script.priority="1100"
+   m:script="/xero/image/imageToolbarScript.js"
    m:script.priority="900"
 >
 
 <!-- Add an ieSource element to display the current HTML - also displays in Firefox, but not needed there
  as one can always inspect source there. -->
-<x:template name="ieSource" md:ieSource.toolbar="ieSource">
+<x:template name="ieSource" mx:ieSource.toolbar="ieSource">
   <span onclick='alert("Source is:"+document.getElementsByTagName("html")[0].innerHTML)'>Inner HTML</span>
 </x:template>
 

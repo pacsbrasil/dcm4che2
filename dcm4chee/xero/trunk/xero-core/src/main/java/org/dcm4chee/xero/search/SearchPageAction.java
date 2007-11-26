@@ -114,7 +114,8 @@ public class SearchPageAction  extends CyclePageAction {
 			defaultMap.put("ModalitiesInStudy", "");
 			defaultMap.put("PatientID", "");
 			defaultMap.put("AccessionNumber", "");
-			defaultMap.put("StudyDateTime", "");
+			// TODO Add this back in once we can actually search on this successfully.
+			//defaultMap.put("StudyDateTime", "");
 			criteria = parser.parseFromMap(defaultMap);
 		}
 		log.debug("Found study search criteria #0",criteria.getXml());

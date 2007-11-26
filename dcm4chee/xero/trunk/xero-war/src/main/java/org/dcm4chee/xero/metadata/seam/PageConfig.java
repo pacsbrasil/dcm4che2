@@ -43,6 +43,8 @@ import java.util.Set;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Page configuration is the lookup into the right meta-data information for 
@@ -62,11 +64,7 @@ import org.jboss.seam.annotations.Name;
 @Name("PageConfig")
 public class PageConfig extends AbstractMap<String,MetaDataBean> 
 {
-
-	Boolean javaScriptEnabled = Boolean.TRUE;
-	Boolean svgEnabled = Boolean.TRUE;
-	Boolean framesEnabled = Boolean.TRUE;
-	
+   static Logger log = LoggerFactory.getLogger(PageConfig.class);
 	/** This is the overall configuration name chosen - there might be a set of these
 	 * that are looked at in order.
 	 */
@@ -78,28 +76,10 @@ public class PageConfig extends AbstractMap<String,MetaDataBean>
 	/** Figure out what metadata node to use to render the given page. */
 	@Override
 	public MetaDataBean get(Object forPage) {
-		return metadata.get(forPage);
+	   log.info("Re-using existing meta-data for "+forPage);
+	   return metadata.get(forPage);
 	}
 	
-	public String test() {
-		return "test result";
-	}
-	
-	/** Indicate if SVG is enabled in the browser */
-	public Boolean getSvgEnabled() {
-		return svgEnabled;
-	}
-	
-	/** Indicate if Javascript is enabled in the browser */
-	public Boolean getJavaScriptEnabled() {
-		return javaScriptEnabled;
-	}
-	
-	/** Indicate if frames are enabled in the browser */
-	public Boolean getFramesEnabled() {
-		return framesEnabled;
-	}
-
 	@Override
 	public Set<java.util.Map.Entry<String, MetaDataBean>> entrySet() {
 		return metadata.entrySet();

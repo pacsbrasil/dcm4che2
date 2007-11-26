@@ -29,11 +29,10 @@
 
     <li><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/>
      <ul>
-      <li><a id="layoutSe2x2" oncommand="/xero/image/action/Layout.seam?layout=layoutSe2x2.xml" ><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/></a></li>
-      <li><a id="layout1x1" oncommand="/xero/image/action/Layout.seam?layout=layout1x1.xml" ><img class="icon" src="/xero/img/layout1x1.png" alt="[1x1]"/></a></li>
-      <li><a id="layoutIm6x4" oncommand="/xero/image/action/Layout.seam?layout=layoutIm6x4.xml" ><img class="icon" src="/xero/img/layoutIm6x4.png" alt="[Im5x5]"/></a></li>
-	  <li><a id="layoutPrint" target="Print" oncommand="/xero/image/action/Layout.seam?layout=layoutPrint.xml">Print</a></li>
-	  <li><a id="layoutDebug" oncommand="/xero/image/action/Layout.seam?layout=layout.xml&amp;debug=true" >Debug</a></li>
+      <li><a id="layoutSe2x2" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutSe2x2.xml" ><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/></a></li>
+      <li><a id="layout1x1" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layout1x1.xml" ><img class="icon" src="/xero/img/layout1x1.png" alt="[1x1]"/></a></li>
+      <li><a id="layoutIm6x4" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutIm6x4.xml" ><img class="icon" src="/xero/img/layoutIm6x4.png" alt="[Im5x5]"/></a></li>
+	  <li><a id="layoutPrint" target="Print" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutPrint.xml">Print</a></li>
 	 </ul>
 	</li>
 
@@ -69,7 +68,7 @@
  </div>
 
  <div id="imgToolbar">
-   <div mode="zoomPan" style="position: relative;" >
+   <div mode="zoomPan">
     <a id="zp2" class="zpSlider" zoom="32" style="position:absolute; top:27px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
     <a id="zp3" class="zpSlider" zoom="16" style="position:absolute; top:44px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
     <a id="zp4" class="zpSlider" zoom="8" style="position:absolute; top:61px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /><img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" /></a>
@@ -85,17 +84,19 @@
     -->
   <div id='imageOverlay'>
     <div class="imageArea">
-      <div class="imageSvg">
-        <div class="imageSPAT">
-          <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />    
-          <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
-          <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="/xero/image/action/KeyImageSelect.seam?" />
-          <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
+      <div class="imageRel">
+        <div class="imageSvg">
+          <div class="imageSPAT">
+            <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />    
+            <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
+            <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="/xero/image/action/KeyImageSelect.seam?" />
+            <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
+          </div>
+          <div class="imageDisplayRel" />
         </div>
-        <div class="imageDisplayRel" />
+        <div toolbarRef="imgToolbar" />
       </div>
     </div>
-    <div toolbarRef="imgToolbar" />
   </div>
   
   <div id='imageHover'>

@@ -2,14 +2,14 @@
 	 The base image contains the code to generate the current image to display.
 -->
 <x:xsl
-   pageConfig="#{PageConfig.display.ImageHover}"
+   pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).imageHoverXsl}"
    xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/metadata/display/ImageHover"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/imageHoverXsl"
    m:includeXsl="/image/imageHoverXsl.xhtml"
    m:includeXsl.priority="-1"
-   m:script="imageHover.js"
+   m:script="/xero/image/imageHover.js"
 >
 
 <x:template name="imageHoverLayout" mode="newlayout" match="xul:imageHover">

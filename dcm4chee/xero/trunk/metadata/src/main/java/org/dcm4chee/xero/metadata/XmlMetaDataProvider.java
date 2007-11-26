@@ -70,6 +70,9 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	String rootXml;
 
 	String suffix;
+	String[] suffixes;
+	
+	String currentFile;
 
 	Map<String, String> metaData;
 	
@@ -117,7 +120,7 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 						prefixToNode.put(uriAt, prefixPath);
 					}
 					String key = prefixPath + attributes.getLocalName(i);
-					log.info("Found an attribute to include: " + key + "="
+					log.info("XML Metadata "+currentFile+": " + key + "="
 							+ attributes.getValue(i));
 					metaData.put(key, attributes.getValue(i));
 				}
@@ -200,6 +203,7 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	protected void scanFile(File f) {
 		try {
 			log.debug("Scanning "+f);
+			currentFile = f.getName();
 			if( saxParser==null ) {
 				SAXParserFactory spf = SAXParserFactory.newInstance();
 				spf.setNamespaceAware(true);
@@ -230,15 +234,22 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 			String propertyFile = (String) metaDataBean
 					.getValue("propertyFile");
 			suffix = (String) metaDataBean.getValue("suffix");
-			if (suffix == null)
-				suffix = ".xhtml";
+			if (suffix == null) {
+				suffixes = new String[]{ ".xhtml" };
+			}
+			else {
+			   suffixes = suffix.split(",");
+			}
 			rootXml = (String) metaDataBean.getValue("rootXml");
 			metaData = new HashMap<String, String>();
 			File dir = getFileContaining(propertyFile);
 			FileFilter fileFilter = new FileFilter() {
 				public boolean accept(File pathname) {
-					boolean b = pathname.toString().endsWith(suffix);
-					return b;
+				   for(int i=0; i<suffixes.length; i++) {
+					  boolean b = pathname.toString().endsWith(suffixes[i]);
+					  if( b ) return true;
+				   }
+					return false;
 				}
 
 			};

@@ -1,4 +1,9 @@
-<x:source pageConfig="#{PageConfig.patient}" xmlns:x="http://www.dcm4che.org/xero/jsf">
+<x:source
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata).patient}" 
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/patient"
+  m:xsl="patientXsl.xsl"
+>
   <cycle>#{cycleUrl}</cycle>
   <tableColumns>patientColumns.seam</tableColumns>
   <PatientIdentifier>#{DisplayStudyLevel.patientIdentifier}</PatientIdentifier>

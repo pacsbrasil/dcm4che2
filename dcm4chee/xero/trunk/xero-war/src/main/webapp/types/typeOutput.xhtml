@@ -1,10 +1,21 @@
 <x:xsl
-   pageConfig="#{PageConfig.converters}"
+   pageConfig="#{ (pageConfig!=null ? pageConfig : metadata.types).typeOutput }"
    xmlns:x="http://www.dcm4che.org/xero/jsf"
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/converters"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/types/typeOutput"
+   m:includeXsl="/types/typeOutput.xhtml"
+   m:messages.inherit="types.messages"
    xmlns:c="http://java.sun.com/jstl/core"
+   m:Name.template="rawConverter"
+   m:string.template="rawConverter"
+   m:UID.template="rawConverter"
+   m:Modality.template="rawConverter"
+   m:DateTime.template="rawConverter"
+   m:StudySelector.template="studyCheckboxConverter"
+   m:PatientSelector.template="patientCheckboxConverter"
+   m:PatientName.template="patientNameConverter"
+   
 >
    
 <!-- The raw converter just prints out the raw value, unchanged. -->
@@ -23,8 +34,7 @@
      <xsl:attribute name="value"><xsl:value-of select="$value" /></xsl:attribute>
      <xsl:if test="$selectedStudies[@uid=$value]">
        <xsl:attribute name="checked">true</xsl:attribute>
-     </xsl:if>
-     
+     </xsl:if> 
   </input>
 </xsl:template>
 
@@ -49,7 +59,7 @@
    <xsl:param name="type" />
    <xsl:param name="value" />
    <xsl:choose>
-      <c:forEach var="converter" items="#{metadata.converters}">
+      <c:forEach var="converter" items="#{pageConfig}">
         <c:if test="#{converter.value.template!=null}">
           <xsl:when test="$type='#{converter.key}'">
             <xsl:call-template name="#{converter.value.template}">

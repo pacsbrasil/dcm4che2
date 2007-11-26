@@ -1,8 +1,10 @@
-<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
-   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:m="http://www.dcm4che.org/xero/metadata/display/vars"
-   m:includeXsl="/image/imageVars.xhtml"
-   m:includeXsl.priority="-10"
+<x:xsl
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).imageVars}"
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/imageVars"
+  m:includeXsl="/image/imageVars.xhtml"
+  m:includeXsl.priority="-10"
 >
 <xsl:variable name="layoutNode" select="/documents/layout" />
 <xsl:variable name="frameNode" select="document($layoutNode/@frame)/se:results" />
@@ -13,4 +15,4 @@
 <xsl:variable name="documentsNode" select="/documents" />
 <xsl:variable name="toolbarNode" select="document(/documents/toolbar)/*" />
 
-</ui:component>
+</x:xsl>
