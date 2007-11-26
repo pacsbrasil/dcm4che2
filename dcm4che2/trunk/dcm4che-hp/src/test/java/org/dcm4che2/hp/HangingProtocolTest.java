@@ -79,7 +79,6 @@ public class HangingProtocolTest extends TestCase {
 
     public void testCopy() {
         HangingProtocol src = new HangingProtocol();
-        HangingProtocol hp = new HangingProtocol(src);
+        new HangingProtocol(src);
     }
-
 }
