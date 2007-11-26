@@ -240,17 +240,17 @@ public class KeyObjectService extends ServiceMBeanSupport {
     	return ds;
     }
     
-	private Dataset newKeyObject(String studyIUID, Dataset rootInfo) {
+    private Dataset newKeyObject(String studyIUID, Dataset rootInfo) {
     	UIDGenerator uidGenerator = UIDGenerator.getInstance();
 		Dataset ds = dof.newDataset();
     	if ( rootInfo != null ) {
     		ds.putAll(rootInfo);
     	}
-	    ds.putUI(Tags.StudyInstanceUID, studyIUID != null ? studyIUID : uidGenerator.createUID());
+        ds.putUI(Tags.StudyInstanceUID, studyIUID != null ? studyIUID : uidGenerator.createUID());
     	String seriesIUID = uidGenerator.createUID();
-	    ds.putUI(Tags.SeriesInstanceUID, seriesIUID );
-	    ds.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
-	    ds.putUI(Tags.SOPInstanceUID, uidGenerator.createUID());
+        ds.putUI(Tags.SeriesInstanceUID, seriesIUID );
+        ds.putUI(Tags.SOPClassUID, UIDs.KeyObjectSelectionDocument);
+        ds.putUI(Tags.SOPInstanceUID, uidGenerator.createUID());
         ds.putCS(Tags.Modality, "KO");
         ds.putIS(Tags.InstanceNumber, 1);
         ds.putDA(Tags.ContentDate, new Date());
@@ -259,7 +259,8 @@ public class KeyObjectService extends ServiceMBeanSupport {
     	Dataset tmplDS = ds.putSQ(Tags.ContentTemplateSeq).addNewItem();
     	tmplDS.putCS(Tags.TemplateIdentifier, "2010");
     	tmplDS.putCS(Tags.MappingResource, "DCMR");
-	    return ds;
+        ds.putSQ(Tags.RefPPSSeq);//Type 2 Attr
+	return ds;
     }
     
 	/**
