@@ -78,7 +78,7 @@ public class DicomDirWriter extends DicomDirReader {
 
     protected long rollbackLen = -1;
 
-    protected ArrayList dirtyRecords = new ArrayList();
+    protected ArrayList<DicomObject> dirtyRecords = new ArrayList<DicomObject>();
 
     protected DicomObject cachedParentRecord;
 
@@ -86,14 +86,11 @@ public class DicomDirWriter extends DicomDirReader {
 
     protected final DicomOutputStream out;
 
-    private static final Comparator offsetComparator = new Comparator() {
-
-	public int compare(Object o1, Object o2) {
-	    DicomObject item1 = (DicomObject) o1;
-	    DicomObject item2 = (DicomObject) o2;
-	    long d = item1.getItemOffset() - item2.getItemOffset();
-	    return d < 0 ? -1 : d > 0 ? 1 : 0;
-	}
+    private static final Comparator<DicomObject> offsetComparator = new Comparator<DicomObject>() {
+        public int compare(DicomObject item1, DicomObject item2) {
+            long d = item1.getItemOffset() - item2.getItemOffset();
+            return d < 0 ? -1 : d > 0 ? 1 : 0;
+        }
     };
 
     public DicomDirWriter(File file) throws IOException {
@@ -329,7 +326,7 @@ public class DicomDirWriter extends DicomDirReader {
 	raf.write(dirInfoHeader, 0, dirInfoHeader.length);
 	rollbackLen = -1;
 	for (int i = 0, n = dirtyRecords.size(); i < n; i++) {
-	    writeDirRecordHeader((DicomObject) dirtyRecords.get(i));
+	    writeDirRecordHeader(dirtyRecords.get(i));
 	}
 	dirtyRecords.clear();
 	raf.seek(firstRecordPos - 14);

@@ -72,7 +72,7 @@ public class VRMap implements Serializable {
 	
 	private static VRMap vrMap;
 
-	private static Hashtable privVRMaps;
+	private static Hashtable<String, VRMap> privVRMaps;
 
 	static {
 		VRMap.reloadVRMaps();
@@ -100,7 +100,7 @@ public class VRMap implements Serializable {
 
 	public static void reloadVRMaps() {
 		VRMap newVRMap = null;
-		Hashtable newPrivVRMaps = new Hashtable();
+		Hashtable<String, VRMap> newPrivVRMaps = new Hashtable<String, VRMap>();
 		List list = ResourceLocator.findResources(VRMap.class);
 		for (int i = 0, n = list.size(); i < n; ++i) {
 			VRMap m = (VRMap) ResourceLocator.loadResource((String) list

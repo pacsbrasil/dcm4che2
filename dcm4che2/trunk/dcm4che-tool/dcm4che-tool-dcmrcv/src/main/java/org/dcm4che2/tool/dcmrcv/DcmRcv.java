@@ -705,6 +705,7 @@ public class DcmRcv extends StorageService {
      * by separate Thread, so reading of following received C-STORE RQs from
      * the open association is not blocked.
      */
+    @Override
     public void cstore(final Association as, final int pcid, DicomObject rq, 
             PDVInputStream dataStream, String tsuid) 
             throws DicomServiceException, IOException {
@@ -727,6 +728,7 @@ public class DcmRcv extends StorageService {
     }
 
     
+    @Override
     protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws IOException, DicomServiceException {

@@ -71,6 +71,7 @@ class IANSCP extends NCreateService {
         this.destination = destination;
     }
 
+    @Override
     protected DicomObject doNCreate(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
         String iuid = rsp.getString(Tag.AffectedSOPInstanceUID);
@@ -101,6 +102,7 @@ class IANSCP extends NCreateService {
             super(dcmOF);
         }
 
+        @Override
         protected void store(String iuid, DicomObject data) throws Exception {
             dcmOF.storeAsXML(new File(destination, iuid + ".xml"), data);
         }

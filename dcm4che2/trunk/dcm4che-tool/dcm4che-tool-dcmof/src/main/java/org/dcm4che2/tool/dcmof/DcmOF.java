@@ -529,7 +529,7 @@ public class DcmOF {
             dcmof.setMaxOpsPerformed(parseInt(cl.getOptionValue(ASYNC),
                     "illegal argument of option -async", 0, 0xffff));
 
-        ArrayList tc = new ArrayList();
+        ArrayList<TransferCapability> tc = new ArrayList<TransferCapability>();
         tc.add(new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS,
                 TransferCapability.SCP));
         if (cl.hasOption(MWL))
@@ -549,7 +549,7 @@ public class DcmOF {
         dcmof.setComments(cl.hasOption("C"));
         dcmof.setIndent(!cl.hasOption("c"));
 
-        dcmof.setTransferCapability((TransferCapability[]) tc
+        dcmof.setTransferCapability(tc
                 .toArray(new TransferCapability[tc.size()]));
         if (cl.hasOption("tls")) {
             String cipher = cl.getOptionValue("tls");
@@ -614,7 +614,7 @@ public class DcmOF {
         this.tsuids = tsuids;
     }
 
-    private void registerMWLSCP(File dir, ArrayList tc) {
+    private void registerMWLSCP(File dir, ArrayList<TransferCapability> tc) {
         MWLSCP mwlscp = new MWLSCP(executor, this);
         mwlscp.setSource(dir);
         ae.register(mwlscp);
@@ -622,15 +622,15 @@ public class DcmOF {
                 TransferCapability.SCP));
     }
 
-    private void registerMPPSSCP(File dir, ArrayList tc) {
+    private void registerMPPSSCP(File dir, ArrayList<TransferCapability> tc) {
         register(new MPPSSCP(this), dir, tc);
     }
 
-    private void registerMPPSXMLSCP(File dir, ArrayList tc) {
+    private void registerMPPSXMLSCP(File dir, ArrayList<TransferCapability> tc) {
         register(new MPPSSCP.XML(this), dir, tc);
     }
 
-    private void register(MPPSSCP mppsscp, File dir, ArrayList tc) {
+    private void register(MPPSSCP mppsscp, File dir, ArrayList<TransferCapability> tc) {
         mppsscp.setDestination(dir);
         ae.register(mppsscp.getNCreateSCP());
         ae.register(mppsscp.getNSetSCP());
@@ -638,31 +638,31 @@ public class DcmOF {
                 tsuids, TransferCapability.SCP));
     }
 
-    private void registerIANXMLSCP(File dir, ArrayList tc) {
+    private void registerIANXMLSCP(File dir, ArrayList<TransferCapability> tc) {
         register(new IANSCP.XML(this), dir, tc);
 
     }
 
-    private void registerIANSCP(File dir, ArrayList tc) {
+    private void registerIANSCP(File dir, ArrayList<TransferCapability> tc) {
         register(new IANSCP(this), dir, tc);
     }
 
-    private void register(IANSCP ianscp, File dir, ArrayList tc) {
+    private void register(IANSCP ianscp, File dir, ArrayList<TransferCapability> tc) {
         ianscp.setDestination(dir);
         ae.register(ianscp);
         tc.add(new TransferCapability(ianscp.getSopClass(), tsuids,
                 TransferCapability.SCP));
     }
 
-    private void registerSCNSCP(File dir, ArrayList tc) {
+    private void registerSCNSCP(File dir, ArrayList<TransferCapability> tc) {
         register(new SCNSCP(this), dir, tc);
     }
 
-    private void registerSCNXMLSCP(File dir, ArrayList tc) {
+    private void registerSCNXMLSCP(File dir, ArrayList<TransferCapability> tc) {
         register(new SCNSCP.XML(this), dir, tc);
     }
 
-    private void register(SCNSCP scnscp, File dir, ArrayList tc) {
+    private void register(SCNSCP scnscp, File dir, ArrayList<TransferCapability> tc) {
         scnscp.setDestination(dir);
         ae.register(scnscp);
         tc.add(new TransferCapability(scnscp.getSopClass(), tsuids,

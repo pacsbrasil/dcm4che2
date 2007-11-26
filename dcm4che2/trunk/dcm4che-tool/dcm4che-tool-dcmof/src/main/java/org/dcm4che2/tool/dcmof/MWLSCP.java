@@ -71,6 +71,7 @@ class MWLSCP extends CFindService
         this.source = source;
     }    
     
+    @Override
     protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd, 
             DicomObject keys, DicomObject rsp) throws DicomServiceException
     {

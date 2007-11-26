@@ -253,7 +253,7 @@ public class Dcm2Xml {
     }
 
     public final void setXsltParams(String[] xsltParam) {
-        xsltParams = (String[]) (xsltParam != null ? xsltParam.clone() : null);
+        xsltParams = (xsltParam != null ? xsltParam.clone() : null);
     }
 
     public void convert(File ifile, File ofile) throws IOException,

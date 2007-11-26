@@ -342,7 +342,7 @@ public class DcmMWL {
         System.out.println(keys.toString());
         DimseRSP rsp = assoc.cfind(UID.ModalityWorklistInformationModelFIND,
                 priority, keys, tc.getTransferSyntax()[0], cancelAfter);
-        List result = new ArrayList();
+        List<DicomObject> result = new ArrayList<DicomObject>();
         while (rsp.next()) {
             DicomObject cmd = rsp.getCommand();
             if (CommandUtils.isPending(cmd)) {

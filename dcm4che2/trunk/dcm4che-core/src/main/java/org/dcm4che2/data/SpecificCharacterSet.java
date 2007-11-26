@@ -44,7 +44,7 @@ import java.util.Map;
 
 public class SpecificCharacterSet {
 
-	private static final Map CHARSET = new HashMap();
+	private static final Map<String, String> CHARSET = new HashMap<String, String>();
 	static {
 		CHARSET.put("", "US-ASCII");
 		CHARSET.put("ISO_IR 100", "ISO-8859-1");
@@ -86,7 +86,7 @@ public class SpecificCharacterSet {
 	public static SpecificCharacterSet valueOf(String[] codes) {
 		if (codes == null || codes.length == 0)
 			return null;
-		String charset = (String) CHARSET.get(codes[0]);
+		String charset = CHARSET.get(codes[0]);
 		if (charset == null)
 			return null;
 		return codes.length > 1 ? new ISO2022(charset)

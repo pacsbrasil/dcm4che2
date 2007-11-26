@@ -395,7 +395,7 @@ public class DicomOutputStream extends FilterOutputStream {
 
         int[] sqlen = {};
 
-        LinkedList childs = null;
+        LinkedList<ItemInfo> childs = null;
 
         ItemInfo(Iterator it, boolean groupLength1) {
             int gggg0 = -1;
@@ -460,7 +460,7 @@ public class DicomOutputStream extends FilterOutputStream {
                 ItemInfo itemInfo = new ItemInfo(item.iterator(),
                         includeGroupLength);
                 if (childs == null) // lazy allocation
-                    childs = new LinkedList();
+                    childs = new LinkedList<ItemInfo>();
                 childs.add(itemInfo);
                 l += 8 + itemInfo.len;
             }

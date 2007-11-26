@@ -383,7 +383,7 @@ public class BasicDicomObject extends AbstractDicomObject {
         if (vr == null)
             vr = vrOf(tag);
         DicomElement e = vr == VR.SQ ? (DicomElement) new SequenceDicomElement(
-                tag, vr, false, new ArrayList(0), this)
+                tag, vr, false, new ArrayList<Object>(0), this)
                 : (DicomElement) new SimpleDicomElement(tag, vr, false, null,
                         null);
         return addInternal(e);
@@ -506,7 +506,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 
     public DicomElement putSequence(int tag, int capacity) {
         return addInternal(new SequenceDicomElement(tag, VR.SQ, false,
-                new ArrayList(capacity), this));
+                new ArrayList<Object>(capacity), this));
     }
 
     public DicomElement putFragments(int tag, VR vr, boolean bigEndian) {
@@ -520,7 +520,7 @@ public class BasicDicomObject extends AbstractDicomObject {
         if (!(vr instanceof VR.Fragment))
             throw new UnsupportedOperationException();
         return addInternal(new SequenceDicomElement(tag, vr, bigEndian,
-                new ArrayList(capacity), this));
+                new ArrayList<Object>(capacity), this));
     }
 
     public void initFileMetaInformation(String tsuid) {

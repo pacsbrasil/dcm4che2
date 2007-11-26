@@ -390,7 +390,7 @@ public class DcmHPQR {
         System.out.println(keys.toString());
         DimseRSP rsp = assoc.cfind(UID.HangingProtocolInformationModelFIND,
                 priority, keys, tc.getTransferSyntax()[0], cancelAfter);
-        List result = new ArrayList();
+        List<DicomObject> result = new ArrayList<DicomObject>();
         while (rsp.next()) {
             DicomObject cmd = rsp.getCommand();
             if (CommandUtils.isPending(cmd)) {
@@ -421,6 +421,7 @@ public class DcmHPQR {
                     + UIDDictionary.getDictionary().prompt(cuid) + ":");
             System.out.println(keys.toString());
             DimseRSPHandler rspHandler = new DimseRSPHandler() {
+                @Override
                 public void onDimseRSP(Association as, DicomObject cmd,
                         DicomObject data) {
                     DcmHPQR.this.onMoveRSP(as, cmd, data);

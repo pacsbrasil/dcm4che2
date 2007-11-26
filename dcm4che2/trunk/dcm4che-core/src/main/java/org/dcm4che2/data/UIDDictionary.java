@@ -98,14 +98,14 @@ public class UIDDictionary implements Serializable {
 		return inst;
 	}
     
-	private Hashtable table;
+	private Hashtable<String, String> table;
 
     private UIDDictionary() {
         this(11);
     }
     
 	private UIDDictionary(int initialCapacity) {
-		this.table = new Hashtable(initialCapacity);
+		this.table = new Hashtable<String, String>(initialCapacity);
 	}
 
     public String prompt(String uid) {
@@ -115,7 +115,7 @@ public class UIDDictionary implements Serializable {
 	public String nameOf(String uid) {
 		if (table == null)
 			return UNKOWN;
-		String name = (String) table.get(uid);
+		String name = table.get(uid);
 		return name != null ? name : UNKOWN;
 	}
 

@@ -55,10 +55,10 @@ class SequenceDicomElement extends AbstractDicomElement {
 
     private static final long serialVersionUID = 3690757302122656054L;
 
-    private transient List items;
+    private transient List<Object> items;
     private transient DicomObject parent;
 
-    public SequenceDicomElement(int tag, VR vr, boolean bigEndian, List items,
+    public SequenceDicomElement(int tag, VR vr, boolean bigEndian, List<Object> items,
             DicomObject parent) {
         super(tag, vr, bigEndian);
         if (items == null)
@@ -102,7 +102,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         vr = VR.valueOf(s.readUnsignedShort());
         bigEndian = s.readBoolean();
         int n = s.readInt();
-        items = new ArrayList(n);
+        items = new ArrayList<Object>(n);
         for (int i = 0; i < n; ++i) {
             items.add(s.readObject());
         }
@@ -346,7 +346,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         if (filter == null)
             return this;
         int count = countItems();
-        List tmp = new ArrayList(count);
+        List<Object> tmp = new ArrayList<Object>(count);
         for (int i = 0; i < count; i++) {
             tmp.add(getDicomObject(i).subSet(filter));
         }

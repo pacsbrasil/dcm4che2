@@ -97,7 +97,7 @@ public class DcmWado {
     private String[] psuid;
     private String[] tsuid;
     private boolean tsfile = false;
-    private ArrayList contentType = new ArrayList();   
+    private ArrayList<String> contentType = new ArrayList<String>();   
     private String[] charset;
     private boolean anonymize = false;
     private String[] annotation;
@@ -110,7 +110,7 @@ public class DcmWado {
     private boolean noKeepAlive;
     private boolean followsRedirect = true;
     private File dir = new File(".");
-    private ArrayList url = new ArrayList();
+    private ArrayList<URL> url = new ArrayList<URL>();
     private byte[] buffer = new byte[8 * KB];
     private long totalSize = 0L;
 

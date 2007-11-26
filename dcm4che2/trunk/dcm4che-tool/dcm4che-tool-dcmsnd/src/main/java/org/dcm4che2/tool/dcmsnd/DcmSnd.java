@@ -161,9 +161,9 @@ public class DcmSnd extends StorageCommitmentService {
 
     private NetworkConnection conn = new NetworkConnection();
 
-    private HashMap as2ts = new HashMap();
+    private HashMap<String, HashSet<String>> as2ts = new HashMap<String, HashSet<String>>();
 
-    private ArrayList files = new ArrayList();
+    private ArrayList<FileInfo> files = new ArrayList<FileInfo>();
 
     private Association assoc;
 
@@ -872,9 +872,9 @@ public class DcmSnd extends StorageCommitmentService {
     }
 
     private void addTransferCapability(String cuid, String tsuid) {
-        HashSet ts = (HashSet) as2ts.get(cuid);
+        HashSet<String> ts = as2ts.get(cuid);
         if (ts == null) {
-            ts = new HashSet();
+            ts = new HashSet<String>();
             ts.add(UID.ImplicitVRLittleEndian);
             as2ts.put(cuid, ts);
         }
@@ -894,9 +894,9 @@ public class DcmSnd extends StorageCommitmentService {
         for (int i = off; i < tc.length; i++) {
             Map.Entry e = (Map.Entry) iter.next();
             String cuid = (String) e.getKey();
-            HashSet ts = (HashSet) e.getValue();
+            HashSet<?> ts = (HashSet) e.getValue();
             tc[i] = new TransferCapability(cuid, 
-                    (String[]) ts.toArray(new String[ts.size()]),
+                    ts.toArray(new String[ts.size()]),
                     TransferCapability.SCU);
         }
         ae.setTransferCapability(tc);
@@ -928,7 +928,7 @@ public class DcmSnd extends StorageCommitmentService {
 
     public void send() {
         for (int i = 0, n = files.size(); i < n; ++i) {
-            FileInfo info = (FileInfo) files.get(i);
+            FileInfo info = files.get(i);
             TransferCapability tc = assoc.getTransferCapabilityAsSCU(info.cuid);
             if (tc == null) {
                 System.out.println();
@@ -952,6 +952,7 @@ public class DcmSnd extends StorageCommitmentService {
             }
             try {
                 DimseRSPHandler rspHandler = new DimseRSPHandler() {
+                    @Override
                     public void onDimseRSP(Association as, DicomObject cmd,
                             DicomObject data) {
                         DcmSnd.this.onDimseRSP(cmd);
@@ -987,7 +988,7 @@ public class DcmSnd extends StorageCommitmentService {
         actionInfo.putString(Tag.TransactionUID, VR.UI, UIDUtils.createUID());
         DicomElement refSOPSq = actionInfo.putSequence(Tag.ReferencedSOPSequence);
         for (int i = 0, n = files.size(); i < n; ++i) {
-            FileInfo info = (FileInfo) files.get(i);
+            FileInfo info = files.get(i);
             if (info.transferred) {
                 BasicDicomObject refSOP = new BasicDicomObject();
                 refSOP.putString(Tag.ReferencedSOPClassUID, VR.UI, info.cuid);
@@ -1119,7 +1120,7 @@ public class DcmSnd extends StorageCommitmentService {
     private void onDimseRSP(DicomObject cmd) {
         int status = cmd.getInt(Tag.Status);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
-        FileInfo info = (FileInfo) files.get(msgId - 1);
+        FileInfo info = files.get(msgId - 1);
         switch (status) {
         case 0:
             info.transferred = true;
@@ -1143,6 +1144,7 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
     
+    @Override
     protected synchronized void onNEventReportRSP(Association as, int pcid,
             DicomObject rq, DicomObject info, DicomObject rsp) {
         stgCmtResult = info;

@@ -61,6 +61,7 @@ class MPPSSCP {
     private final DicomService ncreatescp = new NCreateService(
             UID.ModalityPerformedProcedureStepSOPClass) {
 
+        @Override
         protected DicomObject doNCreate(Association as, int pcid,
                 DicomObject rq, DicomObject data, DicomObject rsp)
                 throws DicomServiceException {
@@ -71,6 +72,7 @@ class MPPSSCP {
     private final DicomService nsetscp = new NSetService(
             UID.ModalityPerformedProcedureStepSOPClass) {
 
+        @Override
         protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
                 DicomObject data, DicomObject rsp) throws DicomServiceException {
             return MPPSSCP.this.doNSet(rq, data);
@@ -160,10 +162,12 @@ class MPPSSCP {
             super(dcmOF);
          }
         
+        @Override
         protected File mkFile(String iuid) {
             return new File(destination, iuid + ".xml");
         }
 
+        @Override
         protected void store(File f, DicomObject data) throws Exception {
             dcmOF.storeAsXML(f, data);
         }

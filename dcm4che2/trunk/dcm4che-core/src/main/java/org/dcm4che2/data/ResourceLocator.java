@@ -59,7 +59,7 @@ public class ResourceLocator {
 	private static final String PREFIX = "META-INF/dcm4che/";
 
 	public static List findResources(Class c) {
-		ArrayList list = new ArrayList();
+		ArrayList<String> list = new ArrayList<String>();
 		try {
 			for (Enumeration configs = enumResources(PREFIX + c.getName()); 
 					configs.hasMoreElements();) {

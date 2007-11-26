@@ -69,7 +69,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private State state = State.EXPECT_ELM;
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final StringBuffer sb = new StringBuffer();    
-    private final Stack sqStack = new Stack();
+    private final Stack<DicomElement> sqStack = new Stack<DicomElement>();
     private DicomObject attrs;
     private int tag;
     private VR vr;
@@ -135,7 +135,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
                     .putFragments(tag, vr, false));
         }
 
-        DicomElement sq = (DicomElement) sqStack.peek();
+        DicomElement sq = sqStack.peek();
         if (sq.vr() == VR.SQ) {
             DicomObject parent = attrs;
             attrs = new BasicDicomObject();
@@ -156,7 +156,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             attrs = attrs.getParent();
             break;
         case EXPECT_FRAG:
-            DicomElement sq = (DicomElement) sqStack.peek();
+            DicomElement sq = sqStack.peek();
             byte[] data =  getValue(sq.vr(), null);
             sq.addFragment(data);
             sb.setLength(0);

@@ -56,7 +56,8 @@ import java.util.regex.Pattern;
 class SimpleDicomElement extends AbstractDicomElement {
 
     private static final long serialVersionUID = 4049072757025092152L;
-    private static final WeakHashMap shared = new WeakHashMap();
+    private static final WeakHashMap<SimpleDicomElement, WeakReference<SimpleDicomElement>> shared =
+        new WeakHashMap<SimpleDicomElement, WeakReference<SimpleDicomElement>>();
     private static final ThreadLocal cbuf = new ThreadLocal(){
         @Override
         protected Object initialValue() {
@@ -116,14 +117,14 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
     
     public DicomElement share() {
-        WeakReference wr = (WeakReference) shared.get(this);
+        WeakReference wr = shared.get(this);
         if (wr != null) {
             DicomElement e = (DicomElement) wr.get();
             if (e != null) {
                 return e;
             }
         }
-        shared.put(this, new WeakReference(this));
+        shared.put(this, new WeakReference<SimpleDicomElement>(this));
         return this;
     }
     

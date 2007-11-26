@@ -78,7 +78,7 @@ public class ElementDictionary implements Serializable {
 
 	private static ElementDictionary stdDict;
 
-	private static Hashtable privDicts;
+	private static Hashtable<String, ElementDictionary> privDicts;
 
 	static {
         try {
@@ -115,7 +115,7 @@ public class ElementDictionary implements Serializable {
 
 	public static void reloadDictionaries() {
 		ElementDictionary newStdDict = null;
-		Hashtable newPrivDicts = new Hashtable();
+		Hashtable<String, ElementDictionary> newPrivDicts = new Hashtable<String, ElementDictionary>();
 		List list = ResourceLocator.findResources(ElementDictionary.class);
 		for (int i = 0, n = list.size(); i < n; ++i) {
 			ElementDictionary d = (ElementDictionary) ResourceLocator

@@ -73,6 +73,7 @@ class SCNSCP extends StorageService
         this.destination = destination;
     }
     
+    @Override
     protected void doCStore(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws DicomServiceException, IOException
@@ -99,6 +100,7 @@ class SCNSCP extends StorageService
             super(dcmOF);
         }
         
+        @Override
         protected void store(String iuid, DicomObject data) throws Exception {
             dcmOF.storeAsXML(new File(destination, iuid + ".xml"), data);
         }

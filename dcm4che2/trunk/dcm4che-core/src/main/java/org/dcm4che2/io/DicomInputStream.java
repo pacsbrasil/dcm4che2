@@ -76,7 +76,7 @@ public class DicomInputStream extends FilterInputStream implements
 
     private DicomObject attrs;
 
-    private ArrayList sqStack;
+    private ArrayList<DicomElement> sqStack;
 
     private long pos = 0;
 
@@ -199,7 +199,7 @@ public class DicomInputStream extends FilterInputStream implements
     }
 
     public final DicomElement sq() {
-        return (DicomElement) sqStack.get(sqStack.size() - 1);
+        return sqStack.get(sqStack.size() - 1);
     }
 
     public final TransferSyntax getTransferSyntax() {
@@ -499,7 +499,7 @@ public class DicomInputStream extends FilterInputStream implements
                 DicomElement a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
                         .putFragments(tag, vr, ts.bigEndian());
                 if (sqStack == null) { // lazy creation
-                    sqStack = new ArrayList();
+                    sqStack = new ArrayList<DicomElement>();
                 }
                 sqStack.add(a);
                 try {
@@ -519,7 +519,7 @@ public class DicomInputStream extends FilterInputStream implements
     }
 
     private void readItemValue() throws IOException, DicomCodingException {
-        DicomElement sq = (DicomElement) sqStack.get(sqStack.size() - 1);
+        DicomElement sq = sqStack.get(sqStack.size() - 1);
         if (vallen == -1) {
             if (sq.vr() == VR.UN) {
                 DicomElement tmp = attrs.putSequence(sq.tag());

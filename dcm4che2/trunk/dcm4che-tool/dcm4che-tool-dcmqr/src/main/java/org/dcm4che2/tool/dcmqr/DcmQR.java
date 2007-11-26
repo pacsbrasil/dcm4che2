@@ -226,7 +226,7 @@ public class DcmQR {
 
     private int qrlevel = STUDY;
 
-    private ArrayList privateFind = new ArrayList();
+    private ArrayList<String> privateFind = new ArrayList<String>();
 
     private DicomObject keys = new BasicDicomObject();
 
@@ -909,7 +909,7 @@ public class DcmQR {
             tc[i++] = mkMoveTC(movecuids[j],
                     ivrle ? IVRLE_TS : NATIVE_LE_TS);
         for (int j = 0; j < numPrivateFind; j++)
-            tc[i++] = mkFindTC((String) privateFind.get(j),
+            tc[i++] = mkFindTC(privateFind.get(j),
                     ivrle ? IVRLE_TS : DEFLATED_TS);
         ae.setTransferCapability(tc);
     }
@@ -950,7 +950,7 @@ public class DcmQR {
     }
 
     public final void addPrivate(String cuid) {
-        this.privateFind.add(cuid);
+        privateFind.add(cuid);
     }
 
     private void setMoveDest(String aet) {
@@ -1006,7 +1006,7 @@ public class DcmQR {
                 + UIDDictionary.getDictionary().prompt(cuid) + ":");
         System.out.println(keys.toString());
         DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
-        List result = new ArrayList();
+        List<DicomObject> result = new ArrayList<DicomObject>();
         while (rsp.next()) {
             DicomObject cmd = rsp.getCommand();
             if (CommandUtils.isPending(cmd)) {
@@ -1064,6 +1064,7 @@ public class DcmQR {
                         + UIDDictionary.getDictionary().prompt(cuid) + ":");
                 System.out.println(keys.toString());
                 DimseRSPHandler rspHandler = new DimseRSPHandler() {
+                    @Override
                     public void onDimseRSP(Association as, DicomObject cmd,
                             DicomObject data) {
                         DcmQR.this.onMoveRSP(as, cmd, data);
