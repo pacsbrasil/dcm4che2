@@ -497,7 +497,7 @@ public class DicomImageReader extends ImageReader {
         String vlutFct = param.getVoiLutFunction();
         if (param.isAutoWindowing()) {
             DicomObject voiObj = VOIUtils.selectVoiObject(ds, pr, frame);
-            if (!VOIUtils.containsVOIAttributes(voiObj)) {
+            if (voiObj==null) {
                 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(ds, pr, frame,
                         data);
                 c = cw[0];

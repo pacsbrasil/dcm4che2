@@ -161,7 +161,7 @@ public class DicomImageReaderTest extends TestCase {
      */
     // TODO 2007-11-23 rick.riemer Re-enable test once we know what the expected
     // output for this test should be.
-    public void notTestReadMonochrome1ApplyCustomWindow() throws Exception {
+    public void testReadMonochrome1ApplyCustomWindow() throws Exception {
         DicomImageReadParam param = new DicomImageReadParam();
         param.setAutoWindowing(false);
         param.setWindowCenter(10000);

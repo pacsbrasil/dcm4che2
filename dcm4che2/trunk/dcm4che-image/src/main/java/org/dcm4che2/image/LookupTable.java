@@ -927,14 +927,14 @@ public abstract class LookupTable {
         DicomObject mLut = mlutObj.getNestedDicomObject(Tag.ModalityLUTSequence);
         DicomObject voiLut = (voiObj!=null && vlutFct==null) ? voiObj.getNestedDicomObject(Tag.VOILUTSequence) : null;
 
-        if( voiLut==null && vlutFct==null && voiObj!=null) {
+        if( voiLut==null && width==0 && voiObj!=null) {
         	vlutFct = voiObj.getString(Tag.VOILUTFunction);
         	center = voiObj.getFloat(Tag.WindowCenter,0f);
         	width = voiObj.getFloat(Tag.WindowWidth,0f);
         }
         
         if (mLut == null) {
-            if (voiLut == null) {
+            if (voiLut == null ) {
                 if (pLut == null) {
                     return LookupTable.createLut(stored, signed, outBits,
                             slope, intercept, center, width, vlutFct, inverse,

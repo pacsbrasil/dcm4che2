@@ -159,7 +159,8 @@ public class VOIUtils {
     			return voiObj;
     		}
     	}
-    	return img;
+    	if( containsVOIAttributes(img) ) return img;
+    	return null;
     }
 
     /** Searches for a Softcopy VOI LUT Sequence for the given frame, or one for just the SOP instance. 
