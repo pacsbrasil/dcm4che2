@@ -60,10 +60,12 @@ public class ImageInputStreamAdapter extends InputStream {
         this.iis = iis;
     }
 
+    @Override
     public int read() throws IOException {
         return iis.read();
     }
 
+    @Override
     public synchronized void mark(int readlimit) {
         try {
             this.markedPos = iis.getStreamPosition();
@@ -73,20 +75,24 @@ public class ImageInputStreamAdapter extends InputStream {
         }
     }
 
+    @Override
     public boolean markSupported() {
         return true;
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return iis.read(b, off, len);
     }
 
+    @Override
     public synchronized void reset() throws IOException {
         if (markException != null)
             throw markException;
         iis.seek(markedPos);
     }
 
+    @Override
     public long skip(long n) throws IOException {
         return iis.skipBytes((int) n);
     }

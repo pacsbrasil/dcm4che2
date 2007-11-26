@@ -58,6 +58,7 @@ class SimpleDicomElement extends AbstractDicomElement {
     private static final long serialVersionUID = 4049072757025092152L;
     private static final WeakHashMap shared = new WeakHashMap();
     private static final ThreadLocal cbuf = new ThreadLocal(){
+        @Override
         protected Object initialValue() {
             return new char[64];
         }
@@ -100,6 +101,7 @@ class SimpleDicomElement extends AbstractDicomElement {
         }
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -125,11 +127,13 @@ class SimpleDicomElement extends AbstractDicomElement {
         return this;
     }
     
+    @Override
     protected void appendValue(StringBuffer sb, int maxValLen) {
         vr.promptValue(value, bigEndian, null, (char[]) cbuf.get(),
                 maxValLen, sb);        
     }
     
+    @Override
     protected void toggleEndian() {
         vr.toggleEndian(value);
     }

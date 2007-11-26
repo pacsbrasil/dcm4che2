@@ -246,6 +246,7 @@ public class ElementDictionary implements Serializable {
 
 		StringBuffer name = new StringBuffer(80);
 
+		@Override
 		public void characters(char[] ch, int start, int length)
 				throws SAXException {
 			if (tag != -1) {
@@ -253,6 +254,7 @@ public class ElementDictionary implements Serializable {
 			}
 		}
 
+		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
 			if ("element".equals(qName)) {
@@ -263,6 +265,7 @@ public class ElementDictionary implements Serializable {
 			}
 		}
 
+		@Override
 		public void endElement(String uri, String localName, String qName)
 				throws SAXException {
 			if ("element".equals(qName)) {

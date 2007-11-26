@@ -81,6 +81,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         this.attrs = attrs;
     }
 
+    @Override
     public void startElement(String namespaceURI, String localName,
             String qName, Attributes atts) throws SAXException {
         if ("attr".equals(qName)) {
@@ -91,6 +92,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         }
     }
 
+    @Override
     public void endElement(String namespaceURI, String localName, String qName)
             throws SAXException {
         if ("attr".equals(qName)) {
@@ -100,6 +102,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         }
     }
 
+    @Override
     public void characters(char[] ch, int start, int length)
             throws SAXException {
         if ((state == State.EXPECT_VAL_OR_FIRST_ITEM && vr != VR.SQ)
@@ -230,31 +233,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
         }
     }
 
-    public void endDocument() throws SAXException {
-    }
-
-    public void startDocument() throws SAXException {
-    }
-
-    public void ignorableWhitespace(char[] ch, int start, int length)
-            throws SAXException {
-    }
-
-    public void endPrefixMapping(String prefix) throws SAXException {
-    }
-
-    public void skippedEntity(String name) throws SAXException {
-    }
-
+    @Override
     public void setDocumentLocator(Locator locator) {
         this.locator = locator;
-    }
-
-    public void processingInstruction(String target, String data)
-            throws SAXException {
-    }
-
-    public void startPrefixMapping(String prefix, String uri)
-            throws SAXException {
     }
 }

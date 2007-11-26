@@ -287,24 +287,28 @@ public abstract class VR
             super(code, padding, valueLengthBytes);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return VR.str2bytes(val, null);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return VR.strs2bytes(val, null);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.trim(VR.bytes2str1(val, null));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -313,6 +317,7 @@ public abstract class VR
             return StringUtils.trim(VR.bytes2strs(val, null));
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             if (val == null || val.length == 0)
@@ -329,24 +334,28 @@ public abstract class VR
             super(code, padding, valueLengthBytes);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return VR.str2bytes(val, cs);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return VR.strs2bytes(val, cs);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.trim(VR.bytes2str1(val, cs));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -355,6 +364,7 @@ public abstract class VR
             return StringUtils.trim(VR.bytes2strs(val, cs));
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             if (val == null || val.length == 0)
@@ -371,18 +381,21 @@ public abstract class VR
             super(code, padding, valueLengthBytes);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return VR.str2bytes(val, cs);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.trimEnd(VR.bytes2str(val, cs));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -403,6 +416,7 @@ public abstract class VR
             super(code, padding, valueLengthBytes);
         }
 
+        @Override
         public byte[] toBytes(int val, boolean bigEndian)
         {
             byte[] b = new byte[2];
@@ -411,6 +425,7 @@ public abstract class VR
                     : ByteUtils.ushort2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(int[] val, boolean bigEndian)
         {
             return bigEndian
@@ -418,6 +433,7 @@ public abstract class VR
                     : ByteUtils.ushorts2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(short[] val, boolean bigEndian)
         {
             return bigEndian
@@ -425,12 +441,14 @@ public abstract class VR
                     : ByteUtils.shorts2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -442,6 +460,7 @@ public abstract class VR
             return toBytes(t, bigEndian);
         }
 
+        @Override
         public short[] toShorts(byte[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -449,6 +468,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2shorts(val);
         }
         
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -457,23 +477,27 @@ public abstract class VR
             return Integer.toString(toInt(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.ints2strs(toInts(val, bigEndian));
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
             return VR.parseShortXMLValue(sb, out, last);
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             return val == null ? 0 : val.length / 2;
         }
 
+        @Override
         public void toggleEndian(byte[] val, int off, int len)
         {
             ByteUtils.toggleShortEndian(val, off, len);
@@ -488,6 +512,7 @@ public abstract class VR
             super(code, padding, valueLengthBytes);
         }
 
+        @Override
         public byte[] toBytes(int val, boolean bigEndian)
         {
             byte[] b = new byte[4];
@@ -496,6 +521,7 @@ public abstract class VR
                     : ByteUtils.int2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(int[] val, boolean bigEndian)
         {
             return bigEndian
@@ -503,12 +529,14 @@ public abstract class VR
                     : ByteUtils.ints2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -520,6 +548,7 @@ public abstract class VR
             return toBytes(t, bigEndian);
         }
 
+        @Override
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -529,12 +558,14 @@ public abstract class VR
                     : ByteUtils.bytesLE2int(val, 0);
         }
 
+        @Override
         public int[] toInts(byte[] val, boolean bigEndian)
         {
             return bigEndian ? ByteUtils.bytesBE2ints(val) : ByteUtils
                     .bytesLE2ints(val);
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
@@ -558,11 +589,13 @@ public abstract class VR
             return out.toByteArray();
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             return val == null ? 0 : val.length / 4;
         }
 
+        @Override
         public void toggleEndian(byte[] val, int off, int len)
         {
             ByteUtils.toggleIntEndian(val, off, len);
@@ -595,6 +628,7 @@ public abstract class VR
             super(0x4154, 0, 8);
         }
 
+        @Override
         public byte[] toBytes(int val, boolean bigEndian)
         {
             byte[] b = new byte[4];
@@ -603,6 +637,7 @@ public abstract class VR
                     : ByteUtils.tag2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(int[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -610,12 +645,14 @@ public abstract class VR
                     : ByteUtils.tags2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {           
             return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -627,6 +664,7 @@ public abstract class VR
             return toBytes(t, bigEndian);
         }
         
+        @Override
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -636,6 +674,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2tag(val, 0);
         }
 
+        @Override
         public int[] toInts(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -645,6 +684,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2tags(val);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -653,6 +693,7 @@ public abstract class VR
             return StringUtils.intToHex(toInt(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -660,6 +701,7 @@ public abstract class VR
             return StringUtils.intsToHex(ints);
         }
         
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -706,6 +748,7 @@ public abstract class VR
             }
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
@@ -733,11 +776,13 @@ public abstract class VR
             return out.toByteArray();
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             return val == null ? 0 : val.length / 4;
         }
 
+        @Override
         public void toggleEndian(byte[] val, int off, int len)
         {
             ByteUtils.toggleShortEndian(val, off, len);
@@ -761,11 +806,13 @@ public abstract class VR
             super(0x4441, ' ', 8);
         }
 
+        @Override
         public byte[] toBytes(Date d)
         {
             return VR.str2bytes(DateUtils.formatDA(d), null);
         }
 
+        @Override
         public byte[] toBytes(Date[] d)
         {
             if (d == null || d.length == 0)
@@ -778,6 +825,7 @@ public abstract class VR
             return VR.strs2bytes(ss, null);
         }
 
+        @Override
         public byte[] toBytes(DateRange dr)
         {
             if (dr == null)
@@ -791,12 +839,14 @@ public abstract class VR
             return VR.str2bytes(sb.toString(), null);
         }
 
+        @Override
         public Date toDate(byte[] val)
         {
             return DateUtils.parseDA(
                     StringUtils.trim(VR.bytes2str1(val, null)), false);
         }
 
+        @Override
         public Date[] toDates(byte[] val)
         {
             if (val == null || val.length == 0)
@@ -810,6 +860,7 @@ public abstract class VR
             return ds;
         }
 
+        @Override
         public DateRange toDateRange(byte[] val)
         {
             String s = StringUtils.trim(VR.bytes2str1(val, null));
@@ -833,11 +884,13 @@ public abstract class VR
             super(0x4453, ' ', 8);
         }
 
+        @Override
         public byte[] toBytes(float val, boolean bigEndian)
         {
             return toBytes(toDS(val), bigEndian, null);
         }
 
+        @Override
         public byte[] toBytes(double val, boolean bigEndian)
         {
             return toBytes(toDS(val), bigEndian, null);
@@ -854,6 +907,7 @@ public abstract class VR
             return s;
         }
 
+        @Override
         public byte[] toBytes(float[] val, boolean bigEndian)
         {
             if (val == null)
@@ -864,6 +918,7 @@ public abstract class VR
             return toBytes(ss, bigEndian, null);
         }
 
+        @Override
         public byte[] toBytes(double[] val, boolean bigEndian)
         {
             if (val == null)
@@ -874,6 +929,7 @@ public abstract class VR
             return toBytes(ss, bigEndian, null);
         }
 
+        @Override
         public float toFloat(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -881,6 +937,7 @@ public abstract class VR
             return Float.parseFloat(toString(val, bigEndian, null));
         }
 
+        @Override
         public float[] toFloats(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -893,6 +950,7 @@ public abstract class VR
             return fs;
         }
 
+        @Override
         public double toDouble(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -900,6 +958,7 @@ public abstract class VR
             return Double.parseDouble(toString(val, bigEndian, null));
         }
 
+        @Override
         public double[] toDoubles(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -921,11 +980,13 @@ public abstract class VR
             super(0x4454, ' ', 8);
         }
 
+        @Override
         public byte[] toBytes(Date d)
         {
             return VR.str2bytes(DateUtils.formatDT(d), null);
         }
 
+        @Override
         public byte[] toBytes(Date[] d)
         {
             if (d == null || d.length == 0)
@@ -938,6 +999,7 @@ public abstract class VR
             return VR.strs2bytes(ss, null);
         }
 
+        @Override
         public byte[] toBytes(DateRange dr)
         {
             if (dr == null)
@@ -951,12 +1013,14 @@ public abstract class VR
             return VR.str2bytes(sb.toString(), null);
         }
 
+        @Override
         public Date toDate(byte[] val)
         {
             return DateUtils.parseDT(
                     StringUtils.trim(VR.bytes2str1(val, null)), false);
         }
 
+        @Override
         public Date[] toDates(byte[] val)
         {
             if (val == null || val.length == 0)
@@ -970,6 +1034,7 @@ public abstract class VR
             return ds;
         }
 
+        @Override
         public DateRange toDateRange(byte[] val)
         {
             String s = StringUtils.trim(VR.bytes2str1(val, null));
@@ -993,6 +1058,7 @@ public abstract class VR
             super(0x464c, 0, 8);
         }
 
+        @Override
         public byte[] toBytes(float val, boolean bigEndian)
         {
             byte[] b = new byte[4];
@@ -1001,6 +1067,7 @@ public abstract class VR
                     : ByteUtils.float2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(float[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1008,12 +1075,14 @@ public abstract class VR
                     : ByteUtils.floats2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1025,6 +1094,7 @@ public abstract class VR
             return toBytes(t, bigEndian);
         }
 
+        @Override
         public float toFloat(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1034,6 +1104,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2float(val, 0);
         }
 
+        @Override
         public float[] toFloats(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1043,11 +1114,13 @@ public abstract class VR
                     : ByteUtils.bytesLE2floats(val);
         }
 
+        @Override
         public double toDouble(byte[] val, boolean bigEndian)
         {
             return toFloat(val, bigEndian);
         }
 
+        @Override
         public double[] toDoubles(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1057,6 +1130,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2floats2doubles(val);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1065,29 +1139,34 @@ public abstract class VR
             return Float.toString(toFloat(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.floats2strs(toFloats(val, bigEndian));
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
             VR.float2chars(val, bigEndian, out, cbuf, maxLen);
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
             return VR.parseFloatXMLValue(sb, out, last);
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             return val == null ? 0 : val.length / 4;
         }
 
+        @Override
         public void toggleEndian(byte[] b, int off, int len)
         {
             ByteUtils.toggleIntEndian(b, off, len);
@@ -1102,6 +1181,7 @@ public abstract class VR
             super(0x4644, 0, 8);
         }
 
+        @Override
         public byte[] toBytes(double val, boolean bigEndian)
         {
             byte[] b = new byte[8];
@@ -1110,6 +1190,7 @@ public abstract class VR
                     : ByteUtils.double2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(double[] val, boolean bigEndian)
         {
             return bigEndian
@@ -1117,12 +1198,14 @@ public abstract class VR
                     : ByteUtils.doubles2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(String val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return toBytes(StringUtils.split(val, '\\'), bigEndian, cs);
         }
 
+        @Override
         public byte[] toBytes(String[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1134,6 +1217,7 @@ public abstract class VR
             return toBytes(t, bigEndian);
         }
 
+        @Override
         public double toDouble(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1143,6 +1227,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2double(val, 0);
         }
 
+        @Override
         public double[] toDoubles(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1152,6 +1237,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2doubles(val);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1160,12 +1246,14 @@ public abstract class VR
             return Double.toString(toDouble(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.doubles2strs(toDoubles(val, bigEndian));
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -1206,6 +1294,7 @@ public abstract class VR
             }
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
@@ -1230,11 +1319,13 @@ public abstract class VR
             return out.toByteArray();
         }
 
+        @Override
         public int vm(byte[] val, SpecificCharacterSet cs)
         {
             return val == null ? 0 : val.length / 8;
         }
 
+        @Override
         public void toggleEndian(byte[] b, int off, int len)
         {
             ByteUtils.toggleLongEndian(b, off, len);
@@ -1249,11 +1340,13 @@ public abstract class VR
             super(0x4953, ' ', 8);
         }
 
+        @Override
         public byte[] toBytes(int val, boolean bigEndian)
         {
             return toBytes(String.valueOf(val), bigEndian, null);
         }
 
+        @Override
         public byte[] toBytes(int[] val, boolean bigEndian)
         {
             if (val == null)
@@ -1264,6 +1357,7 @@ public abstract class VR
             return toBytes(ss, bigEndian, null);
         }
 
+        @Override
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1271,6 +1365,7 @@ public abstract class VR
             return (int) Long.parseLong(toString(val, bigEndian, null));
         }
 
+        @Override
         public int[] toInts(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1309,6 +1404,7 @@ public abstract class VR
             super(0x4f42, 0, 12);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1326,6 +1422,7 @@ public abstract class VR
             return sb.toString();
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -1363,6 +1460,7 @@ public abstract class VR
             }
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
@@ -1395,6 +1493,7 @@ public abstract class VR
             super(0x4f46, 0, 12);
         }
 
+        @Override
         public byte[] toBytes(float val, boolean bigEndian)
         {
             byte[] b = new byte[4];
@@ -1403,6 +1502,7 @@ public abstract class VR
                     : ByteUtils.float2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(float[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1410,6 +1510,7 @@ public abstract class VR
                     : ByteUtils.floats2bytesLE(val);
         }
 
+        @Override
         public float toFloat(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1419,6 +1520,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2float(val, 0);
         }
 
+        @Override
         public float[] toFloats(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1428,11 +1530,13 @@ public abstract class VR
                     : ByteUtils.bytesLE2floats(val);
         }
 
+        @Override
         public double toDouble(byte[] val, boolean bigEndian)
         {
             return toFloat(val, bigEndian);
         }
 
+        @Override
         public double[] toDoubles(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1442,6 +1546,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2floats2doubles(val);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1450,24 +1555,28 @@ public abstract class VR
             return Float.toString(toFloat(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.floats2strs(toFloats(val, bigEndian));
         }
 
+        @Override
         protected void toChars(byte[] bs, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
             VR.float2chars(bs, bigEndian, out, cbuf, maxLen);
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
             return VR.parseFloatXMLValue(sb, out, last);
         }
 
+        @Override
         public void toggleEndian(byte[] val, int off, int len)
         {
             ByteUtils.toggleIntEndian(val, off, len);
@@ -1482,6 +1591,7 @@ public abstract class VR
             super(0x4f57, 0, 12);
         }
 
+        @Override
         public byte[] toBytes(int val, boolean bigEndian)
         {
             byte[] b = new byte[4];
@@ -1490,6 +1600,7 @@ public abstract class VR
                     : ByteUtils.ushort2bytesLE(val, b, 0);
         }
 
+        @Override
         public byte[] toBytes(int[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1497,6 +1608,7 @@ public abstract class VR
                     : ByteUtils.ushorts2bytesLE(val);
         }
 
+        @Override
         public byte[] toBytes(short[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1504,6 +1616,7 @@ public abstract class VR
                     : ByteUtils.shorts2bytesLE(val);
         }
 
+        @Override
         public short[] toShorts(byte[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1511,6 +1624,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2shorts(val);
         }
 
+        @Override
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1520,6 +1634,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2ushort(val, 0);
         }
 
+        @Override
         public int[] toInts(byte[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1527,6 +1642,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2ushorts(val);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1535,24 +1651,28 @@ public abstract class VR
             return Integer.toString(toInt(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.ints2strs(toInts(val, bigEndian));
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
             VR.ushort2chars(val, bigEndian, cbuf, maxLen, out);
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
             return VR.parseShortXMLValue(sb, out, last);
         }
 
+        @Override
         public void toggleEndian(byte[] val, int off, int len)
         {
             ByteUtils.toggleShortEndian(val, off, len);
@@ -1567,12 +1687,14 @@ public abstract class VR
             super(0x504e, ' ', 8);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.trimPN(VR.bytes2str1(val, cs));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1600,6 +1722,7 @@ public abstract class VR
             super(0x534c, ' ', 8);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1608,12 +1731,14 @@ public abstract class VR
             return Integer.toString(toInt(val, bigEndian));
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.ints2strs(toInts(val, bigEndian));
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -1672,6 +1797,7 @@ public abstract class VR
             super(0x5353, 0, 8);
         }
 
+        @Override
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -1681,6 +1807,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2sshort(val, 0);
         }
 
+        @Override
         public int[] toInts(byte[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -1688,6 +1815,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2sshorts(val);
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -1748,11 +1876,13 @@ public abstract class VR
             super(0x544d, ' ', 8);
         }
 
+        @Override
         public byte[] toBytes(Date d)
         {
             return VR.str2bytes(DateUtils.formatTM(d), null);
         }
 
+        @Override
         public byte[] toBytes(Date[] d)
         {
             if (d == null || d.length == 0)
@@ -1765,6 +1895,7 @@ public abstract class VR
             return VR.strs2bytes(ss, null);
         }
 
+        @Override
         public byte[] toBytes(DateRange dr)
         {
             if (dr == null)
@@ -1778,12 +1909,14 @@ public abstract class VR
             return VR.str2bytes(sb.toString(), null);
         }
 
+        @Override
         public Date toDate(byte[] val)
         {
             return DateUtils.parseTM(
                     StringUtils.trim(VR.bytes2str1(val, null)), false);
         }
 
+        @Override
         public Date[] toDates(byte[] val)
         {
             if (val == null || val.length == 0)
@@ -1797,6 +1930,7 @@ public abstract class VR
             return ds;
         }
 
+        @Override
         public DateRange toDateRange(byte[] val)
         {
             String s = StringUtils.trim(VR.bytes2str1(val, null));
@@ -1829,6 +1963,7 @@ public abstract class VR
             super(0x554c, 0, 8);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1837,12 +1972,14 @@ public abstract class VR
             return Long.toString(toInt(val, bigEndian) & 0xffffffffL);
         }
 
+        @Override
         public String[] toStrings(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
             return StringUtils.uints2strs(toInts(val, bigEndian));
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -1892,6 +2029,7 @@ public abstract class VR
             super(0x554e, 0, 12);
         }
 
+        @Override
         public String toString(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs)
         {
@@ -1918,6 +2056,7 @@ public abstract class VR
             return sb.toString();
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -1963,6 +2102,7 @@ public abstract class VR
             }
         }
 
+        @Override
         public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
                 boolean last, SpecificCharacterSet cs)
         {
@@ -2001,6 +2141,7 @@ public abstract class VR
             super(0x5553, 0, 8);
         }
 
+        @Override
         public int toInt(byte[] val, boolean bigEndian)
         {
             if (val == null || val.length == 0)
@@ -2010,6 +2151,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2ushort(val, 0);
         }
 
+        @Override
         public int[] toInts(byte[] val, boolean bigEndian)
         {
             return bigEndian 
@@ -2017,6 +2159,7 @@ public abstract class VR
                     : ByteUtils.bytesLE2ushorts(val);
         }
 
+        @Override
         protected void toChars(byte[] val, boolean bigEndian,
                 SpecificCharacterSet cs, char[] cbuf, int maxLen, CharOut out)
         {
@@ -2188,6 +2331,7 @@ public abstract class VR
         this.headerLength = headerLength;
     }
 
+    @Override
     public final String toString()
     {
         return new String(new char[]

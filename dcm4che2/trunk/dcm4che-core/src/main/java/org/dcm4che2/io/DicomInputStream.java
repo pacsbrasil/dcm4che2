@@ -238,6 +238,7 @@ public class DicomInputStream extends FilterInputStream implements
         }
     }
 
+    @Override
     public int read() throws IOException {
         int ch = in.read();
         if (ch != -1) {
@@ -246,6 +247,7 @@ public class DicomInputStream extends FilterInputStream implements
         return ch;
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int result = in.read(b, off, len);
         if (result != -1) {
@@ -254,16 +256,19 @@ public class DicomInputStream extends FilterInputStream implements
         return result;
     }
 
+    @Override
     public void mark(int readlimit) {
         in.mark(readlimit);
         markedPos = pos;
     }
 
+    @Override
     public void reset() throws IOException {
         in.reset();
         pos = markedPos;
     }
 
+    @Override
     public long skip(long n) throws IOException {
         long result = in.skip(n);
         if (result > 0) {

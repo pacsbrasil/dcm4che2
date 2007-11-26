@@ -142,6 +142,7 @@ public class IntHashtable {
 		return retval;
 	}
 
+	@Override
 	public boolean equals(Object that) {
 		if (that.getClass() != this.getClass())
 			return false;
@@ -162,6 +163,7 @@ public class IntHashtable {
 		return o1 == null ? o2 == null : o1.equals(o1);
 	}
 
+	@Override
 	public int hashCode() {
 		if (count == 0)
 			return 0;
@@ -178,6 +180,7 @@ public class IntHashtable {
 		return h;
 	}
 
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		IntHashtable result = (IntHashtable) super.clone();
 		values = (Object[]) values.clone();

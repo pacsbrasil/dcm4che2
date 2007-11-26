@@ -288,10 +288,12 @@ public class BasicDicomObject extends AbstractDicomObject {
                 privateCreator));
     }
 
+    @Override
     public boolean isEmpty() {
         return table.isEmpty();
     }
 
+    @Override
     public int size() {
         return table.size();
     }
@@ -328,6 +330,7 @@ public class BasicDicomObject extends AbstractDicomObject {
         return a;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

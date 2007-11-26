@@ -55,10 +55,12 @@ class RAFOutputStreamAdapter extends OutputStream {
         this.raf = raf;
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         raf.write(b, off, len);
     }
     
+    @Override
     public void write(int b) throws IOException {
         raf.write(b);
     }

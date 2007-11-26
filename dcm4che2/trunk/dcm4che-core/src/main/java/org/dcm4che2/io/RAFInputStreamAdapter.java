@@ -49,7 +49,6 @@ import java.io.RandomAccessFile;
  *
  */
 class RAFInputStreamAdapter extends InputStream {
-
 	private final RandomAccessFile raf;
 	private long markedPos;
 	private IOException markException;
@@ -58,10 +57,12 @@ class RAFInputStreamAdapter extends InputStream {
 		this.raf = raf;
 	}
 
+	@Override
 	public int read() throws IOException {
 		return raf.read();
 	}
 
+	@Override
 	public synchronized void mark(int readlimit) {
 		try {
 			this.markedPos = raf.getFilePointer();
@@ -71,22 +72,25 @@ class RAFInputStreamAdapter extends InputStream {
 		}
 	}
 
+	@Override
 	public boolean markSupported() {
 		return true;
 	}
 
+	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		return raf.read(b, off, len);
 	}
 
+	@Override
 	public synchronized void reset() throws IOException {
 		if (markException != null)
 			throw markException;
 		raf.seek(markedPos);		
 	}
 
+	@Override
 	public long skip(long n) throws IOException {
 		return raf.skipBytes((int) n);
 	}
-
 }

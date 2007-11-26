@@ -108,6 +108,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         }
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -129,6 +130,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         return this;
     }
 
+    @Override
     protected void appendValue(StringBuffer sb, int maxValLen) {
         final int size = items.size();
         if (size != 0) {
@@ -140,6 +142,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         }
     }
 
+    @Override
     protected void toggleEndian() {
         if (!hasDicomObjects()) {
             for (int i = 0, n = items.size(); i < n; ++i) {

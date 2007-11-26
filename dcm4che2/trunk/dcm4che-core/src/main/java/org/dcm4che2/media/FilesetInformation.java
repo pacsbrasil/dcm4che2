@@ -65,6 +65,7 @@ public class FilesetInformation extends FileMetaInformation {
         super();
     }
     
+    @Override
     public void init() {
         super.init();
         dcmobj.putNull(Tag.FilesetID, VR.CS);
@@ -141,10 +142,12 @@ public class FilesetInformation extends FileMetaInformation {
 	return getFilesetConsistencyFlag() == NO_KNOWN_INCONSISTENCIES;
     }
     
+    @Override
     protected String getSOPClassUID() {
         return UID.MediaStorageDirectoryStorage;
     }
 
+    @Override
     protected String getSOPInstanceUID() {
         return UIDUtils.createUID();
     }

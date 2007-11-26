@@ -99,6 +99,7 @@ public final class DicomObjectToStringParam {
         this.lineSeparator = lineSeparator;
     }
     
+    @Override
     public String toString() {
         return "DicomObjectToStringParam[name=" + name + ",valueLength="
                 + valueLength + ",numItems=" + numItems + ",lineLength="

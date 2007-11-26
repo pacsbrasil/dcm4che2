@@ -60,6 +60,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             Arrays.sort(this.tags);
         }
 
+        @Override
         protected boolean filter(int tag)
         {
             return Arrays.binarySearch(tags, tag) >= 0;
@@ -78,6 +79,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             Arrays.sort(this.tags);
         }
 
+        @Override
         protected boolean filter(int tag)
         {
             return Arrays.binarySearch(tags, tag) < 0;
@@ -109,17 +111,20 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             }
         }
 
+        @Override
         protected boolean filter(int tag)
         {
             long ltag = tag & 0xffffffffL;
             return fromTag <= ltag && ltag <= toTag;
         }
 
+        @Override
         public Iterator iterator()
         {
             return new Itr(attrs.iterator((int) fromTag, (int) toTag));
         }
 
+        @Override
         public Iterator iterator(int fromTag, int toTag)
         {
             final long maxFromTag = Math.max(fromTag & 0xffffffff, this.fromTag);
@@ -137,6 +142,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             super(attrs);
         }
 
+        @Override
         protected boolean filter(int tag)
         {
             return !TagUtils.isPrivateDataElement(tag);
@@ -156,6 +162,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
                 super(itr);
             }
 
+            @Override
             public Object next()
             {
                 DicomElement attr = (DicomElement) super.next();
@@ -176,11 +183,13 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             this.filter = filter;
         }
 
+        @Override
         protected boolean filter(int tag)
         {
             return filter.contains(tag);
         }
 
+        @Override
         public DicomObject getNestedDicomObject(int tag)
         {
             DicomObject item = super.getNestedDicomObject(tag);
@@ -190,11 +199,13 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             return item.subSet(filter.getNestedDicomObject(tag));
         }
 
+        @Override
         public Iterator iterator()
         {
             return new FilterItr(attrs.iterator());
         }
 
+        @Override
         public Iterator iterator(int fromTag, int toTag)
         {
             return new FilterItr(attrs.iterator(fromTag, toTag));

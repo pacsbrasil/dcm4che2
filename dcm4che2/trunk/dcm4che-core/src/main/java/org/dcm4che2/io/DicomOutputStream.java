@@ -113,11 +113,13 @@ public class DicomOutputStream extends FilterOutputStream {
         setTransferSyntax(TransferSyntax.valueOf(tsuid));
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         out.write(b, off, len);
         pos += len;
     }
 
+    @Override
     public void write(int b) throws IOException {
         out.write(b);
         ++pos;

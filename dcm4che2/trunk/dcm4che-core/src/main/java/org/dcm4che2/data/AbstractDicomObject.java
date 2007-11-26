@@ -87,6 +87,7 @@ abstract class AbstractDicomObject implements DicomObject {
         });
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         toStringBuffer(sb, null);

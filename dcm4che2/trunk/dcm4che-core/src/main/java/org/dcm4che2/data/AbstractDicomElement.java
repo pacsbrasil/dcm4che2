@@ -59,6 +59,7 @@ abstract class AbstractDicomElement implements DicomElement {
         this.bigEndian = bigEndian;
     }
 
+    @Override
     public int hashCode() {
         return tag;
     }
@@ -75,6 +76,7 @@ abstract class AbstractDicomElement implements DicomElement {
         return vr;
     }
 
+    @Override
     public String toString() {
         return toStringBuffer(null, TO_STRING_MAX_VAL_LEN).toString();
     }

@@ -338,6 +338,7 @@ public class DicomDirWriter extends DicomDirReader {
         	    FilesetInformation.NO_KNOWN_INCONSISTENCIES);
     }
 
+    @Override
     public void close() throws IOException {
 	commit();
 	super.close();

@@ -120,6 +120,7 @@ public class SpecificCharacterSet {
 			super(charset);
 		}
 
+		@Override
 		public String decode(byte[] b) {
 			String cs = charset;
 			int off = 0;

@@ -64,7 +64,8 @@ public class DateRange {
 		return end;
 	}
 	
-	public String toString() {
+	@Override
+    public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if (start != null) sb.append(start);
 		sb.append("-");
