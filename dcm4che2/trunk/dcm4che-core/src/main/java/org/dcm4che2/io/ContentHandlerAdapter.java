@@ -62,12 +62,11 @@ import org.xml.sax.helpers.DefaultHandler;
  * @since Jul 12, 2005
  */
 public class ContentHandlerAdapter extends DefaultHandler {
-
-    private static final int EXPECT_ELM = 0;
-    private static final int EXPECT_VAL_OR_FIRST_ITEM = 1;
-    private static final int EXPECT_FRAG = 2;
-    private static final int EXPECT_NEXT_ITEM = 3;
-    private int state = EXPECT_ELM;
+    private static enum State {
+        EXPECT_ELM, EXPECT_VAL_OR_FIRST_ITEM, EXPECT_FRAG, EXPECT_NEXT_ITEM;
+    }
+    
+    private State state = State.EXPECT_ELM;
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final StringBuffer sb = new StringBuffer();    
     private final Stack sqStack = new Stack();
@@ -103,49 +102,48 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     public void characters(char[] ch, int start, int length)
             throws SAXException {
-        switch (state) {
-        case EXPECT_VAL_OR_FIRST_ITEM:
-            if (vr == VR.SQ) return;
-        case EXPECT_FRAG:
+        if ((state == State.EXPECT_VAL_OR_FIRST_ITEM && vr != VR.SQ)
+                || state == State.EXPECT_FRAG) {
             sb.append(ch, start, length);
             vr.parseXMLValue(sb, out, false, attrs.getSpecificCharacterSet());
-            break;
         }
     }
 
     private void onStartElement(String tagStr, String vrStr, String src) {
-        if (state != EXPECT_ELM)
+        if (state != State.EXPECT_ELM)
             throw new IllegalStateException("state:" + state);
         this.tag = (int) Long.parseLong(tagStr,16);
         this.vr = vrStr == null ? attrs.vrOf(tag)
                 : VR.valueOf(vrStr.charAt(0) << 8 | vrStr.charAt(1));
-        state = EXPECT_VAL_OR_FIRST_ITEM;
+        state = State.EXPECT_VAL_OR_FIRST_ITEM;
         this.src = src;
     }
 
     private void onStartItem(String offStr, String src) {
         this.src = src;
-        switch (state) {
-        case EXPECT_VAL_OR_FIRST_ITEM:
-            sqStack.push(vr == VR.SQ ? attrs.putSequence(tag) 
-                    : attrs.putFragments(tag, vr, false));
-        case EXPECT_NEXT_ITEM:
-            DicomElement sq = (DicomElement) sqStack.peek();
-            if (sq.vr() == VR.SQ) {
-                DicomObject parent = attrs;
-                attrs = new BasicDicomObject();
-                ((BasicDicomObject) attrs).setParent(parent);
-                if (offStr != null) {
-                    attrs.setItemOffset(Long.parseLong(offStr));
-                }
-                sq.addDicomObject(attrs);
-                state = EXPECT_ELM;
-            } else {
-                state = EXPECT_FRAG;
-            }
-            break;
-        default:
+
+        if (state != State.EXPECT_VAL_OR_FIRST_ITEM
+                && state != State.EXPECT_NEXT_ITEM) {
             throw new IllegalStateException("state:" + state);
+        }
+
+        if (state == State.EXPECT_VAL_OR_FIRST_ITEM) {
+            sqStack.push(vr == VR.SQ ? attrs.putSequence(tag) : attrs
+                    .putFragments(tag, vr, false));
+        }
+
+        DicomElement sq = (DicomElement) sqStack.peek();
+        if (sq.vr() == VR.SQ) {
+            DicomObject parent = attrs;
+            attrs = new BasicDicomObject();
+            ((BasicDicomObject) attrs).setParent(parent);
+            if (offStr != null) {
+                attrs.setItemOffset(Long.parseLong(offStr));
+            }
+            sq.addDicomObject(attrs);
+            state = State.EXPECT_ELM;
+        } else {
+            state = State.EXPECT_FRAG;
         }
     }
  
@@ -164,7 +162,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         default:
             throw new IllegalStateException("state:" + state);
         }
-        state = EXPECT_NEXT_ITEM;
+        state = State.EXPECT_NEXT_ITEM;
     }
 
     private void onEndElement() throws SAXException {
@@ -185,7 +183,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         default:
             throw new IllegalStateException("state:" + state);
         }
-        state = EXPECT_ELM;
+        state = State.EXPECT_ELM;
     }
 
     private byte[] getValue(VR vr, SpecificCharacterSet cs)

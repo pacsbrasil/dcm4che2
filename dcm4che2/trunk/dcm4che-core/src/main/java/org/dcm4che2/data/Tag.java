@@ -67,7 +67,7 @@ public class Tag {
     public static int[] toTagPath(String expr) {
         StringTokenizer stk = new StringTokenizer(expr, "/[]", true);
         int[] tagPath = new int[stk.countTokens()];
-        int i= 0;
+        int i = 0;
         char delim = '/';
         while (stk.hasMoreTokens()) {
             String s = stk.nextToken();
@@ -78,12 +78,15 @@ public class Tag {
                     tagPath[i] = 0;
                     i++;
                 }
+                delim = ch0;
+                break;
             case '[':
             case ']':
-                delim = ch0;              
+                delim = ch0;
                 break;
             default:
-                tagPath[i] = (delim == '[') ? Integer.parseInt(s)-1 : toTag(s);
+                tagPath[i] = (delim == '[') ? Integer.parseInt(s) - 1
+                        : toTag(s);
                 ++i;
                 break;
             }
@@ -96,13 +99,13 @@ public class Tag {
         return tagPath;
     }
         
-    /** (0000,0000) VR=UL, VM=1 Group Length  */
+    /** (0000,0000) VR=UL, VM=1 Group Length */
     public static final int GroupLength00000000 = 0x00000000;
         
     /** (0000,0001) VR=UL, VM=1 Length to End RET */
     public static final int LengthToEndRET00000001 = 0x00000001;
         
-    /** (0000,0002) VR=UI, VM=1 Affected SOP Class UID  */
+    /** (0000,0002) VR=UI, VM=1 Affected SOP Class UID */
     public static final int AffectedSOPClassUID = 0x00000002;
         
     /** (0000,0003) VR=UI, VM=1 Requested SOP Class UID  */
