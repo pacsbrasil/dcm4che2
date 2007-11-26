@@ -1,5 +1,5 @@
 <?xml encoding="UTF-8"?>
-<!ELEMENT dictionary (elements*,uids*,status*)>
+<!ELEMENT dictionary (elements*,uids*,statuses*)>
 
 <!ELEMENT elements (element*)>
 <!ATTLIST elements type (Command|Data|FileMetaInfo|DicomDir) #REQUIRED>
@@ -13,7 +13,7 @@
                   key     CDATA #REQUIRED>
 
 <!ELEMENT uids (uid*)>
-<!ATTLIST uids type (TransferSyntax|SOPClass|MetaSOPClass|SOPInstance|ApplicationContextName) #REQUIRED>
+<!ATTLIST uids type (TransferSyntax|SOPClass|MetaSOPClass|SOPInstance|ApplicationContextName|CodingScheme|SynchronizationFrameOfReference) #REQUIRED>
 
 <!ELEMENT uid EMPTY>
 <!ATTLIST uid value   CDATA #REQUIRED
