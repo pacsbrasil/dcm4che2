@@ -145,10 +145,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  }
 	  
 	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
-	  if( voiObj==null ){
-		 throw new NullPointerException("voiObj should not be null.");
-	  }
-	  if( func==null && !VOIUtils.containsVOIAttributes(voiObj)) {
+	  if( func==null && voiObj==null) {
 		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
 		 windowCenter = cw[0];
 		 windowWidth = cw[1];
