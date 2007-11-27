@@ -4,7 +4,7 @@
   <property file="../build.properties"/>
   
   <property name="version" value="2.13.1"/>
-  <property name="audit-version" value="2.13.1"/>
+  <property name="audit-version" value="2.13.0"/>
   <property name="target.dir" value="${basedir}/target"/>
   <property name="target.conf" value="${target.dir}/conf"/>
   <property name="target.audit-conf" value="${target.dir}/audit-conf"/>
