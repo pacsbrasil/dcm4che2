@@ -274,9 +274,14 @@
   <xsl:variable name="bottomRight"><xsl:choose><xsl:when test="$custNode/@bottomRight"><xsl:value-of select="$custNode/@bottomRight[last()]" /></xsl:when><xsl:when test="$node/@bottomRight"><xsl:value-of select="$node/@bottomRight" /></xsl:when><xsl:otherwise><xsl:value-of select="concat($node/@Columns,',',$node/@Rows)" /></xsl:otherwise></xsl:choose></xsl:variable>
   <xsl:variable name="compZoom" select="$node/@Columns div (substring-before($bottomRight,',') - substring-before($topLeft,','))" />
   <xsl:variable name="zoom" select="../@zoom" />
-  <xsl:if test=" 0.5 > ($zoom - $compZoom)  and 0.5 > ($compZoom - $zoom)">
-    <xsl:attribute name="style">background: gray;<xsl:value-of select="../@style" /></xsl:attribute>
-  </xsl:if>
+  <xsl:choose>
+    <xsl:when test=" 0.5 > ($zoom - $compZoom)  and 0.5 > ($compZoom - $zoom)">
+      <img src="/xero/img/zoomScaleActive.png" alt="|" width="32" height="17"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" />
+    </xsl:otherwise>
+  </xsl:choose>
 </x:template>
   
 <!-- Adds command handling to this object -->
