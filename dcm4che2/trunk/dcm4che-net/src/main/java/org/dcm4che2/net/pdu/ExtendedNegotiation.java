@@ -50,6 +50,7 @@ public class ExtendedNegotiation
     private byte[] info;
     
     public ExtendedNegotiation() {
+        // empty
     }
 
     public ExtendedNegotiation(String cuid, byte[] info) {

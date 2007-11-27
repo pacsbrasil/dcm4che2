@@ -85,6 +85,7 @@ import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.UserIdentity;
 import org.dcm4che2.net.service.StorageCommitmentService;
+import org.dcm4che2.util.CloseUtils;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 
@@ -819,6 +820,7 @@ public class DcmSnd extends StorageCommitmentService {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
         throw new RuntimeException();
@@ -833,24 +835,20 @@ public class DcmSnd extends StorageCommitmentService {
         }
         FileInfo info = new FileInfo(f);
         DicomObject dcmObj = new BasicDicomObject();
+        DicomInputStream in = null;
         try {
-            DicomInputStream in = new DicomInputStream(f);
-            try {
-                in.setHandler(new StopTagInputHandler(Tag.StudyDate));
-                in.readDicomObject(dcmObj, PEEK_LEN);
-                info.tsuid = in.getTransferSyntax().uid();
-                info.fmiEndPos = in.getEndOfFileMetaInfoPosition();
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException ignore) {
-                }
-            }
+            in = new DicomInputStream(f);
+            in.setHandler(new StopTagInputHandler(Tag.StudyDate));
+            in.readDicomObject(dcmObj, PEEK_LEN);
+            info.tsuid = in.getTransferSyntax().uid();
+            info.fmiEndPos = in.getEndOfFileMetaInfoPosition();
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("WARNING: Failed to parse " + f + " - skipped.");
             System.out.print('F');
             return;
+        } finally {
+            CloseUtils.safeClose(in);
         }
         info.cuid = dcmObj.getString(Tag.SOPClassUID);
         if (info.cuid == null) {

@@ -92,8 +92,8 @@ public class Device
     /**
      * Default constructor.
      */
-    public Device()
-    {
+    public Device() {
+        // empty
     }
 
     /**

@@ -224,6 +224,7 @@ public class DicomInputStream extends FilterInputStream implements
                 readFully(b, 0, 6);
             }
         } catch (IOException ignore) {
+            // ignore read errors; we'll guess something smart
         }
         reset();
         boolean bigEndian = b[1] != 0;

@@ -142,7 +142,9 @@ public class Dcm2Txt implements DicomInputHandler {
             int i = Integer.parseInt(s);
             if (i >= min && i <= max)
                 return i;
-        } catch (NumberFormatException e) {}
+        } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
+        }
         exit("illegal argument for option -" + opt);
         throw new RuntimeException();
     }

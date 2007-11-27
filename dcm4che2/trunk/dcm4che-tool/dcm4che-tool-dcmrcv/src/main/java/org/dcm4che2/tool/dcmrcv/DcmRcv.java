@@ -696,6 +696,7 @@ public class DcmRcv extends StorageService {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
         throw new RuntimeException();
@@ -712,15 +713,16 @@ public class DcmRcv extends StorageService {
         final DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
         onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
         if (rspdelay > 0) {
-            executor.execute(new Runnable(){
-
+            executor.execute(new Runnable() {
                 public void run() {
                     try {
                         Thread.sleep(rspdelay);
                         as.writeDimseRSP(pcid, rsp);
                     } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                }});
+                }
+            });
         } else {
             as.writeDimseRSP(pcid, rsp);
         }

@@ -50,8 +50,8 @@ public class RoleSelection
     private boolean scu;
     private boolean scp;
 
-    public RoleSelection()
-    {        
+    public RoleSelection() {
+        // empty
     }
     
     public RoleSelection(String cuid, boolean scu, boolean scp)

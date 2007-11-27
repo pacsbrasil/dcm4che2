@@ -79,6 +79,7 @@ import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.UserIdentity;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -303,11 +304,7 @@ public class DcmGPWL {
                         System.out.println("WARNING: Failed to read " + f + ": "
                                 + e.getMessage());
                     } finally {
-                        if (din != null) {
-                            try {
-                                din.close();
-                            } catch (IOException ignore) {}
-                        }
+                        CloseUtils.safeClose(din);
                     }
                 }
             }
@@ -962,11 +959,7 @@ public class DcmGPWL {
                 System.out.println("WARNING: Failed to read " + file + ": "
                         + e.getMessage());
             } finally {
-                if (din != null) {
-                    try {
-                        din.close();
-                    } catch (IOException ignore) {}
-                }
+                CloseUtils.safeClose(din);
             }
         }        
     }
@@ -1282,6 +1275,7 @@ public class DcmGPWL {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
         throw new RuntimeException();

@@ -56,7 +56,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class VRMap implements Serializable {
+public final class VRMap implements Serializable {
 
 	private static final long serialVersionUID = 6581801202183118918L;
 
@@ -142,7 +142,8 @@ public class VRMap implements Serializable {
 
 	private transient String privateCreator;
 
-	private VRMap() {		
+	private VRMap() {
+	    // private c'tor to avoid instantiation
 	}
 	
 	private VRMap(int initialCapacity) {

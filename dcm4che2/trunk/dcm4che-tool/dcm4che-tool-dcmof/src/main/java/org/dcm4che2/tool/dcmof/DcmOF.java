@@ -79,6 +79,7 @@ import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.VerificationService;
+import org.dcm4che2.util.CloseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -705,6 +706,7 @@ public class DcmOF {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
         throw new RuntimeException();
@@ -727,7 +729,7 @@ public class DcmOF {
         try {
             out.writeDicomFile(data);
         } finally {
-            try { out.close(); } catch (IOException e) {}
+            CloseUtils.safeClose(out);
         }
     }
 

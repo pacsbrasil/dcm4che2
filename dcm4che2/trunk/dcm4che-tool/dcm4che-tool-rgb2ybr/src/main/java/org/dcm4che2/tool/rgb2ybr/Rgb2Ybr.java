@@ -55,6 +55,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputHandler;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -180,9 +181,7 @@ public class Rgb2Ybr implements DicomInputHandler  {
             }
         } finally {
             dis.close();
-            if (dos != null) {
-                dos.close();
-            }
+            CloseUtils.safeClose(dos);
         }
     }
 

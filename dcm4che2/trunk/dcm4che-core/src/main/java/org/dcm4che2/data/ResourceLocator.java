@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.dcm4che2.util.CloseUtils;
+
 public class ResourceLocator {
 
 	private static final String PREFIX = "META-INF/dcm4che/";
@@ -78,7 +80,7 @@ public class ResourceLocator {
 							list.add(ln);
 					}
 				} finally {
-					in.close();
+					CloseUtils.safeClose(in);
 				}
 			}
 			return list;
@@ -105,14 +107,17 @@ public class ResourceLocator {
             throw new ConfigurationError("could not instantiate: " + name, ex); 
         }        
     }
-    
-	private static Class loadClass(String name) throws ClassNotFoundException {
+
+    private static Class loadClass(String name) throws ClassNotFoundException {
         try {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             if (cl != null) {
                 return cl.loadClass(name);
             }
-        } catch (ClassNotFoundException ex) {}
+        } catch (ClassNotFoundException ex) {
+            // Class could not be loaded with thread context class loader. Use
+            // fall back.
+        }
         return ResourceLocator.class.getClassLoader().loadClass(name);
     }
 
@@ -132,10 +137,7 @@ public class ResourceLocator {
 		} catch (Exception e) {
 			throw new ConfigurationError("Failed to load Resource " + name, e);
 		} finally {
-			try {
-				is.close();
-			} catch (IOException ignore) {
-			}
+			CloseUtils.safeClose(is);
 		}
 	}
 	
@@ -154,13 +156,15 @@ public class ResourceLocator {
 		}					
 	}
 
-	public static void serializeTo(Object o, File out)
-			throws IOException {
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(out));		
-		try {
-			oos.writeObject(o);
-		} finally {
-			oos.close();
-		}					
-	}
+    public static void serializeTo(Object o, File out) throws IOException {
+        FileOutputStream fos = new FileOutputStream(out);
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(o);
+        } finally {
+            CloseUtils.safeClose(oos);
+            CloseUtils.safeClose(fos);
+        }
+    }
 }

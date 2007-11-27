@@ -899,6 +899,7 @@ public class DcmHPQR {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
         throw new RuntimeException();

@@ -138,8 +138,10 @@ public class Logger {
             return 0;
         }
         try {
-	    Thread.sleep(sleep);
-	} catch (InterruptedException ignore) {}
+            Thread.sleep(sleep);
+        } catch (InterruptedException ignore) {
+            // explicitly interrupted by another thread; continue
+        }
         switch (opt) {
         case 'd':
             log.debug(msg);

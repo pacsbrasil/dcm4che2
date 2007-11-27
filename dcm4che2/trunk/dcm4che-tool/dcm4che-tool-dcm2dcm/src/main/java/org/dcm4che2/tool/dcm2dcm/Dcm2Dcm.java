@@ -56,6 +56,7 @@ import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.io.TranscoderInputHandler;
 import org.dcm4che2.media.FileMetaInformation;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -152,6 +153,7 @@ public class Dcm2Dcm {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
         throw new RuntimeException();
@@ -241,26 +243,23 @@ public class Dcm2Dcm {
 
     public void convert(File src, File dest) throws IOException {
         DicomInputStream dis = new DicomInputStream(src);
+        DicomOutputStream dos = null;
         try {
             DicomObject fmiAttrs = dis.readFileMetaInformation();
-            DicomOutputStream dos = new DicomOutputStream(dest);
-            try {
-                if (!nofmi) {
-                    FileMetaInformation fmi = fmiAttrs == null
-                            ? createFMI(src)
-                            : createFMI(fmiAttrs);
-                    dos.writeFileMetaInformation(fmi.getDicomObject());
-                }
-                dos.setTransferSyntax(tsuid);
-                TranscoderInputHandler h = new TranscoderInputHandler(dos,
-                        transcoderBufferSize);
-                dis.setHandler(h);
-                dis.readDicomObject();
-            } finally {
-                dos.close();
+            dos = new DicomOutputStream(dest);
+            if (!nofmi) {
+                FileMetaInformation fmi = fmiAttrs == null ? createFMI(src)
+                        : createFMI(fmiAttrs);
+                dos.writeFileMetaInformation(fmi.getDicomObject());
             }
+            dos.setTransferSyntax(tsuid);
+            TranscoderInputHandler h = new TranscoderInputHandler(dos,
+                    transcoderBufferSize);
+            dis.setHandler(h);
+            dis.readDicomObject();
         } finally {
-            dis.close();
+            CloseUtils.safeClose(dos);
+            CloseUtils.safeClose(dis);
         }
     }
 

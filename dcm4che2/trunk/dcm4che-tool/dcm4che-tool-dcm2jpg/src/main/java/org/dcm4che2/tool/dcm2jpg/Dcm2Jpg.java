@@ -63,6 +63,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.util.CloseUtils;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
@@ -130,6 +131,7 @@ public class Dcm2Jpg {
         param.setAutoWindowing(autoWindowing);
         ImageInputStream iis = ImageIO.createImageInputStream(src);
         BufferedImage bi;
+        OutputStream out = null;
         try {
             reader.setInput(iis, false);
             bi = reader.read(0, param);
@@ -137,18 +139,12 @@ public class Dcm2Jpg {
                 System.out.println("\nError: " + src + " - couldn't read!");
                 return;
             }
-        } finally {
-            try {
-                iis.close();
-            } catch (IOException ignore) {
-            }
-        }
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
-        try {
+            out = new BufferedOutputStream(new FileOutputStream(dest));
             JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
             enc.encode(bi);
         } finally {
-            out.close();
+            CloseUtils.safeClose(iis);
+            CloseUtils.safeClose(out);
         }
         System.out.print('.');
     }
@@ -247,55 +243,52 @@ public class Dcm2Jpg {
     }
 
     private static DicomObject loadDicomObject(File file) {
+        DicomInputStream in = null;
         try {
-            DicomInputStream in = new DicomInputStream(file);
-            try {
-                return in.readDicomObject();
-            } finally {
-                in.close();
-            }
+            in = new DicomInputStream(file);
+            return in.readDicomObject();
         } catch (IOException e) {
             exit(e.getMessage());
             throw new RuntimeException();
+        } finally {
+            CloseUtils.safeClose(in);
         }
     }
 
     private static short[] loadPVal2Gray(File file) {
+        BufferedReader r = null;
         try {
-            BufferedReader r = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(file)));
-            try {
-                short[] pval2gray = new short[256];
-                int n = 0;
-                String line;
-                while ((line = r.readLine()) != null) {
-                    try {
-                        int val = Integer.parseInt(line.trim()); 
-                        if (n == pval2gray.length) {
-                            if (n == 0x10000) {
-                                exit("Number of entries in " + file
-                                        + " > 2^16");                   
-                            }
-                            short[] tmp = pval2gray;
-                            pval2gray = new short[n << 1];
-                            System.arraycopy(tmp, 0, pval2gray, 0, n);
+            r = new BufferedReader(new InputStreamReader(new FileInputStream(
+                    file)));
+            short[] pval2gray = new short[256];
+            int n = 0;
+            String line;
+            while ((line = r.readLine()) != null) {
+                try {
+                    int val = Integer.parseInt(line.trim());
+                    if (n == pval2gray.length) {
+                        if (n == 0x10000) {
+                            exit("Number of entries in " + file + " > 2^16");
                         }
-                        pval2gray[n++] = (short) val;
-                    } catch (NumberFormatException nfe) {
-                        // ignore lines where Integer.parseInt fails
+                        short[] tmp = pval2gray;
+                        pval2gray = new short[n << 1];
+                        System.arraycopy(tmp, 0, pval2gray, 0, n);
                     }
+                    pval2gray[n++] = (short) val;
+                } catch (NumberFormatException nfe) {
+                    // ignore lines where Integer.parseInt fails
                 }
-                if (n != pval2gray.length) {
-                    exit("Number of entries in " + file + ": "
-                            + n + " != 2^[8..16]");                   
-                }
-                return pval2gray;
-            } finally {
-                r.close();
             }
+            if (n != pval2gray.length) {
+                exit("Number of entries in " + file + ": " + n
+                        + " != 2^[8..16]");
+            }
+            return pval2gray;
         } catch (IOException e) {
             exit(e.getMessage());
             throw new RuntimeException();
+        } finally {
+            CloseUtils.safeClose(r);
         }
     }
 

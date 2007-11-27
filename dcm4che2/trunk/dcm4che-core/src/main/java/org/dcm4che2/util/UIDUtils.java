@@ -94,7 +94,7 @@ public class UIDUtils {
                     "Failed to load resource org/dcm4che2/util/UIDUtils.properties",
                     e);
         } finally {
-            try { is.close(); } catch (IOException ignore) {}
+            CloseUtils.safeClose(is);
         }
         useHostAddress = toBoolean(p.getProperty("useHostAddress"));
         useHostUnique = toBoolean(p.getProperty("useHostUnique"));

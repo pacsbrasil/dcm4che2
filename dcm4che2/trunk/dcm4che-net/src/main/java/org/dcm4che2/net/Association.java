@@ -61,6 +61,7 @@ import org.dcm4che2.net.pdu.AAssociateRQ;
 import org.dcm4che2.net.pdu.ExtendedNegotiation;
 import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
+import org.dcm4che2.util.CloseUtils;
 import org.dcm4che2.util.IntHashtable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -821,23 +822,11 @@ public class Association implements Runnable {
             }
         }
         setState(State.STA1);
-        try {
-            out.close();
-        } catch (IOException e) {
-            log.warn("I/O error during close of socket output stream", e);
-        }
-        try {
-            in.close();
-        } catch (IOException e) {
-            log.warn("I/O error during close of socket input stream", e);
-        }
+        CloseUtils.safeClose(out);
+        CloseUtils.safeClose(in);
         if (!closed) {
             log.info("{}: close {}", name, socket);
-            try {
-                socket.close();
-            } catch (IOException e) {
-                log.warn("I/O error during close of socket", e);
-            }
+            CloseUtils.safeClose(socket);
             closed = true;
             onClosed();
         }
@@ -1105,11 +1094,13 @@ public class Association implements Runnable {
     }
 
     private synchronized void waitForPerformingOps() {
-        while (performing > 0 && isReadyForDataReceive())
+        while (performing > 0 && isReadyForDataReceive()) {
             try {
                 wait();
             } catch (InterruptedException e) {
+                // explicitly interrupted up by another thread; continue
             }
+        }
     }
 
     void onCollisionReleaseRQ() throws IOException {

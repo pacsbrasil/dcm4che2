@@ -40,10 +40,9 @@ package org.dcm4che2.data;
 import java.util.StringTokenizer;
 
 /** Provides tag constants.*/
-public class Tag {
-
-    /** Private constructor */
+public final class Tag {
     private Tag() {
+        // private c'tor to avoid instantiation
     }
     
     public static final int forName(String name) {

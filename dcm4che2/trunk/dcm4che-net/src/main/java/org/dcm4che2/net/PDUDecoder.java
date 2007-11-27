@@ -60,6 +60,7 @@ import org.dcm4che2.net.pdu.PresentationContext;
 import org.dcm4che2.net.pdu.RoleSelection;
 import org.dcm4che2.net.pdu.UserIdentityAC;
 import org.dcm4che2.net.pdu.UserIdentityRQ;
+import org.dcm4che2.util.CloseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -564,9 +565,8 @@ class PDUDecoder extends PDVInputStream
             log.warn(as.toString() + ": Failed to decode dicom object: " + e.getMessage());
             throw new AAbort();
         }
-        finally
-        {
-            din.close();
+        finally {
+            CloseUtils.safeClose(din);
         }
         return dcm;
     }

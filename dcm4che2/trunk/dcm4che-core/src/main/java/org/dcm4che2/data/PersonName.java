@@ -94,9 +94,18 @@ public class PersonName {
             new String[5], 
             new String[5] };
     
-    public PersonName() {        
+    /**
+     * Default c'tor.
+     */
+    public PersonName() {
+        // empty
     }
 
+    /**
+     * C'tor that can parse a PN-encoded value.
+     * 
+     * @param s the PN-encoded value to initialize from.
+     */
     public PersonName(String s) {
         if (s == null)
             return;

@@ -60,6 +60,7 @@ import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.io.ContentHandlerAdapter;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4che2.util.CloseUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -214,44 +215,42 @@ public class Xml2Dcm {
             }
         }
         File ofile = new File(cl.getOptionValue("o"));
+        DicomOutputStream dos = null;
         try {
-            DicomOutputStream dos = new DicomOutputStream(
-                    new BufferedOutputStream(
-                            new FileOutputStream(ofile)));
-            try {
-                if (!dcmobj.command().isEmpty()) {
-                    dos.writeCommand(dcmobj);
-                    System.out.println("Created DICOM Command Set " + ofile);                
-                } else {
-                    dos.setIncludeGroupLength(cl.hasOption("g"));
-                    dos.setExplicitItemLength(cl.hasOption("e"));
-                    dos.setExplicitItemLengthIfZero(!cl.hasOption("u"));
-                    dos.setExplicitSequenceLength(cl.hasOption("E"));
-                    dos.setExplicitSequenceLengthIfZero(!cl.hasOption("U"));
-                    String tsuid = cl.getOptionValue("t");
-                    if (cl.hasOption("d")) {
-                        if (tsuid == null)
-                            tsuid = TransferSyntax.ExplicitVRLittleEndian.uid();
-                        dcmobj.initFileMetaInformation(tsuid);
-                    }
-                    if (cl.hasOption("a") || dcmobj.fileMetaInfo().isEmpty()) {
-                        if (tsuid == null)
-                            tsuid = TransferSyntax.ImplicitVRLittleEndian.uid();
-                        dos.writeDataset(dcmobj, TransferSyntax.valueOf(tsuid));
-                        System.out.println("Created ACR/NEMA Dump " + ofile);                    
-                    } else {
-                        dos.writeDicomFile(dcmobj);
-                        System.out.println("Created DICOM File " + ofile);                
-                    }
+            dos = new DicomOutputStream(new BufferedOutputStream(
+                    new FileOutputStream(ofile)));
+            if (!dcmobj.command().isEmpty()) {
+                dos.writeCommand(dcmobj);
+                System.out.println("Created DICOM Command Set " + ofile);
+            } else {
+                dos.setIncludeGroupLength(cl.hasOption("g"));
+                dos.setExplicitItemLength(cl.hasOption("e"));
+                dos.setExplicitItemLengthIfZero(!cl.hasOption("u"));
+                dos.setExplicitSequenceLength(cl.hasOption("E"));
+                dos.setExplicitSequenceLengthIfZero(!cl.hasOption("U"));
+                String tsuid = cl.getOptionValue("t");
+                if (cl.hasOption("d")) {
+                    if (tsuid == null)
+                        tsuid = TransferSyntax.ExplicitVRLittleEndian.uid();
+                    dcmobj.initFileMetaInformation(tsuid);
                 }
-            } finally {
-                dos.close();
+                if (cl.hasOption("a") || dcmobj.fileMetaInfo().isEmpty()) {
+                    if (tsuid == null)
+                        tsuid = TransferSyntax.ImplicitVRLittleEndian.uid();
+                    dos.writeDataset(dcmobj, TransferSyntax.valueOf(tsuid));
+                    System.out.println("Created ACR/NEMA Dump " + ofile);
+                } else {
+                    dos.writeDicomFile(dcmobj);
+                    System.out.println("Created DICOM File " + ofile);
+                }
             }
         } catch (IOException e) {
-            System.err.println("xml2dcm: failed to create " + ofile
-                    + ": " + e.getMessage());
+            System.err.println("xml2dcm: failed to create " + ofile + ": "
+                    + e.getMessage());
             e.printStackTrace(System.err);
-            System.exit(1);           
+            System.exit(1);
+        } finally {
+            CloseUtils.safeClose(dos);
         }
      }
 

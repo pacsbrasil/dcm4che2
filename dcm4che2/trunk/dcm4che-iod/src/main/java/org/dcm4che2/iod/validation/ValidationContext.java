@@ -42,7 +42,6 @@ package org.dcm4che2.iod.validation;
  * @version Revision $Date$
  * @since 30.06.2006
  */
-
 public class ValidationContext {
-
+    // TODO 2007-11-27 gunter.zeilinger Should this class be removed? (rick.riemer)
 }

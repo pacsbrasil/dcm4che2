@@ -101,19 +101,18 @@ extends AbstractHPComparator
         return sortOp;
     }
     
-    public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2)
-    {
-        try
-        {
+    public int compare(DicomObject o1, int frame1, DicomObject o2, int frame2) {
+        try {
             float v1 = dot(o1, frame1);
             float v2 = dot(o2, frame2);
             if (v1 < v2)
                 return -sign;
             if (v1 > v2)
                 return sign;
-        }
-        catch (RuntimeException ignore)
-        {
+        } catch (NumberFormatException ignore) {
+            // invalid patient position data - treat as equal
+        } catch (IndexOutOfBoundsException ignore) {
+            // invalid patient position data - treat as equal
         }
         return 0;
     }

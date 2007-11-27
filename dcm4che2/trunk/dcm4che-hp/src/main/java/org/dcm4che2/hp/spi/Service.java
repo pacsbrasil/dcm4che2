@@ -20,6 +20,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.dcm4che2.util.CloseUtils;
+
 
 /**
  * A simple service-provider lookup mechanism.  A <i>service</i> is a
@@ -112,7 +114,9 @@ public final class Service {
 
     private static final String prefix = "META-INF/services/";
 
-    private Service() { }
+    private Service() { 
+        // private c'tor to prevent instantiation
+    }
 
     private static void fail(Class service, String msg, Throwable cause)
 	throws ServiceConfigurationError
@@ -210,12 +214,8 @@ public final class Service {
 	} catch (IOException x) {
 	    fail(service, ": " + x);
 	} finally {
-	    try {
-		if (r != null) r.close();
-		if (in != null) in.close();
-	    } catch (IOException y) {
-		fail(service, ": " + y);
-	    }
+	    CloseUtils.safeClose(r);
+	    CloseUtils.safeClose(in);
 	}
 	return names.iterator();
     }

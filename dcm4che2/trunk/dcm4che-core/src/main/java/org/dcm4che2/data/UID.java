@@ -38,10 +38,9 @@
 package org.dcm4che2.data;
 
 /** Provides tag constants.*/
-public class UID {
-
-    /** Private constructor */
+public final class UID {
     private UID() {
+        // private c'tor to avoid instantiation
     }
     
     public static final String forName(String name) {

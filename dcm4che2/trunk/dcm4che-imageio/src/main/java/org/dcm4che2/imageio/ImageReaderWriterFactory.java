@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import org.dcm4che2.data.ConfigurationError;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -69,16 +70,16 @@ class ImageReaderWriterFactory {
                 }
             }
         }
+        
+        InputStream is = null;
         try {
-            InputStream is = url.openStream();
-            try {
-                config.load(is);
-            } finally {
-                is.close();
-            }
+            is = url.openStream();
+            config.load(is);
         } catch (IOException e) {
             throw new ConfigurationError(
                     "failed to load imageio configuration from " + url, e);
+        } finally {
+            CloseUtils.safeClose(is);
         }
     }
 

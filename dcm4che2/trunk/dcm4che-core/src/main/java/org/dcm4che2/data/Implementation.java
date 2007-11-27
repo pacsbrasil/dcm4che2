@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.dcm4che2.util.CloseUtils;
+
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Revision$ $Date$
@@ -69,7 +71,7 @@ public class Implementation {
         } catch (IOException e) {
             throw new ConfigurationError("Failed to load Resource: " + IMPL_PROPERTIES);
         } finally {
-            try { is.close(); } catch (IOException ignore) {}
+            CloseUtils.safeClose(is);
         }
         classUID = p.getProperty("classUID");
         versionName = p.getProperty("versionName");

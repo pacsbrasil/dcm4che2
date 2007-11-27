@@ -48,6 +48,7 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.util.CloseUtils;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.TagUtils;
 import org.xml.sax.ContentHandler;
@@ -265,7 +266,7 @@ public class SAXWriter implements DicomInputHandler {
         try {
             out.write(data);
         } finally {
-            out.close();
+            CloseUtils.safeClose(out);
         }
     }
 

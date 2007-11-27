@@ -38,7 +38,6 @@
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
 import java.awt.image.BufferedImage;
-import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +53,7 @@ import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che2.util.CloseUtils;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
@@ -159,8 +159,6 @@ public class DicomImageReaderTest extends TestCase {
      * {@link #testReadMonochrome1()}, the output (and thus the hash) is
      * expected to be the same.</em>
      */
-    // TODO 2007-11-23 rick.riemer Re-enable test once we know what the expected
-    // output for this test should be.
     public void testReadMonochrome1ApplyCustomWindow() throws Exception {
         DicomImageReadParam param = new DicomImageReadParam();
         param.setAutoWindowing(false);
@@ -223,8 +221,8 @@ public class DicomImageReaderTest extends TestCase {
             // only if the new JPEG is OK.
             assertEquals(expectedHash, hash);
         } finally {
-            safeClose(is);
-            safeClose(os);
+            CloseUtils.safeClose(is);
+            CloseUtils.safeClose(os);
         }
     }
 
@@ -250,20 +248,8 @@ public class DicomImageReaderTest extends TestCase {
             JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(jpegStream);
             enc.encode(image);
         } finally {
-            safeClose(iis);
-            safeClose(jpegStream);
-        }
-    }
-
-    private void safeClose(ImageInputStream iis) throws IOException {
-        if (iis != null) {
-            iis.close();
-        }
-    }
-
-    private void safeClose(Closeable obj) throws IOException {
-        if (obj != null) {
-            obj.close();
+            CloseUtils.safeClose(iis);
+            CloseUtils.safeClose(jpegStream);
         }
     }
 

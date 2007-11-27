@@ -51,6 +51,7 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.util.CloseUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -216,20 +217,19 @@ public class ContentHandlerAdapter extends DefaultHandler {
                         "Invalid reference to external value src: " + src);
             }
         }
+        DataInputStream in = null;
         try {
             URLConnection con = url.openConnection();
-            DataInputStream in = new DataInputStream(con.getInputStream());
-            try {
-                int len = con.getContentLength();
-                byte[] data = new byte[(len + 1) & ~1];
-                in.readFully(data, 0, len);
-                return data;
-            } finally {
-                in.close();
-            }
+            in = new DataInputStream(con.getInputStream());
+            int len = con.getContentLength();
+            byte[] data = new byte[(len + 1) & ~1];
+            in.readFully(data, 0, len);
+            return data;
         } catch (IOException e) {
-            throw new SAXException(
-                    "Failed to read value from external src: " + url, e);
+            throw new SAXException("Failed to read value from external src: "
+                    + url, e);
+        } finally {
+            CloseUtils.safeClose(in);
         }
     }
 

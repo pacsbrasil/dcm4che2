@@ -65,6 +65,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -284,8 +285,10 @@ public class DcmWado {
             int i = Integer.parseInt(s);
             if (i >= min && i <= max)
                 return i;
-        } catch (NumberFormatException e) {}
-         throw new IllegalArgumentException(errPrompt);
+        } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
+        }
+        throw new IllegalArgumentException(errPrompt);
     }
     
 
@@ -300,13 +303,15 @@ public class DcmWado {
         }
     }
     
-    private static float parseFloat(String s, String errPrompt, float min, float max)
-    {
+    private static float parseFloat(String s, String errPrompt, float min,
+            float max) {
         try {
             float f = Integer.parseInt(s);
             if (f >= min && f <= max)
                 return f;
-        } catch (NumberFormatException e) {}
+        } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
+        }
         throw new IllegalArgumentException(errPrompt);
     }
     
@@ -472,15 +477,15 @@ public class DcmWado {
         this.baseurl = url;
     }
 
-    private void checkURL(String url)
-    {
+    private void checkURL(String url) {
         try {
             String protocol = new URL(url).getProtocol();
-            if ("http".equals(protocol) || "https".equals(protocol)) {
-                return;               
+            if (!"http".equals(protocol) && !"https".equals(protocol)) {
+                throw new IllegalArgumentException("Illegal base-url - " + url);
             }
-        } catch (MalformedURLException e) {}
-        throw new IllegalArgumentException("Illegal base-url - " + url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Illegal base-url - " + url, e);
+        }
     }
 
     public final void setCharset(String[] charset)
@@ -587,37 +592,24 @@ public class DcmWado {
             return;
         }
         DicomObject dcmObj = new BasicDicomObject();
-        try
-        {
-            DicomInputStream in = new DicomInputStream(f);
-            try
-            {
-                in.setHandler(new StopTagInputHandler(Tag.SeriesInstanceUID));
-                in.readDicomObject(dcmObj, -1);
-                String[] uid = {
-                        dcmObj.getString(Tag.StudyInstanceUID),
-                        dcmObj.getString(Tag.SeriesInstanceUID),
-                        dcmObj.getString(Tag.SOPInstanceUID)
-                };
-                String[] ts = tsfile 
-                    ? new String[] { in.getTransferSyntax().uid() }
+        DicomInputStream in = null;
+        try {
+            in = new DicomInputStream(f);
+            in.setHandler(new StopTagInputHandler(Tag.SeriesInstanceUID));
+            in.readDicomObject(dcmObj, -1);
+            String[] uid = { dcmObj.getString(Tag.StudyInstanceUID),
+                    dcmObj.getString(Tag.SeriesInstanceUID),
+                    dcmObj.getString(Tag.SOPInstanceUID) };
+            String[] ts = tsfile ? new String[] { in.getTransferSyntax().uid() }
                     : tsuid;
-                url.add(makeURL(uid, ts));
-            }
-            finally
-            {
-                try
-                {
-                    in.close();
-                } catch (IOException ignore) {}
-            }
-        }
-        catch (IOException e)
-        {
+            url.add(makeURL(uid, ts));
+        } catch (IOException e) {
             e.printStackTrace();
             System.err.println("WARNING: Failed to parse " + f + " - skipped.");
             System.out.print('F');
             return;
+        } finally {
+            CloseUtils.safeClose(in);
         }
         System.out.print('.');
     }
@@ -638,24 +630,16 @@ public class DcmWado {
             con.setInstanceFollowRedirects(followsRedirect);
             con.setRequestProperty("Connection","Keep-Alive");
             con.connect();
-            InputStream in = con.getInputStream();
-            try
-            {
-                OutputStream out = getOutputStream(
-                        URLEncoder.encode(url.getQuery(), "UTF-8"));
-                try
-                {
-                    copy(in, out);
-                }
-                finally
-                {
-                    if (out != null)
-                        out.close();
-                }
-            }
-            finally
-            {
-                in.close();
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                in = con.getInputStream();
+                out = getOutputStream(URLEncoder
+                        .encode(url.getQuery(), "UTF-8"));
+                copy(in, out);
+            } finally {
+                CloseUtils.safeClose(out);
+                CloseUtils.safeClose(in);
                 if (noKeepAlive)
                     con.disconnect();
             }

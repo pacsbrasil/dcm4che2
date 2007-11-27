@@ -74,8 +74,8 @@ public class TransferCapability
     /**
      * Default constructor.
      */
-    public TransferCapability()
-    {
+    public TransferCapability() {
+        // empty
     }
 
     /**
