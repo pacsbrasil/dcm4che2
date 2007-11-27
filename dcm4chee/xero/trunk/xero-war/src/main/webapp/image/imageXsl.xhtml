@@ -56,13 +56,16 @@ var displayMode="<xsl:value-of select="/documents/mode" />";
     <x:callTemplates from="#{pageConfig}" mode="meta" />
     <title>Xero Image Frame</title>
     <link rel="stylesheet" media="all" type="text/css" href="/xero/layout/cssMenu.css" />
-    <x:callTemplates from="#{pageConfig}" mode="script" />
+    <xsl:if test="$jsEnabled">
+      <x:callTemplates from="#{pageConfig}" mode="script" />
+    </xsl:if>
   </head>
-  <body style="background: black; color: white;"
-    onmousemove="return imageHandler.mouseMove(event);"
-    onmouseout="return imageHandler.mouseOut(event);"
-    onmouseup="return imageHandler.mouseUp(event);"
-  >
+  <body style="background: black; color: white;">
+    <xsl:if test="$jsEnabled">
+      <xsl:attribute name="onmousemove">return imageHandler.mouseMove(event);</xsl:attribute>
+      <xsl:attribute name="onmouseout">return imageHandler.mouseOut(event);</xsl:attribute>
+      <xsl:attribute name="onmouseup">return imageHandler.mouseUp(event);</xsl:attribute>
+    </xsl:if>
    <form id="body" name="body" method="post" action="#">
     <x:callTemplates from="#{pageConfig}" mode="body" />
    </form>

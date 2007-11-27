@@ -17,9 +17,9 @@
    <c:forEach var="callTemplateItem" items="#{x:sorted(from,mode)}">
      <c:choose>
        <c:when test="#{callTemplateItem[mode]==null}"></c:when>
-       <c:when test="#{fn:endsWith(callTemplateItem[mode],'.js')}">
-         <script type="text/ecmascript" src="#{callTemplateItem[mode]}"> </script>
-       </c:when>
+         <c:when test="#{fn:endsWith(callTemplateItem[mode],'.js')}">
+           <script type="text/ecmascript" src="#{callTemplateItem[mode]}"> </script>
+         </c:when>
        <c:when test="#{fn:endsWith(callTemplateItem[mode],'.xhtml')}">
          <ui:include src="#{callTemplateItem[mode]}" />
        </c:when>

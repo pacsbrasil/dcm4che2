@@ -80,8 +80,7 @@ public class DicomFilter implements Filter<Object> {
    /**
      * Return either the params cached header, or read it from the file location
      * as appropriate. Returns a dicom image reader that should be synchronized
-     * on before reading images. The reader should probably be cached rather
-     * than creating a new one each time.
+     * on before reading images, AND while using the dicom object.
      * 
      * @param filterItem -
      *            call the fileLocation filter to get the location.
@@ -114,6 +113,8 @@ public class DicomFilter implements Filter<Object> {
 		 reader.setInput(in);
 		 // We don't have any reliable size information right now.   
 		 params.put(CacheItemImpl.CACHE_SIZE, "2048");
+		 // Makes this a bit more thread safe if the header has been read
+		 reader.getStreamMetadata();
 		 return reader;
 	  } catch (IOException e) {
 		 log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);

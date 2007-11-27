@@ -14,5 +14,6 @@
 <xsl:variable name="applyLevel" select="/documents/mode/@applyLevel" />
 <xsl:variable name="documentsNode" select="/documents" />
 <xsl:variable name="toolbarNode" select="document(/documents/toolbar)/*" />
+<xsl:variable name="jsEnabled" select="/documents/jsEnabled='true' or count(/documents/jsEnabled)=0" />
 
 </x:xsl>

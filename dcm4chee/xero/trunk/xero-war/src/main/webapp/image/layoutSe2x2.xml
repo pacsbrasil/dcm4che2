@@ -11,7 +11,7 @@
      <div toolbarRef="studyToolbar" height="1" />
      <xul:hbox id="x1" height="25">
        <se:series id="se0" offset="0" width="25" pageSize="1">
-        <xul:vbox>
+        <xul:vbox id="vse0">
          <div toolbarRef="seriesToolbar" height="1"/>
          <se:image id="i0" offset="0" height='15'>
            <div toolbarRef="imageOverlay" />
@@ -19,7 +19,7 @@
         </xul:vbox>
        </se:series>
        <se:series id="se1" offset="1" width="25" pageSize="1">
-        <xul:vbox>
+        <xul:vbox id="vse1">
          <div toolbarRef="seriesToolbar" height="1"/>
          <se:image id="i1" offset="0" height='15'>
            <div toolbarRef="imageOverlay" />
@@ -29,7 +29,7 @@
      </xul:hbox>
      <xul:hbox id="x2" height="25">
        <se:series id="se2" offset="2" width="25" pageSize="1">
-        <xul:vbox>
+        <xul:vbox id="vse2">
          <div toolbarRef="seriesToolbar" height="1"/>
          <se:image id="i2" offset="0" height='15'>
            <div toolbarRef="imageOverlay" />
@@ -37,7 +37,7 @@
         </xul:vbox>
        </se:series>
        <se:series id="se3" offset="3" width="25" pageSize="1">
-        <xul:vbox>
+        <xul:vbox id="vse3">
          <div toolbarRef="seriesToolbar" height="1"/>
          <se:image id="i3" offset="0" height='15'>
            <div toolbarRef="imageOverlay" />

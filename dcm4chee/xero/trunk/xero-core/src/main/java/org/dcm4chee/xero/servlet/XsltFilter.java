@@ -84,41 +84,46 @@ import org.slf4j.LoggerFactory;
  */
 public class XsltFilter implements Filter {
    private static final Logger log = LoggerFactory.getLogger(XsltFilter.class);
+
    public String XSLT_PARAMETER = "xslt";
 
    FilterConfig filterConfig;
 
-   Map<String,Transformer> transformers = new HashMap<String,Transformer>();
+   Map<String, Transformer> transformers = new HashMap<String, Transformer>();
 
    public void destroy() {
    }
 
    /**
      * Gets the transformer appropriate to transform the given request, as
-     * embodied in the responseWrapper.  Currently this replaces the last bit of the
-     * URL (.seam) with Xsl.xsl and does a request, checking first to see if it is in the cache.
-     * Assume this filter is single-threaded - if not, we need to use a rental model whereby
-     * there is a replace transformer call.
+     * embodied in the responseWrapper. Currently this replaces the last bit of
+     * the URL (.seam) with Xsl.xsl and does a request, checking first to see if
+     * it is in the cache. Assume this filter is single-threaded - if not, we
+     * need to use a rental model whereby there is a replace transformer call.
      */
    protected Transformer getTransformer(HttpServletRequest request, String xml) throws IOException {
 	  String xsl = request.getRequestURI();
 	  int lastDot = xsl.lastIndexOf('.');
-	  if( lastDot<0 ) throw new IllegalArgumentException("Unknown request - need to be .X for some X");
-	  xsl = "http://"+request.getServerName() + ":"+request.getServerPort()+xsl.substring(0,lastDot)+"Xsl.xsl";
-	  log.info("Looking for XSL "+xsl);
+	  if (lastDot < 0)
+		 throw new IllegalArgumentException("Unknown request - need to be .X for some X");
+	  UrlURIResolver resolve = new UrlURIResolver(request, filterConfig.getServletContext());
+	  xsl = xsl.substring(0, lastDot) + "Xsl.xsl";
+	  log.info("Looking for XSL " + xsl);
 	  Transformer transformer = transformers.get(xsl);
-	  if (transformer == null  || "true".equalsIgnoreCase(request.getParameter("refresh")) ) {
-		 URL url = new URL(xsl);
-		 Source styleSource = new StreamSource(url.openStream());
-		 TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		 transformerFactory.setURIResolver(new UrlURIResolver(request, filterConfig.getServletContext()));
+	  if (transformer == null || "true".equalsIgnoreCase(request.getParameter("refresh"))) {
 		 try {
+			Source styleSource = resolve.resolve(xsl, "/");
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			transformerFactory.setURIResolver(resolve);
 			transformer = transformerFactory.newTransformer(styleSource);
 		 } catch (TransformerConfigurationException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
+		 } catch (TransformerException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
 		 }
-		 transformers.put(xsl,transformer);
+		 transformers.put(xsl, transformer);
 	  }
 	  return transformer;
    }
@@ -127,22 +132,23 @@ public class XsltFilter implements Filter {
      * Detect if XSLT should be applied
      */
    protected boolean checkApplyXslt(HttpServletRequest request) {
-	  if ( request.getParameter(XSLT_PARAMETER)!=null ) 
+	  if (request.getParameter(XSLT_PARAMETER) != null)
 		 return "true".equalsIgnoreCase(request.getParameter(XSLT_PARAMETER));
 	  String agent = request.getHeader("USER-AGENT");
-	  // Note that apple web-kit is NOT included, as pages for that browser are conditionally included
+	  // Note that apple web-kit is NOT included, as pages for that browser
+        // are conditionally included
 	  // based on need.
-	  log.info("Agent="+agent);
+	  log.info("Agent=" + agent);
 	  if (agent.indexOf("Opera") >= 0) {
 		 return true;
 	  }
-	  if (agent.indexOf("Konqueror") >=0 ) {
+	  if (agent.indexOf("Konqueror") >= 0) {
 		 return true;
 	  }
-	  if (agent.indexOf("Mobile") >=0 ) {
+	  if (agent.indexOf("Mobile") >= 0) {
 		 return true;
 	  }
-	  if( agent.indexOf("BlackBerry")>=0 ) {
+	  if (agent.indexOf("BlackBerry") >= 0) {
 		 return true;
 	  }
 	  return false;
@@ -151,18 +157,18 @@ public class XsltFilter implements Filter {
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filters) throws IOException, ServletException {
 	  HttpServletRequest hRequest = (HttpServletRequest) request;
 	  if (!checkApplyXslt(hRequest)) {
-		 log.debug("Not applying XSLT transformation to "+hRequest.getRequestURI());
+		 log.debug("Not applying XSLT transformation to " + hRequest.getRequestURI());
 		 filters.doFilter(request, response);
 		 return;
 	  }
 	  log.debug("Apply XSLT.");
- 	  response.setContentType("application/xhtml+xml");
+	  response.setContentType("application/xhtml+xml");
 	  PrintWriter out = response.getWriter();
 	  CharResponseWrapper responseWrapper = new CharResponseWrapper((HttpServletResponse) response);
 	  filters.doFilter(request, responseWrapper);
 	  // Get response from servlet
 	  String xml = responseWrapper.toString();
-	  if( xml.indexOf("<?xml-stylesheet")==-1 ) {
+	  if (xml.indexOf("<?xml-stylesheet") == -1) {
 		 log.debug("Not applying XSLT - no xml-stylesheet applied.");
 		 response.setContentLength(xml.length());
 		 out.write(xml);
@@ -173,7 +179,7 @@ public class XsltFilter implements Filter {
 
 	  try {
 		 Transformer useTransform = getTransformer(hRequest, xml);
-		 useTransform.setURIResolver(new UrlURIResolver(hRequest,filterConfig.getServletContext()));
+		 useTransform.setURIResolver(new UrlURIResolver(hRequest, filterConfig.getServletContext()));
 		 CharArrayWriter caw = new CharArrayWriter();
 		 StreamResult result = new StreamResult(caw);
 		 useTransform.transform(xmlSource, result);
@@ -199,44 +205,43 @@ public class XsltFilter implements Filter {
  */
 class UrlURIResolver implements URIResolver {
    private static Logger log = LoggerFactory.getLogger(UrlURIResolver.class);
-   
+
    HttpServletRequest request;
+
    ServletContext servletContext;
-   
+
    public UrlURIResolver(HttpServletRequest request, ServletContext servletContext) {
 	  this.request = request;
 	  this.servletContext = servletContext;
    }
 
    public Source resolve(String href, String base) throws TransformerException {
-	  log.info("Trying to resolve "+href);
+	  log.info("Trying to resolve " + href);
 	  int firstSlash = href.indexOf('/');
 	  RequestDispatcher dispatcher;
-	  if( firstSlash!=0) {
+	  if (firstSlash != 0) {
 		 log.info("Resolving against relative request dispatcher ");
 		 dispatcher = request.getRequestDispatcher(href);
-	  }
-	  else {
+	  } else {
 		 log.info("Resolving absolute path.");
-		 int secondSlash = href.indexOf('/',1);
-		 if( secondSlash<0 ) {
-			throw new RuntimeException("Not an absolute path within a request module:"+href);
+		 int secondSlash = href.indexOf('/', 1);
+		 if (secondSlash < 0) {
+			throw new RuntimeException("Not an absolute path within a request module:" + href);
 		 }
 		 String relative = href.substring(secondSlash);
-		 String contextPath = href.substring(0,secondSlash);
-		 log.info("Context path="+contextPath+" relative url="+relative);
-		 if( contextPath.equals(request.getContextPath()) ) {
-		   dispatcher = request.getRequestDispatcher(relative);
-		 }
-		 else {
-		   ServletContext altContext = servletContext.getContext(contextPath);
-		   dispatcher = altContext.getRequestDispatcher(relative);
+		 String contextPath = href.substring(0, secondSlash);
+		 log.info("Context path=" + contextPath + " relative url=" + relative);
+		 if (contextPath.equals(request.getContextPath())) {
+			dispatcher = request.getRequestDispatcher(relative);
+		 } else {
+			ServletContext altContext = servletContext.getContext(contextPath);
+			dispatcher = altContext.getRequestDispatcher(relative);
 		 }
 	  }
-	  
-	  try {	 
+
+	  try {
 		 CaptureHttpServletResponse response = new CaptureHttpServletResponse();
-		 IncludeHttpServletRequest includeRequest = new IncludeHttpServletRequest(request,href);
+		 IncludeHttpServletRequest includeRequest = new IncludeHttpServletRequest(request, href);
 		 dispatcher.include(includeRequest, response);
 		 String resolvedResponse = response.getResponseString();
 		 StringReader reader = new StringReader(resolvedResponse);
@@ -244,52 +249,64 @@ class UrlURIResolver implements URIResolver {
 	  } catch (IOException e) {
 		 throw new RuntimeException("IO Exception on URL:" + href, e);
 	  } catch (ServletException e) {
-		 throw new RuntimeException("Caught servlet exception "+e,e);
+		 throw new RuntimeException("Caught servlet exception " + e, e);
 	  }
    }
 }
 
-/** This class removes all request attributes, replacing them with ones parsed from the new URL */
+/**
+ * This class removes all request attributes, replacing them with ones parsed
+ * from the new URL
+ */
 class IncludeHttpServletRequest extends HttpServletRequestWrapper {
    private static final Logger log = LoggerFactory.getLogger(IncludeHttpServletRequest.class);
-   private Map<String,String[]> parameterMap = new HashMap<String,String[]>();
+
+   private Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+
    private String queryString = "";
+
    private String requestURI;
-   
-   /** Add all the parameters from href into the parameter map, instead of the original values */
+
+   /**
+     * Add all the parameters from href into the parameter map, instead of the
+     * original values
+     */
    public IncludeHttpServletRequest(HttpServletRequest request, String href) {
 	  super(request);
 	  int qPos = href.indexOf("?");
 	  requestURI = href;
-	  if( qPos==-1 ) return;
-	  queryString = href.substring(qPos+1);
-	  log.info("Include http servlet query string="+queryString);
-	  requestURI = href.substring(0,qPos);
-	  if( href.length()==0 ) return;
+	  if (qPos == -1)
+		 return;
+	  queryString = href.substring(qPos + 1);
+	  log.info("Include http servlet query string=" + queryString);
+	  requestURI = href.substring(0, qPos);
+	  if (href.length() == 0)
+		 return;
 	  String[] args = queryString.split("&");
-	  for(String arg : args) {
+	  for (String arg : args) {
 		 int keyEnd = arg.indexOf('=');
-		 if( keyEnd<=0 ) continue;
-		 String key = arg.substring(0,keyEnd);
-		 String value = arg.substring(keyEnd+1);
-		 if( value.isEmpty() ) continue;
+		 if (keyEnd <= 0)
+			continue;
+		 String key = arg.substring(0, keyEnd);
+		 String value = arg.substring(keyEnd + 1);
+		 if (value.isEmpty())
+			continue;
 		 String[] vals = parameterMap.get(key);
-		 if( vals==null ) {
-			parameterMap.put(key,new String[]{value});
-		 }
-		 else {
-			String[] newVals = new String[vals.length+1];
+		 if (vals == null) {
+			parameterMap.put(key, new String[] { value });
+		 } else {
+			String[] newVals = new String[vals.length + 1];
 			System.arraycopy(vals, 0, newVals, 0, vals.length);
-			parameterMap.put(key,newVals);
+			parameterMap.put(key, newVals);
 		 }
 	  }
    }
-   
+
    @Override
    public String getQueryString() {
 	  return queryString;
    }
-   
+
    @Override
    public String getRequestURI() {
 	  return requestURI;
@@ -298,7 +315,8 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
    @Override
    public String getParameter(String arg0) {
 	  String[] val = parameterMap.get(arg0);
-	  if( val==null || val.length==0 ) return null;
+	  if (val == null || val.length == 0)
+		 return null;
 	  return val[0];
    }
 
@@ -316,20 +334,20 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
    public String[] getParameterValues(String arg0) {
 	  return parameterMap.get(arg0);
    }
-   
-   
+
 }
 
 /**
  * Converts a regular output stream into a servlet output stream.
+ * 
  * @author bwallace
- *
+ * 
  */
 class ServletOutputStreamConverter extends ServletOutputStream {
    private OutputStream outputStream;
-   
+
    public ServletOutputStreamConverter(OutputStream os) {
-	 outputStream = os;  
+	  outputStream = os;
    }
 
    @Override
@@ -351,34 +369,36 @@ class ServletOutputStreamConverter extends ServletOutputStream {
 
    @Override
    public void write(byte[] b, int off, int len) throws IOException {
-	  outputStream.write(b,off,len);
+	  outputStream.write(b, off, len);
    }
 
    @Override
    public void write(byte[] b) throws IOException {
 	  outputStream.write(b);
    }
-   
+
 }
 
 /** This class just captures the output from the given http request */
 class CaptureHttpServletResponse implements HttpServletResponse {
-   
+
    private ByteArrayOutputStream outputStream;
+
    private ServletOutputStreamConverter servletOutputStream;
-   
+
    private CharArrayWriter writer;
+
    private PrintWriter printWriter;
-   
+
    public void addCookie(Cookie arg0) {
    }
 
    /** Return the string response sent from the servlet */
    public String getResponseString() {
-	  if( writer!=null ) {
+	  if (writer != null) {
 		 return writer.toString();
 	  }
-	  if( outputStream!=null ) {
+	  if (outputStream != null) {
 		 try {
 			return outputStream.toString("UTF-8");
 		 } catch (UnsupportedEncodingException e) {
@@ -461,8 +481,8 @@ class CaptureHttpServletResponse implements HttpServletResponse {
    }
 
    public ServletOutputStream getOutputStream() throws IOException {
-	  if( servletOutputStream==null ) {
-		 if( printWriter!=null ) 
+	  if (servletOutputStream == null) {
+		 if (printWriter != null)
 			throw new IOException("Can't use both output stream and writer.");
 		 outputStream = new ByteArrayOutputStream();
 		 servletOutputStream = new ServletOutputStreamConverter(outputStream);
@@ -471,8 +491,9 @@ class CaptureHttpServletResponse implements HttpServletResponse {
    }
 
    public PrintWriter getWriter() throws IOException {
-	  if( printWriter==null ) {
-		 if( servletOutputStream!=null ) throw new IOException("Can't use both writer and output stream.");
+	  if (printWriter == null) {
+		 if (servletOutputStream != null)
+			throw new IOException("Can't use both writer and output stream.");
 		 writer = new CharArrayWriter();
 		 printWriter = new PrintWriter(writer);
 	  }

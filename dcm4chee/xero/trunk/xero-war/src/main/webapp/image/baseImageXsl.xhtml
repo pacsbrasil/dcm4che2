@@ -22,7 +22,7 @@
  <xsl:param name="node" />
  <xsl:param name="custNode" select="/.." />
  <div>
-  <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+  <xsl:copy-of select="@*" />
   <xsl:attribute name="style">float: left;
    <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template>
    <xsl:if test="@background">background: <xsl:value-of select="@background" /></xsl:if>
@@ -296,7 +296,9 @@
       <xsl:with-param name="node" select="." />
       <xsl:with-param name="custNode" select="$custNode" />
      </xsl:apply-templates></xsl:attribute>
-   <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
+   <xsl:if test="$jsEnabled">
+     <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
+   </xsl:if>
  </xsl:if>
 </x:template>
 
@@ -797,7 +799,7 @@ and cx,cy = width /2, height/2
   <xsl:param name="node" />
   <xsl:param name="custNode" />
   <div>
-    <xsl:attribute name="id">dimg<xsl:value-of select="$custNode/@id[last()]" /></xsl:attribute>
+    <xsl:attribute name="id">dimg<xsl:value-of select="$custNode/self::se:image/@id" /></xsl:attribute>
     <!-- TODO remove all these bits - they should be included as CSS style directly -->
     <xsl:attribute name="style">float: left;
      <xsl:call-template name="styleSize"><xsl:with-param name="loc" select="$loc" /></xsl:call-template><c:if test="#{browser=='MSIE'}">overflow: hidden;</c:if>
