@@ -9,6 +9,7 @@
   m:docName="/documents/images"
   m:layout="/xero/image/layoutSe2x2.xml"
   m:toolbar="/xero/image/imageCommands.seam"
+  m:displayResolution.inherit="layout.displayResolution"
 >
   <!-- Contains the source document references for displaying an image -->
   <cycle>#{cycleUrl}</cycle>
@@ -16,9 +17,6 @@
 
   <mode applyLevel="${DisplayMode.applyLevel}">#{DisplayMode.mode}</mode>
 
-  <!-- This needs to be settable per-machine, in mm/pixel -->
-  <screenPitch>0.294</screenPitch>
-  
   <layout doc="#{ConversationStudyModel.url}" frame="#{ConversationStudyModel.layout!=null ? ConversationStudyModel.layout : pageConfig.layout}"  xmlns:se="http://www.dcm4chee.org/xero/search/study/">
     <h:outputText value="#{ConversationStudyModel.patientXml}" escape="false" />
   </layout>

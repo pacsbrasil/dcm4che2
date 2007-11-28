@@ -666,7 +666,7 @@ and cx,cy = width /2, height/2
  <xsl:param name="bottom" select="number(substring-after(@bottomRight,','))" />
  <xsl:param name="cx" select="($left+$right) div 2" />
  <xsl:param name="cy" select="($bottom+$top) div 2" />
- <xsl:param name="s" select="@spacingX div $documentsNode/screenPitch" />
+ <xsl:param name="s" select="@spacingX div $documentsNode/displayResolution/@screenPitch" />
  <xsl:apply-templates mode="imageViewport" select="$cur">
   <xsl:with-param name="loc" select="concat($loc,$cx,',',$cy,',',$s,',')" />
   <xsl:with-param name="node" select="$node" />
@@ -827,12 +827,14 @@ and cx,cy = width /2, height/2
 
 <!-- This lays out a JPEG image with the correct GSPS applied etc -->
 <x:template name="imageJpeg" mode="newlayout" match="h:div[@class='imageJpeg']">
+  <xsl:param name="loc">512,542,</xsl:param>
   <xsl:param name="node" />
   <xsl:param name="custNode" />
+  <xsl:variable name="w" select="number(substring-before($loc,','))" />
   <xsl:variable name="wWidth"><xsl:choose><xsl:when test="$custNode[@windowWidth]"><xsl:value-of select="$custNode[@windowWidth][last()]/@windowWidth" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowWidth" /></xsl:otherwise></xsl:choose></xsl:variable>
   <xsl:variable name="wCenter"><xsl:choose><xsl:when test="$custNode[@windowCenter]"><xsl:value-of select="$custNode[@windowCenter][last()]/@windowCenter" /></xsl:when><xsl:otherwise><xsl:value-of select="@windowCenter" /></xsl:otherwise></xsl:choose></xsl:variable>
   <xsl:element name="img">
-    <xsl:attribute name="src">/wado2/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$node/@SOPInstanceUID" /><xsl:if test="$wCenter!=''">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:if test="$node/@frame!=''">&amp;frameNumber=<xsl:value-of select="$node/@frame" /></xsl:if><xsl:if test="$node/@gspsUID!=''">&amp;presentationUID=<xsl:value-of select="$node/@gspsUID" /></xsl:if>&amp;rows=512</xsl:attribute>
+    <xsl:attribute name="src">/wado2/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$node/@SOPInstanceUID" /><xsl:if test="$wCenter!=''">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:if test="$node/@frame!=''">&amp;frameNumber=<xsl:value-of select="$node/@frame" /></xsl:if><xsl:if test="$node/@gspsUID!=''">&amp;presentationUID=<xsl:value-of select="$node/@gspsUID" /></xsl:if>&amp;cols=<xsl:value-of select="$w" /></xsl:attribute>
   </xsl:element>
 </x:template>
 
@@ -983,7 +985,7 @@ and cx,cy = width /2, height/2
 
 <x:template name="baseImage" m:body="baseImage" m:body.priority="5">
  <xsl:apply-templates select="$frameNode/*" mode="newlayout" >
-  <xsl:with-param name="loc">1070,710,</xsl:with-param>
+  <xsl:with-param name="loc" select="concat($documentsNode/displayResolution/@width,',',$documentsNode/displayResolution/@height,',')" />
   <xsl:with-param name="node" select="document(/documents/layout/@doc)/se:results" />
  </xsl:apply-templates>
 </x:template>

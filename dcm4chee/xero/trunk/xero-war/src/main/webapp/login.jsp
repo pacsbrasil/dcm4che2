@@ -20,8 +20,10 @@
 
 <%
 	String nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
+    String agent = request.getHeader("USER-AGENT");
 %>
 <body onload="self.focus();document.login.j_username.focus()">
+<% if( !(agent.indexOf("Mobile")>=0 || agent.indexOf("BlackBerry")>=0) ) { %>
 <table border="0" cellspacing="0" cellpadding="0" width="100%">
  <tr>
   <td><img src="/dcm4chee-web/white48.jpg" width="100%" height="5px"></td>
@@ -35,6 +37,7 @@
   <td><img src="/dcm4chee-web/line.jpg" width="100%" height="20px" alt="line"></td>
  </tr>
 </table>
+<% } %>
 <center>
 <h1>User Login at <%= nodeInfo %></h1>
 <br>
