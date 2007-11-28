@@ -136,7 +136,7 @@ public class XsltFilter implements Filter {
 		 return "true".equalsIgnoreCase(request.getParameter(XSLT_PARAMETER));
 	  String agent = request.getHeader("USER-AGENT");
 	  // Note that apple web-kit is NOT included, as pages for that browser
-        // are conditionally included
+	  // are conditionally included
 	  // based on need.
 	  log.info("Agent=" + agent);
 	  if (agent.indexOf("Opera") >= 0) {
@@ -220,22 +220,30 @@ class UrlURIResolver implements URIResolver {
 	  int firstSlash = href.indexOf('/');
 	  RequestDispatcher dispatcher;
 	  if (firstSlash != 0) {
-		 log.info("Resolving against relative request dispatcher ");
+		 log.info("Resolving against relative request dispatcher " + href);
 		 dispatcher = request.getRequestDispatcher(href);
 	  } else {
-		 log.info("Resolving absolute path.");
 		 int secondSlash = href.indexOf('/', 1);
 		 if (secondSlash < 0) {
-			throw new RuntimeException("Not an absolute path within a request module:" + href);
-		 }
-		 String relative = href.substring(secondSlash);
-		 String contextPath = href.substring(0, secondSlash);
-		 log.info("Context path=" + contextPath + " relative url=" + relative);
-		 if (contextPath.equals(request.getContextPath())) {
-			dispatcher = request.getRequestDispatcher(relative);
+			log.info("Resolving a root module href:" + href);
+			ServletContext altContext = servletContext.getContext("/");
+			dispatcher = altContext.getRequestDispatcher(href.substring(firstSlash));
 		 } else {
-			ServletContext altContext = servletContext.getContext(contextPath);
-			dispatcher = altContext.getRequestDispatcher(relative);
+			String relative = href.substring(secondSlash);
+			String contextPath = href.substring(0, secondSlash);
+			log.info("Resolving absolute path for context "+contextPath + " relative "+relative);
+			log.info("Context path=" + contextPath + " relative url=" + relative);
+			if (contextPath.equals(request.getContextPath())) {
+			   dispatcher = request.getRequestDispatcher(relative);
+			} else {
+			   ServletContext altContext = servletContext.getContext(contextPath);
+			   if( altContext==null ) {
+				  log.info("Using root context for full path.");
+				  relative = href;
+				  altContext = servletContext.getContext("/");
+			   }
+			   dispatcher = altContext.getRequestDispatcher(relative);
+			}
 		 }
 	  }
 
@@ -244,6 +252,8 @@ class UrlURIResolver implements URIResolver {
 		 IncludeHttpServletRequest includeRequest = new IncludeHttpServletRequest(request, href);
 		 dispatcher.include(includeRequest, response);
 		 String resolvedResponse = response.getResponseString();
+		 log.info("Resolved response for "+href+" is ");
+		 log.info(resolvedResponse);
 		 StringReader reader = new StringReader(resolvedResponse);
 		 return new StreamSource(reader);
 	  } catch (IOException e) {
@@ -291,10 +301,13 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
 		 String value = arg.substring(keyEnd + 1);
 		 if (value.isEmpty())
 			continue;
+		 value = value.replace("%2F", "/");
 		 String[] vals = parameterMap.get(key);
 		 if (vals == null) {
+			log.info("Putting parameter map info "+key+" value '"+value+"'");
 			parameterMap.put(key, new String[] { value });
 		 } else {
+			log.info("Extending parameter map info "+key+" value "+value);
 			String[] newVals = new String[vals.length + 1];
 			System.arraycopy(vals, 0, newVals, 0, vals.length);
 			parameterMap.put(key, newVals);
@@ -313,10 +326,13 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
    }
 
    @Override
-   public String getParameter(String arg0) {
-	  String[] val = parameterMap.get(arg0);
-	  if (val == null || val.length == 0)
+   public String getParameter(String param) {
+	  String[] val = parameterMap.get(param);
+	  if (val == null || val.length == 0) {
+		 log.info("No value for "+param);
 		 return null;
+	  }
+	  log.info("Returning parameter for "+param+"="+val[0]);
 	  return val[0];
    }
 

@@ -307,7 +307,8 @@
       <xsl:with-param name="custNode" select="$custNode" />
      </xsl:apply-templates>
    </xsl:attribute>
-   <xsl:if test="$jsEnabled">
+   <xsl:if test="$jsEnabled and count(@onmousedown)=0">
+     <xsl:message>Creating onmousedown for oncommand=<xsl:value-of select="@oncommand" /> </xsl:message>
      <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
    </xsl:if>
  </xsl:if>
