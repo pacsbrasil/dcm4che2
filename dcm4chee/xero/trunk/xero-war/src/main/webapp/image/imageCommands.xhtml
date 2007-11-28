@@ -45,6 +45,12 @@
     </li>
     
     <li><a id="saveBtn" onclick="showModalDialog('/xero/image/save.seam');return false"><img class="icon" src="/xero/img/save.png" /></a></li>
+    <li><span class="currentGsps" />
+      <ul>
+        <li><a oncommand="/xero/image/action/SelectGsps.seam?gsps=None">None</a></li>
+        <se:gsps><li><a oncommand="/xero/image/action/SelectGsps.seam?"><span class="gspsLabel" /></a></li></se:gsps>
+      </ul>
+    </li>
     <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
     
     <li><a id="viewBody" onclick="alert('HTML page is '+document.getElementsByTagName('body')[0].innerHTML);" >Body</a></li>

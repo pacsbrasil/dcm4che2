@@ -99,6 +99,9 @@
  </xsl:if>
 </x:template>
 
+<x:template name="ignoreDisabledTags" mode="disabled" match="*">
+</x:template>
+
 <!-- Copy HTML elements as required for disabled -->
 <x:template name="copyHtmlDisabled" mode="disabled" match="h:*">
  <xsl:param name="loc" />
@@ -289,10 +292,12 @@
  <xsl:param name="loc" />
  <xsl:param name="node" />
  <xsl:param name="custNode" select="/.." />
+ <xsl:if test="count($node)=2">
+   <xsl:message>2 nodes - first <xsl:value-of select="local-name($node[1])" /> second <xsl:value-of select="local-name($node[2])" /></xsl:message>
+ </xsl:if>
  <xsl:if test="@oncommand">
    <xsl:attribute name="href">
-     <xsl:value-of select="@oncommand" />
-     <xsl:apply-templates mode="hrefArgsNode" select="current()" >
+     <xsl:value-of select="@oncommand" /><xsl:apply-templates mode="hrefArgsNode" select="current()" >
       <xsl:with-param name="loc" select="$loc" />
       <xsl:with-param name="node" select="$node" />
       <xsl:with-param name="custNode" select="$custNode" />
@@ -300,7 +305,8 @@
       <xsl:with-param name="loc" select="$loc" />
       <xsl:with-param name="node" select="." />
       <xsl:with-param name="custNode" select="$custNode" />
-     </xsl:apply-templates></xsl:attribute>
+     </xsl:apply-templates>
+   </xsl:attribute>
    <xsl:if test="$jsEnabled">
      <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
    </xsl:if>
@@ -873,11 +879,14 @@ and cx,cy = width /2, height/2
  <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
  <xsl:param name="position" select="$viewStart - ( $viewStart mod $countMod )" />
  <xsl:param name="studyUID" select="$node/../@StudyInstanceUID" />
- <xsl:param name="gsps"><xsl:choose><xsl:when test="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel">&amp;gsps=<xsl:value-of select="$documentsNode//se:study[@StudyInstanceUID=$studyUID]/@gspsLabel" /></xsl:when><xsl:when test="$node/parent::*[@gspsLabel]">&amp;gsps=<xsl:value-of select="$node/parent::se:study/@gspsLabel" /></xsl:when></xsl:choose></xsl:param>
- <xsl:param name="koUid"><xsl:choose><xsl:when test="$custNode/@koUID">&amp;koUID=<xsl:value-of select="$custNode/@koUID" /></xsl:when><xsl:when test="$node/parent::se:study/@koUID!=''">&amp;koUID=<xsl:value-of select="$node/parent::se:study/@koUID" /></xsl:when></xsl:choose></xsl:param>
- <xsl:param name="imageUrl" select="concat('/xero/image/image.xml?pixelInfo=true&amp;SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,$gsps,$koUid)" />
- <xsl:param name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study[@StudyInstanceUID=$studyUID]/se:series" />
+ <xsl:param name="gsps"><xsl:choose><xsl:when test="$custNode/@gspsLabel">&amp;gsps=<xsl:value-of select="$custNode/@gspsLabel" /></xsl:when><xsl:when test="$node/parent::*[@gspsLabel]">&amp;gsps=<xsl:value-of select="$node/parent::se:study/@gspsLabel" /></xsl:when></xsl:choose></xsl:param>
+ <xsl:variable name="koUid"><xsl:choose><xsl:when test="$custNode/@koUID">&amp;koUID=<xsl:value-of select="$custNode/@koUID" /></xsl:when><xsl:when test="$node/parent::se:study/@koUID!=''">&amp;koUID=<xsl:value-of select="$node/parent::se:study/@koUID" /></xsl:when></xsl:choose></xsl:variable>
+ <xsl:variable name="imageUrl" select="concat('/xero/image/image.xml?pixelInfo=true&amp;SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,$gsps,$koUid)" />
+ <xsl:variable name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series[@SeriesInstanceUID=$node/@SeriesInstanceUID]" />
  <xsl:message>http://wtl-bwallace/<xsl:value-of select="$imageUrl" /></xsl:message>
+ <xsl:if test="count($newSeriesNode) > 1">
+    <xsl:message>WARNING: 2+ seriesLayout nodes - first <xsl:value-of select="local-name($newSeriesNode[1])" /> second <xsl:value-of select="local-name($newSeriesNode[2])" /> from image level doc <xsl:value-of select="$imageUrl" /></xsl:message>
+ </xsl:if>
 
  <xsl:apply-templates mode="svg" select="$newSeriesNode/../se:series/se:gsps/svg:svg">
   <xsl:with-param name="loc" select="$loc" />
@@ -905,11 +914,15 @@ and cx,cy = width /2, height/2
   <xsl:param name="seriesNodeForUID" select="$node/se:series[@SeriesInstanceUID=$seriesUID]" />
   <xsl:param name="seriesNode" select="$node/se:series[se:image][1+current()/@offset + count($seriesNodeForUID/preceding-sibling::se:series[se:image])]" />
   <xsl:message>Series layout series UID specified/start=<xsl:value-of select="$seriesUID" /> count of series node with that uid=<xsl:value-of select="count($seriesNode)" /> final node selected is <xsl:value-of select="$seriesNode/@SeriesInstanceUID" /> at offset <xsl:value-of select="@offset" /></xsl:message>
+  <xsl:if test="count($seriesNode) > 1">
+    <xsl:message>WARNING: 2+ seriesLayout nodes - first <xsl:value-of select="local-name($seriesNode[1])" /> second <xsl:value-of select="local-name($seriesNode[2])" /> from series level doc.</xsl:message>
+  </xsl:if>
   <xsl:choose>
     <xsl:when test="count($seriesNode)=0">
+      <xsl:message>Disabled series node being called.</xsl:message>
       <xsl:apply-templates mode="disabled">
    	    <xsl:with-param name="loc" select="$loc" />
-     	<xsl:with-param name="node" select="$node" />
+     	<xsl:with-param name="node" select="$seriesNode" />
    	    <xsl:with-param name="custNode" select="$custNode | current()" />
       </xsl:apply-templates>
     </xsl:when>

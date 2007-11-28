@@ -57,6 +57,13 @@
       <redirect view-id="/ipod/image.xhtml" />
     </navigation>
   </page>
+  <page view-id="/ipod/action/SelectGsps.xhtml" action="#{SelectGsps.action}">
+    <param name="gsps" value="#{SelectGsps.gsps}" />
+    <navigation>
+      <redirect view-id="/ipod/image.xhtml" />
+    </navigation>
+  </page>
+  
   
 
   <page view-id="/cycle/cycleFrame.xhtml" action="#{CyclePageAction.cycle}">

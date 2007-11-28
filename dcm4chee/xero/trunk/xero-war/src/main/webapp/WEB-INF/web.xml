@@ -219,10 +219,6 @@
    </servlet>
    <servlet-mapping>
      <servlet-name>WADO</servlet-name>
-     <url-pattern>/wlwado</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-     <servlet-name>WADO</servlet-name>
      <url-pattern>/wado</url-pattern>
    </servlet-mapping>
 
@@ -314,7 +310,7 @@
        <url-pattern>*.seam</url-pattern>
        <url-pattern>*.xhtml</url-pattern>
        <url-pattern>*.xml</url-pattern>
-       <url-pattern>/wlwado</url-pattern>
+       <url-pattern>/wado</url-pattern>
        <http-method>GET</http-method>
        <http-method>POST</http-method>
      </web-resource-collection>
