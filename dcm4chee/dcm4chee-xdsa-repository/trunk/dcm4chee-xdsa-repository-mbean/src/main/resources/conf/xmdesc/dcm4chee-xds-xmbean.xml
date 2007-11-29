@@ -37,7 +37,7 @@
       <name>XDSQueryURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://129.6.24.109:9080/axis2/services/xdsregistryb"/>
+         <value value="http://129.6.24.109:9080/axis2/services/xdsregistrya"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
