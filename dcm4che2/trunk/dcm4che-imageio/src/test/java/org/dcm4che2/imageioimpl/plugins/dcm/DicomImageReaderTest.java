@@ -38,26 +38,16 @@
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
-import java.util.Formatter;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
-import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
-import org.dcm4che2.util.CloseUtils;
-
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * Tests for the image reader code. The tests are based on visual inspection.
@@ -69,200 +59,185 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  * @author rick.riemer
  */
 public class DicomImageReaderTest extends TestCase {
-    /**
-     * Tests the reading of a regular MR instance.
-     */
-    public void testReadMrAutoWindowing() throws Exception {
-        assertImage("mr.dcm", "mr.jpeg", 0,
-                "c71635f769acd9194b9f7462d2f2cdec5665eaf0",
-                new DicomImageReadParam());
-    }
 
-    /**
-     * Tests the reading of a regular CT instance, with windowing elements in
-     * it's meta data.
-     */
-    public void testReadCtNoAutoWindowing() throws Exception {
-        DicomImageReadParam param = new DicomImageReadParam();
-        param.setAutoWindowing(false);
-        assertImage("ct.dcm", "ct.jpeg", 0,
-                "e557747dc04a1870192874f6c829ab94261e7b94", param);
-    }
+	/* The default, 512x512 SMPTE image */
+	private static BufferedImage smpte;
 
-    /**
-     * Tests the reading of a regular CT instance, with windowing elements in
-     * it's meta data, but with a custom Window Center and Window Width set on
-     * the reader parameters.
-     * <p>
-     * <em>Note for visual inspection: since we set the Window Width to a small
-     * value, the rendered output should be clearly distinct from
-     * {@link #testReadCtNoAutoWindowing()}.</em>
-     */
-    public void testReadCtApplyCustomWindow() throws Exception {
-        // TODO 2007-11-23 rick.riemer Re-enable test once we know what the
-        // expected output for this test should be.
-        DicomImageReadParam param = new DicomImageReadParam();
-        param.setAutoWindowing(false);
-        param.setWindowCenter(10);
-        param.setWindowWidth(100);
+	/**
+	 * Tests the reading of a regular MR instance.
+	 */
+	public void testReadMrAutoWindowing() throws Exception {
+		assertImage("mr.dcm", "mr", 0, null);
+	}
 
-        assertImage("ct.dcm", "ct-customwindow.jpeg", 0,
-                "d34b6dd53559538b1f1fc37aba10e8f1b670d3d6", param);
-    }
+	/**
+	 * Tests the reading of a regular CT instance, with windowing elements in
+	 * it's meta data.
+	 */
+	public void testReadCtNoAutoWindowing() throws Exception {
+		DicomImageReadParam param = new DicomImageReadParam();
+		param.setAutoWindowing(false);
+		assertImage("ct.dcm", "ct", 0, null);
+	}
 
-    /**
-     * Tests the reading of an arbitrary frame from a multi-frame instance. In
-     * this case an Enhanced CT from the test set from <a
-     * href="ftp://medical.nema.org/MEDICAL/Dicom/Multiframe/">the DICOM
-     * standard FTP server</a>.
-     * <p>
-     * <em>NOTE for visual inspection: frame 1 should be returned, which is a front
-     * view of a chest. If you see a side view, you're looking at the wrong
-     * frame (0).</em>
-     */
-    public void testReadMultiframe() throws Exception {
-        assertImage("ct-multiframe.dcm", "ct-multiframe-frame2.jpeg", 1,
-                "cbd08219cb743135340720044b6e037ff2a7f9fc",
-                new DicomImageReadParam());
-    }
+	/**
+	 * Tests the reading of a regular CT instance, with windowing elements in
+	 * it's meta data, but with a custom Window Center and Window Width set on
+	 * the reader parameters.
+	 * <p>
+	 * <em>Note for visual inspection: since we set the Window Width to a small
+	 * value, the rendered output should be clearly distinct from
+	 * {@link #testReadCtNoAutoWindowing()}.</em>
+	 */
+	public void testReadCtApplyCustomWindow() throws Exception {
+		// TODO 2007-11-23 rick.riemer Re-enable test once we know what the
+		// expected output for this test should be.
+		DicomImageReadParam param = new DicomImageReadParam();
+		param.setAutoWindowing(false);
+		param.setWindowCenter(10);
+		param.setWindowWidth(100);
 
-    /**
-     * Tests the reading of a CR instance, with MONOCHROME1 photometric
-     * interpretation, with Window Center and Window With elements.
-     */
-    public void testReadMonochrome1() throws Exception {
-        assertImage("cr-monochrome1.dcm", "cr-monochrome1.jpeg", 0,
-                "f9a5bc8f4d712f28f5d77b2f3b3d99e9174c46ed",
-                new DicomImageReadParam());
-    }
+		assertImage("ct.dcm", "ct-customwindow", 0, param);
+	}
 
-    /**
-     * Tests the reading of a CR instance, with MONOCHROME1 photometric
-     * interpretation, <em>without</em> Window Center and Window With
-     * elements.
-     */
-    public void testReadMonochrome1NoWindow() throws Exception {
-        assertImage("cr-monochrome1-nowindow.dcm",
-                "cr-monochrome1-nowindow.jpeg", 0,
-                "91c7da974af97c49586a3140f5f3766876ddf0b3",
-                new DicomImageReadParam());
-    }
+	/**
+	 * Tests the reading of an arbitrary frame from a multi-frame instance. In
+	 * this case an Enhanced CT from the test set from <a
+	 * href="ftp://medical.nema.org/MEDICAL/Dicom/Multiframe/">the DICOM
+	 * standard FTP server</a>.
+	 * <p>
+	 * <em>NOTE for visual inspection: frame 1 should be returned, which is a front
+	 * view of a chest. If you see a side view, you're looking at the wrong
+	 * frame (0).</em>
+	 */
+	public void testReadMultiframe() throws Exception {
+		assertImage("ct-multiframe.dcm", "ct-multiframe-frame2", 1,null);
+	}
 
-    /**
-     * Tests the reading of a CR instance, with MONOCHROME1 photometric
-     * interpretation, <em>without</em> Window Center and Window With
-     * elements, but with a custom Window Center and Window Width set on the
-     * reader parameters.
-     * <p>
-     * <em>Note for visual inspection: since we set the Window Center and
-     * Window Width to the same values as the instance used in
-     * {@link #testReadMonochrome1()}, the output (and thus the hash) is
-     * expected to be the same.</em>
-     */
-    public void testReadMonochrome1ApplyCustomWindow() throws Exception {
-        DicomImageReadParam param = new DicomImageReadParam();
-        param.setAutoWindowing(false);
-        param.setWindowCenter(10000);
-        param.setWindowWidth(27000);
+	/**
+	 * Tests the reading of a CR instance, with MONOCHROME1 photometric
+	 * interpretation, with Window Center and Window With elements.
+	 */
+	public void testReadMonochrome1() throws Exception {
+		assertImage("cr-monochrome1.dcm", "cr-monochrome1", 0,null);
+	}
 
-        assertImage("cr-monochrome1-nowindow.dcm",
-                "cr-monochrome1-nowindow-customwindow.jpeg", 0,
-                "f9a5bc8f4d712f28f5d77b2f3b3d99e9174c46ed", param);
-    }
+	/**
+	 * Tests the reading of a CR instance, with MONOCHROME1 photometric
+	 * interpretation, <em>without</em> Window Center and Window With
+	 * elements.
+	 */
+	public void testReadMonochrome1NoWindow() throws Exception {
+		assertImage("cr-monochrome1-nowindow.dcm",
+				"cr-monochrome1-nowindow", 0, null);
+	}
 
-    /**
-     * Tests the reading of instances from the IHE MESA Modality LUT test cases.
-     * It is expected that the hashes for all output are the same.
-     * <p>
-     * <em>Note for visual inspection: all images should produce the same test
-     * pattern</em>.
-     */
-    // TODO 2007-11-23 rick.riemer Re-enable after
-    // http://www.dcm4che.org/jira/browse/DCM-145 gets resolved.
-    public void testMLUT() throws Exception {
-        boolean failed = false;
-        for (int i = 1; i <= 19; ++i) {
-        	String imgNumber = String.format("%02d", Integer.valueOf(i));
-        	if( i==2 || i==7 || i==8 || i==10 || i==15 || i==17 ) {
-        		System.out.println("Skipping mlut_"+imgNumber + " add test back in later.");
-        		continue;
-        	}
-            try {
-                assertImage("mlut_" + imgNumber + ".dcm", "mlut" + imgNumber
-                        + ".jpeg", 0,
-                        "b712a97da4b95f61e67b9c46ff82b8f96551834b",
-                        new DicomImageReadParam());
-            } catch (ComparisonFailure e) {
-                System.err.println("MLUT " + imgNumber + " failure: "
-                        + e.getMessage());
-                failed = true;
-            }
-        }
+	/**
+	 * Tests the reading of a CR instance, with MONOCHROME1 photometric
+	 * interpretation, <em>without</em> Window Center and Window With
+	 * elements, but with a custom Window Center and Window Width set on the
+	 * reader parameters.
+	 * <p>
+	 * <em>Note for visual inspection: since we set the Window Center and
+	 * Window Width to the same values as the instance used in
+	 * {@link #testReadMonochrome1()}, the output (and thus the hash) is
+	 * expected to be the same.</em>
+	 */
+	public void testReadMonochrome1ApplyCustomWindow() throws Exception {
+		DicomImageReadParam param = new DicomImageReadParam();
+		param.setAutoWindowing(false);
+		param.setWindowCenter(10000);
+		param.setWindowWidth(27000);
 
-        if (failed) {
-            fail("one or more MLUT instances failed. see stderr for details.");
-        }
-    }
+		assertImage("cr-monochrome1-nowindow.dcm",
+				"cr-monochrome1-nowindow-customwindow", 0,param);
+	}
 
-    @SuppressWarnings("unused")
-    public void assertImage(String resourceLocation, String jpegFilename,
-            int frameNumber, String expectedHash, DicomImageReadParam param)
-            throws Exception {
-        OutputStream os = new java.io.FileOutputStream(jpegFilename);
-        //OutputStream os = new NullOutputStream();
-        InputStream is = null;
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            DigestOutputStream dos = new DigestOutputStream(os, digest);
-            is = DicomImageReaderTest.class
-                    .getResourceAsStream(resourceLocation);
-            assertNotNull(is);
-            dcm2jpeg(is, dos, frameNumber, param);
-            String hash = formatDigest(digest);
+	/** Reads the default SMPTE image - mlut_01.dcm */
+	public static synchronized BufferedImage getSmpte() throws IOException {
+		if (smpte != null)
+			return smpte;
+		smpte = ImageIO.read(DicomImageReaderTest.class
+				.getResourceAsStream("smpte.png"));
+		return smpte;
+	}
 
-            // NOTE: If the hash check fails, regenerate the JPEG by using the
-            // FileOutputStream above, and check it visually. Use a new hash
-            // only if the new JPEG is OK.
-            assertEquals(expectedHash, hash);
-        } finally {
-            CloseUtils.safeClose(is);
-            CloseUtils.safeClose(os);
-        }
-    }
+	/** Reads the image from the given resource name */
+	public static BufferedImage readDicomImage(String resourceLocation,
+			int frameNumber, DicomImageReadParam param) throws IOException {
+		DicomImageReaderSpi spi = new DicomImageReaderSpi();
+		DicomImageReader reader = (DicomImageReader) spi
+				.createReaderInstance(null);
 
-    private void dcm2jpeg(InputStream dcmStream, OutputStream jpegStream,
-            int frameNumber, DicomImageReadParam param)
-            throws FileNotFoundException, IOException {
-        DicomImageReaderSpi spi = new DicomImageReaderSpi();
-        DicomImageReader reader = (DicomImageReader) spi
-                .createReaderInstance(null);
+		ImageInputStream iis = null;
+		InputStream is = DicomImageReaderTest.class
+				.getResourceAsStream(resourceLocation);
+		iis = ImageIO.createImageInputStream(is);
 
-        ImageInputStream iis = null;
-        try {
-            iis = ImageIO.createImageInputStream(dcmStream);
+		reader.setInput(iis, true);
+		BufferedImage image = reader.read(frameNumber, param);
+		return image;
+	}
 
-            reader.setInput(iis, true);
-            BufferedImage image = reader.read(frameNumber, param);
+	/**
+	 * Tests the reading of instances from the IHE MESA Modality LUT test cases.
+	 * It is expected that the hashes for all output are the same.
+	 * <p>
+	 * <em>Note for visual inspection: all images should produce the same test
+	 * pattern</em>.
+	 */
+	public void testMLUT() throws Exception {
+		boolean failed = false;
+		DicomImageReadParam param = new DicomImageReadParam();
+		param.setAutoWindowing(true);
+		for (int i = 1; i <= 19; ++i) {
+			int allowedDiff = 0;
+			// The first image fails to be exact because the SMPTE test is a generated test and it was rounded off
+			// incorrectly (down) instead of nearest for 1 region of 670 odd pixels.
+			// The second test is lossy, as it is only 128 bits of encoding and the SMPTE is 256 bits.
+			if( i==1 ) 
+				allowedDiff=1;
+			else if (i == 2)
+				allowedDiff = 2;
+			String imgNumber = String.format("%02d", Integer.valueOf(i));
+			String baseName = "mlut_" + imgNumber;
+			String fileName = baseName + ".dcm";
+			BufferedImage img = readDicomImage(fileName, 0, null);
+			System.out.println("Testing image " + fileName);
+			ImageDiff diff = new ImageDiff(getSmpte(), img, baseName,
+					allowedDiff);
+			if (diff.getMaxDiff() > allowedDiff) {
+				failed = true;
+				System.err
+						.println("File "
+								+ baseName
+								+ ".dcm failed - see .txt file for differences - max diff "
+								+ diff.getMaxDiff());
+			}
+		}
+		if (failed) {
+			fail("one or more MLUT instances failed. see stderr for details.");
+		}
+	}
 
-            // we use a com.sun class here, since the regular Image I/O JPEG
-            // encoder doesn't support high bit rates.
-            JPEGEncodeParam encodeParam = JPEGCodec
-                    .getDefaultJPEGEncodeParam(image);
-            encodeParam.setQuality(1.0f, false);
-            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(jpegStream);
-            enc.encode(image);
-        } finally {
-            CloseUtils.safeClose(iis);
-            CloseUtils.safeClose(jpegStream);
-        }
-    }
+	public void assertImage(String resourceLocation, String baseName,
+			int frameNumber, DicomImageReadParam param) throws Exception {
+		BufferedImage dcm = readDicomImage(resourceLocation, frameNumber, param);
+		BufferedImage comp = null;
+		try {
+			comp = ImageIO.read(DicomImageReaderTest.class
+					.getResourceAsStream(baseName+".png"));
+		}
+		catch(Exception e) {
+			File f = new File(baseName+".png");
+			if( f.exists() ) f.delete();
+			e.printStackTrace();
+			fail("No image to compare against, wrote image to current dir.");
+		}
+		ImageDiff diff = new ImageDiff(comp,dcm,baseName,0);
+		if( diff.getMaxDiff()!=0 ) {
+			fail("Maximum difference on "+baseName+" is supposed to be zero but is "+diff.getMaxDiff());
+		}
+	}
 
-    public static String formatDigest(MessageDigest digest) {
-        StringBuilder result = new StringBuilder();
-        Formatter formatter = new Formatter(result);
-        for (byte b : digest.digest()) {
-            formatter.format("%02x", Byte.valueOf(b));
-        }
-        return result.toString();
-    }
 }

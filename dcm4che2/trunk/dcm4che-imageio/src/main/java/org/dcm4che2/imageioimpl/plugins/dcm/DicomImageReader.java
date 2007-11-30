@@ -43,6 +43,7 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
@@ -65,6 +66,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.OverlayUtils;
@@ -411,8 +413,14 @@ public class DicomImageReader extends ImageReader {
             LookupTable lut = createLut((DicomImageReadParam) param,
                     imageIndex + 1, data);
             if (lut != null) {
-                lut.lookup(data, data);
-                if (data.getDataType() == DataBuffer.TYPE_SHORT) {
+            	DataBuffer dest = data;
+            	if( (! (dest instanceof DataBufferByte)) && (lut instanceof ByteLookupTable) ) {
+                	BufferedImage ret = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+                	dest = ret.getRaster().getDataBuffer();
+                	bi = ret;
+            	}
+                lut.lookup(data, dest);
+                if (dest.getDataType() == DataBuffer.TYPE_SHORT) {
                     ColorModel cm = bi.getColorModel();
                     short[] ss = ((DataBufferShort) data).getData();
                     return new BufferedImage(cm, Raster.createWritableRaster(
@@ -507,6 +515,6 @@ public class DicomImageReader extends ImageReader {
         }
 
         return LookupTable.createLutForImageWithPR(ds, pr, frame, c, w,
-                vlutFct, stored, pval2gray);
+                vlutFct, 8, pval2gray);
     }
 }
