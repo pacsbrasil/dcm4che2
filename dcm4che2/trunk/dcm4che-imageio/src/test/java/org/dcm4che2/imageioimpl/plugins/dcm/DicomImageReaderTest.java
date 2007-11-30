@@ -220,6 +220,45 @@ public class DicomImageReaderTest extends TestCase {
 		}
 	}
 
+	/**
+	 * Tests the reading of instances from the IHE MESA Modality LUT test cases.
+	 * It is expected that the hashes for all output are the same.
+	 * <p>
+	 * <em>Note for visual inspection: all images should produce the same test
+	 * pattern</em>.
+	 */
+	public void testVLUT() throws Exception {
+		boolean failed = false;
+		DicomImageReadParam param = new DicomImageReadParam();
+		param.setAutoWindowing(true);
+		// Don't test 11 - it is a completely different type of test.
+		for (int i = 1; i <= 10; ++i) {
+			// Allow for 1 pixel value differences to account for rounding differences.
+			int allowedDiff = 1;
+			// vlut_03 and 08 are only 50 distinct values - less than 6 bits
+			if( i==3 ) allowedDiff=3;
+			else if( i==8 ) allowedDiff=5;
+			String imgNumber = String.format("%02d", Integer.valueOf(i));
+			String baseName = "vlut_" + imgNumber;
+			String fileName = baseName + ".dcm";
+			BufferedImage img = readDicomImage(fileName, 0, null);
+			System.out.println("Testing image " + fileName);
+			ImageDiff diff = new ImageDiff(getSmpte(), img, baseName,
+					allowedDiff);
+			if (diff.getMaxDiff() > allowedDiff) {
+				failed = true;
+				System.err
+						.println("File "
+								+ baseName
+								+ ".dcm failed - see .txt file for differences - max diff "
+								+ diff.getMaxDiff());
+			}
+		}
+		if (failed) {
+			fail("one or more MLUT instances failed. see stderr for details.");
+		}
+	}
+
 	public void assertImage(String resourceLocation, String baseName,
 			int frameNumber, DicomImageReadParam param) throws Exception {
 		BufferedImage dcm = readDicomImage(resourceLocation, frameNumber, param);
