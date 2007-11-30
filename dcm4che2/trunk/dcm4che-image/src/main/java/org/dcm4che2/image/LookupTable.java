@@ -308,7 +308,7 @@ public abstract class LookupTable {
             float c_05 = center - .5f;
             float w_2 = (width - 1f) / 2;
             in1 = (int) (((c_05 - w_2) - intercept) / slope);
-            in2 = (int) (((c_05 + w_2) - intercept) / slope) + 1;
+            in2 = (int) (((c_05 + w_2) - intercept) / slope);
         }
         int off = Math.max(in1, inMin);
         int iMax = Math.min(in2, inMax) - off;
@@ -932,7 +932,6 @@ public abstract class LookupTable {
         	center = voiObj.getFloat(Tag.WindowCenter,0f);
         	width = voiObj.getFloat(Tag.WindowWidth,0f);
         }
-        
         if (mLut == null) {
             if (voiLut == null ) {
                 if (pLut == null) {
@@ -944,8 +943,8 @@ public abstract class LookupTable {
                         slope, intercept, center, width, vlutFct, pLut,
                         false, pval2out);
             }
-            if (pLut == null) {
-                return LookupTable.createLut(stored, signed, outBits,
+        	if (pLut == null) {
+                    return LookupTable.createLut(stored, signed, outBits,
                         slope, intercept, voiLut, inverse, pval2out);
             }
             return LookupTable.createLut(stored, signed, outBits,

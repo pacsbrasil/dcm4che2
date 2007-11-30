@@ -116,7 +116,6 @@ public class VOIUtils {
     			return mlutObj;
     		}
     	}
-
     	return img;
     }
     
@@ -243,7 +242,7 @@ public class VOIUtils {
             }
         }
         return new float[] {
-                ((minMax[1] + minMax[0]) / 2.f) * slope + intercept,
+                ((minMax[1] + minMax[0]) / 2.f) * slope + intercept+0.5f,
                 (minMax[1] - minMax[0]) * slope + 1 };
     }
 
