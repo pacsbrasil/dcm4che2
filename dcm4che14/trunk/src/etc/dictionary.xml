@@ -2543,6 +2543,9 @@
   <uid value="1.2.840.10008.5.1.4.38.1" name="Hanging Protocol Storage" key="HangingProtocolStorage" />
   <uid value="1.2.840.10008.5.1.4.38.2" name="Hanging Protocol Information Model - FIND" key="HangingProtocolInformationModelFIND" />
   <uid value="1.2.840.10008.5.1.4.38.3" name="Hanging Protocol Information Model - MOVE" key="HangingProtocolInformationModelMOVE" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.1.2.1" name="Dcm4che Upgraded CT Image Storage" key="Dcm4cheUpgradedCTImageStorage" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.1.4.1" name="Dcm4che Upgraded MR Image Storage" key="Dcm4cheUpgradedMRImageStorage" />
+  <uid value="1.2.40.0.13.1.5.1.4.1.1.128.1" name="Dcm4che Upgraded PET Image Storage" key="Dcm4cheUpgradedPETImageStorage" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.1.1" name="Tiani Patient Root Query/Retrieve Information Model - FIND" key="TianiPatientRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1" name="Tiani Study Root Query/Retrieve Information Model - FIND" key="TianiStudyRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.3.1" name="Tiani Patient/Study Only Query/Retrieve Information Model - FIND" key="TianiPatientStudyOnlyQueryRetrieveInformationModelFIND" />
