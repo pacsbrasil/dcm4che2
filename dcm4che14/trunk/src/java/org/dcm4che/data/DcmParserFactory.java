@@ -34,10 +34,12 @@ import javax.imageio.stream.ImageInputStream;
  * @version 1.0.0
  */
 public abstract class DcmParserFactory {
-   
+
+   private static DcmParserFactory instance = (DcmParserFactory)
+            Implementation.findFactory("dcm4che.data.DcmParserFactory");
+
    public static DcmParserFactory getInstance() {
-      return (DcmParserFactory)Implementation.findFactory(
-            "dcm4che.data.DcmParserFactory");
+      return instance;
    }
    
    public abstract DcmParser newDcmParser(InputStream in);
