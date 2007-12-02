@@ -2397,6 +2397,8 @@
   <uid value="1.2.840.10008.1.2.4.91" name="JPEG 2000 Lossy Image Compression" key="JPEG2000Lossy" />
   <uid value="1.2.840.10008.1.2.4.94" name="JPIP Referenced" key="JPIPReferenced" />
   <uid value="1.2.840.10008.1.2.4.95" name="JPIP Referenced Deflated" key="JPIPReferencedDeflated" />
+  <uid value="1.2.840.10008.1.2.4.96" name="No Pixel Data" key="NoPixelData" />
+  <uid value="1.2.840.10008.1.2.4.97" name="No Pixel Data Deflate" key="NoPixelDataDeflate" />
   <uid value="1.2.840.10008.1.2.4.100" name="MPEG2 Main Profile @ Main Level" key="MPEG2" />
   <uid value="1.2.840.10008.1.2.5" name="RLE Lossless" key="RLELossless" />
   <uid value="1.2.840.10008.1.2.6.1" name="RFC 2557 MIME encapsulation" key="RFC2557MIMEEncapsulation" />
