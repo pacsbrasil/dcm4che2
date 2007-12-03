@@ -852,7 +852,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return store;
     }
 
-    private File makeFile(File basedir, Dataset ds) throws Exception {
+    File makeFile(File basedir, Dataset ds) throws Exception {
         Calendar date = Calendar.getInstance();
         if (studyDateInFilePath) {
             Date studyDate = ds.getDateTime(Tags.StudyDate, Tags.StudyTime);

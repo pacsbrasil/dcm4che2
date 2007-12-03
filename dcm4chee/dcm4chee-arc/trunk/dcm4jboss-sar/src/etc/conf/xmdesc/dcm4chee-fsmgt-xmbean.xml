@@ -957,6 +957,18 @@ accessed studies.</description>
       </parameter>
       <return-type>int</return-type>
    </operation>   
+   <operation impact="ACTION">
+      <description>Delete Instances referenced in Stored Series.
+        Remove DB entries and files. Return number of deleted files.
+      </description>
+      <name>deleteStoredSeries</name>
+      <parameter>
+        <description>Stored Series</description>
+        <name>storedSeries</name>
+        <type>org.dcm4chex.archive.common.SeriesStored</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>   
    <operation impact="INFO">
       <description>Locate SOP Instance. Return a File object, if the instance
       is locally available, or the hostname as String object if a file

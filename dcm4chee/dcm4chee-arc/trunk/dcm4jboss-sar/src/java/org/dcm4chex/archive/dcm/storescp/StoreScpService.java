@@ -777,6 +777,21 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
+    public FileDTO makeFile(Dataset dataset) throws Exception {
+        FileSystemDTO fsDTO = selectStorageFileSystem();
+        File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
+        File file = scp.makeFile(baseDir, dataset);
+        String filePath = file.getPath().substring(
+                baseDir.getPath().length() + 1).replace(
+                File.separatorChar, '/');
+        FileDTO fileDTO = new FileDTO();
+        fileDTO.setFileSystemPk(fsDTO.getPk());
+        fileDTO.setAvailability(fsDTO.getAvailability());
+        fileDTO.setDirectoryPath(fsDTO.getDirectoryPath());
+        fileDTO.setFilePath(filePath);
+        return fileDTO;
+    }
+
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
         SeriesStored[] seriesStored = store

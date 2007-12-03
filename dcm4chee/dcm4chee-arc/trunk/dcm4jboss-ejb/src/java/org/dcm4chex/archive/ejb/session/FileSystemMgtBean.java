@@ -69,6 +69,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -81,6 +82,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
@@ -117,6 +119,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
 
     private StudyLocalHome studyHome;
 
+    private SeriesLocalHome seriesHome;
+
     private StudyOnFileSystemLocalHome sofHome;
 
     private FileLocalHome fileHome;
@@ -135,6 +139,8 @@ public abstract class FileSystemMgtBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Study");
             this.sofHome = (StudyOnFileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/StudyOnFileSystem");
+            this.seriesHome = (SeriesLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Series");
             this.fileHome = (FileLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/File");
             this.privFileHome = (PrivateFileLocalHome) jndiCtx
@@ -158,6 +164,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
     public void unsetSessionContext() {
         studyHome = null;
         sofHome = null;
+        seriesHome = null;
         fileHome = null;
         fileSystemHome = null;
     }
@@ -788,6 +795,55 @@ public abstract class FileSystemMgtBean implements SessionBean {
             doDeleteEmptyPatient(pat);
         }
         return fileDTOs;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] deleteStoredSeries(SeriesStored seriesStored) {
+        try {
+            SeriesLocal series = seriesHome.findBySeriesIuid(
+                    seriesStored.getSeriesInstanceUID());
+            StudyLocal study = series.getStudy();
+            Collection instances = series.getInstances();
+            ArrayList fileDTOs = new ArrayList(instances.size());
+            DcmElement refSopSeq = seriesStored.getIAN()
+                .getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
+            int numRefInst = refSopSeq.countItems();
+            HashSet iuids = new HashSet(numRefInst * 4 / 3 + 1);
+            for (int i = 0; i < numRefInst; i++) {
+                iuids.add(refSopSeq.getItem(i)
+                        .getString(Tags.RefSOPInstanceUID));
+            }
+            ArrayList toRemove = new ArrayList(numRefInst);
+            for (Iterator itInst = instances.iterator(); itInst.hasNext();) {
+                InstanceLocal inst = (InstanceLocal) itInst.next();
+                if (iuids.contains(inst.getSopIuid())) {
+                    Collection files = inst.getFiles();
+                    for (Iterator itFiles = files.iterator();
+                            itFiles.hasNext();) {
+                        FileLocal file = (FileLocal) itFiles.next();
+                        fileDTOs.add(file.getFileDTO());
+                    }
+                    toRemove.add(inst);
+                }
+            }
+            if (toRemove.size() == instances.size()) {
+                series.remove();
+            } else {
+                for (Iterator itInst = toRemove.iterator(); itInst.hasNext();) {
+                    InstanceLocal inst = (InstanceLocal) itInst.next();
+                    inst.remove();
+                }
+                series.updateDerivedFields(true, true, true, true, true);
+            }
+            study.updateDerivedFields(true, true, true, true, true, true);
+            return (FileDTO[]) fileDTOs.toArray(new FileDTO[fileDTOs.size()]);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
     }
 
     private static final Comparator DESC_FILE_PK = new Comparator() {

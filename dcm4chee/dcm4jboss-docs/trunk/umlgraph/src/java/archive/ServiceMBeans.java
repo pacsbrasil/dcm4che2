@@ -28,6 +28,8 @@ class StgCmtScuScpQueue {}
 
 class StudyMgtScuQueue {}
 
+class UpgradeToEnhancedMFQueue {}
+
 /**
  * @depend - - - AuditLogger
  * @depend - - - ECHOService
@@ -938,6 +940,24 @@ class UpdateAttributes {}
  * @opt !hide
  */
 class updateAttributes {}
+
+/**
+ * @depend - - - FileSystemMgt
+ * @depend - - - StoreScp
+ * @depend - - - Templates
+ * @depend - - - JMS
+ * @depend - - - UpgradeToEnhancedMFQueue
+ */
+class UpgradeToEnhancedMF {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.UpgradeToEnhancedMF
+ * @opt !hide
+ */
+class upgradeToEnhancedMF {}
 
 /**
  * @depend - - - FileSystemMgt

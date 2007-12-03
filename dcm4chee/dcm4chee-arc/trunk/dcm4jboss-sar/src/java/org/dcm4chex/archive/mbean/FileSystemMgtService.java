@@ -83,6 +83,7 @@ import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -1833,6 +1834,19 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         File file;
         for ( int i = 0 ; i < fileDTOs.length ; i++ ) {
             file = FileUtils.toFile(fileDTOs[i].getDirectoryPath(),fileDTOs[i].getFilePath());
+            delete(file);
+        }
+        return fileDTOs.length;
+    }
+
+    public int deleteStoredSeries(SeriesStored seriesStored)
+    throws Exception {
+        FileDTO[] fileDTOs = newFileSystemMgt()
+                .deleteStoredSeries(seriesStored);
+        File file;
+        for ( int i = 0 ; i < fileDTOs.length ; i++ ) {
+            file = FileUtils.toFile(fileDTOs[i].getDirectoryPath(),
+                    fileDTOs[i].getFilePath());
             delete(file);
         }
         return fileDTOs.length;

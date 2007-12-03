@@ -69,6 +69,7 @@ public class SeriesStored implements Serializable {
     private final Dataset studyAttrs;
     private final Dataset seriesAttrs;
     private final Dataset ian;
+    private final int numI;
 
     public SeriesStored(Dataset patient, Dataset study, Dataset series,
             Dataset ian) {
@@ -88,11 +89,16 @@ public class SeriesStored implements Serializable {
         this.studyAttrs = study;
         this.seriesAttrs = series;
         this.ian = ian;
+        this.numI = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq)
+                .countItems();
     }
 
     public String toString() {
-        return "SeriesStored[calling=" + getCallingAET() + ", suid="
-                + getStudyInstanceUID() + "]";
+        return "SeriesStored[calling=" + getCallingAET()
+                + ", modality=" + getModality()
+                + ", numOfInst=" + numI
+                + ", study-iuid=" + getStudyInstanceUID()
+                + ", series-iuid=" + getSeriesInstanceUID() + "]";
     }
 
     public final Dataset getPatientAttrs() {
@@ -138,6 +144,14 @@ public class SeriesStored implements Serializable {
 
     public String getSeriesInstanceUID() {
         return seriesAttrs.getString(Tags.SeriesInstanceUID);
+    }
+
+    public String getModality() {
+        return seriesAttrs.getString(Tags.Modality);
+    }
+
+    public int getNumberOfInstances() {
+        return numI;
     }
 
 }

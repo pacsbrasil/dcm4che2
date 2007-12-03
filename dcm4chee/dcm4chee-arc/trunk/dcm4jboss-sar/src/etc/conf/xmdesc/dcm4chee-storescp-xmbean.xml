@@ -947,6 +947,16 @@ StoreSCP service.
       </parameter>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Create empty file in storage directory (internal use only)</description>
+      <name>makeFile</name>
+      <parameter>
+        <description>Dataset</description>
+        <name>ds</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <return-type>org.dcm4chex.archive.ejb.interfaces.FileDTO</return-type>
+   </operation>
 
    <!-- Notifications -->
    <notification>
