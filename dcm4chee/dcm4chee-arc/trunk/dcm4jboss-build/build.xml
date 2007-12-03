@@ -510,6 +510,11 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-upgrade2emf-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.archive:service=UpgradeToEMF"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-sar.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-xdsi-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=XDS-I"/>
     </antcall>
