@@ -22,6 +22,8 @@ package org.dcm4che.data;
 
 import java.nio.ByteOrder;
 
+import org.dcm4che.dict.UIDs;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -73,13 +75,17 @@ public class DcmDecodeParam {
             ByteOrder.LITTLE_ENDIAN, true, false, true, true, true, true);
 
     public final static DcmEncodeParam valueOf(String tsuid) {
-        if ("1.2.840.10008.1.2".equals(tsuid))
+        if (UIDs.ImplicitVRLittleEndian.equals(tsuid))
             return IVR_LE;
-        if ("1.2.840.10008.1.2.1".equals(tsuid))
+        if (UIDs.ExplicitVRLittleEndian.equals(tsuid)
+                || UIDs.JPIPReferenced.equals(tsuid)
+                || UIDs.NoPixelData.equals(tsuid))
             return EVR_LE;
-        if ("1.2.840.10008.1.2.1.99".equals(tsuid))
+        if (UIDs.DeflatedExplicitVRLittleEndian.equals(tsuid)
+                || UIDs.JPIPReferencedDeflate.equals(tsuid)
+                || UIDs.NoPixelDataDeflate.equals(tsuid))
             return DEFL_EVR_LE;
-        if ("1.2.840.10008.1.2.2".equals(tsuid))
+        if (UIDs.ExplicitVRBigEndian.equals(tsuid))
             return EVR_BE;
         return ENCAPS_EVR_LE;
     }
