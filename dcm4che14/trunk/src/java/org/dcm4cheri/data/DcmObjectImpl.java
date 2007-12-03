@@ -2519,10 +2519,23 @@ abstract class DcmObjectImpl implements DcmObject {
         Iterator it1 = iterator();
         Iterator it2 = dcmobj2.iterator();
         while (it1.hasNext()) {
-            if (!it2.hasNext() || !it1.next().equals(it2.next())) {
+            if (!it2.hasNext()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Size of " + dcmobj2
+                            + " differs from size of this " + this);
+                }
                 return false;
             }
-        }
+            Object el1 = it1.next();
+            Object el2 = it2.next();
+            if (!el1.equals(el2)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("" + el2 + " of " + dcmobj2 
+                            + " differs from " + el1 + " of this " + this);
+                }
+                return false;
+            }
+       }
         return !it2.hasNext();
     }
 
