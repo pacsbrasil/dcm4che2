@@ -375,8 +375,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         if (soTimeout > 0) {
             s.setSoTimeout(soTimeout);
         }
-        MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
-                .getOutputStream(), false);
+        MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), 
+                new BufferedOutputStream(s.getOutputStream()), false);
         InputStream mllpIn = mllpDriver.getInputStream();
         XMLReader xmlReader = new HL7XMLReader();
         XMLWriter xmlWriter = new HL7XMLWriter(new OutputStreamWriter(
