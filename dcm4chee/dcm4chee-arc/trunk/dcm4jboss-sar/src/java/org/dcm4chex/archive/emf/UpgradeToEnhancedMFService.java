@@ -76,6 +76,8 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     // not yet finally defined in Supp 117
     private static final int PETFrameTypeSeqTag = 0x00189551;
 
+    private static final int[] SERIES_IUID = { Tags.SeriesInstanceUID };
+
     private static final String UPGRADE_CT_XSL = "upgrade-ct.xsl";
 
     private static final String UPGRADE_MR_XSL = "upgrade-mr.xsl";
@@ -89,6 +91,8 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     private String queueName;
 
     private int concurrency = 1;
+
+    private boolean usePatientStudySeriesAttributesFromDB;
 
     private boolean noPixelData;
 
@@ -148,6 +152,15 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     public final void setConfigDir(String path) {
         templates.setConfigDir(path);
+    }
+
+    public final boolean isUsePatientStudySeriesAttributesFromDB() {
+        return usePatientStudySeriesAttributesFromDB;
+    }
+
+    public final void setUsePatientStudySeriesAttributesFromDB(
+            boolean usePatientStudySeriesAttributesFromDB) {
+        this.usePatientStudySeriesAttributesFromDB = usePatientStudySeriesAttributesFromDB;
     }
 
     public final int getConcurrency() {
@@ -308,6 +321,11 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
             builder.add(files[i] = locateInstance(iuid));
         }
         Dataset mfds = builder.build();
+        if (usePatientStudySeriesAttributesFromDB) {
+            mfds.putAll(seriesStored.getSeriesAttrs().exclude(SERIES_IUID));
+            mfds.putAll(seriesStored.getStudyAttrs());
+            mfds.putAll(seriesStored.getPatientAttrs());
+        }
         String tsUID = mfds.getFileMetaInfo().getTransferSyntaxUID();
         FileDTO fileDTO = makeFile(mfds);
         File mffile = FileUtils.toFile(

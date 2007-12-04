@@ -41,6 +41,28 @@
    <value value="conf/dcm4chee-ae" />
   </descriptors>
  </attribute>
+ <attribute access="read-write"
+  getMethod="isUsePatientStudySeriesAttributesFromDB"
+  setMethod="setUsePatientStudySeriesAttributesFromDB">
+  <description>
+   Defines, if Patient, Study and Series attributes are taken from
+   corresponding DB records, so the XSL stylesheets need not to copy such
+   attributes from the Single-frame images to the generated Multi-frame image.
+   As a side-effect, equality of values of such attributes over all source
+   images will not be verified and therefore the generation of the 
+   Multi-frame image will not fail caused by inconsistency of Patient, Study
+   or Series attribute values inside the Series of source images.
+   &lt;p&gt;Copy of the Series Instance UID from the DB is always excluded, so
+   it can be defined by the style sheet - by copying the Series Instance UID
+   attribute into the output, or not - if the generated Multi-frame image
+   shall be put into the same Series as the source images, or not.
+  </description>
+  <name>UsePatientStudySeriesAttributesFromDB</name>
+  <type>boolean</type>
+  <descriptors>
+   <value value="true" />
+  </descriptors>
+ </attribute>
  <attribute access="read-write" getMethod="isNoPixelData"
   setMethod="setNoPixelData">
   <description>

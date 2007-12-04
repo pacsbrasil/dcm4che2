@@ -255,6 +255,11 @@
  <xsl:template match="attr[@tag='00201041']" mode="PlanePosition">
   <xsl:copy-of select="." />
  </xsl:template>
+ <!-- Image Position (Retired)(+) -->
+ <xsl:template match="attr[@tag='00200030']" />
+ <xsl:template match="attr[@tag='00200030']" mode="PlanePosition">
+  <xsl:copy-of select="." />
+ </xsl:template>
  <xsl:template match="attr" mode="PlanePosition" />
 
  <!--
@@ -263,6 +268,11 @@
  <!-- Image Orientation (Patient) -->
  <xsl:template match="attr[@tag='00200037']" />
  <xsl:template match="attr[@tag='00200037']" mode="PlaneOrientation">
+  <xsl:copy-of select="." />
+ </xsl:template>
+ <!-- Image Orientation (Retired)(+) -->
+ <xsl:template match="attr[@tag='00200035']" />
+ <xsl:template match="attr[@tag='00200035']" mode="PlaneOrientation">
   <xsl:copy-of select="." />
  </xsl:template>
  <xsl:template match="attr" mode="PlaneOrientation" />
@@ -568,6 +578,18 @@
   <xsl:copy-of select="." />
  </xsl:template>
  <xsl:template match="attr" mode="CTXrayDetails" />
+
+<!--
+  Attributes taken from DB records (=> allow to differ between source images)
+ -->
+ <!-- Study Time -->
+ <xsl:template match="attr[@tag='00080030']" />
+ <!-- Study Description -->
+ <xsl:template match="attr[@tag='00081030']" />
+ <!-- Series Time -->
+ <xsl:template match="attr[@tag='00080031']" />
+ <!-- Series Description -->
+ <xsl:template match="attr[@tag='0008103E']" />
 
  <xsl:template match="attr">
   <!-- exclude private elements -->
