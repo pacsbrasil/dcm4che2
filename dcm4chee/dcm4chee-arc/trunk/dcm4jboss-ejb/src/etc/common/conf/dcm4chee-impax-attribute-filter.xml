@@ -37,7 +37,6 @@
     <attr tag="00081032"/> <!-- Procedure Code Seq -->
     <attr tag="00081048"/> <!-- Physician(s) of Record -->
     <attr tag="00081049"/> <!-- Physician(s) of Record Identification Seq -->
-    <attr tag="00081050"/> <!-- Performing Physician's Name -->
     <attr tag="00081060"/> <!-- Name of Physician(s) Reading Study -->
     <attr tag="00081062"/> <!-- Physician(s) Reading Study Identification Seq -->
     <attr tag="00081080"/> <!-- Admitting Diagnoses Description -->
@@ -52,14 +51,11 @@
     <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
     <attr tag="00200010"/> <!-- Study ID -->
     <attr tag="0032000A"/> <!-- Study Status ID -->
+    <attr tag="0032000C"/> <!-- Study Priority ID -->
+    <attr tag="00321030"/> <!-- Reason For Study -->
     <attr tag="00324000"/> <!-- Study Comments -->
     <attr tag="00380300"/> <!-- Current Patient Location -->
     <attr tag="00401008"/> <!-- Confidentiality Code -->
-
-    <attr tag="00321030"/> <!-- Reason For Study -->
-    <attr tag="00321032"/> <!-- Requesting Physician -->
-    <attr tag="0032000C"/> <!-- Study Priority ID -->
-
   </study>
   <series>
     <attr tag="00080005"/> <!-- Specific Character Set -->
@@ -106,13 +102,14 @@
     <attr tag="00280108"/> <!-- Smallest Pixel Value in Series -->
     <attr tag="00280109"/> <!-- Largest Pixel Value in Series -->
     <attr tag="00280120"/> <!-- Pixel Padding Value -->
+    <attr tag="00321032"/> <!-- Requesting Physician -->
     <attr tag="00400244"/> <!-- Performed Procedure Step Start Date -->
     <attr tag="00400245"/> <!-- Performed Procedure Step Start Time -->
     <attr tag="00400253"/> <!-- Performed Procedure Step ID -->
     <attr tag="00400254"/> <!-- Performed Procedure Step Description --> 
     <attr tag="00400260"/> <!-- Performed Protocol Code Sequence -->
-    <attr tag="00400280"/> <!-- Comments on the Performed Procedure Step -->
     <attr tag="00400275"/> <!-- Request Attributes Sequence -->
+    <attr tag="00400280"/> <!-- Comments on the Performed Procedure Step -->
     <attr tag="00541001"/> <!-- Units -->
   </series>
   <instance>
