@@ -42,22 +42,22 @@
   </descriptors>
  </attribute>
  <attribute access="read-write"
-  getMethod="isUsePatientStudySeriesAttributesFromDB"
-  setMethod="setUsePatientStudySeriesAttributesFromDB">
+  getMethod="isMergePatientStudySeriesAttributesFromDB"
+  setMethod="setMergePatientStudySeriesAttributesFromDB">
   <description>
-   Defines, if Patient, Study and Series attributes are taken from
-   corresponding DB records, so the XSL stylesheets need not to copy such
-   attributes from the Single-frame images to the generated Multi-frame image.
-   As a side-effect, equality of values of such attributes over all source
-   images will not be verified and therefore the generation of the 
-   Multi-frame image will not fail caused by inconsistency of Patient, Study
-   or Series attribute values inside the Series of source images.
-   &lt;p&gt;Copy of the Series Instance UID from the DB is always excluded, so
-   it can be defined by the style sheet - by copying the Series Instance UID
-   attribute into the output, or not - if the generated Multi-frame image
-   shall be put into the same Series as the source images, or not.
+   &lt;p&gt;Defines, if Patient, Study and Series attributes are merged from
+   corresponding DB records into the generated Multi-frame image, so they need
+   not be copied by XSLT from the Single-frame images to the generated
+   Multi-frame image. Attributes not copied by XSLT are not verified for
+   equality of values over all source images. Therefore, skipping such
+   attributes by XSLT allows the generation of the Multi-frame image even if
+   the attribute value differs between source images.&lt;/p&gt;
+   &lt;p&gt;Series Instance UID is never merged from the DB, so it can be
+   defined by the XSL style sheet - by copying the Series Instance UID
+   attribute into the output, or not - if the generated Multi-frame image shall
+   be put into the same Series as the source images, or not.&lt;/p&gt;
   </description>
-  <name>UsePatientStudySeriesAttributesFromDB</name>
+  <name>MergePatientStudySeriesAttributesFromDB</name>
   <type>boolean</type>
   <descriptors>
    <value value="true" />

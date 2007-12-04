@@ -92,7 +92,7 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private int concurrency = 1;
 
-    private boolean usePatientStudySeriesAttributesFromDB;
+    private boolean mergePatientStudySeriesAttributesFromDB;
 
     private boolean noPixelData;
 
@@ -154,13 +154,13 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
         templates.setConfigDir(path);
     }
 
-    public final boolean isUsePatientStudySeriesAttributesFromDB() {
-        return usePatientStudySeriesAttributesFromDB;
+    public final boolean isMergePatientStudySeriesAttributesFromDB() {
+        return mergePatientStudySeriesAttributesFromDB;
     }
 
-    public final void setUsePatientStudySeriesAttributesFromDB(
-            boolean usePatientStudySeriesAttributesFromDB) {
-        this.usePatientStudySeriesAttributesFromDB = usePatientStudySeriesAttributesFromDB;
+    public final void setMergePatientStudySeriesAttributesFromDB(
+            boolean mergeFromDB) {
+        this.mergePatientStudySeriesAttributesFromDB = mergeFromDB;
     }
 
     public final int getConcurrency() {
@@ -321,7 +321,7 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
             builder.add(files[i] = locateInstance(iuid));
         }
         Dataset mfds = builder.build();
-        if (usePatientStudySeriesAttributesFromDB) {
+        if (mergePatientStudySeriesAttributesFromDB) {
             mfds.putAll(seriesStored.getSeriesAttrs().exclude(SERIES_IUID));
             mfds.putAll(seriesStored.getStudyAttrs());
             mfds.putAll(seriesStored.getPatientAttrs());
