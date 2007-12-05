@@ -280,6 +280,8 @@
  <!--
   Referenced Image Functional Group
  -->
+ <!-- Referenced Image Sequence -->
+ <xsl:template select="attr[@tag='00081140']" />
  <!-- SOP Class UID -->
  <xsl:template match="attr[@tag='00080016']" />
  <xsl:template match="attr[@tag='00080016']" mode="ReferencedImage">
