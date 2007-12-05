@@ -580,7 +580,7 @@
  <xsl:template match="attr" mode="CTXrayDetails" />
 
 <!--
-  Attributes taken from DB records (=> allow to differ between source images)
+  Attributes available from DB records (=> allow to differ between source images)
  -->
  <!-- Study Time -->
  <xsl:template match="attr[@tag='00080030']" />
