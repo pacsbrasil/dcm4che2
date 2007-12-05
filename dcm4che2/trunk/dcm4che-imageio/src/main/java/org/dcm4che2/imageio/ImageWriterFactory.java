@@ -41,9 +41,12 @@ package org.dcm4che2.imageio;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import org.dcm4che2.data.ConfigurationError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -51,7 +54,8 @@ import org.dcm4che2.data.ConfigurationError;
  * @since Aug 6, 2007
  */
 public class ImageWriterFactory extends ImageReaderWriterFactory {
-    
+	private static final Logger log = LoggerFactory.getLogger(ImageWriterFactory.class);
+	
     private static final String CONFIG_KEY =
             "org.dcm4che2.imageio.ImageWriterFactory";
     
@@ -89,5 +93,23 @@ public class ImageWriterFactory extends ImageReaderWriterFactory {
         }
         throw new ConfigurationError("No Image Writer of class " + className
                 + " available for format:" + formatName); 
+    }
+    
+    /**
+     * This is used to create a param for writing the sub-image.  Ideally, this shouldn't depend on the implementation
+     * details, but right now, I can't easily figure out how to avoid that.
+     * @param tsuid
+     * @param writer
+     * @return
+     */
+    public ImageWriteParam createWriteParam(String tsuid, ImageWriter writer) {
+    	ImageWriteParam param = writer.getDefaultWriteParam();
+    	String type = config.getProperty(tsuid+".type");
+    	if( type!=null ) {
+    		log.debug("Setting compression to type "+type);
+    		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+    		param.setCompressionType(type);
+    	}
+    	return param;
     }
 }

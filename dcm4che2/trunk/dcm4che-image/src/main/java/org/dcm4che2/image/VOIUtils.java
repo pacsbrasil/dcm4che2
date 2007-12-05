@@ -246,7 +246,8 @@ public class VOIUtils {
                 (minMax[1] - minMax[0]) * slope + 1 };
     }
 
-    static int[] calcMinMax(DicomObject img, DataBuffer db) {
+    /** Gets the min/max value from a data buffer, in the raw pixel data */
+    public static int[] calcMinMax(DicomObject img, DataBuffer db) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;

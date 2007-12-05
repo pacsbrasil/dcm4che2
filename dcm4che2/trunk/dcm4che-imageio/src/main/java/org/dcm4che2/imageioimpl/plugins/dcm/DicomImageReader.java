@@ -115,8 +115,6 @@ public class DicomImageReader extends ImageReader {
 
     private int allocated;
 
-    private int stored;
-
     private int dataType;
 
     private int samples;
@@ -136,6 +134,9 @@ public class DicomImageReader extends ImageReader {
     private ImageReader reader;
 
     private ItemParser itemParser;
+    
+    /** Store the transfer syntax locally in case it gets modified to re-write the image */
+    private String tsuid;
 
     protected DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
@@ -183,6 +184,7 @@ public class DicomImageReader extends ImageReader {
         banded = false;
         pixelDataPos = 0L;
         pixelDataLen = 0;
+        tsuid = null;
         compressed = false;
         if (reader != null) {
             reader.dispose();
@@ -248,22 +250,21 @@ public class DicomImageReader extends ImageReader {
         ds = dis.readDicomObject();
         streamMetaData = new DicomStreamMetaData();
         streamMetaData.setDicomObject(ds);
+        tsuid = ds.getString(Tag.TransferSyntaxUID);
         if (dis.tag() == Tag.PixelData) {
             pixelDataPos = dis.getStreamPosition();
             pixelDataLen = dis.valueLength();
             compressed = pixelDataLen == -1;
             if (compressed) {
                 ImageReaderFactory f = ImageReaderFactory.getInstance();
-                String ts = ds.getString(Tag.TransferSyntaxUID);
-                log.debug("Transfer syntax for image is " + ts
+                log.debug("Transfer syntax for image is " + tsuid
                         + " with image reader class " + f.getClass());
-                f.adjustDatasetForTransferSyntax(ds, ts);
+                f.adjustDatasetForTransferSyntax(ds, tsuid);
             }
             width = ds.getInt(Tag.Columns);
             height = ds.getInt(Tag.Rows);
             frames = ds.getInt(Tag.NumberOfFrames, 1);
             allocated = ds.getInt(Tag.BitsAllocated, 8);
-            stored = ds.getInt(Tag.BitsStored, allocated);
             banded = ds.getInt(Tag.PlanarConfiguration) != 0;
             dataType = allocated <= 8 ? DataBuffer.TYPE_BYTE
                     : DataBuffer.TYPE_USHORT;
@@ -286,8 +287,7 @@ public class DicomImageReader extends ImageReader {
 
     private void initCompressedImageReader() throws IOException {
         ImageReaderFactory f = ImageReaderFactory.getInstance();
-        String ts = ds.getString(Tag.TransferSyntaxUID);
-        this.reader = f.getReaderForTransferSyntax(ts);
+        this.reader = f.getReaderForTransferSyntax(tsuid);
         this.itemParser = new ItemParser(dis, iis);
     }
 
@@ -477,8 +477,7 @@ public class DicomImageReader extends ImageReader {
         if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
             reader.dispose();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
-            String ts = ds.getString(Tag.TransferSyntaxUID);
-            reader = f.getReaderForTransferSyntax(ts);
+            reader = f.getReaderForTransferSyntax(tsuid);
         } else {
             reader.reset();
         }
