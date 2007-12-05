@@ -424,8 +424,8 @@
   <xsl:copy-of select="." />
  </xsl:template>
 <!-- Single Collimation Width -->
- <xsl:template match="attr[@tag='00181140']" />
- <xsl:template match="attr[@tag='00181140']" mode="CTAcquisitionDetails">
+ <xsl:template match="attr[@tag='00189306']" />
+ <xsl:template match="attr[@tag='00189306']" mode="CTAcquisitionDetails">
   <xsl:copy-of select="." />
  </xsl:template>
 <!-- Total Collimation Width -->
