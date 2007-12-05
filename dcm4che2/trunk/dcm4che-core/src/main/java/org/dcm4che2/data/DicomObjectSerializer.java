@@ -41,6 +41,7 @@ package org.dcm4che2.data;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.dcm4che2.io.DicomInputStream;
@@ -63,7 +64,7 @@ class DicomObjectSerializer implements Serializable {
 	private void writeObject(ObjectOutputStream s)
 			throws IOException {
 		s.defaultWriteObject();
-		DicomOutputStream dos = new DicomOutputStream(s);
+		DicomOutputStream dos = new DicomOutputStream((OutputStream) s);
 		dos.writeDicomObject(attrs);
 	}
 

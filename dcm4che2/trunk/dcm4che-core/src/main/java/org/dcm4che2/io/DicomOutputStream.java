@@ -39,6 +39,7 @@
 package org.dcm4che2.io;
 
 import java.io.BufferedOutputStream;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -77,6 +78,11 @@ public class DicomOutputStream extends FilterOutputStream {
     private byte[] preamble = new byte[PREAMBLE_LENGTH];
 
     private long pos = 0;
+    
+    /** Causes a deflator stream to be finished automatically on writing the dataset - set to false if there
+     * are more elements to the dataset to be written externally.
+     */
+    private boolean autoFinish = true;
 
     public DicomOutputStream(OutputStream out) {
         super(out);
@@ -89,6 +95,14 @@ public class DicomOutputStream extends FilterOutputStream {
     public DicomOutputStream(RandomAccessFile raf) throws IOException {
         super(new RAFOutputStreamAdapter(raf));
         pos = raf.getFilePointer();
+    }
+    
+    /**
+     * Use a DataOutput or ImageOutputStream as a destination.
+     * @param dout to send the dicom data to.
+     */
+    public DicomOutputStream(DataOutput dout) {
+    	super(new DataOutputStreamAdapter(dout));
     }
 
     public final long getStreamPosition() {
@@ -241,17 +255,43 @@ public class DicomOutputStream extends FilterOutputStream {
     public void writeDataset(DicomObject attrs, TransferSyntax transferSyntax)
             throws IOException {
         setTransferSyntax(transferSyntax);
-        if (transferSyntax.deflated())
-            out = new DeflaterOutputStream(out);
         this.ts = transferSyntax;
         writeElements(attrs.datasetIterator(), includeGroupLength,
                 createItemInfo(attrs));
-        if (out instanceof DeflaterOutputStream) {
-            ((DeflaterOutputStream) out).finish();
-           
+        if (autoFinish) {
+           finish();
         }
     }
 
+    /** Indicate if the stream is finished automatically (compressed data written) when the dataset is written */
+	public boolean isAutoFinish() {
+		return autoFinish;
+	}
+
+	/** Set to false to not auto finish the stream on writing a data set - useful for writing a DataObject followed
+	 * by some additonal DICOM that is custom written, eg images or related large data.
+	 * @param autoFinish
+	 */
+	public void setAutoFinish(boolean autoFinish) {
+		this.autoFinish = autoFinish;
+	}
+	
+	@Override
+	public void close() throws IOException {
+		out.close();
+		out = null;
+	}
+
+	/** Finishes writing compressed data to the output stream without closing the underlying stream.  Use this method when
+     * applying multiple filters, and the transfer syntax is a deflator transfer syntax.
+     *
+     */
+    public void finish() throws IOException {
+       if( out instanceof DeflaterOutputStream ) {
+          ((DeflaterOutputStream) out).finish();
+       }
+    }
+    
     private ItemInfo createItemInfo(DicomObject attrs) {
         if (needItemInfo())
             return new ItemInfo(attrs.datasetIterator(), includeGroupLength);
@@ -473,5 +513,6 @@ public class DicomOutputStream extends FilterOutputStream {
         System.arraycopy(src, 0, dest, 0, src.length);
         return dest;
     }
+
 
 }
