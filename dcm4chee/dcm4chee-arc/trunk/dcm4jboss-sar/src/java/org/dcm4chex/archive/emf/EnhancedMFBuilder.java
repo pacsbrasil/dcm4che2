@@ -42,15 +42,9 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
-
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -62,7 +56,6 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.logging.Logger;
 
 /**
@@ -72,31 +65,47 @@ import org.jboss.logging.Logger;
  */
 class EnhancedMFBuilder {
 
-    private static final int[] FG_SEQ_TAGS = new int[] {
-            Tags.SharedFunctionalGroupsSeq, Tags.PerFrameFunctionalGroupsSeq };
-
-    private final SAXTransformerFactory tf = (SAXTransformerFactory) 
-            TransformerFactory.newInstance();
+    private static final int[] FG_SEQ_TAGS = {
+        Tags.SharedFunctionalGroupsSeq, Tags.PerFrameFunctionalGroupsSeq };
+    private static final Dataset ALTERNATE_SOP_CLASS_INSTANCE;
+    static {
+        ALTERNATE_SOP_CLASS_INSTANCE =
+                DcmObjectFactory.getInstance().newDataset();
+        ALTERNATE_SOP_CLASS_INSTANCE.putLO(Tags.CodeValue, "121326");
+        ALTERNATE_SOP_CLASS_INSTANCE.putSH(Tags.CodingSchemeDesignator, "DCM");
+        ALTERNATE_SOP_CLASS_INSTANCE.putLO(Tags.CodeMeaning,
+                "Alternate SOP Class instance");
+    }
     private final Logger log;
-    private final Templates tpl;
+    private final Dataset filter;
+    private final Dataset fgFilters;
+    private final Dataset dataset;
+    private final Dataset sharedFGs;
     private final int frameTypeTag;
     private final boolean noPixelData;
     private final boolean deflate;
+    private final long[] pixelDataOffsets;
+    private final int[] pixelDataLengths;
     private File f0;
-    private Dataset dataset;
     private int pixelDataVR;
     private int pixelDataLength;
     private int curFrame = 0;
-    private final long[] pixelDataOffsets;
-    private final int[] pixelDataLengths;
+
+    private String[] imageType;
+    private Date acquisitionDatetime;
+    private Date contentDatetime;
+    private String instanceNumber;
 
 
     public EnhancedMFBuilder(UpgradeToEnhancedMFService service,
-            Templates tpl, int frameTypeTag, int numFrames) {
+            Dataset filter, int frameTypeTag, int numFrames) {
         this.log = service.getLog();
         this.noPixelData = service.isNoPixelData();
         this.deflate = service.isDeflate();
-        this.tpl = tpl;
+        this.filter = filter;
+        this.fgFilters = filter.getItem(Tags.SharedFunctionalGroupsSeq);
+        this.dataset = DcmObjectFactory.getInstance().newDataset();
+        this.sharedFGs = dataset.putSQ(Tags.SharedFunctionalGroupsSeq).addNewItem();
         this.frameTypeTag = frameTypeTag;
         this.pixelDataOffsets = new long[numFrames];
         this.pixelDataLengths = new int[numFrames];
@@ -127,14 +136,12 @@ class EnhancedMFBuilder {
         if (log.isDebugEnabled()) {
             log.debug("M-READ " + f);
         }
-        Dataset newFrame = DcmObjectFactory.getInstance().newDataset();
+        Dataset source = DcmObjectFactory.getInstance().newDataset();
         BufferedInputStream bis = new BufferedInputStream(
                 new FileInputStream(f));
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(bis);
         try {
-            TransformerHandler th = tf.newTransformerHandler(tpl);
-            parser.setSAXHandler2(th, null, null, Integer.MAX_VALUE, null);
-            th.setResult(new SAXResult(newFrame.getSAXHandler2(null)));
+            parser.setDcmHandler(source.getDcmHandler());
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
             if (parser.getReadTag() != Tags.PixelData) {
                 throw new UpgradeToEnhancedMFException("No Pixel Data in " + f);
@@ -163,17 +170,14 @@ class EnhancedMFBuilder {
             }
             pixelDataOffsets[curFrame] = parser.getStreamPosition();
             pixelDataLengths[curFrame] = parser.getReadLength();
-        } catch (TransformerConfigurationException e) {
-            throw new ConfigurationException(e);
         } finally {
             try { bis.close(); } catch (IOException ignore) {}
         }
-        purgeEmptyItems(newFrame.get(Tags.SharedFunctionalGroupsSeq).getItem());
-        if (dataset == null) {
+        if (curFrame == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("Create new Enhanced MF from " + f);
             }
-            dataset = newFrame;
+            init(source);
             f0 = f;
         } else {
             if (log.isDebugEnabled()) {
@@ -181,60 +185,147 @@ class EnhancedMFBuilder {
             }
             if (!noPixelData
                     && !dataset.getFileMetaInfo().getTransferSyntaxUID()
-                            .equals(newFrame.getFileMetaInfo()
+                            .equals(source.getFileMetaInfo()
                                             .getTransferSyntaxUID())) {
                 throw new UpgradeToEnhancedMFException("Transfer Syntax of "
                         + f + " differs from " + f0);
             }
-            if (!dataset.exclude(FG_SEQ_TAGS).equals(
-                    newFrame.exclude(FG_SEQ_TAGS))) {
+            if (!dataset.exclude(FG_SEQ_TAGS).equals(source.subSet(filter))) {
                 throw new UpgradeToEnhancedMFException(
                         "Non Functional Groups elements of "  + f 
                         + " differs from " + f0);
             }
-            mergeFunctionalGroups(dataset, newFrame);
+            mergeFunctionalGroups(dataset, source);
         }
         ++curFrame;
     }
 
-    private void purgeEmptyItems(Dataset ds) {
-        for (Iterator iterator = ds.iterator(); iterator.hasNext();) {
-            DcmElement el = (DcmElement) iterator.next();
-            if (el.isEmpty() || el.countItems() == 1 && el.getItem().isEmpty()) {
-                iterator.remove();
+    private void init(Dataset source) {
+        dataset.putAll(source.subSet(filter));
+        for (Iterator it = fgFilters.iterator(); it.hasNext();) {
+            DcmElement el = (DcmElement) it.next();
+            Dataset fgFilter = el.getItem();
+            Dataset fg = source.subSet(fgFilter);
+            if (!fg.isEmpty()) {
+                sharedFGs.putSQ(el.tag()).addNewItem().putAll(fg);
+            }
+        }
+        sharedFGs.putSQ(frameTypeTag).addNewItem().putCS(Tags.FrameType,
+                imageType = source.getStrings(Tags.ImageType));
+        Dataset perFrameFGs = dataset.putSQ(
+                Tags.PerFrameFunctionalGroupsSeq).addNewItem();
+        addReferencedImageFG(perFrameFGs, source);
+        addFrameContentFG(perFrameFGs, source);
+    }
+
+    private void addReferencedImageFG(Dataset perFrameFGs, Dataset source) {
+        DcmElement refImageSeq = perFrameFGs.putSQ(Tags.RefImageSeq);
+        Dataset refSource = refImageSeq.addNewItem();
+        refSource.putUI(Tags.RefSOPClassUID,
+                source.getString(Tags.SOPClassUID));
+        refSource.putUI(Tags.RefSOPInstanceUID,
+                source.getString(Tags.SOPInstanceUID));
+        refSource.putSQ(Tags.PurposeOfReferenceCodeSeq)
+                .addItem(ALTERNATE_SOP_CLASS_INSTANCE);
+        
+        DcmElement srcRefImageSeq = source.get(Tags.RefImageSeq);
+        if (srcRefImageSeq != null) {
+            for (int i = 0, n = srcRefImageSeq.countItems(); i < n; i++) {
+                refImageSeq.addItem(srcRefImageSeq.getItem(i));
             }
         }
     }
 
-    private void mergeFunctionalGroups(Dataset dataset, Dataset newframe) {
-        Dataset sharedFGs =
-                dataset.get(Tags.SharedFunctionalGroupsSeq).getItem();
-        Dataset newSharedFGs =
-                newframe.get(Tags.SharedFunctionalGroupsSeq).getItem();
-        Dataset newPerFrameFGs =
-                newframe.get(Tags.PerFrameFunctionalGroupsSeq).getItem();
-        int[] noLongerSharedFGTags = {};
-        for (Iterator sharedFGsIter = sharedFGs.iterator();
-                sharedFGsIter.hasNext();) {
-            DcmElement sharedFGSeq = (DcmElement) sharedFGsIter.next();
-            int fgTag = sharedFGSeq.tag();
-            if (sharedFGSeq.equals(newSharedFGs.get(fgTag))) {
-                newSharedFGs.remove(fgTag);
-            } else {
-                noLongerSharedFGTags = append(noLongerSharedFGTags, fgTag);
-            } 
+    private void addFrameContentFG(Dataset perFrameFGs, Dataset source) {
+        Dataset fg = perFrameFGs.putSQ(Tags.FrameContentSeq).addNewItem();
+        Date d = source.getDate(Tags.AcquisitionDatetime);
+        if (d == null) {
+            d = source.getDateTime(Tags.AcquisitionDate, Tags.AcquisitionTime);
         }
+        if (d != null) {
+            fg.putDT(Tags.FrameAcquisitionDatetime, d);
+            if (acquisitionDatetime == null
+                    || acquisitionDatetime.compareTo(d) > 0) {
+                acquisitionDatetime = d;
+            }
+        }
+        String s;
+        if ((s = source.getString(Tags.AcquisitionNumber)) != null) {
+            try {
+                fg.putUS(Tags.FrameAcquisitionNumber, Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+                log.info("Ignore non-numeric Acquisition Number: " + s
+                        + " of Instance: "
+                        + source.getString(Tags.SOPInstanceUID));
+            }
+        }
+        if ((s = source.getString(Tags.ImageComments)) != null) {
+            fg.putLT(Tags.FrameComments, s);
+        }
+        if ((s = source.getString(Tags.InstanceCreationDate)) != null) {
+            fg.putDA(Tags.InstanceCreationDate, s);
+        }
+        if ((s = source.getString(Tags.InstanceCreationTime)) != null) {
+            fg.putTM(Tags.InstanceCreationTime, s);
+        }
+        if ((s = source.getString(Tags.ContentDate)) != null) {
+            fg.putDA(Tags.ContentDate, s);
+        }
+        if ((s = source.getString(Tags.ContentTime)) != null) {
+            fg.putTM(Tags.ContentTime, s);
+        }
+        if ((s = source.getString(Tags.InstanceNumber)) != null) {
+            fg.putIS(Tags.InstanceNumber, s);
+        }
+        d = source.getDateTime(Tags.ContentDate, Tags.ContentTime);
+        if (d != null) {
+            if (contentDatetime == null
+                    || contentDatetime.compareTo(d) > 0) {
+                contentDatetime = d;
+                instanceNumber = s;
+            }
+        }
+    }
+
+    private void mergeFunctionalGroups(Dataset dataset, Dataset source) {
         DcmElement perFrameFGSeq =
-            dataset.get(Tags.PerFrameFunctionalGroupsSeq);
+                dataset.get(Tags.PerFrameFunctionalGroupsSeq);
+        Dataset perFrameFGs = perFrameFGSeq.addNewItem();
+        addReferencedImageFG(perFrameFGs, source);
+        addFrameContentFG(perFrameFGs, source);
+        int[] noLongerSharedFGTags = {};
+        for (Iterator it = fgFilters.iterator(); it.hasNext();) {
+            DcmElement el = (DcmElement) it.next();
+            int fgTag = el.tag();
+            Dataset fgFilter = el.getItem();
+            Dataset fg = source.subSet(fgFilter);
+            Dataset sharedFG = sharedFGs.getItem(fgTag);
+            if (!fg.equals(sharedFG)) {
+                if (sharedFG != null) {
+                    noLongerSharedFGTags = append(noLongerSharedFGTags, fgTag);
+                }
+                if (!fg.isEmpty()) {
+                    perFrameFGs.putSQ(fgTag).addNewItem().putAll(fg);
+                }
+            }
+        }
+        String[] frameType = source.getStrings(Tags.ImageType);
+        if (!Arrays.equals(this.imageType, frameType)
+                && sharedFGs.contains(frameTypeTag)) {
+            noLongerSharedFGTags = append(noLongerSharedFGTags, frameTypeTag);
+        }
         if (noLongerSharedFGTags.length != 0) {
             Dataset noLongerSharedFGs = sharedFGs.subSet(noLongerSharedFGTags);
-            for (int i = 0, n = perFrameFGSeq.countItems(); i < n; i++) {
+            for (int i = 0, n = perFrameFGSeq.countItems() - 1; i < n; i++) {
                 perFrameFGSeq.getItem(i).putAll(noLongerSharedFGs);
             }
             noLongerSharedFGs.clear();
         }
-        newPerFrameFGs.putAll(newSharedFGs);
-        perFrameFGSeq.addItem(newPerFrameFGs);
+        if (!sharedFGs.contains(frameTypeTag)) {
+            perFrameFGs.putSQ(frameTypeTag).addNewItem()
+                    .putCS(Tags.FrameType, frameType);
+        }
+        this.imageType = mergeImageType(this.imageType, frameType);
     }
 
     private int[] append(int[] a, int i) {
@@ -249,12 +340,17 @@ class EnhancedMFBuilder {
             throw new IllegalStateException("curFrame: " + curFrame
                     + " < numFrame: " + pixelDataOffsets.length);
         }
-        initImageTypeAndAcquisitionDatetime();
+        dataset.putCS(Tags.ImageType, imageType);
+        dataset.putCS(Tags.InstanceNumber, instanceNumber);
+        dataset.putDA(Tags.ContentDate, contentDatetime);
+        dataset.putTM(Tags.ContentTime, contentDatetime);
+        dataset.putDT(Tags.AcquisitionDatetime, acquisitionDatetime);
         dataset.putIS(Tags.NumberOfFrames, pixelDataOffsets.length);
         UIDGenerator uidGen = UIDGenerator.getInstance();
         if (!dataset.containsValue(Tags.SeriesInstanceUID)) {
             dataset.putUI(Tags.SeriesInstanceUID, uidGen.createUID());
         }
+        dataset.putUI(Tags.SOPClassUID, filter.getString(Tags.SOPClassUID));
         dataset.putUI(Tags.SOPInstanceUID, uidGen.createUID());
         try {
             dataset.setFileMetaInfo(
@@ -270,56 +366,14 @@ class EnhancedMFBuilder {
         return dataset;
     }
 
-    private void initImageTypeAndAcquisitionDatetime() {
-        Dataset sharedFGs = dataset.getItem(Tags.SharedFunctionalGroupsSeq);
-        Dataset sharedFrameTypeFG = sharedFGs.getItem(frameTypeTag);
-        DcmElement perFrameFGsSeq = dataset.get(Tags.PerFrameFunctionalGroupsSeq);
-        Dataset perFrameFGs = perFrameFGsSeq.getItem(0);
-        Dataset frameContentFG = perFrameFGs.getItem(Tags.FrameContentSeq);
-        String[] imageType = (sharedFrameTypeFG != null 
-                ? sharedFrameTypeFG : perFrameFGs.getItem(frameTypeTag))
-                .getStrings(Tags.FrameType);
-        String instNo = frameContentFG.getString(Tags.InstanceNumber);
-        Date contentDateTime = frameContentFG.getDateTime(Tags.ContentDate,
-                Tags.ContentTime);
-        Date acquistionDateTime = frameContentFG.getDate(
-                Tags.FrameAcquisitionDatetime);
-        Date d;
-        for (int i = 1, n = perFrameFGsSeq.countItems(); i < n; i++) {
-            perFrameFGs = perFrameFGsSeq.getItem(i);
-            frameContentFG = perFrameFGs.getItem(Tags.FrameContentSeq);
-            if (sharedFrameTypeFG == null) {
-                imageType = mergeImageType(imageType, perFrameFGs
-                        .getItem(frameTypeTag).getStrings(Tags.FrameType));
-            }
-            d = frameContentFG.getDateTime(Tags.ContentDate,
-                    Tags.ContentTime);
-            if (d != null && (contentDateTime == null 
-                    || d.compareTo(contentDateTime) < 0)) {
-                contentDateTime = d;
-                instNo = frameContentFG.getString(Tags.InstanceNumber);
-            }
-            d = frameContentFG.getDate(Tags.FrameAcquisitionDatetime);
-            if (d != null && (acquistionDateTime == null 
-                    || d.compareTo(acquistionDateTime) < 0)) {
-                acquistionDateTime = d;
-            }
-        }
-        dataset.putCS(Tags.ImageType, imageType);
-        dataset.putCS(Tags.InstanceNumber, instNo);
-        dataset.putDA(Tags.ContentDate, contentDateTime);
-        dataset.putTM(Tags.ContentTime, contentDateTime);
-        dataset.putDT(Tags.AcquisitionDatetime, acquistionDateTime);
-    }
-
     private String[] mergeImageType(String[] t1, String[] t2) {
         if (t1.length < t2.length) {
             String[] tmp = t1;
             t1 = t2;
             t2 = tmp;
         }
-        for (int i = 0; i < t2.length; i++) {
-            if (!t1[i].equals(t2[i])) {
+        for (int i = 0; i < t1.length; i++) {
+            if (!(i < t2.length && t1[i].equals(t2[i]))) {
                 t1[i] = "MIXED";
             }
         }

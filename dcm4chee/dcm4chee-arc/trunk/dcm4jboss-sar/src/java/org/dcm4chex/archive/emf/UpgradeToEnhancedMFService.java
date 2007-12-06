@@ -50,18 +50,21 @@ import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
-import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -78,11 +81,11 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private static final int[] SERIES_IUID = { Tags.SeriesInstanceUID };
 
-    private static final String UPGRADE_CT_XSL = "upgrade-ct.xsl";
+    private static final String UPGRADE_CT_XML = "upgrade-ct.xml";
 
-    private static final String UPGRADE_MR_XSL = "upgrade-mr.xsl";
+    private static final String UPGRADE_MR_XML = "upgrade-mr.xml";
 
-    private static final String UPGRADE_PET_XSL = "upgrade-pet.xsl";
+    private static final String UPGRADE_PET_XML = "upgrade-pet.xml";
 
     private ObjectName storeScpServiceName;
 
@@ -91,6 +94,8 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     private String queueName;
 
     private int concurrency = 1;
+
+    private String configDir;
 
     private boolean mergePatientStudySeriesAttributesFromDB;
 
@@ -103,16 +108,6 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     private int bufferSize = 8192;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
-
-    private TemplatesDelegate templates = new TemplatesDelegate(this);
-
-    public final ObjectName getTemplatesServiceName() {
-        return templates.getTemplatesServiceName();
-    }
-
-    public final void setTemplatesServiceName(ObjectName serviceName) {
-        templates.setTemplatesServiceName(serviceName);
-    }
 
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -147,11 +142,11 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     }
 
     public final String getConfigDir() {
-        return templates.getConfigDir();
+        return configDir;
     }
 
     public final void setConfigDir(String path) {
-        templates.setConfigDir(path);
+        this.configDir = path;
     }
 
     public final boolean isMergePatientStudySeriesAttributesFromDB() {
@@ -227,24 +222,47 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     public boolean isUpgradeEnabled(SeriesStored seriesStored) {
         String modality = seriesStored.getModality();
         if ("CT".equals(modality)) {
-            return isUpgradeEnabled(seriesStored, UPGRADE_CT_XSL,
+            return isUpgradeEnabled(seriesStored, UPGRADE_CT_XML,
                     UIDs.CTImageStorage);
         }
         if ("MR".equals(modality)) {
-            return isUpgradeEnabled(seriesStored, UPGRADE_MR_XSL,
+            return isUpgradeEnabled(seriesStored, UPGRADE_MR_XML,
                     UIDs.MRImageStorage);
         }
         if ("PT".equals(modality)) {
-            return isUpgradeEnabled(seriesStored, UPGRADE_PET_XSL,
+            return isUpgradeEnabled(seriesStored, UPGRADE_PET_XML,
                     UIDs.PositronEmissionTomographyImageStorage);
         }
         return false;
     }
 
-    private boolean isUpgradeEnabled(SeriesStored seriesStored, String xsl,
+    private File getConfigFile(String aet, String fname) {
+        if (aet != null) {
+            File f =  FileUtils.resolve(new File(new File(configDir, aet), fname));
+            if (f.exists()) {
+                return f;
+            }
+        }
+        return FileUtils.resolve(new File(configDir, fname));
+    }
+
+    private Dataset loadConfig(File file) throws ConfigurationException {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        try {
+            SAXParserFactory f = SAXParserFactory.newInstance();
+            SAXParser p = f.newSAXParser();
+            p.parse(file, ds.getSAXHandler2(null));
+        } catch (Exception e) {
+            throw new ConfigurationException(
+                    "Failed to load VMF Configuration from " + file);
+        }
+        return ds;
+    }
+
+    private boolean isUpgradeEnabled(SeriesStored seriesStored, String xml,
             String cuid) {
         String callingAET = seriesStored.getCallingAET();
-        return templates.getTemplatesForAET(callingAET, xsl) != null
+        return getConfigFile(callingAET, xml).exists()
             && containsOnlySOPClass(seriesStored, cuid);
     }
 
@@ -393,17 +411,17 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
         String modality = seriesStored.getModality();
         if ("CT".equals(modality)) {
             return new EnhancedMFBuilder(this,
-                    templates.getTemplatesForAET(callingAET, UPGRADE_CT_XSL),
+                    loadConfig(getConfigFile(callingAET, UPGRADE_CT_XML)),
                     Tags.CTImageFrameTypeSeq, numFrames);
         }
         if ("MR".equals(modality)) {
             return new EnhancedMFBuilder(this,
-                    templates.getTemplatesForAET(callingAET, UPGRADE_MR_XSL),
+                    loadConfig(getConfigFile(callingAET, UPGRADE_MR_XML)),
                     Tags.MRImageFrameTypeSeq, numFrames);
         }
         if ("PT".equals(modality)) {
             return new EnhancedMFBuilder(this,
-                    templates.getTemplatesForAET(callingAET, UPGRADE_PET_XSL),
+                    loadConfig(getConfigFile(callingAET, UPGRADE_PET_XML)),
                     PETFrameTypeSeqTag, numFrames);
         }
         throw new IllegalArgumentException("modality: " + modality);
