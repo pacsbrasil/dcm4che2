@@ -944,7 +944,6 @@ class updateAttributes {}
 /**
  * @depend - - - FileSystemMgt
  * @depend - - - StoreScp
- * @depend - - - Templates
  * @depend - - - JMS
  * @depend - - - UpgradeToEnhancedMFQueue
  */
