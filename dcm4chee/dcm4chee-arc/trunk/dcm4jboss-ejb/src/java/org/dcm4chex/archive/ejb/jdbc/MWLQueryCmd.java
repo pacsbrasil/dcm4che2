@@ -163,7 +163,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
         DatasetUtils.fromByteArray( getBytes(1), ds);
         DatasetUtils.fromByteArray(getBytes(2), ds);
-        QueryCmd.adjustDataset(ds, keys);
+        adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
 }

@@ -54,7 +54,7 @@ import org.dcm4chex.archive.common.HPLevel;
  * @version $Revision$ $Date$
  * @since Aug 17, 2005
  */
-public class HPQueryCmd extends BaseReadCmd {
+public class HPQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
 
@@ -69,19 +69,13 @@ public class HPQueryCmd extends BaseReadCmd {
     														"rel_hpdef_proc.proc_fk"};
     private static final String[] REASON_CODE = new String[]{"reason_code","rel_hpdef_reason",
     													"rel_hpdef_reason.hpdef_fk","rel_hpdef_reason.reason_fk"};
- 
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    private final Dataset keys;
-    
     public HPQueryCmd(Dataset keys) throws SQLException {
-		super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+		super(keys, true, false, transactionIsolationLevel);
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
                 defineColumnType(1, Types.LONGVARBINARY);
 		String s;
 		int i;
-		this.keys = keys;
 		// ensure keys contains (8,0005) for use as result filter
 		if (!keys.contains(Tags.SpecificCharacterSet)) {
 			keys.putCS(Tags.SpecificCharacterSet);
@@ -185,7 +179,7 @@ public class HPQueryCmd extends BaseReadCmd {
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         DatasetUtils.fromByteArray( getBytes(1), ds);
-        QueryCmd.adjustDataset(ds, keys);
+        adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
 	

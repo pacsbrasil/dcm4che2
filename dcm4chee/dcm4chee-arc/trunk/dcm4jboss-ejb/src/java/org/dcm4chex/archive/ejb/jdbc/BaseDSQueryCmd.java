@@ -138,7 +138,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         return false;
     }
     
-    static void adjustDataset(Dataset ds, Dataset keys) {
+    protected void adjustDataset(Dataset ds, Dataset keys) {
         for (Iterator it = keys.iterator(); it.hasNext();) {
             DcmElement key = (DcmElement) it.next();
             final int tag = key.tag();
@@ -151,12 +151,20 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
                 el = ds.putXX(tag, vr);
             }
             if (vr == VRs.SQ) {
+                DcmElement filteredEl = null;
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
-                    if (el.isEmpty())
+                    if (el.isEmpty()) {
                         el.addNewItem();
+                    } else if (filterResult && !keyItem.isEmpty()) {
+                        filteredEl = ds.putSQ(tag);
+                    }
                     for (int i = 0, n = el.countItems(); i < n; ++i) {
-                        adjustDataset(el.getItem(i), keyItem);
+                        Dataset item = el.getItem(i);
+                        adjustDataset(item, keyItem);
+                        if (filteredEl != null) {
+                            filteredEl.addItem(item = item.subSet(keyItem));
+                        }
                     }
                 }
             }
