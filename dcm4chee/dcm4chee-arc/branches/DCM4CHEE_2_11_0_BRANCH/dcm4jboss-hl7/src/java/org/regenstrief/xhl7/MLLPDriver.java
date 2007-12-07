@@ -305,9 +305,9 @@ public class MLLPDriver {
       public void flush() throws IOException {
 	if(!_sending && _clearToSend)
 	  beginSending();
-	if(_sending) {
-	  _outputStream.flush();
-	}
+//	if(_sending) {
+//	  _outputStream.flush();
+//	}
       }
       public void close() throws IOException {
 	flush();
