@@ -376,7 +376,7 @@ public class DicomImageReader extends ImageReader {
         }
         return reader.readRaster(imageIndex, param);
     }
-
+    
     /**
      * Reads the provided image as a buffered image. It is possible to read
      * image overlays by providing the 0x60000000 number associated with the
@@ -434,7 +434,8 @@ public class DicomImageReader extends ImageReader {
     }
 
     private void copyReadParam(ImageReadParam src, ImageReadParam dst) {
-        dst.setDestination(src.getDestination());
+    	BufferedImage dest = src.getDestination();
+        dst.setDestination(dest);
         dst.setSourceRegion(src.getSourceRegion());
         dst.setSourceSubsampling(src.getSourceXSubsampling(), src
                 .getSourceYSubsampling(), src.getSubsamplingXOffset(), src
@@ -453,7 +454,7 @@ public class DicomImageReader extends ImageReader {
     private Raster decompressRaster(int imageIndex, ImageReadParam param)
             throws IOException {
         if (!reader.canReadRaster()) {
-            return decompress(imageIndex, param).getData();
+            return decompress(imageIndex, param).getRaster();
         }
         reader.setInput(itemStream(imageIndex));
         Raster raster = reader.readRaster(0, param);
