@@ -198,7 +198,7 @@ public class XDSDocumentMetadata {
 		Node node;
 		Attr attr;
 		for ( int i=0,l=nl.getLength(); i<l ; i++) {
-			node = (Element)nl.item(i);
+			node = (Node)nl.item(i);
 			if ( node.getNodeType() == Node.ELEMENT_NODE ) {
 				if ( "Slot".equals(node.getLocalName() ) ) {
 					attr = ((Element) node).getAttributeNode("name");
