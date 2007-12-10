@@ -123,10 +123,10 @@ public class MetaDataServlet extends HttpServlet {
 			}
 			sri.writeResponse(request, response);
 		} catch (Exception e) {
+		   
 			log.error("Caught error " + e + " for URI "
 					+ request.getRequestURI() + " with parameters "
-					+ request.getQueryString());
-			e.printStackTrace();
+					+ request.getQueryString(),e);
 		}
 	}
 

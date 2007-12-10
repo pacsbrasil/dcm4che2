@@ -125,7 +125,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			} else {
 			   long start = System.nanoTime();
 			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
-			   log.info("Time to decompress image only is "+nanoTimeToString(System.nanoTime()-start));
+			   log.info("Time to decompress image ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
+					 + nanoTimeToString(System.nanoTime() - start));
 			   ColorModel cm = ColorModelFactory.createColorModel(ds);
 			   bi = new BufferedImage(cm, r, false, null);
 			}
