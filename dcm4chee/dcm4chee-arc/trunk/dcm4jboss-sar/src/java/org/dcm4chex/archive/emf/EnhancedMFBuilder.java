@@ -90,6 +90,7 @@ class EnhancedMFBuilder {
     private int pixelDataVR;
     private int pixelDataLength;
     private int curFrame = 0;
+    private String tsuid;
 
     private String[] imageType;
     private Date acquisitionDatetime;
@@ -147,9 +148,18 @@ class EnhancedMFBuilder {
                 throw new UpgradeToEnhancedMFException("No Pixel Data in " + f);
             }
             if (curFrame == 0) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Create new Enhanced MF from " + f);
+                }
+                tsuid = source.getFileMetaInfo().getTransferSyntaxUID();
                 pixelDataVR = parser.getReadVR();
                 pixelDataLength = parser.getReadLength();
+                init(source);
+                f0 = f;
             } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Merge Functional Groups to Enhanced MF from " + f);
+                }
                 if (pixelDataVR != parser.getReadVR()) {
                     throw new UpgradeToEnhancedMFException("VR of Pixel Data in "
                             + f + " differs from " + f0);
@@ -158,6 +168,17 @@ class EnhancedMFBuilder {
                     throw new UpgradeToEnhancedMFException("Pixel Data Length in "
                             + f + " differs from " + f0);
                 }
+                if (!noPixelData && !tsuid.equals(source.getFileMetaInfo()
+                                                .getTransferSyntaxUID())) {
+                    throw new UpgradeToEnhancedMFException("Transfer Syntax of "
+                            + f + " differs from " + f0);
+                }
+                if (!dataset.exclude(FG_SEQ_TAGS).equals(source.subSet(filter))) {
+                    throw new UpgradeToEnhancedMFException(
+                            "Non Functional Groups elements of "  + f 
+                            + " differs from " + f0);
+                }
+                mergeFunctionalGroups(dataset, source);
             }
             if (pixelDataLength == -1) {
                 // skip frame offset table
@@ -172,30 +193,6 @@ class EnhancedMFBuilder {
             pixelDataLengths[curFrame] = parser.getReadLength();
         } finally {
             try { bis.close(); } catch (IOException ignore) {}
-        }
-        if (curFrame == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("Create new Enhanced MF from " + f);
-            }
-            init(source);
-            f0 = f;
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Merge Functional Groups to Enhanced MF from " + f);
-            }
-            if (!noPixelData
-                    && !dataset.getFileMetaInfo().getTransferSyntaxUID()
-                            .equals(source.getFileMetaInfo()
-                                            .getTransferSyntaxUID())) {
-                throw new UpgradeToEnhancedMFException("Transfer Syntax of "
-                        + f + " differs from " + f0);
-            }
-            if (!dataset.exclude(FG_SEQ_TAGS).equals(source.subSet(filter))) {
-                throw new UpgradeToEnhancedMFException(
-                        "Non Functional Groups elements of "  + f 
-                        + " differs from " + f0);
-            }
-            mergeFunctionalGroups(dataset, source);
         }
         ++curFrame;
     }
@@ -358,8 +355,7 @@ class EnhancedMFBuilder {
                             noPixelData
                                     ? (deflate ? UIDs.NoPixelDataDeflate
                                                : UIDs.NoPixelData)
-                                    : dataset.getFileMetaInfo()
-                                             .getTransferSyntaxUID()));
+                                    : tsuid));
         } catch (DcmValueException e) {
             throw new UpgradeToEnhancedMFException(e);
         }
