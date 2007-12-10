@@ -54,7 +54,8 @@ import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dcm4chex.xds.common.XDSResponseObject;
 import org.dcm4chex.xds.mbean.XDSRegistryResponse;
 
@@ -75,7 +76,7 @@ public class XDSRepositoryServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static Logger log = Logger.getLogger(XDSRepositoryServlet.class.getName());
+	private static Logger log = LoggerFactory.getLogger(XDSRepositoryServlet.class.getName());
 	
     public void init(ServletConfig config) throws ServletException {
         try {
@@ -135,16 +136,41 @@ public class XDSRepositoryServlet extends HttpServlet {
 
 	public static MimeHeaders getMimeHeaders(HttpServletRequest request) {
         MimeHeaders mimeHeaders = new MimeHeaders();
-        String name, value;
+        String name, value, tk;
         for (Enumeration names = request.getHeaderNames() ; names.hasMoreElements() ; ) {
             name = (String) names.nextElement();
             value = request.getHeader(name);
             for (StringTokenizer st = new StringTokenizer(value, ",") ; st.hasMoreTokens() ; ) {
-                mimeHeaders.addHeader(name, st.nextToken().trim());
+            	tk = st.nextToken().trim();
+            	if ( name.equalsIgnoreCase("content-type" ) ) {
+            		tk = checkStartParam(tk);
+            	}
+                mimeHeaders.addHeader(name, tk);
             }
         }
         return mimeHeaders;
     }
+
+	private static String checkStartParam(String value) {
+		String tmp= value.toLowerCase();
+		int posStart = tmp.indexOf("start");
+		if (posStart != -1 ) {
+			int pos = tmp.indexOf('\"', posStart);
+			pos++;
+			if ( value.charAt(pos) != '<') {
+				StringBuffer sb = new StringBuffer(value.subSequence(0, pos));
+				sb.append('<');
+				int pos2 = value.indexOf('\"',pos);
+				sb.append(value.substring(pos,pos2)).append('>');
+				sb.append(value.substring(pos2));
+				log.debug("corrected content-type header:"+sb);
+				return sb.toString();
+			}
+		} else {
+			log.info("No start parameter in content-type header! Ignore correction");
+		}
+		return value;
+	}
 	
 }
 class DebugInputStream extends InputStream {
