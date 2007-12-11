@@ -151,21 +151,7 @@
 
    <filter-mapping>
       <filter-name>TimeFilter</filter-name>
-      <url-pattern>*.seam</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>TimeFilter</filter-name>
-      <url-pattern>/wado</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>TimeFilter</filter-name>
-      <url-pattern>*.xml</url-pattern>
-   </filter-mapping>
-   <filter-mapping>
-      <filter-name>TimeFilter</filter-name>
-      <url-pattern>*.xsl</url-pattern>
+      <url-pattern>/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
