@@ -50,6 +50,8 @@ import java.util.Arrays;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -57,7 +59,8 @@ import org.dcm4che2.data.Tag;
  * @since Jul 21, 2007
  */
 public class ColorModelFactory {
-
+    private static final Logger log = LoggerFactory.getLogger(ColorModelFactory.class);
+    
     private static final String MONOCHROME1 = "MONOCHROME1";
     private static final String MONOCHROME2 = "MONOCHROME2";
     private static final String PALETTE_COLOR = "PALETTE COLOR";
@@ -88,8 +91,10 @@ public class ColorModelFactory {
         } else if (samples == 3) {
             pmi = ds.getString(Tag.PhotometricInterpretation, RGB);
             if (pmi.equals(RGB)) {
+            	log.debug("Color space is RGB.");
                 cs = createRGBColorSpace(ds);
             } else if (pmi.equals(YBR_FULL)) {
+            	log.debug("Color space is YBR full");
                 cs = SimpleYBRColorSpace.createYBRFullColorSpace(
                         createRGBColorSpace(ds));
             }

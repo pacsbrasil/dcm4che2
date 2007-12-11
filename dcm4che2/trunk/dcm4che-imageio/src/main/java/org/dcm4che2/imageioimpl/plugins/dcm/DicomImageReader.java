@@ -308,6 +308,7 @@ public class DicomImageReader extends ImageReader {
         reader.setInput(riis);
     }
 
+    /** Create an image type specifier for the entire image */
     private ImageTypeSpecifier createImageTypeSpecifier() {
         ColorModel cm = ColorModelFactory.createColorModel(ds);
         SampleModel sm = createSampleModel();
@@ -434,13 +435,13 @@ public class DicomImageReader extends ImageReader {
     }
 
     private void copyReadParam(ImageReadParam src, ImageReadParam dst) {
-    	BufferedImage dest = src.getDestination();
-        dst.setDestination(dest);
+    	dst.setDestination(src.getDestination());
         dst.setSourceRegion(src.getSourceRegion());
         dst.setSourceSubsampling(src.getSourceXSubsampling(), src
                 .getSourceYSubsampling(), src.getSubsamplingXOffset(), src
                 .getSubsamplingYOffset());
         dst.setDestinationOffset(src.getDestinationOffset());
+        dst.setDestinationType(createImageTypeSpecifier());
     }
 
     private BufferedImage decompress(int imageIndex, ImageReadParam param)

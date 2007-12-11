@@ -47,6 +47,8 @@ import org.dcm4che2.data.ConfigurationError;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -54,7 +56,7 @@ import org.dcm4che2.data.VR;
  * @since Aug 6, 2007
  */
 public class ImageReaderFactory extends ImageReaderWriterFactory {
-    
+    private static final Logger log = LoggerFactory.getLogger(ImageReaderFactory.class);    
     private static final String CONFIG_KEY =
             "org.dcm4che2.imageio.ImageReaderFactory";
     
@@ -89,8 +91,10 @@ public class ImageReaderFactory extends ImageReaderWriterFactory {
                 it.hasNext();) {
             ImageReader r = (ImageReader) it.next();
             if (className.equals(r.getClass().getName())) {
+            	log.debug("Found reader "+className +" for "+tsuid);
                 return r;
             }
+            log.debug("Skipping image reader "+r.getClass().getName());
         }
         throw new ConfigurationError("No Image Reader of class " + className
                 + " available for format:" + formatName); 

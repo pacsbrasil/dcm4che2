@@ -40,12 +40,16 @@ package org.dcm4che2.image;
 
 import java.awt.color.ColorSpace;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
 *
 * @author  gunter.zeilinger@tiani.com
 * @version $Revision$ $Date$
 */
 public final class SimpleYBRColorSpace extends ColorSpace {
+    private static final Logger log = LoggerFactory.getLogger(SimpleYBRColorSpace.class);
 
     private static final long serialVersionUID = 94133999660773774L;
 
@@ -111,6 +115,7 @@ public final class SimpleYBRColorSpace extends ColorSpace {
                         + toRGB[9] * ybr[1]
                         + toRGB[10] * ybr[2]
                         + toRGB[11]));
+        //log.info("Convert "+ybr[0]+","+ybr[1]+","+ybr[2]+" to "+r+","+g+","+b);
         return new float[] {r, g, b};
     }
 
@@ -147,16 +152,18 @@ public final class SimpleYBRColorSpace extends ColorSpace {
     }
 
     private static void out(String label, double[] a) {
-        System.out.print("\n    private static final double[] ");
-        System.out.print(label);
-        System.out.print(" = {");
+    	StringBuffer sb = new StringBuffer();
+        sb.append("\n    private static final double[] ");
+        sb.append(label);
+        sb.append(" = {");
         for (int i = 0; i < a.length; i++) {
             if (i % 4 == 0)
-                System.out.print("\n        ");
-            System.out.print(a[i]);
-            System.out.print(", ");
+            	sb.append("\n        ");
+            sb.append(a[i]);
+            sb.append(", ");
         }
-        System.out.println("\n    };");        
+        sb.append("\n    };");
+        log.info(sb.toString());
     }
 
     private static double[] fromYBR(double[] a) {
