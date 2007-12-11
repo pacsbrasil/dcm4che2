@@ -111,7 +111,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 			if( hostname==null ) {
 				hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
 			}
-			log.info("Using DICOM host "+hostname);
+			log.debug("Using DICOM host "+hostname);
 		} catch (UnknownHostException e) {
 			log.warn("Unable to get local hostname:"+e);
 		}
@@ -225,7 +225,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     				throw new UnsupportedOperationException("Can't search on multi-valued key "+key);
     			}
     		}
-    		log.info("Search condition "+keyTag+"="+value+" of type "+value.getClass());
+    		log.debug("Search condition "+keyTag+"="+value+" of type "+value.getClass());
     		try {
     			ret.putString(Tag.toTagPath(keyTag), null, value );
     		}
@@ -301,7 +301,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	}
 
 	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
-		log.info("DICOM CFind filter starting to search.");
+		log.debug("DICOM CFind filter starting to search.");
 		ResultsBean resultFromDicom = (ResultsBean) params.get(EXTEND_RESULTS_KEY);
 		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
 		SearchCriteria searchCondition = (SearchCriteria) 
@@ -311,7 +311,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 			return null;
 		}
 		find(searchCondition, resultFromDicom);
-		log.info("Found result(s) - returning from filter.");
+		log.debug("Found result(s) - returning from filter.");
 		return resultFromDicom;
 	}
 }

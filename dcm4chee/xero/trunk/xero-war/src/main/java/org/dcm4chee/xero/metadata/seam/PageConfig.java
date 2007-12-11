@@ -76,7 +76,7 @@ public class PageConfig extends AbstractMap<String,MetaDataBean>
 	/** Figure out what metadata node to use to render the given page. */
 	@Override
 	public MetaDataBean get(Object forPage) {
-	   log.info("Re-using existing meta-data for "+forPage);
+	   if( log.isDebugEnabled() ) log.debug("Re-using existing meta-data for "+forPage);
 	   return metadata.get(forPage);
 	}
 	

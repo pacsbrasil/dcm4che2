@@ -226,7 +226,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  for(int i=0; i<modified.size(); i++ ) {
 		 if( modified.get(i) instanceof ImageBeanMultiFrame ) {
 			ImageBeanMultiFrame image = (ImageBeanMultiFrame) modified.get(i);
-			log.info("Splitting a multi-frame object with "+image.getNumberOfFrames()+" frames.");
+			log.debug("Splitting a multi-frame object with "+image.getNumberOfFrames()+" frames.");
 			if( image.getNumberOfFrames()==1 ) continue;
 			int startFrame = Math.max(1, position-image.getPosition()+1);
 			int endFrame = Math.min(image.getNumberOfFrames(), position+count-image.getPosition());

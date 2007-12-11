@@ -41,6 +41,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ComponentColorModel;
 import java.io.IOException;
 import java.util.Map;
 
@@ -140,7 +141,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 		 return wi;
 	  }
 
-	  log.info("Returning a scaled instance of the image sx=" + (cols / (double) nWidth) + " sy=" + (rows / (double) nHeight));
+	  log.debug("Returning a scaled instance of the image sx=" + (cols / (double) nWidth) + " sy=" + (rows / (double) nHeight));
 	  AffineTransform affine = new AffineTransform();
 	  
 	  BufferedImage biScale = null;

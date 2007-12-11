@@ -119,8 +119,6 @@ baseImg.encode=${class:org.dcm4chee.xero.wado.EncodeImage}
 baseImg.encode.priority=9999
 baseImg.wl=${class:org.dcm4chee.xero.wado.WLFilter}
 baseImg.wl.priority=6000
-baseImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
-baseImg.scale.priority=6100
 baseImg.memcache=${ref:imageCache}
 baseImg.memcache.priority=5000
 baseImg.src=${class:org.dcm4chee.xero.wado.DicomImageFilter}
@@ -132,6 +130,8 @@ baseImg.fileLocation.priority=-2
 # Items belonging to the wadoImg area, but not used by Xero directly,
 # including burn-in of various information.
 wadoImg.inherit=baseImg
+wadoImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
+wadoImg.scale.priority=6100
 wadoImg.imageSource=${ref:imageSource}
 wadoImg.imageSource.priority=-2
 wadoImg.gspsBurn=${class:org.dcm4chee.xero.wado.GspsBurnIn}

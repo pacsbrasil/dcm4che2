@@ -135,8 +135,8 @@ class ImageServletResponseItem implements ServletResponseItem {
 
    WadoImage wadoImage;
 
-   //static String preferred_name_start = "com.sun.media.imageioimpl.plugins";
-   static String preferred_name_start = "com.agfa";
+   static String preferred_name_start = "com.sun.media.imageioimpl.plugins";
+   //static String preferred_name_start = "com.agfa";
    
    /**
      * Create an image servlet response to write the given image to the response
@@ -155,7 +155,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(contentType);
 	  writer = writers.next();
 	  while(!writer.getClass().getName().startsWith(preferred_name_start) && writers.hasNext()) {
-		 log.info("Skipping "+writer.getClass().getName());
+		 log.debug("Skipping "+writer.getClass().getName());
 		 writer = writers.next();
 	  }
 	  this.contentType = contentType;
@@ -191,7 +191,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  writer.write(null, iioimage, imageWriteParam);
 	  ios.close();
 	  response.getOutputStream().close();
-	  log.info("Encoding image took " + nanoTimeToString(System.nanoTime() - start) + " with "+writer.getClass());
+	  log.debug("Encoding image took " + nanoTimeToString(System.nanoTime() - start) + " with "+writer.getClass());
    }
 
 }

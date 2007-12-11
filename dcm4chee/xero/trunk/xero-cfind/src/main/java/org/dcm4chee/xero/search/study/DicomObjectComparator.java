@@ -72,7 +72,8 @@ public class DicomObjectComparator implements Comparator<DicomObjectType> {
 		// This should ONLY happen for multi-frame objects
 		// It probably requires a custom read of the DB to read
 		// Concatenation Frame Offset Number
-		log.warn("Identical instance numbers on different objects in same series - probably means multi frame concatenation or DICOM error.");
+		// TODO: However - it happens lots and lots, it isn't quite clear why...
+		log.debug("Identical instance numbers on different objects in same series - probably means multi frame concatenation or DICOM error.");
 		return ret;
 	}
 }

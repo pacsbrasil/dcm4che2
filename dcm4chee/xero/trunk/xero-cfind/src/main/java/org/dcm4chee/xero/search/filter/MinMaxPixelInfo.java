@@ -88,7 +88,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 					 continue;
 				  if (ib.getMacroItems().findMacro(MinMaxPixelMacro.class) != null)
 					 continue;
-				  log.info("MinMaxPixelInfo on " + ib.getSOPInstanceUID());
+				  log.debug("MinMaxPixelInfo on {}",ib.getSOPInstanceUID());
 				  updateImage(filterItem, params, ib);
 			   }
 			}
@@ -129,13 +129,14 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 	  float maxPixelValue = cw[0]+cw[1]/2f;
 	  MinMaxPixelMacro minMax = new MinMaxPixelMacro(minPixelValue, maxPixelValue);
 	  macros.addMacro(minMax);
-	  log.info("Added " + minMax + " to " + macros);
+	  log.debug("Added {} to {}", minMax,macros);
 	  return minMax;
    }
 
    /**
      * This method updates the header with VOI window level defaults (if any)
      * using the first VOI LUT found.
+     * There should be some way of getting a default window level if none is found...
      * 
      * @param minMax
      * @return The window level macro item added, or null if none.
@@ -144,7 +145,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 	  String uid = img.getString(Tag.SOPInstanceUID);
 	  DicomObject voiObj = VOIUtils.selectVoiItemFromPr(uid,pr,frame);
 	  if( voiObj==null ) {
-		 log.warn("No VOI Object found - not setting window level info.");
+		 log.debug("No VOI Object found - not setting window level info.");
 		 return null;
 	  }
 	  float center = voiObj.getInt(Tag.WindowCenter);

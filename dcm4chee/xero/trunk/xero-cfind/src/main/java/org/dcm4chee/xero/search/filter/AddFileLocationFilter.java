@@ -61,10 +61,10 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
    /** Update any image beans with min/max pixel range information */
    public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
-	  log.info("Add file location filter called.");
+	  log.debug("Add file location filter called.");
 	  if( ret==null || ! ("true".equalsIgnoreCase((String) params.get(FILE_LOCATION) )))
 		 return ret;
-	  log.info("Adding file location to dicom objects.");
+	  log.debug("Adding file location to dicom objects.");
 	  for (PatientType pt : ret.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
 			for (SeriesType set : st.getSeries()) {
@@ -79,7 +79,7 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
 			}
 		 }
 	  }
-	  log.info("Adding file location info done.");
+	  log.debug("Adding file location info done.");
 	  return ret;
    }
 

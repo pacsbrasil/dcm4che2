@@ -44,7 +44,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
@@ -108,7 +107,7 @@ public class XsltFilter implements Filter {
 		 throw new IllegalArgumentException("Unknown request - need to be .X for some X");
 	  UrlURIResolver resolve = new UrlURIResolver(request, filterConfig.getServletContext());
 	  xsl = xsl.substring(0, lastDot) + "Xsl.xsl";
-	  log.info("Looking for XSL " + xsl);
+	  log.debug("Looking for XSL " + xsl);
 	  Transformer transformer = transformers.get(xsl);
 	  if (transformer == null || "true".equalsIgnoreCase(request.getParameter("refresh"))) {
 		 try {
@@ -138,7 +137,7 @@ public class XsltFilter implements Filter {
 	  // Note that apple web-kit is NOT included, as pages for that browser
 	  // are conditionally included
 	  // based on need.
-	  log.info("Agent=" + agent);
+	  log.debug("Agent=" + agent);
 	  if (agent.indexOf("Opera") >= 0) {
 		 return true;
 	  }

@@ -20,7 +20,7 @@ public class MemoryCacheFilter<T extends CacheItem> extends MemoryCacheFilterBas
 		boolean noCache = (params.get(NO_CACHE)!=null);
 		T item = ((key!=null && !noCache) ? cache.get(key) : null);
 		if( noCache) log.info("Not caching or using cache for "+key);
-		else log.info(cacheName+" looking for "+key+" found item "+item);
+		else log.debug(cacheName+" looking for "+key+" found item "+item);
 		if( item==null ) {
 			item = (T) filterItem.callNextFilter(params);
 			if( item!=null && key!=null && !noCache) cache.put(key,item);

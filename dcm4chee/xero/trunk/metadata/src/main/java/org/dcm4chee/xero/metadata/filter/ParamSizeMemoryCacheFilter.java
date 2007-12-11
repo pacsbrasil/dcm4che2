@@ -21,7 +21,7 @@ public class ParamSizeMemoryCacheFilter<T> extends MemoryCacheFilterBase<CacheIt
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		String key = computeKey(params);
 		CacheItemImpl<T> item = (key!=null ? cache.get(key) : null);
-		log.info(cacheName+" looking for key "+key+" item "+item);
+		if( log.isDebugEnabled() ) log.debug(cacheName+" looking for key "+key+" item "+item);
 		if( item==null ) {
 			T newValue = (T) filterItem.callNextFilter(params);
 			if( newValue!=null ) item = new CacheItemImpl<T>(newValue,params);

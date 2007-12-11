@@ -94,7 +94,7 @@ public class ConversationStudyModel extends StudyModel {
    @In(value = "DisplayStudyLevel", required = false)
    public void setDisplayStudyLevel(StudyLevel studyLevel) {
 	  if( studyLevel==null ) return;
-	  log.info("Study level set to " + studyLevel);
+	  log.debug("Study level set to {}",studyLevel);
 	  if (studyLevel.getPatientIdentifier() != null || studyLevel.getStudyUIDs() != null) {
 		 // completely re-sets the current display study level - either will
          // work fine.

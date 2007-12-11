@@ -148,7 +148,7 @@ public class StudyModel {
 		 int xmlIndicator = ret.indexOf("?>");
 		 if (xmlIndicator >= 0)
 			ret = ret.substring(xmlIndicator + 2);
-		 log.info("Patient xml is " + ret);
+		 log.debug("Patient xml is {}",ret);
 		 return ret;
 	  } catch (JAXBException e) {
 		 throw new RuntimeException(e);

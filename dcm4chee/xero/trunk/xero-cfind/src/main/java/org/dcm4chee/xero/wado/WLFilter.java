@@ -143,7 +143,11 @@ public class WLFilter implements Filter<WadoImage> {
 	  if( sFrame!=null ) {
 		 frame = Integer.parseInt(sFrame);
 	  }
-	  
+
+	  BufferedImage dest = createCompatible8BitImage(bi);
+	  // Can't window level if a custom type is being used.
+	  if( dest==null ) return wi;
+
 	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
 	  if( func==null && voiObj==null) {
 		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
@@ -164,9 +168,6 @@ public class WLFilter implements Filter<WadoImage> {
 	  //}
 
 	  DataBuffer srcData = bi.getRaster().getDataBuffer();
-	  BufferedImage dest = createCompatible8BitImage(bi);
-	  // Can't window level if a custom type is being used.
-	  if( dest==null ) return wi;
 	  DataBuffer destData = dest.getRaster().getDataBuffer();
 	  if (lut != null)
 		 lut.lookup(srcData, destData);
@@ -174,7 +175,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  WadoImage ret = wi.clone();
 	  ret.setValue(dest);
 	  long dur = System.nanoTime() - start;
-	  log.info("Window levelling took " + nanoTimeToString(dur));
+	  log.debug("Window levelling took " + nanoTimeToString(dur));
 	  return ret;
    }
 

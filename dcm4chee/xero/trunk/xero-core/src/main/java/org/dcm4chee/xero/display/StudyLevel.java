@@ -114,7 +114,7 @@ public class StudyLevel {
    }
 
    public void setStudyUID(String uid) {
-	  log.info("Study UID set to " + uid);
+	  log.debug("Study UID set to {}",uid);
 	  if (uid == null || uid.length() == 0)
 		 return;
 	  uid = uid.trim();

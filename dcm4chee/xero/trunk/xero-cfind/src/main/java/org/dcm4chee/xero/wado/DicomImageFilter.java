@@ -122,12 +122,14 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			   // This object can't be window levelled, so just get it as
 			   // a buffered image directly.
 			   bi = reader.read(frame, param);
+			   log.debug("ColorSpace of returned buffered image is "+bi.getColorModel().getColorSpace());
 			} else {
 			   long start = System.nanoTime();
 			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
-			   log.info("Time to decompress image ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
+			   log.debug("Time to decompress image ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
 					 + nanoTimeToString(System.nanoTime() - start));
 			   ColorModel cm = ColorModelFactory.createColorModel(ds);
+			   log.debug("Color model for image is "+cm);
 			   bi = new BufferedImage(cm, r, false, null);
 			}
 
