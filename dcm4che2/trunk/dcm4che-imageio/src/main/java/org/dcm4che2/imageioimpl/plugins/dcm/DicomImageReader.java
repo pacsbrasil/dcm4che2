@@ -441,7 +441,9 @@ public class DicomImageReader extends ImageReader {
                 .getSourceYSubsampling(), src.getSubsamplingXOffset(), src
                 .getSubsamplingYOffset());
         dst.setDestinationOffset(src.getDestinationOffset());
-        dst.setDestinationType(createImageTypeSpecifier());
+        if( ImageReaderFactory.getInstance().needsImageTypeSpecifier(tsuid) ) {
+        	dst.setDestinationType(createImageTypeSpecifier());
+        }
     }
 
     private BufferedImage decompress(int imageIndex, ImageReadParam param)

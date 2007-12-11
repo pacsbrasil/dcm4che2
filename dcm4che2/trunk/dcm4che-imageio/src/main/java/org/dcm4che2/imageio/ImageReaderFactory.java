@@ -100,6 +100,17 @@ public class ImageReaderFactory extends ImageReaderWriterFactory {
                 + " available for format:" + formatName); 
     }
 
+    /** Some image types need an image type specifier in order to figure out the source
+     * image information - if that is the case, then this will return true, based on 
+     * configuration [tsuid].typeSpecifier=true in the config file.
+     * The RLE and RAW readers need such specifiers, but the RAW one is hard coded elsewhere.
+     * @return
+     */
+    public boolean needsImageTypeSpecifier(String tsuid) {
+    	String typeSpecifier = config.getProperty(tsuid+".typeSpecifier");
+    	return "true".equalsIgnoreCase(typeSpecifier);
+    }
+
     public void adjustDatasetForTransferSyntax(DicomObject ds, String tsuid) {
         if (ds.getInt(Tag.SamplesPerPixel, 1) == 1) {
             return;
