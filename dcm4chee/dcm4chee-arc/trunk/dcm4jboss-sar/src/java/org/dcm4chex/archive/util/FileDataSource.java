@@ -69,58 +69,63 @@ public class FileDataSource implements DataSource {
     private final File file;
     private final Dataset mergeAttrs;
     private final byte[] buffer;
-	
-	/** if true use Dataset.writeFile instead of writeDataset */
-	private boolean writeFile = false;
-	private boolean withoutPixeldata = false;
-	private boolean excludePrivate = false;
 
-	// buffer == null => send no Pixeldata
+    /** if true use Dataset.writeFile instead of writeDataset */
+    private boolean writeFile = false;
+    private boolean withoutPixeldata = false;
+    private boolean excludePrivate = false;
+
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
         this.file = file;
         this.mergeAttrs = mergeAttrs;
         this.buffer = buffer;
     }
-	/**
-	 * @return Returns the writeFile.
-	 */
-	public final boolean isWriteFile() {
-		return writeFile;
-	}
-	/**
-	 * Set the write method (file or net).
-	 * <p>
-	 * If true, this datasource use writeFile instead of writeDataset. 
-	 * Therefore the FileMetaInfo will be only written if writeFile is set to true explicitly!
-	 * 
-	 * @param writeFile The writeFile to set.
-	 */
-	public final void setWriteFile(boolean writeFile) {
-		this.writeFile = writeFile;
-	}
-	
+
+    /**
+     * @return Returns the writeFile.
+     */
+    public final boolean isWriteFile() {
+        return writeFile;
+    }
+
+    /**
+     * Set the write method (file or net).
+     * <p>
+     * If true, this datasource use writeFile instead of writeDataset. Therefore
+     * the FileMetaInfo will be only written if writeFile is set to true
+     * explicitly!
+     * 
+     * @param writeFile
+     *                The writeFile to set.
+     */
+    public final void setWriteFile(boolean writeFile) {
+        this.writeFile = writeFile;
+    }
+
     public final boolean isWithoutPixeldata() {
-		return withoutPixeldata;
-	}
-    
-	public final void setWithoutPixeldata(boolean withoutPixelData) {
-		this.withoutPixeldata = withoutPixelData;
-	}
-	
-	public boolean isExcludePrivate() {
-		return excludePrivate;
-	}
-    
-	public void setExcludePrivate(boolean excludePrivate) {
-		this.excludePrivate = excludePrivate;
-	}
-    
-	public File getFile() {
-		return file;
-	}
-	public Dataset getMergeAttrs() {
-		return mergeAttrs;
-	}
+        return withoutPixeldata;
+    }
+
+    public final void setWithoutPixeldata(boolean withoutPixelData) {
+        this.withoutPixeldata = withoutPixelData;
+    }
+
+    public boolean isExcludePrivate() {
+        return excludePrivate;
+    }
+
+    public void setExcludePrivate(boolean excludePrivate) {
+        this.excludePrivate = excludePrivate;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public Dataset getMergeAttrs() {
+        return mergeAttrs;
+    }
+
     /**
      * 
      * @param out
@@ -129,11 +134,12 @@ public class FileDataSource implements DataSource {
      * @throws IOException
      */
     public void writeTo(OutputStream out, String tsUID) throws IOException {
-        
+
         log.info("M-READ file:" + file);
         FileImageInputStream fiis = new FileImageInputStream(file);
         try {
-            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(fiis);
+            DcmParser parser = DcmParserFactory.getInstance()
+                    .newDcmParser(fiis);
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(null, Tags.PixelData);
@@ -143,39 +149,44 @@ public class FileDataSource implements DataSource {
             }
             ds.putAll(mergeAttrs);
             String tsOrig = DecompressCmd.getTransferSyntax(ds);
-            if ( writeFile) {
-            	if ( tsUID != null ) {
-            		if ( tsUID.equals( UIDs.ExplicitVRLittleEndian) || ! tsUID.equals( tsOrig ) ) { //can only decompress here!
-            			tsUID = UIDs.ExplicitVRLittleEndian;
-            			ds.setFileMetaInfo( DcmObjectFactory.getInstance().newFileMetaInfo(ds, tsUID));
-            		}
-            	} else {
-            		tsUID = tsOrig;
-            	}
+            if (writeFile) {
+                if (tsUID != null) {
+                    if (tsUID.equals(UIDs.ExplicitVRLittleEndian)
+                            || !tsUID.equals(tsOrig)) { // can only decompress
+                                                        // here!
+                        tsUID = UIDs.ExplicitVRLittleEndian;
+                        ds.setFileMetaInfo(DcmObjectFactory.getInstance()
+                                .newFileMetaInfo(ds, tsUID));
+                    }
+                } else {
+                    tsUID = tsOrig;
+                }
             }
             DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
             if (withoutPixeldata || parser.getReadTag() != Tags.PixelData) {
-				log.debug("Dataset:\n");
-				log.debug(ds);
-				write(ds, out, enc);
-                return;                
+                log.debug("Dataset:\n");
+                log.debug(ds);
+                write(ds, out, enc);
+                return;
             }
             int len = parser.getReadLength();
             if (len == -1 && !enc.encapsulated) {
                 DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
                 len = cmd.getPixelDataLength();
-				log.debug("Dataset:\n");
-				log.debug(ds);
-				write(ds, out, enc);
-                ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, (len+1)&~1);
+                log.debug("Dataset:\n");
+                log.debug(ds);
+                write(ds, out, enc);
+                ds
+                        .writeHeader(out, enc, Tags.PixelData, VRs.OW,
+                                (len + 1) & ~1);
                 try {
-	                cmd.decompress(enc.byteOrder, out);
-				} catch (IOException e) {
-				    throw e;
-				} catch (Throwable e) {
-				    throw new RuntimeException("Decompression failed:", e);
-				}
-				if ((len&1)!=0)
+                    cmd.decompress(enc.byteOrder, out);
+                } catch (IOException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw new RuntimeException("Decompression failed:", e);
+                }
+                if ((len & 1) != 0)
                     out.write(0);
             } else {
                 log.debug("Dataset:\n");
@@ -207,31 +218,34 @@ public class FileDataSource implements DataSource {
             }
         }
     }
-    
-    private void write(Dataset ds, OutputStream out, DcmEncodeParam enc) throws IOException {
-		if ( writeFile ) {
-			if ( excludePrivate ) {
-				Dataset dsOut = ds.excludePrivate();
-				dsOut.setFileMetaInfo(ds.getFileMetaInfo());
-				dsOut.writeFile(out,enc); 
-			} else { 
-				ds.writeFile(out, enc);
-			}
-		} else {
-			if ( excludePrivate ) 
-				ds.excludePrivate().writeDataset(out,enc); 
-			else 
-				ds.writeDataset(out, enc);
-		}
-        return;                
-    	
+
+    private void write(Dataset ds, OutputStream out, DcmEncodeParam enc)
+            throws IOException {
+        if (writeFile) {
+            if (excludePrivate) {
+                Dataset dsOut = ds.excludePrivate();
+                dsOut.setFileMetaInfo(ds.getFileMetaInfo());
+                dsOut.writeFile(out, enc);
+            } else {
+                ds.writeFile(out, enc);
+            }
+        } else {
+            if (excludePrivate)
+                ds.excludePrivate().writeDataset(out, enc);
+            else
+                ds.writeDataset(out, enc);
+        }
+        return;
+
     }
 
     private void copy(FileImageInputStream fiis, OutputStream out, int totLen,
             byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
             len = fiis.read(buffer, 0, Math.min(toRead, buffer.length));
-            if (len == -1) { throw new EOFException(); }
+            if (len == -1) {
+                throw new EOFException();
+            }
             out.write(buffer, 0, len);
         }
     }
