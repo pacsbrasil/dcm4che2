@@ -59,36 +59,26 @@ import org.dcm4chex.wado.common.WADORequestObject;
 public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
         WADORequestObject {
 
-    private static final String ERROR_INVALID_REGION_FORMAT =
-        "Error: region parameter is invalid! Must be a comma separated list of 4 decimal strings.";
+    private static final String ERROR_INVALID_REGION_FORMAT = "Error: region parameter is invalid! Must be a comma separated list of 4 decimal strings.";
 
-    private static final String ERROR_INVALID_REGION_OUT_OF_RANGE =
-        "Error: region parameter is invalid! Coordinates must be in range [0..1].";
+    private static final String ERROR_INVALID_REGION_OUT_OF_RANGE = "Error: region parameter is invalid! Coordinates must be in range [0..1].";
 
-    private static final String ERROR_INVALID_REGION_DIMENSION =
-        "Error: region parameter is invalid! Width and height of specified region must be > 0.";
+    private static final String ERROR_INVALID_REGION_DIMENSION = "Error: region parameter is invalid! Width and height of specified region must be > 0.";
 
-    private static final String ERROR_NULL_WINDOW_WIDTH =
-        "Error: windowWidth parameter is invalid! Must specify a value.";
+    private static final String ERROR_NULL_WINDOW_WIDTH = "Error: windowWidth parameter is invalid! Must specify a value.";
 
-    private static final String ERROR_NULL_WINDOW_CENTER =
-        "Error: windowCenter parameter is invalid! Must specify a value.";
+    private static final String ERROR_NULL_WINDOW_CENTER = "Error: windowCenter parameter is invalid! Must specify a value.";
 
-    private static final String ERROR_INVALID_WINDOW_WIDTH_TYPE =
-        "Error: windowWidth parameter is invalid! Must be a decimal string.";
+    private static final String ERROR_INVALID_WINDOW_WIDTH_TYPE = "Error: windowWidth parameter is invalid! Must be a decimal string.";
 
-    private static final String ERROR_INVALID_WINDOW_CENTER_TYPE =
-        "Error: windowCenter parameter is invalid! Must be a decimal string.";
+    private static final String ERROR_INVALID_WINDOW_CENTER_TYPE = "Error: windowCenter parameter is invalid! Must be a decimal string.";
 
-    private static final String ERROR_INVALID_WINDOW_WIDTH_VALUE =
-        "Error: windowWidth parameter is invalid! Width must be > 0.";
+    private static final String ERROR_INVALID_WINDOW_WIDTH_VALUE = "Error: windowWidth parameter is invalid! Width must be > 0.";
 
-    private static final String ERROR_INVALID_IMAGE_QUALITY_TYPE = 
-        "Error: imageQuality parameter is invalid! Must be a integer string.";
+    private static final String ERROR_INVALID_IMAGE_QUALITY_TYPE = "Error: imageQuality parameter is invalid! Must be a integer string.";
 
-    private static final String ERROR_INVALID_IMAGE_QUALITY_VALUE = 
-        "Error: imageQuality parameter is invalid! Quality must be in range [1..100].";
-   
+    private static final String ERROR_INVALID_IMAGE_QUALITY_VALUE = "Error: imageQuality parameter is invalid! Quality must be in range [1..100].";
+
     private String studyUID;
 
     private String seriesUID;
@@ -117,7 +107,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      * Creates a WADORequestObjectImpl instance configured with http request.
      * 
      * @param request
-     *            The http request.
+     *                The http request.
      */
     public WADORequestObjectImpl(HttpServletRequest request) {
         super(request);
@@ -255,7 +245,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     public String getImageQuality() {
         return imageQuality;
     }
-    
+
     /**
      * Checks this request object and returns an error code.
      * <p>
@@ -319,10 +309,10 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
             }
         }
 
-        if ( imageQuality != null) {
+        if (imageQuality != null) {
             try {
                 checkImageQuality(imageQuality);
-            } catch ( IllegalArgumentException e ) {
+            } catch (IllegalArgumentException e) {
                 setErrorMsg(e.getMessage());
                 return INVALID_IMAGE_QUALITY;
             }
@@ -337,7 +327,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      * <code>IllegalArgumentException</code> if it isn't.
      * 
      * @param region
-     *            String representing a rectangular region of an image
+     *                String representing a rectangular region of an image
      * 
      * @return void
      * 
@@ -369,9 +359,9 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      * <code>IllegalArgumentException</code> if either isn't.
      * 
      * @param windowWidth
-     *            The value of the windowWidth WADO parameter
+     *                The value of the windowWidth WADO parameter
      * @param windowCenter
-     *            The value of the windowCenter WADO parameter
+     *                The value of the windowCenter WADO parameter
      * 
      * @return void
      * 
@@ -407,25 +397,24 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
         int quality = -1;
 
         try {
-            quality = Integer.parseInt( imageQuality );
-        } catch ( NumberFormatException e ) {
-            throw new IllegalArgumentException(
-                    ERROR_INVALID_IMAGE_QUALITY_TYPE);
+            quality = Integer.parseInt(imageQuality);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(ERROR_INVALID_IMAGE_QUALITY_TYPE);
         }
 
-        if ( quality <= 0 || quality > 100) 
+        if (quality <= 0 || quality > 100)
             throw new IllegalArgumentException(
                     ERROR_INVALID_IMAGE_QUALITY_VALUE);
     }
-    
+
     /**
      * Seperate the given String with delim character and return a List of the
      * items.
      * 
      * @param s
-     *            String with one or more items seperated with a character.
+     *                String with one or more items seperated with a character.
      * @param delim
-     *            The delimiter charecter.
+     *                The delimiter charecter.
      * @return A List with the seperated items
      */
     private List _string2List(String s, String delim) {

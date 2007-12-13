@@ -134,7 +134,7 @@ public class WADOSupport {
     public static final String CONTENT_TYPE_PLAIN = "text/plain";
 
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
-    
+
     private static Logger log = Logger.getLogger(WADOService.class.getName());
 
     private static final AuditLoggerFactory alf = AuditLoggerFactory
@@ -212,19 +212,20 @@ public class WADOSupport {
      * </DL>
      * 
      * @param req
-     *            The WADO request object.
+     *                The WADO request object.
      * 
      * @return The WADO response object.
-     * @throws PolicyContextException 
+     * @throws PolicyContextException
      */
-    public WADOResponseObject getWADOObject(WADORequestObject req) throws Exception {
+    public WADOResponseObject getWADOObject(WADORequestObject req)
+            throws Exception {
         log.info("Get WADO object for " + req.getObjectUID());
         Dataset objectDs = null;
         QueryCmd cmd = null;
-        if ( ! hasPermission(req) ) {
+        if (!hasPermission(req)) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_UNAUTHORIZED,
-                    "Permission denied for:"+req.getObjectUID());
+                    "Permission denied for:" + req.getObjectUID());
         }
         try {
             Dataset dsQ = dof.newDataset();
@@ -240,13 +241,15 @@ public class WADOSupport {
             log.error("Cant get DICOM Object file reference for "
                     + req.getObjectUID(), x);
         } finally {
-            if ( cmd != null ) cmd.close();
+            if (cmd != null)
+                cmd.close();
         }
-        log.debug("Found object:" + req.getObjectUID()+":");log.debug(objectDs);
+        log.debug("Found object:" + req.getObjectUID() + ":");
+        log.debug(objectDs);
         if (objectDs == null) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_NOT_FOUND,
-                    "DICOM object not found! objectUID:"+req.getObjectUID());
+                    "DICOM object not found! objectUID:" + req.getObjectUID());
         }
         String contentType = getPrefContentType(req, objectDs);
         log.debug("preferred ContentType:" + contentType);
@@ -255,8 +258,8 @@ public class WADOSupport {
             return this.handleJpg(req);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
             return handleDicom(req); // audit log is done in handleDicom to
-                                        // avoid extra query.
-        } 
+            // avoid extra query.
+        }
         File file = null;
         try {
             file = this.getDICOMFile(req.getStudyUID(), req.getSeriesUID(), req
@@ -264,8 +267,8 @@ public class WADOSupport {
             if (file == null) {
                 if (log.isDebugEnabled())
                     log.debug("Dicom object not found: " + req);
-                return new WADOStreamResponseObjectImpl(null,
-                        contentType, HttpServletResponse.SC_NOT_FOUND,
+                return new WADOStreamResponseObjectImpl(null, contentType,
+                        HttpServletResponse.SC_NOT_FOUND,
                         "DICOM object not found!");
             }
         } catch (IOException x) {
@@ -277,10 +280,9 @@ public class WADOSupport {
             if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
                 return getRemoteDICOMFile(nre.getHostname(), req);
             } else {
-                return new WADOStreamResponseObjectImpl(null,
-                        contentType,
+                return new WADOStreamResponseObjectImpl(null, contentType,
                         HttpServletResponse.SC_TEMPORARY_REDIRECT,
-                        getRedirectURL(nre.getHostname(), req).toString()); 
+                        getRedirectURL(nre.getHostname(), req).toString());
             }
         }
         if (CONTENT_TYPE_DICOM_XML.equals(contentType)) {
@@ -290,8 +292,8 @@ public class WADOSupport {
             resp = handleTextTransform(req, file, contentTypeDicomXML,
                     getDicomXslURL(), dict);
         } else if (CONTENT_TYPE_HTML.equals(contentType)) {
-            resp = handleTextTransform(req, file, contentType,
-                    getHtmlXslURL(), null);
+            resp = handleTextTransform(req, file, contentType, getHtmlXslURL(),
+                    null);
         } else if (CONTENT_TYPE_XHTML.equals(contentType)) {
             resp = handleTextTransform(req, file, contentType,
                     getXHtmlXslURL(), null);
@@ -310,13 +312,15 @@ public class WADOSupport {
         return resp;
     }
 
-	private boolean hasPermission(WADORequestObject req)
-			throws PolicyContextException, RemoteException, Exception {
-		if ( req.getRemoteUser() == null ) //not authorized -> all permitted
-			return true;
-		Subject subject = (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
-		return getStudyPermissionManager().hasPermission(req.getStudyUID(), StudyPermissionDTO.READ_ACTION, subject);
-	}
+    private boolean hasPermission(WADORequestObject req)
+            throws PolicyContextException, RemoteException, Exception {
+        if (req.getRemoteUser() == null) // not authorized -> all permitted
+            return true;
+        Subject subject = (Subject) PolicyContext
+                .getContext(SUBJECT_CONTEXT_KEY);
+        return getStudyPermissionManager().hasPermission(req.getStudyUID(),
+                StudyPermissionDTO.READ_ACTION, subject);
+    }
 
     /**
      * @param contentTypes
@@ -333,11 +337,11 @@ public class WADOSupport {
             return supportedContentTypes.get(0).toString();
         }
         contentTypes.retainAll(supportedContentTypes);// remove all
-                                                        // unsupported content
-                                                        // types
+        // unsupported content
+        // types
         if (!contentTypes.isEmpty()) {
             return contentTypes.get(0).toString(); // return the first item
-                                                    // (the most accurate)
+            // (the most accurate)
         } else {
             return null;
         }
@@ -390,12 +394,12 @@ public class WADOSupport {
                         CONTENT_TYPE_DICOM,
                         HttpServletResponse.SC_TEMPORARY_REDIRECT,
                         getRedirectURL(nre.getHostname(), req).toString()); // error
-                                                                            // message
-                                                                            // is
-                                                                            // set
-                                                                            // to
-                                                                            // redirect
-                                                                            // host!
+                // message
+                // is
+                // set
+                // to
+                // redirect
+                // host!
             }
         }
         if ("true".equals(req.getRequest().getParameter("useOrig"))) {
@@ -458,11 +462,10 @@ public class WADOSupport {
             ds = (FileDataSource) server.invoke(fileSystemMgtName,
                     "getDatasourceOfInstance", new Object[] { iuid },
                     new String[] { String.class.getName() });
-            Dataset d = ((FileDataSource) ds).getMergeAttrs();
+            Dataset d = ds.getMergeAttrs();
             if (req.getRequestParams().containsKey("privateTags")) {
-                ((FileDataSource) ds).setExcludePrivate("no"
-                        .equalsIgnoreCase(((String[]) req.getRequestParams()
-                                .get("privateTags"))[0]));
+                ds.setExcludePrivate("no".equalsIgnoreCase(((String[]) req
+                        .getRequestParams().get("privateTags"))[0]));
             }
             WADODatasourceResponseObjectImpl resp = new WADODatasourceResponseObjectImpl(
                     ds, transferSyntax, CONTENT_TYPE_DICOM,
@@ -475,7 +478,6 @@ public class WADOSupport {
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Unexpected error! Cant get updated dicom object");
         }
-
     }
 
     /**
@@ -483,11 +485,13 @@ public class WADOSupport {
      * @return
      */
     protected Dataset getPatientInfo(WADORequestObject req) {
-        log.debug("Get patient info from database for WADO request:"+req);
+        log.debug("Get patient info from database for WADO request:" + req);
         try {
-            return this.getContentManager().getInstanceInfo(req.getObjectUID(), false);
+            return this.getContentManager().getInstanceInfo(req.getObjectUID(),
+                    false);
         } catch (Exception e) {
-            log.error("Cant get Patient/Study info for "+req.getObjectUID(),e);
+            log.error("Cant get Patient/Study info for " + req.getObjectUID(),
+                    e);
             return dof.newDataset();
         }
     }
@@ -500,15 +504,15 @@ public class WADOSupport {
      * <p>
      * 
      * @param studyUID
-     *            The unique id of a study.
+     *                The unique id of a study.
      * @param seriesUID
-     *            The unique id of a series.
+     *                The unique id of a series.
      * @param instanceUID
-     *            The unique id of an instance.
+     *                The unique id of an instance.
      * @param rows
-     *            The number of pixel rows (integer String)
+     *                The number of pixel rows (integer String)
      * @param columns
-     *            the number of pixel columns (integer String)
+     *                the number of pixel columns (integer String)
      * 
      * @return The WADO response object containing the file of the image.
      */
@@ -526,7 +530,8 @@ public class WADOSupport {
 
         try {
             File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
-                    frameNumber, region, windowWidth, windowCenter, imageQuality);
+                    frameNumber, region, windowWidth, windowCenter,
+                    imageQuality);
             if (file != null) {
                 WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
                         new FileInputStream(file), CONTENT_TYPE_JPEG,
@@ -546,12 +551,12 @@ public class WADOSupport {
                         CONTENT_TYPE_JPEG,
                         HttpServletResponse.SC_TEMPORARY_REDIRECT,
                         getRedirectURL(nre.getHostname(), req).toString()); // error
-                                                                            // message
-                                                                            // is
-                                                                            // set
-                                                                            // to
-                                                                            // redirect
-                                                                            // host!
+                // message
+                // is
+                // set
+                // to
+                // redirect
+                // host!
             }
         } catch (NoImageException x1) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
@@ -578,14 +583,14 @@ public class WADOSupport {
      * @param columns
      * @param frameNumber
      * @param region
-     *            String representing a rectangular region of the image
+     *                String representing a rectangular region of the image
      * @param windowWidth
-     *            Decimal string indicating the contrast of the image.
+     *                Decimal string indicating the contrast of the image.
      * @param windowCenter
-     *            Decimal string indicating the luminosity of the image.
+     *                Decimal string indicating the luminosity of the image.
      * @param readDicom
-     *            Used to indicate if the image is read from the dicom file for
-     *            this request.
+     *                Used to indicate if the image is read from the dicom file
+     *                for this request.
      * @return
      * @throws IOException
      * @throws NeedRedirectionException
@@ -626,7 +631,10 @@ public class WADOSupport {
                             rows, columns, region, windowWidth, windowCenter,
                             imageQuality, suffix);
                 } catch (Exception x) {
-                    log.error("Error caching image file! Return image without caching!", x);
+                    log
+                            .error(
+                                    "Error caching image file! Return image without caching!",
+                                    x);
                     throw new ImageCachingException(bi);
                 }
             } else {
@@ -639,8 +647,7 @@ public class WADOSupport {
     /* _ */
 
     private WADOResponseObject handleTextTransform(WADORequestObject req,
-            File file, String contentType, String xslURL,
-            TagDictionary dict) {
+            File file, String contentType, String xslURL, TagDictionary dict) {
         try {
             DataInputStream in = new DataInputStream(new BufferedInputStream(
                     new FileInputStream(file)));
@@ -650,7 +657,8 @@ public class WADOSupport {
             parser.parseDcmFile(null, Tags.PixelData);
             Dataset dsCoerce = null;
             if (!"true".equals(req.getRequest().getParameter("useOrig"))) {
-                dsCoerce = this.getContentManager().getInstanceInfo( req.getObjectUID(), true );
+                dsCoerce = this.getContentManager().getInstanceInfo(
+                        req.getObjectUID(), true);
                 ds.putAll(dsCoerce);
             }
             if (log.isDebugEnabled()) {
@@ -682,7 +690,7 @@ public class WADOSupport {
 
     /**
      * @param htmlXslURL
-     *            The htmlXslURL to set.
+     *                The htmlXslURL to set.
      */
     public void setHtmlXslURL(String htmlXslURL) {
         this.htmlXslURL = htmlXslURL;
@@ -697,7 +705,7 @@ public class WADOSupport {
 
     /**
      * @param htmlXslURL
-     *            The htmlXslURL to set.
+     *                The htmlXslURL to set.
      */
     public void setXHtmlXslURL(String xslURL) {
         this.xhtmlXslURL = xslURL;
@@ -712,7 +720,7 @@ public class WADOSupport {
 
     /**
      * @param xmlXslURL
-     *            The xmlXslURL to set.
+     *                The xmlXslURL to set.
      */
     public void setXmlXslURL(String xmlXslURL) {
         this.xmlXslURL = xmlXslURL;
@@ -727,7 +735,7 @@ public class WADOSupport {
 
     /**
      * @param dicomXslURL
-     *            the dicomXslURL to set
+     *                the dicomXslURL to set
      */
     public void setDicomXslURL(String dicomXslURL) {
         this.dicomXslURL = dicomXslURL;
@@ -742,7 +750,7 @@ public class WADOSupport {
 
     /**
      * @param contentTypeDicomXML
-     *            the contentTypeDicomXML to set
+     *                the contentTypeDicomXML to set
      */
     public void setContentTypeDicomXML(String contentTypeDicomXML) {
         this.contentTypeDicomXML = contentTypeDicomXML;
@@ -776,11 +784,11 @@ public class WADOSupport {
      * Use the FileSystemMgtService MBean to localize the DICOM file.
      * 
      * @param studyUID
-     *            Unique identifier of the study.
+     *                Unique identifier of the study.
      * @param seriesUID
-     *            Unique identifier of the series.
+     *                Unique identifier of the series.
      * @param instanceUID
-     *            Unique identifier of the instance.
+     *                Unique identifier of the instance.
      * 
      * @return The File object or null if not found.
      * 
@@ -795,7 +803,7 @@ public class WADOSupport {
                             .getName() });
 
         } catch (Exception e) {
-            log.error("Failed to get DICOM file:"+instanceUID, e);
+            log.error("Failed to get DICOM file:" + instanceUID, e);
         }
         if (dicomObject == null)
             return null; // not found!
@@ -845,13 +853,13 @@ public class WADOSupport {
      * Tries to get the DICOM file from an external WADO service.
      * 
      * @param hostname
-     *            Hostname of remote WADO service.
+     *                Hostname of remote WADO service.
      * @param studyUID
-     *            Unique identifier of the study.
+     *                Unique identifier of the study.
      * @param seriesUID
-     *            Unique identifier of the series.
+     *                Unique identifier of the series.
      * @param instanceUID
-     *            Unique identifier of the instance.
+     *                Unique identifier of the instance.
      * 
      * @return The File object or null if not found.
      */
@@ -898,8 +906,7 @@ public class WADOSupport {
                         req.getStudyUID(), req.getSeriesUID(),
                         req.getObjectUID(), req.getRows(), req.getColumns(),
                         req.getRegion(), req.getWindowWidth(),
-                        req.getWindowCenter(), req.getImageQuality(),
-                        suffix);
+                        req.getWindowCenter(), req.getImageQuality(), suffix);
                 is = new FileInputStream(file);
             }
             return new WADOStreamResponseObjectImpl(is, conn.getContentType(),
@@ -907,12 +914,14 @@ public class WADOSupport {
         } catch (Exception e) {
             log.error("Can't connect to remote WADO service:" + url, e);
             e.printStackTrace();
-            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
+            return new WADOStreamResponseObjectImpl(
+                    null,
+                    CONTENT_TYPE_JPEG,
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Redirect to find requested object failed! (Can't connect to remote WADO service:"+url+")!");
+                    "Redirect to find requested object failed! (Can't connect to remote WADO service:"
+                            + url + ")!");
         }
     }
-
 
     /**
      * Get the image from DICOM file.
@@ -921,18 +930,18 @@ public class WADOSupport {
      * scaled.
      * 
      * @param file
-     *            A DICOM file.
+     *                A DICOM file.
      * @param frame
      * @param rows
-     *            Image height in pixel.
+     *                Image height in pixel.
      * @param columns
-     *            Image width in pixel.
+     *                Image width in pixel.
      * @param region
-     *            String representing a rectangular region of the image
+     *                String representing a rectangular region of the image
      * @param windowWidth
-     *            Decimal string representing the contrast of the image.
+     *                Decimal string representing the contrast of the image.
      * @param windowCenter
-     *            Decimal string representing the luminosity of the image.
+     *                Decimal string representing the luminosity of the image.
      * 
      * @return
      * @throws IOException
@@ -994,11 +1003,11 @@ public class WADOSupport {
      * Resize the given image.
      * 
      * @param bi
-     *            The image as BufferedImage.
+     *                The image as BufferedImage.
      * @param rows
-     *            Image height in pixel.
+     *                Image height in pixel.
      * @param columns
-     *            Image width in pixel.
+     *                Image width in pixel.
      * 
      * @return
      */
@@ -1039,7 +1048,7 @@ public class WADOSupport {
      * This bean is used to retrieve the DICOM object.
      * 
      * @param fileSystemMgtName
-     *            The fileSystemMgtName to set.
+     *                The fileSystemMgtName to set.
      */
     public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
         this.fileSystemMgtName = fileSystemMgtName;
@@ -1062,7 +1071,7 @@ public class WADOSupport {
      * This bean is used to create Audit Logs.
      * 
      * @param name
-     *            The Audit Logger Name to set.
+     *                The Audit Logger Name to set.
      */
     public void setAuditLoggerName(ObjectName name) {
         this.auditLogName = name;
@@ -1095,7 +1104,7 @@ public class WADOSupport {
      * <code>null</code> means 'ALL'
      * 
      * @param disabledLogHosts
-     *            The disabledLogHosts to set.
+     *                The disabledLogHosts to set.
      */
     public void setDisabledAuditLogHosts(Set disabledLogHosts) {
         this.disabledAuditLogHosts = disabledLogHosts;
@@ -1114,7 +1123,7 @@ public class WADOSupport {
 
     /**
      * @param disableDNS
-     *            the disableDNS to set
+     *                the disableDNS to set
      */
     public void setDisableDNS(boolean disableDNS) {
         this.disableDNS = disableDNS;
@@ -1129,7 +1138,7 @@ public class WADOSupport {
 
     /**
      * @param useTransferSyntaxOfFileAsDefault
-     *            The useTransferSyntaxOfFileAsDefault to set.
+     *                The useTransferSyntaxOfFileAsDefault to set.
      */
     public void setUseTransferSyntaxOfFileAsDefault(
             boolean useTransferSyntaxOfFileAsDefault) {
@@ -1145,7 +1154,7 @@ public class WADOSupport {
 
     /**
      * @param extendedWADOAllowed
-     *            The extendedWADOAllowed to set.
+     *                The extendedWADOAllowed to set.
      */
     public void setExtendedWADOAllowed(boolean extendedWADOAllowed) {
         this.extendedWADOAllowed = extendedWADOAllowed;
@@ -1160,7 +1169,7 @@ public class WADOSupport {
 
     /**
      * @param extendedWADORequestType
-     *            The extendedWADORequestType to set.
+     *                The extendedWADORequestType to set.
      */
     public void setExtendedWADORequestType(String extendedWADORequestType) {
         this.extendedWADORequestType = extendedWADORequestType;
@@ -1177,7 +1186,7 @@ public class WADOSupport {
 
     /**
      * @param sopCuids
-     *            The sopCuids to set.
+     *                The sopCuids to set.
      */
     public void setTextSopCuids(Map sopCuids) {
         if (sopCuids != null && !sopCuids.isEmpty())
@@ -1208,11 +1217,12 @@ public class WADOSupport {
         if (!isAuditLogIHEYr4())
             return;
         Dataset ds = resp.getPatInfo();
-        Patient patient = alf.newPatient(ds.getString(Tags.PatientID),
-                ds.getString(Tags.PatientName));
-        String remoteHost = disableDNS ? req.getRemoteAddr() : 
-                req.getRemoteHost();
-        RemoteNode rnode = alf.newRemoteNode(req.getRemoteAddr(), remoteHost, null);
+        Patient patient = alf.newPatient(ds.getString(Tags.PatientID), ds
+                .getString(Tags.PatientName));
+        String remoteHost = disableDNS ? req.getRemoteAddr() : req
+                .getRemoteHost();
+        RemoteNode rnode = alf.newRemoteNode(req.getRemoteAddr(), remoteHost,
+                null);
         String suid = ds.getString(Tags.StudyInstanceUID);
         try {
             server.invoke(auditLogName, "logInstancesSent", new Object[] {
@@ -1244,18 +1254,18 @@ public class WADOSupport {
     }
 
     private ContentManager getContentManager() throws Exception {
-        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
-                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+                .getFactory().lookup(ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
         return home.create();
     }
-    
+
     private StudyPermissionManager getStudyPermissionManager() throws Exception {
-    	StudyPermissionManagerHome home = (StudyPermissionManagerHome) EJBHomeFactory.getFactory().lookup(
-                StudyPermissionManagerHome.class,
-                StudyPermissionManagerHome.JNDI_NAME);
-    	return home.create();
+        StudyPermissionManagerHome home = (StudyPermissionManagerHome) EJBHomeFactory
+                .getFactory().lookup(StudyPermissionManagerHome.class,
+                        StudyPermissionManagerHome.JNDI_NAME);
+        return home.create();
     }
-    
 
     /**
      * Inner exception class to handle WADO redirection.
@@ -1277,7 +1287,7 @@ public class WADOSupport {
          * Creates a NeedRedirectionException instance.
          * 
          * @param hostname
-         *            the target of redirection.
+         *                the target of redirection.
          */
         public NeedRedirectionException(String hostname) {
             this.hostname = hostname;
