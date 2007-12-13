@@ -264,14 +264,14 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         return detectFileFormat(b);
     }
 
-    private FileFormat detectFileFormat(byte[] b) throws DcmParseException
+    private FileFormat detectFileFormat(byte[] b) throws DcmParseException, IOException
     {
         boolean bigEndian = b[1] != 0;
         int tag = bigEndian
             ? (b[0] & 0xff) << 24 | (b[1] & 0xff) << 16 | (b[2] & 0xff) << 8 | (b[3] & 0xff)
             : (b[1] & 0xff) << 24 | (b[0] & 0xff) << 16 | (b[3] & 0xff) << 8 | (b[2] & 0xff);
         if (tag == MGLIB_MAGIC) {
-            return FileFormat.MGLIB;
+            return detectMglibFileFormat(b);
         }
         boolean fmi = (tag & 0xffff0000) == 0x00020000;
         int vr = ((b[4] & 0xff) << 8) | (b[5] & 0xff);
@@ -305,6 +305,22 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         }
         throw new DcmParseException("Unknown Format");
     }
+    
+    private FileFormat detectMglibFileFormat(byte[] b) throws IOException {
+		String s;
+		boolean compressed = false;
+		while ((s = in.readLine()) != null) {
+			rPos += s.length() + 1;
+			if ("ENDINFO".equals(s)) {
+				break;
+			}
+			if ("COMPRESSION MG1.1".equals(s)) {
+				compressed = true;
+			}
+		}
+
+		return (compressed ? FileFormat.MGLIB_COMPRESSED : FileFormat.MGLIB);
+	}
     
     public int parseHeader() throws IOException {
         eof = false;
@@ -460,9 +476,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
            handler.startDcmFile();
        DcmDecodeParam param = format.decodeParam;
        rPos = 0L;
-       if (format.mglib) {
-           skipMglibHeader();
-       } else if (format.hasFileMetaInfo) {
+       if (format.hasFileMetaInfo) {
            tsUID = null;
            parseFileMetaInfo(format.hasPreamble, format.decodeParam);
            if (tsUID == null)
@@ -474,16 +488,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
        if (handler != null)
            handler.endDcmFile();
        return rPos;
-    }
-    
-    private void skipMglibHeader() throws IOException {
-        String s;
-        while ((s = in.readLine()) != null) {
-            rPos += s.length() + 1;
-            if  ("ENDINFO".equals(s)) {
-                break;
-            }
-        }
     }
 
     public long parseItemDataset() throws IOException {

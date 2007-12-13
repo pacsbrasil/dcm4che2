@@ -111,4 +111,7 @@ public class FileFormat {
 
     public static final FileFormat MGLIB =
             new FileFormat(false, false, DcmDecodeParam.IVR_LE, true);
+    
+    public static final FileFormat MGLIB_COMPRESSED =
+    		new FileFormat(false, false, DcmDecodeParam.IVR_LE, true);
 }
