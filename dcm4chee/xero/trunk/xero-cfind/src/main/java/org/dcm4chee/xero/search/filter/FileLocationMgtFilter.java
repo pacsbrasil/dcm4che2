@@ -49,6 +49,7 @@ import javax.management.ObjectName;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
@@ -137,8 +138,11 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    /** Returns the URL of the local file for the given image bean */
    public static URL findImageBeanUrl(DicomObjectType dot, FilterItem filterItem, Map<String, Object> params) {
-	  Map<String,Object> newParams = new HashMap<String,Object>();
-	  newParams.put("objectUID",dot.getSOPInstanceUID());
+	  Map<String, Object> newParams = new HashMap<String, Object>();
+	  newParams.put("objectUID", dot.getSOPInstanceUID());
+	  if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilterBase.NO_CACHE))) {
+		 newParams.put("no-cache", "true");
+	  }
 	  URL location = (URL) filterItem.callNamedFilter("fileLocation", newParams);
 	  return location;
    }
@@ -154,6 +158,9 @@ public class FileLocationMgtFilter implements Filter<URL> {
 		 // This request is used for filters where the request is for some other objects, and the
 		 // UID is required.
 		 newParams = new HashMap<String, Object>();
+		 if( "true".equalsIgnoreCase((String) params.get(MemoryCacheFilterBase.NO_CACHE))) {
+			newParams.put("no-cache", "true");
+		 }
 		 newParams.put("objectUID", uid);
 	  }
 	  Object ret = filterItem.callNamedFilter("fileLocation", newParams);

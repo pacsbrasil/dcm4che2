@@ -76,7 +76,7 @@ public class DicomFileLocationFilter implements Filter<URL> {
 	 * @todo change the host to be configurable. */
 	protected String createWadoUrl(Map<String, ?> args) {
 		StringBuffer ret = new StringBuffer(
-				"http://localhost:8080/wado?requestType=WADO&contentType=application%2Fdicom");
+				"http://localhost/wado?requestType=WADO&contentType=application%2Fdicom");
 		for(String key : wadoRequired ) {
 			Object value = args.get(key);
 			String strValue = (value==null ? null : value.toString().trim());

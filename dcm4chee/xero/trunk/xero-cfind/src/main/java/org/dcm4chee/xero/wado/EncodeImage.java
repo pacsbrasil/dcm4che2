@@ -135,8 +135,13 @@ class ImageServletResponseItem implements ServletResponseItem {
 
    WadoImage wadoImage;
 
+   // TODO Make this come from metadata
+   // CLIB version
    static String preferred_name_start = "com.sun.media.imageioimpl.plugins";
+   // Agfa proprietary version
    //static String preferred_name_start = "com.agfa";
+   // Pure Java version
+   //static String preferred_name_start = "com.sun.imageio.plugins";
    
    /**
      * Create an image servlet response to write the given image to the response
