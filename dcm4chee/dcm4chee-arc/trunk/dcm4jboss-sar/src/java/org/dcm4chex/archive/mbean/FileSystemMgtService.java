@@ -815,7 +815,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     || checkDiskSpace
                     && !checkStorageFileSystem(fsDTO))
                 if (!switchStorageFileSystem(fsmgt, fsDTO))
-                    return null;
+                    storageFileSystem = null;
         }
         return storageFileSystem;
     }
