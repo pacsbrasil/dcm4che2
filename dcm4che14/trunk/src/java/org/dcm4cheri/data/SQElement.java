@@ -234,7 +234,7 @@ class SQElement extends DcmElementImpl
      * @return               Description of the Return Value
      */
     protected boolean matchValue(DcmElement key, boolean ignorePNCase, boolean ignoreEmpty,
-            Charset keyCS, Charset dsCS)
+    		SpecificCharacterSet keyCS, SpecificCharacterSet dsCS)
     {
         for (int i = 0, m = key.countItems(); i < m; ++i) {
             Dataset keys = key.getItem(i);
