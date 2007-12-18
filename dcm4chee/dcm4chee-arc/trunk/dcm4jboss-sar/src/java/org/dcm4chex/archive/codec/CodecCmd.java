@@ -112,8 +112,6 @@ public abstract class CodecCmd {
 
     protected final int frameLength;
 
-    protected final int pixelDataLength;
-
     protected final int bitsUsed;
 
     protected CodecCmd(Dataset ds) {
@@ -127,7 +125,6 @@ public abstract class CodecCmd {
         this.pixelRepresentation = ds.getInt(Tags.PixelRepresentation, 0);
         this.planarConfiguration = ds.getInt(Tags.PlanarConfiguration, 0);
         this.frameLength = rows * columns * samples * bitsAllocated / 8;
-        this.pixelDataLength = frameLength * frames;
     }
 
     private boolean isOverlayInPixelData(Dataset ds) {
@@ -139,8 +136,8 @@ public abstract class CodecCmd {
         return false;
     }
 
-    public final int getPixelDataLength() {
-        return pixelDataLength;
+    public int getPixelDataLength() {
+        return frames * frameLength;
     }
 
     protected BufferedImage createBufferedImage() {

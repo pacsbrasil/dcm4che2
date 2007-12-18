@@ -92,6 +92,8 @@ public class DecompressCmd extends CodecCmd {
 
     private String tsuid;
 
+    private int[] simpleFrameList;
+
     public static byte[] decompressFile(File inFile, File outFile,
             String outTS, int pxdataVR, byte[] buffer) throws Exception {
         log.info("M-READ file:" + inFile);
@@ -178,9 +180,10 @@ public class DecompressCmd extends CodecCmd {
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
             bi = createBufferedImage();
-            for (int i = 0; i < frames; ++i) {
-                log.debug("start decompression of frame #" + (i + 1));
-                reader.setInput(itemStream(i));
+            for (int i = 0, n = getNumberOfFrames(); i < n; ++i) {
+                int frame = simpleFrameList != null ? (simpleFrameList[i]-1) : i;
+                log.debug("start decompression of frame #" + (frame + 1));
+                reader.setInput(itemStream(frame));
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
                 bi = reader.read(0, param);
@@ -188,7 +191,7 @@ public class DecompressCmd extends CodecCmd {
                 // J2KImageReaderCodecLib.setInput()
                 if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
                     reader.dispose();
-                    reader = i < frames - 1 ? f
+                    reader = i < n - 1 ? f
                             .getReaderForTransferSyntax(tsuid) : null;
                 } else {
                     reader.reset();
@@ -277,4 +280,15 @@ public class DecompressCmd extends CodecCmd {
         }
     }
 
+    public void setSimpleFrameList(int[] simpleFrameList) {
+        this.simpleFrameList = simpleFrameList;
+    }
+
+    public int getPixelDataLength() {
+        return getNumberOfFrames() * frameLength;
+    }
+
+    private int getNumberOfFrames() {
+        return simpleFrameList != null ? simpleFrameList.length : frames;
+    }
 }

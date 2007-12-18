@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import javax.imageio.stream.FileImageInputStream;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -55,6 +56,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.DataSource;
+import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.jboss.logging.Logger;
 
@@ -65,7 +67,15 @@ import org.jboss.logging.Logger;
  */
 public class FileDataSource implements DataSource {
 
-    private static final Logger log = Logger.getLogger(FileDataSource.class);;
+    private static final Logger log = Logger.getLogger(FileDataSource.class);
+    private static final Dataset EXTRACTED_FRAMES;
+
+    static { //TODO final DCM code value not yet available
+        EXTRACTED_FRAMES = DcmObjectFactory.getInstance().newDataset();
+        EXTRACTED_FRAMES.putLO(Tags.CodeValue, "121350");
+        EXTRACTED_FRAMES.putSH(Tags.CodingSchemeDesignator, "99DCM4CHEE");
+        EXTRACTED_FRAMES.putLO(Tags.CodeMeaning, "EXTRACTED FRAMES");
+    }
     private final File file;
     private final Dataset mergeAttrs;
     private final byte[] buffer;
@@ -74,6 +84,9 @@ public class FileDataSource implements DataSource {
     private boolean writeFile = false;
     private boolean withoutPixeldata = false;
     private boolean excludePrivate = false;
+    private int[] simpleFrameList;
+    private int[] calculatedFrameList;
+    private Dataset contributingEquipment;
 
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
         this.file = file;
@@ -110,29 +123,81 @@ public class FileDataSource implements DataSource {
         this.withoutPixeldata = withoutPixelData;
     }
 
-    public boolean isExcludePrivate() {
+    public final boolean isExcludePrivate() {
         return excludePrivate;
     }
 
-    public void setExcludePrivate(boolean excludePrivate) {
+    public final void setExcludePrivate(boolean excludePrivate) {
         this.excludePrivate = excludePrivate;
     }
 
-    public File getFile() {
+    public final void setSimpleFrameList(int[] simpleFrameList) {
+        if (calculatedFrameList != null) {
+            if (calculatedFrameList != null) {
+                throw new IllegalStateException();
+            }
+            if (simpleFrameList.length == 0) {
+                throw new IllegalArgumentException();
+            }
+            for (int i = 0; i < simpleFrameList.length; i++) {
+                if (simpleFrameList[i] <= 0) {
+                    throw new IllegalArgumentException();
+                }
+                if (i != 0 && calculatedFrameList[i]
+                           <= calculatedFrameList[i-1]) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
+        this.simpleFrameList = simpleFrameList;
+    }
+
+    public final void setCalculatedFrameList(int[] calculatedFrameList) {
+        if (calculatedFrameList != null) {
+            if (simpleFrameList != null) {
+                throw new IllegalStateException();
+            }
+            if (calculatedFrameList.length == 0) {
+                throw new IllegalArgumentException();
+            }
+            if (calculatedFrameList.length % 3 != 0) {
+                throw new IllegalArgumentException();
+            }
+            for (int i = 0; i < calculatedFrameList.length; i++) {
+                if (calculatedFrameList[i] <= 0) {
+                    throw new IllegalArgumentException();
+                }
+                switch (i % 3) {
+                case 0:
+                    if (i != 0 && calculatedFrameList[i]
+                               <= calculatedFrameList[i-2]) {
+                        throw new IllegalArgumentException();
+                    }
+                    break;
+                case 1:
+                    if (i != 0 && calculatedFrameList[i]
+                               < calculatedFrameList[i-1]) {
+                        throw new IllegalArgumentException();
+                    }
+                    break;
+                }
+            }
+        }
+        this.calculatedFrameList = calculatedFrameList;
+    }
+
+    public final void setContributingEquipment(Dataset contributingEquipment) {
+        this.contributingEquipment = contributingEquipment;
+    }
+
+    public final File getFile() {
         return file;
     }
 
-    public Dataset getMergeAttrs() {
+    public final Dataset getMergeAttrs() {
         return mergeAttrs;
     }
 
-    /**
-     * 
-     * @param out
-     * @param tsUID
-     * @param writeFile
-     * @throws IOException
-     */
     public void writeTo(OutputStream out, String tsUID) throws IOException {
 
         log.info("M-READ file:" + file);
@@ -148,6 +213,26 @@ public class FileDataSource implements DataSource {
                 parser.parseDataset(parser.getDcmDecodeParam(), -1);
             }
             ds.putAll(mergeAttrs);
+            int framesInFile = ds.getInt(Tags.NumberOfFrames, 1);
+            if (simpleFrameList != null) {
+                if (simpleFrameList[simpleFrameList.length - 1] > framesInFile) {
+                    throw new RequestedFrameNumbersOutOfRangeException();
+                }
+            } else if (calculatedFrameList != null) {
+                if (calculatedFrameList[0] > framesInFile) {
+                    throw new RequestedFrameNumbersOutOfRangeException();
+                }
+                simpleFrameList = calculateFrameList(framesInFile);
+            }
+            if (framesInFile == 1) {
+                simpleFrameList = null;
+            }
+            if (simpleFrameList != null) {
+                addSourceImageSeq(ds);
+                addContributingEquipmentSeq(ds);
+                adjustNumberOfFrames(ds);
+                replaceIUIDs(ds);
+            }
             String tsOrig = DecompressCmd.getTransferSyntax(ds);
             if (writeFile) {
                 if (tsUID != null) {
@@ -172,13 +257,13 @@ public class FileDataSource implements DataSource {
             int len = parser.getReadLength();
             if (len == -1 && !enc.encapsulated) {
                 DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
+                cmd.setSimpleFrameList(simpleFrameList);
                 len = cmd.getPixelDataLength();
                 log.debug("Dataset:\n");
                 log.debug(ds);
                 write(ds, out, enc);
-                ds
-                        .writeHeader(out, enc, Tags.PixelData, VRs.OW,
-                                (len + 1) & ~1);
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, 
+                        (len + 1) & ~1);
                 try {
                     cmd.decompress(enc.byteOrder, out);
                 } catch (IOException e) {
@@ -196,14 +281,49 @@ public class FileDataSource implements DataSource {
                     ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
                     parser.parseHeader();
                     int itemlen;
-                    while (parser.getReadTag() == Tags.Item) {
+                    if (simpleFrameList != null) {
                         itemlen = parser.getReadLength();
-                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-                        copy(fiis, out, itemlen, buffer);
+                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
+                        fiis.skipBytes(itemlen);
                         parser.parseHeader();
+                        for (int srcFrame = 1, destFrame = 0;
+                                parser.getReadTag() == Tags.Item; srcFrame++) {
+                            itemlen = parser.getReadLength();
+                            if (destFrame < simpleFrameList.length
+                                    && srcFrame == simpleFrameList[destFrame]) {
+                                ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+                                copy(fiis, out, itemlen, buffer);
+                                destFrame++;
+                            } else {
+                                fiis.skipBytes(itemlen);
+                            }
+                            parser.parseHeader();
+                        }
+                    } else {
+                        while (parser.getReadTag() == Tags.Item) {
+                            itemlen = parser.getReadLength();
+                            ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+                            copy(fiis, out, itemlen, buffer);
+                            parser.parseHeader();
+                        }
                     }
                     ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
                             VRs.NONE, 0);
+                } else if (simpleFrameList != null) {
+                    int frameLength = len / framesInFile;
+                    int newPixelDataLength =
+                        frameLength * simpleFrameList.length;
+                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
+                            (newPixelDataLength+1)&~1);
+                    long pixelDataPos = fiis.getStreamPosition();
+                    for (int i = 0; i < simpleFrameList.length; i++) {
+                        fiis.seek(pixelDataPos
+                                + frameLength * (simpleFrameList[i]-1));
+                        copy(fiis, out, frameLength, buffer);
+                    }
+                    if ((newPixelDataLength & 1) != 0)
+                        out.write(0);
+                    fiis.seek(pixelDataPos + len);
                 } else {
                     ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, len);
                     copy(fiis, out, len, buffer);
@@ -217,6 +337,64 @@ public class FileDataSource implements DataSource {
             } catch (IOException ignore) {
             }
         }
+    }
+    
+    private void adjustNumberOfFrames(Dataset ds) {
+        ds.putIS(Tags.NumberOfFrames, simpleFrameList.length);
+        DcmElement src = ds.remove(Tags.PerFrameFunctionalGroupsSeq);
+        if (src != null) {
+            DcmElement dest = ds.putSQ(Tags.PerFrameFunctionalGroupsSeq);
+            for (int i = 0; i < simpleFrameList.length; i++) {
+                dest.addItem(src.getItem(simpleFrameList[i]-1));
+            }
+        }
+    }
+
+    private void addContributingEquipmentSeq(Dataset ds) {
+        if (contributingEquipment != null) {
+            getOrPutSQ(ds, Tags.ContributingEquipmentSeq)
+                    .addItem(contributingEquipment);
+        }
+    }
+
+    private void addSourceImageSeq(Dataset ds) {
+        DcmElement seq = getOrPutSQ(ds, Tags.SourceImageSeq);
+        Dataset item = seq.addNewItem();
+        item.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
+        item.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
+        item.putIS(Tags.RefFrameNumber, simpleFrameList);
+        item.putSQ(Tags.PurposeOfReferenceCodeSeq).addItem(EXTRACTED_FRAMES);
+    }
+
+    private DcmElement getOrPutSQ(Dataset ds, int tag) {
+        DcmElement seq = ds.putSQ(Tags.SourceImageSeq);
+        return seq != null ? seq : ds.putSQ(Tags.SourceImageSeq);
+    }
+
+    private void replaceIUIDs(Dataset ds) {
+        UIDGenerator uidgen = UIDGenerator.getInstance();
+        ds.putUI(Tags.SOPInstanceUID, uidgen.createUID());
+        ds.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
+    }
+    
+    private int[] calculateFrameList(int frames) {
+        int[] src = new int[frames];
+        int length = 0;
+        addFrame:
+        for (int i = 0; i < calculatedFrameList.length;) {
+            for (int f = calculatedFrameList[i++],
+                    last = calculatedFrameList[i++],
+                    step = calculatedFrameList[i++];
+                    f <= last; f += step) {
+                if (f > frames) {
+                    break addFrame;
+                }
+                src[length++] = f;
+            }
+        }
+        int[] dest = new int[length];
+        System.arraycopy(src, 0, dest, 0, length);
+        return dest;
     }
 
     private void write(Dataset ds, OutputStream out, DcmEncodeParam enc)

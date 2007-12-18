@@ -109,6 +109,7 @@ import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 import org.dcm4chex.wado.mbean.xml.DatasetXMLResponseObject;
+import org.dcm4chex.wado.web.WADORequestObjectImpl;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -134,6 +135,19 @@ public class WADOSupport {
     public static final String CONTENT_TYPE_PLAIN = "text/plain";
 
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
+
+    private static final String ERROR_INVALID_SIMPLE_FRAME_LIST =
+            "Error: simpleFrameList parameter is invalid! Must be a comma " +
+            "separated list of positive integer strings in ascending order.";
+
+    private static final String ERROR_INVALID_CALCULATED_FRAME_LIST =
+            "Error: calculatedFrameList parameter is invalid! Must be a comma " +
+            "separated list of triples of integer strings, defining " +
+            "non-overlapping ranges of frame numbers.";
+
+    private static final String ERROR_SIMPLE_AND_CALCULATED_FRAME_LIST =
+            "Error: use of simpleFrameList and calculatedFrameList parameter" +
+            " are mutually exclusive.";
 
     private static Logger log = Logger.getLogger(WADOService.class.getName());
 
@@ -454,6 +468,21 @@ public class WADOSupport {
         return transferSyntax;
     }
 
+    private static int[] parseInts(String s) {
+        if (s == null) {
+            return null;
+        }
+        String[] ss = s.split(",");
+        if (ss.length == 0) {
+            throw new IllegalArgumentException();
+        }
+        int[] frameList = new int[ss.length];
+        for (int i = 0; i < frameList.length; i++) {
+            frameList[i] = Integer.parseInt(ss[i].trim());
+        }
+        return frameList;
+    }
+
     private WADOResponseObject getUpdatedInstance(WADORequestObject req,
             String transferSyntax) {
         String iuid = req.getObjectUID();
@@ -463,9 +492,28 @@ public class WADOSupport {
                     "getDatasourceOfInstance", new Object[] { iuid },
                     new String[] { String.class.getName() });
             Dataset d = ds.getMergeAttrs();
-            if (req.getRequestParams().containsKey("privateTags")) {
-                ds.setExcludePrivate("no".equalsIgnoreCase(((String[]) req
-                        .getRequestParams().get("privateTags"))[0]));
+            ds.setExcludePrivate(req.isExcludePrivate());
+            try {
+                ds.setSimpleFrameList(parseInts(req.getSimpleFrameList()));
+            } catch (IllegalArgumentException iae) {
+                return new WADOStreamResponseObjectImpl(null,
+                        CONTENT_TYPE_DICOM,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        ERROR_INVALID_SIMPLE_FRAME_LIST);
+            }
+            try {
+                ds.setCalculatedFrameList(
+                        parseInts(req.getCalculatedFrameList()));
+            } catch (IllegalStateException ise) {
+                return new WADOStreamResponseObjectImpl(null,
+                        CONTENT_TYPE_DICOM,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        ERROR_SIMPLE_AND_CALCULATED_FRAME_LIST);
+            } catch (IllegalArgumentException iae) {
+                return new WADOStreamResponseObjectImpl(null,
+                        CONTENT_TYPE_DICOM,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        ERROR_INVALID_CALCULATED_FRAME_LIST);
             }
             WADODatasourceResponseObjectImpl resp = new WADODatasourceResponseObjectImpl(
                     ds, transferSyntax, CONTENT_TYPE_DICOM,

@@ -63,18 +63,18 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
 
     private static Logger log = Logger.getLogger(WADOService.class.getName());
 
-    private String reqType;
-    private Map headerMap;
-    private Map paramMap;
-    private List allowedContentTypes = null;
+    protected String reqType;
+    protected Map headerMap;
+    protected Map paramMap;
+    protected List allowedContentTypes = null;
 
-    private String reqURL;
-    private String errMsg;
+    protected String reqURL;
+    protected String errMsg;
 
-    private String remoteAddr;
-    private String remoteHost = null;
-    private String remoteUser;
-    private HttpServletRequest request;
+    protected String remoteAddr;
+    protected String remoteHost = null;
+    protected String remoteUser;
+    protected HttpServletRequest request;
 
     /**
      * Initialize an RequestObject with http request.

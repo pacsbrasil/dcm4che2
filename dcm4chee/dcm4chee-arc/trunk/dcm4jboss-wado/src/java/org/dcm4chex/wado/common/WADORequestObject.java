@@ -139,4 +139,10 @@ public interface WADORequestObject extends BasicRequestObject {
      */
     String getImageQuality();
 
+    boolean isExcludePrivate();
+
+    String getSimpleFrameList();
+
+    String getCalculatedFrameList();
+
 }

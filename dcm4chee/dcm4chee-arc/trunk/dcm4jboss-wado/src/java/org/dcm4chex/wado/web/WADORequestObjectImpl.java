@@ -42,7 +42,6 @@ package org.dcm4chex.wado.web;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -111,7 +110,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
 
     private String imageQuality;
 
-    private List contentTypes = null;
+    private List contentTypes;
 
     /**
      * Creates a WADORequestObjectImpl instance configured with http request.
@@ -332,7 +331,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
         return OK;
     }
 
-    /**
+/**
      * Checks that the region string's value is valid. Throws
      * <code>IllegalArgumentException</code> if it isn't.
      * 
@@ -447,15 +446,26 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("WADO request:");
-        Map mapParam = this.getRequestParams();
-        Iterator iter = mapParam.keySet().iterator();
+        Iterator iter = paramMap.keySet().iterator();
         Object key;
         while (iter.hasNext()) {
             key = iter.next();
             sb.append("&").append(key).append("=").append(
-                    ((String[]) mapParam.get(key))[0]);
+                    ((String[]) paramMap.get(key))[0]);
         }
         return sb.toString();
+    }
+
+    public boolean isExcludePrivate() {
+        return "no".equalsIgnoreCase(request.getParameter("privateTags"));
+    }
+
+    public String getSimpleFrameList() {
+        return request.getParameter("simpleFrameList");
+    }
+
+    public String getCalculatedFrameList() {
+        return request.getParameter("calculatedFrameList");
     }
 
 }
