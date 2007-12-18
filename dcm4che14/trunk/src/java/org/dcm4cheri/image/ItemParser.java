@@ -193,6 +193,8 @@ public class ItemParser implements StreamSegmentMapper {
     }
     
     public void seekFooter() throws IOException {
+        while (!lastItemSeen)
+            next();
         iis.seek(last().nextItemPos());
         parser.parseHeader();
     }
