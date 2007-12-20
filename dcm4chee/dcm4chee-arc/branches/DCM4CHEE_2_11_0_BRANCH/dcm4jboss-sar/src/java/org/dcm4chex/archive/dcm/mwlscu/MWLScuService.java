@@ -47,6 +47,7 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
@@ -84,6 +85,8 @@ public class MWLScuService extends AbstractScuService {
     /** DICOM priority. Used for move and media creation action. */
     private int priority = 0;
 
+    private boolean forceMatchingKeyCheck;
+
     /**
      * Returns the AET that holds the work list (Modality Work List SCP).
      * 
@@ -114,6 +117,14 @@ public class MWLScuService extends AbstractScuService {
                     + MIN_MAX_RESULT);
         }
         this.maxResults = maxResults;
+    }
+
+    public boolean isForceMatchingKeyCheck() {
+        return forceMatchingKeyCheck;
+    }
+
+    public void setForceMatchingKeyCheck(boolean forceMatchingKeyCheck) {
+	this.forceMatchingKeyCheck = forceMatchingKeyCheck;
     }
 
     public final boolean isLocal() {
@@ -227,6 +238,16 @@ public class MWLScuService extends AbstractScuService {
                 Dimse mcRQ = AssociationFactory.getInstance().newDimse(PCID, cmd,
                         searchDS);
                 final int[] pendingStatus = { 0xff00 };
+                final int[] received = { 0 };
+                final int[] ignored = { 0 };
+                final Dataset keys = DcmObjectFactory.getInstance().newDataset();
+                if (forceMatchingKeyCheck) {
+                    keys.putAll(searchDS.subSet(new int[]{ Tags.AccessionNumber, Tags.StudyInstanceUID }));
+	            Dataset spsItem = searchDS.getItem(Tags.SPSSeq);
+	            if ( spsItem != null && spsItem.containsValue(Tags.SPSID)) {
+	              	keys.putSQ(Tags.SPSSeq).addItem(spsItem.subSet( new int[]{Tags.SPSID} ));
+	            }
+                }
                 aa.invoke(mcRQ, new DimseListener(){
 
                     public void dimseReceived(Association assoc, Dimse dimse) {
@@ -236,12 +257,19 @@ public class MWLScuService extends AbstractScuService {
                                 pendingStatus[0] = rspCmd.getStatus();
                                 Dataset rsp = dimse.getDataset();
                                 logResponse(rsp);
-                                if (result.size() < maxResults) {
-                                    result.add(rsp);
-                                    if (result.size() == maxResults) {
-                                        log.info("Cancel MWL FIND operation after receive of "
-                                                + maxResults + " pending C-FIND RSP.");
-                                        cancelFind(assoc);
+                                if (received[0] < maxResults) {
+                                    received[0]++;
+                                    if ( keys.isEmpty() || keys.match(rsp, true, true)) {
+                                        result.add(rsp);
+	                                if (received[0] == maxResults) {
+	                                    log.info("Cancel MWL FIND operation after receive of "
+	                                                + maxResults + " pending C-FIND RSP.");
+	                                    cancelFind(assoc);
+	                                }
+                                    } else {
+                                	ignored[0]++;
+                                	log.info("Received MWL FIND Response ignored after additional Matching Key check!");
+                                	log.debug("Received Dataset:"); log.debug(rsp);
                                     }
                                 } else {
                                     log.debug("Ignore pending C-FIND RSP received after cancel of MWL FIND operation");
@@ -252,7 +280,10 @@ public class MWLScuService extends AbstractScuService {
                         } else {
                             if (log.isDebugEnabled()) {
                                 log.debug("Received final C-FIND RSP from " 
-                                        + calledAET + " :" + dimse);                            
+                                        + calledAET + " :" + dimse);
+                                if (ignored[0] > 0) {
+                                	log.debug(ignored[0]+" of "+received[0]+" received Response Messages ignored after Matching Key Check!");
+                                }
                             }                        
                         }
                         

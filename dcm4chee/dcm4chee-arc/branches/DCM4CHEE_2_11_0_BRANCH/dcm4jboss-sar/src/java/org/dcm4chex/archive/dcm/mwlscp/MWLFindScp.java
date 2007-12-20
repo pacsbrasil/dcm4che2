@@ -89,8 +89,10 @@ public class MWLFindScp extends DcmServiceBase {
         service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
                 rqData);
         Dataset coerce = service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
+        log.debug("MWL coercion DS:");log.debug(coerce);
         if (coerce != null) {
             service.coerceAttributes(rqData, coerce);
+            log.debug("MWL coerced DS:");log.debug(rqData);
         }
         
         List l = new ArrayList();

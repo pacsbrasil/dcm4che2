@@ -55,6 +55,18 @@
          <value value="50"/>
       </descriptors>
    </attribute>
+
+   <attribute access="read-write" getMethod="isForceMatchingKeyCheck" setMethod="setForceMatchingKeyCheck">
+      <description>Force additional check of Matching Keys! This will only effect external MWL SCP queries.
+                   You should enable this feature only if you need a 'unique' matching key (Accession Number, Study IUID or SPS ID) which the MWL SCP 
+                   doesn't support as matching key! (e.g. if you need to update image attributes with MWL entries)  
+      </description>
+      <name>ForceMatchingKeyCheck</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    
    <attribute access="read-only" getMethod="isLocal">
       <description>This value is is set to true if the &lt;b&gt;CalledAETitle&lt;/b&gt; attribute is set to LOCAL.
