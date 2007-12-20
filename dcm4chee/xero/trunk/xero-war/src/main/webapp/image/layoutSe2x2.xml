@@ -1,52 +1,49 @@
 <se:results 
   xmlns:se="http://www.dcm4chee.org/xero/search/study/" 
-  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
   xmlns="http://www.w3.org/1999/xhtml"
   id="f-1"
 >
- <xul:vbox id="xcontrol">
   <se:patient id="p0" offset="0" height="1">
    <se:study id="s0" offset="0">
-    <xul:vbox id="x0">
-     <div toolbarRef="studyToolbar" height="1" />
-     <xul:hbox id="x1" height="25">
+    <div class="vbox" id="x0">
+     <div class="layoutRef" ref="toolbar" item="studyToolbar" heightpx="22" />
+     <div class="hbox" id="x1" height="25">
        <se:series id="se0" offset="0" width="25" pageSize="1">
-        <xul:vbox id="vse0">
-         <div toolbarRef="seriesToolbar" height="1"/>
+        <div class="vbox" id="vse0">
+	     <div class="layoutRef" ref="toolbar" item="seriesToolbar" heightpx="22" />
          <se:image id="i0" offset="0" height='15'>
-           <div toolbarRef="imageOverlay" />
+		     <div class="layoutRef" ref="toolbar" item="imageOverlay" height="1" />
          </se:image>
-        </xul:vbox>
+        </div>
        </se:series>
        <se:series id="se1" offset="1" width="25" pageSize="1">
-        <xul:vbox id="vse1">
-         <div toolbarRef="seriesToolbar" height="1"/>
+        <div class="vbox" id="vse1">
+	     <div class="layoutRef" ref="toolbar" item="seriesToolbar" heightpx="22" />
          <se:image id="i1" offset="0" height='15'>
-           <div toolbarRef="imageOverlay" />
+		     <div class="layoutRef" ref="toolbar" item="imageOverlay" height="1" />
          </se:image>
-        </xul:vbox>
+        </div>
        </se:series>
-     </xul:hbox>
-     <xul:hbox id="x2" height="25">
+     </div>
+     <div class="hbox" id="x2" height="25">
        <se:series id="se2" offset="2" width="25" pageSize="1">
-        <xul:vbox id="vse2">
-         <div toolbarRef="seriesToolbar" height="1"/>
+        <div class="vbox" id="vse2">
+	     <div class="layoutRef" ref="toolbar" item="seriesToolbar" heightpx="22" />
          <se:image id="i2" offset="0" height='15'>
-           <div toolbarRef="imageOverlay" />
+		     <div class="layoutRef" ref="toolbar" item="imageOverlay" height="1" />
          </se:image>
-        </xul:vbox>
+        </div>
        </se:series>
        <se:series id="se3" offset="3" width="25" pageSize="1">
-        <xul:vbox id="vse3">
-         <div toolbarRef="seriesToolbar" height="1"/>
+        <div class="vbox" id="vse3">
+	     <div class="layoutRef" ref="toolbar" item="seriesToolbar" heightpx="22" />
          <se:image id="i3" offset="0" height='15'>
-           <div toolbarRef="imageOverlay" />
+		     <div class="layoutRef" ref="toolbar" item="imageOverlay" height="1" />
          </se:image>
-        </xul:vbox>
+        </div>
        </se:series>
-     </xul:hbox>
-    </xul:vbox>
+     </div>
+    </div>
    </se:study>
   </se:patient>
- </xul:vbox>
 </se:results>

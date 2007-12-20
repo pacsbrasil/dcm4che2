@@ -14,7 +14,7 @@
 <c:otherwise>
 <c:set var="_X_SOURCE_IS_DEFINED" value="true" />
 <h:outputText escape="false" value="&lt;?"/>xml version="1.0" encoding="UTF-8"?<h:outputText escape="false" value="&gt;"/>
-<h:outputText escape="false" value="&lt;?"/>xml-stylesheet type="text/xsl" href="#{pageConfig.xsl}"?<h:outputText escape="false" value="&gt;"/>
+<h:outputText escape="false" value="&lt;?"/>xml-stylesheet type="text/xsl" href="#{pageConfig.xsl}?browser=#{browser}-#{browserVersion}&amp;lang=#{localeSelector.language}" ?<h:outputText escape="false" value="&gt;"/>
 <documents conversationId="#{conversation.id}">
    <!-- Default documents values -->
    <ui:insert />

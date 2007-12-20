@@ -17,11 +17,15 @@
 
   <mode applyLevel="${DisplayMode.applyLevel}">#{DisplayMode.mode}</mode>
 
-  <layout doc="#{ConversationStudyModel.url}" frame="#{ConversationStudyModel.layout!=null ? ConversationStudyModel.layout : pageConfig.layout}"  xmlns:se="http://www.dcm4chee.org/xero/search/study/">
-    <h:outputText value="#{ConversationStudyModel.patientXml}" escape="false" />
+  <layout id="displayArea" url="#{ConversationStudyModel.layout!=null ? ConversationStudyModel.layout : pageConfig.layout}">
+    <layout id="toolbar" url="#{pageConfig.toolbar}" />
+    <se:results xmlns:se="http://www.dcm4chee.org/xero/search/study/" doc="#{ConversationStudyModel.url}" >
+      <!-- The first item here contains customization of the layout -->
+      <h:outputText value="#{ConversationStudyModel.patientXml}" escape="false" />
+      <!-- The second item here contains customization of the image display -->
+      <h:outputText value="#{SessionStudyModel.patientXml}" escape="false" />
+    </se:results>
   </layout>
   
-  <toolbar>#{pageConfig.toolbar}</toolbar>
   
-  <h:outputText value="#{SessionStudyModel.patientXml}" escape="false" />
 </x:source>

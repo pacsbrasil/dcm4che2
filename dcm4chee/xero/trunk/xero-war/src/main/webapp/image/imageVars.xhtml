@@ -7,7 +7,7 @@
   m:includeXsl.priority="-10"
 >
 <xsl:variable name="layoutNode" select="/documents/layout" />
-<xsl:variable name="frameNode" select="document($layoutNode/@frame)/se:results" />
+<xsl:variable name="frameNode" select="document($layoutNode/@url)/se:results" />
 
 <xsl:variable name="cid" select="/documents/@conversationId" />
 <xsl:variable name="mode" select="/documents/mode" />

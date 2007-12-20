@@ -32,6 +32,8 @@ a.disabled { color: gray; }
 
 a.active { background: gray; }
 
+div.vbox { float: left; }
+
  /*========================= TOP OF THE MENU CASCADE =========================*/
 
 .menu {

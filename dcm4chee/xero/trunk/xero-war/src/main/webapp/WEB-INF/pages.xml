@@ -180,11 +180,27 @@
   </page>
   
   <page view-id="/image/action/Layout.xhtml" action="#{LayoutAction.action}">
-    <param name="layout" value="#{LayoutAction.layout}" />
-    <navigation>
-      <redirect view-id="/image/image.xhtml" />
-    </navigation>
+     <param name="studyWidth" value="#{LayoutModel.studyWidth}" />
+     <param name="studyHeight" value="#{LayoutModel.studyHeight}" />
+     <param name="seriesWidth" value="#{LayoutModel.seriesWidth}" />
+     <param name="seriesHeight" value="#{LayoutModel.seriesHeight}" />
+     <param name="imageWidth" value="#{LayoutModel.imageWidth}" />
+     <param name="imageHeight" value="#{LayoutModel.imageHeight}" />
+     <param name="layout" value="#{LayoutAction.layout}" />
+     <navigation>
+       <redirect view-id="/image/image.xhtml" />
+     </navigation>
   </page>
+
+  <page view-id="/image/layoutXml.xhtml">
+     <param name="studyWidth" value="#{LayoutEvent.studyWidth}" />
+     <param name="studyHeight" value="#{LayoutEvent.studyHeight}" />
+     <param name="seriesWidth" value="#{LayoutEvent.seriesWidth}" />
+     <param name="seriesHeight" value="#{LayoutEvent.seriesHeight}" />
+     <param name="imageWidth" value="#{LayoutEvent.imageWidth}" />
+     <param name="imageHeight" value="#{LayoutEvent.imageHeight}" />
+  </page>
+  
   
   <page view-id="/image/action/KeyImageSelect.xhtml" action="#{KeyImageSelect.action}">
 	<param name="select" value="#{KeyImageSelect.select}" />

@@ -137,7 +137,7 @@ public class XsltFilter implements Filter {
 	  // Note that apple web-kit is NOT included, as pages for that browser
 	  // are conditionally included
 	  // based on need.
-	  log.debug("Agent=" + agent);
+	  log.debug("Agent={}",agent);
 	  if (agent.indexOf("Opera") >= 0) {
 		 return true;
 	  }
@@ -156,7 +156,7 @@ public class XsltFilter implements Filter {
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filters) throws IOException, ServletException {
 	  HttpServletRequest hRequest = (HttpServletRequest) request;
 	  if (!checkApplyXslt(hRequest)) {
-		 log.debug("Not applying XSLT transformation to " + hRequest.getRequestURI());
+		 log.debug("Not applying XSLT transformation to {}",hRequest.getRequestURI());
 		 filters.doFilter(request, response);
 		 return;
 	  }
@@ -215,29 +215,28 @@ class UrlURIResolver implements URIResolver {
    }
 
    public Source resolve(String href, String base) throws TransformerException {
-	  log.info("Trying to resolve " + href);
+	  log.debug("Trying to resolve {}",href);
 	  int firstSlash = href.indexOf('/');
 	  RequestDispatcher dispatcher;
 	  if (firstSlash != 0) {
-		 log.info("Resolving against relative request dispatcher " + href);
+		 log.debug("Resolving against relative request dispatcher {}",href);
 		 dispatcher = request.getRequestDispatcher(href);
 	  } else {
 		 int secondSlash = href.indexOf('/', 1);
 		 if (secondSlash < 0) {
-			log.info("Resolving a root module href:" + href);
+			log.debug("Resolving a root module href: {}",href);
 			ServletContext altContext = servletContext.getContext("/");
 			dispatcher = altContext.getRequestDispatcher(href.substring(firstSlash));
 		 } else {
 			String relative = href.substring(secondSlash);
 			String contextPath = href.substring(0, secondSlash);
-			log.info("Resolving absolute path for context "+contextPath + " relative "+relative);
-			log.info("Context path=" + contextPath + " relative url=" + relative);
+			log.debug("Absolute path Context path={} relative url={}",contextPath, relative);
 			if (contextPath.equals(request.getContextPath())) {
 			   dispatcher = request.getRequestDispatcher(relative);
 			} else {
 			   ServletContext altContext = servletContext.getContext(contextPath);
 			   if( altContext==null ) {
-				  log.info("Using root context for full path.");
+				  log.debug("Using root context for full path.");
 				  relative = href;
 				  altContext = servletContext.getContext("/");
 			   }
@@ -251,8 +250,7 @@ class UrlURIResolver implements URIResolver {
 		 IncludeHttpServletRequest includeRequest = new IncludeHttpServletRequest(request, href);
 		 dispatcher.include(includeRequest, response);
 		 String resolvedResponse = response.getResponseString();
-		 log.info("Resolved response for "+href+" is ");
-		 log.info(resolvedResponse);
+		 log.debug("Resolved response for {}  is {}", href, resolvedResponse);
 		 StringReader reader = new StringReader(resolvedResponse);
 		 return new StreamSource(reader);
 	  } catch (IOException e) {
@@ -287,7 +285,7 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
 	  if (qPos == -1)
 		 return;
 	  queryString = href.substring(qPos + 1);
-	  log.info("Include http servlet query string=" + queryString);
+	  log.debug("Include http servlet query string={}", queryString);
 	  requestURI = href.substring(0, qPos);
 	  if (href.length() == 0)
 		 return;
@@ -303,10 +301,10 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
 		 value = value.replace("%2F", "/");
 		 String[] vals = parameterMap.get(key);
 		 if (vals == null) {
-			log.info("Putting parameter map info "+key+" value '"+value+"'");
+			log.debug("Putting parameter map info {} value {}", key, value);
 			parameterMap.put(key, new String[] { value });
 		 } else {
-			log.info("Extending parameter map info "+key+" value "+value);
+			log.debug("Extending parameter map info {} value '{}'",key,value);
 			String[] newVals = new String[vals.length + 1];
 			System.arraycopy(vals, 0, newVals, 0, vals.length);
 			parameterMap.put(key, newVals);
@@ -328,10 +326,10 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
    public String getParameter(String param) {
 	  String[] val = parameterMap.get(param);
 	  if (val == null || val.length == 0) {
-		 log.info("No value for "+param);
+		 log.debug("No value for {}",param);
 		 return null;
 	  }
-	  log.info("Returning parameter for "+param+"="+val[0]);
+	  log.debug("Returning parameter for {}={}",param,val[0]);
 	  return val[0];
    }
 

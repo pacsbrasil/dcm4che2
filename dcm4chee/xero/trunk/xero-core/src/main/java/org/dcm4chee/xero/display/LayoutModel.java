@@ -35,53 +35,83 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.util;
+package org.dcm4chee.xero.display;
 
-import javax.faces.context.FacesContext;
-
-import org.jboss.seam.annotations.In;
+import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
-import org.jboss.seam.annotations.Unwrap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.seam.annotations.Role;
+import org.jboss.seam.annotations.Roles;
+import org.jboss.seam.annotations.Scope;
 
-@Name("browser")
-public class Browser {
-   static Logger log = LoggerFactory.getLogger(Browser.class);
-   
-	@In
-	FacesContext facesContext;
-	
-	/** Get the browser's name, one of MSIE, Firefox, AppleWebKit or Opera.  Logs a warning on other
-	 * browsers and returns "Unknown"
-	 * @return
-	 */
-	@Unwrap
-	public String getBrowser() {
-		String userAgent = (String) facesContext.getExternalContext().getRequestHeaderMap().get("USER-AGENT");
-		return getBrowserFromAgent(userAgent);
-	}
+/**
+ * Contains information about the layout design.
+ * @author bwallace
+ *
+ */
+@Name("LayoutModel")
+@Scope(ScopeType.CONVERSATION)
+@Roles( {
+   @Role(name="LayoutEvent", scope=ScopeType.EVENT)
+})
+public class LayoutModel {
 
-   /** Given the user agent string, returns the browser name 
-    * TODO Change to an enum return value.
+   private int studyWidth=1, studyHeight=1, seriesWidth=2, seriesHeight=2, imageWidth=1, imageHeight=1;
+
+   /**
+    * Converts this object to a query string
     */
-   public static String getBrowserFromAgent(String userAgent) {
-	  if( userAgent.indexOf("MSIE")>=0 ) {
-			return "MSIE";
-		}
-		if( userAgent.indexOf("Firefox")>=0 ) {
-			return "Firefox";
-		}
-		if( userAgent.indexOf("AppleWebKit")>=0 ) {
-		   if( userAgent.indexOf("Mobile")>=0 ) {
-			  return "MobileSafari";
-		   }
-		   return "Safari";
-		}
-		if( userAgent.indexOf("Opera")>=0 ) {
-			return "Opera";
-		}
-		log.warn("Unknown browser '"+userAgent);
-		return "Unknown";
+   @Override
+   public String toString() {
+	  return "&studyWidth="+studyWidth+"&studyHeight="+studyHeight+
+	  "&seriesWidth="+seriesWidth+"&seriesHeight="+seriesHeight+
+	  "&imageWidth="+imageWidth+"&imageHeight="+imageHeight;
+	  
+   }
+   public int getImageHeight() {
+      return imageHeight;
+   }
+
+   public void setImageHeight(int imageHeight) {
+      this.imageHeight = imageHeight;
+   }
+
+   public int getImageWidth() {
+      return imageWidth;
+   }
+
+   public void setImageWidth(int imageWidth) {
+      this.imageWidth = imageWidth;
+   }
+
+   public int getSeriesHeight() {
+      return seriesHeight;
+   }
+
+   public void setSeriesHeight(int seriesHeight) {
+      this.seriesHeight = seriesHeight;
+   }
+
+   public int getSeriesWidth() {
+      return seriesWidth;
+   }
+
+   public void setSeriesWidth(int seriesWidth) {
+      this.seriesWidth = seriesWidth;
+   }
+
+   public int getStudyHeight() {
+      return studyHeight;
+   }
+
+   public void setStudyHeight(int studyHeight) {
+      this.studyHeight = studyHeight;
+   }
+
+   public int getStudyWidth() {
+      return studyWidth;
+   }
+
+   public void setStudyWidth(int studyWidth) {
+      this.studyWidth = studyWidth;
    }
 }

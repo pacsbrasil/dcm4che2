@@ -134,6 +134,8 @@ class ImageServletResponseItem implements ServletResponseItem {
    ImageWriteParam imageWriteParam;
 
    WadoImage wadoImage;
+   
+   private int maxAge = 3600;
 
    // TODO Make this come from metadata
    // CLIB version
@@ -190,6 +192,11 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  }
 	  long start = System.nanoTime();
 	  response.setContentType(contentType);
+	  response.setHeader("Cache-Control", "max-age="+maxAge);
+	  // Because this is controlled by login, it will have Pragma and Expires set
+	  // to different values, and those need to be removed to get this cached.
+	  response.setHeader("Pragma", null);
+	  response.setHeader("Expires", null);
 	  ImageOutputStream ios = ImageIO.createImageOutputStream(response.getOutputStream());
 	  writer.setOutput(ios);
 	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);

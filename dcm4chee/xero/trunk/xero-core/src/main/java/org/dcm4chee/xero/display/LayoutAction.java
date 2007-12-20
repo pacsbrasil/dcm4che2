@@ -56,6 +56,9 @@ import org.slf4j.LoggerFactory;
 public class LayoutAction {
    private static Logger log = LoggerFactory.getLogger(LayoutAction.class);
 
+   @In(value = "LayoutModel", required=false)
+   LayoutModel layoutModel;
+   
    @In(value = "ConversationStudyModel", create = true)
    ConversationStudyModel studyModel;
 
@@ -66,6 +69,10 @@ public class LayoutAction {
 	  if( layout==null ) {
 		 log.warn("No new layout specified for layout action.");
 		 return "success";
+	  }
+	  if( layoutModel!=null ) {
+		 if( layout.indexOf("?") <0 ) layout += "?";
+		 layout = layout + layoutModel.toString(); 
 	  }
 	  log.info("Changing layout mode to "+layout);
 	  studyModel.setLayout(layout);

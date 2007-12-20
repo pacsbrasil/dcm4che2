@@ -91,16 +91,7 @@
       <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
       <init-param>
 	      <param-name>maxAge</param-name>
-    	  <param-value>120</param-value>
-      </init-param>
-   </filter>
-
-   <filter>
-      <filter-name>ShortMaxAgeFilter</filter-name>
-      <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
-      <init-param>
-	      <param-name>maxAge</param-name>
-    	  <param-value>9</param-value>
+    	  <param-value>500</param-value>
       </init-param>
    </filter>
 
@@ -111,6 +102,21 @@
 	      <param-name>maxAge</param-name>
     	  <param-value>3600</param-value>
       </init-param>
+   </filter>
+   
+   <filter>
+      <filter-name>PublicLongMaxAgeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.MaxAgeFilter</filter-class>
+      <init-param>
+	      <param-name>maxAge</param-name>
+    	  <param-value>36000</param-value>
+      </init-param>
+      <!-- Don't set this right now - seems to cause browsers not to cache this 
+      <init-param>
+	      <param-name>privacy</param-name>
+    	  <param-value>public</param-value>
+      </init-param>
+      -->
    </filter>
    
    <filter>
@@ -181,20 +187,17 @@
 
    <!-- XSL pages need to take at least a short while to time out. -->
    <filter-mapping>
-      <filter-name>ShortMaxAgeFilter</filter-name>
+      <filter-name>MaxAgeFilter</filter-name>
       <url-pattern>*.xml</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>LongMaxAgeFilter</filter-name>
+      <filter-name>PublicLongMaxAgeFilter</filter-name>
       <url-pattern>*.xsl</url-pattern>
+      <url-pattern>*.png</url-pattern>
+      <url-pattern>*.css</url-pattern>
    </filter-mapping>
    
-   <filter-mapping>
-     <filter-name>LongMaxAgeFilter</filter-name>
-     <url-pattern>/wado</url-pattern>
-   </filter-mapping>
-
    <!-- WADO servlet to use for testing window levelling performance. -->
    <servlet>
      <servlet-name>WADO</servlet-name>

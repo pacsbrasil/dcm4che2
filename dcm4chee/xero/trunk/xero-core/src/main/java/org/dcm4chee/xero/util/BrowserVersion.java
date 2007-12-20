@@ -42,27 +42,53 @@ import javax.faces.context.FacesContext;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Unwrap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Name("browser")
+@Name("browserVersion")
 public class BrowserVersion {
-	@In
-	FacesContext facesContext;
-	
-	@Unwrap
-	public String getBrowser() {
-		String userAgent = (String) facesContext.getExternalContext().getRequestHeaderMap().get("USER-AGENT");
-		if( userAgent.indexOf("MSIE")>=0 ) {
-			return "MSIE";
-		}
-		if( userAgent.indexOf("Firefox")>=0 ) {
-			return "Firefox";
-		}
-		if( userAgent.indexOf("AppleWebKit")>=0 ) {
-			return "Safari";
-		}
-		if( userAgent.indexOf("Opera")>=0 ) {
-			return "Opera";
-		}
-		return userAgent;
-	}
+   static Logger log = LoggerFactory.getLogger(BrowserVersion.class);
+
+   @In
+   FacesContext facesContext;
+
+   @Unwrap
+   public float getBrowser() {
+	  String userAgent = (String) facesContext.getExternalContext().getRequestHeaderMap().get("USER-AGENT");
+	  System.out.println("User agent=" + userAgent);
+	  float version;
+	  if ((version = parseVersion(userAgent, "Firefox/")) != 0)
+		 return version;
+	  if ((version = parseVersion(userAgent, "MSIE ")) != 0)
+		 return version;
+	  if ((version = parseVersion(userAgent, "Version/")) != 0)
+		 return version;
+	  if ((version = parseVersion(userAgent, "Opera/")) != 0)
+		 return version;
+	  log.warn("Unknown browser version for agent " + userAgent);
+
+	  return 1.0f;
+   }
+
+   /** Parses the user agent for the version string, starting with versionStart */
+   private float parseVersion(String userAgent, String versionStart) {
+	  int posn = userAgent.indexOf(versionStart);
+	  if (posn < 0)
+		 return 0f;
+	  int dotPosn = posn + versionStart.length();
+	  boolean firstDot = false;
+	  while (dotPosn < userAgent.length()) {
+		 char ch = userAgent.charAt(dotPosn);
+		 if (ch == '.') {
+			if (firstDot) {
+			   break;
+			}
+			firstDot = true;
+		 } else if (!Character.isDigit(ch)) {
+			break;
+		 }
+		 dotPosn++;
+	  }
+	  return Float.parseFloat(userAgent.substring(posn + versionStart.length(), dotPosn));
+   }
 }
