@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 
@@ -53,9 +52,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.util.Base64;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
@@ -69,52 +66,14 @@ import org.xml.sax.ContentHandler;
  * @since Jan 29, 2006
  *
  */
-public class ORUService extends AbstractHL7Service
+public class ORUService extends ORU_MDMService
 {
     private static final int DEFAULT_STATUS_FIELD_NR = 10;//Default: Field 11 is OBSERV RESULT STATUS
     private static final String NO_RESULT_STATUS = "NO_OBSERV_RESULT_STATUS";
     private static final String NO_OBX = "NO_OBX";
-    private String oru2srXslPath;
-    private String oru2pdfXslPath;
-    private ObjectName exportManagerName;
-    private int storePriority = 0;
     private HashSet obxIgnoreStati = new HashSet();
     private int obxStatusFieldNr = DEFAULT_STATUS_FIELD_NR;
 
-    public String getSRStylesheet() {
-        return oru2srXslPath;
-    }
-
-    public void setSRStylesheet(String path) {
-        this.oru2srXslPath = path;
-    }
-
-    public final String getPDFStylesheet() {
-        return oru2pdfXslPath;
-    }
-
-    public final void setPDFStylesheet(String path) {
-        this.oru2pdfXslPath = path;
-    }
-
-    public final ObjectName getExportManagerName()
-    {
-        return exportManagerName;
-    }
-
-    public final void setExportManagerName(ObjectName exportManagerName)
-    {
-        this.exportManagerName = exportManagerName;
-    }
-
-    public final String getStorePriority() {
-        return DicomPriority.toString(storePriority);
-    }
-
-    public final void setStorePriority(String storePriority) {
-        this.storePriority  = DicomPriority.toCode(storePriority);
-    }
-    
     public void setObxIgnoreStati(String stati) {
         obxIgnoreStati.clear();
         if ( stati.equalsIgnoreCase("NONE")) return;
@@ -157,22 +116,12 @@ public class ORUService extends AbstractHL7Service
         try
         {
             Dataset doc = DcmObjectFactory.getInstance().newDataset();
-            byte[] pdf = getPDF(msg);
-            if (pdf != null) {
-                File xslFile = FileUtils.toExistingFile(oru2pdfXslPath);
-                Transformer t = templates.getTemplates(xslFile).newTransformer();
-                t.transform(new DocumentSource(msg), new SAXResult(
-                        doc.getSAXHandler2(null)));
-                doc.putOB(Tags.EncapsulatedDocument, pdf);
-                storeSR(doc);
-            } else {
-                File xslFile = FileUtils.toExistingFile(oru2srXslPath);
-                Transformer t = templates.getTemplates(xslFile).newTransformer();
-                t.transform(new DocumentSource(msg), new SAXResult(
-                        doc.getSAXHandler2(null)));
-                addIUIDs(doc);
-                storeSR(doc);
-            }
+            File xslFile = FileUtils.toExistingFile(xslPath);
+            Transformer t = templates.getTemplates(xslFile).newTransformer();
+            t.transform(new DocumentSource(msg), new SAXResult(
+                    doc.getSAXHandler2(null)));
+            addIUIDs(doc);
+            storeSR(doc);
         }
         catch (Exception e)
         {
@@ -195,28 +144,6 @@ public class ORUService extends AbstractHL7Service
         return ((Element) obxFields.get(obxStatusFieldNr)).getText();
     }
     
-    static String toString(Object el) {
-        return el != null ? ((Element) el).getText() : "";
-    }
-    
-    private byte[] getPDF(Document msg) {
-        List obxs = msg.getRootElement().elements("OBX");
-        for (Iterator iter = obxs.iterator(); iter.hasNext();) {
-            Element obx = (Element) iter.next();
-            List fds = obx.elements();
-            if ("ED".equals(toString(fds.get(1)))) {
-                List cmps = ((Element) fds.get(4)).elements();
-                if ("PDF".equals(toString(cmps.get(1)))) {
-                    String s = toString(cmps.remove(3));
-                    return Base64.base64ToByteArray(s);
-                }
-            }
-        }
-        // hl7/OBX[field[2]='ED']/field[5]/component[4]
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     private void addIUIDs(Dataset sr) {
         UIDGenerator uidgen = UIDGenerator.getInstance();
         if (!sr.containsValue(Tags.StudyInstanceUID)) {
@@ -284,10 +211,4 @@ public class ORUService extends AbstractHL7Service
                 query.getDataset().getString(Tags.StudyInstanceUID));
     }
 
-    private void storeSR(Dataset sr) throws Exception {
-        server.invoke(exportManagerName, "storeExportSelection",
-                new Object[]{sr, new Integer(storePriority)},
-                new String[]{Dataset.class.getName(), int.class.getName()});        
-    }
-    
 }

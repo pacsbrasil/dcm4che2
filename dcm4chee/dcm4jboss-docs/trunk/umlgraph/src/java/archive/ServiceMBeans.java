@@ -425,6 +425,22 @@ class prefetch {}
  * @depend - - - ExportManager
  * @depend - - - Templates
  */
+class MDMService {}
+
+/**
+ * @view
+ * @opt hide
+ * 
+ * @match context archive.MDMService
+ * @opt !hide
+ */
+class mdmService {}
+
+/**
+ * @depend - - - HL7Server
+ * @depend - - - ExportManager
+ * @depend - - - Templates
+ */
 class ORUService {}
 
 /**
