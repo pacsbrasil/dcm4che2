@@ -31,7 +31,7 @@
       <name>MessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MDM^T02" />
+         <value value="MDM^T02,MDM^T10" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

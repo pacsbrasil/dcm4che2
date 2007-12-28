@@ -69,7 +69,8 @@ public class MDMService extends ORU_MDMService {
         {
             byte[] pdf = getPDF(msg);
             if (pdf == null) {
-                log.warn("Ignore received MDM^T02 without encapsulated report");
+                log.warn("Ignore received " + msh.messageType + "^" +
+                        msh.triggerEvent + " without encapsulated report");
                 return true;
             }
             Dataset doc = DcmObjectFactory.getInstance().newDataset();

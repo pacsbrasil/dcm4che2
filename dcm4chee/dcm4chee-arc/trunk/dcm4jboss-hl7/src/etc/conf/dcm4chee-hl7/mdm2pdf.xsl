@@ -86,6 +86,38 @@
   <attr tag="0020000E" vr="UI">
    <xsl:value-of select="concat($iuid,'.1')" />
   </attr>
+  <xsl:variable name="parent_iuid" select="field[13]/text()" />
+  <xsl:if test="$parent_iuid">
+   <!-- Predecessor Documents Sequence-->
+   <attr tag="0040A360" vr="SQ">
+     <item>
+       <!-- Referenced Series Sequence -->
+       <attr tag="00081115" vr="SQ">
+         <item>
+           <!-- Referenced SOP Sequence -->
+           <attr tag="00081199" vr="SQ">
+             <item>
+               <!-- Referenced SOP Class UID -->
+               <attr tag="00081150" vr="UI">1.2.840.10008.5.1.4.1.1.104.1</attr>
+               <!-- Referenced SOP Instance UID -->
+               <attr tag="00081155" vr="UI">
+                <xsl:value-of select="$parent_iuid" />
+               </attr>             
+             </item>
+           </attr>
+           <!--Series Instance UID-->
+           <attr tag="0020000E" vr="UI">
+             <xsl:value-of select="concat($parent_iuid,'.1')" />
+           </attr>
+         </item>
+       </attr>
+       <!--Study Instance UID-->
+       <attr tag="0020000D" vr="UI">
+         <xsl:value-of select="../OBX[field[2]='HD']/field[5]/text()" />
+       </attr>
+     </item>
+   </attr>
+  </xsl:if>
  </xsl:template>
  <xsl:template match="OBX[field[2]='HD']">
   <!--Study Instance UID-->
