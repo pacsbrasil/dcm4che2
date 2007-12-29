@@ -538,6 +538,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
+      <param name="xmbean.file" value="dcm4chee-hl7mdm-xmbean.xml"/>
+      <param name="mbean"
+        value="dcm4chee.archive:service=HL7Service,type=MDM"/>
+    </antcall>
+    <antcall target="xslt">
+      <param name="xmdesc.dir" value="${dcm4jboss-hl7.xmdesc}"/>
       <param name="xmbean.file" value="dcm4chee-hl7send-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.archive:service=HL7Send"/>
     </antcall>
