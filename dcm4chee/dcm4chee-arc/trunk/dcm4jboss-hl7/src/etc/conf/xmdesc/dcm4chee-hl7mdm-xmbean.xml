@@ -4,7 +4,7 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description><![CDATA[The <b>MDM HL7 Service</b> converts MDM^T02 messages
+   <description><![CDATA[The <b>MDM HL7 Service</b> converts MDM^T02/T10 messages
    conveying a Base64 encoded PDF document according IHE Transaction CARD-7:
    Encapsulated Report Submission, into DICOM encapsulated PDF documents,
    so they can be retrieved by DICOM Retrieve or IHE RID.]]>
@@ -37,7 +37,7 @@
    <attribute access="read-write"
       getMethod="getStylesheet"
       setMethod="setStylesheet">
-      <description><![CDATA[Stylesheet for HL7 MDM^T02 to DICOM Encapsulated
+      <description><![CDATA[Stylesheet for HL7 MDM^T02/T10 to DICOM Encapsulated
       PDF mapping. A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
