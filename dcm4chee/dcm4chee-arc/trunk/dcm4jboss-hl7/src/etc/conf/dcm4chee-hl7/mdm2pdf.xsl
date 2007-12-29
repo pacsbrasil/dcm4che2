@@ -90,32 +90,49 @@
   <xsl:if test="$parent_iuid">
    <!-- Predecessor Documents Sequence-->
    <attr tag="0040A360" vr="SQ">
-     <item>
-       <!-- Referenced Series Sequence -->
-       <attr tag="00081115" vr="SQ">
-         <item>
-           <!-- Referenced SOP Sequence -->
-           <attr tag="00081199" vr="SQ">
-             <item>
-               <!-- Referenced SOP Class UID -->
-               <attr tag="00081150" vr="UI">1.2.840.10008.5.1.4.1.1.104.1</attr>
-               <!-- Referenced SOP Instance UID -->
-               <attr tag="00081155" vr="UI">
-                <xsl:value-of select="$parent_iuid" />
-               </attr>             
-             </item>
-           </attr>
-           <!--Series Instance UID-->
-           <attr tag="0020000E" vr="UI">
-             <xsl:value-of select="concat($parent_iuid,'.1')" />
-           </attr>
-         </item>
+    <item>
+     <!-- Referenced Series Sequence -->
+     <attr tag="00081115" vr="SQ">
+      <item>
+       <!-- Referenced SOP Sequence -->
+       <attr tag="00081199" vr="SQ">
+        <item>
+         <!-- Referenced SOP Class UID -->
+         <attr tag="00081150" vr="UI">1.2.840.10008.5.1.4.1.1.104.1</attr>
+         <!-- Referenced SOP Instance UID -->
+         <attr tag="00081155" vr="UI">
+          <xsl:value-of select="$parent_iuid" />
+         </attr>
+        </item>
        </attr>
-       <!--Study Instance UID-->
-       <attr tag="0020000D" vr="UI">
-         <xsl:value-of select="../OBX[field[2]='HD']/field[5]/text()" />
+       <!--Series Instance UID-->
+       <attr tag="0020000E" vr="UI">
+        <xsl:value-of select="concat($parent_iuid,'.1')" />
        </attr>
-     </item>
+      </item>
+     </attr>
+     <!--Study Instance UID-->
+     <attr tag="0020000D" vr="UI">
+      <xsl:value-of select="../OBX[field[2]='HD']/field[5]/text()" />
+     </attr>
+    </item>
+   </attr>
+  </xsl:if>
+  <xsl:if test="field[22]/component">
+   <!-- Verifying Observer Sequence -->
+   <attr tag="0040A073" vr="SQ">
+    <item>
+     <!-- Verification DateTime -->
+     <attr tag="0040A030" vr="DT">
+      <xsl:value-of select="field[22]/component[14]" />
+     </attr>
+     <!-- Verifying Observer Name -->
+     <attr tag="0040A075" vr="PN">
+      <xsl:call-template name="ppn2pn">
+       <xsl:with-param name="ppn" select="field[22]" />
+      </xsl:call-template>
+     </attr>
+    </item>
    </attr>
   </xsl:if>
  </xsl:template>
@@ -166,12 +183,25 @@
   <xsl:param name="xpn25" select="$xpn/component" />
   <xsl:value-of select="$xpn/text()" />
   <xsl:text>^</xsl:text>
-  <xsl:value-of select="$xpn25[1]/text()" />
+  <xsl:value-of select="$xpn25[1]" />
   <xsl:text>^</xsl:text>
-  <xsl:value-of select="$xpn25[2]/text()" />
+  <xsl:value-of select="$xpn25[2]" />
   <xsl:text>^</xsl:text>
-  <xsl:value-of select="$xpn25[4]/text()" />
+  <xsl:value-of select="$xpn25[4]" />
   <xsl:text>^</xsl:text>
-  <xsl:value-of select="$xpn25[3]/text()" />
+  <xsl:value-of select="$xpn25[3]" />
+ </xsl:template>
+ <xsl:template name="ppn2pn">
+  <xsl:param name="ppn" />
+  <xsl:param name="ppn26" select="$ppn/component" />
+  <xsl:value-of select="$ppn26[1]" />
+  <xsl:text>^</xsl:text>
+  <xsl:value-of select="$ppn26[2]" />
+  <xsl:text>^</xsl:text>
+  <xsl:value-of select="$ppn26[3]" />
+  <xsl:text>^</xsl:text>
+  <xsl:value-of select="$ppn26[5]" />
+  <xsl:text>^</xsl:text>
+  <xsl:value-of select="$ppn26[4]" />
  </xsl:template>
 </xsl:stylesheet>
