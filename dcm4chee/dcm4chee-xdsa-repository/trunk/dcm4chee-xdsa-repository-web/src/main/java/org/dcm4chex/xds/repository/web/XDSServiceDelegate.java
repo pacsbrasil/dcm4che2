@@ -99,7 +99,7 @@ public class XDSServiceDelegate {
 	                new String[] { SOAPMessage.class.getName() } );
 		} catch ( Exception x ) {
 			log.error( "Exception occured in exportDocument: "+x.getMessage(), x );
-			resp = new XDSRegistryResponse( false, "Unexpected error in XDS service !: "+x.getMessage(),x);
+			resp = new XDSRegistryResponse( false, "XDSRepositoryError", "Unexpected error in XDS service !: "+x.getMessage(),x);
 		}
         return resp;
 	}

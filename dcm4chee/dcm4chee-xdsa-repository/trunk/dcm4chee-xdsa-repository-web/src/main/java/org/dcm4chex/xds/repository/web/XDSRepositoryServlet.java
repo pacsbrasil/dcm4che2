@@ -114,7 +114,6 @@ public class XDSRepositoryServlet extends HttpServlet {
 		w.close();
 	}
 	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
-		log.info("XDSRepositoryServlet.doPost called from "+request.getRemoteHost()+" with URL "+request.getRequestURL()+" ! (secure :"+request.isSecure()+")");
         log.debug("request.getContentLength():"+request.getContentLength());
         DebugInputStream bis = new DebugInputStream( request );
         SOAPMessage message = null;
@@ -125,7 +124,7 @@ public class XDSRepositoryServlet extends HttpServlet {
     		xdsResponse = delegate.exportDocument(message);
     		log.info("Export done! remoteHost:"+request.getRemoteHost()+" ! xdsResponse:"+xdsResponse);
         } catch (Exception x) {
-        	xdsResponse = new XDSRegistryResponse( false, "Unexpected error in XDS service !: "+x.getMessage(),x);
+        	xdsResponse = new XDSRegistryResponse( false, "XDSRepositoryError", "Unexpected error in XDS Repository Service !: "+x.getMessage(),x);
 		}
         try {
         	xdsResponse.execute(response);
@@ -143,6 +142,7 @@ public class XDSRepositoryServlet extends HttpServlet {
             for (StringTokenizer st = new StringTokenizer(value, ",") ; st.hasMoreTokens() ; ) {
             	tk = st.nextToken().trim();
             	if ( name.equalsIgnoreCase("content-type" ) ) {
+            		log.debug("Check content-type header!");
             		tk = checkStartParam(tk);
             	}
                 mimeHeaders.addHeader(name, tk);
