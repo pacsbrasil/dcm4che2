@@ -55,11 +55,13 @@ import org.xml.sax.SAXException;
 public class XDSRegistryResponse implements XDSResponseObject {
 
 	private boolean success;
+	private String errorCode;
 	private String msg;
 	private Throwable error;
 	
-	public XDSRegistryResponse( boolean success, String msg, Throwable t) {
+	public XDSRegistryResponse( boolean success, String errorCode, String msg, Throwable t) {
 		this.success = success;
+		this.errorCode = errorCode;
 		this.msg = msg;
 		this.error = t;
 	}
@@ -80,16 +82,9 @@ public class XDSRegistryResponse implements XDSResponseObject {
 		if ( !success ) {
 			w.write("	    <RegistryErrorList>\n");
 			w.write("	       <RegistryError ");
-			w.write("	          codeContext=\"XDS Request:Provide and Register Document\"\n");
-			w.write("	          errorCode=\"Unknown\"\n"); 
-			w.write("	          severity=\"Error\"><![CDATA[\n");
-			w.write("               message:"+this.getMessage());
-			w.write("				Exception:"+error.getMessage()+"\n");
-			while ( error.getCause() != null ) {
-				error = error.getCause();
-				w.write("                caused by:"+error.getMessage()+"\n");
-			}
-			w.write("	      ]]></RegistryError>\n");
+			w.write("	          errorCode=\""+errorCode+"\"\n"); 
+			w.write("	          codeContext=\""+msg+"\"\n");
+			w.write("	          severity=\"Error\" />\n");
 			w.write("	    </RegistryErrorList>\n");
 		}
 		w.write("    </RegistryResponse>\n");

@@ -444,11 +444,11 @@ public class XDSService extends ServiceMBeanSupport {
 				log.info("DEBUGGING SOAP message with missing ExtrinsicObject?:");
 				this.dumpSOAPMessage(message);
 	        	log.info("------------------------------------------------------------------------------------- ####");
-	            throw new Exception("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
+				return new XDSRegistryResponse( false, "XDSMissingDocumentMetadata", "XDSMissingDocumentMetadata",null);
 	        }
             if ( attachments.isEmpty() ) {
-                log.debug("No Attachments found -> forward message to registry!");
-                return new SOAPMessageResponse( sendSOAP(message, getXDSRegistryURI()));
+                log.error("No Attachments found -> Missing document!");
+				return new XDSRegistryResponse( false, "XDSMissingDocument", "XDSMissingDocument",null);
             }
 	        XDSDocumentMetadata metadata;
 	        Element el;
@@ -491,7 +491,7 @@ public class XDSService extends ServiceMBeanSupport {
 		} catch ( Exception x ) {
 			log.error("Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
 			deleteDocuments(storedDocuments);
-			return new XDSRegistryResponse( false, "Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
+			return new XDSRegistryResponse( false, "XDSRepositoryError", "Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
 		}
 		
 	}
