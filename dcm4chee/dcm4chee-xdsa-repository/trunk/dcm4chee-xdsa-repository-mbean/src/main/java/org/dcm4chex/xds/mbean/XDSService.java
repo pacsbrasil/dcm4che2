@@ -452,14 +452,23 @@ public class XDSService extends ServiceMBeanSupport {
             }
 	        XDSDocumentMetadata metadata;
 	        Element el;
+	        AttachmentPart part;
+	        String mime, contentType;
 	        for(Iterator iter = extrinsicObjects.iterator() ; iter.hasNext() ; ) {
 	            el = (Element)iter.next();
 	            metadata = new XDSDocumentMetadata(el);
+	            part = (AttachmentPart)attachments.get(metadata.getContentID());
+	            mime = metadata.getMimeType();
+	            contentType = part.getContentType();
+	            if ( mime == null || contentType == null || !metadata.getMimeType().equalsIgnoreCase( part.getContentType() ) ) {
+	            	log.error("Mimetype mismatch detected! metadata:"+mime+ "attachment:"+contentType);
+	            	return new XDSRegistryResponse( false, "XDSRepositoryError", "Mimetype mismatch detected! metadata:"+mime+" attachment:"+contentType,null);
+	            }
 	            if (reassignDocumentUID) {
 	            	metadata.setUniqueID( UIDUtils.createUID() );
 	            }
 	            filterMetadata(metadata);
-	            storedDoc = saveDocumentEntry(metadata, attachments);
+	            storedDoc = saveDocumentEntry(metadata, part);
 	            metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()));
 	            if ( storedDoc != null) {
 	                storedDocuments.add(storedDoc);
@@ -666,12 +675,12 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @param metadata
      * @throws IOException
 	 */
-	private StoredDocument saveDocumentEntry(XDSDocumentMetadata metadata, Map attachments) throws IOException {
+	private StoredDocument saveDocumentEntry(XDSDocumentMetadata metadata, AttachmentPart part) throws IOException {
 		log.info("Store attachment:"+metadata);
 		StoredDocument storedDoc;
 		String id = metadata.getContentID();
 		String uid = metadata.getUniqueID();
-    	storedDoc = store.store(uid, (AttachmentPart)attachments.get(id), metadata);
+    	storedDoc = store.store(uid, part, metadata);
     	metadata.setHash(storedDoc.getHash());
     	metadata.setSize(storedDoc.getSize());
 		log.info("Attachment ("+uid+") stored in file "+storedDoc+" (size:"+storedDoc.getSize()+" hash:"+storedDoc.getHash());
