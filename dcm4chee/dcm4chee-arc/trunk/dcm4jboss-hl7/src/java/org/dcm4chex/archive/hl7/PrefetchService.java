@@ -223,7 +223,16 @@ public class PrefetchService extends AbstractScuService implements
     public final void setMoveScuServiceName(ObjectName moveScuServiceName) {
             this.moveScuServiceName = moveScuServiceName;
     }
+
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
     
+
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(hl7ServerName, this,

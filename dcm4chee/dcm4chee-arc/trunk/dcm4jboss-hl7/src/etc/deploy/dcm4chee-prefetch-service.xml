@@ -18,6 +18,8 @@
       >dcm4chee.archive:service=JMS</depends>
     <depends optional-attribute-name="MoveScuServiceName"
       >dcm4chee.archive:service=MoveScu</depends>
+    <depends optional-attribute-name="TemplatesServiceName"
+      >dcm4chee.archive:service=Templates</depends>
     <depends>dcm4chee.archive:service=Queue,name=Prefetch</depends>
     <attribute name="QueueName">Prefetch</attribute>
   </mbean>

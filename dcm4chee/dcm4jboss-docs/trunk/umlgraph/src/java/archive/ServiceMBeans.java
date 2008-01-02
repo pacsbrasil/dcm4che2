@@ -407,6 +407,7 @@ class ormService {}
  * @depend - - - TLSConfig
  * @depend - - - MoveScu
  * @depend - - - PrefetchQueue
+ * @depend - - - Templates
  * @depend - - - JMS
  */
 class Prefetch {}

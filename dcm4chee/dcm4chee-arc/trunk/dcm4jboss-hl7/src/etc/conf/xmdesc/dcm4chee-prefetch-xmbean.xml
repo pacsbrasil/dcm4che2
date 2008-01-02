@@ -264,6 +264,14 @@
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>         
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
