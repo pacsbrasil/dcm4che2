@@ -60,6 +60,7 @@ import org.dcm4chex.archive.common.InputAvailabilityFlag;
 public class GPWLQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final String[] FROM = { "Patient", "GPSPS"};
 
@@ -78,9 +79,11 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
     
     public GPWLQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
-        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-        defineColumnType(1, Types.LONGVARBINARY);
-        defineColumnType(2, Types.LONGVARBINARY);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+        }
         String s;
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {

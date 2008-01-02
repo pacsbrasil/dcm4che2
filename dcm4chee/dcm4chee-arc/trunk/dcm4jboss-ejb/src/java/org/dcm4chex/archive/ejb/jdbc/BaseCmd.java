@@ -122,7 +122,36 @@ public abstract class BaseCmd {
 
         open();
     }
-    
+
+    public static String transactionIsolationLevelAsString(int level) {
+        switch (level) {
+        case 0:
+            return "DEFAULT";
+        case Connection.TRANSACTION_READ_UNCOMMITTED:
+            return "READ_UNCOMMITTED";
+        case Connection.TRANSACTION_READ_COMMITTED:
+            return "READ_COMMITTED";
+        case Connection.TRANSACTION_REPEATABLE_READ:
+            return "REPEATABLE_READ";
+        case Connection.TRANSACTION_SERIALIZABLE:
+            return "SERIALIZABLE";
+        }
+        throw new IllegalArgumentException("level:" + level);
+    }
+
+    public static int transactionIsolationLevelOf(String s) {
+        String uc = s.trim().toUpperCase();
+        if ("READ_UNCOMMITTED".equals(uc))
+            return Connection.TRANSACTION_READ_UNCOMMITTED;
+        if ("READ_COMMITTED".equals(uc))
+            return Connection.TRANSACTION_READ_COMMITTED;
+        if ("REPEATABLE_READ".equals(uc))
+            return Connection.TRANSACTION_REPEATABLE_READ;
+        if ("SERIALIZABLE".equals(uc))
+            return Connection.TRANSACTION_SERIALIZABLE;
+        return 0;
+    }
+
     protected void defineColumnType(int index, int type) throws SQLException {
         if (defineColumnType == null) {
             return;

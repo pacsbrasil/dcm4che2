@@ -102,35 +102,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private static final String NONE = "NONE";
 
-    private static String transactionIsolationLevelAsString(int level) {
-        switch (level) {
-        case 0:
-            return "DEFAULT";
-        case Connection.TRANSACTION_READ_UNCOMMITTED:
-            return "READ_UNCOMMITTED";
-        case Connection.TRANSACTION_READ_COMMITTED:
-            return "READ_COMMITTED";
-        case Connection.TRANSACTION_REPEATABLE_READ:
-            return "REPEATABLE_READ";
-        case Connection.TRANSACTION_SERIALIZABLE:
-            return "SERIALIZABLE";
-        }
-        throw new IllegalArgumentException("level:" + level);
-    }
-
-    private static int transactionIsolationLevelOf(String s) {
-        String uc = s.trim().toUpperCase();
-        if ("READ_UNCOMMITTED".equals(uc))
-            return Connection.TRANSACTION_READ_UNCOMMITTED;
-        if ("READ_COMMITTED".equals(uc))
-            return Connection.TRANSACTION_READ_COMMITTED;
-        if ("REPEATABLE_READ".equals(uc))
-            return Connection.TRANSACTION_REPEATABLE_READ;
-        if ("SERIALIZABLE".equals(uc))
-            return Connection.TRANSACTION_SERIALIZABLE;
-        return 0;
-    }
-
     private String[] sendNoPixelDataToAETs = null;
 
     private String[] sendWithDefaultTransferSyntaxToAETitles = null;
@@ -475,20 +446,42 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.checkMatchingKeySupported = checkMatchingKeySupport;
     }
 
+    public final boolean getQueryAccessBlobAsLongVarBinary() {
+        return QueryCmd.accessBlobAsLongVarBinary;
+    }
+
+    public final void setQueryAccessBlobAsLongVarBinary(
+            boolean accessBlobAsLongVarBinary) {
+        QueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    }
+
+    public final boolean getRetrieveAccessBlobAsLongVarBinary() {
+        return RetrieveCmd.accessBlobAsLongVarBinary;
+    }
+
+    public final void setRetrieveAccessBlobAsLongVarBinary(
+            boolean accessBlobAsLongVarBinary) {
+        RetrieveCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    }
+
     public final String getQueryTransactionIsolationLevel() {
-        return transactionIsolationLevelAsString(QueryCmd.transactionIsolationLevel);
+        return QueryCmd.transactionIsolationLevelAsString(
+                QueryCmd.transactionIsolationLevel);
     }
 
     public final void setQueryTransactionIsolationLevel(String level) {
-        QueryCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
+        QueryCmd.transactionIsolationLevel =
+                QueryCmd.transactionIsolationLevelOf(level);
     }
 
     public final String getRetrieveTransactionIsolationLevel() {
-        return transactionIsolationLevelAsString(RetrieveCmd.transactionIsolationLevel);
+        return RetrieveCmd.transactionIsolationLevelAsString(
+                RetrieveCmd.transactionIsolationLevel);
     }
 
     public final void setRetrieveTransactionIsolationLevel(String level) {
-        RetrieveCmd.transactionIsolationLevel = transactionIsolationLevelOf(level);
+        RetrieveCmd.transactionIsolationLevel =
+                RetrieveCmd.transactionIsolationLevelOf(level);
     }
     
     public final boolean isRetrieveWithoutLeftJoins() {

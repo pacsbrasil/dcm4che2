@@ -62,6 +62,7 @@ import org.dcm4che.dict.Tags;
 public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     /** Number of max. parameters in IN(...) statement. */
     public static int maxElementsInUIDMatch = 100;
@@ -175,11 +176,13 @@ public class RetrieveCmd extends BaseReadCmd {
     protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, sql.getSql());
-        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-        defineColumnType(5, Types.LONGVARBINARY);
-        defineColumnType(8, Types.LONGVARBINARY);
-        defineColumnType(9, Types.LONGVARBINARY);
-        defineColumnType(10, Types.LONGVARBINARY);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(5, Types.LONGVARBINARY);
+            defineColumnType(8, Types.LONGVARBINARY);
+            defineColumnType(9, Types.LONGVARBINARY);
+            defineColumnType(10, Types.LONGVARBINARY);
+        }
         this.sqlCmd = sql;
     }
 

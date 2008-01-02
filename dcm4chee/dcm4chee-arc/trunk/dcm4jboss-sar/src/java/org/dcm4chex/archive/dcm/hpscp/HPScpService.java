@@ -54,6 +54,8 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.jdbc.HPQueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.HPRetrieveCmd;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
@@ -144,6 +146,44 @@ public class HPScpService extends AbstractScpService {
         this.sendPendingMoveRSP = sendPendingMoveRSP;
     }
 
+    public final boolean getQueryAccessBlobAsLongVarBinary() {
+        return HPQueryCmd.accessBlobAsLongVarBinary;
+    }
+
+    public final void setQueryAccessBlobAsLongVarBinary(
+            boolean accessBlobAsLongVarBinary) {
+        HPQueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    }
+
+    public final boolean getRetrieveAccessBlobAsLongVarBinary() {
+        return HPRetrieveCmd.accessBlobAsLongVarBinary;
+    }
+
+    public final void setRetrieveAccessBlobAsLongVarBinary(
+            boolean accessBlobAsLongVarBinary) {
+        HPRetrieveCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    }
+
+    public final String getQueryTransactionIsolationLevel() {
+        return HPQueryCmd.transactionIsolationLevelAsString(
+                HPQueryCmd.transactionIsolationLevel);
+    }
+
+    public final void setQueryTransactionIsolationLevel(String level) {
+        HPQueryCmd.transactionIsolationLevel =
+            HPQueryCmd.transactionIsolationLevelOf(level);
+    }
+
+    public final String getRetrieveTransactionIsolationLevel() {
+        return HPRetrieveCmd.transactionIsolationLevelAsString(
+                HPRetrieveCmd.transactionIsolationLevel);
+    }
+
+    public final void setRetrieveTransactionIsolationLevel(String level) {
+        HPRetrieveCmd.transactionIsolationLevel =
+            HPRetrieveCmd.transactionIsolationLevelOf(level);
+    }
+    
     public AEDTO queryAEData(String aet, InetAddress addr)
             throws DcmServiceException {
         try {

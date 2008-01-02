@@ -145,6 +145,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private static final String SR_CODE = "sr_code";
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -657,8 +658,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
+            if (accessBlobAsLongVarBinary) {
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
+            }
         }
 
         protected void init() {
@@ -691,9 +694,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
+            if (accessBlobAsLongVarBinary) {
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
+                defineColumnType(2, Types.LONGVARBINARY);
+            }
             addAdditionalReturnKeys();
         }
 
@@ -750,10 +755,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-            defineColumnType(3, Types.LONGVARBINARY);
+            if (accessBlobAsLongVarBinary) {
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
+                defineColumnType(2, Types.LONGVARBINARY);
+                defineColumnType(3, Types.LONGVARBINARY);
+            }
             addAdditionalReturnKeys();
         }
 
@@ -821,11 +828,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-            defineColumnType(3, Types.LONGVARBINARY);
-            defineColumnType(4, Types.LONGVARBINARY);
+            if (accessBlobAsLongVarBinary) {
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
+                defineColumnType(2, Types.LONGVARBINARY);
+                defineColumnType(3, Types.LONGVARBINARY);
+                defineColumnType(4, Types.LONGVARBINARY);
+            }
             addAdditionalReturnKeys();
         }
 

@@ -731,6 +731,32 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getQueryAccessBlobAsLongVarBinary"
+      setMethod="setQueryAccessBlobAsLongVarBinary">
+      <description>Change JDBC binding for Oracle BLOB's to LONGVARBINARY for
+      accessing attributes stored in BLOB columns of DB records on query.
+      Only effective with Oracle as DB.
+      </description>
+      <name>QueryAccessBlobAsLongVarBinary</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getRetrieveAccessBlobAsLongVarBinary"
+      setMethod="setRetrieveAccessBlobAsLongVarBinary">
+      <description>Change JDBC binding for Oracle BLOB's to LONGVARBINARY for
+      accessing attributes stored in BLOB columns of DB records on retrieve.
+      Only effective with Oracle as DB.
+      </description>
+      <name>RetrieveAccessBlobAsLongVarBinary</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getQueryTransactionIsolationLevel"
       setMethod="setQueryTransactionIsolationLevel">
       <description>Transaction isolation level for queries. Values can be one of: 

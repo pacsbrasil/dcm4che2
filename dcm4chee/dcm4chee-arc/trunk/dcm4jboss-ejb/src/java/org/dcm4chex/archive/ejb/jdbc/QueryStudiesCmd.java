@@ -67,6 +67,7 @@ import org.dcm4chex.archive.util.Convert;
 public class QueryStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -98,9 +99,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, Subject subject)
     	throws SQLException {
     	this(filter, hideMissingStudies, false, subject );
-        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-        defineColumnType(2, Types.LONGVARBINARY);
-        defineColumnType(4, Types.LONGVARBINARY);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
+        }
     }
     /**
      * Creates a new QueryStudiesCmd object with given filter.
