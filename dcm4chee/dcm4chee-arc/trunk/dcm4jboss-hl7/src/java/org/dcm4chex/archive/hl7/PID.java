@@ -95,4 +95,16 @@ class PID {
         return pid;
     }
 
+    public static boolean isEmpty(Document msg) {
+        Element pid = msg.getRootElement().element("PID");
+        if (pid == null)
+                return true;
+        List pidfds = pid.elements(HL7XMLLiterate.TAG_FIELD);
+        if (pidfds.size() < 3)
+                return true;
+        Element pidfd = (Element) pidfds.get(2);
+        String pid3 = pidfd.getText();
+        return pid3 == null || pid3.length() == 0;
+    }
+
 }

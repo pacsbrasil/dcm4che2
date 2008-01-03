@@ -64,7 +64,7 @@ class RSP extends ACK {
         List qakfds = qak.elements(HL7XMLLiterate.TAG_FIELD);
         this.queryTag = toString(qakfds.get(0));
         this.queryResponseStatus = toString(qakfds.get(1));
-        pid = "OK".equals(queryResponseStatus) ? new PID(msg) : null;
+        pid = "OK".equals(queryResponseStatus) && !PID.isEmpty(msg) ? new PID(msg) : null;
     }
 
     public String toString() {
