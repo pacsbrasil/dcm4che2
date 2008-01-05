@@ -207,6 +207,14 @@ public class FileCopyService extends AbstractFileCopyService {
         String destPath = ((FileCopyOrder) order)
                 .getDestinationFileSystemPath();
         List fileInfos = ((FileCopyOrder) order).getFileInfos();
+        int removed = removeSourceTarFiles(fileInfos);
+        if (removed > 0)
+            log.info(removed + " Files on tar FS removed from FileCopy Order!"
+                    + "\nRemaining files to copy:" + fileInfos.size());
+        if (fileInfos.isEmpty()) {
+            log.info("Skip FileCopy Order! No files to copy!");
+            return;
+        }
         if (destPath.startsWith("tar:")) {
             copyTar(fileInfos, destPath);
         }
@@ -341,6 +349,19 @@ public class FileCopyService extends AbstractFileCopyService {
             tarFile.delete();
             throw e;
         }
+    }
+
+    private int removeSourceTarFiles(List fileInfos) {
+        int removed = 0;
+        FileInfo fi;
+        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
+            fi = (FileInfo) iter.next();
+            if (fi.basedir.startsWith("tar:")) {
+                removed++;
+                iter.remove();
+            }
+        }
+        return removed;
     }
 
     private void writeMD5SUM(TarOutputStream tar, List fileInfos)

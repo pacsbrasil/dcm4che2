@@ -100,49 +100,49 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
 
     private String timerIDCheckSeriesWithoutMPPS;
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#getSchedulerServiceName()
      */
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#setSchedulerServiceName(javax.management.ObjectName)
      */
     public void setSchedulerServiceName(ObjectName schedulerServiceName) {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#getMppsScuServiceName()
      */
     public final ObjectName getMppsScuServiceName() {
         return mppsScuServiceName;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#setMppsScuServiceName(javax.management.ObjectName)
      */
     public final void setMppsScuServiceName(ObjectName mppsScuServiceName) {
         this.mppsScuServiceName = mppsScuServiceName;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#getCalledAET()
      */
     public final String getCalledAET() {
         return calledAET;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#setCalledAET(java.lang.String)
      */
     public final void setCalledAET(String calledAET) {
         this.calledAET = calledAET;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#getModalityAETitles()
      */
     public final String getModalityAETitles() {
@@ -158,7 +158,7 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
         return sb.toString();
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#setModalityAETitles(java.lang.String)
      */
     public final void setModalityAETitles(String s) {
@@ -178,14 +178,14 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
         }
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#getPollInterval()
      */
     public final String getPollInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(pollInterval);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#setPollInterval(java.lang.String)
      */
     public void setPollInterval(String interval) throws Exception {
@@ -206,7 +206,7 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
         emulateMPPS();
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#emulateMPPS()
      */
     public int emulateMPPS() {
@@ -225,7 +225,7 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
 
         // Create the proxy here in order to avoid multiple creations in the
         // following loops.
-        MPPSScuServiceMBean mppsSCU = MBeanServerInvocationHandler
+        MPPSScuServiceMBean mppsSCU = (MPPSScuServiceMBean) MBeanServerInvocationHandler
                 .newProxyInstance(server, mppsScuServiceName,
                         MPPSScuServiceMBean.class, true);
 
@@ -306,14 +306,14 @@ public class MPPSEmulatorService extends MBeanServiceBase implements
                 this);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#getTimerIDCheckSeriesWithoutMPPS()
      */
     public String getTimerIDCheckSeriesWithoutMPPS() {
         return timerIDCheckSeriesWithoutMPPS;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.dcm.mppsscu.MPPSEmulatorServiceMBean#setTimerIDCheckSeriesWithoutMPPS(java.lang.String)
      */
     public void setTimerIDCheckSeriesWithoutMPPS(
