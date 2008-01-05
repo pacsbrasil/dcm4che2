@@ -54,6 +54,40 @@ public class StudyPermission extends EntityBase {
 
     private static final long serialVersionUID = 8164450587441995636L;
 
+    /**
+     * Action value for permission to query attributes of the Study and included
+     * Series and Instance entities.
+     */
+    public static final String QUERY_ACTION = "Q";
+
+    /**
+     * Action value for permission to active retrieve or passive receive
+     * Instances of the Study.
+     */
+    public static final String READ_ACTION = "R";
+
+    /**
+     * Action value for permission to retrieve Instances of the Study to another
+     * application entity.
+     */
+    public static final String EXPORT_ACTION = "E";
+
+    /**
+     * Action value for permission to store Instances to an already existing
+     * Study.
+     */
+    public static final String APPEND_ACTION = "A";
+
+    /**
+     * Action value to modify attributes of the Study and included Series.
+     */
+    public static final String UPDATE_ACTION = "U";
+
+    /**
+     * Action value to delete the whole Study or individual Series or Instances.
+     */
+    public static final String DELETE_ACTION = "D";
+
     @Column(name = "study_iuid", nullable = false)
     private String studyIuid;
 
@@ -125,14 +159,5 @@ public class StudyPermission extends EntityBase {
                 ", suid=").append(getStudyIuid()).append(", action=").append(
                 getAction()).append(", role=").append(getRole()).append("]")
                 .toString();
-    }
-
-    public StudyPermissionDTO toDTO() {
-        StudyPermissionDTO dto = new StudyPermissionDTO();
-        dto.setPk(getPk().longValue());
-        dto.setStudyIuid(getStudyIuid());
-        dto.setAction(getAction());
-        dto.setRole(getRole());
-        return dto;
     }
 }

@@ -483,7 +483,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
         }
 
         Query query = em
-                .createQuery("from Series as s join s.study as st where s.ppsIuid is null and s.sourceAET=:aet and st.updatedTime < :ts");
+                .createQuery("select s from Series as s join s.study as st where s.ppsIuid is null and s.sourceAET=:aet and st.updatedTime < :ts");
         query.setParameter("aet", sourceAET);
         query.setParameter("ts", timestamp, TemporalType.TIMESTAMP);
 
@@ -497,7 +497,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
         }
         else {
             if (logger.isDebugEnabled())
-                logger.debug("Found series results.");
+                logger.debug("Found " + seriess.size() + " results.");
         }
 
         return seriess;

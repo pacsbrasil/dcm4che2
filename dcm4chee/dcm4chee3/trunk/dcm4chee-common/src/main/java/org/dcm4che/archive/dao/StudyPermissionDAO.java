@@ -38,7 +38,10 @@
 
 package org.dcm4che.archive.dao;
 
+import java.util.Collection;
+
 import javax.ejb.Local;
+import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.entity.StudyPermission;
 
@@ -51,6 +54,79 @@ import org.dcm4che.archive.entity.StudyPermission;
 public interface StudyPermissionDAO extends DAO<StudyPermission> {
     public static final String JNDI_NAME = "dcm4cheeArchive/StudyPermissionDAOImpl/local";
 
+    /**
+     * Create a {@link StudyPermission} record in the database.
+     * 
+     * @param suid
+     *            The study UID.
+     * @param action
+     *            The action pertaining to the permission
+     * @param role
+     *            The role pertaining to the permission
+     * @return The persistent {@link StudyPermission} object
+     * @throws ContentCreateException
+     */
     public StudyPermission create(String suid, String action, String role)
             throws ContentCreateException;
+
+    /**
+     * Find a {@link StudyPermission} record.
+     * 
+     * @param suid
+     *            The study UID.
+     * @param action
+     *            The action that the permission is for.
+     * @param role
+     *            The role of the user/group the permission affects.
+     * @return {@link StudyPermission}
+     * @throws PersistenceException
+     */
+    public StudyPermission find(String suid, String action, String role)
+            throws PersistenceException;
+
+    /**
+     * Find {@link StudyPermission} records for a study and specific action.
+     * 
+     * @param suid
+     *            The study UID.
+     * @param action
+     *            The action that the permissions are for.
+     * @return {@link Collection} of {@link StudyPermission} objects.
+     * @throws PersistenceException
+     */
+    public Collection<StudyPermission> findByStudyIuidAndAction(String suid,
+            String action) throws PersistenceException;
+
+    /**
+     * Find {@link StudyPermission} records for a study.
+     * 
+     * @param suid
+     *            The study UID.
+     * @return {@link Collection} of {@link StudyPermission} objects.
+     * @throws PersistenceException
+     */
+    public Collection<StudyPermission> findByStudyIuid(String suid)
+            throws PersistenceException;
+
+    /**
+     * Find {@link StudyPermission} objects from the database that are related
+     * to the studies for a particular patient.
+     * 
+     * @param patientPk
+     *            The primary key of the patient owning studies with
+     *            permissions.
+     * @return {@link Collection} of {@link StudyPermission} objects
+     * @throws PersistenceException
+     */
+    public Collection<StudyPermission> findByPatientPk(Long patientPk)
+            throws PersistenceException;
+
+    public Collection<String> selectStudyIuidsByPatientPk(Long patientPk)
+            throws PersistenceException;
+
+    public Collection<String> selectStudyIuidsByPatientId(String pid)
+            throws PersistenceException;
+
+    public Collection<String> selectStudyIuidsByPatientId(String pid,
+            String issuer) throws PersistenceException;
 }
