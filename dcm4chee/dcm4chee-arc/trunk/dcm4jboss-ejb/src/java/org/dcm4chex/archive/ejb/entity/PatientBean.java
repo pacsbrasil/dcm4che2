@@ -596,15 +596,17 @@ public abstract class PatientBean implements EntityBean {
     }
        
     private String toLike(PersonName pn) {
-		StringBuffer sb = new StringBuffer(
-				pn.get(PersonName.FAMILY).toUpperCase());
-		String gn = pn.get(PersonName.GIVEN);
-		if (gn != null) {
-			sb.append('^').append(gn.toUpperCase());
-		}
-		sb.append("^%");
-		return sb.toString();
-	}
+        String fn = pn.get(PersonName.FAMILY);
+        if (fn == null)
+            fn = "";
+        StringBuffer sb = new StringBuffer(fn.toUpperCase());
+        String gn = pn.get(PersonName.GIVEN);
+        if (gn != null) {
+            sb.append('^').append(gn.toUpperCase());
+        }
+        sb.append("^%");
+        return sb.toString();
+    }
 
 	/**
      * @ejb.interface-method
