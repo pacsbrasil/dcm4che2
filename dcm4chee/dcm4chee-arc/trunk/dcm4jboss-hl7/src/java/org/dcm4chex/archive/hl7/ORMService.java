@@ -40,14 +40,17 @@
 package org.dcm4chex.archive.hl7;
 
 import java.io.File;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
 
@@ -56,7 +59,10 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PPSStatus;
 import org.dcm4chex.archive.common.SPSStatus;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
+import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
@@ -64,7 +70,7 @@ import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.exceptions.PatientMismatchException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.HomeFactoryException;
+import org.dcm4chex.archive.util.XSLTUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
@@ -79,12 +85,13 @@ import org.xml.sax.ContentHandler;
 
 public class ORMService extends AbstractHL7Service {
     
+    private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
+
     private static final String[] OP_CODES = { "NW", "XO", "CA", "NOOP",
         "SC(SCHEDULED)", "SC(ARRIVED)", "SC(READY)", "SC(STARTED)",
         "SC(COMPLETED)", "SC(DISCONTINUED)" };
     
     private static final List OP_CODES_LIST = Arrays.asList(OP_CODES);
-
 
     private static final int NW = 0;
 
@@ -176,6 +183,14 @@ public class ORMService extends AbstractHL7Service {
         this.defaultStationName = defaultStationName;
     }
 
+    public final String getMWL2StoreConfigDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setMWL2StoreConfigDir(String path) {
+        templates.setConfigDir(path);
+    }
+
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         int op[] = toOp(msg);
@@ -195,7 +210,7 @@ public class ORMService extends AbstractHL7Service {
                         "Missing required PID-5: Patient Name");
             mergeProtocolCodes(ds, op);
             ds = addScheduledStationInfo(ds);
-            MWLManager mwlManager = getMWLManagerHome().create();
+            MWLManager mwlManager = getMWLManager();
             DcmElement spsSq = ds.remove(Tags.SPSSeq);
             Dataset sps;
             for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
@@ -208,6 +223,7 @@ public class ORMService extends AbstractHL7Service {
                     log("Schedule", ds);
                     logDataset("Insert MWL Item:", ds);
                     mwlManager.addWorklistItem(ds);
+                    updateRequestAttributes(ds, mwlManager);
                     break;
                 case XO:
                     log("Update", ds);
@@ -219,6 +235,7 @@ public class ORMService extends AbstractHL7Service {
                         logDataset("Insert MWL Item:", ds);
                         mwlManager.addWorklistItem(ds);
                     }
+                    updateRequestAttributes(ds, mwlManager);
                     break;
                 case CA:
                     log("Cancel", ds);
@@ -231,25 +248,88 @@ public class ORMService extends AbstractHL7Service {
                     break;
                 default:
                     sps.putCS(Tags.SPSStatus, SPSStatus.toString(op[i]-SC_OFF));
-                    log("Change SPS status of MWL Item:", ds);
-                    if (!mwlManager.updateSPSStatus(ds)) {
-                        log("No Such ", ds);
-                    }
-                    break;                    
+                    updateSPSStatus(ds, mwlManager);
+                    break;
                 }
             }
         } catch (HL7Exception e) {
             throw e;
         } catch (PatientMismatchException e) {
-            throw new HL7Exception("AR", e.getMessage(), e);            
+            throw new HL7Exception("AR", e.getMessage(), e);
         } catch (PatientMergedException e) {
             throw new HL7Exception("AR", e.getMessage(), e);
         } catch (DuplicateMWLItemException e) {
-            throw new HL7Exception("AR", e.getMessage(), e);            
+            throw new HL7Exception("AR", e.getMessage(), e);
         } catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
+    }
+
+    private void updateRequestAttributes(Dataset mwlitem,
+            MWLManager mwlManager) throws Exception {
+        MPPSManager mppsManager = getMPPSManager();
+        List mppsList = mppsManager.updateScheduledStepAttributes(mwlitem);
+        if (!mppsList.isEmpty()) {
+            updateSPSStatus(mwlitem, (Dataset) mppsList.get(0), mwlManager);
+            updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);
+        }
+    }
+
+    private void updateRequestAttributesInSeries(Dataset mwlitem, List mppsList,
+            MPPSManager mppsManager) throws Exception {
+        for (Iterator it = mppsList.iterator(); it.hasNext();) {
+            Dataset mpps = (Dataset) it.next();
+            String aet = mpps.getString(Tags.PerformedStationAET);
+            Templates xslt = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
+            if (xslt == null) {
+                log.warn("Failed to find or load stylesheet "
+                            + MWL2STORE_XSL
+                            + " for "
+                            + aet
+                            + ". Cannot update object attributes with request information.");
+                continue;
+            }
+            Dataset rqAttrs = DcmObjectFactory.getInstance().newDataset();
+            XSLTUtils.xslt(mwlitem, xslt, rqAttrs);
+            DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
+            if (perfSeriesSq != null && !perfSeriesSq.isEmpty()) {
+                for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
+                    String uid = perfSeriesSq.getItem(i)
+                            .getString(Tags.SeriesInstanceUID);
+                    mppsManager.updateSeriesAttributes(uid , rqAttrs, i == 0);
+                }
+            }
+        }
+
+    }
+    
+    private void updateSPSStatus(Dataset mwlitem, Dataset mpps,
+            MWLManager mwlManager) throws PatientMismatchException,
+            RemoteException {
+        String spsStatus;
+        Dataset sps = mwlitem.get(Tags.SPSSeq).getItem();
+        switch (PPSStatus.toInt(mpps.getString(Tags.PPSStatus))) {
+        case PPSStatus.IN_PROGRESS:
+            spsStatus = "STARTED";
+            break;
+        case PPSStatus.COMPLETED:
+            spsStatus = "COMPLETED";
+            break;
+        default: // PPSStatus.DISCOMPLETED
+            spsStatus = "DISCONTINUED";
+            break;
+        }
+        sps.putCS(Tags.SPSStatus, spsStatus);
+        updateSPSStatus(mwlitem, mwlManager);
+    }
+
+    private void updateSPSStatus(Dataset ds, MWLManager mwlManager)
+            throws PatientMismatchException, RemoteException {
+        log("Change SPS status of MWL Item:", ds);
+        if (!mwlManager.updateSPSStatus(ds)) {
+            log("No Such ", ds);
+        }
     }
 
     private void log(String op, Dataset ds) {
@@ -266,9 +346,14 @@ public class ORMService extends AbstractHL7Service {
                 + ds.getString(Tags.PatientID) + "]");
     }
 
-    private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
-        return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
-                MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
+    private MWLManager getMWLManager() throws Exception {
+        return ((MWLManagerHome) EJBHomeFactory.getFactory().lookup(
+                MWLManagerHome.class, MWLManagerHome.JNDI_NAME)).create();
+    }
+
+    private MPPSManager getMPPSManager() throws Exception {
+        return ((MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
     }
 
     private int[] toOp(Document msg) throws HL7Exception {

@@ -282,11 +282,11 @@ public abstract class MPPSBean implements EntityBean {
 		} catch (FinderException e) {
 			throw new EJBException(e);
 		}
-		log.info("Created " + prompt());
+		log.info("Created " + asString());
 	}
 
 	public void ejbRemove() throws RemoveException {
-		log.info("Deleting " + prompt());
+		log.info("Deleting " + asString());
 	}
 
 	/**
@@ -321,7 +321,10 @@ public abstract class MPPSBean implements EntityBean {
 		setPpsStatusAsInt(PPSStatus.toInt(status));
 	}
 
-	private String prompt() {
+        /**
+         * @ejb.interface-method
+         */
+	public String asString() {
 		return "MPPS[pk=" + getPk() + ", iuid=" + getSopIuid() + ", status="
 				+ getPpsStatus() + ", patient->" + getPatient() + "]";
 	}
@@ -381,5 +384,20 @@ public abstract class MPPSBean implements EntityBean {
         public Collection ejbHomeMppsIuidsByStudyIuid(String suid)
                 throws FinderException {
             return ejbSelectMppsIuidsByStudyIuid(suid);            
+        }
+
+        /**
+         * @ejb.select query="SELECT DISTINCT OBJECT(mpps) FROM MPPS mpps, IN(mpps.series) s WHERE s.study.studyIuid = ?1"
+         */ 
+        public abstract Collection ejbSelectMppsByStudyIuid(String suid)
+                throws FinderException;
+        
+        
+        /**
+         * @ejb.home-method
+         */
+        public Collection ejbHomeMppsByStudyIuid(String suid)
+                throws FinderException {
+            return ejbSelectMppsByStudyIuid(suid);            
         }
 }

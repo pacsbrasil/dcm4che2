@@ -118,6 +118,24 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMWL2StoreConfigDir"
+      setMethod="setMWL2StoreConfigDir">
+      <description><![CDATA[Directory where configuration file(s)
+      for coercion of request attributes in already stored instances are located:
+      if XSL stylesheet "mwl-cfindrsp2cstorerq.xsl" exists in this directory or
+      in a sub-directory equal to the AE Title of the Storage SCU, attributes
+      of already received instances from this SCU will be coerced according
+      these stylesheet(s) on create or update of worklist item(s).
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>CoerceConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-ae"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDeviceServiceName"
       setMethod="setDeviceServiceName">
       <description>Used internally - do NOT modify.

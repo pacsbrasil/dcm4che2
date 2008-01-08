@@ -41,8 +41,10 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -76,6 +78,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.exceptions.PatientMismatchException;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -638,4 +641,189 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
         return dsN;
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updateSeriesAttributes(String uid, Dataset newAttrs,
+            boolean updateStudyAttributes) {
+        try {
+            SeriesLocal series = seriesHome.findBySeriesIuid(uid);
+            series.updateAttributes(newAttrs, true);
+            if (updateStudyAttributes) {
+                series.getStudy().updateAttributes(newAttrs);
+            }
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        }
+    }
+    
+    /**
+     * Update Scheduled Step Attributes on receive of ORM^O01 message AFTER
+     * acquisition and storage of objects
+     * @throws PatientMismatchException 
+     * @ejb.interface-method
+     */
+    public List updateScheduledStepAttributes(Dataset mwlitem)
+            throws PatientMismatchException {
+        // query for already received MPPS for scheduled/updated procedure
+        String suid = mwlitem.getString(Tags.StudyInstanceUID);
+        if (log.isDebugEnabled()) {
+            log.debug("Query for MPPS for Study " + suid);
+        }
+        Collection c;
+        try {
+            c = mppsHome.mppsByStudyIuid(suid);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Found " + c.size() + " MPPS for Study " + suid);
+        }
+        if (c.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+        PatientLocal pat;
+        try {
+            pat = patHome.searchFor(mwlitem, false);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        List updated = new ArrayList(c.size());
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            MPPSLocal mpps = (MPPSLocal) it.next();
+            if (!pat.isIdentical(mpps.getPatient())) {
+                String prompt = "Patient[pid="
+                    + mwlitem.getString(Tags.PatientID) + ", issuer=" 
+                    + mwlitem.getString(Tags.IssuerOfPatientID)
+                    + "] does not match Patient associated with "
+                    + mpps.asString();
+                log.warn(prompt);
+                throw new PatientMismatchException(prompt);
+            }
+            Dataset attrs = mpps.getAttributes();
+            if (log.isDebugEnabled()) {
+                log.debug("Check " + mpps.asString()
+                        + " for update of Scheduled Step Attributes:");
+                log.debug(attrs);
+            }
+            DcmElement ssasq = attrs.get(Tags.ScheduledStepAttributesSeq);
+            if (updateScheduledStepAttributes(mwlitem, ssasq)) {
+                mpps.setAttributes(attrs);
+                updated.add(attrs);
+                log.info("Updated Scheduled Step Attributes of "
+                        + mpps.asString());
+                if (log.isDebugEnabled()) {
+                    log.debug(attrs);
+                }
+            }
+        }
+        return updated;
+    }
+
+    private boolean updateScheduledStepAttributes(Dataset mwlitem,
+            DcmElement ssasq) {
+        String suid = mwlitem.getString(Tags.StudyInstanceUID);
+        String rpid = mwlitem.getString(Tags.RequestedProcedureID);
+        Dataset sps = mwlitem.getItem(Tags.SPSSeq);
+        String spsid = sps.getString(Tags.SPSID);
+        for (int i = 0, n = ssasq.countItems(); i < n; i++) {
+            Dataset ssa = ssasq.getItem(i);
+            if (suid.equals(ssa.getString(Tags.StudyInstanceUID))
+                    && isNullOrEquals(
+                            ssa.getString(Tags.RequestedProcedureID), rpid)
+                    && isNullOrEquals(ssa.getString(Tags.SPSID), spsid)) {
+                boolean updated = updateRefStudySeq(ssa, suid);
+                if (updateSH(ssa, Tags.AccessionNumber,
+                        mwlitem.getString(Tags.AccessionNumber))) {
+                    updated = true;
+                }
+                if (updateLO(ssa, Tags.PlacerOrderNumber,
+                        mwlitem.getString(Tags.PlacerOrderNumber))) {
+                    updated = true;
+                }
+                if (updateLO(ssa, Tags.FillerOrderNumber,
+                        mwlitem.getString(Tags.FillerOrderNumber))) {
+                    updated = true;
+                }
+                if (updateSH(ssa, Tags.RequestedProcedureID, rpid)) {
+                    updated = true;
+                }
+                if (updateLO(ssa, Tags.RequestedProcedureDescription,
+                        mwlitem.getString(Tags.RequestedProcedureDescription))) {
+                    updated = true;
+                }
+                if (updateItem(ssa, Tags.RequestedProcedureCodeSeq,
+                        mwlitem.getItem(Tags.RequestedProcedureCodeSeq))) {
+                    updated = true;
+                }
+                if (updateSH(ssa, Tags.SPSID, spsid)) {
+                    updated = true;
+                }
+                if (updateLO(ssa, Tags.SPSDescription,
+                        sps.getString(Tags.SPSDescription))) {
+                    updated = true;
+                }
+                if (updateItems(ssa, Tags.ScheduledProtocolCodeSeq,
+                        sps.get(Tags.ScheduledProtocolCodeSeq))) {
+                    updated = true;
+                }
+                return updated;
+            }
+         }
+        return false;
+    }
+
+    private boolean isNullOrEquals(String val, String ref) {
+        return val == null || val.equals(ref);
+    }
+    
+
+    private boolean updateRefStudySeq(Dataset ssa, String suid) {
+        if (ssa.getItem(Tags.RefStudySeq) != null) {
+            return false;
+        }
+        Dataset refStudy = ssa.putSQ(Tags.RefStudySeq).addNewItem();
+        refStudy.putUI(Tags.RefSOPClassUID, UIDs.DetachedStudyManagement);
+        refStudy.putUI(Tags.RefSOPInstanceUID, suid);
+        return true;
+    }
+
+    private boolean updateSH(Dataset ssa, int tag, String val) {
+        if (val == null || val.equals(ssa.getString(tag))) {
+            return false;
+        }
+        ssa.putSH(tag, val);
+        return true;
+    }
+
+    private boolean updateLO(Dataset ssa, int tag, String val) {
+        if (val == null || val.equals(ssa.getString(tag))) {
+            return false;
+        }
+        ssa.putLO(tag, val);
+        return true;
+    }
+
+    private boolean updateItem(Dataset ssa, int tag, Dataset item) {
+        if (item == null || item.equals(ssa.getItem(tag))) {
+            return false;
+        }
+        ssa.putSQ(tag).addItem(item);
+        return true;
+    }
+    
+    private boolean updateItems(Dataset ssa, int tag, DcmElement sq) {
+        if (sq == null || sq.isEmpty() || sq.equals(ssa.get(tag))) {
+            return false;
+        }
+        DcmElement dstsq = ssa.putSQ(tag);
+        for (int i = 0, n = sq.countItems(); i < n; i++) {
+            dstsq.addItem(sq.getItem(i));
+        }
+        return true;
+    }
+
 }

@@ -862,6 +862,20 @@ public abstract class StudyBean implements EntityBean {
         setEncodedAttributes(b);
     }
 
+    /** 
+    * @ejb.interface-method
+    */
+   public void updateAttributes( Dataset newAttrs) {
+       Dataset oldAttrs = getAttributes(false);
+       if ( oldAttrs == null ) {
+           setAttributes( newAttrs );
+       } else {
+           AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
+           if ( AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
+               setAttributes(oldAttrs);
+           }
+       }
+   }
     /**
      * @throws DcmServiceException 
      * @ejb.interface-method
