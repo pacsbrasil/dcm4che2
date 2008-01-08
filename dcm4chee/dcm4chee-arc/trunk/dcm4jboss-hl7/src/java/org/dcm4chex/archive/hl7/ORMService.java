@@ -213,11 +213,13 @@ public class ORMService extends AbstractHL7Service {
             MWLManager mwlManager = getMWLManager();
             DcmElement spsSq = ds.remove(Tags.SPSSeq);
             Dataset sps;
+            int opIdx;
             for (int i = 0, n = spsSq.countItems(); i < n; ++i) {
                 sps = spsSq.getItem(i);
                 ds.putSQ(Tags.SPSSeq).addItem(sps);
                 adjustAttributes(ds);
-                switch (op[i]) {
+                opIdx = op.length == 1 ? 0 : i;
+                switch (op[opIdx]) {
                 case NW:
                     addMissingAttributes(ds);
                     log("Schedule", ds);
@@ -247,7 +249,7 @@ public class ORMService extends AbstractHL7Service {
                     log("NOOP", ds);
                     break;
                 default:
-                    sps.putCS(Tags.SPSStatus, SPSStatus.toString(op[i]-SC_OFF));
+                    sps.putCS(Tags.SPSStatus, SPSStatus.toString(op[opIdx]-SC_OFF));
                     updateSPSStatus(ds, mwlManager);
                     break;
                 }
@@ -482,7 +484,8 @@ public class ORMService extends AbstractHL7Service {
             } else {
                 spcSqMap.put(spsid, spcSqI);
                 newSpsSq.addItem(sps);
-                op[j++] = op[i];
+                if ( op.length > 1 ) 
+                    op[j++] = op[i];
             }
         }
     }
