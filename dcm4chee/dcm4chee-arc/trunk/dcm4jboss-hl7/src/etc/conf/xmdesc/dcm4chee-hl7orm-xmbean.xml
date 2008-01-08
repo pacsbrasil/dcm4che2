@@ -122,12 +122,12 @@
       setMethod="setMWL2StoreConfigDir">
       <description><![CDATA[Directory where configuration file(s)
       for coercion of request attributes in already stored instances are located:
-      if XSL stylesheet "mwl-cfindrsp2cstorerq.xsl" exists in this directory or
-      in a sub-directory equal to the AE Title of the Storage SCU, attributes
+      if there is a XSL stylesheet "mwl-cfindrsp2cstorerq.xsl" in this directory
+      or in a sub-directory equal to the AE Title of the Storage SCU, attributes
       of already received instances from this SCU will be coerced according
       these stylesheet(s) on create or update of worklist item(s).
       A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>  
+      <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>MWL2StoreConfigDirectory</name>
       <type>java.lang.String</type>
