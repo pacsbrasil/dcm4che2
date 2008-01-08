@@ -487,7 +487,7 @@ public abstract class SeriesBean implements EntityBean {
             setAttributes( newAttrs );
         } else {
             AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
-            if ( AttrUtils.mergeAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
+            if (AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
                 setAttributes(oldAttrs);
             }
         }
@@ -495,9 +495,11 @@ public abstract class SeriesBean implements EntityBean {
     
     private boolean updateSeriesRequest(Dataset oldAttrs, Dataset newAttrs, boolean overwriteReqAttrSQ) throws CreateException {
         DcmElement newReqAttrSQ = newAttrs.get(Tags.RequestAttributesSeq);
-        if ( newReqAttrSQ == null ) return false;
-        DcmElement oldReqAttrSQ = oldAttrs == null ? null : oldAttrs.get(Tags.RequestAttributesSeq);
-        if ( newReqAttrSQ.equals(oldReqAttrSQ) ){
+        if (newReqAttrSQ == null) {
+            return false;
+        }
+        if (oldAttrs != null
+                && newReqAttrSQ.equals(oldAttrs.get(Tags.RequestAttributesSeq))) {
             return false;
         }
         Collection c = getRequestAttributes();
