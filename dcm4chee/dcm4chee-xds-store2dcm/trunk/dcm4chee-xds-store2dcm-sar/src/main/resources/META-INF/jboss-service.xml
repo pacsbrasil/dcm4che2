@@ -6,8 +6,8 @@
          xmbean-dd="">
 
     <xmbean>
-      <description><![CDATA[<b>WebView Service</b><br/>
-		Provides a Service to launch a DICOM Viewer web application (applet).<br/>.
+      <description><![CDATA[<b>Store2Dcm Service</b><br/>
+		Provides a Service to Store XDS Documents as encapsulated DICOM Objects in a DICOM archive.<br/>.
 		]]> </description>
 
       <descriptors>
