@@ -42,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +55,6 @@ import javax.management.ObjectName;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -63,7 +63,6 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.SOAPConnectionFactory;
-import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -73,12 +72,18 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.ActiveParticipant;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.util.UIDUtils;
+import org.dcm4chex.xds.UUID;
 import org.dcm4chex.xds.XDSDocumentMetadata;
+import org.dcm4chex.xds.audit.HttpUserInfo;
+import org.dcm4chex.xds.audit.XDSExportMessage;
+import org.dcm4chex.xds.audit.XDSImportMessage;
 import org.dcm4chex.xds.common.SoapBodyProvider;
 import org.dcm4chex.xds.common.XDSResponseObject;
 import org.dcm4chex.xds.mbean.store.DcmStorageImpl;
-import org.dcm4chex.xds.mbean.store.Storage;
 import org.dcm4chex.xds.mbean.store.StoredDocument;
 import org.dcm4chex.xds.query.SQLQueryObject;
 import org.dcm4chex.xds.query.XDSQueryObject;
@@ -102,19 +107,13 @@ import org.xml.sax.SAXException;
 public class XDSService extends ServiceMBeanSupport {
 
     private static final String OBJECT_REF = "ObjectRef";
-
 	private static final String EXTERNAL_IDENTIFIER = "ExternalIdentifier";
-
 	private static final String EXTRINSIC_OBJECT = "ExtrinsicObject";
-
+	private static final String REGISTRY_PACKAGE = "RegistryPackage";
 	private static final String LEAF_REGISTRY_OBJECT_LIST = "LeafRegistryObjectList";
-
 	private static final String SUBMIT_OBJECTS_REQUEST = "SubmitObjectsRequest";
-
 	private static final String NS_URN_RIM_2_1 = "urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1";
-
 	private static final String NS_URN_REGISTRY_2_1 = "urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1";
-
 	private static final String NONE = "NONE";
     
 	private static Logger log = Logger.getLogger(XDSService.class.getName());
@@ -450,6 +449,13 @@ public class XDSService extends ServiceMBeanSupport {
                 log.error("No Attachments found -> Missing document!");
 				return new XDSRegistryResponse( false, "XDSMissingDocument", "XDSMissingDocument",null);
             }
+            Element registryPackage = this.getRegistryPackage(leafRegistryObjectList);
+            if ( registryPackage == null ) {
+                log.error("No RegistryPackage found!");
+				return new XDSRegistryResponse( false, "XDSRepositoryError", "RegistryPackage missing",null);
+            }
+            submissionUID = getValueOfExternalIdentifier(registryPackage, UUID.XDSSubmissionSet_uniqueId);
+            log.info("SubmissionSet.uniqueID:"+submissionUID);
 	        XDSDocumentMetadata metadata;
 	        Element el;
 	        AttachmentPart part;
@@ -474,11 +480,12 @@ public class XDSService extends ServiceMBeanSupport {
 	                storedDocuments.add(storedDoc);
 	            }
 	            if ( testPatient!= null) {
-	                log.warn("Change patientID in metadata (urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446) to testPatient! new patientID:"+testPatient);
-	                this.updateExternalIdentifier(el,"urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446",testPatient);
+	                log.warn("Change patientID in metadata ("+UUID.XDSSubmissionSet_patientId+") to testPatient! new patientID:"+testPatient);
+	                this.updateExternalIdentifier(el,UUID.XDSSubmissionSet_patientId,testPatient);
 	            }
 	        }
 	        log.info(storedDocuments.size()+" Documents saved!");
+            this.logImport(submissionUID, true);
 	        MessageFactory messageFactory = MessageFactory.newInstance();
 	        SOAPMessage msg = messageFactory.createMessage();
 	        msg.getSOAPPart().setContent(message.getSOAPPart().getContent());
@@ -490,7 +497,9 @@ public class XDSService extends ServiceMBeanSupport {
 	        bodyElement.appendChild(copy);
 */	        
 	        SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
-            if ( ! checkResponse( response, "RegistryResponse" ) ) {
+	        boolean success = checkResponse( response, "RegistryResponse" );
+	        logExport(submissionUID, success);	
+            if ( ! success ) {
             	deleteDocuments(storedDocuments);
             	log.error("Export document(s) failed! see prior messages for reason. SubmissionSet uid:"+submissionUID);
             	return new SOAPMessageResponse(response);
@@ -499,10 +508,16 @@ public class XDSService extends ServiceMBeanSupport {
 			return new SOAPMessageResponse(response);
 		} catch ( Exception x ) {
 			log.error("Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
+			logExport(submissionUID != null ? submissionUID : "SubmissionSet UID missing", false);
 			deleteDocuments(storedDocuments);
 			return new XDSRegistryResponse( false, "XDSRepositoryError", "Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
 		}
 		
+	}
+	
+	private String getSubmissionUID(Element registryPackage) {
+		List l = getExternalIdentifiers(registryPackage);
+		return null;
 	}
     
 	private Node getSubmitObjectsRequest(SOAPBody body) {
@@ -515,6 +530,15 @@ public class XDSService extends ServiceMBeanSupport {
     private List getExtrinsicObjects(Node leafRegistryObjectList) {
 		return getChildNodes(leafRegistryObjectList, EXTRINSIC_OBJECT);
 	}
+    private Element getRegistryPackage(Node leafRegistryObjectList) {
+		List l = getChildNodes(leafRegistryObjectList, REGISTRY_PACKAGE);
+		if ( l.size() < 1 )
+			return null;
+		if ( l.size() > 1 )
+			log.warn("This request contains more than one RegistryPackage! Only the first will be used!");
+		return (Element) l.get(0);
+	}
+    
     private List getExternalIdentifiers(Node extrinsicObject) {
 		return getChildNodes(extrinsicObject, EXTERNAL_IDENTIFIER);
 	}
@@ -545,6 +569,17 @@ public class XDSService extends ServiceMBeanSupport {
 			}
 		}
 		return l;
+	}
+	private String getValueOfExternalIdentifier(Element node, String scheme) { 
+		List l = getChildNodes(node, EXTERNAL_IDENTIFIER);
+		NamedNodeMap attributes;
+		for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+			attributes = ((Node) iter.next() ).getAttributes();
+			if ( attributes.getNamedItem("identificationScheme").getNodeValue().equals(scheme) ) {
+				return attributes.getNamedItem("value").getNodeValue();
+			}
+		}
+		return null;
 	}
 	
 	public List xdsQuery(XDSQueryObject query) throws SOAPException {
@@ -946,4 +981,56 @@ public class XDSService extends ServiceMBeanSupport {
         return l;
     }
 	/*_*/
+    
+	private void logExport(String submissionUID, boolean success) {
+        String requestHost = null;
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        String user = userInfo.getUserId();
+        requestHost = userInfo.getHostName();
+        XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryExportMessage(submissionUID);
+        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                                            AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+        msg.setSource(AuditMessage.getProcessID(), 
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(),
+                AuditMessage.getLocalHostName());
+        msg.setHumanRequestor(user != null ? user : "unknown", null, null);
+        String host = "unknown";
+        try {
+            host = new URL(xdsRegistryURI).getHost();
+        } catch (MalformedURLException ignore) {
+        }
+        msg.setDestination(xdsRegistryURI, null, "XDS Export", host );
+    	//ActiveParticipant.setEncodeUserIsRequestorTrue(true);//ensure that userIsRequestor attribute is in message!
+
+        msg.validate();
+        Logger.getLogger("auditlog").info(msg);
+	}
+	private void logImport(String submissionUID, boolean success) {
+        String requestHost = null;
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        String user = userInfo.getUserId();
+        requestHost = userInfo.getHostName();
+        XDSImportMessage msg = new XDSImportMessage();
+        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                                            AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
+        msg.setSource(AuditMessage.getProcessID(), 
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(),
+                AuditMessage.getLocalHostName() );
+        msg.setHumanRequestor(user != null ? user : "unknown", null, null);
+        
+        String requestURI = userInfo.getRequestURI();
+        String host = "unknown";
+        try {
+            host = new URL(requestURI).getHost();
+        } catch (MalformedURLException ignore) {
+        }
+        msg.setDestination(requestURI, null, "XDS Export", host );
+        msg.setSubmissionSet(submissionUID);
+    	//ActiveParticipant.setEncodeUserIsRequestorTrue(true);//ensure that userIsRequestor attribute is in message!
+        msg.validate();
+        Logger.getLogger("auditlog").info(msg);
+	}
+
 }
