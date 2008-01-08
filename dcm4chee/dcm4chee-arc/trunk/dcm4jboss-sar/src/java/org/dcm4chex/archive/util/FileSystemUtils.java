@@ -208,6 +208,8 @@ public class FileSystemUtils {
 //        }
 
         // build and run the 'dir' command
+    	if (! (path.charAt(0) == '\"') )
+    		path = "\""+path+"\"";
         String[] cmdAttrbs = new String[] {"cmd.exe", "/C", "dir /c " + path};
 
         // read in the output of the command to an ArrayList
