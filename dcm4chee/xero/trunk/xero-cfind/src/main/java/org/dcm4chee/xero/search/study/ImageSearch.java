@@ -48,7 +48,8 @@ import org.dcm4che2.data.Tag;
 public class ImageSearch extends SeriesSearch 
 {
 	public static final String IMAGE_QUERY_LEVEL="IMAGE";
-	
+	public static final int InstanceSeq =  0x00430040;
+
 	public static final int[] IMAGE_LEVEL_RETURN_KEYS = {
 		Tag.PatientID, Tag.PatientBirthDate, Tag.PatientSex,
         Tag.NumberOfPatientRelatedStudies,
@@ -68,6 +69,8 @@ public class ImageSearch extends SeriesSearch
         Tag.InstanceNumber,
         Tag.SOPClassUID,
         Tag.SOPInstanceUID,
+        Tag.Rows, Tag.Columns, Tag.WindowCenter, Tag.WindowWidth, Tag.NumberOfFrames,
+        InstanceSeq,
 	};
 
 	@Override

@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -268,6 +269,10 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
         return tcuids[0];
     }
 
+    /** Adds this object to the result - allows overriding to test for specific conditions in the data */
+    protected void addResult(ResultFromDicom resultFromDicom, DicomObject data) {
+       resultFromDicom.addResult(data);
+    }
     
     /**
      * This method performs a remote query against the local DCM4CHEE ae instance, on port 11112, and
@@ -275,7 +280,8 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      */
 	public void find(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom) {
 		try {
-		   log.info("Connecting to "+hostname+" remoteAE="+remoteAE+" on conn="+conn);
+		   log.debug("Connecting to "+hostname+" remoteAE="+remoteAE+" on conn="+conn);
+		   long start = System.nanoTime();
 	       assoc = ae.connect(remoteAE, executor);
 	       TransferCapability tc = selectTransferCapability(getCuids());
 	       if ( tc==null )
@@ -284,14 +290,28 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	       String tsuid = selectTransferSyntax(tc);
 	       DicomObject keys = generateKeys(searchCriteria);
 	       DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
+	       int cntResults = 0;
 	       while(rsp.next()) {
 	    	   DicomObject cmd = rsp.getCommand();
-	    	   if (CommandUtils.isPending(cmd)) {
+	    	   if (CommandUtils.isPending(cmd)) {	    		  
 	    		   DicomObject data = rsp.getDataset();
-	    		   resultFromDicom.addResult(data);
+	    		   if( data.contains(Tag.DirectoryRecordSequence) ) {
+	    			  log.info("Using blocked structure.");
+	    			  DicomElement dir = data.get(Tag.DirectoryRecordSequence);
+	    			  for(int i=0, n=dir.countItems(); i<n; i++) {
+	    				 data = dir.getDicomObject(i);
+	    				 addResult(resultFromDicom,data);
+	    				 cntResults++;
+	    			  }
+	    		   } 
+	    		   else {
+	    			  addResult(resultFromDicom,data);
+	    			  cntResults++;
+	    		   }
 	    	   }
 	       }
 	       assoc.release(true);
+	       log.debug("Found "+cntResults+" in "+(System.nanoTime()-start)/1e6+" ms");
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {

@@ -36,6 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.servlet;
+
 import java.io.IOException;
 
 import javax.servlet.Filter;
@@ -50,56 +51,62 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MaxAgeFilter implements Filter
-{
-	static Logger log = LoggerFactory.getLogger(MaxAgeFilter.class);
+public class MaxAgeFilter implements Filter {
+   static Logger log = LoggerFactory.getLogger(MaxAgeFilter.class);
 
-	/** The maximum age to declare an item, in seconds. 1 minute by default. */
-	private long maxAge = 60;
-	
-	/** Set any privacy private/public extensions - doesn't actually work in browsers right now,
-	 * so leave it blank.
-	 */
-	private String privacy = "";
+   /** The maximum age to declare an item, in seconds. 1 minute by default. */
+   private long maxAge = 60;
 
-	public void destroy() {
-	}
+   /**
+     * Set any privacy private/public extensions - doesn't actually work in
+     * browsers right now, so leave it blank.
+     */
+   private String privacy = "";
 
-	/**
-	 * Add the cache control private and max-age= parameters to allow the page
-	 * to be cached by the client browser.
-	 */
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		HttpServletResponse httpResponse = (HttpServletResponse) response;
-		HttpServletRequest httpRequest = (HttpServletRequest) request;
-		httpResponse.setHeader("Cache-Control", "max-age="+maxAge+privacy);
-		httpResponse.setHeader("Pragma", null);
-		httpResponse.setHeader("Expires", null);
+   public void destroy() {
+   }
 
-		// Seems to break IE httpResponse.addHeader("Cache-Control", "private");
-		log.debug("For request "+httpRequest.getRequestURI()+" set max-age="+maxAge);
-		chain.doFilter(request,response);
-	}
+   /**
+     * Add the cache control private and max-age= parameters to allow the page
+     * to be cached by the client browser.
+     */
+   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+	  HttpServletResponse httpResponse = (HttpServletResponse) response;
+	  HttpServletRequest httpRequest = (HttpServletRequest) request;
+	  String noCache = httpRequest.getParameter("no-cache");
+	  if (noCache == null || noCache.equalsIgnoreCase("false")) {
+		 httpResponse.setHeader("Cache-Control", "max-age=" + maxAge + privacy);
+		 httpResponse.setHeader("Pragma", null);
+		 httpResponse.setHeader("Expires", null);
+		 log.debug("For request " + httpRequest.getRequestURI() + " set max-age=" + maxAge);
+	  }
+	  else {
+		 log.info("Not caching request.");
+	  }
 
-	/**
-	 * Read the maximum age from the maxAge filter configuration parameter in web.xml.
-	 * This value is in seconds, and defaults to 1 minute if not otherwise specified.
-	 */
-	public void init(FilterConfig config) throws ServletException {
-		String sMaxAge = config.getInitParameter("maxAge");
-		if( sMaxAge!=null ) {
-			this.maxAge = Long.parseLong(sMaxAge);
-			log.info("Set max-age to "+maxAge+" for "+config.getFilterName());
-		}
-		String sPrivacy = config.getInitParameter("privacy");
-		if( sPrivacy!=null ) {
-		   if( sPrivacy.isEmpty() ) {
-			  privacy="";
-		   } else
-		   {
-			  privacy = ", "+sPrivacy;
-		   }
-		}
-	}
+	  // Seems to break IE httpResponse.addHeader("Cache-Control", "private");
+	  chain.doFilter(request, response);
+   }
+
+   /**
+     * Read the maximum age from the maxAge filter configuration parameter in
+     * web.xml. This value is in seconds, and defaults to 1 minute if not
+     * otherwise specified.
+     */
+   public void init(FilterConfig config) throws ServletException {
+	  String sMaxAge = config.getInitParameter("maxAge");
+	  if (sMaxAge != null) {
+		 this.maxAge = Long.parseLong(sMaxAge);
+		 log.info("Set max-age to " + maxAge + " for " + config.getFilterName());
+	  }
+	  String sPrivacy = config.getInitParameter("privacy");
+	  if (sPrivacy != null) {
+		 if (sPrivacy.isEmpty()) {
+			privacy = "";
+		 } else {
+			privacy = ", " + sPrivacy;
+		 }
+	  }
+   }
 
 }

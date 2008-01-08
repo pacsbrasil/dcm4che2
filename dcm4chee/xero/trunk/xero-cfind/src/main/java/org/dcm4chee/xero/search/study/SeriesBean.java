@@ -46,6 +46,7 @@ import javax.xml.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
@@ -119,10 +120,17 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
    /** Add any image level information to this series. */
    public void addResult(DicomObject data) {
 	  String sopInstanceUID = data.getString(Tag.SOPInstanceUID);
-	  if (sopInstanceUID == null)
+	  DicomElement instances = data.get(ImageSearch.InstanceSeq);
+	  if (sopInstanceUID == null && instances==null)
 		 return;
 	  if (getChildren().containsKey(sopInstanceUID)) {
 		 log.debug("Series " + getSeriesInstanceUID() + " already contains a child " + sopInstanceUID);
+	  } else if( instances!=null && instances.countItems()>0 ) {
+// TODO Remove this code or fix it to match whatever VMF code is final.
+		 for(int i=0, n=instances.countItems(); i<n; i++) {
+			DicomObject child = instances.getDicomObject(i);
+			addResult(child);
+		 }
 	  } else {
 		 DicomObjectType dobj = createChildByModality(data);
 		 LocalModel<?> localModel = (LocalModel<?>) dobj;
