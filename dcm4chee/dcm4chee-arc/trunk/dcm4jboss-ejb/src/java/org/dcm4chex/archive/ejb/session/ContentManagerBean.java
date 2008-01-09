@@ -242,6 +242,14 @@ public abstract class ContentManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
+    public Dataset getInstance(long instancePk) throws FinderException {
+        return instanceHome.findByPrimaryKey(new Long(instancePk)).getAttributes(true);
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
     public Dataset getInstanceByIUID(String sopiuid) throws FinderException {
         return instanceHome.findBySopIuid(sopiuid).getAttributes(true);
     }
@@ -761,6 +769,23 @@ public abstract class ContentManagerBean implements SessionBean {
     public boolean isStudyAvailable(long studyPk, int availability) throws FinderException {
     	StudyLocal sl = studyHome.findByPrimaryKey( new Long( studyPk ) );
     	return sl.isStudyAvailable(availability);
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getHeaderInfo(long patPk, long studyPk, long seriesPk, long instancePk) throws FinderException {
+    	Dataset ds = dof.newDataset();
+        if ( patPk != -1 )
+        	ds.putAll( patHome.findByPrimaryKey(new Long(patPk)).getAttributes(true) );
+        if ( studyPk != -1 )
+        	ds.putAll( studyHome.findByPrimaryKey(new Long(studyPk)).getAttributes(true) );
+        if ( seriesPk != -1 )
+        	ds.putAll( seriesHome.findByPrimaryKey(new Long(seriesPk)).getAttributes(true) );
+        if ( instancePk != -1 )
+        	ds.putAll( instanceHome.findByPrimaryKey(new Long(instancePk)).getAttributes(true) );
+        return ds;
     }
     
 	public class InstanceNumberComparator implements Comparator {
