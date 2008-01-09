@@ -38,8 +38,9 @@
 
 package org.dcm4che2.data;
 
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import junit.framework.TestCase;
 
@@ -96,27 +97,43 @@ public class VRTest extends TestCase {
     }
 
     public final void testVR_DA() {
-        SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
         Date t = VR.DA.toDate(DATE_20030515);
-        assertEquals("20030515", f.format(t));
+        assertEqualsDate(2003, 5, 15, t);
         assertEquals(DATE_20030515, VR.DA.toBytes(t));
-        assertEquals("20030515", f.format(VR.DA.toDate(DATE_2003_05_15)));
+        assertEqualsDate(2003, 5, 15, VR.DA.toDate(DATE_2003_05_15));
+    }
+
+    private void assertEqualsDate(int year, int month, int dayOfMonth, Date t) {
+        Calendar c = new GregorianCalendar();
+        c.setTime(t);
+        assertEquals(year, c.get(Calendar.YEAR));
+        assertEquals(month, c.get(Calendar.MONTH)+1);
+        assertEquals(dayOfMonth, c.get(Calendar.DAY_OF_MONTH));
     }
 
     public final void testVR_TM() {
-        SimpleDateFormat f = new SimpleDateFormat("HHmmss_SSS");
         Date t = VR.TM.toDate(TIME_103845_234);
-        assertEquals("103845_234", f.format(t));
+        assertEqualsTime(10, 38, 45, 234, t);
         assertEquals(TIME_103845_234, VR.TM.toBytes(t));
-        assertEquals("100000_000", f.format(VR.TM.toDate(TIME_10)));
-        assertEquals("103800_000", f.format(VR.TM.toDate(TIME_1038)));
-        assertEquals("103845_000", f.format(VR.TM.toDate(TIME_103845)));
+        assertEqualsTime(10, 0, 0, 0, VR.TM.toDate(TIME_10));
+        assertEqualsTime(10, 38, 0, 0, VR.TM.toDate(TIME_1038));
+        assertEqualsTime(10, 38, 45, 0, VR.TM.toDate(TIME_103845));
+    }
+
+    private void assertEqualsTime(int hourOfDay, int minute, int second,
+            int millisecond, Date t) {
+        Calendar c = new GregorianCalendar();
+        c.setTime(t);
+        assertEquals(hourOfDay, c.get(Calendar.HOUR_OF_DAY));
+        assertEquals(minute, c.get(Calendar.MINUTE));
+        assertEquals(second, c.get(Calendar.SECOND));
+        assertEquals(millisecond, c.get(Calendar.MILLISECOND));
     }
 
     public final void testVR_DT() {
-        SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
         Date t = VR.DT.toDate(DATETIME_20030515_103845_234);
-        assertEquals("20030515_103845_234", f.format(t));
+        assertEqualsDate(2003, 5, 15, t);
+        assertEqualsTime(10, 38, 45, 234, t);
         assertEquals(DATETIME_20030515_103845_234, VR.DT.toBytes(t));
     }
 
