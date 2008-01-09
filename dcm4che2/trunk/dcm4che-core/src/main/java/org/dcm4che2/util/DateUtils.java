@@ -40,6 +40,7 @@ package org.dcm4che2.util;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
@@ -53,7 +54,7 @@ public class DateUtils {
     public static Date parseDA(String s, boolean end) {
         if (s == null || s.length() == 0)
             return null;
-        Calendar c = Calendar.getInstance();
+        Calendar c = new GregorianCalendar();
         c.clear();
         if (end) {
             setToDec31(c);
@@ -65,7 +66,7 @@ public class DateUtils {
     public static Date parseTM(String s, boolean end) {
         if (s == null || s.length() == 0)
             return null;
-        Calendar c = Calendar.getInstance();
+        Calendar c = new GregorianCalendar();
         c.clear();
         if (end) {
             setTo2359(c);
@@ -77,7 +78,7 @@ public class DateUtils {
     public static Date parseDT(String s, boolean end) {
         if (s == null || s.length() == 0)
             return null;
-        Calendar c = Calendar.getInstance();
+        Calendar c = new GregorianCalendar();
         c.clear();
         if (end) {
             setToDec31(c);
@@ -99,7 +100,7 @@ public class DateUtils {
     public static String formatDA(Date d) {
         if (d == null)
             return null;
-        Calendar c = Calendar.getInstance();
+        Calendar c = new GregorianCalendar();
         c.setTime(d);
         return formatDA(c, new StringBuffer(8)).toString();
     }
@@ -107,7 +108,7 @@ public class DateUtils {
     public static String formatTM(Date d) {
         if (d == null)
             return null;
-        Calendar c = Calendar.getInstance();
+        Calendar c = new GregorianCalendar();
         c.setTime(d);
         return formatTM(c, new StringBuffer(10)).toString();
     }
@@ -115,7 +116,7 @@ public class DateUtils {
     public static String formatDT(Date d) {
         if (d == null)
             return null;
-        Calendar c = Calendar.getInstance();
+        Calendar c = new GregorianCalendar();
         c.setTime(d);
         StringBuffer sb = new StringBuffer(18);
         formatDA(c, sb);
@@ -227,9 +228,9 @@ public class DateUtils {
             return null;
         if (time == null)
             return date;
-        Calendar d = Calendar.getInstance();
+        Calendar d = new GregorianCalendar();
         d.setTime(date);
-        Calendar t = Calendar.getInstance();
+        Calendar t = new GregorianCalendar();
         t.setTime(time);
         t.set(Calendar.YEAR, d.get(Calendar.YEAR));
         t.set(Calendar.MONTH, d.get(Calendar.MONTH));
