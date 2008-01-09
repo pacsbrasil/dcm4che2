@@ -60,7 +60,6 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
     private long studyPk = -1;
     private long seriesPk = -1;
     private long instancePk = -1;
-    private boolean showAll;
 
     public final void setPatPk(long pk) {
         this.patPk = pk;
@@ -75,62 +74,31 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
         this.instancePk = pk;
     }
 
-    public void setShowAll(boolean showAll) {
-		this.showAll = showAll;
-	}
 	protected String perform() throws Exception {
 	    FolderForm  form = FolderForm.getFolderForm(getCtx());
-	    Dataset ds = DcmObjectFactory.getInstance().newDataset();
 	    StringBuffer sb = new StringBuffer();
-	    ContentManager cm = null;
 		try {
-			if ( instancePk != -1 ) {
-				ds.putAll(form.getInstanceByPk(patPk, studyPk, seriesPk, instancePk).toDataset());
+		    Dataset ds = lookupContentManager().getHeaderInfo(patPk, studyPk, seriesPk, instancePk);
+            getCtx().getRequest().getSession().setAttribute("dataset2view", ds);
+			if ( instancePk != -1 )
 				sb.append("INSTANCE,");
-			}
-			if ( ( showAll || ds.isEmpty() ) &&  seriesPk != -1 ) {
-				ds.putAll(form.getSeriesByPk(patPk, studyPk, seriesPk).toDataset());
+			if ( seriesPk != -1 )
 				sb.append("SERIES,");
-			}
-			if ( ( showAll || ds.isEmpty() ) &&  studyPk != -1 ) {
-			        cm = lookupContentManager();
-				ds.putAll( cm.getStudy(studyPk));
+			if ( studyPk != -1 ) 
 				sb.append("STUDY,");
-			}
-			if ( showAll || ds.isEmpty() ) {
-			        if ( cm == null )
-			            cm = lookupContentManager();
-				ds.putAll(cm.getPatient(patPk));
+			if ( patPk != -1 ) {
 				sb.append("PATIENT,");
 			}
-            getCtx().getRequest().getSession().setAttribute("dataset2view", ds);
             sb.setLength(sb.length()-1);
             getCtx().getRequest().getSession().setAttribute("titleOfdataset2view", 
             		form.formatMessage("folder.dicom_header", new String[]{sb.toString()}));
 			return INSPECT;
 		} catch ( Exception x ) {
 			x.printStackTrace();
-			form.setExternalPopupMsg("folder.err_inspect", getMsgAttrs());
+			form.setExternalPopupMsg("folder.err_inspect", new String[]{"pks:pat:"+patPk+", study:"+studyPk+
+					", series:"+seriesPk+", instance:"+instancePk});
 			return ERROR;
 		}
-	}
-	private String[] getMsgAttrs() {
-		if ( true ) return new String[]{"pks:pat:"+patPk+", study:"+studyPk+", series:"+seriesPk+", instance:"+instancePk+", showAll:"+showAll};
-		String[] msg = new String[2];
-		if (instancePk != -1) {
-			msg[0] = "INSTANCE";
-			msg[1] = ( seriesPk == -1 || studyPk == -1 || patPk == -1) ? "Missing pk(s) of parent levels (series,study,patient)!" : "Instance not found";
-		} else if (seriesPk != -1) {
-			msg[0] = "SERIES";
-			msg[1] = ( studyPk == -1 || patPk == -1) ? "Missing pk(s) of parent levels (study,patient)!" : "Series not found";
-		} else if (studyPk != -1) {
-			msg[0] = "STUDY";
-			msg[1] = patPk == -1 ? "Missing pk of of parent level (patient)!" : "Study not found";
-		} else {
-			msg[0] = "PATIENT";
-			msg[1] = patPk == -1 ? "Missing pk of patient!" : "Patient not found";
-		}
-		return msg;
 	}
 	
 	private ContentManager lookupContentManager() throws Exception {

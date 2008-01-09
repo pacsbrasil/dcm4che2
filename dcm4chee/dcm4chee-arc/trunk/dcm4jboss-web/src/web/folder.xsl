@@ -637,7 +637,7 @@
 					<a href="studyEdit.m?patPk={../../pk}&amp;studyPk={pk}">
 						<img src="images/edit.gif" alt="Edit Study" border="0" title="Edit Study Attributes"/>		
 					</a>
-					<a href="inspectDicomHeader.m?patPk={../../pk}&amp;studyPk={pk}" target="studyAtrrs">
+					<a href="inspectDicomHeader.m?studyPk={pk}" target="studyAtrrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Study attributes in DB"/>		
 					</a>
 					<xsl:if test="$folder.study_permission='true'">
@@ -751,7 +751,7 @@
 					<a href="seriesEdit.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}">
 						<img src="images/edit.gif" alt="Edit Series" border="0" title="Edit Series Attributes"/>		
 					</a>
-					<a href="inspectDicomHeader.m?patPk={../../../../pk}&amp;studyPk={../../pk}&amp;seriesPk={pk}" target="dbAttrs">
+					<a href="inspectDicomHeader.m?seriesPk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Series attributes in DB"/>		
 					</a>
             </xsl:if>
@@ -830,7 +830,7 @@
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="imageview" >
 						<img src="images/image.gif" alt="View image" border="0" title="View image"/>		
 					</a>
-					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+					<a href="inspectDicomHeader.m?instancePk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Instance attributes in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
@@ -923,7 +923,7 @@
 							<img src="images/webview_pr.gif" alt="View Presentation State" border="0" title="View Presentation State in Webviewer"/>		
 						</a>
 					</xsl:if>
-					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+					<a href="inspectDicomHeader.m?instancePk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Instance attributes in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
@@ -1030,7 +1030,7 @@
 					<a href="xdsiExport.m?docUID={sopIUID}" >
 						<img src="images/xds.gif" alt="PDFtoXDS" border="0" title="Export PDF to XDS Repository"/>		
 					</a>
-					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+					<a href="inspectDicomHeader.m?instancePk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Instance attributes in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
@@ -1114,7 +1114,7 @@
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf" target="waveformview" >
 						<img src="images/waveform.gif" alt="waveform" border="0" title="View waveform"/>		
 					</a>
-					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+					<a href="inspectDicomHeader.m?instancePk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Instance attributes in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
@@ -1204,7 +1204,7 @@
 					<a href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType={mimeType}" target="SRview" >
 						<img src="images/sr_pdf.gif" alt="View Document" border="0" title="View Document"/>		
 					</a>
-					<a href="inspectDicomHeader.m?patPk={../../../../../../pk}&amp;studyPk={../../../../pk}&amp;seriesPk={../../pk}&amp;instancePk={pk}" target="dbAttrs">
+					<a href="inspectDicomHeader.m?instancePk={pk}" target="dbAttrs">
 						<img src="images/dbattrs.gif" alt="attrs" border="0" title="Show Instance attributes in DB"/>		
 					</a>
 					<a href="{/model/wadoBaseURL}wado?requestType=WADO&amp;contentType=application/dicom%2Bxml&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}" target="_blank" >
