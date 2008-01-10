@@ -1257,7 +1257,7 @@ public abstract class VR {
                 return;
             int cpos = 0;
             int clen = 0;
-            for (int i = 0; i + 8 < val.length; i += 8)
+            for (int i = 0; i + 8 <= val.length; i += 8)
             {
                 if (clen + 26 >= cbuf.length)
                 {
