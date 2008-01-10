@@ -824,17 +824,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     static class ImageQueryCmd extends QueryCmd {
 
+        Dataset seriesAttrs;
+
         ImageQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
             if (accessBlobAsLongVarBinary) {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                defineColumnType(1, Types.LONGVARBINARY);
                 defineColumnType(2, Types.LONGVARBINARY);
-                defineColumnType(3, Types.LONGVARBINARY);
-                defineColumnType(4, Types.LONGVARBINARY);
             }
+            sqlBuilder.addOrderBy("Instance.series_fk", SqlBuilder.ASC);
             addAdditionalReturnKeys();
         }
 
@@ -848,15 +848,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes",
-                    "Study.encodedAttributes", "Series.encodedAttributes",
-                    "Instance.encodedAttributes", "Study.modalitiesInStudy",
-                    "Study.studyStatusId", "Study.numberOfStudyRelatedSeries",
-                    "Study.numberOfStudyRelatedInstances",
-                    "Series.numberOfSeriesRelatedInstances",
-                    "Instance.retrieveAETs", "Instance.externalRetrieveAET",
-                    "Instance.availability", "Media.filesetId",
-                    "Media.filesetIuid" };
+            return new String[] { "Series.seriesIuid",
+                    "Instance.encodedAttributes", "Instance.retrieveAETs",
+                    "Instance.externalRetrieveAET", "Instance.availability",
+                    "Media.filesetId", "Media.filesetIuid" };
         }
 
         protected String[] getTables() {
@@ -893,23 +888,26 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
+            String seriesIuid = rs.getString(1);
+            if (seriesAttrs == null
+                    || !seriesAttrs.getString(Tags.SeriesInstanceUID)
+                            .equals(seriesIuid)) {
+                ds.putUI(Tags.SeriesInstanceUID, seriesIuid);
+                QueryCmd seriesQuery =
+                    QueryCmd.createSeriesQuery(ds, false, false, null);
+                seriesQuery.execute();
+                seriesQuery.next();
+                seriesAttrs = seriesQuery.getDataset();
+                seriesQuery.close();
+            }
             fillDataset(ds, 2);
-            fillDataset(ds, 3);
-            fillDataset(ds, 4);
-            ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(5),
-                    '\\'));
-            ds.putCS(Tags.StudyStatusID, rs.getString(6));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(7));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(8));
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(9));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(10), rs.getString(11));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(12)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(13));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(14));
+            ds.putAll(seriesAttrs);
+            DatasetUtils.putRetrieveAET(ds, rs.getString(3), rs.getString(4));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(5)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
-
     }
 
     protected boolean isMatchSrCode() {
