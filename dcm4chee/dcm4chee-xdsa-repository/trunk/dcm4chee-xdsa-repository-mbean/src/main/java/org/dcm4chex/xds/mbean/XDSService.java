@@ -132,21 +132,18 @@ public class XDSService extends ServiceMBeanSupport {
 	private HostnameVerifier origHostnameVerifier = null;
 	private String allowedUrlHost = null;
 	
-	private boolean reassignDocumentUID = false;
-	private boolean reassignSubmissionUID = false;
-	
 	private String fetchNewPatIDURL;
 	
 	private DcmStorageImpl store = DcmStorageImpl.getInstance();
 
 	private String retrieveURI;
 
-	private String testPatient;
-
     private List filteredSlots;
     
 	private boolean useLongURI = false;
 	private boolean logSOAPMessage = true;
+	private boolean logReceivedSOAPMessage = false;
+	private boolean indentSOAPLog = true;
 
     private String xdsQueryURI;
     private boolean forceSQLQuery = false;
@@ -314,30 +311,6 @@ public class XDSService extends ServiceMBeanSupport {
 	public void setUseLongURI(boolean useLongURI) {
 		this.useLongURI = useLongURI;
 	}
-	/**
-	 * @return Returns the reassignUID.
-	 */
-	public boolean isReassignDocumentUID() {
-		return reassignDocumentUID;
-	}
-	/**
-	 * @param reassignUID The reassignUID to set.
-	 */
-	public void setReassignDocumentUID(boolean reassignUID) {
-		this.reassignDocumentUID = reassignUID;
-	}
-	/**
-	 * @return Returns the reassignUID.
-	 */
-	public boolean isReassignSubmissionUID() {
-		return reassignSubmissionUID;
-	}
-	/**
-	 * @param reassignUID The reassignUID to set.
-	 */
-	public void setReassignSubmissionUID(boolean reassignUID) {
-		this.reassignSubmissionUID = reassignUID;
-	}
     /**
      * @return Returns the logSOAPMessage.
      */
@@ -350,20 +323,19 @@ public class XDSService extends ServiceMBeanSupport {
     public void setLogSOAPMessage(boolean logSOAPMessage) {
         this.logSOAPMessage = logSOAPMessage;
     }
-	/**
-	 * @return Returns the testPatient.
-	 */
-	public String getTestPatient() {
-		return testPatient == null ? "NONE":testPatient;
-	}
-	/**
-	 * @param testPatient The testPatient to set.
-	 */
-	public void setTestPatient(String testPatient) {
-		testPatient = replace(testPatient, "&amp;","&");
-		this.testPatient = testPatient.equalsIgnoreCase("none") ? null : testPatient;
-	}
 	
+	public boolean isLogReceivedSOAPMessage() {
+		return logReceivedSOAPMessage;
+	}
+	public void setLogReceivedSOAPMessage(boolean logReceivedSOAPMessage) {
+		this.logReceivedSOAPMessage = logReceivedSOAPMessage;
+	}
+	public boolean isIndentSOAPLog() {
+		return indentSOAPLog;
+	}
+	public void setIndentSOAPLog(boolean indentSOAPLog) {
+		this.indentSOAPLog = indentSOAPLog;
+	}
 	/**
      * @return the filterSlots
      */
@@ -376,14 +348,7 @@ public class XDSService extends ServiceMBeanSupport {
     public void setFilteredSlots(String filterSlots) {
         this.filteredSlots = setListString(filterSlots);
     }
-    private String replace(String s, String pattern, String replace) {
-		int pos = s.indexOf(pattern);
-		if ( pos == -1 ) return s;
-		String s1 = s.substring(0,pos);
-		String s2 = s.substring(pos+pattern.length());
-		s = s1+replace+s2;
-		return replace(s,pattern,replace);
-	}
+
 	/**
 	 * @return Returns the fetchNewPatIDURL.
 	 */
@@ -418,8 +383,8 @@ public class XDSService extends ServiceMBeanSupport {
 
 	public XDSResponseObject exportDocument( SOAPMessage message ) throws SOAPException, IOException, ParserConfigurationException, SAXException {
 		List storedDocuments = new ArrayList();
-		if ( log.isDebugEnabled()) {
-			log.debug("SOAP message:");
+		if ( logReceivedSOAPMessage ) {
+			log.info("Received SOAP message:");
 			this.dumpSOAPMessage(message);
 		}
 		String submissionUID = null;
@@ -439,10 +404,12 @@ public class XDSService extends ServiceMBeanSupport {
                     return new SOAPMessageResponse( sendSOAP(message, getXDSRegistryURI()));
                 }
 	        	log.error("No XDSDocumentEntry metadata (ExtrinsicObject) found.");
-	        	log.info("------------------------------------------------------------------------------------- ####");
-				log.info("DEBUGGING SOAP message with missing ExtrinsicObject?:");
-				this.dumpSOAPMessage(message);
-	        	log.info("------------------------------------------------------------------------------------- ####");
+	        	if ( !logReceivedSOAPMessage ) {
+	        		log.info("------------------------------------------------------------------------------------- ####");
+	        		log.info("DEBUGGING received SOAP message with missing ExtrinsicObject?:");
+	        		dumpSOAPMessage(message);
+	        		log.info("------------------------------------------------------------------------------------- ####");
+	        	}
 				return new XDSRegistryResponse( false, "XDSMissingDocumentMetadata", "XDSMissingDocumentMetadata",null);
 	        }
             if ( attachments.isEmpty() ) {
@@ -460,6 +427,8 @@ public class XDSService extends ServiceMBeanSupport {
 	        Element el;
 	        AttachmentPart part;
 	        String mime, contentType;
+	        boolean reassignDocumentUID = "true".equals(getSystemProperty("reassignDocumentUID") );
+	        String testPatient = getSystemProperty("testPatient");
 	        for(Iterator iter = extrinsicObjects.iterator() ; iter.hasNext() ; ) {
 	            el = (Element)iter.next();
 	            metadata = new XDSDocumentMetadata(el);
@@ -471,16 +440,18 @@ public class XDSService extends ServiceMBeanSupport {
 	            	return new XDSRegistryResponse( false, "XDSRepositoryError", "Mimetype mismatch detected! metadata:"+mime+" attachment:"+contentType,null);
 	            }
 	            if (reassignDocumentUID) {
-	            	metadata.setUniqueID( UIDUtils.createUID() );
+	            	String newUID = UIDUtils.createUID();
+	            	log.warn("Reassign documenUID "+metadata.getUniqueID()+" to "+newUID );
+	            	metadata.setUniqueID( newUID );
 	            }
-	            filterMetadata(metadata);
+	            filterMetadata(metadata, testPatient);
 	            storedDoc = saveDocumentEntry(metadata, part);
 	            metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()));
 	            if ( storedDoc != null) {
 	                storedDocuments.add(storedDoc);
 	            }
 	            if ( testPatient!= null) {
-	                log.warn("Change patientID in metadata ("+UUID.XDSSubmissionSet_patientId+") to testPatient! new patientID:"+testPatient);
+	                log.warn("Change patientID in metadata (XDSSubmissionSet: schemeOID:"+UUID.XDSSubmissionSet_patientId+") to testPatient! new patientID:"+testPatient);
 	                this.updateExternalIdentifier(el,UUID.XDSSubmissionSet_patientId,testPatient);
 	            }
 	        }
@@ -514,12 +485,10 @@ public class XDSService extends ServiceMBeanSupport {
 		}
 		
 	}
-	
-	private String getSubmissionUID(Element registryPackage) {
-		List l = getExternalIdentifiers(registryPackage);
-		return null;
+	private String getSystemProperty(String name) {
+		return System.getProperty(getClass().getName()+"."+name);
 	}
-    
+	
 	private Node getSubmitObjectsRequest(SOAPBody body) {
     	return getChildNode( body, NS_URN_REGISTRY_2_1, SUBMIT_OBJECTS_REQUEST);
 	}
@@ -604,7 +573,7 @@ public class XDSService extends ServiceMBeanSupport {
     }
     
     public List findDocuments(String patId) throws SOAPException {
-        if ( patId == null || patId.trim().length() < 1 ) patId = this.testPatient;
+        if ( patId == null || patId.trim().length() < 1 ) patId = this.getSystemProperty("testPatient");
         XDSQueryObject query = XDSQueryObjectFatory.getInstance( forceSQLQuery ).newFindDocumentQuery(patId, null);
         log.info("findDocument Stored Query:"+query);
         return xdsQuery(query);
@@ -627,15 +596,15 @@ public class XDSService extends ServiceMBeanSupport {
 	/**
 	 * @param metadata
 	 */
-	private void filterMetadata(XDSDocumentMetadata metadata) {
+	private void filterMetadata(XDSDocumentMetadata metadata, String testPatient) {
         if ( ! filteredSlots.isEmpty() ) {
             for ( Iterator iter = filteredSlots.iterator() ; iter.hasNext() ; ) {
                 metadata.removeSlot((String) iter.next());
             }
         }
         if ( testPatient!= null) {
-            log.warn("Change patientID in metadata (urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427) to testPatient! new patientID:"+testPatient);
-        	this.updateExternalIdentifier((Element)metadata.getMetadata(),"urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427",testPatient);
+            log.warn("Change patientID in metadata (XDSDocumentEntry: schemeOID:"+UUID.XDSDocumentEntry_patientId+") to testPatient! new patientID:"+testPatient);
+        	this.updateExternalIdentifier((Element)metadata.getMetadata(),UUID.XDSDocumentEntry_patientId,testPatient);
         }
 		
 	}
@@ -873,6 +842,8 @@ public class XDSService extends ServiceMBeanSupport {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();
+            if (indentSOAPLog)
+            	t.setOutputProperty("indent", "yes");
             t.transform(s, new StreamResult(out));
             log.info(out.toString());
         } catch (Exception e) {
@@ -898,7 +869,6 @@ public class XDSService extends ServiceMBeanSupport {
 		pos = response.lastIndexOf(">");
 		if ( pos == -1 ) pos = response.lastIndexOf("="); //in Attribute?
 		response = response.substring(pos+1);
-		this.setTestPatient(response);
 		return response;
 	}
 	/**

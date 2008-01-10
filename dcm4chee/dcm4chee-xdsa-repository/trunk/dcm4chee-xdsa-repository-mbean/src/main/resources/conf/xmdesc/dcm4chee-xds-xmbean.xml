@@ -145,28 +145,6 @@
    </attribute>
    
    <attribute access="read-write"
-      getMethod="isReassignDocumentUID"
-      setMethod="setReassignDocumentUID">
-      <description>Enable reassignment of document unique id's.
-      </description>
-      <name>ReassignDocumentUID</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isReassignSubmissionUID"
-      setMethod="setReassignSubmissionUID">
-      <description>Enable reassignment of SubmissionSet unique id's.
-      </description>
-      <name>ReassignSubmissionUID</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isUseLongURI"
       setMethod="setUseLongURI">
       <description><![CDATA[Enable/Disable the use of splitting long retrieveURI (see change proposal Xds_144).<br/>
@@ -186,7 +164,8 @@
       <description><![CDATA[List of Slots that should be removed from metadata before send to registry.<br/>
       		Such filtering may be necessary if registry does not support certain slots 
       		(e.g. does not support XDS-I 'authorRoleDisplayName' slot).<br/>
-      		Use NONE to disable slot filtering.
+      		Use NONE to disable slot filtering.<br/>
+      		Use ';' or  newline to separate multible entries!
       		]]>
       </description>
       <name>FilteredSlots</name>
@@ -196,22 +175,34 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getTestPatient"
-      setMethod="setTestPatient">
-      <description>Patient ID for NIST-Test or NONE.
-      </description>
-      <name>TestPatient</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE" />
-      </descriptors>
-   </attribute>
-      <attribute access="read-write"
       getMethod="isLogSOAPMessage"
       setMethod="setLogSOAPMessage">
       <description>Enable logging of SOAP message (send and receive).
       </description>
       <name>LogSOAPMessage</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogReceivedSOAPMessage"
+      setMethod="setLogReceivedSOAPMessage">
+      <description>Enable/Disable logging of received SOAP message. 
+      			   LogSOAPMessage has to be enabled to get any SOAP logged!
+      </description>
+      <name>LogReceivedSOAPMessage</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isIndentSOAPLog"
+      setMethod="setIndentSOAPLog">
+      <description>Enable/disable indention of logged SOAP message (send and receive).
+      </description>
+      <name>IndentSOAPLog</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
