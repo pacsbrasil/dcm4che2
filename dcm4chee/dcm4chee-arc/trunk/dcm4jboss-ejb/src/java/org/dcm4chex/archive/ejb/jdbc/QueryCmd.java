@@ -824,7 +824,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     static class ImageQueryCmd extends QueryCmd {
 
-        Dataset seriesAttrs;
+        HashMap seriesAttrsCache = new HashMap();
 
         ImageQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue, Subject subject)
@@ -834,7 +834,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
                 defineColumnType(2, Types.LONGVARBINARY);
             }
-            sqlBuilder.addOrderBy("Instance.series_fk", SqlBuilder.ASC);
             addAdditionalReturnKeys();
         }
 
@@ -889,15 +888,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
         protected void fillDataset(Dataset ds) throws SQLException {
             String seriesIuid = rs.getString(1);
-            if (seriesAttrs == null
-                    || !seriesAttrs.getString(Tags.SeriesInstanceUID)
-                            .equals(seriesIuid)) {
+            Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
+            if (seriesAttrs == null) {
                 ds.putUI(Tags.SeriesInstanceUID, seriesIuid);
                 QueryCmd seriesQuery =
                     QueryCmd.createSeriesQuery(ds, false, false, null);
                 seriesQuery.execute();
                 seriesQuery.next();
-                seriesAttrs = seriesQuery.getDataset();
+                seriesAttrsCache.put(seriesIuid,
+                        seriesAttrs = seriesQuery.getDataset());
                 seriesQuery.close();
             }
             fillDataset(ds, 2);
