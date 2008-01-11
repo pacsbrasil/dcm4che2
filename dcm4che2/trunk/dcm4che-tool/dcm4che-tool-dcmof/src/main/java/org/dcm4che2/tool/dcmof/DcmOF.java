@@ -719,8 +719,23 @@ public class DcmOF {
         TransformerHandler th = tf.newTransformerHandler();
         if (indent)
             th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
-        th.setResult(new StreamResult(f));
-        new SAXWriter(th, comments ? th : null).write(data);
+        
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(f);
+            th.setResult(new StreamResult(fos));
+            new SAXWriter(th, comments ? th : null).write(data);
+        }
+        finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                }
+                catch (Exception ioe) {
+                    // ignore
+                }
+            }
+        }
     }
 
     void storeAsDICOM(File f, DicomObject data) throws Exception {
