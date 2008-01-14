@@ -52,6 +52,7 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -708,7 +709,7 @@ public class DcmGen {
     private void initOverwrite(Configuration config) {
         SortedMap cfg = new TreeMap(config);
 
-        Vector list = new Vector();
+        LinkedHashMap list = new LinkedHashMap();
         for (Iterator it = cfg.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next();
             if (key.startsWith("set.")) {
@@ -719,12 +720,10 @@ public class DcmGen {
                     overwrite.putXX(tag, (String) cfg.get(key));
                     continue;
                 }
-
-                list.setSize(subKey);
-                Dataset ds = (Dataset) list.get(subKey - 1);
+                Dataset ds = (Dataset) list.get("" +(subKey - 1));
                 if (ds == null) {
                     ds = DcmObjectFactory.getInstance().newDataset();
-                    list.add(subKey - 1, ds);
+                    list.put("" + (subKey - 1), ds);
                 }
                 try {
 
@@ -736,7 +735,8 @@ public class DcmGen {
                 }
             }
         }
-        datasets = (Dataset[]) list.toArray(new Dataset[0]);
+
+        datasets = (Dataset[]) list.values().toArray(new Dataset[0]);
     }
 
     private void initTLS(Configuration cfg) {
