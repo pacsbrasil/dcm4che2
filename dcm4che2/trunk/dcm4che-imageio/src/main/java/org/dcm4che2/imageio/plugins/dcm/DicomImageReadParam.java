@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4che2.imageio.plugins.dcm;
 
 import javax.imageio.ImageReadParam;
@@ -51,7 +51,7 @@ public class DicomImageReadParam extends ImageReadParam {
 
     public static final String LINEAR = "LINEAR";
     public static final String SIGMOID = "SIGMOID";
-    
+
     private boolean autoWindowing = true;
     private float center;
     private float width;
@@ -60,7 +60,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private DicomObject prState;
     private short[] pval2gray;
     String overlayRGB = null;
-     
+
     public final boolean isAutoWindowing() {
         return autoWindowing;
     }
@@ -87,12 +87,12 @@ public class DicomImageReadParam extends ImageReadParam {
 
     public final void setVoiLutFunction(String vlutFct) {
         this.vlutFct = vlutFct;
-    }    
+    }
 
     public final String getVoiLutFunction() {
         return vlutFct;
-    }    
-    
+    }
+
     public final DicomObject getVoiLut() {
         return voiLut;
     }
@@ -117,23 +117,30 @@ public class DicomImageReadParam extends ImageReadParam {
         this.pval2gray = pval2gray;
     }
 
-	/** Get the 6 digit hex string that specifies the RGB colour to use for the overlay */
-	public String getOverlayRGB() {
-		return overlayRGB;
-	}
+    /**
+     * Get the 6 digit hex string that specifies the RGB colour to use for the
+     * overlay
+     */
+    public String getOverlayRGB() {
+        return overlayRGB;
+    }
 
-	/** Sets the 6 digit hex string that specifies the RGB colour to use for the overlay. */
-	public void setOverlayRGB(String overlayRGB) {
-		if( overlayRGB==null ) {
-			this.overlayRGB = null;
-			return;
-		}
-		overlayRGB = overlayRGB.trim();
-		if( overlayRGB.startsWith("#") ) overlayRGB = overlayRGB.substring(1,overlayRGB.length());
-		if( overlayRGB.length() == 0 ) {
-			this.overlayRGB = null;
-			return;
-		}
-		this.overlayRGB = overlayRGB;
-	}
+    /**
+     * Sets the 6 digit hex string that specifies the RGB colour to use for the
+     * overlay.
+     */
+    public void setOverlayRGB(String overlayRGB) {
+        if (overlayRGB == null) {
+            this.overlayRGB = null;
+            return;
+        }
+        overlayRGB = overlayRGB.trim();
+        if (overlayRGB.startsWith("#"))
+            overlayRGB = overlayRGB.substring(1, overlayRGB.length());
+        if (overlayRGB.length() == 0) {
+            this.overlayRGB = null;
+            return;
+        }
+        this.overlayRGB = overlayRGB;
+    }
 }
