@@ -69,93 +69,99 @@ import junit.framework.TestCase;
  */
 public class DicomImageWriterTest extends TestCase {
 
-	static {
-		ImageIO.scanForPlugins();
-	};
-	
-	static final boolean eraseDicom = false;
+    static {
+        ImageIO.scanForPlugins();
+    };
 
-	/**
-	 * Test to see that we can find an image writer, and that it is of the
-	 * correct class. If multiple DICOM writers are available, then the dcm4che2
-	 * must currently be the first one.
-	 * 
-	 */
-	public void testFindDicomImageWriter() {
-		ImageWriter writer = ImageIO.getImageWritersByFormatName("DICOM")
-				.next();
-		assert writer != null;
-		assert writer instanceof DicomImageWriter;
-	}
+    static final boolean eraseDicom = false;
 
-	/**
-	 * Tests single frame lossless writing.
-	 */
-	public void testSingleFrameLossless() throws IOException {
-		String name="ct-write";
-		DicomImageReader reader = createImageReader("ct.dcm");
-		BufferedImage bi = readRawBufferedImage(reader,0);
-		DicomStreamMetaData newMeta = copyMeta(reader,UID.JPEGLSLossless);
-		ImageInputStream iis = writeImage(newMeta,bi,name);
-		DicomImageReader readerNew = createImageReader(iis);
-		BufferedImage biNew = readRawBufferedImage(readerNew,0);
-		ImageDiff diff = new ImageDiff(bi,biNew,name,0);
-		assert diff.getMaxDiff()==0;
-	}
-	
-	/** Returns an input stream containing the written data */
-	private ImageInputStream writeImage(DicomStreamMetaData newMeta, BufferedImage bi, String name) throws IOException {
-		File f = new File(name+".dcm");
-		if( f.exists() ) f.delete();
-		ImageOutputStream imageOutput = new FileImageOutputStream(f);
-		DicomImageWriter writer = (DicomImageWriter) new DicomImageWriterSpi().createWriterInstance();
-		IIOImage iioimage = new IIOImage(bi,null,null);
-		writer.setOutput(imageOutput);
-		writer.write(newMeta,iioimage,null);
-		imageOutput.close();
-		return new FileImageInputStream(f);
-	}
+    /**
+     * Test to see that we can find an image writer, and that it is of the
+     * correct class. If multiple DICOM writers are available, then the dcm4che2
+     * must currently be the first one.
+     * 
+     */
+    public void testFindDicomImageWriter() {
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("DICOM")
+                .next();
+        assert writer != null;
+        assert writer instanceof DicomImageWriter;
+    }
 
-	private DicomStreamMetaData copyMeta(DicomImageReader reader, String tsuid) throws IOException {
-		DicomStreamMetaData oldMeta = (DicomStreamMetaData) reader.getStreamMetadata();
-		DicomStreamMetaData ret = new DicomStreamMetaData();
-		DicomObject ds = oldMeta.getDicomObject();
-		DicomObject newDs = new BasicDicomObject();
-		ds.copyTo(newDs);
-		newDs.putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
-		ret.setDicomObject(newDs);
-		return ret;
-	}
+    /**
+     * Tests single frame lossless writing.
+     */
+    public void testSingleFrameLossless() throws IOException {
+        String name = "ct-write";
+        DicomImageReader reader = createImageReader("ct.dcm");
+        BufferedImage bi = readRawBufferedImage(reader, 0);
+        DicomStreamMetaData newMeta = copyMeta(reader, UID.JPEGLSLossless);
+        ImageInputStream iis = writeImage(newMeta, bi, name);
+        DicomImageReader readerNew = createImageReader(iis);
+        BufferedImage biNew = readRawBufferedImage(readerNew, 0);
+        ImageDiff diff = new ImageDiff(bi, biNew, name, 0);
+        assert diff.getMaxDiff() == 0;
+    }
 
-	public static BufferedImage readRawBufferedImage(DicomImageReader reader, int frame) throws IOException {
-		WritableRaster raster = (WritableRaster) reader.readRaster(0,null);
-		DicomObject ds = ((DicomStreamMetaData) reader.getStreamMetadata()).getDicomObject(); 
-		ColorModel cm = ColorModelFactory.createColorModel(ds);
-		return new BufferedImage(cm,raster,false,null);
-	}
+    /** Returns an input stream containing the written data */
+    private ImageInputStream writeImage(DicomStreamMetaData newMeta,
+            BufferedImage bi, String name) throws IOException {
+        File f = new File(name + ".dcm");
+        if (f.exists())
+            f.delete();
+        ImageOutputStream imageOutput = new FileImageOutputStream(f);
+        DicomImageWriter writer = (DicomImageWriter) new DicomImageWriterSpi()
+                .createWriterInstance();
+        IIOImage iioimage = new IIOImage(bi, null, null);
+        writer.setOutput(imageOutput);
+        writer.write(newMeta, iioimage, null);
+        imageOutput.close();
+        return new FileImageInputStream(f);
+    }
 
-	/** Return an image reader on the given resource 
-	 * Example resources are:
-	 * mr.dcm
-	 * ct.dcm
-	 * cr-multiframe.dcm
-	 * cr-monochrome1.dcm
-	 * mlut_*.dcm
-	 */
-	public static DicomImageReader createImageReader(String resource) throws IOException {
-		InputStream is = DicomImageWriterTest.class.getResourceAsStream(resource);
-		assert is!=null;
-		return createImageReader(ImageIO.createImageInputStream(is));
-	}
+    private DicomStreamMetaData copyMeta(DicomImageReader reader, String tsuid)
+            throws IOException {
+        DicomStreamMetaData oldMeta = (DicomStreamMetaData) reader
+                .getStreamMetadata();
+        DicomStreamMetaData ret = new DicomStreamMetaData();
+        DicomObject ds = oldMeta.getDicomObject();
+        DicomObject newDs = new BasicDicomObject();
+        ds.copyTo(newDs);
+        newDs.putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        ret.setDicomObject(newDs);
+        return ret;
+    }
 
-	/** Returns an image reader on the given filename */
-	public static DicomImageReader createImageReader(ImageInputStream is) throws IOException {
-		assert is!=null;
-		DicomImageReaderSpi spi = new DicomImageReaderSpi();
-		DicomImageReader reader = (DicomImageReader) spi
-				.createReaderInstance(null);
-		reader.setInput(is, true);
-		return reader;
-	}
+    public static BufferedImage readRawBufferedImage(DicomImageReader reader,
+            int frame) throws IOException {
+        WritableRaster raster = (WritableRaster) reader.readRaster(0, null);
+        DicomObject ds = ((DicomStreamMetaData) reader.getStreamMetadata())
+                .getDicomObject();
+        ColorModel cm = ColorModelFactory.createColorModel(ds);
+        return new BufferedImage(cm, raster, false, null);
+    }
+
+    /**
+     * Return an image reader on the given resource Example resources are:
+     * mr.dcm ct.dcm cr-multiframe.dcm cr-monochrome1.dcm mlut_*.dcm
+     */
+    public static DicomImageReader createImageReader(String resource)
+            throws IOException {
+        InputStream is = DicomImageWriterTest.class
+                .getResourceAsStream(resource);
+        assert is != null;
+        return createImageReader(ImageIO.createImageInputStream(is));
+    }
+
+    /** Returns an image reader on the given filename */
+    public static DicomImageReader createImageReader(ImageInputStream is)
+            throws IOException {
+        assert is != null;
+        DicomImageReaderSpi spi = new DicomImageReaderSpi();
+        DicomImageReader reader = (DicomImageReader) spi
+                .createReaderInstance(null);
+        reader.setInput(is, true);
+        return reader;
+    }
 
 }
