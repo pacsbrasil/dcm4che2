@@ -88,7 +88,9 @@ public class AuditMessage extends BaseElement {
     static {
         processID = System.getProperty("app.pid");
         if (processID == null) {
-            processID = ManagementFactory.getRuntimeMXBean().getName();
+            String s = ManagementFactory.getRuntimeMXBean().getName();
+            int atPos = s.indexOf('@');
+            processID = atPos > 0 ? s.substring(0, atPos) : s;
         }
     }
     
