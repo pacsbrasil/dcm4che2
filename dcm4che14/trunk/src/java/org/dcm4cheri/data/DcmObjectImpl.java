@@ -979,7 +979,7 @@ abstract class DcmObjectImpl implements DcmObject {
      */
     public DcmElement putDS(int tag, String value) {
         return put(
-            value != null || value.length() != 0
+            value != null && value.length() != 0
                 ? StringElement.createDS(tag, value)
                 : StringElement.createDS(tag));
     }
