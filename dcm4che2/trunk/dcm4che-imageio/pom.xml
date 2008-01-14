@@ -9,10 +9,10 @@
   <version>2.0.13-SNAPSHOT</version>
   <profiles>
    <profile>
-    <id>nojio</id>
+    <id>nojiio</id>
     <activation>
      <property>
-      <name>nojio</name>
+      <name>nojiio</name>
      </property>
     </activation>
     <build>
