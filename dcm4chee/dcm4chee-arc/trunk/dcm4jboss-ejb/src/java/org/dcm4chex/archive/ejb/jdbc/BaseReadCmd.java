@@ -69,13 +69,13 @@ public abstract class BaseReadCmd extends BaseCmd {
 	}
 	
 	public byte[] getBytes(int column) throws SQLException {
-            if (defineColumnType == null) {
+//            if (defineColumnType == null) {
                 ResultSetMetaData meta = rs.getMetaData();
 		if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
 			Blob blob = rs.getBlob(column);
 			return blob != null ? blob.getBytes(1,(int)blob.length()) : null;
 		}
-            }
+//            }
             return rs.getBytes(column);
 	}
 
