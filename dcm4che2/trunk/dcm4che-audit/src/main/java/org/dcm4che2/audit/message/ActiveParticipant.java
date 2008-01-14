@@ -158,7 +158,15 @@ public class ActiveParticipant extends BaseElement {
         ap.setAlternativeUserID(mediaUID);
         return ap;
     }
-    
+
+    public static boolean isEncodeUserIsRequestorTrue() {
+        return encodeUserIsRequestorTrue;
+    }
+
+    public static void setEncodeUserIsRequestorTrue(boolean enable) {
+        ActiveParticipant.encodeUserIsRequestorTrue = enable;
+    }
+
     public String getUserID() {
         return (String) getAttribute("UserID");
     }
