@@ -38,6 +38,7 @@
 
 package org.dcm4cheri.data;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.dict.VRs;
@@ -56,6 +57,7 @@ import org.dcm4cheri.util.StringUtils;
  * @version 1.0.0
  */
 class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
+    private static Logger log = Logger.getLogger(SAXHandlerAdapter.class);
 
     private final DcmHandler handler;
     
@@ -100,7 +102,7 @@ class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
                 handler.startDataset();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new SAXException(qName, ex);
         }
     }
@@ -125,7 +127,7 @@ class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
                 handler.endDataset();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new SAXException(qName, ex);
         }
     }

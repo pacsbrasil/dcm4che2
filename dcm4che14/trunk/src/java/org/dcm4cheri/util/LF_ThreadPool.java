@@ -154,7 +154,7 @@ public class LF_ThreadPool
 	               try { mutex.wait(); }
 	               catch (InterruptedException ie)
 	               {
-	                  ie.printStackTrace();
+	                  log.error(ie);
 	               }
 	               finally { --waiting; }
 	               if (log.isDebugEnabled())

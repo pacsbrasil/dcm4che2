@@ -76,6 +76,11 @@
 
 package org.dcm4cheri.net;
 
+import java.io.IOException;
+
+import org.apache.log4j.Logger;
+import org.dcm4che.data.Command;
+import org.dcm4che.data.Dataset;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationListener;
@@ -84,13 +89,8 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.net.PDU;
-import org.dcm4che.data.Command;
-import org.dcm4che.data.Dataset;
-
-import org.dcm4cheri.util.LF_ThreadPool;
 import org.dcm4cheri.util.IntHashtable2;
-
-import java.io.IOException;
+import org.dcm4cheri.util.LF_ThreadPool;
 
 /**
  * <description> 
@@ -103,6 +103,7 @@ import java.io.IOException;
  */
 final class ActiveAssociationImpl
 	implements ActiveAssociation, LF_ThreadPool.Handler, AssociationListener {
+    private static Logger log = Logger.getLogger(ActiveAssociationImpl.class);
 	// Constants -----------------------------------------------------
 
 	// Attributes ----------------------------------------------------
@@ -287,7 +288,7 @@ final class ActiveAssociationImpl
 					throw new RuntimeException("Illegal Command: " + cmd);
 			}
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			log.error(ioe);
 			pool.shutdown();
 		} finally {
 			// ensure readout of data PDVs

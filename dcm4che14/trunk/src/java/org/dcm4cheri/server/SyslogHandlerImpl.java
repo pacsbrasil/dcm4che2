@@ -39,6 +39,8 @@
 package org.dcm4cheri.server;
 
 import java.net.DatagramPacket;
+
+import org.apache.log4j.Logger;
 import org.dcm4che.server.SyslogService;
 import org.dcm4che.server.UDPServer;
 
@@ -53,6 +55,8 @@ import org.dcm4che.server.UDPServer;
  */
 public class SyslogHandlerImpl implements UDPServer.Handler
 {
+    private static Logger log = Logger.getLogger(SyslogHandlerImpl.class);
+    
     private final SyslogService service;
     
     public SyslogHandlerImpl(SyslogService service) {
@@ -67,7 +71,7 @@ public class SyslogHandlerImpl implements UDPServer.Handler
             service.process(msg.getTimestamp(), msg.getHost(), msg.getContent());
         }
         catch (SyslogMsg.InvalidSyslogMsgException e) {
-            e.printStackTrace();
+            log.error(e);
         }
     }
 

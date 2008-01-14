@@ -57,6 +57,7 @@ import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
@@ -93,6 +94,8 @@ import org.w3c.dom.Document;
  */
 public class DcmImageWriter extends ImageWriter
 {
+    private static Logger log = Logger.getLogger(DcmImageWriter.class);
+    
     /**
 	 * Version number
 	 */
@@ -583,7 +586,7 @@ public class DcmImageWriter extends ImageWriter
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File(xml));
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
             return;
         }
         

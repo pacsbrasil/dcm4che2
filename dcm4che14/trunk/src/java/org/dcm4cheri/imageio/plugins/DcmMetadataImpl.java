@@ -39,20 +39,9 @@
 
 package org.dcm4cheri.imageio.plugins;
 
-import org.dcm4che.imageio.plugins.DcmMetadata;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.DictionaryFactory;
-import org.dcm4che.dict.TagDictionary;
-
+import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadataFormatImpl;
 import javax.imageio.metadata.IIOMetadataNode;
-
-import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.helpers.DefaultHandler;
-
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -60,6 +49,17 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
+
+import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.DictionaryFactory;
+import org.dcm4che.dict.TagDictionary;
+import org.dcm4che.imageio.plugins.DcmMetadata;
+import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Change history:<br>
@@ -72,6 +72,7 @@ import javax.xml.transform.sax.TransformerHandler;
  * @version 1.0.0
  */
 public class DcmMetadataImpl extends DcmMetadata {
+    private static Logger log = Logger.getLogger(DcmMetadataImpl.class);
     
     static final DcmImageReaderConf conf = DcmImageReaderConf.getInstance();
     
@@ -177,7 +178,7 @@ public class DcmMetadataImpl extends DcmMetadata {
             }
             ds.subSet(filter).writeFile(ch, dict);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new RuntimeException("Exception in getTree", ex);
         }
         return root;
@@ -231,10 +232,10 @@ public class DcmMetadataImpl extends DcmMetadata {
             trans.transform(src, res);
         }
         catch (TransformerConfigurationException tce) {
-            tce.printStackTrace();
+            log.error(tce);
         }
         catch (TransformerException te) {
-            te.printStackTrace();
+            log.error(te);
         }
     }
     

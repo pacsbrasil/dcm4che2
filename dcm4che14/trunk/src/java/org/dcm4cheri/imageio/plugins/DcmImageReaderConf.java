@@ -38,15 +38,25 @@
 
 package org.dcm4cheri.imageio.plugins;
 
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.Dataset;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
-import java.io.*;
-import java.util.*;
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
-import javax.xml.transform.stream.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
+
+import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 
 /**
  *
@@ -58,6 +68,8 @@ public class DcmImageReaderConf {
     public static DcmImageReaderConf getInstance() {
         return instance;
     }
+    
+    private static Logger log = Logger.getLogger(DcmImageReaderConf.class);
     
     private static DcmImageReaderConf instance = new DcmImageReaderConf();
     private final ClassLoader classloader;
@@ -84,7 +96,7 @@ public class DcmImageReaderConf {
         try {
             p.load(in);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            log.error(ioe);
             return;
         } finally {
             try { in.close(); } catch (IOException ignore) {}

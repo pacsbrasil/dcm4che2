@@ -48,6 +48,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.dict.VRMap;
@@ -63,6 +64,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 class SAXHandlerAdapter2 extends DefaultHandler {
+    private static Logger log = Logger.getLogger(SAXHandlerAdapter2.class);
 
     private static final int EXPECT_ELM = 0;
 
@@ -114,7 +116,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
                 handler.startDataset();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new SAXException(qName, ex);
         }
     }
@@ -132,7 +134,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
                 handler.endDataset();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new SAXException(qName, ex);
         }
     }
@@ -149,7 +151,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
                 break;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new SAXException(ex);
         }
     }

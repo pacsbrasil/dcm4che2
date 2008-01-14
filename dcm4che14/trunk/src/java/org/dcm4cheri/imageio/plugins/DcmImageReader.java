@@ -699,7 +699,7 @@ public class DcmImageReader extends ImageReader {
             }
             stream.skipBytes(rowLen * (height - sourceYOffset - y));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new IIOException("Exception in readByteSamples", ex);
         }
     }
@@ -766,7 +766,7 @@ public class DcmImageReader extends ImageReader {
             }
             stream.skipBytes((rowLen * (height - sourceYOffset - y)) << 1);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(ex);
             throw new IIOException("Exception in readWordSamples", ex);
         }
     }
