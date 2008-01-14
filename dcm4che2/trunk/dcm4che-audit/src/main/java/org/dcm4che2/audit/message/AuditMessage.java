@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -97,12 +96,12 @@ public class AuditMessage extends BaseElement {
     private static String[] localAETitles; 
 
     protected final AuditEvent event;
-    protected final ArrayList<BaseElement> activeParticipants = new ArrayList<BaseElement>(
-            3);
-    protected final ArrayList<BaseElement> auditSources = new ArrayList<BaseElement>(
-            1);
-    protected final ArrayList<BaseElement> participantObjects = new ArrayList<BaseElement>(
-            3);
+    protected final ArrayList<ActiveParticipant> activeParticipants =
+            new ArrayList<ActiveParticipant>(3);
+    protected final ArrayList<AuditSource> auditSources =
+            new ArrayList<AuditSource>(1);
+    protected final ArrayList<ParticipantObject> participantObjects =
+            new ArrayList<ParticipantObject>(3);
     
     public AuditMessage(AuditEvent event) {
         super("AuditMessage");
@@ -124,7 +123,7 @@ public class AuditMessage extends BaseElement {
         event.setOutcomeIndicator(outcome);
     }
 
-    public List getAuditSources() {
+    public List<AuditSource> getAuditSources() {
         return Collections.unmodifiableList(auditSources);
     }
        
@@ -136,13 +135,12 @@ public class AuditMessage extends BaseElement {
         return sourceId;
     }
 
-    public List getActiveParticipants() {
+    public List<ActiveParticipant> getActiveParticipants() {
         return Collections.unmodifiableList(activeParticipants);
     }
            
     public ActiveParticipant getRequestingActiveParticipants() {
-        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
-            ActiveParticipant ap = (ActiveParticipant) iter.next();
+        for (ActiveParticipant ap : activeParticipants) {
             if (ap.isUserIsRequestor()) {
                 return ap;
             }            
@@ -160,7 +158,7 @@ public class AuditMessage extends BaseElement {
         return apart;
     }
     
-    public List getParticipantObjects() {
+    public List<ParticipantObject> getParticipantObjects() {
         return Collections.unmodifiableList(participantObjects);
     }
            
