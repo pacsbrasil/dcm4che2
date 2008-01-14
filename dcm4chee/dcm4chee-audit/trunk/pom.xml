@@ -1,4 +1,4 @@
-<model>
+<project>
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-audit</artifactId>
@@ -65,4 +65,4 @@
     </plugins>
   </build>
   
-</model>
+</project>
