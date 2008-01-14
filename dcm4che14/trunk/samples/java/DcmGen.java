@@ -58,6 +58,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -711,8 +712,9 @@ public class DcmGen {
         for (Iterator it = cfg.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next();
             if (key.startsWith("set.")) {
-                int subKey = Integer.parseInt(key.substring(4, 5));
-                int tag = Tags.forName(key.substring(6));
+                String[] split = key.split("[.]");
+                int subKey = Integer.parseInt(split[1]);
+                int tag = Tags.forName(split[2]);
                 if (subKey == 0) {
                     overwrite.putXX(tag, (String) cfg.get(key));
                     continue;
