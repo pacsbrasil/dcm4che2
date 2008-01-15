@@ -56,8 +56,8 @@ set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.
 rem Set java.library.path to find native jai-imageio components 
 set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%JBOSS_HOME%\bin\native
 
-rem Set app.name and app.pid used in emitted audit log messages
-set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee -Dapp.pid=%RANDOM%
+rem Set app.name used in emitted audit log messages
+set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee
 
 rem Setup the java endorsed dirs
 set JAVA_OPTS=%JAVA_OPTS% -Djava.endorsed.dirs=%JBOSS_HOME%\lib\endorsed
