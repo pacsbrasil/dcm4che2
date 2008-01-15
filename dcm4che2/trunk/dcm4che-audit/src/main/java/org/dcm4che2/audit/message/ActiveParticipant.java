@@ -93,7 +93,8 @@ public class ActiveParticipant extends BaseElement {
         }
         addAttribute("UserID", userID, false);
         if (!userIsRequestor || encodeUserIsRequestorTrue) {
-            addAttribute("UserIsRequestor", Boolean.valueOf(userIsRequestor), true);
+            addAttribute("UserIsRequestor", Boolean.valueOf(userIsRequestor),
+                    false);
         }
     }
 
@@ -221,7 +222,7 @@ public class ActiveParticipant extends BaseElement {
         setNetworkAccessPointID(AuditMessage.hostNameOf(ip));       
     }
 
-    public List getRoleIDCodeIDs() {
+    public List<RoleIDCode> getRoleIDCodes() {
         return Collections.unmodifiableList(roleIDCodes);
     }
     

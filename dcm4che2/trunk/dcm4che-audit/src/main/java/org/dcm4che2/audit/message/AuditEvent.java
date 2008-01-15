@@ -96,7 +96,7 @@ public class AuditEvent extends BaseElement {
         return this;
     }
     
-    public List getEventTypeCodes() {
+    public List<TypeCode> getEventTypeCodes() {
         return Collections.unmodifiableList(eventTypeCodes);
     }
     

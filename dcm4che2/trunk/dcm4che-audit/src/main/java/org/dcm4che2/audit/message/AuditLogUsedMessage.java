@@ -38,8 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Iterator;
-
 /**
  * This message describes the event of a person or process accessing a log 
  * of audit trail information.
@@ -90,9 +88,8 @@ public class AuditLogUsedMessage extends AuditMessage {
         if (user == null) {
             throw new IllegalStateException("No Requesting User");
         }
-        ParticipantObject auditLog = null;        
-        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
-            ParticipantObject po = (ParticipantObject) iter.next();
+        ParticipantObject auditLog = null;
+        for (ParticipantObject po : participantObjects) {
             if (ParticipantObject.TypeCodeRole.SECURITY_RESOURCE
                     == po.getParticipantObjectTypeCodeRole()) {
                 if (auditLog != null) {

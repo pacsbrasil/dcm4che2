@@ -57,8 +57,9 @@ public class ParticipantObject extends BaseElement {
     private final IDTypeCode idTypeCode;
     private Name name;
     private Query query;
-    private final ArrayList<BaseElement> details = new ArrayList<BaseElement>();
-    private final ArrayList<BaseElement> descs = new ArrayList<BaseElement>();
+    private final ArrayList<Detail> details = new ArrayList<Detail>();
+    private final ArrayList<ParticipantObjectDescription> descs =
+            new ArrayList<ParticipantObjectDescription>();
     
     public ParticipantObject(String id, IDTypeCode idTypeCode) {
         super("ParticipantObjectIdentification");
@@ -150,7 +151,7 @@ public class ParticipantObject extends BaseElement {
         return this;
     }
 
-    public List getParticipantObjectDetails() {
+    public List<Detail> getParticipantObjectDetails() {
         return Collections.unmodifiableList(details);
     }
     
@@ -166,7 +167,8 @@ public class ParticipantObject extends BaseElement {
         return this;
     }
 
-    public List getParticipantObjectDescriptions() {
+    public List<ParticipantObjectDescription>
+            getParticipantObjectDescriptions() {
         return Collections.unmodifiableList(descs);
     }
         

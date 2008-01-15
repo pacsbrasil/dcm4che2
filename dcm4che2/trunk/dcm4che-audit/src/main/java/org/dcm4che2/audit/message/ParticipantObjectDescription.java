@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -56,9 +55,10 @@ import java.util.List;
 public class ParticipantObjectDescription extends BaseElement {
 
     private final ArrayList<BaseElement> mppss = new ArrayList<BaseElement>();
-    private final ArrayList<BaseElement> accessions = new ArrayList<BaseElement>();
-    private final ArrayList<BaseElement> sopClasses = new ArrayList<BaseElement>();
-    private final ArrayList<BaseElement> studies = new ArrayList<BaseElement>();    
+    private final ArrayList<BaseElement> accessions =
+            new ArrayList<BaseElement>();
+    private final ArrayList<SOPClass> sopClasses = new ArrayList<SOPClass>();
+    private final ArrayList<BaseElement> studies = new ArrayList<BaseElement>();
     
     public ParticipantObjectDescription() {
         super("ParticipantObjectDescription");
@@ -70,7 +70,7 @@ public class ParticipantObjectDescription extends BaseElement {
     }
 
     public final ParticipantObjectDescription setEncrypted(boolean encrypted) {
-        addAttribute("Encrypted", Boolean.valueOf(encrypted), true);
+        addAttribute("Encrypted", Boolean.valueOf(encrypted), false);
         return this;
     }
 
@@ -84,15 +84,16 @@ public class ParticipantObjectDescription extends BaseElement {
         return this;
     }
 
-    private static ArrayList toStringList(List<BaseElement> elements, String attrName) {
-        ArrayList<BaseElement> list = new ArrayList<BaseElement>(elements.size());
-        for (Iterator<BaseElement> iter = elements.iterator(); iter.hasNext();) {
-            list.add((BaseElement) iter.next().getAttribute(attrName));                
+    private static List<String> toStringList(List<BaseElement> elements,
+            String attrName) {
+        ArrayList<String> list = new ArrayList<String>(elements.size());
+        for (BaseElement el : elements) {
+            list.add(el.getAttribute(attrName).toString());
         }
         return list;
     }        
             
-    public List getMPPSs() {
+    public List<String> getMPPSs() {
         return toStringList(mppss, "UID");
     }
 
@@ -101,7 +102,7 @@ public class ParticipantObjectDescription extends BaseElement {
         return this;
     }
 
-    public List getAccessions() {
+    public List<String> getAccessions() {
         return toStringList(accessions, "Number");
     }
 
@@ -110,7 +111,7 @@ public class ParticipantObjectDescription extends BaseElement {
         return this;
     }
 
-    public List getSOPClasses() {
+    public List<SOPClass> getSOPClasses() {
         return Collections.unmodifiableList(sopClasses);
     }        
     
@@ -120,10 +121,6 @@ public class ParticipantObjectDescription extends BaseElement {
         }
         sopClasses.add(sopClass);
         return this;
-    }
-
-    public List getStudies() {
-        return toStringList(studies, "UID");
     }
 
     public ParticipantObjectDescription addStudy(String suid) {
@@ -165,10 +162,6 @@ public class ParticipantObjectDescription extends BaseElement {
         public SOPClass addInstance(String iuid) {
             instances.add(new BaseElement("Instance", "UID", iuid));
             return this;
-        }
-
-        public List getInstance() {
-            return toStringList(instances, "UID");
         }
 
         @Override

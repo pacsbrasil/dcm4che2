@@ -38,8 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Iterator;
-
 /**
  * This message describes the event of deletion of one or more studies and 
  * all associated SOP Instances  in a single action. This message may only 
@@ -91,8 +89,7 @@ public class StudyDeletedMessage extends AuditMessage {
        
         ParticipantObject patient = null;        
         ParticipantObject study = null;        
-        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
-            ParticipantObject po = (ParticipantObject) iter.next();
+        for (ParticipantObject po : participantObjects) {
             if (ParticipantObject.TypeCodeRole.PATIENT
                     == po.getParticipantObjectTypeCodeRole()) {
                 if (patient != null) {

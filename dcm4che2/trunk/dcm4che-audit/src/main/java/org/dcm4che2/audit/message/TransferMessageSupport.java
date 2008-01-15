@@ -38,7 +38,6 @@
 
 package org.dcm4che2.audit.message;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -99,9 +98,9 @@ class TransferMessageSupport extends AuditMessage {
         ActiveParticipant source = null;
         ActiveParticipant dest = null;
         ActiveParticipant requestor = null;
-        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
-            ActiveParticipant ap = (ActiveParticipant) iter.next();
-            List roleIDCodeIDs = ap.getRoleIDCodeIDs();
+        for (ActiveParticipant ap : activeParticipants) {
+            List<ActiveParticipant.RoleIDCode> roleIDCodeIDs =
+                    ap.getRoleIDCodes();
             if (roleIDCodeIDs.contains(
                 ActiveParticipant.RoleIDCode.SOURCE)) {
                 if (source != null) {
@@ -134,8 +133,7 @@ class TransferMessageSupport extends AuditMessage {
        
         ParticipantObject patient = null;        
         ParticipantObject study = null;        
-        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
-            ParticipantObject po = (ParticipantObject) iter.next();
+        for (ParticipantObject po : participantObjects) {
             if (ParticipantObject.TypeCodeRole.PATIENT
                     == po.getParticipantObjectTypeCodeRole()) {
                 if (patient != null) {

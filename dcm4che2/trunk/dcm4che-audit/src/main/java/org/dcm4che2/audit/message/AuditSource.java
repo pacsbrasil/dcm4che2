@@ -80,7 +80,7 @@ public class AuditSource extends BaseElement {
         return this;
     }
 
-    public final List getAuditSourceTypeCodes() {
+    public final List<TypeCode> getAuditSourceTypeCodes() {
         return Collections.unmodifiableList(auditSourceTypeCodes);
     }
            

@@ -40,7 +40,6 @@ package org.dcm4che2.audit.log4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -50,7 +49,6 @@ import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.CodeElement;
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -62,7 +60,7 @@ public class AuditMessageFilter extends Filter {
     private boolean acceptOnMatch = false;
     private String eventIDToMatch;
     private String eventActionCodesToMatch;
-    private List<OutcomeIndicator> outcomeIndicatorsToMatch;
+    private List<AuditEvent.OutcomeIndicator> outcomeIndicatorsToMatch;
     private String eventTypeCodeToMatch;
     private String userIDToMatch;
     private Boolean userIsRequestorToMatch;
@@ -121,19 +119,20 @@ public class AuditMessageFilter extends Filter {
                                       : code.getCode() + '^' + codeSystemName;
     }
 
-    private boolean matchEventTypeCode(List eventTypeCodes) {
-        for (Iterator iter = eventTypeCodes.iterator(); iter.hasNext();) {
-            if (eventTypeCodeToMatch.equals(
-                    codeToString(((AuditEvent.TypeCode) iter.next())))) {
+    private boolean matchEventTypeCode(
+            List<AuditEvent.TypeCode> eventTypeCodes) {
+        for (AuditEvent.TypeCode typeCode : eventTypeCodes) {
+            if (eventTypeCodeToMatch.equals(codeToString(typeCode))) {
                 return true;
             }           
         }
         return false;
     }
 
-    private boolean matchActiveParticipant(List activeParticipants) {
-        for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
-            if (matchActiveParticipant((ActiveParticipant) iter.next())) {
+    private boolean matchActiveParticipant(
+            List<ActiveParticipant> activeParticipants) {
+        for (ActiveParticipant participant : activeParticipants) {
+            if (matchActiveParticipant(participant)) {
                 return true;
             }            
         }
@@ -161,7 +160,7 @@ public class AuditMessageFilter extends Filter {
             }
         }
         if (roleIDCodeToMatch != null && roleIDCodeToMatch.length() != 0) {
-            if (!matchRoleIDCode(participant.getRoleIDCodeIDs())) {
+            if (!matchRoleIDCode(participant.getRoleIDCodes())) {
                 return false;
             }
         }
@@ -183,10 +182,10 @@ public class AuditMessageFilter extends Filter {
         return true;
     }
 
-    private boolean matchRoleIDCode(List roleIDCodeIDs) {
-        for (Iterator iter = roleIDCodeIDs.iterator(); iter.hasNext();) {
-            if (roleIDCodeToMatch.equals(codeToString(
-                    ((ActiveParticipant.RoleIDCode) iter.next())))) {
+    private boolean matchRoleIDCode(
+            List<ActiveParticipant.RoleIDCode> roleIDCodeIDs) {
+        for (ActiveParticipant.RoleIDCode roleIDCode : roleIDCodeIDs) {
+            if (roleIDCodeToMatch.equals(codeToString(roleIDCode))) {
                 return true;
             }           
         }
@@ -223,12 +222,10 @@ public class AuditMessageFilter extends Filter {
             return null;
         }
         StringBuffer sb = new StringBuffer();
-        for (Iterator iter = outcomeIndicatorsToMatch.iterator(); 
-                iter.hasNext();) {
-            sb.append(tostr((AuditEvent.OutcomeIndicator) iter.next()))
-                    .append(',');
+        for (AuditEvent.OutcomeIndicator outcome : outcomeIndicatorsToMatch) {
+            sb.append(tostr(outcome)).append(',');
         }
-        return sb.substring(0, sb.length());
+        return sb.substring(0, sb.length()-1);
     }
 
     private String tostr(AuditEvent.OutcomeIndicator indicator) {
@@ -251,7 +248,8 @@ public class AuditMessageFilter extends Filter {
         if (!stk.hasMoreTokens()) {
             outcomeIndicatorsToMatch = null;
         } else {
-            outcomeIndicatorsToMatch = new ArrayList<OutcomeIndicator>(stk.countTokens());
+            outcomeIndicatorsToMatch = 
+                new ArrayList<AuditEvent.OutcomeIndicator>(stk.countTokens());
             do {
                 try {
                     outcomeIndicatorsToMatch.add(

@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -64,7 +63,7 @@ class BaseElement {
         addAttribute(attr, val, false);
     }
 
-    private static class Attr {
+    private static abstract class Attr {
         String name;
         Object val;
         Attr next;
@@ -72,42 +71,129 @@ class BaseElement {
             this.name = name;
             this.val = val;
         }
+        void output(Writer out) throws IOException {
+            out.write(' ');
+            out.write(name);
+            out.write('=');
+            outputVal(out);
+         }
+        abstract void outputVal(Writer out) throws IOException;
+   }
+
+    private static class ObjectAttr extends Attr {
+        ObjectAttr(String name, Object val) {
+            super(name, val);
+        }
+        public void outputVal(Writer out) throws IOException {
+            String str = val.toString();
+            int quote = '"';
+            String apos = "'";
+            if (str.indexOf('"') != -1) {
+                quote = '\'';
+                apos = "&apos;";
+            }
+            out.write(quote);
+            outputEscaped(out, str, apos);
+            out.write(quote);
+        }
+    }
+
+    private static class DateAttr extends Attr {
+        DateAttr(String name, Date val) {
+            super(name, val);
+        }
+        public void outputVal(Writer out) throws IOException {
+            out.write('"');
+            out.write(AuditMessage.toDateTimeStr((Date) val));
+            out.write('"');
+        }
+    }
+
+    private static class BytesAttr extends Attr {
+        BytesAttr(String name, byte[] val) {
+            super(name, val);
+        }
+        public void outputVal(Writer out) throws IOException {
+            out.write('"');
+            out.write(Base64Encoder.encode((byte[]) val));
+            out.write('"');
+        }
     }
 
     protected void addAttribute(String name, Object val, boolean optional) {
-        boolean remove = val == null || val.equals("");
-        if (remove && !optional) {
-            throw new IllegalArgumentException(name 
-                    + " must have a non empty value.");
-        }
-        if (firstAttr == null) {
-            if (!remove) {
-                firstAttr = new Attr(name, val);
+        if (val == null || val.equals("")) {
+            if (optional) {
+                removeAttribute(name);
+            } else {
+                throw new IllegalArgumentException(
+                        "missing value for attribute " + name);
             }
+        } else {
+            addAttribute(new ObjectAttr(name, val));
+        }
+    }
+
+    protected void addAttribute(String name, Date val, boolean optional) {
+        if (val == null) {
+            if (optional) {
+                removeAttribute(name);
+            } else {
+                throw new IllegalArgumentException(
+                        "missing value for attribute " + name);
+            }
+        } else {
+            addAttribute(new DateAttr(name, val));
+        }
+    }
+
+    protected void addAttribute(String name, byte[] val, boolean optional) {
+        if (val == null || val.length == 0) {
+            if (optional) {
+                removeAttribute(name);
+            } else {
+                throw new IllegalArgumentException(
+                        "missing value for attribute " + name);
+            }
+        } else {
+            addAttribute(new BytesAttr(name, val));
+        }
+    }
+
+    private void addAttribute(Attr attr) {
+        if (firstAttr == null) {
+            firstAttr = attr;
+            return;
+        }
+        Attr cur = firstAttr;
+        while (!attr.name.equals(cur.name)) {
+            if (cur.next == null) {
+                cur.next = attr;
+                return;
+            }
+            cur = cur.next;
+        }
+        cur.val = attr.val;
+    }
+    
+    private void removeAttribute(String name) {
+        if (firstAttr == null) {
             return;
         }
         Attr cur = firstAttr;
         Attr prev = null;
         while (!name.equals(cur.name)) {
             if (cur.next == null) {
-                if (!remove) {
-                    cur.next = new Attr(name, val);
-                }
                 return;                
             }
             cur = (prev = cur).next;
         }
-        if (!remove) {
-            cur.val = val;
+        if (prev != null) {
+            prev.next = cur.next;
         } else {
-            if (prev != null) {
-                prev.next = cur.next;
-            } else {
-                firstAttr = cur.next;
-            }
+            firstAttr = cur.next;
         }
     }
-    
+
     protected Object getAttribute(String name) {
         for (Attr attr = firstAttr; attr != null; attr = attr.next) {
             if (name.equals(attr.name)) {
@@ -122,10 +208,7 @@ class BaseElement {
         out.write(name);
         if (firstAttr != null) {
             for (Attr attr = firstAttr; attr != null; attr = attr.next) {
-                out.write(' ');
-                out.write(attr.name);
-                out.write('=');
-                outputAttrValue(out, attr.val);
+                attr.output(out);
             }
         }
         if (isEmpty()) {
@@ -157,52 +240,30 @@ class BaseElement {
         return sw.toString();
     }
     
-    private void outputAttrValue(Writer out, Object val) throws IOException {
-        if (val instanceof Date) {
-            out.write('"');
-            out.write(AuditMessage.toDateTimeStr((Date) val));
-            out.write('"');
-        } else if (val instanceof byte[]) {
-            out.write('"');
-            out.write(Base64Encoder.encode((byte[]) val));
-            out.write('"');
-        } else {
-            String str = val.toString();
-            int quote = '"';
-            String apos = "'";
-            if (str.indexOf('"') != -1) {
-                quote = '\'';
-                apos = "&apos;";
-            }
-            out.write(quote);
-            outputEscaped(out, str, apos);
-            out.write(quote);
-        }
-    }
-
     protected boolean isEmpty() {
         return true;
     }
 
     /**
      * Allows subclasses to write content to the output.
-     * <em>Note to implementers: {@link #isEmpty()} should also be overridden to return <code>false</code>, otherwise this method will not be called</em>.
+     * <em>Note to implementers: {@link #isEmpty()} should also be overridden
+     *  to return <code>false</code>, otherwise this method will not be called</em>.
      * 
      * @param out the writer to write the output to.
      * @throws IOException if an error occurs.
      */
-    @SuppressWarnings("unused")
     protected void outputContent(Writer out) throws IOException {
         // empty
     }
     
-    protected void outputChilds(Writer out, List childs) throws IOException {
-        for (Iterator iter = childs.iterator(); iter.hasNext();) {
-            ((BaseElement) iter.next()).output(out);            
+    protected void outputChilds(Writer out, List<? extends BaseElement> childs)
+            throws IOException {
+        for (BaseElement child : childs) {
+            child.output(out);
         }
     }
     
-    protected void outputEscaped(Writer out, String val, String apos)
+    static void outputEscaped(Writer out, String val, String apos)
     throws IOException {
         char[] cs = val.toCharArray();
         for (int i = 0; i < cs.length; i++) {

@@ -38,8 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Iterator;
-
 class AuditMessageSupport extends AuditMessage {
 
     public static final AuditEvent.ActionCode CREATE = 
@@ -88,9 +86,8 @@ class AuditMessageSupport extends AuditMessage {
         if (user == null) {
             throw new IllegalStateException("No Requesting User");
         }
-        ParticipantObject patient = null;        
-        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
-            ParticipantObject po = (ParticipantObject) iter.next();
+        ParticipantObject patient = null;
+        for (ParticipantObject po : participantObjects) {
             if (ParticipantObject.TypeCodeRole.PATIENT
                     == po.getParticipantObjectTypeCodeRole()) {
                 if (patient != null) {

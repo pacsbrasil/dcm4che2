@@ -38,8 +38,6 @@
  
 package org.dcm4che2.audit.message;
 
-import java.util.Iterator;
-
 /**
  * This message describes the event of DICOM SOP Instances  being viewed,
  * utilized, updated, or deleted. This event is summarized at the level of
@@ -66,8 +64,7 @@ public class InstancesAccessedMessage extends AuditMessageSupport {
     public void validate() {
         super.validate();
         ParticipantObject study = null;        
-        for (Iterator iter = participantObjects.iterator(); iter.hasNext();) {
-            ParticipantObject po = (ParticipantObject) iter.next();
+        for (ParticipantObject po : participantObjects) {
             if (ParticipantObject.TypeCodeRole.REPORT
                         == po.getParticipantObjectTypeCodeRole()
                     && ParticipantObject.IDTypeCode.STUDY_INSTANCE_UID
