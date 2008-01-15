@@ -241,8 +241,9 @@ class AuditRecordHandler extends DefaultHandler {
         }
     }
 
-    private Code findCode(String value, String designator) {
-        List queryResult = em.createQuery(
+    @SuppressWarnings("unchecked")
+	private Code findCode(String value, String designator) {
+        List<Code> queryResult = em.createQuery(
                 "FROM Code c WHERE "
                         + "c.value = :value AND c.designator = :designator")
                 .setParameter("value", value)
@@ -250,7 +251,7 @@ class AuditRecordHandler extends DefaultHandler {
                 .setHint("org.hibernate.readOnly", Boolean.TRUE)
                 .getResultList();
         if (!queryResult.isEmpty()) {
-            return (Code) queryResult.get(0);
+            return queryResult.get(0);
         }
         return null;
     }
