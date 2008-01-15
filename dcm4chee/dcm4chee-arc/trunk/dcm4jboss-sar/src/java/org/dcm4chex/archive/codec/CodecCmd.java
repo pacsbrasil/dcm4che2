@@ -121,19 +121,10 @@ public abstract class CodecCmd {
         this.columns = ds.getInt(Tags.Columns, 1);
         this.bitsAllocated = ds.getInt(Tags.BitsAllocated, 8);
         this.bitsStored = ds.getInt(Tags.BitsStored, bitsAllocated);
-        this.bitsUsed = isOverlayInPixelData(ds) ? bitsAllocated : bitsStored;
+        this.bitsUsed = bitsAllocated;
         this.pixelRepresentation = ds.getInt(Tags.PixelRepresentation, 0);
         this.planarConfiguration = ds.getInt(Tags.PlanarConfiguration, 0);
         this.frameLength = rows * columns * samples * bitsAllocated / 8;
-    }
-
-    private boolean isOverlayInPixelData(Dataset ds) {
-        for (int i = 0; i < 16; ++i) {
-            if (ds.getInt(Tags.OverlayBitPosition + 2 * i, 0) != 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public int getPixelDataLength() {
