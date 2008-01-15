@@ -98,9 +98,8 @@ import org.dcm4che.util.UIDGenerator;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.DataExportMessage;
-import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
-import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
+import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -1080,14 +1079,13 @@ public class XDSIService extends ServiceMBeanSupport {
         msg.addDestinationMedia(docRepositoryURI, null, "XDS-I Export", false, host );
         msg.addPatient(dsKos.getString(Tags.PatientID), dsKos.getString(Tags.PatientName));
         InstanceSorter sorter = getInstanceSorter(dsKos);
-        for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
+        for (String suid : sorter.getSUIDs()) {
             ParticipantObjectDescription desc = new ParticipantObjectDescription();
-            String suid = (String) iter.next();
-            for (Iterator iter2 = sorter.iterateCUIDs(suid);
-                    iter2.hasNext();) {
-                String cuid = (String) iter2.next();
-                SOPClass sopClass = new SOPClass(cuid);
-                sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
+            for (String cuid : sorter.getCUIDs(suid)) {
+                ParticipantObjectDescription.SOPClass sopClass =
+                        new ParticipantObjectDescription.SOPClass(cuid);
+                sopClass.setNumberOfInstances(
+                        sorter.countInstances(suid, cuid));
                 desc.addSOPClass(sopClass);
             }
             msg.addStudy(suid, desc);

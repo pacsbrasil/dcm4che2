@@ -28,19 +28,10 @@ cp -v "$CDW_HOME"/bin/acroread.bat \
   "$CDW_HOME"/bin/xalan.sh \
   "$DCM4CHEE_HOME"/bin
 
-cp -v -R "$CDW_SERV"/conf/dcm4chee-cdw "$DCM4CHEE_SERV"/conf
-
-cp -v "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-cdrecord-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-composer-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-dcmsrv-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-labelprint-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-mcmscp-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-mkisofs-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-nerocmd-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-scheduler-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-spooldir-xmbean.xml \
-  "$CDW_SERV"/conf/xmdesc/dcm4chee-cdw-storescp-xmbean.xml \
-  "$DCM4CHEE_SERV"/conf/xmdesc
+cp -v -R "$CDW_SERV"/conf/dcm4chee-auditlog \
+  "$CDW_SERV"/conf/dcm4chee-cdw \
+  "$CDW_SERV"/conf/xmdesc \
+  "$DCM4CHEE_SERV"/conf
 
 if [ ! -d "$DCM4CHEE_SERV"/data ]; then
   mkdir "$DCM4CHEE_SERV"/data

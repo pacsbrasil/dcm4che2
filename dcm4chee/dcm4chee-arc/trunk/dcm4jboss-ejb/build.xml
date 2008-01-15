@@ -10,8 +10,8 @@
 	<property name="javac.debug" value="on"/>
 	<property name="javac.deprecation" value="off"/>
 	<property name="javac.optimize" value="on"/>
-	<property name="javac.source" value="1.4"/>
-	<property name="javac.target" value="1.4"/>
+	<property name="javac.source" value="1.5"/>
+	<property name="javac.target" value="1.5"/>
 
     <!--property name="datasource.mapping" value="Hypersonic SQL"/-->
     <!--property name="datasource.mapping" value="mySQL"/-->
@@ -427,7 +427,7 @@
                 <exclude name="**/util/**"/>
             </fileset>
         </jar>
-        <style style="${src.etc}/${db.name}/jdbc-properties.xsl"
+        <xslt style="${src.etc}/${db.name}/jdbc-properties.xsl"
              in="${target.meta-inf}-${db.name}/jbosscmp-jdbc.xml"
              out="${target.res}-${db.name}/org/dcm4chex/archive/ejb/jdbc/Jdbc.properties"
         >
@@ -435,7 +435,7 @@
         		<dtd publicId="-//JBoss//DTD JBOSSCMP-JDBC 4.0//EN"
             		 location="${jboss.home}/docs/dtd/jbosscmp-jdbc_4_0.dtd"/>
 		    </xmlcatalog>        
-        </style>
+        </xslt>
         <mkdir dir="${target.dir}/${db.name}/lib"/>
         <jar jarfile="${target.dir}/${db.name}/lib/dcm4chee-jdbc-${db.name}.jar">
         	<manifest>

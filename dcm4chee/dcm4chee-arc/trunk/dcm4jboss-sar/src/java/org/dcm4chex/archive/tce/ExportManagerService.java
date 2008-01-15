@@ -110,9 +110,8 @@ import org.dcm4che.util.UIDGenerator;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.BeginTransferringMessage;
 import org.dcm4che2.audit.message.DataExportMessage;
-import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
-import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
+import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
@@ -778,8 +777,8 @@ public class ExportManagerService extends AbstractScuService
             if (auditLogger.isAuditLogIHEYr4()) {
                 AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
                 Patient pat = alf.newPatient(pid, pname);
-                for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
-                    pat.addStudyInstanceUID((String) iter.next());
+                for (String suid : sorter.getSUIDs()) {
+                    pat.addStudyInstanceUID(suid);
 
                 }
                 server.invoke(auditLogger.getAuditLoggerName(), "logExport", new Object[] { user,
@@ -800,14 +799,13 @@ public class ExportManagerService extends AbstractScuService
                 }
                 msg.addDestinationMedia(mediaID, fsuid);
                 msg.addPatient(pid, pname);
-                for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
+                for (String suid : sorter.getSUIDs()) {
                     ParticipantObjectDescription desc = new ParticipantObjectDescription();
-                    String suid = (String) iter.next();
-                    for (Iterator iter2 = sorter.iterateCUIDs(suid);
-                            iter2.hasNext();) {
-                        String cuid = (String) iter2.next();
-                        SOPClass sopClass = new SOPClass(cuid);
-                        sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
+                    for (String cuid : sorter.getCUIDs(suid)) {
+                        ParticipantObjectDescription.SOPClass sopClass =
+                                new ParticipantObjectDescription.SOPClass(cuid);
+                        sopClass.setNumberOfInstances(
+                                sorter.countInstances(suid, cuid));
                         desc.addSOPClass(sopClass);
                     }
                     msg.addStudy(suid, desc);
@@ -1290,14 +1288,12 @@ public class ExportManagerService extends AbstractScuService
         PersonName pname = manifest.getPersonName(Tags.PatientName);
         msg.addPatient(manifest.getString(Tags.PatientID),
                 pname != null ? pname.format() : null);
-        for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
-            String suid = (String) iter.next();
+        for (String suid : sorter.getSUIDs()) {
             ParticipantObjectDescription desc = 
                     new ParticipantObjectDescription();
-            for (Iterator iter2 = sorter.iterateCUIDs(suid);
-                    iter2.hasNext();) {
-                String cuid = (String) iter2.next();
-                SOPClass sopClass = new SOPClass(cuid);
+            for (String cuid : sorter.getCUIDs(suid)) {
+                ParticipantObjectDescription.SOPClass sopClass =
+                        new ParticipantObjectDescription.SOPClass(cuid);
                 sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
                 desc.addSOPClass(sopClass );
             }

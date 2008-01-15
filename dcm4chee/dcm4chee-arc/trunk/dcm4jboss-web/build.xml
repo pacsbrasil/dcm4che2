@@ -6,10 +6,10 @@
 	<property name="javac.debug" value="on"/>
 	<property name="javac.deprecation" value="off"/>
 	<property name="javac.optimize" value="on"/>
-	<property name="javac.source" value="1.4"/>
-	<property name="javac.target" value="1.4"/>
+	<property name="javac.source" value="1.5"/>
+	<property name="javac.target" value="1.5"/>
 
-	<property name="version" value="DEVELOP-2.13.1"/>
+	<property name="version" value="2.13.1"/>
 	<property name="vendor" value="Agfa Healthcare"/>
 
 	<!-- Override with your JBoss dist location -->

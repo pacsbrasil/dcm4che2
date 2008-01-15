@@ -42,21 +42,9 @@ copy "%CDW_BIN%\xalan.sh" "%DCM4CHEE_BIN%"
 set CDW_CONF=%CDW_SERV%\conf
 set DCM4CHEE_CONF=%DCM4CHEE_SERV%\conf
 
+xcopy /S "%CDW_CONF%\dcm4chee-audit" "%DCM4CHEE_CONF%\dcm4chee-audit\"
 xcopy /S "%CDW_CONF%\dcm4chee-cdw" "%DCM4CHEE_CONF%\dcm4chee-cdw\"
-
-set CDW_XMDESC=%CDW_CONF%\xmdesc
-set DCM4CHEE_XMDESC=%DCM4CHEE_CONF%\xmdesc
-
-copy "%CDW_XMDESC%\dcm4chee-cdw-cdrecord-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-composer-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-dcmsrv-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-labelprint-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-mcmscp-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-mkisofs-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-nerocmd-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-scheduler-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-spooldir-xmbean.xml" "%DCM4CHEE_XMDESC%"
-copy "%CDW_XMDESC%\dcm4chee-cdw-storescp-xmbean.xml" "%DCM4CHEE_XMDESC%"
+xcopy /S "%CDW_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
 set CDW_DATA=%CDW_SERV%\data
 set DCM4CHEE_DATA=%DCM4CHEE_SERV%\data

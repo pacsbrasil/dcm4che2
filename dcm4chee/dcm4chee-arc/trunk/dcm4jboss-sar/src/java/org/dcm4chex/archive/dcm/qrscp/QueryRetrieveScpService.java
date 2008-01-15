@@ -69,9 +69,9 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.ExtNegotiator;
 import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -905,13 +905,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         new String[] { origAET }, null, origHost, true);
             }
             msg.addPatient(fileInfo.patID, formatPN(fileInfo.patName));
-            for (Iterator iter = sorter.iterateSUIDs(); iter.hasNext();) {
-                String suid = (String) iter.next();
+            for (String suid : sorter.getSUIDs()) {
                 ParticipantObjectDescription desc = 
                         new ParticipantObjectDescription();
-                for (Iterator iter2 = sorter.iterateCUIDs(suid); 
-                        iter2.hasNext();) {
-                    String cuid = (String) iter2.next();
+                for (String cuid : sorter.getCUIDs(suid)) {
                     ParticipantObjectDescription.SOPClass sopClass =
                             new ParticipantObjectDescription.SOPClass(cuid);
                     sopClass.setNumberOfInstances(

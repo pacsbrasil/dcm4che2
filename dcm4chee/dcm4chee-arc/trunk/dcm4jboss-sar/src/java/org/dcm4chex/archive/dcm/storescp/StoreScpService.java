@@ -47,7 +47,6 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,9 +71,9 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
@@ -714,12 +713,11 @@ public class StoreScpService extends AbstractScpService {
                 if (pps != null) {
                     desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
                 }
-                for (Iterator iter = sorter.iterateCUIDs(suid);
-                iter.hasNext();) {
-                    String cuid = (String) iter.next();
+                for (String cuid : sorter.getCUIDs(suid)) {
                     ParticipantObjectDescription.SOPClass sopClass =
                             new ParticipantObjectDescription.SOPClass(cuid);
-                    sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
+                    sopClass.setNumberOfInstances(
+                            sorter.countInstances(suid, cuid));
                     desc.addSOPClass(sopClass);
                 }
                 msg.addStudy(ian.getString(Tags.StudyInstanceUID), desc);
