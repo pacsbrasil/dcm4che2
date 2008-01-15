@@ -84,20 +84,9 @@ fi
 
 according available RAM and memory requirements of other processes on this node. 
 E.g.: if only 512 MB RAM are available, you should decrease the default
-value -Xmx512m to (e.g.) -Xmx300.
+value -Xmx512m to (e.g.) -Xmx300.           
 
-9. [Optional] At default configuration, all DICOM services are provided with
-"DCM4CHEE" as Application Entity Title. Although it is possible to change the
-default configuration later on the running application using the web interface,
-it is more efficient and reliable, to replace "DCM4CHEE" by "YOUR_AET" in
-dcm4chee-xxx-2.12.x/server/default/conf/xmdesc/*.xml using any utility provided
-by your platform. E.g. GNU Linux:
-
-> find dcm4chee-xxx-2.12.x/server/default/conf/xmdesc -exec \
-           sed -i s/DCM4CHEE/YOUR_AET/g '{}' ';'
-           
-
-10. To test your installation, move to the dcm4chee-xxx-2.12.x/bin directory
+9. To test your installation, move to the dcm4chee-xxx-2.12.x/bin directory
 and execute the run.bat or run.sh script, as appropriate for your operating
 system. To enable remote access to jboss services and web interface, you have
 to invoke the start script with parameter '-b 0.0.0.0'! Your output should look
@@ -130,12 +119,12 @@ like the following and contain no error or exception messages:
 23:19:49,632 INFO  [Server] JBoss (MX MicroKernel) [4.2.2.GA (build:
  SVNTag=JBoss_4_2_2_GA date=200710221139)] Started in 1m:57s:103ms
 
-11. Connect to the Web Interface at http://localhost:8080/dcm4chee-web/
+10. Connect to the Web Interface at http://localhost:8080/dcm4chee-web/
 of the archive using any Web Browser (most tested are Mozilla-Firefox and
 Microsoft Internet Explorer v6.x). You should get the User Login Screen.
 Login in using default Administrator account 'admin', with password 'admin'.
 
-12. Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and
+11. Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and
 login using also the Administrator account 'admin', with password 'admin'.
 
 Follow the link "service=FileSystemMgt" to the configuration page for 
@@ -147,6 +136,16 @@ the directory, where the archive shall store received objects/images.
 (If no Storage File System is configured, the archive will auto-configure
 dcm4chee-xxx-2.12.x/server/default/archive as Storage File System, when
 receiving the first object/image)
+
+12. [Optional] Change the default AE Title
+Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and login using also the Administrator account 'admin', with password 'admin'.
+Follow the link "service=FileSystemMgt" to the configuration page for File System Management service under the "dcm4chee.archive" heading.
+Invoke the operation updateRetrieveAETitle with the new AE Title as parameter.
+This will update the following configurations:
+* update the retrieve AET of file systems, associated to the current retrieve AET of this node
+* update retrieveAETs of all instances, series and studies that have files on these filesystems
+* update the entry for the retrieve AE in the AE Configuration
+* update all service attributes listed by attribute OtherServiceAETitleAttributesToUpdate
 
 13. [Optional] At default configuration, received images are stored as received
 - in particular, no compression is performed. Lossless compression of received
