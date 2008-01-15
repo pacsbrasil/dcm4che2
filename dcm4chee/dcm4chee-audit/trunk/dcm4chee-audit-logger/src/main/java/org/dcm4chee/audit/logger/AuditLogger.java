@@ -38,12 +38,15 @@
 
 package org.dcm4chee.audit.logger;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.management.AttributeChangeNotification;
 import javax.management.AttributeChangeNotificationFilter;
@@ -59,6 +62,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.ApplicationActivityMessage;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
@@ -66,6 +70,7 @@ import org.dcm4che2.audit.message.AuditSource;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -130,11 +135,14 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
 
-    private String aclConfURL;
+    private String configDir;
 
-    private HashMap notRegisteredAcnSources;
+    private HashMap<ObjectName, AttributeChangeNotificationFilter[]>
+            notRegisteredAcnSources;
 
-    private HashMap registeredAcnSources = new HashMap();
+    private HashMap<ObjectName, AttributeChangeNotificationFilter[]>
+            registeredAcnSources =
+                new HashMap<ObjectName, AttributeChangeNotificationFilter[]>();
 
     public boolean isIHEYr4() {
         return false;
@@ -165,18 +173,15 @@ public class AuditLogger extends ServiceMBeanSupport {
     }
 
     public String getAuditSourceTypeCodes() {
-        List l = auditSource.getAuditSourceTypeCodes();
+        List<AuditSource.TypeCode> l = auditSource.getAuditSourceTypeCodes();
         if (l.isEmpty()) {
             return "-";
         }
         StringBuffer sb = new StringBuffer();
-        for (int i = 0, n = l.size(); i < n; i++) {
-            if (i != 0) {
-                sb.append(',');
-            }
-            sb.append(((AuditSource.TypeCode) l.get(i)).getCode());
+        for (AuditSource.TypeCode typeCode : l) {
+            sb.append(typeCode.getCode()).append(',');
         }
-        return sb.toString();
+        return sb.substring(0, sb.length()-1);
     }
 
     public void setAuditSourceTypeCodes(String codes) {
@@ -272,21 +277,43 @@ public class AuditLogger extends ServiceMBeanSupport {
         AuditMessage.setUtcDateTime(utcDateTime);
     }
 
-    public final String getAttributeChangeConfigurationURL() {
-        return aclConfURL;
+    public boolean isEncodeUserIsRequestorTrue() {
+        return ActiveParticipant.isEncodeUserIsRequestorTrue();
     }
 
-    public final void setAttributeChangeConfigurationURL(String url)
+    public void setEncodeUserIsRequestorTrue(boolean enable) {
+        ActiveParticipant.setEncodeUserIsRequestorTrue(enable);
+    }
+
+    public final String getConfigurationDirectory() {
+        return configDir;
+    }
+
+    public final void setConfigurationDirectory(String configDir)
             throws Exception {
-        HashMap tmp = new HashMap();
+        File dir = new File(configDir.replace('/', File.separatorChar));
+        if (!dir.isAbsolute()) {
+            dir = new File(ServerConfigLocator.locate().getServerHomeDir(),
+                    dir.getPath());
+        }
+        if (!dir.isDirectory()) {
+            throw new IllegalArgumentException("no such directroy: " + dir);
+        }
+        ConfigHandler configHandler = new ConfigHandler();
         SAXParser p = SAXParserFactory.newInstance().newSAXParser();
-        p.parse(url, new ConfigHandler(tmp));
-        this.aclConfURL = url;
+        File[] configFiles = dir.listFiles(new FilenameFilter(){
+            public boolean accept(File dir, String name) {
+                return name.endsWith("-xmbean.xml");
+            }});
+        for (int i = 0; i < configFiles.length; i++) {
+            p.parse(configFiles[i], configHandler);
+        }
         boolean started = getState() == STARTED;
         if (started) {
             unregisterAcnListeners();
         }
-        this.notRegisteredAcnSources = tmp;
+        this.configDir = configDir;
+        this.notRegisteredAcnSources = configHandler.sources();
         if (started) {
             registerAcnListeners();
         }
@@ -325,10 +352,10 @@ public class AuditLogger extends ServiceMBeanSupport {
             ObjectName source = mbsn.getMBeanName();
             AttributeChangeNotificationFilter[] acnf =
                     (AttributeChangeNotificationFilter[])
-                    notRegisteredAcnSources.remove(source);
-            if (acnf != null) {
-                (registerAcnListener(source, acnf) ? registeredAcnSources
-                        : notRegisteredAcnSources).put(source, acnf);
+                    notRegisteredAcnSources.get(source);
+            if (acnf != null && registerAcnListener(source, acnf)) {
+                notRegisteredAcnSources.remove(source);
+                registeredAcnSources.put(source, acnf);
             }
         }
     };
@@ -388,17 +415,19 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     private static class ConfigHandler extends DefaultHandler {
 
-        private final HashMap sources;
+        private final HashMap<ObjectName, AttributeChangeNotificationFilter[]>
+                sources = new HashMap<ObjectName, AttributeChangeNotificationFilter[]>();
 
         private ObjectName source;
 
         private AttributeChangeNotificationFilter[] acnf =
                 new AttributeChangeNotificationFilter[4];
 
-        private List types = Arrays.asList(TYPES);
+        private List<String> types = Arrays.asList(TYPES);
 
-        public ConfigHandler(HashMap sources) {
-            this.sources = sources;
+        public HashMap<ObjectName, AttributeChangeNotificationFilter[]>
+                sources() {
+            return sources;
         }
 
         public void startElement(String uri, String localName, String qName,
@@ -438,12 +467,13 @@ public class AuditLogger extends ServiceMBeanSupport {
     }
 
     private void registerAcnListeners() {
-        for (Iterator iter = notRegisteredAcnSources.entrySet().iterator(); iter
-                .hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            ObjectName source = (ObjectName) entry.getKey();
-            AttributeChangeNotificationFilter[] acnf =
-                    (AttributeChangeNotificationFilter[]) entry.getValue();
+        for (Iterator<Entry<ObjectName, AttributeChangeNotificationFilter[]>>
+                iter = notRegisteredAcnSources.entrySet().iterator();
+                iter.hasNext();) {
+            Map.Entry<ObjectName, AttributeChangeNotificationFilter[]> entry =
+                    iter.next();
+            ObjectName source = entry.getKey();
+            AttributeChangeNotificationFilter[] acnf = entry.getValue();
             if (registerAcnListener(source, acnf)) {
                 registeredAcnSources.put(source, acnf);
                 iter.remove();
@@ -509,12 +539,16 @@ public class AuditLogger extends ServiceMBeanSupport {
     }
 
     private void unregisterAcnListeners() {
-        for (Iterator iter = registeredAcnSources.keySet().iterator(); iter
-                .hasNext();) {
-            unregisterAcnListener((ObjectName) iter.next());
+        for (Iterator<Entry<ObjectName, AttributeChangeNotificationFilter[]>>
+                iter = registeredAcnSources.entrySet().iterator();
+                iter.hasNext();) {
+            Map.Entry<ObjectName, AttributeChangeNotificationFilter[]> entry =
+                    iter.next();
+            ObjectName source = entry.getKey();
+            unregisterAcnListener(source);
+            notRegisteredAcnSources.put(source, entry.getValue());
+            iter.remove();
         }
-        notRegisteredAcnSources.putAll(registeredAcnSources);
-        registeredAcnSources.clear();
     }
 
     private void unregisterAcnListener(ObjectName source) {
