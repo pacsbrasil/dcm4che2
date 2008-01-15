@@ -86,25 +86,25 @@
    <!-- Generate java source from XML via XSLT -->
    <target name="xslt-generate" depends="init">
       <mkdir dir="${build.generate.dir}/org/dcm4che/dict"/>
-      <style processor="trax"
+      <xslt processor="trax"
              style="${src.etc.dir}/Tags.xsl"
              in="${src.etc.dir}/dictionary.xml"
              out="${build.generate.dir}/org/dcm4che/dict/Tags.java"
       />
 
-      <style processor="trax"
+      <xslt processor="trax"
              style="${src.etc.dir}/VRMap.xsl"
              in="${src.etc.dir}/dictionary.xml"
               out="${build.generate.dir}/org/dcm4che/dict/VRMap.java"
       />
 
-      <style processor="trax"
+      <xslt processor="trax"
              style="${src.etc.dir}/UIDs.xsl"
              in="${src.etc.dir}/dictionary.xml"
              out="${build.generate.dir}/org/dcm4che/dict/UIDs.java"
       />
       
-      <style processor="trax"
+      <xslt processor="trax"
              style="${src.etc.dir}/Status.xsl"
              in="${src.etc.dir}/dictionary.xml"
              out="${build.generate.dir}/org/dcm4che/dict/Status.java"
