@@ -53,8 +53,8 @@ set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
 rem With Sun JVMs reduce the RMI GCs to once per hour
 set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000
 
-rem Set app.name and app.pid used in emitted audit log messages
-set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee-arr -Dapp.pid=%RANDOM%
+rem Set app.name used in emitted audit log messages
+set JAVA_OPTS=%JAVA_OPTS% -Dapp.name=dcm4chee-arr
 
 rem Setup the java endorsed dirs
 set JAVA_OPTS=%JAVA_OPTS% -Djava.endorsed.dirs=%JBOSS_HOME%\lib\endorsed
