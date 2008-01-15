@@ -61,7 +61,7 @@ E.g.: MySQL
 mysql> create database pacsdb;
 mysql> grant all on pacsdb.* to 'pacs'@'localhost' identified by 'pacs';
 mysql> \q
-> mysql -upacs -ppacs < dcm4chee-mysql-2.12.x/sql/create.mysql
+> mysql -upacs -ppacs pacsdb < dcm4chee-mysql-2.12.x/sql/create.mysql
 
 6. Adjust the Database connection configuration (host, port, DB name, user
 password) of the archive:
