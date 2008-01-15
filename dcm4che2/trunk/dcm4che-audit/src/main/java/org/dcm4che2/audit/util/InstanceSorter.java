@@ -36,85 +36,95 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che2.audit.message;
+package org.dcm4che2.audit.util;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
+ * @version $Revision: 5518 $ $Date: 2007-11-23 13:23:46 +0100 (Fri, 23 Nov 2007) $
  * @since Mar 1, 2007
  */
 public class InstanceSorter {
     
-    private LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Object>>> suids = new LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Object>>>();
-    
+    private LinkedHashMap<String,
+            LinkedHashMap<String, LinkedHashMap<String, Object>>> suidMap =
+                new LinkedHashMap<String, 
+                        LinkedHashMap<String,
+                                LinkedHashMap<String, Object>>>();
+
     public void clear() {
-        suids.clear();
+        suidMap.clear();
     }
-    
+
     public Object addInstance(String suid, String cuid, String iuid,
             Object obj) {
-        LinkedHashMap<String, LinkedHashMap<String, Object>> cuids = suids.get(suid);
-        if (cuids == null) {
-            cuids = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
-            suids.put(suid, cuids);
+        LinkedHashMap<String, LinkedHashMap<String, Object>> cuidMap =
+                suidMap.get(suid);
+        if (cuidMap == null) {
+            cuidMap = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
+            suidMap.put(suid, cuidMap);
         }
-        LinkedHashMap<String, Object> iuids = cuids.get(cuid);
-        if (iuids == null) {
-            iuids = new LinkedHashMap<String, Object>();
-            cuids.put(cuid, iuids);
+        LinkedHashMap<String, Object> iuidMap = cuidMap.get(cuid);
+        if (iuidMap == null) {
+            iuidMap = new LinkedHashMap<String, Object>();
+            cuidMap.put(cuid, iuidMap);
         }
-        return iuids.put(iuid, obj);
+        return iuidMap.put(iuid, obj);
     }
-    
-    public Iterator<String> iterateSUIDs() {
-        return suids.keySet().iterator();
+
+    public Set<String> getSUIDs() {
+        return Collections.unmodifiableSet(suidMap.keySet());
     }    
 
-    public Iterator iterateCUIDs(String suid) {
-        LinkedHashMap cuids = suids.get(suid);
-        if (cuids == null) {
-            return Collections.EMPTY_LIST.iterator();
+    public Set<String> getCUIDs(String suid) {
+        LinkedHashMap<String, LinkedHashMap<String, Object>> cuidMap =
+                suidMap.get(suid);
+        if (cuidMap == null) {
+            return Collections.emptySet();
         }
-        return cuids.keySet().iterator();
+        return Collections.unmodifiableSet(cuidMap.keySet());
     }
 
-    public Iterator iterateIUIDs(String suid, String cuid) {
-        LinkedHashMap cuids = suids.get(suid);
-        if (cuids == null) {
-            return Collections.EMPTY_LIST.iterator();
+    public Set<String> getIUIDs(String suid, String cuid) {
+        LinkedHashMap<String, LinkedHashMap<String, Object>> cuidMap =
+                suidMap.get(suid);
+        if (cuidMap == null) {
+            return Collections.emptySet();
         }
-        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
-        if (iuids == null) {
-            return Collections.EMPTY_LIST.iterator();
+        LinkedHashMap<String, Object> iuidMap = cuidMap.get(cuid);
+        if (iuidMap == null) {
+            return Collections.emptySet();
         }
-        return iuids.keySet().iterator();
+        return Collections.unmodifiableSet(iuidMap.keySet());
     }
-    
+
     public int countInstances(String suid, String cuid) {
-        LinkedHashMap cuids = suids.get(suid);
-        if (cuids == null) {
+        LinkedHashMap<String, LinkedHashMap<String, Object>> cuidMap =
+                suidMap.get(suid);
+        if (cuidMap == null) {
             return 0;
         }
-        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
-        if (iuids == null) {
+        LinkedHashMap<String, Object> iuidMap = cuidMap.get(cuid);
+        if (iuidMap == null) {
             return 0;
         }
-        return iuids.size();
+        return iuidMap.size();
     }
     
     public Object getInstance(String suid, String cuid, String iuid) {
-        LinkedHashMap cuids = suids.get(suid);
-        if (cuids == null) {
+        LinkedHashMap<String, LinkedHashMap<String, Object>> cuidMap =
+            suidMap.get(suid);
+        if (cuidMap == null) {
             return null;
         }
-        LinkedHashMap iuids = (LinkedHashMap) cuids.get(cuid);
-        if (iuids == null) {
+        LinkedHashMap<String, Object> iuidMap = cuidMap.get(cuid);
+        if (iuidMap == null) {
             return null;
         }
-        return iuids.get(iuid);       
+        return iuidMap.get(iuid);
     }
+
 }
