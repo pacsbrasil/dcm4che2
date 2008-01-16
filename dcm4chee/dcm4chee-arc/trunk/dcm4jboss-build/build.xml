@@ -28,7 +28,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="clean"/>
-    <ant inheritAll="false" dir="../dcm4jboss-xds" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-cdw" target="clean"/>
   </target>
@@ -42,8 +41,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-web" target="war">
       <property name="version" value="${version}" />
     </ant>
-    <!--ant inheritAll="false" dir="../dcm4jboss-xds" target="jar"/-->
-    <!--ant inheritAll="false" dir="../dcm4jboss-xds" target="war"/-->
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="sar"/>
   </target>
 
@@ -235,10 +232,6 @@
               value="../dcm4jboss-sar/src/etc/conf/xmdesc" />
     <property name="dcm4jboss-wado.xmdesc"
               value="../dcm4jboss-wado/src/etc/conf/xmdesc" />
-    <!--
-    <property name="dcm4jboss-xds.xmdesc"
-      value="../dcm4jboss-xds/src/etc/conf/xmdesc"/>
-    -->
     <property name="dcm4jboss-xds-consumer.xmdesc"
               value="../dcm4jboss-xds-consumer/src/etc/META-INF" />
     <antcall target="xslt">
@@ -619,14 +612,6 @@
       <param name="out" value="wadoext-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=WADOExtService" />
     </antcall>
-    <!--
-    <antcall target="xslt">
-      <param name="in
-        " value="${dcm4jboss-xds.xmdesc}/dcm4chee-xds-xmbean.xml"/>
-      <param name="out" value="xds-xmbean.xml"/>
-      <param name="mbean" value="dcm4chee.archive:service=XDSService"/>
-    </antcall>
-    -->
     <antcall target="xslt">
       <param name="in"
              value="${dcm4jboss-xds-consumer.xmdesc}/jboss-service.xml" />
