@@ -38,6 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.xds.query.mbean;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -57,6 +59,10 @@ import javax.xml.registry.RegistryService;
 import javax.xml.soap.SOAPException;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4chex.xds.audit.HttpUserInfo;
+import org.dcm4chex.xds.audit.StoredQueryMessage;
 import org.freebxml.omar.client.xml.registry.BulkResponseImpl;
 import org.freebxml.omar.client.xml.registry.ConnectionImpl;
 import org.freebxml.omar.client.xml.registry.DeclarativeQueryManagerImpl;
@@ -84,10 +90,16 @@ import org.oasis.ebxml.registry.bindings.rs.RegistryResponseType;
  * @since Mar, 2007
  */
 public class XDSStoredQuery {
-
-	private static Logger log = Logger.getLogger(XDSStoredQuery.class.getName());
-
-    private static BindingUtility bu = BindingUtility.getInstance();        
+	public static final String QRY_SUBMISSION_SET_PATIENT_ID = "$XDSSubmissionSetPatientId";
+	public static final String QRY_FOLDER_PATIENT_ID = "$XDSFolderPatientId";
+	public static final String QRY_DOCUMENT_ENTRY_PATIENT_ID = "$XDSDocumentEntryPatientId";
+	public static final String QRY_UUID = "$uuid";
+	public static final String QRY_FOLDER_ENTRY_UUID = "$XDSFolderEntryUUID";
+	public static final String QRY_DOCUMENT_ENTRY_ENTRY_UUID = "$XDSDocumentEntryEntryUUID";
+	public static final String QRY_FOLDER_STATUS = "$XDSFolderStatus";
+	public static final String QRY_SUBMISSION_SET_STATUS = "$XDSSubmissionSetStatus";
+	public static final String QRY_DOCUMENT_ENTRY_STATUS = "$XDSDocumentEntryStatus";
+	public static final String QRY_PATIENT_ID = "$patientId";
 
     public static final String STORED_QUERY_FIND_DOCUMENTS = "urn:uuid:14d4debf-8f97-4251-9a74-a90016b0af0d";
     public static final String STORED_QUERY_FIND_SUBMISSIONSETS = "urn:uuid:f26abbcb-ac74-4422-8a30-edb644bbc1a9";
@@ -107,6 +119,9 @@ public class XDSStoredQuery {
     public static final String V3_STATUS_SUBMITTED = "urn:oasis:names:tc:ebxml-regrep:StatusType:Submitted";
     public static final String V3_STATUS_APPROVED = "urn:oasis:names:tc:ebxml-regrep:StatusType:Approved";
     public static final String V3_STATUS_DEPRECATED = "urn:oasis:names:tc:ebxml-regrep:StatusType:Deprecated";
+
+	private static Logger log = Logger.getLogger(XDSStoredQuery.class.getName());
+    private static BindingUtility bu = BindingUtility.getInstance();        
     
     private XDSQueryService service;
 	public XDSStoredQuery(XDSQueryService service) {
@@ -115,9 +130,9 @@ public class XDSStoredQuery {
 
     public BulkResponse findDocuments(String patId, String status, boolean useLeafClass) throws SOAPException {
         HashMap map = new HashMap();
-        map.put("$XDSDocumentEntryPatientId", patId);
+        map.put(QRY_DOCUMENT_ENTRY_PATIENT_ID, patId);
         ArrayList l = getStatus(status);
-        map.put("$XDSDocumentEntryStatus", l);
+        map.put(QRY_DOCUMENT_ENTRY_STATUS, l);
         log.info("---- findDocuments called ----");
         ReturnType retType = useLeafClass ? ReturnType.LEAF_CLASS : ReturnType.OBJECT_REF;
         return performStoredQuery( STORED_QUERY_FIND_DOCUMENTS, map, retType);
@@ -125,9 +140,9 @@ public class XDSStoredQuery {
 
     public BulkResponse findFolders(String patId, String status, boolean useLeafClass) throws SOAPException {
         HashMap map = new HashMap();
-        map.put("$XDSFolderPatientId", patId);
+        map.put(QRY_FOLDER_PATIENT_ID, patId);
         ArrayList l = getStatus(status);
-        map.put("$XDSFolderStatus", l);
+        map.put(QRY_FOLDER_STATUS, l);
         log.info("---- findFolders called ----");
         ReturnType retType = useLeafClass ? ReturnType.LEAF_CLASS : ReturnType.OBJECT_REF;
         return performStoredQuery( STORED_QUERY_FIND_FOLDERS, map, retType);
@@ -135,53 +150,53 @@ public class XDSStoredQuery {
 
     public BulkResponse findSubmissionSets(String patId, String status) throws SOAPException {
         HashMap map = new HashMap();
-        map.put("$XDSSubmissionSetPatientId", patId);
+        map.put(QRY_SUBMISSION_SET_PATIENT_ID, patId);
         ArrayList l = getStatus(status);
-        map.put("$XDSSubmissionSetStatus", l);
+        map.put(QRY_SUBMISSION_SET_STATUS, l);
         log.info("---- findSubmissionSets called ----");
         return performStoredQuery( STORED_QUERY_FIND_SUBMISSIONSETS, map, ReturnType.OBJECT_REF);
     }
 
     public BulkResponse getAll(String patId, String docStatus, String submissionSetStatus, String folderStatus) throws SOAPException {
         HashMap map = new HashMap();
-        map.put("$patientId", patId);
-        map.put("$XDSDocumentEntryStatus", getStatus(docStatus));
-        map.put("$XDSSubmissionSetStatus", getStatus(submissionSetStatus));
-        map.put("$XDSFolderStatus", getStatus(folderStatus));
+        map.put(QRY_PATIENT_ID, patId);
+        map.put(QRY_DOCUMENT_ENTRY_STATUS, getStatus(docStatus));
+        map.put(QRY_SUBMISSION_SET_STATUS, getStatus(submissionSetStatus));
+        map.put(QRY_FOLDER_STATUS, getStatus(folderStatus));
         log.info("---- getAll called ----");
         return performStoredQuery( STORED_QUERY_GET_ALL, map, ReturnType.LEAF_CLASS);
     }
     
     public BulkResponse getDocuments(List uuids) throws SOAPException {
         Map map = new HashMap();
-        map.put("$XDSDocumentEntryEntryUUID", uuids);
+        map.put(QRY_DOCUMENT_ENTRY_ENTRY_UUID, uuids);
         log.info("---- getDocuments called ----");
         return performStoredQuery( STORED_QUERY_GET_DOCUMENTS, map, ReturnType.LEAF_CLASS);
     }
     public BulkResponse getFolders(List uuids) throws SOAPException {
         Map map = new HashMap();
-        map.put("$XDSFolderEntryUUID", uuids);
+        map.put(QRY_FOLDER_ENTRY_UUID, uuids);
         log.info("---- getFolders called ----");
         return performStoredQuery( STORED_QUERY_GET_FOLDERS, map, ReturnType.LEAF_CLASS);
     }
 
     public BulkResponse getAssociations(List uuids) throws SOAPException {
         Map map = new HashMap();
-        map.put("$uuid", uuids);
+        map.put(QRY_UUID, uuids);
         log.info("---- getAssociations called ----");
         return performStoredQuery( STORED_QUERY_GET_DOC_AND_ASSOC, map, ReturnType.LEAF_CLASS);
     }
 
     public BulkResponse getDocumentsAndAssocs(List uuids) throws SOAPException {
         Map map = new HashMap();
-        map.put("$XDSDocumentEntryEntryUUID", uuids);
+        map.put(QRY_DOCUMENT_ENTRY_ENTRY_UUID, uuids);
         log.info("---- getDocumentsAndAssocs called ----");
         return performStoredQuery( STORED_QUERY_GET_DOC_AND_ASSOC, map, ReturnType.OBJECT_REF);
     }
 
     public BulkResponse getSubmissionSets(List uuids) throws SOAPException {
         Map map = new HashMap();
-        map.put("$uuid", uuids);
+        map.put(QRY_UUID, uuids);
         log.info("---- getSubmissionSets called ----");
         return performStoredQuery( STORED_QUERY_GET_SUBMISSIONSETS, map, ReturnType.LEAF_CLASS);
     }
@@ -196,21 +211,21 @@ public class XDSStoredQuery {
     
     public BulkResponse getFolderAndContents(String uuid) throws SOAPException {
         Map map = new HashMap();
-        map.put("$XDSFolderEntryUUID", uuid);
+        map.put(QRY_FOLDER_ENTRY_UUID, uuid);
         log.info("---- getFolderAndContents called ----");
         return performStoredQuery( STORED_QUERY_GET_FOLDER_AND_CONTENT, map, ReturnType.OBJECT_REF);
     }
 
     public BulkResponse getFoldersForDocument(String uuid) throws SOAPException {
         Map map = new HashMap();
-        map.put("$XDSDocumentEntryEntryUUID", uuid);
+        map.put(QRY_DOCUMENT_ENTRY_ENTRY_UUID, uuid);
         log.info("---- getFoldersForDocument called ----");
         return performStoredQuery( STORED_QUERY_GET_FOLDER_FOR_DOC, map, ReturnType.OBJECT_REF);
     }
 
     public BulkResponse getRelatedDocuments(String uuid, List assocTypes) throws SOAPException {
         Map map = new HashMap();
-        map.put("$XDSDocumentEntryEntryUUID", uuid);
+        map.put(QRY_DOCUMENT_ENTRY_ENTRY_UUID, uuid);
         map.put("$AssociationTypes", assocTypes);
         log.info("---- GetRelatedDocuments called ----");
         return performStoredQuery( STORED_QUERY_GET_RELATED_DOCS, map, ReturnType.OBJECT_REF);
@@ -221,6 +236,7 @@ public class XDSStoredQuery {
             String xdsQueryURI = service.getXDSQueryURI();
             log.info("Send query request to "+xdsQueryURI+
                     " (proxy:"+service.getProxyHost()+":"+service.getProxyPort()+")");
+            log.info("Query Params:"+queryParams);
             service.configProxyAndTLS(xdsQueryURI);
             ProviderProperties.getInstance().put("javax.xml.registry.queryManagerURL", xdsQueryURI);
             ConnectionFactory connFactory = JAXRUtility.getConnectionFactory();
@@ -242,8 +258,9 @@ public class XDSStoredQuery {
             log.info("req getResponseOption:"+req.getResponseOption());
             Date date = new Date();
             BulkResponse resp = dqm.executeQuery(query);
-            if ( resp.getStatus() == JAXRResponse.STATUS_SUCCESS 
-                    && req.getResponseOption().getReturnType() == ReturnType.OBJECT_REF ) {
+            boolean success = resp.getStatus() == JAXRResponse.STATUS_SUCCESS;
+            logQuery(xdsQueryURI, req, getQueryPatId(queryParams), success);
+            if ( success && req.getResponseOption().getReturnType() == ReturnType.OBJECT_REF ) {
                 processObjectRefResponse(resp);
             }
             log.info("-------------------------------------------------");
@@ -264,7 +281,52 @@ public class XDSStoredQuery {
         }
         return null;
     }
-    private void processObjectRefResponse(BulkResponse resp) throws JAXRException {
+
+	private String getQueryPatId(Map queryParams) {
+		String patId = (String)queryParams.get(QRY_DOCUMENT_ENTRY_PATIENT_ID);//findDocument
+		if ( patId == null ) {
+			patId = (String)queryParams.get(QRY_FOLDER_PATIENT_ID);//findFolders
+			if ( patId == null ) {
+				patId = (String)queryParams.get(QRY_SUBMISSION_SET_PATIENT_ID); //findSubmissionSet
+				if ( patId == null ) {
+					patId = (String)queryParams.get(QRY_PATIENT_ID); //getAll
+				}
+			}
+		}
+		return patId;
+	}
+	
+    private void logQuery(String queryRegistryURI, AdhocQueryRequest req, String patId, boolean success) {
+    	try {
+	        String requestHost = null;
+	        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+	        String user = userInfo.getUserId();
+	        requestHost = userInfo.getHostName();
+	        StoredQueryMessage msg = new StoredQueryMessage();
+	        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+	                                            AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
+	        msg.setSource(AuditMessage.getProcessID(), 
+	                AuditMessage.getLocalAETitles(),
+	                AuditMessage.getProcessName(),
+	                AuditMessage.getLocalHostName());
+	        msg.setHumanRequestor(user != null ? user : "unknown", null, null);
+	        msg.setPatient(patId, null);
+	        String host = "unknown";
+	        try {
+	            host = new URL(queryRegistryURI).getHost();
+	        } catch (MalformedURLException ignore) {
+	        }
+	        msg.setDestination(queryRegistryURI, null, "XDS Export", host );
+	        log.debug("AdhocQueryRequest:"+bu.marshalObject(req));
+	        msg.setQuery(bu.marshalObject(req).getBytes(), req.getAdhocQuery().getId());
+	        msg.validate();
+	        Logger.getLogger("auditlog").info(msg);
+    	} catch ( Throwable t) {
+    		log.error("AUDIT LOG for Stored Registry Query failed!", t);
+    	}
+	}
+
+	private void processObjectRefResponse(BulkResponse resp) throws JAXRException {
         log.debug("Process BulkResponse for ObjectRef ResultType!");
         RegistryResponseType regResp = ((BulkResponseImpl) resp).getRegistryResponse();
         Collection col = resp.getCollection();
@@ -299,10 +361,10 @@ public class XDSStoredQuery {
                         sb.append(",").append( getQueryValue( it.next() ) );
                     }
                     sb.append(")");
-                    slots.add( getSlot( (String) e.getKey(), sb.toString() ) );
+                    slots.add( createSlot( (String) e.getKey(), sb.toString() ) );
                 }
             } else {
-                slots.add( getSlot( (String) e.getKey(), getQueryValue(o) ) );
+                slots.add( createSlot( (String) e.getKey(), getQueryValue(o) ) );
             }
         }
     }
@@ -311,7 +373,7 @@ public class XDSStoredQuery {
         return ( o instanceof Number ) ? o.toString() : "'"+o.toString()+"'";
     }
     
-    private Slot getSlot(String name, String value) throws JAXBException {
+    private Slot createSlot(String name, String value) throws JAXBException {
         org.oasis.ebxml.registry.bindings.rim.Slot slot = bu.rimFac.createSlot();
         slot.setSlotType("SlotType1");
         slot.setName(name);

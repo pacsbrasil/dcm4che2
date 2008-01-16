@@ -13,6 +13,9 @@
 	<!-- Override with your JBoss dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.2.2.GA" />
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>
+	<!-- Override with your dcm4chee-sar working directory -->
+	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
+	<property name="dcm4chee-sar.lib" value="${dcm4chee-sar.home}/lib" />
 
 	<property name="lib.dir" value="lib"/>
 	
@@ -39,6 +42,7 @@
 		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
 		</fileset>
+		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.13.jar"/>		
 	</path>
 
 	<target name="clean">
