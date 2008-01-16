@@ -79,7 +79,8 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2007-10-18 11:26:00 +0200 (Thu, 18 Oct
+ *          2007) $
  * @since 27.08.2004
  */
 public class IANScuService extends AbstractScuService implements
@@ -94,42 +95,40 @@ public class IANScuService extends AbstractScuService implements
             return EVENT_TYPE.equals(notif.getType());
         }
     };
-    
+
     private static final String NONE = "NONE";
 
     private static final String[] EMPTY = {};
 
     private static final String[] IAN_ONLY = { UIDs.InstanceAvailabilityNotificationSOPClass };
 
-    private static final String[] IAN_AND_SCN = { UIDs.InstanceAvailabilityNotificationSOPClass,
+    private static final String[] IAN_AND_SCN = {
+            UIDs.InstanceAvailabilityNotificationSOPClass,
             UIDs.BasicStudyContentNotification };
-    
+
     private static final UIDGenerator uidGen = UIDGenerator.getInstance();
 
-    private final NotificationListener seriesStoredListener = 
-        new NotificationListener() {
-            public void handleNotification(Notification notif, Object handback) {
-                onSeriesStored((SeriesStored) notif.getUserData());
-            }
-        };
+    private final NotificationListener seriesStoredListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            onSeriesStored((SeriesStored) notif.getUserData());
+        }
+    };
 
-    private final NotificationListener mppsReceivedListener = 
-        new NotificationListener() {
-            public void handleNotification(Notification notif, Object handback) {
-            	Dataset mpps = (Dataset) notif.getUserData();
-            	if (!isIgnoreMPPS(mpps)) {
-	            	String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
-	            	notifyIfRefInstancesAvailable(mppsiuid);
-                }
+    private final NotificationListener mppsReceivedListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            Dataset mpps = (Dataset) notif.getUserData();
+            if (!isIgnoreMPPS(mpps)) {
+                String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
+                notifyIfRefInstancesAvailable(mppsiuid);
             }
-        };
+        }
+    };
 
-    private final NotificationListener studyDeletedListener = 
-        new NotificationListener() {
-            public void handleNotification(Notification notif, Object handback) {
-                onStudyDeleted((StudyDeleted) notif.getUserData());
-            }
-        };
+    private final NotificationListener studyDeletedListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            onStudyDeleted((StudyDeleted) notif.getUserData());
+        }
+    };
 
     private ObjectName storeScpServiceName;
 
@@ -146,7 +145,7 @@ public class IANScuService extends AbstractScuService implements
     private int scnPriority = 0;
 
     private String[] notifiedAETs = EMPTY;
-    
+
     private boolean notifyOtherServices;
 
     private boolean onStudyDeleted;
@@ -166,7 +165,7 @@ public class IANScuService extends AbstractScuService implements
     public final void setJmsServiceName(ObjectName jmsServiceName) {
         jmsDelegate.setJmsServiceName(jmsServiceName);
     }
-    
+
     public final int getConcurrency() {
         return concurrency;
     }
@@ -202,7 +201,6 @@ public class IANScuService extends AbstractScuService implements
         return notifyOtherServices;
     }
 
-    
     public final boolean isOnStudyDeleted() {
         return onStudyDeleted;
     }
@@ -287,8 +285,8 @@ public class IANScuService extends AbstractScuService implements
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-        server.addNotificationListener(fileSystemMgtName,
-                studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
+        server.addNotificationListener(fileSystemMgtName, studyDeletedListener,
+                StudyDeleted.NOTIF_FILTER, null);
         server.addNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
 
@@ -312,10 +310,10 @@ public class IANScuService extends AbstractScuService implements
             schedule(ian);
         }
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
-        if (pps != null && (notifyOtherServices
-        		||(sendOneIANforEachMPPS && notifiedAETs.length > 0))) {
-        	notifyIfRefInstancesAvailable(pps.getString(Tags.RefSOPInstanceUID));
-        }        
+        if (pps != null
+                && (notifyOtherServices || (sendOneIANforEachMPPS && notifiedAETs.length > 0))) {
+            notifyIfRefInstancesAvailable(pps.getString(Tags.RefSOPInstanceUID));
+        }
     }
 
     private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
@@ -324,21 +322,24 @@ public class IANScuService extends AbstractScuService implements
     }
 
     private void notifyIfRefInstancesAvailable(String mppsIuid) {
-    	try {
-	    	MPPSManager mppsManager = getMPPSManagerHome().create();
-	    	Dataset ian = mppsManager.createIAN(mppsIuid);
-	    	if (ian != null) {
-	    		if (sendOneIANforEachMPPS) {
-	    			schedule(ian);
-	    		}
-		        if (notifyOtherServices) {
-		            sendMPPSInstancesAvailableNotification(
-		            		mppsManager.getMPPS(mppsIuid));
-		        }
-	    	}
-    	} catch (Exception e) {
-    		log.error("Failure processing notifyIfRefInstancesAvailable(): ", e);
-    	}
+        try {
+            MPPSManager mppsManager = getMPPSManagerHome().create();
+            Dataset ian = mppsManager.createIAN(mppsIuid);
+            if (ian != null) {
+                if (sendOneIANforEachMPPS) {
+                    schedule(ian);
+                }
+                if (notifyOtherServices) {
+                    sendMPPSInstancesAvailableNotification(mppsManager
+                            .getMPPS(mppsIuid));
+                }
+            }
+        } catch (Exception e) {
+            log
+                    .error(
+                            "Failure processing notifyIfRefInstancesAvailable(): ",
+                            e);
+        }
     }
 
     void sendMPPSInstancesAvailableNotification(Dataset mpps) {
@@ -347,7 +348,7 @@ public class IANScuService extends AbstractScuService implements
         notif.setUserData(mpps);
         super.sendNotification(notif);
     }
-    
+
     private boolean isIgnoreMPPS(Dataset mpps) {
         if (!notifyOtherServices
                 && (notifiedAETs.length == 0 || !sendOneIANforEachMPPS)) {
@@ -366,8 +367,8 @@ public class IANScuService extends AbstractScuService implements
         Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
         if (item != null && "110514".equals(item.getString(Tags.CodeValue))
                 && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
-            log.info("Ignore MPPS with Discontinuation Reason Code: " +
-                        "Wrong Worklist Entry Selected");
+            log.info("Ignore MPPS with Discontinuation Reason Code: "
+                    + "Wrong Worklist Entry Selected");
             return true;
         }
         return false;
@@ -446,11 +447,11 @@ public class IANScuService extends AbstractScuService implements
     private void invokeDimse(ActiveAssociation aa, IANOrder order)
             throws DcmServiceException, IOException, InterruptedException {
         Association a = aa.getAssociation();
-        List ianPC = a.listAcceptedPresContext(
-                UIDs.InstanceAvailabilityNotificationSOPClass);
+        List ianPC = a
+                .listAcceptedPresContext(UIDs.InstanceAvailabilityNotificationSOPClass);
         boolean ianAccepted = !ianPC.isEmpty();
-        List scnPC = a.listAcceptedPresContext(
-                UIDs.BasicStudyContentNotification);
+        List scnPC = a
+                .listAcceptedPresContext(UIDs.BasicStudyContentNotification);
         boolean scnAccepted = !scnPC.isEmpty();
         AssociationFactory af = AssociationFactory.getInstance();
         Command cmdRq = DcmObjectFactory.getInstance().newCommand();
@@ -512,5 +513,5 @@ public class IANScuService extends AbstractScuService implements
         }
         return scn;
     }
-    
+
 }

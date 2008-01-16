@@ -46,23 +46,26 @@ import org.dcm4che.dict.Tags;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2005-10-06 21:55:27 +0200 (Thu, 06 Oct
+ *          2005) $
  * @since 28.08.2004
- *
+ * 
  */
 class IANOrder implements Serializable {
 
-	private static final long serialVersionUID = 3258412833061679669L;
+    private static final long serialVersionUID = 3258412833061679669L;
 
-	private final String dest;
+    private final String dest;
 
     private final Dataset ds;
 
     private int failureCount;
 
     public IANOrder(String dest, Dataset ds) {
-        if (dest == null) throw new NullPointerException();
-        if (ds == null) throw new NullPointerException();
+        if (dest == null)
+            throw new NullPointerException();
+        if (ds == null)
+            throw new NullPointerException();
         this.dest = dest;
         this.ds = ds;
     }
@@ -85,9 +88,8 @@ class IANOrder implements Serializable {
 
     public String toString() {
         return "IanOrder[dest=" + dest + ", suid="
-                + ds.getString(Tags.StudyInstanceUID)
-                + ", failureCount=" + failureCount
-        		+ "]";
+                + ds.getString(Tags.StudyInstanceUID) + ", failureCount="
+                + failureCount + "]";
     }
 
 }
