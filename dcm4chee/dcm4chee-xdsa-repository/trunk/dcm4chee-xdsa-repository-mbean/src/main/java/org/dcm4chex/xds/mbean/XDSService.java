@@ -519,7 +519,7 @@ public class XDSService extends ServiceMBeanSupport {
     	for ( int i = 0, len = nl.getLength() ; i < len ; i++ ) {
     		child = nl.item(i);
     		if ( child.getNodeType() == Node.ELEMENT_NODE ) {
-    			if ( (namespaceURI != null || namespaceURI.equals( child.getNamespaceURI() ) ) &&
+    			if ( (namespaceURI == null || namespaceURI.equals( child.getNamespaceURI() ) ) &&
     					localName.equals( child.getLocalName() ) ) {
     				return child;
     			}
