@@ -122,7 +122,7 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
         ActiveParticipant requestor = null;
         for (Iterator iter = activeParticipants.iterator(); iter.hasNext();) {
             ActiveParticipant ap = (ActiveParticipant) iter.next();
-            List roleIDCodeIDs = ap.getRoleIDCodeIDs();
+            List roleIDCodeIDs = ap.getRoleIDCodes();
             if (roleIDCodeIDs.contains(
                 ActiveParticipant.RoleIDCode.DESTINATION)) {
                 if (dest != null) {
