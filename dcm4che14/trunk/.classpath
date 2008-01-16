@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry path="build/generate" kind="src"/>
-	<classpathentry path="build/resources" kind="src"/>
-	<classpathentry path="src/resources" kind="src"/>
-	<classpathentry path="samples/java" kind="src"/>
-	<classpathentry path="src/java" kind="src"/>
-	<classpathentry path="test/java" kind="src"/>
-	<classpathentry path="samples/conf" kind="src"/>
-	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
-	<classpathentry path="lib/getopt.jar" exported="true" kind="lib"/>
-	<classpathentry path="lib/log4j.jar" exported="true" kind="lib"/>
-	<classpathentry path="lib/majix.jar" kind="lib"/>
-	<classpathentry path="lib/junit.jar" kind="lib"/>
-	<classpathentry path="lib/jai_imageio.jar" exported="true" kind="lib"/>
-	<classpathentry path="build/classes" kind="output"/>
+	<classpathentry kind="src" path="build/generate"/>
+	<classpathentry kind="src" path="build/resources"/>
+	<classpathentry kind="src" path="src/resources"/>
+	<classpathentry kind="src" path="samples/java"/>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="test/java"/>
+	<classpathentry kind="src" path="samples/conf"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/getopt.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/majix.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jai_imageio.jar"/>
+	<classpathentry kind="lib" path="lib/clibwrapper_jiio.jar"/>
+	<classpathentry kind="lib" path="lib/dcm4che-imageio-rle-2.0.12.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
 </classpath>

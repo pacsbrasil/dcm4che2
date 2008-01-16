@@ -281,7 +281,8 @@ public class Transcoder {
                     .getTransferSyntaxUID());
             bi = (BufferedImage) createBufferedImage();
         } else {
-            bi = pixelDataParam.createBufferedImage(getMaxBits());
+            bi = pixelDataParam.createBufferedImage(isCompressionLossless(),
+                    getMaxBits());
         }
         if (log.isDebugEnabled()) {
             log.debug("read header: " + pixelDataParam);
@@ -380,8 +381,8 @@ public class Transcoder {
                 || encodeTS.equals(UIDs.JPEGExtended)
                 || encodeTS.equals(UIDs.JPEGLossless)
                 || encodeTS.equals(UIDs.JPEGLossless14)
-                || encodeTS.equals(UIDs.JPEGLSLossless) || encodeTS
-                .equals(UIDs.JPEGLSLossy));
+                || encodeTS.equals(UIDs.JPEGLSLossless)
+                || encodeTS.equals(UIDs.JPEGLSLossy));
     }
 
     public void writeHeader() throws IOException {
@@ -665,7 +666,8 @@ public class Transcoder {
     }
 
     protected boolean isCompressionLossless() {
-        return !encodeParam.encapsulated || encodeTS.equals(UIDs.JPEGLossless)
+        return !encodeParam.encapsulated
+                || encodeTS.equals(UIDs.JPEGLossless)
                 || encodeTS.equals(UIDs.JPEGLossless14)
                 || encodeTS.equals(UIDs.JPEGLSLossless)
                 || encodeTS.equals(UIDs.JPEG2000Lossless);

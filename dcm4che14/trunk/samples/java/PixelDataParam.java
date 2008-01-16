@@ -135,7 +135,7 @@ class PixelDataParam {
                     bits}, false, false, ColorModel.OPAQUE, dataType);
         } else {
             return new ComponentColorModel(ColorSpace
-                    .getInstance(ColorSpace.CS_GRAY), new int[] { bitsStored},
+                    .getInstance(ColorSpace.CS_GRAY), new int[] { bits },
                     false, false, ColorModel.OPAQUE, dataType);
         }
     }
@@ -144,8 +144,10 @@ class PixelDataParam {
         return Raster.createWritableRaster(getSampleModel(), null);
     }
 
-    public BufferedImage createBufferedImage(int maxBits) {
-        return new BufferedImage(getColorModel(Math.min(maxBits, bitsStored)),
+    public BufferedImage createBufferedImage(boolean lossless, int maxBits) {
+        return new BufferedImage(
+                getColorModel(lossless ? bitsAllocated
+                                       : Math.min(maxBits, bitsStored)),
                 createRaster(), false, null);
     }
 
