@@ -51,7 +51,7 @@ public final class QueryUsersCmd extends BaseReadCmd {
 	public static final int transactionIsolationLevel = 0;
 
 	public QueryUsersCmd(String dsJndiName) throws SQLException {
-		super(dsJndiName, transactionIsolationLevel,
+		super(dsJndiName, transactionIsolationLevel, false,
 				JdbcProperties.getInstance().getProperty("QueryUsersCmd"));
  	}
 

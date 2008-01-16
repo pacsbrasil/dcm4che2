@@ -51,30 +51,38 @@ import java.sql.SQLException;
  */
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
+    protected final boolean accessBlobAsLongVarBinary;
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            int resultSetType) throws SQLException {
-        super(dsJndiName, transactionIsolationLevel, null, resultSetType);
-    }
-
-    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
+            boolean accessBlobAsLongVarBinary, int resultSetType)
             throws SQLException {
-        super(dsJndiName, transactionIsolationLevel, null);
+        super(dsJndiName, transactionIsolationLevel, null, resultSetType);
+        this.accessBlobAsLongVarBinary = BaseCmd.defineColumnType != null
+                && accessBlobAsLongVarBinary;
     }
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            String sql) throws SQLException {
+            boolean accessBlobAsLongVarBinary) throws SQLException {
+        super(dsJndiName, transactionIsolationLevel, null);
+        this.accessBlobAsLongVarBinary = BaseCmd.defineColumnType != null
+            && accessBlobAsLongVarBinary;
+    }
+
+    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
+            boolean accessBlobAsLongVarBinary, String sql) throws SQLException {
         super(dsJndiName, transactionIsolationLevel, sql);
+        this.accessBlobAsLongVarBinary = BaseCmd.defineColumnType != null
+            && accessBlobAsLongVarBinary;
     }
 
     public byte[] getBytes(int column) throws SQLException {
-        // if (defineColumnType == null) {
-        ResultSetMetaData meta = rs.getMetaData();
-        if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
-            Blob blob = rs.getBlob(column);
-            return blob != null ? blob.getBytes(1, (int) blob.length()) : null;
+        if (!accessBlobAsLongVarBinary) {
+            ResultSetMetaData meta = rs.getMetaData();
+            if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
+                Blob blob = rs.getBlob(column);
+                return blob != null ? blob.getBytes(1, (int) blob.length()) : null;
+            }
         }
-        // }
         return rs.getBytes(column);
     }
 

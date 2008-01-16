@@ -72,7 +72,8 @@ public class HPQueryCmd extends BaseDSQueryCmd {
     													"rel_hpdef_reason.hpdef_fk","rel_hpdef_reason.reason_fk"};
 
     public HPQueryCmd(Dataset keys) throws SQLException {
-		super(keys, true, false, transactionIsolationLevel);
+		super(keys, true, false, transactionIsolationLevel,
+		        accessBlobAsLongVarBinary);
 		if (accessBlobAsLongVarBinary) {
                     // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
                     defineColumnType(1, Types.LONGVARBINARY);

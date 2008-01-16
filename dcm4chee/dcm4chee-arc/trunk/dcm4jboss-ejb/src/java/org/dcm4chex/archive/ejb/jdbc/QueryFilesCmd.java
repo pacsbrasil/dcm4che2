@@ -81,14 +81,14 @@ public final class QueryFilesCmd extends BaseReadCmd {
 
     public QueryFilesCmd(String iuid) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, QueryFilesByUIDCmd);
+                transactionIsolationLevel, false, QueryFilesByUIDCmd);
         ((PreparedStatement) stmt).setString(1, iuid);
         execute();
     }
 
     public QueryFilesCmd(long filePk) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, QueryLinkedFilesCmd);
+                transactionIsolationLevel, false, QueryLinkedFilesCmd);
         ((PreparedStatement) stmt).setLong(1, filePk);
         execute();
     }

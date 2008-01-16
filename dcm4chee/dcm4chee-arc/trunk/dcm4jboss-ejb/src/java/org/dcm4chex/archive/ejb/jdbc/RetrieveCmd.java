@@ -175,7 +175,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
     protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, sql.getSql());
+                transactionIsolationLevel, accessBlobAsLongVarBinary, sql.getSql());
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(5, Types.LONGVARBINARY);

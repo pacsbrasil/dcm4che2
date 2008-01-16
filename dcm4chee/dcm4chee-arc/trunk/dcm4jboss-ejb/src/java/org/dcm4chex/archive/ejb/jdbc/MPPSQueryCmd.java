@@ -73,7 +73,7 @@ public class MPPSQueryCmd extends BaseReadCmd {
      */
     public MPPSQueryCmd(Dataset filter, boolean emptyAccNo) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+                transactionIsolationLevel, accessBlobAsLongVarBinary);
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(1, Types.LONGVARBINARY);

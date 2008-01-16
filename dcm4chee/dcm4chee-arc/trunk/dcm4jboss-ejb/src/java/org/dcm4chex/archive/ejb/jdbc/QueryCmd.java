@@ -217,7 +217,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected QueryCmd(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue, Subject subject) throws SQLException {
-        super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
+        super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel,
+                accessBlobAsLongVarBinary);
         this.subject = subject;
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -847,9 +848,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Series.seriesIuid",
-                    "Instance.encodedAttributes", "Instance.retrieveAETs",
-                    "Instance.externalRetrieveAET", "Instance.availability",
+            return new String[] { "Instance.encodedAttributes",
+                    "Instance.retrieveAETs", "Instance.externalRetrieveAET",
+                    "Instance.availability", "Series.seriesIuid",
                     "Media.filesetId", "Media.filesetIuid" };
         }
 
@@ -887,7 +888,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            String seriesIuid = rs.getString(1);
+            fillDataset(ds, 1);
+            DatasetUtils.putRetrieveAET(ds, rs.getString(2), rs.getString(3));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(4)]);
+            String seriesIuid = rs.getString(5);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
             Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
             if (seriesAttrs == null) {
                 ds.putUI(Tags.SeriesInstanceUID, seriesIuid);
@@ -899,12 +905,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         seriesAttrs = seriesQuery.getDataset());
                 seriesQuery.close();
             }
-            fillDataset(ds, 2);
             ds.putAll(seriesAttrs);
-            DatasetUtils.putRetrieveAET(ds, rs.getString(3), rs.getString(4));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(5)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
     }

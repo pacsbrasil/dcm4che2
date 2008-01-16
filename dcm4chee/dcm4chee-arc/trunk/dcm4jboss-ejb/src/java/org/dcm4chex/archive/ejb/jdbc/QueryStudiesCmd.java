@@ -122,7 +122,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+                transactionIsolationLevel, accessBlobAsLongVarBinary);
         checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(getTables());

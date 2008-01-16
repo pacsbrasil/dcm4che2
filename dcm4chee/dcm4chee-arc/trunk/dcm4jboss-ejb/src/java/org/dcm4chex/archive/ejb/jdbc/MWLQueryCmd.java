@@ -90,7 +90,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
      * @throws SQLException
      */
     public MWLQueryCmd(Dataset keys) throws SQLException {
-        super(keys, true, false, transactionIsolationLevel);
+        super(keys, true, false, transactionIsolationLevel,
+                accessBlobAsLongVarBinary);
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(1, Types.LONGVARBINARY);

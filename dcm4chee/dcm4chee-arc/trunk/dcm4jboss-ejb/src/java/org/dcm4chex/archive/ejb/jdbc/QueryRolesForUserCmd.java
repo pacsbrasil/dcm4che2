@@ -52,7 +52,7 @@ public final class QueryRolesForUserCmd extends BaseReadCmd {
 	public static final int transactionIsolationLevel = 0;
 
 	public QueryRolesForUserCmd(String dsJndiName) throws SQLException {
-		super(dsJndiName, transactionIsolationLevel,
+		super(dsJndiName, transactionIsolationLevel, false,
 				JdbcProperties.getInstance().getProperty("QueryRolesForUserCmd"));
 	}
 

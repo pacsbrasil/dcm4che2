@@ -66,7 +66,7 @@ public class QueryStudyPermissionCmd extends BaseReadCmd {
 
     public QueryStudyPermissionCmd() throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+                transactionIsolationLevel, false);
     	sqlBuilder.setFrom( new String[] {"StudyPermission"} );
         sqlBuilder.setSelect( new String[] { "StudyPermission.studyIuid","StudyPermission.action" });
     }
