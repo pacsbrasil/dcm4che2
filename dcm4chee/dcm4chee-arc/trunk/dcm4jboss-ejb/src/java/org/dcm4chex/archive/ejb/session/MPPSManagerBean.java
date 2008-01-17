@@ -104,10 +104,11 @@ public abstract class MPPSManagerBean implements SessionBean {
     private static final int NO_LONGER_BE_UPDATED_ERR_ID = 0xA710;
     private static final int DELETED = 1;
     private static final int[] PATIENT_ATTRS_EXC = { Tags.RefPatientSeq,
-            Tags.PatientName, Tags.PatientID, Tags.PatientBirthDate,
-            Tags.PatientSex, };
+            Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
+            Tags.PatientBirthDate, Tags.PatientSex, };
     private static final int[] PATIENT_ATTRS_INC = { Tags.PatientName,
-            Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
+            Tags.PatientID, Tags.IssuerOfPatientID, Tags.PatientBirthDate,
+            Tags.PatientSex, };
     private PatientLocalHome patHome;
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
@@ -225,7 +226,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset createIAN(String iuid) {
+    public Dataset createIANwithPatSummaryAndStudyID(String iuid) {
         final MPPSLocal mpps;
         try {
             mpps = mppsHome.findBySopIuid(iuid);
@@ -235,9 +236,6 @@ public abstract class MPPSManagerBean implements SessionBean {
             throw new EJBException(e);
         }
         Dataset attrs = mpps.getAttributes();
-        if (ignoreMPPS(attrs)) {
-            return null;
-        }
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
         DcmElement perfSeriesSq = attrs.get(Tags.PerformedSeriesSeq);
@@ -280,6 +278,10 @@ public abstract class MPPSManagerBean implements SessionBean {
         refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
         refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
         ian.putUI(Tags.StudyInstanceUID, studyIUID);
+        ian.putSH(Tags.StudyID, attrs.getString(Tags.StudyID));
+        Dataset patAttrs = mpps.getPatient().getAttributes(false);
+        ian.putPN(Tags.PatientName, patAttrs.getString(Tags.PatientName));
+        ian.putLO(Tags.PatientID, patAttrs.getString(Tags.PatientID));
         return ian;
     }
 
@@ -310,28 +312,6 @@ public abstract class MPPSManagerBean implements SessionBean {
             }
         }
         return null;
-    }
-
-    private static boolean ignoreMPPS(Dataset mpps) {
-        DcmElement perfSeriesSeq = mpps.get(Tags.PerformedSeriesSeq);
-        if (perfSeriesSeq == null || perfSeriesSeq.isEmpty()) {
-            return true;
-        }
-        String status = mpps.getString(Tags.PPSStatus);
-        if ("COMPLETED".equals(status)) {
-            return false;
-        }
-        if (!"DISCONTINUE".equals(status)) {
-            return true;
-        }
-        Dataset item = mpps.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-        if (item != null && "110514".equals(item.getString(Tags.CodeValue))
-                && "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
-            log.info("Ignore MPPS with Discontinuation Reason Code: "
-                    + "Wrong Worklist Entry Selected");
-            return true;
-        }
-        return false;
     }
 
     /**

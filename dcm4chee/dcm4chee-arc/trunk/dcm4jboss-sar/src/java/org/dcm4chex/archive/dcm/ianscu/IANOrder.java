@@ -53,25 +53,51 @@ import org.dcm4che.dict.Tags;
  */
 class IANOrder implements Serializable {
 
-    private static final long serialVersionUID = 3258412833061679669L;
+    private static final long serialVersionUID = -9036249052896177876L;
 
     private final String dest;
 
-    private final Dataset ds;
+    private final String patname;
+
+    private final String patid;
+
+    private final String studyid;
+
+    private final Dataset ian;
 
     private int failureCount;
 
-    public IANOrder(String dest, Dataset ds) {
+    public IANOrder(String dest, String patid, String patname, String studyid,
+            Dataset ian) {
         if (dest == null)
             throw new NullPointerException();
-        if (ds == null)
+        if (ian == null)
             throw new NullPointerException();
         this.dest = dest;
-        this.ds = ds;
+        this.patid = patid;
+        this.patname = patname;
+        this.studyid = studyid;
+        this.ian = ian;
     }
 
-    public final Dataset getDataset() {
-        return ds;
+    public final String getDestination() {
+        return dest;
+    }
+
+    public String getPatientID() {
+        return patid;
+    }
+
+    public String getPatientName() {
+        return patname;
+    }
+
+    public String getStudyID() {
+        return studyid;
+    }
+
+    public final Dataset getIAN() {
+        return ian;
     }
 
     public final int getFailureCount() {
@@ -82,14 +108,9 @@ class IANOrder implements Serializable {
         this.failureCount = failureCount;
     }
 
-    public final String getDestination() {
-        return dest;
-    }
-
     public String toString() {
         return "IanOrder[dest=" + dest + ", suid="
-                + ds.getString(Tags.StudyInstanceUID) + ", failureCount="
+                + ian.getString(Tags.StudyInstanceUID) + ", failureCount="
                 + failureCount + "]";
     }
-
 }

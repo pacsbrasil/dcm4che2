@@ -54,7 +54,7 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 
-    private static final long serialVersionUID = -704838487760321831L;
+    private static final long serialVersionUID = -3119250046425862896L;
 
     public static final NotificationFilter NOTIF_FILTER =
             new NotificationFilter() {		
@@ -140,6 +140,10 @@ public class SeriesStored implements Serializable {
 
     public String getAccessionNumber() {
         return studyAttrs.getString(Tags.AccessionNumber);
+    }
+
+    public String getStudyID() {
+        return studyAttrs.getString(Tags.StudyID);
     }
 
     public String getSeriesInstanceUID() {

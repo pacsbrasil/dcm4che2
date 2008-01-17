@@ -54,6 +54,7 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -106,7 +107,13 @@ public class IANScuService extends AbstractScuService implements
             UIDs.InstanceAvailabilityNotificationSOPClass,
             UIDs.BasicStudyContentNotification };
 
-    private static final UIDGenerator uidGen = UIDGenerator.getInstance();
+     private static final int[] PAT_SUMMARY_AND_STUDY_IDS = {
+            Tags.PatientName, Tags.PatientID, Tags.StudyID
+    };
+
+     private static final int[] INSTANCE_AVAILABILITY = {
+         Tags.InstanceAvailability
+     };
 
     private final NotificationListener seriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -307,7 +314,8 @@ public class IANScuService extends AbstractScuService implements
             return;
         Dataset ian = stored.getIAN();
         if (!sendOneIANforEachMPPS) {
-            schedule(ian);
+            schedule(stored.getPatientID(), stored.getPatientName(),
+                    stored.getStudyID(), ian);
         }
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
         if (pps != null
@@ -324,10 +332,13 @@ public class IANScuService extends AbstractScuService implements
     private void notifyIfRefInstancesAvailable(String mppsIuid) {
         try {
             MPPSManager mppsManager = getMPPSManagerHome().create();
-            Dataset ian = mppsManager.createIAN(mppsIuid);
+            Dataset ian = mppsManager.createIANwithPatSummaryAndStudyID(mppsIuid);
             if (ian != null) {
                 if (sendOneIANforEachMPPS) {
-                    schedule(ian);
+                    schedule(ian.getString(Tags.PatientID),
+                            ian.getString(Tags.PatientName),
+                            ian.getString(Tags.StudyID),
+                            ian.exclude(PAT_SUMMARY_AND_STUDY_IDS));
                 }
                 if (notifyOtherServices) {
                     sendMPPSInstancesAvailableNotification(mppsManager
@@ -335,9 +346,7 @@ public class IANScuService extends AbstractScuService implements
                 }
             }
         } catch (Exception e) {
-            log
-                    .error(
-                            "Failure processing notifyIfRefInstancesAvailable(): ",
+            log.error("Failure processing notifyIfRefInstancesAvailable(): ",
                             e);
         }
     }
@@ -378,16 +387,19 @@ public class IANScuService extends AbstractScuService implements
         if (notifiedAETs.length == 0)
             return;
         if (onStudyDeleted)
-            schedule(deleted.getInstanceAvailabilityNotification());
+            schedule(null, null, null,
+                    deleted.getInstanceAvailabilityNotification());
     }
 
-    private void schedule(Dataset ian) {
+    private void schedule(String patid, String patname, String studyid,
+            Dataset ian) {
         if (log.isDebugEnabled()) {
             log.debug("IAN Dataset:");
             log.debug(ian);
         }
         for (int i = 0; i < notifiedAETs.length; ++i) {
-            IANOrder order = new IANOrder(notifiedAETs[i], ian);
+            IANOrder order = new IANOrder(notifiedAETs[i], patid, patname,
+                    studyid, ian);
             try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
@@ -447,28 +459,30 @@ public class IANScuService extends AbstractScuService implements
     private void invokeDimse(ActiveAssociation aa, IANOrder order)
             throws DcmServiceException, IOException, InterruptedException {
         Association a = aa.getAssociation();
-        List ianPC = a
-                .listAcceptedPresContext(UIDs.InstanceAvailabilityNotificationSOPClass);
+        List ianPC = a.listAcceptedPresContext(
+                UIDs.InstanceAvailabilityNotificationSOPClass);
         boolean ianAccepted = !ianPC.isEmpty();
-        List scnPC = a
-                .listAcceptedPresContext(UIDs.BasicStudyContentNotification);
+        List scnPC = a.listAcceptedPresContext(
+                UIDs.BasicStudyContentNotification);
         boolean scnAccepted = !scnPC.isEmpty();
         AssociationFactory af = AssociationFactory.getInstance();
+        String iuid = UIDGenerator.getInstance().createUID();
         Command cmdRq = DcmObjectFactory.getInstance().newCommand();
         final Dimse dimseRq;
         if (ianAccepted
                 && (preferInstanceAvailableNotification || !scnAccepted)) {
             cmdRq.initNCreateRQ(a.nextMsgID(),
-                    UIDs.InstanceAvailabilityNotificationSOPClass, uidGen
-                            .createUID());
+                    UIDs.InstanceAvailabilityNotificationSOPClass, iuid);
             dimseRq = af.newDimse(((PresContext) ianPC.get(0)).pcid(), cmdRq,
-                    order.getDataset());
+                    order.getIAN());
         } else {
             cmdRq.initCStoreRQ(a.nextMsgID(),
-                    UIDs.BasicStudyContentNotification, uidGen.createUID(),
-                    scnPriority);
+                    UIDs.BasicStudyContentNotification, iuid, scnPriority);
+            Dataset scn = toSCN(order);
+            scn.putUI(Tags.SOPClassUID, UIDs.BasicStudyContentNotification);
+            scn.putUI(Tags.SOPInstanceUID, iuid);
             dimseRq = af.newDimse(((PresContext) scnPC.get(0)).pcid(), cmdRq,
-                    toSCN(order.getDataset()));
+                    scn);
         }
         log.debug("Dataset:\n");
         log.debug(dimseRq.getDataset());
@@ -492,12 +506,13 @@ public class IANScuService extends AbstractScuService implements
         }
     }
 
-    private Dataset toSCN(Dataset ian) {
+    private Dataset toSCN(IANOrder order) {
         Dataset scn = DcmObjectFactory.getInstance().newDataset();
-        scn.putLO(Tags.PatientID, ian.getString(Tags.PatientID));
-        scn.putPN(Tags.PatientName, ian.getString(Tags.PatientName));
-        scn.putSH(Tags.StudyID, ian.getString(Tags.StudyID));
-        scn.putUI(Tags.StudyInstanceUID, ian.getString(Tags.StudyInstanceUID));
+        scn.putLO(Tags.PatientID, order.getPatientID());
+        scn.putPN(Tags.PatientName, order.getPatientName());
+        scn.putSH(Tags.StudyID, order.getStudyID());
+        DcmObject ian = order.getIAN();
+        scn.putUI(Tags.StudyInstanceUID, ian .getString(Tags.StudyInstanceUID));
         DcmElement ianSeriesSeq = ian.get(Tags.RefSeriesSeq);
         DcmElement scnSeriesSeq = scn.putSQ(Tags.RefSeriesSeq);
         for (int i = 0, n = ianSeriesSeq.countItems(); i < n; ++i) {
@@ -508,7 +523,8 @@ public class IANScuService extends AbstractScuService implements
             DcmElement ianSOPSeq = ianSeries.get(Tags.RefSOPSeq);
             DcmElement scnSOPSeq = scnSeries.putSQ(Tags.RefImageSeq);
             for (int j = 0, m = ianSOPSeq.countItems(); j < m; ++j) {
-                scnSOPSeq.addItem(ianSOPSeq.getItem(j));
+                scnSOPSeq.addItem(
+                        ianSOPSeq.getItem(j).exclude(INSTANCE_AVAILABILITY));
             }
         }
         return scn;
