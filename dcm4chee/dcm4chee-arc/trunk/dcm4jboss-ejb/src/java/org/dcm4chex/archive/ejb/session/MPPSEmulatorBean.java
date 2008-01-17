@@ -242,6 +242,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             mpps.putAE(Tags.PerformedStationAET, sourceAET);
             mpps.putSH(Tags.PerformedStationName, seriesAttrs
                     .getString(Tags.StationName));
+            mpps.putSH(Tags.PerformedLocation);
             mpps.putCS(Tags.Modality, seriesAttrs.getString(Tags.Modality));
             mpps.putSH(Tags.PPSID, makePPSID(md, suid));
             mpps.putLO(Tags.PerformedProcedureTypeDescription, studyAttrs

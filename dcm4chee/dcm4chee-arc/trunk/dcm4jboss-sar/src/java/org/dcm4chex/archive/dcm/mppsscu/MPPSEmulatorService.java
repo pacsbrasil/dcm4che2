@@ -72,9 +72,9 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
             Tags.SOPInstanceUID, Tags.Modality, Tags.ProcedureCodeSeq,
             Tags.RefPatientSeq, Tags.PatientName, Tags.PatientID,
             Tags.IssuerOfPatientID, Tags.PatientBirthDate, Tags.PatientSex,
-            Tags.PerformedStationAET, Tags.PerformedStationName,
-            Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSEndDate,
-            Tags.PPSEndTime, Tags.PPSStatus, Tags.PPSID,
+            Tags.StudyID, Tags.PerformedStationAET, Tags.PerformedStationName,
+            Tags.PerformedLocation, Tags.PPSStartDate, Tags.PPSStartTime,
+            Tags.PPSEndDate, Tags.PPSEndTime, Tags.PPSStatus, Tags.PPSID,
             Tags.PPSDescription, Tags.PerformedProcedureTypeDescription,
             Tags.PerformedProtocolCodeSeq, Tags.ScheduledStepAttributesSeq, };
 
