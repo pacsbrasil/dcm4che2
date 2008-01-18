@@ -360,7 +360,7 @@ public class AEService extends ServiceMBeanSupport {
     
     private void notifyAETchange(String oldTitle, String newTitle) {
         long eventID = this.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(this.getClass().getName(), this, eventID );
+        Notification notif = new Notification(AetChanged.class.getName(), this, eventID );
         notif.setUserData(new AetChanged(oldTitle, newTitle) );
         log.debug("send AE Title changed notif:"+notif);
         this.sendNotification( notif );
