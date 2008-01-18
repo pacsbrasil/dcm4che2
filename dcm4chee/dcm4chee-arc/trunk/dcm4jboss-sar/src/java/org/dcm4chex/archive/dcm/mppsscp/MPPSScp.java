@@ -55,6 +55,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4chex.archive.common.PPSStatus;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -117,6 +118,8 @@ class MPPSScp extends DcmServiceBase {
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         createMPPS(mpps);
+        mpps.setPrivateCreatorID(PrivateTags.CreatorID);
+        mpps.putAE(PrivateTags.CallingAET, as.getCallingAET());
         service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }
@@ -155,6 +158,8 @@ class MPPSScp extends DcmServiceBase {
         checkSetAttributs(mpps);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         updateMPPS(mpps);
+        mpps.setPrivateCreatorID(PrivateTags.CreatorID);
+        mpps.putAE(PrivateTags.CallingAET, as.getCallingAET());
         service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }

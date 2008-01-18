@@ -20,11 +20,22 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getForwardAETs" setMethod="setForwardAETs">
-      <description>List of AE titles for the application entities that MPPS messages are forwarded to, separated by \(backslash). 
-      NONE = do not forward MPPS messages to any application entities.
+   <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
+      <description><![CDATA[List of forwarding rules, dependent upon which
+        application - identified by the Calling AE title - sent the MPPS.
+        The comma separated list of AE titles after the (optional) condition 
+        defines the forwarding destination (the other MPPS SCP) by its Called
+        AE Title.
+      <br>Format:
+      <br>[calling[!]=<i>aeTitleFrom</i>]<i>aeTitleTo</i> | NONE 
+      <br>where
+      <br><i>aeTitleFrom</i> = the calling AE titles separated by '|' (pipe)
+      <br><i>aeTitleTo</i> = the AE titles that objects are forwarded to, in a comma-separated list
+      <br>NONE = do not use any forwarding rules.
+      <br><br>Example: [calling!=SCU1]SCP2
+      <br>Forwards received MPPS to SCU2, except MPPS received from SCU1]]>
       </description>
-      <name>ForwardAETitles</name>
+      <name>ForwardingRules</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>

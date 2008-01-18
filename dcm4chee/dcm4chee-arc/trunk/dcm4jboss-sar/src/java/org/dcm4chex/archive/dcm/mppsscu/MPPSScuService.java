@@ -39,6 +39,9 @@
 
 package org.dcm4chex.archive.dcm.mppsscu;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -57,7 +60,8 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
@@ -74,16 +78,20 @@ public class MPPSScuService extends AbstractScuService implements
 
     private static final int PCID_MPPS = 1;
 
-    private static final String NONE = "NONE";
-
-    private static final String[] EMPTY = {};
-
     private static final int[] EXCLUDE_TAGS = { Tags.SOPClassUID,
             Tags.SOPInstanceUID };
 
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
-    private String[] forwardAETs = EMPTY;
+    private ForwardingRules forwardingRules = new ForwardingRules("");
+
+    public final String getForwardingRules() {
+        return forwardingRules.toString();
+    }
+
+    public final void setForwardingRules(String forwardingRules) {
+        this.forwardingRules = new ForwardingRules(forwardingRules);
+    }
 
     private ObjectName mppsScpServiceName;
 
@@ -116,16 +124,6 @@ public class MPPSScuService extends AbstractScuService implements
             if (restart)
                 start();
         }
-    }
-
-    public final String getForwardAETs() {
-        return forwardAETs.length > 0 ? StringUtils.toString(forwardAETs, '\\')
-                : NONE;
-    }
-
-    public final void setForwardAETs(String forwardAETs) {
-        this.forwardAETs = NONE.equalsIgnoreCase(forwardAETs) ? EMPTY
-                : StringUtils.split(forwardAETs, '\\');
     }
 
     public final ObjectName getMppsScpServiceName() {
@@ -166,8 +164,15 @@ public class MPPSScuService extends AbstractScuService implements
 
     public void handleNotification(Notification notif, Object handback) {
         Dataset mpps = (Dataset) notif.getUserData();
-        for (int i = 0; i < forwardAETs.length; i++) {
-            MPPSOrder order = new MPPSOrder(mpps, forwardAETs[i]);
+        mpps.setPrivateCreatorID(PrivateTags.CreatorID);
+        Map param = new HashMap();
+        param.put("calling", new String[] { 
+                mpps.getString(PrivateTags.CallingAET) });
+        String[] destAETs = forwardingRules
+                .getForwardDestinationsFor(param);
+        for (int i = 0; i < destAETs.length; i++) {
+            MPPSOrder order = new MPPSOrder(mpps.excludePrivate(),
+                    ForwardingRules.toAET(destAETs[i]));
             try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
@@ -228,7 +233,7 @@ public class MPPSScuService extends AbstractScuService implements
                                 .getString(Tags.SOPInstanceUID));
             }
             Dimse dimseRq = AssociationFactory.getInstance()
-                    .newDimse(PCID_MPPS, cmdRq, mpps.exclude(EXCLUDE_TAGS));            
+                    .newDimse(PCID_MPPS, cmdRq, mpps.exclude(EXCLUDE_TAGS));
             final Dimse dimseRsp = aa.invoke(dimseRq).get();
             final Command cmdRsp = dimseRsp.getCommand();
             final int status = cmdRsp.getStatus();
