@@ -896,11 +896,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
             Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
             if (seriesAttrs == null) {
-                Dataset seriesQueryKey =
-                        DcmObjectFactory.getInstance().newDataset();
-                seriesQueryKey.putUI(Tags.SeriesInstanceUID, seriesIuid);
-                QueryCmd seriesQuery = QueryCmd.createSeriesQuery(
-                        seriesQueryKey, false, false, null);
+                QuerySeriesCmd seriesQuery = new QuerySeriesCmd(
+                        QueryCmd.transactionIsolationLevel,
+                        QueryCmd.accessBlobAsLongVarBinary);
+                seriesQuery.setSeriesIUID(seriesIuid);
                 seriesQuery.execute();
                 seriesQuery.next();
                 seriesAttrsCache.put(seriesIuid,
