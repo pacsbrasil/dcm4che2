@@ -29,7 +29,7 @@
       <name>XDSQueryURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/portals/yr3a/storedquery"/>
+         <value value="http://129.6.24.109:9080/axis2/services/xdsregistryb"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
