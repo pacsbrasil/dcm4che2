@@ -42,7 +42,6 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -444,6 +443,23 @@ public class QueryRetrieveScpService extends AbstractScpService {
      */
     public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
         this.checkMatchingKeySupported = checkMatchingKeySupport;
+    }
+
+    public final boolean getLazyFetchSeriesAttrsOnImageLevelQuery() {
+        return QueryCmd.lazyFetchSeriesAttrsOnImageLevelQuery;
+    }
+
+    public final void setLazyFetchSeriesAttrsOnImageLevelQuery(boolean enable) {
+        QueryCmd.lazyFetchSeriesAttrsOnImageLevelQuery = enable;
+    }
+
+    public final boolean getCacheSeriesAttrsOnImageLevelQuery() {
+        return QueryCmd.cacheSeriesAttrsOnImageLevelQuery ||
+                QueryCmd.lazyFetchSeriesAttrsOnImageLevelQuery;
+    }
+
+    public final void setCacheSeriesAttrsOnImageLevelQuery(boolean enable) {
+        QueryCmd.cacheSeriesAttrsOnImageLevelQuery = enable;
     }
 
     public final boolean getQueryAccessBlobAsLongVarBinary() {

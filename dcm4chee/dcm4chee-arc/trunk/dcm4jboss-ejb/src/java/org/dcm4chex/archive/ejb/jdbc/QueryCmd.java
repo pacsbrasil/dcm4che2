@@ -146,6 +146,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
     public static boolean accessBlobAsLongVarBinary = true;
+    public static boolean lazyFetchSeriesAttrsOnImageLevelQuery = false;
+    public static boolean cacheSeriesAttrsOnImageLevelQuery = true;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -833,7 +835,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super(keys, filterResult, noMatchForNoValue, subject);
             if (accessBlobAsLongVarBinary) {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                defineColumnType(2, Types.LONGVARBINARY);
+                if (lazyFetchSeriesAttrsOnImageLevelQuery) {
+                    defineColumnType(1, Types.LONGVARBINARY);
+                } else {
+                    defineColumnType(1, Types.LONGVARBINARY);
+                    defineColumnType(2, Types.LONGVARBINARY);
+                    defineColumnType(3, Types.LONGVARBINARY);
+                    defineColumnType(4, Types.LONGVARBINARY);
+                }
             }
             addAdditionalReturnKeys();
         }
@@ -848,10 +857,31 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Instance.encodedAttributes",
-                    "Instance.retrieveAETs", "Instance.externalRetrieveAET",
-                    "Instance.availability", "Series.seriesIuid",
-                    "Media.filesetId", "Media.filesetIuid" };
+            return lazyFetchSeriesAttrsOnImageLevelQuery
+                    ? new String[] {
+                            "Instance.encodedAttributes",
+                            "Instance.retrieveAETs",
+                            "Instance.externalRetrieveAET",
+                            "Instance.availability",
+                            "Series.seriesIuid",
+                            "Media.filesetId",
+                            "Media.filesetIuid" }
+                    : new String[] {
+                            "Patient.encodedAttributes",
+                            "Study.encodedAttributes",
+                            "Series.encodedAttributes",
+                            "Instance.encodedAttributes",
+                            "Study.modalitiesInStudy",
+                            "Study.studyStatusId",
+                            "Study.numberOfStudyRelatedSeries",
+                            "Study.numberOfStudyRelatedInstances",
+                            "Series.numberOfSeriesRelatedInstances",
+                            "Series.seriesIuid",
+                            "Instance.retrieveAETs",
+                            "Instance.externalRetrieveAET",
+                            "Instance.availability",
+                            "Media.filesetId",
+                            "Media.filesetIuid" };
         }
 
         protected String[] getTables() {
@@ -888,6 +918,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
+            if (lazyFetchSeriesAttrsOnImageLevelQuery) {
+                fillDatasetWithLazyFetchSeriesAttrs(ds);
+            } else {
+                fillDatasetWithEagerFetchSeriesAttrs(ds);
+            }
+        }
+        
+        private void fillDatasetWithLazyFetchSeriesAttrs(Dataset ds)
+                throws SQLException {
             fillDataset(ds, 1);
             DatasetUtils.putRetrieveAET(ds, rs.getString(2), rs.getString(3));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(4)]);
@@ -909,8 +948,40 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             ds.putAll(seriesAttrs);
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
+        
+        private void fillDatasetWithEagerFetchSeriesAttrs(Dataset ds)
+                throws SQLException {
+            fillDataset(ds, 1);
+            if (cacheSeriesAttrsOnImageLevelQuery) {
+                String seriesIuid = rs.getString(10);
+                Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
+                if (seriesAttrs == null) {
+                    seriesAttrs = DcmObjectFactory.getInstance().newDataset();
+                    fillDataset(seriesAttrs, 2);
+                    fillDataset(seriesAttrs, 3);
+                    fillDataset(seriesAttrs, 4);
+                    seriesAttrsCache.put(seriesIuid, seriesAttrs);
+                }
+                ds.putAll(seriesAttrs);
+            } else {
+                fillDataset(ds, 2);
+                fillDataset(ds, 3);
+                fillDataset(ds, 4);
+            }
+            ds.putCS(Tags.ModalitiesInStudy,
+                    StringUtils.split(rs.getString(5), '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(6));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(7));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(8));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(9));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(11), rs.getString(12));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(13)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(14));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(15));
+            ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+        }
     }
-
+    
     protected boolean isMatchSrCode() {
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         return code != null

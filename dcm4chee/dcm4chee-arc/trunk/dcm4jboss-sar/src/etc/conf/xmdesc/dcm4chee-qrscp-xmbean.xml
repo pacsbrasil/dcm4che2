@@ -731,6 +731,34 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLazyFetchSeriesAttrsOnImageLevelQuery"
+      setMethod="setLazyFetchSeriesAttrsOnImageLevelQuery">
+      <description>Activates lazy fetch of Series, Study and Instance
+      attributes stored in BLOB columns by an additional query for
+      each series.on queries on IMAGE level.
+      </description>
+      <name>LazyFetchSeriesAttrsOnImageLevelQuery</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCacheSeriesAttrsOnImageLevelQuery"
+      setMethod="setCacheSeriesAttrsOnImageLevelQuery">
+      <description>Activates caching of Series attributes between IMAGE level
+      C-FIND RSPs, which reduces the number of BLOB access from 4 x Number of
+      matching Instances to Number of matching Instances + 3 * Number of
+      different Series. Implicit set by LazyFetchSeriesAttrsOnImageLevelQuery
+      = true.
+      </description>
+      <name>CacheSeriesAttrsOnImageLevelQuery</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getQueryAccessBlobAsLongVarBinary"
       setMethod="setQueryAccessBlobAsLongVarBinary">
       <description>Change JDBC binding for Oracle BLOB's to LONGVARBINARY for
