@@ -249,8 +249,9 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
     
     /**
      * @ejb.interface-method
+     * @return Collection of related Study Instance UIDs
      */
-    public int grantForPatient(long patPk, String[] actions, String role) {
+    public Collection grantForPatient(long patPk, String[] actions, String role) {
         Collection c;
         try {
             c = studyPermissionHome
@@ -258,13 +259,15 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return grant(c, actions, role);
+        grant(c, actions, role);
+        return c;
     }
 
     /**
      * @ejb.interface-method
+     * @return Collection of related Study Instance UIDs
      */
-    public int revokeForPatient(long patPk, String[] actions, String role) {
+    public Collection revokeForPatient(long patPk, String[] actions, String role) {
         Collection c;
         try {
             c = studyPermissionHome
@@ -272,13 +275,15 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return revoke(c, actions, role);
+        revoke(c, actions, role);
+        return c;
     }
 
     /**
      * @ejb.interface-method
+     * @return Collection of related Study Instance UIDs
      */
-    public int grantForPatient(String pid, String issuer, String[] actions,
+    public Collection grantForPatient(String pid, String issuer, String[] actions,
             String role) {
         Collection c;
         try {
@@ -286,7 +291,8 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return grant(c, actions, role);
+        grant(c, actions, role);
+        return c;
     }
 
     private int grant(Collection suids, String[] actions, String role) {
@@ -299,8 +305,9 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
 
     /**
      * @ejb.interface-method
+     * @return Collection of related Study Instance UIDs
      */
-    public int revokeForPatient(String pid, String issuer, String[] actions,
+    public Collection revokeForPatient(String pid, String issuer, String[] actions,
             String role) {
         Collection c;
         try {
@@ -308,7 +315,8 @@ public abstract class StudyPermissionManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        return revoke(c, actions, role);
+        revoke(c, actions, role);
+        return c;
     }
 
     private int revoke(Collection suids, String[] actions, String role) {
