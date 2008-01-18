@@ -108,6 +108,7 @@ public class StudyPermissionUpdateCtrl extends Dcm4cheeFormController {
 	        }
 	        return SUCCESS;
         } catch (Exception x) {
+        	log.error("StudyPermission update failed:", x);
         	return CANCEL;
         }
     }
