@@ -22,6 +22,7 @@
 	<!-- Override with your dcm4chee-sar dist location -->
 	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.home}/target/lib/dcm4chee.jar" />
+	<property name="dcm4che-audit.jar" value="${dcm4chee-sar.home}/lib/dcm4che-audit-2.0.13.jar" />
 	
 	<!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.2.2.GA"/>
@@ -41,6 +42,7 @@
 		<pathelement location="${lib}/xhl7.jar"/>
 		<pathelement location="${dcm4chee-ejb.target}/common/lib/dcm4chee-ejb-client.jar"/>
 		<pathelement location="${dcm4chee-ejb.target}/hsql/lib/dcm4chee-jdbc-hsql.jar"/>
+		<pathelement location="${dcm4che-audit.jar}"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>

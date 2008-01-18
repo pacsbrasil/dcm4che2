@@ -283,7 +283,7 @@
         <name>role</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>int</return-type>
+      <return-type>java.util.Collection</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[Grant permission for <i>actions</i> on all existing
@@ -312,7 +312,7 @@
         <name>role</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>int</return-type>
+      <return-type>java.util.Collection</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[Revoke permission for <i>actions</i> on all existing
@@ -335,7 +335,7 @@
         <name>role</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>int</return-type>
+      <return-type>java.util.Collection</return-type>
    </operation>   
    <operation impact="ACTION">
       <description><![CDATA[Revoke permission for <i>actions</i> on all existing
@@ -364,7 +364,7 @@
         <name>role</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>int</return-type>
+      <return-type>java.util.Collection</return-type>
    </operation>   
    <operation impact="ACTION">
       <description><![CDATA[Return total number of studies for given patient.]]>

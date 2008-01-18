@@ -39,6 +39,7 @@ package org.dcm4chex.archive.hl7;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -53,17 +54,23 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.QueryMessage;
+import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.io.DocumentSource;
+import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -208,42 +215,118 @@ public class StudyPermissionService extends ServiceMBeanSupport {
 
     public int grant(String suid, String actions, String role)
             throws Exception {
-        // TODO Emit Audit Message
-        return getStudyPermissionManager()
-                .grant(suid, StringUtils.split(actions,','), role);
+        String[] newActions = StringUtils.split(actions,',');
+        int success = getStudyPermissionManager()
+                .grant(suid, newActions, role);
+        logSecurityAlert(success == newActions.length, 
+                "Grant StudyPermission: StudyIuid="+suid+" role="+role+" actions:"+actions);
+        return success;
     }
 
     public boolean revoke(StudyPermissionDTO dto) throws Exception {
-        // TODO Emit Audit Message
-        return getStudyPermissionManager().revoke(dto);
+        boolean granted = getStudyPermissionManager().revoke(dto);
+        String desc = "Revoke StudyPermission: StudyIuid="+dto.getStudyIuid()+
+                    " role="+dto.getRole()+" action:"+dto.getAction();
+        logSecurityAlert(granted, desc);
+        return granted;
     }
 
-    public int grantForPatient(long patPk, String actions, String role)
+    /**
+     * Grant role/actions to all studies of a patient.
+     * 
+     * @param patPk		Patient pk
+     * @param actions	One or more actions separated by ','
+     * @param role		Role name.
+     * 
+     * @return Collection of related Study Instance UIDs
+     * @throws Exception
+     */
+    public Collection grantForPatient(long patPk, String actions, String role)
             throws Exception {
-        // TODO Emit Audit Message
-        return getStudyPermissionManager()
-                .grantForPatient(patPk, StringUtils.split(actions,','), role);
+    	try {
+	        Collection suids = getStudyPermissionManager()
+	                .grantForPatient(patPk, StringUtils.split(actions,','), role);
+	        String desc = "Grant StudyPermissions for patient patPk:"+patPk+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	        logSecurityAlert(true, desc);
+	        return suids;
+    	} catch (Exception x) {
+    		logSecurityAlert(false, "Grant StudyPermissions for patient: patPk:"+patPk+ "actions:"+actions+" role:"+role);
+    		throw x;
+    	}
     }
 
-    public int grantForPatient(String pid, String issuer, String actions,
+    /**
+     * Grant role/actions to all studies of a patient.
+     * 
+     * @param pid		Patient ID
+     * @param issuer	Issuer of patient ID
+     * @param actions	One or more actions separated by ','
+     * @param role		Role name.
+     * 
+     * @return Collection of related Study Instance UIDs
+     * @throws Exception
+     */
+    public Collection grantForPatient(String pid, String issuer, String actions,
             String role) throws Exception {
-        // TODO Emit Audit Message
-        return getStudyPermissionManager().grantForPatient(
-                pid, issuer, StringUtils.split(actions,','), role);
+    	try {
+	    	Collection suids =  getStudyPermissionManager().grantForPatient(
+	                pid, issuer, StringUtils.split(actions,','), role);
+	        String desc = "Grant StudyPermissions for patient patID:"+pid+" issuer:"+issuer+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	        logSecurityAlert(true, desc);
+	        return suids;
+    	} catch (Exception x) {
+    		logSecurityAlert(false, "Grant StudyPermissions for patient: pid:"+pid+" issuer:"+issuer+ "actions:"+actions+" role:"+role);
+    		throw x;
+    	}
     }
-    
-    public int revokeForPatient(long patPk, String actions, String role)
+ 
+    /**
+     * Revoke role/actions from all studies of a patient.
+     * 
+     * @param patPk		Patient pk
+     * @param actions	One or more actions separated by ','
+     * @param role		Role name.
+     * 
+     * @return Collection of related Study Instance UIDs
+     * @throws Exception
+     */
+    public Collection revokeForPatient(long patPk, String actions, String role)
             throws Exception {
-        // TODO Emit Audit Message
-        return getStudyPermissionManager()
+    	try {
+	    	Collection suids =  getStudyPermissionManager()
                 .revokeForPatient(patPk, StringUtils.split(actions,','), role);
+	        String desc = "Revoke StudyPermissions for patient patPk:"+patPk+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	        logSecurityAlert(true, desc);
+	        return suids;
+    	} catch (Exception x) {
+    		logSecurityAlert(false, "Revoke StudyPermissions for patient: patPk:"+patPk+ "actions:"+actions+" role:"+role);
+    		throw x;
+    	}
     }
 
-    public int revokeForPatient(String pid, String issuer, String actions,
+    /**
+     * Revoke role/actions from all studies of a patient.
+     * 
+     * @param pid		Patient ID
+     * @param issuer	Issuer of patient ID
+     * @param actions	One or more actions separated by ','
+     * @param role		Role name.
+     * 
+     * @return Collection of related Study Instance UIDs
+     * @throws Exception
+     */
+    public Collection revokeForPatient(String pid, String issuer, String actions,
             String role) throws Exception {
-        // TODO Emit Audit Message
-        return getStudyPermissionManager().revokeForPatient(
+    	try {
+	    	Collection suids =  getStudyPermissionManager().revokeForPatient(
                 pid, issuer, StringUtils.split(actions,','), role);
+	        String desc = "Grant StudyPermissions for patient patID:"+pid+" issuer:"+issuer+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	        logSecurityAlert(true, desc);
+	        return suids;
+    	} catch (Exception x) {
+    		logSecurityAlert(false, "Grant StudyPermissions for patient: pid:"+pid+" issuer:"+issuer+ "actions:"+actions+" role:"+role);
+    		throw x;
+    	}
     }
     
     public int countStudiesOfPatient(Long patPk) throws Exception {
@@ -319,12 +402,11 @@ public class StudyPermissionService extends ServiceMBeanSupport {
                             throw new SAXException(
                                     "Missing action attribute of <grant>");
                         }
-                        String[] actions = StringUtils.split(action, ',');
                         if (pid != null) {
-                            manager().grantForPatient(pid, issuer, actions, role);
+                            grantForPatient(pid, issuer, action, role);
                         }
                         if (suid != null) {
-                            manager().grant(suid, actions, role);                    
+                            grant(suid, action, role);                    
                         }             
                     } else if (qName.equals("revoke")) {
                         String pid = attrs.getValue("pid");
@@ -407,5 +489,33 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         TransformerHandler th = tf.newTransformerHandler(tpl);
         th.setResult(new SAXResult(newContentHandler()));
         ds.writeDataset2(th, null, null, 64, null);
+    }
+    
+    private void logSecurityAlert(boolean success, String desc) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        SecurityAlertMessage msg = new SecurityAlertMessage(
+                SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
+        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
+        msg.addReportingProcess(AuditMessage.getProcessID(),
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(),
+                AuditMessage.getLocalHostName());
+        if ( userInfo.getHostName() != null ) {
+        	msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+        } else {
+            msg.addPerformingNode(AuditMessage.getLocalHostName());
+        }
+        msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
+        msg.validate();
+        Logger.getLogger("auditlog").warn(msg);
+        
+    }
+    private String toString(Collection c) {
+        StringBuffer sb = new StringBuffer();
+        for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
+       		sb.append(iter.next().toString()).append(',');
+        }
+        sb.setLength(sb.length()-1);
+        return sb.toString();
     }
 }

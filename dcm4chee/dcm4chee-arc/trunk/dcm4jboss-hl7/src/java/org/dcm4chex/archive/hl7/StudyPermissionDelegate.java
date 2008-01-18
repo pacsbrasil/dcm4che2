@@ -113,40 +113,36 @@ public class StudyPermissionDelegate {
         return b.booleanValue();
     }
 
-    public int grantForPatient(long patPk, String actions, String role)
+    public Collection grantForPatient(long patPk, String actions, String role)
             throws Exception {
-        Integer i = (Integer) server.invoke(studyPermissionServiceName,
+        return (Collection) server.invoke(studyPermissionServiceName,
                 "grantForPatient", new Object[] { new Long(patPk), actions,
                         role }, new String[] { long.class.getName(),
                         String.class.getName(), String.class.getName() });
-        return i.intValue();
     }
 
-    public int grantForPatient(String pid, String issuer, String actions,
+    public Collection grantForPatient(String pid, String issuer, String actions,
             String role) throws Exception {
-        Integer i = (Integer) server.invoke(studyPermissionServiceName,
+    	return (Collection) server.invoke(studyPermissionServiceName,
                 "grantForPatient", new Object[] { pid, issuer, actions, role },
                 new String[] { String.class.getName(), String.class.getName(),
                         String.class.getName(), String.class.getName() });
-        return i.intValue();
     }
     
-    public int revokeForPatient(long patPk, String actions, String role)
+    public Collection revokeForPatient(long patPk, String actions, String role)
             throws Exception {
-        Integer i = (Integer) server.invoke(studyPermissionServiceName,
+    	return (Collection) server.invoke(studyPermissionServiceName,
                 "revokeForPatient", new Object[] { new Long(patPk), actions,
                         role }, new String[] { long.class.getName(),
                         String.class.getName(), String.class.getName() });
-        return i.intValue();
     }
 
-    public int revokeForPatient(String pid, String issuer, String actions,
+    public Collection revokeForPatient(String pid, String issuer, String actions,
             String role) throws Exception {
-        Integer i = (Integer) server.invoke(studyPermissionServiceName,
+    	return (Collection) server.invoke(studyPermissionServiceName,
                 "revokeForPatient", new Object[] { pid, issuer, actions, role },
                 new String[] { String.class.getName(), String.class.getName(),
                         String.class.getName(), String.class.getName() });
-        return i.intValue();
     }
     
     public int countStudiesOfPatient(Long patPk) throws Exception {
