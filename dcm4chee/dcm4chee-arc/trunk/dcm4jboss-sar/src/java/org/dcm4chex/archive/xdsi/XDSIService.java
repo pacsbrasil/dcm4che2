@@ -149,9 +149,6 @@ public class XDSIService extends ServiceMBeanSupport {
     
 	private static Logger log = Logger.getLogger(XDSIService.class.getName());
 
-	private String testPath;
-	
-	
 	private Map usr2author = new TreeMap();
 	
 	
@@ -162,11 +159,6 @@ public class XDSIService extends ServiceMBeanSupport {
 	private int proxyPort;
 	private boolean useHttp;
 	
-// SMTP attributes to document repository actor (asynchron)	
-	private String docRepositoryMailAddr;//TODO
-	private String smtpHost;
-	private int smtpPort;
-	private boolean useSmtp;
 	
 // Metadata attributes
 	private File propertyFile;
@@ -198,15 +190,16 @@ public class XDSIService extends ServiceMBeanSupport {
 	private String ridURL;
 	
 	private boolean logSOAPMessage = true;
+	private boolean indentSOAPLog = true;
 
-        private final NotificationListener ianListener = 
-            new NotificationListener() {
-                public void handleNotification(Notification notif, Object handback) {
-                    log.info("ianListener called!");
-                    onIAN((Dataset) notif.getUserData());
-                }
+    private final NotificationListener ianListener = 
+        new NotificationListener() {
+            public void handleNotification(Notification notif, Object handback) {
+                log.info("ianListener called!");
+                onIAN((Dataset) notif.getUserData());
+            }
 
-            };
+        };
         
     /**
 	 * @return Returns the property file path.
@@ -492,22 +485,6 @@ public class XDSIService extends ServiceMBeanSupport {
 		this.useHttp = useHttp;
 	}
 	
-	/**
-	 * @return Returns the testPath.
-	 */
-	public String getTestPath() {
-		return testPath == null ? "NONE":testPath;
-	}
-	/**
-	 * @param testPath The testPath to set.
-	 */
-	public void setTestPath(String testPath) {
-		if ( "NONE".equals(testPath) ) 
-			this.testPath = null;
-		else
-			this.testPath = testPath;
-	}
-
     public final ObjectName getAuditLoggerName() {
         return auditLogger.getAuditLoggerName();
     }
@@ -662,6 +639,14 @@ public class XDSIService extends ServiceMBeanSupport {
     public void setLogSOAPMessage(boolean logSOAPMessage) {
         this.logSOAPMessage = logSOAPMessage;
     }
+    
+	public boolean isIndentSOAPLog() {
+		return indentSOAPLog;
+	}
+	public void setIndentSOAPLog(boolean indentSOAPLog) {
+		this.indentSOAPLog = indentSOAPLog;
+	}
+    
 // Operations	
 	
 	/**
@@ -735,57 +720,15 @@ public class XDSIService extends ServiceMBeanSupport {
 		mapCodeLists.clear();
 	}
 		
-	
-	
-	public boolean nistTest(String testID){
-		if ( testID == null || testID.trim().length() < 1) {
-			File dir = new File( testPath );
-			File[] testDirs = dir.listFiles();
-			boolean result = true;
-			for ( int i = 0; i< testDirs.length; i++) {
-				if ( testDirs[i].isDirectory())
-					if ( !nistTest(testDirs[i].getName()) ) result = false;
-			}
-			return result;
-		}
-		log.info("\n\nPerform NIST test:"+testID);
-        File propFile = new File( new File( testPath, testID), "test.properties");
-    	Properties props = new Properties();
-        try {
-        	props.load(new FileInputStream(propFile));
-        } catch(FileNotFoundException e) {
-            log.warn(" Not a test Directory");
-            return false;
-        } catch(IOException e) {
-            log.error("Error reading test.properties file!",e);
-        }
-		log.info(" Test with URI:"+props.getProperty("url"));
-        String docs = null;
-        if ( !props.getProperty("NumOfDoc","0").equals("0") ) {
-	        StringBuffer sb = new StringBuffer();
-	        int idx=1;
-	        String doc, docPropName;
-	        while ( (doc = props.getProperty( docPropName="doc"+idx++) ) != null) {
-	        	sb.append(',').append(doc).append('|').append(props.get(docPropName+"mimeType"));
-	        	sb.append('|').append(props.getProperty(docPropName+"UUID"));
-	        }
-	        if ( sb.length() > 1 ) docs = sb.toString().substring(1);
-        }
-		return sendSOAP(propFile.getParentFile().getAbsolutePath()+"/",props.getProperty("metadatafile"),docs, props.getProperty("url")  );
-	}
 	public boolean sendSOAP( String metaDataFilename, String docNames, String url ) {
-		return sendSOAP(null,metaDataFilename,docNames, url);
-	}
-	public boolean sendSOAP( String baseDir, String metaDataFilename, String docNames, String url ) {
-		if ( baseDir == null ) baseDir = testPath == null ? "": testPath+"/";
-		File metaDataFile = new File( baseDir+metaDataFilename);
+		File metaDataFile = new File( metaDataFilename);
 		
 		XDSIDocument[] docFiles = null;
 		if ( docNames != null && docNames.trim().length() > 0) {
 			StringTokenizer st = new StringTokenizer( docNames, "," );
 			docFiles = new XDSIDocument[ st.countTokens() ];
 			for ( int i=0; st.hasMoreTokens(); i++ ) {
-				docFiles[i] = XDSIFileDocument.valueOf( baseDir+st.nextToken() );
+				docFiles[i] = XDSIFileDocument.valueOf( st.nextToken() );
 			}
 		}
 		return sendSOAP( readXMLFile(metaDataFile), docFiles, url );
@@ -1258,6 +1201,8 @@ public class XDSIService extends ServiceMBeanSupport {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();
+            if (indentSOAPLog)
+            	t.setOutputProperty("indent", "yes");
             t.transform(s, new StreamResult(out));
             log.info(out.toString());
         } catch (Exception e) {

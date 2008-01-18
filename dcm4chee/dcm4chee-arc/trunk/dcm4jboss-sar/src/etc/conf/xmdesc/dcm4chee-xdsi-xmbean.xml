@@ -266,17 +266,6 @@
          <value value="AutoPublish^Automatic XDS-I export of received images"/>
       </descriptors>
    </attribute>
-
-
-   <attribute access="read-write" getMethod="getTestPath" setMethod="setTestPath">
-      <description>Base directory path. (is used in sendSOAP for metadata and doc files!)
-      </description>
-      <name>TestPath</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="C:\willi\testkit\test"/>
-      </descriptors>
-   </attribute>
    
    <attribute access="read-write" getMethod="getRidURL" setMethod="setRidURL">
       <description>RID URL to get PDF Document for exportPDF.
@@ -320,9 +309,20 @@
    <attribute access="read-write"
       getMethod="isLogSOAPMessage"
       setMethod="setLogSOAPMessage">
-      <description>Enable logging of SOAP message (send and receive).
+      <description>Enable logging of SOAP message.
       </description>
       <name>LogSOAPMessage</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isIndentSOAPLog"
+      setMethod="setIndentSOAPLog">
+      <description>Enable/disable indention of logged SOAP message.
+      </description>
+      <name>IndentSOAPLog</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
