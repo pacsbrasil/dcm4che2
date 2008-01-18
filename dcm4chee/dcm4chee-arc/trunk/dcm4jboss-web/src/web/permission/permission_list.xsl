@@ -6,6 +6,9 @@
 <xsl:variable name="page_title">Study Permissions Overview</xsl:variable>
 <xsl:include href  = "../page.xsl" />
 
+<xsl:param name="folder.study_permission.free_role_action" select="'false'"/>
+<xsl:param name="folder.study_permission.show_only_studyPermissionRoles" select="'false'"/>
+
 <xsl:template match="model">
 	<p>
 	<div align="center" style="font-size : 22px;" >
@@ -25,31 +28,42 @@
 	<div align="center" style="background : green">
 		<table width="80%" border="4" align="center">
 			<xsl:call-template name="add_colgroup" />
-				<tr>
-					<td>&#160;</td>
-					<xsl:apply-templates select="rolesConfig/actions/item" mode="action_header"/>
-				</tr>
-			<xsl:apply-templates select="rolesConfig/roles/item" mode="role_line">
-				<xsl:sort data-type="text" order="ascending" select="displayName"/>
-			</xsl:apply-templates>
+			<tr>
+				<td>&#160;</td>
+				<xsl:apply-templates select="rolesConfig/actions/item" mode="action_header"/>
+			</tr>
+			<xsl:choose>
+	            <xsl:when test="$folder.study_permission.show_only_studyPermissionRoles = 'true'" >
+					<xsl:apply-templates select="rolesConfig/roles/item[type='StudyPermission']" mode="role_line">
+					<xsl:sort data-type="text" order="ascending" select="displayName"/>
+					</xsl:apply-templates>
+				</xsl:when>
+	            <xsl:otherwise >
+					<xsl:apply-templates select="rolesConfig/roles/item" mode="role_line">
+					<xsl:sort data-type="text" order="ascending" select="displayName"/>
+					</xsl:apply-templates>
+				</xsl:otherwise>
+			</xsl:choose>
    		</table>
 	</div>
 	</p>
-	<div align="center" style="background-color: #eeeeee;" >
-		<form action="studyPermissionUpdate.m" name="permForm" method="post" accept-charset="UTF-8" >
-			<br/>&#160;<br/>
-			<xsl:if test="/model/studyPermissionCheckDisabled='true' or /model/grantPrivileg='true'" >
-				role:&#160;<input size="10" name="role" type="text" value="" />
-				&#160;
-				action:&#160;<input size="10" name="action" type="text" value="" />
-				&#160;
-				<input type="submit" name="cmd" value="Add"/>
+		<div align="center" style="background-color: #eeeeee;" >
+			<form action="studyPermissionUpdate.m" name="permForm" method="post" accept-charset="UTF-8" >
 				<br/>&#160;<br/>
-			</xsl:if>
-			<input type="submit" name="cmd" value="Cancel"/>
-			<br/>&#160;<br/>
-		</form>
-	</div>
+	            <xsl:if test="$folder.study_permission.free_role_action = 'true'" >
+					<xsl:if test="/model/studyPermissionCheckDisabled='true' or /model/grantPrivileg='true'" >
+						role:&#160;<input size="10" name="role" type="text" value="" />
+						&#160;
+						action:&#160;<input size="10" name="action" type="text" value="" />
+						&#160;
+						<input type="submit" name="cmd" value="Add"/>
+						<br/>&#160;<br/>
+					</xsl:if>
+    			</xsl:if>
+				<input type="submit" name="cmd" value="Cancel"/>
+				<br/>&#160;<br/>
+			</form>
+		</div>
 </xsl:template>
 
 <xsl:template match="item" mode="action_header">

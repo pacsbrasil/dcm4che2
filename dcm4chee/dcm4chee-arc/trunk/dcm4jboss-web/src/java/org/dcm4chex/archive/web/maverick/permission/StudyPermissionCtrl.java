@@ -72,9 +72,6 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
         }
         return model;
     }
-    protected String getCtrlName() {
-	return "study_permission";
-    }
 
     
     protected String perform() {

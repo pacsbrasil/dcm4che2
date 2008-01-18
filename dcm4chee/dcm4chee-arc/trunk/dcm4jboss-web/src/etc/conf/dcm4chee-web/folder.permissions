@@ -9,7 +9,10 @@
 
 # add_worklist currently hides "Add Series" function in Web Folder  
 # folder.*=edit,move,delete,*export,add_worklist,edit.newStudyUID,xds_consumer,mergepat,study_permission
-folder.*=edit,move,delete,*export,edit.newStudyUID,mergepat,study_permission
+# study_permission.free_role_action: show role and action input field to allow unconfigured roles and actions.
+# study_permission.show_only_studyPermissionRoles: hide all roles that are not of type StudyPermission.
+#
+folder.*=edit,move,delete,*export,edit.newStudyUID,mergepat,study_permission,study_permission.free_role_action
 folder.*export=export_tf,export_xds
 
 # Application - Role Mapping
