@@ -36,9 +36,8 @@ that destination outside a particular time interval.
       <br>Format:
       <br>[calling[!]=<i>aeTitleFrom</i>]<i>aeTitleTo</i>!<i>from</i>-<i>to</i> | NONE 
       <br>where
-      <br><i>calling</i> = create a forward condition for objects sent from this calling AE title
-      <br><i>aeTitleFrom</i> = the calling AE titles separated by commas
-      <br><i>aeTitleTo</i> = the AE titles that objects are forwarded to, in a comma-separated list (optional)
+      <br><i>aeTitleFrom</i> = the calling AE titles separated by '|' (pipe)
+      <br><i>aeTitleTo</i> = the AE titles that objects are forwarded to, in a comma-separated list
       <br><i>!from</i>-<i>to</i> = start and end hour (0-23) when no forwarding should be performed for the aeTitleTo (Storage SCP) value (optional)
       <br>NONE = do not use any forwarding rules.
 <br>Example:      
