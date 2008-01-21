@@ -679,10 +679,8 @@ public class WADOSupport {
                             rows, columns, region, windowWidth, windowCenter,
                             imageQuality, suffix);
                 } catch (Exception x) {
-                    log
-                            .error(
-                                    "Error caching image file! Return image without caching!",
-                                    x);
+                    log.warn("Error caching image file! Return image without caching (Enable DEBUG for stacktrace)!");
+                    log.debug("Stacktrace for caching error:",x);
                     throw new ImageCachingException(bi);
                 }
             } else {
