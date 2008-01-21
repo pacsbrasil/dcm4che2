@@ -324,6 +324,7 @@ class GPWLScu {}
 class gpwlScu {}
 
 /**
+ * @depend - - - AuditLogger
  * @depend - - - HL7Server
  * @depend - - - TLSConfig
  * @depend - - - HL7SendQueue

@@ -116,6 +116,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isAuditPIXQuery"
+      setMethod="setAuditPIXQuery">
+      <description>
+       Controls if Audit Records are emitted for invoked PIX Queries (HL7
+       QBP^Q23).
+      </description>
+      <name>AuditPIXQuery</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
       <description>Used internally - do NOT modify.

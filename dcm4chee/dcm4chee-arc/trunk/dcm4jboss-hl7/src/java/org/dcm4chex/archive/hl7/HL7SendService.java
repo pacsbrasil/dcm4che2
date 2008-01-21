@@ -46,6 +46,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,9 +61,18 @@ import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.security.jacc.PolicyContext;
+import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che2.audit.message.ActiveParticipant;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.QueryMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -74,6 +84,7 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dom4j.Document;
 import org.dom4j.io.SAXContentHandler;
+import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.regenstrief.xhl7.MLLPDriver;
@@ -83,6 +94,13 @@ import org.xml.sax.XMLReader;
 
 public class HL7SendService extends ServiceMBeanSupport implements
         NotificationListener, MessageListener {
+
+    private static final String WEB_REQUEST_KEY =
+            "javax.servlet.http.HttpServletRequest";
+
+    private static final ParticipantObject.IDTypeCode PIX_QUERY = 
+            new ParticipantObject.IDTypeCode(
+                    "ITI-9","IHE Transactions","PIX Query");
 
     private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 
@@ -101,6 +119,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private int acTimeout;
 
     private int soCloseDelay;
+
+    private boolean auditPIXQuery;
 
     private ObjectName hl7ServerName;
 
@@ -188,6 +208,14 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public final void setSoCloseDelay(int soCloseDelay) {
         this.soCloseDelay = soCloseDelay;
+    }
+
+    public final boolean isAuditPIXQuery() {
+        return auditPIXQuery;
+    }
+
+    public final void setAuditPIXQuery(boolean auditPIXQuery) {
+        this.auditPIXQuery = auditPIXQuery;
     }
 
     public final ObjectName getTLSConfigName() {
@@ -465,7 +493,42 @@ public class HL7SendService extends ServiceMBeanSupport implements
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, "2.5");
-        sb.append("\rQPD|").append(pixQueryName).append('|');
+        String qpd = makeQPD(pixQueryName, patientID, issuer, domains);
+        sb.append('\r').append(qpd).append("\rRCP|I||||||");
+        String s = sb.toString();
+        log.info("Query PIX Manager " + pixManager + ":\n"
+                + s.replace('\r', '\n'));
+        final String charsetName = getCharsetName();
+        try {
+            Document msg = invoke(s.getBytes(charsetName), pixManager);
+            log.info("PIX Query returns:");
+            logMessage(msg);
+            MSH msh = new MSH(msg);
+            if (!"RSP".equals(msh.messageType) || !"K23".equals(msh.triggerEvent)) {
+                String prompt = "Unsupport response message type: "
+                        + msh.messageType + '^' + msh.triggerEvent;
+                log.error(prompt);
+                throw new IOException(prompt);
+            }
+            RSP rsp = new RSP(msg);
+            if (!"AA".equals(rsp.acknowledgmentCode)) {
+                log.error("PIX Query fails with code " + rsp.acknowledgmentCode
+                        + " - " + rsp.textMessage);
+                throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
+            }
+            return rsp.getPatientIDs();
+        } catch (Exception e) {
+            if (auditPIXQuery) {
+                auditPIXQuery(pixManager, patientID, issuer, qpd, e);
+            }
+            throw e;
+        }
+    }
+
+    private String makeQPD(String pixQueryName, String patientID, String issuer,
+            String[] domains) {
+        StringBuffer sb = new StringBuffer("QPD|");
+        sb.append(pixQueryName).append('|');
         sb.append((++queryTag)).append('|');
         sb.append(patientID).append("^^^").append(issuer);
         if (domains != null && domains.length > 0) {
@@ -475,28 +538,55 @@ public class HL7SendService extends ServiceMBeanSupport implements
                 // used in makeMSH
             }
         }
-        sb.append("\rRCP|I||||||");
-        String s = sb.toString();
-        log.info("Query PIX Manager " + pixManager + ":\n"
-                + s.replace('\r', '\n'));
-        final String charsetName = getCharsetName();
-        Document msg = invoke(s.getBytes(charsetName), pixManager);
-        log.info("PIX Query returns:");
-        logMessage(msg);
-        MSH msh = new MSH(msg);
-        if (!"RSP".equals(msh.messageType) || !"K23".equals(msh.triggerEvent)) {
-            String prompt = "Unsupport response message type: "
-                    + msh.messageType + '^' + msh.triggerEvent;
-            log.error(prompt);
-            throw new IOException(prompt);
+        return sb.toString();
+    }
+
+    private void auditPIXQuery(String pixManager, String patientID,
+            String issuer, String qpd, Exception e) {
+        try {
+            HttpServletRequest httprq = (HttpServletRequest)
+                    PolicyContext.getContext(WEB_REQUEST_KEY);
+            AEDTO pixManagerInfo= aeMgt().findByAET(pixManager);
+            QueryMessage msg = new QueryMessage();
+            ActiveParticipant source1 = ActiveParticipant.createActivePerson(
+                    httprq != null
+                            ? maskNull(httprq.getRemoteUser(), "UNKOWN_USER")
+                            : AuditMessage.getProcessName(),
+                    null, null, AuditMessage.getLocalHostName(), true);
+            source1.addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
+            msg.addActiveParticipant(source1);
+            ActiveParticipant source2 = ActiveParticipant.createActivePerson(
+                    sendingFacility + '|' + sendingApplication, null, null,
+                    AuditMessage.getLocalHostName(), false);
+            source2.addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
+            msg.addActiveParticipant(source2);
+            ActiveParticipant dest = ActiveParticipant.createActivePerson(
+                    pixManager.replace('^','|'), null, null,
+                    pixManagerInfo.getHostName(), false);
+            dest.addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION);
+            msg.addActiveParticipant(dest);
+            ParticipantObject queryObj = new ParticipantObject(
+                    patientID + "^^^" + issuer, PIX_QUERY);
+            queryObj.setParticipantObjectTypeCode(
+                    ParticipantObject.TypeCode.SYSTEM);
+            queryObj.setParticipantObjectTypeCodeRole(
+                    ParticipantObject.TypeCodeRole.QUERY);
+            queryObj.setParticipantObjectQuery(qpd.getBytes("UTF-8"));
+            msg.addParticipantObject(queryObj);
+            Logger auditlog = Logger.getLogger("auditlog");
+            if (e == null) {
+                auditlog.info(msg);
+            } else {
+                msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
+                auditlog.warn(msg);
+            }
+        } catch (Exception e2) {
+            log.warn("Failed to send Audit Log Used message", e2);
         }
-        RSP rsp = new RSP(msg);
-        if (!"AA".equals(rsp.acknowledgmentCode)) {
-            log.error("PIX Query fails with code " + rsp.acknowledgmentCode
-                    + " - " + rsp.textMessage);
-            throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
-        }
-        return rsp.getPatientIDs();
+    }
+
+    private static String maskNull(String val, String def) {
+        return val !=null && val.length() != 0 ? val : def;
     }
 
     private void logMessage(Document msg) {
