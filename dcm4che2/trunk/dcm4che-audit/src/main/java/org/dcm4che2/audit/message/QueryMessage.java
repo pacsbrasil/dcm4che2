@@ -132,7 +132,7 @@ public class QueryMessage extends AuditMessage {
                 source = ap;               
             } else if (roleIDCodeIDs.contains(
                 ActiveParticipant.RoleIDCode.DESTINATION)) {
-                if (source != null) {
+                if (dest != null) {
                     throw new IllegalStateException(
                             "Multiple Destination identification");
                 }
