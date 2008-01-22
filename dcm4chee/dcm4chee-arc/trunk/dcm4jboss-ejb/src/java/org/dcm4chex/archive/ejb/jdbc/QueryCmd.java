@@ -834,13 +834,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean noMatchForNoValue, Subject subject)
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             if (accessBlobAsLongVarBinary) {
-                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
                 defineColumnType(1, Types.LONGVARBINARY);
             }
             if (accessSeriesBlobAsLongVarBinary
                     && !lazyFetchSeriesAttrsOnImageLevelQuery) {
-                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                // has to also set binding of VARCHAR2 Series.seriesIuid to
+                // LONGVARBINARY, otherwise Oracle JDBC Driver v10.2.0.3.0
+                // throws java.sql.SQLException: Io exception: 
+                // Bigger type length than Maximum on access of column 3 
+                defineColumnType(2, Types.LONGVARBINARY);
+                
                 defineColumnType(3, Types.LONGVARBINARY);
                 defineColumnType(4, Types.LONGVARBINARY);
                 defineColumnType(5, Types.LONGVARBINARY);
