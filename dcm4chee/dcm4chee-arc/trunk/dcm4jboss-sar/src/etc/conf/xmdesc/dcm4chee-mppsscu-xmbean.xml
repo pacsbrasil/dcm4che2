@@ -27,7 +27,7 @@
         defines the forwarding destination (the other MPPS SCP) by its Called
         AE Title.
         <br><br>Syntax:
-        <br> rules = rule | 'NONE' (* 'NONE' = no forwarding *)
+        <br> rules = ( rule { newline  rule } | 'NONE' ) (* 'NONE' = no forwarding *)
         <br> rule = ['[' 'calling' ['!'] '=' from ']'] to
         <br> from = aet { '|'  aet } (* calling AE titles *)
         <br> to = aet { ',' aet } (* destination AE titles *)
