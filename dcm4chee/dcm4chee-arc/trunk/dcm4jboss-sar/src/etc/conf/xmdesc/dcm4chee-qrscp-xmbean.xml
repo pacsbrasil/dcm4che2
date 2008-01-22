@@ -740,7 +740,7 @@ QueryRetrieveScp service.</description>
       <name>LazyFetchSeriesAttrsOnImageLevelQuery</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -769,6 +769,22 @@ QueryRetrieveScp service.</description>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getQueryAccessSeriesBlobAsLongVarBinary"
+      setMethod="setQueryAccessSeriesBlobAsLongVarBinary">
+      <description>
+       Change JDBC binding for Oracle BLOB's to LONGVARBINARY for accessing
+       Patient, Study and Series attributes stored in BLOB columns of DB records
+       on query on IMAGE level. Only effective with Oracle as DB. Should only be
+       enabled with LazyFetchSeriesAttrsOnImageLevelQuery = true or
+       CacheSeriesAttrsOnImageLevelQuery = false.
+      </description>
+      <name>QueryAccessSeriesBlobAsLongVarBinary</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
