@@ -73,7 +73,7 @@ public class GPPPSQueryCmd extends BaseReadCmd {
      */
     public GPPPSQueryCmd(Dataset filter) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                    transactionIsolationLevel, accessBlobAsLongVarBinary);
+                    transactionIsolationLevel);
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(1, Types.LONGVARBINARY);
@@ -109,8 +109,8 @@ public class GPPPSQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1), ds);
-        DatasetUtils.fromByteArray( getBytes(2), ds);
+        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray( getBytes(2, accessBlobAsLongVarBinary), ds);
         return ds;
     }
     

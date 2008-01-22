@@ -466,9 +466,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return QueryCmd.accessBlobAsLongVarBinary;
     }
 
-    public final void setQueryAccessBlobAsLongVarBinary(
-            boolean accessBlobAsLongVarBinary) {
-        QueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    public final void setQueryAccessBlobAsLongVarBinary(boolean enable) {
+        QueryCmd.accessBlobAsLongVarBinary = enable;
+    }
+
+    public final boolean getQueryAccessSeriesBlobAsLongVarBinary() {
+        return QueryCmd.accessSeriesBlobAsLongVarBinary;
+    }
+
+    public final void setQueryAccessSeriesBlobAsLongVarBinary(boolean enable) {
+        QueryCmd.accessSeriesBlobAsLongVarBinary = enable;
     }
 
     public final boolean getRetrieveAccessBlobAsLongVarBinary() {

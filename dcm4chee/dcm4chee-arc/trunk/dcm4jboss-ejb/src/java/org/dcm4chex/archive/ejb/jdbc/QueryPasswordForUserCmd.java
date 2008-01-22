@@ -52,7 +52,7 @@ public final class QueryPasswordForUserCmd extends BaseReadCmd {
 	public static final int transactionIsolationLevel = 0;
 
 	public QueryPasswordForUserCmd(String dsJndiName) throws SQLException {
-		super(dsJndiName, transactionIsolationLevel, false,
+		super(dsJndiName, transactionIsolationLevel,
 				JdbcProperties.getInstance().getProperty("QueryPasswordForUserCmd"));
 	}
 

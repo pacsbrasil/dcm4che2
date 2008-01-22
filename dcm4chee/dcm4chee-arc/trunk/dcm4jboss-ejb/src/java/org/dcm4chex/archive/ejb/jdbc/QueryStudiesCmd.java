@@ -122,7 +122,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Subject subject)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, accessBlobAsLongVarBinary);
+                transactionIsolationLevel);
         checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(getTables());
@@ -237,9 +237,9 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
-                final byte[] patAttrs = getBytes(2);
+                final byte[] patAttrs = getBytes(2, accessBlobAsLongVarBinary);
                 long studyPk = rs.getLong(3);
-                final byte[] styAttrs = getBytes(4);
+                final byte[] styAttrs = getBytes(4, accessBlobAsLongVarBinary);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );

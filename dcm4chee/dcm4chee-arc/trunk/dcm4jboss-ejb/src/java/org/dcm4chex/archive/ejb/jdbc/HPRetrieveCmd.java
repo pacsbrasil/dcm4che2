@@ -66,7 +66,7 @@ public class HPRetrieveCmd extends BaseReadCmd {
 
     public HPRetrieveCmd(Dataset keys) throws SQLException {
 		super(JdbcProperties.getInstance().getDataSource(),
-		        transactionIsolationLevel, accessBlobAsLongVarBinary);
+		        transactionIsolationLevel);
                 if (accessBlobAsLongVarBinary) {
                     // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
                     defineColumnType(1, Types.LONGVARBINARY);
@@ -82,7 +82,7 @@ public class HPRetrieveCmd extends BaseReadCmd {
 		try {
 	        execute(sqlBuilder.getSql());
 			while (next()) {
-				result.add(DatasetUtils.fromByteArray(getBytes(1)));			
+				result.add(DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary)));			
 			}
 		} finally {
 			close();

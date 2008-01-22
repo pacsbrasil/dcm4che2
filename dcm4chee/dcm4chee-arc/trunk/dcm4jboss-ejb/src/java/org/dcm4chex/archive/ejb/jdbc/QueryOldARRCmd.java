@@ -61,8 +61,8 @@ public class QueryOldARRCmd extends BaseReadCmd {
 
     public QueryOldARRCmd(long skipUntilPk, int limit) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, false, JdbcProperties.getInstance()
-                        .getProperty("QueryOldARRCmd"));
+                transactionIsolationLevel,
+                JdbcProperties.getInstance().getProperty("QueryOldARRCmd"));
         int limitPos = Integer.parseInt(JdbcProperties.getInstance()
                 .getProperty("QueryOldARRCmdLimitPos"));
         PreparedStatement ps = ((PreparedStatement) stmt);

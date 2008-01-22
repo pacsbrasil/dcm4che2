@@ -79,7 +79,7 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
     public QueryPrivateStudiesCmd(Dataset filter, int privateType, boolean hideMissingStudies)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, accessBlobAsLongVarBinary);
+                transactionIsolationLevel);
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(3, Types.LONGVARBINARY);
@@ -158,9 +158,9 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
-                final byte[] patAttrs = getBytes(3);
+                final byte[] patAttrs = getBytes(3, accessBlobAsLongVarBinary);
                 long studyPk = rs.getLong(4);
-                final byte[] styAttrs = getBytes(5);
+                final byte[] styAttrs = getBytes(5, accessBlobAsLongVarBinary);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );

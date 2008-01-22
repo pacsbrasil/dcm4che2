@@ -51,32 +51,26 @@ import java.sql.SQLException;
  */
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
-    protected final boolean accessBlobAsLongVarBinary;
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            boolean accessBlobAsLongVarBinary, int resultSetType)
+            int resultSetType)
             throws SQLException {
         super(dsJndiName, transactionIsolationLevel, null, resultSetType);
-        this.accessBlobAsLongVarBinary = BaseCmd.defineColumnType != null
-                && accessBlobAsLongVarBinary;
     }
 
-    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            boolean accessBlobAsLongVarBinary) throws SQLException {
+    protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
+    throws SQLException {
         super(dsJndiName, transactionIsolationLevel, null);
-        this.accessBlobAsLongVarBinary = BaseCmd.defineColumnType != null
-            && accessBlobAsLongVarBinary;
     }
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            boolean accessBlobAsLongVarBinary, String sql) throws SQLException {
+            String sql) throws SQLException {
         super(dsJndiName, transactionIsolationLevel, sql);
-        this.accessBlobAsLongVarBinary = BaseCmd.defineColumnType != null
-            && accessBlobAsLongVarBinary;
     }
 
-    public byte[] getBytes(int column) throws SQLException {
-        if (!accessBlobAsLongVarBinary) {
+    public byte[] getBytes(int column, boolean accessBlobAsLongVarBinary)
+            throws SQLException {
+        if (BaseCmd.defineColumnType == null || !accessBlobAsLongVarBinary) {
             ResultSetMetaData meta = rs.getMetaData();
             if (meta != null && meta.getColumnType(column) == java.sql.Types.BLOB) {
                 Blob blob = rs.getBlob(column);

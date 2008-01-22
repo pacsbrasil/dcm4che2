@@ -90,8 +90,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
      * @throws SQLException
      */
     public MWLQueryCmd(Dataset keys) throws SQLException {
-        super(keys, true, false, transactionIsolationLevel,
-                accessBlobAsLongVarBinary);
+        super(keys, true, false, transactionIsolationLevel);
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(1, Types.LONGVARBINARY);
@@ -165,8 +164,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1), ds);
-        DatasetUtils.fromByteArray(getBytes(2), ds);
+        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), ds);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

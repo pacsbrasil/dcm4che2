@@ -91,7 +91,7 @@ public class RetrieveStudyDatesCmd extends BaseReadCmd {
 
     protected RetrieveStudyDatesCmd(String sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, false, ResultSet.TYPE_SCROLL_INSENSITIVE);
+                transactionIsolationLevel, ResultSet.TYPE_SCROLL_INSENSITIVE);
 		execute(sql);
     }
 

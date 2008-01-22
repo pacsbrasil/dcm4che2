@@ -175,7 +175,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
     protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, accessBlobAsLongVarBinary, sql.getSql());
+                transactionIsolationLevel, sql.getSql());
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(5, Types.LONGVARBINARY);
@@ -236,13 +236,27 @@ public class RetrieveCmd extends BaseReadCmd {
         ArrayList list;
         Object key;
         while (next()) {
-            FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3), rs
-                    .getString(4), getBytes(5), rs.getString(6), rs
-                    .getString(7), getBytes(8), getBytes(9), getBytes(10), rs
-                    .getString(11), rs.getString(12), rs.getString(13), rs
-                    .getString(14), rs.getInt(15), rs.getString(16), rs
-                    .getString(17), rs.getString(18), rs.getString(19), rs
-                    .getInt(20), rs.getInt(21));
+            FileInfo info = new FileInfo(
+                    rs.getLong(2),
+                    rs.getString(3),
+                    rs.getString(4),
+                    getBytes(5, accessBlobAsLongVarBinary),
+                    rs.getString(6),
+                    rs.getString(7),
+                    getBytes(8, accessBlobAsLongVarBinary),
+                    getBytes(9, accessBlobAsLongVarBinary),
+                    getBytes(10, accessBlobAsLongVarBinary),
+                    rs.getString(11),
+                    rs.getString(12),
+                    rs.getString(13),
+                    rs.getString(14),
+                    rs.getInt(15),
+                    rs.getString(16),
+                    rs.getString(17),
+                    rs.getString(18),
+                    rs.getString(19),
+                    rs.getInt(20),
+                    rs.getInt(21));
             key = key();
             list = (ArrayList) result.get(key);
             if (list == null) {

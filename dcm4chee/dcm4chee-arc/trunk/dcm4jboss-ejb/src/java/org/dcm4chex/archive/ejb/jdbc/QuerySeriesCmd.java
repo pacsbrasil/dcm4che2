@@ -55,11 +55,14 @@ import org.dcm4chex.archive.common.DatasetUtils;
  */
 class QuerySeriesCmd extends BaseReadCmd {
 
+    private boolean accessBlobAsLongVarBinary;
+
     public QuerySeriesCmd(int transactionIsolationLevel,
             boolean accessBlobAsLongVarBinary) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(), 
-                transactionIsolationLevel, accessBlobAsLongVarBinary,
+                transactionIsolationLevel,
                 JdbcProperties.getInstance().getProperty("QuerySeriesCmd"));
+        this.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(1, Types.LONGVARBINARY);
@@ -74,9 +77,9 @@ class QuerySeriesCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset dataset = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray(getBytes(1), dataset);
-        DatasetUtils.fromByteArray(getBytes(2), dataset);
-        DatasetUtils.fromByteArray(getBytes(3), dataset);
+        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), dataset);
+        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), dataset);
+        DatasetUtils.fromByteArray(getBytes(3, accessBlobAsLongVarBinary), dataset);
         dataset.putCS(Tags.ModalitiesInStudy,
                 StringUtils.split(rs.getString(4), '\\'));
         dataset.putCS(Tags.StudyStatusID, rs.getString(5));

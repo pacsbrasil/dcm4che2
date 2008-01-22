@@ -146,6 +146,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
     public static boolean accessBlobAsLongVarBinary = true;
+    public static boolean accessSeriesBlobAsLongVarBinary = false;
     public static boolean lazyFetchSeriesAttrsOnImageLevelQuery = false;
     public static boolean cacheSeriesAttrsOnImageLevelQuery = true;
 
@@ -219,8 +220,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected QueryCmd(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue, Subject subject) throws SQLException {
-        super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel,
-                accessBlobAsLongVarBinary);
+        super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
         this.subject = subject;
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -584,7 +584,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private void checkPatAttrs() throws SQLException {
         Dataset ds = dof.newDataset();
-        fillDataset(ds, 1);
+        fillDataset(ds, 1, accessBlobAsLongVarBinary);
         String key = getPatIdString(ds);
         if (chkPatAttrs == null) {
             chkPatAttrs = new HashMap();
@@ -651,8 +651,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected abstract void fillDataset(Dataset ds) throws SQLException;
 
-    protected void fillDataset(Dataset ds, int column) throws SQLException {
-        DatasetUtils.fromByteArray(getBytes(column), ds);
+    protected void fillDataset(Dataset ds, int column,
+            boolean accessBlobAsLongVarBinary) throws SQLException {
+        DatasetUtils.fromByteArray(getBytes(column, accessBlobAsLongVarBinary), ds);
     }
 
     static class PatientQueryCmd extends QueryCmd {
@@ -677,7 +678,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
 
@@ -736,8 +737,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
-            fillDataset(ds, 2);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 2, accessBlobAsLongVarBinary);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
                     '\\'));
             ds.putCS(Tags.StudyStatusID, rs.getString(4));
@@ -808,9 +809,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
-            fillDataset(ds, 2);
-            fillDataset(ds, 3);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 2, accessBlobAsLongVarBinary);
+            fillDataset(ds, 3, accessBlobAsLongVarBinary);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(4),
                     '\\'));
             ds.putCS(Tags.StudyStatusID, rs.getString(5));
@@ -835,14 +836,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super(keys, filterResult, noMatchForNoValue, subject);
             if (accessBlobAsLongVarBinary) {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                if (lazyFetchSeriesAttrsOnImageLevelQuery) {
-                    defineColumnType(1, Types.LONGVARBINARY);
-                } else {
-                    defineColumnType(1, Types.LONGVARBINARY);
-                    defineColumnType(2, Types.LONGVARBINARY);
-                    defineColumnType(3, Types.LONGVARBINARY);
-                    defineColumnType(4, Types.LONGVARBINARY);
-                }
+                defineColumnType(1, Types.LONGVARBINARY);
+            }
+            if (accessSeriesBlobAsLongVarBinary
+                    && !lazyFetchSeriesAttrsOnImageLevelQuery) {
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(3, Types.LONGVARBINARY);
+                defineColumnType(4, Types.LONGVARBINARY);
+                defineColumnType(5, Types.LONGVARBINARY);
             }
             addAdditionalReturnKeys();
         }
@@ -867,16 +868,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "Media.filesetId",
                             "Media.filesetIuid" }
                     : new String[] {
+                            "Instance.encodedAttributes",
+                            "Series.seriesIuid",
                             "Patient.encodedAttributes",
                             "Study.encodedAttributes",
                             "Series.encodedAttributes",
-                            "Instance.encodedAttributes",
                             "Study.modalitiesInStudy",
                             "Study.studyStatusId",
                             "Study.numberOfStudyRelatedSeries",
                             "Study.numberOfStudyRelatedInstances",
                             "Series.numberOfSeriesRelatedInstances",
-                            "Series.seriesIuid",
                             "Instance.retrieveAETs",
                             "Instance.externalRetrieveAET",
                             "Instance.availability",
@@ -927,7 +928,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         
         private void fillDatasetWithLazyFetchSeriesAttrs(Dataset ds)
                 throws SQLException {
-            fillDataset(ds, 1);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
             DatasetUtils.putRetrieveAET(ds, rs.getString(2), rs.getString(3));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(4)]);
             String seriesIuid = rs.getString(5);
@@ -937,7 +938,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             if (seriesAttrs == null) {
                 QuerySeriesCmd seriesQuery = new QuerySeriesCmd(
                         QueryCmd.transactionIsolationLevel,
-                        QueryCmd.accessBlobAsLongVarBinary);
+                        QueryCmd.accessSeriesBlobAsLongVarBinary);
                 seriesQuery.setSeriesIUID(seriesIuid);
                 seriesQuery.execute();
                 seriesQuery.next();
@@ -951,29 +952,29 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         
         private void fillDatasetWithEagerFetchSeriesAttrs(Dataset ds)
                 throws SQLException {
-            fillDataset(ds, 1);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
             if (cacheSeriesAttrsOnImageLevelQuery) {
-                String seriesIuid = rs.getString(10);
+                String seriesIuid = rs.getString(2);
                 Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
                 if (seriesAttrs == null) {
                     seriesAttrs = DcmObjectFactory.getInstance().newDataset();
-                    fillDataset(seriesAttrs, 2);
-                    fillDataset(seriesAttrs, 3);
-                    fillDataset(seriesAttrs, 4);
+                    fillDataset(seriesAttrs, 3, accessSeriesBlobAsLongVarBinary);
+                    fillDataset(seriesAttrs, 4, accessSeriesBlobAsLongVarBinary);
+                    fillDataset(seriesAttrs, 5, accessSeriesBlobAsLongVarBinary);
                     seriesAttrsCache.put(seriesIuid, seriesAttrs);
                 }
                 ds.putAll(seriesAttrs);
             } else {
-                fillDataset(ds, 2);
-                fillDataset(ds, 3);
-                fillDataset(ds, 4);
+                fillDataset(ds, 3, accessSeriesBlobAsLongVarBinary);
+                fillDataset(ds, 4, accessSeriesBlobAsLongVarBinary);
+                fillDataset(ds, 5, accessSeriesBlobAsLongVarBinary);
             }
             ds.putCS(Tags.ModalitiesInStudy,
-                    StringUtils.split(rs.getString(5), '\\'));
-            ds.putCS(Tags.StudyStatusID, rs.getString(6));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(7));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(8));
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(9));
+                    StringUtils.split(rs.getString(6), '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(7));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(8));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(9));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(10));
             DatasetUtils.putRetrieveAET(ds, rs.getString(11), rs.getString(12));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(13)]);
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(14));
