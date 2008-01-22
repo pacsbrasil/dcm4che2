@@ -23,7 +23,7 @@
       <name>SourceID</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="DCM4CHEE"/>
+         <value value="1.2.40.0.13.1.192.168.0.1.111.200711202.101"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" 
