@@ -26,14 +26,14 @@
         The comma separated list of AE titles after the (optional) condition 
         defines the forwarding destination (the other MPPS SCP) by its Called
         AE Title.
-      <br>Format:
-      <br>[calling[!]=<i>aeTitleFrom</i>]<i>aeTitleTo</i> | NONE 
-      <br>where
-      <br><i>aeTitleFrom</i> = the calling AE titles separated by '|' (pipe)
-      <br><i>aeTitleTo</i> = the AE titles that objects are forwarded to, in a comma-separated list
-      <br>NONE = do not use any forwarding rules.
-      <br><br>Example: [calling!=SCU1]SCP2
-      <br>Forwards received MPPS to SCU2, except MPPS received from SCU1]]>
+        <br><br>Syntax:
+        <br> rules = rule | 'NONE' (* 'NONE' = no forwarding *)
+        <br> rule = ['[' 'calling' ['!'] '=' from ']'] to
+        <br> from = aet { '|'  aet } (* calling AE titles *)
+        <br> to = aet { ',' aet } (* destination AE titles *)
+        <br><br>Example: [calling!=ORDER_FILLER]ORDER_FILLER
+        <br>=> Forwards received MPPS to ORDER_FILLER, except MPPS received
+        from ORDER_FILLER]]>
       </description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
