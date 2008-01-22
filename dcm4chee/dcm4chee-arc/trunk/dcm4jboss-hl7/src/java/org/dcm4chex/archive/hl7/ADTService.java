@@ -79,7 +79,7 @@ public class ADTService extends AbstractHL7Service {
     private String pidXslPath;
 
     private String mrgXslPath;
-    
+
     private String pixUpdateNotificationMessageType;
 
     private List issuersOfOnlyOtherPatientIDs;
@@ -88,16 +88,14 @@ public class ADTService extends AbstractHL7Service {
     private boolean handleEmptyMrgAsUpdate;
 
     public final String getPixUpdateNotificationMessageType() {
-		return pixUpdateNotificationMessageType;
-	}
+        return pixUpdateNotificationMessageType;
+    }
 
+    public final void setPixUpdateNotificationMessageType(String messageType) {
+        this.pixUpdateNotificationMessageType = messageType;
+    }
 
-	public final void setPixUpdateNotificationMessageType(String messageType) {
-		this.pixUpdateNotificationMessageType = messageType;
-	}
-
-
-	public final String getIssuersOfOnlyOtherPatientIDs() {
+    public final String getIssuersOfOnlyOtherPatientIDs() {
         if (issuersOfOnlyOtherPatientIDs == null
                 || issuersOfOnlyOtherPatientIDs.isEmpty()) {
             return "-";
@@ -110,7 +108,6 @@ public class ADTService extends AbstractHL7Service {
         return sb.toString();
     }
 
-
     public final void setIssuersOfOnlyOtherPatientIDs(String s) {
         if (s.trim().equals("-")) {
             issuersOfOnlyOtherPatientIDs = null;
@@ -122,7 +119,7 @@ public class ADTService extends AbstractHL7Service {
             }
         }
     }
-    
+
     public final String getMrgStylesheet() {
         return mrgXslPath;
     }
@@ -130,7 +127,6 @@ public class ADTService extends AbstractHL7Service {
     public void setMrgStylesheet(String path) {
         this.mrgXslPath = path;
     }
-
 
     public final String getPidStylesheet() {
         return pidXslPath;
@@ -146,13 +142,15 @@ public class ADTService extends AbstractHL7Service {
     public boolean isIgnoreDeleteErrors() {
         return ignoreDeleteErrors;
     }
+
     /**
-     * @param ignoreNotFound The ignoreNotFound to set.
+     * @param ignoreNotFound
+     *                The ignoreNotFound to set.
      */
     public void setIgnoreDeleteErrors(boolean ignore) {
         this.ignoreDeleteErrors = ignore;
     }
-	
+
     public boolean isHandleEmptyMrgAsUpdate() {
         return handleEmptyMrgAsUpdate;
     }
@@ -161,61 +159,63 @@ public class ADTService extends AbstractHL7Service {
         this.handleEmptyMrgAsUpdate = handleEmptyMrgAsUpdate;
     }
 
-
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         try {
-        	if (isUpdateNotificationMessage(msh, msg)) {
-        		return processUpdateNotificationMessage(msg);
-        	}
-        	Dataset pat = DcmObjectFactory.getInstance().newDataset();
+            if (isUpdateNotificationMessage(msh, msg)) {
+                return processUpdateNotificationMessage(msg);
+            }
+            Dataset pat = DcmObjectFactory.getInstance().newDataset();
             File pidXslFile = FileUtils.toExistingFile(pidXslPath);
             Transformer t = templates.getTemplates(pidXslFile).newTransformer();
             t.transform(new DocumentSource(msg), new SAXResult(pat
                     .getSAXHandler2(null)));
-			String pid = pat.getString(Tags.PatientID);
-			if (pid == null || pid.trim().length() == 0)
-				throw new HL7Exception("AR", 
-						"Missing required PID-3: Patient ID (Internal ID)");
-            
-			final String pname = pat.getString(Tags.PatientName);
-			if (pname == null || pname.trim().length() == 0)
-				throw new HL7Exception("AR", 
-						"Missing required PID-5: Patient Name");
+            String pid = pat.getString(Tags.PatientID);
+            if (pid == null || pid.trim().length() == 0)
+                throw new HL7Exception("AR",
+                        "Missing required PID-3: Patient ID (Internal ID)");
+
+            final String pname = pat.getString(Tags.PatientName);
+            if (pname == null || pname.trim().length() == 0)
+                throw new HL7Exception("AR",
+                        "Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
             if (isMerge(msg)) {
                 Dataset mrg = DcmObjectFactory.getInstance().newDataset();
                 File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
-                Transformer t2 = templates.getTemplates(mrgXslFile).newTransformer();
+                Transformer t2 = templates.getTemplates(mrgXslFile)
+                        .newTransformer();
                 t2.transform(new DocumentSource(msg), new SAXResult(mrg
                         .getSAXHandler2(null)));
-		final String opid = mrg.getString(Tags.PatientID);
-		if (opid != null && opid.trim().length() > 0) {
-		    final String opname = mrg.getString(Tags.PatientName);
-	            log.info("Merge Patient " + opname + ", PID:" + opid
-	                     + " with "+ pname + ", PID:" + pid);
-	            update.mergePatient(pat, mrg);
-	            return true;
-		} else if ( !this.handleEmptyMrgAsUpdate ) {
-		    throw new HL7Exception("AR", "Missing required MRG-1: Prior Patient ID - Internal");
-		} 
-            }  
-            if ( isDelete(msh) ) {
-            	log.info("Delete Patient "+pat.getString( Tags.PatientName )
-						+ ", PID:"+pat.getString( Tags.PatientID ));
-            	try {
-            		update.deletePatient(pat);
-            	} catch ( Exception x ) {
-            		if ( ! ignoreDeleteErrors ) {
-            			throw x;
-            		}
-            	}
-            } else if ( isArrived(msh)) {
-                log.info("Set MWL entries for Patient " + pname + ", PID:" + pid + " to arrived");
+                final String opid = mrg.getString(Tags.PatientID);
+                if (opid != null && opid.trim().length() > 0) {
+                    final String opname = mrg.getString(Tags.PatientName);
+                    log.info("Merge Patient " + opname + ", PID:" + opid
+                            + " with " + pname + ", PID:" + pid);
+                    update.mergePatient(pat, mrg);
+                    return true;
+                } else if (!this.handleEmptyMrgAsUpdate) {
+                    throw new HL7Exception("AR",
+                            "Missing required MRG-1: Prior Patient ID - Internal");
+                }
+            }
+            if (isDelete(msh)) {
+                log.info("Delete Patient " + pat.getString(Tags.PatientName)
+                        + ", PID:" + pat.getString(Tags.PatientID));
+                try {
+                    update.deletePatient(pat);
+                } catch (Exception x) {
+                    if (!ignoreDeleteErrors) {
+                        throw x;
+                    }
+                }
+            } else if (isArrived(msh)) {
+                log.info("Set MWL entries for Patient " + pname + ", PID:"
+                        + pid + " to arrived");
                 update.patientArrived(pat);
             } else {
                 log.info("Update Patient Info of " + pname + ", PID:" + pid);
-                update.updatePatient(pat);					
+                update.updatePatient(pat);
             }
         } catch (HL7Exception e) {
             throw e;
@@ -227,59 +227,58 @@ public class ADTService extends AbstractHL7Service {
         return true;
     }
 
+    private boolean isUpdateNotificationMessage(MSH msh, Document msg) {
+        return pixUpdateNotificationMessageType.equals(msh.messageType + '^'
+                + msh.triggerEvent)
+                && !containsPatientName(msg);
+    }
 
-	private boolean isUpdateNotificationMessage(MSH msh, Document msg) {
-        return pixUpdateNotificationMessageType.equals(
-        		msh.messageType + '^' + msh.triggerEvent)
-        		&& !containsPatientName(msg);     
-	}
+    private boolean containsPatientName(Document msg) {
+        Element pidSegm = msg.getRootElement().element("PID");
+        if (pidSegm == null) {
+            return false;
+        }
+        List pidfds = pidSegm.elements(HL7XMLLiterate.TAG_FIELD);
+        if (pidfds.size() < 5) {
+            return false;
+        }
+        String pname = ((Element) pidfds.get(4)).getTextTrim();
+        return (pname != null && pname.length() > 0);
+    }
 
-	private boolean containsPatientName(Document msg) {
-		Element pidSegm = msg.getRootElement().element("PID");
-		if (pidSegm == null) {
-			return false;        	
-		}
-		List pidfds = pidSegm.elements(HL7XMLLiterate.TAG_FIELD);
-		if (pidfds.size() < 5) {
-			return false;        	
-		}
-		String pname = ((Element) pidfds.get(4)).getTextTrim();
-		return (pname != null && pname.length() > 0);
-	}
+    private boolean processUpdateNotificationMessage(Document msg)
+            throws Exception {
+        List pids;
+        try {
+            pids = new PID(msg).getPatientIDs();
+        } catch (IllegalArgumentException e) {
+            throw new HL7Exception("AR", e.getMessage());
+        }
+        PatientUpdateHome patUpdate = getPatientUpdateHome();
+        for (int i = 0, n = pids.size(); i < n; ++i) {
+            String[] pid = (String[]) pids.get(i);
+            if (!issuersOfOnlyOtherPatientIDs.contains(pid[ISSUER])) {
+                Dataset ds = toDataset(pid);
+                DcmElement opids = ds.putSQ(Tags.OtherPatientIDSeq);
+                for (int j = 0, m = pids.size(); j < m; ++j) {
+                    String[] opid = (String[]) pids.get(j);
+                    if (opid != pid) {
+                        opids.addItem(toDataset(opid));
+                    }
+                }
+                patUpdate.create().updateOtherPatientIDsOrCreate(ds);
+            }
+        }
+        return true;
+    }
 
-	private boolean processUpdateNotificationMessage(Document msg)
-			throws Exception {
-		List pids;
-		try {
-			pids = new PID(msg).getPatientIDs();
-		} catch (IllegalArgumentException e) {
-			throw new HL7Exception("AR", e.getMessage());
-		}
-		PatientUpdateHome patUpdate = getPatientUpdateHome();
-		for (int i = 0, n = pids.size(); i < n; ++i) {
-			String[] pid = (String[]) pids.get(i);
-			if (!issuersOfOnlyOtherPatientIDs.contains(pid[ISSUER])) {
-				Dataset ds = toDataset(pid);
-				DcmElement opids = ds.putSQ(Tags.OtherPatientIDSeq);
-				for (int j = 0, m = pids.size(); j < m; ++j) {
-					String[] opid = (String[]) pids.get(j);
-					if (opid != pid) {
-						opids.addItem(toDataset(opid));
-					}
-				}
-				patUpdate.create().updateOtherPatientIDsOrCreate(ds);
-			}
-		}
-		return true;
-	}
-	
     private Dataset toDataset(String[] pid) {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         ds.putLO(Tags.PatientID, pid[ID]);
         ds.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
         return ds;
-    } 
-	
+    }
+
     private boolean isArrived(MSH msh) {
         return "A10".equals(msh.triggerEvent);
     }
