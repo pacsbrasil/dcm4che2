@@ -263,7 +263,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 			if (nextDot < 0)
 			   nextDot = key.length();
 			String newChildName = key.substring(pathLen + 1, nextDot);
-			if (newChildName.isEmpty()) {
+			if (newChildName.equals("") ) {
 			   log.warn("Child meta-data name is empty:" + key);
 			   continue;
 			}
