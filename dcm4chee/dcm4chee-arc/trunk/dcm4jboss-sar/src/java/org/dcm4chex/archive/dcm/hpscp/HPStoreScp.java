@@ -159,7 +159,7 @@ public class HPStoreScp extends DcmServiceBase {
 			}
 		}
 		DcmElement dssq = hp.get(Tags.DisplaySetsSeq);
-		for (int i = 0, n = issq.countItems(); i < n; i++) {
+		for (int i = 0, n = dssq.countItems(); i < n; i++) {
 			Dataset ds = dssq.getItem(i);
 			checkType1Attrs(ds, TYPE1_DISPLAYSET_ATTR,
 					"Missing Type 1 Attribute (0072,0200)/");
