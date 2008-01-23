@@ -80,12 +80,43 @@ public class ADTService extends AbstractHL7Service {
 
     private String mrgXslPath;
 
+    private String patientArrivingMessageType;
+
+    private String patientMergeMessageType;
+
+    private String deletePatientMessageType;
+
     private String pixUpdateNotificationMessageType;
 
     private List issuersOfOnlyOtherPatientIDs;
 
     private boolean ignoreDeleteErrors;
     private boolean handleEmptyMrgAsUpdate;
+
+    public final String getPatientArrivingMessageType() {
+        return patientArrivingMessageType;
+    }
+
+    public final void setPatientArrivingMessageType(
+            String patientArrivingMessageType) {
+        this.patientArrivingMessageType = patientArrivingMessageType;
+    }
+
+    public final String getPatientMergeMessageType() {
+        return patientMergeMessageType;
+    }
+
+    public final void setPatientMergeMessageType(String patientMergeMessageType) {
+        this.patientMergeMessageType = patientMergeMessageType;
+    }
+
+    public final String getDeletePatientMessageType() {
+        return deletePatientMessageType;
+    }
+
+    public final void setDeletePatientMessageType(String deletePatientMessageType) {
+        this.deletePatientMessageType = deletePatientMessageType;
+    }
 
     public final String getPixUpdateNotificationMessageType() {
         return pixUpdateNotificationMessageType;
@@ -162,7 +193,9 @@ public class ADTService extends AbstractHL7Service {
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         try {
-            if (isUpdateNotificationMessage(msh, msg)) {
+            String msgtype = msh.messageType + '^' + msh.triggerEvent;
+            if (pixUpdateNotificationMessageType.equals(msgtype)
+                    && !containsPatientName(msg)) {
                 return processUpdateNotificationMessage(msg);
             }
             Dataset pat = DcmObjectFactory.getInstance().newDataset();
@@ -180,7 +213,7 @@ public class ADTService extends AbstractHL7Service {
                 throw new HL7Exception("AR",
                         "Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
-            if (isMerge(msg)) {
+            if (patientMergeMessageType.equals(msgtype)) {
                 Dataset mrg = DcmObjectFactory.getInstance().newDataset();
                 File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
                 Transformer t2 = templates.getTemplates(mrgXslFile)
@@ -199,7 +232,7 @@ public class ADTService extends AbstractHL7Service {
                             "Missing required MRG-1: Prior Patient ID - Internal");
                 }
             }
-            if (isDelete(msh)) {
+            if (deletePatientMessageType.equals(msgtype)) {
                 log.info("Delete Patient " + pat.getString(Tags.PatientName)
                         + ", PID:" + pat.getString(Tags.PatientID));
                 try {
@@ -209,7 +242,7 @@ public class ADTService extends AbstractHL7Service {
                         throw x;
                     }
                 }
-            } else if (isArrived(msh)) {
+            } else if (patientArrivingMessageType.equals(msgtype)) {
                 log.info("Set MWL entries for Patient " + pname + ", PID:"
                         + pid + " to arrived");
                 update.patientArrived(pat);
@@ -225,12 +258,6 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
-    }
-
-    private boolean isUpdateNotificationMessage(MSH msh, Document msg) {
-        return pixUpdateNotificationMessageType.equals(msh.messageType + '^'
-                + msh.triggerEvent)
-                && !containsPatientName(msg);
     }
 
     private boolean containsPatientName(Document msg) {
@@ -277,18 +304,6 @@ public class ADTService extends AbstractHL7Service {
         ds.putLO(Tags.PatientID, pid[ID]);
         ds.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
         return ds;
-    }
-
-    private boolean isArrived(MSH msh) {
-        return "A10".equals(msh.triggerEvent);
-    }
-
-    private boolean isMerge(Document msg) {
-        return msg.getRootElement().element("MRG") != null;
-    }
-
-    private boolean isDelete(MSH msh) {
-        return "A23".equals(msh.triggerEvent);
     }
 
     private PatientUpdateHome getPatientUpdateHome()

@@ -35,7 +35,53 @@
       <name>MessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A10,ADT^A23,ADT^A28,ADT^A31,ADT^A34,ADT^A40" />
+         <value value="ADT^A01,ADT^A04,ADT^A05,ADT^A08,ADT^A10,ADT^A23,ADT^A28,ADT^A31,ADT^A34,ADT^A40,ADT^A47" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPatientArrivingMessageType"
+      setMethod="setPatientArrivingMessageType">
+      <description><![CDATA[Message Type for Patient Arriving.
+       Messages of this type will cause to change the status of Scheduled
+       Procedure Steps for this patient in the modality worklist from SCHEDULED
+       to ARRIVED<br/>
+       The message type must be also listed in configured <i>MessageTypes</i>
+       handled by this service.]]>
+      </description>
+      <name>PatientArrivingMessageType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ADT^A10" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDeletePatientMessageType"
+      setMethod="setDeletePatientMessageType">
+      <description><![CDATA[Message Type for deletion of a Patient record.
+       Messages of this type will cause to delete a Patient, which all
+       associated entities, in particular including his/her studies, from the
+       system.<br/>
+       The message type must be also listed in configured <i>MessageTypes</i>
+       handled by this service.]]>
+      </description>
+      <name>DeletePatientMessageType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ADT^A23" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPatientMergeMessageType"
+      setMethod="setPatientMergeMessageType">
+      <description><![CDATA[Message Type for merge of two Patients.
+       Messages of this type will cause to merge two Patients.<br/>
+       The message type must be also listed in configured <i>MessageTypes</i>
+       handled by this service.]]>
+      </description>
+      <name>PatientMergeMessageType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ADT^A40" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
