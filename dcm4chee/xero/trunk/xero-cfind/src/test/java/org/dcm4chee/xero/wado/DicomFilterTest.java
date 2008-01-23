@@ -35,7 +35,9 @@ public class DicomFilterTest {
 	public void koHeaderReadTest() throws IOException {
 		Object dobj = callFilter("wado", "org/dcm4chee/xero/wado/ko_513_mr.dcm");
 		assert dobj != null;
-		DicomObject dicom = ((DicomStreamMetaData) ((ImageReader) dobj).getStreamMetadata()).getDicomObject();
+		assert dobj instanceof ImageReader;
+		ImageReader ir = (ImageReader) dobj;
+		DicomObject dicom = ((DicomStreamMetaData) ir.getStreamMetadata()).getDicomObject();
 		assert dicom.contains(Tag.PixelData) == false;
 		assert dicom.getString(Tag.Modality).equals("KO");
 		String refUid = dicom.getString(new int[] {
