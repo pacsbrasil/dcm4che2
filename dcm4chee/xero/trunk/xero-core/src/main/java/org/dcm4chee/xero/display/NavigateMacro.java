@@ -55,7 +55,7 @@ public class NavigateMacro implements Macro {
    
    /** Setup an object to navigate to the given start position. */
    public NavigateMacro(String viewStart) {
-	  if( viewStart==null || viewStart.isEmpty()) throw new IllegalArgumentException("Navigate must be provided with a start position.");
+	  if( viewStart==null || viewStart.equals("")) throw new IllegalArgumentException("Navigate must be provided with a start position.");
 	  this.viewStart = viewStart;
    }
 

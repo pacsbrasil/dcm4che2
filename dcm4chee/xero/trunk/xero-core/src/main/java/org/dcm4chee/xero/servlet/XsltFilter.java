@@ -296,7 +296,7 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
 			continue;
 		 String key = arg.substring(0, keyEnd);
 		 String value = arg.substring(keyEnd + 1);
-		 if (value.isEmpty())
+		 if (value.equals(""))
 			continue;
 		 value = value.replace("%2F", "/");
 		 String[] vals = parameterMap.get(key);

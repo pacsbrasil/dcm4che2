@@ -101,7 +101,7 @@ public class MaxAgeFilter implements Filter {
 	  }
 	  String sPrivacy = config.getInitParameter("privacy");
 	  if (sPrivacy != null) {
-		 if (sPrivacy.isEmpty()) {
+		 if (sPrivacy.equals("")) {
 			privacy = "";
 		 } else {
 			privacy = ", " + sPrivacy;
