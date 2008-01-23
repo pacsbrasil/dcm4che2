@@ -12,14 +12,15 @@
  * License.
  *
  * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
- * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2006
+ * Agfa-Gevaert Group.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,58 +36,37 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4cheri.image;
+package org.dcm4che.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Properties;
-
-import org.dcm4che.util.SystemUtils;
+import org.apache.log4j.Logger;
 
 /**
- * @author Gunter Zeilinger<gunterze@gmail.com>
- * @version $Id
- * @since Jun 26, 2006
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Jan 23, 2008
  */
-class ConfigurationUtils {
+public class SystemUtils {
 
-    public static void loadPropertiesForClass(Properties map, Class c) {
-        String key = c.getName();
-        String val = SystemUtils.getSystemProperty(key, null);
-        URL url;
-        if (val == null) {
-            val = key.replace('.','/') + ".properties";
-            url = getResource(c, val);
-        } else {
-            try {
-                url = new URL(val);
-            } catch (MalformedURLException e) {
-                url = getResource(c, val);
-            }
-        }
+    private static final Logger LOG = Logger.getLogger(SystemUtils.class);
+
+    /**
+     * Very similar to <code>System.getProperty</code> except that the
+     * {@link SecurityException} is hidden.
+     * 
+     * @param key
+     *                The key to search for.
+     * @param def
+     *                The default value to return.
+     * @return the string value of the system property, or the default value if
+     *         there is no property with that key.
+     */
+    public static String getSystemProperty(String key, String def) {
         try {
-            InputStream is = url.openStream();
-            try {
-                map.load(is);
-            } finally {
-                is.close();
-            }
-        } catch (IOException e) {
-            throw new ConfigurationException("failed not load resource:", e); 
+            return System.getProperty(key, def);
+        } catch (Throwable e) {
+            LOG.debug("Was not allowed to read system property \"" + key
+                    + "\".");
+            return def;
         }
     }
-
-	private static URL getResource(Class c, String val) {
-		URL url;
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		if (cl == null || (url = cl.getResource(val)) == null) {
-			if ((url = c.getClassLoader().getResource(val)) == null) {
-				throw new ConfigurationException("missing resource: " + val);
-			}
-		}
-		return url;
-	}
-
 }

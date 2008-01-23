@@ -47,6 +47,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.or.ObjectRenderer;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.util.SystemUtils;
 
 /**
  * @author franz.willer
@@ -81,7 +82,7 @@ public class DatasetRenderer implements ObjectRenderer {
 	 *
 	 */
 	static {
-		String cfg = System.getProperty("DatasetRenderer.dumpParam", "128,64,\t,128");
+		String cfg = SystemUtils.getSystemProperty("DatasetRenderer.dumpParam", "128,64,\t,128");
 		StringTokenizer st = new StringTokenizer( cfg, ",");
 		if ( st.hasMoreTokens() ) dumpParam.put("maxlen", Integer.valueOf( st.nextToken() ));
 		if ( st.hasMoreTokens() ) dumpParam.put("vallen", Integer.valueOf( st.nextToken() ));
