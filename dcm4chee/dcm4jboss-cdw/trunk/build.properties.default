@@ -2,11 +2,11 @@
 javac.debug=on
 javac.deprecation=off
 javac.optimize=on
-javac.source=1.4
-javac.target=1.4
+javac.source=1.5
+javac.target=1.5
 
-#Override with your dcm4che dist location
-dcm4che.home=../dcm4che14
+#Override with your dcm4che-1.4.x dist location
+dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.15
 
 #Override with your JBoss dist location
 jboss.home=${user.home}/jboss-4.2.2.GA

@@ -19,9 +19,9 @@
     <!-- Override with your FOP dist location -->
     <property name="fop.home" value="${user.home}/fop-0.20.5"/>
 
-    <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="../dcm4che14"/>		
-	<property name="dcm4che.jar" value="${dcm4che.home}/build/lib/dcm4che.jar"/>		
+    <!-- Override with your dcm4che-1.4.x dist location -->
+	<property name="dcm4che14.home" value="${user.home}/dcm4che14/build/dcm4che-1.4.15"/>
+	<property name="dcm4che.jar" value="${dcm4che14.home}/lib/dcm4che.jar"/>
 
     <property name="src.dir" value="${basedir}/src/java"/>
     <property name="src.resources" value="${basedir}/src/resources"/>
@@ -118,15 +118,15 @@
     <property name="dist.db" value="dcm4chee-cdw-${version}"/>
     <property name="dist.db.config" value="${dist.db}/server/default"/>
     <zip destfile="${target.dir}/${dist.db}.zip">
-      <zipfileset dir="${dcm4che.home}/build" prefix="${dist.db.config}">
+      <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
         <include name="lib/dcm4che.jar"/>
       </zipfileset>
-      <zipfileset dir="${dcm4che.home}" prefix="${dist.db.config}">
+      <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
         <include name="lib/dcm4che-imageio-rle-2.0.12.jar"/>
         <include name="lib/jai_imageio.jar"/>
         <include name="lib/clibwrapper_jiio.jar"/>
       </zipfileset>
-      <zipfileset dir="${dcm4che.home}" prefix="${dist.db}/bin/native">
+      <zipfileset dir="${dcm4che14.home}" prefix="${dist.db}/bin/native">
         <include name="bin/libclib_jiio.so"/>
         <include name="bin/clib_jiio*.dll"/>
       </zipfileset>

@@ -1,11 +1,6 @@
-BUILD INSTRUCTIONS FOR DCM4CHEE MEDIA CREATOR:
-=============================================
+BUILD INSTRUCTIONS FOR DCM4CHEE MEDIA CREATOR (DCM4CHEE-CDW):
+===========================================================
 
-The source code of the dcm4chee Media Creator is included in sub-directory
-dcm4jboss-all/dcm4jboss-cdw of the source package dcm4chee-2.13.0-src.zip of
-the dcm4chee Archive application, available at 
-http://sourceforge.net/projects/dcm4che .
- 
 In order to build dcm4chee Media Creator application you also have to download
 and install:
 
@@ -15,12 +10,22 @@ and install:
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
 
+dcm4chee-cdw-2.13.1 also relies on
+
+- dcm4che-1.4.15 : dcm4che DICOM Library
+
+which binary and source distribution package is also available at
+http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
+build dcm4chee-cdw. If you download the source package, you have to build
+all components of dcm4che-1.4.15 (ant release) before building dcm4chee-cdw.
+
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
 
 The build script (dcm4jboss-all/dcm4jboss-cdw/build.xml) assumes following
-locations of JBoss and Apache FOP:
+locations of dcm4che-1.4.15, JBoss and Apache FOP:
 
+dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.15
 jboss.home=${user.home}/jboss-4.2.2.GA
 fop.home=${user.home}/fop-0.20.5
 
