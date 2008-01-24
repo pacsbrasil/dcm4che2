@@ -122,6 +122,9 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void changePatientIdentifierList(Dataset correct, Dataset prior)
             throws CreateException, FinderException,
                     PatientAlreadyExistsException {
+        LOG.info("Change PID for " + correct.getString(Tags.PatientName)
+                + " from " + prior.getString(Tags.PatientID)
+                + " to " + correct.getString(Tags.PatientID));
         try {
             patHome.searchFor(correct, false);
             String prompt = "Patient with PID "
@@ -130,7 +133,7 @@ public abstract class PatientUpdateBean implements SessionBean {
                 + " already exists";
             LOG.warn(prompt);
             throw new PatientAlreadyExistsException(prompt);
-         } catch (ObjectNotFoundException e) {}
+        } catch (ObjectNotFoundException e) {}
         PatientLocal correctPat = patHome.create(correct);
         PatientLocal priorPat= updateOrCreate(prior);
         merge(correctPat, priorPat);
@@ -141,6 +144,10 @@ public abstract class PatientUpdateBean implements SessionBean {
      */
     public void mergePatient(Dataset dominant, Dataset prior)
             throws CreateException, FinderException {
+        LOG.info("Merge " + prior.getString(Tags.PatientName)
+                + " with PID " + prior.getString(Tags.PatientID)
+                + " to " + dominant.getString(Tags.PatientName)
+                + " with PID " + dominant.getString(Tags.PatientID));
         PatientLocal dominantPat = updateOrCreate(dominant);
         PatientLocal priorPat= updateOrCreate(prior);
         merge(dominantPat, priorPat);
@@ -189,6 +196,8 @@ public abstract class PatientUpdateBean implements SessionBean {
      */
     public void updatePatient(Dataset attrs)
             throws CreateException, FinderException {
+        LOG.info("Update " + attrs.getString(Tags.PatientName)
+                + " with PID " + attrs.getString(Tags.PatientID));
         updateOrCreate(attrs);
     }
 
@@ -208,6 +217,8 @@ public abstract class PatientUpdateBean implements SessionBean {
      */
     public boolean deletePatient(Dataset ds)
             throws RemoveException, FinderException {
+        LOG.info("Delete " + ds.getString(Tags.PatientName)
+                + " with PID " + ds.getString(Tags.PatientID));
         try {
             patHome.searchFor(ds, false).remove();
             return true;
@@ -220,6 +231,8 @@ public abstract class PatientUpdateBean implements SessionBean {
      * @ejb.interface-method
      */
     public void patientArrived(Dataset ds) throws FinderException {
+        LOG.info("Change status of SPS for " + ds.getString(Tags.PatientName)
+                + " with PID " + ds.getString(Tags.PatientID) + " to ARRIVED");
         try {
             PatientLocal pat = patHome.searchFor(ds, false);
             Collection c = pat.getMwlItems();

@@ -39,12 +39,19 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.io.File;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.util.FileUtils;
+import org.dom4j.Document;
+import org.dom4j.io.DocumentSource;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -102,6 +109,15 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
             log.error("Failed to register HL7 service", e);
             throw new RuntimeException("Failed to register HL7 service", e);
         }
+    }
+
+    protected Dataset xslt(Document msg, String xslPath) throws Exception {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        File pidXslFile = FileUtils.toExistingFile(xslPath);
+        Transformer t = templates.getTemplates(pidXslFile).newTransformer();
+        t.transform(new DocumentSource(msg), new SAXResult(ds
+                .getSAXHandler2(null)));
+        return ds;
     }
 
     protected void startService() throws Exception {

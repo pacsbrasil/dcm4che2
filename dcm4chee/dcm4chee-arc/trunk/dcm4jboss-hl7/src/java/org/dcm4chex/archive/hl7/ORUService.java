@@ -39,14 +39,10 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.io.File;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -54,10 +50,8 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.DocumentSource;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -106,28 +100,25 @@ public class ORUService extends ORU_MDMService
     }
     
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
-    throws HL7Exception
-    {
+    throws HL7Exception {
         String status = getOBXStatus(msg);
         if ( obxIgnoreStati.contains(status) ) {
             log.info("Ignore ORU message with OBX status='"+status+"'! MSH:"+msh);
-            return true;
+        } else {
+            process(msg);
         }
-        try
-        {
-            Dataset doc = DcmObjectFactory.getInstance().newDataset();
-            File xslFile = FileUtils.toExistingFile(xslPath);
-            Transformer t = templates.getTemplates(xslFile).newTransformer();
-            t.transform(new DocumentSource(msg), new SAXResult(
-                    doc.getSAXHandler2(null)));
+        return true;
+    }
+
+    public void process(Document msg) throws HL7Exception {
+        try {
+            Dataset doc = xslt(msg, xslPath);
+            DcmObjectFactory.getInstance().newDataset();
             addIUIDs(doc);
             storeSR(doc);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
-        }      
-        return true;
+        }
     }
 
     private String getOBXStatus(Document msg) {

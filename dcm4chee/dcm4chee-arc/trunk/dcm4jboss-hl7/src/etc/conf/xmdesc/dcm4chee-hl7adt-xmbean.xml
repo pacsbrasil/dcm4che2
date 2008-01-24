@@ -201,5 +201,23 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Update Patient Information</description>
+      <name>updatePatient</name>
+      <parameter>
+        <name>msg</name>
+        <type>org.dom4j.Document</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
+   <operation impact="ACTION">
+      <description>Merge two Patient Records</description>
+      <name>mergePatient</name>
+      <parameter>
+        <name>msg</name>
+        <type>org.dom4j.Document</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
 </mbean>
     

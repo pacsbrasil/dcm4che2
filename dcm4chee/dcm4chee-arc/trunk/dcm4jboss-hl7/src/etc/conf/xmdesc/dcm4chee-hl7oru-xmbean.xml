@@ -102,5 +102,13 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>Process XML message</description>
+      <name>process</name>
+      <parameter>
+        <name>msg</name>
+        <type>org.dom4j.Document</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
 </mbean>
-    

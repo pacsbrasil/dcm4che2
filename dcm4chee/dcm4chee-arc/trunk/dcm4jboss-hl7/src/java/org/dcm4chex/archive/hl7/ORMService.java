@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.io.File;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +50,6 @@ import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -69,11 +66,9 @@ import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.exceptions.PatientMismatchException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.DocumentSource;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -193,13 +188,19 @@ public class ORMService extends AbstractHL7Service {
 
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
-        int op[] = toOp(msg);
+        process(toOp(msg), msg);
+        return true;
+    }
+    
+    public boolean process(String orderControl, String orderStatus, Document msg)
+            throws HL7Exception {
+        process(new int[] { toOp(orderControl, orderStatus) }, msg);
+        return true;
+    }
+    
+    private void process(int op[], Document msg) throws HL7Exception {
         try {
-            Dataset ds = DcmObjectFactory.getInstance().newDataset();
-            File xslFile = FileUtils.toExistingFile(xslPath);
-            Transformer t = templates.getTemplates(xslFile).newTransformer();
-            t.transform(new DocumentSource(msg), new SAXResult(ds
-                    .getSAXHandler2(null)));
+            Dataset ds = xslt(msg, xslPath);
             final String pid = ds.getString(Tags.PatientID);
             if (pid == null)
                 throw new HL7Exception("AR",
@@ -265,7 +266,6 @@ public class ORMService extends AbstractHL7Service {
         } catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
-        return true;
     }
 
     private void updateRequestAttributes(Dataset mwlitem,
@@ -375,17 +375,22 @@ public class ORMService extends AbstractHL7Service {
                 List obr = ((Element) obrs.get(i)).elements("field");
                 orderStatus = getText(obr, 24);
             }
-            int opIndex = orderControls.indexOf(orderControl + "(" + orderStatus + ")");
-            if (opIndex == -1) {
-                opIndex = orderControls.indexOf(orderControl);
-                if (opIndex == -1) {
-                    throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
-                            + orderControl);                 
-                }
-            }
-            op[i] = ops[opIndex];
+            op[i] = toOp(orderControl, orderStatus);
         }
         return op;
+    }
+
+    private int toOp(String orderControl, String orderStatus)
+            throws HL7Exception {
+        int opIndex = orderControls.indexOf(orderControl + "(" + orderStatus + ")");
+        if (opIndex == -1) {
+            opIndex = orderControls.indexOf(orderControl);
+            if (opIndex == -1) {
+                throw new HL7Exception("AR", "Illegal Order Control Code ORC-1:"
+                        + orderControl);
+            }
+        }
+        return ops[opIndex];
     }
 
     private String getText(List fields, int i) throws HL7Exception {

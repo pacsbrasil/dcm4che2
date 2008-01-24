@@ -39,13 +39,9 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -57,11 +53,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.DocumentSource;
 import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.xml.sax.ContentHandler;
 
@@ -210,51 +203,26 @@ public class ADTService extends AbstractHL7Service {
                     && !containsPatientName(msg)) {
                 return processUpdateNotificationMessage(msg);
             }
-            Dataset pat = DcmObjectFactory.getInstance().newDataset();
-            File pidXslFile = FileUtils.toExistingFile(pidXslPath);
-            Transformer t = templates.getTemplates(pidXslFile).newTransformer();
-            t.transform(new DocumentSource(msg), new SAXResult(pat
-                    .getSAXHandler2(null)));
-            String pid = pat.getString(Tags.PatientID);
-            if (pid == null || pid.trim().length() == 0)
-                throw new HL7Exception("AR",
-                        "Missing required PID-3: Patient ID (Internal ID)");
-
-            final String pname = pat.getString(Tags.PatientName);
-            if (pname == null || pname.trim().length() == 0)
-                throw new HL7Exception("AR",
-                        "Missing required PID-5: Patient Name");
-            PatientUpdate update = getPatientUpdateHome().create();
-            boolean changePatientIdentifierList = changePatientIdentifierListMessageType.equals(msgtype);
-            if (changePatientIdentifierList
-                    || patientMergeMessageType.equals(msgtype)) {
-                Dataset mrg = DcmObjectFactory.getInstance().newDataset();
-                File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
-                Transformer t2 = templates.getTemplates(mrgXslFile)
-                        .newTransformer();
-                t2.transform(new DocumentSource(msg), new SAXResult(mrg
-                        .getSAXHandler2(null)));
-                final String opid = mrg.getString(Tags.PatientID);
-                if (opid != null && opid.trim().length() > 0) {
-                    if (changePatientIdentifierList) {
-                        log.info("Change Patient Identifier List of Patient"
-                                + pname + " from " + opid + " to " + pid);
-                        update.changePatientIdentifierList(pat, mrg);
+            Dataset pat = xslt(msg, pidXslPath);
+            checkPID(pat);
+            PatientUpdate update = getPatientUpdate();
+            if (patientMergeMessageType.equals(msgtype)) {
+                Dataset mrg = xslt(msg, mrgXslPath);
+                try {
+                    checkMRG(mrg);
+                    update.mergePatient(pat, mrg);
+                } catch (HL7Exception e) {
+                    if (handleEmptyMrgAsUpdate) {
+                        update.updatePatient(pat);
                     } else {
-                        final String opname = mrg.getString(Tags.PatientName);
-                        log.info("Merge Patient " + opname + ", PID:" + opid
-                                + " with " + pname + ", PID:" + pid);
-                        update.mergePatient(pat, mrg);
+                        throw e;
                     }
-                    return true;
-                } else if (!this.handleEmptyMrgAsUpdate) {
-                    throw new HL7Exception("AR",
-                            "Missing required MRG-1: Prior Patient ID - Internal");
                 }
-            }
-            if (deletePatientMessageType.equals(msgtype)) {
-                log.info("Delete Patient " + pat.getString(Tags.PatientName)
-                        + ", PID:" + pat.getString(Tags.PatientID));
+            } else if (changePatientIdentifierListMessageType.equals(msgtype)) {
+                Dataset mrg = xslt(msg, mrgXslPath);
+                checkMRG(mrg);
+                update.changePatientIdentifierList(pat, mrg);
+            } else if (deletePatientMessageType.equals(msgtype)) {
                 try {
                     update.deletePatient(pat);
                 } catch (Exception x) {
@@ -263,11 +231,8 @@ public class ADTService extends AbstractHL7Service {
                     }
                 }
             } else if (patientArrivingMessageType.equals(msgtype)) {
-                log.info("Set MWL entries for Patient " + pname + ", PID:"
-                        + pid + " to arrived");
                 update.patientArrived(pat);
             } else {
-                log.info("Update Patient Info of " + pname + ", PID:" + pid);
                 update.updatePatient(pat);
             }
         } catch (HL7Exception e) {
@@ -280,6 +245,51 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
+    }
+    
+    public void updatePatient(Document msg) throws HL7Exception {
+        try {
+            Dataset pid = xslt(msg, pidXslPath);
+            checkPID(pid);
+            getPatientUpdate().updatePatient(pid);
+        } catch (HL7Exception e) {
+            throw e;
+        } catch (PatientMergedException e) {
+            throw new HL7Exception("AR", e.getMessage());
+        } catch (Exception e) {
+            throw new HL7Exception("AE", e.getMessage(), e);
+        }
+    }
+
+    public void mergePatient(Document msg) throws HL7Exception {
+        try {
+            Dataset pid = xslt(msg, pidXslPath);
+            Dataset mrg = xslt(msg, mrgXslPath);
+            checkPID(pid);
+            checkMRG(mrg);
+            getPatientUpdate().mergePatient(pid, mrg);
+        } catch (HL7Exception e) {
+            throw e;
+        } catch (PatientMergedException e) {
+            throw new HL7Exception("AR", e.getMessage());
+        } catch (Exception e) {
+            throw new HL7Exception("AE", e.getMessage(), e);
+        }
+    }
+
+    private void checkPID(Dataset pid) throws HL7Exception {
+        if (!pid.containsValue(Tags.PatientID))
+            throw new HL7Exception("AR",
+                    "Missing required PID-3: Patient ID (Internal ID)");
+        if (!pid.containsValue(Tags.PatientName))
+            throw new HL7Exception("AR",
+                    "Missing required PID-5: Patient Name");
+    }
+
+    private void checkMRG(Dataset mrg) throws HL7Exception {
+        if (!mrg.containsValue(Tags.PatientID))
+            throw new HL7Exception("AR",
+                    "Missing required MRG-1: Prior Patient ID - Internal");
     }
 
     private boolean containsPatientName(Document msg) {
@@ -303,7 +313,7 @@ public class ADTService extends AbstractHL7Service {
         } catch (IllegalArgumentException e) {
             throw new HL7Exception("AR", e.getMessage());
         }
-        PatientUpdateHome patUpdate = getPatientUpdateHome();
+        PatientUpdate patUpdate = getPatientUpdate();
         for (int i = 0, n = pids.size(); i < n; ++i) {
             String[] pid = (String[]) pids.get(i);
             if (!issuersOfOnlyOtherPatientIDs.contains(pid[ISSUER])) {
@@ -315,7 +325,7 @@ public class ADTService extends AbstractHL7Service {
                         opids.addItem(toDataset(opid));
                     }
                 }
-                patUpdate.create().updateOtherPatientIDsOrCreate(ds);
+                patUpdate.updateOtherPatientIDsOrCreate(ds);
             }
         }
         return true;
@@ -328,10 +338,11 @@ public class ADTService extends AbstractHL7Service {
         return ds;
     }
 
-    private PatientUpdateHome getPatientUpdateHome()
-            throws HomeFactoryException {
-        return (PatientUpdateHome) EJBHomeFactory.getFactory().lookup(
-                PatientUpdateHome.class, PatientUpdateHome.JNDI_NAME);
+    private PatientUpdate getPatientUpdate() throws Exception {
+        PatientUpdateHome patHome = (PatientUpdateHome)
+                EJBHomeFactory.getFactory().lookup(
+                        PatientUpdateHome.class, PatientUpdateHome.JNDI_NAME);
+        return patHome.create();
     }
 
 }
