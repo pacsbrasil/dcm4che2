@@ -54,6 +54,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.SPSStatus;
@@ -88,8 +89,9 @@ import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
  */
 public abstract class PatientUpdateBean implements SessionBean {
 
+    private static final Logger LOG = Logger.getLogger(PatientUpdateBean.class);
+
     private PatientLocalHome patHome;
-    
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
             RemoteException {
@@ -122,10 +124,13 @@ public abstract class PatientUpdateBean implements SessionBean {
                     PatientAlreadyExistsException {
         try {
             patHome.searchFor(correct, false);
-            throw new PatientAlreadyExistsException("pid:"
-                    + correct.getString(Tags.PatientID) + ", issuer:"
-                    + correct.getString(Tags.IssuerOfPatientID));
-        } catch (ObjectNotFoundException e) {}
+            String prompt = "Patient with PID "
+                + correct.getString(Tags.PatientID) + "^^^"
+                + correct.getString(Tags.IssuerOfPatientID, "")
+                + " already exists";
+            LOG.warn(prompt);
+            throw new PatientAlreadyExistsException(prompt);
+         } catch (ObjectNotFoundException e) {}
         PatientLocal correctPat = patHome.create(correct);
         PatientLocal priorPat= updateOrCreate(prior);
         merge(correctPat, priorPat);
