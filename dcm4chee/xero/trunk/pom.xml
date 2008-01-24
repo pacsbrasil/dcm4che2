@@ -35,6 +35,12 @@
        <type>jar</type>
      </dependency>
      <dependency>
+       <groupId>log4j</groupId>
+       <artifactId>log4j</artifactId>
+       <version>1.2.13</version>
+       <scope>provided</scope>
+     </dependency>
+     <dependency>
        <groupId>org.jboss.seam</groupId>
        <artifactId>thirdparty-all</artifactId>
        <version>1.2.1.GA</version>
