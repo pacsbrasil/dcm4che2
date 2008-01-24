@@ -16,6 +16,7 @@
       <module>metadata</module>
       <module>xero-cfind</module>
       <module>xero-core</module>
+      <module>xero-wado-war</module>
       <module>xero-war</module>
       <module>xero-ear</module>
   </modules>
@@ -26,14 +27,12 @@
        <artifactId>slf4j-api</artifactId>
        <version>1.1.0</version>
        <type>jar</type>
-       <scope>provided</scope>
      </dependency>
      <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-log4j12</artifactId>
        <version>1.1.0</version>
        <type>jar</type>
-       <scope>provided</scope>
      </dependency>
      <dependency>
        <groupId>org.jboss.seam</groupId>
@@ -63,8 +62,8 @@
        <plugin>
          <artifactId>maven-compiler-plugin</artifactId>
          <configuration>
-           <source>1.6</source>
-           <target>1.6</target>
+           <source>1.5</source>
+           <target>1.5</target>
          </configuration>
       </plugin>
 
