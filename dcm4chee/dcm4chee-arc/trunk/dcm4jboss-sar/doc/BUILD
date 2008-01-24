@@ -16,25 +16,36 @@ to download and install:
 (only needed to build test suite for dcm4jboss-ejb - not need to build
 application)
 
-The dcm4chee archive also uses
+dcm4chee-2.13.1 archive also relies on
+
+- dcm4che-1.4.15 : DICOM Library
+
+which binary and source distribution package is also available at
+http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
+build dcm4chee archive. If you download the source package, you have to build
+all components of dcm4che-1.4.15 (ant release) before building dcm4chee-2.13.1.
+
+dcm4chee-2.13.1 archive also make use of
 
 - dcm4che-audit-logger : JMX Service for emitting DICOM Supp95 Audit Trail
   Messages, and
 - dcm4che-audit-login : JAAS login module emitting User Authentication message
 
-which sources are not included by dcm4chee, but provided as separate
-package dcm4chee-audit at http://sourceforge.net/projects/dcm4che . Follow
-the build instructions included in dcm4chee-audit, to build and install these
-artefacts in your local Maven Repository (default: ~/.m2/repository) for usage
-by following build task for the Audit Record Repository.
+which sources are not included by dcm4chee-2.13.1-src.zip, but provided in a
+separate ZIP archive: dcm4chee-audit-2.13.1-src.zip at
+http://sourceforge.net/projects/dcm4che. Follow the build instructions include
+in dcm4chee-audit, to build and install these artifacts in your local Maven
+Repository (default: ~/.m2/repository) for usage by following build task for 
+dcm4chee-2.13.1 archive.
 
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
 
 The build scripts (dcm4jboss-all/dcm4jboss-xxx/build.xml) assumes following
-locations of XDoclet, JBoss, Apache FOP, Jakarta Cactus and your local Maven2
-Repository:
+locations of dcm4che-1.4.15, XDoclet, JBoss, Apache FOP, Jakarta Cactus and
+your local Maven2 Repository:
 
+dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.15
 xdoclet.home=${user.home}/xdoclet-1.2.3
 jboss.home=${user.home}/jboss-4.2.2.GA
 fop.home=${user.home}/fop-0.20.5

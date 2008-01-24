@@ -7,6 +7,10 @@
   <property name="audit-version" value="2.13.1"/>
   <property name="target.dir" value="${basedir}/target"/>
 
+  <!-- Override with your dcm4che-1.4.x source dist location -->
+  <property name="dcm4che14.home"
+    value="${user.home}/dcm4che14/build/dcm4che-1.4.15"/>
+
   <!-- Override with your local Maven2 repository location -->
   <property name="m2.repos" value="${user.home}/.m2/repository"/>
   <property name="dcm4chee-audit-login.lib" 
@@ -22,7 +26,6 @@
   <property name="fop.home" value="${user.home}/fop-0.20.5"/>
   <target name="clean">
     <delete dir="${target.dir}"/>
-    <ant inheritAll="false" dir="../dcm4che14" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="clean"/>
@@ -32,7 +35,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-cdw" target="clean"/>
   </target>
   <target name="jar">
-    <ant inheritAll="false" dir="../dcm4che14" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="jar"/>
@@ -54,9 +56,7 @@
   		destdir="${target.dir}/bin" eol="lf"/>
     <fixcrlf srcdir="bin" includes="*.bat"
   		destdir="${target.dir}/bin" eol="crlf"/>
-    <mkdir dir="${target.dir}/doc/licenses"/>
-    <fixcrlf srcdir="../dcm4che14/doc/licenses"
-  		destdir="${target.dir}/doc/licenses" eol="crlf"/>
+    <mkdir dir="${target.dir}/doc"/>
     <fixcrlf srcdir="../dcm4jboss-sar/doc" includes="INSTALL, PWD2HASH"
   		destdir="${target.dir}/doc" eol="crlf" />
   </target>
@@ -99,17 +99,20 @@
     <property name="dist.db" value="dcm4chee-${db.name}-${version}"/>
     <property name="dist.db.config" value="${dist.db}/server/default"/>
     <zip destfile="${target.dir}/${dist.db}.zip">
-      <zipfileset dir="../dcm4che14/build" prefix="${dist.db.config}">
+      <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
         <include name="lib/dcm4che.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4che14" prefix="${dist.db.config}">
+      <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
         <include name="lib/dcm4che-imageio-rle-2.0.12.jar"/>
         <include name="lib/jai_imageio.jar"/>
         <include name="lib/clibwrapper_jiio.jar"/>
       </zipfileset>
-      <zipfileset dir="../dcm4che14/bin" prefix="${dist.db}/bin/native">
+      <zipfileset dir="${dcm4che14.home}/bin" prefix="${dist.db}/bin/native">
         <include name="libclib_jiio.so"/>
         <include name="clib_jiio*.dll"/>
+      </zipfileset>
+      <zipfileset dir="${dcm4che14.home}" prefix="${dist.db}/doc">
+        <include name="licenses/*"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/target/common"
         prefix="${dist.db.config}">

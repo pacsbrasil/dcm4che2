@@ -26,10 +26,11 @@
 	<property name="target.deploy" value="${target.dir}/deploy"/>
 	<property name="target.lib" value="${target.dir}/lib"/>
 
-    <!-- Override with your dcm4che dist location -->
-	<property name="dcm4che.home" value="../dcm4che14/build"/>		
-	<property name="dcm4che.jar" value="${dcm4che.home}/lib/dcm4che.jar"/>		
-  <property name="jai_imagio.jar" value="${dcm4che.home}/../lib/jai_imageio.jar"/>
+    <!-- Override with your dcm4che-1.4.x source dist location -->
+    <property name="dcm4che14.home"
+      value="${user.home}/dcm4che14/build/dcm4che-1.4.15"/>
+    <property name="dcm4che.jar" value="${dcm4che14.home}/lib/dcm4che.jar"/>
+    <property name="jai_imagio.jar" value="${dcm4che14.home}/lib/jai_imageio.jar"/>
 
     <!-- Override with your dcm4chee-ejb dist location -->
 	<property name="dcm4chee-ejb.home" value="../dcm4jboss-ejb"/>		
