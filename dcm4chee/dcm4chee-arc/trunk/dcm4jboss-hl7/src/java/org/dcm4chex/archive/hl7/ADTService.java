@@ -54,6 +54,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
+import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -84,6 +85,8 @@ public class ADTService extends AbstractHL7Service {
 
     private String patientMergeMessageType;
 
+    private String changePatientIdentifierListMessageType;
+
     private String deletePatientMessageType;
 
     private String pixUpdateNotificationMessageType;
@@ -108,6 +111,15 @@ public class ADTService extends AbstractHL7Service {
 
     public final void setPatientMergeMessageType(String patientMergeMessageType) {
         this.patientMergeMessageType = patientMergeMessageType;
+    }
+
+    public final String getChangePatientIdentifierListMessageType() {
+        return changePatientIdentifierListMessageType;
+    }
+
+    public final void setChangePatientIdentifierListMessageType(
+            String changePatientIdentifierListMessageType) {
+        this.changePatientIdentifierListMessageType = changePatientIdentifierListMessageType;
     }
 
     public final String getDeletePatientMessageType() {
@@ -213,7 +225,9 @@ public class ADTService extends AbstractHL7Service {
                 throw new HL7Exception("AR",
                         "Missing required PID-5: Patient Name");
             PatientUpdate update = getPatientUpdateHome().create();
-            if (patientMergeMessageType.equals(msgtype)) {
+            boolean changePatientIdentifierList = changePatientIdentifierListMessageType.equals(msgtype);
+            if (changePatientIdentifierList
+                    || patientMergeMessageType.equals(msgtype)) {
                 Dataset mrg = DcmObjectFactory.getInstance().newDataset();
                 File mrgXslFile = FileUtils.toExistingFile(mrgXslPath);
                 Transformer t2 = templates.getTemplates(mrgXslFile)
@@ -222,10 +236,16 @@ public class ADTService extends AbstractHL7Service {
                         .getSAXHandler2(null)));
                 final String opid = mrg.getString(Tags.PatientID);
                 if (opid != null && opid.trim().length() > 0) {
-                    final String opname = mrg.getString(Tags.PatientName);
-                    log.info("Merge Patient " + opname + ", PID:" + opid
-                            + " with " + pname + ", PID:" + pid);
-                    update.mergePatient(pat, mrg);
+                    if (changePatientIdentifierList) {
+                        log.info("Change Patient Identifier List of Patient"
+                                + pname + " from " + opid + " to " + pid);
+                        update.changePatientIdentifierList(pat, mrg);
+                    } else {
+                        final String opname = mrg.getString(Tags.PatientName);
+                        log.info("Merge Patient " + opname + ", PID:" + opid
+                                + " with " + pname + ", PID:" + pid);
+                        update.mergePatient(pat, mrg);
+                    }
                     return true;
                 } else if (!this.handleEmptyMrgAsUpdate) {
                     throw new HL7Exception("AR",
@@ -252,6 +272,8 @@ public class ADTService extends AbstractHL7Service {
             }
         } catch (HL7Exception e) {
             throw e;
+        } catch (PatientAlreadyExistsException e) {
+            throw new HL7Exception("AR", e.getMessage());
         } catch (PatientMergedException e) {
             throw new HL7Exception("AR", e.getMessage());
         } catch (Exception e) {

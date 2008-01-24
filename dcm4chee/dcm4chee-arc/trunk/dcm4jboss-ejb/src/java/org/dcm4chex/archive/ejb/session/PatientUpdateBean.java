@@ -61,6 +61,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
 
 /**
  * 
@@ -114,13 +115,33 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
 
     /**
-     * @throws CreateException 
+     * @ejb.interface-method
+     */
+    public void changePatientIdentifierList(Dataset correct, Dataset prior)
+            throws CreateException, FinderException,
+                    PatientAlreadyExistsException {
+        try {
+            patHome.searchFor(correct, false);
+            throw new PatientAlreadyExistsException("pid:"
+                    + correct.getString(Tags.PatientID) + ", issuer:"
+                    + correct.getString(Tags.IssuerOfPatientID));
+        } catch (ObjectNotFoundException e) {}
+        PatientLocal correctPat = patHome.create(correct);
+        PatientLocal priorPat= updateOrCreate(prior);
+        merge(correctPat, priorPat);
+    }
+
+    /**
      * @ejb.interface-method
      */
     public void mergePatient(Dataset dominant, Dataset prior)
-            throws FinderException, CreateException {
+            throws CreateException, FinderException {
         PatientLocal dominantPat = updateOrCreate(dominant);
         PatientLocal priorPat= updateOrCreate(prior);
+        merge(dominantPat, priorPat);
+    }
+
+    private void merge(PatientLocal dominantPat, PatientLocal priorPat) {
         dominantPat.getStudies().addAll(priorPat.getStudies());
         dominantPat.getMpps().addAll(priorPat.getMpps());
         dominantPat.getMwlItems().addAll(priorPat.getMwlItems());

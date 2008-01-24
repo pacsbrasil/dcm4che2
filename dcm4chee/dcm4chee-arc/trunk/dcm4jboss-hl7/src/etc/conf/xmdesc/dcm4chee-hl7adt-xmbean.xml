@@ -85,6 +85,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getChangePatientIdentifierListMessageType"
+      setMethod="setChangePatientIdentifierListMessageType">
+      <description><![CDATA[Message Type for change of the Patient Identifier
+       List of one Patient.<br/>
+       The message type must be also listed in configured <i>MessageTypes</i>
+       handled by this service.]]>
+      </description>
+      <name>ChangePatientIdentifierListMessageType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ADT^A47" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPixUpdateNotificationMessageType"
       setMethod="setPixUpdateNotificationMessageType">
       <description><![CDATA[Message Type for PIX Update Notification.
