@@ -40,8 +40,8 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.dcm4che.archive.common.DatasetUtils;
 import org.dcm4che.archive.common.HPLevel;
@@ -54,9 +54,11 @@ import org.dcm4che.dict.Tags;
  * @version $Revision: 1.2 $ $Date: 2007/07/05 05:51:46 $
  * @since Aug 17, 2005
  */
-public class HPQueryCmd extends BaseReadCmd {
+public class HPQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
+
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final String[] FROM = { "HP" };
 
@@ -76,16 +78,14 @@ public class HPQueryCmd extends BaseReadCmd {
             "rel_hpdef_reason", "rel_hpdef_reason.hpdef_fk",
             "rel_hpdef_reason.reason_fk" };
 
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
-
-    private final Dataset keys;
-
     public HPQueryCmd(Dataset keys) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel);
+        super(keys, true, false, transactionIsolationLevel);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+        }
         String s;
         int i;
-        this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -167,7 +167,7 @@ public class HPQueryCmd extends BaseReadCmd {
     }
 
     private String[] getLeftJoin() {
-        List<String> list = new ArrayList<String>();
+        ArrayList list = new ArrayList();
         if (isMatchCode(keys
                 .getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
             list.add("Code");
@@ -182,7 +182,8 @@ public class HPQueryCmd extends BaseReadCmd {
             list.add("HP.pk");
             list.add("HPDefinition.hp_fk");
         }
-        return (list.isEmpty() ? null : list.toArray(new String[list.size()]));
+        return (String[]) (list.isEmpty() ? null : list.toArray(new String[list
+                .size()]));
     }
 
     public void execute() throws SQLException {
@@ -192,7 +193,7 @@ public class HPQueryCmd extends BaseReadCmd {
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         DatasetUtils.fromByteArray(getBytes(1), ds);
-        QueryCmd.adjustDataset(ds, keys);
+        adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
 

@@ -123,15 +123,14 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
     public void updateAttributes(Series series, Dataset newAttrs,
             boolean overwriteReqAttrSQ) throws ContentCreateException {
         Dataset oldAttrs = series.getAttributes(false);
-        updateSeriesRequest(series, oldAttrs, newAttrs, overwriteReqAttrSQ);
+        boolean updated = updateSeriesRequest(series, oldAttrs, newAttrs,
+                overwriteReqAttrSQ);
         if (oldAttrs == null) {
             series.setAttributes(newAttrs);
         }
         else {
-            String cuid = newAttrs.getString(Tags.SOPClassUID);
-            AttributeFilter filter = AttributeFilter
-                    .getSeriesAttributeFilter(cuid);
-            if (AttrUtils.mergeAttributes(oldAttrs, filter.filter(newAttrs),
+            AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
+            if (AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
                     logger)) {
                 series.setAttributes(oldAttrs);
             }
@@ -441,7 +440,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
 
     /**
      * @param mppsDAO
-     *            the mppsDAO to set
+     *                the mppsDAO to set
      */
     public void setMppsDAO(MPPSDAO mppsDAO) {
         this.mppsDAO = mppsDAO;
@@ -465,7 +464,7 @@ public class SeriesDAOImpl extends BaseDAOImpl<Series> implements SeriesDAO {
 
     /**
      * @param requestDAO
-     *            the requestDAO to set
+     *                the requestDAO to set
      */
     public void setRequestDAO(SeriesRequestDAO requestDAO) {
         this.requestDAO = requestDAO;

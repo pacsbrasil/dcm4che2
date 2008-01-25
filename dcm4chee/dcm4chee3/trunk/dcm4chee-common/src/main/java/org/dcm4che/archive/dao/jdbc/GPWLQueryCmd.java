@@ -40,6 +40,7 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 
 import org.dcm4che.archive.common.DatasetUtils;
@@ -56,9 +57,10 @@ import org.dcm4che.dict.Tags;
  * @since 02.04.2005
  */
 
-public class GPWLQueryCmd extends BaseReadCmd {
+public class GPWLQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final String[] FROM = { "Patient", "GPSPS"};
 
@@ -75,15 +77,14 @@ public class GPWLQueryCmd extends BaseReadCmd {
     private static final String DEVLOC_CODE = "devloc_code";
     private static final String PERF_CODE = "perf_code";
     
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
-
-    private final Dataset keys;
-
     public GPWLQueryCmd(Dataset keys) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+        super(keys, true, false, transactionIsolationLevel);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+        }
         String s;
-        this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -274,7 +275,7 @@ public class GPWLQueryCmd extends BaseReadCmd {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         DatasetUtils.fromByteArray( getBytes(1), ds);
         DatasetUtils.fromByteArray( getBytes(2), ds);
-        QueryCmd.adjustDataset(ds, keys);
+        adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
 }

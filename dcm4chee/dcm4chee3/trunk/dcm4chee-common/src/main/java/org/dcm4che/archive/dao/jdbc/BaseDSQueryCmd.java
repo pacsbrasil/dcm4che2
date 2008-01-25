@@ -54,11 +54,18 @@ import org.dcm4che.dict.VRs;
  */
 public abstract class BaseDSQueryCmd extends BaseReadCmd {
 
-
     protected final Dataset keys;
-    /** Contains all supported matching keys of the 'root' Dataset (have to include Seq.Tag if match is supported in SQ)  */
-    protected final IntList matchingKeys= new IntList();
-    /** Contains supported matching keys of sequence Items. key=SQ tag, value=list of supported tags) */
+
+    /**
+     * Contains all supported matching keys of the 'root' Dataset (have to
+     * include Seq.Tag if match is supported in SQ)
+     */
+    protected final IntList matchingKeys = new IntList();
+
+    /**
+     * Contains supported matching keys of sequence Items. key=SQ tag,
+     * value=list of supported tags)
+     */
     protected final HashMap seqMatchingKeys = new HashMap();
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
@@ -68,7 +75,8 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
     protected final boolean type2;
 
     protected BaseDSQueryCmd(Dataset keys, boolean filterResult,
-            boolean noMatchForNoValue, int transactionIsolationLevel) throws SQLException {
+            boolean noMatchForNoValue, int transactionIsolationLevel)
+            throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
         this.keys = keys;
@@ -76,15 +84,14 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     }
 
-
     public void execute() throws SQLException {
         execute(sqlBuilder.getSql());
     }
-    
+
     public boolean isMatchNotSupported() {
         return sqlBuilder.isMatchNotSupported();
     }
-    
+
     /**
      * Check if this QueryCmd use an unsupported matching key.
      * 
@@ -97,39 +104,51 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
     /**
      * Search for unsupported Matching key.
      * <p>
-     * Returns true if a key with value (a matching key) is found that is not supported.
+     * Returns true if a key with value (a matching key) is found that is not
+     * supported.
      * <p>
-     * <code>matchingKeys</code> holds the supported keys for the current Dataset <code>ds</code>
+     * <code>matchingKeys</code> holds the supported keys for the current
+     * Dataset <code>ds</code>
      * <p>
-     * If <code>ds</code> contains a sequence element, all items of this sequence are also checked against a new list
-     * of matching keys.<br>
+     * If <code>ds</code> contains a sequence element, all items of this
+     * sequence are also checked against a new list of matching keys.<br>
      * 
-     * @param ds Dataset to check for matching keys
-     * @param matchingKeys List containing all supported keys for ds.
+     * @param ds
+     *                Dataset to check for matching keys
+     * @param matchingKeys
+     *                List containing all supported keys for ds.
      * 
      * @return true if an unsupported key is found.
      */
-    protected boolean findUnsupportedMatchingKey(Dataset ds, IntList matchingKeys) {
+    protected boolean findUnsupportedMatchingKey(Dataset ds,
+            IntList matchingKeys) {
         DcmElement el;
         int tag;
-        for ( Iterator iter=ds.iterator() ; iter.hasNext() ; ) {
+        for (Iterator iter = ds.iterator(); iter.hasNext();) {
             el = (DcmElement) iter.next();
             tag = el.tag();
             if (el.isEmpty() || tag == Tags.SpecificCharacterSet
                     || Tags.isPrivate(tag)) {
                 continue;
             }
-            if ( el.vr() != VRs.SQ ) {
+            if (el.vr() != VRs.SQ) {
                 if (matchingKeys == null || !matchingKeys.contains(tag)) {
-                    log.warn("QueryCmd: Unsupported matching key found! key:"+el);
+                    log.warn("QueryCmd: Unsupported matching key found! key:"
+                            + el);
                     return true;
                 }
-            } else {
-                IntList il = matchingKeys.contains(tag) ? //is matching of this sequence allowed?
-                        (IntList)seqMatchingKeys.get(new Integer(tag)) : null;
-                for ( int i=0; i<el.countItems() ; i++ ) {
-                    if( findUnsupportedMatchingKey(el.getItem(i),il) ) {
-                        log.warn("QueryCmd: Unsupported matching key found in SQ "+el);
+            }
+            else {
+                IntList il = matchingKeys.contains(tag) ? // is matching of
+                                                            // this sequence
+                                                            // allowed?
+                (IntList) seqMatchingKeys.get(new Integer(tag))
+                        : null;
+                for (int i = 0; i < el.countItems(); i++) {
+                    if (findUnsupportedMatchingKey(el.getItem(i), il)) {
+                        log
+                                .warn("QueryCmd: Unsupported matching key found in SQ "
+                                        + el);
                         return true;
                     }
                 }
@@ -137,8 +156,8 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         }
         return false;
     }
-    
-    static void adjustDataset(Dataset ds, Dataset keys) {
+
+    protected void adjustDataset(Dataset ds, Dataset keys) {
         for (Iterator it = keys.iterator(); it.hasNext();) {
             DcmElement key = (DcmElement) it.next();
             final int tag = key.tag();
@@ -151,47 +170,61 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
                 el = ds.putXX(tag, vr);
             }
             if (vr == VRs.SQ) {
+                DcmElement filteredEl = null;
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
-                    if (el.isEmpty())
+                    if (el.isEmpty()) {
                         el.addNewItem();
+                    }
+                    else if (filterResult && !keyItem.isEmpty()) {
+                        filteredEl = ds.putSQ(tag);
+                    }
                     for (int i = 0, n = el.countItems(); i < n; ++i) {
-                        adjustDataset(el.getItem(i), keyItem);
+                        Dataset item = el.getItem(i);
+                        adjustDataset(item, keyItem);
+                        if (filteredEl != null) {
+                            filteredEl.addItem(item = item.subSet(keyItem));
+                        }
                     }
                 }
             }
         }
     }
-    
+
     static class IntList {
         int[] values = new int[40];
+
         int pos = 0;
-        
-        public IntList add(int i){
-            if (pos == values.length ) resize();
+
+        public IntList add(int i) {
+            if (pos == values.length)
+                resize();
             values[pos++] = i;
             return this;
         }
-        public IntList add(int[] vals){
-            while (pos+vals.length >= values.length ) resize();
-            for ( int i=0;i<vals.length;i++ ) {
+
+        public IntList add(int[] vals) {
+            while (pos + vals.length >= values.length)
+                resize();
+            for (int i = 0; i < vals.length; i++) {
                 values[pos++] = vals[i];
             }
             return this;
         }
-        
+
         public boolean contains(int val) {
-            for ( int i = 0 ; i < pos ; i++ ) {
-                if ( values[i] == val ) return true;
+            for (int i = 0; i < pos; i++) {
+                if (values[i] == val)
+                    return true;
             }
             return false;
         }
-        
+
         private void resize() {
-           int[] tmp = new int[pos+20];
-           System.arraycopy(values,0,tmp,0,pos);
-           values = tmp;
+            int[] tmp = new int[pos + 20];
+            System.arraycopy(values, 0, tmp, 0, pos);
+            values = tmp;
         }
     }
 
- }
+}
