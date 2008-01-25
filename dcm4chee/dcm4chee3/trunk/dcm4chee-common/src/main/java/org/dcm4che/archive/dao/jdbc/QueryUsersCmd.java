@@ -48,15 +48,15 @@ import java.sql.SQLException;
  */
 public final class QueryUsersCmd extends BaseReadCmd {
 
-	public static final int transactionIsolationLevel = 0;
+    public static final int transactionIsolationLevel = 0;
 
-	public QueryUsersCmd(String dsJndiName) throws SQLException {
-		super(dsJndiName, transactionIsolationLevel,
-				JdbcProperties.getInstance().getProperty("QueryUsersCmd"));
- 	}
+    public QueryUsersCmd(String dsJndiName) throws SQLException {
+        super(dsJndiName, transactionIsolationLevel, JdbcProperties
+                .getInstance().getProperty("QueryUsersCmd"));
+    }
 
-	public String getUser() throws SQLException {
-		return rs.getString(1);
-	}
+    public String getUser() throws SQLException {
+        return rs.getString(1);
+    }
 
 }

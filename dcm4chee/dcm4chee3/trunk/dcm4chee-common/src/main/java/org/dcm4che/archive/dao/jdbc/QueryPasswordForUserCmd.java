@@ -49,19 +49,19 @@ import java.sql.SQLException;
  */
 public final class QueryPasswordForUserCmd extends BaseReadCmd {
 
-	public static final int transactionIsolationLevel = 0;
+    public static final int transactionIsolationLevel = 0;
 
-	public QueryPasswordForUserCmd(String dsJndiName) throws SQLException {
-		super(dsJndiName, transactionIsolationLevel,
-				JdbcProperties.getInstance().getProperty("QueryPasswordForUserCmd"));
-	}
+    public QueryPasswordForUserCmd(String dsJndiName) throws SQLException {
+        super(dsJndiName, transactionIsolationLevel, JdbcProperties
+                .getInstance().getProperty("QueryPasswordForUserCmd"));
+    }
 
-	public void setUser(String user) throws SQLException {
-		((PreparedStatement) stmt).setString(1, user);		
-	}
+    public void setUser(String user) throws SQLException {
+        ((PreparedStatement) stmt).setString(1, user);
+    }
 
-	public String getPassword() throws SQLException {
-		return rs.getString(1);
-	}
+    public String getPassword() throws SQLException {
+        return rs.getString(1);
+    }
 
 }

@@ -39,29 +39,63 @@
 
 package org.dcm4che.archive.dao.jdbc;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.security.auth.Subject;
+
+import org.dcm4che.archive.common.SecurityUtils;
 
 /**
- * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.2 $ $Date: 2007/07/05 05:51:46 $
- * @since Jun 22, 2005
+ * 
+ * @author franz.willer@agfa.com
+ * @version $Revision: $ $Date: $
+ * @since 03.11.2007
  */
-public final class QueryRolesForUserCmd extends BaseReadCmd {
+public class QueryStudyPermissionCmd extends BaseReadCmd {
 
-    public static final int transactionIsolationLevel = 0;
+    private static final String[] SELECT_ATTRIBUTE = null;
 
-    public QueryRolesForUserCmd(String dsJndiName) throws SQLException {
-        super(dsJndiName, transactionIsolationLevel, JdbcProperties
-                .getInstance().getProperty("QueryRolesForUserCmd"));
+    public static int transactionIsolationLevel = 0;
+
+    private final SqlBuilder sqlBuilder = new SqlBuilder();
+
+    public QueryStudyPermissionCmd() throws SQLException {
+        super(JdbcProperties.getInstance().getDataSource(),
+                transactionIsolationLevel);
+        sqlBuilder.setFrom(new String[] { "StudyPermission" });
+        sqlBuilder.setSelect(new String[] { "StudyPermission.studyIuid",
+                "StudyPermission.action" });
     }
 
-    public void setUser(String user) throws SQLException {
-        ((PreparedStatement) stmt).setString(1, user);
+    public Map getGrantedActionsForStudies(String[] studyIUIDs, Subject subject)
+            throws SQLException {
+        String[] roles = SecurityUtils.rolesOf(subject);
+        sqlBuilder.addListOfStringMatch(null, "StudyPermission.studyIuid",
+                false, studyIUIDs);
+        sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false,
+                roles);
+        try {
+            execute(sqlBuilder.getSql());
+            HashMap result = new HashMap();
+            Set actions;
+            String suid;
+            while (next()) {
+                suid = rs.getString(1);
+                actions = (Set) result.get(suid);
+                if (actions == null) {
+                    actions = new HashSet();
+                    result.put(suid, actions);
+                }
+                actions.add(rs.getString(2));
+            }
+            return result;
+        }
+        finally {
+            close();
+        }
     }
-
-    public String getRole() throws SQLException {
-        return rs.getString(1);
-    }
-
 }

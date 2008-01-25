@@ -112,7 +112,8 @@ public final class QueryFilesCmd extends BaseReadCmd {
         try {
             while (next())
                 list.add(getFileDTO());
-        } finally {
+        }
+        finally {
             close();
         }
         Collections.sort(list, DESC_FILE_PK);

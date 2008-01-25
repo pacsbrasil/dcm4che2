@@ -67,6 +67,7 @@ import org.dcm4cheri.util.StringUtils;
 public class QueryStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+
     public static boolean accessBlobAsLongVarBinary = true;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -75,153 +76,170 @@ public class QueryStudiesCmd extends BaseReadCmd {
             "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
             "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
             "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability", "Study.filesetId", "Study.studyStatusId"};
+            "Study.availability", "Study.filesetId", "Study.studyStatusId" };
 
-    private static final String[] LEFT_JOIN = { 
-        "Study", null, "Patient.pk", "Study.patient_fk",};
-    private static final String[] LEFT_JOIN_WITH_SERIES = { 
-        "Study", null, "Patient.pk", "Study.patient_fk", 
-        "Series", null, "Study.pk", "Series.study_fk"};
-    private static final String[] LEFT_JOIN_WITH_STUDY_PERMISSION = { 
-        "Study", null, "Patient.pk", "Study.patient_fk", 
-        "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
-    private static final String[] LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION = { 
-        "Study", null, "Patient.pk", "Study.patient_fk",
-        "Series", null, "Study.pk", "Series.study_fk", 
-        "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
+    private static final String[] LEFT_JOIN = { "Study", null, "Patient.pk",
+            "Study.patient_fk", };
 
-        private boolean hideMissingStudies;
-    
+    private static final String[] LEFT_JOIN_WITH_SERIES = { "Study", null,
+            "Patient.pk", "Study.patient_fk", "Series", null, "Study.pk",
+            "Series.study_fk" };
+
+    private static final String[] LEFT_JOIN_WITH_STUDY_PERMISSION = { "Study",
+            null, "Patient.pk", "Study.patient_fk", "StudyPermission", null,
+            "Study.studyIuid", "StudyPermission.studyIuid" };
+
+    private static final String[] LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION = {
+            "Study", null, "Patient.pk", "Study.patient_fk", "Series", null,
+            "Study.pk", "Series.study_fk", "StudyPermission", null,
+            "Study.studyIuid", "StudyPermission.studyIuid" };
+
+    private boolean hideMissingStudies;
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-        private boolean checkPermissions = true;
+    private boolean checkPermissions = true;
 
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, Subject subject)
-        throws SQLException {
-        this(filter, hideMissingStudies, false, subject );
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies,
+            Subject subject) throws SQLException {
+        this(filter, hideMissingStudies, false, subject);
         if (accessBlobAsLongVarBinary) {
             // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             defineColumnType(2, Types.LONGVARBINARY);
             defineColumnType(4, Types.LONGVARBINARY);
         }
     }
+
     /**
      * Creates a new QueryStudiesCmd object with given filter.
      * <p>
-     * If parameter <code>noMatchForNoValue=true</code> all Type2 Matches are forced to Type1 matches and therefore all
-     * 'empty field' matches will be hidden.
+     * If parameter <code>noMatchForNoValue=true</code> all Type2 Matches are
+     * forced to Type1 matches and therefore all 'empty field' matches will be
+     * hidden.
      * <p>
      * Dont use this feature for DICOM queries!
-     *   
-     * @param filter Filter Dataset.
-     * @param hideMissingStudies Hide patients without studies.
-     * @param noMatchForNoValue disable type2 matches.
+     * 
+     * @param filter
+     *                Filter Dataset.
+     * @param hideMissingStudies
+     *                Hide patients without studies.
+     * @param noMatchForNoValue
+     *                disable type2 matches.
      * 
      * @throws SQLException
      */
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Subject subject)
-            throws SQLException {
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies,
+            boolean noMatchForNoValue, Subject subject) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
         checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
         sqlBuilder.setFrom(getTables());
-        sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID)));
+        sqlBuilder.setLeftJoin(getLeftJoin(filter
+                .containsValue(Tags.SeriesInstanceUID)));
         sqlBuilder.setRelations(getRelations());
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                type2,
-                filter.getStrings(Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, filter
-                .getString(Tags.IssuerOfPatientID));
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                type2,
-                filter.getString(Tags.PatientName));
-        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
-                filter.getStrings(Tags.StudyID));
+        sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, filter
+                .getStrings(Tags.PatientID));
+        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                type2, filter.getString(Tags.IssuerOfPatientID));
+        sqlBuilder.addPNMatch(
+                new String[] { "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" }, type2, filter
+                        .getString(Tags.PatientName));
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2, filter
+                .getStrings(Tags.StudyID));
         sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
-                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+                SqlBuilder.TYPE1, filter.getStrings(Tags.StudyInstanceUID));
         sqlBuilder.addListOfStringMatch(null, "Series.seriesIuid",
-                SqlBuilder.TYPE1, filter.getStrings( Tags.SeriesInstanceUID));
-        sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
-                filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
+                SqlBuilder.TYPE1, filter.getStrings(Tags.SeriesInstanceUID));
+        sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2, filter
+                .getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
                 filter.getStrings(Tags.AccessionNumber));
-        sqlBuilder.addModalitiesInStudyNestedMatch(null,
-                filter.getStrings(Tags.ModalitiesInStudy));
+        sqlBuilder.addModalitiesInStudyNestedMatch(null, filter
+                .getStrings(Tags.ModalitiesInStudy));
         filter.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addCallingAETsNestedMatch(false,
-                filter.getStrings(PrivateTags.CallingAET));
-        this.hideMissingStudies = hideMissingStudies;   
-        if ( this.hideMissingStudies && ! checkPermissions) {
-                sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
+        sqlBuilder.addCallingAETsNestedMatch(false, filter
+                .getStrings(PrivateTags.CallingAET));
+        this.hideMissingStudies = hideMissingStudies;
+        if (this.hideMissingStudies && !checkPermissions) {
+            sqlBuilder.addNULLValueMatch(null, "Study.encodedAttributes", true);
         }
-        if ( checkPermissions ) {
+        if (checkPermissions) {
             String[] roles = SecurityUtils.rolesOf(subject);
-            if ( roles.length < 1 ) {
-                throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
+            if (roles.length < 1) {
+                throw new IllegalArgumentException(
+                        "User is not in a StudyPermission relevant role");
             }
-            if ( hideMissingStudies ) {
-                sqlBuilder.addSingleValueMatch(null, "StudyPermission.action", false, StudyPermission.QUERY_ACTION);
-                sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
-            } else {
+            if (hideMissingStudies) {
+                sqlBuilder.addSingleValueMatch(null, "StudyPermission.action",
+                        false, StudyPermission.QUERY_ACTION);
+                sqlBuilder.addListOfStringMatch(null, "StudyPermission.role",
+                        false, roles);
+            }
+            else {
                 Node node = sqlBuilder.addNodeMatch("or", false);
-                node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
+                node.addMatch(new Match.NULLValue(null,
+                        "Study.encodedAttributes", false));
                 Node node1 = new Match.Node("and", false);
-                node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermission.QUERY_ACTION));
-                node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
+                node1.addMatch(new Match.SingleValue(null,
+                        "StudyPermission.action", false,
+                        StudyPermission.QUERY_ACTION));
+                node1.addMatch(new Match.ListOfString(null,
+                        "StudyPermission.role", false, roles));
                 node.addMatch(node1);
             }
         }
     }
-    
+
     protected String[] getTables() {
         return new String[] { "Patient" };
     }
 
     protected String[] getLeftJoin(boolean withSeries) {
-        if ( withSeries ) {
-            return checkPermissions
-                ? LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION
-                : QueryStudiesCmd.LEFT_JOIN_WITH_SERIES;
-        } else {
-                return checkPermissions
-                        ? LEFT_JOIN_WITH_STUDY_PERMISSION
-                        : QueryStudiesCmd.LEFT_JOIN;
+        if (withSeries) {
+            return checkPermissions ? LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION
+                    : QueryStudiesCmd.LEFT_JOIN_WITH_SERIES;
+        }
+        else {
+            return checkPermissions ? LEFT_JOIN_WITH_STUDY_PERMISSION
+                    : QueryStudiesCmd.LEFT_JOIN;
         }
     }
+
     protected String[] getRelations() {
         return null;
     }
 
-
     public int count() throws SQLException {
         try {
-            sqlBuilder.setSelectCount(new String[]{"Study.pk"}, true);
-            execute( sqlBuilder.getSql() );
+            sqlBuilder.setSelectCount(new String[] { "Study.pk" }, true);
+            execute(sqlBuilder.getSql());
             next();
-            if (hideMissingStudies) return rs.getInt(1);
-            //we have to add number of studies and number of patients without studies.
+            if (hideMissingStudies)
+                return rs.getInt(1);
+            // we have to add number of studies and number of patients without
+            // studies.
             int studies = rs.getInt(1);
             rs.close();
             rs = null;
-            sqlBuilder.setSelectCount(new String[]{"Patient.pk"}, true);
-                sqlBuilder.addNULLValueMatch(null,"Study.pk", false);
-            execute( sqlBuilder.getSql() );
+            sqlBuilder.setSelectCount(new String[] { "Patient.pk" }, true);
+            sqlBuilder.addNULLValueMatch(null, "Study.pk", false);
+            execute(sqlBuilder.getSql());
             next();
             int emptyPatients = rs.getInt(1);
             List matches = sqlBuilder.getMatches();
-            matches.remove( matches.size() - 1);//removes the Study.pk NULLValue match!
+            matches.remove(matches.size() - 1);// removes the Study.pk
+                                                // NULLValue match!
             return studies + emptyPatients;
-        } finally {
+        }
+        finally {
             close();
         }
     }
 
-        
     public List list(int offset, int limit) throws SQLException {
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
@@ -232,17 +250,17 @@ public class QueryStudiesCmd extends BaseReadCmd {
         try {
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
-            
+
             while (next()) {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
+                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)));
                 final byte[] patAttrs = getBytes(2, accessBlobAsLongVarBinary);
                 long studyPk = rs.getLong(3);
                 final byte[] styAttrs = getBytes(4, accessBlobAsLongVarBinary);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
-                    ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
+                    ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk));
                     DatasetUtils.fromByteArray(styAttrs, ds);
                     ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs
                             .getString(5), '\\'));
@@ -253,12 +271,13 @@ public class QueryStudiesCmd extends BaseReadCmd {
                     ds.putCS(Tags.InstanceAvailability, Availability
                             .toString(rs.getInt(9)));
                     ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
-                    ds.putCS(Tags.StudyStatusID, rs.getString(11) );
+                    ds.putCS(Tags.StudyStatusID, rs.getString(11));
                 }
                 result.add(ds);
             }
             return result;
-        } finally {
+        }
+        finally {
             close();
         }
     }
