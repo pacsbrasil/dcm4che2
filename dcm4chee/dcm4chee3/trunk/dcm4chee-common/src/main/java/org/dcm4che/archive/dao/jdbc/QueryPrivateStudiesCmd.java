@@ -40,6 +40,7 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,84 +61,95 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
+    public static boolean accessBlobAsLongVarBinary = true;
+
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private static final String[] SELECT_ATTRIBUTE = { "PrivatePatient.pk", "PrivatePatient.privateType",
-            "PrivatePatient.encodedAttributes", "PrivateStudy.pk", "PrivateStudy.encodedAttributes"};
+    private static final String[] SELECT_ATTRIBUTE = { "PrivatePatient.pk",
+            "PrivatePatient.privateType", "PrivatePatient.encodedAttributes",
+            "PrivateStudy.pk", "PrivateStudy.encodedAttributes" };
 
-    private static final String[] ENTITY = {"PrivatePatient"};
+    private static final String[] ENTITY = { "PrivatePatient" };
 
-    private static final String[] LEFT_JOIN = { 
-            "PrivateStudy", null, "PrivatePatient.pk", "PrivateStudy.patient_fk",};
+    private static final String[] LEFT_JOIN = { "PrivateStudy", null,
+            "PrivatePatient.pk", "PrivateStudy.patient_fk", };
 
-	private boolean hideMissingStudies = false;
-    
+    private boolean hideMissingStudies = false;
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    public QueryPrivateStudiesCmd(Dataset filter, int privateType, boolean hideMissingStudies)
-            throws SQLException {
+    public QueryPrivateStudiesCmd(Dataset filter, int privateType,
+            boolean hideMissingStudies) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-    	this.hideMissingStudies = hideMissingStudies;
-    	sqlBuilder.setFrom(ENTITY);
+                transactionIsolationLevel);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(3, Types.LONGVARBINARY);
+            defineColumnType(5, Types.LONGVARBINARY);
+        }
+        this.hideMissingStudies = hideMissingStudies;
+        sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
         sqlBuilder.addIntValueMatch(null, "PrivatePatient.privateType",
                 SqlBuilder.TYPE1, privateType);
-        if ( filter != null ) {
-	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
-	                SqlBuilder.TYPE2,
-	                filter.getStrings(Tags.PatientID));
-	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientName",
-	                SqlBuilder.TYPE2,
-	                toWildcardMatchString( filter.getString(Tags.PatientName)) );
-	        sqlBuilder.addWildCardMatch(null, "PrivateStudy.accessionNumber",
-	                SqlBuilder.TYPE2,
-	                filter.getStrings(Tags.AccessionNumber));
-	        sqlBuilder.addListOfStringMatch(null, "PrivateStudy.studyIuid",
-	                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
-	        sqlBuilder.addCallingAETsNestedMatch(true,
-	                filter.getStrings(PrivateTags.CallingAET));
+        if (filter != null) {
+            sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
+                    SqlBuilder.TYPE2, filter.getStrings(Tags.PatientID));
+            sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientName",
+                    SqlBuilder.TYPE2, toWildcardMatchString(filter
+                            .getString(Tags.PatientName)));
+            sqlBuilder.addWildCardMatch(null, "PrivateStudy.accessionNumber",
+                    SqlBuilder.TYPE2, filter.getStrings(Tags.AccessionNumber));
+            sqlBuilder.addListOfStringMatch(null, "PrivateStudy.studyIuid",
+                    SqlBuilder.TYPE1, filter.getStrings(Tags.StudyInstanceUID));
+            sqlBuilder.addCallingAETsNestedMatch(true, filter
+                    .getStrings(PrivateTags.CallingAET));
         }
-        if ( this.hideMissingStudies ) {
-        	sqlBuilder.addNULLValueMatch(null,"PrivateStudy.encodedAttributes", true);
-    	}
-        	
+        if (this.hideMissingStudies) {
+            sqlBuilder.addNULLValueMatch(null,
+                    "PrivateStudy.encodedAttributes", true);
+        }
+
     }
 
     private static String toWildcardMatchString(String patientName) {
-    	if ( patientName != null ) {
-    		patientName = patientName.toUpperCase();
-    		if ( patientName.length() > 0 && 
-    				patientName.indexOf('*') == -1 &&
-					patientName.indexOf('?') == -1) patientName+="*";
-    	}
+        if (patientName != null) {
+            patientName = patientName.toUpperCase();
+            if (patientName.length() > 0 && patientName.indexOf('*') == -1
+                    && patientName.indexOf('?') == -1)
+                patientName += "*";
+        }
         return patientName;
     }
 
     public int count() throws SQLException {
         try {
-            sqlBuilder.setSelectCount(new String[]{"PrivateStudy.pk"}, true);
-            execute( sqlBuilder.getSql() );
+            sqlBuilder.setSelectCount(new String[] { "PrivateStudy.pk" }, true);
+            execute(sqlBuilder.getSql());
             next();
-            if (hideMissingStudies) return rs.getInt(1);
-            //we have to add number of studies and number of patients without studies.
+            if (hideMissingStudies)
+                return rs.getInt(1);
+            // we have to add number of studies and number of patients without
+            // studies.
             int studies = rs.getInt(1);
             rs.close();
             rs = null;
-            sqlBuilder.setSelectCount(new String[]{"PrivatePatient.pk"}, true);
-        	sqlBuilder.addNULLValueMatch(null,"PrivateStudy.pk", false);
-            execute( sqlBuilder.getSql() );
+            sqlBuilder.setSelectCount(new String[] { "PrivatePatient.pk" },
+                    true);
+            sqlBuilder.addNULLValueMatch(null, "PrivateStudy.pk", false);
+            execute(sqlBuilder.getSql());
             next();
             int emptyPatients = rs.getInt(1);
             List matches = sqlBuilder.getMatches();
-            matches.remove( matches.size() - 1);//removes the Study.pk NULLValue match!
+            matches.remove(matches.size() - 1);// removes the Study.pk
+                                                // NULLValue match!
             return studies + emptyPatients;
-        } finally {
+        }
+        finally {
             close();
         }
     }
 
-	
     public List list(int offset, int limit) throws SQLException {
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("PrivatePatient.pk", SqlBuilder.ASC);
@@ -146,23 +158,24 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
         try {
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
-            
+
             while (next()) {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
-                final byte[] patAttrs = getBytes(3);
+                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)));
+                final byte[] patAttrs = getBytes(3, accessBlobAsLongVarBinary);
                 long studyPk = rs.getLong(4);
-                final byte[] styAttrs = getBytes(5);
+                final byte[] styAttrs = getBytes(5, accessBlobAsLongVarBinary);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
-                    ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
+                    ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk));
                     DatasetUtils.fromByteArray(styAttrs, ds);
-                } 
+                }
                 result.add(ds);
             }
             return result;
-        } finally {
+        }
+        finally {
             close();
         }
     }

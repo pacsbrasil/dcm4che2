@@ -118,8 +118,7 @@ class SqlBuilder {
         JdbcProperties jdbcProps = JdbcProperties.getInstance();
         if (fields == null || fields.length < 1) {
             sb.append('*');
-        }
-        else {
+        } else {
             sb.append(jdbcProps.getProperty(fields[0]));
             for (int i = 1; i < fields.length; i++) {
                 sb.append(',').append(jdbcProps.getProperty(fields[i]));
@@ -432,8 +431,7 @@ class SqlBuilder {
                     appendTo(sb, selectAsC1C2CN());
                     sb.append(',');
                     appendTo(sb, selectOrderByAsSort());
-                }
-                else {
+                } else {
                     throw new IllegalArgumentException(
                             "LIMIT OFFSET feature needs order by in MS SQL Server!!");
                 }
@@ -442,8 +440,7 @@ class SqlBuilder {
                 appendTo(sb, select);
                 break;
             }
-        }
-        else {
+        } else {
             appendTo(sb, select);
         }
         sb.append(" FROM ");
@@ -554,8 +551,7 @@ class SqlBuilder {
                     sb.append(" ");
                     sb.append(leftJoin[i4 + 1]);
                 }
-            }
-            else {
+            } else {
                 sb.append(" LEFT JOIN ");
                 sb.append(leftJoin[i4]);
                 if (leftJoin[i4 + 1] != null) {
@@ -588,8 +584,7 @@ class SqlBuilder {
     private void appendInnerJoinsToFrom(StringBuffer sb) {
         if (relations == null || getDatabase() == JdbcProperties.ORACLE) {
             appendTo(sb, from);
-        }
-        else {
+        } else {
             sb.append(from[0]);
             for (int i = 0, n = relations.length / 2; i < n; ++i) {
                 final int i2 = 2 * i;

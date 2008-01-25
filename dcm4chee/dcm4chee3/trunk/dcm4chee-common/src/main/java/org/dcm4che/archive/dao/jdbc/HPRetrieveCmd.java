@@ -40,6 +40,7 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class HPRetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
+    public static boolean accessBlobAsLongVarBinary = true;
+
     private static final String[] FROM = { "HP" };
 
     private static final String[] SELECT = { "HP.encodedAttributes" };
@@ -63,25 +66,31 @@ public class HPRetrieveCmd extends BaseReadCmd {
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     public HPRetrieveCmd(Dataset keys) throws SQLException {
-		super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-		sqlBuilder.setSelect(SELECT);
-		sqlBuilder.setFrom(FROM);
-		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1,
-				keys.getStrings(Tags.SOPInstanceUID));
-	}
-	
-	public List getDatasets() throws SQLException {
-		ArrayList result = new ArrayList();
-		try {
-	        execute(sqlBuilder.getSql());
-			while (next()) {
-				result.add(DatasetUtils.fromByteArray(getBytes(1)));			
-			}
-		} finally {
-			close();
-		}
-		return result;
+        super(JdbcProperties.getInstance().getDataSource(),
+                transactionIsolationLevel);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+        }
+        sqlBuilder.setSelect(SELECT);
+        sqlBuilder.setFrom(FROM);
+        sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
+                .getStrings(Tags.SOPInstanceUID));
     }
-	
+
+    public List getDatasets() throws SQLException {
+        ArrayList result = new ArrayList();
+        try {
+            execute(sqlBuilder.getSql());
+            while (next()) {
+                result.add(DatasetUtils.fromByteArray(getBytes(1,
+                        accessBlobAsLongVarBinary)));
+            }
+        }
+        finally {
+            close();
+        }
+        return result;
+    }
+
 }

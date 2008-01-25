@@ -66,62 +66,89 @@ import org.dcm4cheri.util.StringUtils;
  * @version $Revision: 1.2 $ $Date: 2007/07/05 05:51:46 $
  */
 public abstract class QueryCmd extends BaseDSQueryCmd {
-
+    
     private static final int[] MATCHING_PATIENT_KEYS = new int[] {
-            Tags.PatientID, Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq,
-            Tags.PatientName, Tags.PatientBirthDate, Tags.PatientBirthTime,
-            Tags.PatientSex, };
+            Tags.PatientID, 
+            Tags.IssuerOfPatientID, 
+            Tags.OtherPatientIDSeq,
+            Tags.PatientName, 
+            Tags.PatientBirthDate, 
+            Tags.PatientBirthTime,
+            Tags.PatientSex,
+            };
 
     private static final int[] MATCHING_STUDY_KEYS = new int[] {
-            Tags.StudyInstanceUID, Tags.StudyID, Tags.StudyDate,
-            Tags.StudyTime, Tags.AccessionNumber, Tags.ReferringPhysicianName,
-            Tags.StudyDescription, Tags.StudyStatusID, };
+            Tags.StudyInstanceUID, 
+            Tags.StudyID, 
+            Tags.StudyDate,
+            Tags.StudyTime, 
+            Tags.AccessionNumber, 
+            Tags.ReferringPhysicianName,
+            Tags.StudyDescription,
+            Tags.StudyStatusID,
+            };
 
     private static final int[] MATCHING_SERIES_KEYS = new int[] {
-            Tags.SeriesInstanceUID, Tags.SeriesNumber, Tags.Modality,
-            Tags.ModalitiesInStudy, Tags.InstitutionName, Tags.StationName,
-            Tags.SeriesDescription, Tags.InstitutionalDepartmentName,
-            Tags.PerformingPhysicianName, Tags.BodyPartExamined,
-            Tags.Laterality, Tags.PPSStartDate, Tags.PPSStartTime,
-            Tags.RequestAttributesSeq, };
+            Tags.SeriesInstanceUID, 
+            Tags.SeriesNumber,
+            Tags.Modality,
+            Tags.ModalitiesInStudy, 
+            Tags.InstitutionName,
+            Tags.StationName,
+            Tags.SeriesDescription,
+            Tags.InstitutionalDepartmentName,
+            Tags.PerformingPhysicianName,
+            Tags.BodyPartExamined,
+            Tags.Laterality,
+            Tags.PPSStartDate,
+            Tags.PPSStartTime, 
+            Tags.RequestAttributesSeq,
+            };
 
     private static final int[] MATCHING_INSTANCE_KEYS = new int[] {
-            Tags.SOPInstanceUID, Tags.SOPClassUID, Tags.InstanceNumber,
-            Tags.VerificationFlag, Tags.ContentDate, Tags.ContentTime,
-            Tags.CompletionFlag, Tags.VerificationFlag,
-            Tags.ConceptNameCodeSeq, Tags.VerifyingObserverSeq };
+            Tags.SOPInstanceUID, 
+            Tags.SOPClassUID, 
+            Tags.InstanceNumber,
+            Tags.VerificationFlag, 
+            Tags.ContentDate, 
+            Tags.ContentTime,
+            Tags.CompletionFlag, 
+            Tags.VerificationFlag,
+            Tags.ConceptNameCodeSeq,
+            Tags.VerifyingObserverSeq};
 
     private static final int[] MATCHING_VERIFYING_OBSERVER = new int[] {
-            Tags.VerificationDateTime, Tags.VerifyingObserverName };
+            Tags.VerificationDateTime,
+            Tags.VerifyingObserverName };
 
     private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
-            Tags.StudyInstanceUID, Tags.RequestedProcedureID, Tags.SPSID,
-            Tags.RequestingService, Tags.RequestingPhysician };
+            Tags.StudyInstanceUID,
+            Tags.RequestedProcedureID,
+            Tags.SPSID, 
+            Tags.RequestingService,
+            Tags.RequestingPhysician };
 
     private static final int[] MATCHING_OTHER_PAT_ID_SEQ = new int[] {
-            Tags.PatientID, Tags.IssuerOfPatientID, Tags.TypeOfPatientID // We
-                                                                            // cannot
-                                                                            // match
-                                                                            // but
-                                                                            // should
-                                                                            // add
-                                                                            // here
-                                                                            // to
-                                                                            // avoid
-                                                                            // warnings.
+            Tags.PatientID, 
+            Tags.IssuerOfPatientID, 
+            Tags.TypeOfPatientID // We cannot match but should add here to avoid warnings.
     };
 
     private static final int[] ATTR_IGNORE_DIFF_LOG = new int[] {
-            Tags.PatientID, Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq };
+            Tags.PatientID,
+            Tags.IssuerOfPatientID,
+            Tags.OtherPatientIDSeq };
 
-    private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
-            "OFFLINE", "UNAVAILABLE" };
+    private static final String[] AVAILABILITY = { 
+            "ONLINE", "NEARLINE", "OFFLINE", "UNAVAILABLE" };
 
     private static final String SR_CODE = "sr_code";
 
     public static int transactionIsolationLevel = 0;
-
     public static boolean accessBlobAsLongVarBinary = true;
+    public static boolean accessSeriesBlobAsLongVarBinary = false;
+    public static boolean lazyFetchSeriesAttrsOnImageLevelQuery = false;
+    public static boolean cacheSeriesAttrsOnImageLevelQuery = true;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -133,10 +160,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected final Subject subject;
 
-    public void setCoercePatientIds(boolean coercePatientIds) {
+    public void setCoercePatientIds( boolean coercePatientIds ) {
         this.coercePatientIds = coercePatientIds;
     }
-
+    
     public static QueryCmd create(Dataset keys, boolean filterResult,
             boolean noMatchForNoValue, Subject subject) throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
@@ -249,8 +276,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         DcmElement otherPatIdSQ = getOtherPatientIdMatchSQ();
         if (otherPatIdSQ != null) {
             addListOfPatIdMatch(otherPatIdSQ);
-        }
-        else {
+        } else {
             sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
                     .getStrings(Tags.PatientID));
             sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
@@ -270,10 +296,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            sqlBuilder.addWildCardMatch(null, "Patient."
-                    + filter.getField(fieldTags[i]), type2, keys
-                    .getStrings(fieldTags[i]));
-
+            sqlBuilder.addWildCardMatch(null,
+                    "Patient." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
         }
         matchingKeys.add(MATCHING_PATIENT_KEYS);
         matchingKeys.add(fieldTags);
@@ -305,9 +331,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     return otherPatIdSQ;
             }
         }
-        log
-                .warn("Matching of items in OtherPatientIdSequence disabled! Reason: "
-                        + sb);
+        log.warn("Matching of items in OtherPatientIdSequence disabled! Reason: " + sb);
         otherPatientIDMatchNotSupported = true;
         return null;
     }
@@ -337,12 +361,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             StringBuffer sb) {
         if (value == null) {
             sb.append("Missing attribute ").append(chkItem);
-        }
-        else if (value.indexOf('*') != -1 || value.indexOf('?') != -1) {
+        } else if (value.indexOf('*') != -1 || value.indexOf('?') != -1) {
             sb.append("Wildcard ('*','?') not allowed in ").append(chkItem)
                     .append(" ('").append(value).append("')");
-        }
-        else {
+        } else {
             return true;
         }
         return false;
@@ -368,14 +390,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            sqlBuilder.addWildCardMatch(null, "Study."
-                    + filter.getField(fieldTags[i]), type2, keys
-                    .getStrings(fieldTags[i]));
-
+            sqlBuilder.addWildCardMatch(null,
+                    "Study." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
         }
         matchingKeys.add(MATCHING_STUDY_KEYS);
         matchingKeys.add(fieldTags);
     }
+
 
     protected void addStudyPermissionMatch() {
         if (subject != null) {
@@ -386,6 +409,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
     }
 
+    
     protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
                 .getStrings(Tags.ModalitiesInStudy));
@@ -406,12 +430,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             modality = keys.getStrings(Tags.ModalitiesInStudy);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
                 modality);
-        sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2, keys
-                .getStrings(Tags.SeriesNumber));
+        sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
+                keys.getStrings(Tags.SeriesNumber));
         sqlBuilder.addWildCardMatch(null, "Series.bodyPartExamined", type2,
                 keys.getStrings(Tags.BodyPartExamined));
-        sqlBuilder.addWildCardMatch(null, "Series.laterality", type2, keys
-                .getStrings(Tags.Laterality));
+        sqlBuilder.addWildCardMatch(null, "Series.laterality", type2,
+                keys.getStrings(Tags.Laterality));
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
                 SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionName)));
         sqlBuilder.addWildCardMatch(null, "Series.stationName", type2,
@@ -423,8 +447,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         .getString(Tags.InstitutionalDepartmentName)));
         sqlBuilder.addPNMatch(new String[] { "Series.performingPhysicianName",
                 "Series.performingPhysicianIdeographicName",
-                "Series.performingPhysicianPhoneticName" }, type2, keys
-                .getString(Tags.PerformingPhysicianName));
+                "Series.performingPhysicianPhoneticName" }, type2,
+                keys.getString(Tags.PerformingPhysicianName));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
@@ -436,15 +460,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "SeriesRequest.pk" });
             subQuery.setFrom(new String[] { "SeriesRequest" });
-            subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1,
-                    null, "SeriesRequest.series_fk");
+            subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
+                    "SeriesRequest.series_fk");
             subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
                     rqAttrs.getStrings(Tags.StudyInstanceUID));
             subQuery.addWildCardMatch(null,
-                    "SeriesRequest.requestedProcedureId", SqlBuilder.TYPE1,
-                    rqAttrs.getStrings(Tags.RequestedProcedureID));
-            subQuery.addWildCardMatch(null, "SeriesRequest.spsId",
-                    SqlBuilder.TYPE1, rqAttrs.getStrings(Tags.SPSID));
+                    "SeriesRequest.requestedProcedureId", SqlBuilder.TYPE1, rqAttrs
+                            .getStrings(Tags.RequestedProcedureID));
+            subQuery.addWildCardMatch(null, "SeriesRequest.spsId", SqlBuilder.TYPE1,
+                    rqAttrs.getStrings(Tags.SPSID));
             subQuery.addWildCardMatch(null, "SeriesRequest.requestingService",
                     type2, rqAttrs.getStrings(Tags.RequestingService));
             subQuery.addPNMatch(new String[] {
@@ -460,10 +484,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            sqlBuilder.addWildCardMatch(null, "Series."
-                    + filter.getField(fieldTags[i]), type2, keys
-                    .getStrings(fieldTags[i]));
-
+            sqlBuilder.addWildCardMatch(null,
+                    "Series." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
         }
 
         matchingKeys.add(MATCHING_SERIES_KEYS);
@@ -499,8 +523,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "VerifyingObserver.pk" });
             subQuery.setFrom(new String[] { "VerifyingObserver" });
-            subQuery.addFieldValueMatch(null, "Instance.pk", SqlBuilder.TYPE1,
-                    null, "VerifyingObserver.instance_fk");
+            subQuery.addFieldValueMatch(null, "Instance.pk", SqlBuilder.TYPE1, null,
+                    "VerifyingObserver.instance_fk");
             subQuery.addRangeMatch(null,
                     "VerifyingObserver.verificationDateTime", SqlBuilder.TYPE1,
                     voAttrs.getDateRange(Tags.VerificationDateTime));
@@ -508,20 +532,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "VerifyingObserver.verifyingObserverName",
                     "VerifyingObserver.verifyingObserverIdeographicName",
                     "VerifyingObserver.verifyingObserverPhoneticName" },
-                    SqlBuilder.TYPE1, voAttrs
-                            .getString(Tags.VerifyingObserverName));
+                    SqlBuilder.TYPE1,
+                    voAttrs.getString(Tags.VerifyingObserverName));
 
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
-        AttributeFilter filter = AttributeFilter
-                .getInstanceAttributeFilter(null);
+        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            sqlBuilder.addWildCardMatch(null, "Instance."
-                    + filter.getField(fieldTags[i]), type2, keys
-                    .getStrings(fieldTags[i]));
-
+            sqlBuilder.addWildCardMatch(null,
+                    "Instance." + filter.getField(fieldTags[i]), type2,
+                    keys.getStrings(fieldTags[i]));
+            
         }
         matchingKeys.add(MATCHING_INSTANCE_KEYS);
         matchingKeys.add(fieldTags);
@@ -545,30 +568,28 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
         if (sq != null) {
             checkPatAttrs();
-            if (coercePatientIds) {
+            if ( coercePatientIds ) {
                 if (log.isDebugEnabled()) {
                     log.debug("PatientID in response:"
-                            + keys.getString(Tags.PatientID) + "^"
-                            + keys.getString(Tags.IssuerOfPatientID));
-                    log.debug("PatientID of match:"
-                            + ds.getString(Tags.PatientID) + "^"
-                            + ds.getString(Tags.IssuerOfPatientID));
+                        + keys.getString(Tags.PatientID) + "^"
+                        + keys.getString(Tags.IssuerOfPatientID));
+                    log.debug("PatientID of match:" + ds.getString(Tags.PatientID)
+                        + "^" + ds.getString(Tags.IssuerOfPatientID));
                 }
                 ds.putAll(keys.subSet(new int[] { Tags.PatientID,
-                        Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
+                    Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
             }
         }
     }
 
     private void checkPatAttrs() throws SQLException {
         Dataset ds = dof.newDataset();
-        fillDataset(ds, 1);
+        fillDataset(ds, 1, accessBlobAsLongVarBinary);
         String key = getPatIdString(ds);
         if (chkPatAttrs == null) {
             chkPatAttrs = new HashMap();
             chkPatAttrs.put(key, ds);
-        }
-        else if (!chkPatAttrs.containsKey(key)) {
+        } else if (!chkPatAttrs.containsKey(key)) {
             for (Iterator iter = chkPatAttrs.values().iterator(); iter
                     .hasNext();) {
                 logDiffs(ds, (Dataset) iter.next(), key);
@@ -614,12 +635,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             if (pos != -1) {
                 pos = pn.indexOf('^', pos);
                 return pos != -1 ? pn.substring(0, pos) : pn;
-            }
-            else {
+            } else {
                 return pn;
             }
-        }
-        catch (DcmValueException x) {
+        } catch (DcmValueException x) {
             log.error("Cant get family and given name value of " + el, x);
             return "";
         }
@@ -632,14 +651,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected abstract void fillDataset(Dataset ds) throws SQLException;
 
-    protected void fillDataset(Dataset ds, int column) throws SQLException {
-        DatasetUtils.fromByteArray(getBytes(column), ds);
+    protected void fillDataset(Dataset ds, int column,
+            boolean accessBlobAsLongVarBinary) throws SQLException {
+        DatasetUtils.fromByteArray(getBytes(column, accessBlobAsLongVarBinary), ds);
     }
 
     static class PatientQueryCmd extends QueryCmd {
 
         PatientQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject) throws SQLException {
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
             if (accessBlobAsLongVarBinary) {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
@@ -651,13 +672,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super.init();
             addPatientMatch();
             if (subject != null) {
-                sqlBuilder.addQueryPermissionNestedMatch(SecurityUtils
-                        .rolesOf(subject));
+                sqlBuilder.addQueryPermissionNestedMatch(
+                        SecurityUtils.rolesOf(subject));
             }
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
 
@@ -674,7 +695,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class StudyQueryCmd extends QueryCmd {
 
         StudyQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject) throws SQLException {
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
             if (accessBlobAsLongVarBinary) {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
@@ -702,20 +724,21 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return subject == null ? new String[] { "Patient", "Study" }
+            return subject == null
+                    ? new String[] { "Patient", "Study" }
                     : new String[] { "Patient", "Study", "StudyPermission" };
         }
 
         protected String[] getRelations() {
-            return subject == null ? new String[] { "Patient.pk",
-                    "Study.patient_fk" } : new String[] { "Patient.pk",
-                    "Study.patient_fk", "Study.studyIuid",
-                    "StudyPermission.studyIuid" };
+            return subject == null 
+                    ? new String[] { "Patient.pk", "Study.patient_fk" }
+                    : new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.studyIuid", "StudyPermission.studyIuid"};
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
-            fillDataset(ds, 2);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 2, accessBlobAsLongVarBinary);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
                     '\\'));
             ds.putCS(Tags.StudyStatusID, rs.getString(4));
@@ -733,7 +756,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class SeriesQueryCmd extends QueryCmd {
 
         SeriesQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject) throws SQLException {
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
             if (accessBlobAsLongVarBinary) {
                 // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
@@ -765,17 +789,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return subject == null ? new String[] { "Patient", "Study",
-                    "Series" } : new String[] { "Patient", "Study",
-                    "StudyPermission", "Series" };
+            return subject == null
+                    ? new String[] { "Patient", "Study", "Series" }
+                    : new String[] { "Patient", "Study", "StudyPermission",
+                            "Series" };
         }
 
         protected String[] getRelations() {
-            return subject == null ? new String[] { "Patient.pk",
-                    "Study.patient_fk", "Study.pk", "Series.study_fk" }
+            return subject == null 
+                    ? new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.pk", "Series.study_fk" }
                     : new String[] { "Patient.pk", "Study.patient_fk",
                             "Study.studyIuid", "StudyPermission.studyIuid",
-                            "Study.pk", "Series.study_fk" };
+                            "Study.pk", "Series.study_fk"};
         }
 
         protected String[] getLeftJoin() {
@@ -783,9 +809,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1);
-            fillDataset(ds, 2);
-            fillDataset(ds, 3);
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 2, accessBlobAsLongVarBinary);
+            fillDataset(ds, 3, accessBlobAsLongVarBinary);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(4),
                     '\\'));
             ds.putCS(Tags.StudyStatusID, rs.getString(5));
@@ -805,11 +831,24 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         HashMap seriesAttrsCache = new HashMap();
 
         ImageQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject) throws SQLException {
+                boolean noMatchForNoValue, Subject subject)
+                throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
             if (accessBlobAsLongVarBinary) {
-                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
+            }
+            if (accessSeriesBlobAsLongVarBinary
+                    && !lazyFetchSeriesAttrsOnImageLevelQuery) {
+                // has to also set binding of VARCHAR2 Series.seriesIuid to
+                // LONGVARBINARY, otherwise Oracle JDBC Driver v10.2.0.3.0
+                // throws java.sql.SQLException: Io exception: 
+                // Bigger type length than Maximum on access of column 3 
                 defineColumnType(2, Types.LONGVARBINARY);
+                
+                defineColumnType(3, Types.LONGVARBINARY);
+                defineColumnType(4, Types.LONGVARBINARY);
+                defineColumnType(5, Types.LONGVARBINARY);
             }
             addAdditionalReturnKeys();
         }
@@ -824,16 +863,38 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Series.seriesIuid",
-                    "Instance.encodedAttributes", "Instance.retrieveAETs",
-                    "Instance.externalRetrieveAET", "Instance.availability",
-                    "Media.filesetId", "Media.filesetIuid" };
+            return lazyFetchSeriesAttrsOnImageLevelQuery
+                    ? new String[] {
+                            "Instance.encodedAttributes",
+                            "Instance.retrieveAETs",
+                            "Instance.externalRetrieveAET",
+                            "Instance.availability",
+                            "Series.seriesIuid",
+                            "Media.filesetId",
+                            "Media.filesetIuid" }
+                    : new String[] {
+                            "Instance.encodedAttributes",
+                            "Series.seriesIuid",
+                            "Patient.encodedAttributes",
+                            "Study.encodedAttributes",
+                            "Series.encodedAttributes",
+                            "Study.modalitiesInStudy",
+                            "Study.studyStatusId",
+                            "Study.numberOfStudyRelatedSeries",
+                            "Study.numberOfStudyRelatedInstances",
+                            "Series.numberOfSeriesRelatedInstances",
+                            "Instance.retrieveAETs",
+                            "Instance.externalRetrieveAET",
+                            "Instance.availability",
+                            "Media.filesetId",
+                            "Media.filesetIuid" };
         }
 
         protected String[] getTables() {
-            return subject == null ? new String[] { "Patient", "Study",
-                    "Series", "Instance" } : new String[] { "Patient", "Study",
-                    "StudyPermission", "Series", "Instance" };
+            return subject == null
+                    ? new String[] { "Patient", "Study", "Series", "Instance" }
+                    : new String[] { "Patient", "Study", "StudyPermission",
+                                "Series", "Instance" };
         }
 
         protected String[] getLeftJoin() {
@@ -852,42 +913,86 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getRelations() {
-            return subject == null ? new String[] { "Patient.pk",
-                    "Study.patient_fk", "Study.pk", "Series.study_fk",
-                    "Series.pk", "Instance.series_fk" } : new String[] {
-                    "Patient.pk", "Study.patient_fk", "Study.studyIuid",
-                    "StudyPermission.studyIuid", "Study.pk", "Series.study_fk",
-                    "Series.pk", "Instance.series_fk" };
+            return subject == null 
+                    ? new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.pk", "Series.study_fk", "Series.pk",
+                            "Instance.series_fk" }
+                    : new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.studyIuid", "StudyPermission.studyIuid",
+                            "Study.pk", "Series.study_fk", "Series.pk",
+                            "Instance.series_fk"};
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            String seriesIuid = rs.getString(1);
-            Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
-            if (seriesAttrs == null) {
-                ds.putUI(Tags.SeriesInstanceUID, seriesIuid);
-                QueryCmd seriesQuery = QueryCmd.createSeriesQuery(ds, false,
-                        false, null);
-                seriesQuery.execute();
-                seriesQuery.next();
-                seriesAttrsCache.put(seriesIuid, seriesAttrs = seriesQuery
-                        .getDataset());
-                seriesQuery.close();
+            if (lazyFetchSeriesAttrsOnImageLevelQuery) {
+                fillDatasetWithLazyFetchSeriesAttrs(ds);
+            } else {
+                fillDatasetWithEagerFetchSeriesAttrs(ds);
             }
-            fillDataset(ds, 2);
-            ds.putAll(seriesAttrs);
-            DatasetUtils.putRetrieveAET(ds, rs.getString(3), rs.getString(4));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(5)]);
+        }
+        
+        private void fillDatasetWithLazyFetchSeriesAttrs(Dataset ds)
+                throws SQLException {
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            DatasetUtils.putRetrieveAET(ds, rs.getString(2), rs.getString(3));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(4)]);
+            String seriesIuid = rs.getString(5);
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
+            Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
+            if (seriesAttrs == null) {
+                QuerySeriesCmd seriesQuery = new QuerySeriesCmd(
+                        QueryCmd.transactionIsolationLevel,
+                        QueryCmd.accessSeriesBlobAsLongVarBinary);
+                seriesQuery.setSeriesIUID(seriesIuid);
+                seriesQuery.execute();
+                seriesQuery.next();
+                seriesAttrsCache.put(seriesIuid,
+                        seriesAttrs = seriesQuery.getDataset());
+                seriesQuery.close();
+            }
+            ds.putAll(seriesAttrs);
+            ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+        }
+        
+        private void fillDatasetWithEagerFetchSeriesAttrs(Dataset ds)
+                throws SQLException {
+            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            if (cacheSeriesAttrsOnImageLevelQuery) {
+                String seriesIuid = rs.getString(2);
+                Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
+                if (seriesAttrs == null) {
+                    seriesAttrs = DcmObjectFactory.getInstance().newDataset();
+                    fillDataset(seriesAttrs, 3, accessSeriesBlobAsLongVarBinary);
+                    fillDataset(seriesAttrs, 4, accessSeriesBlobAsLongVarBinary);
+                    fillDataset(seriesAttrs, 5, accessSeriesBlobAsLongVarBinary);
+                    seriesAttrsCache.put(seriesIuid, seriesAttrs);
+                }
+                ds.putAll(seriesAttrs);
+            } else {
+                fillDataset(ds, 3, accessSeriesBlobAsLongVarBinary);
+                fillDataset(ds, 4, accessSeriesBlobAsLongVarBinary);
+                fillDataset(ds, 5, accessSeriesBlobAsLongVarBinary);
+            }
+            ds.putCS(Tags.ModalitiesInStudy,
+                    StringUtils.split(rs.getString(6), '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(7));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(8));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(9));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(10));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(11), rs.getString(12));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(13)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(14));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(15));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
     }
-
+    
     protected boolean isMatchSrCode() {
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         return code != null
-                && (code.containsValue(Tags.CodeValue) || code
-                        .containsValue(Tags.CodingSchemeDesignator));
+                && (code.containsValue(Tags.CodeValue)
+                        || code.containsValue(Tags.CodingSchemeDesignator));
     }
 
     protected boolean isMatchRequestAttributes() {
@@ -896,14 +1001,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 && (rqAttrs.containsValue(Tags.RequestedProcedureID)
                         || rqAttrs.containsValue(Tags.SPSID)
                         || rqAttrs.containsValue(Tags.RequestingService)
-                        || rqAttrs.containsValue(Tags.RequestingPhysician) || rqAttrs
-                        .containsValue(Tags.StudyInstanceUID));
+                        || rqAttrs.containsValue(Tags.RequestingPhysician)
+                        || rqAttrs.containsValue(Tags.StudyInstanceUID));
     }
 
     protected boolean isMatchVerifyingObserver() {
         Dataset item = keys.getItem(Tags.VerifyingObserverSeq);
         return item != null
-                && (item.containsValue(Tags.VerificationDateTime) || item
-                        .containsValue(Tags.VerifyingObserverName));
+                && (item.containsValue(Tags.VerificationDateTime)
+                        || item.containsValue(Tags.VerifyingObserverName));
     }
 }

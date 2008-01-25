@@ -41,6 +41,7 @@ package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -111,7 +112,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     protected final boolean type2;
     
     protected WadoQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
-    		throws SQLException {
+                throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, ResultSet.TYPE_SCROLL_INSENSITIVE);
         this.keys = keys;
@@ -265,7 +266,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
             if (vr == VRs.SQ) {
                 Dataset keyItem = key.getItem();
                 if (keyItem != null) {
-                	if (el.isEmpty()) el.addNewItem();
+                        if (el.isEmpty()) el.addNewItem();
                     for (int i = 0, n = el.countItems(); i < n; ++i) {
                         adjustDataset(el.getItem(i), keyItem);
                     }
@@ -277,84 +278,86 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     protected abstract void fillDataset(Dataset ds) throws SQLException;
     
     public class KeyData
-	{
-    	public Dataset ds;
-    	public HashMap seq;
-    	
-    	public KeyData(Dataset ds, HashMap seq)
-    	{
-    		this.ds = ds;
-    		this.seq = seq;
-    	}
-	}
+        {
+        public Dataset ds;
+        public HashMap seq;
+        
+        public KeyData(Dataset ds, HashMap seq)
+        {
+                this.ds = ds;
+                this.seq = seq;
+        }
+        }
     
     public void fillDatasetHierarchical(HashMap data) throws SQLException
-	{
-    	Long patientPk = null;
-    	Long studyPk = null;
-    	Long seriesPk = null;
-    	Long imagePk = null;
-    	Long filePk = null;
-    	
-    	String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
-    	int level = Arrays.asList(QRLEVEL).indexOf(qrLevel);
-    	switch (level) {
-    		case 4: // Location    	 
-    			filePk = new Long(rs.getLong(14));
-    		case 3: // Image
-    			imagePk = new Long(rs.getLong(7)); 
-    		case 2: // Series
-    			seriesPk = new Long(rs.getLong(5));	 
-    		case 1: // Study	        	
-	        	studyPk = new Long(rs.getLong(3));	        
-    		case 0: // Patient 	            
-	            patientPk = new Long(rs.getInt(1));    
-	            break;
-	            
-	        default:
-	            throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
-    	}
-    	
-    	KeyData kd = getKeyData(patientPk, 2, data, false);    	
-    	kd = (kd != null) ? getKeyData(studyPk, 4, kd.seq, false) : null;
-    	kd = (kd != null) ? getKeyData(seriesPk, 6, kd.seq, false) : null;
-    	kd = (kd != null) ? getKeyData(imagePk, 8, kd.seq, false) : null;    	
-   		kd = (kd != null) ? getKeyData(filePk, -1, kd.seq, true) : null;
-	}
+        {
+        Long patientPk = null;
+        Long studyPk = null;
+        Long seriesPk = null;
+        Long imagePk = null;
+        Long filePk = null;
+        
+        String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
+        int level = Arrays.asList(QRLEVEL).indexOf(qrLevel);
+        switch (level) {
+                case 4: // Location      
+                        filePk = new Long(rs.getLong(14));
+                case 3: // Image
+                        imagePk = new Long(rs.getLong(7)); 
+                case 2: // Series
+                        seriesPk = new Long(rs.getLong(5));      
+                case 1: // Study                        
+                        studyPk = new Long(rs.getLong(3));              
+                case 0: // Patient                  
+                    patientPk = new Long(rs.getInt(1));    
+                    break;
+                    
+                default:
+                    throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
+        }
+        
+        KeyData kd = getKeyData(patientPk, 2, data, false);     
+        kd = (kd != null) ? getKeyData(studyPk, 4, kd.seq, false) : null;
+        kd = (kd != null) ? getKeyData(seriesPk, 6, kd.seq, false) : null;
+        kd = (kd != null) ? getKeyData(imagePk, 8, kd.seq, false) : null;       
+                kd = (kd != null) ? getKeyData(filePk, -1, kd.seq, true) : null;
+        }
     
     private KeyData getKeyData(Long pk, int blob, HashMap d, boolean leaf) throws SQLException
     {
-    	if( pk == null )
-    		return null;
-    	
-    	KeyData kd = null;
-    	if( d.containsKey(pk) )
-			kd = (KeyData)d.get(pk);
-		else
-		{
-			Dataset ds = dof.newDataset();
-			doFillDataset(ds, blob);
-			kd = new KeyData(ds, leaf ? null : new HashMap());
-			d.put(pk, kd);
-		}
-    	return kd;
+        if( pk == null )
+                return null;
+        
+        KeyData kd = null;
+        if( d.containsKey(pk) )
+                        kd = (KeyData)d.get(pk);
+                else
+                {
+                        Dataset ds = dof.newDataset();
+                        doFillDataset(ds, blob);
+                        kd = new KeyData(ds, leaf ? null : new HashMap());
+                        d.put(pk, kd);
+                }
+        return kd;
     }
 
     public void doFillDataset(Dataset ds, int column) throws SQLException {
-    	if(column > 0)
-    		DatasetUtils.fromByteArray(getBytes(column), ds);
-    	else
-    		fillDatasetLocal(ds);
-	}
+        if(column > 0)
+                DatasetUtils.fromByteArray(getBytes(column, true), ds);
+        else
+                fillDatasetLocal(ds);
+        }
 
     public void fillDatasetLocal(Dataset ds) throws SQLException
-    {    	
+    {           
     }
     
     static class PatientQueryCmd extends WadoQueryCmd {
 
         PatientQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -382,6 +385,9 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         StudyQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -429,6 +435,10 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         SeriesQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
+            defineColumnType(6, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -441,8 +451,8 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         protected String[] getSelectAttributes() {
             return new String[] { "Patient.pk", "Patient.encodedAttributes",
                     "Study.pk", "Study.encodedAttributes", 
-					
-					"Series.pk", "Series.encodedAttributes",
+                                        
+                                        "Series.pk", "Series.encodedAttributes",
                     "Series.numberOfSeriesRelatedInstances",
                     "Series.filesetId", "Series.filesetIuid",                    
                     "Series.retrieveAETs", "Series.externalRetrieveAET",
@@ -483,7 +493,12 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         ImageQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-        }
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
+            defineColumnType(6, Types.LONGVARBINARY);
+            defineColumnType(8, Types.LONGVARBINARY);
+       }
 
         protected void init() {
             super.init();
@@ -496,11 +511,11 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         protected String[] getSelectAttributes() {
             return new String[] { "Patient.pk", "Patient.encodedAttributes",
                     "Study.pk", "Study.encodedAttributes", 
-					
-					"Series.pk", "Series.encodedAttributes",
+                                        
+                                        "Series.pk", "Series.encodedAttributes",
                     "Instance.pk", "Instance.encodedAttributes", 
-					
-					"Instance.retrieveAETs",
+                                        
+                                        "Instance.retrieveAETs",
                     "Instance.externalRetrieveAET", "Instance.availability",
                     "Media.filesetId", "Media.filesetIuid"};
         }
@@ -552,21 +567,21 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     static class LocationQueryCmd extends ImageQueryCmd {
 
-    	LocationQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
+        LocationQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-        }
+         }
 
         protected String[] getSelectAttributes() {
             return new String[] { "Patient.pk", "Patient.encodedAttributes",
-                    "Study.pk", "Study.encodedAttributes", 				
-					"Series.pk", "Series.encodedAttributes",
+                    "Study.pk", "Study.encodedAttributes",                              
+                                        "Series.pk", "Series.encodedAttributes",
                     "Instance.pk", "Instance.encodedAttributes", 
-					"Instance.retrieveAETs",
+                                        "Instance.retrieveAETs",
                     "Instance.externalRetrieveAET", "Instance.availability",
                     "Media.filesetId", "Media.filesetIuid",
-					"File.pk", "File.filePath", "File.fileTsuid", "File.fileStatus"
-            		};
+                                        "File.pk", "File.filePath", "File.fileTsuid", "File.fileStatus"
+                        };
         }
 
         protected String[] getTables() {
@@ -576,7 +591,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk", "Study.pk",
                     "Series.study_fk", "Series.pk", "Instance.series_fk", 
-					"Instance.pk", "File.instance_fk"};
+                                        "Instance.pk", "File.instance_fk"};
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -586,13 +601,13 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         }
 
         public void fillDatasetLocal(Dataset ds) throws SQLException {
-        	
-        	ds.putUI(Tags.RefSOPTransferSyntaxUIDInFile, rs.getString(16));   
-        	
-        	 // TODO: need to create a private tag for this: LocationBaseUrl
+                
+                ds.putUI(Tags.RefSOPTransferSyntaxUIDInFile, rs.getString(16));   
+                
+                 // TODO: need to create a private tag for this: LocationBaseUrl
             ds.putUN(Tags.ImageLocationRetired, "http://localhost:9080/wado".getBytes());
             ds.putCS(Tags.QueryRetrieveLevel, "LOCATION");
-    	}
+        }
     }
 
     protected boolean isMatchSrCode() {

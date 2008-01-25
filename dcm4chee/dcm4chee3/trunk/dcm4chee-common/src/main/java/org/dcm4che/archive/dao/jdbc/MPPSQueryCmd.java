@@ -40,6 +40,7 @@
 package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.dcm4che.archive.common.DatasetUtils;
 import org.dcm4che.data.Dataset;
@@ -55,13 +56,14 @@ public class MPPSQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
-    private static final String[] FROM = { "Patient", "MPPS"};
+    public static boolean accessBlobAsLongVarBinary = true;
+
+    private static final String[] FROM = { "Patient", "MPPS" };
 
     private static final String[] SELECT = { "Patient.encodedAttributes",
-            "MPPS.encodedAttributes"};
+            "MPPS.encodedAttributes" };
 
-    private static final String[] RELATIONS = { "Patient.pk",
-    		"MPPS.patient_fk"};
+    private static final String[] RELATIONS = { "Patient.pk", "MPPS.patient_fk" };
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -71,42 +73,41 @@ public class MPPSQueryCmd extends BaseReadCmd {
      */
     public MPPSQueryCmd(Dataset filter, boolean emptyAccNo) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+                transactionIsolationLevel);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+        }
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid",
-                SqlBuilder.TYPE1,
-                filter.getStrings(Tags.SOPInstanceUID) );
-        if ( emptyAccNo ) {
-        	sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false );
-        } else {
-	        sqlBuilder.addListOfStringMatch(null, "MPPS.accessionNumber",
-	                SqlBuilder.TYPE2,
-	                filter.getStrings(Tags.AccessionNumber) );
+        sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid", SqlBuilder.TYPE1,
+                filter.getStrings(Tags.SOPInstanceUID));
+        if (emptyAccNo) {
+            sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false);
+        }
+        else {
+            sqlBuilder.addListOfStringMatch(null, "MPPS.accessionNumber",
+                    SqlBuilder.TYPE2, filter.getStrings(Tags.AccessionNumber));
         }
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                filter.getStrings(Tags.PatientID) );
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
+                SqlBuilder.TYPE1, filter.getStrings(Tags.PatientID));
+        sqlBuilder.addPNMatch(
+                new String[] { "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" }, SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientName));
         sqlBuilder.addListOfStringMatch(null, "MPPS.modality",
-                SqlBuilder.TYPE1,
-                filter.getStrings(Tags.Modality));
+                SqlBuilder.TYPE1, filter.getStrings(Tags.Modality));
         sqlBuilder.addListOfStringMatch(null, "MPPS.performedStationAET",
-                SqlBuilder.TYPE1,
-                filter.getStrings(Tags.PerformedStationAET));
+                SqlBuilder.TYPE1, filter.getStrings(Tags.PerformedStationAET));
         sqlBuilder.addRangeMatch(null, "MPPS.ppsStartDateTime",
-                SqlBuilder.TYPE1,
-                filter.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
+                SqlBuilder.TYPE1, filter.getDateTimeRange(Tags.PPSStartDate,
+                        Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "MPPS.ppsStatusAsInt",
-                SqlBuilder.TYPE1,
-				filter.getStrings(Tags.PPSStatus));
+                SqlBuilder.TYPE1, filter.getStrings(Tags.PPSStatus));
     }
 
     public void execute() throws SQLException {
@@ -114,11 +115,10 @@ public class MPPSQueryCmd extends BaseReadCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1), ds);
-        DatasetUtils.fromByteArray( getBytes(2), ds);
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), ds);
         return ds;
     }
-    
- 
+
 }

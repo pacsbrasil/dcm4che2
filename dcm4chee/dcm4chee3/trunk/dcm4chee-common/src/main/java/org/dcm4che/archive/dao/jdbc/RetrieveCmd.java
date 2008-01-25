@@ -41,6 +41,7 @@ package org.dcm4che.archive.dao.jdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -62,6 +63,8 @@ public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
+    public static boolean accessBlobAsLongVarBinary = true;
+
     /** Number of max. parameters in IN(...) statement. */
     public static int maxElementsInUIDMatch = 100;
 
@@ -81,7 +84,7 @@ public class RetrieveCmd extends BaseReadCmd {
 
     private static final String[] ENTITY_NO_LEFT_JOIN = { "Patient", "Study",
             "Series", "Instance", "File", "FileSystem" };
-    
+
     private static final String[] LEFT_JOIN = { "File", null, "Instance.pk",
             "File.instance_fk", "FileSystem", null, "File.filesystem_fk",
             "FileSystem.pk" };
@@ -108,13 +111,15 @@ public class RetrieveCmd extends BaseReadCmd {
                     : fi2.pk < fi1.pk ? -1 : 1;
         }
     };
-    
+
     private static String[] entity = ENTITY;
+
     private static String[] leftJoin = LEFT_JOIN;
+
     private static String[] relations = RELATIONS;
 
     private Sql sqlCmd;
-    
+
     public static boolean isNoLeftJoin() {
         return leftJoin == null;
     }
@@ -124,10 +129,11 @@ public class RetrieveCmd extends BaseReadCmd {
             entity = ENTITY_NO_LEFT_JOIN;
             leftJoin = null;
             relations = RELATIONS_NO_LEFT_JOIN;
-        } else {
+        }
+        else {
             entity = ENTITY;
             leftJoin = LEFT_JOIN;
-            relations = RELATIONS;         
+            relations = RELATIONS;
         }
     }
 
@@ -174,6 +180,13 @@ public class RetrieveCmd extends BaseReadCmd {
     protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, sql.getSql());
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(5, Types.LONGVARBINARY);
+            defineColumnType(8, Types.LONGVARBINARY);
+            defineColumnType(9, Types.LONGVARBINARY);
+            defineColumnType(10, Types.LONGVARBINARY);
+        }
         this.sqlCmd = sql;
     }
 
@@ -192,32 +205,34 @@ public class RetrieveCmd extends BaseReadCmd {
                 int len = sqlCmd.getNumberOfParams();
                 while (start < params.length) {
                     if (start + len > params.length) { // we need a new
-                                                        // statement for the
-                                                        // remaining parameter
-                                                        // values
+                        // statement for the
+                        // remaining parameter
+                        // values
                         len = params.length - start;
                         sqlCmd.updateUIDMatch(len);
                         pstmt = con.prepareStatement(sqlCmd.getSql(),
                                 resultSetType, resultSetConcurrency);
                         if (firstListIdx > 0) { // we need to set the fix params
-                                                // for the new statement!
+                            // for the new statement!
                             for (int i = 0; i < fixParams.length; i++) {
                                 pstmt.setString(i + 1, fixParams[i]);
                             }
                         }
                     }
                     for (int i = 1; i <= len; i++) {// set the values for the
-                                                    // uid list match
+                        // uid list match
                         pstmt.setString(firstListIdx + i, params[start++]);
                     }
                     rs = pstmt.executeQuery();
                     addFileInfos(result);
                 }
-            } else {
+            }
+            else {
                 rs = pstmt.executeQuery();
                 addFileInfos(result);
             }
-        } finally {
+        }
+        finally {
             close();
         }
         return toArray(result);
@@ -228,12 +243,15 @@ public class RetrieveCmd extends BaseReadCmd {
         Object key;
         while (next()) {
             FileInfo info = new FileInfo(rs.getLong(2), rs.getString(3), rs
-                    .getString(4), getBytes(5), rs.getString(6), rs
-                    .getString(7), getBytes(8), getBytes(9), getBytes(10), rs
-                    .getString(11), rs.getString(12), rs.getString(13), rs
-                    .getString(14), rs.getInt(15), rs.getString(16), rs
-                    .getString(17), rs.getString(18), rs.getString(19), rs
-                    .getInt(20), rs.getInt(21));
+                    .getString(4), getBytes(5, accessBlobAsLongVarBinary), rs
+                    .getString(6), rs.getString(7), getBytes(8,
+                    accessBlobAsLongVarBinary), getBytes(9,
+                    accessBlobAsLongVarBinary), getBytes(10,
+                    accessBlobAsLongVarBinary), rs.getString(11), rs
+                    .getString(12), rs.getString(13), rs.getString(14), rs
+                    .getInt(15), rs.getString(16), rs.getString(17), rs
+                    .getString(18), rs.getString(19), rs.getInt(20), rs
+                    .getInt(21));
             key = key();
             list = (ArrayList) result.get(key);
             if (list == null) {
@@ -334,7 +352,8 @@ public class RetrieveCmd extends BaseReadCmd {
                 for (int i = 0; i < uid.length; i++) {
                     fixValues.add(uid[i]);
                 }
-            } else {
+            }
+            else {
                 if (params != null)
                     throw new IllegalArgumentException(
                             "Only one UID list > maxElementsInUIDMatch ("
@@ -373,7 +392,8 @@ public class RetrieveCmd extends BaseReadCmd {
                 sqlBuilder.addLiteralMatch(null, "Patient.patientId",
                         SqlBuilder.TYPE2, "=?");
                 fixValues.add(pid);
-            } else if (patientRetrieve)
+            }
+            else if (patientRetrieve)
                 throw new IllegalArgumentException("Missing PatientID");
         }
     }
@@ -384,7 +404,8 @@ public class RetrieveCmd extends BaseReadCmd {
             String[] uid = keys.getStrings(Tags.StudyInstanceUID);
             if (uid != null && uid.length != 0 && !"*".equals(uid[0])) {
                 addUidMatch("Study.studyIuid", uid);
-            } else if (studyRetrieve)
+            }
+            else if (studyRetrieve)
                 throw new IllegalArgumentException("Missing StudyInstanceUID");
         }
     }
@@ -395,7 +416,8 @@ public class RetrieveCmd extends BaseReadCmd {
             String[] uid = keys.getStrings(Tags.SeriesInstanceUID);
             if (uid != null && uid.length != 0 && !"*".equals(uid[0])) {
                 addUidMatch("Series.seriesIuid", uid);
-            } else if (seriesRetrieve)
+            }
+            else if (seriesRetrieve)
                 throw new IllegalArgumentException("Missing SeriesInstanceUID");
         }
 
@@ -407,7 +429,8 @@ public class RetrieveCmd extends BaseReadCmd {
             String[] uid = keys.getStrings(Tags.SOPInstanceUID);
             if (uid != null && uid.length != 0 && !"*".equals(uid[0])) {
                 addUidMatch("Instance.sopIuid", uid);
-            } else
+            }
+            else
                 throw new IllegalArgumentException("Missing SOPInstanceUID");
         }
     }

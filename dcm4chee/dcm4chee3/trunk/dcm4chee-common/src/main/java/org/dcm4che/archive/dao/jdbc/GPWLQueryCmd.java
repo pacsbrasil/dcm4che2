@@ -60,23 +60,29 @@ import org.dcm4che.dict.Tags;
 public class GPWLQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
+
     public static boolean accessBlobAsLongVarBinary = true;
 
-    private static final String[] FROM = { "Patient", "GPSPS"};
+    private static final String[] FROM = { "Patient", "GPSPS" };
 
     private static final String[] SELECT = { "Patient.encodedAttributes",
-            "GPSPS.encodedAttributes"};
+            "GPSPS.encodedAttributes" };
 
     private static final String[] RELATIONS = { "Patient.pk",
-            "GPSPS.patient_fk"};
-    
+            "GPSPS.patient_fk" };
+
     private static final String ITEM_CODE = "item_code";
+
     private static final String APP_CODE = "app_code";
+
     private static final String DEVNAME_CODE = "devname_code";
+
     private static final String DEVCLASS_CODE = "devclass_code";
+
     private static final String DEVLOC_CODE = "devloc_code";
+
     private static final String PERF_CODE = "perf_code";
-    
+
     public GPWLQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
         if (accessBlobAsLongVarBinary) {
@@ -93,66 +99,58 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
         sqlBuilder.setLeftJoin(getLeftJoin());
-        sqlBuilder.addListOfUidMatch(null, "GPSPS.sopIuid",
-                SqlBuilder.TYPE1,
+        sqlBuilder.addListOfUidMatch(null, "GPSPS.sopIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.SOPInstanceUID));
         if ((s = keys.getString(Tags.GPSPSStatus)) != null) {
             sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsStatusAsInt",
-                    SqlBuilder.TYPE1,
-                    GPSPSStatus.toInt(s));
+                    SqlBuilder.TYPE1, GPSPSStatus.toInt(s));
         }
         if ((s = keys.getString(Tags.InputAvailabilityFlag)) != null) {
-            sqlBuilder.addIntValueMatch(null, "GPSPS.inputAvailabilityFlagAsInt",
-                    SqlBuilder.TYPE1,
+            sqlBuilder.addIntValueMatch(null,
+                    "GPSPS.inputAvailabilityFlagAsInt", SqlBuilder.TYPE1,
                     InputAvailabilityFlag.toInt(s));
         }
         s = keys.getString(Tags.GPSPSPriority);
         if (s != null) {
             sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsPriorityAsInt",
-                    SqlBuilder.TYPE1,
-                    GPSPSPriority.toInt(s));
+                    SqlBuilder.TYPE1, GPSPSPriority.toInt(s));
         }
         sqlBuilder.addRangeMatch(null, "GPSPS.spsStartDateTime",
-                SqlBuilder.TYPE1,
-                keys.getDateRange(Tags.SPSStartDateAndTime));
+                SqlBuilder.TYPE1, keys.getDateRange(Tags.SPSStartDateAndTime));
         sqlBuilder.addRangeMatch(null, "GPSPS.expectedCompletionDateTime",
-                SqlBuilder.TYPE2,
-                keys.getDateRange(Tags.ExpectedCompletionDateAndTime));        
+                SqlBuilder.TYPE2, keys
+                        .getDateRange(Tags.ExpectedCompletionDateAndTime));
         addCodeMatch(Tags.ScheduledWorkitemCodeSeq, ITEM_CODE);
         addCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq, APP_CODE);
         addCodeMatch(Tags.ScheduledStationNameCodeSeq, DEVNAME_CODE);
         addCodeMatch(Tags.ScheduledStationClassCodeSeq, DEVCLASS_CODE);
-        addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq, DEVLOC_CODE);
+        addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq,
+                DEVLOC_CODE);
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
         if (item != null) {
             sqlBuilder.addPNMatch(new String[] {
                     "GPSPSPerformer.humanPerformerName",
                     "GPSPSPerformer.humanPerformerIdeographicName",
-                    "GPSPSPerformer.humanPerformerPhoneticName"},
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.HumanPerformerName));
+                    "GPSPSPerformer.humanPerformerPhoneticName" },
+                    SqlBuilder.TYPE2, item.getString(Tags.HumanPerformerName));
             addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
         }
         item = keys.getItem(Tags.RefRequestSeq);
         if (item != null) {
             sqlBuilder.addListOfStringMatch(null,
-                    "GPSPSRequest.requestedProcedureId",
-                    SqlBuilder.TYPE2,
-                    item.getStrings(Tags.RequestedProcedureID));
+                    "GPSPSRequest.requestedProcedureId", SqlBuilder.TYPE2, item
+                            .getStrings(Tags.RequestedProcedureID));
             sqlBuilder.addListOfStringMatch(null,
-                    "GPSPSRequest.accessionNumber",
-                    SqlBuilder.TYPE2,
-                    item.getStrings(Tags.AccessionNumber));
-        }        
+                    "GPSPSRequest.accessionNumber", SqlBuilder.TYPE2, item
+                            .getStrings(Tags.AccessionNumber));
+        }
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.PatientID));
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
-                keys.getString(Tags.PatientName));
+                SqlBuilder.TYPE1, keys.getStrings(Tags.PatientID));
+        sqlBuilder.addPNMatch(
+                new String[] { "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" }, SqlBuilder.TYPE2, keys
+                        .getString(Tags.PatientName));
     }
 
     private void addCodeMatch(int tag, String alias) {
@@ -162,11 +160,10 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
     private void addCodeMatch(Dataset item, String alias) {
         if (item != null) {
             sqlBuilder.addSingleValueMatch(alias, "Code.codeValue",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodeValue));
-            sqlBuilder.addSingleValueMatch(alias, "Code.codingSchemeDesignator",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodingSchemeDesignator));
+                    SqlBuilder.TYPE2, item.getString(Tags.CodeValue));
+            sqlBuilder.addSingleValueMatch(alias,
+                    "Code.codingSchemeDesignator", SqlBuilder.TYPE2, item
+                            .getString(Tags.CodingSchemeDesignator));
         }
     }
 
@@ -176,17 +173,17 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
 
     private boolean isMatchCode(Dataset code) {
         return code != null
-                && (code.containsValue(Tags.CodeValue) 
-                        || code.containsValue(Tags.CodingSchemeDesignator));
+                && (code.containsValue(Tags.CodeValue) || code
+                        .containsValue(Tags.CodingSchemeDesignator));
     }
 
     private boolean isMatchRefRequest() {
         Dataset refrq = keys.getItem(Tags.RefRequestSeq);
         return refrq != null
-                && (refrq.containsValue(Tags.RequestedProcedureID)
-                        || refrq.containsValue(Tags.AccessionNumber));
+                && (refrq.containsValue(Tags.RequestedProcedureID) || refrq
+                        .containsValue(Tags.AccessionNumber));
     }
-    
+
     private String[] getLeftJoin() {
         ArrayList list = new ArrayList();
         if (isMatchCode(Tags.ScheduledWorkitemCodeSeq)) {
@@ -241,7 +238,8 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
         }
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
         if (item != null) {
-            boolean matchCode = isMatchCode(item.getItem(Tags.HumanPerformerCodeSeq));
+            boolean matchCode = isMatchCode(item
+                    .getItem(Tags.HumanPerformerCodeSeq));
             if (matchCode || item.containsValue(Tags.HumanPerformerName)) {
                 sqlBuilder.setDistinct(true);
                 list.add("GPSPSPerformer");
@@ -263,8 +261,8 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
             list.add("GPSPS.pk");
             list.add("GPSPSRequest.gpsps_fk");
         }
-        return (String[]) (list.isEmpty() ? null
-                : list.toArray(new String[list.size()]));
+        return (String[]) (list.isEmpty() ? null : list.toArray(new String[list
+                .size()]));
     }
 
     public void execute() throws SQLException {
@@ -273,8 +271,8 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray( getBytes(1), ds);
-        DatasetUtils.fromByteArray( getBytes(2), ds);
+        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), ds);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

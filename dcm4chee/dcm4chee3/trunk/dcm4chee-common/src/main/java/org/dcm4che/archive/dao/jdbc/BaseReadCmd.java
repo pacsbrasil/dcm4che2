@@ -67,8 +67,9 @@ public abstract class BaseReadCmd extends BaseCmd {
         super(dsJndiName, transactionIsolationLevel, sql);
     }
 
-    public byte[] getBytes(int column) throws SQLException {
-        if (defineColumnType == null) {
+    public byte[] getBytes(int column, boolean accessBlobAsLongVarBinary)
+            throws SQLException {
+        if (BaseCmd.defineColumnType == null || !accessBlobAsLongVarBinary) {
             ResultSetMetaData meta = rs.getMetaData();
             if (meta != null
                     && meta.getColumnType(column) == java.sql.Types.BLOB) {

@@ -140,8 +140,8 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
             }
             else {
                 IntList il = matchingKeys.contains(tag) ? // is matching of
-                                                            // this sequence
-                                                            // allowed?
+                // this sequence
+                // allowed?
                 (IntList) seqMatchingKeys.get(new Integer(tag))
                         : null;
                 for (int i = 0; i < el.countItems(); i++) {

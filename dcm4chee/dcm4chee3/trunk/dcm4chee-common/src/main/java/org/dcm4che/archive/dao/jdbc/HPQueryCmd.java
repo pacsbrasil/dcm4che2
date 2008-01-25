@@ -192,7 +192,7 @@ public class HPQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray(getBytes(1), ds);
+        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), ds);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
