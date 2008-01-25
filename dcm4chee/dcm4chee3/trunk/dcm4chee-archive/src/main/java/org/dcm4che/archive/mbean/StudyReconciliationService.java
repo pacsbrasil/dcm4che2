@@ -54,6 +54,7 @@ import javax.ejb.FinderException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.persistence.PersistenceException;
 
 import org.dcm4che.archive.config.RetryIntervalls;
 import org.dcm4che.archive.dao.jdbc.QueryCmd;
@@ -207,7 +208,7 @@ public class StudyReconciliationService extends AbstractScuService {
      * studies that are not completed (store is not completed).
      * 
      * @param age
-     *            ##w (in weeks), ##d (in days), ##h (in hours).
+     *                ##w (in weeks), ##d (in days), ##h (in hours).
      */
     public void setMinStudyAge(String age) {
         this.minStudyAge = RetryIntervalls.parseInterval(age);
@@ -428,7 +429,7 @@ public class StudyReconciliationService extends AbstractScuService {
     private Dataset checkStudy(Dataset qrSeriesDS, Dataset qrInstanceDS,
             Map archiveStudy, ActiveAssociation aa) throws SQLException,
             InterruptedException, IOException {
-        QueryCmd queryCmd = QueryCmd.create(qrSeriesDS, false, false);
+        QueryCmd queryCmd = QueryCmd.create(qrSeriesDS, false, false, null);
         Map map = new HashMap();
         try {
             queryCmd.execute();
@@ -497,7 +498,7 @@ public class StudyReconciliationService extends AbstractScuService {
             throws InterruptedException, IOException, SQLException {
         Map archiveSeries = query(aa, qrInstanceDS, Tags.SOPInstanceUID);
 
-        QueryCmd queryCmd = QueryCmd.create(qrInstanceDS, false, false);
+        QueryCmd queryCmd = QueryCmd.create(qrInstanceDS, false, false, null);
         try {
             queryCmd.execute();
             Dataset ds;
@@ -549,8 +550,7 @@ public class StudyReconciliationService extends AbstractScuService {
         return true;
     }
 
-    public String reschedule() throws RemoteException, FinderException,
-            DcmServiceException {
+    public String reschedule() throws PersistenceException, DcmServiceException {
         StudyReconciliation studyReconciliation = newStudyReconciliation();
         Timestamp createdBefore = new Timestamp(System.currentTimeMillis());
         int total = 0;
@@ -574,11 +574,13 @@ public class StudyReconciliationService extends AbstractScuService {
         return sameday ? inside : !inside;
     }
 
+    @Override
     protected void startService() throws Exception {
         listenerID = scheduler.startScheduler(timerIDCheckStudyReconciliation,
                 taskInterval, updateCheckListener);
     }
 
+    @Override
     protected void stopService() throws Exception {
         scheduler.stopScheduler(timerIDCheckStudyReconciliation, listenerID,
                 updateCheckListener);

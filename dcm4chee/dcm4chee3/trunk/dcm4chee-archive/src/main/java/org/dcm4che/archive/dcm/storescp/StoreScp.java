@@ -792,10 +792,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                                 md5, updateStudyAccessTime);
                     }
                 }
-                else {
-                    return storage.store(ds, fspk, filePath, file.length(),
-                            md5, updateStudyAccessTime);
-                }
+
+                    return storage.store(ds, fspk, filePath, file.length(), md5,
+                        updateStudyAccessTime);
             }
             catch (Exception e) {
                 ++retry;

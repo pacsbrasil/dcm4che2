@@ -60,12 +60,12 @@ import org.dcm4che.data.Dataset;
  * @author <a href="mailto:damien.daddy@gmail.com">Damien Evans</a>
  */
 public interface ContentManager {
-    
+
     /**
      * Get a patient record from the database.
      * 
      * @param pk
-     *            The primary key of the patient record.
+     *                The primary key of the patient record.
      * @return A {@link Dataset} containing the patient attributes.
      * @throws PersistenceException
      */
@@ -312,7 +312,7 @@ public interface ContentManager {
 
     /**
      * @param instanceDAO
-     *            the instanceDAO to set
+     *                the instanceDAO to set
      */
     public void setInstanceDAO(InstanceDAO instanceDAO);
 
@@ -323,7 +323,7 @@ public interface ContentManager {
 
     /**
      * @param mppsDAO
-     *            the mppsDAO to set
+     *                the mppsDAO to set
      */
     public void setMppsDAO(MPPSDAO mppsDAO);
 
@@ -334,7 +334,7 @@ public interface ContentManager {
 
     /**
      * @param patDAO
-     *            the patDAO to set
+     *                the patDAO to set
      */
     public void setPatDAO(PatientDAO patDAO);
 
@@ -345,7 +345,7 @@ public interface ContentManager {
 
     /**
      * @param privInstanceDAO
-     *            the privInstanceDAO to set
+     *                the privInstanceDAO to set
      */
     public void setPrivInstanceDAO(PrivateInstanceDAO privInstanceDAO);
 
@@ -356,7 +356,7 @@ public interface ContentManager {
 
     /**
      * @param privPatDAO
-     *            the privPatDAO to set
+     *                the privPatDAO to set
      */
     public void setPrivPatDAO(PrivatePatientDAO privPatDAO);
 
@@ -367,7 +367,7 @@ public interface ContentManager {
 
     /**
      * @param privSeriesDAO
-     *            the privSeriesDAO to set
+     *                the privSeriesDAO to set
      */
     public void setPrivSeriesDAO(PrivateSeriesDAO privSeriesDAO);
 
@@ -378,7 +378,7 @@ public interface ContentManager {
 
     /**
      * @param privStudyDAO
-     *            the privStudyDAO to set
+     *                the privStudyDAO to set
      */
     public void setPrivStudyDAO(PrivateStudyDAO privStudyDAO);
 
@@ -389,7 +389,7 @@ public interface ContentManager {
 
     /**
      * @param seriesDAO
-     *            the seriesDAO to set
+     *                the seriesDAO to set
      */
     public void setSeriesDAO(SeriesDAO seriesDAO);
 
@@ -400,8 +400,13 @@ public interface ContentManager {
 
     /**
      * @param studyDAO
-     *            the studyDAO to set
+     *                the studyDAO to set
      */
     public void setStudyDAO(StudyDAO studyDAO);
+    
+    public Dataset getInstance(long instancePk) throws PersistenceException;
+
+    public Dataset getHeaderInfo(long patPk, long studyPk, long seriesPk,
+            long instancePk) throws PersistenceException;
 
 }

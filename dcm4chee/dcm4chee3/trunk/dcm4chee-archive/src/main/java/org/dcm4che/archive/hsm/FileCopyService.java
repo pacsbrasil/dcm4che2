@@ -117,8 +117,7 @@ public class FileCopyService extends AbstractFileCopyService {
                 b[2 * i] = s.substring(1);
             }
             this.tarCopyCmd = b;
-        }
-        catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new IllegalArgumentException(cmd);
         }
     }
@@ -129,7 +128,7 @@ public class FileCopyService extends AbstractFileCopyService {
         queryDs.putCS(Tags.QueryRetrieveLevel, "SERIES");
         queryDs.putUI(Tags.StudyInstanceUID, studyIUID);
         queryDs.putUI(Tags.SeriesInstanceUID);
-        QueryCmd cmd = QueryCmd.create(queryDs, true, false);
+        QueryCmd cmd = QueryCmd.create(queryDs, true, false, null);
         cmd.execute();
         while (cmd.next()) {
             if (!copyFilesOfSeries(cmd.getDataset().getString(
@@ -147,7 +146,7 @@ public class FileCopyService extends AbstractFileCopyService {
         queryDs.putUI(Tags.StudyInstanceUID);
         queryDs.putUI(Tags.SeriesInstanceUID, seriesIUID);
         queryDs.putUI(Tags.SOPInstanceUID);
-        QueryCmd cmd = QueryCmd.create(queryDs, true, false);
+        QueryCmd cmd = QueryCmd.create(queryDs, true, false, null);
         cmd.execute();
         Dataset ds = null;
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
@@ -169,8 +168,7 @@ public class FileCopyService extends AbstractFileCopyService {
             schedule(createOrder(ian), 0l);
             log.info("Copy files of series " + seriesIUID + " scheduled!");
             return true;
-        }
-        else {
+        } else {
             log.info("No instances found for file copy! QueryDS:");
             log.info(queryDs);
             return false;
@@ -217,8 +215,7 @@ public class FileCopyService extends AbstractFileCopyService {
         }
         if (destPath.startsWith("tar:")) {
             copyTar(fileInfos, destPath);
-        }
-        else {
+        } else {
             copyFiles(fileInfos, destPath);
         }
     }
@@ -250,8 +247,7 @@ public class FileCopyService extends AbstractFileCopyService {
                 storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath,
                         finfo.fileID, (int) finfo.size, md5sum0, fileStatus);
                 iter.remove();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 dst.delete();
                 ex = e;
             }
@@ -272,16 +268,13 @@ public class FileCopyService extends AbstractFileCopyService {
                     new FileOutputStream(dst), buffer);
             try {
                 bos.copyFrom(fis, (int) src.length());
-            }
-            finally {
+            } finally {
                 bos.close();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             dst.delete();
             throw e;
-        }
-        finally {
+        } finally {
             fis.close();
         }
     }
@@ -294,14 +287,13 @@ public class FileCopyService extends AbstractFileCopyService {
             log.info("M-WRITE " + tarFile);
             tarFile.getParentFile().mkdirs();
             mkTar(fileInfos, tarFile);
-        }
-        else {
+        } else {
             if (absTarOutgoingDir.mkdirs()) {
                 log.info("M-WRITE " + absTarOutgoingDir);
             }
             int tarPathLen = tarPath.length();
-            File tarFile = new File(absTarOutgoingDir, tarPath
-                    .substring(tarPathLen - 21));
+            File tarFile = new File(absTarOutgoingDir, new File(tarPath)
+                    .getName());
             try {
                 log.info("M-WRITE " + tarFile);
                 mkTar(fileInfos, tarFile);
@@ -313,8 +305,7 @@ public class FileCopyService extends AbstractFileCopyService {
                     throw new IOException("Non-zero exit code(" + exit
                             + ") of " + cmd);
                 }
-            }
-            finally {
+            } finally {
                 log.info("M-DELETE " + tarFile);
                 tarFile.delete();
             }
@@ -337,15 +328,13 @@ public class FileCopyService extends AbstractFileCopyService {
                 for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
                     writeFile(tar, (FileInfo) iter.next());
                 }
-            }
-            finally {
+            } finally {
                 tar.close();
             }
             if (verifyCopy) {
                 VerifyTar.verify(tarFile, new byte[bufferSize]);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             tarFile.delete();
             throw e;
         }
@@ -395,8 +384,7 @@ public class FileCopyService extends AbstractFileCopyService {
         FileInputStream fis = new FileInputStream(file);
         try {
             tar.copyEntryContents(fis);
-        }
-        finally {
+        } finally {
             fis.close();
         }
         tar.closeEntry();
@@ -408,8 +396,14 @@ public class FileCopyService extends AbstractFileCopyService {
 
     private String mkTarPath(String filePath) {
         int len = filePath.length();
-        StringBuilder sb = new StringBuilder(len + 4);
-        sb.append(filePath).append(".tar").setCharAt(len - 9, '-');
+        StringBuffer sb = new StringBuffer(len + 4);
+        // Fix for shorter filenames!
+        // TODO: Fix reason of shortened filename! should be 8 chars!
+        sb.append(filePath).append(".tar");
+        int pos = len - 9;
+        if (sb.charAt(pos) != '/')
+            pos = sb.lastIndexOf("/");
+        sb.setCharAt(pos, '-');
         return sb.toString();
     }
 }

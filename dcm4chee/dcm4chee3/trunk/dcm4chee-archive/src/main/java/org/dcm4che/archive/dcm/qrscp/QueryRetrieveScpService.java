@@ -128,11 +128,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return 0;
     }
 
-    private String[] sendNoPixelDataToAETs = null;
+    private String[] sendNoPixelDataToAETs;
 
-    private String[] sendWithDefaultTransferSyntaxToAETitles = null;
+    private String[] sendWithDefaultTransferSyntaxToAETitles;
 
-    private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
+    private String[] ignoreUnsupportedSOPClassFailuresByAETs;
+
+    private String[] unrestrictedQueryPermissionsToAETitles;
 
     private Map ignorableSOPClasses = new LinkedHashMap();
 
@@ -372,6 +374,24 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         coerceRequestPatientIdsAETs).contains(aet));
     }
 
+    public final String getUnrestrictedQueryPermissionsToAETitles() {
+        return unrestrictedQueryPermissionsToAETitles == null ? ANY
+                : StringUtils.toString(unrestrictedQueryPermissionsToAETitles,
+                        '\\');
+    }
+
+    public final void setUnrestrictedQueryPermissionsToAETitles(String s) {
+        String trim = s.trim();
+        this.unrestrictedQueryPermissionsToAETitles = trim
+                .equalsIgnoreCase(ANY) ? null : StringUtils.split(trim, '\\');
+    }
+
+    final boolean hasUnrestrictedQueryPermissions(String aet) {
+        return unrestrictedQueryPermissionsToAETitles == null
+                || Arrays.asList(unrestrictedQueryPermissionsToAETitles)
+                        .contains(aet);
+    }
+
     public final boolean isNoMatchForNoValue() {
         return noMatchForNoValue;
     }
@@ -389,7 +409,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     /**
      * @param checkMatchingKeySupport
-     *            The checkMatchingKeySupport to set.
+     *                The checkMatchingKeySupport to set.
      */
     public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
         this.checkMatchingKeySupported = checkMatchingKeySupport;

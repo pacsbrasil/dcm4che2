@@ -520,6 +520,7 @@ public class StoreScpService extends AbstractScpService {
         scp.setPerfMonServiceName(perfMonServiceName);
     }
 
+    @Override
     protected void startService() throws Exception {
         super.startService();
         listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
@@ -527,12 +528,14 @@ public class StoreScpService extends AbstractScpService {
                 checkPendingSeriesStoredListener);
     }
 
+    @Override
     protected void stopService() throws Exception {
         scheduler.stopScheduler(timerIDCheckPendingSeriesStored, listenerID,
                 checkPendingSeriesStoredListener);
         super.stopService();
     }
 
+    @Override
     protected void bindDcmServices(DcmServiceRegistry services) {
         bindAll(valuesToStringArray(imageCUIDS), scp);
         bindAll(valuesToStringArray(videoCUIDS), scp);
@@ -542,6 +545,7 @@ public class StoreScpService extends AbstractScpService {
         dcmHandler.addAssociationListener(scp);
     }
 
+    @Override
     protected void unbindDcmServices(DcmServiceRegistry services) {
         unbindAll(valuesToStringArray(imageCUIDS));
         unbindAll(valuesToStringArray(videoCUIDS));
@@ -551,6 +555,7 @@ public class StoreScpService extends AbstractScpService {
         dcmHandler.removeAssociationListener(scp);
     }
 
+    @Override
     protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
         putPresContexts(policy, valuesToStringArray(imageCUIDS),
                 enable ? valuesToStringArray(imageTSUIDS) : null);

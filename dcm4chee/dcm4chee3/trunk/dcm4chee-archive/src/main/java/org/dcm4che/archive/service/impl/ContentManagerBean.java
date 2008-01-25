@@ -81,7 +81,6 @@ import org.dcm4che.archive.entity.PrivateSeries;
 import org.dcm4che.archive.entity.PrivateStudy;
 import org.dcm4che.archive.entity.Series;
 import org.dcm4che.archive.entity.Study;
-import org.dcm4che.archive.service.ContentManager;
 import org.dcm4che.archive.service.ContentManagerLocal;
 import org.dcm4che.archive.service.ContentManagerRemote;
 import org.dcm4che.archive.util.Convert;
@@ -98,13 +97,14 @@ import org.springframework.transaction.annotation.Transactional;
  * @version $Revision: 1.2 $ $Date: 2007/06/23 18:59:01 $
  * @since 14.01.2004
  */
-//EJB3
+// EJB3
 @Stateless
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 // Spring
 @Transactional(propagation = Propagation.REQUIRED)
-public class ContentManagerBean implements ContentManagerLocal, ContentManagerRemote {
+public class ContentManagerBean implements ContentManagerLocal,
+        ContentManagerRemote {
 
     private static final int[] MPPS_FILTER_TAGS = { Tags.PerformedStationAET,
             Tags.PerformedStationName, Tags.PPSStartDate, Tags.PPSStartTime,
@@ -115,24 +115,33 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    @EJB private PatientDAO patDAO;
+    @EJB
+    private PatientDAO patDAO;
 
-    @EJB private StudyDAO studyDAO;
+    @EJB
+    private StudyDAO studyDAO;
 
-    @EJB private SeriesDAO seriesDAO;
+    @EJB
+    private SeriesDAO seriesDAO;
 
-    @EJB private InstanceDAO instanceDAO;
+    @EJB
+    private InstanceDAO instanceDAO;
 
-    @EJB private PrivatePatientDAO privPatDAO;
+    @EJB
+    private PrivatePatientDAO privPatDAO;
 
-    @EJB private PrivateStudyDAO privStudyDAO;
+    @EJB
+    private PrivateStudyDAO privStudyDAO;
 
-    @EJB private PrivateSeriesDAO privSeriesDAO;
+    @EJB
+    private PrivateSeriesDAO privSeriesDAO;
 
-    @EJB private PrivateInstanceDAO privInstanceDAO;
+    @EJB
+    private PrivateInstanceDAO privInstanceDAO;
 
-    @EJB private MPPSDAO mppsDAO;
-    
+    @EJB
+    private MPPSDAO mppsDAO;
+
     public Dataset getPatient(long pk) throws PersistenceException {
         Patient pat = patDAO.findByPrimaryKey(new Long(pk));
         return pat.getAttributes(true);
@@ -155,21 +164,21 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
 
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getStudy(long)
      */
     public Dataset getStudy(long studyPk) throws PersistenceException {
         return studyDAO.findByPrimaryKey(new Long(studyPk)).getAttributes(true);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getStudyByIUID(java.lang.String)
      */
     public Dataset getStudyByIUID(String studyIUID) throws PersistenceException {
         return studyDAO.findByStudyIuid(studyIUID).getAttributes(true);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getSeries(long)
      */
     public Dataset getSeries(long seriesPk) throws PersistenceException {
@@ -177,7 +186,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
                 true);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getSeriesByIUID(java.lang.String)
      */
     public Dataset getSeriesByIUID(String seriesIUID)
@@ -185,7 +194,12 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return seriesDAO.findBySeriesIuid(seriesIUID).getAttributes(true);
     }
 
-    /** 
+    public Dataset getInstance(long instancePk) throws PersistenceException {
+        return instanceDAO.findByPrimaryKey(new Long(instancePk))
+                .getAttributes(true);
+    }
+
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getInstanceByIUID(java.lang.String)
      */
     public Dataset getInstanceByIUID(String sopiuid)
@@ -193,8 +207,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return instanceDAO.findBySopIuid(sopiuid).getAttributes(true);
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#countStudies(org.dcm4che.data.Dataset, boolean)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#countStudies(org.dcm4che.data.Dataset,
+     *      boolean)
      */
     public int countStudies(Dataset filter, boolean hideWithoutStudies) {
         try {
@@ -205,8 +220,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#getInstanceInfo(java.lang.String, boolean)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#getInstanceInfo(java.lang.String,
+     *      boolean)
      */
     public Dataset getInstanceInfo(String iuid, boolean supplement)
             throws PersistenceException {
@@ -214,8 +230,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return getInstanceInfo(il, supplement);
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#listInstanceInfos(java.lang.String[], boolean)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#listInstanceInfos(java.lang.String[],
+     *      boolean)
      */
     public List listInstanceInfos(String[] iuids, boolean supplement)
             throws PersistenceException {
@@ -223,8 +240,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return toDatasetList(c, supplement);
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#listInstanceInfosByPatientAndSRCode(java.lang.String, java.lang.String, java.util.Collection, java.util.Collection)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#listInstanceInfosByPatientAndSRCode(java.lang.String,
+     *      java.lang.String, java.util.Collection, java.util.Collection)
      */
     public List listInstanceInfosByPatientAndSRCode(String pid, String issuer,
             Collection codes, Collection cuids) throws PersistenceException {
@@ -263,8 +281,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return (Patient) col.iterator().next();
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#listInstanceInfosByStudyAndSRCode(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#listInstanceInfosByStudyAndSRCode(java.lang.String,
+     *      java.lang.String, java.lang.String, java.lang.String, boolean)
      */
     public List listInstanceInfosByStudyAndSRCode(String suid, String cuid,
             String code, String designator, boolean supplement)
@@ -294,8 +313,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return ds;
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#listStudies(org.dcm4che.data.Dataset, boolean, boolean, int, int)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#listStudies(org.dcm4che.data.Dataset,
+     *      boolean, boolean, int, int)
      */
     public List listStudies(Dataset filter, boolean hideWithoutStudies,
             boolean noMatchForNoValue, int offset, int limit) {
@@ -308,8 +328,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#countPrivateStudies(org.dcm4che.data.Dataset, int, boolean)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#countPrivateStudies(org.dcm4che.data.Dataset,
+     *      int, boolean)
      */
     public int countPrivateStudies(Dataset filter, int privateType,
             boolean hideWithoutStudies) {
@@ -322,8 +343,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#listPrivateStudies(org.dcm4che.data.Dataset, int, boolean, int, int)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#listPrivateStudies(org.dcm4che.data.Dataset,
+     *      int, boolean, int, int)
      */
     public List listPrivateStudies(Dataset filter, int privateType,
             boolean hideWithoutStudies, int offset, int limit) {
@@ -336,7 +358,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         }
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listStudiesOfPatient(long)
      */
     public List listStudiesOfPatient(long patientPk)
@@ -352,7 +374,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listSeriesOfStudy(long)
      */
     public List listSeriesOfStudy(long studyPk) throws PersistenceException {
@@ -379,7 +401,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return ds;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listInstancesOfSeries(long)
      */
     public List listInstancesOfSeries(long seriesPk)
@@ -394,7 +416,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listFilesOfInstance(long)
      */
     public List listFilesOfInstance(long instancePk)
@@ -409,7 +431,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listStudiesOfPrivatePatient(long)
      */
     public List listStudiesOfPrivatePatient(long patientPk)
@@ -430,7 +452,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listSeriesOfPrivateStudy(long)
      */
     public List listSeriesOfPrivateStudy(long studyPk)
@@ -464,7 +486,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listInstancesOfPrivateSeries(long)
      */
     public List listInstancesOfPrivateSeries(long seriesPk)
@@ -485,7 +507,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listFilesOfPrivateInstance(long)
      */
     public List listFilesOfPrivateInstance(long instancePk)
@@ -501,7 +523,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listInstanceFilesToRecover(long)
      */
     public List[] listInstanceFilesToRecover(long pk)
@@ -512,7 +534,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listSeriesFilesToRecover(long)
      */
     public List[] listSeriesFilesToRecover(long pk) throws PersistenceException {
@@ -522,7 +544,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listStudyFilesToRecover(long)
      */
     public List[] listStudyFilesToRecover(long pk) throws PersistenceException {
@@ -532,7 +554,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#listPatientFilesToRecover(long)
      */
     public List[] listPatientFilesToRecover(long pk)
@@ -589,8 +611,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         }
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#getSOPInstanceRefMacro(long, boolean)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#getSOPInstanceRefMacro(long,
+     *      boolean)
      */
     public Dataset getSOPInstanceRefMacro(long studyPk, boolean insertModality)
             throws PersistenceException {
@@ -635,7 +658,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return ds;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getSOPInstanceRefMacros(java.util.Collection)
      */
     public Collection getSOPInstanceRefMacros(Collection instanceUIDs)
@@ -685,7 +708,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return result.values();
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPatientForStudy(long)
      */
     public Dataset getPatientForStudy(long studyPk) throws PersistenceException {
@@ -693,7 +716,7 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return sl.getPatient().getAttributes(false);
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPatientForStudy(java.lang.String)
      */
     public Dataset getPatientForStudy(String studyIUID)
@@ -702,13 +725,32 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
         return sl.getPatient().getAttributes(false);
     }
 
-    /** 
-     * @see org.dcm4che.archive.service.ContentManager#isStudyAvailable(long, int)
+    /**
+     * @see org.dcm4che.archive.service.ContentManager#isStudyAvailable(long,
+     *      int)
      */
     public boolean isStudyAvailable(long studyPk, int availability)
             throws PersistenceException {
         Study study = studyDAO.findByPrimaryKey(new Long(studyPk));
         return studyDAO.isStudyAvailable(study, availability);
+    }
+
+    public Dataset getHeaderInfo(long patPk, long studyPk, long seriesPk,
+            long instancePk) throws PersistenceException {
+        Dataset ds = dof.newDataset();
+        if (patPk != -1)
+            ds.putAll(patDAO.findByPrimaryKey(new Long(patPk)).getAttributes(
+                    true));
+        if (studyPk != -1)
+            ds.putAll(studyDAO.findByPrimaryKey(new Long(studyPk))
+                    .getAttributes(true));
+        if (seriesPk != -1)
+            ds.putAll(seriesDAO.findByPrimaryKey(new Long(seriesPk))
+                    .getAttributes(true));
+        if (instancePk != -1)
+            ds.putAll(instanceDAO.findByPrimaryKey(new Long(instancePk))
+                    .getAttributes(true));
+        return ds;
     }
 
     public class InstanceNumberComparator implements Comparator {
@@ -731,9 +773,9 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
          * InstanceCollector is used to get filesize.
          * 
          * @param arg0
-         *            First argument
+         *                First argument
          * @param arg1
-         *            Second argument
+         *                Second argument
          * 
          * @return <0 if arg0<arg1, 0 if equal and >0 if arg0>arg1
          */
@@ -753,126 +795,126 @@ public class ContentManagerBean implements ContentManagerLocal, ContentManagerRe
 
     }// end class
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getInstanceDAO()
      */
     public InstanceDAO getInstanceDAO() {
         return instanceDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setInstanceDAO(org.dcm4che.archive.dao.InstanceDAO)
      */
     public void setInstanceDAO(InstanceDAO instanceDAO) {
         this.instanceDAO = instanceDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getMppsDAO()
      */
     public MPPSDAO getMppsDAO() {
         return mppsDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setMppsDAO(org.dcm4che.archive.dao.MPPSDAO)
      */
     public void setMppsDAO(MPPSDAO mppsDAO) {
         this.mppsDAO = mppsDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPatDAO()
      */
     public PatientDAO getPatDAO() {
         return patDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setPatDAO(org.dcm4che.archive.dao.PatientDAO)
      */
     public void setPatDAO(PatientDAO patDAO) {
         this.patDAO = patDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPrivInstanceDAO()
      */
     public PrivateInstanceDAO getPrivInstanceDAO() {
         return privInstanceDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setPrivInstanceDAO(org.dcm4che.archive.dao.PrivateInstanceDAO)
      */
     public void setPrivInstanceDAO(PrivateInstanceDAO privInstanceDAO) {
         this.privInstanceDAO = privInstanceDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPrivPatDAO()
      */
     public PrivatePatientDAO getPrivPatDAO() {
         return privPatDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setPrivPatDAO(org.dcm4che.archive.dao.PrivatePatientDAO)
      */
     public void setPrivPatDAO(PrivatePatientDAO privPatDAO) {
         this.privPatDAO = privPatDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPrivSeriesDAO()
      */
     public PrivateSeriesDAO getPrivSeriesDAO() {
         return privSeriesDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setPrivSeriesDAO(org.dcm4che.archive.dao.PrivateSeriesDAO)
      */
     public void setPrivSeriesDAO(PrivateSeriesDAO privSeriesDAO) {
         this.privSeriesDAO = privSeriesDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getPrivStudyDAO()
      */
     public PrivateStudyDAO getPrivStudyDAO() {
         return privStudyDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setPrivStudyDAO(org.dcm4che.archive.dao.PrivateStudyDAO)
      */
     public void setPrivStudyDAO(PrivateStudyDAO privStudyDAO) {
         this.privStudyDAO = privStudyDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getSeriesDAO()
      */
     public SeriesDAO getSeriesDAO() {
         return seriesDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setSeriesDAO(org.dcm4che.archive.dao.SeriesDAO)
      */
     public void setSeriesDAO(SeriesDAO seriesDAO) {
         this.seriesDAO = seriesDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#getStudyDAO()
      */
     public StudyDAO getStudyDAO() {
         return studyDAO;
     }
 
-    /** 
+    /**
      * @see org.dcm4che.archive.service.ContentManager#setStudyDAO(org.dcm4che.archive.dao.StudyDAO)
      */
     public void setStudyDAO(StudyDAO studyDAO) {
