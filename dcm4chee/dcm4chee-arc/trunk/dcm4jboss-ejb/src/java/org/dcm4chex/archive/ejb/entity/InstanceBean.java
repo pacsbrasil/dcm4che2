@@ -594,7 +594,7 @@ public abstract class InstanceBean implements EntityBean {
 
     private void setField(String field, String value ) {
         try {
-            Method m = PatientBean.class.getMethod("set" 
+            Method m = InstanceBean.class.getMethod("set" 
                     + Character.toUpperCase(field.charAt(0))
                     + field.substring(1), STRING_PARAM);
             m.invoke(this, new Object[] { value });
