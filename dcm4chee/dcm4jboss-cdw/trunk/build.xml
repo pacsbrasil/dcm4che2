@@ -106,7 +106,7 @@
   <target name="fixcrlf">
     <mkdir dir="${target.dir}/bin"/>
     <mkdir dir="${target.dir}/doc"/>
-  	<fixcrlf srcdir="${src.etc}" includes="bin/*.sh"
+  	<fixcrlf srcdir="${src.etc}" includes="bin/*.sh,bin/*.conf"
   		destdir="${target.dir}" eol="lf"/>
   	<fixcrlf srcdir="${src.etc}" includes="bin/*.bat,bin/*.xml"
   		destdir="${target.dir}" eol="crlf"/>
