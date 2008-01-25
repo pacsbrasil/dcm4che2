@@ -39,9 +39,13 @@
 
 package org.dcm4che.archive.util;
 
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.dcm4che.archive.exceptions.ConfigurationException;
 import org.dcm4che.data.Dataset;
 
 /**
@@ -57,7 +61,7 @@ public final class AttributeFilter {
 
     static AttributeFilter seriesFilter;
 
-    static HashMap instanceFilters = new HashMap();
+    static Map instanceFilters = new HashMap();
 
     private int[] tags = {};
 
@@ -75,6 +79,10 @@ public final class AttributeFilter {
 
     private final boolean excludePrivate;
 
+    private final boolean overwrite;
+
+    private final boolean merge;
+
     private boolean noFilter = false;
 
     static {
@@ -86,6 +94,17 @@ public final class AttributeFilter {
         AttributeFilterLoader.loadFrom(args[0]);
     }
 
+    public static long lastModified() {
+        URLConnection conn;
+        try {
+            conn = new URL(CONFIG_URL).openConnection();
+        }
+        catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+        return conn.getLastModified();
+    }
+
     public static AttributeFilter getPatientAttributeFilter() {
         return patientFilter;
     }
@@ -94,7 +113,7 @@ public final class AttributeFilter {
         return studyFilter;
     }
 
-    public static AttributeFilter getSeriesAttributeFilter(String cuid) {
+    public static AttributeFilter getSeriesAttributeFilter() {
         return seriesFilter;
     }
 
@@ -106,10 +125,13 @@ public final class AttributeFilter {
         return filter;
     }
 
-    AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate) {
+    AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate,
+            boolean overwrite, boolean merge) {
         this.tsuid = tsuid;
         this.exclude = exclude;
         this.excludePrivate = excludePrivate;
+        this.overwrite = overwrite;
+        this.merge = merge;
     }
 
     final void setNoCoercion(int[] noCoercion) {
@@ -173,6 +195,14 @@ public final class AttributeFilter {
 
     public final String getTransferSyntaxUID() {
         return tsuid;
+    }
+
+    public final boolean isOverwrite() {
+        return overwrite;
+    }
+
+    public final boolean isMerge() {
+        return merge;
     }
 
     public Dataset filter(Dataset ds) {

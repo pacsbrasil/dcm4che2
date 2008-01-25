@@ -40,7 +40,6 @@ package org.dcm4che.archive.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.xml.parsers.SAXParserFactory;
 
@@ -59,18 +58,17 @@ class AttributeFilterLoader extends DefaultHandler {
             Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
             Tags.StorageMediaFileSetUID };
 
-    private final List<String> tagList = new ArrayList<String>();
+    private final ArrayList tagList = new ArrayList();
 
-    private final List<String> vrList = new ArrayList<String>();
+    private final ArrayList vrList = new ArrayList();
 
-    private final List<String> noCoerceList = new ArrayList<String>();
+    private final ArrayList noCoerceList = new ArrayList();
 
-    private final List<String> fieldTagList = new ArrayList<String>();
+    private final ArrayList fieldTagList = new ArrayList();
 
-    private final List<String> fieldList = new ArrayList<String>();
+    private final ArrayList fieldList = new ArrayList();
 
     // private String cuid;
-
     private AttributeFilter filter;
 
     public static void loadFrom(String url) throws ConfigurationException {
@@ -107,35 +105,39 @@ class AttributeFilterLoader extends DefaultHandler {
         }
         else if (qName.equals("instance")) {
             String cuid = attributes.getValue("cuid");
-            filter = new AttributeFilter(attributes.getValue("tsuid"), "true"
-                    .equalsIgnoreCase(attributes.getValue("exclude")), "true"
-                    .equalsIgnoreCase(attributes.getValue("excludePrivate")));
-            if (AttributeFilter.instanceFilters.put(cuid, filter) != null) {
+            if (AttributeFilter.instanceFilters.containsKey(cuid)) {
                 throw new SAXException(
                         "more than one instance element with cuid=" + cuid);
             }
+            AttributeFilter.instanceFilters.put(cuid,
+                    filter = makeFilter(attributes));
         }
         else if (qName.equals("series")) {
             if (AttributeFilter.seriesFilter != null) {
                 throw new SAXException("more than one series element");
             }
-            AttributeFilter.seriesFilter = filter = new AttributeFilter(
-                    attributes.getValue("tsuid"), false, false);
+            AttributeFilter.seriesFilter = filter = makeFilter(attributes);
         }
         else if (qName.equals("study")) {
             if (AttributeFilter.studyFilter != null) {
                 throw new SAXException("more than one study element");
             }
-            AttributeFilter.studyFilter = filter = new AttributeFilter(
-                    attributes.getValue("tsuid"), false, false);
+            AttributeFilter.studyFilter = filter = makeFilter(attributes);
         }
         else if (qName.equals("patient")) {
             if (AttributeFilter.patientFilter != null) {
                 throw new SAXException("more than one patient element");
             }
-            AttributeFilter.patientFilter = filter = new AttributeFilter(
-                    attributes.getValue("tsuid"), false, false);
+            AttributeFilter.patientFilter = filter = makeFilter(attributes);
         }
+    }
+
+    private AttributeFilter makeFilter(Attributes attributes) {
+        String strategy = attributes.getValue("update-strategy");
+        return new AttributeFilter(attributes.getValue("tsuid"), "true"
+                .equalsIgnoreCase(attributes.getValue("exclude")), "true"
+                .equalsIgnoreCase(attributes.getValue("excludePrivate")),
+                strategy.startsWith("overwrite"), strategy.endsWith("merge"));
     }
 
     public void endElement(String uri, String localName, String qName)
@@ -170,7 +172,7 @@ class AttributeFilterLoader extends DefaultHandler {
             }
             filter.setTags(tags);
             filter.setFieldTags(parseInts(fieldTagList));
-            filter.setFields(fieldList.toArray(new String[] {}));
+            filter.setFields((String[]) fieldList.toArray(new String[] {}));
             filter.setNoCoercion(parseInts(noCoerceList));
             filter.setVRs(vrs);
             tagList.clear();
@@ -195,19 +197,19 @@ class AttributeFilterLoader extends DefaultHandler {
         return dst;
     }
 
-    private static int[] parseInts(List<String> list) {
+    private static int[] parseInts(ArrayList list) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = Integer.parseInt(list.get(i), 16);
+            array[i] = Integer.parseInt((String) list.get(i), 16);
         }
         Arrays.sort(array);
         return array;
     }
 
-    private static int[] parseVRs(List<String> list) {
+    private static int[] parseVRs(ArrayList list) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = VRs.valueOf(list.get(i));
+            array[i] = VRs.valueOf((String) list.get(i));
         }
         return array;
     }
