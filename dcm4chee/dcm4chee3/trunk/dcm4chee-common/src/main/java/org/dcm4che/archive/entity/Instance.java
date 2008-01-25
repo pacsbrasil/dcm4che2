@@ -178,7 +178,7 @@ public class Instance extends EntityBase {
      * Create an instance with the specified attributes.
      * 
      * @param attrs
-     *            A {@link Dataset} containing the instance attributes.
+     *                A {@link Dataset} containing the instance attributes.
      */
     public Instance(Dataset attrs) {
         setAttributes(attrs);
@@ -318,7 +318,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param srCode
-     *            the srCode to set
+     *                the srCode to set
      */
     public void setSrCode(Code srCode) {
         this.srCode = srCode;
@@ -333,7 +333,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param externalRetrieveAET
-     *            the externalRetrieveAET to set
+     *                the externalRetrieveAET to set
      */
     public void setExternalRetrieveAET(String externalRetrieveAET) {
         this.externalRetrieveAET = externalRetrieveAET;
@@ -348,7 +348,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param retrieveAETs
-     *            the retrieveAETs to set
+     *                the retrieveAETs to set
      */
     public void setRetrieveAETs(String retrieveAETs) {
         this.retrieveAETs = retrieveAETs;
@@ -358,14 +358,13 @@ public class Instance extends EntityBase {
      * Add the specified AE title to the internal list of retrieve AE titles.
      * 
      * @param aet
-     *            The AE title string
+     *                The AE title string
      */
     public void addRetrieveAET(String aet) {
         String s = getRetrieveAETs();
         if (s == null) {
             setRetrieveAETs(aet);
-        }
-        else {
+        } else {
             final Set<String> aetSet = new HashSet<String>(Arrays
                     .asList(StringUtils.split(s, '\\')));
             if (aetSet.add(aet))
@@ -382,7 +381,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param media
-     *            the media to set
+     *                the media to set
      */
     public void setMedia(Media media) {
         this.media = media;
@@ -412,8 +411,7 @@ public class Instance extends EntityBase {
         Dataset ds;
         try {
             ds = DatasetUtils.fromByteArray(getEncodedAttributes());
-        }
-        catch (IllegalArgumentException x) {
+        } catch (IllegalArgumentException x) {
             // BLOB size not sufficient to store Attributes
             logger
                     .warn("Instance (pk:"
@@ -459,8 +457,7 @@ public class Instance extends EntityBase {
         try {
             setContentDateTime(ds.getDateTime(Tags.ContentDate,
                     Tags.ContentTime));
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             logger.warn("Illegal Content Date/Time format: " + e.getMessage());
         }
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
@@ -477,15 +474,31 @@ public class Instance extends EntityBase {
      */
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
             throws DcmServiceException {
-        Dataset attrs = getAttributes(false);
         String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
-        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, logger);
-        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), logger)) {
+        AttributeFilter filter = AttributeFilter
+                .getInstanceAttributeFilter(cuid);
+        if (filter.isOverwrite()) {
+            Dataset attrs;
+            if (filter.isMerge()) {
+                attrs = getAttributes(false);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), logger);
+            } else {
+                attrs = filter.filter(ds);
+            }
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        } else {
+            Dataset attrs = getAttributes(false);
+            AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter,
+                    logger);
+            if (filter.isMerge()
+                    && AttrUtils.mergeAttributes(attrs, filter.filter(ds),
+                            logger)) {
+                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            }
         }
     }
 
+    @Override
     public String toString() {
         return "Instance[pk=" + getPk() + ", iuid=" + getSopIuid() + ", cuid="
                 + getSopCuid() + ", series->" + getSeries() + "]";
@@ -500,7 +513,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param verifyingObservers
-     *            the verifyingObservers to set
+     *                the verifyingObservers to set
      */
     public void setVerifyingObservers(Set<VerifyingObserver> verifyingObservers) {
         this.verifyingObservers = verifyingObservers;
@@ -515,7 +528,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param instanceCustomAttribute1
-     *            the instanceCustomAttribute1 to set
+     *                the instanceCustomAttribute1 to set
      */
     public void setInstanceCustomAttribute1(String instanceCustomAttribute1) {
         this.instanceCustomAttribute1 = instanceCustomAttribute1;
@@ -530,7 +543,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param instanceCustomAttribute2
-     *            the instanceCustomAttribute2 to set
+     *                the instanceCustomAttribute2 to set
      */
     public void setInstanceCustomAttribute2(String instanceCustomAttribute2) {
         this.instanceCustomAttribute2 = instanceCustomAttribute2;
@@ -545,7 +558,7 @@ public class Instance extends EntityBase {
 
     /**
      * @param instanceCustomAttribute3
-     *            the instanceCustomAttribute3 to set
+     *                the instanceCustomAttribute3 to set
      */
     public void setInstanceCustomAttribute3(String instanceCustomAttribute3) {
         this.instanceCustomAttribute3 = instanceCustomAttribute3;
@@ -553,12 +566,11 @@ public class Instance extends EntityBase {
 
     private void setField(String field, String value) {
         try {
-            Method m = Patient.class.getMethod("set"
+            Method m = Instance.class.getMethod("set"
                     + Character.toUpperCase(field.charAt(0))
                     + field.substring(1), STRING_PARAM);
             m.invoke(this, new Object[] { value });
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ConfigurationException(e);
         }
     }

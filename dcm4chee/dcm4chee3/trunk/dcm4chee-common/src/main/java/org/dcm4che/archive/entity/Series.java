@@ -1,4 +1,3 @@
-
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -61,6 +60,7 @@ import org.dcm4che.archive.exceptions.ConfigurationException;
 import org.dcm4che.archive.util.AttributeFilter;
 import org.dcm4che.archive.util.Convert;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 
@@ -90,7 +90,7 @@ public class Series extends EntityBase {
 
     @Column(name = "series_no")
     private String seriesNumber;
-    
+
     @Column(name = "series_desc")
     private String seriesDescription;
 
@@ -102,7 +102,7 @@ public class Series extends EntityBase {
 
     @Column(name = "institution")
     private String institutionName;
-    
+
     @Column(name = "station_name")
     private String stationName;
 
@@ -143,6 +143,15 @@ public class Series extends EntityBase {
     @OneToMany(mappedBy = "series")
     private Set<Instance> instances;
 
+    @Column(name = "perf_physician")
+    private String performingPhysicianName;
+
+    @Column(name = "perf_phys_i_name")
+    private String performingPhysicianIdeographicName;
+
+    @Column(name = "perf_phys_p_name")
+    private String performingPhysicianPhoneticName;
+
     @Column(name = "pps_start")
     private Timestamp ppsStartDateTime;
 
@@ -174,13 +183,14 @@ public class Series extends EntityBase {
 
     /**
      * Functional constructor for the Series. <strong>Note</strong> that this
-     * constructor will not update the related series attributes (series request, mpps), you'll need to
-     * go through the DAO for that (or do the same thing another way).
+     * constructor will not update the related series attributes (series
+     * request, mpps), you'll need to go through the DAO for that (or do the
+     * same thing another way).
      * 
      * @param ds
-     *            The {@link Dataset} containing the series attributes.
+     *                The {@link Dataset} containing the series attributes.
      * @param study
-     *            The {@link Study} that this series belongs to.
+     *                The {@link Study} that this series belongs to.
      */
     public Series(Dataset ds, Study study) {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
@@ -198,7 +208,7 @@ public class Series extends EntityBase {
 
     /**
      * @param availability
-     *            the availability to set
+     *                the availability to set
      */
     public void setAvailability(Integer availability) {
         this.availability = availability;
@@ -213,7 +223,7 @@ public class Series extends EntityBase {
 
     /**
      * @param createdTime
-     *            the createdTime to set
+     *                the createdTime to set
      */
     public void setCreatedTime(Timestamp createdTime) {
         this.createdTime = createdTime;
@@ -228,7 +238,7 @@ public class Series extends EntityBase {
 
     /**
      * @param encodedAttributes
-     *            the encodedAttributes to set
+     *                the encodedAttributes to set
      */
     public void setEncodedAttributes(byte[] encodedAttributes) {
         this.encodedAttributes = encodedAttributes;
@@ -243,7 +253,7 @@ public class Series extends EntityBase {
 
     /**
      * @param instances
-     *            the instances to set
+     *                the instances to set
      */
     public void setInstances(Set<Instance> instances) {
         this.instances = instances;
@@ -258,7 +268,7 @@ public class Series extends EntityBase {
 
     /**
      * @param institutionalDepartmentName
-     *            the institutionalDepartmentName to set
+     *                the institutionalDepartmentName to set
      */
     public void setInstitutionalDepartmentName(
             String institutionalDepartmentName) {
@@ -274,7 +284,7 @@ public class Series extends EntityBase {
 
     /**
      * @param institutionName
-     *            the institutionName to set
+     *                the institutionName to set
      */
     public void setInstitutionName(String institutionName) {
         this.institutionName = institutionName;
@@ -288,7 +298,8 @@ public class Series extends EntityBase {
     }
 
     /**
-     * @param stationName the stationName to set
+     * @param stationName
+     *                the stationName to set
      */
     public void setStationName(String stationName) {
         this.stationName = stationName;
@@ -303,7 +314,7 @@ public class Series extends EntityBase {
 
     /**
      * @param modality
-     *            the modality to set
+     *                the modality to set
      */
     public void setModality(String modality) {
         this.modality = modality;
@@ -318,7 +329,7 @@ public class Series extends EntityBase {
 
     /**
      * @param numberOfSeriesRelatedInstances
-     *            the numberOfSeriesRelatedInstances to set
+     *                the numberOfSeriesRelatedInstances to set
      */
     public void setNumberOfSeriesRelatedInstances(
             int numberOfSeriesRelatedInstances) {
@@ -334,7 +345,7 @@ public class Series extends EntityBase {
 
     /**
      * @param seriesNumber
-     *            the seriesNumber to set
+     *                the seriesNumber to set
      */
     public void setSeriesNumber(String seriesNumber) {
         this.seriesNumber = seriesNumber;
@@ -349,7 +360,7 @@ public class Series extends EntityBase {
 
     /**
      * @param seriesStatus
-     *            the seriesStatus to set
+     *                the seriesStatus to set
      */
     public void setSeriesStatus(int seriesStatus) {
         this.seriesStatus = seriesStatus;
@@ -364,7 +375,7 @@ public class Series extends EntityBase {
 
     /**
      * @param seriesIuid
-     *            the seriesIuid to set
+     *                the seriesIuid to set
      */
     public void setSeriesIuid(String seriesIuid) {
         this.seriesIuid = seriesIuid;
@@ -379,7 +390,7 @@ public class Series extends EntityBase {
 
     /**
      * @param sourceAET
-     *            the sourceAET to set
+     *                the sourceAET to set
      */
     public void setSourceAET(String sourceAET) {
         this.sourceAET = sourceAET;
@@ -394,7 +405,7 @@ public class Series extends EntityBase {
 
     /**
      * @param study
-     *            the study to set
+     *                the study to set
      */
     public void setStudy(Study study) {
         this.study = study;
@@ -409,7 +420,7 @@ public class Series extends EntityBase {
 
     /**
      * @param updatedTime
-     *            the updatedTime to set
+     *                the updatedTime to set
      */
     public void setUpdatedTime(Timestamp updatedTime) {
         this.updatedTime = updatedTime;
@@ -424,7 +435,7 @@ public class Series extends EntityBase {
 
     /**
      * @param filesetId
-     *            the filesetId to set
+     *                the filesetId to set
      */
     public void setFilesetId(String filesetID) {
         this.filesetId = filesetID;
@@ -439,7 +450,7 @@ public class Series extends EntityBase {
 
     /**
      * @param filesetIuid
-     *            the filesetIuid to set
+     *                the filesetIuid to set
      */
     public void setFilesetIuid(String filesetUID) {
         this.filesetIuid = filesetUID;
@@ -454,10 +465,57 @@ public class Series extends EntityBase {
 
     /**
      * @param mpps
-     *            the mpps to set
+     *                the mpps to set
      */
     public void setMpps(MPPS mpps) {
         this.mpps = mpps;
+    }
+
+    /**
+     * @return the performingPhysicianName
+     */
+    public String getPerformingPhysicianName() {
+        return performingPhysicianName;
+    }
+
+    /**
+     * @param performingPhysicianName
+     *                the performingPhysicianName to set
+     */
+    public void setPerformingPhysicianName(String performingPhysicianName) {
+        this.performingPhysicianName = performingPhysicianName;
+    }
+
+    /**
+     * @return the performingPhysicianIdeographicName
+     */
+    public String getPerformingPhysicianIdeographicName() {
+        return performingPhysicianIdeographicName;
+    }
+
+    /**
+     * @param performingPhysicianIdeographicName
+     *                the performingPhysicianIdeographicName to set
+     */
+    public void setPerformingPhysicianIdeographicName(
+            String performingPhysicianIdeographicName) {
+        this.performingPhysicianIdeographicName = performingPhysicianIdeographicName;
+    }
+
+    /**
+     * @return the performingPhysicianPhoneticName
+     */
+    public String getPerformingPhysicianPhoneticName() {
+        return performingPhysicianPhoneticName;
+    }
+
+    /**
+     * @param performingPhysicianPhoneticName
+     *                the performingPhysicianPhoneticName to set
+     */
+    public void setPerformingPhysicianPhoneticName(
+            String performingPhysicianPhoneticName) {
+        this.performingPhysicianPhoneticName = performingPhysicianPhoneticName;
     }
 
     /**
@@ -469,7 +527,7 @@ public class Series extends EntityBase {
 
     /**
      * @param ppsStartDateTime
-     *            the ppsStartDateTime to set
+     *                the ppsStartDateTime to set
      */
     public void setPpsStartDateTime(Timestamp ppsStartDateTime) {
         this.ppsStartDateTime = ppsStartDateTime;
@@ -484,7 +542,7 @@ public class Series extends EntityBase {
 
     /**
      * @param ppsIuid
-     *            the ppsIuid to set
+     *                the ppsIuid to set
      */
     public void setPpsIuid(String ppsUID) {
         this.ppsIuid = ppsUID;
@@ -499,7 +557,7 @@ public class Series extends EntityBase {
 
     /**
      * @param externalRetrieveAET
-     *            the externalRetrieveAET to set
+     *                the externalRetrieveAET to set
      */
     public void setExternalRetrieveAET(String externalRetrieveAET) {
         this.externalRetrieveAET = externalRetrieveAET;
@@ -514,7 +572,7 @@ public class Series extends EntityBase {
 
     /**
      * @param retrieveAETs
-     *            the retrieveAETs to set
+     *                the retrieveAETs to set
      */
     public void setRetrieveAETs(String retrieveAET) {
         this.retrieveAETs = retrieveAET;
@@ -529,7 +587,7 @@ public class Series extends EntityBase {
 
     /**
      * @param requestAttributes
-     *            the requestAttributes to set
+     *                the requestAttributes to set
      */
     public void setRequestAttributes(Set<SeriesRequest> requestAttributes) {
         this.requestAttributes = requestAttributes;
@@ -544,7 +602,7 @@ public class Series extends EntityBase {
 
     /**
      * @param bodyPartExamined
-     *            the bodyPartExamined to set
+     *                the bodyPartExamined to set
      */
     public void setBodyPartExamined(String bodyPartExamined) {
         this.bodyPartExamined = bodyPartExamined;
@@ -559,7 +617,7 @@ public class Series extends EntityBase {
 
     /**
      * @param laterality
-     *            the laterality to set
+     *                the laterality to set
      */
     public void setLaterality(String laterality) {
         this.laterality = laterality;
@@ -574,7 +632,7 @@ public class Series extends EntityBase {
 
     /**
      * @param seriesCustomAttribute1
-     *            the seriesCustomAttribute1 to set
+     *                the seriesCustomAttribute1 to set
      */
     public void setSeriesCustomAttribute1(String seriesCustomAttribute1) {
         this.seriesCustomAttribute1 = seriesCustomAttribute1;
@@ -589,7 +647,7 @@ public class Series extends EntityBase {
 
     /**
      * @param seriesCustomAttribute2
-     *            the seriesCustomAttribute2 to set
+     *                the seriesCustomAttribute2 to set
      */
     public void setSeriesCustomAttribute2(String seriesCustomAttribute2) {
         this.seriesCustomAttribute2 = seriesCustomAttribute2;
@@ -604,7 +662,7 @@ public class Series extends EntityBase {
 
     /**
      * @param seriesCustomAttribute3
-     *            the seriesCustomAttribute3 to set
+     *                the seriesCustomAttribute3 to set
      */
     public void setSeriesCustomAttribute3(String seriesCustomAttribute3) {
         this.seriesCustomAttribute3 = seriesCustomAttribute3;
@@ -612,7 +670,7 @@ public class Series extends EntityBase {
 
     public void setAttributes(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
@@ -626,8 +684,7 @@ public class Series extends EntityBase {
                     + Character.toUpperCase(field.charAt(0))
                     + field.substring(1), STRING_PARAM);
             m.invoke(this, new Object[] { value });
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ConfigurationException(e);
         }
     }
@@ -640,11 +697,25 @@ public class Series extends EntityBase {
         setInstitutionalDepartmentName(toUpperCase(ds
                 .getString(Tags.InstitutionalDepartmentName)));
         setStationName(toUpperCase(ds.getString(Tags.StationName)));
+        PersonName pn = ds.getPersonName(Tags.PerformingPhysicianName);
+        if (pn != null) {
+            setPerformingPhysicianName(toUpperCase(pn
+                    .toComponentGroupString(false)));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                setPerformingPhysicianIdeographicName(ipn
+                        .toComponentGroupString(false));
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                setPerformingPhysicianPhoneticName(ppn
+                        .toComponentGroupString(false));
+            }
+        }
         try {
             setPpsStartDateTime(ds.getDateTime(Tags.PPSStartDate,
                     Tags.PPSStartTime));
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             logger.warn("Illegal PPS Date/Time format: " + e.getMessage());
         }
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
@@ -668,12 +739,25 @@ public class Series extends EntityBase {
      */
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
             throws DcmServiceException {
-        Dataset attrs = getAttributes(false);
-        String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter(cuid);
-        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, logger);
-        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), logger)) {
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
+        if (filter.isOverwrite()) {
+            Dataset attrs;
+            if (filter.isMerge()) {
+                attrs = getAttributes(false);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), logger);
+            } else {
+                attrs = filter.filter(ds);
+            }
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        } else {
+            Dataset attrs = getAttributes(false);
+            AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter,
+                    logger);
+            if (filter.isMerge()
+                    && AttrUtils.mergeAttributes(attrs, filter.filter(ds),
+                            logger)) {
+                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            }
         }
     }
 
@@ -714,7 +798,8 @@ public class Series extends EntityBase {
     }
 
     /**
-     * @param seriesDescription the seriesDescription to set
+     * @param seriesDescription
+     *                the seriesDescription to set
      */
     public void setSeriesDescription(String seriesDescription) {
         this.seriesDescription = seriesDescription;

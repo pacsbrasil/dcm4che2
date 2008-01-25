@@ -586,11 +586,23 @@ public class Study extends EntityBase {
 
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
             throws DcmServiceException {
-        Dataset attrs = getAttributes(false);
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
-        AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-        if (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
+        if (filter.isOverwrite()) {
+            Dataset attrs;
+            if (filter.isMerge()) {
+                attrs = getAttributes(false);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
+            } else {
+                attrs = filter.filter(ds);
+            }
             setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        } else {
+            Dataset attrs = getAttributes(false);
+            AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
+            if (filter.isMerge()
+                    && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
+                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            }
         }
     }
 
