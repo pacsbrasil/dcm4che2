@@ -51,6 +51,7 @@ dicom.memcache.queryStr=objectUID
 #Now, add a study filter that provides study searches. 
 studyFilter.inherit=servletFilter
 studyFilter.source=${class:org.dcm4chee.xero.search.study.StudySearch}
+studyFilter.dicom.priority=-1
 studyFilter.searchCondition=${class:org.dcm4chee.xero.search.study.StudySearchConditionParser}
 studyFilter.emptyFilter=${class:org.dcm4chee.xero.search.EmptyQueryParameterFilter}
 studyFilter.emptyFilter.priority=1000
@@ -58,6 +59,7 @@ studyFilter.emptyFilter.priority=1000
 # And also have a filter for series and/or images or the complete study.
 imageFilter.inherit=servletFilter
 imageFilter.source=${ref:imageSource}
+imageFilter.dicom.priority=-1
 
 imageSource.inherit=source
 imageSource.dicom.inherit=dicom
@@ -91,6 +93,7 @@ imageSource.minMaxPixelInfo.priority=650
 seriesFilter.inherit=servletFilter
 seriesFilter.seriesSource=${class:org.dcm4chee.xero.search.study.SeriesSearch}
 seriesFilter.seriesSource.priority=-1
+seriesFilter.dicom.priority=-1
 seriesFilter.emptyFilter.inherit=imageSource.emptyFilter
 seriesFilter.kin=${class:org.dcm4chee.xero.search.filter.KeyObjectSeries}
 seriesFilter.kin.priority=25
