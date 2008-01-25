@@ -57,6 +57,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceException;
+import javax.security.auth.Subject;
 
 import org.dcm4che.archive.common.PrivateTags;
 import org.dcm4che.archive.dao.InstanceDAO;
@@ -211,9 +212,9 @@ public class ContentManagerBean implements ContentManagerLocal,
      * @see org.dcm4che.archive.service.ContentManager#countStudies(org.dcm4che.data.Dataset,
      *      boolean)
      */
-    public int countStudies(Dataset filter, boolean hideWithoutStudies) {
+    public int countStudies(Dataset filter, boolean hideWithoutStudies, Subject subject) {
         try {
-            return new QueryStudiesCmd(filter, hideWithoutStudies).count();
+            return new QueryStudiesCmd(filter, hideWithoutStudies, subject).count();
         }
         catch (SQLException e) {
             throw new EJBException(e);
@@ -313,17 +314,13 @@ public class ContentManagerBean implements ContentManagerLocal,
         return ds;
     }
 
-    /**
-     * @see org.dcm4che.archive.service.ContentManager#listStudies(org.dcm4che.data.Dataset,
-     *      boolean, boolean, int, int)
+    /** 
+     * @see org.dcm4che.archive.service.ContentManager#listStudies(org.dcm4che.data.Dataset, boolean, boolean, javax.security.auth.Subject, int, int)
      */
-    public List listStudies(Dataset filter, boolean hideWithoutStudies,
-            boolean noMatchForNoValue, int offset, int limit) {
+    public List listStudies(Dataset filter, boolean hideWithoutStudies, boolean noMatchForNoValue, Subject subject, int offset, int limit) {
         try {
-            return new QueryStudiesCmd(filter, hideWithoutStudies,
-                    noMatchForNoValue).list(offset, limit);
-        }
-        catch (SQLException e) {
+                return new QueryStudiesCmd(filter, hideWithoutStudies, noMatchForNoValue, subject).list(offset, limit);
+        } catch (SQLException e) {
             throw new EJBException(e);
         }
     }

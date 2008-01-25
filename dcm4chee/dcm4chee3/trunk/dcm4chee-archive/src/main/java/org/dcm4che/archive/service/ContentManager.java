@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.PersistenceException;
+import javax.security.auth.Subject;
 
 import org.dcm4che.archive.dao.InstanceDAO;
 import org.dcm4che.archive.dao.MPPSDAO;
@@ -105,7 +106,6 @@ public interface ContentManager {
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public Dataset getInstanceByIUID(String sopiuid)
             throws PersistenceException;
@@ -113,7 +113,7 @@ public interface ContentManager {
     /**
      * 
      */
-    public int countStudies(Dataset filter, boolean hideWithoutStudies);
+    public int countStudies(Dataset filter, boolean hideWithoutStudies, Subject subject);
 
     /**
      * Get the Info of an instance.
@@ -122,7 +122,6 @@ public interface ContentManager {
      * (instance, series, study and patient attributes)
      * 
      * 
-     * @ejb.transaction type="Required"
      */
     public Dataset getInstanceInfo(String iuid, boolean supplement)
             throws PersistenceException;
@@ -134,7 +133,6 @@ public interface ContentManager {
      * (instance, series, study and patient attributes)
      * 
      * 
-     * @ejb.transaction type="Required"
      */
     public List listInstanceInfos(String[] iuids, boolean supplement)
             throws PersistenceException;
@@ -155,7 +153,6 @@ public interface ContentManager {
      * (instance, series, study and patient attributes)
      * 
      * 
-     * @ejb.transaction type="Required"
      */
     public List listInstanceInfosByStudyAndSRCode(String suid, String cuid,
             String code, String designator, boolean supplement)
@@ -164,8 +161,7 @@ public interface ContentManager {
     /**
      * 
      */
-    public List listStudies(Dataset filter, boolean hideWithoutStudies,
-            boolean noMatchForNoValue, int offset, int limit);
+    public List listStudies(Dataset filter, boolean hideWithoutStudies, boolean noMatchForNoValue, Subject subject, int offset, int limit);
 
     /**
      * 
@@ -181,89 +177,75 @@ public interface ContentManager {
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listStudiesOfPatient(long patientPk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listSeriesOfStudy(long studyPk) throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listInstancesOfSeries(long seriesPk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listFilesOfInstance(long instancePk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listStudiesOfPrivatePatient(long patientPk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listSeriesOfPrivateStudy(long studyPk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listInstancesOfPrivateSeries(long seriesPk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List listFilesOfPrivateInstance(long instancePk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List[] listInstanceFilesToRecover(long pk)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List[] listSeriesFilesToRecover(long pk) throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List[] listStudyFilesToRecover(long pk) throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public List[] listPatientFilesToRecover(long pk)
             throws PersistenceException;
 
     /**
      * @throws PersistenceException
-     * 
-     * @ejb.transaction type="Required"
      */
     public Dataset getSOPInstanceRefMacro(long studyPk, boolean insertModality)
             throws PersistenceException;
@@ -275,8 +257,6 @@ public interface ContentManager {
      * UIDs (String) or Instance.pk values (Long).
      * 
      * @throws PersistenceException
-     * 
-     * @ejb.transaction type="Required"
      */
     public Collection getSOPInstanceRefMacros(Collection instanceUIDs)
             throws PersistenceException;
@@ -284,23 +264,18 @@ public interface ContentManager {
     /**
      * @throws PersistenceException
      * 
-     * 
-     * @ejb.transaction type="Required"
      */
     public Dataset getPatientForStudy(long studyPk) throws PersistenceException;
 
     /**
      * @throws PersistenceException
      * 
-     * 
-     * @ejb.transaction type="Required"
      */
     public Dataset getPatientForStudy(String studyIUID)
             throws PersistenceException;
 
     /**
      * 
-     * @ejb.transaction type="Required"
      */
     public boolean isStudyAvailable(long studyPk, int availability)
             throws PersistenceException;
