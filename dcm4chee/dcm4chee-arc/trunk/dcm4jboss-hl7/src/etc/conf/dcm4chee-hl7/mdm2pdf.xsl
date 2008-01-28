@@ -202,9 +202,7 @@
     <xsl:call-template name="conceptName">
      <xsl:with-param name="code">18745-0</xsl:with-param>
      <xsl:with-param name="scheme">LN</xsl:with-param>
-     <xsl:with-param name="meaning">
-      Cardiac Catheterization Report
-     </xsl:with-param>
+     <xsl:with-param name="meaning">Cardiac Catheterization Report</xsl:with-param>
     </xsl:call-template>
    </xsl:when>
    <xsl:when test="$obsidmeaning='Cardiac Electrophysiology Report'">
