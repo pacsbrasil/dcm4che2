@@ -533,15 +533,8 @@ public class IHEDocumentList implements XMLResponseObject{
 	 */
 	private void addComponentStatusCode(Dataset ds) throws SAXException {
         //statusCode /SR: CompletionFlag, Verification flag; ecg: ???
-        String statusCode = "";
-		if ( "SR".equals(ds.getString( Tags.Modality ) ) ) {
-			statusCode = ds.getString( Tags.CompletionFlag);
-	        if ( statusCode == null ) statusCode = "";
-	        String verifyCode = ds.getString( Tags.VerificationFlag );
-	        if ( verifyCode != null ) statusCode += ", "+verifyCode;
-		} else {
-			//TODO: where get the status of waveform storage!?
-		}
+        String statusCode = ds.getString(Tags.CompletionFlag, "")
+                + "/" + ds.getString(Tags.VerificationFlag, "");
         AttributesImpl attrStatusCode = new AttributesImpl();
         util.addAttribute( attrStatusCode, "code", statusCode );
         util.addAttribute( attrStatusCode, "codeSystem", "" );
