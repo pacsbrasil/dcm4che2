@@ -57,6 +57,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.util.SystemUtils;
 
 /**
  *
@@ -84,7 +85,7 @@ public class DcmImageReaderConf {
     /** Creates a new instance of DcmImageReaderConf */
     private DcmImageReaderConf() {        
         classloader = Thread.currentThread().getContextClassLoader();
-        String conf = System.getProperty(
+        String conf = SystemUtils.getSystemProperty(
                 "dcm4cheri.imageio.plugins.DcmImageReader.config",
                 "DcmImageReader.properties");
 
