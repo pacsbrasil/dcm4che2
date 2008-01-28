@@ -237,7 +237,7 @@
       <name>RadiologyPDFConceptCodeNames</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="11541-0:LN" />
+         <value value="11525-3:LN;11528-7:LN;11538-6:LN;11539-4:LN;11540-2:LN;11541-0:LN;18747-6:LN;18748-4:LN;18755-9:LN;18756-7:LN;18757-5:LN;18758-3:LN;18760-9:LN"/>
       </descriptors>
     </attribute>
     <attribute access="read-write"
@@ -249,7 +249,7 @@
       <name>CardiologyPDFConceptCodeNames</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="11522-0:LN;28032-1:LN" />
+         <value value="11522-0:LN;18745-0:LN;18748-4:LN;18750-0:LN;18752-6:LN;18754-2:LN;28032-1:LN" />
       </descriptors>
     </attribute>
     <attribute access="read-write"
@@ -261,7 +261,7 @@
       <name>ECGPDFConceptCodeNames</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="11524-6:LN" />
+         <value value="11524-0:LN" />
       </descriptors>
     </attribute>
 

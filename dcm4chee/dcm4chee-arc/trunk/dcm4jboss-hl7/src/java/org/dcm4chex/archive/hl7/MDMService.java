@@ -102,13 +102,18 @@ public class MDMService extends ORU_MDMService {
         for (Iterator iter = obxs.iterator(); iter.hasNext();) {
             Element obx = (Element) iter.next();
             List fds = obx.elements();
-            if ("ED".equals(toString(fds.get(1)))) {
+            if (fds.size() > 4) {
                 List cmps = ((Element) fds.get(4)).elements();
-                if ("PDF".equals(toString(cmps.get(1)))) {
+                if (cmps.size() > 3 && "PDF".equals(toString(cmps.get(1)))) {
+                    String obx2 = toString(fds.get(1));
+                    if (!"ED".equals(obx2)) {
+                        log.warn("Detect encapsulated report in OBX with OBX-2: '"
+                                + obx2 + "' instead 'ED'");
+                    }
                     String s = toString(cmps.remove(3));
                     return Base64.base64ToByteArray(s);
                 }
-            }
+           }
         }
         // hl7/OBX[field[2]='ED']/field[5]/component[4]
         // TODO Auto-generated method stub

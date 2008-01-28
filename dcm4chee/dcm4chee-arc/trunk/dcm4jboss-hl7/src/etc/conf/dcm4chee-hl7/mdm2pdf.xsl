@@ -66,17 +66,42 @@
   </attr>
  </xsl:template>
  <xsl:template match="OBR">
-  <!--Verification Flag (0040,A493)-->
-  <attr tag="0040A493" vr="CS">
-   <xsl:variable name="status" select="field[25]/text()" />
-   <xsl:choose>
-    <xsl:when test="$status='F'">VERIFIED</xsl:when>
-    <xsl:when test="$status='C'">VERIFIED</xsl:when>
-    <xsl:otherwise>UNVERIFIED</xsl:otherwise>
-   </xsl:choose>
+  <!-- Acquisition DateTime -->
+  <attr tag="0008002A" vr="DT">
+   <xsl:value-of select="field[7]/text()" />
   </attr>
+  <xsl:variable name="status" select="field[25]/text()" />
+  <!--Completion Flag-->
+  <xsl:choose>
+   <xsl:when test="$status='P'">
+    <attr tag="0040A491" vr="CS">PARTIAL</attr>
+   </xsl:when>
+   <xsl:when test="$status='F'">
+    <attr tag="0040A491" vr="CS">COMPLETE</attr>
+   </xsl:when>
+  </xsl:choose>
  </xsl:template>
  <xsl:template match="TXA">
+  <xsl:variable name="ts">
+   <xsl:choose>
+    <!--Transcription Date/Time -->
+    <xsl:when test="field[7]/text()">
+     <xsl:value-of select="field[7]/text()" />
+    </xsl:when>
+    <!--Origination date/time -->
+    <xsl:otherwise>
+     <xsl:value-of select="field[6]/text()" />
+    </xsl:otherwise>
+   </xsl:choose>
+  </xsl:variable>
+  <!-- Content Date  -->
+  <attr tag="00080023" vr="DA">
+   <xsl:value-of select="substring($ts,1,8)" />
+  </attr>
+  <!-- Content Time -->
+  <attr tag="00080033" vr="TM">
+   <xsl:value-of select="substring($ts,9)" />
+  </attr>
   <xsl:variable name="iuid" select="field[12]/text()" />
   <!--SOP Instance UID-->
   <attr tag="00080018" vr="UI">
@@ -118,6 +143,14 @@
     </item>
    </attr>
   </xsl:if>
+  <!--Verification Flag-->
+  <xsl:variable name="txa17" select="field[17]/text()" />
+  <attr tag="0040A493" vr="CS">
+   <xsl:choose>
+    <xsl:when test="$txa17='AU' or $txa17='LA'">VERIFIED</xsl:when>
+    <xsl:otherwise>UNVERIFIED</xsl:otherwise>
+   </xsl:choose>
+  </attr>
   <xsl:if test="field[22]/component">
    <!-- Verifying Observer Sequence -->
    <attr tag="0040A073" vr="SQ">
@@ -142,40 +175,198 @@
    <xsl:value-of select="field[5]/text()" />
   </attr>
  </xsl:template>
- <xsl:template match="OBX[field[2]='ED']">
+ <xsl:template match="OBX[field[5]/component[2]='PDF']">
   <xsl:variable name="obsid" select="field[3]" />
   <xsl:variable name="obsidcode" select="$obsid/text()" />
-  <xsl:variable name="obsidmeaning" select="$obsid/component[1]" />
-  <xsl:variable name="obsidscheme" select="$obsid/component[2]" />
-  <!--Concept Name Code Sequence-->
-  <attr tag="0040A043" vr="SQ">
-   <xsl:if test="$obsidscheme">
-    <item>
-     <!--Code Value-->
-     <attr tag="00080100" vr="SH">
-      <xsl:value-of select="$obsidcode" />
-     </attr>
-     <!--Coding Scheme Designator-->
-     <attr tag="00080102" vr="SH">
-      <xsl:value-of select="$obsidscheme" />
-     </attr>
-     <!--Code Meaning-->
-     <attr tag="00080104" vr="LO">
-      <xsl:value-of select="$obsidmeaning" />
-     </attr>
-    </item>
-   </xsl:if>
-  </attr>
-  <!--Document Title-->
-  <attr tag="00420010" vr="ST">
+  <xsl:variable name="obsidmeaning">
    <xsl:choose>
-    <xsl:when test="$obsidmeaning">
-     <xsl:value-of select="$obsidmeaning" />
+    <xsl:when test="$obsid/component[1]">
+     <xsl:value-of select="$obsid/component[1]" />
     </xsl:when>
     <xsl:otherwise><!-- missing ^ prefix -->
      <xsl:value-of select="$obsidcode" />
     </xsl:otherwise>
    </xsl:choose>
+  </xsl:variable>
+  <xsl:variable name="obsidscheme" select="$obsid/component[2]" />
+  <xsl:choose>
+   <xsl:when test="$obsidscheme">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code" select="$obsidcode" />
+     <xsl:with-param name="scheme" select="$obsidscheme" />
+     <xsl:with-param name="meaning" select="$obsidmeaning" />
+    </xsl:call-template>
+   </xsl:when>
+   <!-- Encode Document Title -->
+   <xsl:when test="$obsidmeaning='Cardiac Catheterization Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18745-0</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">
+      Cardiac Catheterization Report
+     </xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Cardiac Electrophysiology Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18750-0</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Cardiac Electrophysiology Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='CT Abdomen Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11540-2</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">CT Abdomen Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='CT Chest Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11538-6</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">CT Chest Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='CT Head Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11539-4</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">CT Head Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='CT Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18747-6</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">CT Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Diagnostic Imaging Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18748-4</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Diagnostic Imaging Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Echocardiography Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11522-0</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Echocardiography Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='ECG Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11524-0</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">ECG Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Exercise Stress Test Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18752-6</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Exercise Stress Test Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Holter Study Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18754-2</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Holter Study Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Ultrasound Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18760-9</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Ultrasound Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='MRI Head Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11541-0</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">MRI Head Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='MRI Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18755-9</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">MRI Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='MRI Spine Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18756-7</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">MRI Spine Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Nuclear Medicine Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18757-5</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Nuclear Medicine Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Ultrasound Obstetric and Gyn Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11525-3</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Ultrasound Obstetric and Gyn Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='PET Scan Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18758-3</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">PET Scan Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <xsl:when test="$obsidmeaning='Radiology Report'">
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">11528-7</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Radiology Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:when>
+   <!-- fallback to general Diagnostic Imaging Report -->
+   <xsl:otherwise>
+    <xsl:call-template name="conceptName">
+     <xsl:with-param name="code">18748-4</xsl:with-param>
+     <xsl:with-param name="scheme">LN</xsl:with-param>
+     <xsl:with-param name="meaning">Diagnostic Imaging Report</xsl:with-param>
+    </xsl:call-template>
+   </xsl:otherwise>
+  </xsl:choose>
+  <!--Document Title-->
+  <attr tag="00420010" vr="ST">
+   <xsl:value-of select="$obsidmeaning" />
+  </attr>
+ </xsl:template>
+ <xsl:template name="conceptName">
+  <xsl:param name="code" />
+  <xsl:param name="scheme" />
+  <xsl:param name="meaning" />
+  <!--Concept Name Code Sequence-->
+  <attr tag="0040A043" vr="SQ">
+   <item>
+    <!--Code Value-->
+    <attr tag="00080100" vr="SH">
+     <xsl:value-of select="$code" />
+    </attr>
+    <!--Coding Scheme Designator-->
+    <attr tag="00080102" vr="SH">
+     <xsl:value-of select="$scheme" />
+    </attr>
+    <!--Code Meaning-->
+    <attr tag="00080104" vr="LO">
+     <xsl:value-of select="$meaning" />
+    </attr>
+   </item>
   </attr>
  </xsl:template>
  <xsl:template name="xpn2pn">
