@@ -32,7 +32,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="clean"/>
-    <ant inheritAll="false" dir="../dcm4jboss-cdw" target="clean"/>
   </target>
   <target name="jar">
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="jar"/>
