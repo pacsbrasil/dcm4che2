@@ -62,7 +62,9 @@
           <xsl:value-of select="statusCode/@code" />
          </td>
          <td>
-          <xsl:value-of select="effectiveTime/@value" />
+          <xsl:call-template name="formatDateWithTime">
+           <xsl:with-param name="dateTime" select="effectiveTime/@value" />
+          </xsl:call-template>
          </td>
          <td>
           <a>
