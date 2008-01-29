@@ -192,10 +192,9 @@ public class ORMService extends AbstractHL7Service {
         return true;
     }
     
-    public boolean process(String orderControl, String orderStatus, Document msg)
+    public void process(String orderControl, String orderStatus, Document msg)
             throws HL7Exception {
         process(new int[] { toOp(orderControl, orderStatus) }, msg);
-        return true;
     }
     
     private void process(int op[], Document msg) throws HL7Exception {
