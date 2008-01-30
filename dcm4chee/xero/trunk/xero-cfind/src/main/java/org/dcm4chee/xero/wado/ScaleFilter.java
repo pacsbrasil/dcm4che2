@@ -176,7 +176,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  biScale = scale.filter(bi, biScale);
 	  WadoImage ret = wi.clone();
 	  ret.setValue(biScale);
-	  if( !transform.isEmpty() ) ret.setParameter(SVG_TRANSFORM, transform);
+	  if( !transform.equals("") ) ret.setParameter(SVG_TRANSFORM, transform);
 	  return ret;
    }
 

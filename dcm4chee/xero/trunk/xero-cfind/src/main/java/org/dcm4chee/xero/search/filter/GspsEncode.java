@@ -1183,7 +1183,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		 bitmap.setClazz("ImageOverlay");
 	  }
 	  href.append("&frameNumber=").append(layer);
-	  if (rgb != null && !rgb.isEmpty()) {
+	  if (rgb != null && !rgb.equals("")) {
 		 // It doesn't work well to have a # in a URL...
 		 if (rgb.startsWith("#"))
 			rgb = rgb.substring(1);

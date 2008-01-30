@@ -84,7 +84,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 
    public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
 	  String koUid = (String) params.get(KEY_UID);
-	  if (koUid == null || koUid.isEmpty()) {
+	  if (koUid == null || koUid.equals("")) {
 		 return (ResultsBean) filterItem.callNextFilter(params);
 	  }
 	  ResultsBean ret = addKeyObjectMacro(filterItem, params, koUid);
@@ -135,7 +135,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			study.getMacroItems().addMacro(kom);
 
 			List<KeySelection> missing = assignKeyObjectMacro(ret, kom, kob.getKeySelection());
-			if (missing != null && !missing.isEmpty()) {
+			if (missing != null && !missing.isEmpty() ) {
 			   handleMissingItems(filterItem, params, ret, kom, missing);
 			}
 		 }
