@@ -16,7 +16,6 @@ public class ParamSizeMemoryCacheFilter<T> extends MemoryCacheFilterBase<CacheIt
 	private static Logger log = LoggerFactory.getLogger(ParamSizeMemoryCacheFilter.class);
 
 	/** Cache a CacheItemImpl instead of the actual item */
-	@Override
 	@SuppressWarnings("unchecked")
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
 		String key = computeKey(params);
