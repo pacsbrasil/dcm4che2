@@ -108,6 +108,9 @@
      <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
         <fileset dir="xero-war/target/xero" />
      </copy>
+     <copy todir="${developmentServer}/server/default/deploy/xero-wado-war.war" preservelastmodified="true">
+        <fileset dir="xero-wado-war/target/xero-wado-war-1.0-SNAPSHOT" includes="**/*" />
+     </copy>
   </target>
 
   <target name="package" depends="stable" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">

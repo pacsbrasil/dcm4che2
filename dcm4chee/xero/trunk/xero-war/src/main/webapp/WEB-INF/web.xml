@@ -197,24 +197,6 @@
       <url-pattern>*.png</url-pattern>
       <url-pattern>*.css</url-pattern>
    </filter-mapping>
-   
-   <!-- WADO servlet to use for testing window levelling performance. -->
-   <servlet>
-     <servlet-name>WADO</servlet-name>
-      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
-      <init-param>
-	      <param-name>metaData</param-name>
-    	  <param-value>/wado.metadata</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>filter</param-name>
-    	  <param-value>baseImg</param-value>
-      </init-param>
-   </servlet>
-   <servlet-mapping>
-     <servlet-name>WADO</servlet-name>
-     <url-pattern>/wado</url-pattern>
-   </servlet-mapping>
 
    <!-- JSF and Facelets Configuration -->    
    <servlet>

@@ -51,6 +51,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterList;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +85,7 @@ public class MetaDataServlet extends HttpServlet {
      * The filter needs to supply a type and a stream/byte array/data object to
      * send
      */
-   Filter<ServletResponseItem> filter;
+   FilterList<ServletResponseItem> filter;
 
    /**
      * The time between refreshes of filtered response - this is set to an hour
@@ -109,10 +110,22 @@ public class MetaDataServlet extends HttpServlet {
      * @throws IOException
      *             Sets SC_NO_CONTENT on a null return element.
      */
+   @SuppressWarnings("unchecked")
    protected void doFilter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  try {
+		 String requestType = request.getParameter("requestType");
 		 Map<String, Object> params = computeParameterMap(request);
-		 ServletResponseItem sri = filter.filter(filterItem, params);
+		 FilterItem useFilterItem;
+		 if (requestType != null) {
+			useFilterItem = filter.getNamedFilter(filterItem, requestType);
+		 } else {
+			useFilterItem = filter.getFirstFilter(filterItem);
+		 }
+		 if (useFilterItem == null) {
+			throw new ServletException("Didn't find requestType=" + requestType);
+		 }
+		 log.info("Found request type " + requestType+ " = "+useFilterItem);
+		 ServletResponseItem sri = (ServletResponseItem) useFilterItem.filter.filter(useFilterItem, params);
 		 response.setCharacterEncoding("UTF-8");
 		 if (sri == null) {
 			response.sendError(HttpServletResponse.SC_NO_CONTENT, "No content found for this request.");
@@ -120,7 +133,6 @@ public class MetaDataServlet extends HttpServlet {
 		 }
 		 sri.writeResponse(request, response);
 	  } catch (Exception e) {
-
 		 log.error("Caught error " + e + " for URI " + request.getRequestURI() + " with parameters " + request.getQueryString(), e);
 	  }
    }
@@ -173,7 +185,7 @@ public class MetaDataServlet extends HttpServlet {
 	  metaData = root.getForPath(filterName);
 	  if (metaData == null)
 		 throw new IllegalArgumentException("Filter/meta-data information not found for " + filterName);
-	  filter = (Filter<ServletResponseItem>) metaData.getValue();
+	  filter = (FilterList<ServletResponseItem>) metaData.getValue();
 	  if (filter == null)
 		 throw new IllegalArgumentException("Filter not found for " + filterName);
 	  filterItem = new FilterItem(metaData);

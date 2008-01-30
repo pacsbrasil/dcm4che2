@@ -148,13 +148,23 @@ wadoDcm.header=${class:org.dcm4chee.xero.wado.EncodeDicom}
 wadoDcm.fileLocation=${ref:fileLocation}
 wadoDcm.fileLocation.priority=-1
 
+# Defines the filters that are allowed as child elements of this filter.
 wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-wado.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
-wado.choose.priority=100
-wado.dicom=${ref:dicom}
-wado.dicom.priority=-1
-wado.image=${ref:wadoImg}
-wado.image.priority=25
-wado.application/dicom=${ref:wadoDcm}
-wado.application/dicom.priority=20
+wado.WADO.inherit=WADO
+// WADO will be called by default.
+wado.WADO.priority=1
+
+wado.XERO.inherit=baseImg
+// Xero will NOT be called by default.
+wado.XERO.priority=-1
+
+WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
+WADO.choose.priority=100
+WADO.dicom=${ref:dicom}
+WADO.dicom.priority=-1
+WADO.image=${ref:wadoImg}
+WADO.image.priority=25
+WADO.application/dicom=${ref:wadoDcm}
+WADO.application/dicom.priority=20
 

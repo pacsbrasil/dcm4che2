@@ -147,7 +147,7 @@ public class FilterItem implements Comparable<FilterItem> {
 		 }
 		 return true;
 	}
-
+	
 	/** Return the next filters name/metadata path, if any */
 	public String getNextFilterName() {
 		if( nextFilterItem==null ) return null;

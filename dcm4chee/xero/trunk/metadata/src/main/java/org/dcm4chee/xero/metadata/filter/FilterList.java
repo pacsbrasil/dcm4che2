@@ -67,16 +67,34 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	 */
 	@SuppressWarnings("unchecked")
 	public T filter(FilterItem filterItem, Map<String, Object> params) {
-		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
-		FilterItem firstFilter = filterListConfig.getFirstFilter();
-		log.debug("First filter is "+firstFilter.getName());
+	   FilterItem firstFilter = getFirstFilter(filterItem);
 		if( firstFilter!=null ) {
 			Object ret = firstFilter.filter.filter(firstFilter, params);
 			if( ret!=null ) return (T) ret;
 		}
 		return (T) filterItem.callNextFilter(params);
 	}
-
+	
+	/**
+	 * Gets the first filter item.  Returns null if there isn't a first filter.
+	 */
+	public FilterItem getFirstFilter(FilterItem filterItem) {
+		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
+		FilterItem firstFilter = filterListConfig.getFirstFilter();
+		log.debug("First filter is "+firstFilter.getName());
+		return firstFilter;
+	}
+	
+	/**
+	 * Gets the named filter item.
+	 */
+	public FilterItem getNamedFilter(FilterItem filterItem, String name) {
+		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
+		FilterItem firstFilter = filterListConfig.getNamedFilter(name);
+		log.debug("Filter "+name+" is "+firstFilter.getName());
+		return firstFilter;
+	}
+	
 	/** Retrieve any pre-computed list of child elements for this filter list,
 	 * based on the given position in the meta-data - that allows a single
 	 * instance of a filter list to have different contents based on where
