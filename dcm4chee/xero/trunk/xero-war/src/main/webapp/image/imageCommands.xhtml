@@ -53,7 +53,7 @@
     </li>
     <li>Reports
       <ul>
-        <se:report><li><a oncommand="/xero/report/report.seam?" onmousedown="return false;"><span class="reportLabel" /></a></li></se:report>
+        <se:report><li><a oncommand="/xero/report/report.seam?" onclick="return false;"><span class="reportLabel" /></a></li></se:report>
       </ul>
     </li>
     <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
@@ -72,7 +72,7 @@
    <span class="imageNumber" />
    <span mode="cine">
      <a id="cineStop" onclick="alert('stop'); return false;" oncommand="/xero/image/action/CineStop.seam?"><img class="icon small" src="/xero/img/stop.png" alt="stop" /></a>
-     <a id="cineStart" onclick="alert('play'); return false;" oncommand="/xero/image/action/CineStop.seam?"><img class="small icon" src="/xero/img/play.png" alt="play" /></a>
+     <a id="cineStart" onclick="playCine(this); return false;" oncommand="/xero/image/action/CinePlay.seam?"><img class="small icon" src="/xero/img/play.png" alt="play" /></a>
    </span>
    <a class="imageNav" dir="1" page="0" oncommand="/xero/image/action/Navigate.seam?applyLevel=image" >&gt;</a>
    <a class="imageNav" dir="0" page="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image" >Image&gt;&gt;</a>

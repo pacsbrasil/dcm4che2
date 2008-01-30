@@ -36,33 +36,107 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-/**
- * This class handles CINE display control - start/stop end points, rate, and loading of images.
- */ 
- 
- function Cine() {
- 	this.imageCount = 0;
- };
- 
- 
-/** Initializes the Cine object to play CINE on the given SVG Object.
- * Only a single SVG frame is updated at a time, so playing CINE is done on one particular frame.  Once
- * the CINE is stopped, then the "current" frame becomes the one being displayed, +/- the offset to allow it
- * to display in the given location.
- * Not all data is changed on every image update - the items that are changed are:
- * 	1. Window level - changed to be the current user-selected or system selected window level
- * 	2. Rows/columns/quality - this is changed based on the download speed
- * 	3. Image Markup - this will be changed on every image
- *  4. Displayed image - this will often, but not always change - the same CINE code can theoretically be used to drive
- *     overall display location or a combination time/spatial location.
- * 
- * The things that are held constant are:
- * 	1. Region - the same sub-region/viewport area/magnification is used for every image displayed.
- * 		Should different images have different resolutions, then the same % region will be used - eg, the bottom right quadrant might be the visible region.
- * 		This may cause the image to "jump" when stop is pressed if it has a different view type in the GSPS
- * 		etc than the original image that was started with.
- * 	2. Display markup - this will not likely be updated - it isn't part of the "viewport", but rather is above
- * 		that level.
- */
-Cine.prototype.initForViewport = function() {
+/** This class handles CINE display control - start/stop end points, rate, and loading of images.*/ 
+function Cine(lookAhead) {
+	this.lookAhead = lookAhead;
+	var usethis = this;
+ 	this.callDisplayInterval = function() {
+ 		usethis.displayInterval.apply(usethis,arguments);
+ 	};
 };
+Cine.prototype.rate = 15;
+Cine.prototype.interval=1000/Cine.prototype.rate;
+Cine.prototype.started=false;
+Cine.prototype.readAhead=4;
+ 
+/** Sets the number of frames per second to display at. */
+function Cine_setRate(rate) {
+ 	this.rate = rate;
+};
+Cine.prototype.setRate=Cine_setRate;
+
+/** Starts the CINE playing - needs to pre-load some amount of information */
+function Cine_start() {
+	// TODO - ensure that the image meta-data is loaded for at least X images beyond now.  Wait till
+	// at least the first readAhead entries are available before proceeding.
+	// This section starts fetching the first readAhead entries. 
+	var i,n;
+	this.alreadyRead = 0;
+	var ir;
+	var p = this.lookAhead.viewPosition;
+	this.imgs = this.lookAhead.getImageCount();
+	var n = this.readAhead*2;
+	if( n>this.imgs ) {
+		this.readAhead = Math.floor(this.imgs/2);
+		n = this.imgs;
+	};
+	info("Set read ahead to "+this.readAhead+" fetching n="+n+" on "+this.imgs+" images");
+	// Just use the display interval code to start the fetching.
+	this.displayInterval();
+	this.interval = window.setInterval(this.callDisplayInterval, 1000/this.rate);
+};
+Cine.prototype.start=Cine_start;
+
+/** Gets the fetch position based on the look ahead index. */
+function Cine_fetchPosn(i) {
+   return (1+i+this.lookAhead.viewPosition) % this.imgs;	
+};
+Cine.prototype.fetchPosn = Cine_fetchPosn;
+
+/** Returns whether or not the CINE is started yet.  Just because start is called doesn't mean the CINE is actually running & started yet */
+function Cine_isStarted() {
+	return this.started;
+};
+Cine.prototype.isStarted=Cine_isStarted;
+
+/** Causes the next image to be displayed, assuming it is ready. */
+function Cine_displayInterval() {
+	info("displayInterval called.");
+	var ir,fp,i,complete;
+	var n=this.readAhead*2;
+	var loaded = 0;
+	for(i=0; i<n; i++) {
+		fp = this.fetchPosn(i);
+		ir = this.lookAhead.getImageRef(fp);
+		if( ir.isLoaded() ) loaded++;
+		if( i==this.readAhead ) {
+			complete = loaded;
+		}
+		if( !ir.isFetching() ) {
+			ir.fetch();
+		}
+	}
+	fp = this.fetchPosn(0);
+	ir = this.lookAhead.getImageRef(fp);
+	info("read ahead completed "+complete+" total "+loaded);
+	if( complete==this.readAhead ) {
+		this.started = true;
+		if( loaded==complete ) {
+			info("Could increase frame rate if it is down now...");
+		}
+	}
+	else if( this.started ) {
+		warn("Missing "+(this.lookAhead)+ " TODO - decrease frame rate")
+	}
+	// TODO - handle some way to skip an image when it fails or just takes forever
+	if( ir.isLoaded() && this.started ) {
+		info("Is loaded, and setting view position to "+fp);
+		this.lookAhead.setViewPosition(fp);
+	}; 
+};
+Cine.prototype.displayInterval = Cine_displayInterval;
+
+/** Returns how many read-ahead items are available */
+function Cine_getReadAhead() {
+	return this.readAhead;
+};
+Cine.prototype.getReadAhead=Cine_getReadAhead;
+
+/**
+ * Starts playing the CINE loop.
+ */
+function playCine(cmdButton) {
+	alert("Play cine.");
+	return false;
+};
+

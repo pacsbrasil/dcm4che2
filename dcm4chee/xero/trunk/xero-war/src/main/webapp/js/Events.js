@@ -38,6 +38,8 @@
 /**
  * Events.js contains methods to deal with registering for events, getting
  * coordinates etc.
+ * 
+ * TODO rename this misc.js or some such name - it contains many miscellaneous helper functions.
  */
  
 /**
@@ -134,15 +136,35 @@ function encodeURL(url) {
 
 var __XERO_DBG_LVL = 1;
 
-/** Test to see if the trace library is available. */
-function ttrace(msg) {
-	if( typeof(trace)!='undefined') {
-		trace(msg);
-	}
-};
-
 /** A no-op for use as an included operation */
 function notrace(msg) {
+};
+
+if( this.java!==undefined ) {
+  function trace(msg) {
+	java.lang.System.out.println(msg);  	
+  };
+};
+
+if( this.trace!==undefined ) {
+/** Test to see if the trace library is available. */
+  function ttrace() {
+  	if( arguments.length==0 ) { // No-op
+    } else if( arguments.length==1 ) {
+  		trace(arguments[0]);
+  		return;
+  	} else {
+  		var msg = "";
+  		for(var i=0; i < arguments.length; i++ ) {
+  			msg = msg + arguments[i];
+  		}
+  		trace(msg);
+  	};
+  };
+}
+else {
+	function ttrace() {
+	};
 };
 
 /** Dumps an object, complete with all attributes */
@@ -157,28 +179,28 @@ function dumpObj(msg,obj) {
 	}
 };
 
-function debug(msg) {
+function debug() {
 	if( __XERO_DBG_LVL<=0) {
-		ttrace(msg);
+		ttrace.apply(this,arguments);
 	};
 };
 
-function info(msg) {
+function info() {
 	if( __XERO_DBG_LVL<=1) {
-		ttrace(msg);
+		ttrace.apply(this,arguments);
 	};
 };
 
 function warn(msg) {
 	if( __XERO_DBG_LVL<=2) {
-		ttrace(msg);
+		ttrace.apply(this,arguments);
 	};
 };
 
 function error(msg) {
 	if( __XERO_DBG_LVL <=3 ) {
 		alert("Error:"+msg);
-		ttrace(msg);
+		ttrace.apply(this,arguments);
 	};
 };
 
@@ -256,3 +278,34 @@ if( !window.showModalDialog ) {
 		window.open(surl, title, "width=300,height=300,dependent=1");
 	};
 }
+
+
+/**
+ * Gets the URL up to the end of the 1st component, eg given http://server/xero/wado?... it returns
+ * http://server/xero
+ * as this is the part that gets deployed independently.
+ */
+function getUrlModule(url) {
+	if( url===null || url===undefined ) {
+		info("Undefined URL, returning /xero as the base path...");
+		return "/xero";
+	}
+	var idx = url.indexOf("//")+1;
+	idx = url.indexOf("/",idx)+1;
+	var nxt = url.indexOf("/",idx);
+	if( nxt < 0 ) nxt = url.indexOf("?",idx);
+	if( nxt < 0 ) nxt = url.length;
+	return url.substring(0,nxt);
+};
+
+/** Gets the value for the given attribute, or undefined if none */
+function getUrlAttribute(url,attr) {
+	var idx = url.indexOf("?"+attr+"=");
+	if( idx==-1 ) {
+		idx = url.indexOf("&"+attr+"=");
+		if( idx==-1 ) return undefined;
+	}
+	var last = url.indexOf("&",idx+2+attr.length);
+	if( last<0 ) last = url.length;
+	return url.substring(idx+2+attr.length,last);
+};

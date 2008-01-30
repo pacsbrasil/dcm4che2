@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Bill Wallace, Agfa HealthCare Inc., 
- * Portions created by the Initial Developer are Copyright (C) 2007
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,62 +35,36 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.seam;
 
-import java.net.URL;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
+ /** 
+  * Contains method to read objects etc.constructor
+  * Defines readFile(path [, characterCoding]) if not already defined, as well as
+  * readXml(path), returning an XML object.
+  */
 
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.jboss.seam.annotations.Logger;
-import org.jboss.seam.annotations.Name;
-import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.annotations.Unwrap;
-import org.jboss.seam.log.Log;
-import org.jboss.seam.ScopeType;
-
-/** Puts the meta-data class at the right level */
-@Name("metadata")
-@Scope(ScopeType.APPLICATION)
-public class MetaDataSeam
-{
-	String path = "";
-
-	Map<String, String> theme;
-
-	MetaDataBean rootMetaDataBean;
-
-	@Logger Log log;
-	private String confResourceName = "resource:/xeroSeam.conf";
-	static final String resourceName = "/WEB-INF/xero.metadata";
-	//static final String resourceName = "/wado.metadata";
-	
-	/** Gets the xero.metadata property file as the overall meta-data. */
-	private URL getUrl() {
-		URL ret = getClass().getResource(confResourceName);
-		if( ret==null ) {
-			log.info("Configuration "+confResourceName+" is empty, using default "+resourceName);
-			ret = getClass().getResource(resourceName);
-		}
-		log.info("Using meta-data url:"+ret);
-		return ret;
+var mvnPath = "";
+var jsDir = new java.io.File("src/test/js");
+if( jsDir.isDirectory() ) {
+	mvnPath = "src/test/js/";
+} else {
+	jsDir = new java.io.File("xero-war/src/test/js");
+	if( jsDir.isDirectory() ) {
+		mvnPath = "xero-war/src/test/js/";
 	}
-
-	/**
-	 * This is a unwrap/factory type method that returns a meta-data bean
-	 * object.
-	 * 
-	 * @return
-	 */
-	@Unwrap
-	public MetaDataBean getMetaDataBean() {
-	   log.info("Unwrapping meta-data bean from "+getUrl());
-		if (rootMetaDataBean == null) {			
-			rootMetaDataBean = StaticMetaData.getMetaDataByUrl(getUrl());
-		}
-		return rootMetaDataBean;
-	}
-	
 }
+/** Returns the contents of path as XML
+ */
+function readXml(path) {
+	var fin = new java.io.LineNumberReader(new java.io.FileReader(mvnPath+path));
+    var str = "";
+    var ch = fin.readLine();
+    while(ch!==null) {
+    	str = str+ch;
+    	ch = fin.readLine();
+    }
+    fin.close();
+	var parser = new DOMParser();
+	var doc=parser.parseFromString(str,"text/xml");
+	return doc;
+};
+

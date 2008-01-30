@@ -18,6 +18,38 @@
            <warSourceExcludes>WEB-INF/lib/myfaces*.jar</warSourceExcludes>
          </configuration>       
       </plugin>
+      <plugin>
+        <groupId>de.berlios.jsunit</groupId>
+        <artifactId>jsunit-maven2-plugin</artifactId>
+        <executions>
+            <execution>
+                <id>test</id>
+                <configuration>
+                   <sourceDirectory>src/main/webapp</sourceDirectory>
+                   <sources>
+                      <source>js/TestBrowser.js</source>
+                      <source>js/Events.js</source>
+                      <source>js/LookAheadImage.js</source>
+                      <source>image/cine.js</source>
+                   </sources>
+                   <testSuites>
+                      <testSuite>
+                         <name>AllTests</name>
+                         <includes>
+                           <include>lib/ajax.js</include>
+                           <include>FileIO.js</include>
+                           <include>BrowserMock.js</include>
+                           <include>image/LookAheadTest.js</include>
+                         </includes>
+                     </testSuite>
+                   </testSuites>
+                </configuration>
+                <goals>
+                  <goal>jsunit-test</goal>
+                </goals>
+            </execution>
+        </executions>
+     </plugin>
     </plugins>    
   </build>
   <dependencies>

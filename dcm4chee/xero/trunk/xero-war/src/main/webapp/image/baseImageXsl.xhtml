@@ -7,6 +7,7 @@
   xmlns:ui="http://java.sun.com/jsf/facelets"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/baseImageXsl"
+  xmlns:mx="http://www.dcm4che.org/xero/metadata/image/imageXsl"
   xmlns:c="http://java.sun.com/jstl/core"
   xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:svg="http://www.w3.org/2000/svg"
@@ -14,6 +15,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://www.w3.org/1999/xhtml"
   m:includeXsl="/image/baseImageXsl.xhtml"
+  mx:cine.script="/xero/image/cine.js"
 >
 
 
@@ -223,7 +225,7 @@
  
  <xsl:variable name="rows"><xsl:value-of select="round(($bry - $ory) div $sdiv)" /></xsl:variable>
  
- <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter!=''">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="$rows" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if><xsl:if test="@gspsUID">&amp;presentationUID=<xsl:value-of select="@gspsUID" /></xsl:if></xsl:attribute>
+ <xsl:attribute name="#{browser=='MSIE'?'src':'xlink:href'}">/xero/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=1&amp;seriesUID=',../@SeriesInstanceUID,'&amp;objectUID=',@SOPInstanceUID)" /><xsl:if test="$wCenter!=''">&amp;windowCenter=<xsl:value-of select="$wCenter" />&amp;windowWidth=<xsl:value-of select="$wWidth" /></xsl:if><xsl:value-of select="concat('&amp;region=',$orx div @Columns,',',$ory div @Rows,',',$brx div @Columns,',',$bry div @Rows)" />&amp;rows=<xsl:value-of select="$rows" /><xsl:if test="$frame">&amp;frameNumber=<xsl:value-of select="$frame" /></xsl:if><xsl:if test="@gspsUID">&amp;presentationUID=<xsl:value-of select="@gspsUID" /></xsl:if></xsl:attribute>
  <c:if test="#{browser=='MSIE'}">
   <xsl:attribute name="style"><xsl:value-of select="concat('left:',$orx,';top:',$ory,';width:',$brx - $orx,';height:',$bry - $ory,';')" /></xsl:attribute>
  </c:if>
@@ -312,8 +314,8 @@
       <xsl:with-param name="custNode" select="$custNode" />
      </xsl:apply-templates>
    </xsl:attribute>
-   <xsl:if test="$jsEnabled and count(@onmousedown)=0">
-     <xsl:attribute name="onmousedown">return displayXslt.action(this);</xsl:attribute>
+   <xsl:if test="$jsEnabled and count(@onclick)=0">
+     <xsl:attribute name="onclick">return displayXslt.action(this);</xsl:attribute>
    </xsl:if>
  </xsl:if>
 </x:template>

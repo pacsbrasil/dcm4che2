@@ -35,62 +35,17 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.seam;
 
-import java.net.URL;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.jboss.seam.annotations.Logger;
-import org.jboss.seam.annotations.Name;
-import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.annotations.Unwrap;
-import org.jboss.seam.log.Log;
-import org.jboss.seam.ScopeType;
-
-/** Puts the meta-data class at the right level */
-@Name("metadata")
-@Scope(ScopeType.APPLICATION)
-public class MetaDataSeam
-{
-	String path = "";
-
-	Map<String, String> theme;
-
-	MetaDataBean rootMetaDataBean;
-
-	@Logger Log log;
-	private String confResourceName = "resource:/xeroSeam.conf";
-	static final String resourceName = "/WEB-INF/xero.metadata";
-	//static final String resourceName = "/wado.metadata";
+ /**
+  * Defines things to use as a "test" browser setup.constructor
+  */
+  
+function Navigator() {
 	
-	/** Gets the xero.metadata property file as the overall meta-data. */
-	private URL getUrl() {
-		URL ret = getClass().getResource(confResourceName);
-		if( ret==null ) {
-			log.info("Configuration "+confResourceName+" is empty, using default "+resourceName);
-			ret = getClass().getResource(resourceName);
-		}
-		log.info("Using meta-data url:"+ret);
-		return ret;
-	}
+};
+Navigator.prototype.userAgent="Test Browser 1.0";
+var navigator = new Navigator();
 
-	/**
-	 * This is a unwrap/factory type method that returns a meta-data bean
-	 * object.
-	 * 
-	 * @return
-	 */
-	@Unwrap
-	public MetaDataBean getMetaDataBean() {
-	   log.info("Unwrapping meta-data bean from "+getUrl());
-		if (rootMetaDataBean == null) {			
-			rootMetaDataBean = StaticMetaData.getMetaDataByUrl(getUrl());
-		}
-		return rootMetaDataBean;
-	}
-	
-}
+function Window() {
+};
+var window = new Window();
