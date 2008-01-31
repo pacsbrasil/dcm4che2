@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm.gpwlscp;
 
+import java.sql.Types;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -112,12 +113,11 @@ public class GPWLScpService extends AbstractScpService {
     }
     
     public final boolean getAccessBlobAsLongVarBinary() {
-        return GPWLQueryCmd.accessBlobAsLongVarBinary;
+        return GPWLQueryCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setAccessBlobAsLongVarBinary(
-            boolean accessBlobAsLongVarBinary) {
-        GPWLQueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    public final void setAccessBlobAsLongVarBinary(boolean enable) {
+        GPWLQueryCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final String getTransactionIsolationLevel() {

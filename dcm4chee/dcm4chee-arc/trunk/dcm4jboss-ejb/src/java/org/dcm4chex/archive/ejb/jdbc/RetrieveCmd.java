@@ -62,21 +62,34 @@ import org.dcm4che.dict.Tags;
 public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     /** Number of max. parameters in IN(...) statement. */
     public static int maxElementsInUIDMatch = 100;
 
-    private static final String[] SELECT_ATTRIBUTE = { "Instance.pk",
-            "File.pk", "Patient.patientId", "Patient.patientName",
-            "Patient.encodedAttributes", "Study.studyIuid",
-            "Series.seriesIuid", "Study.encodedAttributes",
-            "Series.encodedAttributes", "Instance.encodedAttributes",
-            "Instance.sopIuid", "Instance.sopCuid",
-            "Instance.externalRetrieveAET", "FileSystem.retrieveAET",
-            "FileSystem.availability", "FileSystem.directoryPath",
-            "File.filePath", "File.fileTsuid", "File.fileMd5Field",
-            "File.fileSize", "File.fileStatus", "Series.pk" };
+    private static final String[] SELECT_ATTRIBUTE = { 
+            "Instance.encodedAttributes",
+            "Series.seriesIuid",
+            "Patient.encodedAttributes",
+            "Study.encodedAttributes",
+            "Series.encodedAttributes",
+            "Patient.patientId",
+            "Patient.patientName",
+            "Study.studyIuid",
+            "Instance.pk",
+            "Instance.sopIuid",
+            "Instance.sopCuid",
+            "Instance.externalRetrieveAET",
+            "File.pk",
+            "FileSystem.retrieveAET",
+            "FileSystem.availability",
+            "FileSystem.directoryPath",
+            "File.filePath",
+            "File.fileTsuid",
+            "File.fileMd5Field",
+            "File.fileSize",
+            "File.fileStatus",
+            };
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance" };
@@ -176,13 +189,29 @@ public class RetrieveCmd extends BaseReadCmd {
     protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, sql.getSql());
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(5, Types.LONGVARBINARY);
-            defineColumnType(8, Types.LONGVARBINARY);
-            defineColumnType(9, Types.LONGVARBINARY);
-            defineColumnType(10, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] {
+                blobAccessType,
+                Types.VARCHAR,
+                blobAccessType,
+                blobAccessType,
+                blobAccessType,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.BIGINT,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.BIGINT,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.INTEGER,
+        });
         this.sqlCmd = sql;
     }
 
@@ -236,28 +265,32 @@ public class RetrieveCmd extends BaseReadCmd {
         ArrayList list;
         Object key;
         while (next()) {
-            FileInfo info = new FileInfo(
-                    rs.getLong(2),
-                    rs.getString(3),
-                    rs.getString(4),
-                    getBytes(5, accessBlobAsLongVarBinary),
-                    rs.getString(6),
-                    rs.getString(7),
-                    getBytes(8, accessBlobAsLongVarBinary),
-                    getBytes(9, accessBlobAsLongVarBinary),
-                    getBytes(10, accessBlobAsLongVarBinary),
-                    rs.getString(11),
-                    rs.getString(12),
-                    rs.getString(13),
-                    rs.getString(14),
-                    rs.getInt(15),
-                    rs.getString(16),
-                    rs.getString(17),
-                    rs.getString(18),
-                    rs.getString(19),
-                    rs.getInt(20),
-                    rs.getInt(21));
-            key = key();
+            byte[] instAttrs = rs.getBytes(1);
+            String seriesIUID = rs.getString(2);
+            byte[] patAttrs = rs.getBytes(3);
+            byte[] studyAttrs = rs.getBytes(4);
+            byte[] seriesAttrs = rs.getBytes(5);
+            String patID = rs.getString(6);
+            String patName = rs.getString(7);
+            String studyIUID = rs.getString(8);
+            long instPk = rs.getLong(9);
+            String sopIUID = rs.getString(10);
+            String sopCUID = rs.getString(11);
+            long filePk = rs.getLong(12);
+            String extRetrieveAET = rs.getString(13);
+            String fileRetrieveAET = rs.getString(14);
+            int availability = rs.getInt(15);
+            String basedir = rs.getString(16);
+            String fileID = rs.getString(17);
+            String tsUID = rs.getString(18);
+            String md5 = rs.getString(19);
+            int size = rs.getInt(20);
+            int status = rs.getInt(21);
+            FileInfo info = new FileInfo(filePk, patID, patName, patAttrs,
+                    studyIUID, seriesIUID, studyAttrs, seriesAttrs, instAttrs,
+                    sopIUID, sopCUID, extRetrieveAET, fileRetrieveAET,
+                    availability, basedir, fileID, tsUID, md5, size, status);
+            key = selectKey(instPk, sopIUID);
             list = (ArrayList) result.get(key);
             if (list == null) {
                 result.put(key, list = new ArrayList());
@@ -270,8 +303,8 @@ public class RetrieveCmd extends BaseReadCmd {
         return new TreeMap();
     }
 
-    protected Object key() throws SQLException {
-        return new Long(rs.getLong(1));
+    protected Object selectKey(long instPk, String sopIUID) {
+        return new Long(instPk);
     }
 
     protected FileInfo[][] toArray(Map result) {
@@ -298,10 +331,9 @@ public class RetrieveCmd extends BaseReadCmd {
             return new HashMap();
         }
 
-        protected Object key() throws SQLException {
-            return rs.getString(11);
+        protected Object selectKey(long instPk, String sopIUID) {
+            return sopIUID;
         }
-
     }
 
     private static class Sql {

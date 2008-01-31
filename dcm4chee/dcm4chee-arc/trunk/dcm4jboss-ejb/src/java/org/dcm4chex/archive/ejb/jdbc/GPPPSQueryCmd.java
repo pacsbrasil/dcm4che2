@@ -55,7 +55,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 public class GPPPSQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     private static final String[] FROM = { "Patient", "GPPPS"};
 
@@ -74,11 +74,7 @@ public class GPPPSQueryCmd extends BaseReadCmd {
     public GPPPSQueryCmd(Dataset filter) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                     transactionIsolationLevel);
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
@@ -109,8 +105,8 @@ public class GPPPSQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
-        DatasetUtils.fromByteArray( getBytes(2, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(1), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(2), ds);
         return ds;
     }
     

@@ -152,15 +152,18 @@ public abstract class BaseCmd {
         return 0;
     }
 
-    protected void defineColumnType(int index, int type) throws SQLException {
+    protected void defineColumnTypes(int[] types) throws SQLException {
         if (defineColumnType == null) {
             return;
         }
         try {
-            WrappedStatement wstmt = (WrappedStatement) stmt;            
-            defineColumnType.invoke(wstmt.getUnderlyingStatement(),
-                    new Object[] { Integer.valueOf(index),
-                        Integer.valueOf(type)});
+            WrappedStatement wstmt = (WrappedStatement) stmt;
+            Statement oracleStmt = wstmt.getUnderlyingStatement();
+            for (int i = 0; i < types.length; i++) {
+                defineColumnType.invoke(oracleStmt,
+                        new Object[] { Integer.valueOf(i+1),
+                            Integer.valueOf(types[i])});
+            }
         } catch (InvocationTargetException e) {
             Throwable cause = e.getTargetException();
             if (cause instanceof SQLException) {

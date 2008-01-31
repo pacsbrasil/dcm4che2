@@ -41,6 +41,7 @@ package org.dcm4chex.archive.dcm.mwlscu;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 import org.dcm4che.data.Command;
@@ -59,6 +60,7 @@ import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
+import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
@@ -153,12 +155,11 @@ public class MWLScuService extends AbstractScuService {
     }
 
     public final boolean getAccessBlobAsLongVarBinary() {
-        return MWLQueryCmd.accessBlobAsLongVarBinary;
+        return MWLQueryCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setAccessBlobAsLongVarBinary(
-            boolean accessBlobAsLongVarBinary) {
-        MWLQueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    public final void setAccessBlobAsLongVarBinary(boolean enable) {
+        MWLQueryCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final String getTransactionIsolationLevel() {

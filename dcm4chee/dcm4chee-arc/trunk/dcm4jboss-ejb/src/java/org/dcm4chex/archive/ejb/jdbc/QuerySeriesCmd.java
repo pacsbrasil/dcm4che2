@@ -55,20 +55,20 @@ import org.dcm4chex.archive.common.DatasetUtils;
  */
 class QuerySeriesCmd extends BaseReadCmd {
 
-    private boolean accessBlobAsLongVarBinary;
-
     public QuerySeriesCmd(int transactionIsolationLevel,
-            boolean accessBlobAsLongVarBinary) throws SQLException {
+            int blobAccessType) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(), 
                 transactionIsolationLevel,
                 JdbcProperties.getInstance().getProperty("QuerySeriesCmd"));
-        this.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-            defineColumnType(3, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] {
+                blobAccessType,
+                blobAccessType,
+                blobAccessType,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER });
     }
 
     public void setSeriesIUID(String iuid) throws SQLException {
@@ -77,9 +77,9 @@ class QuerySeriesCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset dataset = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), dataset);
-        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), dataset);
-        DatasetUtils.fromByteArray(getBytes(3, accessBlobAsLongVarBinary), dataset);
+        DatasetUtils.fromByteArray(rs.getBytes(1), dataset);
+        DatasetUtils.fromByteArray(rs.getBytes(2), dataset);
+        DatasetUtils.fromByteArray(rs.getBytes(3), dataset);
         dataset.putCS(Tags.ModalitiesInStudy,
                 StringUtils.split(rs.getString(4), '\\'));
         dataset.putCS(Tags.StudyStatusID, rs.getString(5));

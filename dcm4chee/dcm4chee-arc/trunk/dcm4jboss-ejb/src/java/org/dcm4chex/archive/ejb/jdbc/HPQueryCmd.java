@@ -57,7 +57,7 @@ import org.dcm4chex.archive.common.HPLevel;
 public class HPQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     private static final String[] FROM = { "HP" };
 
@@ -73,10 +73,7 @@ public class HPQueryCmd extends BaseDSQueryCmd {
 
     public HPQueryCmd(Dataset keys) throws SQLException {
 		super(keys, true, false, transactionIsolationLevel);
-		if (accessBlobAsLongVarBinary) {
-                    // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                    defineColumnType(1, Types.LONGVARBINARY);
-		}
+	        defineColumnTypes(new int[] { blobAccessType });
 		String s;
 		int i;
 		// ensure keys contains (8,0005) for use as result filter
@@ -181,7 +178,7 @@ public class HPQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(1), ds);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

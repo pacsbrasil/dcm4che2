@@ -81,7 +81,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 		};
     
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
     
@@ -91,11 +91,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
      */
     public MWLQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -164,8 +160,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
-        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray(rs.getBytes(1), ds);
+        DatasetUtils.fromByteArray(rs.getBytes(2), ds);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
