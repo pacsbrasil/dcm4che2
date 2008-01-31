@@ -54,6 +54,9 @@ import org.w3c.dom.Text;
  * @since Mar 10, 2006
  */
 public class XDSDocumentMetadata {
+	public static final String NS_URN_RIM_2_1 = "urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1";
+	public static final String NS_URN_REGISTRY_2_1 = "urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1";
+	
 	private final Element metadata;
 	private Node firstSlot;//used to insert slot for hash, UUID and URI on correct position
 	
@@ -73,8 +76,6 @@ public class XDSDocumentMetadata {
 	
 	private void init() {
 		attributes = metadata.getAttributes();
-		//NodeList childs = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExternalIdentifier");
-		//firstSlot = metadata.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot").item(0);
 		firstSlot = null;
 		NodeList nl = metadata.getChildNodes();
 		Node child;
@@ -83,7 +84,7 @@ public class XDSDocumentMetadata {
 		for ( int i = 0, len = nl.getLength() ; i < len ; i++ ){
 			child = nl.item(i);
 			if ( child.getNodeType() == Node.ELEMENT_NODE ) {
-				if ( "ExternalIdentifier".equals(child.getNodeName())) {
+				if ( "ExternalIdentifier".equals(child.getLocalName())) {
 					attrs = child.getAttributes();
 					scheme = getAttributeValue(attrs,"identificationScheme");
 					if ( UUID.XDSDocumentEntry_uniqueId.equals(scheme) ) {
@@ -91,7 +92,7 @@ public class XDSDocumentMetadata {
 					} else if ( UUID.XDSDocumentEntry_patientId.equals(scheme) ) {
 						patientID = getAttributeValue(attrs,"value");
 					}
-				} else if (firstSlot == null && "Slot".equals(child.getNodeName())) {
+				} else if (firstSlot == null && "Slot".equals(child.getLocalName())) {
 					firstSlot = child;
 				}
 			}
@@ -150,10 +151,10 @@ public class XDSDocumentMetadata {
 		setSlot(name, new String[]{value});
 	}
 	private void setSlot(String name, String[] values) {
-		Element slot = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Slot");
-		Element valueList = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ValueList");
+		Element slot = doc.createElementNS(NS_URN_RIM_2_1,"Slot");
+		Element valueList = doc.createElementNS(NS_URN_RIM_2_1,"ValueList");
 		for ( int i = 0 ; i < values.length ; i++ ) {
-			Element valueElement = doc.createElementNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","Value");
+			Element valueElement = doc.createElementNS(NS_URN_RIM_2_1,"Value");
 			Text valueElementText = doc.createTextNode(values[i]);
 			valueList.appendChild(valueElement);
 			valueElement.appendChild(valueElementText);

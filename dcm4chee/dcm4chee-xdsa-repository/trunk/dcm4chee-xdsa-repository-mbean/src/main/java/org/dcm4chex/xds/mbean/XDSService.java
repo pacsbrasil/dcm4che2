@@ -112,8 +112,6 @@ public class XDSService extends ServiceMBeanSupport {
 	private static final String REGISTRY_PACKAGE = "RegistryPackage";
 	private static final String LEAF_REGISTRY_OBJECT_LIST = "LeafRegistryObjectList";
 	private static final String SUBMIT_OBJECTS_REQUEST = "SubmitObjectsRequest";
-	private static final String NS_URN_RIM_2_1 = "urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1";
-	private static final String NS_URN_REGISTRY_2_1 = "urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1";
 	private static final String NONE = "NONE";
     
 	private static Logger log = Logger.getLogger(XDSService.class.getName());
@@ -394,8 +392,6 @@ public class XDSService extends ServiceMBeanSupport {
 			Node leafRegistryObjectList;
             SOAPBody body = message.getSOAPBody();
             log.debug("SOAPBody:"+body );
-//            nl = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","ExtrinsicObject");
-//            leafRegistryObjectList = body.getElementsByTagNameNS("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1","LeafRegistryObjectList").item(0);
             leafRegistryObjectList = getLeafRegistryObjectList( getSubmitObjectsRequest(body) );
             List extrinsicObjects = getExtrinsicObjects(leafRegistryObjectList);
 	        if(extrinsicObjects.size() < 1 ) {
@@ -490,10 +486,10 @@ public class XDSService extends ServiceMBeanSupport {
 	}
 	
 	private Node getSubmitObjectsRequest(SOAPBody body) {
-    	return getChildNode( body, NS_URN_REGISTRY_2_1, SUBMIT_OBJECTS_REQUEST);
+    	return getChildNode( body, XDSDocumentMetadata.NS_URN_REGISTRY_2_1, SUBMIT_OBJECTS_REQUEST);
 	}
 	private Node getLeafRegistryObjectList(Node submObjReq) {
-    	return getChildNode(submObjReq, NS_URN_RIM_2_1, LEAF_REGISTRY_OBJECT_LIST);
+    	return getChildNode(submObjReq, XDSDocumentMetadata.NS_URN_RIM_2_1, LEAF_REGISTRY_OBJECT_LIST);
 	}
 
     private List getExtrinsicObjects(Node leafRegistryObjectList) {
@@ -763,6 +759,32 @@ public class XDSService extends ServiceMBeanSupport {
 	    soapBody.addDocument(sb);
         SOAPMessage response = sendSOAP(message, soapURL);
 		return checkResponse(response, "RegistryResponse");
+	}
+	
+	public String checkXDSDocumentMetadata(String xmlFileName) {
+		log.info("\n\nCheck XDSDocumentMetadata for SOAP message:"+xmlFileName);
+        File xmlFile = new File( xmlFileName );
+        if ( !xmlFile.exists() ) {
+        	log.warn("XML File for SOAP Body does not exist:"+xmlFile);
+        	return "File not found!:"+xmlFileName;
+        }
+        Document d = readXMLFile(xmlFile);
+        List extrinsicObjects = getExtrinsicObjects( getLeafRegistryObjectList( 
+        		getChildNode( getChildNode( getChildNode( d, null, "Envelope"), null, "Body"), 
+        				XDSDocumentMetadata.NS_URN_REGISTRY_2_1, SUBMIT_OBJECTS_REQUEST) ) );
+        XDSDocumentMetadata metadata;
+        Element el;
+        StringBuffer sb = new StringBuffer();
+        for(Iterator iter = extrinsicObjects.iterator() ; iter.hasNext() ; ) {
+            el = (Element)iter.next();
+            metadata = new XDSDocumentMetadata(el);
+            sb.append("SubmissionSet.uniqueid :").append(metadata.getUniqueID());
+            sb.append("\ncontentID              :").append(metadata.getContentID());
+            sb.append("\npat_id                 :").append(metadata.getPatientID());
+            sb.append("\nmime                   :").append(metadata.getMimeType());
+            sb.append("\n------------------------------------------------------------------------------------\n");
+        }
+        return sb.toString();
 	}
 	
 	private Document readXMLFile(File xmlFile){

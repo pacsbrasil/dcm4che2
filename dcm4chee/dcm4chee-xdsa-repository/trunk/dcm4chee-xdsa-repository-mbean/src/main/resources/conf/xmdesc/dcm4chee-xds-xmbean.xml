@@ -252,6 +252,17 @@
    </operation>
 
    <operation impact="ACTION">
+      <description><![CDATA[ Perform a simple XDSDocumentMetadata test for a SOAP message given in a file.<br/>
+      		]]> </description>
+      <name>checkXDSDocumentMetadata</name>
+      <parameter>
+        <description>XML File containing SOAP message.</description>
+        <name>xmlFile</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description><![CDATA[ Perform a simple test by sending a SOAP message to the configured registry.<br/>
       			The SOAP message is build with a SOAPBody stored in the given file.<br/>
       		]]> </description>
