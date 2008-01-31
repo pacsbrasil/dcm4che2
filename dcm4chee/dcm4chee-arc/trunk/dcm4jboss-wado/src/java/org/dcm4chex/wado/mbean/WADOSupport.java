@@ -171,10 +171,6 @@ public class WADOSupport {
 
     private boolean useTransferSyntaxOfFileAsDefault = true;
 
-    private boolean extendedWADOAllowed = false;
-
-    private String extendedWADORequestType;
-
     private boolean disableDNS = false;
 
     private Map textSopCuids = null;
@@ -1190,37 +1186,7 @@ public class WADOSupport {
             boolean useTransferSyntaxOfFileAsDefault) {
         this.useTransferSyntaxOfFileAsDefault = useTransferSyntaxOfFileAsDefault;
     }
-
-    /**
-     * @return Returns the extendedWADOAllowed.
-     */
-    public boolean isExtendedWADOAllowed() {
-        return extendedWADOAllowed;
-    }
-
-    /**
-     * @param extendedWADOAllowed
-     *                The extendedWADOAllowed to set.
-     */
-    public void setExtendedWADOAllowed(boolean extendedWADOAllowed) {
-        this.extendedWADOAllowed = extendedWADOAllowed;
-    }
-
-    /**
-     * @return Returns the extendedWADORequestType.
-     */
-    public String getExtendedWADORequestType() {
-        return extendedWADORequestType;
-    }
-
-    /**
-     * @param extendedWADORequestType
-     *                The extendedWADORequestType to set.
-     */
-    public void setExtendedWADORequestType(String extendedWADORequestType) {
-        this.extendedWADORequestType = extendedWADORequestType;
-    }
-
+ 
     /**
      * @return Returns the sopCuids.
      */

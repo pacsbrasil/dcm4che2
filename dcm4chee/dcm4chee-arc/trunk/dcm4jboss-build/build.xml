@@ -486,12 +486,6 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
-             value="${dcm4jboss-sar.xmdesc}/dcm4chee-studyinfo-xmbean.xml" />
-      <param name="out" value="studyinfo-xmbean.xml" />
-      <param name="mbean" value="dcm4chee.archive:service=StudyInfoService" />
-    </antcall>
-    <antcall target="xslt">
-      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-studystatus-xmbean.xml" />
       <param name="out" value="studystatus-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=StudyStatus" />
@@ -607,12 +601,6 @@
              value="${dcm4jboss-wado.xmdesc}/dcm4chee-wado-xmbean.xml" />
       <param name="out" value="wado-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=WADOService" />
-    </antcall>
-    <antcall target="xslt">
-      <param name="in"
-             value="${dcm4jboss-wado.xmdesc}/dcm4chee-wadoext-xmbean.xml" />
-      <param name="out" value="wadoext-xmbean.xml" />
-      <param name="mbean" value="dcm4chee.archive:service=WADOExtService" />
     </antcall>
     <antcall target="xslt">
       <param name="in"

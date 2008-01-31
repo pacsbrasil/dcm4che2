@@ -47,7 +47,6 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.management.ObjectName;
-import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -374,36 +373,6 @@ public class WADOService extends AbstractCacheService {
      */
     public void setFileSystemMgtName(ObjectName name) {
         support.setFileSystemMgtName(name);
-    }
-
-    /**
-     * @return Returns the extendedWADOAllowed.
-     */
-    public boolean isExtendedWADOAllowed() {
-        return support.isExtendedWADOAllowed();
-    }
-
-    /**
-     * @param extendedWADOAllowed
-     *            The extendedWADOAllowed to set.
-     */
-    public void setExtendedWADOAllowed(boolean extendedWADOAllowed) {
-        support.setExtendedWADOAllowed(extendedWADOAllowed);
-    }
-
-    /**
-     * @return Returns the extendedWADORequestType.
-     */
-    public String getExtendedWADORequestType() {
-        return support.getExtendedWADORequestType();
-    }
-
-    /**
-     * @param extendedWADORequestType
-     *            The extendedWADORequestType to set.
-     */
-    public void setExtendedWADORequestType(String extendedWADORequestType) {
-        support.setExtendedWADORequestType(extendedWADORequestType);
     }
 
     /**

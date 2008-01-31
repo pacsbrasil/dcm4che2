@@ -806,17 +806,6 @@ class StoreScp {}
  */
 class storeScp {}
 
-class StudyInfoService {}
-
-/**
- * @view
- * @opt hide
- * 
- * @match context archive.StudyInfoService
- * @opt !hide
- */
-class studyInfoService {}
-
 /**
  * @depend - - - AuditLogger
  * @depend - - - DcmServer
@@ -975,22 +964,6 @@ class UpgradeToEnhancedMF {}
  * @opt !hide
  */
 class upgradeToEnhancedMF {}
-
-/**
- * @depend - - - FileSystemMgt
- * @depend - - - Scheduler
- * @depend - - - StudyInfoService
- */
-class WADOExtService {}
-
-/**
- * @view
- * @opt hide
- * 
- * @match context archive.WADOExtService
- * @opt !hide
- */
-class wadoExtService {}
 
 /**
  * @depend - - - AuditLogger

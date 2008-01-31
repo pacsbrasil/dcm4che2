@@ -50,7 +50,6 @@ import java.util.List;
 public interface WADORequestObject extends BasicRequestObject {
 
     public static final int OK = 0;
-    public static final int EXTENDED_WADO_URL = 1;
 
     public static final int INVALID_WADO_URL = -1;
     public static final int INVALID_ROWS = -2;
