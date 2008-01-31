@@ -720,7 +720,7 @@ public class DcmGen {
                     overwrite.putXX(tag, (String) cfg.get(key));
                     continue;
                 }
-                Dataset ds = (Dataset) list.get("" +(subKey - 1));
+                Dataset ds = (Dataset) list.get("" + (subKey - 1));
                 if (ds == null) {
                     ds = DcmObjectFactory.getInstance().newDataset();
                     list.put("" + (subKey - 1), ds);
