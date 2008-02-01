@@ -487,6 +487,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         File xslFile = FileUtils.toExistingFile(xslt);
         Templates tpl = templates.getTemplates(xslFile);
         TransformerHandler th = tf.newTransformerHandler(tpl);
+        Transformer t = th.getTransformer();
+        t.setParameter("calling", calling);
         th.setResult(new SAXResult(newContentHandler()));
         ds.writeDataset2(th, null, null, 64, null);
     }
