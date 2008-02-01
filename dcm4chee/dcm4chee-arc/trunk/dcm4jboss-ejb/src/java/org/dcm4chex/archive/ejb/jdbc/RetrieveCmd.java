@@ -44,11 +44,14 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -63,33 +66,43 @@ public class RetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
     public static int blobAccessType = Types.LONGVARBINARY;
+    public static int seriesBlobAccessType = Types.BLOB;
+    public static boolean lazyFetchSeriesAttrs = false;
+    public static boolean cacheSeriesAttrs = true;
+    public static long seriesAttrsCacheCurrencyTimeLimit = 600000;
+    private static int seriesAttrsCacheMaxSize = 100;
+
+    static class SeriesAttrsCacheEntry {
+        public final long timestamp = System.currentTimeMillis();
+        public final FileInfo fileInfo;
+        public SeriesAttrsCacheEntry(FileInfo fileInfo) {
+            this.fileInfo = fileInfo;
+        }
+    }
+
+    private static Map<String, SeriesAttrsCacheEntry> seriesAttrsCache =
+        Collections.synchronizedMap(
+            new LinkedHashMap<String, SeriesAttrsCacheEntry>() {
+
+                private static final long serialVersionUID = -3342074672179596774L;
+
+                @Override
+                protected boolean removeEldestEntry(
+                        Entry<String, SeriesAttrsCacheEntry> eldest) {
+                    if (size() >= seriesAttrsCacheMaxSize) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Remove Series attributes for Series "
+                                    + eldest.getValue().fileInfo.seriesIUID
+                                    + " from cache");
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
 
     /** Number of max. parameters in IN(...) statement. */
     public static int maxElementsInUIDMatch = 100;
-
-    private static final String[] SELECT_ATTRIBUTE = { 
-            "Instance.encodedAttributes",
-            "Series.seriesIuid",
-            "Patient.encodedAttributes",
-            "Study.encodedAttributes",
-            "Series.encodedAttributes",
-            "Patient.patientId",
-            "Patient.patientName",
-            "Study.studyIuid",
-            "Instance.pk",
-            "Instance.sopIuid",
-            "Instance.sopCuid",
-            "Instance.externalRetrieveAET",
-            "File.pk",
-            "FileSystem.retrieveAET",
-            "FileSystem.availability",
-            "FileSystem.directoryPath",
-            "File.filePath",
-            "File.fileTsuid",
-            "File.fileMd5Field",
-            "File.fileSize",
-            "File.fileStatus",
-            };
 
     private static final String[] ENTITY = { "Patient", "Study", "Series",
             "Instance" };
@@ -132,6 +145,22 @@ public class RetrieveCmd extends BaseReadCmd {
     
     public static boolean isNoLeftJoin() {
         return leftJoin == null;
+    }
+    
+    public static int getSeriesAttrsCacheMaxSize() {
+        return seriesAttrsCacheMaxSize;
+    }
+    
+    public static void setSeriesAttrsCacheMaxSize(int maxSize) {
+        int toRemove = seriesAttrsCache.size() - maxSize;
+        if (toRemove > 0) {
+            for (Iterator iterator = seriesAttrsCache.entrySet().iterator();
+                    toRemove > 0; toRemove--) {
+                iterator.next();
+                iterator.remove();
+            }
+        }
+        seriesAttrsCacheMaxSize = maxSize;
     }
 
     public static void setNoLeftJoin(boolean noleftJoin) {
@@ -189,29 +218,46 @@ public class RetrieveCmd extends BaseReadCmd {
     protected RetrieveCmd(Sql sql) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, sql.getSql());
-        defineColumnTypes(new int[] {
-                blobAccessType,
-                Types.VARCHAR,
-                blobAccessType,
-                blobAccessType,
-                blobAccessType,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.BIGINT,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.BIGINT,
-                Types.VARCHAR,
-                Types.INTEGER,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.INTEGER,
-                Types.INTEGER,
-        });
+        defineColumnTypes(lazyFetchSeriesAttrs
+                ? new int[] {
+                    blobAccessType,
+                    Types.VARCHAR,
+                    Types.BIGINT,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.BIGINT,
+                    Types.VARCHAR,
+                    Types.INTEGER,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.INTEGER,
+                    Types.INTEGER }
+            : new int[] {
+                    blobAccessType,
+                    Types.VARCHAR,
+                    blobAccessType,
+                    blobAccessType,
+                    blobAccessType,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.BIGINT,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.BIGINT,
+                    Types.VARCHAR,
+                    Types.INTEGER,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.INTEGER,
+                    Types.INTEGER,
+                    });
         this.sqlCmd = sql;
     }
 
@@ -262,41 +308,144 @@ public class RetrieveCmd extends BaseReadCmd {
     }
 
     private void addFileInfos(Map result) throws SQLException {
-        ArrayList list;
-        Object key;
         while (next()) {
-            byte[] instAttrs = rs.getBytes(1);
-            String seriesIUID = rs.getString(2);
-            byte[] patAttrs = rs.getBytes(3);
-            byte[] studyAttrs = rs.getBytes(4);
-            byte[] seriesAttrs = rs.getBytes(5);
-            String patID = rs.getString(6);
-            String patName = rs.getString(7);
-            String studyIUID = rs.getString(8);
-            long instPk = rs.getLong(9);
-            String sopIUID = rs.getString(10);
-            String sopCUID = rs.getString(11);
-            long filePk = rs.getLong(12);
-            String extRetrieveAET = rs.getString(13);
-            String fileRetrieveAET = rs.getString(14);
-            int availability = rs.getInt(15);
-            String basedir = rs.getString(16);
-            String fileID = rs.getString(17);
-            String tsUID = rs.getString(18);
-            String md5 = rs.getString(19);
-            int size = rs.getInt(20);
-            int status = rs.getInt(21);
-            FileInfo info = new FileInfo(filePk, patID, patName, patAttrs,
-                    studyIUID, seriesIUID, studyAttrs, seriesAttrs, instAttrs,
-                    sopIUID, sopCUID, extRetrieveAET, fileRetrieveAET,
-                    availability, basedir, fileID, tsUID, md5, size, status);
-            key = selectKey(instPk, sopIUID);
-            list = (ArrayList) result.get(key);
-            if (list == null) {
-                result.put(key, list = new ArrayList());
+            if (lazyFetchSeriesAttrs) {
+                addFileInfoWithLazyFetchSeriesAttrs(result);
+            } else {
+                addFileInfoWithEagerFetchSeriesAttrs(result);
             }
-            list.add(info);
         }
+    }
+
+    private void addFileInfoWithLazyFetchSeriesAttrs(Map result)
+            throws SQLException {
+        FileInfo info = new FileInfo();
+        info.instAttrs = rs.getBytes(1);
+        info.seriesIUID = rs.getString(2);
+        long instPk = rs.getLong(3);
+        info.sopIUID = rs.getString(4);
+        info.sopCUID = rs.getString(5);
+        info.pk = rs.getLong(6);
+        info.extRetrieveAET = rs.getString(7);
+        info.fileRetrieveAET = rs.getString(8);
+        info.availability = rs.getInt(9);
+        info.basedir = rs.getString(10);
+        info.fileID = rs.getString(11);
+        info.tsUID = rs.getString(12);
+        info.md5 = rs.getString(13);
+        info.size = rs.getInt(14);
+        info.status = rs.getInt(15);
+        FileInfo seriesFileInfo = getCachedSeriesAttrs(info.seriesIUID);
+        if (seriesFileInfo == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Lazy fetch Series attributes for Series "
+                        + info.seriesIUID);
+            }
+            QuerySeriesAttrsForRetrieveCmd seriesQuery =
+                new QuerySeriesAttrsForRetrieveCmd(
+                        QueryCmd.transactionIsolationLevel,
+                        QueryCmd.seriesBlobAccessType,
+                        info.seriesIUID);
+            try {
+                seriesQuery.execute();
+                seriesQuery.next();
+                seriesFileInfo = seriesQuery.getFileInfo();
+            } finally {
+                seriesQuery.close();
+            }
+            seriesAttrsCache.put(info.seriesIUID,
+                    new SeriesAttrsCacheEntry(seriesFileInfo));
+        }
+        info.patAttrs = seriesFileInfo.patAttrs;
+        info.studyAttrs = seriesFileInfo.studyAttrs;
+        info.seriesAttrs = seriesFileInfo.seriesAttrs;
+        info.patID = seriesFileInfo.patID;
+        info.patName = seriesFileInfo.patName;
+        info.studyIUID = seriesFileInfo.studyIUID;
+        addFileInfo(result, instPk, info.sopIUID, info);
+    }
+
+    private static FileInfo getCachedSeriesAttrs(String seriesIUID) {
+        SeriesAttrsCacheEntry cacheEntry = seriesAttrsCache.get(seriesIUID);
+        if (cacheEntry == null) {
+            return null;
+        }
+        if (cacheEntry.timestamp + seriesAttrsCacheCurrencyTimeLimit 
+                < System.currentTimeMillis()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Remove stale Series attributes for Series "
+                        + seriesIUID + " from cache");
+            }
+            seriesAttrsCache.remove(seriesIUID);
+            return null;
+        }
+        return cacheEntry.fileInfo;
+    }
+
+    private void addFileInfoWithEagerFetchSeriesAttrs(Map result)
+            throws SQLException {
+        FileInfo info = new FileInfo();
+        info.instAttrs = rs.getBytes(1);
+        info.seriesIUID = rs.getString(2);
+        if (cacheSeriesAttrs) {
+            FileInfo seriesFileInfo = getCachedSeriesAttrs(info.seriesIUID);
+            if (seriesFileInfo == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Cache Series attributes for Series "
+                            + info.seriesIUID);
+                }
+                info.patAttrs = rs.getBytes(3);
+                info.studyAttrs = rs.getBytes(4);
+                info.seriesAttrs = rs.getBytes(5);
+                info.patID = rs.getString(6);
+                info.patName = rs.getString(7);
+                info.studyIUID = rs.getString(8);
+                seriesAttrsCache.put(info.seriesIUID,
+                        new SeriesAttrsCacheEntry(info));
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Use cached Series attributes for Series "
+                            + info.seriesIUID);
+                }
+                info.patAttrs = seriesFileInfo.patAttrs;
+                info.studyAttrs = seriesFileInfo.studyAttrs;
+                info.seriesAttrs = seriesFileInfo.seriesAttrs;
+                info.patID = seriesFileInfo.patID;
+                info.patName = seriesFileInfo.patName;
+                info.studyIUID = seriesFileInfo.studyIUID;
+            }
+        } else {
+            info.patAttrs = rs.getBytes(3);
+            info.studyAttrs = rs.getBytes(4);
+            info.seriesAttrs = rs.getBytes(5);
+            info.patID = rs.getString(6);
+            info.patName = rs.getString(7);
+            info.studyIUID = rs.getString(8);
+        }
+        long instPk = rs.getLong(9);
+        info.sopIUID = rs.getString(10);
+        info.sopCUID = rs.getString(11);
+        info.pk = rs.getLong(12);
+        info.extRetrieveAET = rs.getString(13);
+        info.fileRetrieveAET = rs.getString(14);
+        info.availability = rs.getInt(15);
+        info.basedir = rs.getString(16);
+        info.fileID = rs.getString(17);
+        info.tsUID = rs.getString(18);
+        info.md5 = rs.getString(19);
+        info.size = rs.getInt(20);
+        info.status = rs.getInt(21);
+        addFileInfo(result, instPk, info.sopIUID, info);
+    }
+
+    private void addFileInfo(Map result, long instPk, String sopIUID,
+            FileInfo info) {
+        Object key = selectKey(instPk, sopIUID);
+        ArrayList list = (ArrayList) result.get(key);
+        if (list == null) {
+            result.put(key, list = new ArrayList());
+        }
+        list.add(info);
     }
 
     protected Map map() {
@@ -348,10 +497,52 @@ public class RetrieveCmd extends BaseReadCmd {
         ArrayList fixValues = new ArrayList();
 
         Sql() {
-            sqlBuilder.setSelect(SELECT_ATTRIBUTE);
+            sqlBuilder.setSelect(getSelectAttributes());
             sqlBuilder.setFrom(RetrieveCmd.entity);
             sqlBuilder.setLeftJoin(RetrieveCmd.leftJoin);
             sqlBuilder.setRelations(RetrieveCmd.relations);
+        }
+
+        private String[] getSelectAttributes() {
+            return lazyFetchSeriesAttrs 
+                ? new String[] {
+                        "Instance.encodedAttributes",
+                        "Series.seriesIuid",
+                        "Instance.pk",
+                        "Instance.sopIuid",
+                        "Instance.sopCuid",
+                        "Instance.externalRetrieveAET",
+                        "File.pk",
+                        "FileSystem.retrieveAET",
+                        "FileSystem.availability",
+                        "FileSystem.directoryPath",
+                        "File.filePath",
+                        "File.fileTsuid",
+                        "File.fileMd5Field",
+                        "File.fileSize",
+                        "File.fileStatus"}
+                : new String[] { 
+                        "Instance.encodedAttributes",
+                        "Series.seriesIuid",
+                        "Patient.encodedAttributes",
+                        "Study.encodedAttributes",
+                        "Series.encodedAttributes",
+                        "Patient.patientId",
+                        "Patient.patientName",
+                        "Study.studyIuid",
+                        "Instance.pk",
+                        "Instance.sopIuid",
+                        "Instance.sopCuid",
+                        "Instance.externalRetrieveAET",
+                        "File.pk",
+                        "FileSystem.retrieveAET",
+                        "FileSystem.availability",
+                        "FileSystem.directoryPath",
+                        "File.filePath",
+                        "File.fileTsuid",
+                        "File.fileMd5Field",
+                        "File.fileSize",
+                        "File.fileStatus"};
         }
 
         public final String getSql() {

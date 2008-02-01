@@ -53,13 +53,14 @@ import org.dcm4chex.archive.common.DatasetUtils;
  * @version $Revision$ $Date$
  * @since Jan 18, 2008
  */
-class QuerySeriesCmd extends BaseReadCmd {
+class QuerySeriesAttrsForQueryCmd extends BaseReadCmd {
 
-    public QuerySeriesCmd(int transactionIsolationLevel,
-            int blobAccessType) throws SQLException {
+    protected QuerySeriesAttrsForQueryCmd(int transactionIsolationLevel,
+                int blobAccessType, String seriesIUID) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(), 
                 transactionIsolationLevel,
-                JdbcProperties.getInstance().getProperty("QuerySeriesCmd"));
+                JdbcProperties.getInstance()
+                        .getProperty("QuerySeriesAttrsForQueryCmd"));
         defineColumnTypes(new int[] {
                 blobAccessType,
                 blobAccessType,
@@ -69,10 +70,7 @@ class QuerySeriesCmd extends BaseReadCmd {
                 Types.INTEGER,
                 Types.INTEGER,
                 Types.INTEGER });
-    }
-
-    public void setSeriesIUID(String iuid) throws SQLException {
-        ((PreparedStatement) stmt).setString(1, iuid);          
+        ((PreparedStatement) stmt).setString(1, seriesIUID);
     }
 
     public Dataset getDataset() throws SQLException {
