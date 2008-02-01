@@ -82,12 +82,12 @@
 	</welcome-file-list>
 
    <!-- A security constraint that restricts access to the
-   	Archive Web Administration pages to users with the role WebAdmin.
+   	WADO service to users with the role WebAdmin.
    -->
 <!-- 
    <security-constraint>
      <web-resource-collection>
-       <web-resource-name>dispatcher</web-resource-name>
+       <web-resource-name>wado</web-resource-name>
        <description>Only allows users with the role WebAdmin
        		to access the Archive Web Administration pages
        </description>
@@ -109,4 +109,5 @@
       <role-name>WebAdmin</role-name>
    </security-role>
 -->   
+
 </web-app>

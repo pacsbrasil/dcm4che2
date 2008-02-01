@@ -120,7 +120,9 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class WADOSupport {
 
-    public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+    private static final String DISABLE_STUDY_PERMISSION_PARAM = "org.dcm4chee.wado.disableStudyPermission";
+
+	public static final String CONTENT_TYPE_JPEG = "image/jpeg";
 
     public static final String CONTENT_TYPE_DICOM = "application/dicom";
 
@@ -324,15 +326,17 @@ public class WADOSupport {
 
     private boolean hasPermission(WADORequestObject req)
             throws PolicyContextException, RemoteException, Exception {
-        if (req.getRemoteUser() == null) // not authorized -> all permitted
+        if ( req.getRemoteUser() == null || "true".equalsIgnoreCase(System.getProperty(DISABLE_STUDY_PERMISSION_PARAM, "false")) ) {
+        	log.debug("StudyPermission check disabled!");
             return true;
+        }
         Subject subject = (Subject) PolicyContext
                 .getContext(SUBJECT_CONTEXT_KEY);
         return getStudyPermissionManager().hasPermission(req.getStudyUID(),
                 StudyPermissionDTO.READ_ACTION, subject);
     }
 
-    /**
+	/**
      * @param contentTypes
      * @return
      */
