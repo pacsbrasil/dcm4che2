@@ -42,7 +42,6 @@
  
 function Image(src) {
 	this.src = src;
-	if( this.src!==null ) this.complete = true;
 };
 Image.prototype.width=0;
 Image.prototype.height=0;
@@ -79,7 +78,7 @@ function TimeIdObj_fire(windw) {
 TimeIdObj.glue();
 
 /** Some window methods */
-function Window_setInterval(func,delay) {
+Window.prototype.setInterval = function Window_setInterval(func,delay) {
 	var args = new Array();
 	if( func===undefined || func===null ) {
 		error("Function for interval is null or undefined.");
@@ -90,9 +89,22 @@ function Window_setInterval(func,delay) {
 	this._timers.push(timeId);
 	return timeId;
 };
-Window.prototype.setInterval = Window_setInterval;
+
 window._timers = new Array();
 window._time = 0;
+
+function Window_clearInterval(interval) {
+	var n=this._timers.length;
+	for(var i=0; i<n; i++) {
+		var timer = this._timers[i];
+		if( timer ===  interval ) {
+			info("Clearing interval "+interval);
+			this._timers.splice(i,1);
+			return;
+		};
+	};
+	info("**** FAILED to clear interval "+interval);
+};
 
 function Window_deliverInterval(addTime) {
 	info("Delivering time.");

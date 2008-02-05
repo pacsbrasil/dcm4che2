@@ -40,6 +40,9 @@ function LookAheadTest(name)
 	TestCase.call(this, name);
 };
 
+// XML parser is slightly different for stand-alone tests and needs the prefix included.
+LookAheadImage.prototype.tagName = "svg:image";
+
 function LookAheadTest_setUp()
 {
 	var la = new LookAheadImage();
@@ -55,6 +58,7 @@ function LookAheadTest_setUp()
 function LookAheadTest_readAll() {
 	debug("Reading XML into the image view.");
 	var la = this.lookAhead;
+	la.imgUrl = this.url;
 	la.readImageXml(readXml("image/image-12-0.xml"));
 	la.readImageXml(readXml("image/image-12-12.xml"));
 	la.readImageXml(readXml("image/image-12-24.xml"));
@@ -65,43 +69,49 @@ function LookAheadTest_readAll() {
 
 function LookAheadTest_testLoadImageRef()
 {
+	var log=debug;
+	info("testLoadImageRef");
 	this.readAll();
-	info("Starting test load image ref.");
+	log("Starting test load image ref.");
 	var la = this.lookAhead;
 	this.assertEquals("There are 57 images in the example xml data", 57, la.getImageCount());
 	this.assertNotNull("Image ref 0 isn't null.", la.getImageRef(0));
 	this.assertNotUndefined("Image ref 0 is defined.", la.getImageRef(0));
 	this.assertNotNull("Image ref 11 isnt null.", la.getImageRef(11));
 	this.assertNotUndefined("Image ref 11 is defined.", la.getImageRef(11));
+	log("Done testLoadImageRef");
 };
 
 function LookAheadTest_testImageFetch()
 {
+	var log = debug;
+	info("Starting testImageFetch.");
 	this.readAll();
-	info("Starting test image fetch.");
 	var la = this.lookAhead;
-	var view = this.view;
 	var url="http://wado?studyUID=1&seriesUID=1&objectUID=1.3.12.2.1107.5.2.6.14157.6.0.1686049290512338&windowCenter=37&windowWidth=56&rows=35&columns=26&region=0,0,0.5,0.75";
     var ir = la.getImageRef(0);
-    debug("About to set window level.");
+    log("About to set window level.");
     ir.setWindowLevel(37,56);
-    debug("About to fetch");
+    log("About to fetch "+ir.src);
     ir.fetch();
-    debug("Getting fetch view.");
+    log("Getting fetch view.");
     var fetchView = ir.getFetchView();
-    debug("Testing url:"+fetchView.src);
-    this.assertSame("URL must be the first URL:", url, 	fetchView.src);
+    log("Testing url:"+fetchView.src);
+    this.assertSame("URL must include the window level:", url, fetchView.src);
     this.assertFalse("Image should not be loaded yet.",ir.isLoaded());
-    debug("Delivering the image now.");
+    log("Delivering the image now.");
     fetchView.deliver();
+    log("Successfully delivered the image.");
     this.assertTrue("Image should be loaded after being delivered.",ir.isLoaded());
-    debug("Checking that the view is still set.");
-    view = la.getViewAtPosition(0);
+    log("Checking that the view is still set.");
+    var view = la.getViewAtPosition(0);
+    this.assertNotUndefined("View must be defined.",view);
     this.assertNotNull(view);
-    debug("Checking that the view is NOT set for the next element.");
+    log("Checking that the view is NOT set for the next element.");
     this.assertNull(la.getViewAtPosition(1));
-    debug("Checking that the displayed URL is also correct.");
+    log("Checking that the displayed URL is also correct.");
     this.assertSame("URL must be correct for source image as it is being displayed", url, view.src);
+    log("Done testImageFetch");
 };
 
 /**
@@ -110,8 +120,10 @@ function LookAheadTest_testImageFetch()
  */
 function LookAheadTest_testCine()
 {
+	var log=debug;
+	info("testCine");
 	this.readAll();
-	info("Starting test CINE.");
+	log("Starting test CINE.");
 	var la = this.lookAhead;
 	var view = this.view;
 	var cine = new Cine(la);
@@ -163,30 +175,28 @@ function getElementById(xml,id) {
  */
 function LookAheadTest_testSetupFromHtml()
 {
-	var imgUrl = "/xero/wado?requestType=WADO&studyUID=1&seriesUID=1.3.12.2.1107.5.2.6.14157.6.0.1686047132209758";
-	var dataUrl = "/xero/image/image.xml?seriesUID=1.3.12.2.1107.5.2.6.14157.6.0.1686047132209758";
+	var log=debug;
+	var imgUrl = "/wado2/wado?requestType=XERO&studyUID=1&seriesUID=1.3.12.2.1107.5.1.4.51997.4.0.2427250630901226&objectUID=1.3.12.2.1107.5.1.4.51997.4.0.2427250630901226&region=0,0,1,1&rows=512";	
+	var dataUrl = "/wado2/image.xml?seriesUID=1.3.12.2.1107.5.1.4.51997.4.0.2427250630901226";
 	info("Starting testSetupFromHtml");
 	var xml = readXml("image/example.xhtml");
-	info("exampleHtml  type="+xml.getNodeType());
+	log("exampleHtml  type="+xml.getNodeType());
 	var la = new LookAheadImage();
 	// Default fetch size would fetch everything, and it is easier to test smaller fetch sizes.
 	la.fetchSize = 12;
-	info(0.1);
-	var imgEl = getElementById(xml,"imgi0");
-	this.assertNotNull("Should have an imgi0 element",imgEl);
-	info(0.3);
-	la.init(imgEl);
-	info(1);
+	var playBtn = getElementById(xml,"cineStart");
+	this.assertNotNull("Should have a play button element",playBtn);
+	la.init(playBtn);
 	this.assertEquals("Should have the right image URL.", imgUrl, la.imgUrl);
 	this.assertEquals("Should have the right data URL.", dataUrl, la.dataUrl);
 	this.assertEquals("Should have 1 view only.", 1, la.viewCount);
-	info("About to deliver XML data.");
+	log("About to deliver XML data.");
 	var xurl = dataUrl + "&Position=0&Count=12";
 	var xml0 = readXml("image/image-12-0.xml");
 	this.assertNotUndefined(xml0);
 	this.assertNotNull(xml0);
 	XMLHttpRequest.prototype.deliverXml(xurl,xml0);
-	info("Done delivering XML data.");
+	log("Done delivering XML data.");
 	this.assertNotNull("Image ref 0 isnt null.", la.getImageRef(0));
 	this.assertNotUndefined("Image ref 0 isnt defined.", la.getImageRef(0));
 	this.assertNotNull("Image ref 11 isnt null.", la.getImageRef(11));

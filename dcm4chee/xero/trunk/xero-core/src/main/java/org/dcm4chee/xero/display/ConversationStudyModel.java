@@ -130,7 +130,7 @@ public class ConversationStudyModel extends StudyModel {
      */
    public String getUrl() {
 	  List<String> uids = displayStudyLevel.getStudyUIDs();
-	  StringBuffer url = new StringBuffer("/xero/study/study.xml");
+	  StringBuffer url = new StringBuffer("/wado2/study.xml");
 	  PatientIdentifier patientIdentifier = displayStudyLevel.getPatientIdentifier();
 	  boolean first = true;
 	  if (uids != null && uids.size() > 0) {

@@ -147,7 +147,7 @@ public class CyclePageAction {
 	}
 	
 	protected void updateCycleUrl() {
-		StringBuffer sb = new StringBuffer("../study/study.xml");
+		StringBuffer sb = new StringBuffer("/wado2/study.xml");
 		boolean isFirst = true;
 		for(String uid : cycleList) {
 			if( isFirst ) {

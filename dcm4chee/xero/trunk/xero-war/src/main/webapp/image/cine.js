@@ -45,62 +45,104 @@ function Cine(lookAhead) {
  	};
 };
 Cine.prototype.rate = 15;
-Cine.prototype.interval=1000/Cine.prototype.rate;
 Cine.prototype.started=false;
 Cine.prototype.readAhead=4;
+Cine.prototype.debug=debug;
+// Start with no images until the look ahead is defined.
+Cine.prototype.imgs = 0;
+Cine.prototype.playingCine = new Array();
+Cine.prototype.showRate = 75;
+Cine.prototype.lastShowRate = 0;
+Cine.prototype.minTime = 1000;
+Cine.prototype.maxTime = 0;
+Cine.prototype.avgTime = 0;
  
 /** Sets the number of frames per second to display at. */
 function Cine_setRate(rate) {
  	this.rate = rate;
+ 	if( this.interval!==undefined ) {
+ 		window.clearInterval(this.interval);
+		this.interval = window.setInterval(this.callDisplayInterval, 1000/this.rate);
+ 	}
 };
 Cine.prototype.setRate=Cine_setRate;
 
 /** Starts the CINE playing - needs to pre-load some amount of information */
 function Cine_start() {
-	// TODO - ensure that the image meta-data is loaded for at least X images beyond now.  Wait till
-	// at least the first readAhead entries are available before proceeding.
-	// This section starts fetching the first readAhead entries. 
+	if( this.interval!==undefined ) return;
+	// Just use the display interval code to start the fetching.
+	this.stopped = false;
+	this.lastShowTime = new Date().getTime();
+	this.displayInterval();
+	this.interval = window.setInterval(this.callDisplayInterval, 1000/this.rate);
+	this.playingCine.push(this);
+};
+Cine.prototype.start=Cine_start;
+
+Cine.prototype.initReadAhead = function Cine_initReadAhead() {
 	var i,n;
 	this.alreadyRead = 0;
 	var ir;
 	var p = this.lookAhead.viewPosition;
 	this.imgs = this.lookAhead.getImageCount();
+	if( this.imgs==0 ) {
+		info("There should be some images defined.");
+		return;
+	}
 	var n = this.readAhead*2;
 	if( n>this.imgs ) {
 		this.readAhead = Math.floor(this.imgs/2);
 		n = this.imgs;
 	};
 	info("Set read ahead to "+this.readAhead+" fetching n="+n+" on "+this.imgs+" images");
-	// Just use the display interval code to start the fetching.
-	this.displayInterval();
-	this.interval = window.setInterval(this.callDisplayInterval, 1000/this.rate);
 };
-Cine.prototype.start=Cine_start;
 
 /** Gets the fetch position based on the look ahead index. */
-function Cine_fetchPosn(i) {
+Cine.prototype.fetchPosn = function Cine_fetchPosn(i) {
    return (1+i+this.lookAhead.viewPosition) % this.imgs;	
 };
-Cine.prototype.fetchPosn = Cine_fetchPosn;
+
 
 /** Returns whether or not the CINE is started yet.  Just because start is called doesn't mean the CINE is actually running & started yet */
-function Cine_isStarted() {
+Cine.prototype.isStarted=function Cine_isStarted() {
 	return this.started;
 };
-Cine.prototype.isStarted=Cine_isStarted;
+
+Cine.prototype.stop=function Cine_stop() {
+   if( this.stopped ) return;
+   this.stopped = true;
+   window.clearInterval(this.interval);
+   this.interval = undefined;
+};
 
 /** Causes the next image to be displayed, assuming it is ready. */
 function Cine_displayInterval() {
-	info("displayInterval called.");
-	var ir,fp,i,complete;
+	if( this.stopped ) return;
+	if( this.lookAhead.images===undefined ) {
+		info("Images not yet defined - waiting till fetch is fully called.");
+		return;
+	}
+	if( this.imgs===0 ) {
+		this.initReadAhead();
+		if( this.imgs==0 ) {
+			info("Images should not be zero after reading some meta-data.");
+			return;
+		}
+	}
+	var ir,fp,i;
+	var complete = 0;
 	var n=this.readAhead*2;
 	var loaded = 0;
+	this.debug("Trying to read ahead ",n," images with readAhead=",this.readAhead);
 	for(i=0; i<n; i++) {
 		fp = this.fetchPosn(i);
 		ir = this.lookAhead.getImageRef(fp);
-		if( ir.isLoaded() ) loaded++;
 		if( i==this.readAhead ) {
 			complete = loaded;
+		}
+		if( ir.isLoaded() ) {
+			loaded++;
+			continue;
 		}
 		if( !ir.isFetching() ) {
 			ir.fetch();
@@ -108,8 +150,8 @@ function Cine_displayInterval() {
 	}
 	fp = this.fetchPosn(0);
 	ir = this.lookAhead.getImageRef(fp);
-	info("read ahead completed "+complete+" total "+loaded);
-	if( complete==this.readAhead ) {
+	this.debug("read ahead completed "+complete+" total "+loaded);
+	if( complete>=this.readAhead ) {
 		this.started = true;
 		if( loaded==complete ) {
 			info("Could increase frame rate if it is down now...");
@@ -120,11 +162,43 @@ function Cine_displayInterval() {
 	}
 	// TODO - handle some way to skip an image when it fails or just takes forever
 	if( ir.isLoaded() && this.started ) {
-		info("Is loaded, and setting view position to "+fp);
+		this.debug("Is loaded, and setting view position to "+fp);
 		this.lookAhead.setViewPosition(fp);
+		this.showRateInfo();
 	}; 
 };
 Cine.prototype.displayInterval = Cine_displayInterval;
+
+/** Shows information about the actual rate that the CINE is being played at. */
+Cine.prototype.showRateInfo = function Cine_showRateInfo() {
+	this.lastShowRate = this.lastShowRate + 1;
+	var now = new Date().getTime();
+	if( this.lastShowRate > 1 ) {
+		var tm = now - this.lastTime;
+		if( tm < this.minTime ) this.minTime = tm;
+		if( tm > this.maxTime ) this.maxTime = tm;
+		var intvl = 1000/this.rate;
+		var error = intvl - tm;
+		if( error < 0 ) error = -error;
+		this.avgTime = this.avgTime +error;
+	}
+	this.lastTime = now;
+	if( this.lastShowRate < this.showRate ) return;
+	var now = new Date().getTime();
+	var delta = now - this.lastShowTime;
+	this.lastShowTime = now;
+	if( delta==0 ) {
+		warn("Time doesn't appear to be changing.");
+		return;
+	};
+	var rate = 1000*this.lastShowRate/delta;
+	this.avgTime = this.avgTime / delta;
+	info("Average display rate over "+this.lastShowRate+" items is "+rate+" in "+delta+" ms"+" min="+this.minTime+" max="+this.maxTime+" avg error="+this.avgTime);	
+	this.minTime = 10000;
+	this.maxTime = 0;
+	this.avgTime = 0;
+	this.lastShowRate = 0;
+};
 
 /** Returns how many read-ahead items are available */
 function Cine_getReadAhead() {
@@ -135,8 +209,54 @@ Cine.prototype.getReadAhead=Cine_getReadAhead;
 /**
  * Starts playing the CINE loop.
  */
-function playCine(cmdButton) {
-	alert("Play cine.");
+function playCine(e) {
+	var cmdButton = target(e);
+	var lay = getNodeForSeriesLayout(cmdButton);
+	if( lay.lookAhead===undefined ) {
+		lay.lookAhead = new LookAheadImage(cmdButton);
+		lay.lookAhead.init(lay);
+	}
+	if( lay.cine===undefined ) {
+		lay.cine = new Cine(lay.lookAhead);
+	};
+	var speedEl = cmdButton.ownerDocument.getElementById("cineSpeed");
+	var speed = 4;
+	if( speedEl!==undefined && speedEl!==null ) {
+		speed = speedEl.getAttribute("value");
+	}
+	info("Initialized to play CINE at ",speed," fps.");
+	lay.cine.setRate(speed);
+	lay.cine.start();
+	info("Started CINE.");
 	return false;
 };
 
+/** Discontinues playing CINE */
+function stopCine(cmdButton) {
+	var lay = getNodeForSeriesLayout(cmdButton);
+	if( lay.cine === undefined ) return;
+	lay.cine.stop();	
+};
+
+function cineSlower(cmdButton) {
+	var speedEl = cmdButton.ownerDocument.getElementById("cineSpeed");
+	if( speedEl!==undefined && speedEl!==null ) {
+		speed = speedEl.getAttribute("value");
+		speed = speed / 1.2;
+		speedEl.setAttribute("value", ""+speed);
+	}
+	for( var i in Cine.prototype.playingCine) {
+		Cine.prototype.playingCine[i].setRate (speed);
+	};
+};
+function cineFaster(cmdButton) {
+	var speedEl = cmdButton.ownerDocument.getElementById("cineSpeed");
+	if( speedEl!==undefined && speedEl!==null ) {
+		speed = speedEl.getAttribute("value");
+		speed = speed * 1.2;
+		speedEl.setAttribute("value", ""+speed);
+	}
+	for( var i in Cine.prototype.playingCine) {
+		Cine.prototype.playingCine[i].setRate (speed);
+	};
+};

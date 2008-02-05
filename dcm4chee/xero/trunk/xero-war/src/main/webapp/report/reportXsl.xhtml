@@ -14,7 +14,7 @@
 <x:template name="imageWadoXero" match="item" mode="imageref">
   <xsl:param name="objectUID" select="attr[@tag='00081155']" />
   <xsl:param name="frameNo" select="attr[@tag='00081160']" />
-  <xsl:param name="seriesDoc">/xero/image/image.xml?containsObjectUID=<xsl:value-of select='$objectUID' /><xsl:if test="$frameNo">&amp;containsFrameNumber=<xsl:value-of select="$frameNo" /></xsl:if></xsl:param>
+  <xsl:param name="seriesDoc">/wado2/image.xml?containsObjectUID=<xsl:value-of select='$objectUID' /><xsl:if test="$frameNo">&amp;containsFrameNumber=<xsl:value-of select="$frameNo" /></xsl:if></xsl:param>
   <xsl:param name="seriesDocNode" select="document($seriesDoc)" />
   <xsl:param name="pid" select="$seriesDocNode/se:results/se:patient/@PatientIdentifier" />
   <xsl:param name="studyUID" select="$seriesDocNode/se:results/se:patient/se:study/@StudyInstanceUID" />
@@ -24,7 +24,7 @@
     <xsl:attribute name="href">/xero/image/action/Navigate.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$pid" />&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" />&amp;position=<xsl:value-of select="$position" /></xsl:attribute>
   	Image 
     <img>
-	  <xsl:attribute name="src">/xero/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$objectUID"/>&amp;rows=128</xsl:attribute>
+	  <xsl:attribute name="src">/wado2/wado?requestType=XERO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$objectUID"/>&amp;rows=128</xsl:attribute>
     </img>
   </a>
   <br/>

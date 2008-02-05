@@ -39,8 +39,6 @@ package org.dcm4chee.xero.metadata.seam;
 
 import java.net.URL;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
@@ -56,7 +54,7 @@ import org.jboss.seam.ScopeType;
 @Scope(ScopeType.APPLICATION)
 public class MetaDataSeam
 {
-	String path = "";
+	private URL url;
 
 	Map<String, String> theme;
 
@@ -69,12 +67,15 @@ public class MetaDataSeam
 	
 	/** Gets the xero.metadata property file as the overall meta-data. */
 	private URL getUrl() {
+	    if( url!=null ) return url;
 		URL ret = getClass().getResource(confResourceName);
 		if( ret==null ) {
-			log.info("Configuration "+confResourceName+" is empty, using default "+resourceName);
+			log.debug("Configuration "+confResourceName+" is empty, using default "+resourceName);
 			ret = getClass().getResource(resourceName);
 		}
-		log.info("Using meta-data url:"+ret);
+		log.info("Using meta-data url for seam:",ret);
+		
+		url = ret;
 		return ret;
 	}
 
@@ -86,9 +87,9 @@ public class MetaDataSeam
 	 */
 	@Unwrap
 	public MetaDataBean getMetaDataBean() {
-	   log.info("Unwrapping meta-data bean from "+getUrl());
 		if (rootMetaDataBean == null) {			
-			rootMetaDataBean = StaticMetaData.getMetaDataByUrl(getUrl());
+		   log.info("Unwrapping meta-data bean from ",getUrl());
+		   rootMetaDataBean = StaticMetaData.getMetaDataByUrl(getUrl());
 		}
 		return rootMetaDataBean;
 	}

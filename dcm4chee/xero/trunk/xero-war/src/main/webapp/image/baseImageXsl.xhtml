@@ -16,6 +16,7 @@
   xmlns:h="http://www.w3.org/1999/xhtml"
   m:includeXsl="/image/baseImageXsl.xhtml"
   mx:cine.script="/xero/image/cine.js"
+  mx:lookAheadImage.script="/xero/js/LookAheadImage.js"
 >
 
 
@@ -105,7 +106,7 @@
   <xsl:param name="custNode" />
   <xsl:param name="custSeriesNode" select="$custNode/self::se:series" />
   <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
-  <xsl:variable name="seriesLay" select="$custNode/self::se:series/@pageSize" />  
+  <xsl:variable name="seriesLay" select="$custSeriesNode/@pageSize" />  
   <xsl:variable name="offset" select="$viewStart + @dir + $seriesLay * @page" />
   <xsl:choose>
     <xsl:when test="$offset >= 0 and $node/self::se:series/@Viewable > $offset ">
@@ -114,6 +115,8 @@
        <xsl:with-param name="node" select="$node" />
        <xsl:with-param name="custNode" select="$custNode" />
 	  </xsl:call-template>
+    </xsl:when>
+    <xsl:when test="$node/self::se:series/@Viewable &lt; 2">
     </xsl:when>
     <xsl:otherwise>
 	  <xsl:call-template name="copyHtmlDisabled">
@@ -131,8 +134,22 @@
   <xsl:param name="custNode" />
   <xsl:param name="custSeriesNode" select="$custNode/self::se:series" />
   <xsl:param name="viewStart"><xsl:choose><xsl:when test="$custSeriesNode/@viewStart"><xsl:value-of select="$custSeriesNode/@viewStart" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
-  <xsl:if test="$node/self::se:series/@Viewable > 1">
-    <span><xsl:value-of select="1+$viewStart" /> of <xsl:value-of select="$node/self::se:series/@Viewable" /></span>
+  <span><xsl:value-of select="1+$viewStart" /> of <xsl:value-of select="$node/self::se:series/@Viewable" /></span>
+</x:template>
+
+<x:template name="imageTest" mode="newlayout" match="h:span[@class='imageTest']">
+  <xsl:param name="loc" />
+  <xsl:param name="node" />
+  <xsl:param name="custNode" />
+  <xsl:variable name="minV"><xsl:choose><xsl:when test="@min > 0"><xsl:value-of select="@min" /></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+  <xsl:variable name="maxV"><xsl:choose><xsl:when test="@max > 0"><xsl:value-of select="@max" /></xsl:when><xsl:otherwise>999999</xsl:otherwise></xsl:choose></xsl:variable>
+  <xsl:variable name="viewable" select="$node/self::se:series/@Viewable" />
+  <xsl:if test="($viewable &gt; $minV) and ($viewable &lt; $maxV)">
+	  <xsl:apply-templates mode="newlayout">
+       <xsl:with-param name="loc" select="$loc" />
+       <xsl:with-param name="node" select="$node" />
+       <xsl:with-param name="custNode" select="$custNode" />
+	 </xsl:apply-templates>
   </xsl:if>
 </x:template>
 
@@ -436,6 +453,7 @@
  <xsl:element name="#{browser=='MSIE'?'v:image':'svg:image'}">
   <xsl:attribute name="preserveAspectRatio">none</xsl:attribute>
   <xsl:attribute name="id">img<xsl:value-of select="$custNode/@id[last()]" /></xsl:attribute>
+  <xsl:attribute name="offset"><xsl:value-of select="$custNode/self::se:image/@offset" /></xsl:attribute>
   <xsl:apply-templates select="$node" mode="wadoArgsNode" ><xsl:with-param name="loc" select="$loc" /><xsl:with-param name="node" select="." /><xsl:with-param name="custNode" select="$custNode" /></xsl:apply-templates>
   <xsl:apply-templates mode="newlayout">
    <xsl:with-param name="loc" select="$loc" />
@@ -866,7 +884,7 @@ and cx,cy = width /2, height/2
  <xsl:param name="studyUID" select="$node/../@StudyInstanceUID" />
  <xsl:param name="gsps"><xsl:choose><xsl:when test="$custNode/@gspsLabel">&amp;gsps=<xsl:value-of select="$custNode/@gspsLabel" /></xsl:when><xsl:when test="$node/parent::*[@gspsLabel]">&amp;gsps=<xsl:value-of select="$node/parent::se:study/@gspsLabel" /></xsl:when></xsl:choose></xsl:param>
  <xsl:variable name="koUid"><xsl:choose><xsl:when test="$custNode/@koUID">&amp;koUID=<xsl:value-of select="$custNode/@koUID" /></xsl:when><xsl:when test="$node/parent::se:study/@koUID!=''">&amp;koUID=<xsl:value-of select="$node/parent::se:study/@koUID" /></xsl:when></xsl:choose></xsl:variable>
- <xsl:variable name="imageUrl" select="concat('/xero/image/image.xml?pixelInfo=true&amp;SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,$gsps,$koUid)" />
+ <xsl:variable name="imageUrl" select="concat('/wado2/image.xml?pixelInfo=true&amp;SeriesInstanceUID=',$node/@SeriesInstanceUID,'&amp;Count=',$count,'&amp;Position=',$position,$gsps,$koUid)" />
  <xsl:variable name="newSeriesNode" select="document($imageUrl)/se:results/se:patient/se:study/se:series[@SeriesInstanceUID=$node/@SeriesInstanceUID]" />
  <xsl:message>http://localhost<xsl:value-of select="$imageUrl" /></xsl:message>
  <xsl:if test="count($newSeriesNode) > 1">
@@ -938,7 +956,7 @@ and cx,cy = width /2, height/2
    <xsl:param name="studyUID" select="$studyNode/@StudyInstanceUID" />
    <xsl:param name="custStudyNode" select="$custNode/se:study[@StudyInstanceUID=$studyUID]" />
    <xsl:param name="koUid"><xsl:choose><xsl:when test="$custStudyNode/@koUID">&amp;koUID=<xsl:value-of select="$custStudyNode/@koUID" /></xsl:when><xsl:otherwise>&amp;koUID=*</xsl:otherwise></xsl:choose></xsl:param>
-   <xsl:param name="seriesDocName" select="concat('/xero/series/series.xml?gsps=*&amp;StudyInstanceUID=',$studyNode/@StudyInstanceUID,$koUid)" />
+   <xsl:param name="seriesDocName" select="concat('/wado2/series.xml?gsps=*&amp;StudyInstanceUID=',$studyNode/@StudyInstanceUID,$koUid)" />
    <xsl:param name="seriesDoc" select="document($seriesDocName)/se:results" />
    <xsl:param name="newStudyNode" select="$seriesDoc/se:patient/se:study[@StudyInstanceUID=$studyUID]" />
    <xsl:apply-templates mode="newlayout" select="*">

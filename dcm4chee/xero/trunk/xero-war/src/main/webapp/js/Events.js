@@ -140,7 +140,7 @@ var __XERO_DBG_LVL = 1;
 function notrace(msg) {
 };
 
-if( this.java!==undefined ) {
+if( this.java!==undefined && this.java.lang!==undefined && this.java.lang.System.out.println!==undefined) {
   function trace(msg) {
 	java.lang.System.out.println(msg);  	
   };
@@ -163,7 +163,12 @@ if( this.trace!==undefined ) {
   };
 }
 else {
-	function ttrace() {
+	var debugWin = window.parent.parent.traceFrame;
+
+	function ttrace(msg) {
+		if (debugWin != undefined && debugWin != null){
+			debugWin.trace(msg);
+		}
 	};
 };
 

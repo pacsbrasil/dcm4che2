@@ -267,3 +267,6 @@ function ajaxInit(url) {
    window.location = { pathname: url };
 }
 
+
+var Node = new Object();
+Node.ELEMENT_NODE=1;

@@ -224,59 +224,6 @@
       <url-pattern>*.xsl</url-pattern>
    </filter-mapping>
    
-   <servlet>
-      <servlet-name>Study Xml Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
-      <init-param>
-	      <param-name>metaData</param-name>
-    	  <param-value>/wado.metadata</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>filter</param-name>
-    	  <param-value>studyFilter</param-value>
-      </init-param>
-      <load-on-startup>1</load-on-startup>      
-   </servlet>
-   <servlet-mapping>
-      <servlet-name>Study Xml Servlet</servlet-name>
-      <url-pattern>/study/study.xml</url-pattern>
-   </servlet-mapping>
-
-   <servlet>
-      <servlet-name>Image Xml Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
-      <init-param>
-	      <param-name>metaData</param-name>
-    	  <param-value>/wado.metadata</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>filter</param-name>
-    	  <param-value>imageFilter</param-value>
-      </init-param>
-      <load-on-startup>1</load-on-startup>      
-   </servlet>
-   <servlet-mapping>
-      <servlet-name>Image Xml Servlet</servlet-name>
-      <url-pattern>/image/image.xml</url-pattern>
-   </servlet-mapping>
-
-   <servlet>
-      <servlet-name>Series Xml Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
-      <init-param>
-	      <param-name>metaData</param-name>
-    	  <param-value>/wado.metadata</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>filter</param-name>
-    	  <param-value>seriesFilter</param-value>
-      </init-param>
-      <load-on-startup>1</load-on-startup>      
-   </servlet>
-   <servlet-mapping>
-      <servlet-name>Series Xml Servlet</servlet-name>
-      <url-pattern>/series/series.xml</url-pattern>
-   </servlet-mapping>
    
    <security-constraint>
      <display-name>Xero Security Constraint</display-name>
@@ -285,8 +232,6 @@
        <description>Only allows users with the role WebUser to access Xero.</description>
        <url-pattern>*.seam</url-pattern>
        <url-pattern>*.xhtml</url-pattern>
-       <url-pattern>*.xml</url-pattern>
-       <url-pattern>/wado</url-pattern>
        <http-method>GET</http-method>
        <http-method>POST</http-method>
      </web-resource-collection>

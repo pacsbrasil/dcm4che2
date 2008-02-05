@@ -77,6 +77,15 @@
       <url-pattern>/series.xml</url-pattern>
    </servlet-mapping>
    
+   <filter>
+      <filter-name>TimeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.TimeFilter</filter-class>
+   </filter>
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+   </filter-mapping>
+   
    <security-constraint>
      <display-name>Xero Security Constraint</display-name>
      <web-resource-collection>

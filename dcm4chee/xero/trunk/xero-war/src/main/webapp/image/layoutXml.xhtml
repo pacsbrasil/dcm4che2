@@ -16,7 +16,7 @@
        <c:forEach var="sey" end="${LayoutEvent.seriesHeight-1}">
         <div class="hbox" id="x1" height="25"><c:forEach var="sex" end="${LayoutEvent.seriesWidth-1}">
          <se:series id="se${sex},${sey}" offset="${sex+sey * LayoutEvent.seriesWidth}" width="25" pageSize="${LayoutEvent.imageWidth * LayoutEvent.imageHeight}">
-          <div class="vbox">
+          <div class="vbox" seriesLayout="se${sex},${sey}">
 	       <div class="layoutRef" ref="toolbar" item="seriesToolbar" heightpx="22" />
          
            <c:forEach var="imy" end="${LayoutEvent.imageHeight-1}">
