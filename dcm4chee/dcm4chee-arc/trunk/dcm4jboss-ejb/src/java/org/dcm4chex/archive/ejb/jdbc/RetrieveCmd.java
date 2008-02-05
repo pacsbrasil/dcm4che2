@@ -220,43 +220,44 @@ public class RetrieveCmd extends BaseReadCmd {
                 transactionIsolationLevel, sql.getSql());
         defineColumnTypes(lazyFetchSeriesAttrs
                 ? new int[] {
-                    blobAccessType,
-                    Types.VARCHAR,
-                    Types.BIGINT,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.BIGINT,
-                    Types.VARCHAR,
-                    Types.INTEGER,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.INTEGER,
-                    Types.INTEGER }
-            : new int[] {
-                    blobAccessType,
-                    Types.VARCHAR,
-                    blobAccessType,
-                    blobAccessType,
-                    blobAccessType,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.BIGINT,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.BIGINT,
-                    Types.VARCHAR,
-                    Types.INTEGER,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.INTEGER,
-                    Types.INTEGER,
+                    blobAccessType,     // Instance.encodedAttributes
+                    Types.VARCHAR,      // Series.seriesIuid
+                    Types.BIGINT,       // Instance.pk
+                    Types.VARCHAR,      // Instance.sopIuid
+                    Types.VARCHAR,      // Instance.sopCuid
+                    Types.VARCHAR,      // Instance.externalRetrieveAET
+                    Types.BIGINT,       // File.pk
+                    Types.VARCHAR,      // FileSystem.retrieveAET
+                    Types.INTEGER,      // FileSystem.availability
+                    Types.VARCHAR,      // FileSystem.directoryPath
+                    Types.VARCHAR,      // File.filePath
+                    Types.VARCHAR,      // File.fileTsuid
+                    Types.VARCHAR,      // File.fileMd5Field
+                    Types.INTEGER,      // File.fileSize
+                    Types.INTEGER,      // File.fileStatus
+                    }
+                : new int[] {
+                    blobAccessType,     // Instance.encodedAttributes
+                    Types.VARCHAR,      // Series.seriesIuid
+                    blobAccessType,     // Patient.encodedAttributes
+                    blobAccessType,     // Study.encodedAttributes
+                    blobAccessType,     // Series.encodedAttributes
+                    Types.VARCHAR,      // Patient.patientId
+                    Types.VARCHAR,      // Patient.patientName
+                    Types.VARCHAR,      // Study.studyIuid
+                    Types.BIGINT,       // Instance.pk
+                    Types.VARCHAR,      // Instance.sopIuid
+                    Types.VARCHAR,      // Instance.sopCuid
+                    Types.VARCHAR,      // Instance.externalRetrieveAET
+                    Types.BIGINT,       // File.pk
+                    Types.VARCHAR,      // FileSystem.retrieveAET
+                    Types.INTEGER,      // FileSystem.availability
+                    Types.VARCHAR,      // FileSystem.directoryPath
+                    Types.VARCHAR,      // File.filePath
+                    Types.VARCHAR,      // File.fileTsuid
+                    Types.VARCHAR,      // File.fileMd5Field
+                    Types.INTEGER,      // File.fileSize
+                    Types.INTEGER,      // File.fileStatus
                     });
         this.sqlCmd = sql;
     }
@@ -325,8 +326,8 @@ public class RetrieveCmd extends BaseReadCmd {
         long instPk = rs.getLong(3);
         info.sopIUID = rs.getString(4);
         info.sopCUID = rs.getString(5);
-        info.pk = rs.getLong(6);
-        info.extRetrieveAET = rs.getString(7);
+        info.extRetrieveAET = rs.getString(6);
+        info.pk = rs.getLong(7);
         info.fileRetrieveAET = rs.getString(8);
         info.availability = rs.getInt(9);
         info.basedir = rs.getString(10);
@@ -425,8 +426,8 @@ public class RetrieveCmd extends BaseReadCmd {
         long instPk = rs.getLong(9);
         info.sopIUID = rs.getString(10);
         info.sopCUID = rs.getString(11);
-        info.pk = rs.getLong(12);
-        info.extRetrieveAET = rs.getString(13);
+        info.extRetrieveAET = rs.getString(12);
+        info.pk = rs.getLong(13);
         info.fileRetrieveAET = rs.getString(14);
         info.availability = rs.getInt(15);
         info.basedir = rs.getString(16);
@@ -506,43 +507,45 @@ public class RetrieveCmd extends BaseReadCmd {
         private String[] getSelectAttributes() {
             return lazyFetchSeriesAttrs 
                 ? new String[] {
-                        "Instance.encodedAttributes",
-                        "Series.seriesIuid",
-                        "Instance.pk",
-                        "Instance.sopIuid",
-                        "Instance.sopCuid",
-                        "Instance.externalRetrieveAET",
-                        "File.pk",
-                        "FileSystem.retrieveAET",
-                        "FileSystem.availability",
-                        "FileSystem.directoryPath",
-                        "File.filePath",
-                        "File.fileTsuid",
-                        "File.fileMd5Field",
-                        "File.fileSize",
-                        "File.fileStatus"}
+                        "Instance.encodedAttributes",   // (1)
+                        "Series.seriesIuid",            // (2)
+                        "Instance.pk",                  // (3)
+                        "Instance.sopIuid",             // (4)
+                        "Instance.sopCuid",             // (5)
+                        "Instance.externalRetrieveAET", // (6)
+                        "File.pk",                      // (7)
+                        "FileSystem.retrieveAET",       // (8)
+                        "FileSystem.availability",      // (9)
+                        "FileSystem.directoryPath",     // (10)
+                        "File.filePath",                // (11)
+                        "File.fileTsuid",               // (12)
+                        "File.fileMd5Field",            // (13)
+                        "File.fileSize",                // (14)
+                        "File.fileStatus"               // (15)
+                        }
                 : new String[] { 
-                        "Instance.encodedAttributes",
-                        "Series.seriesIuid",
-                        "Patient.encodedAttributes",
-                        "Study.encodedAttributes",
-                        "Series.encodedAttributes",
-                        "Patient.patientId",
-                        "Patient.patientName",
-                        "Study.studyIuid",
-                        "Instance.pk",
-                        "Instance.sopIuid",
-                        "Instance.sopCuid",
-                        "Instance.externalRetrieveAET",
-                        "File.pk",
-                        "FileSystem.retrieveAET",
-                        "FileSystem.availability",
-                        "FileSystem.directoryPath",
-                        "File.filePath",
-                        "File.fileTsuid",
-                        "File.fileMd5Field",
-                        "File.fileSize",
-                        "File.fileStatus"};
+                        "Instance.encodedAttributes",   // (1)
+                        "Series.seriesIuid",            // (2)
+                        "Patient.encodedAttributes",    // (3)
+                        "Study.encodedAttributes",      // (4)
+                        "Series.encodedAttributes",     // (5)
+                        "Patient.patientId",            // (6)
+                        "Patient.patientName",          // (7)
+                        "Study.studyIuid",              // (8)
+                        "Instance.pk",                  // (9)
+                        "Instance.sopIuid",             // (10)
+                        "Instance.sopCuid",             // (11)
+                        "Instance.externalRetrieveAET", // (12)
+                        "File.pk",                      // (13)
+                        "FileSystem.retrieveAET",       // (14)
+                        "FileSystem.availability",      // (15)
+                        "FileSystem.directoryPath",     // (16)
+                        "File.filePath",                // (17)
+                        "File.fileTsuid",               // (18)
+                        "File.fileMd5Field",            // (19)
+                        "File.fileSize",                // (20)
+                        "File.fileStatus"               // (21)
+                        };
         }
 
         public final String getSql() {
