@@ -560,6 +560,8 @@ public abstract class PrivateManagerBean implements SessionBean {
         	Dataset ds = patient.getAttributes(true);
             getPrivatePatient( patient, DELETED, true );
             patient.remove();
+            if ( result.isEmpty()) 
+            	result.add(ds);
             return result;
         } catch (CreateException e) {
             throw new RemoteException(e.getMessage());
