@@ -3,7 +3,7 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
 
-  <property name="version" value="2.13.2"/>
+  <property name="version" value="2.13.3"/>
   <property name="audit-version" value="2.13.1"/>
   <property name="target.dir" value="${basedir}/target"/>
 
