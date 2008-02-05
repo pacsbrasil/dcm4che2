@@ -437,7 +437,8 @@ public class ContentEditService extends ServiceMBeanSupport {
         Dataset ds = null;
         for (Iterator iter = col.iterator() ; iter.hasNext() ; ) {
            ds = (Dataset) iter.next();
-           logStudyDeleted(ds);  
+           if (ds.containsValue(Tags.StudyInstanceUID)) //patient without study?
+        	   logStudyDeleted(ds);  
         }
         sendHL7PatientXXX( ds, "ADT^A23" );//Send Patient delete message
         logPatientRecord(ds, PatientRecordMessage.DELETE);
