@@ -57,12 +57,12 @@ class QuerySeriesAttrsForRetrieveCmd extends BaseReadCmd {
                         .getProperty("QuerySeriesAttrsForRetrieveCmd"));
         this.seriesIUID = seriesIUID;
         defineColumnTypes(new int[] {
-                blobAccessType,
-                blobAccessType,
-                blobAccessType,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.VARCHAR,
+                blobAccessType, // patient.pat_attrs
+                blobAccessType, // study.study_attrs
+                blobAccessType, // series.series_attrs
+                Types.VARCHAR,  // patient.pat_id
+                Types.VARCHAR,  // patient.pat_name
+                Types.VARCHAR,  // study.study_iuid
                 });
         ((PreparedStatement) stmt).setString(1, seriesIUID);
     }

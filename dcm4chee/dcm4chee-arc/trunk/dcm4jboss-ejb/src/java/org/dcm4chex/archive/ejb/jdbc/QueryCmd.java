@@ -695,17 +695,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
             defineColumnTypes(new int[] {
-                    blobAccessType,
-                    blobAccessType,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.INTEGER,
-                    Types.INTEGER,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.INTEGER });
+                    blobAccessType,     // Patient.encodedAttributes
+                    blobAccessType,     // Study.encodedAttributes
+                    Types.VARCHAR,      // Study.modalitiesInStudy
+                    Types.VARCHAR,      // Study.studyStatusId
+                    Types.INTEGER,      // Study.numberOfStudyRelatedSeries
+                    Types.INTEGER,      // Study.numberOfStudyRelatedInstances
+                    Types.VARCHAR,      // Study.filesetId
+                    Types.VARCHAR,      // Study.filesetIuid
+                    Types.VARCHAR,      // Study.retrieveAETs
+                    Types.VARCHAR,      // Study.externalRetrieveAET
+                    Types.INTEGER       // Study.availability
+                    });
             addAdditionalReturnKeys();
         }
 
@@ -719,17 +720,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
         protected String[] getSelectAttributes() {
             return new String[] { 
-                    "Patient.encodedAttributes",
-                    "Study.encodedAttributes",
-                    "Study.modalitiesInStudy",
-                    "Study.studyStatusId",
-                    "Study.numberOfStudyRelatedSeries",
-                    "Study.numberOfStudyRelatedInstances",
-                    "Study.filesetId",
-                    "Study.filesetIuid",
-                    "Study.retrieveAETs",
-                    "Study.externalRetrieveAET",
-                    "Study.availability" };
+                    "Patient.encodedAttributes",                // (1)
+                    "Study.encodedAttributes",                  // (2)
+                    "Study.modalitiesInStudy",                  // (3)
+                    "Study.studyStatusId",                      // (4)
+                    "Study.numberOfStudyRelatedSeries",         // (5)
+                    "Study.numberOfStudyRelatedInstances",      // (6)
+                    "Study.filesetId",                          // (7)
+                    "Study.filesetIuid",                        // (8)
+                    "Study.retrieveAETs",                       // (9)
+                    "Study.externalRetrieveAET",                // (10)
+                    "Study.availability",                       // (11)
+                    };
         }
 
         protected String[] getTables() {
@@ -769,19 +771,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 throws SQLException {
             super(keys, filterResult, noMatchForNoValue, subject);
             defineColumnTypes(new int[] {
-                    blobAccessType,
-                    blobAccessType,
-                    blobAccessType,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.INTEGER,
-                    Types.INTEGER,
-                    Types.INTEGER,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.VARCHAR,
-                    Types.INTEGER });
+                    blobAccessType,     // Patient.encodedAttributes
+                    blobAccessType,     // Study.encodedAttributes
+                    blobAccessType,     // Series.encodedAttributes
+                    Types.VARCHAR,      // Study.modalitiesInStudy
+                    Types.VARCHAR,      // Study.studyStatusId
+                    Types.INTEGER,      // Study.numberOfStudyRelatedSeries
+                    Types.INTEGER,      // Study.numberOfStudyRelatedInstances
+                    Types.INTEGER,      // Series.numberOfSeriesRelatedInstances
+                    Types.VARCHAR,      // Series.filesetId
+                    Types.VARCHAR,      // Series.filesetIuid
+                    Types.VARCHAR,      // Series.retrieveAETs
+                    Types.VARCHAR,      // Series.externalRetrieveAET
+                    Types.INTEGER,      // Series.availability
+                    });
             addAdditionalReturnKeys();
         }
 
@@ -795,19 +798,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
         protected String[] getSelectAttributes() {
             return new String[] {
-                    "Patient.encodedAttributes",
-                    "Study.encodedAttributes",
-                    "Series.encodedAttributes",
-                    "Study.modalitiesInStudy",
-                    "Study.studyStatusId",
-                    "Study.numberOfStudyRelatedSeries",
-                    "Study.numberOfStudyRelatedInstances",
-                    "Series.numberOfSeriesRelatedInstances",
-                    "Series.filesetId",
-                    "Series.filesetIuid",
-                    "Series.retrieveAETs",
-                    "Series.externalRetrieveAET",
-                    "Series.availability" };
+                    "Patient.encodedAttributes",                // (1)
+                    "Study.encodedAttributes",                  // (2)
+                    "Series.encodedAttributes",                 // (3)
+                    "Study.modalitiesInStudy",                  // (4)
+                    "Study.studyStatusId",                      // (5)
+                    "Study.numberOfStudyRelatedSeries",         // (6)
+                    "Study.numberOfStudyRelatedInstances",      // (7)
+                    "Series.numberOfSeriesRelatedInstances",    // (8)
+                    "Series.filesetId",                         // (9)
+                    "Series.filesetIuid",                       // (10)
+                    "Series.retrieveAETs",                      // (11)
+                    "Series.externalRetrieveAET",               // (12)
+                    "Series.availability",                      // (13)
+                    };
         }
 
         protected String[] getTables() {
@@ -858,29 +862,31 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super(keys, filterResult, noMatchForNoValue, subject);
             defineColumnTypes(lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new int[] {
-                            blobAccessType,
-                            Types.VARCHAR,
-                            Types.VARCHAR,
-                            Types.INTEGER,
-                            Types.VARCHAR,
-                            Types.VARCHAR,
-                            Types.VARCHAR }
+                            blobAccessType,     // Instance.encodedAttributes
+                            Types.VARCHAR,      // Instance.retrieveAETs
+                            Types.VARCHAR,      // Instance.externalRetrieveAET
+                            Types.INTEGER,      // Instance.availability
+                            Types.VARCHAR,      // Series.seriesIuid
+                            Types.VARCHAR,      // Media.filesetId
+                            Types.VARCHAR,      // Media.filesetIuid
+                            }
                     : new int[] {
-                            blobAccessType,
-                            Types.VARCHAR,
-                            blobAccessType,
-                            blobAccessType,
-                            blobAccessType,
-                            Types.VARCHAR,
-                            Types.VARCHAR,
-                            Types.INTEGER,
-                            Types.INTEGER,
-                            Types.INTEGER,
-                            Types.VARCHAR,
-                            Types.VARCHAR,
-                            Types.INTEGER,
-                            Types.VARCHAR,
-                            Types.VARCHAR });
+                            blobAccessType,     // Instance.encodedAttributes
+                            Types.VARCHAR,      // Series.seriesIuid
+                            blobAccessType,     // Patient.encodedAttributes
+                            blobAccessType,     // Study.encodedAttributes
+                            blobAccessType,     // Series.encodedAttributes
+                            Types.VARCHAR,      // Study.modalitiesInStudy
+                            Types.VARCHAR,      // Study.studyStatusId
+                            Types.INTEGER,      // Study.numberOfStudyRelatedSeries
+                            Types.INTEGER,      // Study.numberOfStudyRelatedInstances
+                            Types.INTEGER,      // Series.numberOfSeriesRelatedInstances
+                            Types.VARCHAR,      // Instance.retrieveAETs
+                            Types.VARCHAR,      // Instance.externalRetrieveAET
+                            Types.INTEGER,      // Instance.availability
+                            Types.VARCHAR,      // Media.filesetId
+                            Types.VARCHAR,      // Media.filesetIuid
+                            });
             addAdditionalReturnKeys();
         }
 
@@ -896,29 +902,31 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         protected String[] getSelectAttributes() {
             return lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new String[] {
-                            "Instance.encodedAttributes",
-                            "Instance.retrieveAETs",
-                            "Instance.externalRetrieveAET",
-                            "Instance.availability",
-                            "Series.seriesIuid",
-                            "Media.filesetId",
-                            "Media.filesetIuid" }
+                            "Instance.encodedAttributes",               // (1)
+                            "Instance.retrieveAETs",                    // (2)
+                            "Instance.externalRetrieveAET",             // (3)
+                            "Instance.availability",                    // (4)
+                            "Series.seriesIuid",                        // (5)
+                            "Media.filesetId",                          // (6)
+                            "Media.filesetIuid",                        // (7)
+                            }
                     : new String[] {
-                            "Instance.encodedAttributes",
-                            "Series.seriesIuid",
-                            "Patient.encodedAttributes",
-                            "Study.encodedAttributes",
-                            "Series.encodedAttributes",
-                            "Study.modalitiesInStudy",
-                            "Study.studyStatusId",
-                            "Study.numberOfStudyRelatedSeries",
-                            "Study.numberOfStudyRelatedInstances",
-                            "Series.numberOfSeriesRelatedInstances",
-                            "Instance.retrieveAETs",
-                            "Instance.externalRetrieveAET",
-                            "Instance.availability",
-                            "Media.filesetId",
-                            "Media.filesetIuid" };
+                            "Instance.encodedAttributes",               // (1)
+                            "Series.seriesIuid",                        // (2)
+                            "Patient.encodedAttributes",                // (3)
+                            "Study.encodedAttributes",                  // (4)
+                            "Series.encodedAttributes",                 // (5)
+                            "Study.modalitiesInStudy",                  // (6)
+                            "Study.studyStatusId",                      // (7)
+                            "Study.numberOfStudyRelatedSeries",         // (8)
+                            "Study.numberOfStudyRelatedInstances",      // (9)
+                            "Series.numberOfSeriesRelatedInstances",    // (10)
+                            "Instance.retrieveAETs",                    // (11)
+                            "Instance.externalRetrieveAET",             // (12)
+                            "Instance.availability",                    // (13)
+                            "Media.filesetId",                          // (14)
+                            "Media.filesetIuid",                        // (15)
+                            };
         }
 
         protected String[] getTables() {

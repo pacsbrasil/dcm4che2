@@ -62,14 +62,15 @@ class QuerySeriesAttrsForQueryCmd extends BaseReadCmd {
                 JdbcProperties.getInstance()
                         .getProperty("QuerySeriesAttrsForQueryCmd"));
         defineColumnTypes(new int[] {
-                blobAccessType,
-                blobAccessType,
-                blobAccessType,
-                Types.VARCHAR,
-                Types.VARCHAR,
-                Types.INTEGER,
-                Types.INTEGER,
-                Types.INTEGER });
+                blobAccessType, // patient.pat_attrs
+                blobAccessType, // study.study_attrs
+                blobAccessType, // series.series_attrs
+                Types.VARCHAR,  // study.mods_in_study
+                Types.VARCHAR,  // study.study_status_id
+                Types.INTEGER,  // study.num_series
+                Types.INTEGER,  // study.num_instances
+                Types.INTEGER,  // series.num_instances
+                });
         ((PreparedStatement) stmt).setString(1, seriesIUID);
     }
 

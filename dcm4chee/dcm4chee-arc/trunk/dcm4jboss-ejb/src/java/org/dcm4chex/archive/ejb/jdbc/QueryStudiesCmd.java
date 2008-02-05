@@ -72,17 +72,18 @@ public class QueryStudiesCmd extends BaseReadCmd {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static final String[] SELECT_ATTRIBUTE = {
-            "Patient.encodedAttributes",
-            "Study.encodedAttributes",
-            "Patient.pk",
-            "Study.pk",
-            "Study.modalitiesInStudy",
-            "Study.numberOfStudyRelatedSeries",
-            "Study.numberOfStudyRelatedInstances",
-            "Study.retrieveAETs",
-            "Study.availability",
-            "Study.filesetId",
-            "Study.studyStatusId"};
+            "Patient.encodedAttributes",                // (1)
+            "Study.encodedAttributes",                  // (2)
+            "Patient.pk",                               // (3)
+            "Study.pk",                                 // (4)
+            "Study.modalitiesInStudy",                  // (5)
+            "Study.numberOfStudyRelatedSeries",         // (6)
+            "Study.numberOfStudyRelatedInstances",      // (7)
+            "Study.retrieveAETs",                       // (8)
+            "Study.availability",                       // (9)
+            "Study.filesetId",                          // (10)
+            "Study.studyStatusId",                      // (11)
+            };
 
     private static final String[] LEFT_JOIN = { 
         "Study", null, "Patient.pk", "Study.patient_fk",};
@@ -107,18 +108,20 @@ public class QueryStudiesCmd extends BaseReadCmd {
     	throws SQLException {
     	this(filter, hideMissingStudies, false, subject );
         defineColumnTypes(new int[] { 
-                blobAccessType, 
-                blobAccessType,
-                Types.BIGINT,
-                Types.BIGINT,
-                Types.VARCHAR,
-                Types.INTEGER,
-                Types.INTEGER,
-                Types.VARCHAR,
-                Types.INTEGER,
-                Types.VARCHAR,
-                Types.VARCHAR });
+                blobAccessType, // Patient.encodedAttributes
+                blobAccessType, // Study.encodedAttributes
+                Types.BIGINT,   // Patient.pk
+                Types.BIGINT,   // Study.pk
+                Types.VARCHAR,  // Study.modalitiesInStudy
+                Types.INTEGER,  // Study.numberOfStudyRelatedSeries
+                Types.INTEGER,  // Study.numberOfStudyRelatedInstances
+                Types.VARCHAR,  // Study.retrieveAETs
+                Types.INTEGER,  // Study.availability
+                Types.VARCHAR,  // Study.filesetId
+                Types.VARCHAR,  // Study.studyStatusId
+                });
     }
+
     /**
      * Creates a new QueryStudiesCmd object with given filter.
      * <p>
