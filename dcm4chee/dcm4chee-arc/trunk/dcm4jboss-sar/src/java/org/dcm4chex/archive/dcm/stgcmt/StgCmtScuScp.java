@@ -61,7 +61,7 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  * @since Jan 5, 2005
  */
-class StgCmtScuScp extends DcmServiceBase {
+public class StgCmtScuScp extends DcmServiceBase {
 
     private final StgCmtScuScpService service;
 
