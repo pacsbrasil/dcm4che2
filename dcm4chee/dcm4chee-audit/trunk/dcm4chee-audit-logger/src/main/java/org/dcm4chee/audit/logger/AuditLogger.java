@@ -133,6 +133,9 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     };
 
+    private static final String AUDITLOG = "auditlog";
+    private static final String DCM4CHEE = "dcm4chee";
+    
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
 
     private String configDir;
@@ -143,6 +146,8 @@ public class AuditLogger extends ServiceMBeanSupport {
     private HashMap<ObjectName, AttributeChangeNotificationFilter[]>
             registeredAcnSources =
                 new HashMap<ObjectName, AttributeChangeNotificationFilter[]>();
+
+    private boolean serviceAuditEnabled = false;
 
     public boolean isIHEYr4() {
         return false;
@@ -200,6 +205,15 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     }
 
+    public boolean isServiceAuditEnabled(){
+        return serviceAuditEnabled;
+    }
+    
+    public void setServiceAuditEnabled(boolean serviceAuditEnabled){
+        this.serviceAuditEnabled = serviceAuditEnabled;
+    }
+    
+    
     public String getProcessID() {
         return AuditMessage.getProcessID();
     }
@@ -322,22 +336,34 @@ public class AuditLogger extends ServiceMBeanSupport {
     protected void startService() throws Exception {
         registerMBeanServerListeners();
         registerAcnListeners();
-        auditApplicationActivity(ApplicationActivityMessage.APPLICATION_START);
     }
 
     protected void stopService() {
         unregisterAcnListeners();
         unregisterMBeanServerListeners();
-        auditApplicationActivity(ApplicationActivityMessage.APPLICATION_STOP);
+        if (serviceAuditEnabled){
+            auditApplicationActivity(ApplicationActivityMessage.APPLICATION_STOP, 
+                    this.serviceName.getCanonicalName());            
+        }
     }
 
-    private void auditApplicationActivity(AuditEvent.TypeCode type) {
+    private void auditApplicationActivity(AuditEvent.TypeCode type, 
+            String serviceName) {
+        String processServiceName;
+        if (serviceName.indexOf(DCM4CHEE)==0){
+            processServiceName = AuditMessage.getProcessName() + 
+            serviceName.substring(DCM4CHEE.length(),
+            serviceName.length());
+        }else{
+            processServiceName = serviceName;
+        }
+
         ApplicationActivityMessage msg = new ApplicationActivityMessage(type);
         msg.addApplication(AuditMessage.getProcessID(), AuditMessage
-                .getLocalAETitles(), AuditMessage.getProcessName(),
+                .getLocalAETitles(), processServiceName,
                 AuditMessage.getLocalHostName());
         msg.addApplicationLauncher(getPrincipal(), null, null, null);
-        Logger.getLogger("auditlog").info(msg);
+        Logger.getLogger(AUDITLOG).info(msg);
     }
 
     private String getPrincipal() {
@@ -387,14 +413,29 @@ public class AuditLogger extends ServiceMBeanSupport {
                         : newValue.equals(oldValue)) {
                 return;
             }
-            SecurityAlertMessage msg = new SecurityAlertMessage(
-                    (AuditEvent.TypeCode) handback);
-            msg.addReportingProcess(AuditMessage.getProcessID(), AuditMessage
-                    .getLocalAETitles(), AuditMessage.getProcessName(),
-                    AuditMessage.getLocalHostName());
-            msg.addPerformingPerson(getPrincipal(), null, null, getHostname());
-            msg.addAlertSubjectWithURI("jmx:" + scn.getSource(), toText(scn));
-            Logger.getLogger("auditlog").info(msg);
+            if (scn.getAttributeName().equals("State")){
+                if (serviceAuditEnabled == true){
+                    if ((Integer)newValue == STOPPED){
+                        auditApplicationActivity(
+                                ApplicationActivityMessage.APPLICATION_STOP,
+                                ((ObjectName)scn.getSource()).getCanonicalName());
+                    }else if((Integer)newValue == STARTED){
+                        auditApplicationActivity(
+                                ApplicationActivityMessage.APPLICATION_START,
+                                ((ObjectName)scn.getSource()).getCanonicalName());
+                    }
+                }
+            } else{
+                SecurityAlertMessage msg = new SecurityAlertMessage(
+                        (AuditEvent.TypeCode) handback);
+                msg.addReportingProcess(AuditMessage.getProcessID(), AuditMessage
+                        .getLocalAETitles(), AuditMessage.getProcessName(),
+                        AuditMessage.getLocalHostName());
+                msg.addPerformingPerson(getPrincipal(), null, null, getHostname());
+                msg.addAlertSubjectWithURI("jmx:" + scn.getSource(), toText(scn));
+                Logger.getLogger(AUDITLOG).info(msg);                
+            }
+            return;
         }
 
         private String toText(AttributeChangeNotification scn) {
@@ -521,6 +562,17 @@ public class AuditLogger extends ServiceMBeanSupport {
             log.debug(REGISTER_ACNL + source);
         }
         int registered = 0;
+        try {
+            AttributeChangeNotificationFilter stateChangeFilter = new 
+            AttributeChangeNotificationFilter();
+            stateChangeFilter.enableAttribute("State");
+            server.addNotificationListener(source, acnl, stateChangeFilter,
+                    null);
+            registered++;
+        } catch (Exception e) {
+            log.warn(FAILED_TO_REGISTER_ACNL + source, e);
+            return false;
+        }
         for (int i = 0; i < acnf.length; i++) {
             if (acnf[i] != null) {
                 try {
