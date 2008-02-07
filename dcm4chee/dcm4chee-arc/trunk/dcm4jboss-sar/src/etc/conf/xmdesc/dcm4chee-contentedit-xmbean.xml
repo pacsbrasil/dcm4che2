@@ -158,6 +158,18 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getAuditEnabled"
+      setMethod="setAuditEnabled">
+      <description>Enable or disable non IHEYr4 auditting for the methods 
+      PatientRecord, AccessStudy and DeleteStudy.
+      </description>
+      <name>auditEnabled</name>
+      <type>boolean</type>
+      <descriptors>
+        <value value="false"/>
+      </descriptors>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

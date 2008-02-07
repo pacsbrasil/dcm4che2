@@ -90,6 +90,8 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
+    private boolean auditEnabled;
+    
     private ContentEdit contentEdit;
 
     private ObjectName hl7SendServiceName;
@@ -126,7 +128,14 @@ public class ContentEditService extends ServiceMBeanSupport {
     public void setAuditLoggerName(ObjectName auditLogName) {
         this.auditLogger.setAuditLoggerName(auditLogName);
     }
+	
+    public void setAuditEnabled(boolean auditEnabled){
+        this.auditEnabled = auditEnabled;
+    }
     
+    public boolean getAuditEnabled(){
+        return auditEnabled;
+    }
 	/**
 	 * @return Returns the fileSystemMgtName.
 	 */
@@ -669,7 +678,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 	}
 
     private void logPatientRecord( Dataset ds, AuditEvent.ActionCode actionCode ){
-        if ( auditLogger.isAuditLogIHEYr4() ) return;
+        if ( auditLogger.isAuditLogIHEYr4() || !auditEnabled) return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         log.debug("log Patient Record! actionCode:"+actionCode);
         try {
