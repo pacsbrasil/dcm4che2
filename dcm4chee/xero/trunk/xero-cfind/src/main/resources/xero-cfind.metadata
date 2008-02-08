@@ -42,7 +42,7 @@ dicom.fileLocation=${ref:fileLocation}
 dicom.fileLocation.priority=-1
 dicom.dicom=${class:org.dcm4chee.xero.wado.DicomFilter}
 dicom.dicom.priority=100
-dicom.memcache=${class:org.dcm4chee.xero.metadata.filter.ParamSizeMemoryCacheFilter}
+dicom.memcache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 # About 1000 open readers at any given time, maximum.  Probably increase for production use.
 dicom.memcache.cacheSize=2000000
 dicom.memcache.priority=200
@@ -91,15 +91,15 @@ imageSource.minMaxPixelInfo.priority=650
 
 
 seriesFilter.inherit=servletFilter
-seriesFilter.seriesSource=${class:org.dcm4chee.xero.search.study.SeriesSearch}
-seriesFilter.seriesSource.priority=-1
+seriesFilter.source=${class:org.dcm4chee.xero.search.study.SeriesSearch}
 seriesFilter.dicom.priority=-1
 seriesFilter.emptyFilter.inherit=imageSource.emptyFilter
 seriesFilter.kin=${class:org.dcm4chee.xero.search.filter.KeyObjectSeries}
 seriesFilter.kin.priority=25
 seriesFilter.sortFilter=${class:org.dcm4chee.xero.search.filter.SortImageFilter}
 seriesFilter.sortFilter.priority=50
-seriesFilter.source=${class:org.dcm4chee.xero.search.study.ImageSearch}
+seriesFilter.imageSource=${class:org.dcm4chee.xero.search.study.ImageSearch}
+seriesFilter.imageSource.priority=-1
 seriesFilter.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 seriesFilter.emptyFilter.inherit=studyFilter.emptyFilter
 seriesFilter.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
@@ -107,7 +107,7 @@ seriesFilter.cacheFilter.cacheSize=3000000
 seriesFilter.cacheFilter.priority=400
 
 #Filters for image,series and study meta-data.
-seriesFilter.singleImagePerSeriesFilter=${class:org.dcm4chee.xero.display.SingleImagePerSeriesFilter}
+seriesFilter.singleImagePerSeriesFilter=${class:org.dcm4chee.xero.search.filter.SingleImagePerSeriesFilter}
 seriesFilter.singleImagePerSeriesFilter.priority=15
 seriesFilter.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
 seriesFilter.gsps.priority=20
@@ -137,6 +137,8 @@ baseImg.fileLocation.priority=-2
 wadoImg.inherit=baseImg
 wadoImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
 wadoImg.scale.priority=6100
+wadoImg.reduceBits=${class:org.dcm4chee.xero.wado.ReduceBitsFilter}
+wadoImg.reduceBits.priority=6300
 wadoImg.imageSource=${ref:imageSource}
 wadoImg.imageSource.priority=-2
 wadoImg.gspsBurn=${class:org.dcm4chee.xero.wado.GspsBurnIn}

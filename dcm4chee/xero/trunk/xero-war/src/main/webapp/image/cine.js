@@ -56,28 +56,48 @@ Cine.prototype.lastShowRate = 0;
 Cine.prototype.minTime = 1000;
 Cine.prototype.maxTime = 0;
 Cine.prototype.avgTime = 0;
+Cine.prototype.degradeRate = 1;
+/** Corrects for slowness in the interval so that the actual frame rate is closer to the
+ * set frame rate.
+ * TODO Compute this dynamically.
+ */
+Cine.prototype.correctInterval = 1;
  
 /** Sets the number of frames per second to display at. */
-function Cine_setRate(rate) {
+Cine.prototype.setRate=function Cine_setRate(rate) {
+	// Use 1.25 to allow for the fact that the actual interval calling rate is slower
+	// than the specified one...
  	this.rate = rate;
+ 	var intvl = (this.correctInterval * 1000) / (this.rate * this.degradeRate);
+ 	info("Interval = "+intvl+" for rate="+this.rate);
  	if( this.interval!==undefined ) {
  		window.clearInterval(this.interval);
-		this.interval = window.setInterval(this.callDisplayInterval, 1000/this.rate);
+		this.interval = window.setInterval(this.callDisplayInterval, intvl);
  	}
 };
-Cine.prototype.setRate=Cine_setRate;
+
+/** Sets the degrade rate - the amount below 1 that the CINE is being played at in order to
+ * be able to play smoothly.
+ */
+Cine.prototype.setDegradeRate=function Cine_setDegradeRate(dr) {
+	if( dr > 1 ) dr = 1;
+	if( dr < 0.1 ) dr = 0.1;
+	this.degradeRate = dr;
+	this.setRate(this.rate);
+}
 
 /** Starts the CINE playing - needs to pre-load some amount of information */
-function Cine_start() {
+Cine.prototype.start=function Cine_start() {
 	if( this.interval!==undefined ) return;
 	// Just use the display interval code to start the fetching.
 	this.stopped = false;
+	this.degradeRate = 1;
 	this.lastShowTime = new Date().getTime();
 	this.displayInterval();
 	this.interval = window.setInterval(this.callDisplayInterval, 1000/this.rate);
 	this.playingCine.push(this);
 };
-Cine.prototype.start=Cine_start;
+
 
 Cine.prototype.initReadAhead = function Cine_initReadAhead() {
 	var i,n;
@@ -153,12 +173,16 @@ function Cine_displayInterval() {
 	this.debug("read ahead completed "+complete+" total "+loaded);
 	if( complete>=this.readAhead ) {
 		this.started = true;
-		if( loaded==complete ) {
-			info("Could increase frame rate if it is down now...");
+		if( loaded>=n-2 ) {
+			if( this.degradeRate < 1 ) {
+				this.setDegradeRate(this.degradeRate * 1.05);
+				info("Increasing frame rate - all images loaded: "+this.degradeRate);
+			}
 		}
 	}
 	else if( this.started ) {
-		warn("Missing "+(this.lookAhead)+ " TODO - decrease frame rate")
+		this.setDegradeRate(this.degradeRate / 1.025);
+		warn("Missing "+(this.lookAhead)+ " - decrease frame rate:"+this.degradeRate);
 	}
 	// TODO - handle some way to skip an image when it fails or just takes forever
 	if( ir.isLoaded() && this.started ) {
@@ -238,22 +262,13 @@ function stopCine(cmdButton) {
 	lay.cine.stop();	
 };
 
-function cineSlower(cmdButton) {
+function cineRate(cmdButton,rel) {
 	var speedEl = cmdButton.ownerDocument.getElementById("cineSpeed");
 	if( speedEl!==undefined && speedEl!==null ) {
 		speed = speedEl.getAttribute("value");
-		speed = speed / 1.2;
-		speedEl.setAttribute("value", ""+speed);
-	}
-	for( var i in Cine.prototype.playingCine) {
-		Cine.prototype.playingCine[i].setRate (speed);
-	};
-};
-function cineFaster(cmdButton) {
-	var speedEl = cmdButton.ownerDocument.getElementById("cineSpeed");
-	if( speedEl!==undefined && speedEl!==null ) {
-		speed = speedEl.getAttribute("value");
-		speed = speed * 1.2;
+		speed = speed * rel;
+		if( speed < 0.1 ) speed = 0.1;
+		if( speed > 60 ) speed = 60;
 		speedEl.setAttribute("value", ""+speed);
 	}
 	for( var i in Cine.prototype.playingCine) {

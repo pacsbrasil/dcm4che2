@@ -47,11 +47,11 @@ import java.util.Map;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase.removeFromQuery;
+import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.removeFromQuery;
 
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
@@ -123,10 +123,10 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  removeFromQuery(params, "rows", "cols", "rotation", "flip");
 	  params.put("rows", nRows);
 	  params.put("cols", nCols);
-	  String queryStr = (String) params.get(MemoryCacheFilterBase.KEY_NAME);
+	  String queryStr = (String) params.get(MemoryCacheFilter.KEY_NAME);
 	  // Need to include the rows/cols in the new queryStr for caching.
 	  queryStr = queryStr + "&rows=" + nRows + "&cols=" + nCols;
-	  params.put(MemoryCacheFilterBase.KEY_NAME, queryStr);
+	  params.put(MemoryCacheFilter.KEY_NAME, queryStr);
 	  log.debug("Calling the next filter with queryStr=" + queryStr);
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if (wi == null)

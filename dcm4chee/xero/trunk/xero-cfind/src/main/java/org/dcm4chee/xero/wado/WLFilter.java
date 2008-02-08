@@ -51,7 +51,7 @@ import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
@@ -86,7 +86,7 @@ public class WLFilter implements Filter<WadoImage> {
    };
 
    public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
-	  Object[] values = MemoryCacheFilterBase.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
+	  Object[] values = MemoryCacheFilter.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if (wi == null) {
 		 log.debug("No wado image found.");
@@ -96,8 +96,13 @@ public class WLFilter implements Filter<WadoImage> {
 		 log.debug("Skipping window levelling as no dicom object header found.");
 		 return wi;
 	  }
-	  if( "raw".equals(values[0]) || "raw".equals(values[1])) {
+	  if( "raw".equals(values[0]) || "raw".equals(values[1]) ) {
 		 log.info("Skipping window level as the RAW image is being requested.");
+		 return wi;
+	  }
+	  
+	  if( "image/jp12".equals(params.get("contentType"))) {
+		 log.info("Skipping window level, as the 12 bit image is being requested.");
 		 return wi;
 	  }
 
@@ -121,7 +126,7 @@ public class WLFilter implements Filter<WadoImage> {
 			func = LookupTable.LINEAR;
 		 }
 	  } catch (NumberFormatException nfe) {
-		 log.debug("Caught number format exception, ignoring and using default values:" + nfe);
+		 log.warn("Caught number format exception, ignoring and using default values:" + nfe);
 	  }
 	  log.debug("WL  W:" + windowWidth + " C:" + windowCenter + ")");
 	  
@@ -175,7 +180,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  WadoImage ret = wi.clone();
 	  ret.setValue(dest);
 	  long dur = System.nanoTime() - start;
-	  log.debug("Window levelling took " + nanoTimeToString(dur));
+	  log.info("Window levelling took " + nanoTimeToString(dur));
 	  return ret;
    }
 

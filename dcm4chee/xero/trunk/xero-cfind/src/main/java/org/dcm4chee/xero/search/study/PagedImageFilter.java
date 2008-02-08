@@ -44,7 +44,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
    public ResultsType filter(FilterItem filterItem, Map<String, Object> params) {
 	  int position = 0;
 	  int count = 0;
-	  Object[] page = MemoryCacheFilterBase.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
+	  Object[] page = MemoryCacheFilter.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
 	  String objectUID = null;
 	  String frameNo = null;
 	  if (page[0]!=null) {
@@ -102,7 +102,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 log.debug("Looking for study/series containing "+objectUID+" frame "+frameNo);
 		 Map<String,Object> newQueryParams = new HashMap<String,Object>(params);
 		 newQueryParams.put("SOPInstanceUID", objectUID);
-		 newQueryParams.put(MemoryCacheFilterBase.KEY_NAME, "SOPInstanceUID="+objectUID);
+		 newQueryParams.put(MemoryCacheFilter.KEY_NAME, "SOPInstanceUID="+objectUID);
 		 ResultsType results = (ResultsType) filterItem.callNextFilter(newQueryParams);
 		 params.remove("SOPInstanceUID");
 		 if( results==null ) return null;
@@ -114,7 +114,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 SeriesType series = study.getSeries().get(0);
 		 String seriesUID = series.getSeriesInstanceUID();
 		 params.put("SeriesInstanceUID", seriesUID);
-		 params.put(MemoryCacheFilterBase.KEY_NAME, "SeriesInstanceUID="+seriesUID);
+		 params.put(MemoryCacheFilter.KEY_NAME, "SeriesInstanceUID="+seriesUID);
 		 log.debug("Looking for series UID "+seriesUID);
 	  }
 	  else {

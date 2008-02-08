@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.filter;
 
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,7 +51,7 @@ import javax.management.ObjectName;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
@@ -121,12 +123,14 @@ public class FileLocationMgtFilter implements Filter<URL> {
    public URL filter(FilterItem filterItem, Map<String, Object> params) {
 	  if (fileSystemMgtName == null || server == null)
 		 return (URL) filterItem.callNextFilter(params);
+	  long start = System.nanoTime();
 	  String objectUID = (String) params.get("objectUID");
 	  File f;
 	  try {
 		 f = getDICOMFile(objectUID);
 		 if (f == null)
 			return (URL) filterItem.callNextFilter(params);
+		 log.info("Time to read file location="+nanoTimeToString(System.nanoTime() - start));
 		 return f.toURI().toURL();
 	  } catch (RuntimeException e) {
 		 throw e;
@@ -140,7 +144,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
    public static URL findImageBeanUrl(DicomObjectType dot, FilterItem filterItem, Map<String, Object> params) {
 	  Map<String, Object> newParams = new HashMap<String, Object>();
 	  newParams.put("objectUID", dot.getSOPInstanceUID());
-	  if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilterBase.NO_CACHE))) {
+	  if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilter.NO_CACHE))) {
 		 newParams.put("no-cache", "true");
 	  }
 	  URL location = (URL) filterItem.callNamedFilter("fileLocation", newParams);
@@ -158,7 +162,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
 		 // This request is used for filters where the request is for some other objects, and the
 		 // UID is required.
 		 newParams = new HashMap<String, Object>();
-		 if( "true".equalsIgnoreCase((String) params.get(MemoryCacheFilterBase.NO_CACHE))) {
+		 if( "true".equalsIgnoreCase((String) params.get(MemoryCacheFilter.NO_CACHE))) {
 			newParams.put("no-cache", "true");
 		 }
 		 newParams.put("objectUID", uid);

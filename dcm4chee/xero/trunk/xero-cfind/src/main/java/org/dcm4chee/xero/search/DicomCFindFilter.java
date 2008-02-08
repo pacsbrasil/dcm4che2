@@ -280,7 +280,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      */
 	public void find(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom) {
 		try {
-		   log.debug("Connecting to "+hostname+" remoteAE="+remoteAE+" on conn="+conn);
+		   log.info("Connecting to "+hostname+" remoteAE="+remoteAE+" on conn="+conn+" at level "+getQueryLevel());
 		   long start = System.nanoTime();
 	       assoc = ae.connect(remoteAE, executor);
 	       TransferCapability tc = selectTransferCapability(getCuids());

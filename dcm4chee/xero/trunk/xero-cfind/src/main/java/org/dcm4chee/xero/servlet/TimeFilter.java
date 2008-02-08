@@ -65,13 +65,13 @@ public class TimeFilter  implements Filter{
 		String msg = "The request "+ req.getRequestURI()
 		+ " with parameters " + req.getQueryString() + " took "+nanoTimeToString(dur);
 		dur = dur/1000000;
-		if( dur < 10 ) {
+		if( dur < 20 ) {
 			log.debug(msg);
 		}
 		else if( dur < 400 ) {
 			log.info(msg);
 		}
-		else if( dur < 1000 ) {
+		else if( dur < 1500 ) {
 			log.warn(msg);
 		}
 		else {

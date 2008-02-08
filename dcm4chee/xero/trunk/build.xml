@@ -101,13 +101,18 @@
      </jar>
   </target>
 
-  <target name="deploy" depends="build" description="Deploy Xero to the development Dcm4che server.">
+  <target name="deploy" depends="build,deployWado,deployXero" description="Deploy Xero to the development Dcm4che server." />
+
+  <target name="deployXero">
      <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
         <fileset dir="xero-ear/target/xero" excludes="xero.war" />
      </copy>
      <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
         <fileset dir="xero-war/target/xero" />
      </copy>
+   </target>
+
+   <target name="deployWado">
      <copy todir="${developmentServer}/server/default/deploy/xero-wado-war.war" preservelastmodified="true">
         <fileset dir="xero-wado-war/target/xero-wado-war-1.0-SNAPSHOT" includes="**/*" />
      </copy>

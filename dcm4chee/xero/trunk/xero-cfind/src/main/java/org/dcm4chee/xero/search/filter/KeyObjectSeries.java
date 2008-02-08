@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
 import org.dcm4chee.xero.search.study.KeySelection;
@@ -84,7 +84,7 @@ public class KeyObjectSeries extends KeyObjectFilter {
 	  String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
 	  log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
 	  newParams.put("SOPInstanceUID", uidArr);
-	  newParams.put(MemoryCacheFilterBase.KEY_NAME, queryStr.toString());
+	  newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
 	  newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
 	  filterItem.callNamedFilter("source", newParams);
 	  List<KeySelection> stillMissing = assignKeyObjectMacro(ret, kom, missing);

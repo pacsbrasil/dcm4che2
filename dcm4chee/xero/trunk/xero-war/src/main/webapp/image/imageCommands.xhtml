@@ -22,8 +22,10 @@
     <li><a id="cineBtn" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img class="icon" src="/xero/img/cine.png" alt="[CINE]" active="cine"/></a></li>
     <li mode="cine"><input id="cineSpeed" mode="cine" type="text" style="width:30px;" value="15" />
       <ul>
-        <li><a mode="cine" onclick="cineSlower(this); return false;"><img class="icon" src="/xero/img/slower.png" alt="slower" /> Slower</a></li>
-		<li><a mode="cine" onclick="cineFaster(this); return false;"><img class="icon" src="/xero/img/faster.png" alt="faster" /> Faster</a></li>
+        <li><a mode="cine" onclick="cineRate(this,0.8); return false;"><img class="icon" src="/xero/img/slower.png" alt="slower" /> Much Slower</a></li>
+        <li><a mode="cine" onclick="cineRate(this,0.95); return false;"><img class="icon" src="/xero/img/slower.png" alt="slower" /> Slower</a></li>
+		<li><a mode="cine" onclick="cineRate(this,1.05); return false;"><img class="icon" src="/xero/img/faster.png" alt="faster" /> Faster</a></li>
+		<li><a mode="cine" onclick="cineRate(this,1.2); return false;"><img class="icon" src="/xero/img/faster.png" alt="faster" /> Much Faster</a></li>
 	  </ul>
 	 </li>
 

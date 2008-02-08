@@ -37,298 +37,347 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata.filter;
 
-import java.util.AbstractMap;
+import java.io.Closeable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A memory cache is a Map that throws things away based on how much memory is
- * being used, and implements a multiple level least recently used cache. Items
- * in L1 are most recent and are quickly thrown away. Items are promoted to L2
- * when the are used more than a certain number of times. The size of each level
- * can be configured independently, as can the maximum size item cached
- * (normally 10% of cache size). Lookup time is O(log n) where n is the number
- * of items in the cache. Contains is O(1). Note that this implementation is not
- * synchronized.
+ * being used. Items that are "Closeable" are closed before being thrown away.
+ * 
+ * There are additional behaviours that can be added as separate objects that
+ * operate on this class. One of these auto-throws things away that are expired,
+ * and the other closes things after some length of time, shorter than expiry
+ * time.
  * 
  * @author bwallace
  * 
  * @param <T>
  */
-public class MemoryCache<K, V extends CacheItem> extends AbstractMap<K, V> {
+public class MemoryCache<K, V> {
 
-	private static final Logger log = LoggerFactory.getLogger(MemoryCache.class);
-	
-	static public final long DEFAULT_SIZE = 1024 * 1024;
+   private static final Logger log = LoggerFactory.getLogger(MemoryCache.class);
 
-	/** By default, an item needs to be accessed first as a put, and then as get
-	 * in order to be promoted
-	 */
-	static public final int DEFAULT_TRANSITION = 1;
+   static public final long DEFAULT_SIZE = 1024 * 1024;
 
-	protected int levels;
-	
-	/** The default maximum age for any item is 5 minutes - after that, it gets reloaded regardless */
-	protected long maxAge = 5*60*1000l;  
+   /**
+     * The default maximum age for any item is 1 hour - after that, it will be
+     * thrown away regardless.
+     */
+   protected long maxAge = 60 * 60 * 1000l;
 
-	protected long[] cacheSizes;
+   /** By default, don't close things */
+   protected long closeAge = 0;
 
-	protected int[] transitions;
+   protected long cacheSize;
 
-	protected long[] currentSizes;
+   protected long currentSize;
 
-	/** Contains the items in least recently used ordering, to allow removal */
-	protected SortedSet<InternalKey<K, V>>[] lruSets;
+   // TODO Figure out if this counter will overflow at some point
+   protected int counter = 0;
 
-	/**
-	 * findMap is used to lookup the information about an item - the value,
-	 * where it is located etc.
-	 */
-	protected Map<K, InternalKey<K, V>> findMap = new HashMap<K, InternalKey<K, V>>();
+   /** Contains the items in least recently used ordering, to allow removal */
+   protected SortedSet<InternalKey<K, V>> lruSet = new TreeSet<InternalKey<K, V>>();
 
-	/**
-	 * Create a memory cache with 2 levels, and 1 meg of space, transitioning on
-	 * two or more requests to an L1 item.
-	 */
-	public MemoryCache() {
-		this(new long[] { DEFAULT_SIZE, DEFAULT_SIZE },
-				new int[] { DEFAULT_TRANSITION });
-	}
+   /**
+     * findMap is used to lookup the information about an item - the value,
+     * where it is located etc.
+     */
+   protected Map<K, InternalKey<K, V>> findMap = new HashMap<K, InternalKey<K, V>>();
 
-	/**
-	 * Create a memory cache with the given number of levels, sizes and
-	 * transitions
-	 */
-	@SuppressWarnings("unchecked")
-	public MemoryCache(long[] cacheSizes, int[] transitions) {
-		this.levels = cacheSizes.length;
-		currentSizes = new long[levels];
-		this.cacheSizes = cacheSizes;
-		if( transitions.length != levels - 1 ) {
-			throw new IllegalArgumentException("Transitions length must be one less than the cacheSizes length.");
-		}
-		this.transitions = transitions;
-		// Not sure why the type can't be declared here.
-		lruSets = new SortedSet[levels];
-		for (int i = 0; i < levels; i++) {
-			lruSets[i] = new TreeSet<InternalKey<K, V>>();
-		}
-	}
+   /**
+     * Create a memory cache with 2 levels, and 1 meg of space, transitioning on
+     * two or more requests to an L1 item.
+     */
+   public MemoryCache() {
+	  this(DEFAULT_SIZE);
+   }
 
-	/** Get the matching item from the cache, if available, return null otherwise */
-	@Override
-	public V get(Object key) {
-		InternalKey<K, V> value = findMap.get(key);
-		if (value == null)
-			return null;
-		if( (System.currentTimeMillis() - value.getOriginalAge()) > maxAge ) {
-			this.remove(key);
-			return null;
-		}
-		int level = value.getLevel();
-		lruSets[level].remove(value);
-		// Must call the get value before adding it back in.
-		V ret = value.getValue();
-		if (level < levels - 1 && value.getAccessCount() >= transitions[level]) {
-			currentSizes[level] -= value.getSize();
-			level++;
-			value.setLevel(level);
-			currentSizes[level] += value.getSize();
-		}
-		lruSets[level].add(value);
-		return ret;
-	}
-	
-	/** Put the item into the cache, as long as the size is no more than
-	 * 1/5 of the first level cache size.
-	 */
-	@Override
-	public V put(K key, V value) {
-		InternalKey<K, V> item = findMap.get(key);
-		if (item != null) {
-			remove(key);
-		}
-		InternalKey<K, V> putItem = new InternalKey<K, V>(key, value);
-		long size = putItem.getSize();
-		if (putItem.getSize() < (cacheSizes[0] / 5)) {
-			findMap.put(key, putItem);
-			lruSets[putItem.getLevel()].add(putItem);
-			currentSizes[putItem.getLevel()] += putItem.getSize();
-			emptyLRU(putItem.getLevel());
-		}
-		else {
-			log.warn("Not caching value for "+key+" because it is too large:"+size+"/"+cacheSizes[0]);
-		}
-		if (item != null)
-			return item.getValue();
-		return null;
-	}
-	
-	/** Removes extra items at the given level */
-	protected void emptyLRU(int level) {
-		while(currentSizes[level] > cacheSizes[level] ) {
-			InternalKey<K,V> first = lruSets[level].first();
-			remove(first.getKey());
-		}
-	}
+   /**
+     * Create a memory cache with the given number of levels, sizes and
+     * transitions
+     */
+   @SuppressWarnings("unchecked")
+   public MemoryCache(long cacheSize) {
+	  this.cacheSize = cacheSize;
+   }
 
-	/** Remove an item from the cache */
-	@Override
-	public V remove(Object key) {
-		InternalKey<K, V> item = findMap.remove(key);
-		if (item == null)
-			return null;
-		lruSets[item.getLevel()].remove(item);
-		currentSizes[item.getLevel()] -= item.getSize();
-		return item.getValue();
-	}
+   /**
+     * Get the matching item from the cache, if available, otherwise it calls
+     * the Future item to get the new value. Does not lock this while calling
+     * the future, but is otherwise thread safe to call.
+     */
+   public V get(K key, SizeableFuture<V> valueGetter) {
+	  InternalKey<K, V> value;
+	  synchronized (this) {
+		 value = findMap.get(key);
+		 if (value != null) {
+			boolean wasFound = lruSet.remove(value);
+			if (wasFound) {
+			   // This means there is already a value.
+			   V ret = value.getValue();
+			   value.setIncrement(counter++);
+			   lruSet.add(value);
+			   log.debug("Found cached item "+key);
+			   return ret;
+			}
+		 } else {
+			value = new InternalKey<K, V>(key);
+			if( valueGetter!=null ) findMap.put(key,value);
+		 }
+	  }
 
-	/**
-	 * Figure out if the key is present or not. Does NOT update most recently
-	 * accessed.
-	 */
-	@Override
-	public boolean containsKey(Object key) {
-		return findMap.containsKey(key);
-	}
+	  // Allow returning a null value if no getter is supplied.
+	  if (valueGetter == null)
+		 return null;
 
-	/**
-	 * Unsupported - you don't want to iterate over the items as it isn't clear
-	 * what that would mean in terms of the accessibility of the items.
-	 */
-	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		throw new UnsupportedOperationException("Entry set not defined yet.");
-	}
+	  if (value.callFutureValue(valueGetter)) {
+		 log.debug("Returning concurrent fetch "+key);
+		 // Don't need to resynchronize on this, as the value is directly
+		 // useable, and someone
+		 // else did the resync, or will do it.
+		 return value.getValue();
+	  }
 
-	/** One stop shopping to set ALL the cache sizes at each level.  Total memory
-	 * consumed could be as much as number of levels times the size provided. 
-	 * This will cause items to be deleted if you decrease the size, but only LRU
-	 * items, not items that are more than 10% of the new size.
-	 */
-	public void setCacheSizes(long size) {
-		if( size<=0 ) throw new IllegalArgumentException("Illegal cache size "+size);
-		for(int i=0; i<levels; i++ ) {
-			cacheSizes[i] = size;
-			emptyLRU(i);
-		}
-	}
+	  // It has to be added into the lruSet.
+	  synchronized (this) {		 
+		 value.setSize(valueGetter.getSize());
+		 currentSize += valueGetter.getSize();
+		 value.setIncrement(counter++);
+		 value.updateOriginalAge();
+		 if (!isToBig(value)) {
+			lruSet.add(value);
+		 } else {
+			// Don't want it in the find map either - but anyone else who found
+			// it while
+			// we were waiting to retrieve it CAN use the shared value.
+			// This will not likely be closed correctly.
+			findMap.remove(key);
+		 }
+		 emptyLRU();
+		 log.debug("Returning fetch "+key);
+		 return value.getValue();
+	  }
+   }
 
+   /** Indicates if the given value is to big for the map. */
+   protected boolean isToBig(InternalKey<K, V> value) {
+	  return value.getSize() > cacheSize / 5;
+   }
 
-/**
- * The internal item is used to determine which cache an item is located in and
- * last-access time etc. It is comparable so that the oldest item can be found.
- * 
- * @author bwallace
- * 
- * @param <T>
- */
-static class InternalKey<K, V extends CacheItem> implements
-		Comparable<InternalKey<K, V>> {
-	private V value;
+   /** Removes extra items at the given level */
+   public synchronized void emptyLRU() {
+	  Iterator<InternalKey<K, V>> it = lruSet.iterator();
+	  long now = System.currentTimeMillis();
+	  while (it.hasNext()) {
+		 InternalKey<K, V> first = it.next();
+		 if( currentSize < cacheSize ) {
+			if( this.maxAge == 0 || (now-first.getOriginalAge()) < this.maxAge ) {
+			   return;
+			}
+		 }
+		 it.remove();
+		 findMap.remove(first.getKey());
+		 currentSize -= first.getSize();
+		 log.debug("Throwing away "+first.getKey());
+		 if (closeAge > 0)
+			first.close();
+	  }
+	  log.debug("Threw away all items in the cache.");
+	  currentSize = 0;
+   }
 
-	private K key;
+   /**
+     * Closes old items. Items are only closed if they haven't been recently
+     * used - continually using an item will prevent it from being closed.
+     */
+   public synchronized void closeOld() {
+	  if (closeAge <= 0)
+		 return;
+	  long now = System.currentTimeMillis();
+	  for (InternalKey<K, V> ikey : lruSet) {
+		 if (now - ikey.getOriginalAge() < closeAge)
+			return;
+		 ikey.close();
+	  }
+   }
 
-	private int increment;
-	private static int currentIncrement = 0;
-	
-	private long originalAge = System.currentTimeMillis();
-	
-	private int accessCount = 0;
+   /** Remove an item from the cache */
+   public synchronized V remove(Object key) {
+	  InternalKey<K, V> item = findMap.remove(key);
+	  if (item == null)
+		 return null;
+	  lruSet.remove(item);
+	  currentSize -= item.getSize();
+	  return item.getValue();
+   }
 
-	private long size;
+   /**
+     * One stop shopping to set ALL the cache sizes at each level. Total memory
+     * consumed could be as much as number of levels times the size provided.
+     * This will cause items to be deleted if you decrease the size, but only
+     * LRU items, not items that are more than 10% of the new size.
+     */
+   public void setCacheSize(long size) {
+	  if (size <= 0)
+		 throw new IllegalArgumentException("Illegal cache size " + size);
+	  cacheSize = size;
+	  emptyLRU();
+   }
 
-	private int level = 0;
+   /** Gets the age after which this item is supposed to be closed */
+   public long getCloseAge() {
+	  return closeAge;
+   }
 
-	public InternalKey(K key, V item) {
-		this.value = item;
-		this.key = key;
-		this.increment = nextIncrement();
-		this.size = value.getSize();
-	}
+   /** Sets the age after which items are to be closed. */
+   public void setCloseAge(long closeAge) {
+	  this.closeAge = closeAge;
+   }
 
-        /** Return the level of the cache 0...LEVELS that this item is located in */
-	public int getLevel() {
-		return level;
-	}
+   /**
+     * The internal item is used to determine which cache an item is located in
+     * and last-access time etc. It is comparable so that the oldest item can be
+     * found.
+     * 
+     * @author bwallace
+     * 
+     * @param <T>
+     */
+   static class InternalKey<K, V> implements Comparable<InternalKey<K, V>> {
+	  private V value;
 
-	/**
-	 * Get the value associated with this item. This WILL cause the item to be
-	 * updated and the last accessed time to be incremented, so if it is in an
-	 * ordered list etc it will need to be moved/repositioned appropriately. DO
-	 * NOT call this while InternalKey is a member of a sorted set.
-	 */
-	public V getValue() {
-		increment = nextIncrement();
-		accessCount++;
-		return value;
-	}
-	
-	/** Gets the key associated with this item */
-	public K getKey() {
-		return key;
-	}
+	  private K key;
 
-	/** Get the size of this item */
-	public long getSize() {
-		return size;
-	}
-	
-	/**
-	 * Gets the original age
-	 */
-	public long getOriginalAge() {
-		return originalAge;
-	}
+	  private int increment;
 
-	/** Get the access count */
-	public int getAccessCount() {
-		return accessCount;
-	}
+	  private long originalAge;
 
-	/** Equals is true ONLY on the key value, not on the current associated value */
-	@Override
-	public boolean equals(Object obj) {
-		if( obj==null ) return false;
-		return key.equals(((InternalKey<?, ?>) obj).getValue());
-	}
-	
-	/** Just use the key hash code */
-	@Override
-	public int hashCode() {
-		return key.hashCode();
-	}
+	  private long size;
 
-	/** Set the cache level - causes the access count to go to zero */
-	public void setLevel(int level) {
-		this.level = level;
-		this.accessCount = 0;
-	}
-	
-	/** Gets the next increment value - used to order cached items. */
-	public static synchronized int nextIncrement() {
-		currentIncrement ++;
-		return currentIncrement;
-	}
+	  public InternalKey(K key) {
+		 this.key = key;
+	  }
 
-	/** Compare items by last accessed */
-	public int compareTo(InternalKey<K, V> o) {
-		// Cast should be safe since the times are current times, and we don't
-		// expect
-		// anything to be in the cache for many years.
-		int ret = increment - o.increment;
-		if (ret != 0)
-			return ret;
-		// Return something to be a constant ordering on the items - we only
-		// care about identity, so default hashCode is good enough.
-		return hashCode() - o.hashCode();
-	}
-}
+	  /**
+         * Get the value associated with this item. This WILL cause the item to
+         * be updated and the last accessed time to be incremented, so if it is
+         * in an ordered list etc it will need to be moved/repositioned
+         * appropriately. DO NOT call this while InternalKey is a member of a
+         * sorted set.
+         */
+	  public V getValue() {
+		 return value;
+	  }
+
+	  /** Sets the current value */
+	  public void setValue(V v) {
+		 this.value = v;
+	  }
+
+	  /**
+         * Calls the future to get the current value.
+         * 
+         * @return true if the future value was already set - indicates that the
+         *         value can be directly used/returned.
+         */
+	  public synchronized boolean callFutureValue(Future<V> future) {
+		 if (this.value != null) {
+			return true;
+		 }
+		 try {
+			this.value = future.get();
+		 } catch (InterruptedException e) {
+			throw new RuntimeException("Couldn't get value.", e);
+		 } catch (ExecutionException e) {
+			throw new RuntimeException("Couldn't get value.", e);
+		 }
+		 return false;
+	  }
+
+	  /**
+         * Sets the current increment value - the ordering information for
+         * access times.
+         */
+	  public void setIncrement(int increment) {
+		 this.increment = increment;
+	  }
+
+	  /** Gets the key associated with this item */
+	  public K getKey() {
+		 return key;
+	  }
+
+	  /** Get the size of this item */
+	  public long getSize() {
+		 return size;
+	  }
+
+	  /** Sets the size of the object */
+	  public void setSize(long size) {
+		 if (size <= 0)
+			throw new IllegalArgumentException("Invalid size: " + size);
+		 this.size = size;
+	  }
+
+	  /**
+         * Gets the original age
+         */
+	  public long getOriginalAge() {
+		 return originalAge;
+	  }
+
+	  /**
+         * Updates the original age
+         */
+	  public void updateOriginalAge() {
+		 this.originalAge = System.currentTimeMillis();
+	  }
+
+	  /**
+         * Equals is true ONLY on the key value, not on the current associated
+         * value
+         */
+	  @Override
+	  public boolean equals(Object obj) {
+		 if (obj == null)
+			return false;
+		 return key.equals(((InternalKey<?, ?>) obj).getValue());
+	  }
+
+	  /** Just use the key hash code */
+	  @Override
+	  public int hashCode() {
+		 return key.hashCode();
+	  }
+
+	  /** Compare items by last accessed */
+	  public int compareTo(InternalKey<K, V> o) {
+		 // Increments are guaranteed unique, so just compare by increment
+		 // value.
+		 return increment - o.increment;
+	  }
+
+	  /** Close this item if it is closeable */
+	  public void close() {
+		 if (value instanceof Closeable) {
+			try {
+			   log.warn("Closing "+value);
+			   ((Closeable) value).close();
+			} catch (java.io.IOException e) {
+			   // No-op
+			}
+		 }
+	  }
+
+   }
 
 }

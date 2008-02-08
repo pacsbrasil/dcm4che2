@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -53,7 +55,7 @@ import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReaderSpi;
 import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.filter.CacheItemImpl;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.slf4j.Logger;
@@ -93,6 +95,7 @@ public class DicomFilter implements Filter<Object> {
 	  URL location = (URL) filterItem.callNamedFilter("fileLocation", params);
 	  if (location == null)
 		 return null;
+	  long start = System.nanoTime();
 	  try {
 		 // Creating it directly rather than iterating over the ImageIO list means that multiple instances
 		 // can be in memory at once, which is rather handy for a stand-alone WAR that can
@@ -112,9 +115,10 @@ public class DicomFilter implements Filter<Object> {
 		 }
 		 reader.setInput(in);
 		 // We don't have any reliable size information right now.   
-		 params.put(CacheItemImpl.CACHE_SIZE, "2048");
+		 params.put(MemoryCacheFilter.CACHE_SIZE, "2048");
 		 // Makes this a bit more thread safe if the header has been read
 		 reader.getStreamMetadata();
+		 log.info("Time to open file & read meta-data "+nanoTimeToString(System.nanoTime() - start));
 		 return reader;
 	  } catch (IOException e) {
 		 log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);

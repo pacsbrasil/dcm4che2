@@ -58,7 +58,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.SearchFilterUtils;
 import org.dcm4chee.xero.search.macro.AspectMacro;
 import org.dcm4chee.xero.search.macro.FlipRotateMacro;
@@ -72,7 +72,7 @@ import org.w3.svg.GType;
 import org.w3.svg.SvgType;
 import org.w3.svg.Use;
 
-import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase.removeFromQuery;
+import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.removeFromQuery;
 
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.splitFloat;
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
@@ -231,7 +231,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  String region = "" + left + "," + top + "," + right + "," + bottom;
 	  log.info("Burning in region " + region);
 	  removeFromQuery(params, "region", "fip", "rotation", "rows", "cols");
-	  StringBuffer queryStr = new StringBuffer((String) params.get(MemoryCacheFilterBase.KEY_NAME));
+	  StringBuffer queryStr = new StringBuffer((String) params.get(MemoryCacheFilter.KEY_NAME));
 	  params.put("region", region);
 	  params.put("rows", rows);
 	  params.put("cols", cols);
@@ -246,7 +246,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
 		 queryStr.append("&rotation=").append(rot);
 		 log.info("Rotating returned image " + rot);
 	  }
-	  params.put(MemoryCacheFilterBase.KEY_NAME, queryStr.toString());
+	  params.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
 
 	  WadoImage ret = (WadoImage) filterItem.callNextFilter(params);
 	  return ret;

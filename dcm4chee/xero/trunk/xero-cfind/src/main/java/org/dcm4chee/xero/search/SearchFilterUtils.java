@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilterBase;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +72,7 @@ public class SearchFilterUtils {
 		 newParams.put("frameNumber", frame);
 		 queryStr.append("&frameNumber="+frame);
 	  }
-	  newParams.put(MemoryCacheFilterBase.KEY_NAME,queryStr.toString());
+	  newParams.put(MemoryCacheFilter.KEY_NAME,queryStr.toString());
 	  log.info("BurnIn Query str for filter image is "+queryStr);
 	  return (ResultsBean) filterItem.callNamedFilter("imageSource", newParams);
    }

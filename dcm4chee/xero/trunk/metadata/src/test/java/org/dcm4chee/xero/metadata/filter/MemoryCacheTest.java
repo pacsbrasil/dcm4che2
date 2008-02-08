@@ -37,7 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata.filter;
 
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.easymock.EasyMock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -53,76 +56,82 @@ public class MemoryCacheTest extends EasyMock {
 	/** Create a default memory cache - 1 meg stored, 2 accesses required to promote,
 	 * and 2 levels L1, and L2.
 	 */
-	Map<String,CacheItem> memoryCache = new MemoryCache<String,CacheItem>();
+	MemoryCache<String,Object> memoryCache = new MemoryCache<String,Object>(1024*1024l);
 	
 	static String key1 = "key1";
 	static String key2 = "key2";
 
-	CacheItem item1, item2;
+	FutureImpl item1, item2;
 	
 	/** Initialize some commonly used data */
 	@BeforeMethod
 	void init() {
-		item1 = createMock(CacheItem.class);
-		expect(item1.getSize()).andReturn(1024l).anyTimes();
-		item2 = createMock(CacheItem.class);
-		expect(item2.getSize()).andReturn(20480l).anyTimes();
-		replay(item1,item2);
-		assert item1!=null;
-		assert item2!=null;
+	   item1 = new FutureImpl(new Object(), 10240l);
+	   item2 = new FutureImpl(new Object(), 20480l);
 	}
 	
 	/** This tests a simple cached item */
 	@Test
-	public void testCacheItem() {
-		memoryCache.put(key1, item1);
-		memoryCache.put(key2, item2);
-		assert memoryCache.get(key1)==item1;
-		assert memoryCache.get(key2)==item2;
+	public void testCacheItem() throws Exception
+	{
+		assert memoryCache.get(key1, item1)==item1.get();
+		assert memoryCache.get(key2, item2)==item2.get();
 	}
 		
 	/**
 	 * Tests that items get thrown out of cache appropriately at the L1 level.
 	 */
 	@Test
-	public void testCacheSizeL1() {
-		memoryCache.put("key0", item1);
+	public void testCacheSize() throws Exception
+	{
+		memoryCache.get("key0", item1);
 		for(int i=1; i<60; i++) {
 			if( i==48 ) {
 				// Don't cause it to be promoted here - just make it most recent in L1.
-				assert memoryCache.get("key0")==item1;
+				assert memoryCache.get("key0",null)==item1.get();
 			}
-			memoryCache.put("key"+i, item2);
+			assert memoryCache.get("key"+i, item2)==item2.get();
 		}
-		// Both get and contains key should fail.
-		assert memoryCache.get("key1")==null;
-		assert memoryCache.containsKey("key1")==false;
+		// key 1 should have been thrown away.
+		assert memoryCache.get("key1",null)==null;
 		// It had better still have the most recent key.
-		assert memoryCache.containsKey("key59");
-		// Both get and contains key should succeed since it was more recently referenced.
-		assert memoryCache.get("key0")==item1;
-		assert memoryCache.containsKey("key0");
+		assert memoryCache.get("key59",null)==item2.get();
+		// Should still have key 0 since it was recently acquired.
+		assert memoryCache.get("key0",null)==item1.get();
 	}
 	
-	/**
-	 * Tests that items get promoted to L2 after a subsequent get request.
-	 */
-	@Test
-	public void testCacheSizeL2() {
-		memoryCache.put("key0", item1);
-		// Promote it to L2 immediately
-		assert memoryCache.get("key0")==item1;
-		for(int i=1; i<60; i++) {
-			memoryCache.put("key"+i, item2);
-		}
-		// Both get and contains key should fail.
-		assert memoryCache.get("key0")==item1;
-		assert memoryCache.containsKey("key0");
-		// It had better still have the most recent key.
-		assert memoryCache.containsKey("key59");
-		// But not the oldest l1 keys.
-		assert memoryCache.get("key1")==null;
-		assert memoryCache.containsKey("key1")==false;
-	}
+	static class FutureImpl implements SizeableFuture<Object> {
+	   Object value;
+	   long size;
+	   
+	   public FutureImpl(Object value, long size) {
+		  this.value = value;
+		  this.size = size;
+	   }
+	   
+	  public boolean cancel(boolean arg0) {
+		return false;
+	  }
 
+	  public Object get() throws InterruptedException, ExecutionException {
+		 return value;
+	  }
+
+	  public Object get(long arg0, TimeUnit arg1) throws InterruptedException, ExecutionException, TimeoutException {
+		return this;
+	  }
+
+	  public boolean isCancelled() {
+		return false;
+	  }
+
+	  public boolean isDone() {
+		return false;
+	  }
+
+	  public long getSize() {
+		return size;
+	  }
+	   
+	};
 }

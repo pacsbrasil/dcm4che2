@@ -38,6 +38,8 @@
 package org.dcm4chee.xero.wado;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -45,6 +47,7 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -132,10 +135,19 @@ class ImageServletResponseItem implements ServletResponseItem {
    ImageWriter writer;
 
    ImageWriteParam imageWriteParam;
+   
+   IIOMetadata iiometadata;
 
    WadoImage wadoImage;
    
    private int maxAge = 3600;
+   
+   private static Map<String,String> contentTypeMap = new HashMap<String,String>();
+   static {
+	  contentTypeMap.put("image/jp12", "image/jpeg");
+	  contentTypeMap.put("image/jpls", "image/jpeg");
+	  contentTypeMap.put("image/jpll", "image/jpeg");
+   };
 
    // TODO Make this come from metadata
    // CLIB version
@@ -159,7 +171,9 @@ class ImageServletResponseItem implements ServletResponseItem {
      *            well, but currently that is the only one available)
      */
    public ImageServletResponseItem(WadoImage image, String contentType, float quality) {
-	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(contentType);
+	  String useContent = contentTypeMap.get(contentType);
+	  if( useContent==null ) useContent = contentType;
+	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(useContent);
 	  writer = writers.next();
 	  while(!writer.getClass().getName().startsWith(preferred_name_start) && writers.hasNext()) {
 		 log.debug("Skipping "+writer.getClass().getName());
@@ -167,12 +181,21 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  }
 	  this.contentType = contentType;
 	  this.wadoImage = image;
-	  if (quality >= 0f && quality <= 1f && contentType.equals("image/jpeg")) {
+	  if( contentType.equals("image/jpll") ) {
+		 imageWriteParam = writer.getDefaultWriteParam();
+		 imageWriteParam.setCompressionType("JPEG-LOSSLESS");
+	  }
+	  else if( contentType.equals("image/jpls") ) {
+		 imageWriteParam = writer.getDefaultWriteParam();
+		 imageWriteParam.setCompressionType("JPEG-LS");
+	  }
+	  else if (quality >= 0f && quality <= 1f && useContent.equals("image/jpeg")) {
 		 imageWriteParam = writer.getDefaultWriteParam();
 		 imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		 imageWriteParam.setCompressionType("JPEG");
 		 imageWriteParam.setCompressionQuality(quality);
 	  }
+	  
    }
 
    /**
@@ -184,6 +207,7 @@ class ImageServletResponseItem implements ServletResponseItem {
      * @param response
      *            that the image is written to. Also sets the content type.
      */
+   @SuppressWarnings("unchecked")
    public void writeResponse(HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
 	  if (wadoImage == null) {
 		 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found.");
@@ -197,10 +221,16 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  // to different values, and those need to be removed to get this cached.
 	  response.setHeader("Pragma", null);
 	  response.setHeader("Expires", null);
+	  Collection<String> headers = (Collection<String>) wadoImage.getParameter("responseHeaders");
+	  if( headers!=null ) {
+		 for(String key : headers) {
+			response.setHeader(key,(String) wadoImage.getParameter(key));
+		 }
+	  }
 	  ImageOutputStream ios = ImageIO.createImageOutputStream(response.getOutputStream());
 	  writer.setOutput(ios);
 	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
-	  writer.write(null, iioimage, imageWriteParam);
+	  writer.write(iiometadata, iioimage, imageWriteParam);
 	  ios.close();
 	  response.getOutputStream().close();
 	  log.debug("Encoding image took " + nanoTimeToString(System.nanoTime() - start) + " with "+writer.getClass());

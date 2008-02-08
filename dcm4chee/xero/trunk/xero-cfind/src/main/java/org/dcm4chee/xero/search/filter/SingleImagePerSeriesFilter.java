@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.display;
+package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +81,7 @@ public class SingleImagePerSeriesFilter implements Filter<Object> {
 		}
 
 		ResultsBean rb = (ResultsBean) filterItem.callNamedFilter(
-				"seriesSource", params);
+				"source", params);
 		if (rb == null)
 			return null;
 
@@ -124,9 +124,10 @@ public class SingleImagePerSeriesFilter implements Filter<Object> {
 			}
 		}
 		if( uidsToSearch.size()>0 ) {
+		    log.info("Searching ",uidsToSearch.size()," series completely.");
 			String[] seriesUids = uidsToSearch.toArray(EMPTY_STRING_ARRAY);
 			Object origValue = params.put("SeriesInstanceUID", seriesUids);
-			Object updated = filterItem.callNextFilter(params);
+			Object updated = filterItem.callNamedFilter("imageSource", params);
 			assert updated==rb;
 			if( origValue==null ) params.remove("SeriesInstanceUID");
 			else params.put("SeriesInstanceUID", origValue);
@@ -141,7 +142,7 @@ public class SingleImagePerSeriesFilter implements Filter<Object> {
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
 		log.info("Filtering by adding an instance number=1 as a first guess.");
 		params.put(INSTANCE_NUMBER, "1");
-		Object ret = filterItem.callNextFilter(params);
+		Object ret = filterItem.callNamedFilter("imageSource",params);
 		assert ret == rb;
 		params.remove(INSTANCE_NUMBER);
 		return rb;

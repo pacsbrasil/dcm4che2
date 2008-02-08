@@ -46,7 +46,7 @@ public class SeriesSearch extends DicomCFindFilter{
 	static final String SERIES_SEARCH_LEVEL = "SERIES";
 	
     private static final String[] SERIES_LEVEL_FIND_CUID = {
-        UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND,
+        //UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND,
     	UID.PrivateStudyRootQueryRetrieveInformationModelFIND,
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND, };

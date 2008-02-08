@@ -54,7 +54,7 @@ import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
 public class SeriesBean extends SeriesType implements Series, ResultFromDicom, CacheItem, LocalModel<String> {
-   static Logger log = LoggerFactory.getLogger(SeriesBean.class.getName());
+   static Logger log = LoggerFactory.getLogger(SeriesBean.class);
 
    /** Used to define the DICOM macro tables included in this object */
    @XmlTransient
@@ -160,8 +160,10 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  }
 	  int frameCount = data.getInt(Tag.NumberOfFrames);
 	  if (frameCount > 1) {
+		 log.debug("Creating a multi-frame image bean on NumberOfFrames=",frameCount);
 		 return new ImageBeanMultiFrame(this,data);
 	  } else
+		 log.debug("Creating a single image bean.");
 		 return new ImageBean(this,data);
    }
 

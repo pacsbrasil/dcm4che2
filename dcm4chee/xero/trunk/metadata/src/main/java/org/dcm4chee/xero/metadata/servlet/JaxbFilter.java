@@ -98,7 +98,7 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 				m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 				response.setContentType("text/xml");
 				String xml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
-				String pretty="<?xml-stylesheet type=\"text/xsl\" href=\"/xero/pretty.xsl\"?>\n";
+				String pretty="<?xml-stylesheet type=\"text/xsl\" href=\"/wado2/pretty.xsl\"?>\n";
 				OutputStream os = response.getOutputStream();
 				os.write(xml.getBytes());
 				os.write(pretty.getBytes());
