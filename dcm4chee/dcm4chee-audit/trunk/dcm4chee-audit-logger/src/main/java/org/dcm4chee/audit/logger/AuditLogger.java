@@ -67,6 +67,7 @@ import org.dcm4che2.audit.message.ApplicationActivityMessage;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.AuditSource;
+import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
@@ -133,12 +134,17 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     };
 
-    private static final String AUDITLOG = "auditlog";
-    private static final String DCM4CHEE = "dcm4chee";
-    
+    private static final AuditEvent.TypeCode SERVICE_STARTED = 
+            new AuditEvent.TypeCode("110138", "99DCM4CHEE", "Service Started");
+
+    private static final AuditEvent.TypeCode SERVICE_STOPPED =
+        new AuditEvent.TypeCode("110139", "99DCM4CHEE", "Service Stopped");
+
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
 
     private String configDir;
+
+    private boolean auditServiceStartStop;
 
     private HashMap<ObjectName, AttributeChangeNotificationFilter[]>
             notRegisteredAcnSources;
@@ -147,10 +153,16 @@ public class AuditLogger extends ServiceMBeanSupport {
             registeredAcnSources =
                 new HashMap<ObjectName, AttributeChangeNotificationFilter[]>();
 
-    private boolean serviceAuditEnabled = false;
-
     public boolean isIHEYr4() {
         return false;
+    }
+
+    public final boolean isAuditServiceStartStop() {
+        return auditServiceStartStop;
+    }
+
+    public final void setAuditServiceStartStop(boolean enable) {
+        this.auditServiceStartStop = enable;
     }
 
     public String getAuditSourceID() {
@@ -205,15 +217,6 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     }
 
-    public boolean isServiceAuditEnabled(){
-        return serviceAuditEnabled;
-    }
-    
-    public void setServiceAuditEnabled(boolean serviceAuditEnabled){
-        this.serviceAuditEnabled = serviceAuditEnabled;
-    }
-    
-    
     public String getProcessID() {
         return AuditMessage.getProcessID();
     }
@@ -336,34 +339,22 @@ public class AuditLogger extends ServiceMBeanSupport {
     protected void startService() throws Exception {
         registerMBeanServerListeners();
         registerAcnListeners();
+        auditApplicationActivity(ApplicationActivityMessage.APPLICATION_START);
     }
 
     protected void stopService() {
         unregisterAcnListeners();
         unregisterMBeanServerListeners();
-        if (serviceAuditEnabled){
-            auditApplicationActivity(ApplicationActivityMessage.APPLICATION_STOP, 
-                    this.serviceName.getCanonicalName());            
-        }
+        auditApplicationActivity(ApplicationActivityMessage.APPLICATION_STOP);
     }
 
-    private void auditApplicationActivity(AuditEvent.TypeCode type, 
-            String serviceName) {
-        String processServiceName;
-        if (serviceName.indexOf(DCM4CHEE)==0){
-            processServiceName = AuditMessage.getProcessName() + 
-            serviceName.substring(DCM4CHEE.length(),
-            serviceName.length());
-        }else{
-            processServiceName = serviceName;
-        }
-
+    private void auditApplicationActivity(AuditEvent.TypeCode type) {
         ApplicationActivityMessage msg = new ApplicationActivityMessage(type);
         msg.addApplication(AuditMessage.getProcessID(), AuditMessage
-                .getLocalAETitles(), processServiceName,
+                .getLocalAETitles(), AuditMessage.getProcessName(),
                 AuditMessage.getLocalHostName());
-        msg.addApplicationLauncher(getPrincipal(), null, null, null);
-        Logger.getLogger(AUDITLOG).info(msg);
+        msg.addApplicationLauncher(getPrincipal(), null, null, getHostname());
+        Logger.getLogger("auditlog").info(msg);
     }
 
     private String getPrincipal() {
@@ -413,29 +404,57 @@ public class AuditLogger extends ServiceMBeanSupport {
                         : newValue.equals(oldValue)) {
                 return;
             }
-            if (scn.getAttributeName().equals("State")){
-                if (serviceAuditEnabled == true){
-                    if ((Integer)newValue == STOPPED){
-                        auditApplicationActivity(
-                                ApplicationActivityMessage.APPLICATION_STOP,
-                                ((ObjectName)scn.getSource()).getCanonicalName());
-                    }else if((Integer)newValue == STARTED){
-                        auditApplicationActivity(
-                                ApplicationActivityMessage.APPLICATION_START,
-                                ((ObjectName)scn.getSource()).getCanonicalName());
-                    }
+            if (scn.getAttributeName().equals("State")) {
+                switch (((Integer) newValue).intValue()) {
+                case STOPPED:
+                    auditServiceStartStop(SERVICE_STOPPED, scn);
+                    break;
+                case STARTED:
+                    auditServiceStartStop(SERVICE_STARTED, scn);
+                    break;
                 }
-            } else{
-                SecurityAlertMessage msg = new SecurityAlertMessage(
-                        (AuditEvent.TypeCode) handback);
-                msg.addReportingProcess(AuditMessage.getProcessID(), AuditMessage
-                        .getLocalAETitles(), AuditMessage.getProcessName(),
-                        AuditMessage.getLocalHostName());
-                msg.addPerformingPerson(getPrincipal(), null, null, getHostname());
-                msg.addAlertSubjectWithURI("jmx:" + scn.getSource(), toText(scn));
-                Logger.getLogger(AUDITLOG).info(msg);                
+            } else {
+                auditAttributeChange(scn, (AuditEvent.TypeCode) handback);
             }
-            return;
+        }
+
+        private void auditServiceStartStop(AuditEvent.TypeCode type,
+                AttributeChangeNotification scn) {
+            ApplicationActivityMessage msg = new ApplicationActivityMessage(type);
+            Principal p = SecurityAssociation.getPrincipal();
+            msg.addActiveParticipant(
+                    ActiveParticipant.createActiveProcess(
+                            AuditMessage.getProcessID(),
+                            AuditMessage.getLocalAETitles(),
+                            AuditMessage.getProcessName(),
+                            AuditMessage.getLocalHostName(),
+                            p == null)
+                    .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION));
+            if (p != null) {
+                msg.addActiveParticipant(
+                        ActiveParticipant.createActivePerson(p.getName(), null, 
+                                null, getHostname(), true));
+            }
+            ParticipantObject obj = new ParticipantObject(toURI(scn),
+                    ParticipantObject.IDTypeCode.URI);
+            obj.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
+            msg.addParticipantObject(obj);
+            Logger.getLogger("auditlog").info(msg);
+        }
+
+        private void auditAttributeChange(AttributeChangeNotification scn,
+                AuditEvent.TypeCode typeCode) {
+            SecurityAlertMessage msg = new SecurityAlertMessage(typeCode);
+            msg.addReportingProcess(AuditMessage.getProcessID(), AuditMessage
+                    .getLocalAETitles(), AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName());
+            msg.addPerformingPerson(getPrincipal(), null, null, getHostname());
+            msg.addAlertSubjectWithURI(toURI(scn), toText(scn));
+            Logger.getLogger("auditlog").info(msg);
+        }
+
+        private String toURI(AttributeChangeNotification scn) {
+            return "jmx:" + scn.getSource();
         }
 
         private String toText(AttributeChangeNotification scn) {
@@ -562,17 +581,6 @@ public class AuditLogger extends ServiceMBeanSupport {
             log.debug(REGISTER_ACNL + source);
         }
         int registered = 0;
-        try {
-            AttributeChangeNotificationFilter stateChangeFilter = new 
-            AttributeChangeNotificationFilter();
-            stateChangeFilter.enableAttribute("State");
-            server.addNotificationListener(source, acnl, stateChangeFilter,
-                    null);
-            registered++;
-        } catch (Exception e) {
-            log.warn(FAILED_TO_REGISTER_ACNL + source, e);
-            return false;
-        }
         for (int i = 0; i < acnf.length; i++) {
             if (acnf[i] != null) {
                 try {
