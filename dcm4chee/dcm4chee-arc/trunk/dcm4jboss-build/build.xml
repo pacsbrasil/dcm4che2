@@ -4,7 +4,7 @@
   <property file="../build.properties"/>
 
   <property name="version" value="2.13.3"/>
-  <property name="audit-version" value="2.13.1"/>
+  <property name="audit-version" value="2.13.4"/>
   <property name="target.dir" value="${basedir}/target"/>
 
   <!-- Override with your dcm4che-1.4.x source dist location -->

@@ -5,6 +5,7 @@
   <xsl:template match="/">
     <mbean name="{$mbean}">
       <xsl:apply-templates select="//attribute[@access!='read-only']"/>
+      <attribute name="State"/>
     </mbean>
   </xsl:template>
   <xsl:template match="attribute">

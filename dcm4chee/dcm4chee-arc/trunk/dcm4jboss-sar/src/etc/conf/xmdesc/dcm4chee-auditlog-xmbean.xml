@@ -169,14 +169,6 @@
     <name>IHEYr4</name>
     <type>boolean</type>
   </attribute>
-  <attribute access="read-write" setMethod="setServiceAuditEnabled" getMethod="isServiceAuditEnabled">
-    <description><![CDATA[Enables audit for all service starts/stops with attribute listeners]]></description>
-    <name>serviceAuditEnabled</name>
-    <type>boolean</type>
-    <descriptors>
-      <value value="false"/>
-    </descriptors>
-  </attribute>
   <!-- Operations -->
   <operation>
     <description><![CDATA[Emits Application Start Audit Message.]]></description>
