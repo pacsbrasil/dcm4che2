@@ -39,10 +39,8 @@
 
 package org.dcm4che.archive.dao.jdbc;
 
-import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
@@ -53,32 +51,19 @@ public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
-            int resultSetType) throws SQLException {
+            int resultSetType)
+            throws SQLException {
         super(dsJndiName, transactionIsolationLevel, null, resultSetType);
     }
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel)
-            throws SQLException {
+    throws SQLException {
         super(dsJndiName, transactionIsolationLevel, null);
     }
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
             String sql) throws SQLException {
         super(dsJndiName, transactionIsolationLevel, sql);
-    }
-
-    public byte[] getBytes(int column, boolean accessBlobAsLongVarBinary)
-            throws SQLException {
-        if (BaseCmd.defineColumnType == null || !accessBlobAsLongVarBinary) {
-            ResultSetMetaData meta = rs.getMetaData();
-            if (meta != null
-                    && meta.getColumnType(column) == java.sql.Types.BLOB) {
-                Blob blob = rs.getBlob(column);
-                return blob != null ? blob.getBytes(1, (int) blob.length())
-                        : null;
-            }
-        }
-        return rs.getBytes(column);
     }
 
     public void execute(String sql) throws SQLException {
@@ -99,8 +84,7 @@ public abstract class BaseReadCmd extends BaseCmd {
                                     + (i + 1));
 
                 return;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 if (lastException == null
                         || !lastException.getMessage().equals(e.getMessage()))
                     log.warn("failed to execute sql: " + sql + " - retry: "
@@ -115,15 +99,13 @@ public abstract class BaseReadCmd extends BaseCmd {
 
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
-                }
-                catch (InterruptedException e1) {
+                } catch (InterruptedException e1) {
                     log.warn(e1);
                 }
 
                 try {
                     open();
-                }
-                catch (SQLException e1) {
+                } catch (SQLException e1) {
                 }
             }
         }
@@ -148,8 +130,7 @@ public abstract class BaseReadCmd extends BaseCmd {
                                     + (i + 1));
 
                 return;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 if (lastException == null
                         || !lastException.getMessage().equals(e.getMessage()))
                     log.warn("failed to execute sql: " + sql + " - retry: "
@@ -164,15 +145,13 @@ public abstract class BaseReadCmd extends BaseCmd {
 
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
-                }
-                catch (InterruptedException e1) {
+                } catch (InterruptedException e1) {
                     log.warn(e1);
                 }
 
                 try {
                     open();
-                }
-                catch (SQLException e1) {
+                } catch (SQLException e1) {
                 }
             }
         }
@@ -191,8 +170,7 @@ public abstract class BaseReadCmd extends BaseCmd {
         if (rs != null) {
             try {
                 rs.close();
-            }
-            catch (SQLException ignore) {
+            } catch (SQLException ignore) {
             }
             rs = null;
         }

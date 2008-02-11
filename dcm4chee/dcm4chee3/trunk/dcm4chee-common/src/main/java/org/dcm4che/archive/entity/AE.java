@@ -75,12 +75,15 @@ public class AE extends EntityBase {
 
     @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
-    
+
     @Column(name = "user_id")
     private String userID;
-    
+
     @Column(name = "passwd")
     private String password;
+
+    @Column(name = "fs_group_id")
+    private String fileSystemGroupID;
 
     @Column(name = "ae_desc")
     private String description;
@@ -96,25 +99,31 @@ public class AE extends EntityBase {
      * Create an AE and initialize all of its fields.
      * 
      * @param aet
-     *            The AE title.
+     *                The AE title.
      * @param aeHost
-     *            The host name.
+     *                The host name.
      * @param portNum
-     *            The port number of the AE title.
+     *                The port number of the AE title.
      * @param cipher
-     *            Security protocols in use by the AE.
+     *                Security protocols in use by the AE.
      * @param issuer
-     *            The issuer of the patient id where this AE is located/used.
+     *                The issuer of the patient id where this AE is
+     *                located/used.
      * @param user
-     *            A string containing the user id for user identity negotiation.
+     *                A string containing the user id for user identity
+     *                negotiation.
      * @param passwd
-     *            A string containing the password for user identity
-     *            negotiation.
+     *                A string containing the password for user identity
+     *                negotiation.
+     * @param fsGroupID
+     *                A string containing the identifier of the file system
+     *                group that this AE is working with.
      * @param desc
-     *            A description of the AE.
+     *                A description of the AE.
      */
     public AE(String aet, String aeHost, int portNum, String cipher,
-            String issuer, String user, String passwd, String desc) {
+            String issuer, String user, String passwd, String fsGroupID,
+            String desc) {
         setTitle(aet);
         setHostname(aeHost);
         setPort(portNum);
@@ -134,7 +143,7 @@ public class AE extends EntityBase {
 
     /**
      * @param cipherSuites
-     *            the cipherSuites to set
+     *                the cipherSuites to set
      */
     public void setCipherSuites(String cipherSuites) {
         this.cipherSuites = cipherSuites;
@@ -149,7 +158,7 @@ public class AE extends EntityBase {
 
     /**
      * @param description
-     *            the description to set
+     *                the description to set
      */
     public void setDescription(String description) {
         this.description = description;
@@ -164,7 +173,7 @@ public class AE extends EntityBase {
 
     /**
      * @param hostname
-     *            the hostname to set
+     *                the hostname to set
      */
     public void setHostname(String hostname) {
         this.hostname = hostname;
@@ -179,7 +188,7 @@ public class AE extends EntityBase {
 
     /**
      * @param issuerOfPatientID
-     *            the issuerOfPatientID to set
+     *                the issuerOfPatientID to set
      */
     public void setIssuerOfPatientID(String issuerOfPatientID) {
         this.issuerOfPatientID = issuerOfPatientID;
@@ -193,7 +202,8 @@ public class AE extends EntityBase {
     }
 
     /**
-     * @param userID the userID to set
+     * @param userID
+     *                the userID to set
      */
     public void setUserID(String userID) {
         this.userID = userID;
@@ -207,7 +217,8 @@ public class AE extends EntityBase {
     }
 
     /**
-     * @param password the password to set
+     * @param password
+     *                the password to set
      */
     public void setPassword(String password) {
         this.password = password;
@@ -222,7 +233,7 @@ public class AE extends EntityBase {
 
     /**
      * @param port
-     *            the port to set
+     *                the port to set
      */
     public void setPort(int port) {
         this.port = port;
@@ -237,7 +248,7 @@ public class AE extends EntityBase {
 
     /**
      * @param title
-     *            the title to set
+     *                the title to set
      */
     public void setTitle(String title) {
         this.title = title;
@@ -274,6 +285,21 @@ public class AE extends EntityBase {
 
     public boolean isTLS() {
         return cipherSuites != null && cipherSuites.length() != 0;
+    }
+
+    /**
+     * @return the fileSystemGroupID
+     */
+    public String getFileSystemGroupID() {
+        return fileSystemGroupID;
+    }
+
+    /**
+     * @param fileSystemGroupID
+     *                the fileSystemGroupID to set
+     */
+    public void setFileSystemGroupID(String fileSystemGroupID) {
+        this.fileSystemGroupID = fileSystemGroupID;
     }
 
     public String toString() {

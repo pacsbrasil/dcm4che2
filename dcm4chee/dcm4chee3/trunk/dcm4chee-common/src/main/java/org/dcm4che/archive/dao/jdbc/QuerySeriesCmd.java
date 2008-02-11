@@ -55,36 +55,33 @@ import org.dcm4cheri.util.StringUtils;
  */
 class QuerySeriesCmd extends BaseReadCmd {
 
-    private boolean accessBlobAsLongVarBinary;
-
     public QuerySeriesCmd(int transactionIsolationLevel,
-            boolean accessBlobAsLongVarBinary) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel, JdbcProperties.getInstance()
-                        .getProperty("QuerySeriesCmd"));
-        this.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-            defineColumnType(3, Types.LONGVARBINARY);
-        }
+            int blobAccessType) throws SQLException {
+        super(JdbcProperties.getInstance().getDataSource(), 
+                transactionIsolationLevel,
+                JdbcProperties.getInstance().getProperty("QuerySeriesCmd"));
+        defineColumnTypes(new int[] {
+                blobAccessType,
+                blobAccessType,
+                blobAccessType,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER });
     }
 
     public void setSeriesIUID(String iuid) throws SQLException {
-        ((PreparedStatement) stmt).setString(1, iuid);
+        ((PreparedStatement) stmt).setString(1, iuid);          
     }
 
     public Dataset getDataset() throws SQLException {
         Dataset dataset = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary),
-                dataset);
-        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary),
-                dataset);
-        DatasetUtils.fromByteArray(getBytes(3, accessBlobAsLongVarBinary),
-                dataset);
-        dataset.putCS(Tags.ModalitiesInStudy, StringUtils.split(
-                rs.getString(4), '\\'));
+        DatasetUtils.fromByteArray(rs.getBytes(1), dataset);
+        DatasetUtils.fromByteArray(rs.getBytes(2), dataset);
+        DatasetUtils.fromByteArray(rs.getBytes(3), dataset);
+        dataset.putCS(Tags.ModalitiesInStudy,
+                StringUtils.split(rs.getString(4), '\\'));
         dataset.putCS(Tags.StudyStatusID, rs.getString(5));
         dataset.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(6));
         dataset.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(7));

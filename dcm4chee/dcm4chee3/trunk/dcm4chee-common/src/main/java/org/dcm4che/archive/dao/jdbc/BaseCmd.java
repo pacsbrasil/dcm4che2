@@ -57,80 +57,68 @@ import org.jboss.resource.adapter.jdbc.WrappedStatement;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- * 
+ *
  */
 public abstract class BaseCmd {
     protected static final Logger log = Logger.getLogger(BaseCmd.class);
-
     protected static final Method defineColumnType;
     static {
-        if (JdbcProperties.getInstance().getDatabase() == JdbcProperties.ORACLE) {
+        if (JdbcProperties.getInstance().getDatabase()
+                == JdbcProperties.ORACLE) {
             try {
                 Class clazz = Class.forName("oracle.jdbc.OracleStatement");
                 defineColumnType = clazz.getMethod("defineColumnType",
                         new Class[] { int.class, int.class });
-            }
-            catch (Exception e) {
+            } catch (Exception e){
                 throw new ConfigurationException(e);
             }
-        }
-        else {
+        } else {
             defineColumnType = null;
         }
     }
 
     protected DataSource ds;
-
     protected Connection con;
-
     protected Statement stmt;
-
     protected int prevLevel = 0;
-
     protected String sql = null;
-
     protected int transactionIsolationLevel;
-
+    
     protected int updateDatabaseMaxRetries = 20;
-
     protected long updateDatabaseRetryInterval = 500L; // ms
-
+    
     protected final int resultSetType;
-
     protected final int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
 
-    protected BaseCmd(String dsJndiName, int transactionIsolationLevel,
-            String sql) throws SQLException {
-        this(dsJndiName, transactionIsolationLevel, sql,
-                ResultSet.TYPE_FORWARD_ONLY);
+    protected BaseCmd(String dsJndiName, int transactionIsolationLevel, String sql)
+			throws SQLException {
+        this(dsJndiName, transactionIsolationLevel, sql, ResultSet.TYPE_FORWARD_ONLY);
     }
-
-    protected BaseCmd(String dsJndiName, int transactionIsolationLevel,
-            String sql, int resultSetType) throws SQLException {
-        this.sql = sql;
-        this.transactionIsolationLevel = transactionIsolationLevel;
+    
+    protected BaseCmd(String dsJndiName, int transactionIsolationLevel, String sql,
+            int resultSetType)
+        throws SQLException {
+    	this.sql = sql;
+    	this.transactionIsolationLevel = transactionIsolationLevel;
         this.resultSetType = resultSetType;
+    	
+		if (sql != null)
+	        log.debug("SQL: " + sql);
 
-        if (sql != null)
-            log.debug("SQL: " + sql);
-
-        try {
-            Context jndiCtx = new InitialContext();
-            try {
-                ds = (DataSource) jndiCtx.lookup(dsJndiName);
-            }
-            finally {
-                try {
-                    jndiCtx.close();
-                }
-                catch (NamingException ignore) {
-                }
-            }
-        }
-        catch (NamingException ne) {
-            throw new RuntimeException("Failed to access Data Source: "
-                    + dsJndiName, ne);
-        }
+ 	   	 try {
+	         Context jndiCtx = new InitialContext();
+	         try {
+	             ds = (DataSource) jndiCtx.lookup(dsJndiName);
+	         } finally {
+	             try {
+	                 jndiCtx.close();
+	             } catch (NamingException ignore) {
+	             }
+	         }
+	     } catch (NamingException ne) {
+	         throw new RuntimeException(
+	                 "Failed to access Data Source: " + dsJndiName, ne);
+	     }
 
         open();
     }
@@ -164,104 +152,86 @@ public abstract class BaseCmd {
         return 0;
     }
 
-    protected void defineColumnType(int index, int type) throws SQLException {
+    protected void defineColumnTypes(int[] types) throws SQLException {
         if (defineColumnType == null) {
             return;
         }
         try {
             WrappedStatement wstmt = (WrappedStatement) stmt;
-            defineColumnType.invoke(wstmt.getUnderlyingStatement(),
-                    new Object[] { Integer.valueOf(index),
-                            Integer.valueOf(type) });
-        }
-        catch (InvocationTargetException e) {
+            Statement oracleStmt = wstmt.getUnderlyingStatement();
+            for (int i = 0; i < types.length; i++) {
+                defineColumnType.invoke(oracleStmt,
+                        new Object[] { Integer.valueOf(i+1),
+                            Integer.valueOf(types[i])});
+            }
+        } catch (InvocationTargetException e) {
             Throwable cause = e.getTargetException();
             if (cause instanceof SQLException) {
-                throw (SQLException) cause;
-            }
-            else {
+                throw (SQLException) cause;                    
+            } else {
                 SQLException sqlEx = new SQLException();
                 sqlEx.initCause(cause);
                 throw sqlEx;
             }
-        }
-        catch (Throwable e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);                
         }
     }
+    
+    public void open() throws SQLException 
+    {	     
+    	Exception lastException = null;
+        for(int i = 0; i < updateDatabaseMaxRetries; i++)
+        {
+	    	try {
+	            con = ds.getConnection();
+	            prevLevel = con.getTransactionIsolation();
+	            if (transactionIsolationLevel > 0)
+	                con.setTransactionIsolation(transactionIsolationLevel);
+				if (sql != null) {
+		            stmt = con.prepareStatement(sql, resultSetType, resultSetConcurrency);
+				} else {
+					stmt = con.createStatement( resultSetType, resultSetConcurrency);
+				} 
+				if(i > 0)
+					log.info("open connection successfully after retries: " + (i+1));
+				
+				return;
+	        } catch (Exception e) {
+	        	if(lastException == null || !lastException.getMessage().equals(e.getMessage()))
+	        		log.warn("failed to open connection - retry: "+(i+1)+" of "+updateDatabaseMaxRetries, e);
+	        	else
+	        		log.warn("failed to open connection: got the same exception as above - retry: "+(i+1)+" of "+updateDatabaseMaxRetries);	        	
+	        	lastException = e;
+				
+	            close();
 
-    public void open() throws SQLException {
-        Exception lastException = null;
-        for (int i = 0; i < updateDatabaseMaxRetries; i++) {
-            try {
-                con = ds.getConnection();
-                prevLevel = con.getTransactionIsolation();
-                if (transactionIsolationLevel > 0)
-                    con.setTransactionIsolation(transactionIsolationLevel);
-                if (sql != null) {
-                    stmt = con.prepareStatement(sql, resultSetType,
-                            resultSetConcurrency);
-                }
-                else {
-                    stmt = con.createStatement(resultSetType,
-                            resultSetConcurrency);
-                }
-                if (i > 0)
-                    log.info("open connection successfully after retries: "
-                            + (i + 1));
-
-                return;
-            }
-            catch (Exception e) {
-                if (lastException == null
-                        || !lastException.getMessage().equals(e.getMessage()))
-                    log.warn("failed to open connection - retry: " + (i + 1)
-                            + " of " + updateDatabaseMaxRetries, e);
-                else
-                    log
-                            .warn("failed to open connection: got the same exception as above - retry: "
-                                    + (i + 1)
-                                    + " of "
-                                    + updateDatabaseMaxRetries);
-                lastException = e;
-
-                close();
-
-                try {
-                    Thread.sleep(updateDatabaseRetryInterval);
-                }
-                catch (InterruptedException e1) {
-                    log.warn(e1);
-                }
-            }
+	            try {
+					Thread.sleep(updateDatabaseRetryInterval); 
+				} catch (InterruptedException e1) { log.warn(e1);} 
+	        }
         }
-        throw new SQLException("give up openning connection after all retries");
+       	throw new SQLException("give up openning connection after all retries");        
     }
-
+	
     public void close() {
         if (stmt != null) {
             try {
                 stmt.close();
-            }
-            catch (SQLException ignore) {
-            }
+            } catch (SQLException ignore) {}
             stmt = null;
         }
         if (con != null) {
             try {
                 con.setTransactionIsolation(prevLevel);
-            }
-            catch (SQLException ignore) {
-            }
+            } catch (SQLException ignore) {}
             try {
                 con.close();
-            }
-            catch (SQLException ignore) {
-            }
+            } catch (SQLException ignore) {}
             con = null;
         }
     }
-
+    
     public final int getUpdateDatabaseMaxRetries() {
         return updateDatabaseMaxRetries;
     }

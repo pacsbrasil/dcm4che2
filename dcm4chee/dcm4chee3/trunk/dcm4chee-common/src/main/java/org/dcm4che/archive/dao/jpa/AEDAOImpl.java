@@ -75,16 +75,17 @@ public class AEDAOImpl extends BaseDAOImpl<AE> implements AEDAO {
     /**
      * @see org.dcm4che.archive.dao.AEDAO#create(java.lang.String,
      *      java.lang.String, int, java.lang.String, java.lang.String,
+     *      java.lang.String, java.lang.String, java.lang.String,
      *      java.lang.String)
-     * @throws ContentCreateException
      */
     public AE create(String title, String hostname, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String desc) throws ContentCreateException {
+            String fsGroupID, String desc) throws ContentCreateException {
         if (logger.isDebugEnabled()) {
             logger.debug("Creating AE (" + title + ")");
         }
-        AE ae = new AE(title, hostname, port, cipherSuites, issuer, user, passwd, desc);
+        AE ae = new AE(title, hostname, port, cipherSuites, issuer, fsGroupID, user,
+                passwd, desc);
         save(ae);
         return ae;
     }

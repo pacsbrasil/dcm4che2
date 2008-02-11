@@ -41,6 +41,9 @@ package org.dcm4che.archive.common;
 
 import java.io.Serializable;
 
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -49,7 +52,15 @@ import org.dcm4che.dict.Tags;
  */
 public class SeriesStored implements Serializable {
 
-    private static final long serialVersionUID = -8664338212703072265L;
+    private static final long serialVersionUID = -3119250046425862896L;
+
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
+        private static final long serialVersionUID = 7625954422409724162L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return SeriesStored.class.getName().equals(notif.getType());
+        }
+    };
 
     private final Dataset patAttrs;
 
@@ -58,6 +69,8 @@ public class SeriesStored implements Serializable {
     private final Dataset seriesAttrs;
 
     private final Dataset ian;
+
+    private final int numI;
 
     public SeriesStored(Dataset patient, Dataset study, Dataset series,
             Dataset ian) {
@@ -77,11 +90,15 @@ public class SeriesStored implements Serializable {
         this.studyAttrs = study;
         this.seriesAttrs = series;
         this.ian = ian;
+        this.numI = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq)
+                .countItems();
     }
 
     public String toString() {
-        return "SeriesStored[calling=" + getCallingAET() + ", suid="
-                + getStudyInstanceUID() + "]";
+        return "SeriesStored[calling=" + getCallingAET() + ", modality="
+                + getModality() + ", numOfInst=" + numI + ", study-iuid="
+                + getStudyInstanceUID() + ", series-iuid="
+                + getSeriesInstanceUID() + "]";
     }
 
     public final Dataset getPatientAttrs() {
@@ -125,8 +142,20 @@ public class SeriesStored implements Serializable {
         return studyAttrs.getString(Tags.AccessionNumber);
     }
 
+    public String getStudyID() {
+        return studyAttrs.getString(Tags.StudyID);
+    }
+
     public String getSeriesInstanceUID() {
         return seriesAttrs.getString(Tags.SeriesInstanceUID);
+    }
+
+    public String getModality() {
+        return seriesAttrs.getString(Tags.Modality);
+    }
+
+    public int getNumberOfInstances() {
+        return numI;
     }
 
 }

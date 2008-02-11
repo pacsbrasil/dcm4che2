@@ -49,22 +49,21 @@ import org.dcm4che.dict.Tags;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.2 $ $Date: 2007/07/05 05:51:46 $
+ * @version $Revision: 5787 $ $Date: 2008-01-30 20:48:04 -0600 (Wed, 30 Jan 2008) $
  * @since 10.02.2004
  */
 public class GPPPSQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
-    public static boolean accessBlobAsLongVarBinary = true;
-
-    private static final String[] FROM = { "Patient", "GPPPS" };
+    private static final String[] FROM = { "Patient", "GPPPS"};
 
     private static final String[] SELECT = { "Patient.encodedAttributes",
-            "GPPPS.encodedAttributes" };
+            "GPPPS.encodedAttributes"};
 
     private static final String[] RELATIONS = { "Patient.pk",
-            "GPPPS.patient_fk" };
+    		"GPPPS.patient_fk"};
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -74,30 +73,30 @@ public class GPPPSQueryCmd extends BaseReadCmd {
      */
     public GPPPSQueryCmd(Dataset filter) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel);
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-        }
+                    transactionIsolationLevel);
+        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
         sqlBuilder.addListOfStringMatch(null, "GPPPS.sopIuid",
-                SqlBuilder.TYPE1, filter.getStrings(Tags.SOPInstanceUID));
+                SqlBuilder.TYPE1,
+                filter.getStrings(Tags.SOPInstanceUID) );
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1, filter.getStrings(Tags.PatientID));
-        sqlBuilder.addPNMatch(
-                new String[] { "Patient.patientName",
-                        "Patient.patientIdeographicName",
-                        "Patient.patientPhoneticName" }, SqlBuilder.TYPE2,
+                SqlBuilder.TYPE1,
+                filter.getStrings(Tags.PatientID) );
+        sqlBuilder.addPNMatch(new String[] {
+                "Patient.patientName",
+                "Patient.patientIdeographicName",
+                "Patient.patientPhoneticName"},
+                SqlBuilder.TYPE2,
                 filter.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "GPPPS.ppsStartDateTime",
-                SqlBuilder.TYPE1, filter.getDateTimeRange(Tags.PPSStartDate,
-                        Tags.PPSStartTime));
+                SqlBuilder.TYPE1,
+                filter.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "GPPPS.ppsStatusAsInt",
-                SqlBuilder.TYPE1, filter.getStrings(Tags.PPSStatus));
+                SqlBuilder.TYPE1,
+				filter.getStrings(Tags.PPSStatus));
     }
 
     public void execute() throws SQLException {
@@ -105,10 +104,11 @@ public class GPPPSQueryCmd extends BaseReadCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), ds);
-        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), ds);
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();       
+        DatasetUtils.fromByteArray( rs.getBytes(1), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(2), ds);
         return ds;
     }
-
+    
+ 
 }

@@ -50,14 +50,13 @@ import org.dcm4che.dict.Tags;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision: 1.2 $ $Date: 2007/07/05 05:51:46 $
+ * @version $Revision: 5787 $ $Date: 2008-01-30 20:48:04 -0600 (Wed, 30 Jan 2008) $
  * @since Aug 22, 2005
  */
 public class HPRetrieveCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
-
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     private static final String[] FROM = { "HP" };
 
@@ -66,31 +65,27 @@ public class HPRetrieveCmd extends BaseReadCmd {
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     public HPRetrieveCmd(Dataset keys) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-                transactionIsolationLevel);
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-        }
-        sqlBuilder.setSelect(SELECT);
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
-                .getStrings(Tags.SOPInstanceUID));
+		super(JdbcProperties.getInstance().getDataSource(),
+		        transactionIsolationLevel);
+                defineColumnTypes(new int[] { blobAccessType });
+		sqlBuilder.setSelect(SELECT);
+		sqlBuilder.setFrom(FROM);
+		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1,
+				keys.getStrings(Tags.SOPInstanceUID));
+	}
+	
+	public List getDatasets() throws SQLException {
+		ArrayList result = new ArrayList();
+		try {
+	        execute(sqlBuilder.getSql());
+			while (next()) {
+				result.add(DatasetUtils.fromByteArray(
+				        rs.getBytes(1)));			
+			}
+		} finally {
+			close();
+		}
+		return result;
     }
-
-    public List getDatasets() throws SQLException {
-        ArrayList result = new ArrayList();
-        try {
-            execute(sqlBuilder.getSql());
-            while (next()) {
-                result.add(DatasetUtils.fromByteArray(getBytes(1,
-                        accessBlobAsLongVarBinary)));
-            }
-        }
-        finally {
-            close();
-        }
-        return result;
-    }
-
+	
 }
