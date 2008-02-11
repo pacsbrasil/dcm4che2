@@ -232,6 +232,10 @@ public class WADOService extends AbstractCacheService {
         support.setContentTypeDicomXML(contentTypeDicomXML);
     }
 
+    public String getImageSopCuids() throws Exception{
+        return map2string(support.getImageSopCuids());
+    }
+
     /**
      * Returns a String with all defined SOP Class UIDs that are used to find
      * text (SR) documents.
@@ -242,12 +246,16 @@ public class WADOService extends AbstractCacheService {
      */
     public String getTextSopCuids() {
         Map uids = support.getTextSopCuids();
-        if (uids == null || uids.isEmpty())
+        return map2string(uids);
+    }
+    
+    private String map2string(Map map) {
+        if (map == null || map.isEmpty())
             return "";
-        StringBuffer sb = new StringBuffer(uids.size() << 5);// StringBuffer
+        StringBuffer sb = new StringBuffer(map.size() << 5);// StringBuffer
                                                                 // initial size:
                                                                 // nrOfUIDs x 32
-        Iterator iter = uids.keySet().iterator();
+        Iterator iter = map.keySet().iterator();
         while (iter.hasNext()) {
             sb.append(iter.next()).append(
                     System.getProperty("line.separator", "\n"));
@@ -265,26 +273,21 @@ public class WADOService extends AbstractCacheService {
      */
     public void setTextSopCuids(String sopCuids) {
 
-        StringTokenizer st = new StringTokenizer(sopCuids, "\r\n;");
-        String uid, name;
-        Map map = new TreeMap();
-        while (st.hasMoreTokens()) {
-            uid = st.nextToken().trim();
-            name = uid;
-            if (isDigit(uid.charAt(0))) {
-                if (!UIDs.isValid(uid))
-                    throw new IllegalArgumentException("UID " + uid
-                            + " isn't a valid UID!");
-            } else {
-                uid = UIDs.forName(name);
-            }
-            map.put(name, uid);
-        }
-        support.setTextSopCuids(map);
+        support.setTextSopCuids(sopCuids);
     }
 
-    private static boolean isDigit(char c) {
-        return c >= '0' && c <= '9';
+    /**
+     * Getter for the name of the StoreScp Service Name.
+     * <p>
+     * This bean is used to get list of Image SOP Classs UID.
+     * 
+     * @return Name of the MBean
+     */
+    public ObjectName getStoreScpServiceName() {
+        return support.getStoreScpServiceName();
+    }
+    public void setStoreScpServiceName(ObjectName name) {
+        support.setStoreScpServiceName(name);
     }
 
     /**

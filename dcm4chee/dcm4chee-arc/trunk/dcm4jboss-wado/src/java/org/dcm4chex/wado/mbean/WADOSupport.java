@@ -61,6 +61,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
@@ -68,8 +69,12 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
@@ -161,6 +166,7 @@ public class WADOSupport {
     private ObjectName fileSystemMgtName = null;
 
     private ObjectName auditLogName = null;
+    private ObjectName storeScpServiceName = null;
 
     private Boolean auditLogIHEYr4 = null;
 
@@ -176,6 +182,7 @@ public class WADOSupport {
     private boolean disableDNS = false;
 
     private Map textSopCuids = null;
+    private Map imageSopCuids = null;
 
     private static MBeanServer server;
 
@@ -266,7 +273,12 @@ public class WADOSupport {
         String contentType = getPrefContentType(req, objectDs);
         log.debug("preferred ContentType:" + contentType);
         WADOResponseObject resp = null;
-        if (CONTENT_TYPE_JPEG.equals(contentType)) {
+        if (contentType == null) {
+            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
+                    HttpServletResponse.SC_NOT_ACCEPTABLE,
+                    "Requested object can not be served as requested content type! Requested contentType(s):"
+                            + req.getRequest().getParameter("contentType"));
+        } else if (CONTENT_TYPE_JPEG.equals(contentType)) {
             return this.handleJpg(req);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
             return handleDicom(req); // audit log is done in handleDicom to
@@ -373,11 +385,10 @@ public class WADOSupport {
             types.add(CONTENT_TYPE_XHTML);
             types.add(CONTENT_TYPE_XML);
             types.add(CONTENT_TYPE_PLAIN);
-            types.add(CONTENT_TYPE_DICOM);
-        } else {
+        } else if ( getImageSopCuids().containsValue(sopCuid) ){
             types.add(CONTENT_TYPE_JPEG);
-            types.add(CONTENT_TYPE_DICOM);
         }
+        types.add(CONTENT_TYPE_DICOM);
         if (!"NONE".equals(contentTypeDicomXML))
             types.add(CONTENT_TYPE_DICOM_XML);
         return types;
@@ -1134,7 +1145,15 @@ public class WADOSupport {
         return auditLogName;
     }
 
-    /**
+    public ObjectName getStoreScpServiceName() {
+		return storeScpServiceName;
+	}
+
+	public void setStoreScpServiceName(ObjectName storeScpServiceName) {
+		this.storeScpServiceName = storeScpServiceName;
+	}
+
+	/**
      * @return Returns if audit log is enabled for the host of the given
      *         request.
      */
@@ -1190,6 +1209,18 @@ public class WADOSupport {
             boolean useTransferSyntaxOfFileAsDefault) {
         this.useTransferSyntaxOfFileAsDefault = useTransferSyntaxOfFileAsDefault;
     }
+    
+    public Map getImageSopCuids() {
+    	if ( imageSopCuids == null ) {
+    		try {
+    			imageSopCuids = uidsString2map((String) server.getAttribute(
+    					storeScpServiceName, "AcceptedImageSOPClasses") );
+    		} catch ( Exception x ) {
+    			log.error("Cant get list of image SOP Class UIDs!",x);
+    		}
+    	}
+    	return imageSopCuids;
+    }
  
     /**
      * @return Returns the sopCuids.
@@ -1204,9 +1235,9 @@ public class WADOSupport {
      * @param sopCuids
      *                The sopCuids to set.
      */
-    public void setTextSopCuids(Map sopCuids) {
-        if (sopCuids != null && !sopCuids.isEmpty())
-            textSopCuids = sopCuids;
+    public void setTextSopCuids(String sopCuids) {
+        if (sopCuids != null && sopCuids.length() > 0)
+            textSopCuids = uidsString2map(sopCuids);
         else {
             setDefaultTextSopCuids();
         }
@@ -1267,6 +1298,29 @@ public class WADOSupport {
         textSopCuids.put("KeyObjectSelectionDocument",
                 UIDs.KeyObjectSelectionDocument);
         textSopCuids.put("MammographyCADSR", UIDs.MammographyCADSR);
+    }
+    
+    public Map uidsString2map(String uids) {
+        StringTokenizer st = new StringTokenizer(uids, "\r\n;");
+        String uid, name;
+        Map map = new TreeMap();
+        while (st.hasMoreTokens()) {
+            uid = st.nextToken().trim();
+            name = uid;
+            if (isDigit(uid.charAt(0))) {
+                if (!UIDs.isValid(uid))
+                    throw new IllegalArgumentException("UID " + uid
+                            + " isn't a valid UID!");
+            } else {
+                uid = UIDs.forName(name);
+            }
+            map.put(name, uid);
+        }
+    	return map;
+    }
+    
+    private static boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
     }
 
     private ContentManager getContentManager() throws Exception {
