@@ -113,7 +113,7 @@
       getMethod="getAuditEnabled"
       setMethod="setAuditEnabled">
       <description>Enable or disable emission of audit messages on
-      create/merge/move/update/delete of Patient/Study/Series/Instance enities.
+      create/merge/move/update/delete of Patient/Study/Series/Instance entities.
       </description>
       <name>auditEnabled</name>
       <type>boolean</type>
