@@ -559,6 +559,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
+            service.postCoercionProcessing(ds);            
             checkPatientIdAndName(ds, callingAET);
             service.supplementIssuerOfPatientID(ds, callingAET);
             service.generatePatientID(ds, ds);
