@@ -81,7 +81,6 @@ import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
@@ -481,7 +480,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         QueryCmd.seriesBlobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
-    public final boolean getLazyFetchSeriesAttrsOnRetrive() {
+    public final boolean getLazyFetchSeriesAttrsOnRetrieve() {
         return RetrieveCmd.lazyFetchSeriesAttrs;
     }
 
