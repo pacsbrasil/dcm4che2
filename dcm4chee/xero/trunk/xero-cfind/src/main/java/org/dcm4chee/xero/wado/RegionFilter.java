@@ -73,10 +73,10 @@ import org.slf4j.LoggerFactory;
 public class RegionFilter implements Filter<WadoImage> {
 	public static final Logger log = LoggerFactory.getLogger(RegionFilter.class);
 
-	public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
+	public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 		String region = (String) MemoryCacheFilter.removeFromQuery(params,"region")[0];
 		log.info("Region filter on region "+region);
-		if( region==null ) return (WadoImage) filterItem.callNextFilter(params);
+		if( region==null ) return filterItem.callNextFilter(params);
 		double[] dregion = WadoImage.splitRegion(region);
 		if( dregion[0]==0.0 && dregion[1]==0.0 && dregion[2] == 1.0 && dregion[3]==1.0 )
 			return (WadoImage) filterItem.callNextFilter(params);
@@ -84,7 +84,7 @@ public class RegionFilter implements Filter<WadoImage> {
 		Object[] values = MemoryCacheFilter.removeFromQuery(params,"rows", "columns");
 		String rows = (String) values[0];
 		String columns = (String) values[1];
-		WadoImage wiFull = (WadoImage) filterItem.callNextFilter(params);
+		WadoImage wiFull = filterItem.callNextFilter(params);
 		if( wiFull==null ) return null;
 		BufferedImage biFull = wiFull.getValue();
 		int width = biFull.getWidth();

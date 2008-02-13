@@ -62,7 +62,7 @@ public class SearchFilterUtils {
     * @param gspsUid
     * @return ResultsBean containing at least the given image bean, and GSPS information.
     */
-   public static ResultsBean filterImage(FilterItem filterItem, Map<String,Object> params, String uid, String presentationUID) {
+   public static ResultsBean filterImage(FilterItem<?> filterItem, Map<String,Object> params, String uid, String presentationUID) {
 	  Map<String,Object> newParams = new HashMap<String,Object>();
 	  StringBuffer queryStr = new StringBuffer("&SOPInstanceUID=").append(uid).append("&presentationUID=").append(presentationUID);
 	  newParams.put("SOPInstanceUID", uid);

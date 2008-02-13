@@ -42,11 +42,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 
 import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -54,6 +52,7 @@ import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.image.OverlayUtils;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
+import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -85,13 +84,10 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * 
      * @return WADO image.
      */
-   public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
-	  URL location = (URL) filterItem.callNamedFilter("fileLocation", params);
-	  if (location == null)
-		 return null;
+   public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  WadoImage ret = null;
-
-	  ImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
+	  DicomImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
+	  boolean readRawBytes = params.containsKey(WadoImage.IMG_AS_BYTES);
 	  if (reader == null) {
 		 log.warn("Couldn't find reader for DICOM object.");
 		 return null;
@@ -111,6 +107,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			frame++;
 	  }
 	  try {
+		 long start = System.nanoTime();
+		 String op = "decompress";
 		 synchronized (reader) {
 			int width = reader.getWidth(0);
 			int height = reader.getHeight(0);
@@ -118,22 +116,27 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			BufferedImage bi;
 			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 			DicomObject ds = streamData.getDicomObject();
-			if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
+			ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
+			if (readRawBytes) {
+			   byte[] img = reader.readBytes(frame, param);
+			   ret.setParameter(WadoImage.IMG_AS_BYTES, img);
+			   bi = null;
+			   op="read raw";
+			} else if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
 			   // This object can't be window levelled, so just get it as
 			   // a buffered image directly.
 			   bi = reader.read(frame, param);
-			   log.debug("ColorSpace of returned buffered image is "+bi.getColorModel().getColorSpace());
-			} else {
-			   long start = System.nanoTime();
+			   log.debug("ColorSpace of returned buffered image is " + bi.getColorModel().getColorSpace());
+			   op="read overlay/colour";
+			}  else {
 			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
-			   log.info("Time to decompress image ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
-					 + nanoTimeToString(System.nanoTime() - start));
 			   ColorModel cm = ColorModelFactory.createColorModel(ds);
-			   log.debug("Color model for image is "+cm);
+			   log.debug("Color model for image is " + cm);
 			   bi = new BufferedImage(cm, r, false, null);
 			}
-
-			ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), bi);
+			ret.setValue(bi);
+			log.info("Time to "+op+" image ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
+				  + nanoTimeToString(System.nanoTime() - start));
 		 }
 	  } catch (IOException e) {
 		 log.error("Caught I/O exception reading image.", e);

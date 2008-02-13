@@ -52,7 +52,7 @@ import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
  */
 public class EncodeDicom implements Filter<ServletResponseItem>{
 
-   public ServletResponseItem filter(FilterItem filterItem, Map<String, Object> params) {
+   public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  URL url = FileLocationMgtFilter.filterURL(filterItem, params, null);
 	  if( url==null ) return null;
 	  return new UrlServletResponseItem(url,"application/dicom");

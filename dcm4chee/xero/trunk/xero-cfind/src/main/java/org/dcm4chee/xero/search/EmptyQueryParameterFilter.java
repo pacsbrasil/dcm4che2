@@ -52,8 +52,9 @@ public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
     public EmptyQueryParameterFilter() {
     	log.info("Instantiated an empty query parameter filter.");
     }
+    
 	/** Checks the search conditions to ensure there is something present. */
-	public ResultFromDicom filter(FilterItem filterItem, Map<String, Object> params) {
+	public ResultFromDicom filter(FilterItem<ResultFromDicom> filterItem, Map<String, Object> params) {
 		ResultsBean resultFromDicom = new ResultsBean();
 		SearchCriteria searchCriteria = (SearchCriteria) 
 			filterItem.callNamedFilter("searchCondition", params);
@@ -63,6 +64,6 @@ public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
 			return resultFromDicom;
 		}
 		log.debug("Results were not empty with "+searchCriteria.getAttributeByName().size() + " items found.");
-		return (ResultFromDicom) filterItem.callNextFilter(params);
+		return filterItem.callNextFilter(params);
 	}
 }

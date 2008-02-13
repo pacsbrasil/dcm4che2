@@ -36,6 +36,8 @@ wlfilter.src.priority=0
 wlfilter.wl=${class:org.dcm4chee.xero.wado.WLFilter}
 wlfilter.wl.priority=15
 
-encode.inherit=wlfilter
+encode=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 encode.encode=${class:org.dcm4chee.xero.wado.EncodeImage}
 encode.encode.priority=1000
+encode.wadoImg=${ref:wlfilter}
+encode.wadoImg.priority=-1

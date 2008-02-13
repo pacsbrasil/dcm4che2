@@ -47,7 +47,7 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
  * @author bwallace
  *
  */
-public class RenameAttributeFilter implements Filter<Object> {
+public class RenameAttributeFilter<T> implements Filter<T> {
    String[] renames = new String[]{
 		 "studyUID", "StudyInstanceUID",
 		 "seriesUID", "SeriesInstanceUID",
@@ -55,7 +55,7 @@ public class RenameAttributeFilter implements Filter<Object> {
    };
 
    /** Rename the given items in the map */
-   public Object filter(FilterItem filterItem, Map<String, Object> args) {
+   public T filter(FilterItem<T> filterItem, Map<String, Object> args) {
 	  for(int i=1; i<renames.length; i+= 2) {
 		 Object val = args.remove(renames[i-1]);
 		 if( val!=null ) args.put(renames[i],val);

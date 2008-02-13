@@ -82,7 +82,7 @@ public class FilterMetaDataTest {
 	{
 
 		@SuppressWarnings("unchecked")
-		public Integer filter(FilterItem filterItem, Map<String,Object> params) {
+		public Integer filter(FilterItem<Integer> filterItem, Map<String,Object> params) {
 			Integer value = (Integer) filterItem.callNextFilter(params);
 			if( value==null ) return null;
 			Integer paramValue = (Integer) params.get("add");
@@ -102,7 +102,7 @@ public class FilterMetaDataTest {
 			this.clazz = clazz;
 		}
 
-		public T filter(FilterItem filterItem, Map<String, Object> params) {
+		public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 			Object value = params.get("src");
 			if ( clazz.isInstance(value) ) return clazz.cast(value);
 			Object nextValue = filterItem.callNextFilter(params);
@@ -124,11 +124,11 @@ public class FilterMetaDataTest {
 		}
 		
 		/** Convert the object into a string */
-		public String filter(FilterItem filterItem, Map<String,Object> params) {
-			Object ret = filterItem.callNextFilter(params);
+		public String filter(FilterItem<String> filterItem, Map<String,Object> params) {
+			String ret = filterItem.callNextFilter(params);
 			if ( ret!=null ) return ret.toString();
-			ret = filterItem.callNamedFilter(subFilter,params);
-			if( ret!=null ) return ret.toString();
+			Object obj = filterItem.callNamedFilter(subFilter,params);
+			if( obj!=null ) return obj.toString();
 			return null;
 		}
 

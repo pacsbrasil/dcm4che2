@@ -51,6 +51,7 @@ import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +86,10 @@ public class WLFilter implements Filter<WadoImage> {
 	 for(int i=0; i<256; i++ )pval2out_inverse[i] = (short) ((255-i) << 8); 
    };
 
-   public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
+   public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  Object[] values = MemoryCacheFilter.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
-	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
+
+	  WadoImage wi = filterItem.callNextFilter(params);
 	  if (wi == null) {
 		 log.debug("No wado image found.");
 		 return null;
@@ -96,16 +98,11 @@ public class WLFilter implements Filter<WadoImage> {
 		 log.debug("Skipping window levelling as no dicom object header found.");
 		 return wi;
 	  }
-	  if( "raw".equals(values[0]) || "raw".equals(values[1]) ) {
-		 log.info("Skipping window level as the RAW image is being requested.");
+	  if( FilterUtil.getInt(params,EncodeImage.MAX_BITS,8)!=8 ) {
+		 log.info("Skipping window level as more bits than 8 is being requested");
 		 return wi;
 	  }
 	  
-	  if( "image/jp12".equals(params.get("contentType"))) {
-		 log.info("Skipping window level, as the 12 bit image is being requested.");
-		 return wi;
-	  }
-
 	  long start = System.nanoTime();
 	  BufferedImage bi = wi.getValue();
 

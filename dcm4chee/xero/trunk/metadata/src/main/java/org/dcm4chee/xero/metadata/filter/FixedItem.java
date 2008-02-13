@@ -54,7 +54,7 @@ public class FixedItem<T> implements Filter<T> {
   }
   
   /** Just return the fixed item */
-  public T filter(FilterItem filterItem, Map<String, Object> params) {
+  public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 	return returnValue;
   }
 

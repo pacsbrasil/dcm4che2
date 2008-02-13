@@ -59,8 +59,8 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
    String FILE_LOCATION="fileLocation";
    
    /** Update any image beans with min/max pixel range information */
-   public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
-	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
+	  ResultsBean ret = filterItem.callNextFilter(params);
 	  log.debug("Add file location filter called.");
 	  if( ret==null || ! ("true".equalsIgnoreCase((String) params.get(FILE_LOCATION) )))
 		 return ret;

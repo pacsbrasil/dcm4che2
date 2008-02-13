@@ -70,7 +70,7 @@ public class KeyObjectSeries extends KeyObjectFilter {
      * ensures they are marked as key objects as well.
      */
    @Override
-   protected void handleMissingItems(FilterItem filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
+   protected void handleMissingItems(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
 		 List<KeySelection> missing) {
 	  Map<String, Object> newParams = new HashMap<String, Object>();
 	  Set<String> uids = new HashSet<String>(newParams.size());

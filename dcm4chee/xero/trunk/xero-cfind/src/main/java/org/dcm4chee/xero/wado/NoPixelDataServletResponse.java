@@ -37,73 +37,69 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Returns the object as read from the given URL
+/**
+ * Implements a servlet response item that writes a DICOM header only to the
+ * output stream. Any encoding is allowed, but only items actually in the
+ * provided DICOM object will be written, and no transcoding will take place
+ * between formats.
  * 
  * @author bwallace
+ * 
  */
-public class UrlServletResponseItem implements ServletResponseItem {
-   private static final Logger log = LoggerFactory.getLogger(UrlServletResponseItem.class);
-   URL url;
-   String contentType;
-   
-   /** Record the URL for playback */
-   public UrlServletResponseItem(URL url, String contentType) {
-	  this.url =url;
-	  this.contentType = contentType;
+public class NoPixelDataServletResponse implements ServletResponseItem {
+
+   protected DicomObject ds;
+
+   protected String tsuid;
+
+   public NoPixelDataServletResponse(DicomObject ds, String tsuid) {
+	  this.tsuid = tsuid;
+	  this.ds = ds;
    }
 
-   /** Write the contents from the given URL to the servlet response */
-   public void writeResponse(HttpServletRequest arg0, HttpServletResponse response) throws IOException {
-	  if( url==null ) {
-		 response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		 log.warn("No response found for request.");
-		 return;
-	  }
-	  if( contentType!=null ) response.setContentType(contentType);
-	  InputStream is;
-	  String surl = url.toString();
-	  long fileSize;
-	  if (surl.startsWith("file:")) {
-		String fileName = url.getFile();
-		log.info("Using file "+fileName);
-		is = new FileInputStream(fileName);
-		fileSize = new File(fileName).length();
-	  }
-	  else {
-		  URLConnection conn = url.openConnection();
-		  log.info("Reading from URL connection "+surl);
-		  fileSize = conn.getContentLength();
-		  is = conn.getInputStream();
-	  }
-	  if( fileSize!=-1 ) {
-		 log.info("Returning "+fileSize+" bytes for file "+url);
-		 response.setContentLength((int) fileSize);
-	  }
+   /** Write whatever dicom object was provided, in it's raw form - do not convert any image
+    * pixel data that happens to be included.
+    */
+   public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	  response.setContentType("application/dicom");
+	  DicomObject fmiAttrs = getFileMetaInformation();
 	  OutputStream os = response.getOutputStream();
-	  byte[] data = new byte[64*1024];
-	  int size = is.read(data);
-	  while(size>0) {
-		 os.write(data,0,size);
-		 os.flush();
-		 size = is.read(data);
-	  }
-	  is.close();
-	  os.close();
+	  DicomOutputStream dos = new DicomOutputStream(os);
+	  dos.writeFileMetaInformation(fmiAttrs);
+	  String useTsuid = tsuid;
+	  // The NoPixelDataDeflate isn't yet fully defined, so use an internal value.
+	  // TODO remove this when Supplement 119 gets real UIDs to use as it will happen automatically.
+	  if( tsuid== RecodeDicom.NoPixelDataDeflateUid ) 
+		 useTsuid = UID.DeflatedExplicitVRLittleEndian;
+	  dos.writeDataset(ds, useTsuid);
+	  dos.finish();
+   }
+
+   /**
+     * Gets the file meta information attributes into a new DICOM object, so
+     * that they can be updated and then the entire object returned.
+     * 
+     * @return
+     */
+   private DicomObject getFileMetaInformation() {
+	  DicomObject ret = new BasicDicomObject();
+	  ds.fileMetaInfo().copyTo(ret);
+	  ret.putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+	  return ds;
    }
 
 }

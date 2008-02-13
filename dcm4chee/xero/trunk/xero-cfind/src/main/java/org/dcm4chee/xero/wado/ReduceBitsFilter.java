@@ -57,6 +57,7 @@ import org.dcm4che2.image.ShortLookupTable;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,23 +83,28 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 
    static ColorModel cm12 = new ComponentColorModel(gray, bits12, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
 
+   /**
+    * Reduces the number of bits from 13-16 to 12, only for contentType=image/jp12
+    */
    @SuppressWarnings("unchecked")
-   public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
+   public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
-	  if (!"image/jp12".equals(params.get("contentType"))) {
-		 log.debug("Not JP12 - returning wado image directly, bits="+wi.getDicomObject().getInt(Tag.BitsStored));
+	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) return wi;
+	  int bits = FilterUtil.getInt(params,EncodeImage.MAX_BITS,8); 
+	  if ( bits<=8 || bits >= 16 ) {
+		 log.debug("Not 9..15 bit image - returning wado image directly, bits="+wi.getDicomObject().getInt(Tag.BitsStored));
 		 return wi;
 	  }
 	  long start = System.nanoTime();
 	  DicomObject ds = wi.getDicomObject();
 	  int stored = ds.getInt(Tag.BitsStored);
-	  if (stored < 13) {
+	  if (stored <= bits) {
 		 log.debug("Only "+stored+" bits -not decimating window level.");
 		 return wi;
 	  }
 	  WritableRaster r = wi.getValue().getRaster();
 	  // Check to see if this has already been done.
-	  if (r.getSampleModel().getSampleSize(0) < 13) {
+	  if (r.getSampleModel().getSampleSize(0) <= bits) {
 		 log.warn("Hmm - actual sample model is already smaller, just returning.");
 		 return wi;
 	  }
@@ -113,6 +119,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		 ds.putInt(Tag.LargestImagePixelValue, VR.IS, largest);
 	  }
 
+	  // TODO handle number of bits !=12  - for now, just go to 12 bits only.
 	  if (smallest >= 0 && largest < 4096) {
 		 // This is actually just a 12 bit raw image - don't need to
          // transcode it.

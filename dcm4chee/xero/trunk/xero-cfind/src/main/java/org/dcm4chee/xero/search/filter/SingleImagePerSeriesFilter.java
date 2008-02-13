@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @Name("metadata.seriesFilter.singleImagePerSeriesFilter")
-public class SingleImagePerSeriesFilter implements Filter<Object> {
+public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
 	private static Logger log = LoggerFactory
@@ -73,15 +73,14 @@ public class SingleImagePerSeriesFilter implements Filter<Object> {
 	private static final String INSTANCE_NUMBER = "InstanceNumber";
 
 	/** Adds an InstanceNumber search criteria */
-	public Object filter(FilterItem filterItem, Map<String, Object> params) {
+	public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 		if (params.containsKey(INSTANCE_NUMBER)) {
 			log
 					.info("Search already has instance number, not filtering series.");
 			return filterItem.callNextFilter(params);
 		}
 
-		ResultsBean rb = (ResultsBean) filterItem.callNamedFilter(
-				"source", params);
+		ResultsBean rb = filterItem.callNextFilter(params);
 		if (rb == null)
 			return null;
 
@@ -107,7 +106,7 @@ public class SingleImagePerSeriesFilter implements Filter<Object> {
 	 *            series to extend
 	 * @return
 	 */
-	protected ResultsBean extendWithOtherInstances(FilterItem filterItem, Map<String, Object> params, ResultsBean rb, List<SeriesType> childless) {
+	protected ResultsBean extendWithOtherInstances(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean rb, List<SeriesType> childless) {
 		log.info("Found "+childless.size()+" series with no child with instance number=1.");
 		List<String> uidsToSearch = new ArrayList<String>(childless.size());
 		for(SeriesType se : childless) {
@@ -135,14 +134,14 @@ public class SingleImagePerSeriesFilter implements Filter<Object> {
 		return rb;
 	}
 
-	protected ResultsBean extendWithInstanceImage(FilterItem filterItem,
+	protected ResultsBean extendWithInstanceImage(FilterItem<ResultsBean> filterItem,
 			Map<String, Object> params, ResultsBean rb) {
 		// This will cause rb to be extended instead of a new instance being
 		// created.
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
 		log.info("Filtering by adding an instance number=1 as a first guess.");
 		params.put(INSTANCE_NUMBER, "1");
-		Object ret = filterItem.callNamedFilter("imageSource",params);
+		ResultsBean ret = (ResultsBean) filterItem.callNamedFilter("imageSource",params);
 		assert ret == rb;
 		params.remove(INSTANCE_NUMBER);
 		return rb;

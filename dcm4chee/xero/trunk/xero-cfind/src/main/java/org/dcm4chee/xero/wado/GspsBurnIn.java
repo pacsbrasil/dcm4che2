@@ -93,11 +93,11 @@ public class GspsBurnIn implements Filter<WadoImage> {
    /**
      * Burn in GSPS elements if any are found and relevant to the given image.
      */
-   public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
+   public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  String presentationUID = (String) params.get("presentationUID");
 	  if (presentationUID == null) {
 		 log.info("Not burning in presentation state, as none specified.");
-		 return (WadoImage) filterItem.callNextFilter(params);
+		 return filterItem.callNextFilter(params);
 	  }
 
 	  log.info("Burning in presentation state " + presentationUID);
@@ -167,7 +167,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
      * @param image
      * @return
      */
-   private WadoImage filterWadoImage(FilterItem filterItem, Map<String, Object> params, ImageBean image) {
+   private WadoImage filterWadoImage(FilterItem<WadoImage> filterItem, Map<String, Object> params, ImageBean image) {
 	  int imgRows = image.getRows();
 	  int imgCols = image.getColumns();
 	  float left = 0;
@@ -248,7 +248,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  }
 	  params.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
 
-	  WadoImage ret = (WadoImage) filterItem.callNextFilter(params);
+	  WadoImage ret = filterItem.callNextFilter(params);
 	  return ret;
    }
 

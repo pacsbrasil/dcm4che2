@@ -78,7 +78,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
      * Filter the results by image position and image count, returning a NEW
      * instance of the overall result.
      */
-   public ResultsType filter(FilterItem filterItem, Map<String, Object> params) {
+   public ResultsType filter(FilterItem<ResultsType> filterItem, Map<String, Object> params) {
 	  int position = 0;
 	  int count = 0;
 	  Object[] page = MemoryCacheFilter.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
@@ -120,7 +120,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  else {
 		 log.debug("Not looking for paging image results - probably an ad-hoc query.");
 	  }
-	  ResultsType results = (ResultsType) filterItem.callNextFilter(params);
+	  ResultsType results = filterItem.callNextFilter(params);
 	  if( objectUID!=null && results!=null ) {
 		 position = findPosition(results,objectUID,frameNo);
 		 log.debug("Found position "+position);

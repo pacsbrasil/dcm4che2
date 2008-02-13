@@ -68,6 +68,8 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 	JAXBContext context;
 	static Logger log = LoggerFactory.getLogger(JaxbFilter.class);
 	
+	protected String source = "source";
+	
 	/**
 	 * This class holds the filtered response item until it is time to be serialized
 	 * 
@@ -111,14 +113,15 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 		}
 	}
 
-	/** Convert the object (if any) into a servlet response item that serializes it as XML
+	/** Convert the object returned by the source filter (if any) into a servlet response item that 
+	 * serializes it as XML.
 	 * @param nextFilter is called to get the item to convert to XML.
 	 * @param params are just passed down the filter chain.
 	 * @return a servlet response that can be used to actually write the XML data.
 	 */
-	public ServletResponseItem filter(FilterItem nextFilter, Map<String, Object> params) {
-		Object data = nextFilter.callNextFilter(params);
-		if( data==null ) return null;
+	public ServletResponseItem filter(FilterItem<ServletResponseItem> nextFilter, Map<String, Object> params) {
+		Object data = nextFilter.callNamedFilter(source, params);
+		if( data==null ) return nextFilter.callNextFilter(params);
 		return new JaxbServletResponseItem(data,context);
 	}
 
@@ -127,6 +130,8 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		String contextPath = (String) metaDataBean.getValue("contextPath");
+		String sourceName = (String) metaDataBean.getValue("sourceName");
+		if( sourceName!=null ) source = sourceName;
 		log.info("Found contextPath="+contextPath);
 		try {
 			if( contextPath!=null ) context = JAXBContext.newInstance(contextPath);

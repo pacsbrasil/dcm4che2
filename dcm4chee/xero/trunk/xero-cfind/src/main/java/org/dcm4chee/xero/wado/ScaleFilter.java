@@ -71,14 +71,14 @@ public class ScaleFilter implements Filter<WadoImage> {
 
    private static final float[] DEFAULT_REGION = new float[] { 0f, 0f, 1f, 1f };
 
-   public WadoImage filter(FilterItem filterItem, Map<String, Object> params) {
+   public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  float[] region = getFloats(params, "region", DEFAULT_REGION);
 	  int rows = getInt(params, "rows");
 	  int cols = getInt(params, "cols");
 	  int rot = getInt(params,"rotation");
 	  boolean flip = getBoolean(params,"flip");
 	  if (rows == 0 && cols == 0 && rot==0 && !flip) {
-		 log.info("Just calling next filter direclty as no size, rotation or flip parameters.");
+		 log.info("Just calling next filter directly as no size, rotation or flip parameters.");
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  }
 	  DicomImageReader dir = DicomFilter.filterDicomImageReader(filterItem, params, null);

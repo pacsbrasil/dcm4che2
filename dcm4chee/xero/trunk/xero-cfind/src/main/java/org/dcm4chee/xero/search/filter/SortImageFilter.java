@@ -48,7 +48,7 @@ import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageBeanMultiFrame;
 import org.dcm4chee.xero.search.study.PatientType;
-import org.dcm4chee.xero.search.study.ResultsType;
+import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesComparator;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
@@ -56,78 +56,93 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class sorts the images by instance number, and adds the position information into the image level data.
+ * This class sorts the images by instance number, and adds the position
+ * information into the image level data.
+ * 
  * @author bwallace
- *
+ * 
  */
-public class SortImageFilter implements Filter<ResultsType>{
-   @SuppressWarnings("unused")
+public class SortImageFilter implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(SortImageFilter.class);
 
-	/** Sort the returned results, by series number and by image number.
-	 * @param filterItem contains information about the other filters, including the next filter.
-	 * @param params are the parameters to use to determine the series.
-	 * @return a patient object with sorted series and images.  Only series/images matching the params queries will be included.
-	 */
-	public ResultsType filter(FilterItem filterItem, Map<String, Object> params) {
-		ResultsType results = (ResultsType) filterItem.callNextFilter(params);
-		if( results==null ) return null;
-		return sortSeriesAndImages(results);
-	}
-
-	/**
-	 * Sorts the series and images, and adds in positional information.
-	 * TODO: This is supposed to take into account multi-frame ordering and grouping, but some of the
-	 * enhanced CT/MR ordering may not be supported yet. 
-	 * @param results
-	 * @return
-	 */
-    public static ResultsType sortSeriesAndImages(ResultsType results) {
-	  List<PatientType> patients = results.getPatient();
-		for(PatientType patient : patients) {
-			List<StudyType> studies = patient.getStudy();
-			for(StudyType study : studies) {
-				sortSeries(study.getSeries());
-			}
-		}
-		return results;
+   /**
+     * Sort the returned results, by series number and by image number.
+     * 
+     * @param filterItem
+     *            contains information about the other filters, including the
+     *            next filter.
+     * @param params
+     *            are the parameters to use to determine the series.
+     * @return a patient object with sorted series and images. Only
+     *         series/images matching the params queries will be included.
+     */
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
+	  ResultsBean results = filterItem.callNextFilter(params);
+	  if (results == null)
+		 return null;
+	  log.debug("Sorting results.");
+	  return sortSeriesAndImages(results);
    }
-	
-	/** Sorts the series items, and then calls the sort on the image items.
-	 * @param series are a list of series objects to sort by series number
-	 */
-	public static void sortSeries(List<SeriesType> series) {
-		Collections.sort(series,new SeriesComparator());
-		for(SeriesType aSeries : series) {
-		    List<DicomObjectType> dicomObjects = aSeries.getDicomObject();
-		    if( dicomObjects!=null && dicomObjects.size()>0 ) {
-			  sortImages(dicomObjects);
-			  DicomObjectType lastDot = dicomObjects.get(dicomObjects.size()-1);
-			  if( lastDot instanceof ImageBean ) {
-				 ImageBean image = (ImageBean) lastDot;
-			     aSeries.setViewable(lastDot.getPosition()+image.getNumberOfFrames());
-			  } 
-		    }
-		}
-	}
-	
-	/** Sorts the image items 
-	 * TODO Currently assumes that multi-frame images are fully sequential.
-	 * @param images are the dicom objects to sort
-	 */
-	public static void sortImages(List<DicomObjectType> images) {
-		Collections.sort(images,new DicomObjectComparator());
-		int position = 0;
-		for(DicomObjectType dot : images) {
-		   if( dot instanceof ImageBeanMultiFrame ) {
-			  dot.setPosition(position);
-			  ImageBeanMultiFrame image = (ImageBeanMultiFrame) dot;
-			  position += image.getNumberOfFrames();
-		   }
-		   else if( dot instanceof ImageBean ) {
-			  dot.setPosition(position++);
-		   }
-		}
-	}
+
+   /**
+     * Sorts the series and images, and adds in positional information. TODO:
+     * This is supposed to take into account multi-frame ordering and grouping,
+     * but some of the enhanced CT/MR ordering may not be supported yet.
+     * 
+     * @param results
+     * @return
+     */
+   public static ResultsBean sortSeriesAndImages(ResultsBean results) {
+	  List<PatientType> patients = results.getPatient();
+	  for (PatientType patient : patients) {
+		 List<StudyType> studies = patient.getStudy();
+		 for (StudyType study : studies) {
+			sortSeries(study.getSeries());
+		 }
+	  }
+	  return results;
+   }
+
+   /**
+     * Sorts the series items, and then calls the sort on the image items.
+     * 
+     * @param series
+     *            are a list of series objects to sort by series number
+     */
+   public static void sortSeries(List<SeriesType> series) {
+	  Collections.sort(series, new SeriesComparator());
+	  for (SeriesType aSeries : series) {
+		 List<DicomObjectType> dicomObjects = aSeries.getDicomObject();
+		 if (dicomObjects != null && dicomObjects.size() > 0) {
+			sortImages(dicomObjects);
+			DicomObjectType lastDot = dicomObjects.get(dicomObjects.size() - 1);
+			if (lastDot instanceof ImageBean) {
+			   ImageBean image = (ImageBean) lastDot;
+			   aSeries.setViewable(lastDot.getPosition() + image.getNumberOfFrames());
+			}
+		 }
+	  }
+   }
+
+   /**
+     * Sorts the image items TODO Currently assumes that multi-frame images are
+     * fully sequential.
+     * 
+     * @param images
+     *            are the dicom objects to sort
+     */
+   public static void sortImages(List<DicomObjectType> images) {
+	  Collections.sort(images, new DicomObjectComparator());
+	  int position = 0;
+	  for (DicomObjectType dot : images) {
+		 if (dot instanceof ImageBeanMultiFrame) {
+			dot.setPosition(position);
+			ImageBeanMultiFrame image = (ImageBeanMultiFrame) dot;
+			position += image.getNumberOfFrames();
+		 } else if (dot instanceof ImageBean) {
+			dot.setPosition(position++);
+		 }
+	  }
+   }
 
 }

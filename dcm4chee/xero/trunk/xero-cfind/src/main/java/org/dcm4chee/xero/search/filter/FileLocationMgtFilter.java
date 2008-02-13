@@ -120,28 +120,28 @@ public class FileLocationMgtFilter implements Filter<URL> {
    }
 
    /** Get the URL of the local file - may not be updated for DB changes etc */
-   public URL filter(FilterItem filterItem, Map<String, Object> params) {
+   public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
 	  if (fileSystemMgtName == null || server == null)
-		 return (URL) filterItem.callNextFilter(params);
+		 return filterItem.callNextFilter(params);
 	  long start = System.nanoTime();
 	  String objectUID = (String) params.get("objectUID");
 	  File f;
 	  try {
 		 f = getDICOMFile(objectUID);
 		 if (f == null)
-			return (URL) filterItem.callNextFilter(params);
+			return filterItem.callNextFilter(params);
 		 log.info("Time to read file location="+nanoTimeToString(System.nanoTime() - start));
 		 return f.toURI().toURL();
 	  } catch (RuntimeException e) {
 		 throw e;
 	  } catch (Exception e) {
 		 log.warn("Caught exception getting dicom file location:" + e, e);
-		 return (URL) filterItem.callNextFilter(params);
+		 return filterItem.callNextFilter(params);
 	  }
    }
 
    /** Returns the URL of the local file for the given image bean */
-   public static URL findImageBeanUrl(DicomObjectType dot, FilterItem filterItem, Map<String, Object> params) {
+   public static URL findImageBeanUrl(DicomObjectType dot, FilterItem<?> filterItem, Map<String, Object> params) {
 	  Map<String, Object> newParams = new HashMap<String, Object>();
 	  newParams.put("objectUID", dot.getSOPInstanceUID());
 	  if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilter.NO_CACHE))) {
@@ -152,7 +152,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
    }
 
    /** Finds the location of the given object by calling the fileLocation filter. */
-   public static URL filterURL(FilterItem filterItem, Map<String, Object> params, String uid) {
+   public static URL filterURL(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
 	  Map<String, Object> newParams;
 	  if (uid == null) {
 		 // This case is used for filters where the request is directly for as single instance 

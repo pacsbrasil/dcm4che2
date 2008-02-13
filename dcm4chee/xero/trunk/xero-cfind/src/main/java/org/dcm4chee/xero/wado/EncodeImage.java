@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.wado;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,8 +53,12 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +72,24 @@ import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToStrin
  * 
  */
 public class EncodeImage implements Filter<ServletResponseItem> {
+   private static final Logger log = LoggerFactory.getLogger(EncodeImage.class);
+   public static final String MAX_BITS = "maxBits";
+
    private static final float DEFAULT_QUALITY = -1.0f;
+
+   protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
+   static {
+	  new EncodeResponseInfo("image/jp12", "image/jpeg", true, 12, null, UID.JPEGExtended24);
+	  new EncodeResponseInfo("image/jpls", "image/jpeg", false, 16, "JPEG-LS", UID.JPEGLSLossless, UID.JPEGLSLossyNearLossless);
+	  new EncodeResponseInfo("image/jpll", "image/jpeg", false, 16, "JPEG-LOSSLESS", UID.JPEGLossless);
+	  new EncodeResponseInfo("image/png", null, false, 8, null);
+	  new EncodeResponseInfo("image/png16", "image/png", false, 16, null);
+	  // image/jpeg is the default, so add a image/* as an additional mapping.
+	  new EncodeResponseInfo("image/jpeg", null, true, 8, null, UID.JPEGBaseline1, "image/*");
+	  new EncodeResponseInfo("image/jp2", null, false, 16, null, UID.JPEG2000, UID.JPEG2000LosslessOnly);
+	  new EncodeResponseInfo("image/gif", null, false, 8, null);
+	  new EncodeResponseInfo("image/bmp", null, false, 8, null);
+   };
 
    /*
      * Include the WADO parameters that are handled further down the chain -
@@ -76,7 +98,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
      */
    String[] wadoParameters = new String[] { "windowCenter", "windowWidth", "imageUID", "studyUID", "seriesUID", "objectUID",
 		 "frameNumber", "rgb", // Could be re-calculated fairly easily, but
-                                // right now it isn't worthwhile.
+		 // right now it isn't worthwhile.
 		 "region", "rows", "cols", "presentationUID", };
 
    /**
@@ -89,7 +111,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
      * @return A response that can be used to write the image to a stream in the
      *         provided encoding type, or image/jpeg if none.
      */
-   public ServletResponseItem filter(FilterItem filterItem, Map<String, Object> map) {
+   public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> map) {
 	  String contentType = (String) map.get("contentType");
 	  if (contentType == null)
 		 contentType = "image/jpeg";
@@ -99,8 +121,38 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		 quality = Float.parseFloat(sQuality);
 	  String queryStr = computeQueryStr(map);
 	  map.put(org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.KEY_NAME, queryStr);
-	  WadoImage image = (WadoImage) filterItem.callNextFilter(map);
-	  return new ImageServletResponseItem(image, contentType, quality);
+	  EncodeResponseInfo eri = contentTypeMap.get(contentType);
+	  boolean multipleEncoding = contentType.indexOf(',')>=0;
+	  if ((eri != null && eri.maxBits > 8) || multipleEncoding) {
+		 DicomObject ds = DicomFilter.filterImageDicomObject(filterItem, map, null);
+		 String tsuid = ds.getString(Tag.TransferSyntaxUID);
+		 EncodeResponseInfo tsEri = contentTypeMap.get(tsuid);
+		 log.info("Source tsuid="+tsuid);
+		 if (tsEri != null && contentType.indexOf(tsEri.mimeType) >= 0) {
+			contentType = tsEri.mimeType;
+			log.info("Trying to read raw image for ",map.get("objectUID"));
+			MemoryCacheFilter.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
+			eri = tsEri;
+			contentType = eri.mimeType;
+			multipleEncoding = false;
+		 }
+		 if( eri!=null ) map.put(MAX_BITS, eri.maxBits);
+	  }
+	  if( multipleEncoding ) {
+		 // This won't happen if we found the encoding that exists in the actual image, eg IMG_AS_BYTES return.
+		 for( String testType : contentType.split(",") ) {
+			int semi = testType.indexOf(';');
+			if( semi>0 ) testType = testType.substring(0,semi);
+			testType = testType.trim();
+			eri = contentTypeMap.get(testType);
+			if( eri!=null ) break;
+		 }
+	  }
+	  if( eri==null ) {
+		 return new ErrorServletResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
+	  }
+	  WadoImage image = (WadoImage) filterItem.callNamedFilter("wadoImg", map);
+	  return new ImageServletResponseItem(image, eri, quality);
    }
 
    /**
@@ -135,28 +187,22 @@ class ImageServletResponseItem implements ServletResponseItem {
    ImageWriter writer;
 
    ImageWriteParam imageWriteParam;
-   
+
    IIOMetadata iiometadata;
 
    WadoImage wadoImage;
-   
+
    private int maxAge = 3600;
-   
-   private static Map<String,String> contentTypeMap = new HashMap<String,String>();
-   static {
-	  contentTypeMap.put("image/jp12", "image/jpeg");
-	  contentTypeMap.put("image/jpls", "image/jpeg");
-	  contentTypeMap.put("image/jpll", "image/jpeg");
-   };
 
    // TODO Make this come from metadata
    // CLIB version
    static String preferred_name_start = "com.sun.media.imageioimpl.plugins";
+
    // Agfa proprietary version
-   //static String preferred_name_start = "com.agfa";
+   // static String preferred_name_start = "com.agfa";
    // Pure Java version
-   //static String preferred_name_start = "com.sun.imageio.plugins";
-   
+   // static String preferred_name_start = "com.sun.imageio.plugins";
+
    /**
      * Create an image servlet response to write the given image to the response
      * stream.
@@ -170,32 +216,27 @@ class ImageServletResponseItem implements ServletResponseItem {
      *            is the JPEG lossy quality (may eventually be other types as
      *            well, but currently that is the only one available)
      */
-   public ImageServletResponseItem(WadoImage image, String contentType, float quality) {
-	  String useContent = contentTypeMap.get(contentType);
-	  if( useContent==null ) useContent = contentType;
-	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(useContent);
+   public ImageServletResponseItem(WadoImage image, EncodeResponseInfo eri, float quality) {
+	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(eri.lookupMimeType);
 	  writer = writers.next();
-	  while(!writer.getClass().getName().startsWith(preferred_name_start) && writers.hasNext()) {
-		 log.debug("Skipping "+writer.getClass().getName());
+	  while (!writer.getClass().getName().startsWith(preferred_name_start) && writers.hasNext()) {
+		 log.debug("Skipping ", writer.getClass().getName());
 		 writer = writers.next();
 	  }
-	  this.contentType = contentType;
+	  this.contentType = eri.mimeType;
 	  this.wadoImage = image;
-	  if( contentType.equals("image/jpll") ) {
-		 imageWriteParam = writer.getDefaultWriteParam();
-		 imageWriteParam.setCompressionType("JPEG-LOSSLESS");
-	  }
-	  else if( contentType.equals("image/jpls") ) {
-		 imageWriteParam = writer.getDefaultWriteParam();
-		 imageWriteParam.setCompressionType("JPEG-LS");
-	  }
-	  else if (quality >= 0f && quality <= 1f && useContent.equals("image/jpeg")) {
+	  if (eri!=null && quality >= 0f && quality <= 1f && eri.isLossyQuality) {
 		 imageWriteParam = writer.getDefaultWriteParam();
 		 imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		 imageWriteParam.setCompressionType("JPEG");
 		 imageWriteParam.setCompressionQuality(quality);
 	  }
-	  
+	  if (eri.compressionType != null) {
+		 if (imageWriteParam == null)
+			imageWriteParam = writer.getDefaultWriteParam();
+		 imageWriteParam.setCompressionType(eri.compressionType);
+	  }
+
    }
 
    /**
@@ -216,24 +257,66 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  }
 	  long start = System.nanoTime();
 	  response.setContentType(contentType);
-	  response.setHeader("Cache-Control", "max-age="+maxAge);
-	  // Because this is controlled by login, it will have Pragma and Expires set
+	  response.setHeader("Cache-Control", "max-age=" + maxAge);
+	  // Because this is controlled by login, it will have Pragma and Expires
+        // set
 	  // to different values, and those need to be removed to get this cached.
 	  response.setHeader("Pragma", null);
 	  response.setHeader("Expires", null);
 	  Collection<String> headers = (Collection<String>) wadoImage.getParameter("responseHeaders");
-	  if( headers!=null ) {
-		 for(String key : headers) {
-			response.setHeader(key,(String) wadoImage.getParameter(key));
+	  if (headers != null) {
+		 for (String key : headers) {
+			response.setHeader(key, (String) wadoImage.getParameter(key));
 		 }
 	  }
-	  ImageOutputStream ios = ImageIO.createImageOutputStream(response.getOutputStream());
+	  OutputStream os = response.getOutputStream();
+	  if( wadoImage.getValue()==null ) {
+		 byte[] rawImage = (byte[]) wadoImage.getParameter(WadoImage.IMG_AS_BYTES);
+		 os.write(rawImage);
+		 os.flush();
+		 log.info("Raw image write took " + nanoTimeToString(System.nanoTime() - start));
+		 return;
+	  }
+	  ImageOutputStream ios = ImageIO.createImageOutputStream(os);
 	  writer.setOutput(ios);
 	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
 	  writer.write(iiometadata, iioimage, imageWriteParam);
 	  ios.close();
-	  response.getOutputStream().close();
-	  log.debug("Encoding image took " + nanoTimeToString(System.nanoTime() - start) + " with "+writer.getClass());
+	  os.close();
+	  log.info("Encoding image took " + nanoTimeToString(System.nanoTime() - start) + " with " + writer.getClass());
    }
 
+}
+
+class EncodeResponseInfo {
+   // Read from this mime type.
+   public String mimeType;
+
+   // Lookup the writer from this mime type.
+   public String lookupMimeType;
+
+   // Set the lossy quality from the header
+   public boolean isLossyQuality;
+
+   // Maximum number of encodeable bits.
+   public int maxBits;
+
+   // Set the compression type to this value
+   public String compressionType;
+
+   public EncodeResponseInfo(String mimeType, String lookupMimeType, boolean isLossyQuality, int maxBits, String compressionType,
+		 String... transferSyntaxes) {
+	  this.mimeType = mimeType;
+	  if( lookupMimeType==null ) lookupMimeType = mimeType;
+	  this.lookupMimeType = lookupMimeType;
+	  this.isLossyQuality = isLossyQuality;
+	  this.maxBits = maxBits;
+	  this.compressionType = compressionType;
+	  if (transferSyntaxes != null) {
+		 for (String ts : transferSyntaxes) {
+			EncodeImage.contentTypeMap.put(ts, this);
+		 }
+	  }
+	  EncodeImage.contentTypeMap.put(mimeType, this);
+   }
 }

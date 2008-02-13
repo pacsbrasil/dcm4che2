@@ -62,7 +62,7 @@ public class DicomFileLocationFilter implements Filter<URL> {
 	};
 
 	/** Figure out the location of the file, as referenced by SOP instance UID. */
-	public URL filter(FilterItem filterItem, Map<String, Object> params) {
+	public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
 		URL ret = (URL) params.get(DICOM_FILE_LOCATION);
 		if( ret!=null ) return ret;
 		try {

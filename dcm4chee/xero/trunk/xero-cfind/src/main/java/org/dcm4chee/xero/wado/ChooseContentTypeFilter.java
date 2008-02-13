@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
    private static final Logger log = LoggerFactory.getLogger(ChooseContentTypeFilter.class);
 
-   public ServletResponseItem filter(FilterItem filterItem, Map<String, Object> params) {
+   public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  String contentType = (String) params.get("contentType");
 	  if( contentType==null ) {
 		 log.info("No content type found, looking for modality of the image to determine contentType");
@@ -102,7 +102,7 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 		 }
 	  }
 	  log.warn("WADO Filter not found for contentType="+contentType);
-	  return (ServletResponseItem) filterItem.callNextFilter(params);
+	  return filterItem.callNextFilter(params);
    }
 
 }

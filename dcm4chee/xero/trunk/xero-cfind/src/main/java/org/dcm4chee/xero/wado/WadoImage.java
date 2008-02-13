@@ -54,6 +54,9 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
 public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem {
 	public static String WINDOW_CENTER = "windowCenter";
 	public static String WINDOW_WIDTH = "windowWidth";
+	public static String FRAME_NUMBER= "frameNumber";
+	
+	public static String IMG_AS_BYTES = " asBytes";
 
 	private DicomObject ds;
 	private int stored;
@@ -132,4 +135,5 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
    public int getStored() {
       return stored;
    }
+
 }

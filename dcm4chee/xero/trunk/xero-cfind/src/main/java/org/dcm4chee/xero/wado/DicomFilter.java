@@ -45,7 +45,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -58,6 +57,7 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  * 
  */
-public class DicomFilter implements Filter<Object> {
+public class DicomFilter implements Filter<DicomImageReader> {
    private static final Logger log = LoggerFactory.getLogger(DicomFilter.class);
    
    DicomImageReaderSpi dicomImageReaderSpi = new DicomImageReaderSpi();
@@ -88,11 +88,11 @@ public class DicomFilter implements Filter<Object> {
      *            call the fileLocation filter to get the location.
      * @param
      */
-   public Object filter(FilterItem filterItem, Map<String, Object> params) {
+   public DicomImageReader filter(FilterItem<DicomImageReader> filterItem, Map<String, Object> params) {
 	  DicomImageReader ret = (DicomImageReader) params.get(DICOM_OBJECT_HEADER_KEY);
 	  if (ret != null)
 		 return ret;
-	  URL location = (URL) filterItem.callNamedFilter("fileLocation", params);
+	  URL location = FileLocationMgtFilter.filterURL(filterItem, params, null);
 	  if (location == null)
 		 return null;
 	  long start = System.nanoTime();
@@ -100,7 +100,7 @@ public class DicomFilter implements Filter<Object> {
 		 // Creating it directly rather than iterating over the ImageIO list means that multiple instances
 		 // can be in memory at once, which is rather handy for a stand-alone WAR that can
 		 // use either a provided version of the library or an included version.
-		 ImageReader reader = dicomImageReaderSpi.createReaderInstance();
+		 DicomImageReader reader = (DicomImageReader) dicomImageReaderSpi.createReaderInstance();
 		 String surl = location.toString();
 		 ImageInputStream in;
 		 if (surl.startsWith("file:")) {
@@ -138,7 +138,21 @@ public class DicomFilter implements Filter<Object> {
    }
 
    /**
-     * Returns the DICOM header read from a filter named "dicom".
+    * Get just the image relevant attributes for this object, eg Bit Stored, LUT's etc - things required
+    * for actual display of the object.
+    * @param filterItem
+    * @param params
+    * @param uid
+    * @return
+    */
+   public static DicomObject filterImageDicomObject(FilterItem filterItem, Map<String,Object> params, String uid) {
+	  // When the filterDicomObject returns something else, then this can be updated to use the dicom object
+	  // from the DicomImageReader or from some other location.
+	  return filterDicomObject(filterItem,params,uid);
+   }
+   /**
+     * Returns the complete DICOM header.  Use this for returning the the client or for complete access
+     * to all dicom attributes.
      * 
      * @param filterItem
      * @param params
@@ -187,7 +201,7 @@ public class DicomFilter implements Filter<Object> {
    }
 
    /**
-     * Returns the DICOM image reader from a filter named "dicom".
+     * Returns the DICOM image reader that allows frames and overlays to be read from the given object.
      * 
      * @param filterItem
      * @param params

@@ -57,5 +57,5 @@ public interface Filter<T> {
 	 * @param filterItem contains information about the available named filters, and the next filter item.
 	 * @return A created or modified value based on params.
 	 */
-    T filter(FilterItem filterItem, Map<String,Object> params);    
+    T filter(FilterItem<T> filterItem, Map<String,Object> params);    
 }

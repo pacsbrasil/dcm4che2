@@ -182,7 +182,7 @@ public class GspsEncode implements Filter<ResultsBean> {
      * be cached for very long, if at all, and not at all if they only apply to
      * one series.
      */
-   public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  ResultsBean results = (ResultsBean) filterItem.callNextFilter(params);
 	  long startTime = System.nanoTime();
 

@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class FilterItem implements Comparable<FilterItem> {
+public class FilterItem<T> implements Comparable<FilterItem> {
 	private static Logger log = LoggerFactory.getLogger(FilterItem.class);
 	String name;
 	public Filter<?> filter;
@@ -103,18 +103,20 @@ public class FilterItem implements Comparable<FilterItem> {
 		return config;
 	}
 	
-	/** Calls the next filter item in the chain.
+	/** Calls the next filter item in the chain.  The next filter is required to return the
+	 * correct type.
 	 * @param params to pass to the next filter
 	 * @return The filtered return value.
 	 */
-	public Object callNextFilter(Map<String,Object> params)
+	@SuppressWarnings("unchecked")
+   public T callNextFilter(Map<String,Object> params)
 	{
 		if( nextFilterItem==null ) return null;
 		if( nextFilterItem.priority < 0 ) return null;
-		return nextFilterItem.filter.filter(nextFilterItem, params);
+		return (T) nextFilterItem.filter.filter(nextFilterItem, params);
 	}
 	
-	/** Calls the given, named filter item from this chain.
+	/** Calls the given, named filter item from this chain.  Named filters can return anything.
 	 * @param filterName is the local name to look for.
 	 * @param params are the parameters to pass.
 	 * @return value from the filter.

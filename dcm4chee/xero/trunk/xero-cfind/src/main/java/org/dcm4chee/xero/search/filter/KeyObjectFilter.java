@@ -82,10 +82,10 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 
    public static final String KEY_UID = "koUID";
 
-   public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  String koUid = (String) params.get(KEY_UID);
 	  if (koUid == null || koUid.equals("")) {
-		 return (ResultsBean) filterItem.callNextFilter(params);
+		 return filterItem.callNextFilter(params);
 	  }
 	  ResultsBean ret = addKeyObjectMacro(filterItem, params, koUid);
 	  if (ret == null)
@@ -103,9 +103,9 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
      * @param koUid
      * @return
      */
-   protected ResultsBean addKeyObjectMacro(FilterItem filterItem, Map<String, Object> params, String koUid) {
+   protected ResultsBean addKeyObjectMacro(FilterItem<ResultsBean> filterItem, Map<String, Object> params, String koUid) {
 	  // Don't remove the koUID as it is part of the cache key still
-	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
+	  ResultsBean ret = filterItem.callNextFilter(params);
 	  if (ret == null)
 		 return null;
 	  for (int patientI = 0; patientI<ret.getPatient().size(); patientI++) {
@@ -218,7 +218,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
    }
 
    /** Handle any missing items - by default, does nothing */
-   protected void handleMissingItems(FilterItem filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
+   protected void handleMissingItems(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
 		 List<KeySelection> missing) {
    }
 
@@ -227,7 +227,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
      * Only one key object can be specified at a time. The object will be
      * returned, as well as being added to the results bean object.
      */
-   public static KeyObjectBean queryForKO(FilterItem filterItem, Map<String, Object> params, String koUid, ResultsBean rb) {
+   public static KeyObjectBean queryForKO(FilterItem<ResultsBean> filterItem, Map<String, Object> params, String koUid, ResultsBean rb) {
 	  DicomObject dobj = DicomFilter.filterDicomObject(filterItem, null, koUid);
 	  if (dobj == null)
 		 return null;

@@ -68,7 +68,7 @@ public class FilterListConfig {
 	}
 	
 	/** This gets the named filter */
-	public FilterItem getNamedFilter(String childName) {
+	public FilterItem<?> getNamedFilter(String childName) {
 		for(FilterItem fi : filterList){	
 			if( fi.name.equals(childName) ) {
 				return fi;

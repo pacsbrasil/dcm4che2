@@ -71,8 +71,8 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
    public static final String MIN_MAX_PIXEL = "pixelInfo";
 
    /** Update any image beans with min/max pixel range information */
-   public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
-	  ResultsBean ret = (ResultsBean) filterItem.callNextFilter(params);
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
+	  ResultsBean ret = filterItem.callNextFilter(params);
 	  if (ret == null || !("true".equalsIgnoreCase((String) params.get(MIN_MAX_PIXEL))))
 		 return ret;
 	  for (PatientType pt : ret.getPatient()) {

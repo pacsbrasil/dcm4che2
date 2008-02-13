@@ -38,7 +38,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 
    public static final String GSPS_KEY = "gsps";
 
-   public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  String gspsNames = (String) params.get(GSPS_KEY);
 	  if (gspsNames == null) {
 		 log.debug("Not applying GSPS discovery.");

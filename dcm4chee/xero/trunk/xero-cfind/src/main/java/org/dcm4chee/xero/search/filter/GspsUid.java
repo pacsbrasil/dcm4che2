@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
 public class GspsUid  implements Filter<ResultsBean> {
 	private static final Logger log = LoggerFactory.getLogger(GspsUid.class);
 
-	public ResultsBean filter(FilterItem filterItem, Map<String, Object> params) {
+	public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 		String gspsName = (String) params.get(GspsDiscover.GSPS_KEY);
 		Object presentationUID = params.get("presentationUID");
 		if( gspsName==null && presentationUID==null) {

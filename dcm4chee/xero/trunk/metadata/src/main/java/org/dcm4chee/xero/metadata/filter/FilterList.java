@@ -66,13 +66,13 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	 * @return The filtered item, or null if not applicable.
 	 */
 	@SuppressWarnings("unchecked")
-	public T filter(FilterItem filterItem, Map<String, Object> params) {
+	public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 	   FilterItem firstFilter = getFirstFilter(filterItem);
 		if( firstFilter!=null ) {
-			Object ret = firstFilter.filter.filter(firstFilter, params);
+			T ret = (T) firstFilter.filter.filter(firstFilter, params);
 			if( ret!=null ) return (T) ret;
 		}
-		return (T) filterItem.callNextFilter(params);
+		return filterItem.callNextFilter(params);
 	}
 	
 	/**
