@@ -433,6 +433,29 @@ public class DicomImageReader extends ImageReader {
         }
         return bi;
     }
+    
+    /** Reads the bytes for the given image as raw data. Useful when copying the image data unchanged to a new
+     * file/location etc, but some values are being changed in the header, or some images are being excluded.
+     */
+    public byte[] readBytes(int imageIndex, ImageReadParam param)
+			throws IOException
+	{
+		initImageReader();
+		if (compressed) {
+			SegmentedImageInputStream siis = itemStream(imageIndex);
+			int size = itemStreamSize(imageIndex);
+			byte[] ret = new byte[(int) size];
+			siis.read(ret);
+			return ret;
+		} else {
+	        int frameLen = width * height * samples * (allocated >> 3);
+	        byte[] ret = new byte[frameLen];
+	        long offset = pixelDataPos + imageIndex*(long) frameLen;
+	        iis.seek(offset);
+	        iis.read(ret);
+			return ret;
+		}
+	}
 
     private void copyReadParam(ImageReadParam src, ImageReadParam dst) {
     	dst.setDestination(src.getDestination());
@@ -465,6 +488,11 @@ public class DicomImageReader extends ImageReader {
         return raster;
     }
 
+    /** 
+     * Returns an ImageInputStream that can be used to read the given frame.
+     * @param imageIndex
+     * @return
+     */
     private SegmentedImageInputStream itemStream(int imageIndex) {
         if (frames > 1) {
             ItemParser.Item item = itemParser.getItem(imageIndex);
@@ -473,6 +501,23 @@ public class DicomImageReader extends ImageReader {
                     new int[] { item.length });
         }
         return new SegmentedImageInputStream(iis, itemParser);
+    }
+
+    /**
+     * Returns the size of the given frame (combined size, all segments)
+     * @param imageIndex
+     * @return
+     */
+    private int itemStreamSize(int imageIndex) {
+        if (frames > 1) {
+            ItemParser.Item item = itemParser.getItem(imageIndex);
+            return item.length;
+        }
+        int size = 0;
+        for(int i=0, n=itemParser.getNumberOfDataFragments(); i<n; i++) {
+        	size += itemParser.getItem(i).length;
+        }
+        return size;
     }
 
     private void postDecompress() {
