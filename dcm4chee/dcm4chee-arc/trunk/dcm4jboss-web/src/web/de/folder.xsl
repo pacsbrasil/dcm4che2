@@ -173,10 +173,14 @@
 							<xsl:for-each select="aets/item">
 								<xsl:sort data-type="text" order="ascending" select="title"/>
 								<option>
+									<xsl:attribute name="value"><xsl:value-of select="title"/></xsl:attribute>
 									<xsl:if test="/model/destination = title">
-										<xsl:attribute name="selected"/>
+										<xsl:attribute name="selected">true</xsl:attribute>
 									</xsl:if>
 									<xsl:value-of select="title"/>
+									<xsl:if test="not(description='')">
+										<xsl:text> (</xsl:text><xsl:value-of select="description"/><xsl:text>)</xsl:text>
+									</xsl:if>
 								</option>
 							</xsl:for-each>						
 						</select>
@@ -1315,7 +1319,10 @@
 					<a href="xdsQuery.m?queryType=findDocuments&amp;patPk={pk}" >
 						<img src="images/search.gif" alt="query" border="0" title="Suche nach XDS Dokumenten"/>		
 					</a>
-    			</td>
+					<a href="xdsQuery.m?queryType=clearDocumentList&amp;patPk={pk}" >
+						<img src="images/loeschen.gif" alt="XML" border="0" title="Liste der XDS Documente loeschen"/>		
+					</a>
+	    		</td>
     		</tr>
 			<tr>
 		  		<td class="xds_doc_header" title="">
