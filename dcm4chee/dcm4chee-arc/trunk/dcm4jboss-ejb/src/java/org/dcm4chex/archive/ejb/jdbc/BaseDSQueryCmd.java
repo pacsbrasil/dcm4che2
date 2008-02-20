@@ -143,7 +143,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         for (Iterator it = keys.iterator(); it.hasNext();) {
             DcmElement key = (DcmElement) it.next();
             final int tag = key.tag();
-            if (tag == Tags.SpecificCharacterSet)
+            if (tag == Tags.SpecificCharacterSet || Tags.isPrivate(tag))
                 continue;
 
             final int vr = key.vr();
