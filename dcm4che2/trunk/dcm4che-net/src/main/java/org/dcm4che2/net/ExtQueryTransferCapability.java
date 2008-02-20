@@ -48,8 +48,7 @@ public class ExtQueryTransferCapability extends TransferCapability {
 
     public static final int RELATIONAL_QUERIES = 0;
     public static final int DATE_TIME_MATCHING = 1;
-    public static final int CASE_SENSITIVE_PN_MATCHING = 2;
-    public static final int SEMANTIC_PN_MATCHING = 3; 
+    public static final int FUZZY_SEMANTIC_PN_MATCHING = 2;
     
     public ExtQueryTransferCapability(String sopClass,
             String[] transferSyntax, String role) {

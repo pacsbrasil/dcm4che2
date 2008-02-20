@@ -242,9 +242,7 @@ public class DcmQR {
 
     private boolean dateTimeMatching;
 
-    private boolean semanticPersonNameMatching;
-
-    private boolean caseSensitivePersonNameMatching;
+    private boolean fuzzySemanticPersonNameMatching;
 
     private boolean noExtNegotiation;
 
@@ -467,10 +465,8 @@ public class DcmQR {
                 "negotiate support of relational queries and retrieval.");
         opts.addOption("datetime", false,
                 "negotiate support of combined date and time attribute range matching.");
-        opts.addOption("case", false, 
-                "negotiate support of case-sensitive person name attribute matching.");
-        opts.addOption("semantic", false, 
-                "negotiate support of semantic person name attribute matching.");
+        opts.addOption("fuzzy", false, 
+                "negotiate support of fuzzy semantic person name attribute matching.");
 
         opts.addOption("retall", false, "negotiate private FIND SOP Classes " +
                 "to fetch all available attributes of matching entities.");
@@ -731,10 +727,8 @@ public class DcmQR {
             dcmqr.setRelationQR(true);
         if (cl.hasOption("datetime"))
             dcmqr.setDateTimeMatching(true);
-        if (cl.hasOption("case"))
-            dcmqr.setCaseSensitivePersonNameMatching(true);
-        if (cl.hasOption("semantic"))
-            dcmqr.setSemanticPersonNameMatching(true);
+        if (cl.hasOption("fuzzy"))
+            dcmqr.setFuzzySemanticPersonNameMatching(true);
 
         if (cl.hasOption("retall"))
             dcmqr.addPrivate(
@@ -854,12 +848,8 @@ public class DcmQR {
         this.noExtNegotiation = b;
     }
 
-    private void setSemanticPersonNameMatching(boolean b) {
-        this.semanticPersonNameMatching = b;
-    }
-
-    private void setCaseSensitivePersonNameMatching(boolean b) {
-        this.caseSensitivePersonNameMatching = b;
+    private void setFuzzySemanticPersonNameMatching(boolean b) {
+        this.fuzzySemanticPersonNameMatching = b;
     }
 
     private void setDateTimeMatching(boolean b) {
@@ -931,11 +921,8 @@ public class DcmQR {
                 relationQR);
         tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING,
                 dateTimeMatching);
-        tc.setExtInfoBoolean(
-                ExtQueryTransferCapability.CASE_SENSITIVE_PN_MATCHING,
-                caseSensitivePersonNameMatching);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.SEMANTIC_PN_MATCHING,
-                semanticPersonNameMatching);
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.FUZZY_SEMANTIC_PN_MATCHING,
+                fuzzySemanticPersonNameMatching);
         if (noExtNegotiation)
             tc.setExtInfo(null);
         return tc;
