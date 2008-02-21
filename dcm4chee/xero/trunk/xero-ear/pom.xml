@@ -44,6 +44,11 @@
              </jarModule>
              <webModule>
                <groupId>org.dcm4chee.xero</groupId>
+               <artifactId>xero-wado-war</artifactId>
+               <contextRoot>/wado2</contextRoot>
+             </webModule>
+             <webModule>
+               <groupId>org.dcm4chee.xero</groupId>
                <artifactId>xero-war</artifactId>
                <contextRoot>/xero</contextRoot>
              </webModule>
@@ -52,12 +57,42 @@
                <artifactId>metadata</artifactId>
                <includeInApplicationXml>true</includeInApplicationXml>
             </jarModule>
+             <jarModule>
+               <groupId>org.jboss.el</groupId>
+               <artifactId>jboss-el</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
             <jarModule>
                <groupId>org.jboss.seam</groupId>
                <artifactId>jboss-seam</artifactId>
                <includeInApplicationXml>true</includeInApplicationXml>
             </jarModule>
-            
+            <jarModule>
+               <groupId>dcm4che</groupId>
+               <artifactId>dcm4che-image</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
+            <jarModule>
+               <groupId>dcm4che</groupId>
+               <artifactId>dcm4che-iod</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
+            <jarModule>
+               <groupId>dcm4che</groupId>
+               <artifactId>dcm4che-imageio</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
+            <jarModule>
+               <groupId>dcm4che</groupId>
+               <artifactId>dcm4che-core</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
+            <jarModule>
+               <groupId>dcm4che</groupId>
+               <artifactId>dcm4che-net</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
+
             <jarModule>
               <groupId>org.slf4j</groupId>
               <artifactId>slf4j-log4j12</artifactId>
@@ -68,6 +103,7 @@
               <artifactId>slf4j-api</artifactId>
               <includeInApplicationXml>true</includeInApplicationXml>
             </jarModule>
+            
           </modules>
         </configuration>
       </plugin>
@@ -95,22 +131,17 @@
      </dependency>
      <dependency>
         <groupId>org.dcm4chee.xero</groupId>
-        <artifactId>xero-war</artifactId>
+        <artifactId>xero-wado-war</artifactId>
         <version>1.0-SNAPSHOT</version>
         <type>war</type>
      </dependency>
      <dependency>
-        <groupId>javax.el</groupId>
-        <artifactId>el-ri</artifactId>
-        <version>1.2</version>
-        <type>jar</type>
+        <groupId>org.dcm4chee.xero</groupId>
+        <artifactId>xero-war</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <type>war</type>
      </dependency>
-     <dependency>
-        <groupId>javax.el</groupId>
-        <artifactId>el-api</artifactId>
-        <version>1.2</version>
-        <type>jar</type>
-     </dependency>
+
      <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
@@ -125,19 +156,7 @@
      </dependency>    
      <dependency>
       <groupId>dcm4che</groupId>
-      <artifactId>dcm4che-imageio</artifactId>
-      <version>2.0.13-SNAPSHOT</version>
-      <type>jar</type>
-     </dependency>    
-     <dependency>
-      <groupId>dcm4che</groupId>
       <artifactId>dcm4che-image</artifactId>
-      <version>2.0.13-SNAPSHOT</version>
-      <type>jar</type>
-     </dependency>    
-     <dependency>
-      <groupId>dcm4che</groupId>
-      <artifactId>dcm4che-net</artifactId>
       <version>2.0.13-SNAPSHOT</version>
       <type>jar</type>
      </dependency>    

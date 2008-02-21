@@ -45,8 +45,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.jboss.ejb3.embedded.EJB3StandaloneBootstrap;
-import org.jboss.ejb3.embedded.EJB3StandaloneDeployer;
+//import org.jboss.ejb3.embedded.EJB3StandaloneBootstrap;
+//import org.jboss.ejb3.embedded.EJB3StandaloneDeployer;
 import org.testng.annotations.Test;
 
 /** This class tests jndi meta-data information lookup.  
@@ -66,6 +66,7 @@ public class JndiMetaDataTest {
 		prop.put("testjndi", "jndi://metadata/TestBean/Local");
 	}
 
+	/*
 	//@BeforeSuite
 	public void startup() throws Exception {
 	 	EJB3StandaloneBootstrap.boot(null);
@@ -82,6 +83,7 @@ public class JndiMetaDataTest {
 			System.out.println("Found child value of "+loc +" "+val);
 		}
 	}
+	*/
 
 	static MetaDataBean mdb;
 

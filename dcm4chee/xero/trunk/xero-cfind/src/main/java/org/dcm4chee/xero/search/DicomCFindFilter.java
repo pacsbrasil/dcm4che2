@@ -151,11 +151,6 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     	return false;
     }
     
-    protected boolean getCaseSensitivePersonNameMatching()
-    {
-    	return false;
-    }
-    
     protected boolean getSemanticPersonNameMatching()
     {
     	return false;
@@ -167,10 +162,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
                 ts, TransferCapability.SCU);
         tc.setExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES, getRelationQR());
         tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING, false);
-        tc.setExtInfoBoolean(
-                ExtQueryTransferCapability.CASE_SENSITIVE_PN_MATCHING,
-                getCaseSensitivePersonNameMatching());
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.SEMANTIC_PN_MATCHING,
+        tc.setExtInfoBoolean(ExtQueryTransferCapability.FUZZY_SEMANTIC_PN_MATCHING,
                 getSemanticPersonNameMatching());
         return tc;
     }

@@ -51,7 +51,6 @@ import org.dcm4chee.xero.search.study.ResultsType;
 import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
-import org.jboss.seam.annotations.Name;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +62,6 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  * 
  */
-@Name("metadata.seriesFilter.singleImagePerSeriesFilter")
 public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 

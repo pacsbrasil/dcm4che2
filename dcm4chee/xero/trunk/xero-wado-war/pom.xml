@@ -8,6 +8,9 @@
   <artifactId>xero-wado-war</artifactId>
   <packaging>war</packaging>
   <name>xero-wado-war</name>
+  <build>
+     <finalName>xero-wado</finalName>
+  </build>
   <dependencies>
     <dependency>
       <groupId>javax.servlet</groupId>
