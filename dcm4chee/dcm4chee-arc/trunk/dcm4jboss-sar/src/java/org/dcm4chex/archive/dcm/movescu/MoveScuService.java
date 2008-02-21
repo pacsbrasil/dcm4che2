@@ -151,6 +151,7 @@ public class MoveScuService extends AbstractScuService implements
 
     public void setRetryIntervalls(String text) {
         retryIntervalls.clear();
+        if ( "NEVER".equals(text)) return;
         StringTokenizer st = new StringTokenizer(text,";\r\n");
         String token, key;
         int pos;
