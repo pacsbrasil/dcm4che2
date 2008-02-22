@@ -19,6 +19,9 @@
            <include name="jaxb*.jar" />
         </fileset>
      </delete>
+     <copy todir="${developmentServer}/server/default/lib">
+        <fileset dir="xero-ear/target/xero" includes="jaxb*.jar" />
+     </copy>
   </target>
 
   <!-- Copies just the webapp files over for a quick test deploy -->
