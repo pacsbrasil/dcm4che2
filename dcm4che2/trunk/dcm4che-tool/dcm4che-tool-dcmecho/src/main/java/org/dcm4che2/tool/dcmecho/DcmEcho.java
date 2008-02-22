@@ -365,7 +365,7 @@ public class DcmEcho {
         final List argList = cl.getArgList();
         String remoteAE = (String) argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
-        dcmecho.setCalledAET(calledAETAddress[0], cl.hasOption("reuse-assoc"));
+        dcmecho.setCalledAET(calledAETAddress[0], cl.hasOption("reuseassoc"));
         if (calledAETAddress[1] == null) {
             dcmecho.setRemoteHost("127.0.0.1");
             dcmecho.setRemotePort(104);
@@ -505,7 +505,7 @@ public class DcmEcho {
                 dcmecho.open();
                 t2 = System.currentTimeMillis();
                 System.out.println("Reconnect or reuse connection to "
-                        + remoteAE + " in " + ((t4 - t1) / 1000F) + "s");
+                        + remoteAE + " in " + ((t2 - t4) / 1000F) + "s");
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
