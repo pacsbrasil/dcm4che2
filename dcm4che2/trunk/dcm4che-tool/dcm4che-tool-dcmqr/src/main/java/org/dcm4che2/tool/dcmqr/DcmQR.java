@@ -77,6 +77,8 @@ import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.UserIdentity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -84,6 +86,8 @@ import org.dcm4che2.net.UserIdentity;
  * @since Jan, 2006
  */
 public class DcmQR {
+    private static Logger LOG = LoggerFactory.getLogger(DcmQR.class);
+    
     private static final int KB = 1024;
 
     private static final String USAGE = "dcmqr [Options] <aet>[@<host>[:<port>]]";
@@ -151,11 +155,21 @@ public class DcmQR {
         SERIES_LEVEL_MOVE_CUID,
         SERIES_LEVEL_MOVE_CUID };
     
-    private static final int[] PATIENT_RETURN_KEYS = { Tag.PatientName,
-        Tag.PatientID, Tag.PatientBirthDate, Tag.PatientSex,
+    private static final int[] PATIENT_RETURN_KEYS = {
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex,
         Tag.NumberOfPatientRelatedStudies,
         Tag.NumberOfPatientRelatedSeries,
         Tag.NumberOfPatientRelatedInstances };
+    
+    private static final int[] PATIENT_MATCHING_KEYS = { 
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.IssuerOfPatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex };
     
     private static final int[] STUDY_RETURN_KEYS = {
         Tag.StudyDate,
@@ -166,11 +180,41 @@ public class DcmQR {
         Tag.NumberOfStudyRelatedSeries,
         Tag.NumberOfStudyRelatedInstances };
     
+    private static final int[] STUDY_MATCHING_KEYS = {
+        Tag.StudyDate,
+        Tag.StudyTime,
+        Tag.AccessionNumber,
+        Tag.ModalitiesInStudy,
+        Tag.ReferringPhysicianName,
+        Tag.StudyID,
+        Tag.StudyInstanceUID };
+    
+    private static final int[] PATIENT_STUDY_MATCHING_KEYS = {
+        Tag.StudyDate,
+        Tag.StudyTime,
+        Tag.AccessionNumber,
+        Tag.ModalitiesInStudy,
+        Tag.ReferringPhysicianName,
+        Tag.PatientName,
+        Tag.PatientID,
+        Tag.IssuerOfPatientID,
+        Tag.PatientBirthDate,
+        Tag.PatientSex,
+        Tag.StudyID,
+        Tag.StudyInstanceUID };
+    
     private static final int[] SERIES_RETURN_KEYS = {
         Tag.Modality,
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
         Tag.NumberOfSeriesRelatedInstances };
+    
+    private static final int[] SERIES_MATCHING_KEYS = {
+        Tag.Modality,
+        Tag.SeriesNumber,
+        Tag.SeriesInstanceUID,
+        Tag.RequestAttributesSequence
+    };
     
     private static final int[] INSTANCE_RETURN_KEYS = {
         Tag.InstanceNumber,
@@ -315,8 +359,10 @@ public class DcmQR {
         trustStoreURL = url;
     }
 
-    public final void setCalledAET(String called) {
+    public final void setCalledAET(String called, boolean reuse) {
         remoteAE.setAETitle(called);
+        if (reuse)
+            ae.setReuseAssocationToAETitle(new String[] { called });
     }
 
     public final void setCalling(String calling) {
@@ -597,6 +643,23 @@ public class DcmQR {
                 "LOW priority of the C-FIND/C-MOVE operation, MEDIUM by default");
         opts.addOption("highprior", false,
                 "HIGH priority of the C-FIND/C-MOVE operation, MEDIUM by default");
+
+        OptionBuilder.withArgName("num");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("repeat query (and retrieve) several times");
+        opts.addOption(OptionBuilder.create("repeat"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "delay in ms between repeated query (and retrieve), no delay by default");
+        opts.addOption(OptionBuilder.create("repeatdelay"));
+
+        opts.addOption("reuseassoc", false,
+                "Reuse association for repeated query (and retrieve)");
+        opts.addOption("closeassoc", false,
+                "Close association between repeated query (and retrieve)");
+
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
                 "print the version information and exit");
@@ -624,10 +687,10 @@ public class DcmQR {
     public static void main(String[] args) {
         CommandLine cl = parse(args);
         DcmQR dcmqr = new DcmQR();
-        final List argList = cl.getArgList();
-        String remoteAE = (String) argList.get(0);
+        final List<String> argList = cl.getArgList();
+        String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
-        dcmqr.setCalledAET(calledAETAddress[0]);
+        dcmqr.setCalledAET(calledAETAddress[0], cl.hasOption("reuseassoc"));
         if (calledAETAddress[1] == null) {
             dcmqr.setRemoteHost("127.0.0.1");
             dcmqr.setRemotePort(104);
@@ -753,6 +816,15 @@ public class DcmQR {
         dcmqr.configureTransferCapability(cl.hasOption("ivrle"));
         
 
+        int repeat = cl.hasOption("repeat") ? parseInt(cl
+                .getOptionValue("repeat"),
+                "illegal argument of option -repeat", 1, Integer.MAX_VALUE) : 0;
+        int interval = cl.hasOption("repeatdelay") ? parseInt(cl
+                .getOptionValue("repeatdelay"),
+                "illegal argument of option -repeatdelay", 1, Integer.MAX_VALUE)
+                : 0;
+        boolean closeAssoc = cl.hasOption("closeassoc");
+
         if (cl.hasOption("tls")) {
             String cipher = cl.getOptionValue("tls");
             if ("NULL".equalsIgnoreCase(cipher)) {
@@ -791,49 +863,58 @@ public class DcmQR {
                 System.exit(2);
             }
             long t2 = System.currentTimeMillis();
-            System.out.println("Initialize TLS context in "
-                    + ((t2 - t1) / 1000F) + "s");
+            LOG.info("Initialize TLS context in {} s", (t2 - t1) / 1000f);
         }
         
         long t1 = System.currentTimeMillis();
         try {
             dcmqr.open();
         } catch (Exception e) {
-            System.err.println("ERROR: Failed to establish association:");
-            e.printStackTrace(System.err);
+            LOG.error("Failed to establish association:", e);
             System.exit(2);
         }
         long t2 = System.currentTimeMillis();
-        System.out.println("Connected to " + remoteAE + " in "
-                + ((t2 - t1) / 1000F) + "s");
+        LOG.info("Connected to {} in {} s", remoteAE, (t2 - t1) / 1000f);
 
-        try {
-            List result = dcmqr.query();
-            long t3 = System.currentTimeMillis();
-            System.out.println("Received " + result.size()
-                    + " matching entries in " + ((t3 - t2) / 1000F) + "s");
-            if (dcmqr.isMove()) {
-                dcmqr.move(result);
+        for (;;) {
+            try {
+                List<DicomObject> result = dcmqr.query();
+                long t3 = System.currentTimeMillis();
+                LOG.info("Received {} matching entries in {} s", result.size(),
+                        (t3 - t2) / 1000f);
+                if (dcmqr.isMove()) {
+                    dcmqr.move(result);
+                    long t4 = System.currentTimeMillis();
+                    LOG.info( "Retrieved {} objects (warning: {}, failed: {}) in {}s",
+                                    new Object[] { dcmqr.getTotalRetrieved(),
+                                            dcmqr.getWarning(),
+                                            dcmqr.getFailed(),
+                                            (t4 - t3) / 1000f });
+                }
+                if (repeat == 0 || closeAssoc) {
+                    try {
+                        dcmqr.close();
+                    } catch (InterruptedException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                    LOG.info("Released connection to {}",remoteAE);
+                }
+                if (repeat-- == 0)
+                    break;
+                Thread.sleep(interval);
                 long t4 = System.currentTimeMillis();
-                System.out.println("Retrieved " + dcmqr.getTotalRetrieved()
-                        + " objects (warning: " + dcmqr.getWarning()
-                        + ", failed: " + dcmqr.getFailed() + ") in "
-                        + ((t4 - t3) / 1000F) + "s");
+                dcmqr.open();
+                t2 = System.currentTimeMillis();
+                LOG.info("Reconnect or reuse connection to {} in {} s",
+                        remoteAE, (t2 - t4) / 1000f);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (InterruptedException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (ConfigurationException e) {
+                LOG.error(e.getMessage(), e);
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-        try {
-            dcmqr.close();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        System.out.println("Released connection to " + remoteAE);
     }
 
     private void setEvalRetrieveAET(boolean evalRetrieveAET) {
@@ -986,26 +1067,171 @@ public class DcmQR {
         assoc = ae.connect(remoteAE, executor);
     }
 
-    public List query() throws IOException, InterruptedException {
+    public List<DicomObject> query() throws IOException, InterruptedException {
+        List<DicomObject> result = new ArrayList<DicomObject>();
         TransferCapability tc = selectFindTransferCapability();
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
-        System.out.println("Send Query Request using "
-                + UIDDictionary.getDictionary().prompt(cuid) + ":");
-        System.out.println(keys.toString());
-        DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
-        List<DicomObject> result = new ArrayList<DicomObject>();
-        while (rsp.next()) {
-            DicomObject cmd = rsp.getCommand();
-            if (CommandUtils.isPending(cmd)) {
-                DicomObject data = rsp.getDataset();
-                result.add(data);
-                System.out.println("\nReceived Query Response #" 
-                        + result.size() + ":");
-                System.out.println(data.toString());
+        if (tc.getExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES)
+                || containsUpperLevelUIDs(cuid)) {
+            LOG.info("Send Query Request using {}:\n{}",
+                    UIDDictionary.getDictionary().prompt(cuid), keys);
+            DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
+            while (rsp.next()) {
+                DicomObject cmd = rsp.getCommand();
+                if (CommandUtils.isPending(cmd)) {
+                    DicomObject data = rsp.getDataset();
+                    result.add(data);
+                    LOG.info("Query Response #{}:\n{}", result.size(), data);
+                }
+            }
+        } else {
+            List<DicomObject> upperLevelUIDs = queryUpperLevelUIDs(cuid, tsuid);
+            List<DimseRSP> rspList = new ArrayList<DimseRSP>(upperLevelUIDs.size());
+            for (int i = 0, n = upperLevelUIDs.size(); i < n; i++) {
+                upperLevelUIDs.get(i).copyTo(keys);
+                LOG.info("Send Query Request #{}/{} using {}:\n{}",
+                        new Object[] {
+                            i+1,
+                            n,
+                            UIDDictionary.getDictionary().prompt(cuid),
+                            keys
+                        });
+                rspList.add(assoc.cfind(cuid, priority, keys, tsuid, cancelAfter));
+            }
+            for (int i = 0, n = rspList.size(); i < n; i++) {
+                DimseRSP rsp = rspList.get(i);
+                for (int j = 0; rsp.next(); ++j) {
+                    DicomObject cmd = rsp.getCommand();
+                    if (CommandUtils.isPending(cmd)) {
+                        DicomObject data = rsp.getDataset();
+                        result.add(data);
+                        LOG.info("Query Response #{} for Query Request #{}/{}:\n{}",
+                                new Object[]{ j+1, i+1, n, data });
+                    }
+                }
             }
         }
         return result;
+    }
+
+    private boolean containsUpperLevelUIDs(String cuid) {
+        switch (qrlevel) {
+            case IMAGE:
+                if (!keys.containsValue(Tag.SeriesInstanceUID)) {
+                    return false;
+                }
+            case SERIES:
+                if (!keys.containsValue(Tag.StudyInstanceUID)) {
+                    return false;
+                }
+            case STUDY:
+                if (Arrays.asList(PATIENT_LEVEL_FIND_CUID).contains(cuid)
+                        && !keys.containsValue(Tag.PatientID)) {
+                    return false;
+                }
+        }
+        return true;
+    }
+
+    private List<DicomObject> queryUpperLevelUIDs(String cuid, String tsuid)
+            throws IOException, InterruptedException {
+        List<DicomObject> keylist = new ArrayList<DicomObject>();
+        if (Arrays.asList(PATIENT_LEVEL_FIND_CUID).contains(cuid)) {
+            queryPatientIDs(cuid, tsuid, keylist);
+            if (qrlevel == STUDY) {
+                return keylist;
+            }
+            keylist = queryStudyOrSeriesIUIDs(cuid, tsuid, keylist,
+                    Tag.StudyInstanceUID, STUDY_MATCHING_KEYS, STUDY);
+        } else {
+            keylist.add(new BasicDicomObject());
+            keylist = queryStudyOrSeriesIUIDs(cuid, tsuid, keylist,
+                    Tag.StudyInstanceUID, PATIENT_STUDY_MATCHING_KEYS, STUDY);
+        }
+        if (qrlevel > SERIES) {
+            keylist = queryStudyOrSeriesIUIDs(cuid, tsuid, keylist,
+                    Tag.SeriesInstanceUID, SERIES_MATCHING_KEYS, SERIES);
+        }
+        return keylist;
+    }
+
+    private void queryPatientIDs(String cuid, String tsuid,
+            List<DicomObject> keylist) throws IOException, InterruptedException {
+        String patID = keys.getString(Tag.PatientID);
+        String issuer = keys.getString(Tag.IssuerOfPatientID);
+        if (patID != null) {
+            DicomObject patIdKeys = new BasicDicomObject();
+            patIdKeys.putString(Tag.PatientID, VR.LO, patID);
+            if (issuer != null) {
+                patIdKeys.putString(Tag.IssuerOfPatientID, VR.LO, issuer);
+            }
+            keylist.add(patIdKeys);
+        } else {
+            DicomObject patLevelQuery = new BasicDicomObject();
+            keys.subSet(PATIENT_MATCHING_KEYS).copyTo(patLevelQuery);
+            patLevelQuery.putNull(Tag.PatientID, VR.LO);
+            patLevelQuery.putNull(Tag.IssuerOfPatientID, VR.LO);
+            patLevelQuery.putString(Tag.QueryRetrieveLevel, VR.CS, "PATIENT");
+            LOG.info("Send Query Request using {}:\n{}",
+                    UIDDictionary.getDictionary().prompt(cuid), patLevelQuery);
+            DimseRSP rsp = assoc.cfind(cuid, priority, patLevelQuery, tsuid,
+                    Integer.MAX_VALUE);
+            for (int i = 0; rsp.next(); ++i) {
+                DicomObject cmd = rsp.getCommand();
+                if (CommandUtils.isPending(cmd)) {
+                    DicomObject data = rsp.getDataset();
+                    LOG.info("Query Response #{}:\n{}", i+1, data);
+                    DicomObject patIdKeys = new BasicDicomObject();
+                    patIdKeys.putString(Tag.PatientID, VR.LO,
+                            data.getString(Tag.PatientID));
+                    issuer = keys.getString(Tag.IssuerOfPatientID);
+                    if (issuer != null) {
+                        patIdKeys.putString(Tag.IssuerOfPatientID, VR.LO,
+                                issuer);
+                    }
+                    keylist.add(patIdKeys);
+                }
+            }
+        }
+    }
+
+    private List<DicomObject> queryStudyOrSeriesIUIDs(String cuid, String tsuid,
+            List<DicomObject> upperLevelIDs, int uidTag, int[] matchingKeys,
+            int qrLevel) throws IOException,
+            InterruptedException {
+        List<DicomObject> keylist = new ArrayList<DicomObject>();
+        String uid = keys.getString(uidTag);
+        for (DicomObject upperLevelID : upperLevelIDs) {
+            if (uid != null) {
+                DicomObject suidKey = new BasicDicomObject();
+                upperLevelID.copyTo(suidKey);
+                suidKey.putString(uidTag, VR.UI, uid);
+                keylist.add(suidKey);
+            } else {
+                DicomObject keys2 = new BasicDicomObject();
+                keys.subSet(matchingKeys).copyTo(keys2);
+                upperLevelID.copyTo(keys2);
+                keys2.putNull(uidTag, VR.UI);
+                keys2.putString(Tag.QueryRetrieveLevel, VR.CS, QRLEVEL[qrLevel]);
+                LOG.info("Send Query Request using {}:\n{}",
+                        UIDDictionary.getDictionary().prompt(cuid), keys2);
+                DimseRSP rsp = assoc.cfind(cuid, priority, keys2,
+                        tsuid, Integer.MAX_VALUE);
+                for (int i = 0; rsp.next(); ++i) {
+                    DicomObject cmd = rsp.getCommand();
+                    if (CommandUtils.isPending(cmd)) {
+                        DicomObject data = rsp.getDataset();
+                        LOG.info("Query Response #{}:\n{}", (i+1), data);
+                        DicomObject suidKey = new BasicDicomObject();
+                        upperLevelID.copyTo(suidKey);
+                        suidKey.putString(uidTag, VR.UI, data.getString(uidTag));
+                        keylist.add(suidKey);
+                    }
+                }
+            }
+        }
+        return keylist;
     }
 
     private TransferCapability selectFindTransferCapability()
@@ -1028,7 +1254,8 @@ public class DcmQR {
         return tcuids[0];
     }
 
-    public void move(List findResults) throws IOException, InterruptedException {
+    public void move(List<DicomObject> findResults)
+            throws IOException, InterruptedException {
         if (moveDest == null)
             throw new IllegalStateException("moveDest == null");
         TransferCapability tc = selectTransferCapability(MOVE_CUID[qrlevel]);
@@ -1044,13 +1271,11 @@ public class DcmQR {
             if (isEvalRetrieveAET()
                     && moveDest.equals(((DicomObject) findResults.get(i))
                             .getString(Tag.RetrieveAETitle))) {
-                System.out.println("Skipping "
-                        + UIDDictionary.getDictionary().prompt(cuid) + ":");
-                System.out.println(keys.toString());
+                LOG.info("Skipping {}:\n{}",
+                        UIDDictionary.getDictionary().prompt(cuid), keys);
             } else {
-                System.out.println("Send Retrieve Request using "
-                        + UIDDictionary.getDictionary().prompt(cuid) + ":");
-                System.out.println(keys.toString());
+                LOG.info("Send Retrieve Request using {}:\n{}",
+                        UIDDictionary.getDictionary().prompt(cuid), keys);
                 DimseRSPHandler rspHandler = new DimseRSPHandler() {
                     @Override
                     public void onDimseRSP(Association as, DicomObject cmd,
@@ -1083,7 +1308,7 @@ public class DcmQR {
         return null;
     }
 
-    private TransferCapability selectTransferCapability(List cuid) {
+    private TransferCapability selectTransferCapability(List<String> cuid) {
         TransferCapability tc;
         for (int i = 0, n = cuid.size(); i < n; i++) {
             tc = assoc.getTransferCapabilityAsSCU((String) cuid.get(i));
