@@ -63,6 +63,9 @@ public class FilterListConfig {
 				log.debug("Adding filter to "+mdb.getPath()+" item "+fi.getName());
 				filterList.add(fi);
 			}
+			else {
+			   log.debug("Skipping item "+valueMdb.getPath());
+			}
 		}
 		log.info("There are "+filterList.size() +" items in "+mdb.getPath());
 	}

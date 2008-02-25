@@ -113,6 +113,9 @@ public class FilterItem<T> implements Comparable<FilterItem> {
 	{
 		if( nextFilterItem==null ) return null;
 		if( nextFilterItem.priority < 0 ) return null;
+		if( log.isDebugEnabled() ) {
+		   log.debug("Calling next filter "+nextFilterItem.name);
+		}
 		return (T) nextFilterItem.filter.filter(nextFilterItem, params);
 	}
 	
@@ -132,6 +135,9 @@ public class FilterItem<T> implements Comparable<FilterItem> {
 		 if( namedFilter==null ) {
 			 log.warn("No filter named "+filterName+" in "+metaData.getParent().getPath());
 			 return null;			 
+		 }
+		 if( log.isDebugEnabled() ) {
+			log.debug("Calling named filter "+namedFilter.name);
 		 }
 		 return namedFilter.filter.filter(namedFilter, params);
 	 }

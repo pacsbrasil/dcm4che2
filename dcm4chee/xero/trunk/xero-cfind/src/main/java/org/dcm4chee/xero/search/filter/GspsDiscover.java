@@ -39,6 +39,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
    public static final String GSPS_KEY = "gsps";
 
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
+	  log.debug("Discovering if any GSPS is applicable.");
 	  String gspsNames = (String) params.get(GSPS_KEY);
 	  if (gspsNames == null) {
 		 log.debug("Not applying GSPS discovery.");
@@ -114,7 +115,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 	  if (presentationUID != null)
 		 prParams.put("SOPInstanceUID", presentationUID);
 	  log.debug("Doing a search on " + uids.size() + " Study UID's for PR objects.");
-	  ResultsBean gspsRB = (ResultsBean) filterItem.callNamedFilter("source", prParams);
+	  ResultsBean gspsRB = (ResultsBean) filterItem.callNamedFilter("imageSearch", prParams);
 	  return gspsRB;
    }
 

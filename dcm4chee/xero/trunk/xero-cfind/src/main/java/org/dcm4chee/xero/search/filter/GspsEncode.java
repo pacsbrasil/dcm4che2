@@ -183,6 +183,7 @@ public class GspsEncode implements Filter<ResultsBean> {
      * one series.
      */
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
+	  log.debug("GspsEncoding to add XML to image.");
 	  ResultsBean results = (ResultsBean) filterItem.callNextFilter(params);
 	  long startTime = System.nanoTime();
 
