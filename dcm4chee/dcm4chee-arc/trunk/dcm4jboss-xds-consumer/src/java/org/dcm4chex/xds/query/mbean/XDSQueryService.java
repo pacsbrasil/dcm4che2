@@ -312,7 +312,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
                         new String[] { String.class.getName(), String.class.getName(), String[].class.getName() });
                 String pid;
                 for ( Iterator iter = pids.iterator() ; iter.hasNext() ; ) {
-                    pid = (String) iter.next();
+	            	pid = toPIDString((String[]) iter.next());
                     if ( isFromDomain(pid) ) {
                         return pid;
                     }
@@ -337,7 +337,22 @@ public class XDSQueryService extends ServiceMBeanSupport {
         }
         return pid.substring(pos).equals(this.affinityDomain);
     }
-    
+
+	private String toPIDString(String[] pid) {
+		if (pid == null || pid.length < 1) return "";
+		StringBuffer sb = new StringBuffer(pid[0]);
+		log.debug("pid[0]:"+pid[0]);
+		if ( pid.length > 1 ) {
+			sb.append("^^^").append(pid[1]);
+			log.debug("pid[1]:"+pid[1]);
+		}
+        for (int i = 2 ; i < pid.length; i++) {
+            sb.append('&').append(pid[i]);
+    		log.debug("pid["+i+"]:"+pid[i]);
+        }
+        return sb.toString();
+	}
+
     protected void configProxyAndTLS(String url) {
         String protocol = url.startsWith("https") ? "https" : "http";
         if ( proxyHost != null && proxyHost.trim().length() > 1 ) {
