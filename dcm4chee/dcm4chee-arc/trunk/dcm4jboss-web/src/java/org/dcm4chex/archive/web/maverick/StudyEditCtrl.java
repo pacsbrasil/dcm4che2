@@ -82,7 +82,7 @@ public class StudyEditCtrl extends Dcm4cheeFormController {
     }
     
     public boolean isUpdateAllowed() {
-    	return studyPk == -1 ? true :
+    	return (studyPk == -1 || isStudyPermissionCheckDisabled() ) ? true :
     		FolderForm.getFolderForm(getCtx()).hasPermission(getStudyModel().getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION);
     }
 
