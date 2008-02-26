@@ -464,8 +464,12 @@ public class RIDSupport {
 	 */
 	protected String checkContentType(RIDRequestObject reqObj, String[] types) {
 		List allowed = reqObj.getAllowedContentTypes();
-		String s;
 		if ( log.isDebugEnabled() ) log.debug(" check against:"+allowed);
+		if ( allowed == null ) {
+			log.debug("No accept header field! use content type:"+types[0]);
+			return types[0];
+		}
+		String s;
 		for ( int i = 0, len = types.length ; i < len ; i++ ) {
 			s = types[i];
 			if ( log.isDebugEnabled() ) log.debug(" check "+s+":"+allowed.contains( s )+" ,"+s.substring( 0, s.indexOf( "/") )+"/*: "+allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) );
