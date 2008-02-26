@@ -448,11 +448,12 @@ public abstract class StorageBean implements SessionBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="NotSupported"
      */
     public void commit(String iuid) throws FinderException {
         instHome.findBySopIuid(iuid).setCommitment(true);
     }
-    
+
     /**
      * @ejb.interface-method
      */
