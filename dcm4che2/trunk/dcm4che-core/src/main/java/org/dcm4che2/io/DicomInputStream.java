@@ -220,6 +220,10 @@ public class DicomInputStream extends FilterInputStream implements
                     && header[3] == 'M') {
                 preamble = b;
                 b = header;
+                if (!markSupported()) {
+                    expectFmiEnd = true;
+                    return TransferSyntax.ExplicitVRLittleEndian;
+                }
                 mark(6);
                 readFully(b, 0, 6);
             }
