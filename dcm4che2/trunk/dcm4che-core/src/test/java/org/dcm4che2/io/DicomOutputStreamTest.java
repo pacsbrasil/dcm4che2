@@ -40,6 +40,7 @@ package org.dcm4che2.io;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -48,8 +49,11 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.TransferSyntax;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.media.FileMetaInformation;
 
 public class DicomOutputStreamTest extends TestCase {
 
@@ -61,7 +65,11 @@ public class DicomOutputStreamTest extends TestCase {
     private static DicomObject load(String fname) throws IOException
     {
         DicomInputStream dis = new DicomInputStream(locateFile(fname));
-        return dis.readDicomObject();
+        try {
+            return dis.readDicomObject();
+        } finally {
+            dis.close();
+        }
     }
     
 	public static void main(java.lang.String[] args) {
@@ -77,14 +85,94 @@ public class DicomOutputStreamTest extends TestCase {
     }
 
     public void testWriteDICOMDIR() throws IOException {
-		DicomObject attrs = load("DICOMDIR");
-		attrs.putString(0x00020010, VR.CS, TransferSyntax.ExplicitVRLittleEndian.uid());
-		File ofile = new File("target/test-out/DICOMDIR");
-		ofile.getParentFile().mkdirs();
-		FileOutputStream fos = new FileOutputStream(ofile);
-		BufferedOutputStream bos = new BufferedOutputStream(fos);
-		DicomOutputStream dos = new DicomOutputStream(bos);
-		dos.writeDicomFile(attrs);
-		dos.close();
+        DicomObject attrs = load("DICOMDIR");
+        File ofile = new File("target/test-out/DICOMDIR");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        DicomOutputStream dos = new DicomOutputStream(bos);
+        dos.setExplicitItemLength(true);
+        dos.setExplicitSequenceLength(true);
+        dos.writeDicomFile(attrs);
+        dos.close();
+        assertEquals(locateFile("DICOMDIR"), ofile);
+    }
+
+    public void testWriteDatasetImplicitVRLE() throws IOException {
+        DicomObject attrs = load("sr_511_ct.dcm");
+        File ofile = new File("target/test-out/sr_511_ct_impl_vr_le.dcm");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        DicomOutputStream dos = new DicomOutputStream(bos);
+        dos.setExplicitSequenceLengthIfZero(false);
+        dos.writeDataset(attrs, TransferSyntax.ImplicitVRLittleEndian);
+        dos.close();
+        assertEquals(locateFile("sr_511_ct.dcm"), ofile);
+    }
+
+    public void testWriteDatasetExplicitVRLE() throws IOException {
+        DicomObject attrs = load("sr_511_ct.dcm");
+        File ofile = new File("target/test-out/sr_511_ct_expl_vr_le.dcm");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        DicomOutputStream dos = new DicomOutputStream(bos);
+        dos.writeDataset(attrs, TransferSyntax.ExplicitVRLittleEndian);
+        dos.close();
+        assertEquals(locateFile("sr_511_ct_expl_vr_le.dcm"), ofile);
+    }
+
+    public void testWriteFile() throws IOException {
+        DicomObject attrs = load("sr_511_ct.dcm");
+        File ofile = new File("target/test-out/sr_511_ct_file.dcm");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        DicomOutputStream dos = new DicomOutputStream(bos);
+        new FileMetaInformation(attrs).init();
+        dos.writeDicomFile(attrs);
+        dos.close();
+        assertEquals(locateFile("sr_511_ct_file.dcm"), ofile);
+    }
+
+    public void testWriteDeflatedFileWithoutPreamble() throws IOException {
+        DicomObject attrs = load("sr_511_ct.dcm");
+        File ofile = new File("target/test-out/sr_511_ct_deflated.dcm");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        DicomOutputStream dos = new DicomOutputStream(bos);
+        attrs.putString(Tag.TransferSyntaxUID, VR.UI,
+                UID.DeflatedExplicitVRLittleEndian);
+        dos.setPreamble(null);
+        dos.writeDicomFile(attrs);
+        dos.close();
+        assertEquals(locateFile("sr_511_ct_deflated.dcm"), ofile);
+    }
+
+    private void assertEquals(File expected, File actual) throws IOException {
+        assertEquals(loadBytes(expected), loadBytes(actual));
+    }
+
+    private void assertEquals(byte[] expected, byte[] actual) {
+        for (int i = 0, n = Math.min(expected.length, actual.length); i < n; i++) {
+             assertEquals("byte at offset " + i, expected[i], actual[i]);
+        };
+        assertEquals("file length", expected.length, actual.length);
+    }
+
+    private byte[] loadBytes(File f) throws IOException {
+        int remain = (int) f.length();
+        byte[] b = new byte[remain];
+        FileInputStream in = new FileInputStream(f);
+        try {
+            while (remain > 0) {
+                remain -= in.read(b, b.length - remain, remain);
+            }
+        } finally {
+            in.close();
+        }
+        return b;
     }
 }

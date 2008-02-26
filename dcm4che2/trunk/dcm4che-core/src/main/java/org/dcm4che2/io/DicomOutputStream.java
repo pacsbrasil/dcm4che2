@@ -105,6 +105,18 @@ public class DicomOutputStream extends FilterOutputStream {
     	super(new DataOutputStreamAdapter(dout));
     }
 
+    public byte[] getPreamble() {
+        return preamble;
+    }
+
+    public void setPreamble(byte[] preamble) {
+        if (preamble != null && preamble.length != PREAMBLE_LENGTH) {
+            throw new IllegalArgumentException(
+                    "preamble length must be 128 but is " + preamble.length);
+        }
+        this.preamble = preamble;
+    }
+
     public final long getStreamPosition() {
         return pos;
     }
@@ -218,11 +230,13 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void writeFileMetaInformation(DicomObject attrs) throws IOException {
-        write(preamble, 0, 128);
-        write('D');
-        write('I');
-        write('C');
-        write('M');
+        if (preamble != null) {
+            write(preamble, 0, PREAMBLE_LENGTH);
+            write('D');
+            write('I');
+            write('C');
+            write('M');
+        }
         this.ts = TransferSyntax.ExplicitVRLittleEndian;
         writeElements(attrs.fileMetaInfoIterator(), true, new ItemInfo(attrs
                 .fileMetaInfoIterator(), true));
@@ -437,12 +451,12 @@ public class DicomOutputStream extends FilterOutputStream {
 
         LinkedList<ItemInfo> childs = null;
 
-        ItemInfo(Iterator it, boolean groupLength1) {
+        ItemInfo(Iterator<DicomElement> it, boolean groupLength1) {
             int gggg0 = -1;
             int gri = -1;
             int sqi = -1;
             while (it.hasNext()) {
-                DicomElement a = (DicomElement) it.next();
+                DicomElement a = it.next();
                 final VR vr = a.vr();
                 int vlen = a.length();
                 if (vlen == -1) {
