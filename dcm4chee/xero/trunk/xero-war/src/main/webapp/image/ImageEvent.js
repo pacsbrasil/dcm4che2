@@ -56,6 +56,7 @@ ImageEvent.prototype.init = function() {
  */
 ImageEvent.prototype.mouseDown = function (evt) {
   if( this.mousing ) return;
+  info("ImageEvent mouse down.");
   this.init();
   this.debugMouse("Mouse down.");
   if( evt==null ) evt = window.event;
@@ -160,14 +161,7 @@ ImageEvent.prototype.mouseOut = function (evt) {
  
 ImageEvent.prototype.updateImage = function (url) 
 {
-  if( this.imageNode.src ) {
-  	this.imageNode.src = url;
-  	if( this.debugUrl ) this.debugUrl.innerHTML = "SRC URL:"+encodeURL(url);
-  }
-  else {
-  	this.imageNode.setAttribute("xlink:href",url);
-  	if( this.debugUrl ) this.debugUrl.innerHTML = "Xlink URL:"+encodeURL(url);
-  }
+	setImageSrc(this.imageNode,url);
 };
 
 /** Allows changing the debug output to another level or otherwise updating it. */
@@ -293,8 +287,7 @@ ImageEvent.prototype.getImageUrl = function(rem) {
 		error("No image node found.");
 		return undefined;
 	}
-    var url = this.imageNode.getAttribute("src");
-    if( ! url ) url = this.imageNode.getAttribute("xlink:href");
+    var url = getImageSrc(this.imageNode);
     var origUrl = url;
 	if( rem ) {
 		url = this.getStrippedUrl(origUrl,rem);

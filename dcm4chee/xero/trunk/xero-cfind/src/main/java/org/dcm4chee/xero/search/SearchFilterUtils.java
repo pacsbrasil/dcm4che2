@@ -74,6 +74,6 @@ public class SearchFilterUtils {
 	  }
 	  newParams.put(MemoryCacheFilter.KEY_NAME,queryStr.toString());
 	  log.info("BurnIn Query str for filter image is "+queryStr);
-	  return (ResultsBean) filterItem.callNamedFilter("imageSource", newParams);
+	  return (ResultsBean) filterItem.callNamedFilter("imageSearch", newParams);
    }
 }

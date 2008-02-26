@@ -211,6 +211,9 @@
       <role-name>WebUser</role-name>
    </security-role>
    <security-role>
+      <role-name>Doctor</role-name>
+   </security-role>
+   <security-role>
       <role-name>WebAdmin</role-name>
    </security-role>
 </web-app>

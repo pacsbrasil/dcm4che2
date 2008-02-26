@@ -64,6 +64,14 @@ function docCoords(e) {
    }
 };
 
+/** Return the response to this function to prevent the default action from occurring */
+function evtPreventDefault(e) {
+	if( e.preventDefault ) {
+		e.preventDefault();
+	}
+	return false;
+}
+
 /** Get the target of the event */
 function target(e) {
 	var targ;
@@ -313,4 +321,38 @@ function getUrlAttribute(url,attr) {
 	var last = url.indexOf("&",idx+2+attr.length);
 	if( last<0 ) last = url.length;
 	return url.substring(idx+2+attr.length,last);
+};
+
+/** IE is broken in that the getElementsByTagName doesn't work for namespaced children in the default
+ * name space.  No idea how to make this work correctly in general, but this implements the same functionality using other methods.
+ */
+function getElementsByTagName(node, childName) {
+	if( browserName!=="IE" ) {
+		return node.getElementsByTagName(childName);
+	}
+	var ret = new IEFixNodeList();
+	ret.getElementsByTagName(node,childName);
+	return ret;
+};
+
+function IEFixNodeList() {
+	this.items = new Array();
+};
+IEFixNodeList.prototype.length = 0;
+IEFixNodeList.prototype.item = function IEFixNodeList_item(i) {
+	return this.items[i];
+}
+
+IEFixNodeList.prototype.getElementsByTagName = function IEFixNodeList_getElementsByTagName(node, childName) {
+	var children = node.childNodes;
+	var n = children.length;
+	for(var i=0; i<n; i++) {
+		var child = children.item(i);
+		if( child.nodeType !== 1 ) continue;
+		if( child.tagName==childName ) {
+			this.items.push(child);			
+			this.length = this.length+1;
+		}
+		this.getElementsByTagName(child,childName);
+	}
 };

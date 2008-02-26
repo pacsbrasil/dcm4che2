@@ -234,12 +234,17 @@ Cine.prototype.getReadAhead=Cine_getReadAhead;
  * Starts playing the CINE loop.
  */
 function playCine(e) {
+	info(1);
 	var cmdButton = target(e);
+	info("Getting node for series layout:");
 	var lay = getNodeForSeriesLayout(cmdButton);
+	info("Got layout node "+lay);
 	if( lay.lookAhead===undefined ) {
 		lay.lookAhead = new LookAheadImage(cmdButton);
+		info( 2.3 );
 		lay.lookAhead.init(lay);
 	}
+	info(3);
 	if( lay.cine===undefined ) {
 		lay.cine = new Cine(lay.lookAhead);
 	};
@@ -252,7 +257,7 @@ function playCine(e) {
 	lay.cine.setRate(speed);
 	lay.cine.start();
 	info("Started CINE.");
-	return false;
+	return evtPreventDefault(e);
 };
 
 /** Discontinues playing CINE */

@@ -124,7 +124,7 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 		    log.info("Searching ",uidsToSearch.size()," series completely.");
 			String[] seriesUids = uidsToSearch.toArray(EMPTY_STRING_ARRAY);
 			Object origValue = params.put("SeriesInstanceUID", seriesUids);
-			Object updated = filterItem.callNamedFilter("imageSource", params);
+			Object updated = filterItem.callNamedFilter("imageSearch", params);
 			assert updated==rb;
 			if( origValue==null ) params.remove("SeriesInstanceUID");
 			else params.put("SeriesInstanceUID", origValue);
@@ -139,7 +139,7 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
 		log.info("Filtering by adding an instance number=1 as a first guess.");
 		params.put(INSTANCE_NUMBER, "1");
-		ResultsBean ret = (ResultsBean) filterItem.callNamedFilter("imageSource",params);
+		ResultsBean ret = (ResultsBean) filterItem.callNamedFilter("imageSearch",params);
 		assert ret == rb;
 		params.remove(INSTANCE_NUMBER);
 		return rb;

@@ -45,8 +45,8 @@
  * Updates the window level according to the new client X,Y positions
  */
 function wlUpdateModel(x,y) {
-   var deltaX = (x-this.startX)/512.0;
-   var deltaY = (y-this.startY)/512.0;
+   var deltaX = (x-this.startX)/1024.0;
+   var deltaY = (y-this.startY)/1024.0;
    this.windowWidth = deltaX*this.range + this.startWidth;
    this.windowCenter = deltaY*this.range + this.startCenter;
    if( this.windowWidth <=0.001 ) this.windowWidth = 0.001;

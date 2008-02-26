@@ -209,9 +209,8 @@ LookAheadImage.prototype.fetchStart=0;
 LookAheadImage.prototype.fetchEnd=-1;
 LookAheadImage.prototype.tagName = "image";
 LookAheadImage.prototype.debug=debug;
-var ieSEPrefix = (browserName=="IE" ? "ns3:" : "");
-LookAheadImage.prototype.seSeriesTag=ieSEPrefix+"series";
-LookAheadImage.prototype.seImageTag=ieSEPrefix+"image";
+LookAheadImage.prototype.seSeriesTag="series";
+LookAheadImage.prototype.seImageTag="image";
 
 /** Returns a single element node with attribute seriesLayout.
  * In the future, change this to return an array of all the related series layout nodes matched
@@ -219,7 +218,6 @@ LookAheadImage.prototype.seImageTag=ieSEPrefix+"image";
  */
 function getNodeForSeriesLayout(xmlEl) {
 	var node = xmlEl;
-	// Hard code this for IE, as it is missing the ELEMENT_NODE types.
 	while(node.nodeType == Node.ELEMENT_NODE ) {
 		info("Testing on node "+node.tagName+" id=",node.getAttribute("id")+" getAttribute seriesLayout="+node.getAttribute("seriesLayout"));
 		var sl = node.getAttribute("seriesLayout")
@@ -250,6 +248,7 @@ LookAheadImage.prototype.init = function LookAheadImage_init(xmlEl) {
 	
 	// Figure out the URL to use for fetching meta-data about the images.
 	var exImg = imgs.item(0);
+	info("exImg="+exImg);
 	var src = getImageSrc(exImg);
 	info("src="+src);
 	var objIndex = src.indexOf("&objectUID");
@@ -328,8 +327,7 @@ function LookAheadImage_readImageXml(xml) {
 	info("Reading xml into look ahead image.");
 	if( xml===null || xml===undefined ) throw new Error("XML provided to LookAheadImage.readImageXml is null/undefined:",xml);
 	var results = xml.documentElement;
-	var txt = new XMLSerializer().serializeToString(results);
-	var series = results.getElementsByTagName(this.seSeriesTag);
+	var series = getElementsByTagName(results, this.seSeriesTag);
 	if( series.length==0 ) throw new Error("No series found in xml.");
 	series = series.item(0);
 	if( this.images===undefined ) {
@@ -338,9 +336,9 @@ function LookAheadImage_readImageXml(xml) {
 		this.images = new Array();
 	};
 	info("Reading image data...");
-	var images = series.getElementsByTagName(this.seImageTag);
+	var images = getElementsByTagName(series,this.seImageTag);
 	var n = images.length;
-	info("Found defintiions for ",n," images out of ",this.imageCount);
+	info("Found definitions for ",n," images out of ",this.imageCount);
 	var i, image;
 	for(i=0; i<n; i++) {
 		image = images.item(i);
@@ -379,6 +377,10 @@ function setImageSrc(img,url) {
   	debug("Setting src attribute to ",url);
   	img.src = url;
   }
+  else if( img.href!==undefined ) {
+  	info("Setting href.baseVal attribute to "+url);
+  	img.href.baseVal = url;
+  }
   else {
   	debug("Setting xlink:href attribute to ",url);
   	img.setAttribute("xlink:href",url);
@@ -392,8 +394,12 @@ LookAheadImage.prototype.setSrc = setImageSrc;
  */
 function getImageSrc(img) {
 	if( img.src!==undefined ) {
-		debug("Returning image source ",img.src);
+		debug("Returning image source "+img.src);
 		return img.src;
+	}
+	else if( img.href!==undefined ) {
+		info("Returning attribute .href="+img.href.baseVal);
+		return img.href.baseVal;
 	}
 	else {
 		debug("Returning attribute xlink:href=",img.getAttribute("xlink:href"));
