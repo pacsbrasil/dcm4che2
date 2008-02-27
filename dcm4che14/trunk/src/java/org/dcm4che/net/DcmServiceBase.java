@@ -118,6 +118,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -135,6 +136,7 @@ public class DcmServiceBase implements DcmService {
         } catch (DcmServiceException e) {
             e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+            doBeforeRsp(assoc, rsp);
             assoc.getAssociation().write(rsp);
             doAfterRsp(assoc, rsp);
         }
@@ -153,6 +155,7 @@ public class DcmServiceBase implements DcmService {
         } catch (DcmServiceException e) {
             e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+            doBeforeRsp(assoc, rsp);
             assoc.getAssociation().write(rsp);
             doAfterRsp(assoc, rsp);
         }
@@ -171,6 +174,7 @@ public class DcmServiceBase implements DcmService {
         } catch (DcmServiceException e) {
             e.writeTo(rspCmd);
             Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+            doBeforeRsp(assoc, rsp);
             assoc.getAssociation().write(rsp);
             doAfterRsp(assoc, rsp);
         }
@@ -190,6 +194,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -210,6 +215,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -230,6 +236,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -250,6 +257,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -270,6 +278,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -290,6 +299,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -310,6 +320,7 @@ public class DcmServiceBase implements DcmService {
             e.writeTo(rspCmd);
         }
         Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+        doBeforeRsp(assoc, rsp);
         assoc.getAssociation().write(rsp);
         doAfterRsp(assoc, rsp);
     }
@@ -317,7 +328,12 @@ public class DcmServiceBase implements DcmService {
     // Package protected ---------------------------------------------
     
     // Protected -----------------------------------------------------
+    protected void doBeforeRsp(ActiveAssociation assoc, Dimse rsp) {
+    	// extension point to allow for customizations
+    }
+    
     protected void doAfterRsp(ActiveAssociation assoc, Dimse rsp) {
+    	// extension point to allow for customizations    	
     }
     
     protected void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
@@ -403,6 +419,7 @@ public class DcmServiceBase implements DcmService {
             do {
                 Dataset rspData = mdr.next(assoc, rq, rspCmd);
                 Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+                doBeforeRsp(assoc, rsp);
                 assoc.getAssociation().write(rsp);
                 doAfterRsp(assoc, rsp);
             } while (rspCmd.isPending());
