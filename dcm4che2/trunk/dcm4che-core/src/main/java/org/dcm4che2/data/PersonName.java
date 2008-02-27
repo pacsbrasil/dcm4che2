@@ -167,12 +167,12 @@ public class PersonName {
         int[] groupLen = { 0, 0, 0 };
         int[] compDelim = { 0, 0, 0 };
         int groupDelim = 0;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 5; j++) {
-                if (components[i][j] != null) {
-                    groupLen[i] += components[i][j].length();
-                    compDelim[i] = j;
-                    groupDelim = i;
+        for (int g = 0; g < 3; g++) {
+            for (int c = 0; c < 5; c++) {
+                if (components[g][c] != null) {
+                    groupLen[g] += components[g][c].length();
+                    compDelim[g] = c;
+                    groupDelim = g;
                 }
             }
         }
@@ -182,20 +182,47 @@ public class PersonName {
         if (len == 0)
             return "";
         StringBuffer sb = new StringBuffer(len);
-        for (int i = 0; i <= groupDelim; i++) {
-            if (i != 0) {
+        for (int g = 0; g <= groupDelim; g++) {
+            if (g != 0) {
                 sb.append('=');
             }
-            for (int j = 0; j <= compDelim[i]; j++) {
-                if (j != 0) {
+            for (int c = 0; c <= compDelim[g]; c++) {
+                if (c != 0) {
                     sb.append('^');
                 }
-                if (components[i][j] != null) {
-                    sb.append(components[i][j]);
+                if (components[g][c] != null) {
+                    sb.append(components[g][c]);
                 }
             }
         }
         return sb.toString();
     }
 
+    public String componentGroupString(int group, boolean trim) {
+        int len = 0;
+        int delim = 0;
+        for (int c = 0; c < 5; c++) {
+            if (components[group][c] != null) {
+                len += components[group][c].length();
+                delim = c;
+            }
+        }
+        if (len == 0)
+            return "";
+        StringBuffer sb = new StringBuffer(len + (trim ? delim : 4));
+        for (int c = 0; c <= delim; c++) {
+            if (c != 0) {
+                sb.append('^');
+            }
+            if (components[group][c] != null) {
+                sb.append(components[group][c]);
+            }
+        }
+        if (!trim) {
+            for (; delim < 4; delim++) {
+                sb.append('^');
+            }
+        }
+        return sb.toString();
+    }
 }

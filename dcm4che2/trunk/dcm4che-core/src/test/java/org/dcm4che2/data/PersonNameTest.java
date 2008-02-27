@@ -62,4 +62,20 @@ public class PersonNameTest extends TestCase {
         }
     }
 
+    public void testComponentGroupString() {
+        PersonName pn = new PersonName("Wang^XiaoDong=王^小東");
+        assertEquals("Wang^XiaoDong",
+                pn.componentGroupString(PersonName.SINGLE_BYTE, true));
+        assertEquals("王^小東",
+                pn.componentGroupString(PersonName.IDEOGRAPHIC, true));
+        assertEquals("",
+                pn.componentGroupString(PersonName.PHONETIC, true));
+        assertEquals("Wang^XiaoDong^^^",
+                pn.componentGroupString(PersonName.SINGLE_BYTE, false));
+        assertEquals("王^小東^^^",
+                pn.componentGroupString(PersonName.IDEOGRAPHIC, false));
+        assertEquals("",
+                pn.componentGroupString(PersonName.PHONETIC, false));
+    }
+
 }
