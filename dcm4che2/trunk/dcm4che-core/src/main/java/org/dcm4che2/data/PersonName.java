@@ -164,31 +164,38 @@ public class PersonName {
     
     @Override
     public String toString() {
-        int len = 0;
-        int pos = 0;
+        int[] groupLen = { 0, 0, 0 };
+        int[] compDelim = { 0, 0, 0 };
+        int groupDelim = 0;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 5; j++) {
                 if (components[i][j] != null) {
-                    pos += components[i][j].length();
-                    len = pos;
+                    groupLen[i] += components[i][j].length();
+                    compDelim[i] = j;
+                    groupDelim = i;
                 }
-                pos++;
             }
         }
+        int len = groupLen[0] + groupLen[1] + groupLen[2]
+                + compDelim[0] + compDelim[1] + compDelim[2]
+                + groupDelim;
         if (len == 0)
             return "";
         StringBuffer sb = new StringBuffer(len);
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 5; j++) {
+        for (int i = 0; i <= groupDelim; i++) {
+            if (i != 0) {
+                sb.append('=');
+            }
+            for (int j = 0; j <= compDelim[i]; j++) {
+                if (j != 0) {
+                    sb.append('^');
+                }
                 if (components[i][j] != null) {
                     sb.append(components[i][j]);
-                    if (sb.length() == len)
-                        return sb.toString();
                 }
-                sb.append(j < 4 ? '^' : '=');
             }
         }
-        throw new RuntimeException();
+        return sb.toString();
     }
 
 }
