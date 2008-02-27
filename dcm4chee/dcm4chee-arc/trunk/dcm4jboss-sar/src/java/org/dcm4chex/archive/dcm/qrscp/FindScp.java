@@ -277,6 +277,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
 	                Dataset rspData = mdr.next(assoc, rq, rspCmd);
 	                Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+	                doBeforeRsp(assoc, rsp);
 	                assoc.getAssociation().write(rsp);
 	                
                 	perfMon.setProperty(assoc, rq, PerfPropertyEnum.RSP_DATASET, rspData);
