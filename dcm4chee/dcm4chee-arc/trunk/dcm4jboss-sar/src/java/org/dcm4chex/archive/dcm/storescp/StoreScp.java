@@ -390,29 +390,48 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
-        Command rqCmd = rq.getCommand();
         InputStream in = rq.getDataAsStream();
-        Association assoc = activeAssoc.getAssociation();
-        String callingAET = assoc.getCallingAET();
+        perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
+        perfMon
+                .setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE,
+                        rq);
+
+        DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
+                .getTransferSyntaxUID());
+        Dataset ds = objFact.newDataset();
+        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
+        parser.setDcmHandler(ds.getDcmHandler());
+        parser.parseDataset(decParam, Tags.PixelData);
+        if (!parser.hasSeenEOF() && parser.getReadTag() != Tags.PixelData) {
+            parser.unreadHeader();
+            parser.parseDataset(decParam, -1);
+        }
+        doActualCStore(activeAssoc, rq, rspCmd, ds, parser);
+
+        perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
+    }
+
+    /**
+     * Actual CStore request handling.  Allows for subclasses to do some preliminary work
+     * with the rq Dataset before reading and handling the pixel data. 
+     * 
+     * This method expects that the Dataset has already been parsed from the Dimse InputStream, 
+     * and the DcmParser is initialized already with the Dataset. 
+     * 
+     * @param activeAssoc        The ActiveAssociation
+     * @param rq                 The Dimse request
+     * @param rspCmd             The response Command
+     * @param ds                 The parsed Dataset from the Dimse rq
+     * @param parser             The DcmParser initialized with the InputStream from the 
+     */
+    protected void doActualCStore(ActiveAssociation activeAssoc, Dimse rq, Command rspCmd, Dataset ds, DcmParser parser) throws IOException, DcmServiceException {
+        File file = null;
         boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(
                 UIDs.TianiURIReferenced);
-        File file = null;
         try {
-            perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
-            perfMon
-                    .setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE,
-                            rq);
-
-            DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
-                    .getTransferSyntaxUID());
-            Dataset ds = objFact.newDataset();
-            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
-            parser.setDcmHandler(ds.getDcmHandler());
-            parser.parseDataset(decParam, Tags.PixelData);
-            if (!parser.hasSeenEOF() && parser.getReadTag() != Tags.PixelData) {
-                parser.unreadHeader();
-                parser.parseDataset(decParam, -1);
-            }
+            Command rqCmd = rq.getCommand();
+            Association assoc = activeAssoc.getAssociation();
+            String callingAET = assoc.getCallingAET();
             String iuid = checkSOPInstanceUID(rqCmd, ds, callingAET);
             checkAppendPermission(assoc, ds);
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
@@ -422,18 +441,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         + "] already exists - ignored");
                 return;
             }
-
+    
             service.preProcess(ds);
-
+    
             if (log.isDebugEnabled()) {
                 log.debug("Dataset:\n");
                 log.debug(ds);
             }
-
+    
             // Set original dataset
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
                     ds);
-
+    
             service.logDIMSE(assoc, STORE_XML, ds);
             if (isCheckIncorrectWorklistEntry()
                     && checkIncorrectWorklistEntry(ds)) {
@@ -532,7 +551,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
                         .getAffectedSOPClassUID(), rqCmd
                         .getAffectedSOPInstanceUID(), tsuid));
-    
+       
                 perfMon.start(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
                 perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE,
@@ -555,7 +574,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
             Dataset coerced = 
-            		service.getCoercionAttributesFor(assoc, STORE_XSL, ds);
+                    service.getCoercionAttributesFor(assoc, STORE_XSL, ds);
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
@@ -585,10 +604,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             seriuid, mwlFilter));
                 }
             }
-
+    
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
-
+    
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, file, md5sum,
                     isUpdateStudyAccessTimeFor(callingAET));
@@ -611,8 +630,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 rspCmd.putUS(Tags.Status, Status.CoercionOfDataElements);
             }
             service.postProcess(ds);
-
-            perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
             if (!tianiURIReferenced) {
@@ -819,7 +836,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, file.length(),
-                    		md5, updateStudyAccessTime);
+                            md5, updateStudyAccessTime);
                 }
             } catch (Exception e) {
                 ++retry;
