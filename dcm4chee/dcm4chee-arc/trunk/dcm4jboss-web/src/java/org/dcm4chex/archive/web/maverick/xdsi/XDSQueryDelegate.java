@@ -231,4 +231,12 @@ public class XDSQueryDelegate {
 	public void setUseLeafFind(boolean b) {
 		this.useLeafFind = b;
 	}
+
+	public void clearDocumentList(String patId, String issuer,
+			XDSConsumerModel model) {
+		List l = model.getDocuments(patId);
+		if ( l != null ) 
+			l.clear();
+		
+	}
 }

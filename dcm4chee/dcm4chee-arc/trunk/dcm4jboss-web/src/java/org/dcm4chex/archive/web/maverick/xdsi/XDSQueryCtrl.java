@@ -83,6 +83,8 @@ public class XDSQueryCtrl extends Dcm4cheeFormController {
 	        if ( "findDocuments".equals(type)) {
 	            delegate.findDocuments(patId, issuer, model);
 	            log.info("ConsumerModel after findDocuments:"+model);
+	        } else if ("clearDocumentList".equals(type)) {
+	        	delegate.clearDocumentList(patId, issuer, model);
 	        } else {
 	            log.warn("Query type "+type+" not supported!");
 	        }
