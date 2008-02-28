@@ -127,13 +127,16 @@ function LookAheadTest_testCine()
 	// Use a smaller read ahead size.
 	info("Created cine object.");
 	cine.setRate(5);
-	cine.readAhead = 4;
+	cine.requireAhead = 4;
+	cine.concurrent = 8;
 	cine.start();
 	info("Called cine start.");
 	this.assertFalse(cine.isStarted());
-	var n = cine.getReadAhead();
+	var n = cine.requireAhead;
 	for(var i=0; i<n; i++) {
-		la.getImageRef(i+1).getFetchView().deliver();
+		var ir = la.getImageRef(i+1);
+		var fv = ir.getFetchView();
+		fv.deliver();
 	}
 	window.deliverInterval(1000);
 	this.assertTrue("Cine should be started after the look ahead images are delivered.",cine.isStarted());
