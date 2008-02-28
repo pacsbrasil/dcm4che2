@@ -86,7 +86,7 @@ public class KeyObjectSeries extends KeyObjectFilter {
 	  newParams.put("SOPInstanceUID", uidArr);
 	  newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
 	  newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
-	  filterItem.callNamedFilter("source", newParams);
+	  filterItem.callNamedFilter("imageSearch", newParams);
 	  List<KeySelection> stillMissing = assignKeyObjectMacro(ret, kom, missing);
 	  if (stillMissing != null && !stillMissing.isEmpty()) {
 		 log.warn("Could not find " + stillMissing.size() + " items referenced in key object.");

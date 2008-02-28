@@ -323,13 +323,20 @@ function getUrlAttribute(url,attr) {
 	return url.substring(idx+2+attr.length,last);
 };
 
-/** IE is broken in that the getElementsByTagName doesn't work for namespaced children in the default
- * name space.  No idea how to make this work correctly in general, but this implements the same functionality using other methods.
+/** Returns the local name of the node */
+function localName(node) {
+	if( node.localName!==undefined && node.localName!==null ) return node.localName;
+	if( node.baseName!==undefined ) return node.baseName;
+	var tn = node.tagName;
+	var i = tn.indexOf(":");
+	if( i>=0 ) tn = ""+tn.substring(i+1);
+	return tn;
+}
+
+/** Browsers aren't consistent even within versions about how to look for various name
+ * spaced elements by any name.  Just use baseName to search for things.
  */
 function getElementsByTagName(node, childName) {
-	if( browserName!=="IE" ) {
-		return node.getElementsByTagName(childName);
-	}
 	var ret = new IEFixNodeList();
 	ret.getElementsByTagName(node,childName);
 	return ret;
@@ -349,10 +356,12 @@ IEFixNodeList.prototype.getElementsByTagName = function IEFixNodeList_getElement
 	for(var i=0; i<n; i++) {
 		var child = children.item(i);
 		if( child.nodeType !== 1 ) continue;
-		if( child.tagName==childName ) {
+		var ln = localName(child);
+		if( ln==childName ) {
+			//info("Found "+childName);
 			this.items.push(child);			
 			this.length = this.length+1;
-		}
+		}; //else info("Looking at "+ln+" for "+childName);
 		this.getElementsByTagName(child,childName);
 	}
 };

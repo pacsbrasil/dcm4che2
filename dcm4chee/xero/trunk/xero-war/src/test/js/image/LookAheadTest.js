@@ -40,9 +40,6 @@ function LookAheadTest(name)
 	TestCase.call(this, name);
 };
 
-// XML parser is slightly different for stand-alone tests and needs the prefix included.
-LookAheadImage.prototype.tagName = "svg:image";
-
 function LookAheadTest_setUp()
 {
 	var la = new LookAheadImage();
@@ -127,8 +124,10 @@ function LookAheadTest_testCine()
 	var la = this.lookAhead;
 	var view = this.view;
 	var cine = new Cine(la);
+	// Use a smaller read ahead size.
 	info("Created cine object.");
 	cine.setRate(5);
+	cine.readAhead = 4;
 	cine.start();
 	info("Called cine start.");
 	this.assertFalse(cine.isStarted());

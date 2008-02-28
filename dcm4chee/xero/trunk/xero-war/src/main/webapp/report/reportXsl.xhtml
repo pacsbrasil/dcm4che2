@@ -32,7 +32,7 @@
 	
 <x:template name="displayHtml" match="/">
   <xsl:param name="objectUID" select="/documents/layout/@objectUID" />
-  <xsl:param name="reportURL" select="concat('/wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=',$objectUID,'&amp;contentType=text%2Fxml')" />
+  <xsl:param name="reportURL" select="concat('/wado2/wado?requestType=WADO&amp;objectUID=',$objectUID,'&amp;contentType=text%2Fxml')" />
   <xsl:param name="reportXML" select="document($reportURL)" />
   <xsl:apply-templates select="$reportXML/dataset"/>
 </x:template>

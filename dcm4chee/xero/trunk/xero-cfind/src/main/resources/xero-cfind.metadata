@@ -173,15 +173,22 @@ wado.XERO.image.priority=25
 wado.XERO.priority=-1
 wado.XERO.wadoImg=${ref:xeroImg}
 wado.XERO.wadoImg.priority=-1
+wado.XERO.dicom=${ref:dicom}
+wado.XERO.dicom.priority=-1
 
 WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
 WADO.choose.priority=100
 
-WADO.application/dicom=${ref:wadoDcm}
-WADO.application/dicom.priority=20
 WADO.image=${class:org.dcm4chee.xero.wado.EncodeImage}
 WADO.image.priority=25
+WADO.application/xml=${class:org.dcm4chee.xero.wado.EncodeXml}
+WADO.application/xml.priority=15
+WADO.text/xml=${class:org.dcm4chee.xero.wado.EncodeXml}
+WADO.text/xml.priority=-1
+WADO.application/dicom=${ref:wadoDcm}
+WADO.application/dicom.priority=10
+
 
 WADO.dicom=${ref:dicom}
 WADO.dicom.priority=-1

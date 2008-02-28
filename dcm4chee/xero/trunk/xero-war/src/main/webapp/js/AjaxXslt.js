@@ -232,7 +232,7 @@ XsltAjax.prototype.replaceNode = function (items, fromDoc) {
       	this.debug("Using outerHTML to replace "+items);
         replaced.outerHTML =replaceBy.xml;
       }
-      else if( browserName==='Safari' ) {
+      else {
 		this.debug("Safari - replacing child with imported child.");
 		try {
 			replaceBy = document.importNode(replaceBy,true);
@@ -242,19 +242,6 @@ XsltAjax.prototype.replaceNode = function (items, fromDoc) {
 			this.debug("Caught exception on replacing with importNode:"+e);
 			return;
 		}
-      }
-      else {
-      	this.debug("Using replace child to replace "+items);
-        parentNode = replaced.parentNode;
-        try {
-          parentNode.replaceChild(replaceBy, replaced);
-        }
-        catch(e) {
-        	this.info("Caught exception on replace by "+e);
-        	return;
-        }
-        if( this.logLevel<1 ) this.info("Using text "+this.asString(replaceBy));
-        //replaced.outerHTML = this.asString(replaceBy);
       }
       this.debug("Finished replacing.");
    }

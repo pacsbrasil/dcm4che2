@@ -115,6 +115,12 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  String contentType = (String) map.get("contentType");
 	  if (contentType == null)
 		 contentType = "image/jpeg";
+	  DicomObject ds = DicomFilter.filterImageDicomObject(filterItem, map,null);
+	  if( ds!=null && !ds.contains(Tag.PixelRepresentation) ) {
+		 log.info("DICOM does not contain pixel representation.");
+		 return filterItem.callNextFilter(map);
+	  }
+
 	  float quality = DEFAULT_QUALITY;
 	  String sQuality = (String) map.get("imageQuality");
 	  if (sQuality != null)
@@ -124,7 +130,6 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  EncodeResponseInfo eri = contentTypeMap.get(contentType);
 	  boolean multipleEncoding = contentType.indexOf(',')>=0;
 	  if ((eri != null && eri.maxBits > 8) || multipleEncoding) {
-		 DicomObject ds = DicomFilter.filterImageDicomObject(filterItem, map, null);
 		 String tsuid = ds.getString(Tag.TransferSyntaxUID);
 		 EncodeResponseInfo tsEri = contentTypeMap.get(tsuid);
 		 log.info("Source tsuid="+tsuid);

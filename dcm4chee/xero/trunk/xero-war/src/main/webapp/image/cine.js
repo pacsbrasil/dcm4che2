@@ -46,7 +46,12 @@ function Cine(lookAhead) {
 };
 Cine.prototype.rate = 15;
 Cine.prototype.started=false;
-Cine.prototype.readAhead=4;
+// How many images to read ahead
+Cine.prototype.readAhead=25;
+// How many items are required to have read before starting and before starting to slow down
+Cine.prototype.requireAhead = 12;
+// The concurrent number of loads.
+Cine.prototype.concurrent = 3;
 Cine.prototype.debug=debug;
 // Start with no images until the look ahead is defined.
 Cine.prototype.imgs = 0;
@@ -57,6 +62,8 @@ Cine.prototype.minTime = 1000;
 Cine.prototype.maxTime = 0;
 Cine.prototype.avgTime = 0;
 Cine.prototype.degradeRate = 1;
+Cine.prototype.complete = 0;
+Cine.prototype.degradeCount = 0;
 /** Corrects for slowness in the interval so that the actual frame rate is closer to the
  * set frame rate.
  * TODO Compute this dynamically.
@@ -68,6 +75,7 @@ Cine.prototype.setRate=function Cine_setRate(rate) {
 	// Use 1.25 to allow for the fact that the actual interval calling rate is slower
 	// than the specified one...
  	this.rate = rate;
+ 	if( this.readAhead < rate*2 ) this.readAhead = rate*2;
  	var intvl = (this.correctInterval * 1000) / (this.rate * this.degradeRate);
  	info("Interval = "+intvl+" for rate="+this.rate);
  	if( this.interval!==undefined ) {
@@ -100,7 +108,7 @@ Cine.prototype.start=function Cine_start() {
 
 
 Cine.prototype.initReadAhead = function Cine_initReadAhead() {
-	var i,n;
+	var i;
 	this.alreadyRead = 0;
 	var ir;
 	var p = this.lookAhead.viewPosition;
@@ -109,12 +117,7 @@ Cine.prototype.initReadAhead = function Cine_initReadAhead() {
 		info("There should be some images defined.");
 		return;
 	}
-	var n = this.readAhead*2;
-	if( n>this.imgs ) {
-		this.readAhead = Math.floor(this.imgs/2);
-		n = this.imgs;
-	};
-	info("Set read ahead to "+this.readAhead+" fetching n="+n+" on "+this.imgs+" images");
+	info("Using read ahead to "+this.readAhead+" on "+this.imgs+" images");
 };
 
 /** Gets the fetch position based on the look ahead index. */
@@ -150,44 +153,53 @@ function Cine_displayInterval() {
 		}
 	}
 	var ir,fp,i;
-	var complete = 0;
-	var n=this.readAhead*2;
+	var n=this.readAhead;
+	if( n > this.imgs ) n = this.imgs;
+	if( this.requireAhead > this.readAhead ) this.requireAhead = this.readAhead;
 	var loaded = 0;
-	this.debug("Trying to read ahead ",n," images with readAhead=",this.readAhead);
-	for(i=0; i<n; i++) {
+	this.debug("Trying to read ahead ",n," images.");
+	var someUnloaded = 0;
+	for(i=this.complete; i<n; i++) {
 		fp = this.fetchPosn(i);
 		ir = this.lookAhead.getImageRef(fp);
-		if( i==this.readAhead ) {
-			complete = loaded;
-		}
 		if( ir.isLoaded() ) {
 			loaded++;
+			if(someUnloaded===0 ) {
+				this.complete++;
+			}
 			continue;
 		}
-		if( !ir.isFetching() ) {
+		someUnloaded++;
+		if( (!ir.isFetching())  ) {
 			ir.fetch();
 		}
+		if( someUnloaded >= this.concurrent ) break;
 	}
 	fp = this.fetchPosn(0);
 	ir = this.lookAhead.getImageRef(fp);
-	this.debug("read ahead completed "+complete+" total "+loaded);
-	if( complete>=this.readAhead ) {
+	this.debug("read ahead completed "+this.complete+" total "+loaded);
+	if( this.complete>= this.requireAhead ) {
+		this.degradeCount = 0;
 		this.started = true;
-		if( loaded>=n-2 ) {
-			if( this.degradeRate < 1 ) {
-				this.setDegradeRate(this.degradeRate * 1.05);
-				info("Increasing frame rate - all images loaded: "+this.degradeRate);
-			}
+		if( this.degradeRate < 1 && this.complete > this.requireAhead+this.concurrent/2) {
+			this.setDegradeRate(this.degradeRate * 1.025);
+			info("Increasing frame rate - all images loaded: "+this.degradeRate);
 		}
 	}
 	else if( this.started ) {
-		this.setDegradeRate(this.degradeRate / 1.025);
+		this.degradeCount++;
+		if( this.degradeCount < this.requireAhead/2 ) {
+			this.setDegradeRate(this.degradeRate / 1.01);
+		}
+		else {
+			this.setDegradeRate(this.degradeRate / 1.025);
+		}
 		warn("Missing "+(this.lookAhead)+ " - decrease frame rate:"+this.degradeRate);
 	}
-	// TODO - handle some way to skip an image when it fails or just takes forever
-	if( ir.isLoaded() && this.started ) {
-		this.debug("Is loaded, and setting view position to "+fp);
+	if( this.started ) {
+		info("fp="+fp+" complete="+this.complete+" someUnloaded="+someUnloaded);
 		this.lookAhead.setViewPosition(fp);
+		this.complete = 0;
 		this.showRateInfo();
 	}; 
 };

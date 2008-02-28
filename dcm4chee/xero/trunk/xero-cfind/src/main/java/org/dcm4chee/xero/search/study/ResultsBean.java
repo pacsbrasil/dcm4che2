@@ -58,7 +58,7 @@ import org.dcm4chee.xero.search.ResultFromDicom;
  * @author bwallace
  * 
  */
-@XmlRootElement(name = "results")
+@XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "results")
 public class ResultsBean extends ResultsType implements ResultFromDicom, CacheItem {
 
    @XmlTransient

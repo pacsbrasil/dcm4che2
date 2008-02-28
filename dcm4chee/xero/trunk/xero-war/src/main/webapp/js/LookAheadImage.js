@@ -105,7 +105,7 @@ function ImageRef_getFetchView() {
 ImageRef.prototype.getFetchView = ImageRef_getFetchView;
 
 /** Sets the src in the image view.  Does not require the URL, only the image */
-function ImageRef_setSrc(image) {
+ImageRef.prototype.setSrc=function ImageRef_setSrc(image) {
 	if( image===undefined || image===null ) return;
 	this.debug("setSrc src=",this.src," on ",image);
 	setImageSrc(image,this.src);
@@ -116,7 +116,6 @@ function ImageRef_setSrc(image) {
 		this.debug("Not clearing the fetch "+this.fetchView);
 	}
 };
-ImageRef.prototype.setSrc=ImageRef_setSrc;
 
 /** Sets the window level for the given image.
  */
@@ -242,9 +241,9 @@ LookAheadImage.prototype.init = function LookAheadImage_init(xmlEl) {
 	// Figure out all the image viewports, and their relative offsets to the current display position.
 	// The current heuristic for this is to find all elements of the same type as this object, with an offset attribute
 	// and the src seriesUID being the same as this series UID.  
-	var imgs = this.seriesLayout.getElementsByTagName(this.tagName);
+	var imgs = getElementsByTagName(this.seriesLayout, this.tagName);
 	var n = imgs.length;
-	if( n==0 ) throw new Error("No image objects to view.");
+	if( n==0 ) throw new Error("No objects "+this.tagName+" to view.");
 	
 	// Figure out the URL to use for fetching meta-data about the images.
 	var exImg = imgs.item(0);
@@ -328,7 +327,7 @@ function LookAheadImage_readImageXml(xml) {
 	if( xml===null || xml===undefined ) throw new Error("XML provided to LookAheadImage.readImageXml is null/undefined:",xml);
 	var results = xml.documentElement;
 	var series = getElementsByTagName(results, this.seSeriesTag);
-	if( series.length==0 ) throw new Error("No series found in xml.");
+	if( series.length==0 ) throw new Error("No "+this.seSeriesTag+" found in xml.");
 	series = series.item(0);
 	if( this.images===undefined ) {
 		this.imageCount = parseInt(series.getAttribute("Viewable"));
@@ -371,14 +370,15 @@ function LookAheadImage_setViewPosition(posn) {
 };
 LookAheadImage.prototype.setViewPosition=LookAheadImage_setViewPosition;
 
-/** Deals with setting the src attribute in various types of image objects */
+/** Deals with setting the src attribute in various types of image objects.  Used
+ * stand-alone as well as as a member function. */
 function setImageSrc(img,url) {
   if( img.src!==undefined ) {
   	debug("Setting src attribute to ",url);
   	img.src = url;
   }
   else if( img.href!==undefined ) {
-  	info("Setting href.baseVal attribute to "+url);
+  	debug("Setting href.baseVal attribute to "+url);
   	img.href.baseVal = url;
   }
   else {
@@ -398,7 +398,7 @@ function getImageSrc(img) {
 		return img.src;
 	}
 	else if( img.href!==undefined ) {
-		info("Returning attribute .href="+img.href.baseVal);
+		debug("Returning attribute .href="+img.href.baseVal);
 		return img.href.baseVal;
 	}
 	else {
@@ -411,7 +411,7 @@ function getImageSrc(img) {
 function LookAheadImage_setView(index,view) {
 	this.view[index] = view;
 	this.viewCount = this.viewCount+1;
-	info("Setting the src for the look ahead to "+view.src);
+	this.debug("Setting the src for the look ahead to "+view.src);
 	this.src = view.src;
 };
 LookAheadImage.prototype.setView=LookAheadImage_setView;
@@ -421,7 +421,7 @@ function LookAheadImage_getViewAtPosition(p) {
 	p = p-this.viewPosition;
 	if( p<0 ) return null;
 	if( p>= this.viewCount ) return null;
-	info("Getting view index "+p+" value is "+this.view[p]);
+	this.debug("Getting view index "+p+" value is "+this.view[p]);
 	return this.view[p];
 };
 LookAheadImage.prototype.getViewAtPosition = LookAheadImage_getViewAtPosition;
