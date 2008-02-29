@@ -198,9 +198,11 @@ function Cine_displayInterval() {
 	}
 	if( this.started ) {
 		info("fp="+fp+" complete="+this.complete+" someUnloaded="+someUnloaded);
-		this.lookAhead.setViewPosition(fp);
-		this.complete = 0;
-		this.showRateInfo();
+		if( ir.isLoaded() ) {
+			this.lookAhead.setViewPosition(fp);
+			this.complete = 0;
+			this.showRateInfo();
+		}
 	}; 
 };
 Cine.prototype.displayInterval = Cine_displayInterval;
