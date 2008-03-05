@@ -142,14 +142,13 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
      * @return The window level macro item added, or null if none.
      */
    public static WindowLevelMacro updateWindowLevel(DicomObject img, DicomObject pr, int frame, MacroItems macros) {
-	  String uid = img.getString(Tag.SOPInstanceUID);
-	  DicomObject voiObj = VOIUtils.selectVoiItemFromPr(uid,pr,frame);
+	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
 	  if( voiObj==null ) {
 		 log.debug("No VOI Object found - not setting window level info.");
 		 return null;
 	  }
-	  float center = voiObj.getInt(Tag.WindowCenter);
-	  float width = voiObj.getInt(Tag.WindowWidth);
+	  float center = Float.parseFloat(voiObj.getString(Tag.WindowCenter));
+	  float width = Float.parseFloat(voiObj.getString(Tag.WindowWidth));
 
 	  WindowLevelMacro wl;
 	  if (width==0f) {

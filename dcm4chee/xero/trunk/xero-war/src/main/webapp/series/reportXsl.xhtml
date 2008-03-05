@@ -11,13 +11,14 @@
   <xsl:for-each select="$docNode/se:results/se:patient/se:study/se:series/se:report">
    <xsl:variable name="name" select="@conceptMeaning" />
    <xsl:variable name="curSOP" select="@SOPInstanceUID" />
-   <xsl:variable name="firstSOP" select="($docNode/se:results/se:patient/se:study/se:series/se:report[@conceptMeaning=$name]/@SOPInstanceUID)[1]" />
+   <xsl:variable name="firstSOP" select="($docNode/se:results/se:patient/se:study/se:series/se:report[@conceptMeaning=$name or count(@conceptMeaning)=0]/@SOPInstanceUID)[1]" />
+   <xsl:message>Founda report view to add: <xsl:value-of select="$name" /></xsl:message>
    <xsl:if test="$firstSOP = $curSOP" >
     <span>
        <a target="imageFrame">
           <xsl:attribute name="href">/xero/report/report.seam?cid=<xsl:value-of select='$cid' />&amp;patientId=<xsl:value-of select="ancestor-or-self::*/@PatientID" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
        <xsl:value-of select="@conceptMeaning" />
-       <xsl:if test="@conceptMeaning=''">
+       <xsl:if test="@conceptMeaning='' or count(@conceptMeaning)=0">
        Report
        </xsl:if>	        
        </a>

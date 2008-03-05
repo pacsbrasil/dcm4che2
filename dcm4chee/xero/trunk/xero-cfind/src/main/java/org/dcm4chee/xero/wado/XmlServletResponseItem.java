@@ -33,8 +33,9 @@ public class XmlServletResponseItem implements ServletResponseItem {
 
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
 	  response.setContentType("application/xml");
+	  response.setCharacterEncoding("UTF-8");
 	  OutputStream os = response.getOutputStream();
-	  Writer w = new OutputStreamWriter(os);
+	  Writer w = new OutputStreamWriter(os, "UTF-8");
 	  w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	  w.write("<?xml-stylesheet href=\"/xsl/sr_html.xsl\" type=\"text/xsl\" ?>\n");
 	  w.write("<dataset>\n");

@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -282,13 +283,18 @@ class ImageServletResponseItem implements ServletResponseItem {
 		 log.info("Raw image write took " + nanoTimeToString(System.nanoTime() - start));
 		 return;
 	  }
-	  ImageOutputStream ios = ImageIO.createImageOutputStream(os);
+	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	  ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
 	  writer.setOutput(ios);
 	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
 	  writer.write(iiometadata, iioimage, imageWriteParam);
 	  ios.close();
-	  os.close();
-	  log.info("Encoding image took " + nanoTimeToString(System.nanoTime() - start) + " with " + writer.getClass());
+	  byte[] data = baos.toByteArray();
+	  long mid = System.nanoTime();
+	  log.info("Encoding image took " + nanoTimeToString(mid - start) + " with " + writer.getClass());
+	  os.write(data);
+	  os.flush();
+	  log.info("Writing image took " + nanoTimeToString(System.nanoTime() - mid) + " with " + writer.getClass());
    }
 
 }

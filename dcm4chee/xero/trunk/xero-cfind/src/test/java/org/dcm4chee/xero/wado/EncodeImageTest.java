@@ -60,7 +60,8 @@ import org.testng.annotations.Test;
 public class EncodeImageTest {
 	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata"); 
 
-	@Test
+	@SuppressWarnings("unchecked")
+   @Test
 	public void testJpegEncoding() throws Exception
 	{
 		assert mdb!=null;
