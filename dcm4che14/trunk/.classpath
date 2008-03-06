@@ -14,6 +14,6 @@
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jai_imageio.jar"/>
 	<classpathentry kind="lib" path="lib/clibwrapper_jiio.jar"/>
-	<classpathentry kind="lib" path="lib/dcm4che-imageio-rle-2.0.12.jar"/>
+	<classpathentry kind="lib" path="lib/dcm4che-imageio-rle-2.0.13.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
