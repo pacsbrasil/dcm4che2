@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -59,24 +59,27 @@ public class NonXMLBody extends BaseElement {
         return text;
     }
 
-    public void setText(Text text) {
+    public NonXMLBody setText(Text text) {
         this.text = text;
+        return this;
     }
 
     public ConfidentialityCode getConfidentialityCode() {
         return confidentialityCode;
     }
 
-    public void setConfidentialityCode(ConfidentialityCode confidentialityCode) {
+    public NonXMLBody setConfidentialityCode(ConfidentialityCode confidentialityCode) {
         this.confidentialityCode = confidentialityCode;
+        return this;
     }
 
     public LanguageCode getLanguageCode() {
         return languageCode;
     }
 
-    public void setLanguageCode(LanguageCode languageCode) {
+    public NonXMLBody setLanguageCode(LanguageCode languageCode) {
         this.languageCode = languageCode;
+        return this;
     }
 
     @Override

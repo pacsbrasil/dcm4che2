@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,36 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-public class Custodian extends BaseElement {
+public class LegalAuthenticatorTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
+    static final String TIME = "19990522";
+    static final String EXTENSION = "11111111";
+    static final String ROOT = "1.3.5.35.1.4436.7";
+    static final String AUTHENTICATOR = "<legalAuthenticator><time value=\""
+            + TIME + "\"/><signatureCode code=\"S\"/>"
+            + "<assignedEntity><id extension=\"" + EXTENSION + "\" root=\""
+            + ROOT + "\"/><assignedPerson>" + NameTest.AUTHOR_NAME
+            + "</assignedPerson></assignedEntity></legalAuthenticator>";
 
-    public Custodian() {
-        super("custodian");
+    public void testToXML() {
+        assertEquals(AUTHENTICATOR,
+                LegalAuthenticatorTest.createAuthenticator().toXML());
     }
 
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
+    static LegalAuthenticator createAuthenticator() {
+        return new LegalAuthenticator()
+                .setTime(new Time(TIME))
+                .setSignatureCode(SignatureCode.SIGNED)
+                .setAssignedEntity(new AssignedEntity()
+                        .setID(new ID(EXTENSION, ROOT))
+                        .setAssignedPerson(new AssignedPerson()
+                                .setName(NameTest.createAuthorName())));
     }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
-    }
-
 }

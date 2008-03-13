@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,6 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
+import java.io.IOException;
+import java.io.Writer;
+
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -44,8 +47,31 @@ package org.dcm4che2.cda;
  */
 public class AssignedCustodian extends BaseElement {
 
+    private RepresentedCustodianOrganization representedCustodianOrganization;
+
     public AssignedCustodian() {
         super("assignedCustodian");
     }
 
+    public RepresentedCustodianOrganization getRepresentedCustodianOrganization() {
+        return representedCustodianOrganization;
+    }
+
+    public AssignedCustodian setRepresentedCustodianOrganization(
+            RepresentedCustodianOrganization representedCustodianOrganization) {
+        this.representedCustodianOrganization = representedCustodianOrganization;
+        return this;
+    }
+
+    @Override
+    protected boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    protected void writeContentTo(Writer out) throws IOException {
+        writeTo(representedCustodianOrganization, out);
+    }
+
 }
+

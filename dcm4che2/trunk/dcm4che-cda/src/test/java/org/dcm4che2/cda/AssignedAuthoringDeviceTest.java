@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,33 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-public class Custodian extends BaseElement {
+public class AssignedAuthoringDeviceTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
+    static final String SOFTWARE_NAME = "SCAN SOFTWARE NAME v0.0";
+    static final String MODEL_NAME = "SOME SCANNER NAME AND MODEL";
+    static final String DEVICE = "<assignedAuthoringDevice>"
+            + "<code code=\"CAPTURE\" codeSystem=\"1.2.840.10008.2.16.4\" "
+            + "codeSystemName=\"DCM\" displayName=\"Image Capture\"/>"
+            + "<manufacturerModelName>" + MODEL_NAME
+            + "</manufacturerModelName><softwareName>" + SOFTWARE_NAME
+            + "</softwareName></assignedAuthoringDevice>";
 
-    public Custodian() {
-        super("custodian");
+    public void testToXML() {
+        assertEquals(DEVICE,
+                AssignedAuthoringDeviceTest.createDevice().toXML());
     }
 
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
+    static AssignedAuthoringDevice createDevice() {
+        return new AssignedAuthoringDevice()
+                .setCode(Code.IMAGE_CAPTURE)
+                .setManufacturerModelName(MODEL_NAME)
+                .setSoftwareName(SOFTWARE_NAME);
     }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
-    }
-
 }

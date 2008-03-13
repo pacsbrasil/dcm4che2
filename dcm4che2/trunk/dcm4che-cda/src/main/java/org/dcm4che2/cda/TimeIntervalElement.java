@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,7 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
@@ -46,17 +49,86 @@ import java.util.Date;
  */
 class TimeIntervalElement extends BaseElement {
 
-    protected TimeIntervalElement(String name, Date low, Date high) {
-        super(name, new String[] { "low", "high" },
-                new Object[] { new TimeStamp(low), new TimeStamp(high) });
+    private Low low;
+    private High high;
+
+    protected TimeIntervalElement(String name, String low, String high) {
+        super(name);
+        this.low = new Low(low);
+        this.high = new High(high);
     }
 
-    public Date getLow() {
-        return ((TimeStamp) getAttribute("low")).getTime();
+    protected TimeIntervalElement(String name, Date low, Date high, boolean tz) {
+        super(name);
+        this.low = new Low(low, tz);
+        this.high = new High(high, tz);
     }
 
-    public Date getHigh() {
-        return ((TimeStamp) getAttribute("high")).getTime();
+    protected TimeIntervalElement(String name, Date low, Date high, TimeZone tz) {
+        super(name);
+        this.low = new Low(low, tz);
+        this.high = new High(high, tz);
+   }
+
+    public String getLow() {
+        return low.getValue();
+    }
+
+    public Date getLowTime() {
+        return TimeElement.parseTime(getLow());
+    }
+
+    public String getHigh() {
+        return high.getValue();
+    }
+
+    public Date getHighTime() {
+        return TimeElement.parseTime(getHigh());
+    }
+
+    @Override
+    protected boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    protected void writeContentTo(Writer out) throws IOException {
+        writeTo(low, out);
+        writeTo(high, out);
+    }
+
+
+    private static class Low extends TimeElement {
+
+        public Low(Date time, boolean tz) {
+            super("low", time, tz);
+         }
+
+        public Low(Date time, TimeZone tz) {
+            super("low", time, tz);
+        }
+
+        public Low(String value) {
+            super("low", value);
+        }
+
+    }
+
+
+    private static class High extends TimeElement {
+
+        public High(Date time, boolean tz) {
+            super("high", time, tz);
+         }
+
+        public High(Date time, TimeZone tz) {
+            super("high", time, tz);
+        }
+
+        public High(String value) {
+            super("high", value);
+        }
+
     }
 
 }

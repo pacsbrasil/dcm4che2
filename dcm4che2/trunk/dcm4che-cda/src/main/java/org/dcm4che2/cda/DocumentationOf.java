@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -57,8 +57,9 @@ public class DocumentationOf extends BaseElement {
         return serviceEvent;
     }
 
-    public void setServiceEvent(ServiceEvent serviceEvent) {
+    public DocumentationOf setServiceEvent(ServiceEvent serviceEvent) {
         this.serviceEvent = serviceEvent;
+        return this;
     }
 
     @Override

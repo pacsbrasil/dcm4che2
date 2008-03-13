@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,53 +60,89 @@ public class AssignedEntity extends BaseElement {
         super("assignedEntity");
     }
 
-    public List<ID> getIds() {
+    public List<ID> getIDs() {
         return ids;
     }
 
-    public void setIds(List<ID> ids) {
+    public AssignedEntity setIDs(List<ID> ids) {
         this.ids = ids;
+        return this;
     }
 
-    public ID getId() {
+    public ID getID() {
         return ids != null && !ids.isEmpty() ? ids.get(0) : null;
     }
 
-    public void setId(ID id) {
+    public AssignedEntity setID(ID id) {
         this.ids = Collections.singletonList(id);
+        return this;
+    }
+
+    public AssignedEntity addID(ID id) {
+        if (ids == null) {
+            return setID(id);
+        }
+        try {
+            ids.add(id);
+        } catch (UnsupportedOperationException e) {
+            List<ID> tmp = new ArrayList<ID>();
+            tmp.addAll(ids);
+            tmp.add(id);
+            ids = tmp;
+        }
+        return this;
     }
 
     public Code getCode() {
         return code;
     }
 
-    public void setCode(Code code) {
+    public AssignedEntity setCode(Code code) {
         this.code = code;
+        return this;
     }
 
     public Addr getAddr() {
         return addrs != null && !addrs.isEmpty() ? addrs.get(0) : null;
     }
 
-    public void setAddr(Addr addr) {
+    public AssignedEntity setAddr(Addr addr) {
         this.addrs = Collections.singletonList(addr);
+        return this;
+    }
+
+    public AssignedEntity addAddr(Addr addr) {
+        if (addrs == null) {
+            return setAddr(addr);
+        }
+        try {
+            addrs.add(addr);
+        } catch (UnsupportedOperationException e) {
+            List<Addr> tmp = new ArrayList<Addr>();
+            tmp.addAll(addrs);
+            tmp.add(addr);
+            addrs = tmp;
+        }
+        return this;
     }
 
     public AssignedPerson getAssignedPerson() {
         return assignedPerson;
     }
 
-    public void setAssignedPerson(AssignedPerson assignedPerson) {
+    public AssignedEntity setAssignedPerson(AssignedPerson assignedPerson) {
         this.assignedPerson = assignedPerson;
+        return this;
     }
 
     public RepresentedOrganization getRepresentedOrganization() {
         return representedOrganization;
     }
 
-    public void setRepresentedOrganization(
+    public AssignedEntity setRepresentedOrganization(
             RepresentedOrganization representedOrganization) {
         this.representedOrganization = representedOrganization;
+        return this;
     }
 
     @Override

@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -56,36 +56,40 @@ public class Name extends BaseElement {
         super("name");
     }
 
-    public Prefix getPrefix() {
-        return prefix;
+    public String getPrefix() {
+        return prefix != null ? prefix.getText() : null;
     }
 
-    public void setPrefix(Prefix prefix) {
-        this.prefix = prefix;
+    public Name setPrefix(String text) {
+        this.prefix = text != null ? new Prefix(text) : null;
+        return this;
     }
 
-    public Given getGiven() {
-        return given;
+    public String getGiven() {
+        return given != null ? given.getText() : null;
     }
 
-    public void setGiven(Given given) {
-        this.given = given;
+    public Name setGiven(String text) {
+        this.given = text != null ? new Given(text) : null;
+        return this;
     }
 
-    public Family getFamily() {
-        return family;
+    public String getFamily() {
+        return family != null ? family.getText() : null;
     }
 
-    public void setFamily(Family family) {
-        this.family = family;
+    public Name setFamily(String text) {
+        this.family = text != null ? new Family(text) : null;
+        return this;
     }
 
-    public Suffix getSuffix() {
-        return suffix;
+    public String getSuffix() {
+        return suffix != null ? suffix.getText() : null;
     }
 
-    public void setSuffix(Suffix suffix) {
-        this.suffix = suffix;
+    public Name setSuffix(String text) {
+        this.suffix = text != null ? new Suffix(text) : null;
+        return this;
     }
 
     @Override
@@ -102,28 +106,28 @@ public class Name extends BaseElement {
     }
 
 
-    public static class Prefix extends TextElement {
+    private static class Prefix extends TextElement {
         public Prefix(String text) {
             super("prefix", text);
         }
     }
 
 
-    public static class Given extends TextElement {
+    private static class Given extends TextElement {
         public Given(String text) {
             super("given", text);
         }
     }
 
 
-    public static class Family extends TextElement {
+    private static class Family extends TextElement {
         public Family(String text) {
             super("family", text);
         }
     }
 
 
-    public static class Suffix extends TextElement {
+    private static class Suffix extends TextElement {
         public Suffix(String text) {
             super("suffix", text);
         }

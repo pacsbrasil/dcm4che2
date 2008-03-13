@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,9 +39,11 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
@@ -58,28 +60,55 @@ public class ServiceEvent extends BaseElement {
         super("serviceEvent");
     }
 
-    public List<ID> getIds() {
+    public List<ID> getIDs() {
         return ids;
     }
 
-    public void setIds(List<ID> ids) {
+    public ServiceEvent setIDs(List<ID> ids) {
         this.ids = ids;
+        return this;
     }
 
-    public ID getId() {
+    public ID getID() {
         return ids != null && !ids.isEmpty() ? ids.get(0) : null;
     }
 
-    public void setId(ID id) {
+    public ServiceEvent addID(ID id) {
+        if (ids == null) {
+            return setID(id);
+        }
+        try {
+            ids.add(id);
+        } catch (UnsupportedOperationException e) {
+            List<ID> tmp = new ArrayList<ID>();
+            tmp.addAll(ids);
+            tmp.add(id);
+            ids = tmp;
+        }
+        return this;
+    }
+
+    public ServiceEvent setID(ID id) {
         this.ids = Collections.singletonList(id);
+        return this;
     }
 
     public Code getCode() {
         return code;
     }
 
-    public void setCode(Code code) {
+    public ServiceEvent setCode(Code code) {
         this.code = code;
+        return this;
+    }
+
+    public final EffectiveTime getEffectiveTime() {
+        return effectiveTime;
+    }
+
+    public final ServiceEvent setEffectiveTime(EffectiveTime effectiveTime) {
+        this.effectiveTime = effectiveTime;
+        return this;
     }
 
     @Override
@@ -95,8 +124,16 @@ public class ServiceEvent extends BaseElement {
 
     public static class EffectiveTime extends TimeIntervalElement {
 
-        public EffectiveTime(Date low, Date high) {
+        public EffectiveTime(String low, String high) {
             super("effectiveTime", low, high);
+        }
+
+        public EffectiveTime(Date low, Date high, TimeZone tz) {
+            super("effectiveTime", low, high, tz);
+        }
+
+        public EffectiveTime(Date low, Date high, boolean tz) {
+            super("effectiveTime", low, high, tz);
         }
 
     }

@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,6 +38,7 @@
 package org.dcm4che2.cda;
 
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
@@ -46,8 +47,16 @@ import java.util.Date;
  */
 public class BirthTime extends TimeElement {
 
-    public BirthTime(Date time) {
+    public BirthTime(String time) {
         super("birthTime", time);
+    }
+
+    public BirthTime(Date time, boolean tz) {
+        super("birthTime", time, tz);
+    }
+
+    public BirthTime(Date time, TimeZone tz) {
+        super("birthTime", time, tz);
     }
 
 }

@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -59,24 +59,29 @@ public class AssignedAuthoringDevice extends BaseElement {
         return code;
     }
 
-    public void setCode(Code code) {
+    public AssignedAuthoringDevice setCode(Code code) {
         this.code = code;
+        return this;
     }
 
-    public ManufacturerModelName getManufacturerModelName() {
-        return manufacturerModelName;
+    public String getManufacturerModelName() {
+        return manufacturerModelName != null ? manufacturerModelName.getText()
+                : null;
     }
 
-    public void setManufacturerModelName(ManufacturerModelName manufacturerModelName) {
-        this.manufacturerModelName = manufacturerModelName;
+    public AssignedAuthoringDevice setManufacturerModelName(String text) {
+        this.manufacturerModelName = text != null
+                ? new ManufacturerModelName(text) : null;
+        return this;
     }
 
-    public SoftwareName getSoftwareName() {
-        return softwareName;
+    public String getSoftwareName() {
+        return softwareName != null ? softwareName.getText() : null;
     }
 
-    public void setSoftwareName(SoftwareName softwareName) {
-        this.softwareName = softwareName;
+    public AssignedAuthoringDevice setSoftwareName(String text) {
+        this.softwareName = text != null ? new SoftwareName(text) : null;
+        return this;
     }
 
     @Override
@@ -92,7 +97,7 @@ public class AssignedAuthoringDevice extends BaseElement {
     }
 
 
-    public static class ManufacturerModelName extends TextElement {
+    private static class ManufacturerModelName extends TextElement {
 
         public ManufacturerModelName(String text) {
             super("manufacturerModelName", text);
@@ -100,7 +105,7 @@ public class AssignedAuthoringDevice extends BaseElement {
 
     }
 
-    public static class SoftwareName extends TextElement {
+    private static class SoftwareName extends TextElement {
 
         public SoftwareName(String text) {
             super("softwareName", text);

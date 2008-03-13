@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +48,7 @@ import java.util.List;
  * @version $Revision$ $Date$
  * @since Mar 11, 2008
  */
-public class Organization extends BaseElement {
+class Organization<T> extends BaseElement {
 
     private List<ID> ids;
     private List<Name> names;
@@ -57,52 +58,122 @@ public class Organization extends BaseElement {
         super(name);
     }
 
-    public List<ID> getIds() {
+    public List<ID> getIDs() {
         return ids;
     }
 
-    public void setIds(List<ID> ids) {
+    @SuppressWarnings("unchecked")
+    public T setIDs(List<ID> ids) {
         this.ids = ids;
+        return (T) this;
     }
 
-    public ID getId() {
+    public ID getID() {
         return ids != null && !ids.isEmpty() ? ids.get(0) : null;
     }
 
-    public void setId(ID id) {
+    @SuppressWarnings("unchecked")
+    public T setID(ID id) {
         this.ids = Collections.singletonList(id);
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T addID(ID id) {
+        if (ids == null) {
+            return setID(id);
+        }
+        try {
+            ids.add(id);
+        } catch (UnsupportedOperationException e) {
+            List<ID> tmp = new ArrayList<ID>();
+            tmp.addAll(ids);
+            tmp.add(id);
+            ids = tmp;
+        }
+        return (T) this;
     }
 
     public List<Name> getNames() {
         return names;
     }
 
-    public void setNames(List<Name> names) {
+    @SuppressWarnings("unchecked")
+    public T setNames(List<Name> names) {
         this.names = names;
+        return (T) this;
     }
 
     public Name getName() {
         return names != null && !names.isEmpty() ? names.get(0) : null;
     }
 
-    public void setName(Name name) {
+    @SuppressWarnings("unchecked")
+    public T setName(Name name) {
         this.names = Collections.singletonList(name);
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setName(String text) {
+        return setName(new Name(text));
+    }
+
+    @SuppressWarnings("unchecked")
+    public T addName(Name name) {
+        if (names == null) {
+            return setName(name);
+        }
+        try {
+            names.add(name);
+        } catch (UnsupportedOperationException e) {
+            List<Name> tmp = new ArrayList<Name>();
+            tmp.addAll(names);
+            tmp.add(name);
+            names = tmp;
+        }
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T addName(String text) {
+        return addName(new Name(text));
     }
 
     public List<Addr> getAddrs() {
         return addrs;
     }
 
-    public void setAddrs(List<Addr> addrs) {
+    @SuppressWarnings("unchecked")
+    public T setAddrs(List<Addr> addrs) {
         this.addrs = addrs;
-    }
+        return (T) this;
+   }
 
     public Addr getAddr() {
         return addrs != null && !addrs.isEmpty() ? addrs.get(0) : null;
     }
 
-    public void setAddr(Addr addr) {
+    @SuppressWarnings("unchecked")
+    public T setAddr(Addr addr) {
         this.addrs = Collections.singletonList(addr);
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T addAddr(Addr addr) {
+        if (addrs == null) {
+            return setAddr(addr);
+        }
+        try {
+            addrs.add(addr);
+        } catch (UnsupportedOperationException e) {
+            List<Addr> tmp = new ArrayList<Addr>();
+            tmp.addAll(addrs);
+            tmp.add(addr);
+            addrs = tmp;
+        }
+        return (T) this;
     }
 
     @Override

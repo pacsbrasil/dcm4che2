@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,33 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 12, 2008
  */
-public class Custodian extends BaseElement {
+public class CustodianTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
-
-    public Custodian() {
-        super("custodian");
+    static final String ROOT = "1.3.6.4.1.4.1.2835.2";
+    static final String NAME = "SOME Scanning Facility";
+    static final String CUSTODIAN = "<custodian><assignedCustodian>"
+            + "<representedCustodianOrganization><id root=\"" + ROOT
+            + "\"/><name>" + NAME + "</name>" + AddrTest.CUSTODIAN_ADDR
+            + "</representedCustodianOrganization></assignedCustodian>"
+            + "</custodian>";
+    
+    static Custodian createCustodian() {
+        return new Custodian().setAssignedCustodian(
+                new AssignedCustodian().setRepresentedCustodianOrganization(
+                        new RepresentedCustodianOrganization()
+                                .setID(new ID(ROOT))
+                                .setName(NAME)
+                                .setAddr(AddrTest.createCustodianAddr())));
     }
 
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
+    public void testToXML() {
+        assertEquals(CUSTODIAN, CustodianTest.createCustodian().toXML());
     }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
-    }
-
 }

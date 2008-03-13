@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -57,6 +57,52 @@ public class Addr extends BaseElement {
         super("addr");
     }
 
+    public String getStreetAddressLine() {
+        return streetAddressLine != null ? streetAddressLine.getText() : null;
+    }
+
+    public Addr setStreetAddressLine(String text) {
+        this.streetAddressLine = text != null ? new StreetAddressLine(text)
+                : null;
+        return this;
+    }
+
+    public String getCity() {
+        return city != null ? city.getText() : null;
+    }
+
+    public Addr setCity(String text) {
+        this.city = text != null ? new City(text) : null;
+        return this;
+    }
+
+    public String getState() {
+        return state != null ? state.getText() : null;
+    }
+
+    public Addr setState(String text) {
+        this.state = text != null ? new State(text) : null;
+        return this;
+    }
+
+    public String getPostalCode() {
+        return postalCode != null ? postalCode.getText() : null;
+    }
+
+    public Addr setPostalCode(String text) {
+        this.postalCode = text != null ? new PostalCode(text) : null;
+        return this;
+    }
+
+    public String getCountry() {
+        return country != null ? country.getText() : null;
+    }
+
+    public Addr setCountry(String text) {
+        this.country = text != null ? new Country(text) : null;
+        return this;
+    }
+
     @Override
     protected boolean isEmpty() {
         return false;
@@ -72,35 +118,35 @@ public class Addr extends BaseElement {
     }
 
 
-    public static class StreetAddressLine extends TextElement {
+    private static class StreetAddressLine extends TextElement {
         public StreetAddressLine(String text) {
             super("streetAddressLine", text);
         }
     }
 
 
-    public static class City extends TextElement {
+    private static class City extends TextElement {
         public City(String text) {
             super("city", text);
         }
     }
 
 
-    public static class State extends TextElement {
+    private static class State extends TextElement {
         public State(String text) {
             super("state", text);
         }
     }
 
 
-    public static class PostalCode extends TextElement {
+    private static class PostalCode extends TextElement {
         public PostalCode(String text) {
             super("postalCode", text);
         }
     }
 
 
-    public static class Country extends TextElement {
+    private static class Country extends TextElement {
         public Country(String text) {
             super("country", text);
         }

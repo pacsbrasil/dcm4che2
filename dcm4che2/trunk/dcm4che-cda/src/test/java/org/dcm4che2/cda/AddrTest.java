@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,70 +37,55 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 12, 2008
  */
-public class Text extends BaseElement {
+public class AddrTest extends TestCase {
+    static final String _21_NORTH_AVE = "21 North Ave";
+    static final String BURLINGTON = "Burlington";
+    static final String MA = "MA";
+    static final String _01803 = "01803";
+    static final String USA = "USA";
+    static final String CUSTODIAN_ADDR = "<addr><streetAddressLine>"
+            + _21_NORTH_AVE + "</streetAddressLine><city>" + BURLINGTON
+            + "</city><state>" + MA + "</state><postalCode>" + _01803
+            + "</postalCode><country>" + USA + "</country></addr>";
 
-    protected Text(String mediaType, String representation) {
-        super("text");
-        if (mediaType != null)
-            addAttribute("mediaType", mediaType);
-        if (representation != null)
-            addAttribute("representation", representation);
+    static final String _17_DAWS_RD = "17 Daws Rd.";
+    static final String BLUE_BELL = "Blue Bell";
+    static final String _02368 = "02368";
+    static final String PATIENT_ADDR = "<addr><streetAddressLine>"
+            + _17_DAWS_RD + "</streetAddressLine><city>" + BLUE_BELL
+            + "</city><state>" + MA + "</state><postalCode>" + _02368
+            + "</postalCode><country>" + USA + "</country></addr>";
+
+    static Addr createCustodianAddr() {
+        return new Addr()
+                .setStreetAddressLine(_21_NORTH_AVE)
+                .setCity(BURLINGTON)
+                .setState(MA)
+                .setPostalCode(_01803)
+                .setCountry(USA);
     }
 
-    public final String getMediaType() {
-        return (String) getAttribute("mediaType");
+    static Addr createPatientAddr() {
+        return new Addr()
+                .setStreetAddressLine(_17_DAWS_RD)
+                .setCity(BLUE_BELL)
+                .setState(MA)
+                .setPostalCode(_02368)
+                .setCountry(USA);
     }
 
-    public final String getRepresentation() {
-        return (String) getAttribute("representation");
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    public static class TXT extends Text {
-
-        private String text;
-
-        public TXT(String text) {
-            super(null, null);
-            this.text = text;
-        }
-
-        @Override
-        protected void writeContentTo(Writer out) throws IOException {
-            writeEscapedTo(text, "'", out);
-        }
-   }
-
-    
-    public static class B64 extends Text {
-
-        private byte[] binaryData;
-
-        public B64(String mediaType, byte[] binaryData) {
-            super(mediaType, "B64");
-            this.binaryData = binaryData;
-        }
-
-        public byte[] getBinaryData() {
-            return binaryData;
-        }
-
-        @Override
-        protected void writeContentTo(Writer out) throws IOException {
-            out.write(Base64Encoder.encode(binaryData));
-        }
+    public void testToXML() {
+        assertEquals(PATIENT_ADDR,
+                AddrTest.createPatientAddr().toXML());
+        assertEquals(CUSTODIAN_ADDR,
+                AddrTest.createCustodianAddr().toXML());
     }
 
 }

@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,53 +59,94 @@ public class Patient extends BaseElement {
         super("patient");
     }
 
-    public List<ID> getIds() {
+    public List<ID> getIDs() {
         return ids;
     }
 
-    public void setIds(List<ID> ids) {
+    public Patient setIDs(List<ID> ids) {
         this.ids = ids;
+        return this;
     }
 
-    public ID getId() {
+    public ID getID() {
         return ids != null && !ids.isEmpty() ? ids.get(0) : null;
     }
 
-    public void setId(ID id) {
+    public Patient setID(ID id) {
         this.ids = Collections.singletonList(id);
+        return this;
+    }
+
+    public Patient addID(ID id) {
+        if (ids == null) {
+            return setID(id);
+        }
+        try {
+            ids.add(id);
+        } catch (UnsupportedOperationException e) {
+            List<ID> tmp = new ArrayList<ID>();
+            tmp.addAll(ids);
+            tmp.add(id);
+            ids = tmp;
+        }
+        return this;
     }
 
     public List<Name> getNames() {
         return names;
     }
 
-    public void setNames(List<Name> names) {
+    public Patient setNames(List<Name> names) {
         this.names = names;
+        return this;
     }
 
     public Name getName() {
         return names != null && !names.isEmpty() ? names.get(0) : null;
     }
 
-    public void setName(Name name) {
+    public Patient setName(Name name) {
         this.names = Collections.singletonList(name);
+        return this;
+    }
+
+    public Patient addName(Name name) {
+        if (names == null) {
+            return setName(name);
+        }
+        try {
+            names.add(name);
+        } catch (UnsupportedOperationException e) {
+            List<Name> tmp = new ArrayList<Name>();
+            tmp.addAll(names);
+            tmp.add(name);
+            names = tmp;
+        }
+        return this;
     }
 
     public AdministrativeGenderCode getAdministrativeGenderCode() {
         return administrativeGenderCode;
     }
 
-    public void setAdministrativeGenderCode(
+    public Patient setAdministrativeGenderCode(
             AdministrativeGenderCode administrativeGenderCode) {
         this.administrativeGenderCode = administrativeGenderCode;
+        return this;
     }
 
     public BirthTime getBirthTime() {
         return birthTime;
     }
 
-    public void setBirthTime(BirthTime birthTime) {
+    public Patient setBirthTime(BirthTime birthTime) {
         this.birthTime = birthTime;
+        return this;
+    }
+
+    public Patient setBirthTime(String birthTime) {
+        this.birthTime = new BirthTime(birthTime);
+        return this;
     }
 
     @Override

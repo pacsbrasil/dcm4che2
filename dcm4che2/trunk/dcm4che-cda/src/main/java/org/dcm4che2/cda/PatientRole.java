@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,58 +52,85 @@ public class PatientRole extends BaseElement {
 
     private List<ID> ids;
     private List<Addr> addrs;
-    private List<Patient> patients;
+    private Patient patient;
 
     public PatientRole() {
         super("patientRole");
     }
 
-    public List<ID> getIds() {
+    public List<ID> getIDs() {
         return ids;
     }
 
-    public void setIds(List<ID> ids) {
+    public PatientRole setIDs(List<ID> ids) {
         this.ids = ids;
+        return this;
     }
 
-    public ID getId() {
+    public ID getID() {
         return ids != null && !ids.isEmpty() ? ids.get(0) : null;
     }
 
-    public void setId(ID id) {
+    public PatientRole setID(ID id) {
         this.ids = Collections.singletonList(id);
+        return this;
+    }
+
+    public PatientRole addID(ID id) {
+        if (ids == null) {
+            return setID(id);
+        }
+        try {
+            ids.add(id);
+        } catch (UnsupportedOperationException e) {
+            List<ID> tmp = new ArrayList<ID>();
+            tmp.addAll(ids);
+            tmp.add(id);
+            ids = tmp;
+        }
+        return this;
     }
 
     public List<Addr> getAddrs() {
         return addrs;
     }
 
-    public void setAddrs(List<Addr> addrs) {
+    public PatientRole setAddrs(List<Addr> addrs) {
         this.addrs = addrs;
+        return this;
     }
 
     public Addr getAddr() {
         return addrs != null && !addrs.isEmpty() ? addrs.get(0) : null;
     }
 
-    public void setAddr(Addr addr) {
+    public PatientRole setAddr(Addr addr) {
         this.addrs = Collections.singletonList(addr);
+        return this;
     }
 
-    public List<Patient> getPatients() {
-        return patients;
-    }
-
-    public void setPatients(List<Patient> patients) {
-        this.patients = patients;
+    public PatientRole addAddr(Addr addr) {
+        if (addrs == null) {
+            return setAddr(addr);
+        }
+        try {
+            addrs.add(addr);
+        } catch (UnsupportedOperationException e) {
+            List<Addr> tmp = new ArrayList<Addr>();
+            tmp.addAll(addrs);
+            tmp.add(addr);
+            addrs = tmp;
+        }
+        return this;
     }
 
     public Patient getPatient() {
-        return patients != null && !patients.isEmpty() ? patients.get(0) : null;
+        return patient;
     }
 
-    public void setPatient(Patient patient) {
-        this.patients = Collections.singletonList(patient);
+    public PatientRole setPatient(Patient patient) {
+        this.patient = patient;
+        return this;
     }
 
     @Override
@@ -114,7 +142,7 @@ public class PatientRole extends BaseElement {
     protected void writeContentTo(Writer out) throws IOException {
         writeTo(ids, out);
         writeTo(addrs, out);
-        writeTo(patients, out);
+        writeTo(patient, out);
     }
 
 }

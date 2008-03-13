@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,38 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-public class Custodian extends BaseElement {
+public class RecordTargetTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
+    static final String PAT_ID = "12345";
+    static final String PAT_ID_ROOT = "2.16.840.1.113883.3.933";
+    static final String BIRTHDATE = "19600127";
+    static final String RECORD_TARGET = "<recordTarget><patientRole>"
+            + "<id extension=\"" + PAT_ID + "\" root=\"" + PAT_ID_ROOT + "\"/>"
+            + AddrTest.PATIENT_ADDR + "<patient>" + NameTest.PATIENT_NAME
+            + "<administrativeGenderCode code=\"F\" "
+            + "codeSystem=\"2.16.840.1.113883.5.1\"/>" + "<birthTime value=\""
+            + BIRTHDATE + "\"/></patient></patientRole></recordTarget>";
 
-    public Custodian() {
-        super("custodian");
+    public void testToXML() {
+        assertEquals(RECORD_TARGET,
+                RecordTargetTest.createRecordTarget().toXML());
     }
 
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
+    static RecordTarget createRecordTarget() {
+         return new RecordTarget().setPatientRole(new PatientRole()
+                 .setID(new ID(PAT_ID, PAT_ID_ROOT))
+                 .setAddr(AddrTest.createPatientAddr())
+                 .setPatient(new Patient()
+                         .setName(NameTest.createPatientName())
+                         .setAdministrativeGenderCode(
+                                 AdministrativeGenderCode.FEMALE)
+                         .setBirthTime(BIRTHDATE)));
     }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
-    }
-
 }

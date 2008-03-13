@@ -15,7 +15,7 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Agfa-Gevaert AG.
  * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *

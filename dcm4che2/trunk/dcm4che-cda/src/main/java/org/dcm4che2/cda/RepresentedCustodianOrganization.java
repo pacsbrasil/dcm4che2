@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,44 +58,79 @@ public class RepresentedCustodianOrganization extends BaseElement {
         super("representedCustodianOrganization");
     }
 
-    public List<ID> getIds() {
+    public List<ID> getIDs() {
         return ids;
     }
 
-    public void setIds(List<ID> ids) {
+    public RepresentedCustodianOrganization setIDs(List<ID> ids) {
         this.ids = ids;
+        return this;
     }
 
-    public ID getId() {
+    public ID getID() {
         return ids != null && !ids.isEmpty() ? ids.get(0) : null;
     }
 
-    public void setId(ID id) {
+    public RepresentedCustodianOrganization setID(ID id) {
         this.ids = Collections.singletonList(id);
+        return this;
     }
 
-    public Name getName() {
-        return name;
+    public RepresentedCustodianOrganization addID(ID id) {
+        if (ids == null) {
+            return setID(id);
+        }
+        try {
+            ids.add(id);
+        } catch (UnsupportedOperationException e) {
+            List<ID> tmp = new ArrayList<ID>();
+            tmp.addAll(ids);
+            tmp.add(id);
+            ids = tmp;
+        }
+        return this;
     }
 
-    public void setName(Name name) {
-        this.name = name;
+    public String getName() {
+        return name != null ? name.getText() : null;
+    }
+
+    public RepresentedCustodianOrganization setName(String text) {
+        this.name = new Name(text);
+        return this;
     }
 
     public List<Addr> getAddrs() {
         return addrs;
     }
 
-    public void setAddrs(List<Addr> addrs) {
+    public RepresentedCustodianOrganization setAddrs(List<Addr> addrs) {
         this.addrs = addrs;
+        return this;
     }
 
     public Addr getAddr() {
         return addrs != null && !addrs.isEmpty() ? addrs.get(0) : null;
     }
 
-    public void setAddr(Addr addr) {
+    public RepresentedCustodianOrganization setAddr(Addr addr) {
         this.addrs = Collections.singletonList(addr);
+        return this;
+    }
+
+    public RepresentedCustodianOrganization addAddr(Addr addr) {
+        if (addrs == null) {
+            return setAddr(addr);
+        }
+        try {
+            addrs.add(addr);
+        } catch (UnsupportedOperationException e) {
+            List<Addr> tmp = new ArrayList<Addr>();
+            tmp.addAll(addrs);
+            tmp.add(addr);
+            addrs = tmp;
+        }
+        return this;
     }
 
     @Override
@@ -109,7 +145,7 @@ public class RepresentedCustodianOrganization extends BaseElement {
         writeTo(addrs, out);
     }
 
-    public static class Name extends TextElement {
+    private static class Name extends TextElement {
 
         public Name(String text) {
             super("name", text);

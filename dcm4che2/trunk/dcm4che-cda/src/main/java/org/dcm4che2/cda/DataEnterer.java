@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -58,16 +58,18 @@ public class DataEnterer extends BaseElement {
         return time;
     }
 
-    public void setTime(Time time) {
+    public DataEnterer setTime(Time time) {
         this.time = time;
+        return this;
     }
 
     public AssignedEntity getAssignedEntity() {
         return assignedEntity;
     }
 
-    public void setAssignedEntity(AssignedEntity assignedEntity) {
+    public DataEnterer setAssignedEntity(AssignedEntity assignedEntity) {
         this.assignedEntity = assignedEntity;
+        return this;
     }
 
     @Override

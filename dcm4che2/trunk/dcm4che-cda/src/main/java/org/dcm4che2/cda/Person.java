@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,11 +48,11 @@ import java.util.List;
  * @version $Revision$ $Date$
  * @since Mar 11, 2008
  */
-public class Person extends BaseElement {
+class Person<T> extends BaseElement {
 
     private List<Name> names;
 
-    public Person(String name) {
+    protected Person(String name) {
         super(name);
     }
 
@@ -59,16 +60,36 @@ public class Person extends BaseElement {
         return names;
     }
 
-    public void setNames(List<Name> names) {
+    @SuppressWarnings("unchecked")
+    public T setNames(List<Name> names) {
         this.names = names;
+        return (T) this;
     }
 
     public Name getName() {
         return names != null && !names.isEmpty() ? names.get(0) : null;
     }
 
-    public void setName(Name name) {
+    @SuppressWarnings("unchecked")
+    public T setName(Name name) {
         this.names = Collections.singletonList(name);
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T addName(Name name) {
+        if (names == null) {
+            return setName(name);
+        }
+        try {
+            names.add(name);
+        } catch (UnsupportedOperationException e) {
+            List<Name> tmp = new ArrayList<Name>();
+            tmp.addAll(names);
+            tmp.add(name);
+            names = tmp;
+        }
+        return (T) this;
     }
 
     @Override

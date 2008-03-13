@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,37 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-public class Custodian extends BaseElement {
+public class TimeTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
-
-    public Custodian() {
-        super("custodian");
+    static Date getTime(TimeZone tz, int year, int month, int day,
+                int hour, int minute, int second) {
+        Calendar c = new GregorianCalendar(tz);
+        c.clear();
+        c.set(Calendar.YEAR, year);
+        c.set(Calendar.MONTH, month-1);
+        c.set(Calendar.DAY_OF_MONTH, day);
+        c.set(Calendar.HOUR_OF_DAY, hour);
+        c.set(Calendar.MINUTE, minute);
+        c.set(Calendar.SECOND, second);
+        return c.getTime();
     }
-
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
-    }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
+    
+    public void testToXML() {
+        TimeZone tz = TimeZone.getTimeZone("GMT+05:00");
+        assertEquals("<time value=\"20050329224411+0500\"/>",
+                new Time(getTime(tz, 2005, 3, 29, 22, 44, 11), tz).toXML());
     }
 
 }

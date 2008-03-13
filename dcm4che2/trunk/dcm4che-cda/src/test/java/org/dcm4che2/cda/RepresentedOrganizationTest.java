@@ -37,81 +37,46 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-class TimeStamp {
+public class RepresentedOrganizationTest extends TestCase {
 
-    private static final int MILLISECONDS_PER_MIN = 60000;
+    static final String AUTHOR_ORG_EXT = "aaaaabbbbb";
+    static final String AUTHOR_ORG_ROOT = "1.3.5.35.1.4436.7";
+    static final String AUTHOR_ORG_NAME = "Dr. Wiseman’s Clinic";
+    static final String AUTHOR_ORG = "<representedOrganization><id extension=\""
+            + AUTHOR_ORG_EXT + "\" root=\"" + AUTHOR_ORG_ROOT + "\"/><name>"
+            + AUTHOR_ORG_NAME + "</name></representedOrganization>";
 
-    private final Date time; 
+    static final String DEVICE_ORG_ROOT = "1.3.6.4.1.4.1.2835.2";
+    static final String DEVICE_ORG_NAME = "SOME Scanning Facility";
+    static final String DEVICE_ORG = "<representedOrganization><id root=\""
+            + DEVICE_ORG_ROOT + "\"/><name>" + DEVICE_ORG_NAME + "</name>"
+            + AddrTest.CUSTODIAN_ADDR + "</representedOrganization>";
 
-    public TimeStamp(Date time) {
-        this.time = time;
+    static RepresentedOrganization createAuthorOrg() {
+        return new RepresentedOrganization()
+                .setID(new ID(AUTHOR_ORG_EXT, AUTHOR_ORG_ROOT))
+                .setName(AUTHOR_ORG_NAME);
     }
 
-    public final Date getTime() {
-        return time;
+    static RepresentedOrganization createDeviceOrg() {
+        return new RepresentedOrganization()
+                .setID(new ID(DEVICE_ORG_ROOT))
+                .setName(DEVICE_ORG_NAME)
+                .setAddr(AddrTest.createCustodianAddr());
     }
 
-    @Override
-    public String toString() {
-        Calendar c = new GregorianCalendar();
-        c.setTime(time);
-        return containsTime(c) ? formatDateAndTime(c) : formatDate(c);
+    public void testToXML() {
+        assertEquals(AUTHOR_ORG,
+                RepresentedOrganizationTest.createAuthorOrg().toXML());
+        assertEquals(DEVICE_ORG,
+                RepresentedOrganizationTest.createDeviceOrg().toXML());
     }
-
-    private boolean containsTime(Calendar c) {
-        return c.get(Calendar.HOUR_OF_DAY) != 0
-        || c.get(Calendar.MINUTE) != 0
-        || c.get(Calendar.SECOND) != 0;
-    }
-
-    private String formatDate(Calendar c) {
-        StringBuffer sb = new StringBuffer(8);
-        appendYYYYMMDDTo(c, sb);
-        return sb.toString();
-    }
-
-    private void appendYYYYMMDDTo(Calendar c, StringBuffer sb) {
-        sb.append(c.get(Calendar.YEAR));
-        appendNNTo(c.get(Calendar.MONTH)+1, sb);
-        appendNNTo(c.get(Calendar.DAY_OF_MONTH), sb);
-    }
-    
-    private void appendNNTo(int i, StringBuffer sb) {
-        if (i < 10)
-            sb.append('0');
-        sb.append(i);
-    }
-
-    private String formatDateAndTime(Calendar c) {
-        StringBuffer sb = new StringBuffer(19);
-        appendYYYYMMDDTo(c, sb);
-        appendNNTo(c.get(Calendar.HOUR_OF_DAY), sb);
-        appendNNTo(c.get(Calendar.MINUTE), sb);
-        appendNNTo(c.get(Calendar.SECOND), sb);
-        appendZONETo(c.get(Calendar.ZONE_OFFSET), sb);
-        return null;
-    }
-
-    private void appendZONETo(int ms, StringBuffer sb) {
-        if (ms < 0) {
-            sb.append('-');
-            ms = -ms;
-        } else {
-            sb.append('+');
-        }
-        int min = ms / MILLISECONDS_PER_MIN;
-        appendNNTo(min / 60, sb);
-        appendNNTo(min % 60, sb);
-    }
-
 
 }

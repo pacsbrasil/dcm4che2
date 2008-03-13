@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,32 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-public class Custodian extends BaseElement {
+public class DocumentationOfTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
+    static final String LOW_TIME = "19800127";
+    static final String HIGH_TIME = "19990522";
+    static final String DOCUMENTATION_OF = "<documentationOf><serviceEvent>"
+            + "<effectiveTime><low value=\"" + LOW_TIME + "\"/><high value=\""
+            + HIGH_TIME
+            + "\"/></effectiveTime></serviceEvent></documentationOf>";
 
-    public Custodian() {
-        super("custodian");
+    public void testToXML() {
+        assertEquals(DOCUMENTATION_OF,
+                DocumentationOfTest.createDocumentationOf().toXML());
     }
 
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
+    static DocumentationOf createDocumentationOf() {
+        return new DocumentationOf()
+            .setServiceEvent(new ServiceEvent()
+                    .setEffectiveTime(
+                            new ServiceEvent.EffectiveTime(
+                                    LOW_TIME, HIGH_TIME)));
     }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
-    }
-
 }

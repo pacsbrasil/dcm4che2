@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2002-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,39 +37,30 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.cda;
 
-import java.io.IOException;
-import java.io.Writer;
+import junit.framework.TestCase;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 10, 2008
+ * @since Mar 13, 2008
  */
-public class Custodian extends BaseElement {
+public class TextTest extends TestCase {
 
-    private AssignedCustodian assignedCustodian;
+    static final String APP_PDF = "application/pdf";
+    static final String APP_PDF_B64 = "<text mediaType=\"" + APP_PDF
+            + "\" representation=\"B64\">//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5"
+            + "OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1"
+            + "tLOysbCvrq2sq6qpqKempaSjoqGgn56d</text>";
 
-    public Custodian() {
-        super("custodian");
+    public void testToXML() {
+        assertEquals(APP_PDF_B64, createAPP_PDF_B64().toXML());
     }
 
-    public AssignedCustodian getAssignedCustodian() {
-        return assignedCustodian;
+    static Text createAPP_PDF_B64() {
+        byte[] b = new byte[99];
+        for (int i = 0; i < b.length; i++) {
+            b[i] = (byte) ~i;
+        }
+        return new Text.B64(APP_PDF, b);
     }
-
-    public Custodian setAssignedCustodian(AssignedCustodian assignedCustodian) {
-        this.assignedCustodian = assignedCustodian;
-        return this;
-    }
-
-    @Override
-    protected boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    protected void writeContentTo(Writer out) throws IOException {
-        writeTo(assignedCustodian, out);
-    }
-
 }

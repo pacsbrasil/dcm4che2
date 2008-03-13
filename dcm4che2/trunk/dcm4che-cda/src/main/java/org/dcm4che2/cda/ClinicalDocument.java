@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,9 +39,11 @@ package org.dcm4che2.cda;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
@@ -101,60 +103,68 @@ public class ClinicalDocument extends BaseElement {
         ClinicalDocument.incXMLDecl = incXMLDecl;
     }
 
-    public ID getId() {
+    public ID getID() {
         return id;
     }
 
-    public void setId(ID id) {
+    public ClinicalDocument setID(ID id) {
         this.id = id;
+        return this;
     }
 
     public Code getCode() {
         return code;
     }
 
-    public void setCode(Code code) {
+    public ClinicalDocument setCode(Code code) {
         this.code = code;
+        return this;
     }
 
-    public Title getTitle() {
-        return title;
+    public String getTitle() {
+        return title.getText();
     }
 
-    public void setTitle(Title title) {
-        this.title = title;
+    public ClinicalDocument setTitle(String text) {
+        this.title = new Title(text);
+        return this;
     }
 
     public EffectiveTime getEffectiveTime() {
         return effectiveTime;
     }
 
-    public void setEffectiveTime(EffectiveTime effectiveTime) {
+    public ClinicalDocument setEffectiveTime(EffectiveTime effectiveTime) {
         this.effectiveTime = effectiveTime;
+        return this;
     }
 
     public CodeElement getConfidentialityCode() {
         return confidentialityCode;
     }
 
-    public void setConfidentialityCode(ConfidentialityCode confidentialityCode) {
+    public ClinicalDocument setConfidentialityCode(
+            ConfidentialityCode confidentialityCode) {
         this.confidentialityCode = confidentialityCode;
+        return this;
     }
 
     public LanguageCode getLanguageCode() {
         return languageCode;
     }
 
-    public void setLanguageCode(LanguageCode code) {
+    public ClinicalDocument setLanguageCode(LanguageCode code) {
         this.languageCode = code;
+        return this;
     }
 
     public List<RecordTarget> getRecordTargets() {
         return recordTargets;
     }
 
-    public void setRecordTargets(List<RecordTarget> recordTargets) {
+    public ClinicalDocument setRecordTargets(List<RecordTarget> recordTargets) {
         this.recordTargets = recordTargets;
+        return this;
     }
 
     public RecordTarget getRecordTarget() {
@@ -162,56 +172,93 @@ public class ClinicalDocument extends BaseElement {
                 ? recordTargets.get(0) : null;
     }
 
-    public void setRecordTarget(RecordTarget recordTarget) {
+    public ClinicalDocument setRecordTarget(RecordTarget recordTarget) {
         this.recordTargets = Collections.singletonList(recordTarget);
+        return this;
+    }
+
+    public ClinicalDocument addRecordTarget(RecordTarget recordTarget) {
+        if (recordTargets == null) {
+            return setRecordTarget(recordTarget);
+        }
+        try {
+            recordTargets.add(recordTarget);
+        } catch (UnsupportedOperationException e) {
+            List<RecordTarget> tmp = new ArrayList<RecordTarget>();
+            tmp.addAll(recordTargets);
+            tmp.add(recordTarget);
+            recordTargets = tmp;
+        }
+        return this;
     }
 
     public List<Author> getAuthors() {
         return authors;
     }
 
-    public void setAuthors(List<Author> authors) {
+    public ClinicalDocument setAuthors(List<Author> authors) {
         this.authors = authors;
+        return this;
     }
 
     public Author getAuthor() {
         return authors != null && !authors.isEmpty() ? authors.get(0) : null;
     }
 
-    public void setAuthor(Author author) {
+    public ClinicalDocument setAuthor(Author author) {
         this.authors = Collections.singletonList(author);
+        return this;
+    }
+
+    public ClinicalDocument addAuthor(Author author) {
+        if (authors == null) {
+            return setAuthor(author);
+        }
+        try {
+            authors.add(author);
+        } catch (UnsupportedOperationException e) {
+            List<Author> tmp = new ArrayList<Author>();
+            tmp.addAll(authors);
+            tmp.add(author);
+            authors = tmp;
+        }
+        return this;
     }
 
     public DataEnterer getDataEnterer() {
         return dataEnterer;
     }
 
-    public void setDataEnterer(DataEnterer dataEnterer) {
+    public ClinicalDocument setDataEnterer(DataEnterer dataEnterer) {
         this.dataEnterer = dataEnterer;
+        return this;
     }
 
     public Custodian getCustodian() {
         return custodian;
     }
 
-    public void setCustodian(Custodian custodian) {
+    public ClinicalDocument setCustodian(Custodian custodian) {
         this.custodian = custodian;
+        return this;
     }
 
     public LegalAuthenticator getLegalAuthenticator() {
         return legalAuthenticator;
     }
 
-    public void setLegalAuthenticator(LegalAuthenticator legalAuthenticator) {
+    public ClinicalDocument setLegalAuthenticator(LegalAuthenticator legalAuthenticator) {
         this.legalAuthenticator = legalAuthenticator;
+        return this;
     }
 
     public List<DocumentationOf> getDocumentationOfs() {
         return documentationOfs;
     }
 
-    public void setDocumentationOfs(List<DocumentationOf> documentationOfs) {
+    public ClinicalDocument setDocumentationOfs(List<DocumentationOf> documentationOfs) {
         this.documentationOfs = documentationOfs;
+        return this;
     }
 
     public DocumentationOf getDocumentationOf() {
@@ -219,16 +266,33 @@ public class ClinicalDocument extends BaseElement {
                 ? documentationOfs.get(0) : null;
     }
 
-    public void setDocumentationOf(DocumentationOf documentationOf) {
+    public ClinicalDocument setDocumentationOf(DocumentationOf documentationOf) {
         this.documentationOfs = Collections.singletonList(documentationOf);
+        return this;
+    }
+
+    public ClinicalDocument addDocumentationOf(DocumentationOf documentationOf) {
+        if (documentationOfs == null) {
+            return setDocumentationOf(documentationOf);
+        }
+        try {
+            documentationOfs.add(documentationOf);
+        } catch (UnsupportedOperationException e) {
+            List<DocumentationOf> tmp = new ArrayList<DocumentationOf>();
+            tmp.addAll(documentationOfs);
+            tmp.add(documentationOf);
+            documentationOfs = tmp;
+        }
+        return this;
     }
 
     public Component getComponent() {
         return component;
     }
 
-    public void setComponent(Component component) {
+    public ClinicalDocument setComponent(Component component) {
         this.component = component;
+        return this;
     }
 
     @Override
@@ -237,8 +301,8 @@ public class ClinicalDocument extends BaseElement {
     }
 
     @Override
-    public String toString() {
-        return toString(1024);
+    public String toXML() {
+        return toXML(1024);
     }    
 
     @Override
@@ -268,7 +332,7 @@ public class ClinicalDocument extends BaseElement {
     }
 
 
-    public static class Title extends TextElement {
+    private static class Title extends TextElement {
 
         private Title(String text) {
             super("title", text);
@@ -279,8 +343,16 @@ public class ClinicalDocument extends BaseElement {
 
     public static class EffectiveTime extends TimeElement {
 
-        public EffectiveTime(Date time) {
+        public EffectiveTime(String time) {
             super("effectiveTime", time);
+        }
+
+        public EffectiveTime(Date time, boolean tz) {
+            super("effectiveTime", time, tz);
+        }
+
+        public EffectiveTime(Date time, TimeZone tz) {
+            super("effectiveTime", time, tz);
         }
 
     }

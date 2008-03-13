@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
- * Portions created by the Initial Developer are Copyright (C) 2002-2008
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,6 +38,18 @@
 package org.dcm4che2.cda;
 
 public class ConfidentialityCode extends CodeElement {
+
+    public static final String CONFIDALITY_CODE_SYSTEM =
+            "2.16.840.1.113883.5.25";
+
+    public static ConfidentialityCode NORMAL =
+            new ConfidentialityCode("N", CONFIDALITY_CODE_SYSTEM);
+
+    public static ConfidentialityCode RESTRICTED =
+            new ConfidentialityCode("R", CONFIDALITY_CODE_SYSTEM);
+
+    public static ConfidentialityCode VERY_RESTRICTED =
+            new ConfidentialityCode("V", CONFIDALITY_CODE_SYSTEM);
 
     public ConfidentialityCode(String code, String codeSystem) {
         super("confidentialityCode", code, codeSystem, null, null);
