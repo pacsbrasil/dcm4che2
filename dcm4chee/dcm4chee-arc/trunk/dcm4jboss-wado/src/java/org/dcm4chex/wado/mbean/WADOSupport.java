@@ -664,9 +664,11 @@ public class WADOSupport {
         int frame = 0;
         String suffix = null;
         if (frameNumber != null) {
-            frame = Integer.parseInt(frameNumber);
-            if (frame != 0)
+            frame = Integer.parseInt(frameNumber)-1;
+            if (frame > 0)
                 suffix = "-" + frameNumber;
+            else
+                frame = 0;
         }
         WADOCache cache = WADOCacheImpl.getWADOCache();
         File file;
