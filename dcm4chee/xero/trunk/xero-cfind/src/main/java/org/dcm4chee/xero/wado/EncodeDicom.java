@@ -40,10 +40,14 @@ package org.dcm4chee.xero.wado;
 import java.net.URL;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Encodes a file as a servlet response item returning the raw DICOM
  * 
@@ -51,10 +55,14 @@ import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
  *
  */
 public class EncodeDicom implements Filter<ServletResponseItem>{
-
+   private static Logger log = LoggerFactory.getLogger(EncodeDicom.class);
+   
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  URL url = FileLocationMgtFilter.filterURL(filterItem, params, null);
-	  if( url==null ) return null;
+	  if( url==null ) {
+		 log.warn("DICOM File not found.");
+		 return new ErrorServletResponseItem(HttpServletResponse.SC_NOT_FOUND,"DICOM File not found.");
+	  }
 	  return new UrlServletResponseItem(url,"application/dicom");
    }
 

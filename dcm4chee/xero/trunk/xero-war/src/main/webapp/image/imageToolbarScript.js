@@ -52,6 +52,22 @@ function initDisplay() {
 	t.prev=["image","imageToolbar","imagePrefetch"];
     t.next=t.prev;
     if( !imageHandler.getImageUrl) alert("Warning - no image url.");
+    resizeDisplayArea();
 };
+
+/** Resize the display area to the viewable area, assuming it is different from the initial area */
+function resizeDisplayArea() {
+	if( xslRenderWindow===undefined ) return;
+	var vs = getViewportSize();
+	vs[0] = vs[0] - 19;
+	vs[1] = vs[1] - 19;
+	if( vs[0]!=xslRenderWindow[0] || vs[1]!=xslRenderWindow[1] ) {
+	   var newSize = "width="+vs[0]+"&height=" + vs[1];
+	   displayXslt.action("displayResolution", newSize);
+	   xslRenderWindow = vs;
+	}
+};
+
+
 
 addLoadEvent(initDisplay);

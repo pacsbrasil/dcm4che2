@@ -43,6 +43,8 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A wado image is a buffered image return object that includes methods to
@@ -52,6 +54,8 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
  * 
  */
 public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem {
+   private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
+   
 	public static String WINDOW_CENTER = "windowCenter";
 	public static String WINDOW_WIDTH = "windowWidth";
 	public static String FRAME_NUMBER= "frameNumber";
@@ -99,6 +103,7 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 	 */
 	public long getSize() {
 		long size = getParameterMap().size() * 128l;
+		log.debug("Size from parameter map only ",size);
 		BufferedImage image = getValue();
 		if (image != null) {
 			int width = image.getWidth();
@@ -114,6 +119,12 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 				size += width * height * 2;
 			else
 				size += width * height * channels * 2;
+			log.debug("Size from parameter map + image ",size);
+		}
+	    byte[] raw = (byte[]) getParameter(IMG_AS_BYTES);
+		if( raw!=null ) {
+		   size += raw.length;
+		   log.debug("Size adding from image as bytes ",size);
 		}
 		return size;
 	}

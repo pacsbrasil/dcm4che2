@@ -49,9 +49,9 @@ Cine.prototype.started=false;
 // How many images to read ahead
 Cine.prototype.readAhead=25;
 // How many items are required to have read before starting and before starting to slow down
-Cine.prototype.requireAhead = 12;
+Cine.prototype.requireAhead = 18;
 // The concurrent number of loads.
-Cine.prototype.concurrent = 3;
+Cine.prototype.concurrent = 12;
 Cine.prototype.debug=debug;
 // Start with no images until the look ahead is defined.
 Cine.prototype.imgs = 0;
@@ -117,6 +117,8 @@ Cine.prototype.initReadAhead = function Cine_initReadAhead() {
 		info("There should be some images defined.");
 		return;
 	}
+	if( this.imgs <= this.requireAhead ) this.requireAhead = this.imgs-1;
+	if( this.imgs <= this.concurrent ) this.concurrent = this.imgs-1;
 	info("Using read ahead to "+this.readAhead+" on "+this.imgs+" images");
 };
 

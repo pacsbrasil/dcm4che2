@@ -81,6 +81,10 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	public FilterItem getFirstFilter(FilterItem filterItem) {
 		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
 		FilterItem firstFilter = filterListConfig.getFirstFilter();
+		if( firstFilter==null ) {
+		   log.warn("First filter isn't found.");
+		   return null;
+		}
 		log.debug("First filter is "+firstFilter.getName());
 		return firstFilter;
 	}
@@ -91,6 +95,10 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	public FilterItem getNamedFilter(FilterItem filterItem, String name) {
 		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
 		FilterItem firstFilter = filterListConfig.getNamedFilter(name);
+		if( firstFilter==null ) {
+		   log.warn("Unable to find filter named "+name);
+		   return null;
+		}
 		log.debug("Filter "+name+" is "+firstFilter.getName());
 		return firstFilter;
 	}

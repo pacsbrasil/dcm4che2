@@ -82,6 +82,8 @@ public class DicomImageServletResponse implements ServletResponseItem {
    protected String tsuid;
 
    protected boolean readRaw;
+   
+   protected String sop;
 
    /** Create the dicom image writers directly rather than trying to find them. */
    static ImageWriterSpi dicomImageWriterCreator = new DicomImageWriterSpi();
@@ -96,6 +98,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
 	  this.frames = frames;
 	  this.filterItem = filterItem;
 	  this.params = params;
+	  this.sop = ds.getString(Tag.SOPInstanceUID);
 	  readRaw = true;
 	  if (!tsuid.equals(ds.getString(Tag.TransferSyntaxUID))) {
 		 log.info("Can't read raw image data - transfer syntaxes are different.");
@@ -107,7 +110,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
      * Write the desired images out to the response.
      */
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	  log.info("Writing a DICOM image response.");
+	  log.info("Writing a DICOM image response for "+sop + " to "+response);
 	  response.setContentType("application/dicom");
 	  DicomObject dsUse = new BasicDicomObject();
 	  ds.copyTo(dsUse);
@@ -119,20 +122,21 @@ public class DicomImageServletResponse implements ServletResponseItem {
 	  }
 	  DicomImageWriter diw = (DicomImageWriter) dicomImageWriterCreator.createWriterInstance();
 	  OutputStream os = response.getOutputStream();
-	  diw.setOutput(new MemoryCacheImageOutputStream(os));
+	  MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(os); 
+	  diw.setOutput(mcios);
 	  DicomStreamMetaData dsmd = new DicomStreamMetaData();
 	  dsmd.setDicomObject(dsUse);
-	  log.info("Preparing to write sequence with " + dsUse.size() + " items.");
+	  log.debug("Preparing to write sequence for "+sop+" with " + dsUse.size() + " items.");
 	  diw.prepareWriteSequence(dsmd);
 
 	  try {
 		 if (this.frames != null) {
-			log.info("Writing "+this.frames.size()+" images.");
+			log.debug("Writing "+this.frames.size()+" images for sop "+sop);
 			for (int i : this.frames) {
 			   writeToSequence(diw, i);
 			}
 		 } else {
-			  log.info("Writing "+numberOfFrames+" images.");
+			log.debug("Writing "+numberOfFrames+" images for sop "+sop);
 			for (int i = 0; i < numberOfFrames; i++) {
 			   writeToSequence(diw, i);
 			}
@@ -142,8 +146,10 @@ public class DicomImageServletResponse implements ServletResponseItem {
 		 return;
 	  }
 
-	  log.info("Completed writing image items.");
+	  log.debug("Completed writing image items to "+sop+" output "+response);
 	  diw.endWriteSequence();
+	  mcios.close();
+	  os.close();
    }
 
    /**
@@ -152,7 +158,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
      * @param i
      */
    protected void writeToSequence(DicomImageWriter diw, int i) throws IOException {
-	  log.info("Writing image " + i);
+	  log.debug("Writing image " + sop+"["+i+"]");
 	  WadoImage img = readImage(i);
 	  if (img == null)
 		 throw new NullPointerException("Image " + i + " should not be null.");

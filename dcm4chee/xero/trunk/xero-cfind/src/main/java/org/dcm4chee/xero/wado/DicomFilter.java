@@ -118,7 +118,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		 params.put(MemoryCacheFilter.CACHE_SIZE, "2048");
 		 // Makes this a bit more thread safe if the header has been read
 		 reader.getStreamMetadata();
-		 log.info("Time to open file & read meta-data "+nanoTimeToString(System.nanoTime() - start));
+		 log.info("Time to open "+params.get("objectUID")+" read meta-data "+nanoTimeToString(System.nanoTime() - start));
 		 return reader;
 	  } catch (IOException e) {
 		 log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);

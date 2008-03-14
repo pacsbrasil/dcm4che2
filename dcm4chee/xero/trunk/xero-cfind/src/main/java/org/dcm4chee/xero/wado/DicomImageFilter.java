@@ -135,7 +135,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			   bi = new BufferedImage(cm, r, false, null);
 			}
 			ret.setValue(bi);
-			log.info("Time to "+op+" image ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
+			log.info("Time to "+op+" image "+params.get("objectUID")+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
 				  + nanoTimeToString(System.nanoTime() - start));
 		 }
 	  } catch (IOException e) {

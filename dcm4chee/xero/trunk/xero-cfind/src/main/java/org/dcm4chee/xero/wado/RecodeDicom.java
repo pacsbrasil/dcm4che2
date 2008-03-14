@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -86,6 +88,10 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 	  try {
 		 String tsuid = (String) params.get("transferSyntax");
 		 DicomImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
+		 if( reader==null || reader.getStreamMetadata()==null ) {
+			log.warn("No image/dicom object found for objectUID="+params.get("objectUID"));
+			return new ErrorServletResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
+		 }
 		 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 		 DicomObject ds = streamData.getDicomObject();
 

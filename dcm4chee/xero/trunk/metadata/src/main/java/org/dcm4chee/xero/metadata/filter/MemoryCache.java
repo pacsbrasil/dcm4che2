@@ -80,6 +80,8 @@ public class MemoryCache<K, V> {
    protected long cacheSize;
 
    protected long currentSize;
+   
+   protected String cacheName;
 
    // TODO Figure out if this counter will overflow at some point
    protected int counter = 0;
@@ -148,12 +150,17 @@ public class MemoryCache<K, V> {
 	  }
 
 	  // It has to be added into the lruSet.
-	  synchronized (this) {		 
-		 value.setSize(valueGetter.getSize());
+	  synchronized (this) {
+		 long size = valueGetter.getSize();
+		 if( size==0 ) {
+			log.error("Size is 0 on "+valueGetter+" in "+cacheName);
+		 }
+		 value.setSize(size);
 		 currentSize += valueGetter.getSize();
 		 value.setIncrement(counter++);
 		 value.updateOriginalAge();
 		 if (!isToBig(value)) {
+			log.debug("Adding to "+cacheName+" item "+key+" of size "+size);
 			lruSet.add(value);
 		 } else {
 			// Don't want it in the find map either - but anyone else who found
@@ -177,6 +184,10 @@ public class MemoryCache<K, V> {
    public synchronized void emptyLRU() {
 	  Iterator<InternalKey<K, V>> it = lruSet.iterator();
 	  long now = System.currentTimeMillis();
+	  if( log.isDebugEnabled() ) {
+		 // This is too expensive to compute if it isn't being printed.
+		 log.debug("Cache "+cacheName+" current size="+currentSize+"/"+cacheSize+" with "+findMap.size()+" items and lruSet size="+lruSet.size());
+	  }
 	  while (it.hasNext()) {
 		 InternalKey<K, V> first = it.next();
 		 if( currentSize < cacheSize ) {
@@ -187,7 +198,8 @@ public class MemoryCache<K, V> {
 		 it.remove();
 		 findMap.remove(first.getKey());
 		 currentSize -= first.getSize();
-		 log.debug("Throwing away "+first.getKey());
+		 // This is in a moderate loop, so don't construct the string unless needed.
+		 if( log.isDebugEnabled() ) log.debug("Throwing away "+first.getKey()+" in "+cacheName);
 		 if (closeAge > 0)
 			first.close();
 	  }

@@ -318,3 +318,5 @@ ClickHandler.prototype.startLeft = function(x,y) {
 };
 
 var clickHandler = new ClickHandler();
+
+

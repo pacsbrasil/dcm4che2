@@ -72,7 +72,7 @@ public class MetaDataServlet extends HttpServlet {
    private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
 
    /** The meta data needs to be read from the appropriate location. */
-   MetaDataBean metaData, metaDataForThis;
+   MetaDataBean metaData;
 
    /**
      * The filterItem contains the fixed information about how to handle this
@@ -121,9 +121,9 @@ public class MetaDataServlet extends HttpServlet {
 			useFilterItem = filter.getFirstFilter(filterItem);
 		 }
 		 if (useFilterItem == null) {
-			throw new ServletException("Didn't find requestType=" + requestType);
+			throw new ServletException("Didn't find requestType=" + requestType+" from "+filter+" in "+metaData.getPath());
 		 }
-		 log.info("Found request type " + requestType+ " = "+useFilterItem);
+		 log.debug("Found request type " + requestType+ " = "+useFilterItem);
 		 ServletResponseItem sri = (ServletResponseItem) useFilterItem.filter.filter(useFilterItem, params);
 		 response.setCharacterEncoding("UTF-8");
 		 if (sri == null) {

@@ -44,7 +44,7 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
    protected String paramKeyName = KEY_NAME;
 
    protected String cacheName, closeAge;
-
+   
    MemoryCache<String, T> cache = new MemoryCache<String, T>();
 
    /**
@@ -67,10 +67,10 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 	  SizeableFuture sf = new SizeableFutureFilter<T>(filterItem, params);
 
 	  long start = System.nanoTime();
-	  log.info("Looking in cache for " + key);
+	  log.debug("Looking in cache "+cacheName +" for " + key);
 	  T ret = cache.get(key, sf);
 	  long dur = System.nanoTime() - start;
-	  String msg = "Found value " + key + "=" + ret + " in " + nanoTimeToString(dur);
+	  String msg = "Found in "+cacheName+" value " + key + "=" + ret + " in " + nanoTimeToString(dur);
 	  log.info(msg);
 	  if (dur > 1000000000)
 		 log.warn("More than 1 second to fetch " + key);
@@ -116,6 +116,7 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 	  if (cacheSize != null)
 		 setCacheSize(Long.parseLong(cacheSize));
 	  cacheName = metaDataBean.getPath();
+	  cache.cacheName = cacheName;
 	  closeAge = (String) metaDataBean.getValue(CLOSE_AGE);
 	  if (closeAge != null)
 		 cache.setCloseAge(Long.parseLong(closeAge));
@@ -233,11 +234,22 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 	  @SuppressWarnings("unchecked")
 	  public T get() throws InterruptedException, ExecutionException {
 		 value = (T) filterItem.callNextFilter(params);
+		 if( value==null ) {
+			log.info("Couldn't find value for sizeable future");
+			return null;
+		 }
 		 String sSize = (String) params.get(CACHE_SIZE);
 		 if (sSize != null) {
 			size = Long.parseLong(sSize);
+			if( size==0 ) {
+			   log.warn("Size set in params return is 0.");
+			}
+			params.remove(CACHE_SIZE);
 		 } else {
 			size = ((CacheItem) value).getSize();
+			if( size==0 ) {
+			   log.warn("Size returned by cache item "+value+" is zero.");
+			}
 		 }
 		 return value;
 	  }

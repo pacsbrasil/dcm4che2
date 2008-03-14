@@ -47,6 +47,7 @@ var pageDebug=false;
 pageDebug=true;
 </xsl:if>
 var displayMode="<xsl:value-of select="/documents/mode" />";
+var xslRenderWindow = [<xsl:value-of select="concat(/documents/displayResolution/@width,',',/documents/displayResolution/@height)" />];
     </xsl:element>
 </x:template>
   

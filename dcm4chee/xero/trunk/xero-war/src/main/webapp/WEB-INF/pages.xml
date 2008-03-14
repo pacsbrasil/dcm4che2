@@ -150,6 +150,15 @@
     <begin-conversation join="true" />
   </page>
 
+  <page view-id="/image/action/DisplayResolution.xhtml" action="#{DisplayResolution.action}">
+    <param name="width" value="#{DisplayResolution.width}" />
+    <param name="height" value="#{DisplayResolution.height}" />
+    <param name="pitch" value="#{DisplayResolution.pitch}" />
+  	<navigation>
+      <redirect view-id="/image/image.xhtml" />
+  	</navigation>
+  </page>
+  
   <page view-id="/image/action/Mode.xhtml" action="#{DisplayMode.action}">
     <navigation>
       <redirect view-id="/image/image.xhtml" />

@@ -78,7 +78,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  int rot = getInt(params,"rotation");
 	  boolean flip = getBoolean(params,"flip");
 	  if (rows == 0 && cols == 0 && rot==0 && !flip) {
-		 log.info("Just calling next filter directly as no size, rotation or flip parameters.");
+		 log.debug("Just calling next filter directly as no size, rotation or flip parameters.");
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  }
 	  DicomImageReader dir = DicomFilter.filterDicomImageReader(filterItem, params, null);

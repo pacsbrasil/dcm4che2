@@ -365,3 +365,25 @@ IEFixNodeList.prototype.getElementsByTagName = function IEFixNodeList_getElement
 		this.getElementsByTagName(child,childName);
 	}
 };
+
+/** Provides information about the frame width */
+function getViewportSize() {
+    var size = [0, 0];
+    if (typeof window.innerWidth != 'undefined')
+    {
+    	size = [ window.innerWidth, window.innerHeight ];
+    }
+    else if (typeof document.documentElement != 'undefined' &&
+             typeof document.documentElement.clientWidth != 'undefined' &&
+             document.documentElement.clientWidth != 0)
+    {
+     size = [ document.documentElement.clientWidth, document.documentElement.clientHeight ];
+    }
+    else
+    {
+     size = [ document.getElementsByTagName('body')[0].clientWidth,
+              document.getElementsByTagName('body')[0].clientHeight ];
+    }
+
+    return size;
+};

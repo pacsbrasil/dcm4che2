@@ -128,9 +128,11 @@ public class FileLocationMgtFilter implements Filter<URL> {
 	  File f;
 	  try {
 		 f = getDICOMFile(objectUID);
-		 if (f == null)
+		 if (f == null) {
+			log.warn("File not found in local online cache.");
 			return filterItem.callNextFilter(params);
-		 log.info("Time to read file location="+nanoTimeToString(System.nanoTime() - start));
+		 }
+		 log.info("Time to read "+objectUID+" file location="+nanoTimeToString(System.nanoTime() - start));
 		 return f.toURI().toURL();
 	  } catch (RuntimeException e) {
 		 throw e;
