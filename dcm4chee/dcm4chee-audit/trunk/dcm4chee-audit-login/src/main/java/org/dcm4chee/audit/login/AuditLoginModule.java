@@ -75,22 +75,22 @@ public class AuditLoginModule implements LoginModule {
     }
 
     public boolean login() throws LoginException {
-        return true;
+        return false;
     }
 
     public boolean commit() throws LoginException {
         auditUserAuth(UserAuthenticationMessage.LOGIN);
-        return true;
+        return false;
     }
 
     public boolean abort() throws LoginException {
         auditUserAuthFailure(AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-        return true;
+        return false;
     }
 
     public boolean logout() throws LoginException {
         auditUserAuth(UserAuthenticationMessage.LOGIN);
-        return true;
+        return false;
     }
 
     private void auditUserAuth(AuditEvent.TypeCode typeCode) {
