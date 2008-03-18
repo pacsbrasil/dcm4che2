@@ -75,40 +75,40 @@ public class MetaDataServlet extends HttpServlet {
    MetaDataBean metaData;
 
    /**
-     * The filterItem contains the fixed information about how to handle this
-     * request
-     */
+    * The filterItem contains the fixed information about how to handle this
+    * request
+    */
    FilterItem filterItem;
 
    /**
-     * The filter needs to supply a type and a stream/byte array/data object to
-     * send
-     */
+    * The filter needs to supply a type and a stream/byte array/data object to
+    * send
+    */
    FilterList<ServletResponseItem> filter;
 
    /**
-     * The time between refreshes of filtered response - this is set to an hour
-     * as it isn't expected that new data arrives all that often. This does NOT
-     * affect a user hitting refresh in the browser - that will directly reload
-     * the data.
-     */
+    * The time between refreshes of filtered response - this is set to an hour
+    * as it isn't expected that new data arrives all that often. This does NOT
+    * affect a user hitting refresh in the browser - that will directly reload
+    * the data.
+    */
    private long modifiedTimeAllowed = 60 * 60 * 1000; // 1 hour default.
 
    // Refresh screen
    // refreshes list.
 
    /**
-     * Filter the items to get a return response by calling the first filter in
-     * the list.
-     * 
-     * @param request
-     *            used to determine the parameters for the filter
-     * @param response
-     *            used to write the filtered data.
-     * @throws ServletException
-     * @throws IOException
-     *             Sets SC_NO_CONTENT on a null return element.
-     */
+    * Filter the items to get a return response by calling the first filter in
+    * the list.
+    * 
+    * @param request
+    *            used to determine the parameters for the filter
+    * @param response
+    *            used to write the filtered data.
+    * @throws ServletException
+    * @throws IOException
+    *             Sets SC_NO_CONTENT on a null return element.
+    */
    @SuppressWarnings("unchecked")
    protected void doFilter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  try {
@@ -121,9 +121,9 @@ public class MetaDataServlet extends HttpServlet {
 			useFilterItem = filter.getFirstFilter(filterItem);
 		 }
 		 if (useFilterItem == null) {
-			throw new ServletException("Didn't find requestType=" + requestType+" from "+filter+" in "+metaData.getPath());
+			throw new ServletException("Didn't find requestType=" + requestType + " from " + filter + " in " + metaData.getPath());
 		 }
-		 log.debug("Found request type " + requestType+ " = "+useFilterItem);
+		 log.debug("Found request type " + requestType + " = " + useFilterItem);
 		 ServletResponseItem sri = (ServletResponseItem) useFilterItem.filter.filter(useFilterItem, params);
 		 response.setCharacterEncoding("UTF-8");
 		 if (sri == null) {
@@ -137,17 +137,17 @@ public class MetaDataServlet extends HttpServlet {
    }
 
    /**
-     * Computes a parameter map that maps single valued items to Strings and
-     * multi-valued items to String[]. This is handy for the normal case where
-     * only a single item is expected - if the type is wrong, then it is usually
-     * an error, so it is ok to just throw an exception.
-     * 
-     * @param request
-     *            contains the parameter map to convert to a simple map.
-     * @return A Map to String where only 1 value is present, and to String[]
-     *         for multiple values. This break down makes the most sense in the
-     *         usual case where there is only 1 possible value.
-     */
+    * Computes a parameter map that maps single valued items to Strings and
+    * multi-valued items to String[]. This is handy for the normal case where
+    * only a single item is expected - if the type is wrong, then it is usually
+    * an error, so it is ok to just throw an exception.
+    * 
+    * @param request
+    *            contains the parameter map to convert to a simple map.
+    * @return A Map to String where only 1 value is present, and to String[] for
+    *         multiple values. This break down makes the most sense in the usual
+    *         case where there is only 1 possible value.
+    */
    @SuppressWarnings("unchecked")
    protected Map<String, Object> computeParameterMap(HttpServletRequest request) {
 	  Map<String, String[]> parameters = request.getParameterMap();
@@ -165,18 +165,18 @@ public class MetaDataServlet extends HttpServlet {
    }
 
    /**
-     * The initialization needs to read the meta data object in, from one of 3
-     * places: JndiMetaData SeamMetaData PropertiesMetaData TODO - see if we can
-     * figure out how to make this just kind of work by inheriting from
-     * something else...
-     * 
-     * @throws MalformedURLException
-     */
+    * The initialization needs to read the meta data object in, from one of 3
+    * places: JndiMetaData SeamMetaData PropertiesMetaData TODO - see if we can
+    * figure out how to make this just kind of work by inheriting from something
+    * else...
+    * 
+    * @throws MalformedURLException
+    */
    @SuppressWarnings("unchecked")
    @Override
    public void init() throws ServletException {
 	  String name = this.getInitParameter("metaData");
-	  log.debug("Loading meta-data from {} for servlet.",name);
+	  log.debug("Loading meta-data from {} for servlet.", name);
 	  MetaDataBean root = StaticMetaData.getMetaData(name);
 	  String filterName = getInitParameter("filter");
 	  if (filterName == null)
@@ -191,9 +191,9 @@ public class MetaDataServlet extends HttpServlet {
    }
 
    /**
-     * Get requests can return last modified information. so add the cache
-     * control headings and then proceed with a doFilter.
-     */
+    * Get requests can return last modified information. so add the cache
+    * control headings and then proceed with a doFilter.
+    */
    @Override
    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 	  long modifiedTime = getModifiedTimeAllowed() / 1000;
@@ -226,8 +226,8 @@ public class MetaDataServlet extends HttpServlet {
    }
 
    /**
-     * Post responses always return new data - so just call doFilter directly.
-     */
+    * Post responses always return new data - so just call doFilter directly.
+    */
    @Override
    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 	  log.debug("MetaData Servlet as post for {}  with parameters  {}", req.getRequestURI(), req.getQueryString());

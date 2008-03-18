@@ -54,12 +54,13 @@ import org.dcm4chee.xero.metadata.list.ValueList;
  * This is a metadata information object that provides meta-data at a single
  * level. For example, it might provide StudySearch meta-data. In turn study
  * search might have StudySearch.Commands that has meta-data of it's own.
+ * It is read-only once constructed, and thus is thread safe.
  * 
  * @author bwallace
  */
 public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
    static Logger log = LoggerFactory.getLogger(MetaDataBean.class);
-
+   
    /**
      * This object had better actually not be serialized however, it isn't clear
      * how to avoid that right now.
@@ -103,6 +104,21 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 	  this.path = "";
 	  this.childName = "";
 	  configureProviders(properties);
+	  initAll();
+   }
+   
+   /**
+    * Initializes this and all child elements
+    * TODO - make this safe even for self-nesting inherits (this is otherwise recursive indefinitely)
+    */
+   protected void initAll() {
+	  log.debug("Initializing "+this.path);
+	  this.initChildren();
+	  if( children==null ) return;
+	  for(String child : children.keySet()) {
+		 MetaDataBean mdbChild = get(child);
+		 mdbChild.initAll();
+	  }
    }
 
    /**

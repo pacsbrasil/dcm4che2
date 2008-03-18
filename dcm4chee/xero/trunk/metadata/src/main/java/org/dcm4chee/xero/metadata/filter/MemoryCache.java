@@ -152,8 +152,14 @@ public class MemoryCache<K, V> {
 	  // It has to be added into the lruSet.
 	  synchronized (this) {
 		 long size = valueGetter.getSize();
+		 if( size==0l && value.getValue()==null ) {
+			   log.info("No value found in "+cacheName+" for "+key+" removing from map.");
+			   findMap.remove(key);
+			   return null;
+		 }
 		 if( size==0 ) {
-			log.error("Size is 0 on "+valueGetter+" in "+cacheName);
+			log.error("Size is 0 on "+valueGetter+" in "+cacheName+" using huge size:");
+			size = Integer.MAX_VALUE;
 		 }
 		 value.setSize(size);
 		 currentSize += valueGetter.getSize();

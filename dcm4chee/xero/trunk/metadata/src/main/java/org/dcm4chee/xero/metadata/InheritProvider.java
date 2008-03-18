@@ -66,20 +66,21 @@ public class InheritProvider implements MetaDataProvider {
 			MetaDataBean existingMetaData) {
 		Map<String,  Object> ret = new HashMap<String, Object>();
 		Set<String> alreadyInherited = new HashSet<String>();
+		log.debug("Starting to inherit source "+existingMetaData.path);
 		alreadyInherited.add(existingMetaData.path);
 		addMetaData(path, "", existingMetaData, ret, alreadyInherited);
+		log.debug("Completted inheritting "+existingMetaData.path);
 		return ret;
 	}
 
 	/**
-	 * 
 	 * @param path is the full path to use for found values.
 	 * @param childPath is the path underneath mdb to look for values from.
 	 * @param mdb is the current level of meta-data bean to look for children in.
-	 * @param ret is the object to extend with additional values.
+	 * @param inherittedValues is the object to extend with additional values.
 	 */
 	protected void addMetaData(String path, String childPath, MetaDataBean mdb,
-			Map<String, Object> ret, Set<String> alreadyInherited) {
+			Map<String, Object> inherittedValues, Set<String> alreadyInherited) {
 		if( mdb==null ) return;
 		
 		MetaDataBean parent = mdb.getParent();
@@ -95,8 +96,16 @@ public class InheritProvider implements MetaDataProvider {
 				if( mdbInherit!=null && !alreadyInherited.contains(mdbInherit.path)) {
 					log.info("Inheriting from "+mdbInherit.path+" into "+path+" parent inherit "+inheritFrom + " at level "+mdb.path);
 					alreadyInherited.add(mdbInherit.path);
-					inheritFrom(path,mdbInherit,ret);
-					addMetaData(path,"",mdbInherit, ret,alreadyInherited);
+					inheritFrom(path,mdbInherit,inherittedValues);
+					addMetaData(path,"",mdbInherit, inherittedValues,alreadyInherited);
+				}
+				else {
+				   if( mdbInherit!=null ) {
+					  log.debug("Not inheritting from "+mdbInherit.path+" as it is already inheritted.");
+				   }
+				   else {
+					  log.info("No parent "+mdbInherit+" found to inherit from.");
+				   }
 				}
 			}
 		}
@@ -114,32 +123,34 @@ public class InheritProvider implements MetaDataProvider {
 		else {
 			relativeChildPath = mdbName + "." + childPath;
 		}
-		addMetaData(path, relativeChildPath, parent, ret, alreadyInherited);
+		addMetaData(path, relativeChildPath, parent, inherittedValues, alreadyInherited);
 	}
 
 	/**
-	 * Adds everything not already added from mdb into ret. mdb had better be at
-	 * the same relative level as the existing meta-data bean.
+	 * Adds everything not already added from mdb into ret. 
+	 * mdb must be at the same relative level as the existing meta-data bean.
 	 * 
 	 * @param path to put things into
 	 * @param childPath
 	 * @param mdb
-	 * @param ret
+	 * @param inherittedValues
 	 */
-	protected void inheritFrom(String path, MetaDataBean mdb, Map<String, Object> ret) {
+	protected void inheritFrom(String path, MetaDataBean mdb, Map<String, Object> inherittedValues) {
 		Map<String, MetaDataBean> children = mdb.getChildren();
 		Object rawValue = mdb.rawValue;
 		// This is actually the only real inherited value at this level - 
 		// everything else is just another nested meta-data bean.
-		if (rawValue != null && !ret.containsKey(path)) {
-			ret.put(path, rawValue);
+		if (rawValue != null && !inherittedValues.containsKey(path)) {
+		    log.debug("Inheriting "+path+" raw value="+rawValue);
+			inherittedValues.put(path, rawValue);
 		}
 		if (children != null) {
 			for (Map.Entry<String, MetaDataBean> me : children.entrySet()) {
-				if (!ret.containsKey(me.getKey())) {
+				if (!inherittedValues.containsKey(me.getKey())) {
 					// The value doesn't really matter here - as long as it
 					// is non-null, the path will create a separate sub-element.
-					ret.put(path+"."+me.getKey(), me.getValue());
+				    log.debug("Inheritting "+path+"."+me.getKey()+"="+me.getValue().rawValue);
+					inherittedValues.put(path+"."+me.getKey(), me.getValue().rawValue);
 				}
 			}
 		}
