@@ -238,13 +238,13 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 			log.info("Couldn't find value for sizeable future");
 			return null;
 		 }
-		 String sSize = (String) params.get(CACHE_SIZE);
-		 if (sSize != null) {
-			size = Long.parseLong(sSize);
+		 Object psize = params.get(CACHE_SIZE);
+		 size = FilterUtil.getLong(params,CACHE_SIZE,-1);
+		 log.info("Cache size object="+psize+" parsed size="+size);
+		 if (size >= 0) {
 			if( size==0 ) {
-			   log.warn("Size set in params return is 0.");
+			   log.warn("Size provided is 0.");
 			}
-			params.remove(CACHE_SIZE);
 		 } else {
 			size = ((CacheItem) value).getSize();
 			if( size==0 ) {

@@ -44,6 +44,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,11 +81,23 @@ public class UrlServletResponseItem implements ServletResponseItem {
 	  InputStream is;
 	  String surl = url.toString();
 	  long fileSize;
+	  OutputStream os = response.getOutputStream();
 	  if (surl.startsWith("file:")) {
 		String fileName = url.getFile();
-		log.info("Using file "+fileName);
-		is = new FileInputStream(fileName);
+		log.info("Using memory mapped file "+fileName);
+		FileInputStream fis = new FileInputStream(fileName);
 		fileSize = new File(fileName).length();
+		FileChannel fc = fis.getChannel();
+		ByteBuffer bb = ByteBuffer.allocate(32*1024);
+		int s = fc.read(bb);
+		while(s>0) {
+		   os.write(bb.array(), 0, s);
+		   s = fc.read(bb);
+		}
+		fc.close();
+		fis.close();
+		os.close();
+		return;
 	  }
 	  else {
 		  URLConnection conn = url.openConnection();
@@ -94,7 +109,6 @@ public class UrlServletResponseItem implements ServletResponseItem {
 		 log.info("Returning "+fileSize+" bytes for file "+url);
 		 response.setContentLength((int) fileSize);
 	  }
-	  OutputStream os = response.getOutputStream();
 	  byte[] data = new byte[64*1024];
 	  int size = is.read(data);
 	  while(size>0) {

@@ -31,6 +31,11 @@ fileLocation.fileLocationMgt.priority=1000
 #fileLocation.wadoLocation=${class:org.dcm4chee.xero.search.filter.DicomFileLocationFilter}
 #fileLocation.wadoLocation.priority=100
 fileLocation.priority=-1
+fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+fileLocation.locationCache.priority=10000
+fileLocation.locationCache.cacheSize=2000000
+fileLocation.locationCache.queryStr=objectUID
+
 
 # Defines the list of items to read DicomImageReader objects for a given SOP Instance
 dicom=${class:org.dcm4chee.xero.metadata.filter.FilterList}

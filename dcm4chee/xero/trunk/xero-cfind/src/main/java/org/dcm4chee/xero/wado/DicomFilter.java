@@ -115,7 +115,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		 }
 		 reader.setInput(in);
 		 // We don't have any reliable size information right now.   
-		 params.put(MemoryCacheFilter.CACHE_SIZE, "2048");
+		 params.put(MemoryCacheFilter.CACHE_SIZE, 2048);
 		 // Makes this a bit more thread safe if the header has been read
 		 reader.getStreamMetadata();
 		 log.info("Time to open "+params.get("objectUID")+" read meta-data "+nanoTimeToString(System.nanoTime() - start));

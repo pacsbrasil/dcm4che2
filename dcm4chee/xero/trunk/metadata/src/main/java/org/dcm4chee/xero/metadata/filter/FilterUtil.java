@@ -74,6 +74,23 @@ public class FilterUtil {
 	  throw new IllegalArgumentException("Expected integer value for " + key + " got class " + v.getClass() + " value " + v);
    }
 
+   public static long getLong(Map<String, Object> params, String key) {
+	  return getLong(params, key, 0l);
+   }
+
+   public static long getLong(Map<String, Object> params, String key, long def) {
+	  Object v = params.get(key);
+	  if (v == null)
+		 return def;
+	  if (v instanceof String)
+		 return Long.parseLong((String) v);
+	  if (v instanceof Integer)
+		 return ((Integer) v).intValue();
+	  if (v instanceof Long)
+		 return ((Long) v).longValue();
+	  throw new IllegalArgumentException("Expected long value for " + key + " got class " + v.getClass() + " value " + v);
+   }
+
    /** Get the float values from params */
    public static float[] getFloats(Map<String, Object> params, String key, float[] def) {
 	  Object v = params.get(key);

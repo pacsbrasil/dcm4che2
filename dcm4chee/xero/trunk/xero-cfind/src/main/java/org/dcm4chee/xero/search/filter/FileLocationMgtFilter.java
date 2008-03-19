@@ -132,8 +132,11 @@ public class FileLocationMgtFilter implements Filter<URL> {
 			log.warn("File not found in local online cache.");
 			return filterItem.callNextFilter(params);
 		 }
-		 log.info("Time to read "+objectUID+" file location="+nanoTimeToString(System.nanoTime() - start));
-		 return f.toURI().toURL();
+		 URL url = f.toURI().toURL();
+		 int size = url.toString().length()*2 + 64;
+		 params.put(MemoryCacheFilter.CACHE_SIZE, size);
+		 log.info("Time to read "+objectUID+" file location="+nanoTimeToString(System.nanoTime() - start)+" size of URL="+size);
+		 return url;
 	  } catch (RuntimeException e) {
 		 throw e;
 	  } catch (Exception e) {

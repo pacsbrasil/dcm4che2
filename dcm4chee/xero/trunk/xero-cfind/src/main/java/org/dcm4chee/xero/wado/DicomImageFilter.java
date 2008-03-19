@@ -56,6 +56,7 @@ import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +93,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 log.warn("Couldn't find reader for DICOM object.");
 		 return null;
 	  }
+	  // In case a size has been added, remove it as the size is changing.
+	  params.remove(MemoryCacheFilter.CACHE_SIZE);
 	  ImageReadParam param = reader.getDefaultReadParam();
 	  DicomImageReadParam dParam = (DicomImageReadParam) param;
 	  dParam.setOverlayRGB((String) params.get("rgb"));
