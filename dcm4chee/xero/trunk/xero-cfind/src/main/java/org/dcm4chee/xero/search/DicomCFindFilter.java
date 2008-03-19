@@ -321,7 +321,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	 */
 	public ResultFromDicom filter(FilterItem<ResultFromDicom> filterItem, Map<String, Object> params) {
 		log.debug("DICOM CFind filter starting to search.");
-		ResultsBean resultFromDicom = (ResultsBean) params.get(EXTEND_RESULTS_KEY);
+		ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
 		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
 		SearchCriteria searchCondition = (SearchCriteria) 
 			filterItem.callNamedFilter("searchCondition", params);

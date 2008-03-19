@@ -76,12 +76,14 @@ import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToStrin
  * 
  */
 public class TestUrlRetrieve {
-   public static String BASE_URL = "http://localhost/wado2/";
+   public static String BASE_URL = "http://localhost/";
+   public static String WADO2_URL = BASE_URL+"wado2/";
+   public static String XERO_URL = BASE_URL+"xero/";
 
    private static Logger log = LoggerFactory.getLogger(TestUrlRetrieve.class);
 
    enum UrlLevel {
-	  STUDY, SERIES, IMAGE, IMAGE_PAGE, WADO, THUMBNAIL, SEAM_IMAGE, ACTION, ORIG,
+	  STUDY, SERIES, SERIES_IMAGE, IMAGE, IMAGE_PAGE, WADO, THUMBNAIL, SEAM_IMAGE, ACTION, ORIG,
    };
 
    static JAXBContext context;
@@ -193,6 +195,8 @@ public class TestUrlRetrieve {
    static TestUrlRetrieve studyRet = new TestUrlRetrieve(UrlLevel.STUDY, 3, 0);
 
    static TestUrlRetrieve seriesRet = new TestUrlRetrieve(UrlLevel.SERIES, 3, 0);
+   
+   static TestUrlRetrieve seriesImageRet = new TestUrlRetrieve(UrlLevel.SERIES_IMAGE, 1, 0);
 
    static TestUrlRetrieve imageRet = new TestUrlRetrieve(UrlLevel.IMAGE, 3, 0);
 
@@ -247,7 +251,7 @@ public class TestUrlRetrieve {
 		 // 14 image CR String uid = "1.2.124.113532.128.5.1.74.20020108.75343.563790";
 		 // String uid="1.2.124.113532.132.183.36.32.20040429.112406.11120792";
 		 // 451 image single series 
-		 String uid="1.3.6.1.4.1.5962.1.2.20.1106149053.29346";
+		 String uid="1.2.840.113619.6.95.31.0.3.4.1.24.13.1833834";
 		 // 400 image study		 String uid="1.2.124.113532.128.5.1.74.20020131.162815.589479"; 
 		 studyRet.runnables.add(new StudyRun(uid));
 		 seriesRet.runnables.add(new SeriesRun(uid));
@@ -256,6 +260,7 @@ public class TestUrlRetrieve {
 	  long overallStart = System.nanoTime();
 	  studyRet.testAndPrintResults();
 	  seriesRet.testAndPrintResults();
+	  seriesImageRet.testAndPrintResults();
 	  imageRet.testAndPrintResults();
 	  imagePageRet.testAndPrintResults();
 	  //seamRet.testAndPrintResults();
@@ -276,7 +281,7 @@ public class TestUrlRetrieve {
 
 	  @Override
 	  public int runLoadUrl() throws Exception {
-		 String url = BASE_URL+"study.xml?StudyInstanceUID=" + uid;
+		 String url = WADO2_URL+"study.xml?StudyInstanceUID=" + uid;
 		 readFully(url);
 		 return 1;
 	  }
@@ -295,8 +300,9 @@ public class TestUrlRetrieve {
 
 	  @Override
 	  public int runLoadUrl() throws Exception {
-		 String urlS = BASE_URL+"series.xml?studyUID=" + uid;
+		 String urlS = WADO2_URL+"series.xml?studyUID=" + uid;
 		 URL url = new URL(urlS);
+		 System.out.println("Series URL="+urlS);
 		 ResultsType rt = (ResultsType) ((JAXBElement) unmarshaller.unmarshal(url)).getValue();
 		 int ret = 0;
 		 for (PatientType pt : rt.getPatient()) {
@@ -312,8 +318,9 @@ public class TestUrlRetrieve {
 					 wado.useOrig = true;
 					 origRet.runnables.add(wado);
 				  }
-				  seamRet.runnables.add(new TimeRunnable("http://xero:8080/xero/image/image.seam?studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
-				  actionRet.runnables.add(new TimeRunnable("http://xero:8080/xero/image/action/WindowLevel.seam?windowWidth=32767&windowCenter=65536&studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
+				  seamRet.runnables.add(new TimeRunnable(XERO_URL+"image/image.seam?studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
+				  actionRet.runnables.add(new TimeRunnable(XERO_URL+"image/action/WindowLevel.seam?windowWidth=32767&windowCenter=65536&studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
+				  seriesImageRet.runnables.add(new TimeRunnable(WADO2_URL+"cfind?level=seriesImage&seriesUID="+se.getSeriesInstanceUID()));
 				  ret++;
 			   }
 			}
@@ -344,7 +351,7 @@ public class TestUrlRetrieve {
 
 	  @Override
 	  public int runLoadUrl() throws Exception {
-		 String urlS = BASE_URL+"image.xml?Position=" + pos + "&Count=" + count + "&SeriesInstanceUID=" + uid;
+		 String urlS = WADO2_URL+"image.xml?Position=" + pos + "&Count=" + count + "&SeriesInstanceUID=" + uid;
 		 URL url = new URL(urlS);
 		 ResultsType rt = (ResultsType) ((JAXBElement) unmarshaller.unmarshal(url)).getValue();
 		 int ret = 0;
@@ -399,7 +406,7 @@ public class TestUrlRetrieve {
 
 	  @Override
 	  public int runLoadUrl() throws Exception {
-		 String url = BASE_URL+"wado?objectUID=" + uid;
+		 String url = WADO2_URL+"wado?objectUID=" + uid;
 		 if( thumb ) {
 			url = url+"&rows=128";
 		 }

@@ -48,6 +48,15 @@ import java.util.Map;
  */
 public class FilterUtil {
 
+   public static String getString(Map<String,Object> params, String key, String def) {
+	  Object v = params.get(key);
+	  if (v == null)
+		 return def;
+	  if (v instanceof String)
+		 return (String) v;
+	  throw new IllegalArgumentException("Expected String value for " + key + " got class " + v.getClass() + " value " + v);
+   }
+   
    public static boolean getBoolean(Map<String,Object> params, String key) {
 	  Object v = params.get(key);
 	  if( v==null ) return false;

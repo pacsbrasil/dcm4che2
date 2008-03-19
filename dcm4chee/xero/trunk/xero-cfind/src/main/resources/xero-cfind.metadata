@@ -201,4 +201,33 @@ WADO.wadoImg=${ref:wadoImg}
 WADO.wadoImg.priority=-1
 
 
+# This section contains the series level C-FIND setup
+cfind=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+cfind.blocked=${class:org.dcm4chee.xero.search.dicom.BlockedSearchFilter}
+cfind.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
+cfind.priority=10000
 
+cfind.study=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+cfind.study.priority=-1
+cfind.study.find=${class:org.dcm4chee.xero.search.study.StudySearch}
+cfind.study.searchCondition=${class:org.dcm4chee.xero.search.study.StudySearchConditionParser}
+cfind.study.searchCondition.priority=-1
+
+cfind.series=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+cfind.series.priority=-1
+cfind.series.find=${class:org.dcm4chee.xero.search.study.SeriesSearch}
+cfind.series.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+cfind.series.searchCondition.priority=-1
+
+# This is the default level
+cfind.seriesImage=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+cfind.seriesImage.priority=-1
+cfind.seriesImage.find=${class:org.dcm4chee.xero.search.dicom.ImageInSeriesSearch}
+cfind.seriesImage.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+cfind.seriesImage.searchCondition.priority=-1
+
+cfind.image=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+cfind.image.priority=-1
+cfind.image.find=${class:org.dcm4chee.xero.search.study.ImageSearch}
+cfind.image.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+cfind.image.searchCondition.priority=-1
