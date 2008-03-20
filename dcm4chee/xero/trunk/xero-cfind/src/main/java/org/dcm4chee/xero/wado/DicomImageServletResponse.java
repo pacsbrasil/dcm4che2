@@ -104,6 +104,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
 		 log.info("Can't read raw image data - transfer syntaxes are different.");
 		 readRaw = false;
 	  }
+	  EncodeImage.addEncodingInfo(tsuid,params);
    }
 
    /**

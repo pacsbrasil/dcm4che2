@@ -182,6 +182,18 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  return ret.toString();
    }
 
+   /** Adds encoding information to the params map based on the transfer syntax or (single)
+    * contentType tsuid.
+    * 
+    * @param tsuid  The transfer syntax UID or single mime type with no parameters.
+    * @param params
+    */
+   public static void addEncodingInfo(String tsuid, Map<String, Object> params) {
+	  EncodeResponseInfo eri = contentTypeMap.get(tsuid);
+	  if( eri==null ) return;
+	  params.put(MAX_BITS, eri.maxBits);
+   }
+
 }
 
 /** Does the actual writing to the stream */

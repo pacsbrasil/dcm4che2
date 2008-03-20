@@ -255,6 +255,9 @@ public class TestUrlRetrieve {
 		 // 400 image study		 String uid="1.2.124.113532.128.5.1.74.20020131.162815.589479"; 
 		 studyRet.runnables.add(new StudyRun(uid));
 		 seriesRet.runnables.add(new SeriesRun(uid));
+
+		 seriesImageRet.runnables.add(new TimeRunnable(WADO2_URL+"cfind?level=image&studyUID="+uid));
+
 	  }
 
 	  long overallStart = System.nanoTime();
@@ -320,7 +323,6 @@ public class TestUrlRetrieve {
 				  }
 				  seamRet.runnables.add(new TimeRunnable(XERO_URL+"image/image.seam?studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
 				  actionRet.runnables.add(new TimeRunnable(XERO_URL+"image/action/WindowLevel.seam?windowWidth=32767&windowCenter=65536&studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
-				  seriesImageRet.runnables.add(new TimeRunnable(WADO2_URL+"cfind?level=seriesImage&seriesUID="+se.getSeriesInstanceUID()));
 				  ret++;
 			   }
 			}
@@ -416,8 +418,11 @@ public class TestUrlRetrieve {
 			url = url + "&contentType=application/dicom&transferSyntax=1.2.840.10008.1.2.4.70";
 			log.info("Original URL="+url);
 		 }
-		 if( useMime ) {
+		 else if( useMime ) {
 			url = url + "&contentType=image/jpeg,image/jpll";
+		 }
+		 else {
+			url = url + "&contentType=image/jp12";
 		 }
 		 readFully(url);
 		 return 1;
