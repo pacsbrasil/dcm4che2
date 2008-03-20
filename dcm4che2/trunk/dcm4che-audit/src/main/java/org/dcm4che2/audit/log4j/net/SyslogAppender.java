@@ -270,13 +270,19 @@ public class SyslogAppender extends AppenderSkeleton {
   public String getLocalHostname() {
       try {
         InetAddress addr = InetAddress.getLocalHost();
-        return addr.getHostName();
+        return skipDomain(addr.getHostName());
       } catch (UnknownHostException uhe) {
         return "UNKNOWN_HOST";
       }
     }
-  
-  public final int getFatalPriority() {
+
+  private String skipDomain(String hostName) {
+    int len = hostName.indexOf('.');
+    return len > 0 && !Character.isDigit(hostName.charAt(0))
+            ? hostName.substring(0, len) : hostName;
+  }
+
+public final int getFatalPriority() {
       return fatalPriority;
   }
 
