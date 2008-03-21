@@ -92,7 +92,6 @@ public class AuditMessage extends BaseElement {
             String s = ManagementFactory.getRuntimeMXBean().getName();
             int atPos = s.indexOf('@');
             processID = atPos > 0 ? s.substring(0, atPos) : s;
-            System.setProperty("app.pid", processID);
         }
     }
     
@@ -252,7 +251,6 @@ public class AuditMessage extends BaseElement {
 
     public static void setProcessName(String processName) {
         AuditMessage.processName = processName;
-        System.setProperty("app.name", processName);
     }
 
     public static String[] getLocalAETitles() {
