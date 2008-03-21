@@ -294,6 +294,14 @@ public class AuditLogger extends ServiceMBeanSupport {
         AuditMessage.setUtcDateTime(utcDateTime);
     }
 
+    public boolean isQualifyHostname() {
+        return AuditMessage.isQualifyHostname();
+    }
+
+    public void setQualifyHostname(boolean qualifyHostname) {
+        AuditMessage.setQualifyHostname(qualifyHostname);
+    }
+
     public boolean isEncodeUserIsRequestorTrue() {
         return ActiveParticipant.isEncodeUserIsRequestorTrue();
     }
