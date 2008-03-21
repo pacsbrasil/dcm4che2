@@ -69,6 +69,7 @@ public class AuditMessage extends BaseElement {
     private static boolean enableDNSLookups = false;
     private static boolean timezonedDateTime = true;
     private static boolean utcDateTime = false;
+    private static boolean qualifyHostname = false;
 
     private static InetAddress localHost;
     static {
@@ -233,6 +234,14 @@ public class AuditMessage extends BaseElement {
         AuditMessage.utcDateTime = utcDateTime;
     }
 
+    public static final boolean isQualifyHostname() {
+        return qualifyHostname;
+    }
+
+    public static final void setQualifyHostname(boolean qualifyHostname) {
+        AuditMessage.qualifyHostname = qualifyHostname;
+    }
+
     public static String getProcessID() {
         return processID;
     }
@@ -263,7 +272,8 @@ public class AuditMessage extends BaseElement {
     }
 
     public static String hostNameOf(InetAddress node) {
-        return enableDNSLookups ? node.getHostName() : node.getHostAddress();
+        return enableDNSLookups ? skipDomain(node.getHostName())
+                : node.getHostAddress();
     }
 
     public static String nodeIDOf(InetAddress node) {
@@ -288,11 +298,11 @@ public class AuditMessage extends BaseElement {
     }
     
     public static String getLocalHostName() {
-        return getLocalHost().getHostName();
+        return skipDomain(getLocalHost().getHostName());
     }
     
     public static String getLocalNodeID() {
-        return nodeIDOf(getLocalHost());
+        return nodeIDOf(localHost);
     }
     
     public static String aetToAltUserID(String aet) {
@@ -379,5 +389,13 @@ public class AuditMessage extends BaseElement {
         mm -= hh * 60;
         appendNNTo(sign, hh, sb);
         appendNNTo(':', mm, sb);
+    }
+    
+    private static String skipDomain(String hostname) {
+        if (qualifyHostname)
+            return hostname;
+        int dotpos = hostname.indexOf('.');
+        return dotpos > 0 && !Character.isDigit(hostname.charAt(0))
+                ? hostname.substring(0, dotpos) : hostname;
     }
 }
