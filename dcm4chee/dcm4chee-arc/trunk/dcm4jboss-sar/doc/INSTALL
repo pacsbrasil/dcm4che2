@@ -23,6 +23,13 @@ from Sun [https://jai-imageio.dev.java.net/binary-builds.html] yourself and
 replace the Linux version of libclib_jiio.so in dcm4chee-xxx-2.13.4/bin/native
 from the JAI Image IO package for Linux-amd64 or Solaris.
 
+For MAC OS X there is no native Image I/O implementation available. There is an 
+open call on the jai-imageio webpage:
+https://jai-imageio-core.dev.java.net/issues/show_bug.cgi?id=103
+Because of the missing implementation you have to change 2 files in dcm4chee
+if you want to have RID and WADO service running. Please have a look at point
+8a. how to change the files.
+
 Installation Procedure:
 
 1. Extract the binary distribution package of dcm4chee for the database
@@ -76,7 +83,7 @@ according your Database configuration.
 [Windows]: dcm4chee-xxx-2.13.4/bin/run.bat:
 rem Sun JVM memory allocation pool parameters. Modify as appropriate.
 set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
-[Linux/Unix]: dcm4chee-xxx-2.13.4/bin/run.conf
+[Linux/Unix/MAC OS X]: dcm4chee-xxx-2.13.4/bin/run.conf
 # Specify options to pass to the Java VM.
 if [ "x$JAVA_OPTS" = "x" ]; then
    JAVA_OPTS="-Xms128m -Xmx512m ..
@@ -85,6 +92,31 @@ fi
 according available RAM and memory requirements of other processes on this node. 
 E.g.: if only 512 MB RAM are available, you should decrease the default
 value -Xmx512m to (e.g.) -Xmx300.
+
+8a. MAC OS X specific changes for RID/WADO service:
+Please edit the following files and exchange
+"com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" with
+"com.sun.image.codec.jpeg.JPEGImageEncoder" for the ImageWriterClass:
+
+$DCM4CHEE_HOME/server/default/conf/xmdesc/dcm4chee-rid-xmbean.xml:
+@@ -124,7 +124,7 @@
+       <name>ImageWriterClass</name>
+       <type>java.lang.String</type>
+       <descriptors>
+-         <value value="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
++         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+       </descriptors>
+    </attribute>
+
+and $DCM4CHEE_HOME/server/default/conf/xmdesc/dcm4chee-wado-xmbean.xml:
+@@ -128,7 +128,7 @@
+       <name>ImageWriterClass</name>
+       <type>java.lang.String</type>
+       <descriptors>
+-         <value value="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
++         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+       </descriptors>
+    </attribute>
 
 9. To test your installation, move to the dcm4chee-xxx-2.13.4/bin directory
 and execute the run.bat or run.sh script, as appropriate for your operating
@@ -209,7 +241,14 @@ started it, and
 or 
 [Redhat Linux]: copy the init script dcm4chee_init_redhat.sh to /etc/init.d/
 and adjust it according your installation location of the archive and the JDK
+and under which user the archive application shall run
+or
+[MAC OS X]: copy the init script dcm4chee.plist to /Library/LaunchDaemons and
+register it with launchctl load /Library/LaunchDaemons/dcm4chee.plist
+and adjust it according your installation location of the archive and the JDK
 and under which user the archive application shall run.
+For more information on launchd look at:
+http://developer.apple.com/macosx/launchd.html
 
 
 DEPLOY DCM4CHEE MEDIA CREATOR 2.13.1 with DCM4CHEE ARCHIVE:
