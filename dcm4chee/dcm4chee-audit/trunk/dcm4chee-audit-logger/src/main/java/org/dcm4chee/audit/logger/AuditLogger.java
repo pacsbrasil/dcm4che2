@@ -144,8 +144,6 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     private String configDir;
 
-    private boolean auditServiceStartStop;
-
     private HashMap<ObjectName, AttributeChangeNotificationFilter[]>
             notRegisteredAcnSources;
 
@@ -155,14 +153,6 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     public boolean isIHEYr4() {
         return false;
-    }
-
-    public final boolean isAuditServiceStartStop() {
-        return auditServiceStartStop;
-    }
-
-    public final void setAuditServiceStartStop(boolean enable) {
-        this.auditServiceStartStop = enable;
     }
 
     public String getAuditSourceID() {
