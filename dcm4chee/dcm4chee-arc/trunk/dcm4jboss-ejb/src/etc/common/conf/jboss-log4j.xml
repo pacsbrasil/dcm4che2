@@ -176,7 +176,7 @@
      <param name="Facility" value="AUTHPRIV"/>
      <param name="SyslogHost" value="localhost:4000"/>
      <layout class="org.apache.log4j.PatternLayout">
-       <param name="ConversionPattern" value="${app.name}[${app.pid}]: %m"/>
+       <param name="ConversionPattern" value="${app.name}: %m"/>
      </layout>
    </appender>
 
