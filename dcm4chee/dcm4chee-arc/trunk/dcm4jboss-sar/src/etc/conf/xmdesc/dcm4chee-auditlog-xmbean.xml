@@ -65,8 +65,8 @@
   <attribute access="read-only" getMethod="getProcessID">
     <description><![CDATA[Used to identify this application instance as
     <i>Active Participant</i> in emitted Audit Messages. Initialized from
-    <i>System Property</i> <code>app.pid</code> or alternatively by
-    <code>java.lang.management.RuntimeMXBean#getName()</code>.
+    <i>System Property</i> <code>app.pid</code> or alternatively extracted
+    from <code>java.lang.management.RuntimeMXBean#getName()</code>.
     ]]></description>
     <name>ProcessID</name>
     <type>java.lang.String</type>
@@ -131,6 +131,17 @@
     Audit Messages is given as Coordinated Universal Time (UTC).<br/>
     Default: <code>false</code>]]></description>
     <name>UtcDateTime</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false"/>
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isQualifyHostname"
+    setMethod="setQualifyHostname">
+    <description><![CDATA[Determines, if host names included in the emitted
+    Audit Messages shall be fully qualified.<br/>
+    Default: <code>false</code>]]></description>
+    <name>QualifyHostname</name>
     <type>boolean</type>
     <descriptors>
       <value value="false"/>
