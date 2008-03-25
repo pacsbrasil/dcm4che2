@@ -8,7 +8,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 
-class BlockedFindScp extends FindScp {
+public class BlockedFindScp extends FindScp {
 
 	public BlockedFindScp(QueryRetrieveScpService service) {
 		super(service, false);
