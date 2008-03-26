@@ -420,15 +420,16 @@ public class AuditLogger extends ServiceMBeanSupport {
                         : newValue.equals(oldValue)) {
                 return;
             }
-            if (auditServiceStartStop
-                    && scn.getAttributeName().equals("State")) {
-                switch (((Integer) newValue).intValue()) {
-                case STOPPED:
-                    auditServiceStartStop(SERVICE_STOPPED, scn);
-                    break;
-                case STARTED:
-                    auditServiceStartStop(SERVICE_STARTED, scn);
-                    break;
+            if (scn.getAttributeName().equals("State")) {
+                if (auditServiceStartStop) {
+                    switch (((Integer) newValue).intValue()) {
+                    case STOPPED:
+                        auditServiceStartStop(SERVICE_STOPPED, scn);
+                        break;
+                    case STARTED:
+                        auditServiceStartStop(SERVICE_STARTED, scn);
+                        break;
+                    }
                 }
             } else {
                 auditAttributeChange(scn, (AuditEvent.TypeCode) handback);
