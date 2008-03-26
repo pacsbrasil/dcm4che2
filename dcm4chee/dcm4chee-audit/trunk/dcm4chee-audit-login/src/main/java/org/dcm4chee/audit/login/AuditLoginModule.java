@@ -89,7 +89,7 @@ public class AuditLoginModule implements LoginModule {
     }
 
     public boolean logout() throws LoginException {
-        auditUserAuth(UserAuthenticationMessage.LOGIN);
+        auditUserAuth(UserAuthenticationMessage.LOGOUT);
         return false;
     }
 
