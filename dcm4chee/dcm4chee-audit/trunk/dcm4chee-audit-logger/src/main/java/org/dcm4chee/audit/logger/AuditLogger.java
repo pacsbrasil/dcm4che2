@@ -142,6 +142,8 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
 
+    private boolean auditServiceStartStop;
+
     private String configDir;
 
     private HashMap<ObjectName, AttributeChangeNotificationFilter[]>
@@ -153,6 +155,14 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     public boolean isIHEYr4() {
         return false;
+    }
+
+    public final boolean isAuditServiceStartStop() {
+        return auditServiceStartStop;
+    }
+
+    public final void setAuditServiceStartStop(boolean auditServiceStartStop) {
+        this.auditServiceStartStop = auditServiceStartStop;
     }
 
     public String getAuditSourceID() {
@@ -337,12 +347,20 @@ public class AuditLogger extends ServiceMBeanSupport {
     protected void startService() throws Exception {
         registerMBeanServerListeners();
         registerAcnListeners();
+        auditApplicationStart();
+    }
+
+    public void auditApplicationStart() {
         auditApplicationActivity(ApplicationActivityMessage.APPLICATION_START);
     }
 
     protected void stopService() {
         unregisterAcnListeners();
         unregisterMBeanServerListeners();
+        auditApplicationStop();
+    }
+
+    public void auditApplicationStop() {
         auditApplicationActivity(ApplicationActivityMessage.APPLICATION_STOP);
     }
 
@@ -402,7 +420,8 @@ public class AuditLogger extends ServiceMBeanSupport {
                         : newValue.equals(oldValue)) {
                 return;
             }
-            if (scn.getAttributeName().equals("State")) {
+            if (auditServiceStartStop
+                    && scn.getAttributeName().equals("State")) {
                 switch (((Integer) newValue).intValue()) {
                 case STOPPED:
                     auditServiceStartStop(SERVICE_STOPPED, scn);

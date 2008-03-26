@@ -172,6 +172,20 @@
       <value value="conf/dcm4chee-auditlog"/>
     </descriptors>
   </attribute>
+  <attribute access="read-write" getMethod="isAuditServiceStartStop"
+    setMethod="setAuditServiceStartStop">
+    <description><![CDATA[Defines, if start/stop of individual services shall
+    trigger emission of <i>Application Activity</i> messages with proprietary
+    <i>Audit Event Type</i> codes:
+    <code>(110138, 99DCM4CHEE, "Service Started")</code> /
+    <code>(110139, 99DCM4CHEE, "Service Stopped")</code><br/>
+    Default: <code>true</code>]]></description>
+    <name>AuditServiceStartStop</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true"/>
+    </descriptors>
+  </attribute>
   <attribute access="read-only" getMethod="isIHEYr4">
     <description><![CDATA[Used to distinguish this RFC 3881 compliant Audit Logger
     Service from the preceding Audit Logger Service, which creates Audit Messages
@@ -183,10 +197,11 @@
   <!-- Operations -->
   <operation>
     <description><![CDATA[Emits Application Start Audit Message.]]></description>
-    <name>start</name>
+    <name>auditApplicationStart</name>
   </operation>
   <operation>
     <description><![CDATA[Emits Application Stop Audit Message.]]></description>
-    <name>stop</name>
+    <name>auditApplicationStop</name>
   </operation>
+ &defaultOperations;
 </mbean>
