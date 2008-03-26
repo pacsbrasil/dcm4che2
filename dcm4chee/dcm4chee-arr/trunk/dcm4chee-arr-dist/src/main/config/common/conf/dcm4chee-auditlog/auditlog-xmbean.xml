@@ -1,4 +1,4 @@
-<mbean name="dcm4chee.arr:service=AuditLogger">
+<mbean name="dcm4chee.archive:service=AuditLogger">
 <attribute name="AuditSourceID"/>
 <attribute name="AuditEnterpriseSiteID"/>
 <attribute name="AuditSourceTypeCodes"/>
@@ -11,5 +11,6 @@
 <attribute name="QualifyHostname"/>
 <attribute name="EncodeUserIsRequestorTrue"/>
 <attribute name="ConfigurationDirectory"/>
+<attribute name="AuditServiceStartStop"/>
 <attribute name="State"/>
 </mbean>
