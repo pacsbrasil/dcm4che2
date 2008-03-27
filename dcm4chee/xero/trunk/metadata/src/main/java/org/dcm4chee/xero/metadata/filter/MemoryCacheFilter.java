@@ -70,8 +70,10 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 	  log.debug("Looking in cache "+cacheName +" for " + key);
 	  T ret = cache.get(key, sf);
 	  long dur = System.nanoTime() - start;
-	  String msg = "Found in "+cacheName+" value " + key + "=" + ret + " in " + nanoTimeToString(dur);
-	  log.info(msg);
+      if( log.isDebugEnabled() ) {
+	     String msg = "Found in "+cacheName+" value " + key + "=" + ret + " in " + nanoTimeToString(dur);
+	     log.debug(msg);
+      }
 	  if (dur > 1000000000)
 		 log.warn("More than 1 second to fetch " + key);
 	  return ret;
@@ -238,9 +240,7 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 			log.info("Couldn't find value for sizeable future");
 			return null;
 		 }
-		 Object psize = params.get(CACHE_SIZE);
 		 size = FilterUtil.getLong(params,CACHE_SIZE,-1);
-		 log.info("Cache size object="+psize+" parsed size="+size);
 		 if (size >= 0) {
 			if( size==0 ) {
 			   log.warn("Size provided is 0.");
