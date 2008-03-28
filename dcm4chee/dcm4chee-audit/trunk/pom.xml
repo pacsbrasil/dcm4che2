@@ -15,6 +15,9 @@
       <id>dcm4che</id>
       <name>dcm4che Repository</name>
       <url>http://www.dcm4che.org/maven2</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>jboss</id>
