@@ -67,7 +67,6 @@ import org.dcm4che2.audit.message.ApplicationActivityMessage;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.AuditSource;
-import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
@@ -134,15 +133,7 @@ public class AuditLogger extends ServiceMBeanSupport {
         }
     };
 
-    private static final AuditEvent.TypeCode SERVICE_STARTED = 
-            new AuditEvent.TypeCode("110138", "99DCM4CHEE", "Service Started");
-
-    private static final AuditEvent.TypeCode SERVICE_STOPPED =
-        new AuditEvent.TypeCode("110139", "99DCM4CHEE", "Service Stopped");
-
     private AuditSource auditSource = AuditSource.getDefaultAuditSource();
-
-    private boolean auditServiceStartStop;
 
     private String configDir;
 
@@ -155,14 +146,6 @@ public class AuditLogger extends ServiceMBeanSupport {
 
     public boolean isIHEYr4() {
         return false;
-    }
-
-    public final boolean isAuditServiceStartStop() {
-        return auditServiceStartStop;
-    }
-
-    public final void setAuditServiceStartStop(boolean auditServiceStartStop) {
-        this.auditServiceStartStop = auditServiceStartStop;
     }
 
     public String getAuditSourceID() {
@@ -420,54 +403,32 @@ public class AuditLogger extends ServiceMBeanSupport {
                         : newValue.equals(oldValue)) {
                 return;
             }
-            if (scn.getAttributeName().equals("State")) {
-                if (auditServiceStartStop) {
-                    switch (((Integer) newValue).intValue()) {
-                    case STOPPED:
-                        auditServiceStartStop(SERVICE_STOPPED, scn);
-                        break;
-                    case STARTED:
-                        auditServiceStartStop(SERVICE_STARTED, scn);
-                        break;
-                    }
-                }
-            } else {
-                auditAttributeChange(scn, (AuditEvent.TypeCode) handback);
-            }
-        }
-
-        private void auditServiceStartStop(AuditEvent.TypeCode type,
-                AttributeChangeNotification scn) {
-            ApplicationActivityMessage msg = new ApplicationActivityMessage(type);
-            Principal p = SecurityAssociation.getPrincipal();
-            msg.addActiveParticipant(
-                    ActiveParticipant.createActiveProcess(
-                            AuditMessage.getProcessID(),
-                            AuditMessage.getLocalAETitles(),
-                            AuditMessage.getProcessName(),
-                            AuditMessage.getLocalHostName(),
-                            p == null)
-                    .addRoleIDCode(ActiveParticipant.RoleIDCode.APPLICATION));
-            if (p != null) {
-                msg.addActiveParticipant(
-                        ActiveParticipant.createActivePerson(p.getName(), null, 
-                                null, getHostname(), true));
-            }
-            ParticipantObject obj = new ParticipantObject(toURI(scn),
-                    ParticipantObject.IDTypeCode.URI);
-            obj.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
-            msg.addParticipantObject(obj);
-            Logger.getLogger("auditlog").info(msg);
+            auditAttributeChange(scn, (AuditEvent.TypeCode) handback);
         }
 
         private void auditAttributeChange(AttributeChangeNotification scn,
                 AuditEvent.TypeCode typeCode) {
+            String text;
+            boolean stateChanged = scn.getAttributeName().equals("State");
+            if (stateChanged) {
+                int newState = (Integer) scn.getNewValue();
+                // only audit state changes, if initiated by an authentified
+                // user and new state is STARTED or STOPPED
+                if (SecurityAssociation.getPrincipal() == null 
+                        || !(newState == STARTED || newState == STOPPED)) {
+                    return;
+                }
+                text = states[newState];
+            } else {
+                text = toText(scn);
+            }
             SecurityAlertMessage msg = new SecurityAlertMessage(typeCode);
-            msg.addReportingProcess(AuditMessage.getProcessID(), AuditMessage
-                    .getLocalAETitles(), AuditMessage.getProcessName(),
+            msg.addReportingProcess(AuditMessage.getProcessID(),
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName());
             msg.addPerformingPerson(getPrincipal(), null, null, getHostname());
-            msg.addAlertSubjectWithURI(toURI(scn), toText(scn));
+            msg.addAlertSubjectWithURI(toURI(scn), text);
             Logger.getLogger("auditlog").info(msg);
         }
 
