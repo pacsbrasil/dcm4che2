@@ -11,6 +11,5 @@
 <attribute name="QualifyHostname"/>
 <attribute name="EncodeUserIsRequestorTrue"/>
 <attribute name="ConfigurationDirectory"/>
-<attribute name="AuditServiceStartStop"/>
 <attribute name="State"/>
 </mbean>
