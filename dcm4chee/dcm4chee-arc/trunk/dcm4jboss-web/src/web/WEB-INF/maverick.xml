@@ -35,6 +35,14 @@ default-transform-type="xslt">
       <transform path="de/trash.xsl" />
     </view>
   </views>
+  <views mode="fr">
+    <view id="folder" name="folder">
+      <transform path="fr/folder.xsl" />
+    </view>
+    <view id="trash" name="trash">
+      <transform path="fr/trash.xsl" />
+    </view>
+  </views>
 
   <commands>
     <command name="folder">

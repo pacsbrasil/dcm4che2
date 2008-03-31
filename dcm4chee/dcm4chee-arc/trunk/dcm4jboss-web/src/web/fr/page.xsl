@@ -42,13 +42,13 @@
 									<xsl:attribute name="href">
 										<xsl:value-of select="$request_uri"/><xsl:text>?language=en</xsl:text>
 									</xsl:attribute>
-									<img src="images/select_en.gif" alt="English" border="0" title="English"/>		
+									<img src="images/select_en.gif" alt="English" border="0" title="Anglais"/>		
 								</a>
 								<a>
 									<xsl:attribute name="href">
 										<xsl:value-of select="$request_uri"/><xsl:text>?language=de</xsl:text>
 									</xsl:attribute>
-									<img src="images/select_de.gif" alt="German" border="0" title="German"/>		
+									<img src="images/select_de.gif" alt="German" border="0" title="Allemand"/>
 								</a>
 								<a>
 									<xsl:attribute name="href">
@@ -70,7 +70,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		    			<a class="tab" href="foldersubmit.m?filter=true">Folder</a>
+		    			<a class="tab" href="foldersubmit.m?filter=true">Archives</a>
 		    		</td>
 		      	</xsl:if>
 	    		<xsl:if test="$trash='true'">
@@ -83,7 +83,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-	    				<a class="tab" href="trashfolder.m?filter=true">Trash</a>
+	    				<a class="tab" href="trashfolder.m?filter=true">Corbeille</a>
 	    			</td>
 		      	</xsl:if>
 	    		<xsl:if test="$ae_mgr='true'">
@@ -96,7 +96,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		    			<a class="tab" href="ae.m">AE Management</a>
+		    			<a class="tab" href="ae.m">Gestion AE</a>
 		    		</td>
 		      	</xsl:if>
 	    		<xsl:if test="$offline_storage='true'">
@@ -109,7 +109,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="mcm_console.m">Offline Storage</a>
+		      			<a class="tab" href="mcm_console.m">Stockage Hors-Ligne</a>
 		      		</td>
 		      	</xsl:if>
 	    		<xsl:if test="$mwl_console='true'">
@@ -122,7 +122,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="mwl_console.m?filter.x=1">Worklist Console</a>
+		      			<a class="tab" href="mwl_console.m?filter.x=1">Console Worklist</a>
 		      		</td>
 		      	</xsl:if>
 	    		<xsl:if test="$mpps_console='true'">
@@ -135,7 +135,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="mpps_console.m?filter.x=1">MPPS Console</a>
+		      			<a class="tab" href="mpps_console.m?filter.x=1">Console MPPS</a>
 		      		</td>
 		      	</xsl:if>
 	    		<xsl:if test="$gpwl_console='true'">
@@ -148,7 +148,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="gpwl_console.m?filter.x=1">GP Worklist Console</a>
+		      			<a class="tab" href="gpwl_console.m?filter.x=1">Console GP Worklist</a>
 		      		</td>
 		      	</xsl:if>
 	    		<xsl:if test="$gppps_console='true'">
@@ -161,7 +161,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="gppps_console.m?filter.x=1">GPPPS Console</a>
+		      			<a class="tab" href="gppps_console.m?filter.x=1">Console GPPPS</a>
 		      		</td>
 		      	</xsl:if>
 		      	<xsl:if test="$user_admin='true'">
@@ -174,7 +174,7 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 	    				</xsl:choose>
-	      				<a class="tab" href="useradmin_console.m">User Admin</a>
+	      				<a class="tab" href="useradmin_console.m">Administration Utilisateurs</a>
 		      		</td>
 		      	</xsl:if>
 	      		<xsl:if test="$audit_repository='true'">
@@ -187,15 +187,10 @@
 								<xsl:attribute name="class">tab</xsl:attribute>
 							</xsl:otherwise>
 		    			</xsl:choose>
-		      			<a class="tab" href="arr.m">Audit Repository</a>
+		      			<a class="tab" href="arr.m">Dépôt Audit</a>
 		      		</td>
 		      	</xsl:if>
-		      	<!-- 
-	    		<xsl:if test="$audit_repository='true'">
-			      	<td class="tab" width="120" align="center"><a class="tab" href="../dcm4chee-arr">Audit Repository</a></td>
-		      	</xsl:if>
-		      	 -->
-		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Logout</a></td>
+		      	<td class="tab" width="120" align="center"><a class="tab" href="foldersubmit.m?logout=">Déconnexion</a></td>
 				<td width="40%"></td> 
 		     </tr>
 		 </table>

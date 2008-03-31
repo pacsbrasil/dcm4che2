@@ -50,6 +50,12 @@
 									</xsl:attribute>
 									<img src="images/select_de.gif" alt="Deutsch" border="0" title="Deutsch"/>		
 								</a>
+								<a>
+									<xsl:attribute name="href">
+										<xsl:value-of select="$request_uri"/><xsl:text>?language=fr</xsl:text>
+									</xsl:attribute>
+									<img src="images/select_fr.gif" alt="German" border="0" title="Français"/>		
+								</a>
 				    		</td>
 				    	</tr>
 				    </table>
