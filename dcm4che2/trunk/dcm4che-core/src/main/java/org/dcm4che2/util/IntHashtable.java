@@ -42,7 +42,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class IntHashtable {
+/**
+ * Hash table implementation, which uses integers as keys. 
+ * 
+ * @param <T> the value type.
+ */
+public class IntHashtable<T> {
 
 	private static final float HIGH_WATER_FACTOR = 0.4F;
 	private static final float LOW_WATER_FACTOR = 0.0F;
@@ -69,8 +74,8 @@ public class IntHashtable {
 	private int lowWaterMark;
 	private int count;
 	private int[] keyList;
-	private Object[] values;
-	private Object value0;
+	private T[] values;
+	private T value0;
 	private int[] sortedKeys;
 	private boolean sorted;
 
@@ -99,7 +104,7 @@ public class IntHashtable {
 		sorted = false;
 	}
 
-	public void put(int key, Object value) {
+	public void put(int key, T value) {
 		if (value == null) {
 			throw new NullPointerException();
 		}
@@ -115,7 +120,7 @@ public class IntHashtable {
 		putInternal(key, value);
 	}
 
-	public Object get(int key) {
+	public T get(int key) {
 		return key == 0 ? value0 : values[find(key)];
 	}
 
@@ -204,14 +209,15 @@ public class IntHashtable {
 		return true;
 	}
 
-	public Iterator iterator(int start, int end) {
+	public Iterator<T> iterator(int start, int end) {
 		return new Itr(start, end);
 	}
 
-	private void initialize(int primeIndex) {
+	@SuppressWarnings("unchecked")
+        private void initialize(int primeIndex) {
 		this.primeIndex = Math.min(Math.max(0, primeIndex), PRIMES.length - 1);
 		int initialSize = PRIMES[primeIndex];
-		values = new Object[initialSize];
+		values = (T[])new Object[initialSize];
 		keyList = new int[initialSize];
 		sortedKeys = null;
 		count = 0;
@@ -222,7 +228,7 @@ public class IntHashtable {
 	}
 
 	private void rehash() {
-		Object[] oldValues = values;
+		T[] oldValues = values;
 		int[] oldkeyList = keyList;
 		int newPrimeIndex = primeIndex;
 		if (count > highWaterMark) {
@@ -232,14 +238,14 @@ public class IntHashtable {
 		}
 		initialize(newPrimeIndex);
 		for (int i = oldkeyList.length - 1; i >= 0; --i) {
-			Object value = oldValues[i];
+			T value = oldValues[i];
 			if (value != null) {
 				putInternal(oldkeyList[i], value);
 			}
 		}
 	}
 
-	private void putInternal(int key, Object value) {
+	private void putInternal(int key, T value) {
 		int index = find(key);
 		keyList[index] = key;
 		if (values[index] == null)
@@ -277,10 +283,10 @@ public class IntHashtable {
 		return i;
 	}
 
-	private final class Itr implements Iterator {
+	private final class Itr implements Iterator<T> {
 		int endIndex;
 		int index;
-		Object next;
+		T next;
 
 		private Itr(int start, int end) {
 			if ((start & 0xffffffffL) > (end & 0xffffffffL))
@@ -332,12 +338,12 @@ public class IntHashtable {
 			return next != null;
 		}
 
-		public Object next() {
+		public T next() {
 			if (next == null)
 				throw new NoSuchElementException();
-			Object v = next;
-            next = null;
-            while (next == null && index != endIndex)
+			T v = next;
+		        next = null;
+		        while (next == null && index != endIndex)
 			{
 				index = incIndex(index);
 				next = get(sortedKeys[index]);

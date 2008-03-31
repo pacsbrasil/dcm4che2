@@ -119,9 +119,9 @@ public class Association implements Runnable {
 
     private boolean closed;
 
-    private IntHashtable rspHandlerForMsgId = new IntHashtable();
+    private IntHashtable<DimseRSPHandler> rspHandlerForMsgId = new IntHashtable<DimseRSPHandler>();
 
-    private IntHashtable cancelHandlerForMsgId = new IntHashtable();
+    private IntHashtable<DimseRSP> cancelHandlerForMsgId = new IntHashtable<DimseRSP>();
 
     private HashMap<String, Map<String, PresentationContext>> acceptedPCs = new HashMap<String, Map<String, PresentationContext>>();
 
@@ -789,7 +789,7 @@ public class Association implements Runnable {
 
     private DimseRSPHandler getDimseRSPHandler(int msgId) {
         synchronized (rspHandlerForMsgId) {
-            return (DimseRSPHandler) rspHandlerForMsgId.get(msgId);
+            return rspHandlerForMsgId.get(msgId);
         }
     }
 

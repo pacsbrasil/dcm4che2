@@ -119,13 +119,13 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         }
 
         @Override
-        public Iterator iterator()
+        public Iterator<DicomElement> iterator()
         {
             return new Itr(attrs.iterator((int) fromTag, (int) toTag));
         }
 
         @Override
-        public Iterator iterator(int fromTag, int toTag)
+        public Iterator<DicomElement> iterator(int fromTag, int toTag)
         {
             final long maxFromTag = Math.max(fromTag & 0xffffffff, this.fromTag);
             final long minToTag = Math.min(toTag & 0xffffffff, this.toTag);
@@ -154,7 +154,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
     {
         private static final long serialVersionUID = 1L;
 
-        final class FilterItr extends Itr implements Iterator
+        final class FilterItr extends Itr
         {
 
             public FilterItr(Iterator itr)
@@ -163,9 +163,9 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             }
 
             @Override
-            public Object next()
+            public DicomElement next()
             {
-                DicomElement attr = (DicomElement) super.next();
+                DicomElement attr = super.next();
                 if (attr.vr() == VR.SQ && attr.hasItems())
                 {
                     return attr.filterItems(filter.getNestedDicomObject(attr.tag()));
@@ -200,13 +200,13 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         }
 
         @Override
-        public Iterator iterator()
+        public Iterator<DicomElement> iterator()
         {
             return new FilterItr(attrs.iterator());
         }
 
         @Override
-        public Iterator iterator(int fromTag, int toTag)
+        public Iterator<DicomElement> iterator(int fromTag, int toTag)
         {
             return new FilterItr(attrs.iterator(fromTag, toTag));
         }
@@ -252,17 +252,17 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         });
     }
 
-    public Iterator iterator()
+    public Iterator<DicomElement> iterator()
     {
         return new Itr(attrs.iterator());
     }
 
-    public Iterator iterator(int fromTag, int toTag)
+    public Iterator<DicomElement> iterator(int fromTag, int toTag)
     {
         return new Itr(attrs.iterator(fromTag, toTag));
     }
 
-    protected class Itr implements Iterator
+    protected class Itr implements Iterator<DicomElement>
     {
         final Iterator itr;
         DicomElement next;
@@ -283,11 +283,11 @@ abstract class FilteredDicomObject extends AbstractDicomObject
             return next != null;
         }
 
-        public Object next()
+        public DicomElement next()
         {
             if (next == null)
-                return new NoSuchElementException();
-            Object tmp = next;
+                throw new NoSuchElementException();
+            DicomElement tmp = next;
             findNext();
             return tmp;
         }

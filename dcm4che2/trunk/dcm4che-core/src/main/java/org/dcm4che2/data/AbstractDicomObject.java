@@ -290,15 +290,15 @@ abstract class AbstractDicomObject implements DicomObject {
         return count[0];
     }
 
-    public Iterator commandIterator() {
+    public Iterator<DicomElement> commandIterator() {
         return iterator(0x00000000, 0x0000ffff);
     }
 
-    public Iterator fileMetaInfoIterator() {
+    public Iterator<DicomElement> fileMetaInfoIterator() {
         return iterator(0x00020000, 0x0002ffff);
     }
 
-    public Iterator datasetIterator() {
+    public Iterator<DicomElement> datasetIterator() {
         return iterator(0x00030000, 0xffffffff);
     }
 

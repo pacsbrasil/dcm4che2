@@ -138,7 +138,7 @@ public final class VRMap implements Serializable {
 		return vrMap != null ? vrMap : DEFAULT;
 	}
 
-	private transient IntHashtable table;
+	private transient IntHashtable<VR> table;
 
 	private transient String privateCreator;
 
@@ -147,7 +147,7 @@ public final class VRMap implements Serializable {
 	}
 	
 	private VRMap(int initialCapacity) {
-		this.table = new IntHashtable(initialCapacity);
+		this.table = new IntHashtable<VR>(initialCapacity);
 	}
 
 	public final String getPrivateCreator() {
@@ -180,7 +180,7 @@ public final class VRMap implements Serializable {
 		is.defaultReadObject();
 		privateCreator = (String) is.readObject();
 		int size = is.readInt();
-		table = new IntHashtable(size);
+		table = new IntHashtable<VR>(size);
 		for (int i = 0, tag, code; i < size; ++i) {
 			tag = is.readInt();
 			code = is.readUnsignedShort();
@@ -204,7 +204,7 @@ public final class VRMap implements Serializable {
 		}
 		if (table == null)
 			return VR.UN;
-		VR vr = (VR) table.get(tag);
+		VR vr = table.get(tag);
 		return vr != null ? vr : VR.UN;
 	}
 	

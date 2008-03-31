@@ -165,7 +165,7 @@ public class ElementDictionary implements Serializable {
 		return dict != null  ? dict : EMPTY;
 	}
 
-	private transient IntHashtable table;
+	private transient IntHashtable<String> table;
 
 	private transient String privateCreator;
 
@@ -174,7 +174,7 @@ public class ElementDictionary implements Serializable {
 	}
 
 	private ElementDictionary(int initialCapacity) {
-		this.table = new IntHashtable(initialCapacity);
+		this.table = new IntHashtable<String>(initialCapacity);
 	}
 
 	private void writeObject(final ObjectOutputStream os) throws IOException {
@@ -203,7 +203,7 @@ public class ElementDictionary implements Serializable {
 		is.defaultReadObject();
 		privateCreator = (String) is.readObject();
 		int size = is.readInt();
-		table = new IntHashtable(size);
+		table = new IntHashtable<String>(size);
 		for (int i = 0, tag; i < size; ++i) {
 			tag = is.readInt();
 			table.put(tag, is.readUTF());
@@ -226,7 +226,7 @@ public class ElementDictionary implements Serializable {
 		}
 		if (table == null)
 			return unkown;
-		String name = (String) table.get(tag);
+		String name = table.get(tag);
 		return name != null ? name : unkown;
 	}
 

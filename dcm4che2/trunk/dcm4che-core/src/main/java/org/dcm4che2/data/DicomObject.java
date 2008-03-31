@@ -111,7 +111,7 @@ public interface DicomObject extends Serializable {
      * 
      * @return an <tt>Iterator</tt> over all elements in this Dicom Object.
      */
-    Iterator iterator();
+    Iterator<DicomElement> iterator();
 
     /**
      * Returns an iterator over elements in the given range in this Dicom
@@ -125,7 +125,7 @@ public interface DicomObject extends Serializable {
      *            element included.
      * @return an <tt>Iterator</tt> over elements in this Dicom Object.
      */
-    Iterator iterator(int fromTag, int toTag);
+    Iterator<DicomElement> iterator(int fromTag, int toTag);
 
     /**
      * Returns an iterator over Command elements (0000, eeee) in this Dicom
@@ -134,7 +134,7 @@ public interface DicomObject extends Serializable {
      * @return an <tt>Iterator</tt> over Command elements (0000, eeee) in this
      *         Dicom Object.
      */
-    Iterator commandIterator();
+    Iterator<DicomElement> commandIterator();
 
     /**
      * Returns an iterator over File Meta Information elements (0002, eeee) in
@@ -143,7 +143,7 @@ public interface DicomObject extends Serializable {
      * @return an <tt>Iterator</tt> over File Meta Information elements (0002,
      *         eeee) in this Dicom Object.
      */
-    Iterator fileMetaInfoIterator();
+    Iterator<DicomElement> fileMetaInfoIterator();
 
     /**
      * Returns an iterator over Data elements (group tag > 2) in this Dicom
@@ -151,7 +151,7 @@ public interface DicomObject extends Serializable {
      * 
      * @return an <tt>Iterator</tt> over Data elements in this Dicom Object.
      */
-    Iterator datasetIterator();
+    Iterator<DicomElement> datasetIterator();
 
     /**
      * Returns zero-based position of this Nested Data in the Sequence Element,

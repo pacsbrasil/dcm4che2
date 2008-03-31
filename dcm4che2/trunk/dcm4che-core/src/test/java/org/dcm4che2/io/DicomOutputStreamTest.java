@@ -158,7 +158,7 @@ public class DicomOutputStreamTest extends TestCase {
     private void assertEquals(byte[] expected, byte[] actual) {
         for (int i = 0, n = Math.min(expected.length, actual.length); i < n; i++) {
              assertEquals("byte at offset " + i, expected[i], actual[i]);
-        };
+        }
         assertEquals("file length", expected.length, actual.length);
     }
 

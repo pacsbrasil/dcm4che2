@@ -444,17 +444,17 @@ public class DicomImageReader extends ImageReader {
 		if (compressed) {
 			SegmentedImageInputStream siis = itemStream(imageIndex);
 			int size = itemStreamSize(imageIndex);
-			byte[] ret = new byte[(int) size];
+			byte[] ret = new byte[size];
 			siis.read(ret);
 			return ret;
-		} else {
+		}
+
 	        int frameLen = width * height * samples * (allocated >> 3);
 	        byte[] ret = new byte[frameLen];
 	        long offset = pixelDataPos + imageIndex*(long) frameLen;
 	        iis.seek(offset);
 	        iis.read(ret);
-			return ret;
-		}
+		return ret;
 	}
 
     private void copyReadParam(ImageReadParam src, ImageReadParam dst) {

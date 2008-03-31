@@ -122,6 +122,7 @@ public class TransferSyntax
     }
     
     /** Check to see if the transfer syntax is the same */
+    @Override
     public  boolean equals(Object o2) {
     	if( ! (o2 instanceof TransferSyntax) ) return false;
     	return uid().equals(((TransferSyntax) o2).uid());

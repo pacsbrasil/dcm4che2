@@ -261,7 +261,7 @@ public class RLEImageReader extends ImageReader {
 	private BufferedImage getReadImage(ImageReadParam param) {
 		BufferedImage bi = param.getDestination();
 		ImageTypeSpecifier imageType = param.getDestinationType();
-		if (param == null || (bi == null && imageType == null)) {
+		if (bi == null && imageType == null) {
 			throw new IllegalArgumentException(
 					"RLE Image Reader needs set ImageReadParam.destination or an ImageTypeSpecifier");
 		}

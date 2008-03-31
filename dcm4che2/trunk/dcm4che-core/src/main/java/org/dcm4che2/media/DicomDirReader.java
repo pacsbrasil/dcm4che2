@@ -67,7 +67,7 @@ public class DicomDirReader {
     protected final RandomAccessFile raf;
     protected final DicomInputStream in;
     protected final FilesetInformation filesetInfo;
-    protected final IntHashtable cache = new IntHashtable();
+    protected final IntHashtable<DicomObject> cache = new IntHashtable<DicomObject>();
     protected File file;
     protected boolean showInactiveRecords;
 
@@ -243,7 +243,7 @@ public class DicomDirReader {
 	if (offset == 0) {
 	    return null;
 	}
-	DicomObject item = (DicomObject) cache.get(offset);
+	DicomObject item = cache.get(offset);
 	long off = offset & 0xffffffffL;
 	if (item != null) {
 	    log.debug("Get record @ {} from cache", new Long(off));

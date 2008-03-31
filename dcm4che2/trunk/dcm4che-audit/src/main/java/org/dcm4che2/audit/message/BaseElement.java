@@ -84,6 +84,7 @@ class BaseElement {
         ObjectAttr(String name, Object val) {
             super(name, val);
         }
+        @Override
         public void outputVal(Writer out) throws IOException {
             String str = val.toString();
             int quote = '"';
@@ -102,6 +103,7 @@ class BaseElement {
         DateAttr(String name, Date val) {
             super(name, val);
         }
+        @Override
         public void outputVal(Writer out) throws IOException {
             out.write('"');
             out.write(AuditMessage.toDateTimeStr((Date) val));
@@ -113,6 +115,7 @@ class BaseElement {
         BytesAttr(String name, byte[] val) {
             super(name, val);
         }
+        @Override
         public void outputVal(Writer out) throws IOException {
             out.write('"');
             out.write(Base64Encoder.encode((byte[]) val));
@@ -250,8 +253,9 @@ class BaseElement {
      *  to return <code>false</code>, otherwise this method will not be called</em>.
      * 
      * @param out the writer to write the output to.
-     * @throws IOException if an error occurs.
+     * @throws IOException thrown by derived classes if an error occurs.
      */
+    @SuppressWarnings("unused")
     protected void outputContent(Writer out) throws IOException {
         // empty
     }

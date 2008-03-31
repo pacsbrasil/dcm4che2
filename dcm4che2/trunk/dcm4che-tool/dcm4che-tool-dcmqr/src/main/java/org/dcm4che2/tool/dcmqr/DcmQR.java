@@ -684,6 +684,7 @@ public class DcmQR {
         return cl;
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
         DcmQR dcmqr = new DcmQR();
@@ -863,7 +864,7 @@ public class DcmQR {
                 System.exit(2);
             }
             long t2 = System.currentTimeMillis();
-            LOG.info("Initialize TLS context in {} s", (t2 - t1) / 1000f);
+            LOG.info("Initialize TLS context in {} s", Float.valueOf((t2 - t1) / 1000f));
         }
         
         long t1 = System.currentTimeMillis();
@@ -874,22 +875,24 @@ public class DcmQR {
             System.exit(2);
         }
         long t2 = System.currentTimeMillis();
-        LOG.info("Connected to {} in {} s", remoteAE, (t2 - t1) / 1000f);
+        LOG.info("Connected to {} in {} s", remoteAE, Float.valueOf((t2 - t1) / 1000f));
 
         for (;;) {
             try {
                 List<DicomObject> result = dcmqr.query();
                 long t3 = System.currentTimeMillis();
-                LOG.info("Received {} matching entries in {} s", result.size(),
-                        (t3 - t2) / 1000f);
+                LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
+                        Float.valueOf((t3 - t2) / 1000f));
                 if (dcmqr.isMove()) {
                     dcmqr.move(result);
                     long t4 = System.currentTimeMillis();
-                    LOG.info( "Retrieved {} objects (warning: {}, failed: {}) in {}s",
-                                    new Object[] { dcmqr.getTotalRetrieved(),
-                                            dcmqr.getWarning(),
-                                            dcmqr.getFailed(),
-                                            (t4 - t3) / 1000f });
+                    LOG.info("Retrieved {} objects (warning: {}, failed: {}) in {}s",
+                                    new Object[] {
+                                            Integer.valueOf(dcmqr
+                                                    .getTotalRetrieved()),
+                                            Integer.valueOf(dcmqr.getWarning()),
+                                            Integer.valueOf(dcmqr.getFailed()),
+                                            Float.valueOf((t4 - t3) / 1000f) });
                 }
                 if (repeat == 0 || closeAssoc) {
                     try {
@@ -906,7 +909,7 @@ public class DcmQR {
                 dcmqr.open();
                 t2 = System.currentTimeMillis();
                 LOG.info("Reconnect or reuse connection to {} in {} s",
-                        remoteAE, (t2 - t4) / 1000f);
+                        remoteAE, Float.valueOf((t2 - t4) / 1000f));
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             } catch (InterruptedException e) {
@@ -1082,7 +1085,7 @@ public class DcmQR {
                 if (CommandUtils.isPending(cmd)) {
                     DicomObject data = rsp.getDataset();
                     result.add(data);
-                    LOG.info("Query Response #{}:\n{}", result.size(), data);
+                    LOG.info("Query Response #{}:\n{}", Integer.valueOf(result.size()), data);
                 }
             }
         } else {
@@ -1092,8 +1095,8 @@ public class DcmQR {
                 upperLevelUIDs.get(i).copyTo(keys);
                 LOG.info("Send Query Request #{}/{} using {}:\n{}",
                         new Object[] {
-                            i+1,
-                            n,
+                            Integer.valueOf(i+1),
+                            Integer.valueOf(n),
                             UIDDictionary.getDictionary().prompt(cuid),
                             keys
                         });
@@ -1107,7 +1110,7 @@ public class DcmQR {
                         DicomObject data = rsp.getDataset();
                         result.add(data);
                         LOG.info("Query Response #{} for Query Request #{}/{}:\n{}",
-                                new Object[]{ j+1, i+1, n, data });
+                                new Object[]{ Integer.valueOf(j+1), Integer.valueOf(i+1), Integer.valueOf(n), data });
                     }
                 }
             }
@@ -1181,7 +1184,7 @@ public class DcmQR {
                 DicomObject cmd = rsp.getCommand();
                 if (CommandUtils.isPending(cmd)) {
                     DicomObject data = rsp.getDataset();
-                    LOG.info("Query Response #{}:\n{}", i+1, data);
+                    LOG.info("Query Response #{}:\n{}", Integer.valueOf(i+1), data);
                     DicomObject patIdKeys = new BasicDicomObject();
                     patIdKeys.putString(Tag.PatientID, VR.LO,
                             data.getString(Tag.PatientID));
@@ -1222,7 +1225,7 @@ public class DcmQR {
                     DicomObject cmd = rsp.getCommand();
                     if (CommandUtils.isPending(cmd)) {
                         DicomObject data = rsp.getDataset();
-                        LOG.info("Query Response #{}:\n{}", (i+1), data);
+                        LOG.info("Query Response #{}:\n{}", Integer.valueOf(i+1), data);
                         DicomObject suidKey = new BasicDicomObject();
                         upperLevelID.copyTo(suidKey);
                         suidKey.putString(uidTag, VR.UI, data.getString(uidTag));
@@ -1266,10 +1269,10 @@ public class DcmQR {
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
-            DicomObject keys = ((DicomObject) findResults.get(i))
+            DicomObject keys = findResults.get(i)
             .subSet(MOVE_KEYS);
             if (isEvalRetrieveAET()
-                    && moveDest.equals(((DicomObject) findResults.get(i))
+                    && moveDest.equals(findResults.get(i)
                             .getString(Tag.RetrieveAETitle))) {
                 LOG.info("Skipping {}:\n{}",
                         UIDDictionary.getDictionary().prompt(cuid), keys);
@@ -1311,7 +1314,7 @@ public class DcmQR {
     private TransferCapability selectTransferCapability(List<String> cuid) {
         TransferCapability tc;
         for (int i = 0, n = cuid.size(); i < n; i++) {
-            tc = assoc.getTransferCapabilityAsSCU((String) cuid.get(i));
+            tc = assoc.getTransferCapabilityAsSCU(cuid.get(i));
             if (tc != null)
                 return tc;
         }

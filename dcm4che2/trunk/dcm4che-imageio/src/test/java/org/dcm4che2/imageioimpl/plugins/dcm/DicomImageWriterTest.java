@@ -71,7 +71,7 @@ public class DicomImageWriterTest extends TestCase {
 
     static {
         ImageIO.scanForPlugins();
-    };
+    }
 
     static final boolean eraseDicom = false;
 
@@ -154,8 +154,7 @@ public class DicomImageWriterTest extends TestCase {
     }
 
     /** Returns an image reader on the given filename */
-    public static DicomImageReader createImageReader(ImageInputStream is)
-            throws IOException {
+    public static DicomImageReader createImageReader(ImageInputStream is) {
         assert is != null;
         DicomImageReaderSpi spi = new DicomImageReaderSpi();
         DicomImageReader reader = (DicomImageReader) spi

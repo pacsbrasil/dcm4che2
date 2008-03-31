@@ -44,7 +44,7 @@ import junit.framework.TestCase;
 
 public class IntHashtableTest extends TestCase {
 
-	private IntHashtable table;
+	private IntHashtable<Integer> table;
 
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(IntHashtableTest.class);
@@ -55,8 +55,8 @@ public class IntHashtableTest extends TestCase {
 	}
 
 	@Override
-    protected void setUp() throws Exception {
-		this.table = new IntHashtable();
+        protected void setUp() throws Exception {
+		this.table = new IntHashtable<Integer>();
 		for (int i = -10; i < 10; i++) {
 			table.put(i, new Integer(i));
 		}

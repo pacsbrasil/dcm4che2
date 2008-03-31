@@ -36,22 +36,17 @@ public class ImageDiff {
 	public ImageDiff(BufferedImage i1, BufferedImage i2, String fileBase, long allowedDiff)
 			throws IOException {
 		this.allowedDiff = allowedDiff;
+		assert i1 != null;
 		assert i1.getWidth() == i2.getWidth();
 		assert i1.getHeight() == i2.getHeight();
-		BufferedImage i3 = null;
-		if( i1!=null ) {
-			computeDiffs(i1, i2, i3);
-		}
-		else {
-			maxDiff=Long.MAX_VALUE;
-		}
+		computeDiffs(i1, i2, null);
 		if (writeImage) {
 			writeImage(i2, fileBase);
 		}
+		
+		BufferedImage i3 = null;
 		if (writeDiff) {
 			i3 = new BufferedImage(i1.getWidth(), i1.getHeight(), i1.getType());
-		}
-		if (i3 != null) {
 			writeImage(i3, fileBase + "-diff");
 		}
 		if (writeInfo) {

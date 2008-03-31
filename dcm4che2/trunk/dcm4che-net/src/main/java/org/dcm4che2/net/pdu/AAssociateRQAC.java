@@ -71,7 +71,7 @@ public abstract class AAssociateRQAC {
     protected String implClassUID = Implementation.classUID();
     protected String implVersionName = Implementation.versionName();
     protected final ArrayList<PresentationContext> pcs = new ArrayList<PresentationContext>();
-    protected final IntHashtable pcidMap = new IntHashtable();
+    protected final IntHashtable<PresentationContext> pcidMap = new IntHashtable<PresentationContext>();
     protected final LinkedHashMap<String, RoleSelection> roleSelMap = new LinkedHashMap<String, RoleSelection>();
     protected final LinkedHashMap<String, ExtendedNegotiation> extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
     protected final LinkedHashMap<String, CommonExtendedNegotiation> commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
@@ -182,7 +182,7 @@ public abstract class AAssociateRQAC {
     }
 
     public PresentationContext getPresentationContext(int pcid) {
-        return (PresentationContext) pcidMap.get(pcid);
+        return pcidMap.get(pcid);
     }
 
     public synchronized void addPresentationContext(PresentationContext pc) {

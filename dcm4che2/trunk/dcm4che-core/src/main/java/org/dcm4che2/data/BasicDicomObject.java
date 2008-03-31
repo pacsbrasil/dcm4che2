@@ -53,7 +53,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 
     private static final int INIT_SEQUENCE_CAPACITY = 10;
 
-    private transient final IntHashtable table;
+    private transient final IntHashtable<DicomElement> table;
 
     private transient DicomObject defaults;
 
@@ -85,7 +85,7 @@ public class BasicDicomObject extends AbstractDicomObject {
 
     public BasicDicomObject(DicomObject defaults, int capacity) {
         this.defaults = defaults;
-        this.table = new IntHashtable(capacity);
+        this.table = new IntHashtable<DicomElement>(capacity);
     }
 
     public final DicomObject getDefaults() {
@@ -158,11 +158,11 @@ public class BasicDicomObject extends AbstractDicomObject {
         });
     }
 
-    public Iterator iterator() {
+    public Iterator<DicomElement> iterator() {
         return iterator(0, 0xffffffff);
     }
 
-    public Iterator iterator(int fromTag, int toTag) {
+    public Iterator<DicomElement> iterator(int fromTag, int toTag) {
         if ((fromTag & 0xffffffffL) > (toTag & 0xffffffffL)) {
             throw new IllegalArgumentException("fromTag:"
                     + TagUtils.toString(fromTag) + " > toTag:"
@@ -303,7 +303,7 @@ public class BasicDicomObject extends AbstractDicomObject {
     }
 
     public DicomElement get(int tag) {
-        DicomElement attr = (DicomElement) table.get(tag);
+        DicomElement attr = table.get(tag);
         return (attr != null || defaults == null) ? attr : defaults.get(tag);
     }
 
