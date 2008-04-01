@@ -8,6 +8,7 @@
   <modules>
     <module>dcm4chee-audit-logger</module>
     <module>dcm4chee-audit-login</module>
+    <module>dcm4chee-audit-tomcat</module>
   </modules>
   
   <repositories>
