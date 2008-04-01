@@ -107,17 +107,41 @@ public class DcmQR {
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
-    private static final int PATIENT = 0;
-    private static final int STUDY = 1;
-    private static final int SERIES = 2;
-    private static final int IMAGE = 3;
+    private static enum QueryRetrieveLevel {
+        PATIENT("PATIENT", PATIENT_RETURN_KEYS, PATIENT_LEVEL_FIND_CUID, PATIENT_LEVEL_MOVE_CUID),
+        STUDY("STUDY", STUDY_RETURN_KEYS, STUDY_LEVEL_FIND_CUID, STUDY_LEVEL_MOVE_CUID),
+        SERIES("SERIES", SERIES_RETURN_KEYS, SERIES_LEVEL_FIND_CUID, SERIES_LEVEL_MOVE_CUID),
+        IMAGE("IMAGE", INSTANCE_RETURN_KEYS, SERIES_LEVEL_FIND_CUID, SERIES_LEVEL_MOVE_CUID);
+        
+        private final String code;
+        private final int[] returnKeys;
+        private final String[] findClassUids;
+        private final String[] moveClassUids;
 
-    private static final String[] QRLEVEL = {
-        "PATIENT",
-        "STUDY",
-        "SERIES",
-        "IMAGE" };
-    
+        private QueryRetrieveLevel(String code, int[] returnKeys, String[] findClassUids, String[] moveClassUids) {
+            this.code = code;
+            this.returnKeys = returnKeys;
+            this.findClassUids = findClassUids;
+            this.moveClassUids = moveClassUids;
+        }
+        
+        public String getCode() {
+            return code;
+        }
+        
+        public int[] getReturnKeys() {
+            return returnKeys;
+        }
+        
+        public String[] getFindClassUids() {
+            return findClassUids;
+        }
+        
+        public String[] getMoveClassUids() {
+            return moveClassUids;
+        }
+    }
+
     private static final String[] PATIENT_LEVEL_FIND_CUID = {
         UID.PatientRootQueryRetrieveInformationModelFIND,
         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
@@ -131,11 +155,6 @@ public class DcmQR {
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND, };
     
-    private static final String[][] FIND_CUID = { PATIENT_LEVEL_FIND_CUID,
-        STUDY_LEVEL_FIND_CUID,
-        SERIES_LEVEL_FIND_CUID,
-        SERIES_LEVEL_FIND_CUID };
-    
     private static final String[] PATIENT_LEVEL_MOVE_CUID = {
         UID.PatientRootQueryRetrieveInformationModelMOVE,
         UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
@@ -148,12 +167,6 @@ public class DcmQR {
     private static final String[] SERIES_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
         UID.PatientRootQueryRetrieveInformationModelMOVE };
-    
-    private static final String[][] MOVE_CUID = {
-        PATIENT_LEVEL_MOVE_CUID,
-        STUDY_LEVEL_MOVE_CUID,
-        SERIES_LEVEL_MOVE_CUID,
-        SERIES_LEVEL_MOVE_CUID };
     
     private static final int[] PATIENT_RETURN_KEYS = {
         Tag.PatientName,
@@ -221,12 +234,6 @@ public class DcmQR {
         Tag.SOPClassUID,
         Tag.SOPInstanceUID, };
     
-    private static final int[][] RETURN_KEYS = {
-        PATIENT_RETURN_KEYS,
-        STUDY_RETURN_KEYS,
-        SERIES_RETURN_KEYS,
-        INSTANCE_RETURN_KEYS };
-    
     private static final int[] MOVE_KEYS = {
         Tag.QueryRetrieveLevel,
         Tag.PatientID,
@@ -268,7 +275,7 @@ public class DcmQR {
     
     private boolean evalRetrieveAET = false;
 
-    private int qrlevel = STUDY;
+    private QueryRetrieveLevel qrlevel = QueryRetrieveLevel.STUDY;
 
     private ArrayList<String> privateFind = new ArrayList<String>();
 
@@ -778,13 +785,13 @@ public class DcmQR {
         if (cl.hasOption("evalRetrieveAET"))
             dcmqr.setEvalRetrieveAET(true);
         if (cl.hasOption("P"))
-            dcmqr.setQueryLevel(PATIENT);
+            dcmqr.setQueryLevel(QueryRetrieveLevel.PATIENT);
         else if (cl.hasOption("S"))
-            dcmqr.setQueryLevel(SERIES);
+            dcmqr.setQueryLevel(QueryRetrieveLevel.SERIES);
         else if (cl.hasOption("I"))
-            dcmqr.setQueryLevel(IMAGE);
+            dcmqr.setQueryLevel(QueryRetrieveLevel.IMAGE);
         else
-            dcmqr.setQueryLevel(STUDY);
+            dcmqr.setQueryLevel(QueryRetrieveLevel.STUDY);
         if (cl.hasOption("noextneg"))
             dcmqr.setNoExtNegotiation(true);
         if (cl.hasOption("rel"))
@@ -969,10 +976,10 @@ public class DcmQR {
     }
 
     private void configureTransferCapability(boolean ivrle) {
-        String[] findcuids = FIND_CUID[qrlevel];
-        String[] movecuids = moveDest != null ? MOVE_CUID[qrlevel]
+        String[] findcuids = qrlevel.getFindClassUids();
+        String[] movecuids = moveDest != null ? qrlevel.getMoveClassUids()
                 : EMPTY_STRING;
-        final int numPrivateFind = qrlevel != PATIENT ? privateFind.size() : 0;
+        int numPrivateFind = qrlevel != QueryRetrieveLevel.PATIENT ? privateFind.size() : 0;
         TransferCapability[] tc = new TransferCapability[findcuids.length
                 + movecuids.length + numPrivateFind];
         int i = 0;
@@ -1012,12 +1019,12 @@ public class DcmQR {
         return tc;
     }
 
-    private void setQueryLevel(int qrlevel) {
+    private void setQueryLevel(QueryRetrieveLevel qrlevel) {
         this.qrlevel = qrlevel;
-        keys.putString(Tag.QueryRetrieveLevel, VR.CS, QRLEVEL[qrlevel]);
-        int[] tags = RETURN_KEYS[qrlevel];
-        for (int i = 0; i < tags.length; i++)
-            keys.putNull(tags[i], null);
+        keys.putString(Tag.QueryRetrieveLevel, VR.CS, qrlevel.getCode());
+        for (int tag : qrlevel.getReturnKeys()) {
+            keys.putNull(tag, null);
+        }
     }
 
     public final void addPrivate(String cuid) {
@@ -1118,21 +1125,27 @@ public class DcmQR {
         return result;
     }
 
+    @SuppressWarnings("fallthrough")
     private boolean containsUpperLevelUIDs(String cuid) {
         switch (qrlevel) {
-            case IMAGE:
-                if (!keys.containsValue(Tag.SeriesInstanceUID)) {
-                    return false;
-                }
-            case SERIES:
-                if (!keys.containsValue(Tag.StudyInstanceUID)) {
-                    return false;
-                }
-            case STUDY:
-                if (Arrays.asList(PATIENT_LEVEL_FIND_CUID).contains(cuid)
-                        && !keys.containsValue(Tag.PatientID)) {
-                    return false;
-                }
+        case IMAGE:
+            if (!keys.containsValue(Tag.SeriesInstanceUID)) {
+                return false;
+            }
+            // fall through
+        case SERIES:
+            if (!keys.containsValue(Tag.StudyInstanceUID)) {
+                return false;
+            }
+            // fall through
+        case STUDY:
+            if (Arrays.asList(PATIENT_LEVEL_FIND_CUID).contains(cuid)
+                    && !keys.containsValue(Tag.PatientID)) {
+                return false;
+            }
+            // fall through
+        case PATIENT:
+            // fall through
         }
         return true;
     }
@@ -1142,19 +1155,19 @@ public class DcmQR {
         List<DicomObject> keylist = new ArrayList<DicomObject>();
         if (Arrays.asList(PATIENT_LEVEL_FIND_CUID).contains(cuid)) {
             queryPatientIDs(cuid, tsuid, keylist);
-            if (qrlevel == STUDY) {
+            if (qrlevel == QueryRetrieveLevel.STUDY) {
                 return keylist;
             }
             keylist = queryStudyOrSeriesIUIDs(cuid, tsuid, keylist,
-                    Tag.StudyInstanceUID, STUDY_MATCHING_KEYS, STUDY);
+                    Tag.StudyInstanceUID, STUDY_MATCHING_KEYS, QueryRetrieveLevel.STUDY);
         } else {
             keylist.add(new BasicDicomObject());
             keylist = queryStudyOrSeriesIUIDs(cuid, tsuid, keylist,
-                    Tag.StudyInstanceUID, PATIENT_STUDY_MATCHING_KEYS, STUDY);
+                    Tag.StudyInstanceUID, PATIENT_STUDY_MATCHING_KEYS, QueryRetrieveLevel.STUDY);
         }
-        if (qrlevel > SERIES) {
+        if (qrlevel == QueryRetrieveLevel.IMAGE) {
             keylist = queryStudyOrSeriesIUIDs(cuid, tsuid, keylist,
-                    Tag.SeriesInstanceUID, SERIES_MATCHING_KEYS, SERIES);
+                    Tag.SeriesInstanceUID, SERIES_MATCHING_KEYS, QueryRetrieveLevel.SERIES);
         }
         return keylist;
     }
@@ -1201,7 +1214,7 @@ public class DcmQR {
 
     private List<DicomObject> queryStudyOrSeriesIUIDs(String cuid, String tsuid,
             List<DicomObject> upperLevelIDs, int uidTag, int[] matchingKeys,
-            int qrLevel) throws IOException,
+            QueryRetrieveLevel qrLevel) throws IOException,
             InterruptedException {
         List<DicomObject> keylist = new ArrayList<DicomObject>();
         String uid = keys.getString(uidTag);
@@ -1216,7 +1229,7 @@ public class DcmQR {
                 keys.subSet(matchingKeys).copyTo(keys2);
                 upperLevelID.copyTo(keys2);
                 keys2.putNull(uidTag, VR.UI);
-                keys2.putString(Tag.QueryRetrieveLevel, VR.CS, QRLEVEL[qrLevel]);
+                keys2.putString(Tag.QueryRetrieveLevel, VR.CS, qrLevel.getCode());
                 LOG.info("Send Query Request using {}:\n{}",
                         UIDDictionary.getDictionary().prompt(cuid), keys2);
                 DimseRSP rsp = assoc.cfind(cuid, priority, keys2,
@@ -1240,13 +1253,13 @@ public class DcmQR {
     private TransferCapability selectFindTransferCapability()
             throws NoPresentationContextException {
         TransferCapability tc;
-        if (qrlevel != PATIENT
+        if (qrlevel != QueryRetrieveLevel.PATIENT
                 && (tc = selectTransferCapability(privateFind)) != null)
             return tc;
-        if ((tc = selectTransferCapability(FIND_CUID[qrlevel])) != null)
+        if ((tc = selectTransferCapability(qrlevel.getFindClassUids())) != null)
             return tc;
         throw new NoPresentationContextException(UIDDictionary.getDictionary()
-                .prompt(FIND_CUID[qrlevel][0])
+                .prompt(qrlevel.getFindClassUids()[0])
                 + " not supported by" + remoteAE.getAETitle());
     }
 
@@ -1261,10 +1274,10 @@ public class DcmQR {
             throws IOException, InterruptedException {
         if (moveDest == null)
             throw new IllegalStateException("moveDest == null");
-        TransferCapability tc = selectTransferCapability(MOVE_CUID[qrlevel]);
+        TransferCapability tc = selectTransferCapability(qrlevel.getMoveClassUids());
         if (tc == null)
             throw new NoPresentationContextException(UIDDictionary
-                    .getDictionary().prompt(MOVE_CUID[qrlevel][0])
+                    .getDictionary().prompt(qrlevel.getMoveClassUids()[0])
                     + " not supported by" + remoteAE.getAETitle());
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
