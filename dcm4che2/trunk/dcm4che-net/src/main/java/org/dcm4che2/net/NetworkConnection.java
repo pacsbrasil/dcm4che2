@@ -717,7 +717,7 @@ public class NetworkConnection {
         server = null;
     }
 
-    private Socket createTLSSocket() throws IOException {
+    protected Socket createTLSSocket() throws IOException {
         SSLContext sslContext = device.getSSLContext();
         if (sslContext == null)
             throw new IllegalStateException("TLS Context not initialized!");
@@ -728,7 +728,7 @@ public class NetworkConnection {
         return s;
     }
 
-    private ServerSocket createTLSServerSocket() throws IOException {
+    protected ServerSocket createTLSServerSocket() throws IOException {
         SSLContext sslContext = device.getSSLContext();
         if (sslContext == null)
             throw new IllegalStateException("TLS Context not initialized!");
