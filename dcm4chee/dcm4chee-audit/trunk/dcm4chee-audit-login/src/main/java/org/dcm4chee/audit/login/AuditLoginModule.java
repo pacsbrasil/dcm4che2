@@ -70,7 +70,7 @@ public class AuditLoginModule implements LoginModule {
     private CallbackHandler cbh;
 
     public void initialize(Subject subject, CallbackHandler cbh,
-            Map sharedState, Map options) {
+            Map<String, ?> sharedState, Map<String, ?> options) {
         this.cbh = cbh;
     }
 
