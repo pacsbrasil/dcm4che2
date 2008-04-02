@@ -54,6 +54,7 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
@@ -151,6 +152,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
                                     null,
                                     stored.getStudyInstanceUID(),
                                     stored.getSeriesInstanceUID(),
+                                    sopIUIDsOrNull(stored),
                                     toScheduledTime(cal, attrs.getValue("delay")));
                         }
                     }});
@@ -158,6 +160,14 @@ public class ForwardService2 extends ServiceMBeanSupport {
                 log.error("Applying forwarding rules to " + stored + " fails:", e);                
             }
         }
+    }
+
+    private static String[] sopIUIDsOrNull(SeriesStored seriesStored) {
+        return seriesStored.getNumberOfInstances() == 1 
+                ? new String[] { seriesStored.getIAN()
+                    .getItem(Tags.RefSeriesSeq).getItem(Tags.RefSOPSeq)
+                    .getString(Tags.RefSOPInstanceUID) }
+                : null;
     }
 
     private static int toPriority(String s) {
@@ -195,11 +205,12 @@ public class ForwardService2 extends ServiceMBeanSupport {
     }
 
     private void scheduleMove(String retrieveAET, String destAET, int priority,
-            String pid, String studyIUID, String seriesIUID, long scheduledTime) {
+            String pid, String studyIUID, String seriesIUID, String[] sopIUIDs,
+            long scheduledTime) {
         try {
             server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
                     retrieveAET, destAET, new Integer(priority), pid,
-                    studyIUID, seriesIUID, null, new Long(scheduledTime) },
+                    studyIUID, seriesIUID, sopIUIDs, new Long(scheduledTime) },
                     new String[] { String.class.getName(),
                             String.class.getName(), int.class.getName(),
                             String.class.getName(), String.class.getName(),

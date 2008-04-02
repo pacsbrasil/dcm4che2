@@ -48,6 +48,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
@@ -86,10 +87,20 @@ public class ForwardService extends ServiceMBeanSupport {
                         forwardPriority, null,
                         seriesStored.getStudyInstanceUID(),
                         seriesStored.getSeriesInstanceUID(),
+                        sopIUIDsOrNull(seriesStored),
                         scheduledTime);
             }
         }
+
     };
+
+    private static String[] sopIUIDsOrNull(SeriesStored seriesStored) {
+        return seriesStored.getNumberOfInstances() == 1 
+                ? new String[] { seriesStored.getIAN()
+                    .getItem(Tags.RefSeriesSeq).getItem(Tags.RefSOPSeq)
+                    .getString(Tags.RefSOPInstanceUID) }
+                : null;
+    }
 
     private final NotificationListener seriesUpdatedListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -246,11 +257,12 @@ public class ForwardService extends ServiceMBeanSupport {
     }
 
     private void scheduleMove(String retrieveAET, String destAET, int priority,
-            String pid, String studyIUID, String seriesIUID, long scheduledTime) {
+            String pid, String studyIUID, String seriesIUID, String[] sopIUIDs,
+            long scheduledTime) {
         try {
             server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
                     retrieveAET, destAET, new Integer(priority), pid,
-                    studyIUID, seriesIUID, null, new Long(scheduledTime) },
+                    studyIUID, seriesIUID, sopIUIDs, new Long(scheduledTime) },
                     new String[] { String.class.getName(),
                             String.class.getName(), int.class.getName(),
                             String.class.getName(), String.class.getName(),
@@ -265,7 +277,7 @@ public class ForwardService extends ServiceMBeanSupport {
             String studyIUID, String seriesIUID) {
         for (int i = 0; i < forwardModifiedToAETs.length; i++) {
             scheduleMove(retrieveAET, forwardModifiedToAETs[i],
-                    forwardPriority, patientID, studyIUID, seriesIUID, 0l);
+                    forwardPriority, patientID, studyIUID, seriesIUID, null, 0l);
         }
     }
 
