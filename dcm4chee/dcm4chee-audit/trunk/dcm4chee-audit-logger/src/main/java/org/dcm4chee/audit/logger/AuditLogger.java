@@ -367,7 +367,6 @@ public class AuditLogger extends ServiceMBeanSupport {
             MBeanServerNotification mbsn = (MBeanServerNotification) notif;
             ObjectName source = mbsn.getMBeanName();
             AttributeChangeNotificationFilter[] acnf =
-                    (AttributeChangeNotificationFilter[])
                     notRegisteredAcnSources.get(source);
             if (acnf != null && registerAcnListener(source, acnf)) {
                 notRegisteredAcnSources.remove(source);
@@ -382,7 +381,6 @@ public class AuditLogger extends ServiceMBeanSupport {
             MBeanServerNotification mbsn = (MBeanServerNotification) notif;
             ObjectName source = mbsn.getMBeanName();
             AttributeChangeNotificationFilter[] acnf =
-                    (AttributeChangeNotificationFilter[])
                     registeredAcnSources.remove(source);
             if (acnf != null) {
                 unregisterAcnListener(source);
@@ -411,7 +409,7 @@ public class AuditLogger extends ServiceMBeanSupport {
             String text;
             boolean stateChanged = scn.getAttributeName().equals("State");
             if (stateChanged) {
-                int newState = (Integer) scn.getNewValue();
+                int newState = ((Integer) scn.getNewValue()).intValue();
                 // only audit state changes, if initiated by an authentified
                 // user and new state is STARTED or STOPPED
                 if (SecurityAssociation.getPrincipal() == null 
