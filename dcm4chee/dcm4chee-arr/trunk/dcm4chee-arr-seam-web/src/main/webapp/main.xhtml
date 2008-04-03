@@ -340,6 +340,15 @@
               url="img/#{rec.eventOutcome}.gif"/>
           </h:column>
           <h:column>
+            <f:facet name="header">
+              <h:outputText value="F" title="Audit Message Format"/>
+            </f:facet>
+            <h:outputText rendered="#{rec.IHEYr4}" value="I"
+                title="IHEYr4 (Basic Security)" />
+            <h:outputText rendered="#{!rec.IHEYr4}" value="A"
+                title="RFC-3881 (ATNA)" />
+          </h:column>
+          <h:column>
             <f:facet name="header">Audit Source</f:facet>
             <h:outputText value="#{rec.enterpriseSiteID}"
               title="Enterprise Site ID"
