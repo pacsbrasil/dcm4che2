@@ -40,6 +40,25 @@
          <value value="conf/dcm4chee-ae"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getForwardOnInstanceLevelFromAETs"
+      setMethod="setForwardOnInstanceLevelFromAETs">
+      <description><![CDATA[Comma separated list of AE titles of Storage SCUs
+      from which objects are forwarded by an Instance level retrieve request.
+      Objects received from other Storage SCUs are forwarded on Series level,
+      which may cause to multiple forwarding of objects, if the Storage SCU
+      sends instances of one Series association.
+      <br>NONE = Forward objects on Series level received from any Storage SCUs
+      <br>Exception: if only one object is received in the association,
+      the object will be forwarded by an Instance level retrieve request, even
+      if the AE title of the sending Storage SCU is not listed.
+      ]]>
+      </description>
+      <name>ForwardOnInstanceLevelFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">

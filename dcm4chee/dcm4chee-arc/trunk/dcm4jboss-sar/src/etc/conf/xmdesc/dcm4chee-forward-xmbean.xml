@@ -51,7 +51,26 @@ that destination outside a particular time interval.
          <value value="[calling=SCU1|SCU2]SCP3,SCP4!8-16;NONE"/>
       </descriptors>
    </attribute>
-  <attribute access="read-write" getMethod="isEnablePatientUpdated" setMethod="setEnablePatientUpdated">
+   <attribute access="read-write" getMethod="getForwardOnInstanceLevelFromAETs"
+      setMethod="setForwardOnInstanceLevelFromAETs">
+      <description><![CDATA[Comma separated list of AE titles of Storage SCUs
+      from which objects are forwarded by an Instance level retrieve request.
+      Objects received from other Storage SCUs are forwarded on Series level,
+      which may cause to multiple forwarding of objects, if the Storage SCU
+      sends instances of one Series association.
+      <br>NONE = Forward objects on Series level received from any Storage SCUs
+      <br>Exception: if only one object is received in the association,
+      the object will be forwarded by an Instance level retrieve request, even
+      if the AE title of the sending Storage SCU is not listed.
+      ]]>
+      </description>
+      <name>ForwardOnInstanceLevelFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isEnablePatientUpdated" setMethod="setEnablePatientUpdated">
       <description><![CDATA[Enable/Disable PatientUpdated notification support.<br> 
       		If enabled a <tt>PatientUpdated</tt> notification will forward all instances of 
       		the related patient to each AET listed in <tt>ForwardModifiedToAETs</tt>.<p>

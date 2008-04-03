@@ -53,8 +53,10 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
@@ -74,6 +76,12 @@ public class ForwardService2 extends ServiceMBeanSupport {
 
     private static final String FORWARD_XSL = "forward.xsl";
 
+    private static final String NONE = "NONE";
+
+    private static final String[] EMPTY = {};
+
+    private String[] forwardOnInstanceLevelFromAETs = EMPTY;
+
     private final NotificationListener seriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             ForwardService2.this.onSeriesStored((SeriesStored) notif.getUserData());
@@ -83,9 +91,9 @@ public class ForwardService2 extends ServiceMBeanSupport {
     private ObjectName storeScpServiceName;
 
     private ObjectName moveScuServiceName;
-    
+
     private TemplatesDelegate templates = new TemplatesDelegate(this);
-       
+
     public final String getConfigDir() {
         return templates.getConfigDir();
     }
@@ -118,7 +126,24 @@ public class ForwardService2 extends ServiceMBeanSupport {
         this.storeScpServiceName = storeScpServiceName;
     }
 
-    
+    public String getForwardOnInstanceLevelFromAETs() {
+        return forwardOnInstanceLevelFromAETs.length == 0 ? NONE 
+                : StringUtils.toString(forwardOnInstanceLevelFromAETs, ',');
+    }
+
+    public void setForwardOnInstanceLevelFromAETs(String s) {
+        forwardOnInstanceLevelFromAETs = NONE.equals(s) ? EMPTY
+                : StringUtils.split(s, ',');
+    }
+
+    private boolean isForwardOnInstanceLevelFromAET(String aet) {
+        for (int i = 0; i < forwardOnInstanceLevelFromAETs.length; i++) {
+            if (aet.equals(forwardOnInstanceLevelFromAETs[i]))
+                return true;
+        }
+        return false;
+    }
+
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
@@ -162,12 +187,19 @@ public class ForwardService2 extends ServiceMBeanSupport {
         }
     }
 
-    private static String[] sopIUIDsOrNull(SeriesStored seriesStored) {
-        return seriesStored.getNumberOfInstances() == 1 
-                ? new String[] { seriesStored.getIAN()
-                    .getItem(Tags.RefSeriesSeq).getItem(Tags.RefSOPSeq)
-                    .getString(Tags.RefSOPInstanceUID) }
-                : null;
+    private String[] sopIUIDsOrNull(SeriesStored seriesStored) {
+        int numI = seriesStored.getNumberOfInstances();
+        if (numI > 1 && !isForwardOnInstanceLevelFromAET(
+                        seriesStored.getCallingAET())) {
+            return null;
+        }
+        String[] iuids = new String[numI];
+        DcmElement sq = seriesStored.getIAN().getItem(Tags.RefSeriesSeq)
+                .get(Tags.RefSOPSeq);
+        for (int i = 0; i < iuids.length; i++) {
+            iuids[i] = sq.getItem(i).getString(Tags.RefSOPInstanceUID);
+        }
+        return iuids;
     }
 
     private static int toPriority(String s) {

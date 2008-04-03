@@ -48,6 +48,7 @@ import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.SeriesStored;
@@ -75,7 +76,7 @@ public class ForwardService extends ServiceMBeanSupport {
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-            Map param = new HashMap();
+            Map<String, String[]> param = new HashMap<String, String[]>();
             param.put("calling", new String[] { seriesStored.getCallingAET() });
             String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(param);
@@ -94,12 +95,19 @@ public class ForwardService extends ServiceMBeanSupport {
 
     };
 
-    private static String[] sopIUIDsOrNull(SeriesStored seriesStored) {
-        return seriesStored.getNumberOfInstances() == 1 
-                ? new String[] { seriesStored.getIAN()
-                    .getItem(Tags.RefSeriesSeq).getItem(Tags.RefSOPSeq)
-                    .getString(Tags.RefSOPInstanceUID) }
-                : null;
+    private String[] sopIUIDsOrNull(SeriesStored seriesStored) {
+        int numI = seriesStored.getNumberOfInstances();
+        if (numI > 1 && !isForwardOnInstanceLevelFromAET(
+                        seriesStored.getCallingAET())) {
+            return null;
+        }
+        String[] iuids = new String[numI];
+        DcmElement sq = seriesStored.getIAN().getItem(Tags.RefSeriesSeq)
+                .get(Tags.RefSOPSeq);
+        for (int i = 0; i < iuids.length; i++) {
+            iuids[i] = sq.getItem(i).getString(Tags.RefSOPInstanceUID);
+        }
+        return iuids;
     }
 
     private final NotificationListener seriesUpdatedListener = new NotificationListener() {
@@ -135,7 +143,9 @@ public class ForwardService extends ServiceMBeanSupport {
 
     private ObjectName editContentServiceName;
 
-    private String[] forwardModifiedToAETs = {};
+    private String[] forwardOnInstanceLevelFromAETs = EMPTY;
+
+    private String[] forwardModifiedToAETs = EMPTY;
 
     private int forwardPriority = 0;
 
@@ -178,6 +188,24 @@ public class ForwardService extends ServiceMBeanSupport {
      */
     public final ObjectName getEditContentServiceName() {
         return editContentServiceName;
+    }
+
+    public String getForwardOnInstanceLevelFromAETs() {
+        return forwardOnInstanceLevelFromAETs.length == 0 ? NONE 
+                : StringUtils.toString(forwardOnInstanceLevelFromAETs, ',');
+    }
+
+    public void setForwardOnInstanceLevelFromAETs(String s) {
+        forwardOnInstanceLevelFromAETs = NONE.equals(s) ? EMPTY
+                : StringUtils.split(s, ',');
+    }
+
+    private boolean isForwardOnInstanceLevelFromAET(String aet) {
+        for (int i = 0; i < forwardOnInstanceLevelFromAETs.length; i++) {
+            if (aet.equals(forwardOnInstanceLevelFromAETs[i]))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -229,13 +257,13 @@ public class ForwardService extends ServiceMBeanSupport {
     }
 
     public String getForwardModifiedToAETs() {
-        return forwardModifiedToAETs.length == 0 ? NONE : StringUtils.toString(
-                forwardModifiedToAETs, ',');
+        return forwardModifiedToAETs.length == 0 ? NONE
+                : StringUtils.toString(forwardModifiedToAETs, ',');
     }
 
     public void setForwardModifiedToAETs(String s) {
-        forwardModifiedToAETs = NONE.equals(s) ? EMPTY : StringUtils.split(s,
-                ',');
+        forwardModifiedToAETs = NONE.equals(s) ? EMPTY
+                : StringUtils.split(s, ',');
     }
 
     protected void startService() throws Exception {
