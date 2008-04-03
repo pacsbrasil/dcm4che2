@@ -67,7 +67,7 @@
     <dependency>
       <groupId>jboss.jbossws</groupId>
       <artifactId>jbossws-core</artifactId>
-      <version>0.1.0</version>
+      <version>3.0.1-native-2.0.4.GA</version>
       <scope>provided</scope>
     </dependency>    
     <dependency>
