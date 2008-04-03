@@ -364,6 +364,28 @@
       <name>KeyObjectServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isUseXDSb"
+      setMethod="setUseXDSb">
+      <description>Use XDS.b rather than XDS.a to export documents.
+      </description>
+      <name>UseXDSb</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+     getMethod="getXdsbSourceServiceName"
+     setMethod="setXdsbSourceServiceName">
+      <description>Used internally. Do not modify (dcm4chee.xds:service=XDSbSourceService).
+      </description>
+      <name>XdsbSourceServiceName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
    
    &defaultAttributes;
 

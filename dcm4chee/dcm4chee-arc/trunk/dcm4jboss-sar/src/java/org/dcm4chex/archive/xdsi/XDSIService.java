@@ -64,9 +64,13 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.activation.DataHandler;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.RuntimeMBeanException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -126,7 +130,8 @@ import org.xml.sax.SAXException;
  */
 public class XDSIService extends ServiceMBeanSupport {
 
-    public static final String DOCUMENT_ID = "doc_1";
+    private static final String DEFAULT_XDSB_SOURCE_SERVICE = "dcm4chee.xds:service=XDSbSourceService";
+	public static final String DOCUMENT_ID = "doc_1";
     public static final String PDF_DOCUMENT_ID = "pdf_doc_1";
 	public static final String AUTHOR_SPECIALITY = "authorSpeciality";
 	public static final String AUTHOR_PERSON = "authorPerson";
@@ -141,8 +146,8 @@ public class XDSIService extends ServiceMBeanSupport {
     protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
     
     protected ObjectName ianScuServiceName;
-
     protected ObjectName keyObjectServiceName;
+    protected ObjectName xdsbSourceServiceName;
     
     protected String[] autoPublishAETs;
     private String autoPublishDocTitle;
@@ -191,6 +196,7 @@ public class XDSIService extends ServiceMBeanSupport {
 	
 	private boolean logSOAPMessage = true;
 	private boolean indentSOAPLog = true;
+	private boolean useXDSb = false;
 
     private final NotificationListener ianListener = 
         new NotificationListener() {
@@ -517,7 +523,29 @@ public class XDSIService extends ServiceMBeanSupport {
         this.keyObjectServiceName = keyObjectServiceName;
     }
     
-    public final String getAutoPublishAETs() {
+    public String getXdsbSourceServiceName() {
+		return xdsbSourceServiceName == null ? NONE : xdsbSourceServiceName.toString();
+	}
+	public void setXdsbSourceServiceName(String name) throws MalformedObjectNameException, NullPointerException {
+		this.xdsbSourceServiceName = NONE.equals(name) ? null : ObjectName.getInstance(name);
+	}
+	
+	public boolean isUseXDSb() {
+		return useXDSb;
+	}
+	public void setUseXDSb(boolean useXDSb) {
+		if ( this.useXDSb != useXDSb ) {
+			this.useXDSb = useXDSb;
+			if ( useXDSb && xdsbSourceServiceName == null ) {
+				try {
+					setXdsbSourceServiceName(DEFAULT_XDSB_SOURCE_SERVICE);
+				} catch (Exception x) {
+					log.warn("Cant set default XDS.b Service ("+DEFAULT_XDSB_SOURCE_SERVICE+")!",x);
+				}
+			}
+		}
+	}
+	public final String getAutoPublishAETs() {
         return autoPublishAETs.length > 0 ? StringUtils.toString(autoPublishAETs,
                 '\\') : NONE;
     }
@@ -735,6 +763,13 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	
 	public boolean sendSOAP( Document metaData, XDSIDocument[] docs, String url ) {
+		if ( isUseXDSb() ) {
+			if ( xdsbSourceServiceName != null ) {
+				return exportXDSb(metaData, docs);
+			} else {
+				log.warn("UseXDSb is enabled but XdsbSourceServiceName is not configured! Use XDS.a instead!");
+			}
+		}
 		if ( url == null ) url = this.docRepositoryURI;
         log.info("Send 'Provide and Register Document Set' request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
 		SOAPConnection conn = null;
@@ -829,7 +864,27 @@ public class XDSIService extends ServiceMBeanSupport {
 	}
 	
 	
-    public static String resolvePath(String fn) {
+    private boolean exportXDSb(Document metaData, XDSIDocument[] docs) {
+		log.info("export Document(s) as XDS.b Document Source!");
+		Node rsp = null;
+        try {
+        	Map mapDocs = new HashMap();
+        	if ( docs != null) {
+            	for ( int i = 0 ; i < docs.length ; i++) {
+            		mapDocs.put(docs[i].getDocumentID(), docs[i].getDataHandler() ); 
+            	}
+        	}
+			rsp = (Node) server.invoke(this.xdsbSourceServiceName,
+			        "exportDocuments",
+			        new Object[] { metaData, mapDocs },
+			        new String[] { Node.class.getName(), Map.class.getName() });
+			return true;
+		} catch (Exception x) {
+			log.error("Export Documents failed via XDS.b transaction",x);
+			return false;
+		}
+	}
+	public static String resolvePath(String fn) {
     	File f = new File(fn);
         if (f.isAbsolute()) return f.getAbsolutePath();
         File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
