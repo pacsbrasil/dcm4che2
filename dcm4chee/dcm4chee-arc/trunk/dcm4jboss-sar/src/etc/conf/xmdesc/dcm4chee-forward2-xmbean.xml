@@ -47,7 +47,7 @@
       Objects received from other Storage SCUs are forwarded on Series level,
       which may cause to multiple forwarding of objects, if the Storage SCU
       sends instances of one Series association.
-      <br>NONE = Forward objects on Series level received from any Storage SCUs
+      <br>NONE = Forward objects on Series level received from any Storage SCUs.
       <br>Exception: if only one object is received in the association,
       the object will be forwarded by an Instance level retrieve request, even
       if the AE title of the sending Storage SCU is not listed.
