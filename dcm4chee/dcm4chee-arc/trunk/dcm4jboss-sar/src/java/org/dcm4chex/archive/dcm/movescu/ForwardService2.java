@@ -76,6 +76,8 @@ public class ForwardService2 extends ServiceMBeanSupport {
 
     private static final String FORWARD_XSL = "forward.xsl";
 
+    private static final String ALL = "ALL";
+
     private static final String NONE = "NONE";
 
     private static final String[] EMPTY = {};
@@ -127,16 +129,20 @@ public class ForwardService2 extends ServiceMBeanSupport {
     }
 
     public String getForwardOnInstanceLevelFromAETs() {
-        return forwardOnInstanceLevelFromAETs.length == 0 ? NONE 
+        return forwardOnInstanceLevelFromAETs == null ? ALL 
+                : forwardOnInstanceLevelFromAETs.length == 0 ? NONE 
                 : StringUtils.toString(forwardOnInstanceLevelFromAETs, ',');
     }
 
     public void setForwardOnInstanceLevelFromAETs(String s) {
-        forwardOnInstanceLevelFromAETs = NONE.equals(s) ? EMPTY
-                : StringUtils.split(s, ',');
+        forwardOnInstanceLevelFromAETs = ALL.equals(s) ? null
+                : NONE.equals(s) ? EMPTY : StringUtils.split(s, ',');
     }
 
     private boolean isForwardOnInstanceLevelFromAET(String aet) {
+        if (forwardOnInstanceLevelFromAETs == null) {
+            return true;
+        }
         for (int i = 0; i < forwardOnInstanceLevelFromAETs.length; i++) {
             if (aet.equals(forwardOnInstanceLevelFromAETs[i]))
                 return true;
