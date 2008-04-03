@@ -47,6 +47,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.filter.Filter;
@@ -141,4 +142,11 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 		}
 	}
 
+	/**
+	 * Gets the default priority of this item. 
+	 */
+	@MetaData
+	public static int getPriority() {
+	   return 999999;
+	}
 }

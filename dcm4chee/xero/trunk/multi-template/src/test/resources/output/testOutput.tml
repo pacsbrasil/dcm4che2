@@ -1,0 +1,33 @@
+<m:template
+    xmlns:m="http://www.dcm4che.org/xero/metadata/testOutput"
+    m:tml="output/testOutput.tml"
+    m:output.inherit="output"
+    m:inherit="templates"
+>
+
+<m:test phase="0">
+<h1>Phase 0 Test</h1>
+<p>The tests for phase 0 check to see that id=v0 has the final int value <span m:assert="{find('v0')==3}">3</span>
+and that the <span m:assert="find('v1')!=4">v1</span> and <span m:assert="${find('v2')!=5}">v2</span>
+values haven't been rendered yet.
+</m:test>
+
+<m:literal name="initialV" v="3" phase="0" />
+<m:literal name="secondaryV" v="4" phase="1" />
+<m:literal name="clientV" v="5" phase="2" />
+
+<h1>The number below will render at initial load render time.</h1>
+initialV.v = <span id="v0"><m:output.int v="${initialV.v}" /></span> <br />
+
+<h1>The number below will be rendered into the JS HTML page, but not into templates - that will be client side rendered.</h1>
+secondaryV.v = <span id="v1"><m:output.int v="${secondaryV}"  /></span> <br />
+
+<h1>2 - Client Render</h1>
+<p>The number below will be rendered in client rendering only - 
+that is, the initial JS HTML page will contain a place-holder that will be 
+updated when the JS runs.  The server side (JS Free) will render it after the secondary rendering.</p>
+clientV.v=<span id="v2"><m:output.int v="${clientV.v}" /></span><br />
+
+
+
+</m:template>

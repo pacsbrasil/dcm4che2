@@ -1,14 +1,14 @@
 # Define the meta-data providers for seam, to allow pluging in seam meta-data.
 # Set the priority fairly high so that we can eventually have a JNDI meta-data provider
 # that takes precedence
-metaDataProvider.seam=${org.dcm4chee.xero.metadata.seam.SeamMetaDataProvider}
+metaDataProvider.seam=${class:org.dcm4chee.xero.metadata.seam.SeamMetaDataProvider}
 metaDataProvider.seam.priority=25
 metaDataProvider.seam.prefixPath=xero
-metaDataProvider.xhtml=${org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.xhtml=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
 metaDataProvider.xhtml.priority=35
 metaDataProvider.xhtml.propertyFile=index.html
 metaDataProvider.xhtml.rootXml=http://www.dcm4che.org/xero/metadata
-valueProvider.seam=${org.dcm4chee.xero.metadata.seam.SeamELValueProvider}
+valueProvider.seam=${class:org.dcm4chee.xero.metadata.seam.SeamELValueProvider}
 
 
 

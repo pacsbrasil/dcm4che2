@@ -143,18 +143,22 @@ public class TestUrlRetrieve {
 	  long subItems = 0;
 	  latch.await();
 	  long totalDur = System.nanoTime() - totalStart;
+	  long totalSize = 0;
 	  for (TimeRunnable tru : runnables) {
 		 totalTime += tru.dur;
 		 subItems += tru.subItems;
+		 totalSize += tru.size;
 	  }
 	  System.out.println("Level " + level + " " + nanoTimeToString(totalTime / runnables.size()) + " avg " + " for " + runnables.size()
-			+ " overall items, overall total average=" + nanoTimeToString(totalDur / runnables.size()));
+			+ " overall items, overall total average=" + nanoTimeToString(totalDur / runnables.size()) + " avg size="+(totalSize/runnables.size())+" total size="+totalSize);
    }
 
    static class TimeRunnable implements Runnable {
 	  long dur;
 
 	  long subItems;
+	  
+	  long size;
 
 	  CountDownLatch latch;
 	  
@@ -185,8 +189,11 @@ public class TestUrlRetrieve {
 		 URLConnection conn = url.openConnection();
 		 InputStream is = conn.getInputStream();
 		 byte[] data = new byte[10240];
-		 while (is.read(data) != -1)
-			;
+		 int b = is.read(data);
+		 while (b>0) {
+			size += b;
+			b = is.read(data);
+		 }
 		 is.close();
 	  }
 
@@ -251,7 +258,7 @@ public class TestUrlRetrieve {
 		 // 14 image CR String uid = "1.2.124.113532.128.5.1.74.20020108.75343.563790";
 		 // String uid="1.2.124.113532.132.183.36.32.20040429.112406.11120792";
 		 // 451 image single series 
-		 String uid="1.2.840.113619.6.95.31.0.3.4.1.24.13.1833834";
+		 String uid="1.2.124.113532.193.190.36.23.20030729.152309.4144348";
 		 // 400 image study		 String uid="1.2.124.113532.128.5.1.74.20020131.162815.589479"; 
 		 studyRet.runnables.add(new StudyRun(uid));
 		 seriesRet.runnables.add(new SeriesRun(uid));
@@ -373,7 +380,7 @@ public class TestUrlRetrieve {
 						   Integer frame = null;
 						   frame = frameNumber.get(dot.getSOPInstanceUID());
 						   WadoRun wr = new WadoRun(dot.getSOPInstanceUID(), frame);
-						   wr.useMime = true;
+						   //wr.useMime = true;
 						   wadoRet.runnables.add(wr);
 						   if (frame == null)
 							  frame = 2;
@@ -415,7 +422,7 @@ public class TestUrlRetrieve {
 		 if (frame != null)
 			url = url + "&frameNumber=" + frame;
 		 if( useOrig ) {
-			url = url + "&contentType=application/dicom&transferSyntax=1.2.840.10008.1.2.4.70";
+			url = url + "&contentType=application/dicom&transferSyntax=1.2.840.10008.1.2.4.51";
 			log.info("Original URL="+url);
 		 }
 		 else if( useMime ) {

@@ -1,0 +1,15 @@
+<html
+    xmlns:m="http://www.dcm4che.org/xero/metadata/includedMacro"
+    m:tml="compiledJS/includedMacro.tml"
+    m:inherit="templates"
+    m:child.inherit="directMacro"
+>
+<body>
+	<m:template m:child.macOverride="IncludeOverride"><h1>This is the correct, overridden text.</h1></m:template>
+	
+	<m:child.macIndirect/>
+	
+	<m:child.macOverride />
+	
+</body>
+</html>

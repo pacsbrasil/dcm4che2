@@ -1,4 +1,4 @@
-metaDataProvider.xml=${org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.xml=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
 # URL of this file
 metaDataProvider.xml.propertyFile=metadata-test.metadata
 # Only look for meta-data entered into root meta-data metadata.

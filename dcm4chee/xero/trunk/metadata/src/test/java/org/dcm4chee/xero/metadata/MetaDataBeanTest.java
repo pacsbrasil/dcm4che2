@@ -72,7 +72,7 @@ public class MetaDataBeanTest {
 
 		// Bean outjection test
 		ret.put("out",
-				"${org.dcm4chee.xero.metadata.TestBean}");
+				"${class:org.dcm4chee.xero.metadata.TestBean}");
 
 		// Complex inheritance test
 		ret.put("a.b.c.v1", "abcv1"); // a only
@@ -175,8 +175,8 @@ public class MetaDataBeanTest {
 
 }
 
-class TestBean implements MetaDataUser {
-	public String str1 = "meta-str1";
+class TestBean {
+	public String str1 = "orig";
 	public String str2, str3, str5, str6;
 
 	public int int1;
@@ -211,11 +211,6 @@ class TestBean implements MetaDataUser {
 	public void setInt1(int int1) {
 		this.int1 = int1;
 	}
-
-	/** Called to set the meta-data on this. */
-	public void setMetaData(MetaDataBean metaDataBean) {
-		metaDataBean.inject(this);
-	};
 
 }
 

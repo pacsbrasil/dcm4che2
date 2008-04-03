@@ -1,0 +1,41 @@
+<html xmlns:a='http://www.dcm4che.org/xero/multi-template/initial' xmlns:c='http://www.dcm4che.org/xero/multi-template/client'>
+<head><title>Table Render Test</title></head>
+<body>
+<h1>Table Render Test</h1>
+<p>This is a self-contained test of table rendering that should work in HTML only, mixed and pure client side rendering modes.</p>
+
+<h2>Tests</h2>
+
+<a:test name="simpleExistance">
+<p>The section defines the tests that ensure that the table renders correctly.  
+<span t:assert="${xpath('table').length==1}">There must exist a regular HTML table element.</span>
+<span t:assert="${xpath('table/tr/th').length==2}">There must be 2 table header nodes.</span>
+<span t:assert="${xpath('table/tr[td]').length==4}">There must be 4 data rows.</span>
+TODO - add testing for the contents and ordering of the data columns.</p>
+</a:test>
+
+
+<!-- Define some data to use for display - the contents are defined at client render time, while the
+     layout, available columns etc are defined initially. -->
+<a:list var="search">
+	<a:literal PatientName="Flintstone, Fred" PatientID="1" Sex="M"/>
+	<a:literal PatientName="Flintstone, Wilma" PatientID="2" Sex="F"/>
+	<a:literal PatientName="Rubble, Barney" PatientID="3" Sex="M"/>
+	<a:literal PatientName="Rubble, Betty" PatientID="4" Sex="F"/>
+</a:list>
+
+<a:list var="testColumns">
+	<a:literal item="PatientName" header="Patient Name"/>
+	<a:literal item="PatientID" header="Patient ID" />
+</a:list>
+
+<!-- Define a table in the initial phase with initial phase-defined columns, but get the 
+     data to fill the table in the client phase (that is what c:data means) 
+     This must be a standard macro reference - that is, there is no desire to make a:table 
+     require a custom Java class to implement, it should just be able to use pre-existing tml files
+     that register themselves into the meta-data appropriately.
+     -->
+<a:table data="${search}" columns="${testColumns}" />
+
+</body>
+</html>

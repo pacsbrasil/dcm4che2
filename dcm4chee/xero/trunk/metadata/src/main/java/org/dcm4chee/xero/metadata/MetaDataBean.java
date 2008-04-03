@@ -131,6 +131,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 	  valueProviders = new ValueList<ValueProvider>(ValueProvider.class);
 	  valueProviders.add(new NullValueProvider());
 	  valueProviders.add(new InstanceValueProvider());
+	  valueProviders.add(new FactoryValueProvider());
 	  valueProviders.add(new ReferenceValueProvider());
 	  List<ValueProvider> baseList = new ArrayList<ValueProvider>(valueProviders);
 
@@ -328,8 +329,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 			}
 			// We might need to inject this after the extra meta-data is
 			// read in case it reads meta-data itself.
-			if (instanceValue instanceof MetaDataUser)
-			   ((MetaDataUser) instanceValue).setMetaData(this);
+			inject(instanceValue);
 			return;
 		 }
 	  }
@@ -355,12 +355,12 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 		 return instanceConfig;
 	  Object val = getValue();
 	  if (instanceValueProvider instanceof PreConfigMetaData) {
-		 instanceConfig = ((PreConfigMetaData) instanceValueProvider).getConfigMetaData(this);
+		 instanceConfig = ((PreConfigMetaData<?>) instanceValueProvider).getConfigMetaData(this);
 		 if (instanceConfig != null)
 			return instanceConfig;
 	  }
 	  if (val instanceof PreConfigMetaData) {
-		 instanceConfig = ((PreConfigMetaData) val).getConfigMetaData(this);
+		 instanceConfig = ((PreConfigMetaData<?>) val).getConfigMetaData(this);
 		 if (instanceConfig != null)
 			return instanceConfig;
 	  }
@@ -478,14 +478,21 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
    }
 
    /**
-     * Inject the components into the bean. If there are any
+     * Inject the components into the bean. If there are any.  Note that the
+     * pre-configured values are auto-injected at the right time, but any
+     * values the final conversion (eg factory: values and others) still need
+     * injection.
      * 
      * @MetaData flagged items with required=true (that is the default), then
      *           throw an exception if the value isn't found. In any case, throw
      *           an exception if the value can't be converted correctly.
      */
    public void inject(Object obj) {
+	  // There are a few reasons why we can get null and it is valid, so just ignore.
+	  if( obj==null ) return;
 	  Injector.getInjector(obj.getClass()).inject(this, obj);
+	  if (obj instanceof MetaDataUser)
+		   ((MetaDataUser) obj).setMetaData(this);
    }
 
    /**

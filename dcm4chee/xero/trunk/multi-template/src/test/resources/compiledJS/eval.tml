@@ -1,0 +1,10 @@
+<html
+    xmlns:m="http://www.dcm4che.org/xero/metadata/eval"
+    m:tml="compiledJS/eval.tml"
+    m:inherit="templates"
+>
+<body>
+	<m:literal name="clientV" v="5" phase="2" />
+	<m:eval v="${clientV.v}" />
+</body>
+</html>

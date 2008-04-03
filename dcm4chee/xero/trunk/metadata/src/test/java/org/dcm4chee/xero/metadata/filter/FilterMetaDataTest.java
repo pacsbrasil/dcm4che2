@@ -137,7 +137,7 @@ public class FilterMetaDataTest {
 	static Map<String,Object> properties = new HashMap<String,Object>();
 	static {
 		// A string filter
-		properties.put("str","${org.dcm4chee.xero.metadata.filter.FilterList}");
+		properties.put("str","${class:org.dcm4chee.xero.metadata.filter.FilterList}");
 		properties.put("str.priority", "-1");
 		properties.put("str.int.inherit", "int");
 		properties.put("str.convert",new ConvertFilter("int"));

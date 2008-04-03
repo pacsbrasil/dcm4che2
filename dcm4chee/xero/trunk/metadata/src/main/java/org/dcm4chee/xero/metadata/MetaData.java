@@ -58,14 +58,10 @@ import java.lang.annotation.Target;
 public @interface MetaData {
    /**
     * The meta-data name to use, relative to the parent meta-data.
+    * This defaults to the bean-name of the attribute it is on, for beans.
+    * Classes have not default value here - you need to specify one.
     */
    String value() default "";
-   
-   /**
-    * Specifies that a component should be instantiated
-    * if the context variable is null.
-    */
-   boolean create() default false;
    
    /**
     * Specifies that the injected value must not be
@@ -75,6 +71,8 @@ public @interface MetaData {
 
    /**
     * Specifies the value that is to be out-jected into the meta-data.
+    * For classes, defaults to ${class:<CLASS-NAME>} - that is, outject the class as an instance.
+    * Thus, for classes, all that needs to be set is the value, not the instance data.
     * @return
     */
    String out() default "";

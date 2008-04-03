@@ -55,26 +55,19 @@ public class InstanceValueProvider implements ValueProvider {
 		if (!(sourceValue instanceof String))
 			return null;
 		String sourceValueStr = ((String) sourceValue).trim();
-		if (!sourceValueStr.startsWith("${"))
-			return null;
-		if( (!sourceValueStr.startsWith("${class:")) && sourceValueStr.indexOf(":")>=0 ) {
+		if( (!sourceValueStr.startsWith("${class:")) ) {
 		   return null;
 		}
 		if (!sourceValueStr.endsWith("}"))
 			return null;		
 		String className;
-		if( sourceValueStr.startsWith("${class:") ) {
 		   className = sourceValueStr.substring(8,
 					sourceValueStr.length() - 1);
-		} else {
-		   log.warn("Deprecated naming convention used:"+sourceValueStr+" prefer to start with class:");
-		   className = sourceValueStr.substring(2,
-					sourceValueStr.length() - 1);
-		}
 		try {
-			Class clazz = Class.forName(className);
+			Class<?> clazz = Class.forName(className);
 			log.debug("Found class for meta-data value "+className);
 			Object instance = clazz.newInstance();
+			// The return value is auto-injected on return, so don't do it here.
 			return instance;
 		} catch (ClassNotFoundException e) {
 			log.warn("No class found for "+className);

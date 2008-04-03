@@ -47,17 +47,17 @@ import org.testng.annotations.Test;
 public class ValueListTest {
 	static Map<String,Object> prop = new HashMap<String,Object>();
 	static {
-	   prop.put("list","${org.dcm4chee.xero.metadata.list.ValueList}");
+	   prop.put("list","${class:org.dcm4chee.xero.metadata.list.ValueList}");
 	   prop.put("list.className","org.dcm4chee.xero.metadata.list.ListItem");
-	   prop.put("list.a","${org.dcm4chee.xero.metadata.list.ListItem}");
+	   prop.put("list.a","${class:org.dcm4chee.xero.metadata.list.ListItem}");
 	   prop.put("list.a.priority","50");
-	   prop.put("list.b","${org.dcm4chee.xero.metadata.list.ListItem}");
+	   prop.put("list.b","${class:org.dcm4chee.xero.metadata.list.ListItem}");
 	   prop.put("list.b.priority","25");
-	   prop.put("list.c","${org.dcm4chee.xero.metadata.list.ListItem}");
+	   prop.put("list.c","${class:org.dcm4chee.xero.metadata.list.ListItem}");
 	   prop.put("list.c.priority","75");
-	   prop.put("list.d","${org.dcm4chee.xero.metadata.list.ValueListTest}");
+	   prop.put("list.d","${class:org.dcm4chee.xero.metadata.list.ValueListTest}");
 	   prop.put("list.d.priority","0");
-	   prop.put("empty","${org.dcm4chee.xero.metadata.list.ValueList}");
+	   prop.put("empty","${class:org.dcm4chee.xero.metadata.list.ValueList}");
 	}
 	
 	static MetaDataBean mdb = new MetaDataBean(prop);

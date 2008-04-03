@@ -1,0 +1,43 @@
+ <a:templates 
+    xmlns:a='http://www.dcm4che.org/xero/multi-template/initial'
+    xmlns:m="http://www.dcm4che.org/xero/metadata/templates/initial"
+    m:testMapper="${class:org.dcm4chee.xero.templates.XmlTemplateMapper}"
+    m:testMapper.include="templateMacros.tml"
+ >
+ 
+ <!-- This file defines a bunch of macros used to test the templating engine.  They extend the default
+      initial template context when included with the test build. -->
+      
+<!-- A simple component expansion, with no variables etc -->
+<a:component name="testComponent"><i>Hello, World!</i></a:component>
+
+<!-- A simple macro expansion, with no variables etc -->
+<a:macro name="testMacro"><i>Hello, World!</i></a:macro>
+
+<!-- A component expansion with simple variables.  Note that the arguments are specified as arguments to the 
+     overall component.  The specified value can be anything, including a value expansion.  To inherit values, use
+     a ${} expansion of the old variable name.
+  -->
+<a:component name="testVarComponent" a:text="Hello, World"><i><a:eval v="${text}" /></i></a:component>
+
+<!-- A macro expansion with simple variables.  Note that the variables are NOT specified on the
+     command line - the user can just specify anything they want.  It is possible to set values here - 
+     they will extend any values as required.
+ -->
+<a:component name="testVarMacro"><i><a:eval v="${text}" /></i></a:component>
+
+
+
+<!-- A test for variable expansion.  Must default to the regular expansion of testVarComponent, NOT to one with garbage in it. -->
+<a:macro name="testLifetimeVarComponent"><a:decorate template="emptyComponent" text="More garbage" /><a:decorate template="testVarComponent" /></a:macro>
+
+<!-- An included component in the above definition -->
+<a:component name="emptyComponent" a:text="Garbage text." />
+
+<!-- A test for variable expansion using macros - shows that the text DOES carry over.  Must define Au Revoir as the message. -->
+<a:macro name="testLifetimeVarMacro"><a:decorate template="emptyMacro" text="Au Revoir" /><a:decorate template="testVarMacro" /></a:macro>
+
+<!-- An included macro in the above definition -->
+<a:macro name="emptyMacro"/>
+
+</a:templates>

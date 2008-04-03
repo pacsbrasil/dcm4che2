@@ -1,0 +1,11 @@
+<m:templates
+    xmlns:m="http://www.dcm4che.org/xero/metadata/output"
+    m:tml="output/output.tml"
+    m:inherit="templates"
+>
+
+<m:macro m:int="defaultOutput" m:defaultOutput="defaultOutput" m:string="defaultOutput">
+<m:eval v="${v}" />
+</m:macro>
+
+</m:templates>

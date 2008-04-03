@@ -1,0 +1,31 @@
+# Define a provider that reads template files
+metaDataProvider.tml=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.tml.priority=35
+metaDataProvider.tml.propertyFile=multi-templates.metadata
+metaDataProvider.tml.rootXml=http://www.dcm4che.org/xero/metadata
+metaDataProvider.tml.suffix=.tml
+
+# Definitions for the default template setup for a 2 stage, multi-phase template design allowing both server
+# side rendering and client side rendering.
+
+templates.initial=${class:org.dcm4chee.xero.template.UriTemplateMapper}
+
+###############
+# Define the a-level template handling
+templates.initial.a=${class:org.dcm4chee.xero.template.BeanXmlTemplateMapper}
+templates.initial.a.namespace=http://www.dcm4che.org/xero/multi-template/initial
+
+templates.initial.a.eval=${class:org.dcm4chee.xero.template.EvalTemplate}
+templates.initial.a.literal=${class:org.dcm4chee.xero.template.LiteralTemplate}
+
+###############
+# Define the internationalization template handling
+templates.initial.i=${class:org.dcm4chee.xero.template.BeanXmlTemplateMapper}
+templates.initial.i.namespace=http://www.dcm4che.org/xero/multi-template/i18n
+
+templates.initial.i.msg=${class:org.dcm4chee.xero.template.I18NTemplate}
+templates.initial.i.msg.resource=messages
+
+templates.initial.i.test=${class:org.dcm4chee.xero.template.I18NTemplate}
+templates.initial.i.test.resource=test-messages
+

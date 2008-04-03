@@ -1,0 +1,26 @@
+<a:templates
+    xmlns:a='http://www.dcm4che.org/xero/multi-template/initial'
+    xmlns:m="http://www.dcm4che.org/xero/metadata/templates/initial"
+    m:tableMapper.tml="output/table.tml"
+>
+
+<a:macro name="tableBody">
+		Iterate over rows
+		<a:for var="row" data="${data}">
+		<tr><a:for var="column" data="${columns}"><td><a:eval v="${data[column.item]}" /></td></a:for></tr>
+		</a:for>
+</a:macro>
+
+<!-- Layout a table.
+     @param data containing a list of objects that contain a row of data.
+     @param columns that defines the overall layout.
+  -->
+<a:component name="table" data="" columns="">
+	<table>
+		<a:insert name="tableHeader"><tr><a:for var="column" data="${columns}"><th><a:eval v="${column.header}" /></th></a:for></tr>
+</a:insert>
+		<a:insert name="tableBody"><a:tableBody /></a:insert>
+	</table>
+</a:component>
+
+</a:templates>

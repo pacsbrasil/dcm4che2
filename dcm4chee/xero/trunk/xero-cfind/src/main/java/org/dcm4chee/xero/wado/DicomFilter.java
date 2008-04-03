@@ -133,7 +133,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 
    /** Get the default priority for the dicom header filter. */
    @MetaData
-   public int getPriority() {
+   public static int getPriority() {
 	  return 25;
    }
 

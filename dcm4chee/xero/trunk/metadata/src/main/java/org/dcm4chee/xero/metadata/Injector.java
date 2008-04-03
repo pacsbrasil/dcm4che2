@@ -37,112 +37,136 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Injector knows how to inject meta-data attributes into a class.
  * 
  * @author bwallace
  */
-public class Injector implements MetaDataProvider
-{
-	static final Logger log = Logger.getLogger(Injector.class.getName());
-	
-	static final Map<Class, Injector> classMap = new HashMap<Class, Injector>();
+public class Injector implements MetaDataProvider {
+   static final Logger log = LoggerFactory.getLogger(Injector.class);
 
-	protected Class clazz;
+   static final Map<Class<?>, Injector> classMap = new HashMap<Class<?>, Injector>();
 
-	protected Map<Method, String> metaDataItems = new HashMap<Method,String>();
+   protected Class<?> clazz;
 
-	Map<String,String> outjectMetaData;
-	
-	/**
-	 * Create an injector by reading the meta-data attributes and figuring out
-	 * what name to use for each attribute.
-	 * 
-	 * @param clazz
-	 */
-	protected Injector(Class clazz) {
-		this.clazz = clazz;
-		Method[] methods = clazz.getMethods();
-		for (Method m : methods) {
+   protected Map<Method, String> metaDataItems = new HashMap<Method, String>();
 
-			MetaData md = m.getAnnotation(MetaData.class);
-			if (md == null)
-				continue;
-			String name = md.value();
-			if (name == null || name.length()==0) {
-				name = m.getName();
-				if (name.startsWith("set") && name.length() > 3) {
-					name = "" + Character.toLowerCase(name.charAt(3))
-							+ name.substring(4);
-				}
+   Map<String, String> outjectMetaData;
+
+   /**
+    * Create an injector by reading the meta-data attributes and figuring out
+    * what name to use for each attribute.
+    * 
+    * @param clazz
+    */
+   private Injector(Class<?> clazz) {
+	  this.clazz = clazz;
+	  Method[] methods = clazz.getMethods();
+	  log.debug("Injector examining class " + clazz);
+	  for (Method m : methods) {
+		 log.debug("Injector method " + m);
+		 MetaData md = m.getAnnotation(MetaData.class);
+		 if (md == null)
+			continue;
+		 String name = md.value();
+		 boolean isSetter = m.getParameterTypes().length==1;
+		 boolean isStaticGet = ((m.getModifiers() & Modifier.STATIC) == Modifier.STATIC) && (m.getParameterTypes().length==0);
+		 if (name == null || name.length() == 0) {
+			name = m.getName();
+			if ((name.startsWith("set") || name.startsWith("get")) && name.length() > 3) {
+			   name = "" + Character.toLowerCase(name.charAt(3)) + name.substring(4);
 			}
-			metaDataItems.put(m,name);
-			if( md.out().length()>0 ) {
-				if( outjectMetaData==null ) outjectMetaData = new HashMap<String,String>();
-				outjectMetaData.put(name,md.out());
-			}
-		}
-	}
-
-	public synchronized static Injector getInjector(Class clazz) {
-		if (classMap.containsKey(clazz))
-			return classMap.get(clazz);
-		Injector injector = new Injector(clazz);
-		classMap.put(clazz, injector);
-		return injector;
-	}
-
-	public void inject(MetaDataBean mdb, Object bean) {
-		if (bean == null)
-			return;
-		for (Map.Entry<Method,String> ent : metaDataItems.entrySet()) {
-			String key = ent.getValue();
-			Object value = mdb.getValue(key);
+		 }
+		 if( isSetter ) {
+			 metaDataItems.put(m, name);
+		 }
+		 if (md.out().length() > 0) {
+			log.info("Adding outjecting meta-data " + name + "=" + md.out());
+			if (outjectMetaData == null)
+			   outjectMetaData = new HashMap<String, String>();
+			outjectMetaData.put(name, md.out());
+		 } else if (isStaticGet) {
+			String value;
 			try {
-				Method m = ent.getKey();
-				Class[] argTypes = m.getParameterTypes();
-				if ( argTypes.length!=1 ) {
-					throw new IllegalArgumentException("Wrong number of arguments for method:"+m);
-				}
-				Class argType = argTypes[0];
-				if ( value==null ) {
-					MetaData md = m.getAnnotation(MetaData.class);
-					if ( md.required() ) throw new NullPointerException("No value found for "+key +" on "+mdb.getPath());
-					continue;
-				}
-				if ( !argType.isInstance(value) ) {
-					String strValue = value.toString();
-					if( argType==String.class ) {
-						value = strValue;
-					}
-					else if( argType==Integer.class || argType==Integer.TYPE) {
-						value = new Integer(strValue);
-					}
-					else {
-						throw new IllegalArgumentException("Invalid type for "+m+" value "+strValue);
-					}
-				}
-				ent.getKey().invoke(bean, new Object[] { value });
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException(e);
+			   value = m.invoke(null).toString();
+			   log.info("Adding static get meta-data " + name + "=" + value);
+			   if (outjectMetaData == null)
+				  outjectMetaData = new HashMap<String, String>();
+			   outjectMetaData.put(name, value);
+			} catch (IllegalArgumentException e) {
+			   e.printStackTrace();
+			} catch (IllegalAccessException e) {
+			   e.printStackTrace();
+			} catch (InvocationTargetException e) {
+			   e.printStackTrace();
 			}
-		}
-	}
+		 }
+	  }
+   }
 
-	/** Returns the meta-data associated with this class declaration.
-	 * Note that path in this case is a relative path, not an absolute one, so
-	 * in fact it can be completely ignored and just return the child elements.
-	 */
-	public Map<String, ?> getMetaData(String path, MetaDataBean existingMetaData) {		
-		return outjectMetaData;
-	}
+   public synchronized static Injector getInjector(Class<?> clazz) {
+	  if (classMap.containsKey(clazz))
+		 return classMap.get(clazz);
+	  Injector injector = new Injector(clazz);
+	  classMap.put(clazz, injector);
+	  return injector;
+   }
+
+   public void inject(MetaDataBean mdb, Object bean) {
+	  if (bean == null)
+		 return;
+	  for (Map.Entry<Method, String> ent : metaDataItems.entrySet()) {
+		 String key = ent.getValue();
+		 Object value = mdb.getValue(key);
+		 try {
+			Method m = ent.getKey();
+			Class<?>[] argTypes = m.getParameterTypes();
+			if (argTypes.length != 1) {
+			   throw new IllegalArgumentException("Wrong number of arguments for method:" + m);
+			}
+			Class<?> argType = argTypes[0];
+			if (value == null) {
+			   MetaData md = m.getAnnotation(MetaData.class);
+			   if (md.required())
+				  throw new NullPointerException("No value found for " + key + " on " + mdb.getPath() + " into "+clazz);
+			   continue;
+			}
+			if (!argType.isInstance(value)) {
+			   String strValue = value.toString();
+			   if (argType == String.class) {
+				  value = strValue;
+			   } else if (argType == Integer.class || argType == Integer.TYPE) {
+				  value = new Integer(strValue);
+			   } else {
+				  throw new IllegalArgumentException("Invalid type for " + m + " value " + strValue);
+			   }
+			}
+			ent.getKey().invoke(bean, new Object[] { value });
+		 } catch (RuntimeException e) {
+			throw e;
+		 } catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		 }
+	  }
+   }
+
+   /**
+    * Returns the meta-data associated with this class declaration. Note that
+    * path in this case is a relative path, not an absolute one, so in fact it
+    * can be completely ignored and just return the child elements.
+    */
+   public Map<String, ?> getMetaData(String path, MetaDataBean existingMetaData) {
+	  return outjectMetaData;
+   }
 
 }

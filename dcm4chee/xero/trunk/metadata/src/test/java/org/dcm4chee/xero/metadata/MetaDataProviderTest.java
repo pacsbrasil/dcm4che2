@@ -50,7 +50,7 @@ import org.testng.annotations.Test;
 public class MetaDataProviderTest {
 	static Map<String,Object> prop = new HashMap<String,Object>();
 	static {
-	   prop.put("metaDataProvider.a","${org.dcm4chee.xero.metadata.MetaDataProviderBeanA}");
+	   prop.put("metaDataProvider.a","${class:org.dcm4chee.xero.metadata.MetaDataProviderBeanA}");
 	   prop.put("metaDataProvider.a.priority","5");
 	   prop.put("overrideA", "topOverrideA");
 	   prop.put("overrideB", "topOverrideB");
@@ -94,7 +94,7 @@ class MetaDataProviderBeanA extends PropertyProvider
 {
 	static Map<String,Object> prop = new HashMap<String,Object>();
 	static {
-		   prop.put("metaDataProvider.b","${org.dcm4chee.xero.metadata.MetaDataProviderBeanB}");
+		   prop.put("metaDataProvider.b","${class:org.dcm4chee.xero.metadata.MetaDataProviderBeanB}");
 		   prop.put("metaDataProvider.b.priority","10");
 		   prop.put("overrideA", "aOverrideA");
 		   prop.put("overrideAB", "aOverrideAB");

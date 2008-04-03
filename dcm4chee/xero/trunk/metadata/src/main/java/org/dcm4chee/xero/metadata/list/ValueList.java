@@ -140,7 +140,6 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		if( metaDataBean==null ) return;
-		metaDataBean.inject(this);
 		List<ValueListItem<T>> list = new ArrayList<ValueListItem<T>>();
 		for (Map.Entry<String, MetaDataBean> me : metaDataBean.entrySet()) {
 			T child = lookupChildInstance(me.getValue());

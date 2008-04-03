@@ -1,0 +1,18 @@
+<m:template name="singleTemplate"
+    xmlns:m="http://www.dcm4che.org/xero/metadata/templates/singleTemplate"
+    m:tml="singleTemplate.tml"
+    m:output.inherit="output"
+    m:template.inherit="template"
+>
+
+<m:component m:output.int="myOutputInt" v="0">Your integer is <a:eval v="${v}" /></m:component>
+
+<!-- Outputs a single, provided date, using the default, inheritted definition ->
+<m:output.date v="2008/01/01" />
+
+<!-- Outputs an int, using the above definition, NOT the default definition. -->
+<m:output.int v="15" />
+
+<m:output.table ... />
+</m:template> 
+ 
