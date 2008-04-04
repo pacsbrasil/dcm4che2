@@ -185,12 +185,31 @@
    <attribute access="read-write"
       getMethod="isMockRegistryResponse"
       setMethod="setMockRegistryResponse">
-      <description>If enabled the Registry Document will be mocked with a Success Registry Response.
+      <description><![CDATA[ If enabled the 'Registry Document Set' transaction will be mocked:<br/>
+      			1) MockError='NONE': A Success Registry Response<br/>
+      			2) MockError!='NONE': A Failure Registry Response<br/>
+      		]]>
       </description>
       <name>MockRegistryResponse</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true" />
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMockError"
+      setMethod="setMockError">
+      <description><![CDATA[ An optional error message for mocked Registry Response.<br/>
+      			Format: NONE or [&lt;Error Code&gt;|]&lt;ErrorMessage&gt;<br/>
+      			NONE: Means Success status<br/>
+      			ErrorCode: Optional ErrorCode. If not specified 'XDSRepositoryError' is used.<br/>
+      			ErrorMessage: The error message.<br/>
+      		]]>
+      </description>
+      <name>MockError</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getDocumentStoreService" setMethod="setDocumentStoreService">

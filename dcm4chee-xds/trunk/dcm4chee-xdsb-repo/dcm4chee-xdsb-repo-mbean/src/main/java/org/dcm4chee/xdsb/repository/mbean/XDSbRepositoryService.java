@@ -79,6 +79,8 @@ import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.infoset.ExtrinsicObjectType;
 import org.dcm4chee.xds.common.infoset.ObjectFactory;
 import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
+import org.dcm4chee.xds.common.infoset.RegistryError;
+import org.dcm4chee.xds.common.infoset.RegistryErrorList;
 import org.dcm4chee.xds.common.infoset.RegistryObjectType;
 import org.dcm4chee.xds.common.infoset.RegistryPackageType;
 import org.dcm4chee.xds.common.infoset.RegistryResponseType;
@@ -130,6 +132,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	private boolean indentXmlLog;
 	private boolean saveRequestAsFile;
 	private boolean mockRegistryResponse = true;
+	private String mockError;
 	
 
 	private DocumentStoreDelegate docStoreDelegate = new DocumentStoreDelegate();
@@ -292,6 +295,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	public void setMockRegistryResponse(boolean mockRegistryRsponse) {
 		this.mockRegistryResponse = mockRegistryRsponse;
 	}
+	public String getMockError() {
+		return mockError == null ? NONE : mockError;
+	}
+	public void setMockError(String mockError) {
+		this.mockError = NONE.equals(mockError) ? null : mockError;
+	}
 	public ObjectName getDocumentStoreService() {
 		return docStoreDelegate.getDocumentStoreService();
 	}
@@ -301,6 +310,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	}
 
 	public RegistryResponseType storeAndRegisterDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
+	   Map<String, StoredDocument> storedDocuments = null;
+	   boolean success = false;
 	   try {
 		   log.debug("------------ProvideAndRegisterDocumentSetRequest:"+req);
 		   if ( logReceivedMessage ) {
@@ -321,61 +332,82 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			   fos.write(InfoSetUtil.marshallObject(objFac.createProvideAndRegisterDocumentSetRequest(req), true).getBytes() );
 			   fos.close();
 		   }
-		   Map<String, StoredDocument> storedDocuments = exportDocuments(req);
+		   storedDocuments = exportDocuments(req);
 		   if ( logRegisterMessage ) {
 			   String xmlReq = InfoSetUtil.marshallObject(submitRequest, this.indentXmlLog);
 			   log.debug("'Register Document Set' SubmitRequest:"+xmlReq);
 		   }
 		   log.info("SubmissionUID:"+submissionUID);
 		   logImport(submissionUID, true);
-		   if ( mockRegistryResponse ) {
-			   log.info("Mock RegistryResponse with status Success! Omit Register Document transaction!");
-			   return getMockResponse();
-		   }
-		   Dispatch<Source> dispatch = createDispatch();
-		   Source s = InfoSetUtil.getSourceForObject(submitRequest);
-		   log.info("####################################################");
-		   log.info("####################################################");
-		   log.info("XDS.b: Send register document-b request to registry:"+xdsRegistryURI);
-		   log.info("####################################################");
-		   log.info("####################################################");
-		   Source resultSrc;
-		   try {
-			   resultSrc = dispatch.invoke(s);
-		   } catch ( Throwable t ) {
-			   throw new XDSException(XDSConstants.XDS_ERR_REG_NOT_AVAIL,"Provide And Register failed! Can not connect to registry:"+xdsRegistryURI,t);
-		   }
-		   log.debug("Response (transform.Source) from registry:"+resultSrc);
-		   Unmarshaller unmarshaller = InfoSetUtil.getJAXBContext().createUnmarshaller();
-		   Object rspObj = unmarshaller.unmarshal(resultSrc);
-		   log.debug("Response Object from registry:"+rspObj);
-		   RegistryResponseType rsp;
-		   if ( rspObj instanceof RegistryResponseType ) {
-			   rsp = (RegistryResponseType) rspObj;
-		   } else {
-			   JAXBElement elem = (JAXBElement)rspObj;
-		       rsp = (RegistryResponseType) elem.getValue();
-		   }
-		   boolean success = checkResponse( rsp );
+		   RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest);
+		   success = checkResponse( rsp );
 		   logExport(submissionUID, success);
 		   log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
 		   if ( logResponseMessage ) {
 			   log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog));
-		   }
-		   if ( storedDocuments != null ) {
-			   postProcessStorage(storedDocuments, success);
 		   }
 		   return rsp;
 	   } catch (XDSException x) {
 			throw x;
 	   } catch (Throwable t) {
 		   throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Provide And Register failed!",t);
+	   } finally {
+		   if ( storedDocuments != null ) {
+			   postProcessStorage(storedDocuments, success);
+		   }
 	   }
+	}
+	private RegistryResponseType dispatchSubmitObjectsRequest(
+			SubmitObjectsRequest submitRequest) throws MalformedURLException,
+			JAXBException, XDSException {
+		if ( mockRegistryResponse ) {
+			   log.info("Mock RegistryResponse! Bypass 'Register Document Set' transaction!");
+			   return getMockResponse();
+		}
+		Dispatch<Source> dispatch = createDispatch();
+		Source s = InfoSetUtil.getSourceForObject(submitRequest);
+		log.info("####################################################");
+		log.info("####################################################");
+		log.info("XDS.b: Send register document-b request to registry:"+xdsRegistryURI);
+		log.info("####################################################");
+		log.info("####################################################");
+		Source resultSrc;
+		try {
+			resultSrc = dispatch.invoke(s);
+		} catch ( Throwable t ) {
+			throw new XDSException(XDSConstants.XDS_ERR_REG_NOT_AVAIL,"Provide And Register failed! Can not connect to registry:"+xdsRegistryURI,t);
+		}
+		log.debug("Response (transform.Source) from registry:"+resultSrc);
+		Unmarshaller unmarshaller = InfoSetUtil.getJAXBContext().createUnmarshaller();
+		Object rspObj = unmarshaller.unmarshal(resultSrc);
+		log.debug("Response Object from registry:"+rspObj);
+		RegistryResponseType rsp;
+		if ( rspObj instanceof RegistryResponseType ) {
+			rsp = (RegistryResponseType) rspObj;
+		} else {
+			JAXBElement elem = (JAXBElement)rspObj;
+			rsp = (RegistryResponseType) elem.getValue();
+		}
+		return rsp;
 	}
 
 	private RegistryResponseType getMockResponse() {
 		RegistryResponseType rsp = objFac.createRegistryResponseType();
-		rsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+		log.info("MockError:"+mockError);
+		if ( mockError == null ) {
+			rsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+		} else {
+			rsp.setStatus(XDSConstants.XDS_B_STATUS_FAILURE);
+			RegistryErrorList errList = objFac.createRegistryErrorList();
+			List<RegistryError> errors = errList.getRegistryError();
+			RegistryError err = objFac.createRegistryError();
+			int pos = mockError.indexOf('|');
+			String errCode = pos == -1 ? XDSConstants.XDS_ERR_REPOSITORY_ERROR : mockError.substring(0,pos);
+			String errMsg = pos == -1 ? mockError : mockError.substring(++pos);
+			err.setErrorCode(errCode);
+			err.setCodeContext(errMsg);
+			errors.add(err);
+		}
 		return rsp;
 	}
 	private void postProcessStorage( Map<String, StoredDocument> storedDocuments, 
@@ -475,6 +507,9 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 						addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_REPOSITORY_UNIQUE_ID, this.getRepositoryUniqueId());
 						addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_SIZE, String.valueOf(doc.getSize()));
 						addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_HASH, doc.getHash());
+						if ( this.retrieveURI != null ) {
+							addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_URI, this.getDocumentURI(doc.getDocumentUID(), xdsDoc.getMimeType()));
+						}
 					} else {
 						log.warn("Document already exists! docUid:"+xdsDoc.getDocumentUID());
 					}
@@ -519,10 +554,15 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     }
     
 	private void addOrOverwriteSlot(RegistryObjectType ro, Map slots, String slotName, String val) throws JAXBException {
+		addOrOverwriteSlot(ro, slots, slotName, new String[]{val});
+	}
+	private void addOrOverwriteSlot(RegistryObjectType ro, Map slots, String slotName, String[] val) throws JAXBException {
 	    SlotType1 slot = objFac.createSlotType1();
 	    slot.setName(slotName);
 	    ValueListType valueList = objFac.createValueListType();
-	    valueList.getValue().add(val);
+	    for ( int i = 0 ; i < val.length ; i++) {
+	    	valueList.getValue().add(val[i]);
+	    }
 	    slot.setValueList(valueList);
 	    if ( slots.containsKey(slotName) ) {
 	    	log.warn("RegistryObject id="+ro.getId()+" already contains slot '"+slotName+"'!");
