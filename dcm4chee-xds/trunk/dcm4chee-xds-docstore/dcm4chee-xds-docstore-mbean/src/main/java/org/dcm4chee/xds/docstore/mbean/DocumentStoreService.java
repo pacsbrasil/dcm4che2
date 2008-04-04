@@ -40,6 +40,7 @@ package org.dcm4chee.xds.docstore.mbean;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.dcm4chee.xds.common.XDSConstants;
@@ -47,12 +48,12 @@ import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.store.BasicXDSDocument;
 import org.dcm4chee.xds.common.store.StoredDocument;
 import org.dcm4chee.xds.common.store.XDSDocument;
+import org.dcm4chee.xds.common.store.XDSDocumentIdentifier;
 import org.dcm4chee.xds.docstore.spi.XDSDocumentStorage;
 import org.dcm4chee.xds.docstore.spi.XDSDocumentStorageRegistry;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * @author franz.willer@gmail.com
@@ -110,7 +111,16 @@ public class DocumentStoreService extends ServiceMBeanSupport {
 	}
 	public boolean rollbackDocuments(Collection storedDocuments) {
 		log.info("#### Rollback Documents:"+storedDocuments);
-		return false;
+		if ( storedDocuments == null || storedDocuments.size() < 1 ) 
+			return true;
+		XDSDocumentIdentifier doc;
+		boolean success = true;
+		for ( Iterator iter = storedDocuments.iterator() ; iter.hasNext() ; ) {
+			doc = (StoredDocument) iter.next();
+			log.debug("Delete XDSDocument:"+doc);
+			success = success & documentStorageBeforeRegister.deleteDocument(doc);
+		}
+		return success;
 	}
 	
 	public Set listDocumentStorageProvider() {
