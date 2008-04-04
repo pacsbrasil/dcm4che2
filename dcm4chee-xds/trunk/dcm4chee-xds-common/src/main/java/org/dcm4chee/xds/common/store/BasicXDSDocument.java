@@ -39,7 +39,7 @@
 
 package org.dcm4chee.xds.common.store;
 
-public class BasicXDSDocument {
+public class BasicXDSDocument implements XDSDocumentIdentifier{
 
 	private String docUid;
 	private String mimeType;

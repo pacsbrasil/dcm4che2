@@ -39,7 +39,7 @@
 
 package org.dcm4chee.xds.common.store;
 
-public class StoredDocument {
+public class StoredDocument implements XDSDocumentIdentifier{
 
 	private String docUid;
 	private String desc;

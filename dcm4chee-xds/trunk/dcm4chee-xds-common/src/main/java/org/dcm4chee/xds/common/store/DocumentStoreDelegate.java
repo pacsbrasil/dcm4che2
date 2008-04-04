@@ -88,15 +88,33 @@ public class DocumentStoreDelegate {
 	/**
 	 * @param storedDocuments
 	 */
-	public void commitDocuments(Collection storedDocuments) {
-		log.info("Commit Documents! Not implemented yet!");
+	public boolean commitDocuments(Collection storedDocuments) {
+		log.info("**** Commit Documents after 'Register Document Set'! :"+storedDocuments);
+		try {
+	        return ((Boolean) server.invoke(documentStoreService,
+	                "commitDocuments",
+	                new Object[] { storedDocuments },
+	                new String[] { Collection.class.getName() } ) ).booleanValue();
+		} catch ( Exception x ) {
+			log.error("Commit of document storage failed!");
+			return false;
+		}
 	}
 	
 	/**
 	 * @param storedDocuments
 	 */
-	public void rollbackDocuments(Collection storedDocuments) {
-		log.info("Rollback Documents! Not implemented yet!");
+	public boolean rollbackDocuments(Collection storedDocuments) {
+		log.info("**** Rollback Documents after failed 'Provide and Register Document Set'! :"+storedDocuments);
+		try {
+			return ((Boolean) server.invoke(documentStoreService,
+	                "rollbackDocuments",
+	                new Object[] { storedDocuments },
+	                new String[] { Collection.class.getName() } )).booleanValue();
+		} catch ( Exception x ) {
+			log.error("Rollback of document storage failed!",x);
+			return false;
+		}
 	}
 	
 	public BasicXDSDocument retrieveDocument(String docUid) throws XDSException {

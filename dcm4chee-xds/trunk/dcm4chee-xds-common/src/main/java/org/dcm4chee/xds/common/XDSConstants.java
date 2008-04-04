@@ -5,6 +5,8 @@ public interface XDSConstants {
 	public static final String SLOT_HASH = "hash";
 	public static final String SLOT_SIZE = "size";
 	public static final String SLOT_REPOSITORY_UNIQUE_ID = "repositoryUniqueId";
+	public static final String SLOT_URI = "URI";
+
 	public static final String XDS_A_STATUS_SUCCESS = "Success";
 	public static final String XDS_A_STATUS_FAILURE = "Failure";
 	public static final String XDS_B_STATUS_SUCCESS = "urn:oasis:names:tc:ebxml-regrep:ResponseStatusType:Success";
