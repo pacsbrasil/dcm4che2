@@ -46,6 +46,7 @@ import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.store.BasicXDSDocument;
 import org.dcm4chee.xds.common.store.StoredDocument;
 import org.dcm4chee.xds.common.store.XDSDocument;
+import org.dcm4chee.xds.common.store.XDSDocumentIdentifier;
 
 public interface XDSDocumentStorage {
 	void init(String initString);
@@ -55,6 +56,6 @@ public interface XDSDocumentStorage {
 	String getRetrieveURL(String docUid);
 	BasicXDSDocument retrieveDocument(String docUid) throws IOException;
 	Availability getAvailabilty(String docUid);
-	boolean deleteDocument(XDSDocument xdsDoc);
+	boolean deleteDocument(XDSDocumentIdentifier xdsDoc);
 	ObjectName getMBeanServiceName();
 }

@@ -15,6 +15,7 @@ import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.store.BasicXDSDocument;
 import org.dcm4chee.xds.common.store.StoredDocument;
 import org.dcm4chee.xds.common.store.XDSDocument;
+import org.dcm4chee.xds.common.store.XDSDocumentIdentifier;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
 import org.dcm4chee.xds.docstore.spi.Availability;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class XDSDocumentFileStorage implements XDSDocumentStorage {
 
+	private static final String MIMEFILE_EXTENSION = ".mime";
 	public static final String STORAGE_NAME = "XDSFileStorage";
 	private static final String DEFAULT_BASE_DIR = "xds/repo/docs";
 	
@@ -49,9 +51,14 @@ public class XDSDocumentFileStorage implements XDSDocumentStorage {
 			baseDir = new File(serverHomeDir, dir.getPath());
 		}
 	}
-	public boolean deleteDocument(XDSDocument xdsDoc) {
+	public boolean deleteDocument(XDSDocumentIdentifier xdsDoc) {
 		File f = getDocumentFile(xdsDoc.getDocumentUID());
-		return f.exists() ? f.delete() : false;
+		if ( f.exists() ) {
+			File mimeFile = new File(f.getAbsolutePath()+MIMEFILE_EXTENSION);
+			mimeFile.delete();
+			return f.delete();
+		}
+		return false;
 	}
 
 	public Availability getAvailabilty(String docUid) {
@@ -138,7 +145,7 @@ public class XDSDocumentFileStorage implements XDSDocumentStorage {
 	private void writeMime(File f, String mimeType) throws IOException {
 		FileOutputStream fos = null;
 		try {
-			File mimeFile = new File(f.getAbsolutePath()+".mime");
+			File mimeFile = new File(f.getAbsolutePath()+MIMEFILE_EXTENSION);
 			fos = new FileOutputStream(mimeFile);
 			fos.write(mimeType.getBytes());
 		} finally {
@@ -154,7 +161,7 @@ public class XDSDocumentFileStorage implements XDSDocumentStorage {
 	private String readMime(File f) throws IOException {
 		FileInputStream fis = null;
 		try {
-			File mimeFile = new File(f.getAbsolutePath()+".mime");
+			File mimeFile = new File(f.getAbsolutePath()+MIMEFILE_EXTENSION);
 			fis = new FileInputStream(mimeFile);
 			byte[] ba = new byte[fis.available()];
 			fis.read(ba);
