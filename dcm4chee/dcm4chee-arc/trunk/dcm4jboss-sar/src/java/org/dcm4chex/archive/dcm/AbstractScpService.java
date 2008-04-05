@@ -781,7 +781,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 msg.addSourceProcess(srcHost , 
                         new String[] { assoc.getCallingAET() }, null, 
                         srcHost, true);
-                byte[] query = DatasetUtils.toByteArray(keys, UIDs.ExplicitVRLittleEndian);
+                byte[] query = DatasetUtils.toByteArray(keys);
                 msg.addQuerySOPClass(cuid, UIDs.ExplicitVRLittleEndian, query);
                 msg.validate();
                 Logger.getLogger("auditlog").info(msg);
