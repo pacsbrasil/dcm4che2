@@ -126,6 +126,8 @@
       <xsl:value-of select="@ParticipantObjectName"/>
     </xsl:if>
     <xsl:apply-templates
+      select="ParticipantObjectQuery[../ParticipantObjectDetail[@type='TransferSyntax']]"/>
+    <xsl:apply-templates
       select="ParticipantObjectDetail[@type='AlertDescription']"/>
   </xsl:template>
   <xsl:template match="ParticipantObjectIDTypeCode">
@@ -147,6 +149,14 @@
       <xsl:when test="@code=12">URI</xsl:when>
       <xsl:otherwise>id</xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  <xsl:template match="ParticipantObjectQuery">
+    <xsl:variable name="tsuid" select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(../ParticipantObjectDetail[@type='TransferSyntax']/@value)"/>
+    <xsl:variable name="value" select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decode(.)"/>
+    <h4>Query Attributes:</h4>
+    <pre>
+      <xsl:value-of select="java:org.dcm4chee.arr.seam.ejb.DicomUtils.format($value,$tsuid,120,64)"/>
+    </pre>
   </xsl:template>
   <xsl:template match="ParticipantObjectDetail">
     <xsl:text>,&#32;Description=</xsl:text>
