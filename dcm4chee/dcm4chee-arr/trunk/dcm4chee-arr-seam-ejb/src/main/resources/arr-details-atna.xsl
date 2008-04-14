@@ -125,8 +125,7 @@
       <xsl:text>,&#32;Name=</xsl:text>
       <xsl:value-of select="@ParticipantObjectName"/>
     </xsl:if>
-    <xsl:apply-templates
-      select="ParticipantObjectQuery[../ParticipantObjectDetail[@type='TransferSyntax']]"/>
+    <xsl:apply-templates select="ParticipantObjectQuery"/>
     <xsl:apply-templates
       select="ParticipantObjectDetail[@type='AlertDescription']"/>
   </xsl:template>
@@ -151,15 +150,29 @@
     </xsl:choose>
   </xsl:template>
   <xsl:template match="ParticipantObjectQuery">
-    <xsl:variable name="tsuid" select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(../ParticipantObjectDetail[@type='TransferSyntax']/@value)"/>
-    <xsl:variable name="value" select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decode(.)"/>
+    <xsl:variable name="ts" select="../ParticipantObjectDetail[@type='TransferSyntax']" />
     <h4>Query Attributes:</h4>
     <pre>
-      <xsl:value-of select="java:org.dcm4chee.arr.seam.ejb.DicomUtils.format($value,$tsuid,120,64)"/>
+      <xsl:choose>
+        <xsl:when test="$ts">
+          <xsl:variable name="tsuid"
+            select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8($ts/@value)"
+            />
+          <xsl:variable name="value"
+            select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decode(.)" />
+          <xsl:value-of
+            select="java:org.dcm4chee.arr.seam.ejb.DicomUtils.format($value,$tsuid,120,64)"
+            />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of
+            select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(.)" />
+        </xsl:otherwise>
+      </xsl:choose>
     </pre>
   </xsl:template>
   <xsl:template match="ParticipantObjectDetail">
-    <xsl:text>,&#32;Description=</xsl:text>
+    <h4>Description</h4>
     <xsl:value-of select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(@value)"/>
   </xsl:template>
 </xsl:stylesheet>

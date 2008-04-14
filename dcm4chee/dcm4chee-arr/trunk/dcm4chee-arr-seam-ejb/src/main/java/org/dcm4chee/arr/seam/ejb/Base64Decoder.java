@@ -55,8 +55,46 @@ public class Base64Decoder {
         }
     }
     
+    private static class KillWhiteSpace {
+        private final String s;
+        private int index;
+        
+        KillWhiteSpace(String s) {
+            this.s = s;
+        }
+
+        public char next() {
+            char c;
+            while ((c = s.charAt(index++)) <= ' ');
+            return c;
+        }
+
+        public char last() {
+            char c;
+            int i = s.length();
+            while ((c = s.charAt(--i)) <= ' ');
+            return c;
+        }
+
+        public char lastButOne() {
+            char c;
+            int i = s.length();
+            while ((c = s.charAt(--i)) <= ' ');
+            while ((c = s.charAt(--i)) <= ' ');
+            return c;
+        }
+
+        public int length() {
+            int sLen = s.length();
+            for (int i = 0, n = sLen; i < n; i++)
+                if (s.charAt(i) <= ' ') --sLen;
+            return sLen;
+        }
+    }
+
     public static byte[] decode(String s) {
-        int sLen = s.length();
+        KillWhiteSpace kws = new KillWhiteSpace(s);
+        int sLen = kws.length();
         int groups = sLen/4;
         if (4*groups != sLen)
             throw new IllegalArgumentException(
@@ -64,33 +102,31 @@ public class Base64Decoder {
         int missing = 0;
         int fullGroups = groups;
         if (sLen != 0) {
-            if (s.charAt(sLen-1) == '=') {
-                missing++;
+            if (kws.last() == '=') {
+                missing = kws.lastButOne() == '=' ? 2 : 1;
                 fullGroups--;
             }
-            if (s.charAt(sLen-2) == '=')
-                missing++;
         }
         byte[] out = new byte[3*groups - missing];
 
-        int readPos = 0, writePos = 0;
+        int writePos = 0;
         for (int i=0; i<fullGroups; i++) {
-            int b1 = BYTES[s.charAt(readPos++)];
-            int b12 = BYTES[s.charAt(readPos++)];
-            int b23 = BYTES[s.charAt(readPos++)];
-            int b3 = BYTES[s.charAt(readPos++)];
+            int b1 = BYTES[kws.next()];
+            int b12 = BYTES[kws.next()];
+            int b23 = BYTES[kws.next()];
+            int b3 = BYTES[kws.next()];
             out[writePos++] = (byte) ((b1 << 2) | (b12 >> 4));
             out[writePos++] = (byte) ((b12 << 4) | (b23 >> 2));
             out[writePos++] = (byte) ((b23 << 6) | b3);
         }
 
         if (missing != 0) {
-            int b1 = BYTES[s.charAt(readPos++)];
-            int b12 = BYTES[s.charAt(readPos++)];
+            int b1 = BYTES[kws.next()];
+            int b12 = BYTES[kws.next()];
             out[writePos++] = (byte) ((b1 << 2) | (b12 >> 4));
 
             if (missing == 1) {
-                int b23 = BYTES[s.charAt(readPos++)];
+                int b23 = BYTES[kws.next()];
                 out[writePos++] = (byte) ((b12 << 4) | (b23 >> 2));
             }
         }
