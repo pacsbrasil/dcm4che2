@@ -9,10 +9,5 @@
         <handler-name>SOAPHeaderHandler</handler-name>
         <handler-class>org.dcm4chee.xds.repo.ws.SOAPHeaderHandler</handler-class>
       </handler>
-      
-      <handler>
-        <handler-name>XDSXOPHandler</handler-name>
-        <handler-class>org.dcm4chee.xds.repo.ws.XDSXOPHandler</handler-class>
-      </handler>
     </handler-chain>
 </handler-chains>

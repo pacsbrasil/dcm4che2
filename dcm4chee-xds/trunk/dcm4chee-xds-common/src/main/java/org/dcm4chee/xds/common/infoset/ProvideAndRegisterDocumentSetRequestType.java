@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.XmlMimeType;
 
 
 /**
@@ -45,16 +46,15 @@ import javax.xml.bind.annotation.XmlValue;
  * 
  * 
  */
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(name = "ProvideAndRegisterDocumentSetRequestType", namespace = "urn:ihe:iti:xds-b:2007", propOrder = {
     "submitObjectsRequest",
     "document"
 })
 public class ProvideAndRegisterDocumentSetRequestType {
 
-    @XmlElement(name = "SubmitObjectsRequest", namespace = "urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0", required = true)
     protected SubmitObjectsRequest submitObjectsRequest;
-    @XmlElement(name = "Document")
+    
     protected List<ProvideAndRegisterDocumentSetRequestType.Document> document;
 
     /**
@@ -65,6 +65,7 @@ public class ProvideAndRegisterDocumentSetRequestType {
      *     {@link SubmitObjectsRequest }
      *     
      */
+    @XmlElement(name = "SubmitObjectsRequest", namespace = "urn:oasis:names:tc:ebxml-regrep:xsd:lcm:3.0", required = true)    
     public SubmitObjectsRequest getSubmitObjectsRequest() {
         return submitObjectsRequest;
     }
@@ -103,6 +104,7 @@ public class ProvideAndRegisterDocumentSetRequestType {
      * 
      * 
      */
+    @XmlElement(name = "Document")    
     public List<ProvideAndRegisterDocumentSetRequestType.Document> getDocument() {
         if (document == null) {
             document = new ArrayList<ProvideAndRegisterDocumentSetRequestType.Document>();
@@ -128,16 +130,11 @@ public class ProvideAndRegisterDocumentSetRequestType {
      * 
      * 
      */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "value"
-    })
+    @XmlAccessorType(XmlAccessType.PROPERTY)
+    @XmlType(name = "")
     public static class Document {
 
-        @XmlValue
-        protected byte[] value;
-        @XmlAttribute(required = true)
-        @XmlSchemaType(name = "anyURI")
+        protected DataHandler value;
         protected String id;
 
         /**
@@ -147,7 +144,9 @@ public class ProvideAndRegisterDocumentSetRequestType {
          *     possible object is
          *     byte[]
          */
-        public byte[] getValue() {
+        @XmlValue
+        @XmlMimeType("application/octet-stream")
+        public DataHandler getValue() {
             return value;
         }
 
@@ -158,7 +157,7 @@ public class ProvideAndRegisterDocumentSetRequestType {
          *     allowed object is
          *     byte[]
          */
-        public void setValue(byte[] value) {
+        public void setValue(DataHandler value) {
             this.value = value;
         }
 
@@ -170,6 +169,8 @@ public class ProvideAndRegisterDocumentSetRequestType {
          *     {@link String }
          *     
          */
+        @XmlAttribute(required = true)
+        @XmlSchemaType(name = "anyURI")
         public String getId() {
             return id;
         }

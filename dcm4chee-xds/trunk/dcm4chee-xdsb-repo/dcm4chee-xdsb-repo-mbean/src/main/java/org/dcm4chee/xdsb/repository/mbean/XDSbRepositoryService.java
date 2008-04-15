@@ -469,7 +469,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	public Map exportDocuments( ProvideAndRegisterDocumentSetRequestType req ) throws XDSException {
 		Map extrObjs = InfoSetUtil.getExtrinsicObjects(req.getSubmitObjectsRequest());
 		Map docs = InfoSetUtil.getDocuments(req);
-		checkDocuments(docs);
 		if ( extrObjs.size() > docs.size() ) {
 			log.warn("Missing Documents! Found more ExtrinsicObjects("+extrObjs.size()+") than Documents("+docs.size()+")!");
 			throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,
@@ -530,29 +529,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		return storedDocuments;
 	}
 
-    private void checkDocuments(Map docs) {
-    	log.info("---Check Documents--");
-        CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-		HttpServletRequest servlet = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-		Map docDatas = null;
-		Document doc;
-        for ( Iterator iter = docs.values().iterator() ; iter.hasNext() ; ) {
-        	doc = (Document) iter.next();
-        	if ( doc.getValue() == null || doc.getValue().length < 1 ) {
-        		log.warn("Document has no value! doc.getValue:"+doc.getValue());
-        		if ( docDatas == null && servlet != null) {
-        			docDatas = (Map) servlet.getSession().getAttribute(XDSConstants.WORKAROUND_DOC_DATA_SESSION_KEY);
-        			log.info("'WORKAROUND' Document Data from Servlet Session:"+servlet+"\ndocDatas:"+docDatas);
-        		}
-        		if ( docDatas == null) {
-        			log.info("No 'WORKAROUND' Attachment data in Session!");
-        			return;
-        		}
-				doc.setValue((byte[]) docDatas.get(doc.getId()) );
-        	}
-        }
-    }
-    
 	private void addOrOverwriteSlot(RegistryObjectType ro, Map slots, String slotName, String val) throws JAXBException {
 		addOrOverwriteSlot(ro, slots, slotName, new String[]{val});
 	}

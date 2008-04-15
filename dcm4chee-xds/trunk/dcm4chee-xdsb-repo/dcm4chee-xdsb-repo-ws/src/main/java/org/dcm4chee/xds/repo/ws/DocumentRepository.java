@@ -5,7 +5,6 @@ import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.xml.bind.JAXBException;
-import javax.xml.ws.BindingType;
 import javax.xml.ws.WebServiceContext;
 
 import org.dcm4chee.xds.common.exception.XDSException;
@@ -13,6 +12,7 @@ import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
 import org.dcm4chee.xds.common.infoset.RegistryResponseType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
+import org.jboss.ws.annotation.EndpointConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 		endpointInterface="org.dcm4chee.xds.repo.ws.DocumentRepositoryPortType"
 		)
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
-@BindingType(value = "http://www.w3.org/2003/05/soap/bindings/HTTP/?mtom=true")
-//@BindingType(value = "http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true")
-@HandlerChain(file = "jaxws-handlers-server.xml")
+@EndpointConfig(configName = "Standard WSAddressing Endpoint")
+// TODO: remove HandlerChain if not necessary anymore
+// @HandlerChain(file = "jaxws-handlers-server.xml")
 public class DocumentRepository implements DocumentRepositoryPortType {
 
 	@Resource

@@ -4,6 +4,7 @@
     <format>zip</format>
   </formats>
   <baseDirectory>dcm4chee-xds-${version}</baseDirectory>
+  <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
 
 <!-- bin -->
@@ -58,14 +59,14 @@
     </fileSet>
 <!-- XDS.b Repository -->
     <fileSet>
-      <directory>../dcm4chee-xds-repo/dcm4chee-xds-repo-mbean/target</directory>
+      <directory>../dcm4chee-xdsb-repo/dcm4chee-xdsb-repo-mbean/target</directory>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
         <include>*.sar</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>../dcm4chee-xds-repo/dcm4chee-xds-repo-ws/target</directory>
+      <directory>../dcm4chee-xdsb-repo/dcm4chee-xdsb-repo-ws/target</directory>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
         <include>*.war</include>

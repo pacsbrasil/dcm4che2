@@ -7,8 +7,7 @@ import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.ws.Action;
-import javax.xml.ws.BindingType;
+import javax.xml.ws.addressing.Action;
 
 import org.dcm4chee.xds.common.infoset.ObjectFactory;
 import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
@@ -26,7 +25,6 @@ import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
  */
 @WebService(name = "DocumentRepository_PortType", targetNamespace = "urn:ihe:iti:xds-b:2007")
 @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
-@BindingType(value = "http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true")
 @XmlSeeAlso({
     ObjectFactory.class
 })

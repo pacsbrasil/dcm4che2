@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.xml.soap.AttachmentPart;
@@ -118,6 +119,11 @@ public class XDSDocumentWriterFactory {
         return new CachedWriter(is);
     }
 
+    public XDSDocumentWriter getDocumentWriter(DataHandler dh) throws IOException {
+        return new DataHandlerWriter(dh);
+    }
+    
+    // TODO: remove if not needed
     class CachedWriter implements XDSDocumentWriter {
     	public static final int MAX_MEMORY_CACHESIZE = 1<<26; //64 MBytes
         private byte[] buffer;
@@ -221,6 +227,7 @@ public class XDSDocumentWriterFactory {
 		}
     }
     
+    // TODO: remove if not needed
     class DataWriter implements XDSDocumentWriter {
         byte[] data;
         DataWriter( String s ) {
@@ -238,6 +245,23 @@ public class XDSDocumentWriterFactory {
 		public int size() {
 			return data.length;
 		}
+    }
+    
+    class DataHandlerWriter implements XDSDocumentWriter {
+        DataHandler dh;
+        DataHandlerWriter( DataHandler dh ){
+            this.dh = dh;
+        }
+        public void writeTo(OutputStream os) throws IOException {
+            dh.writeTo(os);
+        }
+        public void close() throws IOException {
+        }
+        public int size() {
+            // TODO: remove size() from XDSDocumentWriter interface if only used for logging purposed  
+            return 9999;
+        }
+        
     }
 
 }
