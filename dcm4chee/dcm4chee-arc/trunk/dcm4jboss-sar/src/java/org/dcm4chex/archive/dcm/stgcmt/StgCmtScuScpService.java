@@ -546,7 +546,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         try {
             DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
             parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-            if (parser.getReadTag() == Tags.PixelData) {
+            if ((parser.getReadTag() & 0xFFFFFFFFL) >= Tags.PixelData) {
                 if (parser.getReadLength() == -1) {
                     while (parser.parseHeader() == Tags.Item) {
                         readOut(parser.getInputStream(), parser.getReadLength());
