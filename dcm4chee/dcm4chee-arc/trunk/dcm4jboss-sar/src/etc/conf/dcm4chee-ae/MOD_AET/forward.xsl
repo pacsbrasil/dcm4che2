@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:output method="xml"/>
-  <xsl:param name="year">2007</xsl:param>
-  <xsl:param name="month">4</xsl:param> <!-- 1=Jan, 2=Feb .. -->
-  <xsl:param name="date">30</xsl:param> 
-  <xsl:param name="day">1</xsl:param>   <!-- 0=Sun, 1=Mon .. -->
-  <xsl:param name="hour">15</xsl:param>
+
+  <!--
+   The following parameters are made available by the application:
+   year  - The current year
+   month - The current month (1=Jan, 2=Feb ..)
+   date  - The current day of the month
+   day   - The current day of the week (0=Sun, 1=Mon ..)
+   hour  - The current hour of the day
+   
+   These parameters may be to define rules that depend on the current date or time.
+   
+   An example of the parameters that are made available to this stylesheet is as follows:
+   <xsl:param name="year">2007</xsl:param>
+   <xsl:param name="month">4</xsl:param>
+   <xsl:param name="date">30</xsl:param> 
+   <xsl:param name="day">1</xsl:param>
+   <xsl:param name="hour">15</xsl:param>
+  -->
+  <xsl:param name="year"/>
+  <xsl:param name="month"/>
+  <xsl:param name="date"/> 
+  <xsl:param name="day"/>
+  <xsl:param name="hour"/>
+
   <xsl:template match="/dataset">
     <destinations>
       <!-- Forward all Series to LONG_TERM outside business hours (7-19) after one week -->
