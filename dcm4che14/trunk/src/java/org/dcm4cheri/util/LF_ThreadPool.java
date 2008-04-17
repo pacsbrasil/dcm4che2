@@ -65,7 +65,6 @@ public class LF_ThreadPool
    private boolean shutdown = false;
    private Thread leader = null;
    private Object mutex = new Object();
-   private Object runningLock = new Object();
    private int waiting = 0;
    private int running = 0;
    private int maxRunning = 0;
@@ -168,8 +167,8 @@ public class LF_ThreadPool
 	            leader = Thread.currentThread();
 	            if (log.isDebugEnabled())
 	               log.debug("" + this + " - New Leader"); 
+	            ++running;
 	         }
-	         synchronized (runningLock) { ++running; }
 	         try {  
 	            do {
 	               handler.run(this);
@@ -177,7 +176,7 @@ public class LF_ThreadPool
 	         } catch (Throwable th) {
 	            log.warn("Exception thrown in " + Thread.currentThread().getName(), th);
 	            shutdown();
-	         } finally { synchronized (runningLock) { --running; } }
+	         } finally { synchronized (mutex) { --running; } }
 	      }
       } finally {
           log.debug("Thread: " + Thread.currentThread().getName() + " LEFT ThreadPool " + name);
