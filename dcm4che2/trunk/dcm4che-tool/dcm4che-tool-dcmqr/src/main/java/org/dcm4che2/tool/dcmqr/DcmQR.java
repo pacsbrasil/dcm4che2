@@ -478,7 +478,7 @@ public class DcmQR {
         opts.addOption(OptionBuilder.create("tls"));
 
         opts.addOption("nossl2", false, 
-                "disable acceptance of SSLv2Hello TLS handshake");
+                "disable SSLv2Hello TLS handshake");
         opts.addOption("noclientauth", false, 
                 "disable client authentification for TLS");
 
