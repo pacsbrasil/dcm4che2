@@ -345,7 +345,15 @@ public class DcmQR {
         conn.setTlsAES_128_CBC();
         remoteConn.setTlsAES_128_CBC();
     }
-    
+
+    public final void disableSSLv2Hello() {
+        conn.disableSSLv2Hello();
+    }
+
+    public final void setTlsNeedClientAuth(boolean needClientAuth) {
+        conn.setTlsNeedClientAuth(needClientAuth);
+    }
+
     public final void setKeyStoreURL(String url) {
         keyStoreURL = url;
     }
@@ -468,6 +476,11 @@ public class DcmQR {
         OptionBuilder.withDescription(
                 "enable TLS connection without, 3DES or AES encryption");
         opts.addOption(OptionBuilder.create("tls"));
+
+        opts.addOption("nossl2", false, 
+                "disable acceptance of SSLv2Hello TLS handshake");
+        opts.addOption("noclientauth", false, 
+                "disable client authentification for TLS");
 
         OptionBuilder.withArgName("file|url");
         OptionBuilder.hasArg();
@@ -844,6 +857,10 @@ public class DcmQR {
             } else {
                 exit("Invalid parameter for option -tls: " + cipher);
             }
+            if (cl.hasOption("nossl2")) {
+                dcmqr.disableSSLv2Hello();
+            }
+            dcmqr.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
             if (cl.hasOption("keystore")) {
                 dcmqr.setKeyStoreURL(cl.getOptionValue("keystore"));
             }
