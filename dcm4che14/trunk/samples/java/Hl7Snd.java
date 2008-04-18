@@ -129,7 +129,7 @@ public class Hl7Snd {
         //      listConfig(cfg);
         try {
             Hl7Snd hl7snd = new Hl7Snd(cfg, new MLLP_URL(args[optind]), argc);
-            hl7snd.execute(args, optind+1);
+            System.exit( hl7snd.execute(args, optind+1));
         } catch (IllegalArgumentException e) {
             exit(e.getMessage(), true);
         }
@@ -151,9 +151,10 @@ public class Hl7Snd {
     }
     
     // Methods -------------------------------------------------------
-    public void execute(String[] args, int offset) {
+    public int execute(String[] args, int offset) {
         long t1 = System.currentTimeMillis();
         int count = 0;
+        int exitStatus = 0;
         Socket s = null;
         MLLPInputStream in = null;
         MLLPOutputStream out = null;
@@ -169,6 +170,7 @@ public class Hl7Snd {
             }
         } catch (Exception e) {
             log.error("Could not send all messages: ", e);
+            exitStatus = 1;
         } finally {
             if (out != null) {
                 try { out.close(); } catch (IOException ignore) {}
@@ -187,6 +189,7 @@ public class Hl7Snd {
                 new Integer(count),
                 new Long(dt),
             }));
+        return exitStatus;
     }
     
     private int send(File file, MLLPInputStream in, MLLPOutputStream out)
