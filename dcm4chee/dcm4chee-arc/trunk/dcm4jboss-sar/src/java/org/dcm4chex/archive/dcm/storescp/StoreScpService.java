@@ -90,15 +90,15 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-02-11 23:01:28 +0100 (Mon, 11 Feb
+ *          2008) $
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
-    private final NotificationListener checkPendingSeriesStoredListener = 
-        new NotificationListener() {
+    private final NotificationListener checkPendingSeriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             try {
                 log.info("Check for Pending Series Stored");
@@ -179,9 +179,9 @@ public class StoreScpService extends AbstractScpService {
     private boolean md5sum = true;
 
     private StoreScp scp = new StoreScp(this);
-    
+
     protected StoreScp getScp() {
-    	return scp;
+        return scp;
     }
 
     public final String getCheckPendingSeriesStoredInterval() {
@@ -196,9 +196,10 @@ public class StoreScpService extends AbstractScpService {
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED
                 && oldInterval != checkPendingSeriesStoredInterval) {
-            scheduler.stopScheduler(timerIDCheckPendingSeriesStored, listenerID,
-                    checkPendingSeriesStoredListener);
-            listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
+            scheduler.stopScheduler(timerIDCheckPendingSeriesStored,
+                    listenerID, checkPendingSeriesStoredListener);
+            listenerID = scheduler.startScheduler(
+                    timerIDCheckPendingSeriesStored,
                     checkPendingSeriesStoredInterval,
                     checkPendingSeriesStoredListener);
         }
@@ -270,29 +271,29 @@ public class StoreScpService extends AbstractScpService {
     }
 
     public final int getFilePathComponents() {
-		return scp.getFilePathComponents();
-	}
+        return scp.getFilePathComponents();
+    }
 
-	public final void setFilePathComponents(int filePathComponents) {
-        scp.setFilePathComponents(filePathComponents);		
-	}
+    public final void setFilePathComponents(int filePathComponents) {
+        scp.setFilePathComponents(filePathComponents);
+    }
 
-	public final boolean isReadReferencedFile() {
-		return scp.isReadReferencedFile();
-	}
+    public final boolean isReadReferencedFile() {
+        return scp.isReadReferencedFile();
+    }
 
-	public final void setReadReferencedFile(boolean readReferencedFile) {
-		scp.setReadReferencedFile(readReferencedFile);
-	}
-	
-	public final boolean isMd5sumReferencedFile() {
-		return scp.isMd5sumReferencedFile();
-	}
-	
-	public final void setMd5sumReferencedFile(boolean md5ReferencedFile) {
-		scp.setMd5sumReferencedFile(md5ReferencedFile);
-	}
-	
+    public final void setReadReferencedFile(boolean readReferencedFile) {
+        scp.setReadReferencedFile(readReferencedFile);
+    }
+
+    public final boolean isMd5sumReferencedFile() {
+        return scp.isMd5sumReferencedFile();
+    }
+
+    public final void setMd5sumReferencedFile(boolean md5ReferencedFile) {
+        scp.setMd5sumReferencedFile(md5ReferencedFile);
+    }
+
     public final boolean isAcceptMissingPatientID() {
         return scp.isAcceptMissingPatientID();
     }
@@ -324,7 +325,7 @@ public class StoreScpService extends AbstractScpService {
     public void setSchedulerServiceName(ObjectName schedulerServiceName) {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
-    
+
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -343,23 +344,22 @@ public class StoreScpService extends AbstractScpService {
 
     public final String getUnrestrictedAppendPermissionsToAETitles() {
         return unrestrictedAppendPermissionsToAETitles == null ? ANY
-                : StringUtils.toString(
-                        unrestrictedAppendPermissionsToAETitles, '\\');
+                : StringUtils.toString(unrestrictedAppendPermissionsToAETitles,
+                        '\\');
     }
 
     public final void setUnrestrictedAppendPermissionsToAETitles(String s) {
         String trim = s.trim();
-        this.unrestrictedAppendPermissionsToAETitles = 
-                trim.equalsIgnoreCase(ANY) ? null 
-                        : StringUtils.split(trim, '\\');
+        this.unrestrictedAppendPermissionsToAETitles = trim
+                .equalsIgnoreCase(ANY) ? null : StringUtils.split(trim, '\\');
     }
 
     final boolean hasUnrestrictedAppendPermissions(String aet) {
-        return unrestrictedAppendPermissionsToAETitles == null 
+        return unrestrictedAppendPermissionsToAETitles == null
                 || Arrays.asList(unrestrictedAppendPermissionsToAETitles)
                         .contains(aet);
     }
-    
+
     public String getCoerceWarnCallingAETs() {
         return scp.getCoerceWarnCallingAETs();
     }
@@ -375,7 +375,7 @@ public class StoreScpService extends AbstractScpService {
     public void setAcceptMismatchIUIDCallingAETs(String aets) {
         scp.setAcceptMismatchIUIDCallingAETs(aets);
     }
-    
+
     public String getUpdateStudyAccessTimeCallingAETs() {
         return scp.getUpdateStudyAccessTimeCallingAETs();
     }
@@ -383,7 +383,7 @@ public class StoreScpService extends AbstractScpService {
     public void setUpdateStudyAccessTimeCallingAETs(String aets) {
         scp.setUpdateStudyAccessTimeCallingAETs(aets);
     }
-    
+
     public boolean isStoreDuplicateIfDiffHost() {
         return scp.isStoreDuplicateIfDiffHost();
     }
@@ -520,7 +520,7 @@ public class StoreScpService extends AbstractScpService {
      * worklist selected' is referenced.
      * 
      * @param check
-     *            The checkIncorrectWorklistEntry to set.
+     *                The checkIncorrectWorklistEntry to set.
      */
     public void setCheckIncorrectWorklistEntry(boolean check) {
         scp.setCheckIncorrectWorklistEntry(check);
@@ -533,16 +533,16 @@ public class StoreScpService extends AbstractScpService {
     public void setTimerIDCheckPendingSeriesStored(
             String timerIDCheckPendingSeriesStored) {
         this.timerIDCheckPendingSeriesStored = timerIDCheckPendingSeriesStored;
-    }    
-    
-	public final ObjectName getPerfMonServiceName() {
-		return scp.getPerfMonServiceName();
-	}
+    }
 
-	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
-		scp.setPerfMonServiceName(perfMonServiceName);
-	}
-	
+    public final ObjectName getPerfMonServiceName() {
+        return scp.getPerfMonServiceName();
+    }
+
+    public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+        scp.setPerfMonServiceName(perfMonServiceName);
+    }
+
     protected void startService() throws Exception {
         super.startService();
         listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
@@ -599,19 +599,17 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-
-	public FileSystemDTO findStorageFileSystem(String dirPath)
-			throws DcmServiceException {
+    public FileSystemDTO findStorageFileSystem(String dirPath)
+            throws DcmServiceException {
         try {
-            return (FileSystemDTO) server.invoke(
-                    fileSystemMgtName, "findStorageFileSystem",
-                    new Object[]{ dirPath },
-                    new String[]{ String.class.getName()});
+            return (FileSystemDTO) server.invoke(fileSystemMgtName,
+                    "findStorageFileSystem", new Object[] { dirPath },
+                    new String[] { String.class.getName() });
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-	}
-	
+    }
+
     boolean isLocalRetrieveAET(String aet) {
         try {
             return aet.equals(server.getAttribute(fileSystemMgtName,
@@ -648,36 +646,41 @@ public class StoreScpService extends AbstractScpService {
                 final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
                 Dataset ian = seriesStored.getIAN();
                 Dataset pps = ian.getItem(Tags.RefPPSSeq);
-                String ppsiuid = pps != null ? pps.getString(Tags.RefSOPInstanceUID)
-                        : null;
+                String ppsiuid = pps != null ? pps
+                        .getString(Tags.RefSOPInstanceUID) : null;
                 InstancesAction action = alf.newInstancesAction("Create", ian
-                        .getString(Tags.StudyInstanceUID), alf.newPatient(seriesStored
-                                .getPatientID(), seriesStored.getPatientName()));
+                        .getString(Tags.StudyInstanceUID), alf.newPatient(
+                        seriesStored.getPatientID(), seriesStored
+                                .getPatientName()));
                 action.setMPPSInstanceUID(ppsiuid);
                 action.setAccessionNumber(seriesStored.getAccessionNumber());
-                DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
+                DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(
+                        Tags.RefSOPSeq);
                 int n = sq.countItems();
                 for (int i = 0; i < n; i++) {
-                    action.addSOPClassUID(sq.getItem(i).getString(Tags.RefSOPClassUID));
+                    action.addSOPClassUID(sq.getItem(i).getString(
+                            Tags.RefSOPClassUID));
                 }
                 action.setNumberOfInstances(n);
                 RemoteNode remoteNode;
                 if (s != null) {
-                    remoteNode = alf.newRemoteNode(s, seriesStored.getCallingAET());
+                    remoteNode = alf.newRemoteNode(s, seriesStored
+                            .getCallingAET());
                 } else {
                     try {
                         InetAddress iAddr = InetAddress.getLocalHost();
-                        remoteNode = alf.newRemoteNode(iAddr.getHostAddress(), iAddr
-                                .getHostName(), "LOCAL");
+                        remoteNode = alf.newRemoteNode(iAddr.getHostAddress(),
+                                iAddr.getHostName(), "LOCAL");
                     } catch (UnknownHostException x) {
-                        remoteNode = alf.newRemoteNode("127.0.0.1", "localhost",
-                        "LOCAL");
+                        remoteNode = alf.newRemoteNode("127.0.0.1",
+                                "localhost", "LOCAL");
                     }
                 }
-                server.invoke(auditLogger.getAuditLoggerName(), "logInstancesStored", new Object[] {
-                        remoteNode, action },
-                        new String[] { RemoteNode.class.getName(),
-                        InstancesAction.class.getName() });
+                server.invoke(auditLogger.getAuditLoggerName(),
+                        "logInstancesStored",
+                        new Object[] { remoteNode, action }, new String[] {
+                                RemoteNode.class.getName(),
+                                InstancesAction.class.getName() });
             } else {
                 InstanceSorter sorter = new InstanceSorter();
                 Dataset ian = seriesStored.getIAN();
@@ -686,22 +689,21 @@ public class StoreScpService extends AbstractScpService {
                 DcmElement refSops = series.get(Tags.RefSOPSeq);
                 for (int i = 0, n = refSops.countItems(); i < n; i++) {
                     final Dataset refSop = refSops.getItem(i);
-                    sorter.addInstance(suid, 
-                            refSop.getString(Tags.RefSOPClassUID),
-                            refSop.getString(Tags.RefSOPInstanceUID),
-                            null);
+                    sorter.addInstance(suid, refSop
+                            .getString(Tags.RefSOPClassUID), refSop
+                            .getString(Tags.RefSOPInstanceUID), null);
                 }
-                InstancesTransferredMessage msg = 
-                        new InstancesTransferredMessage(
-                                InstancesTransferredMessage.CREATE);
+                InstancesTransferredMessage msg = new InstancesTransferredMessage(
+                        InstancesTransferredMessage.CREATE);
                 String srcAET = seriesStored.getCallingAET();
-                String srcHost = s != null ?
-                        AuditMessage.hostNameOf(s.getInetAddress()) : null;
+                String srcHost = s != null ? AuditMessage.hostNameOf(s
+                        .getInetAddress()) : null;
                 String srcID = srcHost != null ? srcHost : srcAET;
-                msg.addSourceProcess(srcID, new String[] { srcAET }, null, srcHost, true);
-                msg.addDestinationProcess(AuditMessage.getProcessID(), 
-                        calledAETs, AuditMessage.getProcessName(), 
-                        AuditMessage.getLocalHostName(), false);
+                msg.addSourceProcess(srcID, new String[] { srcAET }, null,
+                        srcHost, true);
+                msg.addDestinationProcess(AuditMessage.getProcessID(),
+                        calledAETs, AuditMessage.getProcessName(), AuditMessage
+                                .getLocalHostName(), false);
                 msg.addPatient(seriesStored.getPatientID(),
                         formatPN(seriesStored.getPatientName()));
                 String accno = seriesStored.getAccessionNumber();
@@ -714,10 +716,10 @@ public class StoreScpService extends AbstractScpService {
                     desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
                 }
                 for (String cuid : sorter.getCUIDs(suid)) {
-                    ParticipantObjectDescription.SOPClass sopClass =
-                            new ParticipantObjectDescription.SOPClass(cuid);
-                    sopClass.setNumberOfInstances(
-                            sorter.countInstances(suid, cuid));
+                    ParticipantObjectDescription.SOPClass sopClass = new ParticipantObjectDescription.SOPClass(
+                            cuid);
+                    sopClass.setNumberOfInstances(sorter.countInstances(suid,
+                            cuid));
                     desc.addSOPClass(sopClass);
                 }
                 msg.addStudy(ian.getString(Tags.StudyInstanceUID), desc);
@@ -726,7 +728,7 @@ public class StoreScpService extends AbstractScpService {
             }
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
-        }           
+        }
     }
 
     /**
@@ -738,11 +740,11 @@ public class StoreScpService extends AbstractScpService {
      * <p>
      * 
      * @param fileDTO
-     *            Refers the DICOM file.
+     *                Refers the DICOM file.
      * @param ds
-     *            Dataset with metadata for database.
+     *                Dataset with metadata for database.
      * @param last
-     *            last file to import
+     *                last file to import
      */
     public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
@@ -780,8 +782,8 @@ public class StoreScpService extends AbstractScpService {
         File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
         File file = scp.makeFile(baseDir, dataset);
         String filePath = file.getPath().substring(
-                baseDir.getPath().length() + 1).replace(
-                File.separatorChar, '/');
+                baseDir.getPath().length() + 1)
+                .replace(File.separatorChar, '/');
         FileDTO fileDTO = new FileDTO();
         fileDTO.setFileSystemPk(fsDTO.getPk());
         fileDTO.setAvailability(fsDTO.getAvailability());
@@ -809,49 +811,55 @@ public class StoreScpService extends AbstractScpService {
 
     public List findMWLEntries(Dataset ds) throws Exception {
         List resp = new ArrayList();
-        server.invoke(mwlScuServiceName, "findMWLEntries",
-                    new Object[] { ds, resp },
-                    new String[] { Dataset.class.getName(), List.class.getName() });
+        server.invoke(mwlScuServiceName, "findMWLEntries", new Object[] { ds,
+                resp }, new String[] { Dataset.class.getName(),
+                List.class.getName() });
         return resp;
     }
-    
+
     /**
      * Callback for pre-processing the dataset
-     * @param ds the original dataset
+     * 
+     * @param ds
+     *                the original dataset
      * @throws Exception
      */
     void preProcess(Dataset ds) throws Exception {
-        doPreProcess(ds);        
+        doPreProcess(ds);
     }
 
     protected void doPreProcess(Dataset ds) throws Exception {
-        // Extension Point for customized StoreScpService    
+        // Extension Point for customized StoreScpService
     }
 
     /**
      * Callback for post-processing the dataset
-     * @param ds the coerced dataset
+     * 
+     * @param ds
+     *                the coerced dataset
      * @throws Exception
      */
     void postProcess(Dataset ds) throws Exception {
-        doPostProcess(ds);        
+        doPostProcess(ds);
     }
 
     protected void doPostProcess(Dataset ds) throws Exception {
-        // Extension Point for customized StoreScpService    
+        // Extension Point for customized StoreScpService
     }
-    
+
     /**
-     * Callback for post-processing the dataset after the 
-     * dataset has been coerced.
-     * @param ds the coerced dataset
+     * Callback for post-processing the dataset after the dataset has been
+     * coerced.
+     * 
+     * @param ds
+     *                the coerced dataset
      * @throws Exception
      */
     void postCoercionProcessing(Dataset ds) throws Exception {
-    	doPostCoercionProcessing(ds);        
+        doPostCoercionProcessing(ds);
     }
 
     protected void doPostCoercionProcessing(Dataset ds) throws Exception {
-        // Extension Point for customized StoreScpService    
+        // Extension Point for customized StoreScpService
     }
 }
