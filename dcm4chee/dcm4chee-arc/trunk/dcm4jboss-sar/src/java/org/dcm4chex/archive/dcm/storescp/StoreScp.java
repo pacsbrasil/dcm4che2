@@ -119,12 +119,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final int NO_APPEND_PERMISSION_ERR_STATUS = 0xCE24;
 
-    private static final String MISSING_USER_ID_ERR_MSG =
-            "Missing user identification for appending existing Study";
-    
-    private static final String NO_APPEND_PERMISSION_ERR_MSG =
-            "No permission to append existing Study";
-    
+    private static final String MISSING_USER_ID_ERR_MSG = "Missing user identification for appending existing Study";
+
+    private static final String NO_APPEND_PERMISSION_ERR_MSG = "No permission to append existing Study";
+
     private static final String STORE_XSL = "cstorerq.xsl";
 
     private static final String STORE_XML = "-cstorerq.xml";
@@ -136,7 +134,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
 
     private static final String SERIES_IUID = "SERIES_IUID";
-    
+
     final StoreScpService service;
 
     private final Logger log;
@@ -173,7 +171,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private String[] acceptMismatchIUIDCallingAETs = {};
 
-    private String[] updateStudyAccessTimeAETs = {};    
+    private String[] updateStudyAccessTimeAETs = {};
 
     private boolean checkIncorrectWorklistEntry = true;
 
@@ -238,24 +236,24 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public final void setAcceptMismatchIUIDCallingAETs(String aets) {
         acceptMismatchIUIDCallingAETs = StringUtils.split(aets, '\\');
     }
-    
+
     public final String getUpdateStudyAccessTimeCallingAETs() {
         return updateStudyAccessTimeAETs == null ? "ANY"
-        		: updateStudyAccessTimeAETs.length == 0 ? "NONE"
-        		: StringUtils.toString(updateStudyAccessTimeAETs, '\\');
+                : updateStudyAccessTimeAETs.length == 0 ? "NONE" : StringUtils
+                        .toString(updateStudyAccessTimeAETs, '\\');
     }
 
     public final void setUpdateStudyAccessTimeCallingAETs(String aets) {
-    	updateStudyAccessTimeAETs = aets.equalsIgnoreCase("ANY") ? null
-    			: aets.equalsIgnoreCase("NONE") ? new String[0]
-    			: StringUtils.split(aets, '\\');
+        updateStudyAccessTimeAETs = aets.equalsIgnoreCase("ANY") ? null : aets
+                .equalsIgnoreCase("NONE") ? new String[0] : StringUtils.split(
+                aets, '\\');
     }
-    
-	private boolean isUpdateStudyAccessTimeFor(String aet) {
-		return updateStudyAccessTimeAETs == null
-			|| Arrays.asList(updateStudyAccessTimeAETs).contains(aet);
-	}    
-        
+
+    private boolean isUpdateStudyAccessTimeFor(String aet) {
+        return updateStudyAccessTimeAETs == null
+                || Arrays.asList(updateStudyAccessTimeAETs).contains(aet);
+    }
+
     public final boolean isStudyDateInFilePath() {
         return studyDateInFilePath;
     }
@@ -381,7 +379,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     /**
      * @param checkIncorrectWorklistEntry
-     *            The checkIncorrectWorklistEntry to set.
+     *                The checkIncorrectWorklistEntry to set.
      */
     public void setCheckIncorrectWorklistEntry(
             boolean checkIncorrectWorklistEntry) {
@@ -392,9 +390,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Command rspCmd) throws IOException, DcmServiceException {
         InputStream in = rq.getDataAsStream();
         perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
-        perfMon
-                .setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE,
-                        rq);
+        perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
 
         DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq
                 .getTransferSyntaxUID());
@@ -412,19 +408,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     /**
-     * Actual CStore request handling.  Allows for subclasses to do some preliminary work
-     * with the rq Dataset before reading and handling the pixel data. 
+     * Actual CStore request handling. Allows for subclasses to do some
+     * preliminary work with the rq Dataset before reading and handling the
+     * pixel data.
      * 
-     * This method expects that the Dataset has already been parsed from the Dimse InputStream, 
-     * and the DcmParser is initialized already with the Dataset. 
+     * This method expects that the Dataset has already been parsed from the
+     * Dimse InputStream, and the DcmParser is initialized already with the
+     * Dataset.
      * 
-     * @param activeAssoc        The ActiveAssociation
-     * @param rq                 The Dimse request
-     * @param rspCmd             The response Command
-     * @param ds                 The parsed Dataset from the Dimse rq
-     * @param parser             The DcmParser initialized with the InputStream from the 
+     * @param activeAssoc
+     *                The ActiveAssociation
+     * @param rq
+     *                The Dimse request
+     * @param rspCmd
+     *                The response Command
+     * @param ds
+     *                The parsed Dataset from the Dimse rq
+     * @param parser
+     *                The DcmParser initialized with the InputStream from the
      */
-    protected void doActualCStore(ActiveAssociation activeAssoc, Dimse rq, Command rspCmd, Dataset ds, DcmParser parser) throws IOException, DcmServiceException {
+    protected void doActualCStore(ActiveAssociation activeAssoc, Dimse rq,
+            Command rspCmd, Dataset ds, DcmParser parser) throws IOException,
+            DcmServiceException {
         File file = null;
         boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(
                 UIDs.TianiURIReferenced);
@@ -441,18 +446,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         + "] already exists - ignored");
                 return;
             }
-    
+
             service.preProcess(ds);
-    
+
             if (log.isDebugEnabled()) {
                 log.debug("Dataset:\n");
                 log.debug(ds);
             }
-    
+
             // Set original dataset
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
                     ds);
-    
+
             service.logDIMSE(assoc, STORE_XML, ds);
             if (isCheckIncorrectWorklistEntry()
                     && checkIncorrectWorklistEntry(ds)) {
@@ -531,10 +536,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     String tsuid = ds.getString(
                             PrivateTags.TianiURIReferencedTransferSyntaxUID,
                             UIDs.ImplicitVRLittleEndian);
-                    ds.setFileMetaInfo(objFact.newFileMetaInfo(
-                            rqCmd.getAffectedSOPClassUID(),
-                            rqCmd.getAffectedSOPInstanceUID(),
-                            tsuid));
+                    ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
+                            .getAffectedSOPClassUID(), rqCmd
+                            .getAffectedSOPInstanceUID(), tsuid));
                 }
             } else {
                 fsDTO = service.selectStorageFileSystem();
@@ -551,15 +555,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
                         .getAffectedSOPClassUID(), rqCmd
                         .getAffectedSOPInstanceUID(), tsuid));
-       
+
                 perfMon.start(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
-                perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE,
-                        file);
+                perfMon.setProperty(activeAssoc, rq,
+                        PerfPropertyEnum.DICOM_FILE, file);
                 md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
-                perfMon
-                        .stop(activeAssoc, rq,
-                                PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+                perfMon.stop(activeAssoc, rq,
+                        PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
             if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
@@ -573,12 +576,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(PrivateTags.CallingAET, callingAET);
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-            Dataset coerced = 
-                    service.getCoercionAttributesFor(assoc, STORE_XSL, ds);
+            Dataset coerced = service.getCoercionAttributesFor(assoc,
+                    STORE_XSL, ds);
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
-            service.postCoercionProcessing(ds);            
+            service.postCoercionProcessing(ds);
             checkPatientIdAndName(ds, callingAET);
             service.supplementIssuerOfPatientID(ds, callingAET);
             service.generatePatientID(ds, ds);
@@ -591,7 +594,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     SeriesStored seriesStored = store
                             .makeSeriesStored(prevseriud);
                     if (seriesStored != null) {
-                        log.debug("Send SeriesStoredNotification - series changed");
+                        log
+                                .debug("Send SeriesStoredNotification - series changed");
                         Socket sock = assoc.getSocket();
                         doAfterSeriesIsStored(store, sock, seriesStored);
                         store.commitSeriesStored(seriesStored);
@@ -604,10 +608,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             seriuid, mwlFilter));
                 }
             }
-    
+
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
-    
+
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, file, md5sum,
                     isUpdateStudyAccessTimeFor(callingAET));
@@ -647,10 +651,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private void checkAppendPermission(Association a, Dataset ds)
             throws Exception {
-        if (service.hasUnrestrictedAppendPermissions(a.getCallingAET())) {            
+        if (service.hasUnrestrictedAppendPermissions(a.getCallingAET())) {
             return;
         }
-        // only check on first instance of a series received in the same association
+        // only check on first instance of a series received in the same
+        // association
         String seriuid = ds.getString(Tags.SeriesInstanceUID);
         String prevseriud = (String) a.getProperty(SERIES_IUID);
         if (seriuid.equals(prevseriud)) {
@@ -659,15 +664,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         String suid = ds.getString(Tags.StudyInstanceUID);
         if (getStorage(a).numberOfStudyRelatedInstances(suid) == -1) {
             return;
-        } 
+        }
 
         Subject subject = (Subject) a.getProperty("user");
         if (subject == null) {
             throw new DcmServiceException(MISSING_USER_ID_ERR_STATUS,
                     MISSING_USER_ID_ERR_MSG);
         }
-        if (!service.getStudyPermissionManager(a).hasPermission(
-                suid, StudyPermissionDTO.APPEND_ACTION, subject)) {
+        if (!service.getStudyPermissionManager(a).hasPermission(suid,
+                StudyPermissionDTO.APPEND_ACTION, subject)) {
             throw new DcmServiceException(NO_APPEND_PERMISSION_ERR_STATUS,
                     NO_APPEND_PERMISSION_ERR_MSG);
         }
@@ -980,7 +985,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 "Missing Series Instance UID (0020,000E)");
         if (!rqCmd.getAffectedSOPInstanceUID().equals(iuid)) {
             String prompt = "SOP Instance UID in Dataset [" + iuid
-                    + "] differs from Affected SOP Instance UID[" 
+                    + "] differs from Affected SOP Instance UID["
                     + rqCmd.getAffectedSOPInstanceUID() + "]";
             log.warn(prompt);
             if (!contains(acceptMismatchIUIDCallingAETs, aet)) {
@@ -996,18 +1001,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return iuid;
     }
 
-    
     private static String checkNotNull(String val, String msg)
-    throws DcmServiceException {
+            throws DcmServiceException {
         if (val == null) {
             throw new DcmServiceException(
-                    Status.DataSetDoesNotMatchSOPClassError, msg);            
+                    Status.DataSetDoesNotMatchSOPClassError, msg);
         }
         return val;
     }
 
     private void checkPatientIdAndName(Dataset ds, String aet)
-            throws DcmServiceException, HomeFactoryException, RemoteException, CreateException, FinderException {
+            throws DcmServiceException, HomeFactoryException, RemoteException,
+            CreateException, FinderException {
         String pid = ds.getString(Tags.PatientID);
         String pname = ds.getString(Tags.PatientName);
         if (pid == null && !acceptMissingPatientID) {
@@ -1094,8 +1099,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
      * </dl>
      * 
      * @param s
-     *            The Association socket or null if series is stored local (e.g.
-     *            undelete)
+     *                The Association socket or null if series is stored local
+     *                (e.g. undelete)
      * @param seriesStored
      */
     protected void doAfterSeriesIsStored(Storage store, Socket s,
