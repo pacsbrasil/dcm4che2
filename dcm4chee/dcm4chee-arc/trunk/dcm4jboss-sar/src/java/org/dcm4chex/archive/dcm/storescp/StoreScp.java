@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.net.URI;
 import java.rmi.RemoteException;
 import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
@@ -488,14 +489,16 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             + referencedDirectoryPath);
                 }
                 filePath = uri.substring(referencedDirectoryURI.length());
-                file = FileUtils.toFile(referencedDirectoryPath, filePath);
-                if (!file.isFile()) {
-                    throw new DcmServiceException(Status.ProcessingFailure,
-                            "File referenced by (0040,E010) Retrieve URI: "
-                                    + uri + " not found!");
+                if (uri.startsWith("file:/")) {
+                    file = new File(new URI(uri));
+                    if (!file.isFile()) {
+                        throw new DcmServiceException(Status.ProcessingFailure,
+                                "File referenced by (0040,E010) Retrieve URI: "
+                                        + uri + " not found!");
+                    }
                 }
                 fsDTO = getFileSystemMgt().getFileSystem(referencedDirectoryPath);
-                if (readReferencedFile) {
+                if (file != null && readReferencedFile) {
                     log.info("M-READ " + file);
                     Dataset fileDS = objFact.newDataset();
                     FileInputStream fis = new FileInputStream(file);
