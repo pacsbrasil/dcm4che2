@@ -360,9 +360,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 			   dh = (DataHandler) entry.getValue();
 			   doc = objFac.createProvideAndRegisterDocumentSetRequestTypeDocument();
 			   doc.setId((String) entry.getKey());
-			   ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			   dh.writeTo(baos);
-			   doc.setValue(baos.toByteArray());
+			   doc.setValue(dh);
 			   l.add(doc);
 		   }
 		   if (unifyUIDs)
