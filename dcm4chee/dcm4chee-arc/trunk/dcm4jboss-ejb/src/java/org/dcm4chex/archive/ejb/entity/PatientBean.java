@@ -533,7 +533,10 @@ public abstract class PatientBean implements EntityBean {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         Collection c;
         if (pid != null && issuer != null) {
-        	c = patHome.findByPatientIdWithIssuer(pid, issuer);
+            c = patHome.findByPatientIdWithExactIssuer(pid, issuer);
+            if (c.isEmpty()) {
+                c = patHome.findByPatientId(pid);
+            }
         } else {
         	PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
         	if (pn != null) {
