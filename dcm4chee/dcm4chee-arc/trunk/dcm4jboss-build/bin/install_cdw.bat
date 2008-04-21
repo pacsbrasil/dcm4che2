@@ -65,3 +65,6 @@ copy "%CDW_DEPLOY%\dcm4chee-cdw.sar" "%DCM4CHEE_DEPLOY%"
 copy "%CDW_DEPLOY%\dcm4chee-nerocmd.sar" "%DCM4CHEE_DEPLOY%"
 
 copy "%CDW_SERV%\lib\dcm4chee-cdw.jar" "%DCM4CHEE_SERV%\lib"
+
+:end
+if "%OS%" == "Windows_NT" endlocal
