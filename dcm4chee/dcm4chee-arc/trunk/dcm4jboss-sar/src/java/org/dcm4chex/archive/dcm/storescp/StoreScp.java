@@ -56,8 +56,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
-
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
@@ -175,7 +173,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private boolean checkIncorrectWorklistEntry = true;
 
-    private int filePathComponents = 2;
+    private String referencedDirectoryPath;
+
+    private String referencedDirectoryURI;
 
     private boolean readReferencedFile = true;
 
@@ -294,16 +294,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.hourInFilePath = hourInFilePath;
     }
 
-    public final int getFilePathComponents() {
-        return filePathComponents;
+    public final String getReferencedDirectoryPath() {
+        return referencedDirectoryPath;
     }
 
-    public final void setFilePathComponents(int filePathComponents) {
-        if (filePathComponents < 1) {
-            throw new IllegalArgumentException("filePathComponents: "
-                    + filePathComponents);
-        }
-        this.filePathComponents = filePathComponents;
+    public final void setReferencedDirectoryPath(String pathOrURI) {
+        String trimmed = pathOrURI.trim();
+        referencedDirectoryURI = isURI(trimmed) ? (trimmed + '/') :
+                FileUtils.toFile(trimmed).toURI().toString();
+        referencedDirectoryPath = trimmed;
+    }
+
+    private static boolean isURI(String pathOrURI) {
+        return pathOrURI.indexOf(':') > 1 ;
     }
 
     public final boolean isMd5sumReferencedFile() {
@@ -477,33 +480,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             Status.DataSetDoesNotMatchSOPClassError,
                             "Missing (0040,E010) Retrieve URI - required for Tiani Retrieve URI Transfer Syntax");
                 }
-                StringTokenizer stk = new StringTokenizer(uri, "/");
-                int dirPathComponents = stk.countTokens() - filePathComponents
-                        - 1;
-                if (dirPathComponents < 1 || !stk.nextToken().equals("file:")) {
+                if (!uri.startsWith(referencedDirectoryURI)) {
                     throw new DcmServiceException(
                             Status.DataSetDoesNotMatchSOPClassError,
-                            "Illegal (0040,E010) Retrieve URI: " + uri);
+                            "(0040,E010) Retrieve URI: " + uri
+                            + " does not match with configured Referenced Directory Path: "
+                            + referencedDirectoryPath);
                 }
-                StringBuffer sb = new StringBuffer();
-                String dirPath = null;
-                for (int i = 0; stk.hasMoreTokens(); i++) {
-                    if (i == dirPathComponents) {
-                        dirPath = sb.toString();
-                        sb.setLength(0);
-                    } else {
-                        sb.append('/');
-                    }
-                    sb.append(stk.nextToken());
-                }
-                filePath = sb.toString();
-                file = FileUtils.toFile(dirPath, filePath);
+                filePath = uri.substring(referencedDirectoryURI.length());
+                file = FileUtils.toFile(referencedDirectoryPath, filePath);
                 if (!file.isFile()) {
                     throw new DcmServiceException(Status.ProcessingFailure,
                             "File referenced by (0040,E010) Retrieve URI: "
                                     + uri + " not found!");
                 }
-                fsDTO = getFileSystemMgt().getFileSystem(dirPath);
+                fsDTO = getFileSystemMgt().getFileSystem(referencedDirectoryPath);
                 if (readReferencedFile) {
                     log.info("M-READ " + file);
                     Dataset fileDS = objFact.newDataset();

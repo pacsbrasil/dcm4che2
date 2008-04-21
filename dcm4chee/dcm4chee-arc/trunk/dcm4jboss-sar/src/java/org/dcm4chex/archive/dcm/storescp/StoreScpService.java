@@ -270,12 +270,12 @@ public class StoreScpService extends AbstractScpService {
         scp.setHourInFilePath(enable);
     }
 
-    public final int getFilePathComponents() {
-        return scp.getFilePathComponents();
+    public final String getReferencedDirectoryPath() {
+        return scp.getReferencedDirectoryPath();
     }
 
-    public final void setFilePathComponents(int filePathComponents) {
-        scp.setFilePathComponents(filePathComponents);
+    public final void setReferencedDirectoryPath(String pathOrURI) {
+        scp.setReferencedDirectoryPath(pathOrURI);
     }
 
     public final boolean isReadReferencedFile() {

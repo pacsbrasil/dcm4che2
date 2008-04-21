@@ -242,17 +242,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFilePathComponents"
-      setMethod="setFilePathComponents">
-      <description><![CDATA[Used to split directory path (mount point) from file path
-      components in the (0040,E010) Retrieve URI, referring an already existing file
-      of this object in a configured read-only file system. Only effective for receiving
-      objects encoded with private Transfer Syntax: 1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced.]]>
+      getMethod="getReferencedDirectoryPath"
+      setMethod="setReferencedDirectoryPath">
+      <description><![CDATA[Used to split directory path (mount point) from
+      file path in the (0040,E010) Retrieve URI of objects received with
+      private Transfer Syntax: 1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/. Alternatively an URI
+      can be specified. In any case, there must be already a file system
+      configured, which directory path match the value. If an URI is specified,
+      the (0040,E010) Retrieve URI in received objects must start with the value
+       + '/'. If a directory path is specified, the Retrieve URI must
+      start with 'file:' + absolute directory path. Otherwise the storage will fail.]]>
       </description>
-      <name>FilePathComponents</name>
-      <type>int</type>
+      <name>ReferencedDirectoryPath</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="2"/>
+         <value value="archive"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
