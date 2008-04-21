@@ -527,7 +527,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.home-method
      */
     public PatientLocal ejbHomeSearchFor(Dataset ds,
-            boolean followMergedWith) throws FinderException {
+            boolean followMergedWith, boolean trustPatientID) throws FinderException {
         String pid = ds.getString(Tags.PatientID);
         String issuer = ds.getString(Tags.IssuerOfPatientID);
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
@@ -535,7 +535,7 @@ public abstract class PatientBean implements EntityBean {
         if (pid != null && issuer != null) {
         	c = patHome.findByPatientIdWithIssuer(pid, issuer);
         } else {
-        	PersonName pn = ds.getPersonName(Tags.PatientName);
+        	PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
         	if (pn != null) {
         		String pnLike = toLike(pn);
         		Date birthdate = ds.getDate(Tags.PatientBirthDate);

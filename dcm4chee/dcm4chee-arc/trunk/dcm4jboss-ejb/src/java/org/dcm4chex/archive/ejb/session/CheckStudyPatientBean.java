@@ -188,7 +188,7 @@ public abstract class CheckStudyPatientBean implements SessionBean {
     private PatientLocal getOrCreatePatient(Dataset ds)
             throws CreateException, FinderException {
         try {
-            return patHome.searchFor(ds, false);
+            return patHome.searchFor(ds, false, false);
         } catch (ObjectNotFoundException e) {
             return patHome.create(ds);
         }

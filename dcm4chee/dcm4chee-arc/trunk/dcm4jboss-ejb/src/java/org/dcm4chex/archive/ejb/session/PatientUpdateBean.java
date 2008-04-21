@@ -126,7 +126,7 @@ public abstract class PatientUpdateBean implements SessionBean {
                 + " from " + prior.getString(Tags.PatientID)
                 + " to " + correct.getString(Tags.PatientID));
         try {
-            patHome.searchFor(correct, false);
+            patHome.searchFor(correct, false, true);
             String prompt = "Patient with PID "
                 + correct.getString(Tags.PatientID) + "^^^"
                 + correct.getString(Tags.IssuerOfPatientID, "")
@@ -204,7 +204,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     private PatientLocal updateOrCreate(Dataset ds)
             throws CreateException, FinderException {
        try {
-            PatientLocal pat = patHome.searchFor(ds, false);
+            PatientLocal pat = patHome.searchFor(ds, false, true);
             pat.updateAttributes(ds);
             return pat;
         } catch (ObjectNotFoundException e) {
@@ -220,7 +220,7 @@ public abstract class PatientUpdateBean implements SessionBean {
         LOG.info("Delete " + ds.getString(Tags.PatientName)
                 + " with PID " + ds.getString(Tags.PatientID));
         try {
-            patHome.searchFor(ds, false).remove();
+            patHome.searchFor(ds, false, true).remove();
             return true;
         } catch (ObjectNotFoundException e) {
             return false;
@@ -234,7 +234,7 @@ public abstract class PatientUpdateBean implements SessionBean {
         LOG.info("Change status of SPS for " + ds.getString(Tags.PatientName)
                 + " with PID " + ds.getString(Tags.PatientID) + " to ARRIVED");
         try {
-            PatientLocal pat = patHome.searchFor(ds, false);
+            PatientLocal pat = patHome.searchFor(ds, false, true);
             Collection c = pat.getMwlItems();
             for (Iterator iter = c.iterator(); iter.hasNext();) {
                 MWLItemLocal mwlitem = (MWLItemLocal) iter.next();
@@ -251,7 +251,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void updateOtherPatientIDsOrCreate(Dataset ds)
     throws FinderException, CreateException {
         try {
-            patHome.searchFor(ds, false).updateOtherPatientIDs(ds);
+            patHome.searchFor(ds, false, true).updateOtherPatientIDs(ds);
         } catch (ObjectNotFoundException e) {
             patHome.create(ds);
         }

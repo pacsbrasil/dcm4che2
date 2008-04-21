@@ -180,7 +180,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             throws DcmServiceException {
         try {
             try {
-                return patHome.searchFor(ds, true);
+                return patHome.searchFor(ds, true, false);
             } catch (ObjectNotFoundException onfe) {
                 return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
             }
@@ -691,7 +691,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
         PatientLocal pat;
         try {
-            pat = patHome.searchFor(mwlitem, false);
+            pat = patHome.searchFor(mwlitem, false, true);
         } catch (FinderException e) {
             throw new EJBException(e);
         }

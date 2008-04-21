@@ -406,14 +406,14 @@ public abstract class StorageBean implements SessionBean {
             throws Exception {
     	PatientLocal pat;
         try {
-            pat = patHome.searchFor(ds, true);
+            pat = patHome.searchFor(ds, true, false);
         } catch (ObjectNotFoundException e) {
             try {
 				return patHome.create(ds);
 			} catch (CreateException e1) {
         		// check if Patient record was inserted by concurrent thread
 		        try {
-		            pat = patHome.searchFor(ds, true);
+		            pat = patHome.searchFor(ds, true, false);
 		        } catch (Exception e2) {
 		        	throw e1;
 		        }

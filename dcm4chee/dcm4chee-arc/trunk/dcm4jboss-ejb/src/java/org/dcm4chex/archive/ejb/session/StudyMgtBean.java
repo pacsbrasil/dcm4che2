@@ -152,7 +152,7 @@ public abstract class StudyMgtBean implements SessionBean {
 	private PatientLocal findOrCreatePatient(Dataset ds)
 	        throws FinderException, CreateException  {
 	    try {
-	        return patHome.searchFor(ds, true);
+	        return patHome.searchFor(ds, true, false);
 	    } catch (ObjectNotFoundException onfe) {
 	        return patHome.create(ds);
 	    }           
