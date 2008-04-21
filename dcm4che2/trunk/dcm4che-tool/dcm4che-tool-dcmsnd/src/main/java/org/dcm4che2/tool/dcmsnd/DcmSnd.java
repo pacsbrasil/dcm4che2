@@ -47,11 +47,13 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -150,6 +152,10 @@ public class DcmSnd extends StorageCommitmentService {
 
     private static final int STG_CMT_ACTION_TYPE = 1;
 
+    /** TransferSyntax: DCM4CHE URI Referenced */
+    private static final String DCM4CHEE_URI_REFERENCED_TS_UID =
+            "1.2.40.0.13.1.1.2.4.94";
+
     private Executor executor = new NewThreadExecutor("DCMSND");
 
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -162,7 +168,7 @@ public class DcmSnd extends StorageCommitmentService {
 
     private NetworkConnection conn = new NetworkConnection();
 
-    private HashMap<String, HashSet<String>> as2ts = new HashMap<String, HashSet<String>>();
+    private Map<String, Set<String>> as2ts = new HashMap<String, Set<String>>();
 
     private ArrayList<FileInfo> files = new ArrayList<FileInfo>();
 
@@ -175,7 +181,9 @@ public class DcmSnd extends StorageCommitmentService {
     private int filesSent = 0;
 
     private long totalSize = 0L;
-    
+
+    private boolean fileref = false;
+
     private boolean stgcmt = false;
     
     private long shutdownDelay = 1000L;
@@ -190,8 +198,8 @@ public class DcmSnd extends StorageCommitmentService {
     
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
     
-    private char[] trustStorePassword = SECRET; 
-    
+    private char[] trustStorePassword = SECRET;
+
     public DcmSnd() {
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
@@ -280,6 +288,10 @@ public class DcmSnd extends StorageCommitmentService {
     public final void setOfferDefaultTransferSyntaxInSeparatePresentationContext(
             boolean enable) {
         ae.setOfferDefaultTransferSyntaxInSeparatePresentationContext(enable);
+    }
+
+    public final void setSendFileRef(boolean fileref) {
+        this.fileref = fileref;
     }
 
     public final void setStorageCommitment(boolean stgcmt) {
@@ -378,7 +390,13 @@ public class DcmSnd extends StorageCommitmentService {
         opts.addOption("ts1", false, "offer Default Transfer Syntax in " +
                 "separate Presentation Context. By default offered with\n" +
                 "Explicit VR Little Endian TS in one PC.");
-        
+
+        opts.addOption("fileref", false,
+                "send objects without pixel data, but with a reference to " +
+                "the DICOM file using DCM4CHE URI\nReferenced Transfer Syntax " +
+                "to import DICOM objects\n                            on a given file system to a DCM4CHEE " +
+                "archive.");
+
         OptionBuilder.withArgName("username");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -554,11 +572,12 @@ public class DcmSnd extends StorageCommitmentService {
         return cl;
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
         DcmSnd dcmsnd = new DcmSnd();
-        final List argList = cl.getArgList();
-        String remoteAE = (String) argList.get(0);
+        final List<String> argList = cl.getArgList();
+        String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmsnd.setCalledAET(calledAETAddress[0]);
         if (calledAETAddress[1] == null) {
@@ -583,6 +602,7 @@ public class DcmSnd extends StorageCommitmentService {
         }
         dcmsnd.setOfferDefaultTransferSyntaxInSeparatePresentationContext(
                 cl.hasOption("ts1"));
+        dcmsnd.setSendFileRef(cl.hasOption("fileref"));
         if (cl.hasOption("username")) {
             String username = cl.getOptionValue("username");
             UserIdentity userId;
@@ -655,7 +675,7 @@ public class DcmSnd extends StorageCommitmentService {
         System.out.println("Scanning files to send");
         long t1 = System.currentTimeMillis();
         for (int i = 1, n = argList.size(); i < n; ++i)
-            dcmsnd.addFile(new File((String) argList.get(i)));
+            dcmsnd.addFile(new File(argList.get(i)));
         long t2 = System.currentTimeMillis();
         if (dcmsnd.getNumberOfFilesToSend() == 0) {
             System.exit(2);
@@ -870,13 +890,20 @@ public class DcmSnd extends StorageCommitmentService {
     }
 
     private void addTransferCapability(String cuid, String tsuid) {
-        HashSet<String> ts = as2ts.get(cuid);
-        if (ts == null) {
-            ts = new HashSet<String>();
-            ts.add(UID.ImplicitVRLittleEndian);
-            as2ts.put(cuid, ts);
+        Set<String> ts = as2ts.get(cuid);
+        if (fileref) {
+            if (ts == null) {
+                as2ts.put(cuid,
+                        Collections.singleton(DCM4CHEE_URI_REFERENCED_TS_UID));
+            }
+        } else {
+            if (ts == null) {
+                ts = new HashSet<String>();
+                ts.add(UID.ImplicitVRLittleEndian);
+                as2ts.put(cuid, ts);
+            }
+            ts.add(tsuid);
         }
-        ts.add(tsuid);
     }
 
     private void configureTransferCapability() {
@@ -888,11 +915,11 @@ public class DcmSnd extends StorageCommitmentService {
                     ONLY_IVLE_TS, 
                     TransferCapability.SCU);
         }
-        Iterator iter = as2ts.entrySet().iterator();
+        Iterator<Map.Entry<String, Set<String>>> iter = as2ts.entrySet().iterator();
         for (int i = off; i < tc.length; i++) {
-            Map.Entry e = (Map.Entry) iter.next();
-            String cuid = (String) e.getKey();
-            HashSet<?> ts = (HashSet) e.getValue();
+            Map.Entry<String, Set<String>> e = iter.next();
+            String cuid = e.getKey();
+            Set<String> ts = e.getValue();
             tc[i] = new TransferCapability(cuid, 
                     ts.toArray(new String[ts.size()]),
                     TransferCapability.SCU);
@@ -937,14 +964,16 @@ public class DcmSnd extends StorageCommitmentService {
                 continue;
             }
             String tsuid = selectTransferSyntax(tc.getTransferSyntax(),
-                    info.tsuid);
+                    fileref ? DCM4CHEE_URI_REFERENCED_TS_UID : info.tsuid);
             if (tsuid == null) {
                 System.out.println();
                 System.out.println(UIDDictionary.getDictionary().prompt(
                         info.cuid)
                         + " with "
-                        + UIDDictionary.getDictionary().prompt(info.tsuid)
-                        + " not supported by" + remoteAE.getAETitle());
+                        + UIDDictionary.getDictionary().prompt(
+                                fileref ? DCM4CHEE_URI_REFERENCED_TS_UID 
+                                        : info.tsuid)
+                        + " not supported by " + remoteAE.getAETitle());
                 System.out.println("skip file " + info.f);
                 continue;
             }
@@ -1030,7 +1059,10 @@ public class DcmSnd extends StorageCommitmentService {
             return selectTransferSyntax(available, EVLE_TS);
         if (tsuid.equals(UID.ExplicitVRBigEndian))
             return selectTransferSyntax(available, EVBE_TS);
-        return tsuid;
+        for (int j = 0; j < available.length; j++)
+            if (available[j].equals(tsuid))
+                return tsuid;
+        return null;
     }
 
     private String selectTransferSyntax(String[] available, String[] tsuids) {
@@ -1091,7 +1123,19 @@ public class DcmSnd extends StorageCommitmentService {
                 } finally {
                     fis.close();
                 }
-            } else {
+            } else if (tsuid.equals(DCM4CHEE_URI_REFERENCED_TS_UID)) {
+                DicomObject attrs;
+                DicomInputStream dis = new DicomInputStream(info.f);
+                try {
+                    dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+                    attrs = dis.readDicomObject();
+                } finally {
+                    dis.close();
+                }
+                DicomOutputStream dos = new DicomOutputStream(out);
+                attrs.putString(Tag.RetrieveURI, VR.UT, info.f.toURI().toString());
+                dos.writeDataset(attrs, tsuid);
+             } else {
                 DicomInputStream dis = new DicomInputStream(info.f);
                 try {
                     DicomOutputStream dos = new DicomOutputStream(out);
