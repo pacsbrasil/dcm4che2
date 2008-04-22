@@ -605,9 +605,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
-
+            long fileLength = file != null ? file.length() : 0L;
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
-                    filePath, file, md5sum,
+                    filePath, fileLength, md5sum,
                     isUpdateStudyAccessTimeFor(callingAET));
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
@@ -822,7 +822,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
-            String filePath, File file, byte[] md5,
+            String filePath, long fileLength, byte[] md5,
             boolean updateStudyAccessTime) throws DcmServiceException,
             CreateException, HomeFactoryException, IOException {
         int retry = 0;
@@ -830,11 +830,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             try {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
-                        return storage.store(ds, fspk, filePath, file.length(),
+                        return storage.store(ds, fspk, filePath, fileLength,
                                 md5, updateStudyAccessTime);
                     }
                 } else {
-                    return storage.store(ds, fspk, filePath, file.length(),
+                    return storage.store(ds, fspk, filePath, fileLength,
                             md5, updateStudyAccessTime);
                 }
             } catch (Exception e) {
@@ -842,14 +842,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "failed to update DB with entries for received "
-                                    + file, e);
+                                    + fileLength, e);
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
-                        "failed to update DB with entries for received " + file
-                                + " - retry", e);
+                        "failed to update DB with entries for received "
+                                   + fileLength + " - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
