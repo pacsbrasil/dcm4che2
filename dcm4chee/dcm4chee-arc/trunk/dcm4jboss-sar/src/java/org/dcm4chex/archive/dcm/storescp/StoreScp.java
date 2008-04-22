@@ -842,14 +842,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
                             "failed to update DB with entries for received "
-                                    + fileLength, e);
+                                    + filePath, e);
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
                         "failed to update DB with entries for received "
-                                   + fileLength + " - retry", e);
+                                   + filePath + " - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);
                 } catch (InterruptedException e1) {
