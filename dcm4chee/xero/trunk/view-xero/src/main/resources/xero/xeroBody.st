@@ -1,0 +1,2 @@
+$query/query()$
+$search/studyTable()$

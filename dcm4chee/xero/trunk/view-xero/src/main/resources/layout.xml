@@ -1,0 +1,19 @@
+<layout
+  xmlns:m="http://www.dcm4che.org/xero/metadata/model" 
+  m:layout="${class:org.dcm4chee.xero.model.XmlModel}"
+  m:layout.resource="layout.xml"
+>
+	<PatientName type="string" v="pname"/>
+	<PatientID type="string" v="123"/>
+	<AccessionNumber type="string" v="some acc"/>
+	<StudyDate type="dateQueryEnum" v="Today"/>
+	<Modality type="string" v="CT"/>
+	
+	<SortOrder type="key" v="PatientName" />
+
+	<results type="XmlModel">
+		<httpArgs base="/wado2/study.xml" PatientName="true" PatientID="true" AccessionNumber="true" Modality="true" StudyDate="true" />
+		<sort key="SortOrder" />		
+	</results>
+	 
+</layout>

@@ -42,6 +42,11 @@
                 <artifactId>xero-cfind</artifactId>
                 <includeInApplicationXml>true</includeInApplicationXml>
              </jarModule>
+              <jarModule>
+                <groupId>org.dcm4chee.xero</groupId>
+                <artifactId>model-xero</artifactId>
+                <includeInApplicationXml>true</includeInApplicationXml>
+             </jarModule>
              <webModule>
                <groupId>org.dcm4chee.xero</groupId>
                <artifactId>xero-wado-war</artifactId>
@@ -51,6 +56,11 @@
                <groupId>org.dcm4chee.xero</groupId>
                <artifactId>xero-war</artifactId>
                <contextRoot>/xero</contextRoot>
+             </webModule>
+             <webModule>
+               <groupId>org.dcm4chee.xero</groupId>
+               <artifactId>view-xero</artifactId>
+               <contextRoot>/xview</contextRoot>
              </webModule>
              <jarModule>
                <groupId>org.dcm4chee.xero</groupId>
@@ -103,7 +113,16 @@
               <artifactId>slf4j-api</artifactId>
               <includeInApplicationXml>true</includeInApplicationXml>
             </jarModule>
-            
+            <jarModule>
+               <groupId>org.antlr</groupId>
+               <artifactId>stringtemplate</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
+            <jarModule>
+               <groupId>antlr</groupId>
+               <artifactId>antlr</artifactId>
+               <includeInApplicationXml>true</includeInApplicationXml>
+            </jarModule>
           </modules>
         </configuration>
       </plugin>
@@ -115,6 +134,12 @@
      <dependency>
         <groupId>org.dcm4chee.xero</groupId>
         <artifactId>metadata</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <type>jar</type>
+     </dependency>
+     <dependency>
+        <groupId>org.dcm4chee.xero</groupId>
+        <artifactId>model-xero</artifactId>
         <version>1.0-SNAPSHOT</version>
         <type>jar</type>
      </dependency>
@@ -132,6 +157,12 @@
      <dependency>
         <groupId>org.dcm4chee.xero</groupId>
         <artifactId>xero-wado-war</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <type>war</type>
+     </dependency>
+     <dependency>
+        <groupId>org.dcm4chee.xero</groupId>
+        <artifactId>view-xero</artifactId>
         <version>1.0-SNAPSHOT</version>
         <type>war</type>
      </dependency>
@@ -175,6 +206,16 @@
         <artifactId>log4j</artifactId>
         <version>1.2.13</version>
         <scope>provided</scope>
+     </dependency>
+     <dependency>
+       <groupId>org.antlr</groupId>
+       <artifactId>stringtemplate</artifactId>
+       <version>3.1.custom</version>
+     </dependency>
+     <dependency>
+       <groupId>antlr</groupId>
+       <artifactId>antlr</artifactId>
+       <version>2.7.7</version>
      </dependency>
   </dependencies>
 </project>

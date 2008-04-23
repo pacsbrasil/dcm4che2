@@ -83,7 +83,7 @@ public class TestUrlRetrieve {
    private static Logger log = LoggerFactory.getLogger(TestUrlRetrieve.class);
 
    enum UrlLevel {
-	  STUDY, SERIES, SERIES_IMAGE, IMAGE, IMAGE_PAGE, WADO, THUMBNAIL, SEAM_IMAGE, ACTION, ORIG,
+	  STUDY, SERIES, SERIES_IMAGE, IMAGE, IMAGE_PAGE, WADO, THUMBNAIL, SEAM_IMAGE, ACTION, ORIG, VIEW,
    };
 
    static JAXBContext context;
@@ -210,6 +210,7 @@ public class TestUrlRetrieve {
    static TestUrlRetrieve imagePageRet = new TestUrlRetrieve(UrlLevel.IMAGE_PAGE, 2, 0);
 
    static TestUrlRetrieve wadoRet = new TestUrlRetrieve(UrlLevel.WADO, 3, 0);
+   
 
    static TestUrlRetrieve thumbRet = new TestUrlRetrieve(UrlLevel.THUMBNAIL, 2, 0);
    
@@ -219,6 +220,7 @@ public class TestUrlRetrieve {
    
    static TestUrlRetrieve origRet = new TestUrlRetrieve(UrlLevel.ORIG, 2, 0);
    
+   static TestUrlRetrieve viewRet = new TestUrlRetrieve(UrlLevel.VIEW,2,0);
 
    static int count = 6;
 
@@ -266,6 +268,9 @@ public class TestUrlRetrieve {
 		 seriesImageRet.runnables.add(new TimeRunnable(WADO2_URL+"cfind?level=image&studyUID="+uid));
 
 	  }
+	  
+	  for(int i=0; i<100; i++) viewRet.runnables.add(new TimeRunnable(BASE_URL+"xview/xero"));
+
 
 	  long overallStart = System.nanoTime();
 	  studyRet.testAndPrintResults();
@@ -273,6 +278,7 @@ public class TestUrlRetrieve {
 	  seriesImageRet.testAndPrintResults();
 	  imageRet.testAndPrintResults();
 	  imagePageRet.testAndPrintResults();
+	  viewRet.testAndPrintResults();
 	  //seamRet.testAndPrintResults();
 	  //actionRet.testAndPrintResults();
 	  //thumbRet.testAndPrintResults();

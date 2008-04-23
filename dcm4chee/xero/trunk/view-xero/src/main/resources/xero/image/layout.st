@@ -1,0 +1,12 @@
+$studyRows:{studyX|$studyColumns:{studyY|
+    $studyToolbar(studyX,studyY)$
+    $series/seriesTray$
+    $seriesRows:{seriesX|$seriesColumns:{seriesY|
+    	$series/seriesTray$
+    }$}$
+    $seriesRows:{seriesX|$seriesColumns:{seriesY|
+    	$imageRows:{imageX|$imageColumns:{imageY|
+    		${st$studyX$,$studyY$se$seriesX$,$seriesY$im$imageX$,$imageY$}:image/imageBox()$
+    	}$}$
+    }$}$
+}$}$

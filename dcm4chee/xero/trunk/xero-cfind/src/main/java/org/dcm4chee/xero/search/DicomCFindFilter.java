@@ -39,8 +39,13 @@ package org.dcm4chee.xero.search;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -173,6 +178,83 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     /** Return the set of key to negotiate for */
     protected abstract int[] getReturnKeys();
     
+    
+    /**
+     * Format a date to the DICOM internal format for dates only.
+     * @param d
+     * @return DICOM formatted date.
+     */
+    protected String formatDate(Calendar cal) {
+       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
+       return sdf.format(cal.getTime());
+    }
+        
+    /**
+     * Handles various types of date values such as Today, Yesterday etc
+     * @param value
+     * @return
+     */
+   protected String parseDateValue(String value) {
+       if( value.length()==0 ) return "";
+       if( Character.isDigit(value.charAt(0)) || value.charAt(0)=='-' ) return value;
+       // It must be an enumerated value
+       String ret = value;
+       GregorianCalendar start = new GregorianCalendar();
+       Calendar end=null;
+       if( value.equalsIgnoreCase("TODAY") ) {
+    	  // No-op
+       }
+       else if( value.equalsIgnoreCase("SINCEYESTERDAY") ) {
+    	  start.add(Calendar.DAY_OF_MONTH, -1);
+       }
+       else if( value.equalsIgnoreCase("YESTERDAY") ) {
+    	  start.add(Calendar.DAY_OF_MONTH, -1);
+    	  end = new GregorianCalendar();
+       }
+       else if( value.equalsIgnoreCase("LAST10YEARS") ) {
+    	  start.add(Calendar.YEAR,-10);
+       }
+       else if( value.equalsIgnoreCase("LAST7DAYS") ) {
+    	  start.add(Calendar.DAY_OF_MONTH,-7);
+       }
+       else if( value.equalsIgnoreCase("Last4Weeks") ) {
+    	  start.add(Calendar.DAY_OF_MONTH,-28);
+       }
+       else if( value.equalsIgnoreCase("ThisMonth") ) {
+    	  start.set(Calendar.DAY_OF_MONTH, 1);
+       }
+       else if( value.equalsIgnoreCase("LastMonth") ) {
+    	  start.set(Calendar.DAY_OF_MONTH, 1);
+    	  start.add(Calendar.MONTH,-1);
+    	  end = new GregorianCalendar();
+    	  end.set(Calendar.DAY_OF_MONTH,1);
+       }
+       else if( value.equalsIgnoreCase("ThisYear") ) {
+    	  start.set(Calendar.DAY_OF_MONTH,1);
+    	  start.set(Calendar.MONTH,0);
+       }
+       else if(value.equalsIgnoreCase("LastYear") ) {
+    	  start.set(Calendar.DAY_OF_MONTH,1);
+    	  start.set(Calendar.MONTH,0);
+    	  start.add(Calendar.YEAR,-1);
+    	  end = new GregorianCalendar();
+    	  end.set(Calendar.DAY_OF_MONTH,1);
+    	  end.set(Calendar.MONTH,0);
+       }
+       else if(value.equalsIgnoreCase("SinceLastYear") ) {
+    	  start.set(Calendar.DAY_OF_MONTH,1);
+    	  start.set(Calendar.MONTH,0);
+    	  start.add(Calendar.YEAR,-1);
+       }
+       else {
+    	  log.warn("Unknown date/time format string "+value);
+    	  return value;
+       }
+       ret = (start!=null ? formatDate(start) : "")+"-"+(end!=null ? formatDate(end) : "");
+       log.info("Using "+ret+" for date time key "+value);
+       return ret;
+    }
+    
     /**
      * Generates a set of dicom keys related to the search condition, as well as ensuring that
      * the required fields are returned.
@@ -201,6 +283,12 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     			}
     			else {
     				throw new UnsupportedOperationException("Can't search on anything except simple values.");
+    			}
+    			// TODO - this probably needs to be decided by looking up the tag
+    			// and seeing if it really is a datetime tag, but for now just support date tags.
+    			if( key.endsWith("DateTime") ) {
+    			   keyTag = keyTag.substring(0,keyTag.length()-4);
+    			   value = parseDateValue(value);
     			}
     		} 
     		else {

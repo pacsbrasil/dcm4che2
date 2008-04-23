@@ -14,8 +14,9 @@
 
    <modules>
       <module>metadata</module>
-      <module>multi-template</module>
       <module>xero-cfind</module>
+      <module>model-xero</module>
+      <module>view-xero</module>
       <module>xero-core</module>
       <module>xero-wado-war</module>
       <module>xero-war</module>
@@ -109,6 +110,7 @@
   </repository>
  </repositories>
 
+ <!--
  <distributionManagement>
     <repository>
        <id>dcm4che</id>
@@ -116,5 +118,6 @@
        <url>scp://www.dcm4che.org:443/home/maven2</url>
     </repository>
  </distributionManagement>
+ -->
 
 </project>

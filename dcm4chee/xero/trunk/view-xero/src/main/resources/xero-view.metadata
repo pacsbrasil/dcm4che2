@@ -1,0 +1,10 @@
+## To include the model meta-data as well, use the following:
+metaDataProvider.property=${class:org.dcm4chee.xero.metadata.PropertyProvider}
+metaDataProvider.property.model=xero-model.metadata
+
+# Include view path related objects
+metaDataProvider.model=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.model.priority=35
+metaDataProvider.model.propertyFile=xero-view.metadata
+metaDataProvider.model.rootXml=http://www.dcm4che.org/xero/metadata
+metaDataProvider.model.suffix=.xml

@@ -48,9 +48,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The table columns represent the columns displayed in a table, along with the
@@ -60,8 +62,9 @@ import javax.xml.bind.annotation.XmlTransient;
  * 
  */
 public class TableColumn extends AttributeType {
-	private static Logger log = Logger.getLogger(TableColumn.class.getName());
+	private static Logger log = LoggerFactory.getLogger(TableColumn.class);
 	
+	public static final String DateTime = "DateTime"; 
 	@XmlTransient
 	String i18NName;
 
@@ -191,6 +194,9 @@ public class TableColumn extends AttributeType {
 	/** Sets a simple string value as the sole content. */
 	public void setValue(String value) {
 		getContent().clear();
+		if( this.type==DateTime ) {
+		   
+		}
 		getContent().add(value);
 	}
 
@@ -217,7 +223,7 @@ public class TableColumn extends AttributeType {
 			return ((String) value).length()==0;
 		// As more sub-types are added, they need to have their own
 		// implementations of isEmpty.
-		log.warning("TableColumn has a non-String sub-type for which no isEmpty method has been written, and thus isEmpty might be invalid.");
+		log.warn("TableColumn has a non-String sub-type for which no isEmpty method has been written, and thus isEmpty might be invalid.");
 		return false;
 	}
 	

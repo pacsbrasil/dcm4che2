@@ -40,6 +40,7 @@ package org.dcm4chee.xero.metadata;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -120,9 +121,9 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 						prefixToNode.put(uriAt, prefixPath);
 					}
 					String key = prefixPath + attributes.getLocalName(i);
-					log.info("XML Metadata "+currentFile+": " + key + "="
-							+ attributes.getValue(i));
-					metaData.put(key, attributes.getValue(i));
+					String value = attributes.getValue(i);
+					log.info("XML Metadata "+currentFile+": " + key + "=" + value);
+					metaData.put(key, value);
 				}
 			}
 		}
@@ -152,26 +153,28 @@ public class XmlMetaDataProvider implements MetaDataProvider, MetaDataUser {
 	 * @return File contianing propertyFile.
 	 */
 	static public File getFileContaining(String propertyFile) {
-		ClassLoader classLoader = Thread.currentThread()
-				.getContextClassLoader();
-		log.debug("Looking for " + propertyFile);
-		URL url = classLoader.getResource(propertyFile);
-		String base = url.toString();
-		if (!base.startsWith("file:"))
-			throw new UnsupportedOperationException(
-					"Can only read meta data from un-packed file structures, got url:"
-							+ base);
-		File file;
-		try {
+	  ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	  log.debug("Looking for " + propertyFile);
+	  URL url = classLoader.getResource(propertyFile);
+	  if (url == null) {
+		 throw new IllegalArgumentException("Property file '" + propertyFile + "' not found.");
+	  }
+	  String base = url.toString();
+	  if (base.startsWith("file:")) {
+		 File file;
+		 try {
 			file = new File(url.toURI());
-		} catch (URISyntaxException e) {
+		 } catch (URISyntaxException e) {
 			throw new RuntimeException(e);
-		}
-		assert file.exists();
-		File parent = file.getParentFile();
-		log.debug("Parent file=" + parent);
-		return parent;
-	}
+		 }
+		 assert file.exists();
+		 File parent = file.getParentFile();
+		 log.debug("Parent file=" + parent);
+		 return parent;
+	  } else {
+		 throw new UnsupportedOperationException("Can only read meta data from un-packed file structures, got url " + base);
+	  }
+   }
 
 	/**
 	 * Recursively search through all directories, returning all elements

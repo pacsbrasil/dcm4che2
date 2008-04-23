@@ -1,0 +1,5 @@
+metaDataProvider.model=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.model.priority=35
+metaDataProvider.model.propertyFile=test-model.metadata
+metaDataProvider.model.rootXml=http://www.dcm4che.org/xero/metadata
+metaDataProvider.model.suffix=.xml
