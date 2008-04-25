@@ -1078,9 +1078,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                         String.class.getName(), String.class.getName() });
     }
     
-    protected File getFile(FileDTO dto) throws Exception {
-    	String fsID = dto.getDirectoryPath();
-    	String fileID = dto.getFilePath();
+    protected File getFile(String fsID, String fileID) throws Exception {
     	return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
     			: FileUtils.toFile(fsID, fileID);
     }    
@@ -1097,7 +1095,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 for (int i = 0; i < fileDTOs.length; ++i) {
                     dto = fileDTOs[i];
                     if (retrieveAET.equals(dto.getRetrieveAET()))
-                        return getFile(dto);
+                        return getFile(dto.getDirectoryPath(),
+                                dto.getFilePath());
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }
@@ -1113,7 +1112,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         return home.create();
     }
     
-    public DataSource getDatasourceOfInstance(String iuid) throws SQLException {
+    public DataSource getDatasourceOfInstance(String iuid) throws Exception {
         Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
         dsQ.putUI(Tags.SOPInstanceUID, iuid);
         dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
@@ -1125,7 +1124,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         for (int i = 0; i < fileInfos.length; ++i) {
             final FileInfo info = fileInfos[i];
             if (retrieveAET.equals(info.fileRetrieveAET)) {
-                File f = FileUtils.toFile(info.basedir, info.fileID);
+                File f = getFile(info.basedir, info.fileID);
                 Dataset mergeAttrs = DatasetUtils.fromByteArray(
                         info.patAttrs,
                         DatasetUtils .fromByteArray(
