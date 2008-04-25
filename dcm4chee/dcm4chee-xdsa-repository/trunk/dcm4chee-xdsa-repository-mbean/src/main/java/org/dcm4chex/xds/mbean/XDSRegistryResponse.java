@@ -72,8 +72,6 @@ public class XDSRegistryResponse implements XDSResponseObject {
 		PrintWriter w = response.getWriter();
 		w.write("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n");
 		w.write("  <SOAP-ENV:Header>\n");
-		w.write("	 <xdsheader SOAP-ENV:mustUnderstand=\"0\"\n>");
-		w.write("    </xdsheader>\n");
 		w.write("  </SOAP-ENV:Header>\n");
 		w.write("  <SOAP-ENV:Body>\n");
 		w.write("	 <RegistryResponse status=\"");
