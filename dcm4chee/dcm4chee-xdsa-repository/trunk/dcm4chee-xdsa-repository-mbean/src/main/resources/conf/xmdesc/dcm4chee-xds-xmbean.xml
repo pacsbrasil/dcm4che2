@@ -175,6 +175,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getRimPrefix"
+      setMethod="setRimPrefix">
+      <description><![CDATA[Set RIM NS prefix for added slots (size, hash, URI)!
+      		]]>
+      </description>
+      <name>RimPrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isLogSOAPMessage"
       setMethod="setLogSOAPMessage">
       <description>Enable logging of SOAP message (send and receive).
