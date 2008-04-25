@@ -146,6 +146,7 @@ public class XDSService extends ServiceMBeanSupport {
     private String xdsQueryURI;
     private boolean forceSQLQuery = false;
     
+    private String rimPrefix = null;
 	public XDSService() {
         dbFactory = DocumentBuilderFactory.newInstance();
         dbFactory.setNamespaceAware(true);
@@ -347,6 +348,12 @@ public class XDSService extends ServiceMBeanSupport {
         this.filteredSlots = setListString(filterSlots);
     }
 
+	public String getRimPrefix() {
+		return rimPrefix == null ? NONE : rimPrefix;
+	}
+	public void setRimPrefix(String rimPrefix) {
+		this.rimPrefix = NONE.equals(rimPrefix) ? null : rimPrefix;
+	}
 	/**
 	 * @return Returns the fetchNewPatIDURL.
 	 */
@@ -379,7 +386,7 @@ public class XDSService extends ServiceMBeanSupport {
         return sb.toString();
     }
 
-	public XDSResponseObject exportDocument( SOAPMessage message ) throws SOAPException, IOException, ParserConfigurationException, SAXException {
+	public XDSResponseObject exportDocument( SOAPMessage message ) {
 		List storedDocuments = new ArrayList();
 		if ( logReceivedSOAPMessage ) {
 			log.info("Received SOAP message:");
@@ -442,7 +449,7 @@ public class XDSService extends ServiceMBeanSupport {
 	            }
 	            filterMetadata(metadata, testPatient);
 	            storedDoc = saveDocumentEntry(metadata, part);
-	            metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()));
+	            metadata.setURI(getDocumentURI(metadata.getUniqueID(), metadata.getMimeType()), rimPrefix);
 	            if ( storedDoc != null) {
 	                storedDocuments.add(storedDoc);
 	            }
@@ -456,13 +463,6 @@ public class XDSService extends ServiceMBeanSupport {
 	        MessageFactory messageFactory = MessageFactory.newInstance();
 	        SOAPMessage msg = messageFactory.createMessage();
 	        msg.getSOAPPart().setContent(message.getSOAPPart().getContent());
-/*	        
-	        SOAPEnvelope envelope = msg.getSOAPPart().getEnvelope();
-	        SOAPBody soapBody = envelope.getBody();
-	        SOAPElement bodyElement = soapBody.addBodyElement(envelope.createName(SUBMIT_OBJECTS_REQUEST,"rs",NS_URN_REGISTRY_2_1));
-	        Node copy = leafRegistryObjectList.cloneNode(true);
-	        bodyElement.appendChild(copy);
-*/	        
 	        SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
 	        boolean success = checkResponse( response, "RegistryResponse" );
 	        logExport(submissionUID, success);	
@@ -473,11 +473,11 @@ public class XDSService extends ServiceMBeanSupport {
             }
 			log.info("Register document finished.");
 			return new SOAPMessageResponse(response);
-		} catch ( Exception x ) {
+		} catch ( Throwable x ) {
 			log.error("Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
 			logExport(submissionUID != null ? submissionUID : "SubmissionSet UID missing", false);
 			deleteDocuments(storedDocuments);
-			return new XDSRegistryResponse( false, "XDSRepositoryError", "Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
+			return new XDSRegistryResponse( false, "XDSRepositoryError", "Export document(s) failed! SubmissionSet uid:"+submissionUID+" Reason:"+x.getMessage(),x);
 		}
 		
 	}
@@ -681,8 +681,8 @@ public class XDSService extends ServiceMBeanSupport {
 		String id = metadata.getContentID();
 		String uid = metadata.getUniqueID();
     	storedDoc = store.store(uid, part, metadata);
-    	metadata.setHash(storedDoc.getHash());
-    	metadata.setSize(storedDoc.getSize());
+    	metadata.setHash(storedDoc.getHash(), rimPrefix);
+    	metadata.setSize(storedDoc.getSize(), rimPrefix);
 		log.info("Attachment ("+uid+") stored in file "+storedDoc+" (size:"+storedDoc.getSize()+" hash:"+storedDoc.getHash());
 		return storedDoc;
 	}
@@ -712,7 +712,7 @@ public class XDSService extends ServiceMBeanSupport {
 	}
 	
 	
-	public SOAPMessage sendSOAP( SOAPMessage message, String url ) {
+	public SOAPMessage sendSOAP( SOAPMessage message, String url ) throws SOAPException {
 		SOAPConnection conn = null;
 		try {
 	        log.debug("Send request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
@@ -728,9 +728,12 @@ public class XDSService extends ServiceMBeanSupport {
             log.info("-------------------------------- response ----------------------------------");
             dumpSOAPMessage(response);
             return response;
-		} catch ( Throwable x ) {
+		} catch ( RuntimeException x ) {
+			log.error("Cant send SOAP message! RuntimeException occured:", x);
+			throw x;
+		} catch ( SOAPException x ) {
 			log.error("Cant send SOAP message! Reason:", x);
-			return null;
+			throw x;
 		} finally {
 			if ( conn != null ) try {
 					conn.close();
@@ -841,12 +844,6 @@ public class XDSService extends ServiceMBeanSupport {
 		return false;
 	}
 	
-//	private Document getDocumentFromMessage( SOAPMessage message ) throws SOAPException, ParserConfigurationException, SAXException, IOException {
-//		JAXMStreamSource src = (JAXMStreamSource) message.getSOAPPart().getContent();
-//        DocumentBuilder builder = dbFactory.newDocumentBuilder();
-//        Document d = builder.parse( src.getInputStream() );
-//        return d;
-//	}
 	/**
 	 * @param message
 	 * @return
@@ -857,10 +854,10 @@ public class XDSService extends ServiceMBeanSupport {
 	 * @throws IOException
 	 * @throws SOAPException
 	 */
-	private void dumpSOAPMessage(SOAPMessage message) throws ParserConfigurationException, SAXException, SOAPException, IOException {
+	private void dumpSOAPMessage(SOAPMessage message) {
 	    if ( ! logSOAPMessage ) return;
-		Source s = message.getSOAPPart().getContent();
         try {
+    		Source s = message.getSOAPPart().getContent();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             out.write("SOAP message:".getBytes());
             Transformer t = TransformerFactory.newInstance().newTransformer();

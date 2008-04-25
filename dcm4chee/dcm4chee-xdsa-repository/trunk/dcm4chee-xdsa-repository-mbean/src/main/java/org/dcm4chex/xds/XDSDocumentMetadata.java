@@ -130,31 +130,34 @@ public class XDSDocumentMetadata {
 	/**
 	 * @param hash
 	 */
-	public void setURI(String[] uri) {
-		setSlot( "URI", uri);
+	public void setURI(String[] uri, String prefix) {
+		setSlot( "URI", uri, prefix);
 	}
 	/**
 	 * @param hash
 	 */
-	public void setHash(String hash) {
-		setSlot("hash", hash);
+	public void setHash(String hash, String prefix) {
+		setSlot("hash", hash, prefix);
 	}
 	
 	/**
 	 * @param fileSize
 	 */
-	public void setSize(long fileSize) {
-		setSlot("size", String.valueOf(fileSize));
+	public void setSize(long fileSize, String prefix) {
+		setSlot("size", String.valueOf(fileSize), prefix);
 	}
 
-	private void setSlot(String name, String value) {
-		setSlot(name, new String[]{value});
+	private void setSlot(String name, String value, String prefix) {
+		setSlot(name, new String[]{value}, prefix);
 	}
-	private void setSlot(String name, String[] values) {
+	private void setSlot(String name, String[] values, String prefix) {
 		Element slot = doc.createElementNS(NS_URN_RIM_2_1,"Slot");
+		if ( prefix != null ) slot.setPrefix(prefix);
 		Element valueList = doc.createElementNS(NS_URN_RIM_2_1,"ValueList");
+		if ( prefix != null ) valueList.setPrefix(prefix);
 		for ( int i = 0 ; i < values.length ; i++ ) {
 			Element valueElement = doc.createElementNS(NS_URN_RIM_2_1,"Value");
+			if ( prefix != null ) valueElement.setPrefix(prefix);
 			Text valueElementText = doc.createTextNode(values[i]);
 			valueList.appendChild(valueElement);
 			valueElement.appendChild(valueElementText);
