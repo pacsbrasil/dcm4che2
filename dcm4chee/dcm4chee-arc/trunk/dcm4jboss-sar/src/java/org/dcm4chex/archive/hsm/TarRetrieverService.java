@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
@@ -221,18 +222,14 @@ public class TarRetrieverService extends ServiceMBeanSupport {
             throw new IllegalArgumentException("Missing ! in " + fileID);
         }
         int dirEnd = fileID.lastIndexOf('/', tarEnd);
-        if (dirEnd == -1) {
-            throw new IllegalArgumentException(
-                    "Missing / before ! in " + fileID);
-        }
-        String dpath = fileID.substring(0, dirEnd).replace('/', 
-                File.separatorChar);
-        File cacheDir = new File(absCacheRoot, dpath);
+        File cacheDir = (dirEnd == -1) ? absCacheRoot : new File(absCacheRoot,
+                fileID.substring(0, dirEnd).replace('/', File.separatorChar));
         String fpath = fileID.substring(tarEnd + 1).replace('/',
                 File.separatorChar);        
         File f = new File(cacheDir, fpath);
         if (!f.exists()) {
             String tarPath = fileID.substring(0, tarEnd);
+            String tarName = fileID.substring(dirEnd+1, tarEnd);
             if (tarFetchCmd == null) {
                 File tarFile = FileUtils.toFile(fsID.substring(4), tarPath);
                 extractTar(tarFile, cacheDir);
@@ -240,9 +237,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 if (absTarIncomingDir.mkdirs()) {
                     log.info("M-WRITE " + absTarIncomingDir);
                 }
-                int tarPathLen = tarPath.length();
-                File tarFile = new File(absTarIncomingDir,
-                        tarPath.substring(tarPathLen - 21));                
+                File tarFile = new File(absTarIncomingDir, tarName);
                 String cmd = makeCommand(fsID, tarPath, tarFile.getPath());
                 try {
                     log.info("Fetch from HSM: " + cmd);
@@ -288,36 +283,38 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         TarInputStream tar = new TarInputStream(new FileInputStream(tarFile));
         InputStream in = tar;
         try {
-            TarEntry entry = tar.getNextEntry();
+            TarEntry entry = skipDirectoryEntries(tar);
             if (entry == null)
                 throw new IOException("No entries in " + tarFile);
             String entryName = entry.getName();
-            if (!"MD5SUM".equals(entryName))
-                throw new IOException("Missing MD5SUM entry in " + tarFile);
-
+            Map<String, byte[]> md5sums = null;
             MessageDigest digest = null;
-            HashMap md5sums = new HashMap();
-            if (checkMD5) {
-                BufferedReader lineReader = new BufferedReader(
-                        new InputStreamReader(tar));
-                String line;
-                while ((line = lineReader.readLine()) != null) {
-                    md5sums.put(line.substring(34), 
-                            MD5Utils.toBytes(line.substring(0, 32)));
+            if ("MD5SUM".equals(entryName)) {
+                if (checkMD5) {
+                    try {
+                        digest = MessageDigest.getInstance("MD5");
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    }
+                    md5sums = new HashMap<String, byte[]>();
+                    BufferedReader lineReader = new BufferedReader(
+                            new InputStreamReader(tar));
+                    String line;
+                    while ((line = lineReader.readLine()) != null) {
+                        md5sums.put(line.substring(34), 
+                                MD5Utils.toBytes(line.substring(0, 32)));
+                    }
                 }
-                try {
-                    digest = MessageDigest.getInstance("MD5");
-                } catch (NoSuchAlgorithmException e) {
-                    throw new RuntimeException(e);
-                }
+                entry = skipDirectoryEntries(tar);
+            } else if (checkMD5 ) {
+                getLog().warn("Missing MD5SUM entry in " + tarFile);
             }
-
-            while ((entry = tar.getNextEntry()) != null) {
+            for (; entry != null; entry = skipDirectoryEntries(tar)) {
                 entryName = entry.getName();
                 // Retrieve saved MD5 checksum
                 byte[] md5sum = null;
-                if (checkMD5) {
-                    md5sum = (byte[]) md5sums.remove(entryName);
+                if (md5sums != null && digest != null) {
+                    md5sum = md5sums.remove(entryName);
                     if (md5sum == null)
                         throw new VerifyTarException("Unexpected TAR entry: "
                                 + entryName + " in " + tarFile);
@@ -346,7 +343,6 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                         out.close();
                     } catch (Exception ignore) {
                     }
-                    ;
                     if (cleanup) {
                         log.info("M-DELETE " + f);
                         f.delete();
@@ -354,7 +350,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 }
 
                 // Verify MD5
-                if (checkMD5) {
+                if (md5sums != null && digest != null) {
                     if (!Arrays.equals(digest.digest(), md5sum)) {
                         log.info("M-DELETE " + f);
                         f.delete();
@@ -376,6 +372,16 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         if (toDelete > 0) {
             freeNonBlocking(toDelete);
         }
+    }
+
+    private TarEntry skipDirectoryEntries(TarInputStream tar)
+            throws IOException {
+        for (TarEntry entry = tar.getNextEntry(); entry != null;
+            entry = tar.getNextEntry()) { 
+            if (!entry.isDirectory())
+                return entry;
+        }
+        return null;
     }
 
     private void freeNonBlocking(final long toDelete) {
