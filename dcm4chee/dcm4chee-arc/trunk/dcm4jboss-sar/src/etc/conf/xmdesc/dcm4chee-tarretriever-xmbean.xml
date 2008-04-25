@@ -60,6 +60,21 @@
          <value value="100MB"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isCheckMD5"
+    setMethod="setCheckMD5">
+    <description><![CDATA[
+     Defines if the MD5 sum of TAR file entries shall be checked against
+     values in first entry <code>MD5SUM</code> file during retrieval. If
+     the check fails, the retrieval will fail. If activated, but the first
+     TAR entry is not the <code>MD5SUM</code> file, a WARN messages will be
+     logged in <code>server.log</code>.]]>
+    </description>
+    <name>CheckMD5</name>
+    <type>boolean</type>
+    <descriptors>
+     <value value="true" />
+    </descriptors>
+   </attribute>
    <attribute access="read-write" 
      getMethod="getTarFetchCommand" 
      setMethod="setTarFetchCommand">
