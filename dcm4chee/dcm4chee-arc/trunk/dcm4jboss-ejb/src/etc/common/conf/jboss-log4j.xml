@@ -172,12 +172,45 @@
    <!-- Audit Trail Messages -->
    <!-- ==================== -->
    <!-- Used for emitting RFC-3881 compliant Audit messages -->
-   <appender name="AUDITLOG" class="org.dcm4che2.audit.log4j.net.SyslogAppender">
-     <param name="Facility" value="AUTHPRIV"/>
-     <param name="SyslogHost" value="localhost:4000"/>
+   <appender name="AUDITLOG"
+     class="org.dcm4che2.audit.log4j.net.SyslogAppender">
+     <param name="Facility" value="AUTHPRIV" />
+     <param name="SyslogHost" value="localhost:4000" />
      <layout class="org.apache.log4j.PatternLayout">
-       <param name="ConversionPattern" value="${app.name}: %m"/>
+       <param name="ConversionPattern" value="${app.name}: %m" />
      </layout>
+     <!-- Sample Audit Message Filter to suppress emission of Audit Messages 
+       triggered by Queries (Event ID = (110112,DCM,"Query")) invoked by
+       DICOM AE "DCMQR".
+     <filter class="org.dcm4che2.audit.log4j.AuditMessageFilter">
+       <param name="AcceptOnMatch" value="false" />
+       <param name="EventIDToMatch" value="110112^DCM" />
+       <param name="AETitlesToMatch" value="DCMQR" />
+       <param name="UserIsRequestorToMatch" value="true" />
+     </filter>
+     -->
+     <!-- Parameters supported by org.dcm4che2.audit.log4j.AuditMessageFilter:
+     AcceptOnMatch - defines if matching messages are included (=true) or 
+       excluded (=false). Be aware on the filter order if mixing include and
+       exclude filters!
+     Event parameters:
+       EventIDToMatch - Event ID code to match. Format: code^codeSystemName.
+       EventActionCodesToMatch - Comma separated list of Event Action Codes
+         {'C','R','U','D','E'} to match.
+       EventOutcomeIndicatorsToMatch - Comma separated list of Event Outcome
+         Indicators {'SUCCESS','WARN','ERROR'.'FATAL'} to match.
+       EventTypeCodeToMatch - Event Type code to match.
+         Format: code^codeSystemName.
+     Active Participant parameters (at least one of the Active Participants
+     of the message must match with ALL specified parameters):
+       UserIDToMatch - User ID of Active Participant to match.
+       RoleIDCodeToMatch - Role ID code of Active Participant to match.
+       AETitlesToMatch - AE Title of Active Participant to match.
+       UserIsRequestorToMatch - defines if the requesting (=true) or the
+         not requesting (=false) Active Participants matches.
+       MachineNameToMatch - Host name of Active Participant to match.
+       IPAddressToMatch - IP address of Active Participant to match.
+     -->
    </appender>
 
    <!-- set additivity="true" to log emitted Audit Messages in CONSOLE
