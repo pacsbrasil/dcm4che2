@@ -128,7 +128,7 @@ public class XDSDocumentFileStorage implements XDSDocumentStorage {
 				FileOutputStream fos = new FileOutputStream(f);
 				dos = new DigestOutputStream(fos, md);
 				writer.writeTo(dos);
-				log.info("#### File written:"+f+" exists:"+f.exists()+"  digest:"+md.digest());
+				log.info("#### File written:"+f+" exists:"+f.exists());
 			} finally {
 				if ( dos != null )
 					try {
