@@ -102,6 +102,35 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
+ 
+   <operation impact="ACTION">
+      <description><![CDATA[ Computes Hashcode as result from regular storeDocument! 
+      		]]> </description>
+      <name>computeHash</name>
+      <parameter>
+        <description>Filename of Document</description>
+        <name>Filename</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Algorythm (default is SHA1).</description>
+        <name>alg</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   
+   <operation impact="ACTION">
+      <description><![CDATA[ Computes Hashcode for file.
+      		]]> </description>
+      <name>computeHash</name>
+      <parameter>
+        <description>Filename of document</description>
+        <name>Filename</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
       
     </xmbean>
   </mbean>
