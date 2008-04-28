@@ -291,11 +291,11 @@ public class AuditMessageFilter extends Filter {
         this.userIDToMatch = userID;
     }
 
-    public final String getAeTitleToMatch() {
+    public final String getAETitleToMatch() {
         return aeTitleToMatch;
     }
     
-    public final void setAeTitlesToMatch(String aeTitleToMatch) {
+    public final void setAETitlesToMatch(String aeTitleToMatch) {
         this.aeTitleToMatch = aeTitleToMatch;
     }
     
@@ -323,11 +323,11 @@ public class AuditMessageFilter extends Filter {
         this.machineNameToMatch = machineName;
     }
 
-    public final String getIpAddressToMatch() {
+    public final String getIPAddressToMatch() {
         return ipAddressToMatch;
     }
 
-    public final void setIpAddressToMatch(String ipAddressToMatch) {
+    public final void setIPAddressToMatch(String ipAddressToMatch) {
         this.ipAddressToMatch = ipAddressToMatch;
     }
 
