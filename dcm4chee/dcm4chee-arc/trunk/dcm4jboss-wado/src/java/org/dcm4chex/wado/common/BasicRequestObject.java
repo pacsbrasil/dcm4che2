@@ -97,7 +97,8 @@ public interface BasicRequestObject {
 	
 	String getRemoteAddr();
 	String getRemoteHost();
-        String getRemoteUser();
-        HttpServletRequest getRequest();
-
+	String getRemoteUser();
+	HttpServletRequest getRequest();
+	boolean isStudyPermissionCheckDisabled();
+	void setStudyPermissionCheckDisabled(boolean b);
 }

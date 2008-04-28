@@ -74,6 +74,8 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
     protected String remoteAddr;
     protected String remoteHost = null;
     protected String remoteUser;
+    boolean studyPermissionCheckDisabled;
+    
     protected HttpServletRequest request;
 
     /**
@@ -215,5 +217,13 @@ public abstract class BasicRequestObjectImpl implements BasicRequestObject {
     public String getRemoteUser() {
         return remoteUser;
     }
+
+	public boolean isStudyPermissionCheckDisabled() {
+		return studyPermissionCheckDisabled;
+	}
+
+	public void setStudyPermissionCheckDisabled(boolean studyPermissionCheckDisabled) {
+		this.studyPermissionCheckDisabled = studyPermissionCheckDisabled;
+	}
 
 }

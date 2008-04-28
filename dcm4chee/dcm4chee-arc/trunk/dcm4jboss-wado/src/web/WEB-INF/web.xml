@@ -32,6 +32,26 @@
 			<param-name>fileSystemMgtName</param-name>
 			<param-value>dcm4chee.archive:service=FileSystemMgt</param-value>
 		</init-param>
+		<!-- 
+		 Enable/Disable StudyPermissionCheck for WADO retrieve
+		 true: restrict WADO retrieve of objects according Study Read permission of remote user. 
+		         denied access if no remote user information is associated with the request
+		 false: no restriction.
+		-->
+		 <init-param>
+		  <param-name>enableStudyPermissionCheck</param-name>
+		  <param-value>false</param-value>
+		 </init-param>
+		<!-- 
+		 Disable StudyPermissionCheck for dedicated user(s).
+		 List of users (seperated by ',') for which Study Read permissions are not checked on WADO retrieve,
+		 even if enableStudyPermissionCheck=true.
+		 default: admin
+		-->
+		 <init-param>
+		  <param-name>disableStudyPermissionCheckForUser</param-name>
+		  <param-value>admin</param-value>
+		 </init-param>
 
 		<load-on-startup>2</load-on-startup>
 	</servlet>
@@ -59,6 +79,7 @@
 			<param-name>allowShortURL</param-name>
 			<param-value>true</param-value>
 		</init-param>
+
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	
@@ -84,7 +105,7 @@
    <!-- A security constraint that restricts access to the
    	WADO service to users with the role WebAdmin.
    -->
-<!-- 
+<!--
    <security-constraint>
      <web-resource-collection>
        <web-resource-name>wado</web-resource-name>
@@ -96,7 +117,7 @@
        <http-method>POST</http-method>
      </web-resource-collection>
      <auth-constraint>
-       <role-name>WebAdmin</role-name>
+       <role-name>WebUser</role-name>
      </auth-constraint>
    </security-constraint>
 
@@ -106,8 +127,8 @@
    </login-config>
 
    <security-role>
-      <role-name>WebAdmin</role-name>
+      <role-name>WebUser</role-name>
    </security-role>
--->   
+ -->  
 
 </web-app>

@@ -39,9 +39,14 @@
 
 package org.dcm4chex.wado.web;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -67,6 +72,8 @@ public class WADOServiceDelegate {
 
     private static ObjectName wadoServiceName = null;
 	private static MBeanServer server;
+	private static boolean studyPermissionCheckEnabled;
+	private static ArrayList disableStudyPermissionUserList;
 	
     private static Logger log = Logger.getLogger( WADOServiceDelegate.class.getName() );
 
@@ -87,6 +94,16 @@ public class WADOServiceDelegate {
 		} catch (Exception e) {
 			log.error( "Exception in init! Servlet init parameter 'wadoServiceName' not valid",e );
 		}
+		studyPermissionCheckEnabled = "true".equals(config.getInitParameter("enableStudyPermissionCheck"));
+		if ( studyPermissionCheckEnabled ) {
+			disableStudyPermissionUserList = new ArrayList(3);
+			String users = config.getInitParameter("disableStudyPermissionCheckForUser");
+			if ( users != null && users.trim().length() > 0) {
+				for ( StringTokenizer st = new StringTokenizer(users, ",") ; st.hasMoreTokens() ; ) {
+					disableStudyPermissionUserList.add(st.nextToken().trim());
+				}
+			}
+		} 
     }
 
 	public Logger getLogger() {
@@ -102,6 +119,7 @@ public class WADOServiceDelegate {
 	 */
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
 		WADOResponseObject resp = null;
+		reqVO.setStudyPermissionCheckDisabled( isStudyPermissionCheckDisabled(reqVO.getRequest()) );
 		try {
 	        Object o = server.invoke(wadoServiceName,
 	                "getWADOObject",
@@ -113,6 +131,13 @@ public class WADOServiceDelegate {
 			resp = new WADOStreamResponseObjectImpl( null, "text.html", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error in WADO service ("+wadoServiceName+"): "+x.getMessage());
 		}
         return resp;
+	}
+	
+	public boolean isStudyPermissionCheckDisabled(HttpServletRequest request) {
+		log.debug("studyPermissionCheckEnabled:"+studyPermissionCheckEnabled);
+		log.debug("disableStudyPermissionUserList:"+disableStudyPermissionUserList);
+		log.debug("remoteUser:"+request.getRemoteUser());
+		return !studyPermissionCheckEnabled || disableStudyPermissionUserList.contains( request.getRemoteUser() );
 	}
 
 }
