@@ -13,6 +13,7 @@ public interface XDSConstants {
 	public static final String XDS_B_STATUS_FAILURE = "urn:oasis:names:tc:ebxml-regrep:ResponseStatusType:Failure";
 	public static final String SUBMIT_OBJECTS_REQUEST = "SubmitObjectsRequest";
 	public static final String SOAP_HEADER_ACTION = "Action";
+	public static final String SOAP_HEADER_MSG_ID = "MessageID";
 	public static final String SOAP_HEADER_MUST_UNDERSTAND = "mustUnderstand";
 
 	public static final String TAG_XDSB_DOCUMENT = "Document";
@@ -32,9 +33,13 @@ public interface XDSConstants {
 	public static final String NS_URN_REGISTRY_2_1 = "urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1";
 
 //IHE URN
-	public static final String URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B = "urn:ihe:iti:2007:RetrieveDocumentSet";
+	public static final String URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B = "urn:ihe:iti:2007:ProvideAndRegisterDocumentSet-b";
 	public static final String URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B_RESPONSE = "urn:ihe:iti:2007:ProvideAndRegisterDocumentSet-bResponse";
+	public static final String URN_IHE_ITI_2007_REGISTER_DOCUMENT_SET_B = "urn:ihe:iti:2007:RegisterDocumentSet-b";
+	public static final String URN_IHE_ITI_2007_REGISTER_DOCUMENT_SET_B_RESPONSE = "urn:ihe:iti:2007:RegisterDocumentSet-bResponse";
 	public static final String URN_IHE_ITI_2007_RETRIEVE_DOCUMENT_SET_RESPONSE = "urn:ihe:iti:2007:RetrieveDocumentSetResponse";
+	public static final String MSG_ID_PROVIDE_AND_REGISTER_DOCUMENT_SET_B = "urn:uuid:6d296e90-e5dc-43d0-b455-7c1f3eb35d83";
+	public static final String MSG_ID_REGISTER_DOCUMENT_SET_B = "urn:uuid:6d296e90-e5dc-43d0-b455-7c1f3eb3ffff";
 //ERROR	const
 	public static final String XDS_ERR_REPOSITORY_ERROR = "XDSRepositoryError";
 	public static final String XDS_ERR_MISSING_DOCUMENT_METADATA = "XDSMissingDocumentMetadata";
