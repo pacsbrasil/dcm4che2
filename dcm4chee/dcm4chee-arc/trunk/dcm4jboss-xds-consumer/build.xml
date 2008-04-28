@@ -42,7 +42,7 @@
 		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
 		</fileset>
-		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.14-SNAPSHOT.jar"/>		
+		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.14.jar"/>		
 	</path>
 
 	<target name="clean">
