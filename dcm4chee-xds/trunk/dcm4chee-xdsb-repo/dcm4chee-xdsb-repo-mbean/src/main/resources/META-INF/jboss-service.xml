@@ -260,6 +260,22 @@
       </parameter>
       <return-type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Retrieve Document Set.<br/>
+      		]]> </description>
+      <name>retrieveDocument</name>
+      <parameter>
+        <description>Doc UID</description>
+        <name>doc</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Mime Type</description>
+        <name>mime</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>javax.activation.DataHandler</return-type>
+   </operation>
         
     </xmbean>
   </mbean>

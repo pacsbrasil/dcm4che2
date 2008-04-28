@@ -42,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,20 +51,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.activation.DataHandler;
 import javax.management.ObjectName;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Dispatch;
 import javax.xml.ws.Service;
 import javax.xml.ws.Service.Mode;
-import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
@@ -95,12 +96,18 @@ import org.dcm4chee.xds.common.store.BasicXDSDocument;
 import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
 import org.dcm4chee.xds.common.store.StoredDocument;
 import org.dcm4chee.xds.common.store.XDSDocument;
+import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
 import org.dcm4chee.xds.common.utils.InfoSetUtil;
+import org.dcm4chee.xdsb.repository.ws.client.DocumentRegistryPortType;
+import org.dcm4chee.xdsb.repository.ws.client.DocumentRegistryService;
+import org.dcm4chee.xdsb.repository.ws.client.RegistryClientHeaderHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.SOAPElementImpl;
+import org.jboss.ws.core.soap.SOAPElementWriter;
 
 
 /**
@@ -315,7 +322,18 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	   try {
 		   log.debug("------------ProvideAndRegisterDocumentSetRequest:"+req);
 		   if ( logReceivedMessage ) {
+			   List<Document> docList = new ArrayList<Document>();
+			   docList.addAll(req.getDocument());
+			   req.getDocument().clear();
 			   log.info(" Received ProvideAndRegisterDocumentSetRequest"+InfoSetUtil.marshallObject( objFac.createProvideAndRegisterDocumentSetRequest(req), indentXmlLog));
+			   log.info("Documents:"+docList.size()+" DocumentElements in request. (Hidden in above xml representation!)");
+			   Document doc;
+			   for ( Iterator<Document> iter = docList.iterator() ; iter.hasNext() ; ) {
+				   doc = iter.next();
+				   log.info("Document:"+doc.getId()+" contentType:"+doc.getValue().getContentType()+
+						   " size:"+doc.getValue().getInputStream().available());
+			   }
+				req.getDocument().addAll(docList);
 		   }
 		   SubmitObjectsRequest submitRequest = req.getSubmitObjectsRequest();
 		   RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(submitRequest);
@@ -329,7 +347,10 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			   File f = new File(resolvePath("log/xdsb/pnr-"+submissionUID+".xml"));
 			   f.getParentFile().mkdirs();
 			   FileOutputStream fos = new FileOutputStream(f);
-			   fos.write(InfoSetUtil.marshallObject(objFac.createProvideAndRegisterDocumentSetRequest(req), true).getBytes() );
+			   CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+			   SOAPMessage msg = msgContext.getSOAPMessage();
+			   SOAPElementWriter writer = new SOAPElementWriter(fos, "UTF-8");
+			   writer.writeElement((SOAPElementImpl) msg.getSOAPPart().getEnvelope());
 			   fos.close();
 		   }
 		   storedDocuments = exportDocuments(req);
@@ -364,30 +385,25 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			   log.info("Mock RegistryResponse! Bypass 'Register Document Set' transaction!");
 			   return getMockResponse();
 		}
-		Dispatch<Source> dispatch = createDispatch();
-		Source s = InfoSetUtil.getSourceForObject(submitRequest);
+		DocumentRegistryPortType port = new DocumentRegistryService().getDocumentRegistryPortSoap12();
+		   Map<String, Object> reqCtx = ((BindingProvider)port).getRequestContext();
+	       List customHandlerChain = new ArrayList();
+	       customHandlerChain.add(new RegistryClientHeaderHandler());
+		   SOAPBinding binding = (SOAPBinding)((BindingProvider)port).getBinding();
+	       binding.setHandlerChain(customHandlerChain);			   
+	       log.debug("OLD ENDPOINT_ADDRESS_PROPERTY:"+reqCtx.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
+		   reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsRegistryURI);
+		   log.debug("NEW ENDPOINT_ADDRESS_PROPERTY:"+reqCtx.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
+		//Dispatch<Source> dispatch = createDispatch();
+		//Source s = InfoSetUtil.getSourceForObject(submitRequest);
 		log.info("####################################################");
 		log.info("####################################################");
 		log.info("XDS.b: Send register document-b request to registry:"+xdsRegistryURI);
 		log.info("####################################################");
 		log.info("####################################################");
-		Source resultSrc;
-		try {
-			resultSrc = dispatch.invoke(s);
-		} catch ( Throwable t ) {
-			throw new XDSException(XDSConstants.XDS_ERR_REG_NOT_AVAIL,"Provide And Register failed! Can not connect to registry:"+xdsRegistryURI,t);
-		}
-		log.debug("Response (transform.Source) from registry:"+resultSrc);
-		Unmarshaller unmarshaller = InfoSetUtil.getJAXBContext().createUnmarshaller();
-		Object rspObj = unmarshaller.unmarshal(resultSrc);
-		log.debug("Response Object from registry:"+rspObj);
-		RegistryResponseType rsp;
-		if ( rspObj instanceof RegistryResponseType ) {
-			rsp = (RegistryResponseType) rspObj;
-		} else {
-			JAXBElement elem = (JAXBElement)rspObj;
-			rsp = (RegistryResponseType) elem.getValue();
-		}
+		RegistryResponseType rsp = port.registerDocumentSetB(submitRequest);
+	   log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
+					   objFac.createRegistryResponse(rsp), indentXmlLog) );
 		return rsp;
 	}
 
@@ -464,6 +480,22 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		doc.getXdsDocWriter().writeTo(baos);
 		docRsp.setDocument(baos.toByteArray());
 		return docRsp;
+	}
+	
+	public DataHandler retrieveDocument(String docUid, String mime) throws XDSException {
+		log.info("Retrieve Document "+docUid+" with mime type:"+mime);
+		BasicXDSDocument doc = docStoreDelegate.retrieveDocument(docUid);
+		if ( doc != null ) {
+			if ( mime == null || mime.equals( doc.getMimeType() ) ) {
+				XDSDocumentWriter wr = doc.getXdsDocWriter();
+				return new XdsDataHandler(wr, mime);
+			}
+			log.info("Requested mime type ("+mime+
+					") doesn't comply with mime type of stored document ("+doc.getMimeType()+")!");
+		} else {
+			log.info("Requested document not found:"+docUid);
+		}
+		return null;
 	}
 	
 	public Map exportDocuments( ProvideAndRegisterDocumentSetRequestType req ) throws XDSException {
@@ -565,8 +597,15 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		QName portName = new QName(targetNS, "XDSbRepositoryPort");
 		Service service = Service.create(serviceName);
 		configProxyAndTLS(xdsRegistryURI);
-		service.addPort(portName, SOAPBinding.SOAP12HTTP_MTOM_BINDING, new URL(xdsRegistryURI).toExternalForm());
+		service.addPort(portName, SOAPBinding.SOAP12HTTP_BINDING, new URL(xdsRegistryURI).toExternalForm());
 		Dispatch<Source> dispatch = service.createDispatch(portName, Source.class, Mode.PAYLOAD);
+		
+		log.info("############# add custom RegSOAPHeaderHandler!");
+		   SOAPBinding binding = (SOAPBinding)((BindingProvider)dispatch).getBinding();
+	       List customHandlerChain = new ArrayList();
+	       customHandlerChain.add(new RegSOAPHeaderHandler());
+	       binding.setHandlerChain(customHandlerChain);			   
+			log.info("############# add custom RegSOAPHeaderHandler done!");
 		return dispatch;
 	}
 
@@ -711,4 +750,17 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		}
 	}
 	
+	public class XdsDataHandler extends DataHandler {
+		private XDSDocumentWriter writer;
+		public XdsDataHandler(XDSDocumentWriter wr, String mime) {
+			super(null, mime);
+			writer = wr;
+		}
+		
+		public void writeTo(OutputStream out) throws IOException {
+			writer.writeTo(out);
+		}
+	}
+	
 }
+
