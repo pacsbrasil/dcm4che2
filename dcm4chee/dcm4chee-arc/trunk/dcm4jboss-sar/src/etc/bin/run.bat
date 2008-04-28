@@ -109,11 +109,6 @@ rem Sample SSL debugging option:
 rem set JAVA_OPTS=%JAVA_OPTS% -Djavax.net.debug=ssl,handshake,data,trustmanager,help
 rem set JAVA_OPTS=%JAVA_OPTS% -Djavax.net.debug=ssl,handshake
 
-rem Uncomment to disable StudyPermission Check in WADO Service.
-rem Only effective if user authentication is configured for WADO.
-rem set JAVA_OPTS=%JAVA_OPTS% -Dorg.dcm4chee.wado.disableStudyPermission=true
-
-
 echo ===============================================================================
 echo.
 echo   JBoss Bootstrap Environment
