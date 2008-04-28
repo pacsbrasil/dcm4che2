@@ -363,9 +363,10 @@ public class BasicDicomObject extends AbstractDicomObject {
             if (a.vr() == VR.SQ) {
                 t = putSequence(a.tag(), n);
                 for (int i = 0; i < n; i++) {
-                    BasicDicomObject item = new BasicDicomObject(n);
+                    DicomObject srcItem = a.getDicomObject(i);
+                    BasicDicomObject item = new BasicDicomObject(srcItem.size());
                     item.setParent(this);
-                    a.getDicomObject(i).copyTo(item);
+                    srcItem.copyTo(item);
                     t.addDicomObject(item);
                 }
             } else {
