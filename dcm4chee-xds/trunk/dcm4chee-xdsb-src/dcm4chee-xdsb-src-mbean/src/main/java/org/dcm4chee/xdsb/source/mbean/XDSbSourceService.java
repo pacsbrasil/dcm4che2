@@ -132,6 +132,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 	private boolean logRequest;
 	private boolean logResponse;
 	private boolean indentXmlLog;
+	private boolean useSOAP11=false;
 	
 	private ObjectFactory objFac = new ObjectFactory();
 
@@ -311,6 +312,12 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         }
         return v3toV2tpl;
 	}
+	public boolean isUseSOAP11() {
+		return useSOAP11;
+	}
+	public void setUseSOAP11(boolean useSOAP11) {
+		this.useSOAP11 = useSOAP11;
+	}
 	private boolean isRimV2(Node n) {
 		if ( n instanceof org.w3c.dom.Document)
 			n = n.getFirstChild();
@@ -404,7 +411,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 		return submitRequest;
 	}
 
-	public boolean exportTestFile(String filename) throws JAXBException, XDSException {
+	public boolean exportTestFile(String filename) throws Exception {
 		   Unmarshaller unmarshaller = InfoSetUtil.getJAXBContext().createUnmarshaller();
 		   JAXBElement o = (JAXBElement) unmarshaller.unmarshal(new File(filename));
 		   log.debug("unmarshalled Object:"+ o);
@@ -450,7 +457,9 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 			   log.info("patId:"+patId);
 			   log.info("patName:"+patName);
 			   configProxyAndTLS(xdsRepositoryURI);
-			   DocumentRepositoryPortType port = new DocumentRepositoryService().getDocumentRepositoryPortSoap12();
+			   DocumentRepositoryPortType port = useSOAP11 ? 
+					   new DocumentRepositoryService().getDocumentRepositoryPortSoap11() : 
+						   new DocumentRepositoryService().getDocumentRepositoryPortSoap12();
 			   SOAPBinding binding = (SOAPBinding)((BindingProvider)port).getBinding();
 			   binding.setMTOMEnabled(true);
 			   Map<String, Object> reqCtx = ((BindingProvider)port).getRequestContext();
@@ -474,6 +483,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 			   logExport(submissionUID, patId, patName, success);
 			   log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
 			   return rsp;
+/*_*/
 		   } catch (XDSException x) {
 				throw x;
 		   } catch (Throwable t) {
@@ -481,7 +491,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 		   }
 		}
 		
-	private boolean checkResponse(RegistryResponseType rsp) throws JAXBException {
+	private boolean checkResponse(RegistryResponseType rsp) throws Exception {
 		if ( rsp == null ){
 			log.error("No RegistryResponse from registry!");
 			return false;

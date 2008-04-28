@@ -26,7 +26,8 @@ import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
  */
 @WebService(name = "DocumentRepository_PortType", targetNamespace = "urn:ihe:iti:xds-b:2007")
 @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
-@BindingType(value = "http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true")
+@BindingType(value = "http://www.w3.org/2003/05/soap/bindings/HTTP/?mtom=true")
+//@BindingType(value = "http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true")
 @XmlSeeAlso({
     ObjectFactory.class
 })
