@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ihe="urn:ihe:iti:xds-b:2007" xmlns:rs="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0" targetNamespace="urn:ihe:iti:xds-b:2007" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" name="XDS-b_DocumentRepository">
+<definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" 
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ihe="urn:ihe:iti:xds-b:2007" 
+		xmlns:rs="urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0" 
+		targetNamespace="urn:ihe:iti:xds-b:2007" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" name="XDS-b_DocumentRepository">
 	<documentation>IHE XDS.b Document Repository</documentation>
 	<types>
 		<xsd:schema elementFormDefault="qualified">
@@ -55,7 +58,7 @@
 		</operation>
 	</binding>
 	<binding name="DocumentRepository_Binding_Soap12" type="ihe:DocumentRepository_PortType">
-		<soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<soap12:binding style="document" transport="http://www.w3.org/2003/05/soap/bindings/HTTP"/>
 		<operation name="DocumentRepository_ProvideAndRegisterDocumentSet-b">
 			<soap12:operation soapAction="urn:ihe:iti:2007:ProvideAndRegisterDocumentSet-b"/>
 			<input>

@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 		)
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
 @EndpointConfig(configName = "Standard WSAddressing Endpoint")
-// TODO: remove HandlerChain if not necessary anymore
-// @HandlerChain(file = "jaxws-handlers-server.xml")
 public class DocumentRepository implements DocumentRepositoryPortType {
 
 	@Resource
