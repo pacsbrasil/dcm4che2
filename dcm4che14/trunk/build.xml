@@ -1,4 +1,4 @@
-?xml version="1.0"?>
+<?xml version="1.0"?>
 
 <project name="dcm4che" basedir="." default="release">
 
