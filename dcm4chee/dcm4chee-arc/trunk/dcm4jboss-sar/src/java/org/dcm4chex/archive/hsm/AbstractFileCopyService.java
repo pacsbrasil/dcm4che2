@@ -158,12 +158,16 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             newCondition = new Condition(destination.substring(0, startDest+1));
             destination = destination.substring(startDest+1);
         }
-        String fsid = ForwardingRules.toAET(destination);
-        try {
-            getFileSystemMgt().getFileSystem(fsid);
-        } catch (ObjectNotFoundException e) {
-            throw new IllegalArgumentException(
-                    "No such file system configured: " + fsid);
+        // skip check for existing file system configuration, if called
+        // on service creation (EJB will not yet be bound!) 
+        if (getState() == STARTED) {
+            String fsid = ForwardingRules.toAET(destination);
+            try {
+                getFileSystemMgt().getFileSystem(fsid);
+            } catch (ObjectNotFoundException e) {
+                throw new IllegalArgumentException(
+                        "No such file system configured: " + fsid);
+            }
         }
         this.condition = newCondition;
         this.destination = destination;
