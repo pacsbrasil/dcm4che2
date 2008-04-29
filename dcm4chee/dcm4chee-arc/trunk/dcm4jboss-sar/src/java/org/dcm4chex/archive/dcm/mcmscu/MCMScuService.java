@@ -620,6 +620,10 @@ public class MCMScuService extends AbstractScuService implements
         try {
             mc = this.lookupMediaComposer();
             Collection studies = mc.getStudiesReceivedBefore(getSearchDate());
+            if ( studies.isEmpty() ) {
+            	log.info("No Studies found for scheduling on media!");
+            	return 0;
+            }
             List mediaPool = null;
             String prefix = getFileSetIdPrefix();
             log.info(studies.size() + " are selected for scheduling on media!");
