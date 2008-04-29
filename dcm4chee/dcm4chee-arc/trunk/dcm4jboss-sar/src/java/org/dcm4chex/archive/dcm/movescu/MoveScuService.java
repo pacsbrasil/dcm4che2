@@ -82,6 +82,8 @@ public class MoveScuService extends AbstractScuService implements
     private int concurrency = 1;
 
     private String queueName;
+    
+    private boolean forceCalledAET;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
@@ -167,6 +169,14 @@ public class MoveScuService extends AbstractScuService implements
         }
     }
 
+    public boolean isForceCalledAET() {
+        return forceCalledAET;
+    }
+
+    public void setForceCalledAET(boolean forceCalledAET) {
+        this.forceCalledAET = forceCalledAET;
+    }
+
     public void scheduleMove(String retrieveAET, String destAET,
             int priority, String pid, String studyIUID, String seriesIUID,
             String[] sopIUIDs, long scheduledTime) {
@@ -229,9 +239,10 @@ public class MoveScuService extends AbstractScuService implements
 
     private void process(MoveOrder order) throws Exception {
         String aet = order.getRetrieveAET();
-        if (aet == null) {
+        if (forceCalledAET || aet == null) {
             aet = calledAET;
         }
+        
         ActiveAssociation aa = openAssociation(aet,
                 UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         

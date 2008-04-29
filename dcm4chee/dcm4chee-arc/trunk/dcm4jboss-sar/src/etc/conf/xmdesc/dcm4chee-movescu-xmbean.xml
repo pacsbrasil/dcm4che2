@@ -36,12 +36,26 @@
       getMethod="getCalledAET"
       setMethod="setCalledAET">
       <description>AE title of the default Move SCP. Only effective, if a
-      Move order does not specify a Retrieve AE title.
+      Move order does not specify a Retrieve AE title or the ForceCalledAET
+      flag is set to true.
       </description>
       <name>CalledAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="DCM4CHEE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isForceCalledAET"
+      setMethod="setForceCalledAET">
+      <description><![CDATA[Specifies whether to ALWAYS use the Called AET 
+      defined in the Move SCU.  If false, the Retrieve AET of the move 
+      order, if specified, will be used.]]>
+      </description>
+      <name>ForceCalledAET</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
