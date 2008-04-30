@@ -42,6 +42,7 @@ package org.dcm4chex.archive.ejb.entity;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -533,9 +534,15 @@ public abstract class PatientBean implements EntityBean {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         Collection c;
         if (pid != null && issuer != null) {
-            c = patHome.findByPatientIdWithExactIssuer(pid, issuer);
-            if (c.isEmpty()) {
-                c = patHome.findByPatientId(pid);
+            c = patHome.findByPatientIdWithIssuer(pid, issuer);
+            if (c.size() > 1) {
+                for (Iterator iterator = c.iterator(); iterator.hasNext();) {
+                    PatientLocal pat = (PatientLocal) iterator.next();
+                    if (pat.getIssuerOfPatientId() != null) {
+                        c = Collections.singleton(pat);
+                        break;
+                    }
+                }
             }
         } else {
         	PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
