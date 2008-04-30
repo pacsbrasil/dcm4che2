@@ -1,13 +1,12 @@
 package org.dcm4chee.xero.view;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,74 +16,93 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This servlet takes a stringtemplate object and uses it as a DATA structure and applies the 
- * given, named template.
+ * This servlet takes a stringtemplate object and uses it as a DATA structure
+ * and applies the given, named template.
  * 
  * @author bwallace
- *
+ * 
  */
-public class JSTemplateServlet extends HttpServlet {
-   static final Logger log = LoggerFactory.getLogger(JSTemplateServlet.class);
-   static ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-   /**
-    * The stg group contains the templates to use to render OTHER templates into JavaScript
-    */
-   protected StringTemplateGroup stg;
+@SuppressWarnings("serial")
+public class JSTemplateServlet extends StringTemplateServlet {
+   private static final Logger log = LoggerFactory.getLogger(JSTemplateServlet.class);
+   protected Map<String, StringTemplate> templateData;
    
+   long lastLookup;
+
+   List<String> startTemplates;
+
+   /** The name of the template group that provides the given templates */
+   String dataName;
+
+   /** The name of the templates variable to be created.  If null, then don't declare the variable, but
+    * render as JSON data.
+    */
+   String jsName;
    /**
-    * The stgData group contains the OTHER template to be rendered into JavaScript by stg.
+    * The stgData group contains the OTHER template to be rendered into
+    * JavaScript by stg. This data should also refresh, but it doesn't appear to
+    * do so right now.
     */
    protected StringTemplateGroup stgData;
 
-   @Override
-   protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	  long start = System.nanoTime();
-	  StringTemplate st = stg.getInstanceOf("jstemplate");	  
-	  List<String> templates = new ArrayList<String>(1);
-	  templates.add("xeroBody");
-	  st.setAttribute("templates", FindAllTemplates.findAllTemplates(stgData, templates));
-	  st.setAttribute("templatesName","xeroTemplates");
-	  st.setAttribute("nameJSTemplate", new NameJSTemplate());
-	  String stProg = st.toString();
-	  log.info("Generating xeroBody templates took "+((System.nanoTime()-start)/1e6)+" ms");
-
-	  start = System.nanoTime();
-	  StringTemplate stClientJS = stgData.getInstanceOf("clientjs");
-	  String clientJS = stClientJS.toString();
-	  log.info("Generating clientjs body took "+((System.nanoTime()-start)/1e6)+" ms");
-	  
-	  response.setContentType("text/javascript");
-	  response.setCharacterEncoding("UTF-8");
-	  PrintWriter pw = response.getWriter();
-	  pw.println(stProg);
-	  pw.println(clientJS);
-	  pw.close();
+   public JSTemplateServlet() {
+	  this.templates = "jstemplate";
+	  this.contentType = "text/javascript";
    }
 
-
-
-   /** Initialize the string template groups to be used to render the JavaScript text */
-   public void init(ServletConfig config) throws ServletException {
-	  super.init(config);
-	  String dataDir = cl.getResource("xero").getFile();
-	  stgData = new StringTemplateGroup("xero", dataDir);
-	  String s = config.getInitParameter("refreshInterval");
-	  String rootDir = cl.getResource("jstemplate").getFile();
-	  stg = new StringTemplateGroup("jstemplate", rootDir);
-	  if (s != null && s.length() > 0) {
-		 int refreshInterval = Integer.parseInt(s);
-		 log.info("Set JS Template Servlet refresh interval to " + refreshInterval);
-		 stgData.setRefreshInterval(refreshInterval);
-		 stg.setRefreshInterval(refreshInterval);
+   /**
+    * Creates the model to use for the given request. By default just returns
+    * the parameter map.
+    */
+   protected synchronized Map<String, Object> createModel(HttpServletRequest req, HttpServletResponse resp) {
+	  Map<String, Object> ret = new HashMap<String, Object>();
+	  ret.put("templatesName", jsName);
+	  ret.put("nameJSTemplate", new NameJSTemplate());
+	  long now = System.currentTimeMillis();
+	  if( (now-lastLookup)/1000 > refreshIntervalInSeconds ) {
+		  log.info("Reloading template data.");
+		  templateData = FindAllTemplates.findAllTemplates(stgData, startTemplates);
+		  lastLookup = now;
 	  }
-	  else {
-		 stgData.setRefreshInterval(15);
-		 stg.setRefreshInterval(15);
-	  }
+	  ret.put("templates", templateData);
+	  return ret;
+   }
 
-	  stg.setAttributeRenderers(JSStringSafeRenderer.RENDERERS);
+   /**
+    * Return the generic jstemplate name
+    */
+   @Override
+   protected String getTemplateName(HttpServletRequest req) {
+	  return "jstemplate";
    }
    
+   /**
+    * Initialize the string template groups to be used to render the JavaScript
+    * text
+    */
+   public void init(ServletConfig config) throws ServletException {
+	  super.init(config);
+	  stg.setAttributeRenderers(JSStringSafeRenderer.RENDERERS);
+
+	  String test = config.getInitParameter("dataName");
+	  if (test != null)
+		 dataName = test;
+	  assert dataName != null;
+
+	  stgData = createStringTemplateGroup(dataName);
+
+	  startTemplates = new ArrayList<String>(1);
+	  test = config.getInitParameter("startTemplates");
+	  if (test != null) {
+		 String[] splits = test.split(",");
+		 for (String split : splits)
+			startTemplates.add(split);
+	  }
+	  assert startTemplates != null;
+	  templateData = FindAllTemplates.findAllTemplates(stgData, startTemplates);
+	  lastLookup = System.currentTimeMillis();
+	  
+	  jsName = config.getInitParameter("jsName");
+   }
 
 }

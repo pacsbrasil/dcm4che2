@@ -39,6 +39,7 @@ package org.dcm4chee.xero.view;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -48,6 +49,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
+import org.dcm4chee.xero.controller.Action;
+import org.dcm4chee.xero.controller.RequestValidator;
+import org.dcm4chee.xero.controller.XeroController;
+import org.dcm4chee.xero.controller.XmlModelFactory;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.model.MapWithDefaults;
@@ -71,84 +76,36 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @SuppressWarnings("serial")
-public class XeroServlet extends HttpServlet {
+public class XeroServlet extends StringTemplateServlet {
    static final Logger log = LoggerFactory.getLogger(XeroServlet.class);
 
-   static ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-   MetaDataBean mdb;
-
-   /**
-    * How long between page refreshes, in seconds TODO change this to a big
-    * value later on.
-    */
-   protected int refreshIntervalInSeconds = 30;
-
-   protected StringTemplateGroup stg;
+   Action controller;
    
-   /** Instantiate the requested template and return it */
-   @SuppressWarnings("unchecked")
+   /** This is the information about the model, including "defaults" - not necessarily
+    * the actual model used for each event.
+    */
+   MetaDataBean model;
+   
+   
+   /**
+    * Create the model to use for rendering pages.
+    * Initialize the event map with the parameters, URI Resolver and session, and then
+    * call the controller with the provided action (if any).
+    */
    @Override
-   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-	  long start = System.nanoTime();
-	  resp.setContentType("text/html");
-	  resp.setCharacterEncoding("UTF-8");
-	  PrintWriter pw = resp.getWriter();
-	  StringTemplatePrintWriter stpw = new StringTemplatePrintWriter(pw);
-	  MapWithDefaults mwd = new MapWithDefaults(mdb);
-	  mwd.put("parameters", req.getParameterMap());
-	  mwd.put("URIResolver", new UrlUriResolver(req,resp,getServletContext()));
-	  StringTemplate st = stg.getInstanceOf("xero",mwd);
-	  st.write(stpw);
-	  pw.close();
-	  long end = System.nanoTime();
-	  log.info("Templating/writing took " + ((end - start) / (1e6)) + " ms");
-   }
-
-   /**
-    * Returns the requested language - currently only default is supported
-    * (English)
-    */
-   protected String getLanguage(HttpServletRequest req) {
-	  return "default";
-   }
-
-   /**
-    * Returns the browser to use for looking up the template - currently returns
-    * ONLY html or ie - that is, a standard html browser or IE. May in the
-    * future support mobile and potentially other devices, and or specific
-    * versions of browsers.
-    */
-   protected String getBrowser(HttpServletRequest req) {
-	  return "html";
-   }
-
-   /**
-    * Returns whether the browser supports JavaScript
-    */
-   protected boolean getJavaScript(HttpServletRequest req) {
-	  return true;
-   }
-
-   /** Just call doGet, as posting/getting are going to be handled the same way. */
-   @Override
-   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-	  doGet(req, resp);
+   public Map<String,Object> createModel(HttpServletRequest req, HttpServletResponse resp) {
+	  MapWithDefaults mwd = new MapWithDefaults(model);
+	  mwd.put(RequestValidator.PARAMETERS,req.getParameterMap());
+	  mwd.put(XmlModelFactory.URIRESOLVER, new UrlUriResolver(req,resp,getServletContext()));
+	  mwd.put("_session", new SessionMap(req.getSession()));
+	  return controller.action(mwd);
    }
 
    @Override
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
-	  String s = config.getInitParameter("refreshInterval");
-	  if (s != null && s.length() > 0) {
-		 refreshIntervalInSeconds = Integer.parseInt(s);
-		 log.info("Set refresh interval to " + refreshIntervalInSeconds);
-	  }
-	  mdb = StaticMetaData.getMetaData("xero-view.metadata").get("model");
-	  log.info("Creating template group.");
-	  String rootDir = cl.getResource("xero").getFile();
-	  stg = new StringTemplateGroup("xero", rootDir);
-	  stg.setRefreshInterval(refreshIntervalInSeconds);
+	  MetaDataBean root = StaticMetaData.getMetaData("xero-view.metadata");
+	  model = root.get("model");
+	  controller = (Action) root.get("controller").getValue();
    }
-
 }

@@ -166,17 +166,23 @@ StringTemplate.prototype[7] = function ST_Include(chunk,model)
 {
 	var nameT = chunk.ast[0];
 	var name;
+	var argsT = chunk.ast[1];
 	if( nameT.type==20 ) {
 	  name = nameT.text;
 	} else if( nameT.type==33 ) {
-		return this.call(chunk.ast[0],model);
-	} else {
-	  name = this[nameT.type](chunk,model);
+		return this.call(nameT,model);
+	} else if( nameT.type==9 ) {
+	  // The nesting on the AST for this is VERY ugly - it would be much nicer to have
+	  // this look like type 20 with arguments after the value of the template to instantiate
+	  name = this.call(nameT.ast[0],model);
+	  argsT = nameT.ast[1];
 	}
-	var argsT = chunk.ast[1];
+	else {
+	  throw new Error("Unkonwn include type "+nameT.type);
+	}
 	var nmodel = model
 	var i,n, arg;
-	if( argsT.ast!==undefined ) {
+	if( argsT && argsT.ast!==undefined ) {
 		n = argsT.ast.length;
 		this.debug("Including macro %s with %d args.",name,n);
 		nmodel = new StringTemplateModel(model);

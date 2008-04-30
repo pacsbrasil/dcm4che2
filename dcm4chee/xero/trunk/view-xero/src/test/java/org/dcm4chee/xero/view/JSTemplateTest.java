@@ -46,7 +46,7 @@ public class JSTemplateTest {
    }
    @Test
    public void elseifTest() throws Exception {
-	  runTest("elseif",false);
+	  runTest("elseif",true);
    }
    @Test
    public void ifTest() throws Exception {
@@ -99,6 +99,10 @@ public class JSTemplateTest {
    @Test
    public void valueTest() throws Exception {
 	  runTest("value",false);
+   }
+   @Test
+   public void separatorAnonTest() throws Exception {
+	  runTest("separatorAnon",true);
    }
    
    public void runTest(String testKey, boolean verbose) throws Exception {

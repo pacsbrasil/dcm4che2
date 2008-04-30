@@ -140,7 +140,12 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    
    /** Return the id for this element, in this case the SOP Instance UID */
    public String getId() {
-	 return getSOPInstanceUID();
+	 return key(getSOPInstanceUID());
+   }
+   
+   /** Return the key for the given object */
+   public static String key(String objectUid) {
+	  return objectUid;
    }
 
    /** Gets additional attributes and child elements defined in other objects */

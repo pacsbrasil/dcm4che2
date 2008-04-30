@@ -25,9 +25,9 @@ public class XmlModelFactoryTest {
    public void studyRowsCreateTest() {
 	  MapWithDefaults mwd = new MapWithDefaults(model);
 	  Map<String,Object> parameters = new HashMap<String,Object>();
-	  mwd.put("parameters", parameters);
+	  mwd.put(RequestValidator.PARAMETERS, parameters);
 	  parameters.put("ModalitiesInStudy", "CR");
-	  mwd.put("URIResolver", new ResourceURIResolver("studyRows.xml"));
+	  mwd.put(XmlModelFactory.URIRESOLVER, new ResourceURIResolver("studyRows.xml"));
 	  Map<String,Object> search = (Map<String,Object>) mwd.get("search");
 	  assert search!=null;
    }

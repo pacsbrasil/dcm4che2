@@ -123,8 +123,9 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  DicomElement instances = data.get(ImageSearch.InstanceSeq);
 	  if (sopInstanceUID == null && instances==null)
 		 return;
-	  if (getChildren().containsKey(sopInstanceUID)) {
-		 log.debug("Series " + getSeriesInstanceUID() + " already contains a child " + sopInstanceUID);
+	  String key = ImageBean.key(sopInstanceUID);
+	  if (getChildren().containsKey(key)) {
+		 log.debug("Series " + getSeriesInstanceUID() + " already contains a child " + key);
 	  } else if( instances!=null && instances.countItems()>0 ) {
 // TODO Remove this code or fix it to match whatever VMF code is final.
 		 for(int i=0, n=instances.countItems(); i<n; i++) {
@@ -196,7 +197,11 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 
    /** Get the ID for this object, in this case the series instance UID */
    public String getId() {
-	  return getSeriesInstanceUID();
+	  return key(getSeriesInstanceUID());
+   }
+   
+   public static String key(String seriesUid) {
+	  return "series://"+seriesUid;
    }
 
    /** Gets additional attributes and child elements defined in other objects */

@@ -125,7 +125,7 @@ public class StudyModel {
 			patient = new PatientBean();
 		 }
 		 for (String uid : uids) {
-			StudyBean study = (StudyBean) children.get(uid);
+			StudyBean study = (StudyBean) children.get(StudyBean.key(uid));
 			if (study != null) {
 			   patient.getStudy().add(study);
 			}
@@ -182,7 +182,7 @@ public class StudyModel {
 	  String studyUid = actionStudyLevel.getStudyUID();
 	  if (studyUid == null)
 		 throw new IllegalArgumentException("Study UID must be supplied.");
-	  StudyBean ret = (StudyBean) children.get(studyUid);
+	  StudyBean ret = (StudyBean) children.get(StudyBean.key(studyUid));
 	  if (ret != null)
 		 return ret;
 	  PatientBean patient = getPatient();
@@ -203,7 +203,7 @@ public class StudyModel {
 	  String seriesUid = actionStudyLevel.getSeriesUID();
 	  if (seriesUid == null)
 		 throw new IllegalArgumentException("Series UID must be supplied.");
-	  SeriesBean ret = (SeriesBean) children.get(seriesUid);
+	  SeriesBean ret = (SeriesBean) children.get(SeriesBean.key(seriesUid));
 	  if (ret != null)
 		 return ret;
 	  StudyBean study = getStudy();

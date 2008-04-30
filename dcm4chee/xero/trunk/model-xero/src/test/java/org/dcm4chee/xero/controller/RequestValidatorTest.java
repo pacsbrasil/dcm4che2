@@ -26,7 +26,7 @@ public class RequestValidatorTest {
 	  assert model.get("query")!=null;
 	  MapWithDefaults mwd = new MapWithDefaults(model);
 	  Map<String,Object> request = new HashMap<String,Object>();
-	  mwd.put("parameters", request);
+	  mwd.put(RequestValidator.PARAMETERS, request);
 	  request.put("ModalitiesInStudy", "CT");
 	  Map<String,Object> rv = (Map<String,Object>) mwd.get("query");
 	  assert rv!=null;

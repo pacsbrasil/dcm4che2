@@ -43,7 +43,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.HashMap;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -146,6 +145,7 @@ public class XmlModel extends HashMap<String, Object> {
 	  XmlModelHandler handler = new XmlModelHandler(this);
 	  SAXParserFactory spf = SAXParserFactory.newInstance();
 	  try {
+		 spf.setFeature("http://xml.org/sax/features/namespaces", true);
 		 SAXParser sp = spf.newSAXParser();
 		 sp.parse(is, handler);
 	  } catch (ParserConfigurationException e) {

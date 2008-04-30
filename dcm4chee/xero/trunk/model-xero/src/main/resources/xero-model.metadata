@@ -2,7 +2,7 @@
 
 # Defines a URL query factory - something that knows how to produce a query result from
 # one or more parameters.
-model.query=${class:org.dcm4chee.xero.controller.RequestValidator}
+model.query=${factory:org.dcm4chee.xero.controller.RequestValidator}
 model.query.PatientID=${class:org.dcm4chee.xero.parsers.StringParser}
 model.query.AccessionNumber=${class:org.dcm4chee.xero.parsers.StringParser}
 model.query.PatientName=${class:org.dcm4chee.xero.parsers.StringParser}
@@ -26,3 +26,11 @@ model.search=${factory:org.dcm4chee.xero.controller.XmlModelFactory}
 # to get the actual XML data required.
 model.search.url=query
 
+# This will reference the directy queryController object as the default factory, IF no one else
+# sets this first - if someone else does set it, then it will be whatever the value is that was set.
+model.layouts=${ref:controller.queryController}
+
+controller=${class:org.dcm4chee.xero.controller.XeroController}
+controller.defaultAction=${class:org.dcm4chee.xero.controller.InitializeAction}
+controller.queryController=${class:org.dcm4chee.xero.controller.QueryController}
+controller.patientController=${class:org.dcm4chee.xero.controller.PatientController}

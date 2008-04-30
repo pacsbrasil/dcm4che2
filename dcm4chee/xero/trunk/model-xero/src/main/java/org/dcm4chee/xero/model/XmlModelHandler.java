@@ -67,15 +67,21 @@ public class XmlModelHandler extends DefaultHandler {
    public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
 	  XmlModel parent = null;
 	  XmlModel child;
+	  // Use the unqualified name...
+	  if( localName!=null ) name = localName;
 	  if( xmlModels.size()>0 ) {
 		 parent = xmlModels.get(xmlModels.size()-1);
 		 List<XmlModel> children = (List<XmlModel>) parent.get(name);
+		 child = new XmlModel(attributes.getLength()+1);
 		 if( children==null ) {
 			log.debug("Created nested child "+name+" on "+parent);
 			children = new ArrayList<XmlModel>();
 			parent.put(name,children);
+			child.put("xmlFirst", true);
 		 }
-		 child = new XmlModel(attributes.getLength()+1);
+		 else {
+			child.put("xmlFirst", false);
+		 }
 		 child.setParent(parent);
 		 children.add(child);
 	  }

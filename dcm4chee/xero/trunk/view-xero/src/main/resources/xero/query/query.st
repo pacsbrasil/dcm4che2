@@ -1,5 +1,5 @@
-<form id="query">
-$query/studyQuery()$
+<div id="query">
+$query/studyQuery(query=layout.query)$
 $query/findControl()$
-</form>
+</div>
 <br style="clear: left;"/>

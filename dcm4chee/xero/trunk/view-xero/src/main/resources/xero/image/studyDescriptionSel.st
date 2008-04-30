@@ -1,0 +1,1 @@
+<a class="jslink" onclick="xeroController.displayStudy(this,'$row.StudyInstanceUID$')">$row.(var)$</a>

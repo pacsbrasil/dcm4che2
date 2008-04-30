@@ -68,8 +68,9 @@ public class PatientIdentifier {
 		return patientID.hashCode();
 	}
 	
-	/** The string representation of the patient identifier is just the PatientID right now.
-	 * However, in the future, it could become more complex.
+	/** The string representation of the patient identifier is just the PatientID prefixed
+	 * by a pid:// url identifier, but in the future it can be more complex, and/or use different
+	 * syntaxes.
 	 */
 	public String toString() {
 		return this.patientID;

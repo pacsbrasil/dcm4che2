@@ -37,12 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.namespace.QName;
@@ -176,8 +178,9 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  log.debug("Adding information to study seriesUID=" + seriesUID);
 	  if (seriesUID != null) {
 		 log.debug("Adding child to study " + seriesUID);
-		 if (children.containsKey(seriesUID)) {
-			((SeriesBean) children.get(seriesUID)).addResult(data);
+		 String key = SeriesBean.key(seriesUID);
+		 if (children.containsKey(key)) {
+			((SeriesBean) children.get(key)).addResult(data);
 		 } else {
 			SeriesBean child = new SeriesBean(this, data);
 			children.put(child.getId(), child);
@@ -204,7 +207,11 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
    }
 
    public String getId() {
-	  return getStudyInstanceUID();
+	  return key(getStudyInstanceUID());
+   }
+   
+   public static String key(String studyUid) {
+	  return "study://"+studyUid;
    }
 
    /**
@@ -223,6 +230,16 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 		 return children.get(uid);
 	  return null;
    }
+   
+   @XmlAttribute(name = "StudyDateF")
+   public String getStudyDateFormatted() {
+	  if( studyDateTime==null ) return null;
+	  GregorianCalendar gc = studyDateTime.toGregorianCalendar();
+	  Date time = gc.getTime();
+	  DateFormat df = DateFormat.getDateTimeInstance();
+	  return df.format(time);
+   }
+
 
    /** Get the attributes from the macro items that are included in this object. */
    @XmlAnyAttribute

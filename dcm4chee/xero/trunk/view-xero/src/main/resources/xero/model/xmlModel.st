@@ -24,6 +24,10 @@ XmlModel.prototype.debug = console.debug;
  */
 XmlModel.prototype.request = function XM_request() {
 	var url = this.urlSource.url;
+	this.requestUrl(url);
+};
+
+XmlModel.prototype.requestUrl = function XM_requestUrl(url) {
 	var request;
 	this.debug("Requesting XML data "+url);
 	request = new XMLHttpRequest();
@@ -38,7 +42,7 @@ XmlModel.prototype.parse = function XM_parse(el) {
     // Handle attribute children
 	var children = el.attributes;
 	var i,n=children.length;
-	var child;
+	var child, colon;
 	for(i=0; i<n;i++) {
 		child = children.item(i);
 		this[child.nodeName] = child.nodeValue;
@@ -51,17 +55,28 @@ XmlModel.prototype.parse = function XM_parse(el) {
 	for(i=0; i<n; i++) {
 		child = children.item(i);
 		if( child.nodeType!==1 ) continue;
-		name = child.localName;
-		if( name===undefined || name===null ) name = child.nodeName;
+		name = localName(child);
 		lst = this[name];
+		xchild = new XmlModel();
 		if( lst===null || lst===undefined ) {
 		  lst = new Array();
 		  this[name] = lst;
-		};
-		xchild = new XmlModel();
+		  xchild.xmlFirst = true;
+		} else xchild.xmlFirst = false;
 		xchild._parent = this;
 		xchild.parse(child);
 		xchild._parent = this;
 		lst.push(xchild);
 	};
+};
+
+/** Finds the given element in the list child element, having attribute att with the given value 
+ * TODO - construct an index instead, and use it consistently.
+ */
+XmlModel.prototype.find = function XM_find(childName, att, value) {
+	var lst = this[childName];
+	var i,n=lst.length;
+	for(i=0; i<n; i++) {
+		if( lst[i][att]==value ) return lst[i];
+	}
 };

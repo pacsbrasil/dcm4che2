@@ -1,5 +1,7 @@
 $model/urlFactory()$
 $model/xmlModel()$
+$model/layout()$
+$model/merged()$
 
 /** Contains the model for Xero.
   * The model has a few parts:
@@ -14,19 +16,21 @@ function XeroModel() {
 
 var xeroModel = new XeroModel();
 
-XeroModel.prototype.studyColumns = {
+var XeroStudyColumns = {
 	"header":[
-		{"name":"Patient Name", "var":"PatientName" },
-		{"name":"Patient ID", "var":"PatientID" },
-		{"name":"Study Description", "var":"StudyDescription" },
-		{"name":"Modality", "var":"ModalitiesInStudy" },
-		{"name":"Acc#", "var":"AccessionNumber" },
-		{"name":"Study Date", "var":"StudyDate" },
-		{"name":"# Series", "var":"NumberOfStudyRelatedSeries" },
-		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances" }
+		{"name":"Patient Name", "var":"PatientName", "format":"image/patientNameSel" },
+		{"name":"Patient ID", "var":"PatientID", "format":"html/displayFirst" },
+		{"name":"Study Description", "var":"StudyDescription", "format":"image/studyDescriptionSel" },
+		{"name":"Modality", "var":"ModalitiesInStudy", "format":"html/displayIt" },
+		{"name":"Acc#", "var":"AccessionNumber", "format":"html/displayIt" },
+		{"name":"Study Date", "var":"StudyDateF", "sort":"StudyDateTime", "format":"html/displayIt" },
+		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "format":"html/displayIt" },
+		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "format":"html/displayIt" }
 	]
 };
 
-xeroModel.query = new UrlFactory("/wado2/study.xml","query");
+xeroModel.queryBox = { "format":"query/query", "query":new UrlFactory("/wado2/study.xml","query") }; 
+xeroModel.searchBox = {"format":"search/studyTable", "columns":XeroStudyColumns, "query":xeroModel.queryBox.query  };
+xeroModel.queryLayouts = [ xeroModel.queryBox, xeroModel.searchBox ];
 
-xeroModel.search = new XmlModel(xeroModel.query);
+

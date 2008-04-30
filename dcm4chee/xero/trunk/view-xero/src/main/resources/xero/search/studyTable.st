@@ -1,2 +1,4 @@
 <!-- Parameters rows, cols, nest where nest is the child nesting to use -->
-$html/nestedTable(rows=search.patient,cols=studyColumns,nested="study",id="searchTable")$
+$if(layout.search.patient)$
+$html/nestedTable(rows=layout.search.patient,cols=layout.columns,nested="study",id="searchTable")$
+$endif$

@@ -119,7 +119,7 @@ public class PatientBean extends PatientType implements Patient,
 		if (str == null)
 			return null;
 		if (str.length() == 0)
-			return str;
+			return null;
 		if (str.charAt(str.length() - 1) == 0) {
 			return str.substring(0, str.length() - 1);
 		}
@@ -163,13 +163,13 @@ public class PatientBean extends PatientType implements Patient,
 	 * @see org.dcm4chee.xero.search.study.ResultFromDicom#addResult(org.dcm4che2.data.DicomObject)
 	 */
 	public void addResult(DicomObject data) {
-		String studyUID = data.getString(Tag.StudyInstanceUID);
-		if (children.containsKey(studyUID)) {
-			((ResultFromDicom) children.get(studyUID)).addResult(data);
+		String key = StudyBean.key(data.getString(Tag.StudyInstanceUID));
+		if (children.containsKey(key)) {
+			((ResultFromDicom) children.get(key)).addResult(data);
 		} else {
 			StudyBean child = new StudyBean(children, data);
 			getStudy().add(child);
-			children.put(studyUID, child);
+			children.put(key, child);
 		}
 	}
 
