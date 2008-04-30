@@ -288,7 +288,7 @@ public class ExportManagerService extends AbstractScuService
     private synchronized String nextFilesetID() {
         try {
             server.setAttribute(serviceName, 
-                    new Attribute("LastFilesetIDSeqno", 
+                    new Attribute("FilesetIDSeqno", 
                             new Integer(lastFilesetIDSeqno+1)) );
         } catch (Exception e) {
             log.warn("Failed to store incremented LastFilesetIDSeqno - " +
