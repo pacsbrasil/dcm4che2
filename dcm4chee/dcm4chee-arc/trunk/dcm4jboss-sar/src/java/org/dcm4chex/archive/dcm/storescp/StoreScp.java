@@ -585,15 +585,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (!seriuid.equals(prevseriud)) {
                 assoc.putProperty(SERIES_IUID, seriuid);
                 if (prevseriud != null) {
-                    SeriesStored seriesStored = store
-                            .makeSeriesStored(prevseriud);
-                    if (seriesStored != null) {
-                        log
-                                .debug("Send SeriesStoredNotification - series changed");
-                        Socket sock = assoc.getSocket();
-                        doAfterSeriesIsStored(store, sock, seriesStored);
-                        store.commitSeriesStored(seriesStored);
-                    }
+                    doAfterSeriesIsStored(store, assoc.getSocket(), prevseriud);
                 }
                 Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
                         STORE2MWL_XSL, ds);
@@ -1059,14 +1051,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (seriuid != null) {
             try {
                 Storage store = getStorage(assoc);
-                SeriesStored seriesStored = store.makeSeriesStored(seriuid);
-                if (seriesStored != null) {
-                    log
-                            .debug("Send SeriesStoredNotification - association closed");
-                    Socket sock = assoc.getSocket();
-                    doAfterSeriesIsStored(store, sock, seriesStored);
-                    store.commitSeriesStored(seriesStored);
-                }
+                doAfterSeriesIsStored(store, assoc.getSocket(), seriuid);
                 store.remove();
             } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);
@@ -1092,79 +1077,48 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
      * <dd>4) send SeriesStored JMX notification</dd>
      * </dl>
      * 
-     * @param s
+     * @param assoc
      *                The Association socket or null if series is stored local
      *                (e.g. undelete)
-     * @param seriesStored
+     * @param seriuid
+     * @throws FinderException 
+     * @throws RemoteException 
      */
-    protected void doAfterSeriesIsStored(Storage store, Socket s,
-            SeriesStored seriesStored) {
-        Dataset ian = seriesStored.getIAN();
-        updateDBSeries(store, ian.getItem(Tags.RefSeriesSeq).getString(
-                Tags.SeriesInstanceUID));
-        updateDBStudy(store, ian.getString(Tags.StudyInstanceUID));
-        service.logInstancesStored(s, seriesStored);
-        service.sendJMXNotification(seriesStored);
-    }
-
-    private void updateDBStudy(Storage store, final String suid) {
-        int retry = 0;
-        for (;;) {
-            try {
-                if (serializeDBUpdate) {
-                    synchronized (store) {
-                        store.updateStudy(suid);
-                    }
-                } else {
-                    store.updateStudy(suid);
-                }
-                return;
-            } catch (Exception e) {
-                ++retry;
-                if (retry > updateDatabaseMaxRetries) {
-                    service.getLog().error(
-                            "give up update DB Study Record [iuid=" + suid
-                                    + "]:", e);
-                    return;
-                }
-                maxCountUpdateDatabaseRetries = Math.max(retry,
-                        maxCountUpdateDatabaseRetries);
-                service.getLog().warn(
-                        "failed to update DB Study Record [iuid=" + suid
-                                + "] - retry:", e);
-                try {
-                    Thread.sleep(updateDatabaseRetryInterval);
-                } catch (InterruptedException e1) {
-                    log.warn("update Database Retry Interval interrupted:", e1);
-                }
-            }
+    protected void doAfterSeriesIsStored(Storage store, Socket sock,
+            String seriuid) throws RemoteException, FinderException {
+        updateDBSeriesAndStudy(store, seriuid);
+        SeriesStored seriesStored = store.makeSeriesStored(seriuid);
+        if (seriesStored != null) {
+            service.logInstancesStored(sock, seriesStored);
+            service.sendJMXNotification(seriesStored);
+            store.commitSeriesStored(seriesStored);
         }
     }
 
-    private void updateDBSeries(Storage store, final String seriuid) {
+    private void updateDBSeriesAndStudy(Storage store, final String seriuid) {
         int retry = 0;
         for (;;) {
             try {
                 if (serializeDBUpdate) {
                     synchronized (store) {
-                        store.updateSeries(seriuid);
+                        store.updateSeriesAndStudy(seriuid);
                     }
                 } else {
-                    store.updateSeries(seriuid);
+                    store.updateSeriesAndStudy(seriuid);
                 }
                 return;
             } catch (Exception e) {
                 ++retry;
                 if (retry > updateDatabaseMaxRetries) {
                     service.getLog().error(
-                            "give up update DB Series Record [iuid=" + seriuid
+                            "give up update DB Series Record and Study Record [series-iuid=" + seriuid
                                     + "]:", e);
                     return;
                 }
                 maxCountUpdateDatabaseRetries = Math.max(retry,
                         maxCountUpdateDatabaseRetries);
                 service.getLog().warn(
-                        "failed to update DB Series Record [iuid=" + seriuid
+                        "failed to update DB Series and Study Record [series-iuid=" + seriuid
                                 + "] - retry", e);
                 try {
                     Thread.sleep(updateDatabaseRetryInterval);

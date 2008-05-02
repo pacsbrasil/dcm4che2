@@ -282,24 +282,11 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public SeriesStored[] checkSeriesStored(long maxPendingTime)
+    public Collection checkSeriesStored(long maxPendingTime)
     throws FinderException {
         Timestamp before = new Timestamp(System.currentTimeMillis() 
                 - maxPendingTime);
-        Collection c = seriesHome.findByStatusReceivedBefore(RECEIVED, before);
-        if (c.isEmpty()) {
-            return new SeriesStored[0]; 
-        }
-        log.info("Found " + c.size() + " Stored Series");
-        ArrayList list = new ArrayList(c.size());
-        SeriesStored seriesStored;
-        for (Iterator iter = c.iterator(); iter.hasNext();) {
-            seriesStored = makeSeriesStored((SeriesLocal) iter.next());
-            if (seriesStored != null) {
-                list.add(seriesStored);
-            }
-        }
-        return (SeriesStored[]) list.toArray(new SeriesStored[list.size()]);
+        return seriesHome.seriesIuidsByStatusReceivedBefore(RECEIVED, before);
     }
     
     private SeriesStored makeSeriesStored(SeriesLocal series) {
@@ -493,14 +480,6 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updateStudy(String iuid) throws FinderException {
-   		final StudyLocal study = studyHome.findByStudyIuid(iuid);
-   		study.updateDerivedFields(true, true, false, true, true, true);
-    }
-
-    /**
-     * @ejb.interface-method
-     */
     public int numberOfStudyRelatedInstances(String iuid) {
         try {
             StudyLocal study = studyHome.findByStudyIuid(iuid);
@@ -515,9 +494,11 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updateSeries(String iuid) throws FinderException {
-   		final SeriesLocal series = findBySeriesIuid(iuid);
-   		series.updateDerivedFields(true, true, false, true, true);
+    public void updateSeriesAndStudy(String iuid) throws FinderException {
+        SeriesLocal series = findBySeriesIuid(iuid);
+        StudyLocal study = series.getStudy();
+        series.updateDerivedFields(true, true, false, true, true);
+        study.updateDerivedFields(true, true, false, true, true, true);
     }
     
     /**
