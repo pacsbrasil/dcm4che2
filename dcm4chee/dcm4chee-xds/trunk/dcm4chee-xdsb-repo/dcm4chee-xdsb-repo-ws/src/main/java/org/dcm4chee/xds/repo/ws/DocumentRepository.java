@@ -1,10 +1,12 @@
 package org.dcm4chee.xds.repo.ws;
 
+import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING;
+
 import javax.annotation.Resource;
-import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.xml.bind.JAXBException;
+import javax.xml.ws.BindingType;
 import javax.xml.ws.WebServiceContext;
 
 import org.dcm4chee.xds.common.exception.XDSException;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 		endpointInterface="org.dcm4chee.xds.repo.ws.DocumentRepositoryPortType"
 		)
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
+@BindingType(SOAP12HTTP_BINDING)
 @EndpointConfig(configName = "Standard WSAddressing Endpoint")
 public class DocumentRepository implements DocumentRepositoryPortType {
 
