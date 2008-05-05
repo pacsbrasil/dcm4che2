@@ -39,7 +39,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>../dcm4chee-xds-store2dcm-sar/target</directory>
+      <directory>../dcm4chee-xds-store2dcm-mbean/target</directory>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
         <include>*.sar</include>
