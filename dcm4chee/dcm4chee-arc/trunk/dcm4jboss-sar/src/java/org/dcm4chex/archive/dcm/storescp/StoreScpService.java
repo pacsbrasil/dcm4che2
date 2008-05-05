@@ -47,8 +47,6 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -753,7 +751,12 @@ public class StoreScpService extends AbstractScpService {
         Storage store = getStorage();
         String seriud = ds.getString(Tags.SeriesInstanceUID);
         if (prevseriuid != null && !prevseriuid.equals(seriud)) {
-            scp.doAfterSeriesIsStored(store, null, prevseriuid);
+            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid);
+            if (seriesStored != null) {
+                log.debug("Send SeriesStoredNotification - series changed");
+                scp.doAfterSeriesIsStored(null, seriesStored);
+                store.commitSeriesStored(seriesStored);
+            }
         }
         String cuid = ds.getString(Tags.SOPClassUID);
         String iuid = ds.getString(Tags.SOPInstanceUID);
@@ -766,7 +769,11 @@ public class StoreScpService extends AbstractScpService {
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f.length(),
                 fileDTO.getFileMd5(), true);
         if (last) {
-            scp.doAfterSeriesIsStored(store, null, seriud);
+            SeriesStored seriesStored = store.makeSeriesStored(seriud);
+            if (seriesStored != null) {
+                scp.doAfterSeriesIsStored(null, seriesStored);
+                store.commitSeriesStored(seriesStored);
+            }
         }
     }
 
@@ -787,14 +794,12 @@ public class StoreScpService extends AbstractScpService {
 
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
-        Collection uids = store.checkSeriesStored(
-                pendingSeriesStoredTimeout);
-        if (uids.isEmpty())
-            return;
-        for (Iterator iterator = uids.iterator(); iterator.hasNext();) {
-            String uid = (String) iterator.next();
-            log.info("Detect pending Series [iuid" + uid + "]");
-            scp.doAfterSeriesIsStored(store, null, uid);
+        SeriesStored[] seriesStored = store
+                .checkSeriesStored(pendingSeriesStoredTimeout);
+        for (int i = 0; i < seriesStored.length; i++) {
+            log.info("Detect pending " + seriesStored[i]);
+            scp.doAfterSeriesIsStored(null, seriesStored[i]);
+            store.commitSeriesStored(seriesStored[i]);
         }
     }
 

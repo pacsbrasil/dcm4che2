@@ -104,6 +104,10 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid = ?1"
  *             transaction-type="Supports"
  * 
+ * @ejb.finder signature="java.util.Collection findByStatusReceivedBefore(int status, java.sql.Timestamp updatedBefore)"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesStatus = ?1 AND s.createdTime < ?2"
+ *             transaction-type="Supports"
+ *             
  * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.study.updatedTime < ?2"
  *             transaction-type="Supports"
@@ -519,18 +523,6 @@ public abstract class SeriesBean implements EntityBean {
         return true;
     }
 
-    /**
-     * @ejb.select query="SELECT s.seriesIuid FROM Series AS s WHERE s.seriesStatus = ?1 AND s.createdTime < ?2"
-     */
-    public abstract java.util.Collection ejbSelectSeriesIuidsByStatusReceivedBefore(int status, java.sql.Timestamp updatedBefore) throws FinderException;
- 
-    /**
-     * @ejb.home-method
-     */
-    public Collection ejbHomeSeriesIuidsByStatusReceivedBefore(int status, java.sql.Timestamp updatedBefore) throws FinderException {
-        return ejbSelectSeriesIuidsByStatusReceivedBefore(status, updatedBefore);
-    }
- 
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
      */ 
