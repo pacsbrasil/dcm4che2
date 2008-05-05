@@ -628,7 +628,7 @@ public class DcmQR {
         opts.addOptionGroup(qrlevel);
 
         OptionBuilder.withArgName("[seq/]attr=value");
-        OptionBuilder.hasArgs(2);
+        OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
                 "specified by name or tag value (in hex), e.g. PatientName\n" +
