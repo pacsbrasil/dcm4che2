@@ -7,12 +7,16 @@
   <packaging>pom</packaging>
   <name>Implementation of XDS Actors</name>
   <modules>
-    <module>dcm4chee-xds-common</module> 
-    <module>dcm4chee-xds-docstore</module>
-    <module>dcm4chee-xdsb-repo</module>
-    <module>dcm4chee-xdsb-src</module>
+    <!--  XDS.a Modules -->
+      <module>dcm4chee-xdsa-repository</module> 
+      <module>dcm4chee-xdscfg</module>
+      <module>dcm4chee-xds-store2dcm</module>
+    <!-- XDS.b Modules -->
+      <module>dcm4chee-xds-common</module> 
+      <module>dcm4chee-xds-docstore</module>
+      <module>dcm4chee-xdsb-repo</module>
+      <module>dcm4chee-xdsb-src</module>
   </modules>
-
   <build>
     <plugins>
       <plugin>

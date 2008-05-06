@@ -65,15 +65,48 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+  <profiles>
+   <profile>
+    <id>test-all</id>
+    <activation>
+     <property>
+      <name>test-all</name>
+     </property>
+    </activation>
+    <build>
+     <plugins>
+      <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-surefire-plugin</artifactId>
+       <configuration>
+         <includes>
+          <include>**/Store2DcmTest.java</include>
+          <include>**/DocumentSendTest.java</include>
+        </includes>
+       </configuration>
+      </plugin>
+     </plugins>
+    </build>
+   </profile>
+  </profiles>
   <build>
     <plugins>
-	<plugin>
-	  <groupId>org.codehaus.mojo</groupId>
-	  <artifactId>jboss-packaging-maven-plugin</artifactId>
-	  <version>2.0-SNAPSHOT</version>
-	  <extensions>true</extensions>
+	  <plugin>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <artifactId>jboss-packaging-maven-plugin</artifactId>
+	    <version>2.0-SNAPSHOT</version>
+	    <extensions>true</extensions>
       </plugin>
-    </plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+         <includes>
+          <include>**/Store2DcmTest.java</include>
+        </includes>
+       </configuration>
+      </plugin>
+     </plugins>
   </build>
 
 </project>
