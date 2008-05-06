@@ -640,7 +640,7 @@ public class DcmQR {
         opts.addOption(OptionBuilder.create("q"));
 
         OptionBuilder.withArgName("attr");
-        OptionBuilder.hasArg();
+        OptionBuilder.hasArgs();
         OptionBuilder.withDescription("specify additional return key. attr can " +
                 "be specified by name or tag value (in hex).");
         opts.addOption(OptionBuilder.create("r"));
