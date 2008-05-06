@@ -151,7 +151,16 @@ public class XdsCfgService extends ServiceMBeanSupport {
         }
         return sb.toString();
     }
-    
+
+    /**
+     * Parse String to get map with service name as key and list of attributes as value.
+     * <p/>
+     * The key can be either a full qualified ObjectName (dcm4chee.xds:service=DocumentStoreService) or
+     * a short name when service is within current serviceDomainPrefix.<br/>
+     * e.g.: serviceDomainPrefix='dcm4chee.archive:service='
+     * full ObjectName: 'dcm4chee.xds:service=DocumentStoreService:*' -&gt; key = 'dcm4chee.xds:service=DocumentStoreService'
+     * short name: 'XDS-I:*' -&gt; key = 'XDS-I' -&gt; full ObjectName: 'dcm4chee.archive:service=XDS-I'
+     */
     protected Map toMap( String s ) {
     	Map map = new LinkedHashMap();
     	int pos;
@@ -159,7 +168,7 @@ public class XdsCfgService extends ServiceMBeanSupport {
         List attrList;
         for ( StringTokenizer st = new StringTokenizer(s, " \t\r\n;") ; st.hasMoreTokens() ; ) {
         	token = st.nextToken();
-        	pos = token.indexOf(':');
+        	pos = token.lastIndexOf(':'); 
         	attrList = new ArrayList();
         	if ( pos != -1 ) {
 	        	key = token.substring(0,pos);
