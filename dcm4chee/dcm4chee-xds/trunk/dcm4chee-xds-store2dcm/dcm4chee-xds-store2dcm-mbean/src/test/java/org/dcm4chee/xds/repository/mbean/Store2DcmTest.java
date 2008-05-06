@@ -73,7 +73,6 @@ public class Store2DcmTest extends TestCase {
                 new BufferedOutputStream(new FileOutputStream(f)));
         Store2Dcm store = new Store2Dcm(null, docWriter, null, (File)null);
         byte[] digest = store.encapsulate(dos,true);
-        dos.close();
         DicomInputStream dis = new DicomInputStream(f);
         DicomObject obj = dis.readDicomObject();
         checkBasicAttributes(obj, digest);
@@ -91,7 +90,6 @@ public class Store2DcmTest extends TestCase {
                 new BufferedOutputStream(new FileOutputStream(f)));
         Store2Dcm store = new Store2Dcm(xmlFile, docWriter, null, (File)null);
         byte[] digest = store.encapsulate(dos, true);
-        dos.close();
         DicomInputStream dis = new DicomInputStream(f);
         DicomObject obj = dis.readDicomObject();
         checkBasicAttributes(obj, digest);
@@ -159,7 +157,6 @@ public class Store2DcmTest extends TestCase {
         Store2Dcm store = new Store2Dcm(null, docWriter, 
         		domSrc, xslFile);
         byte[] digest = store.encapsulate(dos, true);
-        dos.close();
         DicomInputStream dis = new DicomInputStream(f);
         DicomObject obj = dis.readDicomObject();
         checkBasicAttributes(obj, digest);
@@ -182,7 +179,6 @@ public class Store2DcmTest extends TestCase {
 		Store2Dcm store = new Store2Dcm(null, docWriter, 
 				new StreamSource(submStream), xslFile);
 		byte[] digest = store.encapsulate(dos, true);
-		dos.close();
 		DicomInputStream dis = new DicomInputStream(f);
 		DicomObject obj = dis.readDicomObject();
 		checkBasicAttributes(obj, digest);
