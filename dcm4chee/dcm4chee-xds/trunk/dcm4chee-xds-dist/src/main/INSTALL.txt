@@ -1,5 +1,16 @@
-INSTALL INSTRUCTIONS FOR DCM4CHEE XDS.b (REPOSITORY, SOURCE and XDSStore):
-==========================================================================
+                 INSTALL INSTRUCTIONS FOR DCM4CHEE XDS Implementation 
+==========================================================================================
+
+Installed Modules:
+------------------------------------------------------------------------------------------
+dcm4chee-xds-common:	   Common classes for XDS implementation
+dcm4chee-xdsa-repository:  XDS.a Repository implementation
+dcm4chee-xdsb-repo:        XDS.b Repository implementation
+dcm4chee-xdsb-src:         XDS.b Source Service (XDS.a -> XDS.b Bridge
+dcm4chee-xds-docstore:     Persistence Layer Service for XDS documents
+dcm4chee-xds-store2dcm:    Service to store XDS documents as encapsulated DICOM objects
+dcm4chee-xdscfg:           XDS Configuration Management service
+------------------------------------------------------------------------------------------
 
 Requirements: 
 A) Add on to DCM4CHEE Archive
