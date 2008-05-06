@@ -18,7 +18,6 @@
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-jmx.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/activation.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/mail.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/jboss-saaj.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dcm4jboss-sar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/servlet-api.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/jboss-j2ee.jar" sourcepath="/JBOSS_SRC/j2ee/src/main"/>
