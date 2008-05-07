@@ -81,6 +81,7 @@
       <xsl:with-param name="mn" select="string($xpn25[2]/text())"/>
       <xsl:with-param name="ns" select="string($xpn25[3]/text())"/>
       <xsl:with-param name="np" select="string($xpn25[4]/text())"/>
+      <xsl:with-param name="deg" select="string($xpn25[5]/text())"/>
     </xsl:call-template>
   </xsl:template>
   <xsl:template name="cn2pnAttr">
@@ -95,6 +96,7 @@
       <xsl:with-param name="mn" select="string($cn26[3]/text())"/>
       <xsl:with-param name="ns" select="string($cn26[4]/text())"/>
       <xsl:with-param name="np" select="string($cn26[5]/text())"/>
+      <xsl:with-param name="deg" select="string($cn26[6]/text())"/>
     </xsl:call-template>
   </xsl:template>
   <xsl:template name="pnAttr">
@@ -105,6 +107,7 @@
     <xsl:param name="mn"/>
     <xsl:param name="np"/>
     <xsl:param name="ns"/>
+    <xsl:param name="deg"/>
     <xsl:if test="$val">
       <attr tag="{$tag}" vr="PN">
         <xsl:if test="$val != '&quot;&quot;'">
@@ -124,9 +127,19 @@
             <xsl:with-param name="str" select="$np"/>
           </xsl:call-template>
           <xsl:text>^</xsl:text>
-          <xsl:call-template name="maskQuotes">
-            <xsl:with-param name="str" select="$ns"/>
-          </xsl:call-template>
+          <xsl:choose>
+	          <xsl:when test="$ns and $ns != '&quot;&quot;'">
+	          	<xsl:value-of select="$ns"/>
+	          	<xsl:if test="$deg and $deg != '&quot;&quot;'">
+	          		<xsl:text> </xsl:text><xsl:value-of select="$deg"/>
+	          	</xsl:if>
+	          </xsl:when>
+	          <xsl:otherwise>
+		          <xsl:call-template name="maskQuotes">
+		            <xsl:with-param name="str" select="$deg"/>
+		          </xsl:call-template>
+	          </xsl:otherwise>
+	      </xsl:choose>
         </xsl:if>
       </attr>
     </xsl:if>
