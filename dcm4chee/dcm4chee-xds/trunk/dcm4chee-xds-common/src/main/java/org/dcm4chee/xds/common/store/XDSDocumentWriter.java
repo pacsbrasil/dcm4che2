@@ -41,9 +41,10 @@ package org.dcm4chee.xds.common.store;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
+import javax.activation.DataHandler;
 public interface XDSDocumentWriter {
     int size();
     void writeTo( OutputStream os ) throws IOException;
     void close() throws IOException;
+    public DataHandler getDataHandler();
 }

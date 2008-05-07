@@ -100,6 +100,10 @@ public class InfoSetUtil {
 				return oldValue;
 			}
 		}
+		ei = new ExternalIdentifierType();
+		ei.setIdentificationScheme(urn);
+		ei.setValue(value);
+		l.add(ei);
 		return null;
 	}
 	

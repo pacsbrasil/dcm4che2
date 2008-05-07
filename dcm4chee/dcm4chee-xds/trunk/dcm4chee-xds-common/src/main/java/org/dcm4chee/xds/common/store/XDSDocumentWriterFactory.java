@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.xml.soap.AttachmentPart;
@@ -80,7 +81,9 @@ public class XDSDocumentWriterFactory {
         if ( fileSize > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("File is to large! "+fileSize+" exceeds maximum of "+Integer.MAX_VALUE+" bytes");
         }
-        return new CachedWriter( f );
+        FileDataSource ds = new FileDataSource(f);
+        return new DataHandlerWriter(new DataHandler(ds));
+        //return new CachedWriter( f );
     }
     public XDSDocumentWriter getDocumentWriter(AttachmentPart part) throws SOAPException, IOException {
     	if ( log.isDebugEnabled()) {
@@ -225,6 +228,10 @@ public class XDSDocumentWriterFactory {
 				cacheFile.delete();
 			}
 		}
+		
+        public DataHandler getDataHandler() {
+        	return null;
+        } 		
     }
     
     // TODO: remove if not needed
@@ -245,6 +252,9 @@ public class XDSDocumentWriterFactory {
 		public int size() {
 			return data.length;
 		}
+        public DataHandler getDataHandler() {
+        	return null;
+        }
     }
     
     class DataHandlerWriter implements XDSDocumentWriter {
@@ -261,7 +271,9 @@ public class XDSDocumentWriterFactory {
             // TODO: remove size() from XDSDocumentWriter interface if only used for logging purposed  
             return 9999;
         }
-        
+        public DataHandler getDataHandler() {
+        	return dh;
+        }        
     }
 
 }

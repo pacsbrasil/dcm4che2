@@ -3,10 +3,13 @@ package org.dcm4chee.xds.common.infoset;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.activation.DataHandler;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.XmlMimeType;
 
 
 /**
@@ -45,16 +48,14 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * 
  */
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(name = "RetrieveDocumentSetResponseType", namespace = "urn:ihe:iti:xds-b:2007", propOrder = {
     "registryResponse",
     "documentResponse"
 })
 public class RetrieveDocumentSetResponseType {
 
-    @XmlElement(name = "RegistryResponse", namespace = "urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0", required = true)
     protected RegistryResponseType registryResponse;
-    @XmlElement(name = "DocumentResponse")
     protected List<RetrieveDocumentSetResponseType.DocumentResponse> documentResponse;
 
     /**
@@ -65,6 +66,7 @@ public class RetrieveDocumentSetResponseType {
      *     {@link RegistryResponseType }
      *     
      */
+    @XmlElement(name = "RegistryResponse", namespace = "urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0", required = true)    
     public RegistryResponseType getRegistryResponse() {
         return registryResponse;
     }
@@ -103,6 +105,7 @@ public class RetrieveDocumentSetResponseType {
      * 
      * 
      */
+    @XmlElement(name = "DocumentResponse")    
     public List<RetrieveDocumentSetResponseType.DocumentResponse> getDocumentResponse() {
         if (documentResponse == null) {
             documentResponse = new ArrayList<RetrieveDocumentSetResponseType.DocumentResponse>();
@@ -134,7 +137,7 @@ public class RetrieveDocumentSetResponseType {
      * 
      * 
      */
-    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlAccessorType(XmlAccessType.PROPERTY)
     @XmlType(name = "", propOrder = {
         "homeCommunityId",
         "repositoryUniqueId",
@@ -144,16 +147,11 @@ public class RetrieveDocumentSetResponseType {
     })
     public static class DocumentResponse {
 
-        @XmlElement(name = "HomeCommunityId", namespace = "urn:ihe:iti:xds-b:2007")
         protected String homeCommunityId;
-        @XmlElement(name = "RepositoryUniqueId", namespace = "urn:ihe:iti:xds-b:2007", required = true)
         protected String repositoryUniqueId;
-        @XmlElement(name = "DocumentUniqueId", namespace = "urn:ihe:iti:xds-b:2007", required = true)
         protected String documentUniqueId;
-        @XmlElement(namespace = "urn:ihe:iti:xds-b:2007", required = true)
         protected String mimeType;
-        @XmlElement(name = "Document", namespace = "urn:ihe:iti:xds-b:2007", required = true)
-        protected byte[] document;
+        protected DataHandler document;
 
         /**
          * Gets the value of the homeCommunityId property.
@@ -163,6 +161,7 @@ public class RetrieveDocumentSetResponseType {
          *     {@link String }
          *     
          */
+        @XmlElement(name = "HomeCommunityId", namespace = "urn:ihe:iti:xds-b:2007")
         public String getHomeCommunityId() {
             return homeCommunityId;
         }
@@ -187,6 +186,7 @@ public class RetrieveDocumentSetResponseType {
          *     {@link String }
          *     
          */
+        @XmlElement(name = "RepositoryUniqueId", namespace = "urn:ihe:iti:xds-b:2007", required = true)
         public String getRepositoryUniqueId() {
             return repositoryUniqueId;
         }
@@ -211,6 +211,7 @@ public class RetrieveDocumentSetResponseType {
          *     {@link String }
          *     
          */
+        @XmlElement(name = "DocumentUniqueId", namespace = "urn:ihe:iti:xds-b:2007", required = true)
         public String getDocumentUniqueId() {
             return documentUniqueId;
         }
@@ -235,6 +236,7 @@ public class RetrieveDocumentSetResponseType {
          *     {@link String }
          *     
          */
+        @XmlElement(namespace = "urn:ihe:iti:xds-b:2007", required = true)
         public String getMimeType() {
             return mimeType;
         }
@@ -258,7 +260,9 @@ public class RetrieveDocumentSetResponseType {
          *     possible object is
          *     byte[]
          */
-        public byte[] getDocument() {
+        @XmlElement(name = "Document", namespace = "urn:ihe:iti:xds-b:2007", required = true)
+        @XmlMimeType("application/octet-stream")
+        public DataHandler getDocument() {
             return document;
         }
 
@@ -269,8 +273,8 @@ public class RetrieveDocumentSetResponseType {
          *     allowed object is
          *     byte[]
          */
-        public void setDocument(byte[] value) {
-            this.document = ((byte[]) value);
+        public void setDocument(DataHandler document) {
+            this.document = document;
         }
 
     }

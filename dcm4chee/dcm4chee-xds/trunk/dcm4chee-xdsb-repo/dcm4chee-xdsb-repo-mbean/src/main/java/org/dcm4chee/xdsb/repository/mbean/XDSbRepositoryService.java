@@ -476,9 +476,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		docRsp.setDocumentUniqueId(doc.getDocumentUID());
 		docRsp.setMimeType(doc.getMimeType());
 		docRsp.setRepositoryUniqueId(this.repositoryUniqueId);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		doc.getXdsDocWriter().writeTo(baos);
-		docRsp.setDocument(baos.toByteArray());
+		docRsp.setDocument(doc.getXdsDocWriter().getDataHandler());
 		return docRsp;
 	}
 	
