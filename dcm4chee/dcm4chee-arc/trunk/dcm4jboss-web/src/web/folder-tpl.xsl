@@ -118,6 +118,7 @@
       <td class="folder_header" width="40">
        <input type="image" value="Move" name="move"
         src="images/move.gif" alt="move" border="0"
+        onclick="return confirm('&MoveSelectedEntities;?')"
         title="&MoveSelectedEntities;">
         <xsl:if test="total &lt;= 0">
          <xsl:attribute name="disabled">disabled</xsl:attribute>
