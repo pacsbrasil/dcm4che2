@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Bill Wallace, Agfa HealthCare Inc., 
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,47 +35,37 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.view;
+/** Miscellaneous event handling helper code bits */
 
-import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.model.MapWithDefaults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
+/** Returns the local name of the node */
+function localName(node) {
+	if( node.localName!==undefined && node.localName!==null ) return node.localName;
+	if( node.baseName!==undefined ) return node.baseName;
+	var tn = node.tagName;
+	var i = tn.indexOf(":");
+	if( i>=0 ) tn = ""+tn.substring(i+1);
+	return tn;
+};
 
-/**
- * Renders a table using default data set and tests the resulting output.
- * @author bwallace
- *
- */
-public class TableTest {
-   static final Logger log = LoggerFactory.getLogger(TableTest.class);
-   static ClassLoader cl = Thread.currentThread().getContextClassLoader();
-   
-   static boolean print = false;
+/** Provides information about the frame width.  Defaults to 1024, 768 if nothing else found.*/
+function getViewportSize() {
+    var size = [1024, 768];
+    if (typeof window.innerWidth != 'undefined')
+    {
+    	size = [ window.innerWidth, window.innerHeight ];
+    }
+    else if (typeof document.documentElement != 'undefined' &&
+             typeof document.documentElement.clientWidth != 'undefined' &&
+             document.documentElement.clientWidth != 0)
+    {
+     size = [ document.documentElement.clientWidth, document.documentElement.clientHeight ];
+    }
+    else
+    {
+     var body = document.getElementsByTagName('body')[0];
+     size = [ body.clientWidth, body.clientHeight ];
+    }
 
-   MetaDataBean mdb = StaticMetaData.getMetaData("test-view.metadata");
-   MetaDataBean model = mdb.get("model");
+    return size;
+};
 
-   @Test
-   public void searchResultsTableTest() {
-	  MapWithDefaults mwd = new MapWithDefaults(model);
-	  String rootDir = cl.getResource("xero").getFile();
-	  StringTemplateGroup stg = new StringTemplateGroup("xero",rootDir);
-	  StringTemplate st = stg.getInstanceOf("xero",mwd);
-	  String result = st.toString();
-	  if( print ) log.info("Result=\n"+result);
-	  int cnt = 100;
-	  long start = System.nanoTime();
-	  for(int i=0; i<cnt; i++) {
-		 mwd = new MapWithDefaults(model);
-		 st = stg.getInstanceOf("xero",mwd);
-		 st.toString();
-	  }
-	  log.info("Table generation took "+(System.nanoTime()-start)/(1e6*cnt)+" ms/iteration.");
-	  // TODO - add some asserts about the table setup
-   }
-}

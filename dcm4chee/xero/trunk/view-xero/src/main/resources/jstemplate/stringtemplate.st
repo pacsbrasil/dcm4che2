@@ -52,12 +52,27 @@ StringTemplate.prototype.toString = function ST_toString(templateName, model) {
 StringTemplate.prototype.convertToString = function ST_convertToString(result) {
 	var ret;
 	var typ = typeof(result);
+	var format;
 	if( result===undefined || result===null ) ret = "";
 	else if( typ==="string" ) ret = result;
-	else if( typ==="object" && result.length!==undefined ) ret = this.listToString(result);
-	else ret = ""+result;
+	else if( typ==="object" && result.length!==undefined ) {
+		ret = this.listToString(result);
+		format = result.format;
+	} else {
+		ret = ""+result;
+		format = result.format;
+	}
+	if( format==="xml" ) {
+		ret = this.formatXml(ret);
+	}
 	this.debug("Converting %s of type to string result %s",result,ret);
 	return ret;
+};
+
+/** Formats & and < correctly for XML */
+StringTemplate.prototype.formatXml = function ST_formatXml(str) {
+	if( !str ) return str;
+	return str.replace(/&/g,"&amp;").replace(/</g,"&lt;");
 };
 
 StringTemplate.prototype.listToString = function ST_listToString(lst) {	
@@ -87,8 +102,15 @@ StringTemplate.prototype.evalChunks = function ST_evalChunks(chunks,model) {
 		};
 		this.debug("Evaluating chunk "+i+" of type ASTExpr.");
 		val = this.call(chunk.ast[0],model);
-		if( chunk.separator!==undefined && typeof(val)==="object" ) {
+		if( chunk.separator && typeof(val)==="object" ) {
 			val.separator = chunk.separator;
+		}
+		if( chunk.format ) {
+			if( typeof(val)==="object" ) {
+				val.format = chunk.format;
+			} else if( typeof(val)==="string" ) {
+				val = this.formatXml(val);
+			}
 		}
 		ret.push(val);
 	};

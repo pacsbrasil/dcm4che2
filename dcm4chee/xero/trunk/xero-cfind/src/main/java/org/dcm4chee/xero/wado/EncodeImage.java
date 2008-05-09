@@ -214,10 +214,10 @@ class ImageServletResponseItem implements ServletResponseItem {
 
    // TODO Make this come from metadata
    // CLIB version
-   static String preferred_name_start = "com.sun.media.imageioimpl.plugins";
+   static String preferred_name_start2 = "com.sun.media.imageioimpl.plugins";
 
    // Agfa proprietary version
-   // static String preferred_name_start = "com.agfa";
+   static String preferred_name_start = "com.agfa";
    // Pure Java version
    // static String preferred_name_start = "com.sun.imageio.plugins";
 
@@ -236,10 +236,22 @@ class ImageServletResponseItem implements ServletResponseItem {
      */
    public ImageServletResponseItem(WadoImage image, EncodeResponseInfo eri, float quality) {
 	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(eri.lookupMimeType);
-	  writer = writers.next();
-	  while (!writer.getClass().getName().startsWith(preferred_name_start) && writers.hasNext()) {
-		 log.debug("Skipping ", writer.getClass().getName());
-		 writer = writers.next();
+	  ImageWriter writerIt = writers.next();
+	  while (writers.hasNext()) {
+		 String name = writerIt.getClass().getName();
+		 if( name.startsWith(preferred_name_start) ) {
+			writer = writerIt;
+			break;
+		 }
+		 else if( name.startsWith(preferred_name_start2) ) {
+			writer = writerIt;
+		 }
+		 log.debug("Skipping {}", name);
+		 writerIt = writers.next();
+	  }
+	  if( writer==null ) {
+		 writer = writerIt;
+		 log.warn("Couldn't find preferred writer, using "+writer.getClass()+" instead.");
 	  }
 	  this.contentType = eri.mimeType;
 	  this.wadoImage = image;
@@ -274,6 +286,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 		 return;
 	  }
 	  long start = System.nanoTime();
+	  log.info("wadoImage is of type {}",wadoImage.getValue().getType());
 	  response.setContentType(contentType);
 	  response.setHeader("Cache-Control", "max-age=" + maxAge);
 	  // Because this is controlled by login, it will have Pragma and Expires

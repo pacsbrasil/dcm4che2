@@ -193,7 +193,7 @@ if (!("console" in window) || !("firebug" in console)) {
     {
         if (consoleFrame)
             return;
-        
+     
         window.onFirebugReady = function(doc)
         {
             window.onFirebugReady = null;
@@ -213,7 +213,11 @@ if (!("console" in window) || !("firebug" in console)) {
 
         var baseURL = getFirebugURL();
 
-        consoleFrame = document.createElement("iframe");
+		if( document.createElementNS ) {
+        	consoleFrame = document.createElementNS("http://www.w3.org/1999/xhtml","iframe");
+		} else {
+        	consoleFrame = document.createElement("iframe");
+		}
         consoleFrame.setAttribute("src", baseURL+"/firebug.html");
         consoleFrame.setAttribute("frameBorder", "0");
         consoleFrame.style.visibility = (frameVisible ? "visible" : "hidden");    

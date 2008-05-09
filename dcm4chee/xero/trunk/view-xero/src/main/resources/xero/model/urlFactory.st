@@ -12,13 +12,15 @@ function UrlFactory(base, formId) {
 	this.updateUrl();
 };
 
+UrlFactory.prototype.debug = function() {};
+
 /** Updates the local parameters with values from the form being currently displayed, if it can be found.
   * If not, then it just silently returns.
   */
 UrlFactory.prototype.updateUrl = function URLF_updateUrl() {
 	var form = document.getElementById(this.formId);
 	if( form!==undefined && form!==null ) {
-		console.info("Update url %s from form %s", this.url, this.formId);
+		this.debug("Update url %s from form %s", this.url, this.formId);
 		this.sep = "?";
 		this.url = this.base;
 		this.updateUrlFromForm(form);
@@ -38,7 +40,7 @@ UrlFactory.prototype.updateUrlFromForm = function URLF_updateUrlFromForm(node) {
 		val = node.value;
 	};
 	if( name ) {
-		console.info("Adding parameter %s=%s",name,val);
+		this.debug("Adding parameter %s=%s",name,val);
 		this[name] = val;
 		if( val && val!=="" ) {
 			this.url = this.url + this.sep + name+"="+val;

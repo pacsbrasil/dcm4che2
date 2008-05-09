@@ -23,7 +23,7 @@
   	<option value="ThisYear">This Year</option>
   	<option value="LastYear">Last Year</option>
   	<option value="SinceLastYear">Since Last Year</option>
-  	<option value="Last10Years">Last 10 Years</options>
+  	<option value="Last10Years">Last 10 Years</option>
   </select>
 </td></tr>
 

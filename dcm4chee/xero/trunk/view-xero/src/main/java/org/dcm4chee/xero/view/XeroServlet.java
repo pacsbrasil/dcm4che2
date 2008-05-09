@@ -37,21 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.view;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.dcm4chee.xero.controller.Action;
 import org.dcm4chee.xero.controller.RequestValidator;
-import org.dcm4chee.xero.controller.XeroController;
 import org.dcm4chee.xero.controller.XmlModelFactory;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
@@ -81,6 +76,8 @@ public class XeroServlet extends StringTemplateServlet {
 
    Action controller;
    
+   StringTemplateGroup stgIE;
+   
    /** This is the information about the model, including "defaults" - not necessarily
     * the actual model used for each event.
     */
@@ -100,12 +97,30 @@ public class XeroServlet extends StringTemplateServlet {
 	  mwd.put("_session", new SessionMap(req.getSession()));
 	  return controller.action(mwd);
    }
+   
+   
+   /** Chooses the group for IE if the user agent includes MSIE, otherwise use the regular,
+    * SVG style group.
+    */
+   @Override
+   protected StringTemplateGroup getStringTemplateGroup(HttpServletRequest req) {
+	  	if( req.getHeader("USER-AGENT").indexOf("MSIE")>=0 ) {
+	  	   return stgIE;
+	  	}
+	  	return stg;
+   }
 
+
+
+   /** Initialize the data and ie specific stg. */
    @Override
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
 	  MetaDataBean root = StaticMetaData.getMetaData("xero-view.metadata");
 	  model = root.get("model");
 	  controller = (Action) root.get("controller").getValue();
+	  stgIE = createStringTemplateGroup("ie");
+	  stgIE.setSuperGroup(stg);
+	  stgIE.setAttributeRenderers(StringSafeRenderer.RENDERERS);
    }
 }

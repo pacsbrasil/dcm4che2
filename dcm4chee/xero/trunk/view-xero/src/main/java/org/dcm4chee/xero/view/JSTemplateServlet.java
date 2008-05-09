@@ -82,7 +82,7 @@ public class JSTemplateServlet extends StringTemplateServlet {
     */
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
-	  stg.setAttributeRenderers(JSStringSafeRenderer.RENDERERS);
+	  stg.setAttributeRenderers(StringSafeRenderer.JS_RENDERERS);
 
 	  String test = config.getInitParameter("dataName");
 	  if (test != null)

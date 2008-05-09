@@ -1,1 +1,1 @@
-<a class="jslink" onclick="xeroController.displayStudy(this,'$row.StudyInstanceUID$')">$row.(var)$</a>
+<a class="jslink" onclick="xeroController.displayStudy(this,'$rowTop.PatientIdentifier$','$row.StudyInstanceUID$')">$row.(var);format="xml"$</a>

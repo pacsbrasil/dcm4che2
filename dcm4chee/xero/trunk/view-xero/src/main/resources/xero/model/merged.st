@@ -18,19 +18,24 @@ function Merged(level, keyRef, offset) {
 		this.keyRef = keyRef;
 		this.offset = offset;
 		this.levelName = this.names[level];
-		this.idVar = this.idVars[level];
 		this.listeners = new Array();
 	} else {
 		this.conversation = new Object();
 		// The id is an indicator that the parent is valid and has a valid location.
 		this.id = "results";
 	}
+	this.childType = this.childTypes[this.level];
+	this.childIdVar = this.idVars[this.level];
 };
 
 /** A key is used to identify a particular element in the set, typically a UID.
  * Offsets from this follow the natural list order.
  */
 Merged.prototype.KEY="key";
+
+Merged.prototype.isDebug = false;
+if( Merged.prototype.isDebug ) Merged.prototype.debug = console.debug;
+else Merged.prototype.debug = function() {};
 
 /** A keySet is used to explicitly list the available/interesting items */
 Merged.prototype.KEY_SET="keySet";
@@ -44,19 +49,91 @@ Merged.prototype.POSITION="position";
 
 Merged.prototype.names = ["result", "patient", "study", "series", "image"];
 Merged.prototype.level =0;
-Merged.prototype.idVars = [null,"PatientIdentifier", "StudyInstanceUID", "SeriesInstanceUID", "Position"];
+Merged.prototype.idVars = ["PatientIdentifier", "StudyInstanceUID", "SeriesInstanceUID", "Position"];
 
 Merged.prototype.keyTypes = {"key":"key", "keySet":"keySet", "position":"position"};
 Merged.prototype.childTypes = ["patient", "study", "series", "image"];
+Merged.prototype.IMAGE_QUERY_SIZE=64;
+Merged.prototype.QUERY_SIZE=16;
+
+Merged.prototype.QUERY = "/wado2/image.xml";
+
+/** Sets external data for the the study.
+ * There are 3 types of external data that can be queried for:
+ *    Patient/Study - this is the initial information on the studies selected to be displayed
+ * and contains no series/image information.
+ *    Initial Study/Series/Image - contains all series and within each series, a given number of images.
+ *    Subsequent Images - contains additional images not found in the first study/series query.
+ * Clear is true if existing information is to be removed.
+ * Returns undefined if no additional data is needed, or an array of the required queries for
+ * data.  
+ */  
+Merged.prototype.mergeExternal = function Merged_mergeExternal(external, ret) {
+	if( this.external!==external ) {
+		this.external = external;
+		this.fireChanged();
+	}
+	this.debug("Adding external data to %s at level %d", this.id,this.level);
+	var child,childKey;
+	var childExt,url,position;
+	for(childKey in this.children) {
+		child = this.children[childKey];
+		if(!child.id) {
+			child.invalidate(false);
+		}
+		if( child.id!==undefined && external.children) {
+			if( child.id===null ) continue;
+			childExt = external.children[child.id];
+			if( childExt ) {
+				ret = child.mergeExternal(childExt,ret);
+				continue;
+			}
+			// So we don't have any external data for the child object, but we DO have it's id
+			// That has to mean that it is an image query, and that this is the series level,
+			if(!ret) ret = new Object();
+			if( this.level===3 ) {
+				position = child.id - this.QUERY_SIZE;
+				position = position - (position % this.IMAGE_QUERY_SIZE);
+				url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
+				this.debug("Adding %s to queries.",url); 
+				ret[url] = url;
+			}
+			else if( this.level===1 ) {
+				// This happens when the user views a NEW study in the same patient
+				url = this.STUDY_QUERY+"?StudyInstanceUID="+child.id;
+				this.debug("Adding new study query %s",url);
+				ret[url] = url;
+			}
+			else {
+				console.error("Unknown id/query this level %d in for child id %s", this.level, child.id);
+			}
+			continue;
+		}
+		// We don't have a child id - that has to mean that we need to make an initial study
+		// query
+		if( this.level===2 ) {
+			if( !ret ) ret =new Object();
+			url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id;
+			ret[url] = url;
+			this.debug("Adding %s to queries.", url);
+			return ret; 
+		}
+		else {
+			assert(false);
+			throw new Error("Unknown Merged query level "+this.level);
+		} 
+	}
+	return ret;
+}; 
 
 /** Sets a given named navigation key object value. */
 Merged.prototype.setNavigation = function Merged_setNavigation(key,value) {
 	this.createConversation();
 	if( this.conversation[key] == value ) {
-		console.debug("setNavigation key is unchanged - continuing with doing anything.");
+		this.debug("setNavigation key is unchanged - continuing with doing anything.");
 		return;
 	}
-	console.debug("setNavigation on %s is %s=%s", this.id, key, value);
+	this.debug("setNavigation on %s is %s=%s", this.id, key, value);
 	this.conversation[key] = value;
 
 	this.invalidate(true);
@@ -69,23 +146,27 @@ Merged.prototype.invalidate = function Merged_invalidate(isTop) {
 		// Compute the new id if we can
 		this.id = this.parent.lookupId(this.keyRef,this.offset);
 		if( this.id === oldId ) {
-			console.debug("Unchanged id=%s", this.id);
 			return;
 		}
-		console.debug("Changed data for old id %s is now %s",oldId,this.id);
-	
-		// Clear out anyone listening to changes in this object - no one can listen at level 0.
-		var i,n=this.listeners.length;
-		for(i=0; i<n; i++) {
-			this.listeners[i][this.levelName] = null;
-			this.listeners[i].id = this.id;
-		}
+		this.debug("Changed data for old id %s is now %s",oldId,this.id);
+		this.external = undefined;
+		this.conversation = undefined;
+		this.fireChanged();	
 	};
 	
 	var childKey, child;
 	for(childKey in this.children ) {
 		child = this.children[childKey];
 		child.invalidate(false);		
+	}
+};
+
+Merged.prototype.fireChanged = function Merge_fireChanged() {
+	if( this.level===0 ) return;
+	var i,n=this.listeners.length;
+	var listener;
+	for(i=0; i<n;i++) {
+		this.listeners[i].mergedListener(this);
 	}
 };
 
@@ -98,7 +179,6 @@ Merged.prototype.lookupId = function Merged_lookupId(key,offset) {
 	var val = this.conversation[key];
 	var type = this.keyTypes[key];
 	if( type===this.KEY_SET ) {
-		console.info("Looking up a keyset type mapping ");
 		if(! val ) return undefined;
 		if( offset < val.length && offset >=0 ) return val[offset];
 		return null;
@@ -112,38 +192,63 @@ Merged.prototype.lookupId = function Merged_lookupId(key,offset) {
 		return null;
 	}
 	else if( type===this.KEY ) {
-		console.info("Looking up a key type mapping found %s",val);
 		// Key type - one case is to avoid any searching at all, although it doesn't
 		// allow you to find out much extra information in the child.
 		if( offset===0 && val ) return val;
 		if( !this.external ) return undefined;
-		var extChildren = this.external[this.childTypes[this.level]];
-		if( !extChildren ) return undefined;
+		var extChildren = this.getExtChildren();
+		if( !extChildren ) {
+			this.debug("Found no children defined for %s under the name %s", this.id,this.childType);
+			return undefined;
+		}
 		if( val ) {
 			var posn = this.findExternal(val);
 			if( posn ) {
 				offset = offset + posn;
-			}
-			else {
-				console.warn("Can't find child item "+posn);
+			} else {
 				return null;
 			}
 		}
-		if( extChildren.length > offset && offset>=0 ) return extChildren[offset];
+		if( extChildren.length > offset && offset>=0 ) {
+			return extChildren[offset][this.childIdVar];
+		}
 		return null;
 	}
 	else {
+		key.a.b;
 		throw new Error("Unknown key type "+key);
 	}
 };
 
+/** Gets the external children list.
+ * Normally, this is just the simple children objects, but
+ * for the series child list (of a study), it only returns series that contain images.  
+ * Other types of listeners/data is needed for non-image series.
+ */
+Merged.prototype.getExtChildren = function Merged_getExtChildren() {
+	var ret = this.external[this.childType];
+	if( this.level!==1 || !ret) return ret;
+	var seriesImage = this.external._seriesImage;
+	// The available series doesn't change unless the entire object is refreshed, once the
+	// first set of series has been loaded.
+	if( seriesImage ) return seriesImage;
+	seriesImage = new Array();
+	var ser, i,n=ret.length;
+	for(i=0; i<n; i++) {
+		ser = ret[i];
+		if( !ser.image ) continue;
+		seriesImage.push(ser);
+	}
+	this.external._seriesImage = seriesImage;
+	return seriesImage;
+};
+
 /** Finds the position in the external data having the given id value */
 Merged.prototype.findExternal = function Merged_findExternal(val) {
-	var extChildren = this.external[this.childTypes[this.level]];
+	var extChildren = this.external[this.childType];
 	var i,n=extChildren.length;
-	var searchId = this.idVars[this.level+1];
 	for(i=0; i<n; i++) {
-		if( extChildren[i][searchId]==val ) return i;
+		if( extChildren[i][this.childIdVar]==val ) return i;
 	}
 	return null;
 }
@@ -164,18 +269,8 @@ Merged.prototype.createConversation = function Merged_createConversation() {
 };
 
 
-/** Assigns results information to the various levels - causes the actual
- * information to display to be decided.  
+/** Assigns results information to the various levels.
  */
-Merged.prototype.assign = function Merged_assign(results) {
-	this.results = results;
-	var i,n = this.listeners.length;
-	if(!this.name) this.name = this.names[this.level];
-	for(i=0; i<n; i++) {
-		this.listeners[i][this.name] = results;
-	}
-	
-};
 
 /** Gets the given merged child element.  The object will be disconnected from this merged object
  * if on the next apply, no child elements are found reflecting that child information.
@@ -194,19 +289,19 @@ Merged.prototype.getChild = function Merged_getChild(key,offset) {
 /**
  * Indicate that a given object is a listener for this level of information - when a new assignment
  * is made, the values in the child object will be changed.  Multiple objects can listen for the same
- * position/offset.  A change is indicated by calling the "setResult" method if present, or by 
- * assigning the result level attribute otherwise eg
- *	  patient/study/series/image - whatever the level name is, it contains a unified view of the data 
- *		for that particular object - call it <result> generically
- *	  <result>.<series/study/patient> is the parent unified view object
- *	  <result>.conversation is the conversational context associated values
- *	  <result>.session is the session context associated values
- *	  
+ * position/offset.  The given function is assigned ot obj as mergedListener and called.  A given
+ * object can't have 2 or more functions without some other means of combining them.
+ * @return the child object that is being listened to.
  */
-Merged.prototype.addListener = function Merged_addListener(listener, key, offset) {
-	var child = this.getChild(key,offset);
-	child.listeners.push(listener);
-	listener.merged = child;
+Merged.prototype.addChildListener = function Merged_addChildListener(obj, listenerF, key, offset) {
+	return this.getChild(key,offset).addListener(obj,listenerF);
+};
+
+Merged.prototype.addListener = function Merged_addListener(obj,listenerF) {
+	obj.mergedListener = listenerF;
+	this.listeners.push(obj);
+	obj.mergedListener(this);
+	return this;
 };
 
 /**
@@ -218,8 +313,7 @@ Merged.prototype.removeAllListeners = function Merged_removeAllListeners() {
 	if( this.level>0 ) {
 		var i,n=this.listeners.length;
 		for(i=0; i<n; i++) {
-			this.listeners[i].merged = undefined;
-			this.listeners[this.names[this.level]] = undefined;
+			this.listeners[i].mergedListener(undefined);
 		}
 		this.listeners = new Array();
 	}

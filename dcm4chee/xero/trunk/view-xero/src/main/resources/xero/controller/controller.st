@@ -28,7 +28,11 @@ function XeroController(model, view) {
 	// Start with the query layout as the default layout.
 	console.info("Setting controller layouts to %s",model.queryLayouts);
 	model.layouts = model.queryLayouts;
+	if( this.isDebug ) this.debug = console.debug;
 };
+
+XeroController.prototype.isDebug = true;
+XeroController.prototype.debug = function() {};
 
 XeroController.prototype.getBody = function XC_getBody() {
 	if( this.body===undefined ) {
@@ -37,13 +41,62 @@ XeroController.prototype.getBody = function XC_getBody() {
 	return this.body;
 };
 
+function replaceHtml(el, html) {
+	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
+	/*@cc_on // Pure innerHTML is slightly faster in IE
+		oldEl.innerHTML = html;
+		return oldEl;
+	@*/
+	var newEl = oldEl.cloneNode(false);
+	newEl.innerHTML = html;
+	oldEl.parentNode.replaceChild(newEl, oldEl);
+	/* Since we just removed the old element from the DOM, return a reference
+	to the new element, which can be used to restore variable references. */
+	return newEl;
+};
+
+XeroController.prototype.importHtml = function XC_importHtml(el, html) {
+	this.debug("importHTML.");
+	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
+
+	var dp = new DOMParser();
+	//var parsed = dp.parseFromString('<div id="body" xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg">'+html+"</div>","text/xml");
+	var parsed = dp.parseFromString(html,"text/xml");
+	if( !parsed ) {
+		console.warn("No parsed value found - not changing display, source text %s", html);
+		return;
+	}
+	parsed = parsed.documentElement;
+	if( !parsed ) {
+		console.warn("No parsed document element value found - not changing display, source text %s", html);
+		return;
+	}
+	this.debug("Finished parsing node.");
+	var newEl = document.importNode(parsed,true);
+	if(!newEl ) console.warn("newEl not defined.");
+	if(!oldEl ) console.warn("oldEl not defined.");
+	if( !oldEl.parentNode ) console.warn("parentNode of oldEl not defined.");
+	this.debug("Finished importing node.");
+	oldEl.parentNode.replaceChild(newEl, oldEl);
+	this.debug("Replaced body node directly.");
+	/* Since we just removed the old element from the DOM, return a reference
+	to the new element, which can be used to restore variable references. */
+	return newEl;
+};
+
 XeroController.prototype.updateView = function XC_action(actionName) {
 	console.time("InitialRender "+actionName);
-	var render = this.view.toString("xeroBody",this.model);
+	var render = ""+this.view.toString("xeroBody",this.model);
 	console.timeEnd("InitialRender "+actionName);
+	window._render = render;
 	
+	//console.info("Render: %s",render);
 	console.time("InnerHTML");
-	this.getBody().innerHTML = render;
+	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
+		this.importHtml("innerBody", render);
+	} else {
+		this.getBody().innerHTML = render;
+	}
 	console.timeEnd("InnerHTML");
 };
 

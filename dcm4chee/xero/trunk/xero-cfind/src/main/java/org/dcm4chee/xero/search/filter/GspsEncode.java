@@ -73,6 +73,7 @@ import org.dcm4chee.xero.search.study.Macro;
 import org.dcm4chee.xero.search.study.MacroItems;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
+import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
@@ -1093,7 +1094,9 @@ public class GspsEncode implements Filter<ResultsBean> {
 				  }
 			   }
 			   // Didn't find the series - might as well add it completely.
-			   studyIt.getSeries().add((SeriesType) study.getChildById(seriesUid));
+			   SeriesType sb = (SeriesType) study.getChildById(SeriesBean.key(seriesUid));
+			   assert sb!=null;
+			   studyIt.getSeries().add(sb);
 			   return gspsType;
 			}
 		 }

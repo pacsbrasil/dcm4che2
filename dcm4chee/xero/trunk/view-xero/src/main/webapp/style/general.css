@@ -5,6 +5,9 @@ tr {
 tr.header {
 }
 
+body {
+	margin: 0px;
+}
 tr.even {
   background: #dfefff;
 }
@@ -21,31 +24,44 @@ button {
 	color: blue;
 }
 
+div {
+	margin: 0px;
+}
+
 div.studyTray {
 	background:green;
 	width:142px;
 	float: left;
+	overflow: hidden;
 }
 
 div.seriesToolbar {
 	background: blue;
-	width: 25%;
 	float: left;
+	overflow: hidden;
 }
 
-div.image {
-	background: red;
-	width: 25%;
+.image {
+	margin: 0px;
+	border: 0px;
+	background: black;
+	color: white;
 	float: left;
+	overflow: hidden;
 }
 
 div.menu {
-	width: 100%;
-	height: 25px;
 	background: cyan;
+	overflow: hidden;
 }
 
 div.layout {
 	float: left;
-	background: orange;
+	background: #202020;
+}
+
+
+div.innerBody {
+	background: #909090;
+	overflow: hidden;
 }

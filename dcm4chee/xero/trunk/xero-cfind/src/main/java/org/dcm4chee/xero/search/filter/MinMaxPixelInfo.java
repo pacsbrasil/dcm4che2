@@ -78,6 +78,9 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 	  for (PatientType pt : ret.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
 			for (SeriesType set : st.getSeries()) {
+			   if( set==null ) {
+				  log.warn("Series should not be null...");
+			   }
 			   for (DicomObjectType dot : set.getDicomObject()) {
 				  if (!(dot instanceof ImageBean))
 					 continue;

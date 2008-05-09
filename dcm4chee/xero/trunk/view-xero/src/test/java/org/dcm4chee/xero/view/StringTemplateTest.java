@@ -86,6 +86,6 @@ public class StringTemplateTest {
 	  System.out.println("Mid size two param test took "+(System.nanoTime()-start)/(1e6*count)+" ms/render");
 	  
 	  twoParamMidSize = group.getInstanceOf("templates/twoParamMidSize");
-	  System.out.println("Result="+twoParamMidSize.toString());
+	  //System.out.println("Result="+twoParamMidSize.toString());
    }
 }

@@ -11,10 +11,11 @@
  
 function XmlModel(urlSource) {
 	this.urlSource = urlSource;
+	if( this.isDebug ) this.debug = console.debug;
 };
 
-XmlModel.prototype.debug = console.debug;
-
+XmlModel.prototype.debug = function() {};
+//XmlModel.prototype.isDebug = true;
 
 /** Causes a request to be made to update the given object.  Currently creates synchronous requests
  * but eventually that should be changed to use asynchronous and to make the required requests up front
@@ -23,8 +24,10 @@ XmlModel.prototype.debug = console.debug;
  * displayed, but implementing it could be really hard.
  */
 XmlModel.prototype.request = function XM_request() {
-	var url = this.urlSource.url;
-	this.requestUrl(url);
+	if( !this.url ) {
+		this.url = this.urlSource.url;
+	}
+	this.requestUrl(this.url);
 };
 
 XmlModel.prototype.requestUrl = function XM_requestUrl(url) {
@@ -56,18 +59,24 @@ XmlModel.prototype.parse = function XM_parse(el) {
 		child = children.item(i);
 		if( child.nodeType!==1 ) continue;
 		name = localName(child);
-		lst = this[name];
-		xchild = new XmlModel();
-		if( lst===null || lst===undefined ) {
-		  lst = new Array();
-		  this[name] = lst;
-		  xchild.xmlFirst = true;
-		} else xchild.xmlFirst = false;
+		xchild = this.getChild(name,child);
 		xchild._parent = this;
 		xchild.parse(child);
 		xchild._parent = this;
-		lst.push(xchild);
 	};
+};
+
+/** Gets a given child, specified by the given name.  May use other attributes from el to look it up. */
+XmlModel.prototype.getChild = function XM_getChild(name,el) {		
+	var lst = this[name];
+	var xchild = new XmlModel();
+	if( !lst ) {
+	  lst = new Array();
+	  this[name] = lst;
+	  xchild.xmlFirst = true;
+	} else xchild.xmlFirst = false;
+	lst.push(xchild);
+	return xchild;
 };
 
 /** Finds the given element in the list child element, having attribute att with the given value 

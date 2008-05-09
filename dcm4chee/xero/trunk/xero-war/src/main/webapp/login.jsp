@@ -68,12 +68,17 @@
 </table>
 </center>
 <% if( !isMobile ) { %>
-<a href="http://www.dcm4che.org/confluence/display/ee2/Xero">Xero WIKI</a><br />
+Login/password:  user/user <br />
+<a href="http://www.dcm4che.org/confluence/display/ee2/Xero">Xero WIKI (including links to source)</a><br />
 <a href="http://www.dcm4che.org/jira/browse/XER">Xero Bug Reports</a><br />
 <a href="http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=236929">Xero Download</a><br />
+<h2>New Version of Xero</h2>
+<a href="/xview/xero">XSLT Free Version</a> <br />
+<a href="/xview/xero?ModalitiesInStudy=CT">CT Studies</a> <br />
+<a href="/xview/xero?ModalitiesInStudy=CR">CR Studies</a> <br />
+
 <h2>Known Issues</h2>
 <ul>
-<li>Same Series/Study UID - if a study with the same UID for study/series/object is attempted to be shown, IE will show an error, while Firefox will just show a black series tray.</li>
 <li>IE XSLT Bug - If IE only updates the mode/page once the user clicks on a second series to view, or redisplays the page, then it is probably caused by a bug in the MS XSLT - upgrade to a newer version of the XML library from MS.</li>
 <li>Opera - never updates the page on mode changes etc, but does display.</li>
 <li>Safari - only displays, no image change functionality (not sure what causes this yet.)</li>

@@ -54,7 +54,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 		 return rb;
 	  for (PatientType pt : rb.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
-			GspsType gspsType = findMostRecentGsps(st, gspsResults, gspsNames);
+			GspsType gspsType = findMostRecentGsps((StudyBean) st, gspsResults, gspsNames);
 			if (gspsType != null) {
 			   log.debug("Setting GSPS to apply for " + st.getStudyInstanceUID() + " to " + gspsType.getContentLabel());
 			   st.setGspsLabel(gspsType.getContentLabel());
@@ -65,9 +65,9 @@ public class GspsDiscover implements Filter<ResultsBean> {
    }
 
    /** Finds the most recent GSPS matching the given content names */
-   private GspsType findMostRecentGsps(StudyType st, ResultsBean gspsResults, String gspsNames) {
+   private GspsType findMostRecentGsps(StudyBean st, ResultsBean gspsResults, String gspsNames) {
 	  log.debug("Looking for GSPS for study " + st.getStudyInstanceUID());
-	  StudyBean gspsSb = (StudyBean) gspsResults.getChildren().get(st.getStudyInstanceUID());
+	  StudyBean gspsSb = (StudyBean) gspsResults.getChildren().get(st.getId());
 	  if (gspsSb == null) {
 		 log.debug("Didn't find any GSPS objects for study.");
 		 return null;
@@ -114,7 +114,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 	  prParams.put("StudyInstanceUID", uids.toArray(STRING_ARRAY_TYPE));
 	  if (presentationUID != null)
 		 prParams.put("SOPInstanceUID", presentationUID);
-	  log.debug("Doing a search on " + uids.size() + " Study UID's for PR objects.");
+	  log.debug("Doing a search on {} Study UID's for PR objects uid[0]={}", uids.size(), uids.get(0));
 	  ResultsBean gspsRB = (ResultsBean) filterItem.callNamedFilter("imageSearch", prParams);
 	  return gspsRB;
    }

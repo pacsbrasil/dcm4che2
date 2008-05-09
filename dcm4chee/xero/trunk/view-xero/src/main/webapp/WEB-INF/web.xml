@@ -9,23 +9,9 @@
       <filter-class>org.dcm4chee.xero.servlet.TimeFilter</filter-class>
    </filter>
 
-   <filter>
-      <filter-name>HtmlContentFilter</filter-name>
-      <filter-class>org.dcm4chee.xero.servlet.ContentTypeFilter</filter-class>
-      <init-param>
-	      <param-name>contentType</param-name>
-    	  <param-value>text/html</param-value>
-      </init-param>
-   </filter>
-
    <filter-mapping>
       <filter-name>TimeFilter</filter-name>
       <url-pattern>/*</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>HtmlContentFilter</filter-name>
-      <url-pattern>/xero</url-pattern>
    </filter-mapping>
    
    <servlet>
@@ -40,6 +26,10 @@
 	      <param-name>templates</param-name>
     	  <param-value>xero</param-value>
       </init-param>
+      <init-param>
+      	<param-name>contentType</param-name>
+      	<param-value>xhtml</param-value>
+      </init-param>
    </servlet>
    
    <servlet>
@@ -53,6 +43,10 @@
       <init-param>
 	      <param-name>templates</param-name>
     	  <param-value>nojs,xero</param-value>
+      </init-param>
+      <init-param>
+      	<param-name>contentType</param-name>
+      	<param-value>xhtml</param-value>
       </init-param>
    </servlet>
    
@@ -76,8 +70,38 @@
 	      <param-name>jsName</param-name>
     	  <param-value>xeroView</param-value>
       </init-param>
+      <init-param>
+	      <param-name>contentType</param-name>
+    	  <param-value>text/javascript</param-value>
+      </init-param>
    </servlet>
    
+   <servlet>
+      <servlet-name>Xero IE View Servlet</servlet-name>
+      <servlet-class>org.dcm4chee.xero.view.JSTemplateServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+      <init-param>
+	      <param-name>refreshInterval</param-name>
+    	  <param-value>10</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>startTemplates</param-name>
+    	  <param-value>xeroBody</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>dataName</param-name>
+    	  <param-value>ie,xero</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>jsName</param-name>
+    	  <param-value>xeroView</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>contentType</param-name>
+    	  <param-value>text/javascript</param-value>
+      </init-param>
+   </servlet>
+
    <servlet>
       <servlet-name>Xero JS Servlet</servlet-name>
       <servlet-class>org.dcm4chee.xero.view.StringTemplateServlet</servlet-class>
@@ -114,6 +138,10 @@
    <servlet-mapping>
       <servlet-name>Xero View Servlet</servlet-name>
       <url-pattern>/xeroView.js</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>Xero IE View Servlet</servlet-name>
+      <url-pattern>/xeroViewIE.js</url-pattern>
    </servlet-mapping>
 
    

@@ -13,9 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.model.MapWithDefaults;
-import org.dcm4chee.xero.model.UrlUriResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
+@SuppressWarnings("serial")
 public class StringTemplateServlet extends HttpServlet{
    private static final Logger log = LoggerFactory.getLogger(StringTemplateServlet.class);
 
@@ -56,18 +54,35 @@ public class StringTemplateServlet extends HttpServlet{
 		 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		 return;
 	  }
-	  resp.setContentType(getContentType(req));
+	  if( contentType.equals("xhtml") ) {
+		 if( req.getHeader("USER-AGENT").indexOf("MSIE")>=0 ) {
+			resp.setContentType("text/html");
+		 }
+		 else {
+			resp.setContentType("text/xml");
+		 }
+	  } else {
+	          resp.setContentType(getContentType(req));
+   	  }
 	  resp.setCharacterEncoding(characterEncoding);
 	  PrintWriter pw = resp.getWriter();
 	  StringTemplatePrintWriter stpw = new StringTemplatePrintWriter(pw);
 	  Map model = createModel(req,resp);
-	  StringTemplate st = stg.getInstanceOf(templateName,model);
+	  StringTemplateGroup group = getStringTemplateGroup(req);
+	  StringTemplate st = group.getInstanceOf(templateName,model);
 	  st.write(stpw);
 	  pw.close();
 	  long end = System.nanoTime();
 	  log.info("Templating/writing {} took {} ms",templateName,(end - start) / (1e6));
    }
 
+   /**
+    * Gets the string template group to use for the specific request - allows different
+    * groups to be used for particular browsers.
+    */
+   protected StringTemplateGroup getStringTemplateGroup(HttpServletRequest req) {
+	  return stg;
+   }
 
    /** Given the request, figure out what the template name is.  Return null for not found. */
    protected String getTemplateName(HttpServletRequest req) {
@@ -142,6 +157,7 @@ public class StringTemplateServlet extends HttpServlet{
 	  // Can pre-define a set of templates name in the constructor, so this assert isn't unnecessary
 	  assert templates!=null;
 	  stg = createStringTemplateGroup(templates);
+	  stg.setAttributeRenderers(StringSafeRenderer.RENDERERS);
 	  
 	  test = config.getInitParameter("contentType");
 	  if( test!=null ) contentType = test;

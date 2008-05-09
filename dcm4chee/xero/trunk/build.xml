@@ -87,7 +87,7 @@
   <target name="copyPackage">
      <mkdir dir="${stableServer}" />
      <copy todir="${stableServer}/server/default/deploy/xero.ear" preservelastmodified="true">
-        <fileset dir="xero-ear/target/xero" excludes="xero.war,xero-wado.war" />
+        <fileset dir="xero-ear/target/xero" excludes="xero.war,xero-wado.war,view-xero.war" />
      </copy>
      <copy todir="${stableServer}/server/default/deploy/xero.ear/xero-wado.war" preservelastmodified="true">
         <fileset dir="xero-wado-war/target/xero-wado" excludes="xero-wado.war,**/*.jar" />
@@ -97,6 +97,9 @@
         <fileset dir="xero-ipod/src/main/webapp">
           <include name="**/*" />
         </fileset>
+     </copy>
+     <copy todir="${stableServer}/server/default/deploy/xero.ear/view-xero.war" preservelastmodified="true">
+        <fileset dir="view-xero/target/view-xero" excludes="**/*.jar" />
      </copy>
      <copy todir="${stableServer}/server/default/conf">
         <fileset dir="conf" includes="**/*" />

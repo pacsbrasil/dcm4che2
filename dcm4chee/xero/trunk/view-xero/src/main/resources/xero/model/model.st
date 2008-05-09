@@ -1,5 +1,6 @@
 $model/urlFactory()$
 $model/xmlModel()$
+$model/studyData()$
 $model/layout()$
 $model/merged()$
 
@@ -33,4 +34,6 @@ xeroModel.queryBox = { "format":"query/query", "query":new UrlFactory("/wado2/st
 xeroModel.searchBox = {"format":"search/studyTable", "columns":XeroStudyColumns, "query":xeroModel.queryBox.query  };
 xeroModel.queryLayouts = [ xeroModel.queryBox, xeroModel.searchBox ];
 
-
+var STUDY_QUERY="/wado2/study.xml";
+var IMAGE_QUERY="/wado2/image.xml";
+var WADO_QUERY="/wado2/wado?requestType=WADO";

@@ -1,3 +1,4 @@
+<div id="innerBody" style="width:100%; height: 100%;"  xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">
 $if(layouts)$
 $layouts:{layout|$(layout.format)()$}$
 $elseif(layouts)$
@@ -8,7 +9,7 @@ $html/displayFirst()$
 
 $image/patientNameSel()$
 $image/studyDescriptionSel()$
-$image/menu()$
+$image/patientMenu()$
 $image/image()$
 $image/studyTray()$
 $image/seriesToolbar()$
@@ -22,3 +23,4 @@ $search/studyTable()$
 $else$
 No layouts found.
 $endif$
+</div>

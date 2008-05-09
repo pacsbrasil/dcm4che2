@@ -54,11 +54,11 @@
 <table>
 	<tr valign="middle">
 	  <td><div class="text">Name:</div></td>
-	  <td><input class="textfield" type="text" name="j_username" value=""/></td>
+	  <td><input class="textfield" type="text" name="j_username" value="user"/></td>
 	</tr>
 	<tr valign="middle">
 	  <td><div class="text">Password:</div></td>
-	  <td><input class="textfield" type="password" name="j_password" value=""/></td>
+	  <td><input class="textfield" type="password" name="j_password" value="user"/></td>
 	</tr>
 	<tr><td>&nbsp;</td></tr>
 	<tr valign="middle">
@@ -73,17 +73,11 @@
 <a href="http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=236929">Xero Download</a><br />
 <h2>Known Issues</h2>
 <ul>
-<li>Same Series/Study UID - if a study with the same UID for study/series/object is attempted to be shown, IE will show an error, while Firefox will just show a black series tray.</li>
-<li>IE XSLT Bug - If IE only updates the mode/page once the user clicks on a second series to view, or redisplays the page, then it is probably caused by a bug in the MS XSLT - upgrade to a newer version of the XML library from MS.</li>
-<li>Opera - never updates the page on mode changes etc, but does display.</li>
-<li>Safari - only displays, no image change functionality (not sure what causes this yet.)</li>
-<li>Some images in YBR 422 are corrupted when displayed.</li>
-<li>US, MG are not split by echo and/or multi-frame split correctly.</li>
-<li>IE will sometimes backup when playing CINE.</li>
-<li><a href="/xero/ipod.html">iPOD/iPhone</a></li>
+<li>This version has no window levelling, zoom/pan, CINE, series/image navigation, GSPS etc</li>
+<li>This version DOES support IE 6,7 Firefox 2,3  Opera 9   Safari 3</li>
+<li>This version has query and multi-study display, unlike the previous version.</li>
+<li>Missing features from the previous version are being worked on.</li> 
 </ul>
-<% } else { %>
-Mobile
 <% } %>
 
 </form>

@@ -32,21 +32,25 @@ public class JSTemplateTest {
 
    static String dataDir = cl.getResource("jstest").getFile();
 
+   // This copy of stgData is used as the base data to render.
    static StringTemplateGroup stgData = new StringTemplateGroup("jstest", dataDir);
+
+   static StringTemplateGroup stgRender = new StringTemplateGroup("jstest", dataDir);
 
    static StringTemplateGroup stg = new StringTemplateGroup("jstemplate", rootDir);
    static {
-	  stg.setAttributeRenderers(JSStringSafeRenderer.RENDERERS);
-	  stgData.setAttributeRenderers(JSStringSafeRenderer.RENDERERS);
+	  stg.setAttributeRenderers(StringSafeRenderer.JS_RENDERERS);
+	  stgRender.setAttributeRenderers(StringSafeRenderer.JS_RENDERERS);
+	  stgData.setAttributeRenderers(StringSafeRenderer.JS_RENDERERS);
    }
 
    @Test
    public void simpleTextTest() throws Exception {
-	  runTest("simpleText",false);
+	  runTest("simpleText",true);
    }
    @Test
    public void elseifTest() throws Exception {
-	  runTest("elseif",true);
+	  runTest("elseif",false);
    }
    @Test
    public void ifTest() throws Exception {
@@ -102,7 +106,11 @@ public class JSTemplateTest {
    }
    @Test
    public void separatorAnonTest() throws Exception {
-	  runTest("separatorAnon",true);
+	  runTest("separatorAnon",false);
+   }
+   @Test
+   public void formatTest() throws Exception {
+	  runTest("format",false);
    }
    
    public void runTest(String testKey, boolean verbose) throws Exception {
@@ -130,9 +138,7 @@ public class JSTemplateTest {
 
    /** Generates the Java side of the string template tests */
    public static String generateJavaResult(String testKey) {
-	  StringTemplateGroup stg = new StringTemplateGroup("jstemplate", rootDir);
-	  stg.setAttributeRenderers(JSStringSafeRenderer.RENDERERS);
-	  StringTemplate testTemplate = stgData.getInstanceOf(testKey);
+	  StringTemplate testTemplate = stgRender.getInstanceOf(testKey);
 	  testTemplate.setAttribute("a", "eh");
 	  testTemplate.setAttribute("b", 2);
 	  testTemplate.setAttribute("c", "sea");
@@ -142,6 +148,7 @@ public class JSTemplateTest {
 	  testTemplate.setAttribute("lst2", 2);
 	  testTemplate.setAttribute("lst2", 3);
 	  testTemplate.setAttribute("lst2", 4);
+	  testTemplate.setAttribute("ampValue","This & string has two & and two << signs.");
 	  Map<String,Object> person = new HashMap<String,Object>();
 	  person.put("name","Bill");
 	  testTemplate.setAttribute("person", person);

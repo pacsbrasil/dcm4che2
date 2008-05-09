@@ -22,6 +22,6 @@ function assertEqual(v1,v2) {
    }
 };
 
-model = { "a" : "eh", "b":2, "c":"sea", "lst":[1,2,3], "lst2":[2,3,4], "person":{"name":"Bill"} };
+model = { "a" : "eh", "b":2, "c":"sea", "lst":[1,2,3], "lst2":[2,3,4], "person":{"name":"Bill"}, "ampValue":"This & string has two & and two << signs." };
 assertEqual("$expected$", testTemplates.toString("$template$",model));
 print("Passed template $template$ with expected value $expected$\n");
