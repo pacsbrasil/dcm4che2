@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 		)
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
 @BindingType(SOAP12HTTP_BINDING)
-@EndpointConfig(configName = "Standard WSAddressing Endpoint")
+@EndpointConfig(configName = "Standard SOAP 1.2 WSAddressing Endpoint")
 public class DocumentRepository implements DocumentRepositoryPortType {
 
 	@Resource
