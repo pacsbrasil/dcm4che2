@@ -48,7 +48,7 @@
 <!ENTITY formatPatientID "format: id[^^^issuer]">
 <!ENTITY StudyIUID "Study Instance UID">
 <!ENTITY SeriesIUID "Series Instance UID">
-<!ENTITY StudyIUID "Study ID">
+<!ENTITY StudyID "Study ID">
 <!ENTITY StudyDate "Study Date">
 <!ENTITY formatStudyDate "format: yyyy/mm/dd or yyyy/mm/dd-yyyy/mm/dd">
 <!ENTITY AccessionNo "Accession No.">

@@ -48,7 +48,7 @@
 <!ENTITY formatPatientID "Format: ID[^^^Aussteller]">
 <!ENTITY StudyIUID "Studien Instance UID">
 <!ENTITY SeriesIUID "Serien Instance UID">
-<!ENTITY StudyIUID "Studien ID">
+<!ENTITY StudyID "Studien ID">
 <!ENTITY StudyDate "Studien Datum">
 <!ENTITY formatStudyDate "Format: yyyy/mm/dd oder yyyy/mm/dd-yyyy/mm/dd">
 <!ENTITY AccessionNo "Fall Nr.">
@@ -67,8 +67,8 @@
 <!ENTITY AccNo "Fall Nr.">
 <!ENTITY RefPhysician "Behandelnder Arzt">
 <!ENTITY Status "Status">
-<!ENTITY NoS "# S">
-<!ENTITY NoI "# O">
+<!ENTITY NoS "#&#160;S">
+<!ENTITY NoI "#&#160;O">
 <!ENTITY Series "Serie">
 <!ENTITY SeriesNoMedia "Serien Nr (@Medium)">
 <!ENTITY SeriesDescription "Serienbeschreibung">
