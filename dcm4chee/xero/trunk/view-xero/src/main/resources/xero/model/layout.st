@@ -77,6 +77,28 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 	};
 };
 
+/** Checks to see if the layout information is complete */
+Layout.prototype.isComplete = function Layout_isComplete() {
+	if( !this.layouts ) return true;
+	var lay,i,n=this.layouts.length;
+	for(i=0;i<n;i++){
+		lay = this.layouts[i];
+		if( !lay.used ) continue;
+		if( !lay.isComplete() ) return false;
+	};
+	return true;
+};
+
+/** Clears an relayout flags that have been set for this object and all child objects */
+Layout.prototype.clearRelayout = function Layout_clearRelayout() {
+	this.relayout = false;
+	if(! this.layouts ) return;
+	var i,n=this.layouts.length;
+	for(i=0; i<n; i++) {
+		this.layouts[i].clearRelayout();
+	}
+};
+
 /** Return only layouts that are being used - allows them to disappear or otherwise
  * not be shown.
  */
@@ -190,6 +212,16 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	
 	this.computeScale();
 	this.computeTranslate();
+};
+
+/** Indicate if the image load is complete */
+ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
+	if( !this.preloadImage ) return true;
+	if( this.preloadImage.complete ) {
+		this.preloadImage = undefined;
+		return true;
+	};
+	return false;
 };
 
 /** This generates a URL object that includes positioning/offset information 

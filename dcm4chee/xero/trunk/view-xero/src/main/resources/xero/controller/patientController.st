@@ -45,6 +45,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	this.mergeExternal(external);
 
 	model.layouts = model.patientLayout.layouts;
+	model.layout = model.patientLayout;
 	console.timeEnd("Load Patient Data");
 
 	var size = getViewportSize();
@@ -105,7 +106,7 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	
 };
 
-/** Navigates at the image level */
+/** Navigates at the image level - can be called against either the imageToolbar or imageArea */
 XeroController.prototype.navImg = function XC_navImg(id,dir) {
 	var lay = this.model.patientLayout.findLayout(id);
 	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
@@ -119,11 +120,13 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
+	//if( lay.imageArea ) lay.imageArea.relayout = true;
+	//else lay.relayout = true;
 	console.info("You are trying to navigate to %s", dirImg);
 	merged.setNavigation(merged.POSITION,dirImg);
 	this.mergeExternal();
 	
-	this.updateView("navImg");
+	this.waitUpdate("navImg");
 };
 
 /** Navigates the series using the mouse wheel */
@@ -134,6 +137,7 @@ XeroController.prototype.navWheelImg = function XC_navWheelImg(id,e) {
 	wheelData = (wheelData * id.gridX * id.gridY)/3;
 	this.debug("Trying to navigate %d", wheelData);
 	this.navImg(id,wheelData);
+	console.info("isComplete=%s",id.isComplete());
 	return cancelEvent(e);
 };
 
@@ -205,6 +209,7 @@ XeroController.prototype.createSeriesArea = function PC_createSeriesArea(merged,
 		};
 		for(i=0; i<sex; i++) {
 			imageArea = this.createImageArea(toolbars[i].merged,imx,imy);
+			toolbars[i].imageArea = imageArea;
 			layouts.push(imageArea);
 		};
 	};
@@ -274,6 +279,7 @@ function ImageAreaMergedListener(merged) {
 	if( merged.external===this.series ) {
 		return;
 	}
+	this.relayout = true;
 	this.series = merged.external;
 	if( !this.series ) {
 		this.used = false;
@@ -319,6 +325,7 @@ function ImageAreaMergedListener(merged) {
 function ImageMergedListener(merged) {
 	this.merged = merged;
 	if( merged && this.image!==merged.external ) {
+		this.relayout = true;
 		this.image = merged.external;
 		this.updatePosition();
 		AddImageUrl(this,true);
@@ -329,6 +336,9 @@ function AddImageUrl(imageLay, clear) {
 	if( clear ) imageLay.imageUrls = new Array();
 	if( (!imageLay.image) || !(imageLay.width) || !(imageLay.height) ) return;
 	imageLay.imageUrls.push(imageLay.createFullUrl(WADO_QUERY));
+	imageLay.preloadImage = new Image();
+	var src = imageLay.imageUrls[imageLay.imageUrls.length-1].imageUrl;
+	imageLay.preloadImage.src = src;
 };
 
 /** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place. */

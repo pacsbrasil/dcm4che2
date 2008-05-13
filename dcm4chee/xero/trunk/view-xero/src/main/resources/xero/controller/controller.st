@@ -29,6 +29,7 @@ function XeroController(model, view) {
 	console.info("Setting controller layouts to %s",model.queryLayouts);
 	model.layouts = model.queryLayouts;
 	if( this.isDebug ) this.debug = console.debug;
+	
 };
 
 XeroController.prototype.isDebug = true;
@@ -94,20 +95,81 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	return newEl;
 };
 
+/** Updates the view in its entirety.
+ */
 XeroController.prototype.updateView = function XC_action(actionName) {
-	console.time("InitialRender "+actionName);
-	var render = ""+this.view.toString("xeroBody",this.model);
-	console.timeEnd("InitialRender "+actionName);
+	console.time(actionName);
+	var render = this.view.toString("xeroBody",this.model);
 	window._render = render;
 	
 	//console.info("Render: %s",render);
-	console.time("InnerHTML");
 	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
 		this.importHtml("innerBody", render);
 	} else {
 		this.replaceHtml(this.getBody(),render);
 	}
-	console.timeEnd("InnerHTML");
+	console.timeEnd(actionName);
+};
+
+/** Performs a delayed update */
+XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
+	if( cnt===undefined ) cnt = 3;
+	var missing = this.renderComplete(this.model.layouts);
+	if( missing===0 ) return 0;
+	if( cnt===0 ) {
+		console.info("Rendering with cnt=%d with %d missing", cnt, missing);
+		this.updateLayouts(actionName);
+		return;
+	}
+	console.info("Waiting till everything is complete - cnt=%d", cnt);
+	var usethis = this;
+	window.setTimeout( function() {
+		usethis.waitUpdate(actionName,cnt-1);
+	}, 150);
+};
+
+/** Renders all components that have relayout set and are complete.  Returns a count of required items. */
+XeroController.prototype.renderComplete = function XC_renderComplete(layouts,incomplete) {
+	var render, origLay,lay,i,n=layouts.length;
+	var ret = 0;
+	for(i=0; i<n;i++) {
+		lay = layouts[i];
+		if( !lay.used ) continue;
+		if( lay.relayout ) {
+			if( incomplete || lay.isComplete() ) {
+				this.debug("Re-rendering %s template %s",lay.id, lay.format);
+				origLay = this.model.layout;
+				this.model.layout = lay;
+				render =this.view.toString(lay.format,this.model);
+				this.model.layout = origLay;
+				this.replaceHtml(lay.id,render);
+				lay.clearRelayout();
+			}
+			else {
+				ret++;
+			} 
+		}
+		else if( lay.layouts ) ret += this.renderComplete(lay.layouts, incomplete);
+	}
+	return ret;
+};
+
+
+/** Updates the layout components individually, only as required. */
+XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,layouts) {
+	if( layouts===undefined ) {
+		console.time(actionName);
+		if(! this.model.layouts ) {
+			console.warn("Layouts is null - can't update layouts.");
+			return;
+		}
+		this.updateLayouts(actionName,this.model.layouts);
+		console.timeEnd(actionName);
+		return;
+	}
+
+	// Rendering everything, even stuff not yet complete.
+	this.renderComplete(this.model.layouts,true);	 
 };
 
 $controller/patientController()$
