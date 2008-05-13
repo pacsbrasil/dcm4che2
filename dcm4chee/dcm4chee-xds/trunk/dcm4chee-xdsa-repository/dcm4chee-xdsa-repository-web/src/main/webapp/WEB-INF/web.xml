@@ -15,7 +15,7 @@
 		<servlet-class>org.dcm4chex.xds.repository.web.XDSRepositoryServlet</servlet-class>
 		<init-param>
 			<param-name>xdsServiceName</param-name>
-			<param-value>dcm4chee.archive:service=XDSService</param-value>
+			<param-value>dcm4chee.xds:service=XDSService</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
