@@ -2,7 +2,7 @@
 <!--  Version $Revision:$ $Date:$ -->
 <server>
   <mbean code="org.dcm4chee.xds.cfg.mbean.XdsCfgService" 
-         name="dcm4chee.archive:service=XdsCfgService"
+         name="dcm4chee.xds:service=XdsCfgService"
          xmbean-dd="">
 
 <xmbean>
@@ -35,7 +35,7 @@
       <name>AttributesToStore</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="XDS-I:*;XDSQueryService:*;XDSService:*"/>
+         <value value="dcm4chee.archive:service=XDS-I:*;dcm4chee.archive:service=XDSQueryService:*;XDSService:*;Store2Dcm:*;XDSbRepositoryService:*;XDSbSourceService:*;DocumentStoreService:*"/>
       </descriptors>
    </attribute>
 
@@ -54,12 +54,12 @@
       <description><![CDATA[ Default ServiceDomainPrefix for the AttributesToStore List.<br/>
       				With this prefix you can use the service name (e.g. XDSService) in 
       				the AttributesToStore list instead of the full qualified ObjectName String
-      				(e.g. dcm4chee.archive:service=XDSService)
+      				(e.g. dcm4chee.xds:service=XDSService)
       			]]> </description>
       <name>ServiceDomainPrefix</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="dcm4chee.archive:service="/>
+         <value value="dcm4chee.xds:service="/>
       </descriptors>
    </attribute>
 
