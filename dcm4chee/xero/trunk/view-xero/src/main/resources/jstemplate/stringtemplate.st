@@ -273,6 +273,15 @@ StringTemplate.prototype[21] = function ST_assign(chunk,model)
 	return "";
 };
 
+/** Concat two strings */
+StringTemplate.prototype[24] = function ST_concat(chunk,model) {
+	var child1 = this.call(chunk.ast[0],model);
+	var child2 = this.call(chunk.ast[1],model);
+	child1 = this.convertToString(child1);
+	child2 = this.convertToString(child2);
+	return child1+child2;
+};
+
 /** Handle the dot object */
 StringTemplate.prototype[25] = function ST_dot(chunk,model) {
 	var root = this.call(chunk.ast[0],model);

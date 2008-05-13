@@ -89,6 +89,18 @@ Layout.prototype.getUsedLayouts = function Layout_getUsedLayouts() {
 	return ret;
 };
 
+/** Finds the given layout object.  Can be passed a layout object directly or the id of one. */
+Layout.prototype.findLayout = function findLayout(id) {
+	if( typeof(id)!=="string" ) return id;
+	if( this.id===id ) return this;
+	if( !this.layouts ) return;
+	var ret,i,n=this.layouts.length;
+	for(i=0; i<n;i++) {
+		ret = this.layouts[i].findLayout(id);
+		if( ret ) return ret;
+	}
+}; 
+
 /** Sum all of the widths of the absolute width items */
 Layout.prototype.sumAbsWidth = function Layout_sumAbsWidth(usedLay) {
 	var ret = 0;

@@ -210,7 +210,7 @@
      <dependency>
        <groupId>org.antlr</groupId>
        <artifactId>stringtemplate</artifactId>
-       <version>3.1.custom</version>
+       <version>3.1-XERO</version>
      </dependency>
      <dependency>
        <groupId>antlr</groupId>

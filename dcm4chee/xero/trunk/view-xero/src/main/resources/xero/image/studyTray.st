@@ -4,12 +4,12 @@ $if(layout.study)$
 	$layout.study.StudyDescription$ <br />
 	Study ID: $layout.study.StudyID$ <br />
 	Acc#: $layout.study.AccessionNumber$ <br />
-	Next Prev Series<br />
+	$html/link(it="Prev",onclick="xeroController.navSer('"+layout.id+"',-1)")$ $html/link(it="Next",onclick="xeroController.navSer('"+layout.id+"',1)")$ Series<br />
 	<br />
 	Reports <br />
 	Key Image Sets <br />
 	Presentation State <br />
-	Series <br />
+	$image/seriesTray()$<br />
 	  Key Images <br />
 	  Other Series <br />
 $else$

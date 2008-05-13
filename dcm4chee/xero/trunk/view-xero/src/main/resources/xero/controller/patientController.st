@@ -35,12 +35,29 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	var merged = model.merged;
 	merged.setNavigation(merged.KEY, patientId);
 	merged.getChild(merged.KEY, 0).setNavigation(merged.KEY_SET,uids);
-
-	var external = model.merged.external;
+	
+	var external = merged.external;
 	if( (!external) || (!external.children[patientId]) ) {
 		external = new StudyData(uids);
 		external.request();
 	}
+
+	this.mergeExternal(external);
+
+	model.layouts = model.patientLayout.layouts;
+	console.timeEnd("Load Patient Data");
+
+	var size = getViewportSize();
+	this.debug("Viewport size %d,%d",size[0],size[1]);
+	model.patientLayout.resize(size[0],size[1], "width:100%; height:100%;");
+
+	this.updateView("displayPatient");
+};
+
+/** Merge the external data into the merged display data so that layouts can be seen. */
+XeroController.prototype.mergeExternal = function(external) {
+	var merged = this.model.merged;
+	if( !external ) external = merged.external;
 	var queries = merged.mergeExternal(external);
 	i = 2;
 	while(queries && i>0) {
@@ -53,14 +70,71 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 		console.warn("Too many queries without getting all data...");
 	}
 
-	model.layouts = model.patientLayout.layouts;
-	console.timeEnd("Load Patient Data");
+};
+
+/** Displays the specified (backslashes) set of study UIDs */
+XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, studyUid) {
+	this.debug("Display study UID %s",studyUid);
+	var uids = [ studyUid ];
+	this.displayPatient(src, patientId,uids);
+};
+
+/** Navigates at the series level */
+XeroController.prototype.navSer = function XC_navSer(id,dir) {
+	var lay = this.model.patientLayout.findLayout(id);
+	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
+	if( (!lay) || ! lay.merged ) {
+		console.warn("Didn't find a study to navigate on?");
+		return;
+	}
+	var merged = lay.merged;
+	var dirSeries = merged.lookupId(merged.KEY,dir);
+	if(!dirSeries ) {
+		console.warn("Didn't find a next/previous series to navigate to.");
+		return;
+	}
+	console.info("You are trying to navigate to %s", dirSeries);
+	merged.setNavigation(merged.KEY,dirSeries);
+	this.mergeExternal();
 
 	var size = getViewportSize();
 	this.debug("Viewport size %d,%d",size[0],size[1]);
-	model.patientLayout.resize(size[0],size[1], "width:100%; height:100%;");
+	this.model.patientLayout.resize(size[0],size[1], "width:100%; height:100%;");
 
-	this.updateView("displayPatient");
+	this.updateView("navSer");
+	
+};
+
+/** Navigates at the image level */
+XeroController.prototype.navImg = function XC_navImg(id,dir) {
+	var lay = this.model.patientLayout.findLayout(id);
+	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
+	if( (!lay) || ! lay.merged ) {
+		console.warn("Didn't find an image to navigate on?");
+		return;
+	}
+	var merged = lay.merged;
+	var dirImg = merged.lookupId(merged.POSITION,dir);
+	if(!dirImg ) {
+		console.warn("Didn't find a next/previous series to navigate to.");
+		return;
+	}
+	console.info("You are trying to navigate to %s", dirImg);
+	merged.setNavigation(merged.POSITION,dirImg);
+	this.mergeExternal();
+	
+	this.updateView("navImg");
+};
+
+/** Navigates the series using the mouse wheel */
+XeroController.prototype.navWheelImg = function XC_navWheelImg(id,e) {
+	this.debug("Wheel mouse navigation called on %s.", id);
+	id = this.model.patientLayout.findLayout(id);
+	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
+	wheelData = (wheelData * id.gridX * id.gridY)/3;
+	this.debug("Trying to navigate %d", wheelData);
+	this.navImg(id,wheelData);
+	return cancelEvent(e);
 };
 
 /**
@@ -139,7 +213,12 @@ XeroController.prototype.createSeriesArea = function PC_createSeriesArea(merged,
 
 XeroController.prototype.createImageArea = function PC_createImageArea(merged,imx, imy) {
 	var cnt = Layout.prototype.idCnt++;
-	var imageArea = new Layout("imageArea"+cnt,"html/layout");
+	var imageArea = new Layout("imageArea"+cnt,"image/imageArea");
+	var xcThis = this;
+	imageArea.mousewheel = function(evt) {
+		console.info("Mouse wheel image area called.");
+		return xcThis.navWheelImg(imageArea,evt);
+	};
 	merged.addListener(imageArea,ImageAreaMergedListener);
 	imageArea.used = false;
 	imageArea.setGrid(imx,imy);
@@ -159,14 +238,6 @@ XeroController.prototype.createImageArea = function PC_createImageArea(merged,im
 	};
 	return imageArea;
 };
-
-/** Displays the specified (backslashes) set of study UIDs */
-XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, studyUid) {
-	this.debug("Display study UID %s",studyUid);
-	var uids = [ studyUid ];
-	this.displayPatient(src, patientId,uids);
-};
-
 
 /** The listener for the patient information */
 function PatientMergedListener(merged) {

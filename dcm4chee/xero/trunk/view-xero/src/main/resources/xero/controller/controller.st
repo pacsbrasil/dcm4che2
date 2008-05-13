@@ -41,18 +41,27 @@ XeroController.prototype.getBody = function XC_getBody() {
 	return this.body;
 };
 
-function replaceHtml(el, html) {
+XeroController.prototype.replaceHtml = function XC_replaceHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
-	/*@cc_on // Pure innerHTML is slightly faster in IE
-		oldEl.innerHTML = html;
+	oldEl.innerHTML = html;
+	/*@cc_on // Don't call fixWheelMouse in IE
 		return oldEl;
 	@*/
-	var newEl = oldEl.cloneNode(false);
-	newEl.innerHTML = html;
-	oldEl.parentNode.replaceChild(newEl, oldEl);
-	/* Since we just removed the old element from the DOM, return a reference
-	to the new element, which can be used to restore variable references. */
-	return newEl;
+	this.fixWheelMouse();
+	return oldEl;
+};
+
+XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
+	if(!layouts ) layouts = this.model.layouts;
+	var lay, i,n=layouts.length;
+	for(i=0; i<n; i++) {
+		lay = layouts[i];
+		if( ! lay.used ) continue;
+		if( lay.mousewheel ) {
+			hookEvent(lay.id, "mousewheel", lay.mousewheel);
+		};
+		if( lay.layouts ) this.fixWheelMouse(lay.layouts);
+	}
 };
 
 XeroController.prototype.importHtml = function XC_importHtml(el, html) {
@@ -79,6 +88,7 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	this.debug("Finished importing node.");
 	oldEl.parentNode.replaceChild(newEl, oldEl);
 	this.debug("Replaced body node directly.");
+	this.fixWheelMouse();
 	/* Since we just removed the old element from the DOM, return a reference
 	to the new element, which can be used to restore variable references. */
 	return newEl;
@@ -95,7 +105,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
 		this.importHtml("innerBody", render);
 	} else {
-		this.getBody().innerHTML = render;
+		this.replaceHtml(this.getBody(),render);
 	}
 	console.timeEnd("InnerHTML");
 };

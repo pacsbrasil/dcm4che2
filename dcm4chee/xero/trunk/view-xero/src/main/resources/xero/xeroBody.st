@@ -11,6 +11,7 @@ $image/patientNameSel()$
 $image/studyDescriptionSel()$
 $image/patientMenu()$
 $image/image()$
+$image/imageArea()$
 $image/studyTray()$
 $image/seriesToolbar()$
 

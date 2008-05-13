@@ -22,6 +22,7 @@ button {
 .jslink {
 	text-decoration: underline;
 	color: blue;
+	cursor: pointer;
 }
 
 div {
@@ -36,7 +37,8 @@ div.studyTray {
 }
 
 div.seriesToolbar {
-	background: blue;
+	background: brown;
+	color: white;
 	float: left;
 	overflow: hidden;
 }

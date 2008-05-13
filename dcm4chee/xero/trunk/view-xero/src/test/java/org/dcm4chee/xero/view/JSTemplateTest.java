@@ -112,6 +112,10 @@ public class JSTemplateTest {
    public void formatTest() throws Exception {
 	  runTest("format",false);
    }
+   @Test
+   public void concatStringTest() throws Exception {
+	  runTest("concatString",false);
+   }
    
    public void runTest(String testKey, boolean verbose) throws Exception {
 	  ScriptEngineManager sem = new ScriptEngineManager();

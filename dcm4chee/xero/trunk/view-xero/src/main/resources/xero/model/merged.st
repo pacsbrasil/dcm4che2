@@ -92,8 +92,10 @@ Merged.prototype.mergeExternal = function Merged_mergeExternal(external, ret) {
 			// That has to mean that it is an image query, and that this is the series level,
 			if(!ret) ret = new Object();
 			if( this.level===3 ) {
+				this.debug("Adding image level query at %d of size %d initial offset %d", child.id, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
 				position = child.id - this.QUERY_SIZE;
-				position = position - (position % this.IMAGE_QUERY_SIZE);
+				position -= (position % this.IMAGE_QUERY_SIZE);
+				position += this.QUERY_SIZE;
 				url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
 				this.debug("Adding %s to queries.",url); 
 				ret[url] = url;
@@ -194,18 +196,22 @@ Merged.prototype.lookupId = function Merged_lookupId(key,offset) {
 	else if( type===this.KEY ) {
 		// Key type - one case is to avoid any searching at all, although it doesn't
 		// allow you to find out much extra information in the child.
-		if( offset===0 && val ) return val;
+		if( offset===0 && val ) {
+			console.info("Returning 0 offset information directly.");
+			return val;
+		}
 		if( !this.external ) return undefined;
 		var extChildren = this.getExtChildren();
 		if( !extChildren ) {
-			this.debug("Found no children defined for %s under the name %s", this.id,this.childType);
+			console.info("Found no children defined for %s under the name %s", this.id,this.childType);
 			return undefined;
 		}
 		if( val ) {
 			var posn = this.findExternal(val);
-			if( posn ) {
+			if( posn!==undefined ) {
 				offset = offset + posn;
 			} else {
+				console.warn("Didn't find offset %d for %s at position %s",offset,key,posn);
 				return null;
 			}
 		}
@@ -250,7 +256,6 @@ Merged.prototype.findExternal = function Merged_findExternal(val) {
 	for(i=0; i<n; i++) {
 		if( extChildren[i][this.childIdVar]==val ) return i;
 	}
-	return null;
 }
 
 
