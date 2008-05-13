@@ -2,7 +2,7 @@
 <!--  Version $Revision:$ $Date:$ -->
 <server>
   <mbean code="org.dcm4chee.xds.repository.mbean.Store2DcmService" 
-         name="dcm4chee.archive:service=Store2Dcm"
+         name="dcm4chee.xds:service=Store2Dcm"
          xmbean-dd="">
 
     <xmbean>
