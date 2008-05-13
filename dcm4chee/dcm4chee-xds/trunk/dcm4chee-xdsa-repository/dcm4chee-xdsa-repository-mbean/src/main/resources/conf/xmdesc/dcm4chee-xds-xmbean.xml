@@ -241,7 +241,7 @@
       <name>Store2DcmServicename</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chee.archive:service=Store2Dcm" />
+         <value value="dcm4chee.xds:service=Store2Dcm" />
       </descriptors>
    </attribute>
 
