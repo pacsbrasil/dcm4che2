@@ -147,7 +147,9 @@ import org.dcm4chex.archive.util.Convert;
  */
 public abstract class InstanceBean implements EntityBean {
 
-    private static final Logger log = Logger.getLogger(InstanceBean.class);
+    private static final int DEFAULT_IN_LIST_SIZE = 200;
+
+	private static final Logger log = Logger.getLogger(InstanceBean.class);
 
     private static final Class[] STRING_PARAM = new Class[] { String.class };
     
@@ -659,12 +661,49 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.home-method
      */
     public Collection ejbHomeListByIUIDs(String[] iuids) throws FinderException {
-        StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
-        jbossQl.append(" WHERE i.sopIuid");
-        addIN( jbossQl, 1, iuids.length);
-         log.debug("Execute JBossQL: " + jbossQl);
-        return ejbSelectGeneric(jbossQl.toString(), iuids);
+    	if ( iuids == null || iuids.length < 1)
+    		return new ArrayList();
+    	Collection c;
+    	String jbossQl;
+		log.debug("List by IUIDs:"+iuids.length);
+		long t0=System.currentTimeMillis();
+    	if ( iuids.length > DEFAULT_IN_LIST_SIZE ) {
+    		jbossQl = getByIUIDsQueryString(DEFAULT_IN_LIST_SIZE);
+    		String[] uids = new String[DEFAULT_IN_LIST_SIZE];
+    		System.arraycopy(iuids, 0, uids, 0, DEFAULT_IN_LIST_SIZE);
+    		int idx = DEFAULT_IN_LIST_SIZE;
+    		int maxIdx = iuids.length - DEFAULT_IN_LIST_SIZE;
+    		c = ejbSelectGeneric(jbossQl, uids);
+    		log.debug("First chunked query:"+c.size());
+    		while ( idx < maxIdx ) {
+    			System.arraycopy(iuids, idx, uids, 0, DEFAULT_IN_LIST_SIZE);
+    			c.addAll(ejbSelectGeneric(jbossQl, uids));
+        		log.debug("chunked query (idx:"+idx+"):"+c.size());
+    			idx += DEFAULT_IN_LIST_SIZE;
+    		}
+    		if ( idx < iuids.length ) {
+    			int remain = iuids.length - idx;
+    			jbossQl = getByIUIDsQueryString(remain);
+    			uids = new String[remain];
+    			System.arraycopy(iuids, idx, uids, 0, remain);
+    			c.addAll(ejbSelectGeneric(jbossQl, uids));
+        		log.debug("Remain chunked query(remain:"+remain+"):"+c.size());
+    		}
+    	} else {
+	    	jbossQl = getByIUIDsQueryString(iuids.length);
+    		c = ejbSelectGeneric(jbossQl, iuids);
+    	}
+		log.debug("Total time:"+(System.currentTimeMillis()-t0));
+        return c;
     }
+
+	private String getByIUIDsQueryString(int size) {
+		StringBuffer sb = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
+        sb.append(" WHERE i.sopIuid");
+        addIN( sb, 1, size);
+         log.debug("Execute JBossQL: " + sb);
+		return sb.toString();
+	}
 
     /**    
      * @ejb.home-method
