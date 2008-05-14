@@ -38,7 +38,7 @@ A. As Add-On to DCM4CHEE
 4. a)Open console and change to your directory of the JBossWS distribution.
    b)Run: ant deploy-jboss422
 
-5. Extract your DCM4CHEE distribution package to 
+5. Extract your DCM4CHEE distribution package to a temporary directory (<DCM4CHEE>).
 
 6. a) Change directory to <DCM4CHEE>/bin
    b) Run install-jboss.sh <JBOSS422.home> (e.g. install-jboss.sh /tmp/jboss-4.2.2.GA)
