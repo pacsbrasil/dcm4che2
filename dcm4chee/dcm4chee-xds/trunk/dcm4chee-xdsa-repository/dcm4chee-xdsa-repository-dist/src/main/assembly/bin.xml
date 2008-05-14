@@ -71,7 +71,7 @@
     <dependencySet>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
-        <include>dcm4che:dcm4chee-xds-store2dcm-sar</include>
+        <include>dcm4che:dcm4chee-xds-store2dcm-mbean</include>
       </includes>
     </dependencySet>
   </dependencySets>
