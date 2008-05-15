@@ -150,8 +150,12 @@ public class GPWLScpService extends AbstractScpService {
         services.unbind(UIDs.GeneralPurposePerformedProcedureStepSOPClass);
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+    protected void enablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(cuidMap),
-                enable ? valuesToStringArray(tsuidMap) : null);
+                valuesToStringArray(tsuidMap));
+    }
+
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        putPresContexts(policy, valuesToStringArray(cuidMap),null);
     }
 }

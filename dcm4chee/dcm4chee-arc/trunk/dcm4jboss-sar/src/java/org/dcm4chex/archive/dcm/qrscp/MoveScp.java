@@ -49,7 +49,6 @@ import javax.security.auth.Subject;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObject;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -121,9 +120,16 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
             	log.debug("Identifier:\n");
             	log.debug(rqData);
             }
-            
-            checkMoveRQ(a, rq.pcid(), rqCmd, rqData);
             String dest = rqCmd.getString(Tags.MoveDestination);
+            if (dest == null) {
+                throw new DcmServiceException(Status.UnableToProcess,
+                        "Missing Move Destination");
+            }
+            QRLevel qrLevel = QRLevel.toQRLevel(rqData);
+            qrLevel.checkSOPClass(rqCmd.getAffectedSOPClassUID(), 
+                    UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                    UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
+            qrLevel.checkRetrieveRQ(rqData);
             boolean thirdPartyMove = !dest.equals(a.getCallingAET());
             AEDTO aeData = null;
             FileInfo[][] fileInfos = null;
@@ -240,81 +246,6 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
                 moveDest);
     }
 
-    private void checkMoveRQ(
-        Association assoc,
-        int pcid,
-        Command rqCmd,
-        Dataset rqData)
-        throws DcmServiceException {
-
-        checkAttribute(
-            rqCmd,
-            Tags.MoveDestination,
-            Status.UnableToProcess,
-            "Missing Move Destination");
-        checkAttribute(
-            rqData,
-            Tags.QueryRetrieveLevel,
-            Status.IdentifierDoesNotMatchSOPClass,
-            "Missing Query Retrieve Level");
-
-        final String level = rqData.getString(Tags.QueryRetrieveLevel);
-        final String asid =
-            assoc.getProposedPresContext(pcid).getAbstractSyntaxUID();
-        if ("PATIENT".equals(level)) {
-            if (UIDs.StudyRootQueryRetrieveInformationModelMOVE.equals(asid)) {
-                throw new DcmServiceException(
-                    Status.IdentifierDoesNotMatchSOPClass,
-                    "Cannot use Query Retrieve Level PATIENT with Study Root IM");
-            }
-            checkAttribute(
-                rqData,
-                Tags.PatientID,
-                Status.IdentifierDoesNotMatchSOPClass,
-                "Missing Patient ID");
-        } else if ("STUDY".equals(level)) {
-            checkAttribute(
-                rqData,
-                Tags.StudyInstanceUID,
-                Status.IdentifierDoesNotMatchSOPClass,
-                "Missing Study Instance UID");
-            
-        } else if ("SERIES".equals(level)) {
-            if (UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE.equals(asid)) {
-                throw new DcmServiceException(
-                    Status.IdentifierDoesNotMatchSOPClass,
-                    "Cannot use Query Retrieve Level SERIES with Patient Study Only IM");
-            }
-            checkAttribute(
-                rqData,
-                Tags.SeriesInstanceUID,
-                Status.IdentifierDoesNotMatchSOPClass,
-                "Missing Series Instance UID");            
-        } else if ("IMAGE".equals(level)) {
-            if (UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE.equals(asid)) {
-                throw new DcmServiceException(
-                    Status.IdentifierDoesNotMatchSOPClass,
-                    "Cannot use Query Retrieve Level SERIES with Patient Study Only IM");
-            }
-            checkAttribute(
-                rqData,
-                Tags.SOPInstanceUID,
-                Status.IdentifierDoesNotMatchSOPClass,
-                "Missing SOP Instance UID");            
-        } else {
-            throw new DcmServiceException(
-                Status.IdentifierDoesNotMatchSOPClass,
-                "Invalid Retrieve Level " + level);            
-        }
-    }
-
-    private void checkAttribute(DcmObject dcm, int tag, int status, String msg)
-        throws DcmServiceException {
-        if (!dcm.containsValue(tag)) {
-            throw new DcmServiceException(status, msg);
-        }
-    }
-    
     public final ObjectName getPerfMonServiceName() {
 		return perfMon.getPerfMonServiceName();
 	}

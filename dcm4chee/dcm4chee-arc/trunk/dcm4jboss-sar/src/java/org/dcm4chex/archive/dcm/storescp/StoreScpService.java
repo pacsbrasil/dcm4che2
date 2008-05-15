@@ -574,19 +574,39 @@ public class StoreScpService extends AbstractScpService {
         dcmHandler.removeAssociationListener(scp);
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        putPresContexts(policy, valuesToStringArray(imageCUIDS),
-                enable ? valuesToStringArray(imageTSUIDS) : null);
-        putPresContexts(policy, valuesToStringArray(videoCUIDS),
-                enable ? valuesToStringArray(videoTSUIDS) : null);
-        putPresContexts(policy, valuesToStringArray(srCUIDS),
-                enable ? valuesToStringArray(srTSUIDS) : null);
-        putPresContexts(policy, valuesToStringArray(waveformCUIDS),
-                enable ? valuesToStringArray(waveformTSUIDS) : null);
-        putPresContexts(policy, valuesToStringArray(otherCUIDS),
-                enable ? valuesToStringArray(tsuidMap) : null);
+    protected void enablePresContexts(AcceptorPolicy policy) {
+        String[] cuids;
+        putPresContexts(policy, cuids = valuesToStringArray(imageCUIDS),
+                valuesToStringArray(imageTSUIDS));
+        putRoleSelections(policy, cuids, true, true);
+        putPresContexts(policy, cuids = valuesToStringArray(videoCUIDS),
+                valuesToStringArray(videoTSUIDS));
+        putRoleSelections(policy, cuids, true, true);
+        putPresContexts(policy, cuids = valuesToStringArray(srCUIDS),
+                valuesToStringArray(srTSUIDS));
+        putRoleSelections(policy, cuids, true, true);
+        putPresContexts(policy, cuids = valuesToStringArray(waveformCUIDS),
+                valuesToStringArray(waveformTSUIDS));
+        putRoleSelections(policy, cuids, true, true);
+        putPresContexts(policy, cuids = valuesToStringArray(otherCUIDS),
+                valuesToStringArray(tsuidMap));
+        putRoleSelections(policy, cuids, true, true);
     }
 
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        String[] cuids;
+        putPresContexts(policy, cuids = valuesToStringArray(imageCUIDS), null);
+        removeRoleSelections(policy, cuids);
+        putPresContexts(policy, cuids = valuesToStringArray(videoCUIDS), null);
+        removeRoleSelections(policy, cuids);
+        putPresContexts(policy, cuids = valuesToStringArray(srCUIDS), null);
+        removeRoleSelections(policy, cuids);
+        putPresContexts(policy, cuids = valuesToStringArray(waveformCUIDS), null);
+        removeRoleSelections(policy, cuids);
+        putPresContexts(policy, cuids = valuesToStringArray(otherCUIDS), null);
+        removeRoleSelections(policy, cuids);
+    }
+    
     public FileSystemDTO selectStorageFileSystem() throws DcmServiceException {
         try {
             FileSystemDTO fsDTO = (FileSystemDTO) server.invoke(

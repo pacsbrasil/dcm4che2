@@ -223,10 +223,16 @@ public class HPScpService extends AbstractScpService {
         services.unbind(UIDs.HangingProtocolInformationModelMOVE);
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        String[] tsuids = enable ? valuesToStringArray(tsuidMap) : null;
+    protected void enablePresContexts(AcceptorPolicy policy) {
+        String[] tsuids = valuesToStringArray(tsuidMap);
         policy.putPresContext(UIDs.HangingProtocolStorage, tsuids);
         policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, tsuids);
         policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, tsuids);
+    }
+
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        policy.putPresContext(UIDs.HangingProtocolStorage, null);
+        policy.putPresContext(UIDs.HangingProtocolInformationModelFIND, null);
+        policy.putPresContext(UIDs.HangingProtocolInformationModelMOVE, null);
     }
 }

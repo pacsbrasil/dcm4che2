@@ -272,17 +272,15 @@ public class StgCmtScuScpService extends AbstractScpService implements
         services.unbind(UIDs.StorageCommitmentPushModel);
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
-        if (enable) {
-            policy.putPresContext(UIDs.StorageCommitmentPushModel,
-                    valuesToStringArray(tsuidMap));
-            policy
-                    .putRoleSelection(UIDs.StorageCommitmentPushModel, true,
-                            true);
-        } else {
-            policy.putPresContext(UIDs.StorageCommitmentPushModel, null);
-            policy.removeRoleSelection(UIDs.StorageCommitmentPushModel);
-        }
+    protected void enablePresContexts(AcceptorPolicy policy) {
+        policy.putPresContext(UIDs.StorageCommitmentPushModel,
+                valuesToStringArray(tsuidMap));
+        policy.putRoleSelection(UIDs.StorageCommitmentPushModel, true, true);
+    }
+
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        policy.putPresContext(UIDs.StorageCommitmentPushModel, null);
+        policy.removeRoleSelection(UIDs.StorageCommitmentPushModel);
     }
 
     private AEManager aeMgr() throws Exception {

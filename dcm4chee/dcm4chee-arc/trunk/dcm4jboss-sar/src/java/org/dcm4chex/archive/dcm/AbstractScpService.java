@@ -417,7 +417,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             }
             policy1.setMaxPDULength(maxPDULength);
             policy1.setAsyncOpsWindow(maxOpsInvoked, maxOpsPerformed);
-            updatePresContexts(policy1, true);
+            enablePresContexts(policy1);
         }
         return changed;
     }
@@ -473,7 +473,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             AcceptorPolicy policy1 = policy
                     .getPolicyForCalledAET(calledAETs[i]);
             if (policy1 != null) {
-                updatePresContexts(policy1, false);
+                disablePresContexts(policy1);
                 if (policy1.listPresContext().isEmpty()) {
                     policy.putPolicyForCalledAET(calledAETs[i], null);
                     policy.removeCalledAET(calledAETs[i]);
@@ -621,8 +621,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected abstract void unbindDcmServices(DcmServiceRegistry services);
 
-    protected abstract void updatePresContexts(AcceptorPolicy policy,
-            boolean enable);
+    protected abstract void enablePresContexts(AcceptorPolicy policy);
+
+    protected abstract void disablePresContexts(AcceptorPolicy policy);
 
     protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
             String[] tsuids) {
@@ -635,6 +636,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             boolean scu, boolean scp) {
         for (int i = 0; i < cuids.length; i++) {
             policy.putRoleSelection(cuids[i], scu, scp);
+        }
+    }
+
+    protected void removeRoleSelections(AcceptorPolicy policy, String[] cuids) {
+        for (int i = 0; i < cuids.length; i++) {
+            policy.removeRoleSelection(cuids[i]);
         }
     }
 

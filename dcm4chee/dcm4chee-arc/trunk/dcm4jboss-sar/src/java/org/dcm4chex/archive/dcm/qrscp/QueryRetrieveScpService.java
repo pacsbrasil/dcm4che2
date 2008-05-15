@@ -50,6 +50,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Map.Entry;
 
 import javax.management.JMException;
@@ -59,20 +61,29 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
+import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDDictionary;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
+import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.ExtNegotiator;
+import org.dcm4che.net.PresContext;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -84,10 +95,14 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.exceptions.NoPresContextException;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.DicomSecurityDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.perf.PerfMonDelegate;
+import org.dcm4chex.archive.perf.PerfPropertyEnum;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
@@ -102,6 +117,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private static final String ANY = "ANY";
 
     private static final String NONE = "NONE";
+
+    private static final String SEND_BUFFER = "SEND_BUFFER";
+
+    private static final Timer pendingRspTimer = new Timer(true);
+
+    static final UIDDictionary uidDict = 
+            DictionaryFactory.getInstance().getDefaultUIDDictionary();
 
     private String[] sendNoPixelDataToAETs = null;
 
@@ -132,9 +154,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private DicomSecurityDelegate dicomSecurity =
             new DicomSecurityDelegate(this);
 
-    private boolean sendPendingMoveRSP = true;
+    private boolean sendPendingRetrieveRSP = true;
 
-    private long pendingMoveRSPInterval = 5000;
+    private long pendingRetrieveRSPInterval = 5000;
     
     private boolean forwardAsMoveOriginator = true;
 
@@ -172,6 +194,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private MoveScp moveScp = null;
 
+    private GetScp getScp = null;
+
     private int maxUIDsPerMoveRQ = 100;
 
     private int maxBlockedFindRSP = 10000;
@@ -206,6 +230,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
+        getScp = createGetScp();
     	dicomFindScp = createFindScp();
     }
     
@@ -215,6 +240,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     protected MoveScp createMoveScp() {
         return new MoveScp(this);
+    }
+
+    protected GetScp createGetScp() {
+        return new GetScp(this);
     }
 
     protected FindScp createFindScp() {
@@ -622,23 +651,23 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.maxStoreOpsInvoked = maxStoreOpsInvoked;
     }
 
-    public final boolean isSendPendingMoveRSP() {
-        return sendPendingMoveRSP;
+    public final boolean isSendPendingRetrieveRSP() {
+        return sendPendingRetrieveRSP;
     }
 
-    public final void setSendPendingMoveRSP(boolean sendPendingMoveRSP) {
-        this.sendPendingMoveRSP = sendPendingMoveRSP;
+    public final void setSendPendingRetrieveRSP(boolean sendPendingRetrieveRSP) {
+        this.sendPendingRetrieveRSP = sendPendingRetrieveRSP;
     }
 
-    public final void setPendingMoveRSPInterval(long ms) {
+    public final void setPendingRetrieveRSPInterval(long ms) {
         if (ms <= 0) {
-            throw new IllegalArgumentException("pendingMoveRSPInterval: " +  ms);
+            throw new IllegalArgumentException("pendingRetrieveRSPInterval: " +  ms);
         }
-        pendingMoveRSPInterval = ms ;
+        pendingRetrieveRSPInterval = ms ;
     }
     
-    public final long getPendingMoveRSPInterval() {
-        return pendingMoveRSPInterval ;
+    public final long getPendingRetrieveRSPInterval() {
+        return pendingRetrieveRSPInterval ;
     }
     
     public final boolean isForwardAsMoveOriginator() {
@@ -782,10 +811,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 moveScp);
-        services.bind(UIDs.StudyRootQueryRetrieveInformationModelMOVE, moveScp);
+        services.bind(UIDs.StudyRootQueryRetrieveInformationModelMOVE,
+                moveScp);
         services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE,
                 moveScp);
-        
+
+        services.bind(UIDs.PatientRootQueryRetrieveInformationModelGET,
+                getScp);
+        services.bind(UIDs.StudyRootQueryRetrieveInformationModelGET,
+                getScp);
+        services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelGET,
+                getScp);
+
         dcmHandler.addAssociationListener(dicomFindScp);
         dcmHandler.addAssociationListener(moveScp);
     }
@@ -815,7 +852,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE);
-        
+
+        services.unbind(UIDs.PatientRootQueryRetrieveInformationModelGET);
+        services.unbind(UIDs.StudyRootQueryRetrieveInformationModelGET);
+        services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelGET);
+
         dcmHandler.removeAssociationListener(dicomFindScp);
         dcmHandler.removeAssociationListener(moveScp);
     }
@@ -826,11 +867,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     };
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+    protected void enablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(privateCuidMap),
-                enable ? valuesToStringArray(privateTSuidMap) : null);
+                valuesToStringArray(privateTSuidMap));
         putPresContexts(policy, valuesToStringArray(standardCuidMap),
-                enable ? valuesToStringArray(tsuidMap) : null);
+                valuesToStringArray(tsuidMap));
+    }
+
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        putPresContexts(policy, valuesToStringArray(privateCuidMap), null);
+        putPresContexts(policy, valuesToStringArray(standardCuidMap), null);
     }
 
     protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
@@ -936,23 +982,24 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-    protected void logInstancesSent(Association moveAs, Association storeAs,
-            ArrayList fileInfos) {
+    protected void logInstancesSent(Association moveOrGetAs,
+            Association storeAs, ArrayList fileInfos) {
         if (auditLogger.isAuditLogIHEYr4()) {
             return;
         }
         try {
             InstanceSorter sorter = new InstanceSorter();
-             FileInfo fileInfo = null;
+            FileInfo fileInfo = null;
             for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
                 fileInfo = (FileInfo) iter.next();
                 sorter.addInstance(fileInfo.studyIUID, fileInfo.sopCUID,
                         fileInfo.sopIUID, null);
             }
-            String destAET = storeAs.getCalledAET();
+            String destAET = storeAs.isRequestor() ? storeAs.getCalledAET()
+                                                   : storeAs.getCallingAET();
             String destHost = AuditMessage.hostNameOf(
                     storeAs.getSocket().getInetAddress());
-            String origAET = moveAs.getCallingAET();
+            String origAET = moveOrGetAs.getCallingAET();
             boolean dstIsRequestor = origAET.equals(destAET);
             boolean srcIsRequestor = !dstIsRequestor 
                     && Arrays.asList(calledAETs).contains(origAET);
@@ -966,7 +1013,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                     destHost, dstIsRequestor);
             if (!dstIsRequestor && !srcIsRequestor) {
                 String origHost = AuditMessage.hostNameOf(
-                        moveAs.getSocket().getInetAddress());
+                        moveOrGetAs.getSocket().getInetAddress());
                 msg.addOtherParticipantProcess(origHost,
                         new String[] { origAET }, null, origHost, true);
             }
@@ -1025,7 +1072,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
     }
 
-    void updateStudyAccessTime(Set studyInfos) {
+    void updateStudyAccessTime(Set<StudyInstanceUIDAndDirPath> studyInfos) {
         if (!recordStudyAccessTime)
             return;
 
@@ -1037,12 +1084,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
             return;
         }
         try {
-            for (Iterator it = studyInfos.iterator(); it.hasNext();) {
-                String studyInfo = (String) it.next();
-                int delim = studyInfo.indexOf('@');
+            for (Iterator<StudyInstanceUIDAndDirPath> it = studyInfos.iterator(); it.hasNext();) {
+                StudyInstanceUIDAndDirPath studyInfo = it.next();
                 try {
-                    fsMgt.touchStudyOnFileSystem(studyInfo.substring(0, delim),
-                            studyInfo.substring(delim + 1));
+                    fsMgt.touchStudyOnFileSystem(studyInfo.studyIUID, studyInfo.dirpath);
                 } catch (Exception e) {
                     log.warn("Failed to update access time for study "
                             + studyInfo, e);
@@ -1091,4 +1136,83 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return ds;
     }
 
+    void scheduleSendPendingRsp(TimerTask sendPendingRsp) {
+        if (sendPendingRetrieveRSP) {
+            pendingRspTimer.schedule(sendPendingRsp, 0, pendingRetrieveRSPInterval);
+        }
+     }
+
+    Dataset makeRetrieveRspIdentifier(List<String> failedIUIDs) {
+        if (failedIUIDs.isEmpty() )
+            return null;
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        String[] a = failedIUIDs.toArray(new String[failedIUIDs.size()]);
+        ds.putUI(Tags.FailedSOPInstanceUIDList, a);
+        // check if 64k limit for UI attribute is reached
+        if (ds.get(Tags.FailedSOPInstanceUIDList).length() < 0x10000)
+            return ds;
+        log.warn("Failed SOP InstanceUID List exceeds 64KB limit - send empty attribute instead");
+        ds.putUI(Tags.FailedSOPInstanceUIDList);
+        return ds;
+    }
+
+    Dimse makeCStoreRQ(ActiveAssociation activeAssoc, FileInfo info,
+            int priority, String moveOriginatorAET, int moveRqMsgID,
+            byte[] buffer, PerfMonDelegate perfMon) throws Exception {
+        Association assoc = activeAssoc.getAssociation();
+        String dest = assoc.isRequestor() ? assoc.getCalledAET() 
+                : assoc.getCallingAET();
+        PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
+                info.tsUID);
+        if (presCtx == null) {
+            presCtx = assoc.getAcceptedPresContext(info.sopCUID,
+                    UIDs.ExplicitVRLittleEndian);
+            if (presCtx == null) {
+                presCtx = assoc.getAcceptedPresContext(info.sopCUID,
+                        UIDs.ImplicitVRLittleEndian);
+                if (presCtx == null)
+                    throw new NoPresContextException(
+                            "No Presentation Context for "
+                                + uidDict.toString(info.sopCUID)
+                                + (assoc.isRequestor() ? " accepted by "
+                                                       : " offered by ")
+                                + dest);
+            }
+        }
+        Command storeRqCmd = DcmObjectFactory.getInstance().newCommand();
+        storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
+                priority);
+        if (moveOriginatorAET != null) {
+            storeRqCmd.putUS(Tags.MoveOriginatorMessageID, moveRqMsgID);
+            storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
+        }
+        File f = getFile(info);
+        Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
+                DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
+                        .fromByteArray(info.seriesAttrs, DatasetUtils
+                                .fromByteArray(info.instAttrs))));
+        FileDataSource ds = new FileDataSource(f, mergeAttrs, buffer);
+        ds.setWithoutPixeldata(isWithoutPixelData(dest));
+        Dimse rq = AssociationFactory.getInstance().newDimse(
+                presCtx.pcid(), storeRqCmd, ds);
+        if (perfMon != null) {
+            perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, f);
+        }
+        return rq;
+    }
+
+    protected File getFile(FileInfo info) throws Exception {
+        return info.basedir.startsWith("tar:") 
+                ? retrieveFileFromTAR(info.basedir, info.fileID)
+                : FileUtils.toFile(info.basedir, info.fileID);
+    }
+
+    byte[] getByteBuffer(Association assoc) {
+        byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
+        if (buf == null) {
+            buf = new byte[bufferSize];
+            assoc.putProperty(SEND_BUFFER, buf);
+        }
+        return buf;
+    }
 }

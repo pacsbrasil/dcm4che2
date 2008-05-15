@@ -86,11 +86,15 @@ public class StudyMgtScpService extends AbstractScpService {
 		services.unbind(UIDs.TianiStudyManagement);		
 	}
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+    protected void enablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.TianiStudyManagement,
-                enable ? valuesToStringArray(tsuidMap) : null);
+                valuesToStringArray(tsuidMap));
     }
-    
+
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        policy.putPresContext(UIDs.TianiStudyManagement, null);
+    }
+
     void sendStudyMgtNotification(ActiveAssociation assoc, int cmdField,
 			int actionTypeID, String iuid, Dataset ds) {
 		Association a = assoc.getAssociation();

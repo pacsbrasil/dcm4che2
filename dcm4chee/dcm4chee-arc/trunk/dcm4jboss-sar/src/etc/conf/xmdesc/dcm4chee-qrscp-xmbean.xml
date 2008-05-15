@@ -340,10 +340,13 @@ QueryRetrieveScp service.</description>
         List of accepted Query/Retrieve SOP Classes. Use either the SOP Class 
         UID value, or following defined symbolic names:
         PatientRootQueryRetrieveInformationModelFIND,
+        PatientRootQueryRetrieveInformationModelGET
         PatientRootQueryRetrieveInformationModelMOVE,
         StudyRootQueryRetrieveInformationModelFIND,
+        StudyRootQueryRetrieveInformationModelGET
         StudyRootQueryRetrieveInformationModelMOVE,
         PatientStudyOnlyQueryRetrieveInformationModelFIND,
+        PatientStudyOnlyQueryRetrieveInformationModelGET
         PatientStudyOnlyQueryRetrieveInformationModelMOVE,
         ]]>
       </description>
@@ -352,10 +355,13 @@ QueryRetrieveScp service.</description>
       <descriptors>
          <value value="
            PatientRootQueryRetrieveInformationModelFIND
+           PatientRootQueryRetrieveInformationModelGET
            PatientRootQueryRetrieveInformationModelMOVE
            StudyRootQueryRetrieveInformationModelFIND
+           StudyRootQueryRetrieveInformationModelGET
            StudyRootQueryRetrieveInformationModelMOVE
            PatientStudyOnlyQueryRetrieveInformationModelFIND
+           PatientStudyOnlyQueryRetrieveInformationModelGET
            PatientStudyOnlyQueryRetrieveInformationModelMOVE
            "/>
       </descriptors>
@@ -501,29 +507,29 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isSendPendingMoveRSP"
-      setMethod="setSendPendingMoveRSP">
-      <description><![CDATA[Flag indicating if optional C-Move Response DICOM
+      getMethod="isSendPendingRetrieveRSP"
+      setMethod="setSendPendingRetrieveRSP">
+      <description><![CDATA[Flag indicating if optional C-Move/C-Get Response DICOM
       message with pending status are returned in the interval defined by
-      attribute <i>PendingMoveRSPInterval</i>.]]>
+      attribute <i>PendingRetrieveResponseInterval</i>.]]>
       </description>
-      <name>SendPendingMoveResponse</name>
+      <name>SendPendingRetrieveResponse</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPendingMoveRSPInterval"
-      setMethod="setPendingMoveRSPInterval">
-      <description><![CDATA[Interval in ms in which C-Move Response DICOM
+      getMethod="getPendingRetrieveRSPInterval"
+      setMethod="setPendingRetrieveRSPInterval">
+      <description><![CDATA[Interval in ms in which C-Move/C-Get Response DICOM
       message with pending status are returned. Even send (identical) response
       messages, if no storage sub-operation was performed during such interval,
-      to keep the association alive. Only effective, if sending C-Move Response
+      to keep the association alive. Only effective, if sending C-Move/C-Get Response
       DICOM message with pending status is activated by attribute
-      <i>SendPendingMoveResponse</i>.]]>
+      <i>SendPendingRetrieveResponse</i>.]]>
       </description>
-      <name>PendingMoveRSPInterval</name>
+      <name>PendingRetrieveResponseInterval</name>
       <type>long</type>
       <descriptors>
          <value value="5000"/>

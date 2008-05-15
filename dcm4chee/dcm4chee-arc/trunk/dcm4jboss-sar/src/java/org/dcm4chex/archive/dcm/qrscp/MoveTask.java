@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.dcm.qrscp;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TimerTask;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
@@ -74,17 +72,12 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
-import org.dcm4che.net.PresContext;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.exceptions.NoPresContextException;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
-import org.dcm4chex.archive.util.FileDataSource;
-import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.logging.Logger;
 
 /**
@@ -94,8 +87,6 @@ import org.jboss.logging.Logger;
  */
 public class MoveTask implements Runnable {
 
-    private static final String SEND_BUFFER = "SEND_BUFFER";
-
     private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
             UIDs.ImplicitVRLittleEndian, };
 
@@ -104,11 +95,6 @@ public class MoveTask implements Runnable {
     private static final int PCID = 1;
 
     private static final String IMAGE = "IMAGE";
-
-    private static final UIDDictionary uidDict = DictionaryFactory
-            .getInstance().getDefaultUIDDictionary();
-    
-    private static final Timer pendingRspTimer = new Timer(true);
 
     protected final QueryRetrieveScpService service;
 
@@ -138,7 +124,7 @@ public class MoveTask implements Runnable {
 
     private ActiveAssociation moveAssoc;
 
-    private final ArrayList failedIUIDs = new ArrayList();
+    private final List<String> failedIUIDs = new ArrayList<String>();
 
     private final int size;
 
@@ -293,7 +279,7 @@ public class MoveTask implements Runnable {
                                 // item to avoid ConcurrentModificationException
                 remaining -= iuids.size();
                 final String prompt = "No Presentation Context for "
-                        + uidDict.toString(cuid) + " accepted by " + moveDest
+                        + QueryRetrieveScpService.uidDict.toString(cuid) + " accepted by " + moveDest
                         + "\n\tCannot send " + iuids.size()
                         + " instances of this class";
                 if (!service.isIgnorableSOPClass(cuid, moveDest)) {
@@ -313,10 +299,7 @@ public class MoveTask implements Runnable {
     }
 
     public void run() {
-        if (service.isSendPendingMoveRSP()) {
-            pendingRspTimer.schedule(sendPendingRsp , 0, 
-                    service.getPendingMoveRSPInterval());
-        }
+        service.scheduleSendPendingRsp(sendPendingRsp);
         try {
             if (retrieveInfo.isRetrieveFromLocal()) {
                 retrieveLocal();
@@ -478,7 +461,8 @@ public class MoveTask implements Runnable {
     private void retrieveLocal() {
         this.stgCmtActionInfo = DcmObjectFactory.getInstance().newDataset();
         this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
-        Set studyInfos = new HashSet();
+        Set<StudyInstanceUIDAndDirPath> studyInfos = 
+                new HashSet<StudyInstanceUIDAndDirPath>();
         Association a = storeAssoc.getAssociation();
         Collection localFiles = retrieveInfo.getLocalFiles();
         final Set remainingIUIDs = new HashSet(retrieveInfo.removeLocalIUIDs());
@@ -517,7 +501,9 @@ public class MoveTask implements Runnable {
             };
             
             try {
-            	Dimse rq = makeCStoreRQ(fileInfo, getByteBuffer(a));
+            	Dimse rq = service.makeCStoreRQ(storeAssoc,
+            	        fileInfo, priority, moveOriginatorAET, msgID,
+            	        service.getByteBuffer(a), perfMon);
             	perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
@@ -528,10 +514,9 @@ public class MoveTask implements Runnable {
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
-            if (fileInfo.availability == Availability.ONLINE) // only track
-                                                                // access on
-                                                                // ONLINE FS
-                studyInfos.add(fileInfo.studyIUID + '@' + fileInfo.basedir);
+            // track access on ONLINE FS
+            if (fileInfo.availability == Availability.ONLINE)
+                studyInfos.add(new StudyInstanceUIDAndDirPath(fileInfo));
         }
         if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
             try {
@@ -573,15 +558,6 @@ public class MoveTask implements Runnable {
                     .queueStgCmtOrder(moveCalledAET, stgCmtAET,
                             stgCmtActionInfo);
     }
-
-    private byte[] getByteBuffer(Association assoc) {
-        byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
-        if (buf == null) {
-            buf = new byte[service.getBufferSize()];
-            assoc.putProperty(SEND_BUFFER, buf);
-        }
-        return buf;
-    }
     
     private void updateInstancesAction(final FileInfo info) {
         if (instancesAction == null) {
@@ -604,78 +580,11 @@ public class MoveTask implements Runnable {
         item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
-
-    private Dimse makeCStoreRQ(FileInfo info, byte[] buffer) throws Exception {
-        Association assoc = storeAssoc.getAssociation();
-        PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
-                info.tsUID);
-        if (presCtx == null) {
-            presCtx = assoc.getAcceptedPresContext(info.sopCUID,
-                    UIDs.ExplicitVRLittleEndian);
-            if (presCtx == null) {
-                presCtx = assoc.getAcceptedPresContext(info.sopCUID,
-                        UIDs.ImplicitVRLittleEndian);
-                if (presCtx == null)
-                    throw new NoPresContextException(
-                            "No Presentation Context for "
-                                    + uidDict.toString(info.sopCUID)
-                                    + " accepted by " + moveDest);
-            }
-        }
-        Command storeRqCmd = DcmObjectFactory.getInstance().newCommand();
-        storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
-                priority);
-        storeRqCmd.putUS(Tags.MoveOriginatorMessageID, msgID);
-        storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
-        File f = getFile(info);
-        Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
-                DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
-                        .fromByteArray(info.seriesAttrs, DatasetUtils
-                                .fromByteArray(info.instAttrs))));
-        FileDataSource ds = new FileDataSource(f, mergeAttrs, buffer);
-        ds.setWithoutPixeldata(withoutPixeldata);
-        Dimse rq = AssociationFactory.getInstance().newDimse(presCtx.pcid(),
-                storeRqCmd, ds);
-    	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.DICOM_FILE, f);
-    	return rq;
-    }
-    
-    /**
-     * This method may trigger remote retrieval. Use cautiously
-     * 
-     * @param info
-     * @return The File 
-     * @throws Exception
-     */
-    protected File getFile(FileInfo info) throws Exception {
-    	return info.basedir.startsWith("tar:") ? service.retrieveFileFromTAR(
-                info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
-                        info.fileID);
-    }
-
     private void notifyMoveFinished() {
         notifyMoveSCU(canceled ? Status.Cancel : failed == 0 ? Status.Success
                 : completed == 0 ? Status.UnableToPerformSuboperations
                         : Status.SubOpsOneOrMoreFailures,
-                makeMoveRspIdentifier(), null);
-    }
-
-    private Dataset makeMoveRspIdentifier() {
-        if (failed == 0)
-            return null;
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        if (failed == failedIUIDs.size()) {
-            String[] a = (String[]) failedIUIDs.toArray(new String[failedIUIDs
-                    .size()]);
-            ds.putUI(Tags.FailedSOPInstanceUIDList, a);
-            // check if 64k limit for UI attribute is reached
-            if (ds.get(Tags.FailedSOPInstanceUIDList).length() < 0x10000)
-                return ds;
-            log
-                    .warn("Failed SOP InstanceUID List exceeds 64KB limit - send empty attribute instead");
-        }
-        ds.putUI(Tags.FailedSOPInstanceUIDList);
-        return ds;
+                service.makeRetrieveRspIdentifier(failedIUIDs), null);
     }
 
     private void notifyMoveSCU(int status, Dataset ds, Command fwdMoveRspCmd) {

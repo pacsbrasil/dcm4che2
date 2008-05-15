@@ -162,9 +162,13 @@ public class MWLFindScpService extends AbstractScpService implements
         services.unbind(UIDs.ModalityWorklistInformationModelFIND);
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+    protected void enablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND,
-                enable ? valuesToStringArray(tsuidMap) : null);
+                valuesToStringArray(tsuidMap));
+    }
+
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND, null);
     }
 
     private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {

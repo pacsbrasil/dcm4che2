@@ -104,9 +104,13 @@ public class MPPSScpService extends AbstractScpService {
         services.unbind(UIDs.ModalityPerformedProcedureStep);
     }
 
-    protected void updatePresContexts(AcceptorPolicy policy, boolean enable) {
+    protected void enablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.ModalityPerformedProcedureStep,
-                enable ? valuesToStringArray(tsuidMap) : null);
+                valuesToStringArray(tsuidMap));
+    }
+    
+    protected void disablePresContexts(AcceptorPolicy policy) {
+        policy.putPresContext(UIDs.ModalityPerformedProcedureStep, null);
     }
     
     void sendMPPSNotification(Dataset ds, String eventType) {
