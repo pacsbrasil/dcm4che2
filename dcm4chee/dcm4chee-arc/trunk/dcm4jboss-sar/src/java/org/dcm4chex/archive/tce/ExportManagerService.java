@@ -516,6 +516,10 @@ public class ExportManagerService extends AbstractScuService
         ArrayList list = new ArrayList();
         copyIUIDs(sel.get(Tags.IdenticalDocumentsSeq), list);
         copyIUIDs(sel.get(Tags.CurrentRequestedProcedureEvidenceSeq), list);
+        if ( list.size() < 1) {
+        	log.warn("No instance referenced in KOS! This manifest will be ignored!");
+        	return false;
+        }
         final String[] iuids = (String[]) list.toArray(new String[list.size()]);
         log.info("Check if " + iuids.length
                 + " referenced objects were already received");
