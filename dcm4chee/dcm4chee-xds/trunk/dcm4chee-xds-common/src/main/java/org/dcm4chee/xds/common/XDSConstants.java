@@ -37,6 +37,7 @@ public interface XDSConstants {
 	public static final String URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B_RESPONSE = "urn:ihe:iti:2007:ProvideAndRegisterDocumentSet-bResponse";
 	public static final String URN_IHE_ITI_2007_REGISTER_DOCUMENT_SET_B = "urn:ihe:iti:2007:RegisterDocumentSet-b";
 	public static final String URN_IHE_ITI_2007_REGISTER_DOCUMENT_SET_B_RESPONSE = "urn:ihe:iti:2007:RegisterDocumentSet-bResponse";
+	public static final String URN_IHE_ITI_2007_RETRIEVE_DOCUMENT_SET = "urn:ihe:iti:2007:RetrieveDocumentSet";
 	public static final String URN_IHE_ITI_2007_RETRIEVE_DOCUMENT_SET_RESPONSE = "urn:ihe:iti:2007:RetrieveDocumentSetResponse";
 	public static final String MSG_ID_PROVIDE_AND_REGISTER_DOCUMENT_SET_B = "urn:uuid:6d296e90-e5dc-43d0-b455-7c1f3eb35d83";
 	public static final String MSG_ID_REGISTER_DOCUMENT_SET_B = "urn:uuid:6d296e90-e5dc-43d0-b455-7c1f3eb3ffff";
