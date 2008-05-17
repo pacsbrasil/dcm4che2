@@ -74,7 +74,7 @@ class NumContentImpl extends NamedContentImpl implements NumContent {
 
     // Methodes --------------------------------------------------------
     public final void setName(Code newName) {
-        this.name = checkNotNull(name);
+        this.name = checkNotNull(newName);
     }
     
     public String toString() {
