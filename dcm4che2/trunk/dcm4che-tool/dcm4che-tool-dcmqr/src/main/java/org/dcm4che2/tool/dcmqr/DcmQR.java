@@ -38,7 +38,10 @@
 
 package org.dcm4che2.tool.dcmqr;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -62,10 +65,12 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.Device;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.Executor;
@@ -75,8 +80,12 @@ import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
+import org.dcm4che2.net.PDVInputStream;
+import org.dcm4che2.net.Status;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.UserIdentity;
+import org.dcm4che2.net.service.DicomService;
+import org.dcm4che2.net.service.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,41 +96,57 @@ import org.slf4j.LoggerFactory;
  */
 public class DcmQR {
     private static Logger LOG = LoggerFactory.getLogger(DcmQR.class);
-    
+
     private static final int KB = 1024;
 
     private static final String USAGE = "dcmqr [Options] <aet>[@<host>[:<port>]]";
 
     private static final String DESCRIPTION = 
         "Query specified remote Application Entity (=Query/Retrieve SCP) "
-        + "and optional (s. option -dest) retrieve instances of matching entities. "
-        + "If <port> is not specified, DICOM default port 104 is assumed. "
-        + "If also no <host> is specified localhost is assumed.\n"
+        + "and optional (s. option -cget/-cmove) retrieve instances of "
+        + "matching entities. If <port> is not specified, DICOM default port "
+        + "104 is assumed. If also no <host> is specified localhost is assumed. "
+        + "Also Storage Services can be provided (s. option -cstore) to receive "
+        + "retrieved instances. For receiving objects retrieved by C-MOVE in a "
+        + "separate association, a local listening port must be specified "
+        + "(s.option -L).\n"
         + "Options:";
     
     private static final String EXAMPLE = 
-        "\nExample: dcmqr QRSCP@localhost:11112 -qStudyDate=20060204 -dest STORESCP\n"
+        "\nExample: dcmqr -L QRSCU:11113 QRSCP@localhost:11112 -cmove QRSCU " +
+        "-qStudyDate=20060204 -qModalitiesInStudy=CT -cstore CT -cstore PR:LE " +
+        "-cstoredest /tmp\n"
         + "=> Query Application Entity QRSCP listening on local port 11112 for "
-        + "studies from Feb 4, 2006 and retrieve instances of matching studies to "
-        + "Application Entity STORESCP.";
+        + "CT studies from Feb 4, 2006 and retrieve matching studies by C-MOVE "
+        + "to own Application Entity QRSCU listing on local port 11113, "
+        + "storing received CT images and Grayscale Softcopy Presentation "
+        + "states to /tmp.";
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
     private static enum QueryRetrieveLevel {
-        PATIENT("PATIENT", PATIENT_RETURN_KEYS, PATIENT_LEVEL_FIND_CUID, PATIENT_LEVEL_MOVE_CUID),
-        STUDY("STUDY", STUDY_RETURN_KEYS, STUDY_LEVEL_FIND_CUID, STUDY_LEVEL_MOVE_CUID),
-        SERIES("SERIES", SERIES_RETURN_KEYS, SERIES_LEVEL_FIND_CUID, SERIES_LEVEL_MOVE_CUID),
-        IMAGE("IMAGE", INSTANCE_RETURN_KEYS, SERIES_LEVEL_FIND_CUID, SERIES_LEVEL_MOVE_CUID);
+        PATIENT("PATIENT", PATIENT_RETURN_KEYS, PATIENT_LEVEL_FIND_CUID,
+                PATIENT_LEVEL_GET_CUID, PATIENT_LEVEL_MOVE_CUID),
+        STUDY("STUDY", STUDY_RETURN_KEYS, STUDY_LEVEL_FIND_CUID,
+                STUDY_LEVEL_GET_CUID, STUDY_LEVEL_MOVE_CUID),
+        SERIES("SERIES", SERIES_RETURN_KEYS, SERIES_LEVEL_FIND_CUID,
+                SERIES_LEVEL_GET_CUID, SERIES_LEVEL_MOVE_CUID),
+        IMAGE("IMAGE", INSTANCE_RETURN_KEYS, SERIES_LEVEL_FIND_CUID,
+                SERIES_LEVEL_GET_CUID, SERIES_LEVEL_MOVE_CUID);
         
         private final String code;
         private final int[] returnKeys;
         private final String[] findClassUids;
+        private final String[] getClassUids;
         private final String[] moveClassUids;
 
-        private QueryRetrieveLevel(String code, int[] returnKeys, String[] findClassUids, String[] moveClassUids) {
+        private QueryRetrieveLevel(String code, int[] returnKeys,
+                String[] findClassUids, String[] getClassUids,
+                String[] moveClassUids) {
             this.code = code;
             this.returnKeys = returnKeys;
             this.findClassUids = findClassUids;
+            this.getClassUids = getClassUids;
             this.moveClassUids = moveClassUids;
         }
         
@@ -137,6 +162,10 @@ public class DcmQR {
             return findClassUids;
         }
         
+        public String[] getGetClassUids() {
+            return getClassUids;
+        }
+        
         public String[] getMoveClassUids() {
             return moveClassUids;
         }
@@ -145,29 +174,42 @@ public class DcmQR {
     private static final String[] PATIENT_LEVEL_FIND_CUID = {
         UID.PatientRootQueryRetrieveInformationModelFIND,
         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
-    
+
     private static final String[] STUDY_LEVEL_FIND_CUID = {
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND,
         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
-    
+
     private static final String[] SERIES_LEVEL_FIND_CUID = {
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND, };
+
+    private static final String[] PATIENT_LEVEL_GET_CUID = {
+        UID.PatientRootQueryRetrieveInformationModelGET,
+        UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired };
     
+    private static final String[] STUDY_LEVEL_GET_CUID = {
+        UID.StudyRootQueryRetrieveInformationModelGET,
+        UID.PatientRootQueryRetrieveInformationModelGET,
+        UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired };
+
+    private static final String[] SERIES_LEVEL_GET_CUID = {
+        UID.StudyRootQueryRetrieveInformationModelGET,
+        UID.PatientRootQueryRetrieveInformationModelGET };
+
     private static final String[] PATIENT_LEVEL_MOVE_CUID = {
         UID.PatientRootQueryRetrieveInformationModelMOVE,
         UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
-    
+
     private static final String[] STUDY_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
         UID.PatientRootQueryRetrieveInformationModelMOVE,
         UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
-    
+
     private static final String[] SERIES_LEVEL_MOVE_CUID = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
         UID.PatientRootQueryRetrieveInformationModelMOVE };
-    
+
     private static final int[] PATIENT_RETURN_KEYS = {
         Tag.PatientName,
         Tag.PatientID,
@@ -176,14 +218,14 @@ public class DcmQR {
         Tag.NumberOfPatientRelatedStudies,
         Tag.NumberOfPatientRelatedSeries,
         Tag.NumberOfPatientRelatedInstances };
-    
+
     private static final int[] PATIENT_MATCHING_KEYS = { 
         Tag.PatientName,
         Tag.PatientID,
         Tag.IssuerOfPatientID,
         Tag.PatientBirthDate,
         Tag.PatientSex };
-    
+
     private static final int[] STUDY_RETURN_KEYS = {
         Tag.StudyDate,
         Tag.StudyTime,
@@ -192,7 +234,7 @@ public class DcmQR {
         Tag.StudyInstanceUID,
         Tag.NumberOfStudyRelatedSeries,
         Tag.NumberOfStudyRelatedInstances };
-    
+
     private static final int[] STUDY_MATCHING_KEYS = {
         Tag.StudyDate,
         Tag.StudyTime,
@@ -201,7 +243,7 @@ public class DcmQR {
         Tag.ReferringPhysicianName,
         Tag.StudyID,
         Tag.StudyInstanceUID };
-    
+
     private static final int[] PATIENT_STUDY_MATCHING_KEYS = {
         Tag.StudyDate,
         Tag.StudyTime,
@@ -215,43 +257,113 @@ public class DcmQR {
         Tag.PatientSex,
         Tag.StudyID,
         Tag.StudyInstanceUID };
-    
+
     private static final int[] SERIES_RETURN_KEYS = {
         Tag.Modality,
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
         Tag.NumberOfSeriesRelatedInstances };
-    
+
     private static final int[] SERIES_MATCHING_KEYS = {
         Tag.Modality,
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
         Tag.RequestAttributesSequence
     };
-    
+
     private static final int[] INSTANCE_RETURN_KEYS = {
         Tag.InstanceNumber,
         Tag.SOPClassUID,
         Tag.SOPInstanceUID, };
-    
+
     private static final int[] MOVE_KEYS = {
         Tag.QueryRetrieveLevel,
         Tag.PatientID,
         Tag.StudyInstanceUID,
         Tag.SeriesInstanceUID,
         Tag.SOPInstanceUID, };
-    
+
     private static final String[] IVRLE_TS = {
         UID.ImplicitVRLittleEndian };
-    
+
     private static final String[] NATIVE_LE_TS = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian  };
-    
+
+    private static final String[] NATIVE_BE_TS = {
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian  };
+
     private static final String[] DEFLATED_TS = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
         UID.DeflatedExplicitVRLittleEndian };
+
+    private static final String[] JPLL_TS = {
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.JPEGLossless,
+        UID.JPEGLosslessNonHierarchical14,
+        UID.JPEGLSLossless,
+        UID.JPEG2000LosslessOnly };
+
+    private static final String[] JPLY_TS = {
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.JPEGBaseline1,
+        UID.JPEGExtended24,
+        UID.JPEGLSLossyNearLossless,
+        UID.JPEG2000 };
+
+    private static final String[] MPEG2_TS = { UID.MPEG2 };
+
+    private static final String[] DEF_TS = {
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian,
+        UID.DeflatedExplicitVRLittleEndian,
+        UID.JPEGLossless,
+        UID.JPEGLosslessNonHierarchical14,
+        UID.JPEGLSLossless,
+        UID.JPEGLSLossyNearLossless,
+        UID.JPEG2000LosslessOnly,
+        UID.JPEG2000,
+        UID.JPEGBaseline1,
+        UID.JPEGExtended24,
+        UID.MPEG2 };
+
+    private static enum TS {
+        IVLE(IVRLE_TS),
+        LE(NATIVE_LE_TS),
+        BE(NATIVE_BE_TS),
+        DEFL(DEFLATED_TS),
+        JPLL(JPLL_TS),
+        JPLY(JPLY_TS),
+        MPEG2(MPEG2_TS);
+        
+        final String[] uids;
+        TS(String[] uids) { this.uids = uids; }
+    }
+
+    private static enum CUID {
+        CR(UID.ComputedRadiographyImageStorage),
+        CT(UID.CTImageStorage),
+        MR(UID.MRImageStorage),
+        US(UID.UltrasoundImageStorage),
+        NM(UID.NuclearMedicineImageStorage),
+        SC(UID.SecondaryCaptureImageStorage),
+        XA(UID.XRayAngiographicImageStorage),
+        XRF(UID.XRayRadiofluoroscopicImageStorage),
+        DX(UID.DigitalXRayImageStorageForPresentation),
+        MG(UID.DigitalMammographyXRayImageStorageForPresentation),
+        PR(UID.GrayscaleSoftcopyPresentationStateStorageSOPClass),
+        KO(UID.KeyObjectSelectionDocument),
+        SR(UID.BasicTextSR);
+
+        final String uid;
+        CUID(String uid) { this.uid = uid; }
+        
+    }
 
     private static final String[] EMPTY_STRING = {};
 
@@ -271,13 +383,24 @@ public class DcmQR {
 
     private int priority = 0;
 
+    private boolean cget; 
+
     private String moveDest;
-    
+
+    private File storeDest;
+
+    private boolean devnull;
+
+    private int fileBufferSize = 256;
+
     private boolean evalRetrieveAET = false;
 
     private QueryRetrieveLevel qrlevel = QueryRetrieveLevel.STUDY;
 
-    private ArrayList<String> privateFind = new ArrayList<String>();
+    private List<String> privateFind = new ArrayList<String>();
+
+    private final List<TransferCapability> storeTransferCapability =
+            new ArrayList<TransferCapability>(8);
 
     private DicomObject keys = new BasicDicomObject();
 
@@ -305,7 +428,7 @@ public class DcmQR {
     
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
     
-    private char[] trustStorePassword = SECRET; 
+    private char[] trustStorePassword = SECRET;
     
     public DcmQR() {
         remoteAE.setInstalled(true);
@@ -316,11 +439,16 @@ public class DcmQR {
         device.setNetworkConnection(conn);
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
+        ae.setAssociationAcceptor(true);
         ae.setAETitle("DCMQR");
     }
 
     public final void setLocalHost(String hostname) {
         conn.setHostname(hostname);
+    }
+
+    public final void setLocalPort(int port) {
+        conn.setPort(port);
     }
 
     public final void setRemoteHost(String hostname) {
@@ -404,6 +532,10 @@ public class DcmQR {
         ae.setMaxOpsInvoked(maxOpsInvoked);
     }
 
+    public final void setMaxOpsPerformed(int maxOps) {
+        ae.setMaxOpsPerformed(maxOps);
+    }
+
     public final void setPackPDV(boolean packPDV) {
         ae.setPackPDV(packPDV);
     }
@@ -444,13 +576,16 @@ public class DcmQR {
         conn.setSendBufferSize(bufferSize);
     }
 
+    public final void setFileBufferSize(int size) {
+        fileBufferSize = size;
+    }
+
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
-        OptionBuilder.withArgName("aet[@host]");
+        OptionBuilder.withArgName("aet[@host][:port]");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("set AET and local address of local " +
-                "Application Entity, use ANONYMOUS and pick up any valid\n" +
-                "local address to bind the socket by default");
+        OptionBuilder.withDescription(
+                "set AET, local address and listening port of local Application Entity");
         opts.addOption(OptionBuilder.create("L"));
 
         OptionBuilder.withArgName("username");
@@ -515,8 +650,55 @@ public class DcmQR {
         OptionBuilder.withArgName("aet");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "retrieve instances of matching entities to specified destination.");
-        opts.addOption(OptionBuilder.create("dest"));
+                "retrieve instances of matching entities by C-MOVE to specified destination.");
+        opts.addOption(OptionBuilder.create("cmove"));
+
+        opts.addOption("cget", false, "retrieve instances of matching entities by C-GET.");
+
+        OptionBuilder.withArgName("cuid[:ts]");
+        OptionBuilder.hasArgs();
+        OptionBuilder.withDescription(
+                "negotiate support of specified Storage SOP Class and Transfer "
+                + "Syntaxes. The Storage SOP\nClass may be specified by its UID "
+                + "or by one\nof following key words:\n"
+                + "CR  - Computed Radiography Image Storage\n"
+                + "CT  - CT Image Storage\n"
+                + "MR  - MRImageStorage\n"
+                + "US  - Ultrasound Image Storage\n"
+                + "NM  - Nuclear Medicine Image Storage\n"
+                + "SC  - Secondary Capture Image Storage\n"
+                + "XA  - XRay Angiographic Image Storage\n"
+                + "XRF - XRay Radiofluoroscopic Image Storage\n"
+                + "DX  - Digital X-Ray Image Storage for Presentation\n"
+                + "                            MG  - Digital Mammography X-Ray Image Storage\n"
+                + "for Presentation\n"
+                + "PR  - Grayscale Softcopy Presentation State Storage\n"
+                + "                            KO  - Key Object Selection Document Storage\n"
+                + "SR  - Basic Text Structured Report Document Storage\n"
+                + "                            The Transfer Syntaxes may be specified by a comma\n"
+                + "                            separated list of UIDs or by one of following key\n"
+                + "                            words:\n"
+                + "                            IVRLE - offer only Implicit VR Little Endian\n"
+                + "                            Transfer Syntax\n"
+                + "                            LE    - offer Explicit and Implicit VR Little\n"
+                + "                            Endian Transfer Syntax\n"
+                + "                            BE    - offer Explicit VR Big Endian Transfer\n"
+                + "                            Syntax\n"
+                + "                            DEFL  - offer Deflated Explicit VR Little\n"
+                + "                            Endian Transfer Syntax\n"
+                + "                            JPLL  - offer JEPG Loss Less Transfer Syntaxes\n"
+                + "                            JPLY  - offer JEPG Lossy Transfer Syntaxes\n"
+                + "                            MPEG2 - offer MPEG2 Transfer Syntax\n"
+                + "If only the Storage SOP Class is specified, all\n"
+                + "                            Transfer Syntaxes listed above are offered.");
+        opts.addOption(OptionBuilder.create("cstore"));
+
+        OptionBuilder.withArgName("dir");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "store received objects into files in specified directory <dir>."
+                        + " Do not store received objects\nby default.");
+        opts.addOption(OptionBuilder.create("cstoredest"));
 
         opts.addOption("ivrle", false, "offer only Implicit VR Little Endian Transfer Syntax.");
 
@@ -525,6 +707,13 @@ public class DcmQR {
         OptionBuilder.withDescription("maximum number of outstanding C-MOVE-RQ " +
                 "it may invoke asynchronously, 1 by default.");
         opts.addOption(OptionBuilder.create("async"));
+
+        OptionBuilder.withArgName("maxops");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "maximum number of outstanding storage operations performed "
+                        + "asynchronously, unlimited by\n                            default.");
+        opts.addOption(OptionBuilder.create("storeasync"));
 
         opts.addOption("noextneg", false, "disable extended negotiation.");
         opts.addOption("rel", false,
@@ -538,13 +727,14 @@ public class DcmQR {
                 "to fetch all available attributes of matching entities.");
         opts.addOption("blocked", false, "negotiate private FIND SOP Classes " +
                 "to return attributes of several matching entities per FIND\n" +
-                "response.");
+                "                            response.");
         opts.addOption("vmf", false, "negotiate private FIND SOP Classes to " +
                 "return attributes of legacy CT/MR images of one series as\n" +
-                "virtual multiframe object.");
+                "                           virtual multiframe object.");
         opts.addOption("pdv1", false,
-                "send only one PDV in one P-Data-TF PDU, pack command and data " +
-                "PDV in one P-DATA-TF PDU by default.");
+                "send only one PDV in one P-Data-TF PDU, pack command and data "
+                + "PDV in one P-DATA-TF PDU\n"
+                + "                           by default.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
@@ -608,20 +798,29 @@ public class DcmQR {
                 "set SO_SNDBUF socket option to specified value in KB");
         opts.addOption(OptionBuilder.create("sosndbuf"));
 
+        OptionBuilder.withArgName("KB");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "minimal buffer size to write received object to file, 1KB by default");
+        opts.addOption(OptionBuilder.create("filebuf"));
+
         OptionGroup qrlevel = new OptionGroup();
 
-        OptionBuilder.withDescription("perform patient level query, multiple " +
-                "exclusive with -S and -I, perform study level query by default.");
+        OptionBuilder.withDescription("perform patient level query, multiple "
+                + "exclusive with -S and -I, perform study level query\n"
+                + "                            by default.");
         OptionBuilder.withLongOpt("patient");
         opts.addOption(OptionBuilder.create("P"));
 
-        OptionBuilder.withDescription("perform series level query, multiple " +
-                "exclusive with -P and -I, perform study level query by default.");
+        OptionBuilder.withDescription("perform series level query, multiple "
+                + "exclusive with -P and -I, perform study level query\n"
+                + "                            by default.");
         OptionBuilder.withLongOpt("series");
         opts.addOption(OptionBuilder.create("S"));
 
-        OptionBuilder.withDescription("perform instance level query, multiple " +
-                "exclusive with -P and -S, perform study level query by default.");
+        OptionBuilder.withDescription("perform instance level query, multiple "
+                + "exclusive with -P and -S, perform study level query\n"
+                + "                            by default.");
         OptionBuilder.withLongOpt("image");
         opts.addOption(OptionBuilder.create("I"));
 
@@ -634,7 +833,7 @@ public class DcmQR {
                 "specified by name or tag value (in hex), e.g. PatientName\n" +
                 "or 00100010. Attributes in nested Datasets can\n" +
                 "be specified by including the name/tag value of\n" +
-                "the sequence attribute, e.g. 00400275/00400009\n" +
+                "                            the sequence attribute, e.g. 00400275/00400009\n" +
                 "for Scheduled Procedure Step ID in the Request\n" +
                 "Attributes Sequence");
         opts.addOption(OptionBuilder.create("q"));
@@ -655,7 +854,7 @@ public class DcmQR {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("retrieve matching objects to specified " +
                 "move destination.");
-        opts.addOption(OptionBuilder.create("dest"));
+        opts.addOption(OptionBuilder.create("cmove"));
         
         opts.addOption("evalRetrieveAET", false,
                 "Only Move studies not allready stored on destination AET");
@@ -722,10 +921,14 @@ public class DcmQR {
         }
         if (cl.hasOption("L")) {
             String localAE = cl.getOptionValue("L");
-            String[] callingAETHost = split(localAE, '@');
+            String[] localPort = split(localAE, ':');
+            if (localPort[1] != null) {
+                dcmqr.setLocalPort(toPort(localPort[1]));                
+            }
+            String[] callingAETHost = split(localPort[0], '@');
             dcmqr.setCalling(callingAETHost[0]);
             if (callingAETHost[1] != null) {
-                dcmqr.setLocalHost(callingAETHost[1]);
+                dcmqr.setLocalHost(callingAETHost[0]);
             }
         }
         if (cl.hasOption("username")) {
@@ -781,11 +984,18 @@ public class DcmQR {
             dcmqr.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000)
                     * KB);
+        if (cl.hasOption("filebuf"))
+            dcmqr.setFileBufferSize(parseInt(cl.getOptionValue("filebuf"),
+                    "illegal argument of option -filebuf", 1, 10000)
+                    * KB);
         dcmqr.setPackPDV(!cl.hasOption("pdv1"));
         dcmqr.setTcpNoDelay(!cl.hasOption("tcpdelay"));
         dcmqr.setMaxOpsInvoked(cl.hasOption("async") ? parseInt(cl
                 .getOptionValue("async"), "illegal argument of option -async",
                 0, 0xffff) : 1);
+        dcmqr.setMaxOpsPerformed(cl.hasOption("cstoreasync") ? parseInt(cl
+                .getOptionValue("cstoreasync"), "illegal argument of option -cstoreasync",
+                0, 0xffff) : 0);
         if (cl.hasOption("C"))
             dcmqr.setCancelAfter(parseInt(cl.getOptionValue("C"),
                     "illegal argument of option -C", 1, Integer.MAX_VALUE));
@@ -793,8 +1003,37 @@ public class DcmQR {
             dcmqr.setPriority(CommandUtils.LOW);
         if (cl.hasOption("highprior"))
             dcmqr.setPriority(CommandUtils.HIGH);
-        if (cl.hasOption("dest"))
-            dcmqr.setMoveDest(cl.getOptionValue("dest"));
+        if (cl.hasOption("cstore")) {
+            String[] storeTCs = cl.getOptionValues("cstore");
+            for (String storeTC : storeTCs) {
+                String cuid;
+                String[] tsuids;
+                int colon = storeTC.indexOf(':');
+                if (colon == -1) {
+                    cuid = storeTC;
+                    tsuids = DEF_TS;
+                } else {
+                    cuid = storeTC.substring(0, colon);
+                    String ts = storeTC.substring(colon+1);
+                    try {
+                        tsuids = TS.valueOf(ts).uids;
+                    } catch (IllegalArgumentException e) {
+                        tsuids = ts.split(",");
+                    }
+                }
+                try {
+                    cuid = CUID.valueOf(cuid).uid;
+                } catch (IllegalArgumentException e) {
+                    // assume cuid already contains UID
+                }
+                dcmqr.addStoreTransferCapability(cuid, tsuids);
+            }
+            if (cl.hasOption("cstoredest"))
+                dcmqr.setStoreDestination(cl.getOptionValue("cstoredest"));
+        }
+        dcmqr.setCGet(cl.hasOption("cget"));
+        if (cl.hasOption("cmove"))
+            dcmqr.setMoveDest(cl.getOptionValue("cmove"));
         if (cl.hasOption("evalRetrieveAET"))
             dcmqr.setEvalRetrieveAET(true);
         if (cl.hasOption("P"))
@@ -813,16 +1052,17 @@ public class DcmQR {
             dcmqr.setDateTimeMatching(true);
         if (cl.hasOption("fuzzy"))
             dcmqr.setFuzzySemanticPersonNameMatching(true);
-
-        if (cl.hasOption("retall"))
-            dcmqr.addPrivate(
-                    UID.PrivateStudyRootQueryRetrieveInformationModelFIND);
-        if (cl.hasOption("blocked"))
-            dcmqr.addPrivate(
-                    UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND);
-        if (cl.hasOption("vmf"))
-            dcmqr.addPrivate(
-                    UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);
+        if (!cl.hasOption("P")) {
+            if (cl.hasOption("retall"))
+                dcmqr.addPrivate(
+                        UID.PrivateStudyRootQueryRetrieveInformationModelFIND);
+            if (cl.hasOption("blocked"))
+                dcmqr.addPrivate(
+                        UID.PrivateBlockedStudyRootQueryRetrieveInformationModelFIND);
+            if (cl.hasOption("vmf"))
+                dcmqr.addPrivate(
+                        UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);
+        }
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
@@ -890,58 +1130,76 @@ public class DcmQR {
             long t2 = System.currentTimeMillis();
             LOG.info("Initialize TLS context in {} s", Float.valueOf((t2 - t1) / 1000f));
         }
-        
-        long t1 = System.currentTimeMillis();
         try {
-            dcmqr.open();
+            dcmqr.start();
         } catch (Exception e) {
-            LOG.error("Failed to establish association:", e);
+            System.err.println("ERROR: Failed to start server for receiving " +
+                    "Storage Commitment results:" + e.getMessage());
             System.exit(2);
         }
-        long t2 = System.currentTimeMillis();
-        LOG.info("Connected to {} in {} s", remoteAE, Float.valueOf((t2 - t1) / 1000f));
-
-        for (;;) {
+        try {
+            long t1 = System.currentTimeMillis();
             try {
-                List<DicomObject> result = dcmqr.query();
-                long t3 = System.currentTimeMillis();
-                LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
-                        Float.valueOf((t3 - t2) / 1000f));
-                if (dcmqr.isMove()) {
-                    dcmqr.move(result);
-                    long t4 = System.currentTimeMillis();
-                    LOG.info("Retrieved {} objects (warning: {}, failed: {}) in {}s",
-                                    new Object[] {
-                                            Integer.valueOf(dcmqr
-                                                    .getTotalRetrieved()),
-                                            Integer.valueOf(dcmqr.getWarning()),
-                                            Integer.valueOf(dcmqr.getFailed()),
-                                            Float.valueOf((t4 - t3) / 1000f) });
-                }
-                if (repeat == 0 || closeAssoc) {
-                    try {
-                        dcmqr.close();
-                    } catch (InterruptedException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
-                    LOG.info("Released connection to {}",remoteAE);
-                }
-                if (repeat-- == 0)
-                    break;
-                Thread.sleep(interval);
-                long t4 = System.currentTimeMillis();
                 dcmqr.open();
-                t2 = System.currentTimeMillis();
-                LOG.info("Reconnect or reuse connection to {} in {} s",
-                        remoteAE, Float.valueOf((t2 - t4) / 1000f));
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-            } catch (InterruptedException e) {
-                LOG.error(e.getMessage(), e);
-            } catch (ConfigurationException e) {
-                LOG.error(e.getMessage(), e);
+            } catch (Exception e) {
+                LOG.error("Failed to establish association:", e);
+                System.exit(2);
             }
+            long t2 = System.currentTimeMillis();
+            LOG.info("Connected to {} in {} s", remoteAE, Float.valueOf((t2 - t1) / 1000f));
+    
+            for (;;) {
+                try {
+                    List<DicomObject> result = dcmqr.query();
+                    long t3 = System.currentTimeMillis();
+                    LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
+                            Float.valueOf((t3 - t2) / 1000f));
+                    if (dcmqr.isCMove() || dcmqr.isCGet()) {
+                        if (dcmqr.isCMove())
+                            dcmqr.move(result);
+                        else
+                            dcmqr.get(result);
+                        long t4 = System.currentTimeMillis();
+                        LOG.info("Retrieved {} objects (warning: {}, failed: {}) in {}s",
+                                        new Object[] {
+                                                Integer.valueOf(dcmqr
+                                                        .getTotalRetrieved()),
+                                                Integer.valueOf(dcmqr.getWarning()),
+                                                Integer.valueOf(dcmqr.getFailed()),
+                                                Float.valueOf((t4 - t3) / 1000f) });
+                    }
+                    if (repeat == 0 || closeAssoc) {
+                        try {
+                            dcmqr.close();
+                        } catch (InterruptedException e) {
+                            LOG.error(e.getMessage(), e);
+                        }
+                        LOG.info("Released connection to {}",remoteAE);
+                    }
+                    if (repeat-- == 0)
+                        break;
+                    Thread.sleep(interval);
+                    long t4 = System.currentTimeMillis();
+                    dcmqr.open();
+                    t2 = System.currentTimeMillis();
+                    LOG.info("Reconnect or reuse connection to {} in {} s",
+                            remoteAE, Float.valueOf((t2 - t4) / 1000f));
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (InterruptedException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (ConfigurationException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+        } finally {
+            dcmqr.stop();
         }
+    }
+
+    private void addStoreTransferCapability(String cuid, String[] tsuids) {
+        storeTransferCapability.add(new TransferCapability(
+                cuid, tsuids, TransferCapability.SCP));
     }
 
     private void setEvalRetrieveAET(boolean evalRetrieveAET) {
@@ -996,23 +1254,67 @@ public class DcmQR {
         String[] findcuids = qrlevel.getFindClassUids();
         String[] movecuids = moveDest != null ? qrlevel.getMoveClassUids()
                 : EMPTY_STRING;
-        int numPrivateFind = qrlevel != QueryRetrieveLevel.PATIENT ? privateFind.size() : 0;
-        TransferCapability[] tc = new TransferCapability[findcuids.length
-                + movecuids.length + numPrivateFind];
+        String[] getcuids = cget ? qrlevel.getGetClassUids()
+                : EMPTY_STRING;
+        TransferCapability[] tcs = new TransferCapability[findcuids.length
+                + privateFind.size() + movecuids.length + getcuids.length
+                + storeTransferCapability.size()];
         int i = 0;
-        for (int j = 0; j < findcuids.length; j++)
-            tc[i++] = mkFindTC(findcuids[j],
-                    ivrle ? IVRLE_TS : NATIVE_LE_TS);
-        for (int j = 0; j < movecuids.length; j++)
-            tc[i++] = mkMoveTC(movecuids[j],
-                    ivrle ? IVRLE_TS : NATIVE_LE_TS);
-        for (int j = 0; j < numPrivateFind; j++)
-            tc[i++] = mkFindTC(privateFind.get(j),
-                    ivrle ? IVRLE_TS : DEFLATED_TS);
-        ae.setTransferCapability(tc);
+        for (String cuid : findcuids)
+            tcs[i++] = mkFindTC(cuid, ivrle ? IVRLE_TS : NATIVE_LE_TS);
+        for (String cuid : privateFind)
+            tcs[i++] = mkFindTC(cuid, ivrle ? IVRLE_TS : DEFLATED_TS);
+        for (String cuid : movecuids)
+            tcs[i++] = mkRetrieveTC(cuid, ivrle ? IVRLE_TS : NATIVE_LE_TS);
+        for (String cuid : getcuids)
+            tcs[i++] = mkRetrieveTC(cuid, ivrle ? IVRLE_TS : NATIVE_LE_TS);
+        for (TransferCapability tc : storeTransferCapability) {
+            tcs[i++] = tc;
+        }
+        ae.setTransferCapability(tcs);
+        if (!storeTransferCapability.isEmpty()) {
+            ae.register(createStorageService());
+        }
     }
 
-    private TransferCapability mkMoveTC(String cuid, String[] ts) {
+    private DicomService createStorageService() {
+        String[] cuids = new String[storeTransferCapability.size()];
+        int i = 0;
+        for (TransferCapability tc : storeTransferCapability) {
+            cuids[i++] = tc.getSopClass();
+        }
+        return new StorageService(cuids) {
+            @Override
+            protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
+                    PDVInputStream dataStream, String tsuid, DicomObject rsp)
+                    throws IOException, DicomServiceException {
+                if (storeDest == null) {
+                    super.onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
+                } else {
+                    try {
+                        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+                        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+                        BasicDicomObject fmi = new BasicDicomObject();
+                        fmi.initFileMetaInformation(cuid, iuid, tsuid);
+                        File file = devnull ? storeDest : new File(storeDest, iuid);
+                        FileOutputStream fos = new FileOutputStream(file);
+                        BufferedOutputStream bos = new BufferedOutputStream(fos,
+                                fileBufferSize);
+                        DicomOutputStream dos = new DicomOutputStream(bos);
+                        dos.writeFileMetaInformation(fmi);
+                        dataStream.copyTo(dos);
+                        dos.close();
+                    } catch (IOException e) {
+                        throw new DicomServiceException(rq, Status.ProcessingFailure, e
+                                .getMessage());
+                    }
+                }
+            }
+            
+        };
+    }
+
+    private TransferCapability mkRetrieveTC(String cuid, String[] ts) {
         ExtRetrieveTransferCapability tc = new ExtRetrieveTransferCapability(
                 cuid, ts, TransferCapability.SCU);
         tc.setExtInfoBoolean(
@@ -1048,11 +1350,19 @@ public class DcmQR {
         privateFind.add(cuid);
     }
 
+    private void setCGet(boolean cget) {
+        this.cget = cget;
+    }
+
+    private boolean isCGet() {
+        return cget;
+    }
+
     private void setMoveDest(String aet) {
         moveDest = aet;
     }
 
-    private boolean isMove() {
+    private boolean isCMove() {
         return moveDest != null;
     }
 
@@ -1087,6 +1397,19 @@ public class DcmQR {
         System.err.println(msg);
         System.err.println("Try 'dcmqr -h' for more information.");
         System.exit(1);
+    }
+
+    public void start() throws IOException { 
+        if (conn.isListening()) {
+            conn.bind(executor );
+            System.out.println("Start Server listening on port " + conn.getPort());
+        }
+    }
+
+    public void stop() {
+        if (conn.isListening()) {
+            conn.unbind();
+        }
     }
 
     public void open() throws IOException, ConfigurationException,
@@ -1270,8 +1593,7 @@ public class DcmQR {
     private TransferCapability selectFindTransferCapability()
             throws NoPresentationContextException {
         TransferCapability tc;
-        if (qrlevel != QueryRetrieveLevel.PATIENT
-                && (tc = selectTransferCapability(privateFind)) != null)
+        if ((tc = selectTransferCapability(privateFind)) != null)
             return tc;
         if ((tc = selectTransferCapability(qrlevel.getFindClassUids())) != null)
             return tc;
@@ -1299,8 +1621,7 @@ public class DcmQR {
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
-            DicomObject keys = findResults.get(i)
-            .subSet(MOVE_KEYS);
+            DicomObject keys = findResults.get(i).subSet(MOVE_KEYS);
             if (isEvalRetrieveAET()
                     && moveDest.equals(findResults.get(i)
                             .getString(Tag.RetrieveAETitle))) {
@@ -1309,18 +1630,38 @@ public class DcmQR {
             } else {
                 LOG.info("Send Retrieve Request using {}:\n{}",
                         UIDDictionary.getDictionary().prompt(cuid), keys);
-                DimseRSPHandler rspHandler = new DimseRSPHandler() {
-                    @Override
-                    public void onDimseRSP(Association as, DicomObject cmd,
-                            DicomObject data) {
-                        DcmQR.this.onMoveRSP(as, cmd, data);
-                    }
-                };
                 assoc.cmove(cuid, priority, keys, tsuid, moveDest, rspHandler);
             }
         }
         assoc.waitForDimseRSP();
     }
+
+
+    public void get(List<DicomObject> findResults)
+            throws IOException, InterruptedException {
+        TransferCapability tc = selectTransferCapability(qrlevel.getGetClassUids());
+        if (tc == null)
+            throw new NoPresentationContextException(UIDDictionary
+                    .getDictionary().prompt(qrlevel.getGetClassUids()[0])
+                    + " not supported by" + remoteAE.getAETitle());
+        String cuid = tc.getSopClass();
+        String tsuid = selectTransferSyntax(tc);
+        for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
+            DicomObject keys = findResults.get(i).subSet(MOVE_KEYS);
+            LOG.info("Send Retrieve Request using {}:\n{}",
+                    UIDDictionary.getDictionary().prompt(cuid), keys);
+            assoc.cget(cuid, priority, keys, tsuid, rspHandler);
+        }
+        assoc.waitForDimseRSP();
+    }
+    
+    private final DimseRSPHandler rspHandler = new DimseRSPHandler() {
+        @Override
+        public void onDimseRSP(Association as, DicomObject cmd,
+                DicomObject data) {
+            DcmQR.this.onMoveRSP(as, cmd, data);
+        }
+    };
 
     protected void onMoveRSP(Association as, DicomObject cmd, DicomObject data) {
         if (!CommandUtils.isPending(cmd)) {
@@ -1353,6 +1694,13 @@ public class DcmQR {
 
     public void close() throws InterruptedException {
         assoc.release(true);
+    }
+
+    private void setStoreDestination(String filePath) {
+        this.storeDest = new File(filePath);
+        this.devnull = "/dev/null".equals(filePath);
+        if (!devnull)
+            storeDest.mkdir();
     }
 
     public void initTLS() throws GeneralSecurityException, IOException {
