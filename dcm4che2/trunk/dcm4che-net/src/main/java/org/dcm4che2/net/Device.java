@@ -58,35 +58,54 @@ import javax.net.ssl.TrustManagerFactory;
  * (TLS-enabled, AE titles used, etc.).
  * 
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2007-11-27 08:24:27 -0600 (Tue, 27 Nov
+ *          2007) $
  * @since Nov 25, 2005
  * 
  */
-public class Device
-{
+public class Device {
     private String deviceName = "";
+
     private String description;
+
     private String manufacturer;
+
     private String manufacturerModelName;
+
     private String stationName;
+
     private String deviceSerialNumber;
+
     private String issuerOfPATIENT_ID;
+
     private String[] softwareVersion = {};
+
     private String[] primaryDeviceType = {};
+
     private String[] institutionName = {};
+
     private String[] institutionAddress = {};
+
     private String[] institutionalDepartmentName = {};
+
     private X509Certificate[] authorizedNodeCertificate = {};
+
     private X509Certificate[] thisNodeCertificate = {};
+
     private Object[] relatedDeviceConfiguration = {};
+
     private Object[] vendorDeviceData = {};
+
     private int associationReaperPeriod = 10000;
+
     private boolean installed = true;
 
     private NetworkConnection[] networkConnection = {};
+
     private NetworkApplicationEntity[] networkAE = {};
 
     private SSLContext sslContext;
+
     private AssociationReaper reaper;
 
     /**
@@ -99,10 +118,10 @@ public class Device
     /**
      * Constructor which sets the name of this device.
      * 
-     * @param deviceName String
+     * @param deviceName
+     *                String
      */
-    public Device(String deviceName)
-    {
+    public Device(String deviceName) {
         this.deviceName = deviceName;
     }
 
@@ -115,8 +134,7 @@ public class Device
      * 
      * @return AssociationReaper
      */
-    synchronized final AssociationReaper getAssociationReaper()
-    {
+    synchronized final AssociationReaper getAssociationReaper() {
         if (reaper == null)
             reaper = new AssociationReaper(getAssociationReaperPeriod());
         return reaper;
@@ -127,8 +145,7 @@ public class Device
      * 
      * @return A String containing the device name.
      */
-    public final String getDeviceName()
-    {
+    public final String getDeviceName() {
         return deviceName;
     }
 
@@ -138,10 +155,10 @@ public class Device
      * This should be a unique name for this device. It is restricted to legal
      * LDAP names, and not constrained by DICOM AE Title limitations.
      * 
-     * @param deviceName A String containing the device name.
+     * @param deviceName
+     *                A String containing the device name.
      */
-    public final void setDeviceName(String deviceName)
-    {
+    public final void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
     }
 
@@ -150,18 +167,17 @@ public class Device
      * 
      * @return A String containing the device description.
      */
-    public final String getDescription()
-    {
+    public final String getDescription() {
         return description;
     }
 
     /**
      * Set the description of this device.
      * 
-     * @param description A String containing the device description.
+     * @param description
+     *                A String containing the device description.
      */
-    public final void setDescription(String description)
-    {
+    public final void setDescription(String description) {
         this.description = description;
     }
 
@@ -170,8 +186,7 @@ public class Device
      * 
      * @return A String containing the device manufacturer.
      */
-    public final String getManufacturer()
-    {
+    public final String getManufacturer() {
         return manufacturer;
     }
 
@@ -181,10 +196,10 @@ public class Device
      * This should be the same as the value of Manufacturer (0008,0070) in SOP
      * instances created by this device.
      * 
-     * @param manufacturer A String containing the device manufacturer.
+     * @param manufacturer
+     *                A String containing the device manufacturer.
      */
-    public final void setManufacturer(String manufacturer)
-    {
+    public final void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
 
@@ -193,8 +208,7 @@ public class Device
      * 
      * @return A String containing the device manufacturer model name.
      */
-    public final String getManufacturerModelName()
-    {
+    public final String getManufacturerModelName() {
         return manufacturerModelName;
     }
 
@@ -204,11 +218,10 @@ public class Device
      * This should be the same as the value of Manufacturer Model Name
      * (0008,1090) in SOP instances created by this device.
      * 
-     * @param manufacturerModelName A String containing the device manufacturer
-     *            model name.
+     * @param manufacturerModelName
+     *                A String containing the device manufacturer model name.
      */
-    public final void setManufacturerModelName(String manufacturerModelName)
-    {
+    public final void setManufacturerModelName(String manufacturerModelName) {
         this.manufacturerModelName = manufacturerModelName;
     }
 
@@ -217,8 +230,7 @@ public class Device
      * 
      * @return A String array containing the software versions.
      */
-    public final String[] getSoftwareVersion()
-    {
+    public final String[] getSoftwareVersion() {
         return softwareVersion;
     }
 
@@ -228,10 +240,10 @@ public class Device
      * This should be the same as the values of Software Versions (0018,1020) in
      * SOP instances created by this device.
      * 
-     * @param softwareVersion A String array containing the software versions.
+     * @param softwareVersion
+     *                A String array containing the software versions.
      */
-    public final void setSoftwareVersion(String[] softwareVersion)
-    {
+    public final void setSoftwareVersion(String[] softwareVersion) {
         this.softwareVersion = softwareVersion;
     }
 
@@ -240,8 +252,7 @@ public class Device
      * 
      * @return A String containing the station name.
      */
-    public final String getStationName()
-    {
+    public final String getStationName() {
         return stationName;
     }
 
@@ -251,10 +262,10 @@ public class Device
      * This should be the same as the value of Station Name (0008,1010) in SOP
      * instances created by this device.
      * 
-     * @param stationName A String containing the station name.
+     * @param stationName
+     *                A String containing the station name.
      */
-    public final void setStationName(String stationName)
-    {
+    public final void setStationName(String stationName) {
         this.stationName = stationName;
     }
 
@@ -263,8 +274,7 @@ public class Device
      * 
      * @return A String containing the serial number.
      */
-    public final String getDeviceSerialNumber()
-    {
+    public final String getDeviceSerialNumber() {
         return deviceSerialNumber;
     }
 
@@ -274,10 +284,10 @@ public class Device
      * This should be the same as the value of Device Serial Number (0018,1000)
      * in SOP instances created by this device.
      * 
-     * @param deviceSerialNumber A String containing the serial number.
+     * @param deviceSerialNumber
+     *                A String containing the serial number.
      */
-    public final void setDeviceSerialNumber(String deviceSerialNumber)
-    {
+    public final void setDeviceSerialNumber(String deviceSerialNumber) {
         this.deviceSerialNumber = deviceSerialNumber;
     }
 
@@ -286,8 +296,7 @@ public class Device
      * 
      * @return A String array containing the type codes of this device.
      */
-    public final String[] getPrimaryDeviceType()
-    {
+    public final String[] getPrimaryDeviceType() {
         return primaryDeviceType;
     }
 
@@ -300,8 +309,7 @@ public class Device
      * 
      * @param primaryDeviceType
      */
-    public final void setPrimaryDeviceType(String[] primaryDeviceType)
-    {
+    public final void setPrimaryDeviceType(String[] primaryDeviceType) {
         this.primaryDeviceType = primaryDeviceType;
     }
 
@@ -311,8 +319,7 @@ public class Device
      * 
      * @return A String array containing the institution name values.
      */
-    public final String[] getInstitutionName()
-    {
+    public final String[] getInstitutionName() {
         return institutionName;
     }
 
@@ -323,10 +330,10 @@ public class Device
      * Should be the same as the value of Institution Name (0008,0080) in SOP
      * Instances created by this device.
      * 
-     * @param names A String array containing the institution name values.
+     * @param names
+     *                A String array containing the institution name values.
      */
-    public final void setInstitutionName(String[] name)
-    {
+    public final void setInstitutionName(String[] name) {
         this.institutionName = name;
     }
 
@@ -335,8 +342,7 @@ public class Device
      * 
      * @return A String array containing the institution address values.
      */
-    public final String[] getInstitutionAddress()
-    {
+    public final String[] getInstitutionAddress() {
         return institutionAddress;
     }
 
@@ -346,10 +352,10 @@ public class Device
      * Should be the same as the value of Institution Address (0008,0081)
      * attribute in SOP Instances created by this device.
      * 
-     * @param addr A String array containing the institution address values.
+     * @param addr
+     *                A String array containing the institution address values.
      */
-    public final void setInstitutionAddress(String[] addr)
-    {
+    public final void setInstitutionAddress(String[] addr) {
         this.institutionAddress = addr;
     }
 
@@ -358,8 +364,7 @@ public class Device
      * 
      * @return A String array containing the dept. name values.
      */
-    public final String[] getInstitutionalDepartmentName()
-    {
+    public final String[] getInstitutionalDepartmentName() {
         return institutionalDepartmentName;
     }
 
@@ -369,10 +374,10 @@ public class Device
      * Should be the same as the value of Institutional Department Name
      * (0008,1040) in SOP Instances created by this device.
      * 
-     * @param name A String array containing the dept. name values.
+     * @param name
+     *                A String array containing the dept. name values.
      */
-    public final void setInstitutionalDepartmentName(String[] name)
-    {
+    public final void setInstitutionalDepartmentName(String[] name) {
         this.institutionalDepartmentName = name;
     }
 
@@ -381,8 +386,7 @@ public class Device
      * 
      * @return A String containing the PID issuer value.
      */
-    public final String getIssuerOfPATIENT_ID()
-    {
+    public final String getIssuerOfPATIENT_ID() {
         return issuerOfPATIENT_ID;
     }
 
@@ -393,10 +397,10 @@ public class Device
      * created by this device. May be overridden by the values received in a
      * worklist or other source.
      * 
-     * @param issuerOfPATIENT_ID A String containing the PID issuer value.
+     * @param issuerOfPATIENT_ID
+     *                A String containing the PID issuer value.
      */
-    public final void setIssuerOfPATIENT_ID(String issuerOfPATIENT_ID)
-    {
+    public final void setIssuerOfPATIENT_ID(String issuerOfPATIENT_ID) {
         this.issuerOfPATIENT_ID = issuerOfPATIENT_ID;
     }
 
@@ -405,8 +409,7 @@ public class Device
      * 
      * @return An Object array of related references.
      */
-    public final Object[] getRelatedDeviceConfiguration()
-    {
+    public final Object[] getRelatedDeviceConfiguration() {
         return relatedDeviceConfiguration;
     }
 
@@ -418,10 +421,10 @@ public class Device
      * objects instantiated from other schema and used for separate
      * administrative purposes.
      * 
-     * @param relatedDevice An Object array of related references.
+     * @param relatedDevice
+     *                An Object array of related references.
      */
-    public final void setRelatedDeviceConfiguration(Object[] relatedDevice)
-    {
+    public final void setRelatedDeviceConfiguration(Object[] relatedDevice) {
         this.relatedDeviceConfiguration = relatedDevice;
     }
 
@@ -431,8 +434,7 @@ public class Device
      * 
      * @return An array containing the X509Certificate objects
      */
-    public final X509Certificate[] getAuthorizedNodeCertificate()
-    {
+    public final X509Certificate[] getAuthorizedNodeCertificate() {
         return authorizedNodeCertificate;
     }
 
@@ -440,10 +442,10 @@ public class Device
      * Set the certificates of nodes that are authorized to connect to this
      * device.
      * 
-     * @param certs An array containing the X509Certificate objects.
+     * @param certs
+     *                An array containing the X509Certificate objects.
      */
-    public final void setAuthorizedNodeCertificate(X509Certificate[] certs)
-    {
+    public final void setAuthorizedNodeCertificate(X509Certificate[] certs) {
         this.authorizedNodeCertificate = certs;
     }
 
@@ -452,18 +454,17 @@ public class Device
      * 
      * @return An array containing the X509Certificate objects
      */
-    public final X509Certificate[] getThisNodeCertificate()
-    {
+    public final X509Certificate[] getThisNodeCertificate() {
         return thisNodeCertificate;
     }
 
     /**
      * Set the public certificates for this device.
      * 
-     * @param certs An array containing the X509Certificate objects.
+     * @param certs
+     *                An array containing the X509Certificate objects.
      */
-    public final void setThisNodeCertificate(X509Certificate[] certs)
-    {
+    public final void setThisNodeCertificate(X509Certificate[] certs) {
         this.thisNodeCertificate = certs;
     }
 
@@ -472,18 +473,17 @@ public class Device
      * 
      * @return An Object array of the device data.
      */
-    public final Object[] getVendorDeviceData()
-    {
+    public final Object[] getVendorDeviceData() {
         return vendorDeviceData;
     }
 
     /**
      * Set device specific vendor configuration information
      * 
-     * @param vendorDeviceData An Object array of the device data.
+     * @param vendorDeviceData
+     *                An Object array of the device data.
      */
-    public final void setVendorDeviceData(Object[] vendorDeviceData)
-    {
+    public final void setVendorDeviceData(Object[] vendorDeviceData) {
         this.vendorDeviceData = vendorDeviceData;
     }
 
@@ -494,8 +494,7 @@ public class Device
      * 
      * @return A boolean which will be true if this device is installed.
      */
-    public final boolean isInstalled()
-    {
+    public final boolean isInstalled() {
         return installed;
     }
 
@@ -504,11 +503,10 @@ public class Device
      * the network. (This is useful for pre-configuration, mobile vans, and
      * similar situations.)
      * 
-     * @param installed A boolean which will be true if this device is
-     *            installed.
+     * @param installed
+     *                A boolean which will be true if this device is installed.
      */
-    public final void setInstalled(boolean installed)
-    {
+    public final void setInstalled(boolean installed) {
         this.installed = installed;
     }
 
@@ -520,8 +518,7 @@ public class Device
      * 
      * @return An array of <code>NetworkApplicationEntity</code> objects.
      */
-    public final NetworkApplicationEntity[] getNetworkApplicationEntity()
-    {
+    public final NetworkApplicationEntity[] getNetworkApplicationEntity() {
         return networkAE;
     }
 
@@ -531,11 +528,11 @@ public class Device
      * identified on the network, as well as the properties and capabilities of
      * those services.
      * 
-     * @param networkAE A <code>NetworkApplicationEntity</code> object.
+     * @param networkAE
+     *                A <code>NetworkApplicationEntity</code> object.
      */
     public final void setNetworkApplicationEntity(
-            NetworkApplicationEntity networkAE)
-    {
+            NetworkApplicationEntity networkAE) {
         setNetworkApplicationEntity(new NetworkApplicationEntity[] { networkAE });
     }
 
@@ -545,12 +542,12 @@ public class Device
      * are identified on the network, as well as the properties and capabilities
      * of those services.
      * 
-     * @param networkAE An array of <code>NetworkApplicationEntity</code>
-     *            objects.
+     * @param networkAE
+     *                An array of <code>NetworkApplicationEntity</code>
+     *                objects.
      */
     public final void setNetworkApplicationEntity(
-            NetworkApplicationEntity[] networkAE)
-    {
+            NetworkApplicationEntity[] networkAE) {
         for (int i = 0; i < networkAE.length; i++)
             networkAE[i].setDevice(this);
 
@@ -563,8 +560,7 @@ public class Device
      * 
      * @return An array of <code>NetworkConnection</code> objects.
      */
-    public final NetworkConnection[] getNetworkConnection()
-    {
+    public final NetworkConnection[] getNetworkConnection() {
         return networkConnection;
     }
 
@@ -572,10 +568,10 @@ public class Device
      * Set the <code>NetworkConnection</code> object associated with this
      * device. This will coincide with the TCP port used by the device.
      * 
-     * @param networkConnection A<code>NetworkConnection</code> object.
+     * @param networkConnection
+     *                A<code>NetworkConnection</code> object.
      */
-    public final void setNetworkConnection(NetworkConnection networkConnection)
-    {
+    public final void setNetworkConnection(NetworkConnection networkConnection) {
         setNetworkConnection(new NetworkConnection[] { networkConnection });
     }
 
@@ -583,10 +579,10 @@ public class Device
      * Get the <code>NetworkConnection</code> objects associated with this
      * device. These will coincide with the TCP ports used by the device.
      * 
-     * @param An array of <code>NetworkConnection</code> objects.
+     * @param An
+     *                array of <code>NetworkConnection</code> objects.
      */
-    public final void setNetworkConnection(NetworkConnection[] networkConnection)
-    {
+    public final void setNetworkConnection(NetworkConnection[] networkConnection) {
         for (int i = 0; i < networkConnection.length; i++)
             networkConnection[i].setDevice(this);
 
@@ -595,27 +591,25 @@ public class Device
 
     /**
      * The AssociationReaper will check for idle associations. This time period
-     * (in milliseconds) defines how often the reaper will check this
-     * device's associations for idleness.
+     * (in milliseconds) defines how often the reaper will check this device's
+     * associations for idleness.
      * 
      * @return An int signifying association idle check period in milliseconds.
      */
-    public final int getAssociationReaperPeriod()
-    {
+    public final int getAssociationReaperPeriod() {
         return associationReaperPeriod;
     }
 
     /**
      * The AssociationReaper will check for idle associations. This time period
-     * (in milliseconds) defines how often the reaper will check this
-     * device's associations for idleness.
+     * (in milliseconds) defines how often the reaper will check this device's
+     * associations for idleness.
      * 
      * @param associationReaperPeriod
-     *            An int signifying association idle check period in
-     *            milliseconds.
+     *                An int signifying association idle check period in
+     *                milliseconds.
      */
-    public final void setAssociationReaperPeriod(int associationReaperPeriod)
-    {
+    public final void setAssociationReaperPeriod(int associationReaperPeriod) {
         this.associationReaperPeriod = associationReaperPeriod;
     }
 
@@ -624,12 +618,13 @@ public class Device
      * Alternatively you may initialize the secure socket layer context by
      * {@link #initTLS}.
      * 
-     * @param sslContext initialized <code>SSLContext</code>
+     * @param sslContext
+     *                initialized <code>SSLContext</code>
      */
     public final void setSSLContext(SSLContext sslContext) {
         this.sslContext = sslContext;
     }
-    
+
     /**
      * Get the secure socket layer context set by {@link #setSSLContext} or
      * initialized by {@link #initTLS}.
@@ -639,21 +634,22 @@ public class Device
     public final SSLContext getSSLContext() {
         return sslContext;
     }
-    
+
     /**
      * Initialize transport layer security (TLS) for network interactions using
      * the device's certificate (as returned by
      * <code>getThisNodeCertificate()</code>).
      * 
-     * @param key The <code>KeyStore</code> containing the keys needed for
-     *            secure network interaction with another device.
-     * @param password A char array containing the password used to access the
-     *            key.
+     * @param key
+     *                The <code>KeyStore</code> containing the keys needed for
+     *                secure network interaction with another device.
+     * @param password
+     *                A char array containing the password used to access the
+     *                key.
      * @throws GeneralSecurityException
      */
     public void initTLS(KeyStore key, char[] password)
-            throws GeneralSecurityException
-    {
+            throws GeneralSecurityException {
         KeyStore trust = KeyStore.getInstance(KeyStore.getDefaultType());
         addCertificate(trust, getThisNodeCertificate());
         addCertificate(trust, getAuthorizedNodeCertificate());
@@ -664,7 +660,8 @@ public class Device
             throws KeyStoreException {
         if (certs != null) {
             for (int i = 0; i < certs.length; i++)
-                trust.setCertificateEntry(certs[i].getSubjectDN().getName(), certs[i]);
+                trust.setCertificateEntry(certs[i].getSubjectDN().getName(),
+                        certs[i]);
         }
     }
 
@@ -673,17 +670,19 @@ public class Device
      * the trusted material (certificates, etc.) contained in the "trust"
      * parameter..
      * 
-     * @param key The <code>KeyStore</code> containing the keys needed for
-     *            secure network interaction with another device.
-     * @param password A char array containing the password used to access the
-     *            key.
-     * @param trust The <code>KeyStore</code> object containing the source of
-     *            certificates and trusted material.
+     * @param key
+     *                The <code>KeyStore</code> containing the keys needed for
+     *                secure network interaction with another device.
+     * @param password
+     *                A char array containing the password used to access the
+     *                key.
+     * @param trust
+     *                The <code>KeyStore</code> object containing the source
+     *                of certificates and trusted material.
      * @throws GeneralSecurityException
      */
     public void initTLS(KeyStore key, char[] password, KeyStore trust)
-            throws GeneralSecurityException
-    {
+            throws GeneralSecurityException {
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
                 .getDefaultAlgorithm());
         kmf.init(key, password);
@@ -699,14 +698,13 @@ public class Device
     /**
      * Bind to a socket and start listening for DICOM associations.
      * 
-     * @param executor The <code>Executor</code> threading implementation to
-     *            use when binding to a socket.
+     * @param executor
+     *                The <code>Executor</code> threading implementation to
+     *                use when binding to a socket.
      * @throws IOException
      */
-    public void startListening(Executor executor) throws IOException
-    {
-        for (int i = 0; i < networkConnection.length; i++)
-        {
+    public void startListening(Executor executor) throws IOException {
+        for (int i = 0; i < networkConnection.length; i++) {
             NetworkConnection c = networkConnection[i];
             if (c.isInstalled() && c.isListening())
                 c.bind(executor);
@@ -716,10 +714,8 @@ public class Device
     /**
      * Unbind from all active socket connections.
      */
-    public void stopListening()
-    {
-        for (int i = 0; i < networkConnection.length; i++)
-        {
+    public void stopListening() {
+        for (int i = 0; i < networkConnection.length; i++) {
             NetworkConnection c = networkConnection[i];
             c.unbind();
         }
@@ -729,14 +725,13 @@ public class Device
      * Get a specific <code>NetworkApplicationEntity</code> object by it's AE
      * title.
      * 
-     * @param aet A String containing the AE title.
+     * @param aet
+     *                A String containing the AE title.
      * @return The <code>NetworkApplicationEntity</code> corresponding to the
      *         aet parameter.
      */
-    public NetworkApplicationEntity getNetworkApplicationEntity(String aet)
-    {
-        for (int i = 0; i < networkAE.length; i++)
-        {
+    public NetworkApplicationEntity getNetworkApplicationEntity(String aet) {
+        for (int i = 0; i < networkAE.length; i++) {
             NetworkApplicationEntity ae = networkAE[i];
             String aeti = ae.getAETitle();
             if (aeti == null || aeti.equals(aet))

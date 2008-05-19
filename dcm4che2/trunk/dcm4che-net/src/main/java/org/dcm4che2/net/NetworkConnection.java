@@ -71,29 +71,28 @@ import org.slf4j.LoggerFactory;
  * called and calling AE-titles.
  * 
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-04-01 05:03:40 -0500 (Tue, 01 Apr
+ *          2008) $
  * @since Nov 24, 2005
  */
 public class NetworkConnection {
     static Logger log = LoggerFactory.getLogger(NetworkConnection.class);
 
     public static final int DEFAULT = 0;
-    
+
     public static final int ONLY_ACTIVE = -1;
-    
+
     private static final String[] TLS_NULL = { "SSL_RSA_WITH_NULL_SHA" };
-    
-    private static final String[] TLS_3DES_EDE_CBC = { 
-            "SSL_RSA_WITH_3DES_EDE_CBC_SHA" };
-    
-    private static final String[] TLS_AES_128_CBC = { 
-            "TLS_RSA_WITH_AES_128_CBC_SHA",
-            "SSL_RSA_WITH_3DES_EDE_CBC_SHA" };
-    
+
+    private static final String[] TLS_3DES_EDE_CBC = { "SSL_RSA_WITH_3DES_EDE_CBC_SHA" };
+
+    private static final String[] TLS_AES_128_CBC = {
+            "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" };
+
     private static String[] TLS_WO_SSLv2 = { "TLSv1", "SSLv3" };
 
     private static String[] TLS_AND_SSLv2 = { "TLSv1", "SSLv3", "SSLv2Hello" };
-       
+
     private String commonName;
 
     private String hostname;
@@ -145,9 +144,8 @@ public class NetworkConnection {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("NetworkConnection[");
-        sb.append(addr != null ? addr.toString() : hostname)
-            .append(':')
-            .append(port);
+        sb.append(addr != null ? addr.toString() : hostname).append(':')
+                .append(port);
         if (tlsCipherSuite.length != 0)
             sb.append(", TLS").append(Arrays.asList(tlsCipherSuite));
         if (installed != null)
@@ -173,7 +171,7 @@ public class NetworkConnection {
      * to.
      * 
      * @param device
-     *            The owning <code>Device</code> object.
+     *                The owning <code>Device</code> object.
      */
     final void setDevice(Device device) {
         this.device = device;
@@ -196,13 +194,14 @@ public class NetworkConnection {
      * sufficiently qualified to be unambiguous for any client DNS user.
      * 
      * @param hostname
-     *            A String containing the host name.
+     *                A String containing the host name.
      */
     public final void setHostname(String hostname) {
         this.hostname = hostname;
         try {
             addr = InetAddress.getByName(hostname);
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e) {
             addr = null;
             log.warn("unkown host name: {}", hostname);
         }
@@ -223,7 +222,7 @@ public class NetworkConnection {
      * name or any unique sequence of characters.
      * 
      * @param name
-     *            A String containing the name.
+     *                A String containing the name.
      */
     public final void setCommonName(String name) {
         this.commonName = name;
@@ -248,7 +247,8 @@ public class NetworkConnection {
      * A port number of <code>zero</code> will let the system pick up an
      * ephemeral port.
      * 
-     * @param port The port number
+     * @param port
+     *                The port number
      */
     public final void setPort(int port) {
         if (port < ONLY_ACTIVE || port > 0xFFFF) {
@@ -256,7 +256,7 @@ public class NetworkConnection {
         }
         this.port = port;
     }
-    
+
     /**
      * The TLS CipherSuites that are supported on this particular connection.
      * TLS CipherSuites shall be described using an RFC-2246 string
@@ -274,7 +274,7 @@ public class NetworkConnection {
      * representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')
      * 
      * @param tlsCipherSuite
-     *            A String array containing the supported cipher suites
+     *                A String array containing the supported cipher suites
      */
     public final void setTlsCipherSuite(String[] tlsCipherSuite) {
         checkNotNull("tlsCipherSuite", tlsCipherSuite);
@@ -288,7 +288,7 @@ public class NetworkConnection {
             if (a[i] == null)
                 throw new NullPointerException(name + '[' + i + ']');
     }
-    
+
     public final void setTlsWithoutEncyrption() {
         this.tlsCipherSuite = TLS_NULL;
     }
@@ -320,7 +320,7 @@ public class NetworkConnection {
      * is inherited from the device.
      * 
      * @param installed
-     *            True if the NetworkConnection is installed on the network.
+     *                True if the NetworkConnection is installed on the network.
      */
     public final void setInstalled(boolean installed) {
         this.installed = Boolean.valueOf(installed);
@@ -368,7 +368,7 @@ public class NetworkConnection {
      * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
      * 
      * @param An
-     *            int value containing the milliseconds.
+     *                int value containing the milliseconds.
      */
     public final int getRequestTimeout() {
         return requestTimeout;
@@ -378,7 +378,7 @@ public class NetworkConnection {
      * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
      * 
      * @param timeout
-     *            An int value containing the milliseconds.
+     *                An int value containing the milliseconds.
      */
     public final void setRequestTimeout(int timeout) {
         if (timeout < 0)
@@ -399,7 +399,7 @@ public class NetworkConnection {
      * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
      * 
      * @param timeout
-     *            An int value containing the milliseconds.
+     *                An int value containing the milliseconds.
      */
     public final void setReleaseTimeout(int timeout) {
         if (timeout < 0)
@@ -420,7 +420,7 @@ public class NetworkConnection {
      * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
      * 
      * @param delay
-     *            An int value containing the milliseconds.
+     *                An int value containing the milliseconds.
      */
     public final void setSocketCloseDelay(int delay) {
         if (delay < 0)
@@ -441,7 +441,7 @@ public class NetworkConnection {
      * Set the SO_RCVBUF socket option to specified value in KB.
      * 
      * @param bufferSize
-     *            An int value containing the buffer size in KB.
+     *                An int value containing the buffer size in KB.
      */
     public final void setReceiveBufferSize(int size) {
         if (size < 0)
@@ -462,7 +462,7 @@ public class NetworkConnection {
      * Set the SO_SNDBUF socket option to specified value in KB,
      * 
      * @param bufferSize
-     *            An int value containing the buffer size in KB.
+     *                An int value containing the buffer size in KB.
      */
     public final void setSendBufferSize(int size) {
         if (size < 0)
@@ -485,8 +485,8 @@ public class NetworkConnection {
      * as part of its network communication.
      * 
      * @param tcpNoDelay
-     *            boolean True if TCP no delay (Nagle's algorithm) should be
-     *            used.
+     *                boolean True if TCP no delay (Nagle's algorithm) should be
+     *                used.
      */
     public final void setTcpNoDelay(boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
@@ -507,7 +507,7 @@ public class NetworkConnection {
     public final void setTlsProtocol(String[] tlsProtocol) {
         this.tlsProtocol = tlsProtocol.clone();
     }
-    
+
     public final void enableSSLv2Hello() {
         this.tlsProtocol = TLS_AND_SSLv2;
     }
@@ -515,7 +515,7 @@ public class NetworkConnection {
     public final void disableSSLv2Hello() {
         this.tlsProtocol = TLS_WO_SSLv2;
     }
-    
+
     private InetSocketAddress getEndPoint() {
         return new InetSocketAddress(addr, port);
     }
@@ -539,17 +539,18 @@ public class NetworkConnection {
     public final ServerSocket getServer() {
         return server;
     }
-    
+
     /**
      * Create a socket as an SCU and connect to a peer network connection (the
      * SCP).
      * 
      * @param peerConfig
-     *            The peer <code>NetworkConnection</code> object that this
-     *            network connection is connecting to.
+     *                The peer <code>NetworkConnection</code> object that this
+     *                network connection is connecting to.
      * @return Socket The created socket object.
      * @throws IOException
-     *             If the connection cannot be made due to network IO reasons.
+     *                 If the connection cannot be made due to network IO
+     *                 reasons.
      */
     public Socket connect(NetworkConnection peerConfig) throws IOException {
         if (device == null)
@@ -573,23 +574,25 @@ public class NetworkConnection {
      * SCU).
      * 
      * @param s
-     *            The <code>Socket</code> object.
+     *                The <code>Socket</code> object.
      * @throws SocketException
-     *             If the options cannot be set on the socket.
+     *                 If the options cannot be set on the socket.
      */
     protected void setSocketOptions(Socket s) throws SocketException {
         int size;
         size = s.getReceiveBufferSize();
         if (receiveBufferSize == DEFAULT) {
             receiveBufferSize = size;
-        } else if (receiveBufferSize != size) {
+        }
+        else if (receiveBufferSize != size) {
             s.setReceiveBufferSize(size);
             receiveBufferSize = s.getReceiveBufferSize();
         }
         size = s.getSendBufferSize();
         if (sendBufferSize == DEFAULT) {
             sendBufferSize = size;
-        } else if (sendBufferSize != size) {
+        }
+        else if (sendBufferSize != size) {
             s.setSendBufferSize(size);
             sendBufferSize = s.getSendBufferSize();
         }
@@ -603,11 +606,11 @@ public class NetworkConnection {
      * accept loop.
      * 
      * @param executor
-     *            The <code>Executor</code> implementation that association
-     *            threads should run within. The executor determines the
-     *            threading model.
+     *                The <code>Executor</code> implementation that
+     *                association threads should run within. The executor
+     *                determines the threading model.
      * @throws IOException
-     *             If there is a problem with the network interaction.
+     *                 If there is a problem with the network interaction.
      */
     public synchronized void bind(final Executor executor) throws IOException {
         if (device == null)
@@ -635,7 +638,8 @@ public class NetworkConnection {
                             executor.execute(a);
                         }
                     }
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     // assume exception was raised by graceful stop of server
                 }
                 log.info("Stop listening on {}", sockAddr);
@@ -648,7 +652,7 @@ public class NetworkConnection {
      * this Network Connection.
      * 
      * @param s
-     *            The socket connection.
+     *                The socket connection.
      * @return boolean True if association negotiation should proceed.
      */
     protected boolean checkConnection(Socket s) {
@@ -669,7 +673,8 @@ public class NetworkConnection {
                     return false;
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.debug("Caught IOException closing socket from {}", ip);
             return false;
         }
@@ -688,9 +693,9 @@ public class NetworkConnection {
      * Decrement the number of active associations.
      */
     protected void decListenerConnectionCount() {
-        if (associationCount == 0) 
+        if (associationCount == 0)
             return;
-        
+
         --associationCount;
     }
 
@@ -698,7 +703,8 @@ public class NetworkConnection {
      * Check to see if the specified number of associations has been exceeded.
      * 
      * @param maxAssociations
-     *            An int containing the maximum number of associations allowed.
+     *                An int containing the maximum number of associations
+     *                allowed.
      * @return boolean True if the max association count has not been exceeded.
      */
     public boolean checkConnectionCountWithinLimit() {
@@ -710,7 +716,8 @@ public class NetworkConnection {
             return;
         try {
             server.close();
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
         associationCount = 0;
@@ -759,7 +766,7 @@ public class NetworkConnection {
      * thread and try to negotiate an association.
      * 
      * @param excludeConnectionsFrom
-     *            the list of IP addresses which should be ignored.
+     *                the list of IP addresses which should be ignored.
      */
     public void setExcludeConnectionsFrom(List excludeConnectionsFrom) {
         this.excludeConnectionsFrom = excludeConnectionsFrom;
@@ -780,7 +787,7 @@ public class NetworkConnection {
      * Connection will allow.
      * 
      * @param maxScpAssociations
-     *            An int which defines the max associations.
+     *                An int which defines the max associations.
      */
     public void setMaxScpAssociations(int maxListenerAssociations) {
         this.maxScpAssociations = maxListenerAssociations;

@@ -55,20 +55,24 @@ import org.dcm4che2.net.pdu.ExtendedNegotiation;
  * @version $Reversion$ $Date$
  * @since Oct 7, 2005
  */
-public class TransferCapability
-{
+public class TransferCapability {
 
     /** String representation of the DICOM SCU role. */
     public static final String SCU = "SCU";
+
     /** String representation of the DICOM SCP role. */
     public static final String SCP = "SCP";
 
     private static byte[] NO_EXT_INFO = {};
 
     protected String commonName;
+
     protected String sopClass;
+
     protected boolean scp;
+
     protected String[] transferSyntax = {};
+
     protected byte[] extInfo = {};
 
     /**
@@ -82,15 +86,17 @@ public class TransferCapability
      * Creates the <code>TransferCapability</code> instance with the specified
      * presentation context..
      * 
-     * @param sopClass A String containing the SOP Class UID.
-     * @param transferSyntax A String array containing the acceptable transfer
-     *            syntaxes for <tt>sopClass</tt>.
-     * @param role A String defining the role selection (SCU or SCP) for this
-     *            <code>TransferCapability</code>instance
+     * @param sopClass
+     *                A String containing the SOP Class UID.
+     * @param transferSyntax
+     *                A String array containing the acceptable transfer syntaxes
+     *                for <tt>sopClass</tt>.
+     * @param role
+     *                A String defining the role selection (SCU or SCP) for this
+     *                <code>TransferCapability</code>instance
      */
     public TransferCapability(String sopClass, String[] transferSyntax,
-            String role)
-    {
+            String role) {
         setSopClass(sopClass);
         setTransferSyntax(transferSyntax);
         setRole(role);
@@ -102,8 +108,7 @@ public class TransferCapability
      * 
      * @return A String containing the common name.
      */
-    public final String getCommonName()
-    {
+    public final String getCommonName() {
         return commonName;
     }
 
@@ -111,10 +116,10 @@ public class TransferCapability
      * Get the name of the Transfer Capability object. Can be a meaningful name
      * or any unqiue sequence of characters.
      * 
-     * @param commonName A String containing the common name.
+     * @param commonName
+     *                A String containing the common name.
      */
-    public final void setCommonName(String commonName)
-    {
+    public final void setCommonName(String commonName) {
         this.commonName = commonName;
     }
 
@@ -124,21 +129,21 @@ public class TransferCapability
      * @return A String defining the role selection (SCU or SCP) for this
      *         <code>TransferCapability</code>instance
      */
-    public final String getRole()
-    {
+    public final String getRole() {
         return scp ? SCP : SCU;
     }
 
     /**
      * Set the role selection for this <code>TransferCapability</code>instance.
      * 
-     * @param role A String defining the role selection (SCU or SCP) for this
-     *            <code>TransferCapability</code>instance
-     * @throws IllegalArgumentException If the role is not equal to <tt>SCU</tt>
-     *             or <tt>SCP</tt>.
+     * @param role
+     *                A String defining the role selection (SCU or SCP) for this
+     *                <code>TransferCapability</code>instance
+     * @throws IllegalArgumentException
+     *                 If the role is not equal to <tt>SCU</tt> or
+     *                 <tt>SCP</tt>.
      */
-    public final void setRole(String role)
-    {
+    public final void setRole(String role) {
         if (role == null)
             throw new NullPointerException("Role");
 
@@ -156,8 +161,7 @@ public class TransferCapability
      * 
      * @return true if SCP is the selected role of this object.
      */
-    public final boolean isSCP()
-    {
+    public final boolean isSCP() {
         return scp;
     }
 
@@ -167,8 +171,7 @@ public class TransferCapability
      * 
      * @return true if SCU is the selected role of this object.
      */
-    public final boolean isSCU()
-    {
+    public final boolean isSCU() {
         return !scp;
     }
 
@@ -177,18 +180,17 @@ public class TransferCapability
      * 
      * @return A String containing the SOP Class UID.
      */
-    public final String getSopClass()
-    {
+    public final String getSopClass() {
         return sopClass;
     }
 
     /**
      * Set the SOP Class of this Transfer Capability object.
      * 
-     * @param sopClass A String containing the SOP Class UID.
+     * @param sopClass
+     *                A String containing the SOP Class UID.
      */
-    public final void setSopClass(String sopClass)
-    {
+    public final void setSopClass(String sopClass) {
         if (sopClass == null)
             throw new NullPointerException("sopClass");
         this.sopClass = sopClass;
@@ -208,16 +210,14 @@ public class TransferCapability
      * Set the transfer syntax(es) that may be requested as an SCU or that are
      * offered as an SCP.
      * 
-     * @param transferSyntax String array containing the transfer syntaxes.
+     * @param transferSyntax
+     *                String array containing the transfer syntaxes.
      */
-    public final void setTransferSyntax(String[] transferSyntax)
-    {
+    public final void setTransferSyntax(String[] transferSyntax) {
         if (transferSyntax.length == 0)
             throw new IllegalArgumentException("transferSyntax.length = 0");
-        for (int i = 0; i < transferSyntax.length; i++)
-        {
-            if (transferSyntax[i] == null)
-            {
+        for (int i = 0; i < transferSyntax.length; i++) {
+            if (transferSyntax[i] == null) {
                 throw new NullPointerException("transferSyntax[" + i + "]");
             }
         }
@@ -236,8 +236,7 @@ public class TransferCapability
      * @param field
      * @return
      */
-    public boolean getExtInfoBoolean(int field)
-    {
+    public boolean getExtInfoBoolean(int field) {
         return extInfo != null && extInfo.length > field && extInfo[field] != 0;
     }
 
@@ -245,8 +244,7 @@ public class TransferCapability
      * @param field
      * @return
      */
-    public int getExtInfoInt(int field)
-    {
+    public int getExtInfoInt(int field) {
         return extInfo != null && extInfo.length > field ? extInfo[field] & 0xff
                 : 0;
     }
@@ -255,8 +253,7 @@ public class TransferCapability
      * @param field
      * @param b
      */
-    public void setExtInfoBoolean(int field, boolean b)
-    {
+    public void setExtInfoBoolean(int field, boolean b) {
         setExtInfoInt(field, b ? 1 : 0);
     }
 
@@ -264,24 +261,22 @@ public class TransferCapability
      * @param field
      * @param value
      */
-    public void setExtInfoInt(int field, int value)
-    {
+    public void setExtInfoInt(int field, int value) {
         extInfo[field] = (byte) value;
     }
 
     /**
      * Negotiate any extended negotiation items for the association.
      * 
-     * @param offered The <code>ExtendedNegotiation</code> that was offered.
+     * @param offered
+     *                The <code>ExtendedNegotiation</code> that was offered.
      * @return <code>ExtendedNegotiation</code> that was negotiated.
      */
-    protected ExtendedNegotiation negotiate(ExtendedNegotiation offered)
-    {
+    protected ExtendedNegotiation negotiate(ExtendedNegotiation offered) {
         if (offered == null || extInfo == null)
             return null;
         byte[] info = offered.getInformation();
-        for (int i = 0; i < info.length; i++)
-        {
+        for (int i = 0; i < info.length; i++) {
             info[i] &= getExtInfoInt(i);
         }
         return new ExtendedNegotiation(sopClass, info);

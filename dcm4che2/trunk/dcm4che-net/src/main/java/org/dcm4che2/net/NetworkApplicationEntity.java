@@ -77,41 +77,68 @@ import org.slf4j.LoggerFactory;
  * are separate Network AEs.
  * 
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2007-11-23 06:23:46 -0600 (Fri, 23 Nov
+ *          2007) $
  * @since Nov 25, 2005
  * 
  */
 public class NetworkApplicationEntity {
-    
-    private static Logger log = 
-            LoggerFactory.getLogger(NetworkApplicationEntity.class);
-    
+
+    private static Logger log = LoggerFactory
+            .getLogger(NetworkApplicationEntity.class);
+
     private boolean associationAcceptor;
+
     private boolean associationInitiator;
+
     private String aeTitle;
+
     private String description;
+
     private Object[] vendorData = {};
+
     private String[] applicationCluster = {};
+
     private String[] preferredCallingAETitle = {};
+
     private String[] preferredCalledAETitle = {};
+
     private String[] supportedCharacterSet = {};
+
     private Boolean installed;
+
     private int maxOpsInvoked;
+
     private int maxOpsPerformed;
+
     private int maxPDULengthReceive = 0x4000; // =16384
+
     private int maxPDULengthSend = 0x4000;
+
     private boolean packPDV;
+
     private int dimseRspTimeout = 60000;
+
     private int moveRspTimeout = 600000;
+
     private int idleTimeout = 60000;
+
     private List<String> reuseAssocationToAETitle = Collections.emptyList();
+
     private List<String> reuseAssocationFromAETitle = Collections.emptyList();
+
     private NetworkConnection[] networkConnection = {};
+
     private TransferCapability[] transferCapability = {};
+
     private boolean offerDefaultTSInSeparatePC;
+
     private UserIdentity userIdentity;
+
     private Device device;
+
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+
     private final List<Association> pool = new ArrayList<Association>();
 
     /**
@@ -127,7 +154,7 @@ public class NetworkApplicationEntity {
      * Set the device that is identified by this application entity.
      * 
      * @param device
-     *            The owning <code>Device</code>.
+     *                The owning <code>Device</code>.
      */
     final void setDevice(Device device) {
         this.device = device;
@@ -146,7 +173,7 @@ public class NetworkApplicationEntity {
      * Set the AE title for this Network AE.
      * 
      * @param aetitle
-     *            A String containing the AE title.
+     *                A String containing the AE title.
      */
     public final void setAETitle(String aetitle) {
         this.aeTitle = aetitle;
@@ -167,7 +194,7 @@ public class NetworkApplicationEntity {
      * neuroradiology.
      * 
      * @param cluster
-     *            A String array containing the names.
+     *                A String array containing the names.
      */
     public final void setApplicationCluster(String[] cluster) {
         this.applicationCluster = cluster;
@@ -187,8 +214,8 @@ public class NetworkApplicationEntity {
      * Set whether or not this network AE can accept associations.
      * 
      * @param acceptor
-     *            A boolean value. True if the Network AE can accept
-     *            associations, false otherwise.
+     *                A boolean value. True if the Network AE can accept
+     *                associations, false otherwise.
      */
     public final void setAssociationAcceptor(boolean acceptor) {
         this.associationAcceptor = acceptor;
@@ -208,8 +235,8 @@ public class NetworkApplicationEntity {
      * Set whether or not this network AE can initiate associations.
      * 
      * @param initiator
-     *            A boolean value. True if the Network AE can accept
-     *            associations, false otherwise.
+     *                A boolean value. True if the Network AE can accept
+     *                associations, false otherwise.
      */
     public final void setAssociationInitiator(boolean initiator) {
         this.associationInitiator = initiator;
@@ -228,7 +255,7 @@ public class NetworkApplicationEntity {
      * Set a description of this network AE.
      * 
      * @param description
-     *            A String containing the description.
+     *                A String containing the description.
      */
     public final void setDescription(String description) {
         this.description = description;
@@ -250,9 +277,9 @@ public class NetworkApplicationEntity {
      * Set whether or not this network AE is installed on a network.
      * 
      * @param installed
-     *            A Boolean value. True if the AE is installed on a network. If
-     *            not present, information about the installed status of the AE
-     *            is inherited from the device
+     *                A Boolean value. True if the AE is installed on a network.
+     *                If not present, information about the installed status of
+     *                the AE is inherited from the device
      */
     public final void setInstalled(boolean installed) {
         this.installed = Boolean.valueOf(installed);
@@ -273,7 +300,7 @@ public class NetworkApplicationEntity {
      * network AE.
      * 
      * @param nc
-     *            A <code>NetworkConnection</code> object.
+     *                A <code>NetworkConnection</code> object.
      */
     public final void setNetworkConnection(NetworkConnection nc) {
         setNetworkConnection(new NetworkConnection[] { nc });
@@ -284,7 +311,7 @@ public class NetworkApplicationEntity {
      * network AE.
      * 
      * @param nc
-     *            An array of <code>NetworkConnection</code> objects.
+     *                An array of <code>NetworkConnection</code> objects.
      */
     public final void setNetworkConnection(NetworkConnection[] nc) {
         this.networkConnection = nc;
@@ -317,7 +344,7 @@ public class NetworkApplicationEntity {
      * SCPs that this network AE title may interact with.
      * 
      * @param aet
-     *            A String containing the AE title to test.
+     *                A String containing the AE title to test.
      * @return A boolean value. True if the parameter is a preferred called AE
      *         title.
      */
@@ -338,7 +365,7 @@ public class NetworkApplicationEntity {
      * SCPs that this network AE title may interact with.
      * 
      * @param aets
-     *            A String array containing the preferred called AE titles.
+     *                A String array containing the preferred called AE titles.
      */
     public final void setPreferredCalledAETitle(String[] aets) {
         this.preferredCalledAETitle = aets;
@@ -376,7 +403,7 @@ public class NetworkApplicationEntity {
      * not prohibit other SCUs from making associations.
      * 
      * @param aet
-     *            A String containing the AE title to test.
+     *                A String containing the AE title to test.
      * @return A boolean value. True if the parameter is a preferred calling AE
      *         title.
      */
@@ -391,7 +418,7 @@ public class NetworkApplicationEntity {
      * associations.
      * 
      * @param aets
-     *            A String array containing the preferred calling AE titles.
+     *                A String array containing the preferred calling AE titles.
      */
     public final void setPreferredCallingAETitle(String[] aets) {
         this.preferredCallingAETitle = aets;
@@ -418,7 +445,7 @@ public class NetworkApplicationEntity {
      * repertoire (ISO IR 6).
      * 
      * @param characterSets
-     *            A String array of the supported character sets.
+     *                A String array of the supported character sets.
      */
     public final void setSupportedCharacterSet(String[] characterSets) {
         this.supportedCharacterSet = characterSets;
@@ -439,7 +466,7 @@ public class NetworkApplicationEntity {
      * information, etc.) that this network AE may make use of.
      * 
      * @param transferCapability
-     *            An array of <code>TransferCapability</code> objects.
+     *                An array of <code>TransferCapability</code> objects.
      */
     public final void setTransferCapability(
             TransferCapability[] transferCapability) {
@@ -468,7 +495,7 @@ public class NetworkApplicationEntity {
      * Set any vendor information or configuration specific to this network AE
      * 
      * @param vendorData
-     *            An Object array of the vendor data.
+     *                An Object array of the vendor data.
      */
     public final void setVendorData(Object[] vendorData) {
         this.vendorData = vendorData;
@@ -489,7 +516,7 @@ public class NetworkApplicationEntity {
      * asynchronously as an SCU. Default is 0 (unlimited).
      * 
      * @param maxOpsInvoked
-     *            An int value containing the max ops.
+     *                An int value containing the max ops.
      */
     public final void setMaxOpsInvoked(int maxOpsInvoked) {
         this.maxOpsInvoked = maxOpsInvoked;
@@ -510,7 +537,7 @@ public class NetworkApplicationEntity {
      * asynchronously as an SCP. Default is 0 (unlimited).
      * 
      * @param maxOpsPerformed
-     *            An int value containing the max ops.
+     *                An int value containing the max ops.
      */
     public final void setMaxOpsPerformed(int maxOpsPerformed) {
         this.maxOpsPerformed = maxOpsPerformed;
@@ -542,7 +569,7 @@ public class NetworkApplicationEntity {
      * Defaults to 16364.
      * 
      * @param maxPDULengthReceive
-     *            An int signifying the max PDU length.
+     *                An int signifying the max PDU length.
      */
     public final void setMaxPDULengthReceive(int maxPDULengthReceive) {
         this.maxPDULengthReceive = maxPDULengthReceive;
@@ -563,7 +590,7 @@ public class NetworkApplicationEntity {
      * Defaults to 16364.
      * 
      * @param maxPDULengthSend
-     *            An int signifying the max PDU length.
+     *                An int signifying the max PDU length.
      */
     public final void setMaxPDULengthSend(int maxPDULengthSend) {
         this.maxPDULengthSend = maxPDULengthSend;
@@ -585,8 +612,8 @@ public class NetworkApplicationEntity {
      * false.
      * 
      * @param packPDV
-     *            A boolean value. If true, this network AE will pack command
-     *            and data PDV in one P-DATA-TF PDU when sending.
+     *                A boolean value. If true, this network AE will pack
+     *                command and data PDV in one P-DATA-TF PDU when sending.
      */
     public final void setPackPDV(boolean packPDV) {
         this.packPDV = packPDV;
@@ -607,7 +634,7 @@ public class NetworkApplicationEntity {
      * association. Default 60 seconds (60000 milliseconds).
      * 
      * @param dimseRspTimeout
-     *            An int value signifying the timeout in milliseconds.
+     *                An int value signifying the timeout in milliseconds.
      */
     public final void setDimseRspTimeout(int dimseRspTimeout) {
         this.dimseRspTimeout = dimseRspTimeout;
@@ -628,7 +655,8 @@ public class NetworkApplicationEntity {
      * Default 60 seconds (60000 milliseconds).
      * 
      * @param dimseRspTimeout
-     *            An int value signifying the max idle period in milliseconds.
+     *                An int value signifying the max idle period in
+     *                milliseconds.
      */
     public final void setIdleTimeout(int idleTimeout) {
         this.idleTimeout = idleTimeout;
@@ -651,7 +679,7 @@ public class NetworkApplicationEntity {
      * 60 seconds (60000 milliseconds).
      * 
      * @param dimseRspTimeout
-     *            An int value signifying the timeout in milliseconds.
+     *                An int value signifying the timeout in milliseconds.
      */
     public final void setMoveRspTimeout(int moveRspTimeout) {
         this.moveRspTimeout = moveRspTimeout;
@@ -676,13 +704,13 @@ public class NetworkApplicationEntity {
      * reuse an existing association object as opposed to creating a new one.
      * 
      * @param reuseAssocationFromAETitle
-     *            String array containing the AE titles that association reuse
-     *            will be enabled for.
+     *                String array containing the AE titles that association
+     *                reuse will be enabled for.
      */
     public final void setReuseAssocationFromAETitle(
             String[] reuseAssocationFromAETitle) {
-        this.reuseAssocationFromAETitle = 
-            Arrays.asList(reuseAssocationFromAETitle);
+        this.reuseAssocationFromAETitle = Arrays
+                .asList(reuseAssocationFromAETitle);
     }
 
     /**
@@ -704,16 +732,16 @@ public class NetworkApplicationEntity {
      * an existing association object as opposed to creating a new one.
      * 
      * @param reuseAssocationToAETitle
-     *            String array containing the AE titles that association reuse
-     *            will be enabled for.
+     *                String array containing the AE titles that association
+     *                reuse will be enabled for.
      */
     public final void setReuseAssocationToAETitle(
             String[] reuseAssocationToAETitle) {
         this.reuseAssocationToAETitle = Arrays.asList(reuseAssocationToAETitle);
-        
+
     }
 
-    /** 
+    /**
      * Get User Identity used for initiating associations, if no User Identity
      * is specified in the connect method. Returns <code>null</code>, if no
      * User Identity is associated with this NetworkApplicationEntity.
@@ -728,11 +756,12 @@ public class NetworkApplicationEntity {
         return userIdentity;
     }
 
-    /** 
+    /**
      * Set User Identity used for initiating associations, if no User Identity
      * is specified in the connect method.
      * 
-     * @param  User Identity associated with this NetworkApplicationEntity.
+     * @param User
+     *                Identity associated with this NetworkApplicationEntity.
      * 
      * @see #getUserIdentity
      * @see #connect(NetworkApplicationEntity, Executor)
@@ -746,19 +775,19 @@ public class NetworkApplicationEntity {
      * Open a connection to the remote AE, using the passed in threading model.
      * If a User Identity was associated with this NetworkApplicationEntity by
      * {@link #setUserIdentity(UserIdentity)}, corresponding User Identity
-     * Negotiation will be performed.
-     * This method will result in an association being opened (or re-used if so
-     * configured). This association is then returned for use.
+     * Negotiation will be performed. This method will result in an association
+     * being opened (or re-used if so configured). This association is then
+     * returned for use.
      * 
      * @param remoteAE
-     *            A <code>NetworkApplicationEntity</code> to connect to.
+     *                A <code>NetworkApplicationEntity</code> to connect to.
      * @param executor
-     *            An <code>Executor</code> implementation containing the
-     *            threading model to use for this connection/association.
+     *                An <code>Executor</code> implementation containing the
+     *                threading model to use for this connection/association.
      * @return An open <code>Association</code> object.
      * @throws ConfigurationException
-     *             If there is no compatible network connection between this AE
-     *             title and the one that it is connecting to.
+     *                 If there is no compatible network connection between this
+     *                 AE title and the one that it is connecting to.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -770,22 +799,22 @@ public class NetworkApplicationEntity {
 
     /**
      * Open a connection to the remote AE, using the passed in user identity
-     * Negotiation will be performed.
-     * This method will result in an association being opened (or re-used if so
-     * configured). This association is then returned for use.
+     * Negotiation will be performed. This method will result in an association
+     * being opened (or re-used if so configured). This association is then
+     * returned for use.
      * 
      * @param userIdentity
-     *            The <code>UserIdentity</code> notified to the Association
-     *            Acceptor by User Identity Negotiation.
+     *                The <code>UserIdentity</code> notified to the
+     *                Association Acceptor by User Identity Negotiation.
      * @param remoteAE
-     *            A <code>NetworkApplicationEntity</code> to connect to.
+     *                A <code>NetworkApplicationEntity</code> to connect to.
      * @param executor
-     *            An <code>Executor</code> implementation containing the
-     *            threading model to use for this connection/association.
+     *                An <code>Executor</code> implementation containing the
+     *                threading model to use for this connection/association.
      * @return An open <code>Association</code> object.
      * @throws ConfigurationException
-     *             If there is no compatible network connection between this AE
-     *             title and the one that it is connecting to.
+     *                 If there is no compatible network connection between this
+     *                 AE title and the one that it is connecting to.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -794,29 +823,28 @@ public class NetworkApplicationEntity {
             throws ConfigurationException, IOException, InterruptedException {
         return connect(userIdentity, remoteAE, executor, false);
     }
-    
+
     /**
      * Open a connection to the remote AE, using the passed in threading model.
      * If a User Identity was associated with this NetworkApplicationEntity by
      * {@link #setUserIdentity(UserIdentity)}, corresponding User Identity
-     * Negotiation will be performed.
-     * This method will result in an association being opened (or reused if so
-     * configured, and the "forceNew" parameter is false). This association is
-     * then returned for use.
+     * Negotiation will be performed. This method will result in an association
+     * being opened (or reused if so configured, and the "forceNew" parameter is
+     * false). This association is then returned for use.
      * 
      * @param remoteAE
-     *            A <code>NetworkApplicationEntity</code> to connect to.
+     *                A <code>NetworkApplicationEntity</code> to connect to.
      * @param executor
-     *            An <code>Executor</code> implementation containing the
-     *            threading model to use for this connection/association.
+     *                An <code>Executor</code> implementation containing the
+     *                threading model to use for this connection/association.
      * @param forceNew
-     *            A boolean value. If true, always create a new association,
-     *            ignoring any existing association re-use configuration that
-     *            has been set.
+     *                A boolean value. If true, always create a new association,
+     *                ignoring any existing association re-use configuration
+     *                that has been set.
      * @return An open <code>Association</code> object.
      * @throws ConfigurationException
-     *             If there is no compatible network connection between this AE
-     *             title and the one that it is connecting to.
+     *                 If there is no compatible network connection between this
+     *                 AE title and the one that it is connecting to.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -825,44 +853,44 @@ public class NetworkApplicationEntity {
             IOException, InterruptedException {
         return connect(userIdentity, remoteAE, executor, forceNew);
     }
-    
+
     /**
-     * Open a connection to the remote AE, using the passed in user identity
-     * and threading model.
-     * This method will result in an association being opened (or reused if so
-     * configured, and the "forceNew" parameter is false). This association is
-     * then returned for use.
+     * Open a connection to the remote AE, using the passed in user identity and
+     * threading model. This method will result in an association being opened
+     * (or reused if so configured, and the "forceNew" parameter is false). This
+     * association is then returned for use.
      * 
      * @param userIdentity
-     *            The <code>UserIdentity</code> notified to the Association
-     *            Acceptor by User Identity Negotiation.
+     *                The <code>UserIdentity</code> notified to the
+     *                Association Acceptor by User Identity Negotiation.
      * @param remoteAE
-     *            A <code>NetworkApplicationEntity</code> to connect to.
+     *                A <code>NetworkApplicationEntity</code> to connect to.
      * @param executor
-     *            An <code>Executor</code> implementation containing the
-     *            threading model to use for this connection/association.
+     *                An <code>Executor</code> implementation containing the
+     *                threading model to use for this connection/association.
      * @param forceNew
-     *            A boolean value. If true, always create a new association,
-     *            ignoring any existing association re-use configuration that
-     *            has been set.
+     *                A boolean value. If true, always create a new association,
+     *                ignoring any existing association re-use configuration
+     *                that has been set.
      * @return An open <code>Association</code> object.
      * @throws ConfigurationException
-     *             If there is no compatible network connection between this AE
-     *             title and the one that it is connecting to.
+     *                 If there is no compatible network connection between this
+     *                 AE title and the one that it is connecting to.
      * @throws IOException
      * @throws InterruptedException
      */
     public Association connect(UserIdentity userIdentity,
             NetworkApplicationEntity remoteAE, Executor executor,
-            boolean forceNew)
-            throws ConfigurationException, IOException, InterruptedException {
+            boolean forceNew) throws ConfigurationException, IOException,
+            InterruptedException {
         final String remoteAET = remoteAE.getAETitle();
         if (!forceNew
                 && !pool.isEmpty()
-                && !(reuseAssocationToAETitle.isEmpty() 
-                        && reuseAssocationFromAETitle.isEmpty())) {
+                && !(reuseAssocationToAETitle.isEmpty() && reuseAssocationFromAETitle
+                        .isEmpty())) {
             synchronized (pool) {
-                for (Iterator<Association> iter = pool.iterator(); iter.hasNext();) {
+                for (Iterator<Association> iter = pool.iterator(); iter
+                        .hasNext();) {
                     Association as = iter.next();
                     if (!remoteAET.equals(as.getRemoteAET()))
                         continue;
@@ -908,10 +936,10 @@ public class NetworkApplicationEntity {
         aarq.setCallingAET(aeTitle);
         aarq.setCalledAET(remoteAE.getAETitle());
         aarq.setMaxPDULength(maxPDULengthReceive);
-        aarq.setMaxOpsInvoked(
-                minZeroAsMax(maxOpsInvoked, remoteAE.maxOpsPerformed));
-        aarq.setMaxOpsPerformed(
-                minZeroAsMax(maxOpsPerformed, remoteAE.maxOpsInvoked));
+        aarq.setMaxOpsInvoked(minZeroAsMax(maxOpsInvoked,
+                remoteAE.maxOpsPerformed));
+        aarq.setMaxOpsPerformed(minZeroAsMax(maxOpsPerformed,
+                remoteAE.maxOpsInvoked));
 
         LinkedHashMap<String, LinkedHashSet<String>> cuid2ts = new LinkedHashMap<String, LinkedHashSet<String>>();
         HashSet<String> scu = new HashSet<String>();
@@ -919,8 +947,7 @@ public class NetworkApplicationEntity {
         evaluateTC(aarq, cuid2ts, scu, scp, remoteAE.getTransferCapability());
         if (cuid2ts.isEmpty()) {
             log.info("No common Transfer Capability between local AE "
-                            + getAETitle() + " and remote AE "
-                            + remoteAE.getAETitle());
+                    + getAETitle() + " and remote AE " + remoteAE.getAETitle());
             PresentationContext pctx = new PresentationContext();
             pctx.setPCID(aarq.nextPCID());
             pctx.setAbstractSyntax(UID.VerificationSOPClass);
@@ -938,7 +965,8 @@ public class NetworkApplicationEntity {
         initPCwithRemainingTS(aarq, cuid2ts);
         for (Iterator<String> iter = scp.iterator(); iter.hasNext();) {
             String cuid = iter.next();
-            aarq.addRoleSelection(new RoleSelection(cuid , scu.contains(cuid), true));
+            aarq.addRoleSelection(new RoleSelection(cuid, scu.contains(cuid),
+                    true));
         }
         if (userIdentity != null) {
             aarq.setUserIdentity(userIdentity.getUserIdentityRQ());
@@ -969,7 +997,8 @@ public class NetworkApplicationEntity {
             LinkedHashSet<String> ts = cuid2ts.get(cuid);
             if (ts == null) {
                 cuid2ts.put(cuid, ts1);
-            } else {
+            }
+            else {
                 ts.addAll(ts1);
             }
             (tc.isSCP() ? scp : scu).add(cuid);
@@ -981,10 +1010,10 @@ public class NetworkApplicationEntity {
             }
         }
     }
-    
-    private int initPCwithUncompressedLETS(AAssociateRQ aarq, Map<String, LinkedHashSet<String>> cuid2ts,
-            int freePc) {
-         for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
+
+    private int initPCwithUncompressedLETS(AAssociateRQ aarq,
+            Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
+        for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
                 && iter.hasNext();) {
             Map.Entry e = (Entry) iter.next();
             String cuid = (String) e.getKey();
@@ -992,7 +1021,7 @@ public class NetworkApplicationEntity {
             boolean implicitVR = ts.remove(UID.ImplicitVRLittleEndian);
             boolean explicitVR = ts.remove(UID.ExplicitVRLittleEndian);
             if (!implicitVR && !explicitVR) {
-                continue;                
+                continue;
             }
             PresentationContext pctx = new PresentationContext();
             pctx.setPCID(aarq.nextPCID());
@@ -1012,17 +1041,19 @@ public class NetworkApplicationEntity {
             aarq.addPresentationContext(pctx);
             if (ts.isEmpty()) {
                 iter.remove();
-            } else {
+            }
+            else {
                 --freePc;
             }
         }
         return freePc;
     }
 
-    private void initPCwith1TS(AAssociateRQ aarq, Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
+    private void initPCwith1TS(AAssociateRQ aarq,
+            Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
         while (freePc > 0 && !cuid2ts.isEmpty()) {
-            for (Iterator iter = cuid2ts.entrySet().iterator(); 
-                    freePc > 0 && iter.hasNext();) {
+            for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
+                    && iter.hasNext();) {
                 Map.Entry e = (Entry) iter.next();
                 String cuid = (String) e.getKey();
                 LinkedHashSet ts = (LinkedHashSet) e.getValue();
@@ -1035,15 +1066,17 @@ public class NetworkApplicationEntity {
                 tsiter.remove();
                 if (ts.isEmpty()) {
                     iter.remove();
-                } else {
+                }
+                else {
                     --freePc;
                 }
             }
         }
     }
-    
-    private void initPCwithRemainingTS(AAssociateRQ aarq, Map<String, LinkedHashSet<String>> cuid2ts) {
-        for (Iterator iter = cuid2ts.entrySet().iterator(); iter.hasNext() 
+
+    private void initPCwithRemainingTS(AAssociateRQ aarq,
+            Map<String, LinkedHashSet<String>> cuid2ts) {
+        for (Iterator iter = cuid2ts.entrySet().iterator(); iter.hasNext()
                 && aarq.getNumberOfPresentationContexts() < 128;) {
             Map.Entry e = (Entry) iter.next();
             String cuid = (String) e.getKey();
@@ -1073,8 +1106,8 @@ public class NetworkApplicationEntity {
      * Register a <code>DicomService</code> with this network AE.
      * 
      * @param service
-     *            The <code>DicomService</code> that will respond to DICOM
-     *            requests.
+     *                The <code>DicomService</code> that will respond to DICOM
+     *                requests.
      */
     public void register(DicomService service) {
         serviceRegistry.register(service);
@@ -1084,7 +1117,7 @@ public class NetworkApplicationEntity {
      * Unregister (remove) a <code>DicomService</code> from this network AE.
      * 
      * @param service
-     *            The <code>DicomService</code> to unregister.
+     *                The <code>DicomService</code> to unregister.
      */
     public void unregister(DicomService service) {
         serviceRegistry.unregister(service);
@@ -1095,7 +1128,7 @@ public class NetworkApplicationEntity {
      * of associations.
      * 
      * @param a
-     *            The <code>Association</code> to add.
+     *                The <code>Association</code> to add.
      */
     void addToPool(Association a) {
         synchronized (pool) {
@@ -1108,7 +1141,7 @@ public class NetworkApplicationEntity {
      * pool of associations.
      * 
      * @param a
-     *            The <code>Association</code> to remove.
+     *                The <code>Association</code> to remove.
      */
     void removeFromPool(Association a) {
         synchronized (pool) {
@@ -1120,19 +1153,19 @@ public class NetworkApplicationEntity {
      * Perform the action associated with the given DICOM command object.
      * 
      * @param as
-     *            The <code>Association</code> to perform the operation
-     *            within.
+     *                The <code>Association</code> to perform the operation
+     *                within.
      * @param pcid
-     *            The presentation context ID for this operation.
+     *                The presentation context ID for this operation.
      * @param cmd
-     *            The <code>DicomObject</code> representing the command to
-     *            execute.
+     *                The <code>DicomObject</code> representing the command to
+     *                execute.
      * @param dataStream
-     *            The <code>PDVInputStream</code> used to interpret the
-     *            incoming/outgoing PDUs.
+     *                The <code>PDVInputStream</code> used to interpret the
+     *                incoming/outgoing PDUs.
      * @param tsuid
-     *            A String containing the transfer syntax that will be used in
-     *            this operation.
+     *                A String containing the transfer syntax that will be used
+     *                in this operation.
      * @throws IOException
      */
     void perform(Association as, int pcid, DicomObject cmd,
@@ -1144,15 +1177,15 @@ public class NetworkApplicationEntity {
      * Negotiate a DICOM association as an SCP.
      * 
      * @param a
-     *            The <code>Association</code> object containing the SCU and
-     *            network information.
+     *                The <code>Association</code> object containing the SCU
+     *                and network information.
      * @param rq
-     *            The <code>AAssociationRQ</code> object that was created when
-     *            the <code>PDVInputStream</code> sensed an association
-     *            request.
+     *                The <code>AAssociationRQ</code> object that was created
+     *                when the <code>PDVInputStream</code> sensed an
+     *                association request.
      * @return An <code>AAssociateAC</code> response object.
      * @throws AAssociateRJ
-     *             Thrown if the association request is rejected.
+     *                 Thrown if the association request is rejected.
      */
     AAssociateAC negotiate(Association a, AAssociateRQ rq) throws AAssociateRJ {
         if (!isAssociationAcceptor())
@@ -1173,7 +1206,8 @@ public class NetworkApplicationEntity {
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
         ac.setMaxPDULength(maxPDULengthReceive);
-        ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
+        ac
+                .setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
                         maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
@@ -1218,7 +1252,8 @@ public class NetworkApplicationEntity {
                 }
             }
             acpc.setResult(PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED);
-        } else {
+        }
+        else {
             acpc.setResult(PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED);
         }
         acpc.addTransferSyntax(rqpc.getTransferSyntax());
