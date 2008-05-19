@@ -77,7 +77,7 @@
       <delete dir="${build.dir}"/>
    </target>
 
-   <target name="main" depends="jar,jai_imageio_api.zip"
+   <target name="main" depends="jar"
            description="Compile and build JAR files (default target)"/>
 
    <target name="all" depends="clean,release"
@@ -218,11 +218,11 @@
       <mkdir dir="${build.lib.dir}"/>
       <jar jarfile="${build.lib.dir}/dcm4che.jar">
         	<manifest>
-				<attribute name="Class-Path" value="log4j.jar dcm4che-imageio-rle-2.0.14.jar jai_imageio.jar
-					clibwrapper_jiio.jar jai_imageio_api.zip"/>
+				<attribute name="Class-Path"
+					value="log4j.jar slf4j-api-1.4.3.jar slf4j-log4j12-1.4.3.jar dcm4che-imageio-rle-2.0.14.jar jai_imageio.jar clibwrapper_jiio.jar"/>
 				<attribute name="Implementation-Title" value="dcm4che"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
-				<attribute name="Implementation-Vendor" value="TIANI MEDGRAPH AG (gunter.zeilinger@tiani.com)"/>
+				<attribute name="Implementation-Vendor" value="dcm4che.org (gunterze@gmail.com)"/>
 	    	</manifest>
            <fileset dir="${build.classes.dir}"
                     includes="org/dcm4che*/**"
@@ -454,20 +454,12 @@
       </javadoc>     
    </target>
  
-   <target name="jai_imageio_api.zip"
-     description="Extract needed classes from jai_imagio.jar to jai_imageio.zip">
-     <zip zipfile="${build.lib.dir}/jai_imageio_api.zip">
-       <zipfileset src="${lib.dir}/jai_imageio.jar" 
-         includes="com/sun/media/imageio/stream/*,com/sun/media/imageio/plugins/jpeg2000/*"/>
-     </zip>
-   </target>
-   
-   <target name="release" depends="jar,doc,jai_imageio_api.zip"
+   <target name="release" depends="jar,doc"
            description="Build destribution ZIP file">
       <mkdir dir="${dist.dir}"/>
       <copy todir="${dist.dir}">
          <fileset dir="${build.dir}" includes="lib/**,bin/**,doc/**"/>
-         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,lib/dcm4che-imageio-rle-2.0.14.jar,bin/*"/>
+         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/slf4j-api-1.4.3.jar,lib/slf4j-log4j12-1.4.3.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,lib/dcm4che-imageio-rle-2.0.14.jar,bin/*"/>
          <fileset dir="${doc.dir}" excludes="BUILD,**/.nbattrs"/>
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>
