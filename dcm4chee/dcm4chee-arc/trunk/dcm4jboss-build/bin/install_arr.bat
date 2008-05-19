@@ -42,8 +42,6 @@ copy "%ARR_SERV%\deploy\arr-%ARR_DB%-ds.xml" "%DCM4CHEE_SERV%\deploy"
 copy "%DCM4CHEE_HOME%\doc\dcm4chee-auditlog-service.xml" "%DCM4CHEE_SERV%\deploy"
 
 copy "%ARR_SERV%\lib\dcm4che-core-2.0.14.jar" "%DCM4CHEE_SERV%\lib"
-copy "%ARR_SERV%\lib\slf4j-api-1.4.3.jar" "%DCM4CHEE_SERV%\lib"
-copy "%ARR_SERV%\lib\slf4j-log4j12-1.4.3.jar" "%DCM4CHEE_SERV%\lib"
 
 :end
 if "%OS%" == "Windows_NT" endlocal
