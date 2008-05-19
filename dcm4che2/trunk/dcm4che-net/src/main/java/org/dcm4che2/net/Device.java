@@ -21,7 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
- * Damien Evans <damien@theevansranch.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -145,7 +145,7 @@ public class Device {
      * 
      * @return A String containing the device name.
      */
-    public final String getDeviceName() {
+    public String getDeviceName() {
         return deviceName;
     }
 
@@ -158,7 +158,7 @@ public class Device {
      * @param deviceName
      *                A String containing the device name.
      */
-    public final void setDeviceName(String deviceName) {
+    public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
     }
 
@@ -167,7 +167,7 @@ public class Device {
      * 
      * @return A String containing the device description.
      */
-    public final String getDescription() {
+    public String getDescription() {
         return description;
     }
 
@@ -177,7 +177,7 @@ public class Device {
      * @param description
      *                A String containing the device description.
      */
-    public final void setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -186,7 +186,7 @@ public class Device {
      * 
      * @return A String containing the device manufacturer.
      */
-    public final String getManufacturer() {
+    public String getManufacturer() {
         return manufacturer;
     }
 
@@ -199,7 +199,7 @@ public class Device {
      * @param manufacturer
      *                A String containing the device manufacturer.
      */
-    public final void setManufacturer(String manufacturer) {
+    public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
     }
 
@@ -208,7 +208,7 @@ public class Device {
      * 
      * @return A String containing the device manufacturer model name.
      */
-    public final String getManufacturerModelName() {
+    public String getManufacturerModelName() {
         return manufacturerModelName;
     }
 
@@ -221,7 +221,7 @@ public class Device {
      * @param manufacturerModelName
      *                A String containing the device manufacturer model name.
      */
-    public final void setManufacturerModelName(String manufacturerModelName) {
+    public void setManufacturerModelName(String manufacturerModelName) {
         this.manufacturerModelName = manufacturerModelName;
     }
 
@@ -230,7 +230,7 @@ public class Device {
      * 
      * @return A String array containing the software versions.
      */
-    public final String[] getSoftwareVersion() {
+    public String[] getSoftwareVersion() {
         return softwareVersion;
     }
 
@@ -243,7 +243,7 @@ public class Device {
      * @param softwareVersion
      *                A String array containing the software versions.
      */
-    public final void setSoftwareVersion(String[] softwareVersion) {
+    public void setSoftwareVersion(String[] softwareVersion) {
         this.softwareVersion = softwareVersion;
     }
 
@@ -252,7 +252,7 @@ public class Device {
      * 
      * @return A String containing the station name.
      */
-    public final String getStationName() {
+    public String getStationName() {
         return stationName;
     }
 
@@ -265,7 +265,7 @@ public class Device {
      * @param stationName
      *                A String containing the station name.
      */
-    public final void setStationName(String stationName) {
+    public void setStationName(String stationName) {
         this.stationName = stationName;
     }
 
@@ -274,7 +274,7 @@ public class Device {
      * 
      * @return A String containing the serial number.
      */
-    public final String getDeviceSerialNumber() {
+    public String getDeviceSerialNumber() {
         return deviceSerialNumber;
     }
 
@@ -287,7 +287,7 @@ public class Device {
      * @param deviceSerialNumber
      *                A String containing the serial number.
      */
-    public final void setDeviceSerialNumber(String deviceSerialNumber) {
+    public void setDeviceSerialNumber(String deviceSerialNumber) {
         this.deviceSerialNumber = deviceSerialNumber;
     }
 
@@ -296,7 +296,7 @@ public class Device {
      * 
      * @return A String array containing the type codes of this device.
      */
-    public final String[] getPrimaryDeviceType() {
+    public String[] getPrimaryDeviceType() {
         return primaryDeviceType;
     }
 
@@ -309,7 +309,7 @@ public class Device {
      * 
      * @param primaryDeviceType
      */
-    public final void setPrimaryDeviceType(String[] primaryDeviceType) {
+    public void setPrimaryDeviceType(String[] primaryDeviceType) {
         this.primaryDeviceType = primaryDeviceType;
     }
 
@@ -319,7 +319,7 @@ public class Device {
      * 
      * @return A String array containing the institution name values.
      */
-    public final String[] getInstitutionName() {
+    public String[] getInstitutionName() {
         return institutionName;
     }
 
@@ -333,7 +333,7 @@ public class Device {
      * @param names
      *                A String array containing the institution name values.
      */
-    public final void setInstitutionName(String[] name) {
+    public void setInstitutionName(String[] name) {
         this.institutionName = name;
     }
 
@@ -342,7 +342,7 @@ public class Device {
      * 
      * @return A String array containing the institution address values.
      */
-    public final String[] getInstitutionAddress() {
+    public String[] getInstitutionAddress() {
         return institutionAddress;
     }
 
@@ -355,7 +355,7 @@ public class Device {
      * @param addr
      *                A String array containing the institution address values.
      */
-    public final void setInstitutionAddress(String[] addr) {
+    public void setInstitutionAddress(String[] addr) {
         this.institutionAddress = addr;
     }
 
@@ -364,7 +364,7 @@ public class Device {
      * 
      * @return A String array containing the dept. name values.
      */
-    public final String[] getInstitutionalDepartmentName() {
+    public String[] getInstitutionalDepartmentName() {
         return institutionalDepartmentName;
     }
 
@@ -377,7 +377,7 @@ public class Device {
      * @param name
      *                A String array containing the dept. name values.
      */
-    public final void setInstitutionalDepartmentName(String[] name) {
+    public void setInstitutionalDepartmentName(String[] name) {
         this.institutionalDepartmentName = name;
     }
 
@@ -386,7 +386,7 @@ public class Device {
      * 
      * @return A String containing the PID issuer value.
      */
-    public final String getIssuerOfPATIENT_ID() {
+    public String getIssuerOfPATIENT_ID() {
         return issuerOfPATIENT_ID;
     }
 
@@ -400,7 +400,7 @@ public class Device {
      * @param issuerOfPATIENT_ID
      *                A String containing the PID issuer value.
      */
-    public final void setIssuerOfPATIENT_ID(String issuerOfPATIENT_ID) {
+    public void setIssuerOfPATIENT_ID(String issuerOfPATIENT_ID) {
         this.issuerOfPATIENT_ID = issuerOfPATIENT_ID;
     }
 
@@ -409,7 +409,7 @@ public class Device {
      * 
      * @return An Object array of related references.
      */
-    public final Object[] getRelatedDeviceConfiguration() {
+    public Object[] getRelatedDeviceConfiguration() {
         return relatedDeviceConfiguration;
     }
 
@@ -424,7 +424,7 @@ public class Device {
      * @param relatedDevice
      *                An Object array of related references.
      */
-    public final void setRelatedDeviceConfiguration(Object[] relatedDevice) {
+    public void setRelatedDeviceConfiguration(Object[] relatedDevice) {
         this.relatedDeviceConfiguration = relatedDevice;
     }
 
@@ -434,7 +434,7 @@ public class Device {
      * 
      * @return An array containing the X509Certificate objects
      */
-    public final X509Certificate[] getAuthorizedNodeCertificate() {
+    public X509Certificate[] getAuthorizedNodeCertificate() {
         return authorizedNodeCertificate;
     }
 
@@ -445,7 +445,7 @@ public class Device {
      * @param certs
      *                An array containing the X509Certificate objects.
      */
-    public final void setAuthorizedNodeCertificate(X509Certificate[] certs) {
+    public void setAuthorizedNodeCertificate(X509Certificate[] certs) {
         this.authorizedNodeCertificate = certs;
     }
 
@@ -454,7 +454,7 @@ public class Device {
      * 
      * @return An array containing the X509Certificate objects
      */
-    public final X509Certificate[] getThisNodeCertificate() {
+    public X509Certificate[] getThisNodeCertificate() {
         return thisNodeCertificate;
     }
 
@@ -464,7 +464,7 @@ public class Device {
      * @param certs
      *                An array containing the X509Certificate objects.
      */
-    public final void setThisNodeCertificate(X509Certificate[] certs) {
+    public void setThisNodeCertificate(X509Certificate[] certs) {
         this.thisNodeCertificate = certs;
     }
 
@@ -473,7 +473,7 @@ public class Device {
      * 
      * @return An Object array of the device data.
      */
-    public final Object[] getVendorDeviceData() {
+    public Object[] getVendorDeviceData() {
         return vendorDeviceData;
     }
 
@@ -483,7 +483,7 @@ public class Device {
      * @param vendorDeviceData
      *                An Object array of the device data.
      */
-    public final void setVendorDeviceData(Object[] vendorDeviceData) {
+    public void setVendorDeviceData(Object[] vendorDeviceData) {
         this.vendorDeviceData = vendorDeviceData;
     }
 
@@ -494,7 +494,7 @@ public class Device {
      * 
      * @return A boolean which will be true if this device is installed.
      */
-    public final boolean isInstalled() {
+    public boolean isInstalled() {
         return installed;
     }
 
@@ -506,7 +506,7 @@ public class Device {
      * @param installed
      *                A boolean which will be true if this device is installed.
      */
-    public final void setInstalled(boolean installed) {
+    public void setInstalled(boolean installed) {
         this.installed = installed;
     }
 
@@ -518,7 +518,7 @@ public class Device {
      * 
      * @return An array of <code>NetworkApplicationEntity</code> objects.
      */
-    public final NetworkApplicationEntity[] getNetworkApplicationEntity() {
+    public NetworkApplicationEntity[] getNetworkApplicationEntity() {
         return networkAE;
     }
 
@@ -531,7 +531,7 @@ public class Device {
      * @param networkAE
      *                A <code>NetworkApplicationEntity</code> object.
      */
-    public final void setNetworkApplicationEntity(
+    public void setNetworkApplicationEntity(
             NetworkApplicationEntity networkAE) {
         setNetworkApplicationEntity(new NetworkApplicationEntity[] { networkAE });
     }
@@ -546,7 +546,7 @@ public class Device {
      *                An array of <code>NetworkApplicationEntity</code>
      *                objects.
      */
-    public final void setNetworkApplicationEntity(
+    public void setNetworkApplicationEntity(
             NetworkApplicationEntity[] networkAE) {
         for (int i = 0; i < networkAE.length; i++)
             networkAE[i].setDevice(this);
@@ -560,7 +560,7 @@ public class Device {
      * 
      * @return An array of <code>NetworkConnection</code> objects.
      */
-    public final NetworkConnection[] getNetworkConnection() {
+    public NetworkConnection[] getNetworkConnection() {
         return networkConnection;
     }
 
@@ -571,7 +571,7 @@ public class Device {
      * @param networkConnection
      *                A<code>NetworkConnection</code> object.
      */
-    public final void setNetworkConnection(NetworkConnection networkConnection) {
+    public void setNetworkConnection(NetworkConnection networkConnection) {
         setNetworkConnection(new NetworkConnection[] { networkConnection });
     }
 
@@ -582,7 +582,7 @@ public class Device {
      * @param An
      *                array of <code>NetworkConnection</code> objects.
      */
-    public final void setNetworkConnection(NetworkConnection[] networkConnection) {
+    public void setNetworkConnection(NetworkConnection[] networkConnection) {
         for (int i = 0; i < networkConnection.length; i++)
             networkConnection[i].setDevice(this);
 
@@ -596,7 +596,7 @@ public class Device {
      * 
      * @return An int signifying association idle check period in milliseconds.
      */
-    public final int getAssociationReaperPeriod() {
+    public int getAssociationReaperPeriod() {
         return associationReaperPeriod;
     }
 
@@ -609,7 +609,7 @@ public class Device {
      *                An int signifying association idle check period in
      *                milliseconds.
      */
-    public final void setAssociationReaperPeriod(int associationReaperPeriod) {
+    public void setAssociationReaperPeriod(int associationReaperPeriod) {
         this.associationReaperPeriod = associationReaperPeriod;
     }
 
@@ -621,7 +621,7 @@ public class Device {
      * @param sslContext
      *                initialized <code>SSLContext</code>
      */
-    public final void setSSLContext(SSLContext sslContext) {
+    public void setSSLContext(SSLContext sslContext) {
         this.sslContext = sslContext;
     }
 
@@ -631,7 +631,7 @@ public class Device {
      * 
      * @return The initialized <code>SSLContext</code>.
      */
-    public final SSLContext getSSLContext() {
+    public SSLContext getSSLContext() {
         return sslContext;
     }
 

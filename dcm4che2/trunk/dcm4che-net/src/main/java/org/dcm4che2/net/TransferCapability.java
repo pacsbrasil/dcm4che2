@@ -108,7 +108,7 @@ public class TransferCapability {
      * 
      * @return A String containing the common name.
      */
-    public final String getCommonName() {
+    public String getCommonName() {
         return commonName;
     }
 
@@ -119,7 +119,7 @@ public class TransferCapability {
      * @param commonName
      *                A String containing the common name.
      */
-    public final void setCommonName(String commonName) {
+    public void setCommonName(String commonName) {
         this.commonName = commonName;
     }
 
@@ -129,7 +129,7 @@ public class TransferCapability {
      * @return A String defining the role selection (SCU or SCP) for this
      *         <code>TransferCapability</code>instance
      */
-    public final String getRole() {
+    public String getRole() {
         return scp ? SCP : SCU;
     }
 
@@ -143,7 +143,7 @@ public class TransferCapability {
      *                 If the role is not equal to <tt>SCU</tt> or
      *                 <tt>SCP</tt>.
      */
-    public final void setRole(String role) {
+    public void setRole(String role) {
         if (role == null)
             throw new NullPointerException("Role");
 
@@ -161,7 +161,7 @@ public class TransferCapability {
      * 
      * @return true if SCP is the selected role of this object.
      */
-    public final boolean isSCP() {
+    public boolean isSCP() {
         return scp;
     }
 
@@ -171,7 +171,7 @@ public class TransferCapability {
      * 
      * @return true if SCU is the selected role of this object.
      */
-    public final boolean isSCU() {
+    public boolean isSCU() {
         return !scp;
     }
 
@@ -180,7 +180,7 @@ public class TransferCapability {
      * 
      * @return A String containing the SOP Class UID.
      */
-    public final String getSopClass() {
+    public String getSopClass() {
         return sopClass;
     }
 
@@ -190,7 +190,7 @@ public class TransferCapability {
      * @param sopClass
      *                A String containing the SOP Class UID.
      */
-    public final void setSopClass(String sopClass) {
+    public void setSopClass(String sopClass) {
         if (sopClass == null)
             throw new NullPointerException("sopClass");
         this.sopClass = sopClass;
@@ -202,7 +202,7 @@ public class TransferCapability {
      * 
      * @return String array containing the transfer syntaxes.
      */
-    public final String[] getTransferSyntax() {
+    public String[] getTransferSyntax() {
         return transferSyntax.clone();
     }
 
@@ -213,7 +213,7 @@ public class TransferCapability {
      * @param transferSyntax
      *                String array containing the transfer syntaxes.
      */
-    public final void setTransferSyntax(String[] transferSyntax) {
+    public void setTransferSyntax(String[] transferSyntax) {
         if (transferSyntax.length == 0)
             throw new IllegalArgumentException("transferSyntax.length = 0");
         for (int i = 0; i < transferSyntax.length; i++) {
@@ -224,11 +224,11 @@ public class TransferCapability {
         this.transferSyntax = transferSyntax.clone();
     }
 
-    public final byte[] getExtInfo() {
+    public byte[] getExtInfo() {
         return extInfo.clone();
     }
 
-    public final void setExtInfo(byte[] info) {
+    public void setExtInfo(byte[] info) {
         extInfo = info != null ? (byte[]) info.clone() : NO_EXT_INFO;
     }
 

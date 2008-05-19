@@ -21,7 +21,7 @@
  *
  * Contributor(s):
  * Gunter Zeilinger <gunterze@gmail.com>
- * Damien Evans <damien@theevansranch.com>
+ * Damien Evans <damien.daddy@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -146,7 +146,7 @@ public class NetworkApplicationEntity {
      * 
      * @return The owning <code>Device</code>.
      */
-    public final Device getDevice() {
+    public Device getDevice() {
         return device;
     }
 
@@ -156,7 +156,7 @@ public class NetworkApplicationEntity {
      * @param device
      *                The owning <code>Device</code>.
      */
-    final void setDevice(Device device) {
+    void setDevice(Device device) {
         this.device = device;
     }
 
@@ -165,7 +165,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A String containing the AE title.
      */
-    public final String getAETitle() {
+    public String getAETitle() {
         return aeTitle;
     }
 
@@ -175,7 +175,7 @@ public class NetworkApplicationEntity {
      * @param aetitle
      *                A String containing the AE title.
      */
-    public final void setAETitle(String aetitle) {
+    public void setAETitle(String aetitle) {
         this.aeTitle = aetitle;
     }
 
@@ -185,7 +185,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A String array containing the names.
      */
-    public final String[] getApplicationCluster() {
+    public String[] getApplicationCluster() {
         return applicationCluster;
     }
 
@@ -196,7 +196,7 @@ public class NetworkApplicationEntity {
      * @param cluster
      *                A String array containing the names.
      */
-    public final void setApplicationCluster(String[] cluster) {
+    public void setApplicationCluster(String[] cluster) {
         this.applicationCluster = cluster;
     }
 
@@ -206,7 +206,7 @@ public class NetworkApplicationEntity {
      * @return A boolean value. True if the Network AE can accept associations,
      *         false otherwise.
      */
-    public final boolean isAssociationAcceptor() {
+    public boolean isAssociationAcceptor() {
         return associationAcceptor;
     }
 
@@ -217,7 +217,7 @@ public class NetworkApplicationEntity {
      *                A boolean value. True if the Network AE can accept
      *                associations, false otherwise.
      */
-    public final void setAssociationAcceptor(boolean acceptor) {
+    public void setAssociationAcceptor(boolean acceptor) {
         this.associationAcceptor = acceptor;
     }
 
@@ -227,7 +227,7 @@ public class NetworkApplicationEntity {
      * @return A boolean value. True if the Network AE can accept associations,
      *         false otherwise.
      */
-    public final boolean isAssociationInitiator() {
+    public boolean isAssociationInitiator() {
         return associationInitiator;
     }
 
@@ -238,7 +238,7 @@ public class NetworkApplicationEntity {
      *                A boolean value. True if the Network AE can accept
      *                associations, false otherwise.
      */
-    public final void setAssociationInitiator(boolean initiator) {
+    public void setAssociationInitiator(boolean initiator) {
         this.associationInitiator = initiator;
     }
 
@@ -247,7 +247,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A String containing the description.
      */
-    public final String getDescription() {
+    public String getDescription() {
         return description;
     }
 
@@ -257,7 +257,7 @@ public class NetworkApplicationEntity {
      * @param description
      *                A String containing the description.
      */
-    public final void setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -268,7 +268,7 @@ public class NetworkApplicationEntity {
      *         present, information about the installed status of the AE is
      *         inherited from the device
      */
-    public final boolean isInstalled() {
+    public boolean isInstalled() {
         return installed != null ? installed.booleanValue() : device == null
                 || device.isInstalled();
     }
@@ -281,7 +281,7 @@ public class NetworkApplicationEntity {
      *                If not present, information about the installed status of
      *                the AE is inherited from the device
      */
-    public final void setInstalled(boolean installed) {
+    public void setInstalled(boolean installed) {
         this.installed = Boolean.valueOf(installed);
     }
 
@@ -291,7 +291,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An array of <code>NetworkConnection</code> objects.
      */
-    public final NetworkConnection[] getNetworkConnection() {
+    public NetworkConnection[] getNetworkConnection() {
         return networkConnection;
     }
 
@@ -302,7 +302,7 @@ public class NetworkApplicationEntity {
      * @param nc
      *                A <code>NetworkConnection</code> object.
      */
-    public final void setNetworkConnection(NetworkConnection nc) {
+    public void setNetworkConnection(NetworkConnection nc) {
         setNetworkConnection(new NetworkConnection[] { nc });
     }
 
@@ -313,7 +313,7 @@ public class NetworkApplicationEntity {
      * @param nc
      *                An array of <code>NetworkConnection</code> objects.
      */
-    public final void setNetworkConnection(NetworkConnection[] nc) {
+    public void setNetworkConnection(NetworkConnection[] nc) {
         this.networkConnection = nc;
     }
 
@@ -323,7 +323,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A String array of the preferred called AE titles.
      */
-    public final String[] getPreferredCalledAETitle() {
+    public String[] getPreferredCalledAETitle() {
         return preferredCalledAETitle;
     }
 
@@ -333,7 +333,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A boolean value. True if there is a preferred called AE title.
      */
-    public final boolean hasPreferredCalledAETitle() {
+    public boolean hasPreferredCalledAETitle() {
         return preferredCalledAETitle != null
                 && preferredCalledAETitle.length > 0;
     }
@@ -367,7 +367,7 @@ public class NetworkApplicationEntity {
      * @param aets
      *                A String array containing the preferred called AE titles.
      */
-    public final void setPreferredCalledAETitle(String[] aets) {
+    public void setPreferredCalledAETitle(String[] aets) {
         this.preferredCalledAETitle = aets;
     }
 
@@ -379,7 +379,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A String array containing the preferred calling AE titles.
      */
-    public final String[] getPreferredCallingAETitle() {
+    public String[] getPreferredCallingAETitle() {
         return preferredCallingAETitle;
     }
 
@@ -391,7 +391,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A boolean value. True if there is a preferred AE title.
      */
-    public final boolean hasPreferredCallingAETitle() {
+    public boolean hasPreferredCallingAETitle() {
         return preferredCallingAETitle != null
                 && preferredCallingAETitle.length > 0;
     }
@@ -420,7 +420,7 @@ public class NetworkApplicationEntity {
      * @param aets
      *                A String array containing the preferred calling AE titles.
      */
-    public final void setPreferredCallingAETitle(String[] aets) {
+    public void setPreferredCallingAETitle(String[] aets) {
         this.preferredCallingAETitle = aets;
     }
 
@@ -433,7 +433,7 @@ public class NetworkApplicationEntity {
      * 
      * @return A String array of the supported character sets.
      */
-    public final String[] getSupportedCharacterSet() {
+    public String[] getSupportedCharacterSet() {
         return supportedCharacterSet;
     }
 
@@ -447,7 +447,7 @@ public class NetworkApplicationEntity {
      * @param characterSets
      *                A String array of the supported character sets.
      */
-    public final void setSupportedCharacterSet(String[] characterSets) {
+    public void setSupportedCharacterSet(String[] characterSets) {
         this.supportedCharacterSet = characterSets;
     }
 
@@ -457,7 +457,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An array of <code>TransferCapability</code> objects.
      */
-    public final TransferCapability[] getTransferCapability() {
+    public TransferCapability[] getTransferCapability() {
         return transferCapability;
     }
 
@@ -468,16 +468,16 @@ public class NetworkApplicationEntity {
      * @param transferCapability
      *                An array of <code>TransferCapability</code> objects.
      */
-    public final void setTransferCapability(
+    public void setTransferCapability(
             TransferCapability[] transferCapability) {
         this.transferCapability = transferCapability;
     }
 
-    public final boolean isOfferDefaultTransferSyntaxInSeparatePresentationContext() {
+    public boolean isOfferDefaultTransferSyntaxInSeparatePresentationContext() {
         return offerDefaultTSInSeparatePC;
     }
 
-    public final void setOfferDefaultTransferSyntaxInSeparatePresentationContext(
+    public void setOfferDefaultTransferSyntaxInSeparatePresentationContext(
             boolean offerDefaultTSInSeparatePC) {
         this.offerDefaultTSInSeparatePC = offerDefaultTSInSeparatePC;
     }
@@ -487,7 +487,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An Object array of the vendor data.
      */
-    public final Object[] getVendorData() {
+    public Object[] getVendorData() {
         return vendorData;
     }
 
@@ -497,7 +497,7 @@ public class NetworkApplicationEntity {
      * @param vendorData
      *                An Object array of the vendor data.
      */
-    public final void setVendorData(Object[] vendorData) {
+    public void setVendorData(Object[] vendorData) {
         this.vendorData = vendorData;
     }
 
@@ -507,7 +507,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int value containing the max ops.
      */
-    public final int getMaxOpsInvoked() {
+    public int getMaxOpsInvoked() {
         return maxOpsInvoked;
     }
 
@@ -518,7 +518,7 @@ public class NetworkApplicationEntity {
      * @param maxOpsInvoked
      *                An int value containing the max ops.
      */
-    public final void setMaxOpsInvoked(int maxOpsInvoked) {
+    public void setMaxOpsInvoked(int maxOpsInvoked) {
         this.maxOpsInvoked = maxOpsInvoked;
     }
 
@@ -528,7 +528,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int value containing the max ops.
      */
-    public final int getMaxOpsPerformed() {
+    public int getMaxOpsPerformed() {
         return maxOpsPerformed;
     }
 
@@ -539,7 +539,7 @@ public class NetworkApplicationEntity {
      * @param maxOpsPerformed
      *                An int value containing the max ops.
      */
-    public final void setMaxOpsPerformed(int maxOpsPerformed) {
+    public void setMaxOpsPerformed(int maxOpsPerformed) {
         this.maxOpsPerformed = maxOpsPerformed;
     }
 
@@ -550,7 +550,7 @@ public class NetworkApplicationEntity {
      * @return A boolean value. True if this network AE is capable of async
      *         operations.
      */
-    public final boolean isAsyncOps() {
+    public boolean isAsyncOps() {
         return maxOpsInvoked != 1 || maxOpsPerformed != 1;
     }
 
@@ -560,7 +560,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int signifying the max PDU length.
      */
-    public final int getMaxPDULengthReceive() {
+    public int getMaxPDULengthReceive() {
         return maxPDULengthReceive;
     }
 
@@ -571,7 +571,7 @@ public class NetworkApplicationEntity {
      * @param maxPDULengthReceive
      *                An int signifying the max PDU length.
      */
-    public final void setMaxPDULengthReceive(int maxPDULengthReceive) {
+    public void setMaxPDULengthReceive(int maxPDULengthReceive) {
         this.maxPDULengthReceive = maxPDULengthReceive;
     }
 
@@ -581,7 +581,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int signifying the max PDU length.
      */
-    public final int getMaxPDULengthSend() {
+    public int getMaxPDULengthSend() {
         return maxPDULengthSend;
     }
 
@@ -592,7 +592,7 @@ public class NetworkApplicationEntity {
      * @param maxPDULengthSend
      *                An int signifying the max PDU length.
      */
-    public final void setMaxPDULengthSend(int maxPDULengthSend) {
+    public void setMaxPDULengthSend(int maxPDULengthSend) {
         this.maxPDULengthSend = maxPDULengthSend;
     }
 
@@ -603,7 +603,7 @@ public class NetworkApplicationEntity {
      * @return A boolean value. If true, this network AE will pack command and
      *         data PDV in one P-DATA-TF PDU when sending.
      */
-    public final boolean isPackPDV() {
+    public boolean isPackPDV() {
         return packPDV;
     }
 
@@ -615,7 +615,7 @@ public class NetworkApplicationEntity {
      *                A boolean value. If true, this network AE will pack
      *                command and data PDV in one P-DATA-TF PDU when sending.
      */
-    public final void setPackPDV(boolean packPDV) {
+    public void setPackPDV(boolean packPDV) {
         this.packPDV = packPDV;
     }
 
@@ -625,7 +625,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int value signifying the timeout in milliseconds.
      */
-    public final int getDimseRspTimeout() {
+    public int getDimseRspTimeout() {
         return dimseRspTimeout;
     }
 
@@ -636,7 +636,7 @@ public class NetworkApplicationEntity {
      * @param dimseRspTimeout
      *                An int value signifying the timeout in milliseconds.
      */
-    public final void setDimseRspTimeout(int dimseRspTimeout) {
+    public void setDimseRspTimeout(int dimseRspTimeout) {
         this.dimseRspTimeout = dimseRspTimeout;
     }
 
@@ -646,7 +646,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int value signifying the max idle period in milliseconds.
      */
-    public final int getIdleTimeout() {
+    public int getIdleTimeout() {
         return idleTimeout;
     }
 
@@ -658,7 +658,7 @@ public class NetworkApplicationEntity {
      *                An int value signifying the max idle period in
      *                milliseconds.
      */
-    public final void setIdleTimeout(int idleTimeout) {
+    public void setIdleTimeout(int idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
 
@@ -669,7 +669,7 @@ public class NetworkApplicationEntity {
      * 
      * @return An int value signifying the timeout in milliseconds.
      */
-    public final int getMoveRspTimeout() {
+    public int getMoveRspTimeout() {
         return moveRspTimeout;
     }
 
@@ -681,7 +681,7 @@ public class NetworkApplicationEntity {
      * @param dimseRspTimeout
      *                An int value signifying the timeout in milliseconds.
      */
-    public final void setMoveRspTimeout(int moveRspTimeout) {
+    public void setMoveRspTimeout(int moveRspTimeout) {
         this.moveRspTimeout = moveRspTimeout;
     }
 
@@ -693,7 +693,7 @@ public class NetworkApplicationEntity {
      * @return A String array containing the AE titles that association reuse
      *         will be enabled for.
      */
-    public final String[] getReuseAssocationFromAETitle() {
+    public String[] getReuseAssocationFromAETitle() {
         return reuseAssocationFromAETitle
                 .toArray(new String[reuseAssocationFromAETitle.size()]);
     }
@@ -707,7 +707,7 @@ public class NetworkApplicationEntity {
      *                String array containing the AE titles that association
      *                reuse will be enabled for.
      */
-    public final void setReuseAssocationFromAETitle(
+    public void setReuseAssocationFromAETitle(
             String[] reuseAssocationFromAETitle) {
         this.reuseAssocationFromAETitle = Arrays
                 .asList(reuseAssocationFromAETitle);
@@ -721,7 +721,7 @@ public class NetworkApplicationEntity {
      * @return String array containing the AE titles that association reuse will
      *         be enabled for.
      */
-    public final String[] getReuseAssocationToAETitle() {
+    public String[] getReuseAssocationToAETitle() {
         return reuseAssocationToAETitle
                 .toArray(new String[reuseAssocationToAETitle.size()]);
     }
@@ -735,7 +735,7 @@ public class NetworkApplicationEntity {
      *                String array containing the AE titles that association
      *                reuse will be enabled for.
      */
-    public final void setReuseAssocationToAETitle(
+    public void setReuseAssocationToAETitle(
             String[] reuseAssocationToAETitle) {
         this.reuseAssocationToAETitle = Arrays.asList(reuseAssocationToAETitle);
 
@@ -752,7 +752,7 @@ public class NetworkApplicationEntity {
      * @see #connect(NetworkApplicationEntity, Executor)
      * @see #connect(NetworkApplicationEntity, Executor, boolean)
      */
-    public final UserIdentity getUserIdentity() {
+    public UserIdentity getUserIdentity() {
         return userIdentity;
     }
 
@@ -767,7 +767,7 @@ public class NetworkApplicationEntity {
      * @see #connect(NetworkApplicationEntity, Executor)
      * @see #connect(NetworkApplicationEntity, Executor, boolean)
      */
-    public final void setUserIdentity(UserIdentity userIdentity) {
+    public void setUserIdentity(UserIdentity userIdentity) {
         this.userIdentity = userIdentity;
     }
 

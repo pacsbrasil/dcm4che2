@@ -162,7 +162,7 @@ public class NetworkConnection {
      * 
      * @return Device
      */
-    public final Device getDevice() {
+    public Device getDevice() {
         return device;
     }
 
@@ -173,7 +173,7 @@ public class NetworkConnection {
      * @param device
      *                The owning <code>Device</code> object.
      */
-    final void setDevice(Device device) {
+    void setDevice(Device device) {
         this.device = device;
     }
 
@@ -184,7 +184,7 @@ public class NetworkConnection {
      * 
      * @return A String containing the host name.
      */
-    public final String getHostname() {
+    public String getHostname() {
         return hostname;
     }
 
@@ -196,7 +196,7 @@ public class NetworkConnection {
      * @param hostname
      *                A String containing the host name.
      */
-    public final void setHostname(String hostname) {
+    public void setHostname(String hostname) {
         this.hostname = hostname;
         try {
             addr = InetAddress.getByName(hostname);
@@ -213,7 +213,7 @@ public class NetworkConnection {
      * 
      * @return A String containing the name.
      */
-    public final String getCommonName() {
+    public String getCommonName() {
         return commonName;
     }
 
@@ -224,7 +224,7 @@ public class NetworkConnection {
      * @param name
      *                A String containing the name.
      */
-    public final void setCommonName(String name) {
+    public void setCommonName(String name) {
         this.commonName = name;
     }
 
@@ -234,7 +234,7 @@ public class NetworkConnection {
      * 
      * @return An int containing the port number.
      */
-    public final int getPort() {
+    public int getPort() {
         return port;
     }
 
@@ -250,7 +250,7 @@ public class NetworkConnection {
      * @param port
      *                The port number
      */
-    public final void setPort(int port) {
+    public void setPort(int port) {
         if (port < ONLY_ACTIVE || port > 0xFFFF) {
             throw new IllegalArgumentException("port out of range:" + port);
         }
@@ -264,7 +264,7 @@ public class NetworkConnection {
      * 
      * @return A String array containing the supported cipher suites
      */
-    public final String[] getTlsCipherSuite() {
+    public String[] getTlsCipherSuite() {
         return tlsCipherSuite.clone();
     }
 
@@ -276,7 +276,7 @@ public class NetworkConnection {
      * @param tlsCipherSuite
      *                A String array containing the supported cipher suites
      */
-    public final void setTlsCipherSuite(String[] tlsCipherSuite) {
+    public void setTlsCipherSuite(String[] tlsCipherSuite) {
         checkNotNull("tlsCipherSuite", tlsCipherSuite);
         this.tlsCipherSuite = tlsCipherSuite.clone();
     }
@@ -289,15 +289,15 @@ public class NetworkConnection {
                 throw new NullPointerException(name + '[' + i + ']');
     }
 
-    public final void setTlsWithoutEncyrption() {
+    public void setTlsWithoutEncyrption() {
         this.tlsCipherSuite = TLS_NULL;
     }
 
-    public final void setTls3DES_EDE_CBC() {
+    public void setTls3DES_EDE_CBC() {
         this.tlsCipherSuite = TLS_3DES_EDE_CBC;
     }
 
-    public final void setTlsAES_128_CBC() {
+    public void setTlsAES_128_CBC() {
         this.tlsCipherSuite = TLS_AES_128_CBC;
     }
 
@@ -309,7 +309,7 @@ public class NetworkConnection {
      * @return boolean True if the NetworkConnection is installed on the
      *         network.
      */
-    public final boolean isInstalled() {
+    public boolean isInstalled() {
         return installed != null ? installed.booleanValue() : device == null
                 || device.isInstalled();
     }
@@ -322,7 +322,7 @@ public class NetworkConnection {
      * @param installed
      *                True if the NetworkConnection is installed on the network.
      */
-    public final void setInstalled(boolean installed) {
+    public void setInstalled(boolean installed) {
         this.installed = Boolean.valueOf(installed);
     }
 
@@ -334,31 +334,31 @@ public class NetworkConnection {
         return tlsCipherSuite.length > 0;
     }
 
-    public final int getBacklog() {
+    public int getBacklog() {
         return backlog;
     }
 
-    public final void setBacklog(int backlog) {
+    public void setBacklog(int backlog) {
         if (backlog < 1)
             throw new IllegalArgumentException("backlog: " + backlog);
         this.backlog = backlog;
     }
 
-    public final int getAcceptTimeout() {
+    public int getAcceptTimeout() {
         return acceptTimeout;
     }
 
-    public final void setAcceptTimeout(int timeout) {
+    public void setAcceptTimeout(int timeout) {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.acceptTimeout = timeout;
     }
 
-    public final int getConnectTimeout() {
+    public int getConnectTimeout() {
         return connectTimeout;
     }
 
-    public final void setConnectTimeout(int timeout) {
+    public void setConnectTimeout(int timeout) {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.connectTimeout = timeout;
@@ -370,7 +370,7 @@ public class NetworkConnection {
      * @param An
      *                int value containing the milliseconds.
      */
-    public final int getRequestTimeout() {
+    public int getRequestTimeout() {
         return requestTimeout;
     }
 
@@ -380,7 +380,7 @@ public class NetworkConnection {
      * @param timeout
      *                An int value containing the milliseconds.
      */
-    public final void setRequestTimeout(int timeout) {
+    public void setRequestTimeout(int timeout) {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.requestTimeout = timeout;
@@ -391,7 +391,7 @@ public class NetworkConnection {
      * 
      * @return An int value containing the milliseconds.
      */
-    public final int getReleaseTimeout() {
+    public int getReleaseTimeout() {
         return releaseTimeout;
     }
 
@@ -401,7 +401,7 @@ public class NetworkConnection {
      * @param timeout
      *                An int value containing the milliseconds.
      */
-    public final void setReleaseTimeout(int timeout) {
+    public void setReleaseTimeout(int timeout) {
         if (timeout < 0)
             throw new IllegalArgumentException("timeout: " + timeout);
         this.releaseTimeout = timeout;
@@ -412,7 +412,7 @@ public class NetworkConnection {
      * 
      * @return An int value containing the milliseconds.
      */
-    public final int getSocketCloseDelay() {
+    public int getSocketCloseDelay() {
         return socketCloseDelay;
     }
 
@@ -422,7 +422,7 @@ public class NetworkConnection {
      * @param delay
      *                An int value containing the milliseconds.
      */
-    public final void setSocketCloseDelay(int delay) {
+    public void setSocketCloseDelay(int delay) {
         if (delay < 0)
             throw new IllegalArgumentException("delay: " + delay);
         this.socketCloseDelay = delay;
@@ -433,7 +433,7 @@ public class NetworkConnection {
      * 
      * @return An int value containing the buffer size in KB.
      */
-    public final int getReceiveBufferSize() {
+    public int getReceiveBufferSize() {
         return receiveBufferSize;
     }
 
@@ -443,7 +443,7 @@ public class NetworkConnection {
      * @param bufferSize
      *                An int value containing the buffer size in KB.
      */
-    public final void setReceiveBufferSize(int size) {
+    public void setReceiveBufferSize(int size) {
         if (size < 0)
             throw new IllegalArgumentException("size: " + size);
         this.receiveBufferSize = size;
@@ -454,7 +454,7 @@ public class NetworkConnection {
      * 
      * @return An int value containing the buffer size in KB.
      */
-    public final int getSendBufferSize() {
+    public int getSendBufferSize() {
         return sendBufferSize;
     }
 
@@ -464,7 +464,7 @@ public class NetworkConnection {
      * @param bufferSize
      *                An int value containing the buffer size in KB.
      */
-    public final void setSendBufferSize(int size) {
+    public void setSendBufferSize(int size) {
         if (size < 0)
             throw new IllegalArgumentException("size: " + size);
         this.sendBufferSize = size;
@@ -476,7 +476,7 @@ public class NetworkConnection {
      * 
      * @return boolean True if TCP no delay (Nagle's algorithm) is being used.
      */
-    public final boolean isTcpNoDelay() {
+    public boolean isTcpNoDelay() {
         return tcpNoDelay;
     }
 
@@ -488,31 +488,31 @@ public class NetworkConnection {
      *                boolean True if TCP no delay (Nagle's algorithm) should be
      *                used.
      */
-    public final void setTcpNoDelay(boolean tcpNoDelay) {
+    public void setTcpNoDelay(boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
     }
 
-    public final boolean isTlsNeedClientAuth() {
+    public boolean isTlsNeedClientAuth() {
         return tlsNeedClientAuth;
     }
 
-    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
+    public void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
 
-    public final String[] getTlsProtocol() {
+    public String[] getTlsProtocol() {
         return tlsProtocol.clone();
     }
 
-    public final void setTlsProtocol(String[] tlsProtocol) {
+    public void setTlsProtocol(String[] tlsProtocol) {
         this.tlsProtocol = tlsProtocol.clone();
     }
 
-    public final void enableSSLv2Hello() {
+    public void enableSSLv2Hello() {
         this.tlsProtocol = TLS_AND_SSLv2;
     }
 
-    public final void disableSSLv2Hello() {
+    public void disableSSLv2Hello() {
         this.tlsProtocol = TLS_WO_SSLv2;
     }
 
@@ -536,7 +536,7 @@ public class NetworkConnection {
      * @return server socket associated with this Network Connection or
      *         <code>null</code>
      */
-    public final ServerSocket getServer() {
+    public ServerSocket getServer() {
         return server;
     }
 
