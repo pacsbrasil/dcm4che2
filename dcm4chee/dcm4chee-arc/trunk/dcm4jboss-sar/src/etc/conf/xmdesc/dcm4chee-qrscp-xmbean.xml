@@ -393,18 +393,18 @@ QueryRetrieveScp service.</description>
       <description><![CDATA[
         List of accepted Query/Retrieve SOP Classes. Use either the SOP Class 
         UID value, or following defined symbolic names:
-        TianiStudyRootQueryRetrieveInformationModelFIND,
-        TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
-        TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
+        Dcm4cheStudyRootQueryRetrieveInformationModelFIND,
+        Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND,
+        Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
         ]]>
       </description>
       <name>AcceptedPrivateSOPClasses</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           TianiStudyRootQueryRetrieveInformationModelFIND
-           TianiBlockedStudyRootQueryRetrieveInformationModelFIND
-           TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND
+           Dcm4cheStudyRootQueryRetrieveInformationModelFIND
+           Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND
+           Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND
            "/>
       </descriptors>
    </attribute>

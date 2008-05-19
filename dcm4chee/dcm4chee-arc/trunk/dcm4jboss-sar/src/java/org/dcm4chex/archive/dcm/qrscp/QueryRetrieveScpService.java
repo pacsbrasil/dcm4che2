@@ -799,14 +799,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.bind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND,
                 dicomFindScp);
 
-        services.bind(UIDs.TianiStudyRootQueryRetrieveInformationModelFIND,
+        services.bind(UIDs.Dcm4cheStudyRootQueryRetrieveInformationModelFIND,
                 tianiFindScp);
         services.bind(
-                UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND,
+                UIDs.Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND,
                 tianiBlockedFindScp);
         services
                 .bind(
-                        UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
+                        UIDs.Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
                         tianiVMFFindScp);
 
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE,
@@ -832,22 +832,22 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
 
-        services.unbind(UIDs.TianiPatientRootQueryRetrieveInformationModelFIND);
-        services.unbind(UIDs.TianiStudyRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.Dcm4chePatientRootQueryRetrieveInformationModelFIND);
+        services.unbind(UIDs.Dcm4cheStudyRootQueryRetrieveInformationModelFIND);
         services
-                .unbind(UIDs.TianiPatientStudyOnlyQueryRetrieveInformationModelFIND);
+                .unbind(UIDs.Dcm4chePatientStudyOnlyQueryRetrieveInformationModelFIND);
 
         services
-                .unbind(UIDs.TianiBlockedPatientRootQueryRetrieveInformationModelFIND);
+                .unbind(UIDs.Dcm4cheBlockedPatientRootQueryRetrieveInformationModelFIND);
         services
-                .unbind(UIDs.TianiBlockedStudyRootQueryRetrieveInformationModelFIND);
+                .unbind(UIDs.Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND);
         services
-                .unbind(UIDs.TianiBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND);
+                .unbind(UIDs.Dcm4cheBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND);
 
         services
-                .unbind(UIDs.TianiVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND);
+                .unbind(UIDs.Dcm4cheVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND);
         services
-                .unbind(UIDs.TianiVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND);
+                .unbind(UIDs.Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND);
 
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelMOVE);

@@ -436,7 +436,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmServiceException {
         File file = null;
         boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(
-                UIDs.TianiURIReferenced);
+                UIDs.Dcm4cheURIReferenced);
         try {
             Command rqCmd = rq.getCommand();
             Association assoc = activeAssoc.getAssociation();
@@ -479,7 +479,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (uri == null) {
                     throw new DcmServiceException(
                             Status.DataSetDoesNotMatchSOPClassError,
-                            "Missing (0040,E010) Retrieve URI - required for Tiani Retrieve URI Transfer Syntax");
+                            "Missing (0040,E010) Retrieve URI - required for Dcm4che Retrieve URI Transfer Syntax");
                 }
                 if (!uri.startsWith(referencedDirectoryURI)) {
                     throw new DcmServiceException(
@@ -528,7 +528,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 } else {
                     ds.setPrivateCreatorID(PrivateTags.CreatorID);
                     String tsuid = ds.getString(
-                            PrivateTags.TianiURIReferencedTransferSyntaxUID,
+                            PrivateTags.Dcm4cheURIReferencedTransferSyntaxUID,
                             UIDs.ImplicitVRLittleEndian);
                     ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
                             .getAffectedSOPClassUID(), rqCmd

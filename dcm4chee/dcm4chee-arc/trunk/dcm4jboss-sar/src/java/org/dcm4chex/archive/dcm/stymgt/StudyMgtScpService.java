@@ -79,20 +79,20 @@ public class StudyMgtScpService extends AbstractScpService {
 	}
 
 	protected void bindDcmServices(DcmServiceRegistry services) {
-        services.bind(UIDs.TianiStudyManagement, stymgtScp);
+        services.bind(UIDs.Dcm4cheStudyManagement, stymgtScp);
 	}
 
 	protected void unbindDcmServices(DcmServiceRegistry services) {
-		services.unbind(UIDs.TianiStudyManagement);		
+		services.unbind(UIDs.Dcm4cheStudyManagement);		
 	}
 
     protected void enablePresContexts(AcceptorPolicy policy) {
-        policy.putPresContext(UIDs.TianiStudyManagement,
+        policy.putPresContext(UIDs.Dcm4cheStudyManagement,
                 valuesToStringArray(tsuidMap));
     }
 
     protected void disablePresContexts(AcceptorPolicy policy) {
-        policy.putPresContext(UIDs.TianiStudyManagement, null);
+        policy.putPresContext(UIDs.Dcm4cheStudyManagement, null);
     }
 
     void sendStudyMgtNotification(ActiveAssociation assoc, int cmdField,

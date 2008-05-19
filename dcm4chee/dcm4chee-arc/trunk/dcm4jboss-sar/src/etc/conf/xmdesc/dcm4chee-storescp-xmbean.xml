@@ -246,7 +246,7 @@
       setMethod="setReferencedDirectoryPath">
       <description><![CDATA[Used to split directory path (mount point) from
       file path in the (0040,E010) Retrieve URI of objects received with
-      private Transfer Syntax: 1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced.
+      private Transfer Syntax: 1.2.40.0.13.1.1.2.4.94/Dcm4che URI Referenced.
       A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/. Alternatively an URI
       can be specified. In any case, there must be already a file system
@@ -268,7 +268,7 @@
       Retrieve URI is parsed to supplement attributes in the C-STORE RQ with
       all attributes from the filed DICOM object. Only effective for receiving
       objects encoded with private Transfer Syntax:
-      1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced.]]>
+      1.2.40.0.13.1.1.2.4.94/Dcm4che URI Referenced.]]>
       </description>
       <name>ReadReferencedFile</name>
       <type>boolean</type>
@@ -282,7 +282,7 @@
       <description><![CDATA[Specifies if the MD5 file check sum for 
       the file referenced by (0040,E010) Retrieve URI is calculated.
       Only effective for receiving objects encoded with private Transfer Syntax:
-      1.2.40.0.13.1.1.2.4.94/Tiani URI Referenced and with attribute
+      1.2.40.0.13.1.1.2.4.94/Dcm4che URI Referenced and with attribute
       <i>ReadReferencedFile</i> = <code>true</code>.]]>
       </description>
       <name>Md5sumReferencedFile</name>
@@ -512,7 +512,7 @@ StoreSCP service.
         JPEG2000Lossless,
         JPEG2000Lossy,
         RLELossless,
-        TianiURIReferenced
+        Dcm4cheURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForImageSOPClasses</name>
@@ -531,7 +531,7 @@ StoreSCP service.
          JPEGExtended
          JPEGLSLossy
          JPEG2000Lossy
-         TianiURIReferenced"/>
+         Dcm4cheURIReferenced"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -561,7 +561,7 @@ StoreSCP service.
         Transfer Syntaxes UID value or following defined symbolic names: 
         JPEGBaseline,
         MPEG2,
-        TianiURIReferenced        
+        Dcm4cheURIReferenced        
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForVideoSOPClasses</name>
@@ -570,7 +570,7 @@ StoreSCP service.
          <value value="
            JPEGBaseline
            MPEG2
-           TianiURIReferenced"/>
+           Dcm4cheURIReferenced"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -607,7 +607,7 @@ StoreSCP service.
         ExplicitVRLittleEndian,
         DeflatedExplicitVRLittleEndian,
         ExplicitVRBigEndian,
-        TianiURIReferenced
+        Dcm4cheURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForWaveformSOPClasses</name>
@@ -616,7 +616,7 @@ StoreSCP service.
          <value value="
            ExplicitVRLittleEndian
            ImplicitVRLittleEndian
-           TianiURIReferenced
+           Dcm4cheURIReferenced
            "/>
       </descriptors>
    </attribute>
@@ -660,7 +660,7 @@ StoreSCP service.
         ExplicitVRLittleEndian,
         DeflatedExplicitVRLittleEndian,
         ExplicitVRBigEndian,
-        TianiURIReferenced
+        Dcm4cheURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForSRSOPClasses</name>
@@ -670,7 +670,7 @@ StoreSCP service.
            DeflatedExplicitVRLittleEndian
            ExplicitVRLittleEndian
            ImplicitVRLittleEndian
-           TianiURIReferenced
+           Dcm4cheURIReferenced
            "/>
       </descriptors>
    </attribute>
@@ -716,7 +716,7 @@ StoreSCP service.
            StandalonePETCurveStorage
            AgfaAttributePresentationState
            SiemensCSANonImageStorage
-           TianiEncapsulatedDocumentStorage
+           Dcm4cheEncapsulatedDocumentStorage
            "/>
       </descriptors>
    </attribute>
@@ -732,7 +732,7 @@ StoreSCP service.
         ExplicitVRLittleEndian,
         DeflatedExplicitVRLittleEndian,
         ExplicitVRBigEndian,
-        TianiURIReferenced
+        Dcm4cheURIReferenced
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForOtherSOPClasses</name>
@@ -741,7 +741,7 @@ StoreSCP service.
          <value value="
            ExplicitVRLittleEndian
            ImplicitVRLittleEndian
-           TianiURIReferenced
+           Dcm4cheURIReferenced
          "/>
       </descriptors>
    </attribute>

@@ -259,13 +259,13 @@ public class StudyMgtScuService extends AbstractScuService implements
     public void ncreate(String aet, String iuid, Dataset ds)
             throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
-        cmd.initNCreateRQ(MSG_ID, UIDs.TianiStudyManagement, iuid);
+        cmd.initNCreateRQ(MSG_ID, UIDs.Dcm4cheStudyManagement, iuid);
         checkStatus(invoke(aet, cmd, ds).getCommand());
     }
 
     public void nset(String aet, String iuid, Dataset ds) throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
-        cmd.initNSetRQ(MSG_ID, UIDs.TianiStudyManagement, iuid);
+        cmd.initNSetRQ(MSG_ID, UIDs.Dcm4cheStudyManagement, iuid);
         checkStatus(invoke(aet, cmd, ds).getCommand());
     }
 
@@ -273,21 +273,21 @@ public class StudyMgtScuService extends AbstractScuService implements
             throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd
-                .initNActionRQ(MSG_ID, UIDs.TianiStudyManagement, iuid,
+                .initNActionRQ(MSG_ID, UIDs.Dcm4cheStudyManagement, iuid,
                         actionTypeID);
         checkStatus(invoke(aet, cmd, ds).getCommand());
     }
 
     public void ndelete(String aet, String iuid) throws Exception {
         Command cmd = DcmObjectFactory.getInstance().newCommand();
-        cmd.initNDeleteRQ(MSG_ID, UIDs.TianiStudyManagement, iuid);
+        cmd.initNDeleteRQ(MSG_ID, UIDs.Dcm4cheStudyManagement, iuid);
         checkStatus(invoke(aet, cmd, null).getCommand());
     }
 
     private Dimse invoke(String aet, Command cmd, Dataset ds)
             throws Exception {
         ActiveAssociation aa = openAssociation(aet,
-                    UIDs.TianiStudyManagement);
+                    UIDs.Dcm4cheStudyManagement);
         try {
             return aa.invoke(AssociationFactory.getInstance()
                     .newDimse(PCID_STYMGT, cmd, ds)).get();
