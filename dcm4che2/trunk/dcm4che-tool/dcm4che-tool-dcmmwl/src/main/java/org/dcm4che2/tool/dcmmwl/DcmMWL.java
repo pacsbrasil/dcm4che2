@@ -80,7 +80,7 @@ import org.dcm4che2.net.UserIdentity;
 public class DcmMWL {
 
     private static final int KB = 1024;
-    private static final String USAGE = "dcmmwl [Options] <aet>[@<host>[:<port>]]";
+    private static final String USAGE = "dcmmwl <aet>[@<host>[:<port>]] [Options]";
     private static final String DESCRIPTION = 
             "Query specified remote Application Entity (=Modality Worklist SCP) " + 
             "If <port> is not specified, DICOM default port 104 is assumed. " +
@@ -657,7 +657,7 @@ public class DcmMWL {
         opts.addOption(OptionBuilder.create("sosndbuf"));
 
         OptionBuilder.withArgName("[seq/]attr=value");
-        OptionBuilder.hasArgs(2);
+        OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
                 "specified by name or tag value (in hex), e.g. PatientName\n" +
@@ -693,7 +693,7 @@ public class DcmMWL {
         opts.addOption(OptionBuilder.create("aet"));
 
         OptionBuilder.withArgName("attr");
-        OptionBuilder.hasArg();
+        OptionBuilder.hasArgs();
         OptionBuilder.withDescription("specify additional return key. attr can " +
                 "be specified by name or tag value (in hex).");
         opts.addOption(OptionBuilder.create("r"));
