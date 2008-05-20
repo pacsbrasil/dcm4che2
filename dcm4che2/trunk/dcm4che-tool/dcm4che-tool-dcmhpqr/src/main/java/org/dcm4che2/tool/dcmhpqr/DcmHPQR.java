@@ -83,7 +83,7 @@ public class DcmHPQR {
 
     private static final int KB = 1024;
 
-    private static final String USAGE = "dcmhpqr [Options] <aet>[@<host>[:<port>]]";
+    private static final String USAGE = "dcmhpqr <aet>[@<host>[:<port>]] [Options]";
 
     private static final String DESCRIPTION = 
             "Query specified remote Application Entity (=Hanging Protocol SCP) "
@@ -791,7 +791,7 @@ public class DcmHPQR {
         opts.addOption(OptionBuilder.create("sosndbuf"));
 
         OptionBuilder.withArgName("[seq/]attr=value");
-        OptionBuilder.hasArgs(2);
+        OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be "
                 + "specified by name or tag value (in hex), e.g. PatientName\n"
@@ -843,7 +843,7 @@ public class DcmHPQR {
         opts.addOption(OptionBuilder.create("user"));
 
         OptionBuilder.withArgName("attr");
-        OptionBuilder.hasArg();
+        OptionBuilder.hasArgs();
         OptionBuilder.withDescription(
                 "specify additional return key. attr can be specified by name or tag value (in hex).");
         opts.addOption(OptionBuilder.create("r"));
