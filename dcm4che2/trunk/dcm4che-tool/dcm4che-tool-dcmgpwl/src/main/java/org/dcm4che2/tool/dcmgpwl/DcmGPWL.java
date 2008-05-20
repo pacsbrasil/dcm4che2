@@ -91,7 +91,7 @@ public class DcmGPWL {
 
     private static final int KB = 1024;
     private static final String USAGE = 
-            "dcmgpwl [Options] <aet>[@<host>[:<port>]]";
+            "dcmgpwl <aet>[@<host>[:<port>]] [Options]";
     private static final String DESCRIPTION = 
             "Query specified remote Application Entity (=General Purpose Worklist SCP) " + 
             "If <port> is not specified, DICOM default port 104 is assumed. " +
@@ -1140,7 +1140,7 @@ public class DcmGPWL {
         opts.addOption(OptionBuilder.create("refsps"));
         
         OptionBuilder.withArgName("attr=value");
-        OptionBuilder.hasArgs(2);
+        OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription(
                 "specify matching key or PPS attribute. attr can be specified " +
@@ -1153,7 +1153,7 @@ public class DcmGPWL {
         opts.addOption(OptionBuilder.create("D"));        
 
         OptionBuilder.withArgName("attr=value");
-        OptionBuilder.hasArgs(2);
+        OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription(
                 "specify matching Referenced Request key or PPS attribute. " +
