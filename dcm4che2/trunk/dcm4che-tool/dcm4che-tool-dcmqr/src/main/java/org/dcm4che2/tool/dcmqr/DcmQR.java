@@ -99,7 +99,7 @@ public class DcmQR {
 
     private static final int KB = 1024;
 
-    private static final String USAGE = "dcmqr [Options] <aet>[@<host>[:<port>]]";
+    private static final String USAGE = "dcmqr <aet>[@<host>[:<port>]] [Options]";
 
     private static final String DESCRIPTION = 
         "Query specified remote Application Entity (=Query/Retrieve SCP) "
