@@ -13,6 +13,7 @@ public interface XDSConstants {
 	public static final String XDS_B_STATUS_FAILURE = "urn:oasis:names:tc:ebxml-regrep:ResponseStatusType:Failure";
 	public static final String SUBMIT_OBJECTS_REQUEST = "SubmitObjectsRequest";
 	public static final String SOAP_HEADER_ACTION = "Action";
+	public static final String SOAP_HEADER_TO = "To";
 	public static final String SOAP_HEADER_MSG_ID = "MessageID";
 	public static final String SOAP_HEADER_MUST_UNDERSTAND = "mustUnderstand";
 

@@ -1,8 +1,10 @@
 
-package org.dcm4chee.xds.repo.ws;
+package org.dcm4chee.xds.common.ws;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import javax.jws.soap.SOAPBinding;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebEndpoint;
@@ -18,11 +20,11 @@ import javax.xml.ws.WebServiceFeature;
  * 
  */
 @WebServiceClient(name = "DocumentRepository_Service", targetNamespace = "urn:ihe:iti:xds-b:2007", wsdlLocation = "file:/E:/xdsb-schema/wsdl/XDS.b_DocumentRepository.wsdl")
+@SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
 public class DocumentRepositoryService
     extends Service
 {
-
-    private final static URL DOCUMENTREPOSITORYSERVICE_WSDL_LOCATION;
+	private final static URL DOCUMENTREPOSITORYSERVICE_WSDL_LOCATION;
 
     static {
         URL url = null;

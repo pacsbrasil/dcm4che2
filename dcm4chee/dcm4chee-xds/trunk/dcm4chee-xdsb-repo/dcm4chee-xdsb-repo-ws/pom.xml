@@ -35,9 +35,9 @@
       <scope>provided</scope>
     </dependency>  
     <dependency>
-      <groupId>jboss</groupId>
+      <groupId>jboss.jbossws</groupId>
       <artifactId>jboss-jaxws</artifactId>
-      <version>1.2.1.GA</version>
+      <version>2.0.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
