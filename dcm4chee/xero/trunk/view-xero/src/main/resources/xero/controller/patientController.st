@@ -120,8 +120,8 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
-	//if( lay.imageArea ) lay.imageArea.relayout = true;
-	//else lay.relayout = true;
+	if( lay.imageArea ) lay.imageArea.relayout = true;
+	lay.relayout = true;
 	console.info("You are trying to navigate to %s", dirImg);
 	merged.setNavigation(merged.POSITION,dirImg);
 	this.mergeExternal();
@@ -139,6 +139,19 @@ XeroController.prototype.navWheelImg = function XC_navWheelImg(id,e) {
 	this.navImg(id,wheelData);
 	console.info("isComplete=%s",id.isComplete());
 	return cancelEvent(e);
+};
+
+/** Changes the image layout */
+XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
+	id = this.model.patientLayout.findLayout(id);
+	if( id.imageArea ) id = id.imageArea;
+	id.origGridX = w;
+	id.origGridY = h;
+	// Make an artificial change to re-layout the image area.
+	id.series = null;
+	id.mergedListener(id.merged);
+	id.resize(id.width, id.height, id.style);
+	this.updateView("displayPatient");
 };
 
 /**

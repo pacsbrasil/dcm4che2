@@ -52,6 +52,14 @@ div.seriesToolbar {
 	overflow: hidden;
 }
 
+.icon {
+	margin: 0px;
+	border: 1px thin green;
+	background: blue;
+	width: 20px;
+	height: 20px;
+}
+
 div.menu {
 	background: cyan;
 	overflow: hidden;
