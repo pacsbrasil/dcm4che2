@@ -116,12 +116,10 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 	}
 	var merged = lay.merged;
 	var dirImg = merged.lookupId(merged.POSITION,dir);
-	if(!dirImg ) {
+	if(dirImg==null ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
-	if( lay.imageArea ) lay.imageArea.relayout = true;
-	lay.relayout = true;
 	console.info("You are trying to navigate to %s", dirImg);
 	merged.setNavigation(merged.POSITION,dirImg);
 	this.mergeExternal();
@@ -281,6 +279,7 @@ function SeriesMergedListener(merged) {
 	if( merged ) {
 		this.series = merged.external;
 	}
+	this.relayout = true;
 };
 
 /** Defines the image area merged listener to reset the grid size and
@@ -340,6 +339,9 @@ function ImageMergedListener(merged) {
 	if( merged && this.image!==merged.external ) {
 		this.relayout = true;
 		this.image = merged.external;
+		if( this.image ) {
+			this.Position1 = 1+parseInt(this.image.Position);
+		}
 		this.updatePosition();
 		AddImageUrl(this,true);
 	}

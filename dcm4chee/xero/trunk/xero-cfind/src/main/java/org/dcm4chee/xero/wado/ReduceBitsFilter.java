@@ -52,12 +52,13 @@ import java.util.Map;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.image.LookupTable;
+import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.ShortLookupTable;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,8 @@ import org.slf4j.LoggerFactory;
  * This filter reduces the number of stored bits, down to 12 bits so that the
  * image can be encoded using 12 bit JPEG. Also adds response headers to
  * indicate the transformation.
+ * TODO Add Modality LUT transformation - send the image complete with the Modality LUT
+ * having been applied.
  * 
  * @author bwallace
  */
@@ -80,35 +83,93 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
    static ColorSpace gray = ColorSpace.getInstance(ColorSpace.CS_GRAY);
 
    static int[] bits12 = new int[] { 12 };
-
    static ColorModel cm12 = new ComponentColorModel(gray, bits12, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
 
    /**
     * Reduces the number of bits from 13-16 to 12, only for contentType=image/jp12
     */
-   @SuppressWarnings("unchecked")
    public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
+	  int bits = FilterUtil.getInt(params,EncodeImage.MAX_BITS);
+	  if( bits==0 || bits>15 ) return filterItem.callNextFilter(params);
+
+	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) {
+		 // Check up-front to see if the image can be returned as bytes so that no
+		 // decoding is necessary.  This only works if the correct number of bits is set.
+		 DicomObject ds = DicomFilter.filterImageDicomObject(filterItem,params,null);
+		 if( !needsRescale(bits,ds) ) return filterItem.callNextFilter(params);
+		 // Can't get it as bytes....
+		 MemoryCacheFilter.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
+		 params.remove(WadoImage.IMG_AS_BYTES);
+	  }
+
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
-	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) return wi;
-	  int bits = FilterUtil.getInt(params,EncodeImage.MAX_BITS,8); 
-	  if ( bits<=8 || bits >= 16 ) {
-		 log.debug("Not 9..15 bit image - returning wado image directly, bits="+wi.getDicomObject().getInt(Tag.BitsStored));
-		 return wi;
-	  }
-	  long start = System.nanoTime();
+	  if( wi==null ) return wi;
 	  DicomObject ds = wi.getDicomObject();
-	  int stored = ds.getInt(Tag.BitsStored);
-	  if (stored <= bits) {
-		 log.debug("Only "+stored+" bits -not decimating window level.");
-		 return wi;
-	  }
+	  if( !needsRescale(bits,ds) ) return wi;
+
+	  long start = System.nanoTime();
+	  int maxAllowed = (1 << bits)-1;
+
+	  int [] smlLrg = addSmallestLargest(wi);
 	  WritableRaster r = wi.getValue().getRaster();
-	  // Check to see if this has already been done.
-	  if (r.getSampleModel().getSampleSize(0) <= bits) {
-		 log.warn("Hmm - actual sample model is already smaller, just returning.");
+
+	  if (smlLrg[0] >= 0 && smlLrg[1] <= maxAllowed ) {
+		 // This is actually just a bits sized raw image - don't need to
+         // transcode it - could compute actual bits, but this is good enough.
+		 // This case is VERY common for CT images so it is worth including.  As well it doesn't
+		 // require any actual changes to the results - however, it should be fixed to work
+		 // with 8 bit actual images as well...
+		 ds.putInt(Tag.BitsStored, VR.IS, bits);
+		 BufferedImage bi = new BufferedImage(cm12, r, false, null);
+		 wi.setValue(bi);
+		 log.info("Within reduced bit range already - no image change " + nanoTimeToString(System.nanoTime() - start));
+
 		 return wi;
 	  }
+
+	  int range = smlLrg[1]-smlLrg[0];
+	  int entries = range + 1;
+
+	  
+	  BufferedImage bi;
+	  int stored = ds.getInt(Tag.BitsStored);
 	  boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+
+	  if( bits>8 ) {
+		 ColorModel cm = new ComponentColorModel(gray, new int[]{bits}, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
+		 bi = new BufferedImage(cm, r, false, null);
+		 short[] slut = new short[entries];
+		 for (int i = 0; i < entries; i++) {
+			slut[i] = (short) ((maxAllowed * i) / range);
+		 }
+		 ShortLookupTable lut = new ShortLookupTable(stored, signed, smlLrg[0], bits, slut);
+		 lut.lookup(r.getDataBuffer(), r.getDataBuffer());
+	  } else {
+		 if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
+		 bi = new BufferedImage( wi.getValue().getWidth(), wi.getValue().getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
+		 byte[] blut = new byte[entries];
+		 for (int i = 0; i < entries; i++) {
+			blut[i] = (byte) ((maxAllowed * i) / range);
+		 }
+		 ByteLookupTable lut = new ByteLookupTable(stored, signed, smlLrg[0], bits, blut);
+		 lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer());
+	  }
+
+	  WadoImage wiRet = wi.clone();
+	  wiRet.setValue(bi);
+	  log.info(""+bits+" bit scaled " + nanoTimeToString(System.nanoTime() - start)+" small/large="+smlLrg[0]+","+smlLrg[1]);
+
+	  return wiRet;
+   }
+
+   /** Adds the smallest/largest image pixel value to the image information.
+    * Returns an array of the smallest/largest values.
+    * @param wi
+    */
+   @SuppressWarnings("unchecked")
+   public static int[] addSmallestLargest(WadoImage wi) {
+	  WritableRaster r = wi.getValue().getRaster();
+	  DicomObject ds = wi.getDicomObject();
 	  int smallest = ds.getInt(Tag.SmallestImagePixelValue);
 	  int largest = ds.getInt(Tag.LargestImagePixelValue);
 	  if (smallest >= largest) {
@@ -119,43 +180,28 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		 ds.putInt(Tag.LargestImagePixelValue, VR.IS, largest);
 	  }
 
-	  // TODO handle number of bits !=12  - for now, just go to 12 bits only.
-	  if (smallest >= 0 && largest < 4096) {
-		 // This is actually just a 12 bit raw image - don't need to
-         // transcode it.
-		 ds.putInt(Tag.BitsStored, VR.IS, 12);
-		 BufferedImage bi = new BufferedImage(cm12, r, false, null);
-		 wi.setValue(bi);
-		 log.info("12 bit actual image change " + nanoTimeToString(System.nanoTime() - start));
-
-		 return wi;
-	  }
-
-	  BufferedImage bi = new BufferedImage(cm12, r, false, null);
-	  int range = largest - smallest;
-	  int entries = range + 1;
-	  short[] slut = new short[entries];
-	  for (int i = 0; i < entries; i++) {
-		 slut[i] = (short) ((4095 * i) / range);
-	  }
-	  LookupTable lut = new ShortLookupTable(stored, signed, -smallest, 12, slut);
-	  lut.lookup(r.getDataBuffer(), r.getDataBuffer());
-
-	  WadoImage wiRet = wi.clone();
-	  wiRet.setValue(bi);
-	  log.info("12 bit scaled " + nanoTimeToString(System.nanoTime() - start)+" small/large="+smallest+","+largest);
-	  Collection<String> headers = (Collection<String>) wiRet.getParameter(RESPONSE_HEADERS);
+	  // Add the header now so it is always available.
+	  Collection<String> headers = (Collection<String>) wi.getParameter(RESPONSE_HEADERS);
 	  if( headers==null ) {
 		 headers = new HashSet<String>(2);
-		 wiRet.setParameter(RESPONSE_HEADERS, headers);
+		 wi.setParameter(RESPONSE_HEADERS, headers);
 	  }
 	  headers.add(SMALLEST_IMAGE_PIXEL_VALUE);
 	  headers.add(LARGEST_IMAGE_PIXEL_VALUE);
 	  
-	  wiRet.setParameter(SMALLEST_IMAGE_PIXEL_VALUE, ""+smallest);
-	  wiRet.setParameter(LARGEST_IMAGE_PIXEL_VALUE, ""+largest);
-
-	  return wiRet;
+	  wi.setParameter(SMALLEST_IMAGE_PIXEL_VALUE, ""+smallest);
+	  wi.setParameter(LARGEST_IMAGE_PIXEL_VALUE, ""+largest);
+	  return new int[]{smallest,largest};
    }
 
+
+   public static boolean needsRescale(int bits, DicomObject ds) {
+	  boolean isGray = (ds.getInt(Tag.SamplesPerPixel)==1);
+	  if( !isGray ) return false;
+	  int stored = ds.getInt(Tag.BitsStored);
+	  boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	  // This will ensure that in current versions, colour images won't pass here,
+	  // and that regular images that don't need any translation will go directly through this filter.
+	  return stored > bits || signed;  
+   }
 }

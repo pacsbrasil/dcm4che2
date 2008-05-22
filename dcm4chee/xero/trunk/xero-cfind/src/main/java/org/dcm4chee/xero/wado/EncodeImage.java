@@ -79,17 +79,18 @@ public class EncodeImage implements Filter<ServletResponseItem> {
    private static final float DEFAULT_QUALITY = -1.0f;
 
    protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
+   // TODO - replace the bit information with a set of additional params requested....
    static {
 	  new EncodeResponseInfo("image/jp12", "image/jpeg", true, 12, null, UID.JPEGExtended24);
 	  new EncodeResponseInfo("image/jpls", "image/jpeg", false, 16, "JPEG-LS", UID.JPEGLSLossless, UID.JPEGLSLossyNearLossless);
 	  new EncodeResponseInfo("image/jpll", "image/jpeg", false, 16, "JPEG-LOSSLESS", UID.JPEGLossless);
-	  new EncodeResponseInfo("image/png", null, false, 8, null);
+	  new EncodeResponseInfo("image/png", null, false, 0, null);
 	  new EncodeResponseInfo("image/png16", "image/png", false, 16, null);
 	  // image/jpeg is the default, so add a image/* as an additional mapping.
-	  new EncodeResponseInfo("image/jpeg", null, true, 8, null, UID.JPEGBaseline1, "image/*");
+	  new EncodeResponseInfo("image/jpeg", null, true, 0, null, UID.JPEGBaseline1, "image/*");
 	  new EncodeResponseInfo("image/jp2", null, false, 16, null, UID.JPEG2000, UID.JPEG2000LosslessOnly);
-	  new EncodeResponseInfo("image/gif", null, false, 8, null);
-	  new EncodeResponseInfo("image/bmp", null, false, 8, null);
+	  new EncodeResponseInfo("image/gif", null, false, 0, null);
+	  new EncodeResponseInfo("image/bmp", null, false, 0, null);
    };
 
    /*
@@ -142,7 +143,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			contentType = eri.mimeType;
 			multipleEncoding = false;
 		 }
-		 if( eri!=null ) map.put(MAX_BITS, eri.maxBits);
+		 if( eri!=null && eri.maxBits!=0) map.put(MAX_BITS, eri.maxBits);
 	  }
 	  if( multipleEncoding ) {
 		 // This won't happen if we found the encoding that exists in the actual image, eg IMG_AS_BYTES return.

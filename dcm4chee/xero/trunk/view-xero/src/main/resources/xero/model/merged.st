@@ -56,6 +56,11 @@ Merged.prototype.childTypes = ["patient", "study", "series", "image"];
 Merged.prototype.IMAGE_QUERY_SIZE=64;
 Merged.prototype.QUERY_SIZE=16;
 
+// Event types.
+Merged.prototype.NAVIGATION_CHANGED = 100;
+Merged.prototype.INVALID = 110;
+Merged.prototype.EXTERNAL_CHANGED = 120;
+
 Merged.prototype.QUERY = "/wado2/image.xml";
 
 /** Sets external data for the the study.
@@ -71,7 +76,7 @@ Merged.prototype.QUERY = "/wado2/image.xml";
 Merged.prototype.mergeExternal = function Merged_mergeExternal(external, ret) {
 	if( this.external!==external ) {
 		this.external = external;
-		this.fireChanged();
+		this.fireChanged(this.EXTERNAL_CHANGED);
 	}
 	this.debug("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
@@ -138,6 +143,7 @@ Merged.prototype.setNavigation = function Merged_setNavigation(key,value) {
 	this.debug("setNavigation on %s is %s=%s", this.id, key, value);
 	this.conversation[key] = value;
 
+	this.fireChanged(this.NAVIGATION_CHANGED);
 	this.invalidate(true);
 };
 
@@ -153,7 +159,7 @@ Merged.prototype.invalidate = function Merged_invalidate(isTop) {
 		this.debug("Changed data for old id %s is now %s",oldId,this.id);
 		this.external = undefined;
 		this.conversation = undefined;
-		this.fireChanged();	
+		this.fireChanged(this.INVALID);	
 	};
 	
 	var childKey, child;
@@ -163,12 +169,12 @@ Merged.prototype.invalidate = function Merged_invalidate(isTop) {
 	}
 };
 
-Merged.prototype.fireChanged = function Merge_fireChanged() {
+Merged.prototype.fireChanged = function Merge_fireChanged(type) {
 	if( this.level===0 ) return;
 	var i,n=this.listeners.length;
 	var listener;
 	for(i=0; i<n;i++) {
-		this.listeners[i].mergedListener(this);
+		this.listeners[i].mergedListener(this,type);
 	}
 };
 

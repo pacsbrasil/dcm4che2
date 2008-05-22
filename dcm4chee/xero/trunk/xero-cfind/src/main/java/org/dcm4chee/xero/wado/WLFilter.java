@@ -98,8 +98,8 @@ public class WLFilter implements Filter<WadoImage> {
 		 log.debug("Skipping window levelling as no dicom object header found.");
 		 return wi;
 	  }
-	  if( FilterUtil.getInt(params,EncodeImage.MAX_BITS,8)!=8 ) {
-		 log.info("Skipping window level as more bits than 8 is being requested");
+	  if( FilterUtil.getInt(params,EncodeImage.MAX_BITS)!=0 ) {
+		 log.info("Skipping window level as specific bit depth is being requested - see ReduceBitsFilter");
 		 return wi;
 	  }
 	  
