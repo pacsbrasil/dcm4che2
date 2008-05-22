@@ -203,7 +203,7 @@ public class NetworkConnection {
         }
         catch (UnknownHostException e) {
             addr = null;
-            log.warn("unkown host name: {}", hostname);
+            log.warn("unknown host name: {}", hostname);
         }
     }
 
