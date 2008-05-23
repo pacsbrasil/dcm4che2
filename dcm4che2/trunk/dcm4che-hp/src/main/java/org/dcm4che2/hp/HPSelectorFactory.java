@@ -121,7 +121,7 @@ public class HPSelectorFactory {
             String privateCreator, int tag, int valueNumber, VR vr,
             String[] values) {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
-                valueNumber, vr, values, FilterOp.MEMBER_OF);
+                valueNumber, vr, values, null);
     }
 
     /**
@@ -148,7 +148,7 @@ public class HPSelectorFactory {
     public static HPSelector createAttributeValueSelector(String usageFlag,
             String privateCreator, int tag, int valueNumber, VR vr, int[] values) {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
-                valueNumber, vr, values, FilterOp.MEMBER_OF);
+                valueNumber, vr, values, null);
     }
 
     /**
@@ -176,7 +176,7 @@ public class HPSelectorFactory {
             String privateCreator, int tag, int valueNumber, VR vr,
             float[] values) {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
-                valueNumber, vr, values, FilterOp.MEMBER_OF);
+                valueNumber, vr, values, null);
     }
 
     /**
@@ -201,7 +201,7 @@ public class HPSelectorFactory {
     public static HPSelector createAttributeValueSelector(String usageFlag,
             String privateCreator, int tag, int valueNumber, double[] values) {
         return createAttributeValueSelector(usageFlag, privateCreator, tag,
-                valueNumber, values, FilterOp.MEMBER_OF);
+                valueNumber, values, null);
     }
 
     /**
@@ -226,7 +226,7 @@ public class HPSelectorFactory {
     public static HPSelector createCodeValueSelector(String usageFlag,
             String privateCreator, int tag, Code[] values) {
         return new CodeValueSelector(usageFlag, privateCreator, tag, values,
-                FilterOp.MEMBER_OF);
+                null);
     }
 
     /**
@@ -687,10 +687,12 @@ public class HPSelectorFactory {
                 String usageFlag, FilterOp filterOp, VR vr) {
             super(tag, privateCreator, usageFlag == null || isMatch(usageFlag));
             this.valueNumber = valueNumber;
-            this.filterOp = filterOp;
+            this.filterOp = filterOp != null ? filterOp : FilterOp.MEMBER_OF;
             item.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
-            item.putString(Tag.FilterbyOperator, VR.CS, filterOp
-                    .getCodeString());
+            if (filterOp != null) {
+                item.putString(Tag.FilterbyOperator, VR.CS,
+                        filterOp.getCodeString());
+            }
             item.putString(Tag.SelectorAttributeVR, VR.CS, vr.toString());
             if (usageFlag != null) {
                 item.putString(Tag.ImageSetSelectorUsageFlag, VR.CS, usageFlag);
