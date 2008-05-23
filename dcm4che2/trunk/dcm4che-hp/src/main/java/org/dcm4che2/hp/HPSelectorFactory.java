@@ -217,6 +217,8 @@ public class HPSelectorFactory {
      *            contained by a Private Group, otherwise <code>null</code>.
      * @param tag
      *            Selector Attribute
+     * @param valueNumber
+     *            Selector Value Number
      * @param values
      *            Selector Values
      * @param valueNumber
@@ -224,9 +226,9 @@ public class HPSelectorFactory {
      * @return new Image Set Selector
      */
     public static HPSelector createCodeValueSelector(String usageFlag,
-            String privateCreator, int tag, Code[] values) {
-        return new CodeValueSelector(usageFlag, privateCreator, tag, values,
-                null);
+            String privateCreator, int tag, int valueNumber, Code[] values) {
+        return new CodeValueSelector(tag, privateCreator, valueNumber,
+                usageFlag, null, values);
     }
 
     /**
@@ -420,9 +422,9 @@ public class HPSelectorFactory {
      * @return new Display Set Filter
      */
     public static HPSelector createCodeValueSelector(String privateCreator,
-            int tag, Code[] values, FilterOp filterOp) {
-        return new CodeValueSelector(null, privateCreator, tag, values,
-                filterOp);
+            int tag, int valueNumber, Code[] values, FilterOp filterOp) {
+        return new CodeValueSelector(tag, privateCreator, valueNumber,
+                null, filterOp, values);
     }
 
     /**
@@ -990,9 +992,9 @@ public class HPSelectorFactory {
                         "Missing (0072,0080) Selector Code Sequence Value");
         }
 
-        CodeValueSelector(String usageFlag, String privateCreator, int tag,
-                Code[] values, FilterOp filterOp) {
-            super(tag, privateCreator, 0, usageFlag, filterOp, VR.SQ);
+        CodeValueSelector(int tag, String privateCreator, int valueNumber,
+                String usageFlag, FilterOp filterOp, Code[] values) {
+            super(tag, privateCreator, valueNumber, usageFlag, filterOp, VR.SQ);
             this.params = item.putSequence(Tag.SelectorCodeSequenceValue,
                     values.length);
             for (int i = 0; i < values.length; i++) {
