@@ -22,14 +22,16 @@ public class WSAddressingHandler extends GenericSOAPHandler
 	private static Set<QName> HEADERS = new HashSet<QName>();
 	private String to;
 	private String action;
+	private String messageId;
 
 	static {
 		HEADERS.add( new AddressingConstantsImpl().getActionQName());
 	}
 	
-	public WSAddressingHandler(String to, String action) {
+	public WSAddressingHandler(String to, String action, String messageId) {
 		this.to = to;
 		this.action = action;
+		this.messageId = messageId;
 	}
 	
 	public Set getHeaders()
@@ -40,12 +42,22 @@ public class WSAddressingHandler extends GenericSOAPHandler
 	protected boolean handleOutbound(MessageContext msgContext) {
 		try {
 			SOAPMessage msg = ((SOAPMessageContext)msgContext).getMessage();
+			
+			// Set the "To" header
 			SOAPHeaderElement hdr = msg.getSOAPHeader().addHeaderElement(
 					new QName(XDSConstants.NS_WS_ADDRESSING, XDSConstants.SOAP_HEADER_TO, "wsa"));
 			hdr.setValue(to);
+			
+			// Set the "Action" header
 			hdr = msg.getSOAPHeader().addHeaderElement(
 					new QName(XDSConstants.NS_WS_ADDRESSING, XDSConstants.SOAP_HEADER_ACTION, "wsa"));
 			hdr.setValue(action);
+			
+			// Set the "MessageID" header
+			hdr = msg.getSOAPHeader().addHeaderElement(
+					new QName(XDSConstants.NS_WS_ADDRESSING, XDSConstants.SOAP_HEADER_MSG_ID, "wsa"));
+			hdr.setValue(messageId);
+			
 		} catch (Exception e) {
 			log.error("Error:",e);
 		}

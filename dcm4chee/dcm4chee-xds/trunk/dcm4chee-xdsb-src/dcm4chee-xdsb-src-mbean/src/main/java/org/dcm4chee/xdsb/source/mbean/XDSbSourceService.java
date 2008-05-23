@@ -77,6 +77,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.Handler;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
@@ -98,7 +99,7 @@ import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType.
 import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.dcm4chee.xds.common.ws.DocumentRepositoryPortType;
 import org.dcm4chee.xds.common.ws.DocumentRepositoryService;
-import org.dcm4chee.xdsb.source.ws.SOAPClientHeaderHandler;
+import org.dcm4chee.xds.common.ws.WSAddressingHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 import org.w3c.dom.Node;
@@ -463,8 +464,10 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 			   SOAPBinding binding = (SOAPBinding)((BindingProvider)port).getBinding();
 			   binding.setMTOMEnabled(true);
 			   Map<String, Object> reqCtx = ((BindingProvider)port).getRequestContext();
-		       List customHandlerChain = new ArrayList();
-		       customHandlerChain.add(new SOAPClientHeaderHandler());
+			   List<Handler> customHandlerChain = new ArrayList<Handler>();
+		       customHandlerChain.add(new WSAddressingHandler(
+		    		   xdsRepositoryURI, XDSConstants.URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B, XDSConstants.MSG_ID_PROVIDE_AND_REGISTER_DOCUMENT_SET_B)
+		       		);
 		       binding.setHandlerChain(customHandlerChain);			   
 		       log.debug("OLD ENDPOINT_ADDRESS_PROPERTY:"+reqCtx.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
 			   reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsRepositoryURI);

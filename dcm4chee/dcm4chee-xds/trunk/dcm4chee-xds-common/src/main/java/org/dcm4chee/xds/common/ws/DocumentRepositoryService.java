@@ -29,7 +29,7 @@ public class DocumentRepositoryService
     static {
         URL url = null;
         try {
-            url = new URL("file:/E:/xdsb-schema/wsdl/XDS.b_DocumentRepository.wsdl");
+            url = new URL("http://localhost:8080/dcm4chee-xdsb-repository?wsdl");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
