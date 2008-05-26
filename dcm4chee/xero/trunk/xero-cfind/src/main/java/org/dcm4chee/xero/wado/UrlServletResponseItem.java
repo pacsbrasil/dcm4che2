@@ -92,6 +92,7 @@ public class UrlServletResponseItem implements ServletResponseItem {
 		int s = fc.read(bb);
 		while(s>0) {
 		   os.write(bb.array(), 0, s);
+           bb.clear();
 		   s = fc.read(bb);
 		}
 		fc.close();
