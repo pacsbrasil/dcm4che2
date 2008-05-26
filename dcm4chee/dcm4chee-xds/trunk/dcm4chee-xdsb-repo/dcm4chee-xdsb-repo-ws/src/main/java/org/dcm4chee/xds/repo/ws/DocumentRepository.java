@@ -1,6 +1,5 @@
 package org.dcm4chee.xds.repo.ws;
 
-import javax.jws.HandlerChain;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
@@ -13,7 +12,7 @@ import org.dcm4chee.xds.common.infoset.RegistryResponseType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
 import org.dcm4chee.xds.common.ws.DocumentRepositoryPortType;
-
+import org.jboss.ws.annotation.EndpointConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 		endpointInterface="org.dcm4chee.xds.common.ws.DocumentRepositoryPortType"
 		)
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
-@HandlerChain(file = "jaxws-handlers-server.xml") 
+@EndpointConfig(configName = "Standard SOAP 1.2 WSAddressing Endpoint")
 public class DocumentRepository implements DocumentRepositoryPortType {
 
 	@Resource
