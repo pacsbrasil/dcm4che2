@@ -717,7 +717,7 @@ public class DcmWado {
             sb.append("&presentationUID=").append(psuid[1]);
         }
         if (tsuid != null) {
-            sb.append("&transfersyntax=");
+            sb.append("&transferSyntax=");
             append(tsuid, sb);
         }        
         return new URL(sb.toString());
