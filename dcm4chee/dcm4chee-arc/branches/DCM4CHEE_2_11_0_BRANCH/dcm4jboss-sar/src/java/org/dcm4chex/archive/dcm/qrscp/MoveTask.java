@@ -109,6 +109,7 @@ public class MoveTask implements Runnable {
             .getInstance().getDefaultUIDDictionary();
     
     private static final Timer pendingRspTimer = new Timer(true);
+    private static final Timer waitEchoTimer = new Timer(true);
 
     protected final QueryRetrieveScpService service;
 
@@ -198,6 +199,11 @@ public class MoveTask implements Runnable {
             if (remaining > 0 || fwdMoveRspCmd != null) {
                 notifyMoveSCU(Status.Pending, null, fwdMoveRspCmd);
             }
+        }};
+    private TimerTask sendWaitEcho = new TimerTask() {
+
+        public void run() {
+            log.info("Send DICOM echo while waiting for tar file retrieve!");
         }};
 
     public MoveTask(QueryRetrieveScpService service,
@@ -517,7 +523,11 @@ public class MoveTask implements Runnable {
             };
             
             try {
+            	if ( fileInfo.basedir.startsWith("tar:")) {
+            		waitEchoTimer.schedule(sendPendingRsp , 0, 1000);
+            	}
             	Dimse rq = makeCStoreRQ(fileInfo, getByteBuffer(a));
+            	waitEchoTimer.cancel();
             	perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
