@@ -385,4 +385,12 @@ public abstract class StudyMgtBean implements SessionBean {
             throws FinderException, DcmServiceException {
         getStudy(iuid).setStudyStatusId(statusId);
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public String getStudyStatusId(String iuid, String statusId)
+            throws FinderException, DcmServiceException {
+        return getStudy(iuid).getStudyStatusId();
+    }
 }
