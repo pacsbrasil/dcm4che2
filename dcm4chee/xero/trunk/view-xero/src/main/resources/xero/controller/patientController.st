@@ -152,6 +152,10 @@ XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
 	this.updateView("displayPatient");
 };
 
+XeroController.prototype.setMode = function XC_setMode(md) {
+	alert("Set mode to "+md);
+};
+
 /**
  * Create a patient layout with the given sizing/design
  */

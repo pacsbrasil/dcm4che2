@@ -1,10 +1,16 @@
 <project name="dcm4che-xero" default="deploy">
   <!-- Include build.properties first as it over-rides default.properties -->
   <property file="build.properties" />
+
   <property file="build.properties.default" />
 
+  <!-- Allow inclusion of local additions to the build.
+       These can ADD new targets, but cannot change/modify the base targets.
+  -->
+  <import file="${localBuildXml}" optional="true" />
+
   <target name="build" description="Deploy Xero to the development Dcm4che server.">
-     <exec executable="${mvn}">
+     <exec executable="${mvn}" failonerror="true">
         <arg line="install" />
      </exec>
   </target>

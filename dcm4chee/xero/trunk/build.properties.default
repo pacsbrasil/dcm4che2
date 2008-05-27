@@ -6,4 +6,6 @@ developmentServer=c:/dcm4chee
 # The same as above, but a (more) stable version, for demos etc.
 stableServer=target/dcm4chee
 
+localBuildXml=local/build.xml
+
 mvn=mvn.bat

@@ -42,6 +42,7 @@ public class FindAllTemplates {
    }
    
    static void addAllTemplates(StringTemplateGroup stg, StringTemplate st, Map<String,StringTemplate> templates) {
+	  if( st==null || st.getChunks()==null ) return;
 	  for(Object chunk : st.getChunks() ) {
 		 if( chunk instanceof StringRef ) continue;
 		 if( chunk instanceof ConditionalExpr ) {

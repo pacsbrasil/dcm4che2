@@ -14,7 +14,7 @@ $image/image()$
 $image/imageArea()$
 $image/studyTray()$
 $image/seriesToolbar()$
-
+$image/layoutMenu()$
 $html/nestedRow()$
 $html/layout()$
 
