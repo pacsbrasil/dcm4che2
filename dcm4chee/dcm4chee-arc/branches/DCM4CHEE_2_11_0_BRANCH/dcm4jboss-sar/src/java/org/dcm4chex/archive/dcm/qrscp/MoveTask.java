@@ -540,7 +540,7 @@ public class MoveTask implements Runnable {
             
             try {
             	if ( fileInfo.basedir.startsWith("tar:")) {
-            		waitEchoTimer.schedule(sendWaitEcho , 0, 1000);
+            		waitEchoTimer.schedule(sendWaitEcho , 1000, 1000);
             	}
             	Dimse rq = makeCStoreRQ(fileInfo, getByteBuffer(a));
             	sendWaitEcho.cancel();
