@@ -102,6 +102,7 @@ public class MoveTask implements Runnable {
     private static final byte[] RELATIONAL_RETRIEVE = { 1 };
 
     private static final int PCID = 1;
+    private static final int PCID_ECHO = 1;
 
     private static final String IMAGE = "IMAGE";
 
@@ -201,10 +202,24 @@ public class MoveTask implements Runnable {
             }
         }};
     private TimerTask sendWaitEcho = new TimerTask() {
-
         public void run() {
-            log.info("Send DICOM echo while waiting for tar file retrieve!");
-        }};
+        	sendDicomEcho();
+        } };
+        
+	private void sendDicomEcho() {
+		log.info("Send DICOM Echo while waiting for tar file retrieve!");
+		try {
+			if ( storeAssoc.getAssociation().getAcceptedTransferSyntaxUID(PCID_ECHO) == null) {
+				log.warn("C-ECHO not accepted!");
+			} else {
+				storeAssoc.invoke(AssociationFactory.getInstance().newDimse(
+			        PCID_ECHO, DcmObjectFactory.getInstance().newCommand()
+			        .initCEchoRQ(storeAssoc.getAssociation().nextMsgID())) );
+			}
+		} catch (Exception x) {
+			log.error("Send DICOM Echo failed!",x);
+		}
+	}        
 
     public MoveTask(QueryRetrieveScpService service,
             ActiveAssociation moveAssoc, int movePcid, Command moveRqCmd,
@@ -252,6 +267,7 @@ public class MoveTask implements Runnable {
             if (maxOpsInvoked != 1) {
                 rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
             }
+            rq.addPresContext(asf.newPresContext(PCID_ECHO, UIDs.Verification, new String[]{ UIDs.ImplicitVRLittleEndian }));
             retrieveInfo.addPresContext(rq, service
                     .isSendWithDefaultTransferSyntax(moveDest));
             
