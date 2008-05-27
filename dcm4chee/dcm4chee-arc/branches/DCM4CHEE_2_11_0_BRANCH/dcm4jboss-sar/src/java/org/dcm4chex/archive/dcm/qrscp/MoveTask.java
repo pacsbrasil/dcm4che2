@@ -540,10 +540,10 @@ public class MoveTask implements Runnable {
             
             try {
             	if ( fileInfo.basedir.startsWith("tar:")) {
-            		waitEchoTimer.schedule(sendPendingRsp , 0, 1000);
+            		waitEchoTimer.schedule(sendWaitEcho , 0, 1000);
             	}
             	Dimse rq = makeCStoreRQ(fileInfo, getByteBuffer(a));
-            	waitEchoTimer.cancel();
+            	sendWaitEcho.cancel();
             	perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
             	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
