@@ -1,8 +1,8 @@
-$model/urlFactory()$
-$model/xmlModel()$
-$model/studyData()$
-$model/layout()$
-$model/merged()$
+$urlFactory()$
+$xmlModel()$
+$studyData()$
+$layout()$
+$merged()$
 
 /** Contains the model for Xero.
   * The model has a few parts:

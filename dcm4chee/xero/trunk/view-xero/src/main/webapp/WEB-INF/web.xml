@@ -112,7 +112,7 @@
       </init-param>
       <init-param>
 	      <param-name>templates</param-name>
-    	  <param-value>xero</param-value>
+    	  <param-value>xeroModel,xeroController</param-value>
       </init-param>
       <init-param>
 	      <param-name>contentType</param-name>

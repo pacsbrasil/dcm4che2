@@ -172,7 +172,7 @@ XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,la
 	this.renderComplete(this.model.layouts,true);	 
 };
 
-$controller/patientController()$
+$patientController()$
 
 XeroController.prototype.performSearch = function XC_performSearch() {
 	var model = this.model;

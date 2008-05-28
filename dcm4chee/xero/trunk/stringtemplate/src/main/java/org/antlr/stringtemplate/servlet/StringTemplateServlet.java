@@ -130,7 +130,7 @@ public class StringTemplateServlet extends HttpServlet{
 		  parents[i] = parents[i].trim();
 		  URL url = cl.getResource(parents[i]);
 		  if( url==null ) {
-			 throw new IllegalArgumentException("No resource named "+name);
+			 throw new IllegalArgumentException("No resource named "+parents[i]);
 		  }
 		  String rootDir = url.getFile();
 		  StringTemplateGroup ret = new StringTemplateGroup(parents[i], rootDir);
