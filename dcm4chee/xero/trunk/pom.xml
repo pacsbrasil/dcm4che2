@@ -14,6 +14,7 @@
 
    <modules>
       <module>metadata</module>
+      <module>util-xero</module>
       <module>wado-xero</module>
       <module>model-xero</module>
       <module>view-xero</module>

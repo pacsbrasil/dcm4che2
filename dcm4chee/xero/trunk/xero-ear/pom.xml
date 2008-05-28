@@ -49,11 +49,6 @@
              </jarModule>
              <webModule>
                <groupId>org.dcm4chee.xero</groupId>
-               <artifactId>xero-wado-war</artifactId>
-               <contextRoot>/wado2</contextRoot>
-             </webModule>
-             <webModule>
-               <groupId>org.dcm4chee.xero</groupId>
                <artifactId>xero-war</artifactId>
                <contextRoot>/xero</contextRoot>
              </webModule>
@@ -153,12 +148,6 @@
         <groupId>org.dcm4chee.xero</groupId>
         <artifactId>wado-xero</artifactId>
         <version>1.0-SNAPSHOT</version>
-     </dependency>
-     <dependency>
-        <groupId>org.dcm4chee.xero</groupId>
-        <artifactId>xero-wado-war</artifactId>
-        <version>1.0-SNAPSHOT</version>
-        <type>war</type>
      </dependency>
      <dependency>
         <groupId>org.dcm4chee.xero</groupId>

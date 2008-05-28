@@ -59,7 +59,7 @@
      </jar>
   </target>
 
-  <target name="deploy" depends="localBuild, build, deployXero, localDeploy" description="Deploy Xero to the development Dcm4che server." />
+  <target name="deploy" depends="build, localBuild, deployXero, deployWADO, localDeploy" description="Deploy Xero to the development Dcm4che server." />
 
   <target name="deployXero">
      <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
@@ -68,11 +68,14 @@
      <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
         <fileset dir="xero-war/target/xero" />
      </copy>
-     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero-wado.war" preservelastmodified="true">
-        <fileset dir="xero-wado-war/target/xero-wado" excludes="**/*.jar" />
-     </copy>
      <copy todir="${developmentServer}/server/default/deploy/xero.ear/view-xero.war" preservelastmodified="true">
         <fileset dir="view-xero/target/view-xero" excludes="**/*.jar" />
+     </copy>
+   </target>
+
+   <target name="deployWADO">
+     <copy todir="${developmentServer}/server/default/deploy/wado2.war" preservelastmodified="true">
+        <fileset dir="xero-wado-war/target/xero-wado" />
      </copy>
    </target>
 
