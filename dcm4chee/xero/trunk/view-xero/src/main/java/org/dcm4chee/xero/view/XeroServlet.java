@@ -45,6 +45,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.antlr.stringtemplate.StringTemplateGroup;
+import org.antlr.stringtemplate.servlet.SessionMap;
+import org.antlr.stringtemplate.servlet.StringSafeRenderer;
+import org.antlr.stringtemplate.servlet.StringTemplateServlet;
 import org.dcm4chee.xero.controller.Action;
 import org.dcm4chee.xero.controller.RequestValidator;
 import org.dcm4chee.xero.controller.XmlModelFactory;

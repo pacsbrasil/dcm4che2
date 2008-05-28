@@ -1,6 +1,7 @@
-package org.dcm4chee.xero.view;
+package org.antlr.stringtemplate.servlet;
 
 import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -29,7 +30,7 @@ public class SessionMap extends AbstractMap<String,Object> {
    }
 
    @Override
-   public Set entrySet() {
+   public Set<Map.Entry<String,Object> > entrySet() {
 	  throw new UnsupportedOperationException("entrySet not yet supported.");
    }
    

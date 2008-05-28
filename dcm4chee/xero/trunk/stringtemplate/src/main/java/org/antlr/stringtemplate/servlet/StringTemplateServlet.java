@@ -1,4 +1,4 @@
-package org.dcm4chee.xero.view;
+package org.antlr.stringtemplate.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -133,8 +133,14 @@ public class StringTemplateServlet extends HttpServlet{
 			 throw new IllegalArgumentException("No resource named "+name);
 		  }
 		  String rootDir = url.getFile();
-		  assert rootDir!=null;
 		  StringTemplateGroup ret = new StringTemplateGroup(parents[i], rootDir);
+		  log.info("root resource for {} is {}", parents[i],rootDir);
+		  if( rootDir==null || rootDir.indexOf('!')>0) {
+			 log.info("Using root resource {}",parents[i]);
+			 // Just use the name directly as the root resource.
+			 ret.setRootResource(parents[i]);
+			 ret.setRootDir(null);
+		  }
 		  ret.setRefreshInterval(refreshIntervalInSeconds);
 		  if( parentSTG!=null ) ret.setSuperGroup(parentSTG);
 		  parentSTG = ret;

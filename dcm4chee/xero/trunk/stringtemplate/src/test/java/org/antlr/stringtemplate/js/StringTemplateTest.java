@@ -35,11 +35,11 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.view;
+package org.antlr.stringtemplate.js;
 
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 /** Tests string template performance */
 public class StringTemplateTest {

@@ -1,16 +1,8 @@
-package org.dcm4chee.xero.view;
+package org.antlr.stringtemplate.js;
 
-import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.Set;
 
-import org.antlr.stringtemplate.language.ASTExpr;
-import org.antlr.stringtemplate.language.NewlineRef;
-import org.antlr.stringtemplate.language.StringRef;
-import org.antlr.stringtemplate.language.StringTemplateAST;
 import org.antlr.stringtemplate.language.ActionEvaluatorTokenTypes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This names the template to use to handle the given object node type.
@@ -19,8 +11,8 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
+@SuppressWarnings("serial")
 public class NameJSTemplate extends HashMap<Object,String> {
-   private static final Logger log = LoggerFactory.getLogger(NameJSTemplate.class);
 
    public NameJSTemplate() {
 	  put(ActionEvaluatorTokenTypes.ANONYMOUS_TEMPLATE,"anonymousTemplate");

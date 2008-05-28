@@ -15,6 +15,12 @@
      </exec>
   </target>
 
+  <target name="buildStringtemplate" description="Builds stringtemplate.">
+     <exec executable="${mvn}" failonerror="true" dir="stringtemplate">
+        <arg line="install" />
+     </exec>
+  </target>
+
   <!-- Sets up the lib directory -->
   <target name="setupLib">
      <delete>
@@ -85,7 +91,7 @@
      </copy>
   </target>
 
-  <target name="package" depends="build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
+  <target name="package" depends="buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
      <mkdir dir="target" />
      <zip destfile="target/xero.zip" basedir="${stableServer}" />
   </target>

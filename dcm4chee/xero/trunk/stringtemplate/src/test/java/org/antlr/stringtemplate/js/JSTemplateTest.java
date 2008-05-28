@@ -1,4 +1,4 @@
-package org.dcm4chee.xero.view;
+package org.antlr.stringtemplate.js;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,10 +13,12 @@ import javax.script.ScriptException;
 
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
-import org.dcm4chee.xero.util.StringUtil;
+import org.antlr.stringtemplate.js.NameJSTemplate;
+import org.antlr.stringtemplate.servlet.FindAllTemplates;
+import org.antlr.stringtemplate.servlet.StringSafeRenderer;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
 
 /**
  * This class tests rendering the xero templates into JavaScript.
@@ -30,12 +32,12 @@ public class JSTemplateTest {
 
    static String rootDir = cl.getResource("jstemplate").getFile();
 
-   static String dataDir = cl.getResource("jstest").getFile();
+   static String dataDir = cl.getResource("jstemplatetest").getFile();
 
    // This copy of stgData is used as the base data to render.
-   static StringTemplateGroup stgData = new StringTemplateGroup("jstest", dataDir);
+   static StringTemplateGroup stgData = new StringTemplateGroup("jstemplatetest", dataDir);
 
-   static StringTemplateGroup stgRender = new StringTemplateGroup("jstest", dataDir);
+   static StringTemplateGroup stgRender = new StringTemplateGroup("jstemplatetest", dataDir);
 
    static StringTemplateGroup stg = new StringTemplateGroup("jstemplate", rootDir);
    static {
@@ -183,7 +185,7 @@ public class JSTemplateTest {
 	  StringTemplate stgTest = stgData.getInstanceOf("testtemplate");
 	  stgTest.setAttribute("expected", expected);
 	  stgTest.setAttribute("template", testKey);
-	  String log = readResource("model/rhino.js") + "\n" + readResource("model/logging.js");
+	  String log = readResource("jsbase/rhino.js") + "\n" + readResource("jsbase/logging.js");
 	  String stProg = st.toString();
 	  String testProg = stgTest.toString();
 	  return log+"\n"+stProg+"\n"+testProg;

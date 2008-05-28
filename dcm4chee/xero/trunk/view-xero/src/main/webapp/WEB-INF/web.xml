@@ -52,7 +52,7 @@
    
    <servlet>
       <servlet-name>Xero View Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.view.JSTemplateServlet</servlet-class>
+      <servlet-class>org.antlr.stringtemplate.servlet.JSTemplateServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
       <init-param>
 	      <param-name>refreshInterval</param-name>
@@ -78,7 +78,7 @@
    
    <servlet>
       <servlet-name>Xero IE View Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.view.JSTemplateServlet</servlet-class>
+      <servlet-class>org.antlr.stringtemplate.servlet.JSTemplateServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
       <init-param>
 	      <param-name>refreshInterval</param-name>
@@ -104,7 +104,7 @@
 
    <servlet>
       <servlet-name>Xero JS Servlet</servlet-name>
-      <servlet-class>org.dcm4chee.xero.view.StringTemplateServlet</servlet-class>
+      <servlet-class>org.antlr.stringtemplate.servlet.StringTemplateServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
       <init-param>
 	      <param-name>refreshInterval</param-name>
