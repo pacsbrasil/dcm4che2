@@ -17,6 +17,9 @@
       <module>xero-cfind</module>
       <module>model-xero</module>
       <module>view-xero</module>
+      <module>controller-xero</module>
+
+      <!-- Remove the following once the new template version is ready -->
       <module>xero-core</module>
       <module>xero-wado-war</module>
       <module>xero-war</module>
