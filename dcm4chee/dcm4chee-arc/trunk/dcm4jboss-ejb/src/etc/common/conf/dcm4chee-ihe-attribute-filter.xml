@@ -21,6 +21,7 @@
         <attr tag="00081032"/> <!-- Procedure Code Seq -->
         <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
         <attr tag="00200010"/> <!-- Study ID -->
+        <attr tag="0032000A"/> <!-- Study Status ID -->
     </study>
     <series>
         <attr tag="00080005"/> <!-- Specific Character Set -->

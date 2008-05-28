@@ -383,7 +383,12 @@ public abstract class StudyMgtBean implements SessionBean {
      */
     public void updateStudyStatusId(String iuid, String statusId)
             throws FinderException, DcmServiceException {
-        getStudy(iuid).setStudyStatusId(statusId);
+        StudyLocal study = getStudy(iuid);
+        Dataset attrs = study.getAttributes(false);
+        if (!statusId.equals(attrs.getString(Tags.StudyStatusID))) {
+            attrs.putCS(Tags.StudyStatusID, statusId);
+            study.setAttributes(attrs);
+        }
     }
 
     /**

@@ -834,6 +834,7 @@ public abstract class StudyBean implements EntityBean {
     private void setAttributesInternal(Dataset ds, String tsuid) {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setStudyId(ds.getString(Tags.StudyID));
+        setStudyStatusId(ds.getString(Tags.StudyStatusID));
         try {
             setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         } catch (IllegalArgumentException e) {
