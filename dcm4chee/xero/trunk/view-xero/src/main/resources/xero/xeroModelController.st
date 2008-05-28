@@ -1,2 +1,2 @@
-$model/model()$
+$model()$
 $controller/controller()$
