@@ -1,8 +1,0 @@
-<html
-    xmlns:m="http://www.dcm4che.org/xero/metadata/simpleExample"
-    m:tml="compiledJS/simpleExample.tml"
-    m:inherit="templates"
->
-<body>
-</body>
-</html>

@@ -47,6 +47,11 @@
                 <artifactId>model-xero</artifactId>
                 <includeInApplicationXml>true</includeInApplicationXml>
              </jarModule>
+              <jarModule>
+                <groupId>org.dcm4chee.xero</groupId>
+                <artifactId>util-xero</artifactId>
+                <includeInApplicationXml>true</includeInApplicationXml>
+             </jarModule>
              <webModule>
                <groupId>org.dcm4chee.xero</groupId>
                <artifactId>xero-war</artifactId>
@@ -135,6 +140,12 @@
      <dependency>
         <groupId>org.dcm4chee.xero</groupId>
         <artifactId>model-xero</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <type>jar</type>
+     </dependency>
+     <dependency>
+        <groupId>org.dcm4chee.xero</groupId>
+        <artifactId>util-xero</artifactId>
         <version>1.0-SNAPSHOT</version>
         <type>jar</type>
      </dependency>

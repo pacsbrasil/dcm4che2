@@ -1,1 +1,1 @@
-  <script src="/xview/xeroView.js" type="text/ecmascript"> </script>
+  <script src="xeroView.js" type="text/ecmascript"> </script>
