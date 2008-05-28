@@ -59,7 +59,7 @@
      </jar>
   </target>
 
-  <target name="deploy" depends="build,deployXero" description="Deploy Xero to the development Dcm4che server." />
+  <target name="deploy" depends="localBuild, build, deployXero, localDeploy" description="Deploy Xero to the development Dcm4che server." />
 
   <target name="deployXero">
      <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
@@ -76,7 +76,7 @@
      </copy>
    </target>
 
-   <target name="deployView">
+   <target name="deployView" depends="localDeployView">
       <copy todir="${developmentServer}/server/default/deploy/xero.ear/view-xero.war">
          <fileset dir="view-xero/src/main/webapp" includes="**/*" />
       </copy>
@@ -91,7 +91,7 @@
      </copy>
   </target>
 
-  <target name="package" depends="buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
+  <target name="package" depends="localBuild,buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
      <mkdir dir="target" />
      <zip destfile="target/xero.zip" basedir="${stableServer}" />
   </target>

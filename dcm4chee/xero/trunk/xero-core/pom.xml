@@ -42,7 +42,7 @@
     </dependency>
     <dependency>
     	<groupId>org.dcm4chee.xero</groupId>
-    	<artifactId>xero-cfind</artifactId>
+    	<artifactId>wado-xero</artifactId>
     	<version>1.0-SNAPSHOT</version>
     	<scope>provided</scope>
     </dependency>

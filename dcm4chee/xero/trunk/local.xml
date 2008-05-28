@@ -1,0 +1,11 @@
+<project name="dcm4che-xero-local">
+
+  <target name="localDeployView">
+  </target>
+
+  <target name="localBuild">
+  </target>
+
+  <target name="localDeploy">
+  </target>
+</project>

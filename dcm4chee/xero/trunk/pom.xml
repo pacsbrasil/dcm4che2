@@ -14,7 +14,7 @@
 
    <modules>
       <module>metadata</module>
-      <module>xero-cfind</module>
+      <module>wado-xero</module>
       <module>model-xero</module>
       <module>view-xero</module>
       <module>controller-xero</module>
