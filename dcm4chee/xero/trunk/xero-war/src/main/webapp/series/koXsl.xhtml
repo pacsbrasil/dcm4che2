@@ -12,7 +12,7 @@
   <xsl:for-each select="$node/se:series/se:keyObject">
     <span>
        <a target="displayFrame">
-         <xsl:attribute name="href">/xero/series/action/SelectKo.seam?cid=<xsl:value-of select="$cid" />&amp;patientIdentifier=<xsl:value-of select="../../../@PatientIdentifier" />&amp;studyUID=<xsl:value-of select="../../@StudyInstanceUID" />&amp;koUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
+         <xsl:attribute name="href">../series/action/SelectKo.seam?cid=<xsl:value-of select="$cid" />&amp;patientIdentifier=<xsl:value-of select="../../../@PatientIdentifier" />&amp;studyUID=<xsl:value-of select="../../@StudyInstanceUID" />&amp;koUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
          KIN: <xsl:value-of select="@conceptMeaning" />
        </a>
    </span>

@@ -21,7 +21,7 @@
   <xsl:param name="seriesUID" select="$seriesDocNode/se:results/se:patient/se:study/se:series/@SeriesInstanceUID" />
   <xsl:param name="position" select="$seriesDocNode/se:results/se:patient/se:study/se:series/se:image/@Position" />
   <a>
-    <xsl:attribute name="href">/xero/image/action/Navigate.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$pid" />&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" />&amp;position=<xsl:value-of select="$position" /></xsl:attribute>
+    <xsl:attribute name="href">../image/action/Navigate.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$pid" />&amp;studyUID=<xsl:value-of select="$studyUID" />&amp;seriesUID=<xsl:value-of select="$seriesUID" />&amp;position=<xsl:value-of select="$position" /></xsl:attribute>
   	Image 
     <img>
 	  <xsl:attribute name="src">/wado2/wado?requestType=XERO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="$objectUID"/>&amp;rows=128</xsl:attribute>

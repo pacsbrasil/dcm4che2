@@ -294,14 +294,14 @@ if( !window.showModalDialog ) {
 
 
 /**
- * Gets the URL up to the end of the 1st component, eg given http://server/xero/wado?... it returns
- * http://server/xero
+ * Gets the URL up to the end of the 1st component, eg given http://server/xslt/wado?... it returns
+ * http://server/xslt
  * as this is the part that gets deployed independently.
  */
 function getUrlModule(url) {
 	if( url===null || url===undefined ) {
-		info("Undefined URL, returning /xero as the base path...");
-		return "/xero";
+		info("Undefined URL, returning /xslt as the base path...");
+		return "/xslt";
 	}
 	var idx = url.indexOf("//")+1;
 	idx = url.indexOf("/",idx)+1;

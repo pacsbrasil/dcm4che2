@@ -6,15 +6,15 @@
    xmlns:c="http://java.sun.com/jstl/core"
    xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl"
    m:includeXsl="/image/imageXsl.xhtml"
-   m:Display.script="/xero/image/ImageEvent.js"
+   m:Display.script="../image/ImageEvent.js"
    m:Display.script.priority="950"
-   m:WL.script="/xero/image/windowLevel.js"
+   m:WL.script="../image/windowLevel.js"
    m:WL.script.priority="50"
    m:WL.toolbar="wlToolbar"
-   m:Event.script="/xero/js/Events.js"
+   m:Event.script="../js/Events.js"
    m:Event.script.priority="1000"
    m:jsEnabled.inherit="jsEnabled"
-   m:trace.script="/xero/trace/trace.js"
+   m:trace.script="../trace/trace.js"
 >
 
  <xsl:output method="xml" version="1.0" doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN" />
@@ -56,7 +56,7 @@ var xslRenderWindow = [<xsl:value-of select="concat(/documents/displayResolution
 	
     <x:callTemplates from="#{pageConfig}" mode="meta" />
     <title>Xero Image Frame</title>
-    <link rel="stylesheet" media="all" type="text/css" href="/xero/layout/cssMenu.css" />
+    <link rel="stylesheet" media="all" type="text/css" href="../layout/cssMenu.css" />
     <xsl:if test="$jsEnabled">
       <x:callTemplates from="#{pageConfig}" mode="script" />
     </xsl:if>

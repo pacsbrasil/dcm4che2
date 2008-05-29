@@ -143,7 +143,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			contentType = eri.mimeType;
 			multipleEncoding = false;
 		 }
-		 if( eri!=null && eri.maxBits!=0) map.put(MAX_BITS, eri.maxBits);
+		 if( eri!=null && eri.maxBits!=0 && map.containsKey(MAX_BITS)==false) map.put(MAX_BITS, eri.maxBits);
 	  }
 	  if( multipleEncoding ) {
 		 // This won't happen if we found the encoding that exists in the actual image, eg IMG_AS_BYTES return.

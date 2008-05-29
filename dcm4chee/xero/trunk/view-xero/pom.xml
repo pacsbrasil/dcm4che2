@@ -9,16 +9,6 @@
   <name>Xero View Templates</name>
   <artifactId>view-xero</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>war</packaging>
-  <build>
-     <finalName>view-xero</finalName>
-     <plugins>
-        <plugin>
-           <artifactId>maven-war-plugin</artifactId>
-           <configuration></configuration>
-        </plugin>
-     </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
@@ -34,6 +24,7 @@
       <groupId>javax.servlet</groupId>
       <artifactId>jsp-api</artifactId>
       <version>2.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
        <groupId>org.antlr</groupId>

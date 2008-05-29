@@ -9,13 +9,20 @@
   -->
   <import file="${localBuildXml}" optional="true" />
 
-  <target name="build" description="Deploy Xero to the development Dcm4che server.">
+  <target name="build" description="Build all components." depends="buildStringtemplate, buildBase" />
+
+  <target name="deploy" depends="deployWado, deployViewAll" description="Deploy Xero to the development Dcm4che server." />
+
+
+  <!-- Builds the WADO war file -->
+  <target name="buildBase">
      <exec executable="${mvn}" failonerror="true">
         <arg line="install" />
      </exec>
   </target>
 
-  <target name="buildStringtemplate" description="Builds stringtemplate.">
+  <!-- Builds the custom Xero stringtemplate library -->
+  <target name="buildStringtemplate">
      <exec executable="${mvn}" failonerror="true" dir="stringtemplate">
         <arg line="install" />
      </exec>
@@ -36,13 +43,6 @@
      </copy>
   </target>
 
-  <!-- Copies just the webapp files over for a quick test deploy -->
-  <target name="deployWebapp" description="Copy webapp files over for a no-redeploy test.">
-     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war">
-        <fileset dir="xero-war/src/main/webapp" includes="**/*" />
-     </copy>
-  </target>
-
   <target name="setupConf">
      <copy todir="${developmentServer}/server/default/conf" overwrite="true">
         <fileset dir="conf" includes="**/*" />
@@ -59,42 +59,47 @@
      </jar>
   </target>
 
-  <target name="deploy" depends="build, localBuild, deployXero, deployWADO, localDeploy" description="Deploy Xero to the development Dcm4che server." />
-
-  <target name="deployXero">
-     <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
-        <fileset dir="xero-ear/target/xero" excludes="xero.war,xero-wado.war,view-xero.war" />
-     </copy>
-     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
-        <fileset dir="xero-war/target/xero" />
-     </copy>
-     <copy todir="${developmentServer}/server/default/deploy/xero.ear/view-xero.war" preservelastmodified="true">
-        <fileset dir="view-xero/target/view-xero" excludes="**/*.jar" />
-     </copy>
-   </target>
-
-   <target name="deployWADO">
+  <target name="deployWado" depends="buildBase" description="Build and deploy WADO to ${developmentServer}">
      <copy todir="${developmentServer}/server/default/deploy/wado2.war" preservelastmodified="true">
         <fileset dir="xero-wado-war/target/xero-wado" />
      </copy>
-   </target>
+  </target>
 
-   <target name="deployView" depends="localDeployView">
-      <copy todir="${developmentServer}/server/default/deploy/xero.ear/view-xero.war">
-         <fileset dir="view-xero/src/main/webapp" includes="**/*" />
+  <!-- An internal target to deploy all the view components - does not recompile -->
+  <target name="deployViewAll" depends="deployView">
+      <copy todir="${developmentServer}/server/default/deploy/xero.war">
+         <fileset dir="xero-view-war/target/xero-view" includes="**/*" />
       </copy>
-      <copy todir="${developmentServer}/server/default/deploy/xero.ear/view-xero.war/WEB-INF/classes">
+  </target>
+
+   <target name="deployView" depends="localDeployView" description="Deploys JUST the resources to the Xero view - no recompile">
+      <copy todir="${developmentServer}/server/default/deploy/xero.war">
+         <fileset dir="xero-view-war/src/main/webapp" includes="**/*" />
+      </copy>
+      <copy todir="${developmentServer}/server/default/deploy/xero.war/WEB-INF/classes">
          <fileset dir="view-xero/src/main/resources" includes="**/*" />
          <fileset dir="model-xero/src/main/resources" includes="**/*" />
          <fileset dir="controller-xero/src/main/resources" includes="**/*" />
       </copy>
    </target>
 
-   <target name="deployWado" depends="build">
-     <copy todir="${developmentServer}/server/default/deploy/xero-wado-war.war" preservelastmodified="true">
-        <fileset dir="xero-wado-war/target/xero-wado-war" includes="**/*" />
+   <target name="deployEar" description="Deploys the EAR view of Xero containing all the components to the server.">
+     <exec executable="${mvn}" failonerror="true" dir="xero-core">
+        <arg line="install" />
+     </exec>
+     <exec executable="${mvn}" failonerror="true" dir="xero-war">
+        <arg line="install" />
+     </exec>
+     <exec executable="${mvn}" failonerror="true" dir="xero-ear">
+        <arg line="install" />
+     </exec>
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
+        <fileset dir="xero-ear/target/xero" excludes="xero.war" />
      </copy>
-  </target>
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
+        <fileset dir="xero-war/target/xero" />
+     </copy>
+   </target>
 
   <target name="package" depends="localBuild,buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
      <mkdir dir="target" />

@@ -16,15 +16,13 @@
       <module>metadata</module>
       <module>util-xero</module>
       <module>wado-xero</module>
+      <module>xero-wado-war</module>
+
       <module>model-xero</module>
       <module>view-xero</module>
       <module>controller-xero</module>
+      <module>xero-view-war</module>
 
-      <!-- Remove the following once the new template version is ready -->
-      <module>xero-core</module>
-      <module>xero-wado-war</module>
-      <module>xero-war</module>
-      <module>xero-ear</module>
   </modules>
 
   <dependencies>

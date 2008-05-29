@@ -15,8 +15,8 @@
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="http://www.w3.org/1999/xhtml"
   m:includeXsl="/image/baseImageXsl.xhtml"
-  mx:cine.script="/xero/image/cine.js"
-  mx:lookAheadImage.script="/xero/js/LookAheadImage.js"
+  mx:cine.script="../image/cine.js"
+  mx:lookAheadImage.script="../js/LookAheadImage.js"
 >
 
 
@@ -302,10 +302,10 @@
   <xsl:variable name="zoom" select="../@zoom" />
   <xsl:choose>
     <xsl:when test=" 0.5 > ($zoom - $compZoom)  and 0.5 > ($compZoom - $zoom)">
-      <img src="/xero/img/zoomScaleActive.png" alt="|" width="32" height="17"/>
+      <img src="../img/zoomScaleActive.png" alt="|" width="32" height="17"/>
     </xsl:when>
     <xsl:otherwise>
-      <img src="/xero/img/zoomScale.png" alt="|" width="32" height="17" />
+      <img src="../img/zoomScale.png" alt="|" width="32" height="17" />
     </xsl:otherwise>
   </xsl:choose>
 </x:template>
@@ -715,10 +715,10 @@ and cx,cy = width /2, height/2
   
   <xsl:if test="$custImage/@koUID='true' or (count($custImage[@koUID])=0 and $node/@koUID!='')">
    <c:if test="#{browser=='MSIE'}">
-    <v:image style="width:100px; height: 100px; top: 25px; left: 900px;" src="/xero/img/key.png" />
+    <v:image style="width:100px; height: 100px; top: 25px; left: 900px;" src="../img/key.png" />
    </c:if>
    <c:if test="#{browser!='MSIE'}">
-    <svg:image xlink:href="/xero/img/key.png" x="900" y="25" width="100" height="100" preserveAspectRatio="none"/>
+    <svg:image xlink:href="../img/key.png" x="900" y="25" width="100" height="100" preserveAspectRatio="none"/>
    </c:if>
   </xsl:if>
 </x:template>

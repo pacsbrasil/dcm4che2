@@ -3,13 +3,13 @@
 -->
 <x:xsl
    pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).imageHoverXsl}"
-   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:x="http://www.dcm4che.org../jsf"
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/imageHoverXsl"
    m:includeXsl="/image/imageHoverXsl.xhtml"
    m:includeXsl.priority="-1"
-   m:script="/xero/image/imageHover.js"
+   m:script="../image/imageHover.js"
 >
 
 <x:template name="imageHoverLayout" mode="newlayout" match="xul:imageHover">

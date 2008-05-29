@@ -10,90 +10,90 @@
     -->
   <div class="menu" id='studyToolbar'>
    <ul>
-    <li><se:series offset="-1"><a id="prevSeries" dir="-1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">&lt;Series</a></se:series></li>
-    <li><a id="wlBtn" oncommand="/xero/image/action/Mode.seam?mode=windowLevel"  ><img class="icon" src="/xero/img/wl.png" alt="[Window Level]" active="windowLevel"/></a></li>
-    <li><a id="zpBtn" oncommand="/xero/image/action/Mode.seam?mode=zoomPan"><img class="icon" src="/xero/img/zoomPan.png" alt="[Zoom/Pan]"  active="zoomPan"/></a></li>
-    <li><a id="keyBtn" oncommand="/xero/image/action/Mode.seam?mode=key"><img class="icon" src="/xero/img/key.png" alt="[Key Image]" active="key"/></a></li>
-    <li><a id="cmBtn" oncommand="/xero/image/action/Mode.seam?mode=createMarkup" ><img class="icon" src="/xero/img/polyCaliper.png" alt="[Poly Caliper]" active="createMarkup"/></a>
+    <li><se:series offset="-1"><a id="prevSeries" dir="-1" oncommand="../image/action/Navigate.seam?applyLevel=series">&lt;Series</a></se:series></li>
+    <li><a id="wlBtn" oncommand="../image/action/Mode.seam?mode=windowLevel"  ><img class="icon" src="../img/wl.png" alt="[Window Level]" active="windowLevel"/></a></li>
+    <li><a id="zpBtn" oncommand="../image/action/Mode.seam?mode=zoomPan"><img class="icon" src="../img/zoomPan.png" alt="[Zoom/Pan]"  active="zoomPan"/></a></li>
+    <li><a id="keyBtn" oncommand="../image/action/Mode.seam?mode=key"><img class="icon" src="../img/key.png" alt="[Key Image]" active="key"/></a></li>
+    <li><a id="cmBtn" oncommand="../image/action/Mode.seam?mode=createMarkup" ><img class="icon" src="../img/polyCaliper.png" alt="[Poly Caliper]" active="createMarkup"/></a>
      <ul>
-	    <li><a id="emBtn" oncommand="/xero/image/action/Mode.seam?mode=editMarkup" ><img class="icon" src="/xero/img/editMarkup.png" alt="[Edit Markup]" active="editMarkup"/> Edit</a></li>	 
+	    <li><a id="emBtn" oncommand="../image/action/Mode.seam?mode=editMarkup" ><img class="icon" src="../img/editMarkup.png" alt="[Edit Markup]" active="editMarkup"/> Edit</a></li>	 
 	 </ul>
 	</li>
-    <li><a id="cineBtn" label="Cine" oncommand="/xero/image/action/Mode.seam?mode=cine"><img class="icon" src="/xero/img/cine.png" alt="[CINE]" active="cine"/></a></li>
+    <li><a id="cineBtn" label="Cine" oncommand="../image/action/Mode.seam?mode=cine"><img class="icon" src="../img/cine.png" alt="[CINE]" active="cine"/></a></li>
     <li mode="cine"><input id="cineSpeed" mode="cine" type="text" style="width:30px;" value="15" />
       <ul>
-        <li><a mode="cine" onclick="cineRate(this,0.8); return false;"><img class="icon" src="/xero/img/slower.png" alt="slower" /> Much Slower</a></li>
-        <li><a mode="cine" onclick="cineRate(this,0.95); return false;"><img class="icon" src="/xero/img/slower.png" alt="slower" /> Slower</a></li>
-		<li><a mode="cine" onclick="cineRate(this,1.05); return false;"><img class="icon" src="/xero/img/faster.png" alt="faster" /> Faster</a></li>
-		<li><a mode="cine" onclick="cineRate(this,1.2); return false;"><img class="icon" src="/xero/img/faster.png" alt="faster" /> Much Faster</a></li>
+        <li><a mode="cine" onclick="cineRate(this,0.8); return false;"><img class="icon" src="../img/slower.png" alt="slower" /> Much Slower</a></li>
+        <li><a mode="cine" onclick="cineRate(this,0.95); return false;"><img class="icon" src="../img/slower.png" alt="slower" /> Slower</a></li>
+		<li><a mode="cine" onclick="cineRate(this,1.05); return false;"><img class="icon" src="../img/faster.png" alt="faster" /> Faster</a></li>
+		<li><a mode="cine" onclick="cineRate(this,1.2); return false;"><img class="icon" src="../img/faster.png" alt="faster" /> Much Faster</a></li>
 	  </ul>
 	 </li>
 
-    <li><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/>
+    <li><img class="icon" src="../img/layoutSe2x2.png" alt="[Se2x2]"/>
      <ul>
-      <li><a id="layoutSe2x2" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutXml.seam&amp;seriesWidth=2&amp;seriesHeight=2" ><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/></a></li>
-      <li><a id="layoutSe3x3" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutXml.seam&amp;seriesWidth=3&amp;seriesHeight=3" ><img class="icon" src="/xero/img/layoutSe3x3.png" alt="[Se3x3]"/></a></li>
-      <!--  <li><a id="layoutSe2x2Im2x1" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutXml.seam&amp;studyWidth=2&amp;studyHeight=2&amp;seriesWidth=2&amp;seriesHeight=2&amp;imageWidth=2&amp;imageHeight=2" ><img class="icon" src="/xero/img/layoutSe2x2.png" alt="[Se2x2]"/></a></li> -->
-      <li><a id="layout1x1" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutXml.seam&amp;studyWidth=1&amp;studyHeight=1&amp;seriesWidth=1&amp;seriesHeight=1&amp;imageWidth=1&amp;imageHeight=1" ><img class="icon" src="/xero/img/layout1x1.png" alt="[1x1]"/></a></li>
-      <li><a id="layoutIm6x4" oncommand="/xero/image/action/Layout.seam?layout=/xero/image/layoutXml.seam&amp;studyWidth=1&amp;studyHeight=1&amp;seriesWidth=1&amp;seriesHeight=1&amp;imageWidth=6&amp;imageHeight=4" ><img class="icon" src="/xero/img/layoutIm6x4.png" alt="[Im5x5]"/></a></li>
+      <li><a id="layoutSe2x2" oncommand="../image/action/Layout.seam?layout=../image/layoutXml.seam&amp;seriesWidth=2&amp;seriesHeight=2" ><img class="icon" src="../img/layoutSe2x2.png" alt="[Se2x2]"/></a></li>
+      <li><a id="layoutSe3x3" oncommand="../image/action/Layout.seam?layout=../image/layoutXml.seam&amp;seriesWidth=3&amp;seriesHeight=3" ><img class="icon" src="../img/layoutSe3x3.png" alt="[Se3x3]"/></a></li>
+      <!--  <li><a id="layoutSe2x2Im2x1" oncommand="../image/action/Layout.seam?layout=../image/layoutXml.seam&amp;studyWidth=2&amp;studyHeight=2&amp;seriesWidth=2&amp;seriesHeight=2&amp;imageWidth=2&amp;imageHeight=2" ><img class="icon" src="../img/layoutSe2x2.png" alt="[Se2x2]"/></a></li> -->
+      <li><a id="layout1x1" oncommand="../image/action/Layout.seam?layout=../image/layoutXml.seam&amp;studyWidth=1&amp;studyHeight=1&amp;seriesWidth=1&amp;seriesHeight=1&amp;imageWidth=1&amp;imageHeight=1" ><img class="icon" src="../img/layout1x1.png" alt="[1x1]"/></a></li>
+      <li><a id="layoutIm6x4" oncommand="../image/action/Layout.seam?layout=../image/layoutXml.seam&amp;studyWidth=1&amp;studyHeight=1&amp;seriesWidth=1&amp;seriesHeight=1&amp;imageWidth=6&amp;imageHeight=4" ><img class="icon" src="../img/layoutIm6x4.png" alt="[Im5x5]"/></a></li>
 	 </ul>
 	</li>
 
     <li>Apply Level
      <ul>
-      <li><a id="studyLevel" oncommand="/xero/image/image.seam?applyLevel=study">Study</a></li>
-      <li><a id="seriesLevel" oncommand="/xero/image/image.seam?applyLevel=series">Series</a></li>
-      <li><a id="imageLevel" oncommand="/xero/image/image.seam?applyLevel=image">Image</a></li>
+      <li><a id="studyLevel" oncommand="../image/image.seam?applyLevel=study">Study</a></li>
+      <li><a id="seriesLevel" oncommand="../image/image.seam?applyLevel=series">Series</a></li>
+      <li><a id="imageLevel" oncommand="../image/image.seam?applyLevel=image">Image</a></li>
      </ul>
     </li>
     
-    <li><a id="saveBtn" onclick="showModalDialog('/xero/image/save.seam');return false"><img class="icon" src="/xero/img/save.png" /></a></li>
+    <li><a id="saveBtn" onclick="showModalDialog('../image/save.seam');return false"><img class="icon" src="../img/save.png" /></a></li>
     <li><span class="currentGsps" />
       <ul>
-        <li><a oncommand="/xero/image/action/SelectGsps.seam?gsps=None">None</a></li>
-        <se:gsps><li><a oncommand="/xero/image/action/SelectGsps.seam?"><span class="gspsLabel" /></a></li></se:gsps>
+        <li><a oncommand="../image/action/SelectGsps.seam?gsps=None">None</a></li>
+        <se:gsps><li><a oncommand="../image/action/SelectGsps.seam?"><span class="gspsLabel" /></a></li></se:gsps>
       </ul>
     </li>
     <li>Reports
       <ul>
-        <se:report><li><a oncommand="/xero/report/report.seam?" onclick="return false;"><span class="reportLabel" /></a></li></se:report>
+        <se:report><li><a oncommand="../report/report.seam?" onclick="return false;"><span class="reportLabel" /></a></li></se:report>
       </ul>
     </li>
-    <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
+    <li><se:series offset="1"><a id="nextSeries" dir="1" oncommand="../image/action/Navigate.seam?applyLevel=series">Series &gt;</a></se:series></li>
     
     <li><a id="viewBody" onclick="alert('HTML page is '+document.getElementsByTagName('body')[0].innerHTML);" >Body</a></li>
     <li><a id="viewI0" onclick="alert('I0 is '+document.getElementById('imgse0,0').innerHTML);" >Img0</a></li>
     <li><a id="viewSe0" onclick="alert('Se0 is '+document.getElementById('dimgse0,0-im0,0').innerHTML);" >Se0</a></li>
    </ul>
-   <a id="displayResolution" oncommand="/xero/image/action/DisplayResolution.seam?" style="display:hidden;" />
+   <a id="displayResolution" oncommand="../image/action/DisplayResolution.seam?" style="display:hidden;" />
   </div>
   
   <!-- Defines the series level toolbar.  Can't affect the study level display.  
     -->
   <div class="menu" style="background: black; z-index: 90;" id='seriesToolbar'>
-   <a class="imageNav" dir="0" page="-1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image">&lt;&lt;Image</a>
-   <a class="imageNav" dir="-1" page="0" oncommand="/xero/image/action/Navigate.seam?applyLevel=image">&lt;</a>
+   <a class="imageNav" dir="0" page="-1" oncommand="../image/action/Navigate.seam?applyLevel=image">&lt;&lt;Image</a>
+   <a class="imageNav" dir="-1" page="0" oncommand="../image/action/Navigate.seam?applyLevel=image">&lt;</a>
    <span class="imageNumber" />
    <span class="imageTest" min="8">
    <span mode="cine">
-     <a id="cineStop" onclick="stopCine(this); return false;" oncommand="/xero/image/action/CineStop.seam?"><img class="icon small" src="/xero/img/stop.png" alt="stop" /></a>
-     <a id="cineStart" onclick="return playCine(event);" oncommand="/xero/image/action/CinePlay.seam?"><img class="small icon" src="/xero/img/play.png" alt="play" /></a>
+     <a id="cineStop" onclick="stopCine(this); return false;" oncommand="../image/action/CineStop.seam?"><img class="icon small" src="../img/stop.png" alt="stop" /></a>
+     <a id="cineStart" onclick="return playCine(event);" oncommand="../image/action/CinePlay.seam?"><img class="small icon" src="../img/play.png" alt="play" /></a>
    </span>
    </span>
-   <a class="imageNav" dir="1" page="0" oncommand="/xero/image/action/Navigate.seam?applyLevel=image" >&gt;</a>
-   <a class="imageNav" dir="0" page="1" oncommand="/xero/image/action/Navigate.seam?applyLevel=image" >Image&gt;&gt;</a>
+   <a class="imageNav" dir="1" page="0" oncommand="../image/action/Navigate.seam?applyLevel=image" >&gt;</a>
+   <a class="imageNav" dir="0" page="1" oncommand="../image/action/Navigate.seam?applyLevel=image" >Image&gt;&gt;</a>
  </div>
 
  <div id="imgToolbar">
    <div mode="zoomPan">
-    <a id="zp2" class="zpSlider" zoom="32" style="position:absolute; top:27px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp3" class="zpSlider" zoom="16" style="position:absolute; top:44px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp4" class="zpSlider" zoom="8" style="position:absolute; top:61px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp5" class="zpSlider" zoom="4" style="position:absolute; top:78px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp6" class="zpSlider" zoom="3" style="position:absolute; top:95px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp7" class="zpSlider" zoom="2" style="position:absolute; top:112px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp8" class="zpSlider" zoom="1" style="position:absolute; top:129px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
-    <a id="zp9" class="zpSlider" zoom="0.5" style="position:absolute; top:146px; left:10px;" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp2" class="zpSlider" zoom="32" style="position:absolute; top:27px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp3" class="zpSlider" zoom="16" style="position:absolute; top:44px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp4" class="zpSlider" zoom="8" style="position:absolute; top:61px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp5" class="zpSlider" zoom="4" style="position:absolute; top:78px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp6" class="zpSlider" zoom="3" style="position:absolute; top:95px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp7" class="zpSlider" zoom="2" style="position:absolute; top:112px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp8" class="zpSlider" zoom="1" style="position:absolute; top:129px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
+    <a id="zp9" class="zpSlider" zoom="0.5" style="position:absolute; top:146px; left:10px;" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT"><se:highlightZoom /></a>
   </div>
  </div>
    
@@ -104,9 +104,9 @@
       <div class="imageRel">
         <div class="imageSvg">
           <div class="imageSPAT">
-            <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?" />    
-            <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
-            <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="/xero/image/action/KeyImageSelect.seam?" />
+            <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="../image/action/WindowLevel.seam?" />    
+            <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="../image/action/ZoomPan.seam?size=SCALE_TO_FIT" />
+            <div class="imageHandler" mode="key" addKeyImageArgs="true" handler="clickHandler" oncommand="../image/action/KeyImageSelect.seam?" />
             <div class="imageHandler" mode="createMarkup" handler="markupCreate" />
           </div>
           <div class="imageDisplayRel" />
@@ -117,11 +117,11 @@
   </div>
   
   <div id='imageHover'>
-    <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="/xero/image/action/WindowLevel.seam?i=0">
+    <div class="imageHandler" mode="windowLevel" handler="windowLevelHandler" oncommand="../image/action/WindowLevel.seam?i=0">
       <div class="windowLevel" />
     </div>
     
-    <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="/xero/image/action/ZoomPan.seam?size=MAGNIFY" />
+    <div class="imageHandler" mode="zoomPan" handler="zoomPanHandler" oncommand="../image/action/ZoomPan.seam?size=MAGNIFY" />
     
   </div>
 </div>

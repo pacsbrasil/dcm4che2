@@ -10,4 +10,11 @@
   <name>Xero Controller</name>
   <artifactId>controller-xero</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>view-xero</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 </project>

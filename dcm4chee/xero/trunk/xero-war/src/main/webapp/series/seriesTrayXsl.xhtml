@@ -5,7 +5,7 @@
    xmlns:ui="http://java.sun.com/jsf/facelets"
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:m="http://www.dcm4che.org/xero/metadata/series"
-   m:xsl="/xero/series/seriesTrayXsl.xsl"
+   m:xsl="../series/seriesTrayXsl.xsl"
    m:docName="/documents/series"
    m:jsXsl.inherit="js.jsXsl"
    m:Event.script="../js/Events.js"   m:Event.script.priority="1000"
@@ -44,7 +44,7 @@
  <xsl:param name="node" />
  <xsl:for-each select="$node/se:series[se:image/@koUID]">
   <div style="float: left; background: black;">
-   <span xml:space="preserve"><img src="/xero/img/key.png" style="width: 32px; height: 32px;" /><xsl:value-of select="@SeriesNumber" />
+   <span xml:space="preserve"><img src="../img/key.png" style="width: 32px; height: 32px;" /><xsl:value-of select="@SeriesNumber" />
      <xsl:value-of select="@SeriesDescription" />
      <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
    </span>

@@ -105,7 +105,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if( wi==null ) return wi;
 	  DicomObject ds = wi.getDicomObject();
-	  if( !needsRescale(bits,ds) ) return wi;
+	  if( !needsRescale(bits,ds) )  return wi;
 
 	  long start = System.nanoTime();
 	  int maxAllowed = (1 << bits)-1;
@@ -197,11 +197,19 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 
    public static boolean needsRescale(int bits, DicomObject ds) {
 	  boolean isGray = (ds.getInt(Tag.SamplesPerPixel)==1);
-	  if( !isGray ) return false;
+	  if( !isGray ) {
+		 log.info("Not grayscale - not rescaling.");
+		 return false;
+	  }
 	  int stored = ds.getInt(Tag.BitsStored);
 	  boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
 	  // This will ensure that in current versions, colour images won't pass here,
 	  // and that regular images that don't need any translation will go directly through this filter.
-	  return stored > bits || signed;  
+	  if( stored > bits || signed ) {
+		 log.info("Needs rescale - stored bits "+stored+" allowed "+bits+" signed "+signed);
+		 return true;
+	  }
+	  log.info("Does not need rescale - {} of {} unsigned",stored,bits);
+	  return false;
    }
 }

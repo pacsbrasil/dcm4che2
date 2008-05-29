@@ -16,7 +16,7 @@
   <xsl:param name="row" />
   <xsl:param name="value" />
   <a>
-    <xsl:attribute name="href">/xero/study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$row/parent::*/@PatientIdentifier"/>&amp;studyUID=<xsl:value-of select="$row/@StudyInstanceUID" /></xsl:attribute>
+    <xsl:attribute name="href">../study/patientFrame.seam?cid=<xsl:value-of select="$cid" />&amp;pid=<xsl:value-of select="$row/parent::*/@PatientIdentifier"/>&amp;studyUID=<xsl:value-of select="$row/@StudyInstanceUID" /></xsl:attribute>
     <xsl:attribute name="target">mainFrame</xsl:attribute>
     <xsl:if test="$value=''">
       (Unknown)
@@ -32,7 +32,7 @@
 <!-- Generates the search toolbar buttons. -->
 <xsl:template name="searchToolbar" m:searchToolbar.body="searchToolbar" m:searchToolbar.body.priority="900">
   <div style="float: left; width: 220px;"> 
-   <x:button value="Find" action="search.seam"><img src="/xero/img/find.png" alt="Find"/></x:button>
+   <x:button value="Find" action="search.seam"><img src="../img/find.png" alt="Find"/></x:button>
  </div>
 </xsl:template>
 

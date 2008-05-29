@@ -16,7 +16,7 @@
    <xsl:if test="$firstSOP = $curSOP" >
     <span>
        <a target="imageFrame">
-          <xsl:attribute name="href">/xero/report/report.seam?cid=<xsl:value-of select='$cid' />&amp;patientId=<xsl:value-of select="ancestor-or-self::*/@PatientID" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
+          <xsl:attribute name="href">../report/report.seam?cid=<xsl:value-of select='$cid' />&amp;patientId=<xsl:value-of select="ancestor-or-self::*/@PatientID" />&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/></xsl:attribute>
        <xsl:value-of select="@conceptMeaning" />
        <xsl:if test="@conceptMeaning='' or count(@conceptMeaning)=0">
        Report

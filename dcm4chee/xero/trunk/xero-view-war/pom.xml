@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <parent>
+    <artifactId>xero</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.dcm4chee.xero</groupId>
+  <name>Xero View WAR Packaging</name>
+  <artifactId>xero-view-war</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <build>
+     <finalName>xero-view</finalName>
+     <plugins>
+        <plugin>
+           <artifactId>maven-war-plugin</artifactId>
+           <configuration></configuration>
+        </plugin>
+     </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>controller-xero</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+</project>
