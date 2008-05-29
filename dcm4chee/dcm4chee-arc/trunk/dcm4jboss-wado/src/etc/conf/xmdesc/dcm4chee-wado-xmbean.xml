@@ -47,7 +47,7 @@
       getMethod="getDirectoryTree"
       setMethod="setDirectoryTree">
       <description><![CDATA[This list specify the directory structure (depth and limit of subdirs per dir) of this cache.<br>
-      					NONE : no limitation (File: &lt;StudyIUID&gt;/&lt;SeriesIUID&gt;/&lt;instanceIUID&gt).<br>
+      					NONE : no limitation (File: &lt;StudyIUID&gt;/&lt;SeriesIUID&gt;/&lt;instanceIUID&gt;).<br>
       					The number of primes specify the directory depth, the prime value specify the max. number 
       					of subdirectories of the corresponding directory.<br/>
       					e.g.: 337/331/317: use three subdirectories with max 337, 331 and 317 subdirectories.
