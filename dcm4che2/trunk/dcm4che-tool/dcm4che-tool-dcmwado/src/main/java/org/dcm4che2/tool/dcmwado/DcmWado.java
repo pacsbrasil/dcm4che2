@@ -595,7 +595,7 @@ public class DcmWado {
         DicomInputStream in = null;
         try {
             in = new DicomInputStream(f);
-            in.setHandler(new StopTagInputHandler(Tag.SeriesInstanceUID));
+            in.setHandler(new StopTagInputHandler(Tag.StudyID));//use StudyID to have seriesIUID included!
             in.readDicomObject(dcmObj, -1);
             String[] uid = { dcmObj.getString(Tag.StudyInstanceUID),
                     dcmObj.getString(Tag.SeriesInstanceUID),
