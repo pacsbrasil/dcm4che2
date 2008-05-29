@@ -585,15 +585,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (!seriuid.equals(prevseriud)) {
                 assoc.putProperty(SERIES_IUID, seriuid);
                 if (prevseriud != null) {
-                    SeriesStored seriesStored = store
-                            .makeSeriesStored(prevseriud);
-                    if (seriesStored != null) {
-                        log
-                                .debug("Send SeriesStoredNotification - series changed");
-                        Socket sock = assoc.getSocket();
-                        doAfterSeriesIsStored(sock, seriesStored);
-                        store.commitSeriesStored(seriesStored);
-                    }
+                	try {
+	                    SeriesStored seriesStored = store
+	                            .makeSeriesStored(prevseriud);
+	                    if (seriesStored != null) {
+	                        log
+	                                .debug("Send SeriesStoredNotification - series changed");
+	                        Socket sock = assoc.getSocket();
+	                        doAfterSeriesIsStored(sock, seriesStored);
+	                        store.commitSeriesStored(seriesStored);
+	                    }
+                	} catch (ObjectNotFoundException ignore) {
+                		log.warn("Previous series with uid " + prevseriud + " not found.  Not sending series stored notification.");
+                	}
                 }
                 Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
                         STORE2MWL_XSL, ds);
