@@ -50,6 +50,7 @@ import java.io.OutputStream;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import javax.activation.URLDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.xml.soap.AttachmentPart;
@@ -83,8 +84,13 @@ public class XDSDocumentWriterFactory {
         }
         FileDataSource ds = new FileDataSource(f);
         return new DataHandlerWriter(new DataHandler(ds));
-        //return new CachedWriter( f );
     }
+    
+    public XDSDocumentWriter getDocumentWriter(InputStream inputStream) throws IOException {
+        InputStreamDataSource ds = new InputStreamDataSource(inputStream);
+        return new DataHandlerWriter(new DataHandler(ds));
+    }
+    
     public XDSDocumentWriter getDocumentWriter(AttachmentPart part) throws SOAPException, IOException {
     	if ( log.isDebugEnabled()) {
     		log.debug("part datahandler:"+part.getDataHandler().getClass().getName());
@@ -118,10 +124,6 @@ public class XDSDocumentWriterFactory {
         return new DataWriter(data);
     }
     
-    public XDSDocumentWriter getDocumentWriter(InputStream is) throws IOException {
-        return new CachedWriter(is);
-    }
-
     public XDSDocumentWriter getDocumentWriter(DataHandler dh) throws IOException {
         return new DataHandlerWriter(dh);
     }
@@ -268,7 +270,7 @@ public class XDSDocumentWriterFactory {
         public void close() throws IOException {
         }
         public int size() {
-            // TODO: remove size() from XDSDocumentWriter interface if only used for logging purposed  
+            // TODO: remove size() from XDSDocumentWriter interface if only used for logging purposes  
             return 9999;
         }
         public DataHandler getDataHandler() {
