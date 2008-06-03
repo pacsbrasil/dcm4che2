@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4jboss-sar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4che14"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4jboss-ejb"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
