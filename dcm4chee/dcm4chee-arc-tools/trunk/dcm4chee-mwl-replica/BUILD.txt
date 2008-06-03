@@ -8,9 +8,9 @@ http://maven.apache.org/download.html for building the MWL Replica Service.
 If you are behind a http proxy, you have to configure Maven, to use it for
 http downloads (s.  http://maven.apache.org/guides/mini/guide-proxies.html ).
 
-You also need to install dcm4chee-sar and dcm4chee-ejb-client jars from DCM4CHEE to your local maven repository:
-mvn install:install-file -DgroupId=dcm4che -DartifactId=dcm4chee-sar -Dversion=2.13.0 -Dpackaging=jar -Dfile=<DCM4CHEE>/server/default/lib/dcm4chee.jar 
-mvn install:install-file -DgroupId=dcm4che -DartifactId=dcm4chee-ejb-client -Dversion=2.13.0 -Dpackaging=jar -Dfile=<DCM4CHEE>/server/default/lib/dcm4chee-ejb-client.jar
+You also need to install dcm4chee-sar and dcm4chee-ejb-client jars from DCM4CHEE (2.13.5) to your local maven repository:
+mvn install:install-file -DgroupId=dcm4che -DartifactId=dcm4chee-sar -Dversion=2.13.5 -Dpackaging=jar -Dfile=<DCM4CHEE>/server/default/lib/dcm4chee.jar 
+mvn install:install-file -DgroupId=dcm4che -DartifactId=dcm4chee-ejb-client -Dversion=2.13.5 -Dpackaging=jar -Dfile=<DCM4CHEE>/server/default/lib/dcm4chee-ejb-client.jar
 
 $ cd dcm4chee-mwl-replica
 $ mvn install
