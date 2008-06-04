@@ -25,9 +25,6 @@ function XeroController(model, view) {
 	this.model = model;
 	this.view = view;
 	
-	// Start with the query layout as the default layout.
-	console.info("Setting controller layouts to %s",model.queryLayouts);
-	model.layouts = model.queryLayouts;
 	if( this.isDebug ) this.debug = console.debug;
 	
 };
@@ -42,7 +39,7 @@ XeroController.prototype.getBody = function XC_getBody() {
 	return this.body;
 };
 
-XeroController.prototype.replaceHtml = function XC_replaceHtml(el, html) {
+XeroController.prototype.innerHtml = function XC_innerHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 	oldEl.innerHTML = html;
 	/*@cc_on // Don't call fixWheelMouse in IE
@@ -53,7 +50,7 @@ XeroController.prototype.replaceHtml = function XC_replaceHtml(el, html) {
 };
 
 XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
-	if(!layouts ) layouts = this.model.layouts;
+	if(!layouts ) layouts = this.model.layout.layouts;
 	var lay, i,n=layouts.length;
 	for(i=0; i<n; i++) {
 		lay = layouts[i];
@@ -70,8 +67,9 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 
 	var dp = new DOMParser();
-	//var parsed = dp.parseFromString('<div id="body" xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg">'+html+"</div>","text/xml");
-	var parsed = dp.parseFromString(html,"text/xml");
+	var parsed = dp.parseFromString('<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">'+html+"</div>","text/xml");
+	console.info("Parsed=%s",parsed);
+	//var parsed = dp.parseFromString(html,"text/xml");
 	if( !parsed ) {
 		console.warn("No parsed value found - not changing display, source text %s", html);
 		return;
@@ -83,6 +81,7 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	}
 	this.debug("Finished parsing node.");
 	var newEl = document.importNode(parsed,true);
+	newEl = newEl.firstChild;
 	if(!newEl ) console.warn("newEl not defined.");
 	if(!oldEl ) console.warn("oldEl not defined.");
 	if( !oldEl.parentNode ) console.warn("parentNode of oldEl not defined.");
@@ -95,6 +94,14 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	return newEl;
 };
 
+XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
+	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
+		this.importHtml(node, text);
+	} else {
+		this.innerHtml(node,render);
+	}
+}
+
 /** Updates the view in its entirety.
  */
 XeroController.prototype.updateView = function XC_action(actionName) {
@@ -103,18 +110,14 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	window._render = render;
 	
 	//console.info("Render: %s",render);
-	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
-		this.importHtml("innerBody", render);
-	} else {
-		this.replaceHtml(this.getBody(),render);
-	}
+	this.replaceHtml("innerBody", render);
 	console.timeEnd(actionName);
 };
 
 /** Performs a delayed update */
 XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
 	if( cnt===undefined ) cnt = 3;
-	var missing = this.renderComplete(this.model.layouts);
+	var missing = this.renderComplete(this.model.layout.layouts);
 	if( missing===0 ) return 0;
 	if( cnt===0 ) {
 		console.info("Rendering with cnt=%d with %d missing", cnt, missing);
@@ -137,10 +140,10 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 		if( !lay.used ) continue;
 		if( lay.relayout ) {
 			if( incomplete || lay.isComplete() ) {
-				this.debug("Re-rendering %s template %s",lay.id, lay.format);
+				this.debug("Re-rendering %s template %s",lay.id, lay.template);
 				origLay = this.model.layout;
 				this.model.layout = lay;
-				render =this.view.toString(lay.format,this.model);
+				render =this.view.toString(lay.template,this.model);
 				this.model.layout = origLay;
 				this.replaceHtml(lay.id,render);
 				lay.clearRelayout();
@@ -169,7 +172,7 @@ XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,la
 	}
 
 	// Rendering everything, even stuff not yet complete.
-	this.renderComplete(this.model.layouts,true);	 
+	this.renderComplete(this.model.layout.layouts,true);	 
 };
 
 $patientController()$
@@ -181,8 +184,8 @@ XeroController.prototype.performSearch = function XC_performSearch() {
 	console.info("Updated URL to %s", model.queryBox.query.url);
 
 	console.time("SearchQuery");
-	model.searchBox.search = new XmlModel(model.searchBox.query);
-	model.searchBox.search.request();
+	model.searchLayout.search = new XmlModel(model.searchLayout.query);
+	model.searchLayout.search.request();
 	console.timeEnd("SearchQuery");
 };
 
@@ -192,11 +195,11 @@ XeroController.prototype.findAction = function XC_findAction(src) {
 	this.updateView("findAction");	
 };
 
-/** Displays the query model */
-XeroController.prototype.displayQuery = function XC_displayQuery(src) {
-	var model = this.model;
-	model.layouts = model.queryLayouts;
-	this.updateView("displayQuery");
+/** Switch to the given tab */
+XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
+	if( this.model.layout.selectTab(tabName) ) {
+		this.updateView("switchTab");
+	}
 };
 
 var xeroController = new XeroController(xeroModel, xeroView);

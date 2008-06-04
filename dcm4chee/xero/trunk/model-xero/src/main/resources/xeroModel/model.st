@@ -3,6 +3,7 @@ $xmlModel()$
 $studyData()$
 $layout()$
 $merged()$
+$tabs()$
 
 /** Contains the model for Xero.
   * The model has a few parts:
@@ -18,21 +19,31 @@ function XeroModel() {
 var xeroModel = new XeroModel();
 
 var XeroStudyColumns = {
+	"template":"xeroStudyColumns",
 	"header":[
-		{"name":"Patient Name", "var":"PatientName", "format":"image/patientNameSel" },
-		{"name":"Patient ID", "var":"PatientID", "format":"html/displayFirst" },
-		{"name":"Study Description", "var":"StudyDescription", "format":"image/studyDescriptionSel" },
-		{"name":"Modality", "var":"ModalitiesInStudy", "format":"html/displayIt" },
-		{"name":"Acc#", "var":"AccessionNumber", "format":"html/displayIt" },
-		{"name":"Study Date", "var":"StudyDateF", "sort":"StudyDateTime", "format":"html/displayIt" },
-		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "format":"html/displayIt" },
-		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "format":"html/displayIt" }
+		{"name":"Patient Name", "var":"PatientName", "template":"image/patientNameSel" },
+		{"name":"Patient ID", "var":"PatientID", "template":"html/displayFirst" },
+		{"name":"Study Description", "var":"StudyDescription", "template":"image/studyDescriptionSel" },
+		{"name":"Modality", "var":"ModalitiesInStudy", "template":"html/displayIt" },
+		{"name":"Acc#", "var":"AccessionNumber", "template":"html/displayIt" },
+		{"name":"Study Date", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt" },
+		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "template":"html/displayIt" },
+		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "template":"html/displayIt" }
 	]
 };
 
-xeroModel.queryBox = { "format":"query/query", "query":new UrlFactory("/wado2/study.xml","query") }; 
-xeroModel.searchBox = {"format":"search/studyTable", "columns":XeroStudyColumns, "query":xeroModel.queryBox.query  };
-xeroModel.queryLayouts = [ xeroModel.queryBox, xeroModel.searchBox ];
+xeroModel.queryBox = new Layout(null,"query/query");
+xeroModel.queryBox.query = new UrlFactory("/wado2/study.xml","query"); 
+xeroModel.searchLayout = new Layout(null,"search/studyTable");
+xeroModel.searchLayout.columns = XeroStudyColumns;
+xeroModel.searchLayout.query = xeroModel.queryBox.query;
+xeroModel.findLayout = new Layout();
+xeroModel.findLayout.add(xeroModel.queryBox);
+xeroModel.findLayout.add(xeroModel.searchLayout);
+
+xeroModel.layout = new TabsLayout();
+xeroModel.layout.addTab("Find", xeroModel.findLayout);
+xeroModel.layout.addTab("Display");
 
 var STUDY_QUERY="/wado2/study.xml";
 var IMAGE_QUERY="/wado2/image.xml";

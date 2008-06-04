@@ -191,12 +191,14 @@ StringTemplate.prototype[7] = function ST_Include(chunk,model)
 	var argsT = chunk.ast[1];
 	if( nameT.type==20 ) {
 	  name = nameT.text;
+	  if(!name) this.error("No name provided for child include.");
 	} else if( nameT.type==33 ) {
 		return this.call(nameT,model);
 	} else if( nameT.type==9 ) {
 	  // The nesting on the AST for this is VERY ugly - it would be much nicer to have
 	  // this look like type 20 with arguments after the value of the template to instantiate
 	  name = this.call(nameT.ast[0],model);
+	  if( !name ) this.error("No name returned executing "+nameT.ast[0]);
 	  argsT = nameT.ast[1];
 	}
 	else {
@@ -256,8 +258,9 @@ StringTemplate.prototype.checkif = function ST_checkif(test,model) {
 /** Define an ID object */
 StringTemplate.prototype[20] = function ST_ID(chunk,model)
 {
-	this.debug("Looking up ID %s", chunk.text);
-	return this.get(model,chunk.text);
+	var val= this.get(model,chunk.text);
+	this.debug("Looking up ID %s found %s", chunk.text,val);
+	return val;
 };
 
 /** Define a variable value */
@@ -287,10 +290,12 @@ StringTemplate.prototype[25] = function ST_dot(chunk,model) {
 	var root = this.call(chunk.ast[0],model);
 	var child = chunk.ast[1];
 	if( child.type==20 ) {
-		return this.get(root,child.text);
+		var val= this.get(root,child.text);
+		return val;
 	}
 	child = this.call(child,model);
-	return this.get(root,child);
+	var val= this.get(root,child);
+	return val;
 };
 
 /** Handle an anonymous template */

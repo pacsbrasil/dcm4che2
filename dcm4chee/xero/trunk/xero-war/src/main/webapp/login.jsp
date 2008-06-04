@@ -73,9 +73,9 @@ Login/password:  user/user <br />
 <a href="http://www.dcm4che.org/jira/browse/XER">Xero Bug Reports</a><br />
 <a href="http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=236929">Xero Download</a><br />
 <h2>New Version of Xero</h2>
-<a href="/xview/xero">XSLT Free Version</a> <br />
-<a href="/xview/xero?ModalitiesInStudy=CT">CT Studies</a> <br />
-<a href="/xview/xero?ModalitiesInStudy=CR">CR Studies</a> <br />
+<a href="/xero/xero">XSLT Free Version</a> <br />
+<a href="/xero/xero?ModalitiesInStudy=CT">CT Studies</a> <br />
+<a href="/xero/xero?ModalitiesInStudy=CR">CR Studies</a> <br />
 
 <h2>Known Issues</h2>
 <ul>
@@ -85,7 +85,7 @@ Login/password:  user/user <br />
 <li>Some images in YBR 422 are corrupted when displayed.</li>
 <li>US, MG are not split by echo and/or multi-frame split correctly.</li>
 <li>IE will sometimes backup when playing CINE.</li>
-<li><a href="/xero/ipod.html">iPOD/iPhone</a></li>
+<li><a href="/xslt/ipod.html">iPOD/iPhone</a></li>
 </ul>
 <% } else { %>
 Mobile

@@ -26,9 +26,10 @@ model.search=${factory:org.dcm4chee.xero.controller.XmlModelFactory}
 # to get the actual XML data required.
 model.search.url=query
 
-# This will reference the directy queryController object as the default factory, IF no one else
+# This will reference the queryController object as the default factory, IF no one else
 # sets this first - if someone else does set it, then it will be whatever the value is that was set.
-model.layouts=${ref:controller.queryController}
+model.layout=${ref:controller.queryController}
+model.txt=Demo Value
 
 controller=${class:org.dcm4chee.xero.controller.XeroController}
 controller.defaultAction=${class:org.dcm4chee.xero.controller.InitializeAction}

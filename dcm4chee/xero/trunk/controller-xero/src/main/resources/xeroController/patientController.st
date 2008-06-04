@@ -10,11 +10,11 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	console.time("Load Patient Data");
 	var model = this.model;
 	
-	if(! model.searchBox.search ) {
+	if(! model.searchLayout.search ) {
 		this.performSearch();
 	};
 	
-	var study = model.searchBox.search.find("patient","PatientIdentifier", patientId).study;
+	var study = model.searchLayout.search.find("patient","PatientIdentifier", patientId).study;
 	var i,n=study.length;
 	model.studies = new Object();
 	var xmlSeries;
@@ -31,6 +31,8 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	if( ! model.patientLayout ) {
 		model.merged = new Merged();
 		model.patientLayout = this.createPatientLayout(model.merged,2,2,1,2,4,2);
+		model.layout.removeTab("Display");
+		model.layout.addTab("Display", model.patientLayout);
 	}
 	var merged = model.merged;
 	merged.setNavigation(merged.KEY, patientId);
@@ -44,13 +46,12 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 
 	this.mergeExternal(external);
 
-	model.layouts = model.patientLayout.layouts;
-	model.layout = model.patientLayout;
+	model.layout.selectTab("Display");
 	console.timeEnd("Load Patient Data");
 
 	var size = getViewportSize();
 	this.debug("Viewport size %d,%d",size[0],size[1]);
-	model.patientLayout.resize(size[0],size[1], "width:100%; height:100%;");
+	model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
 
 	this.updateView("displayPatient");
 };
@@ -96,12 +97,15 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	}
 	console.info("You are trying to navigate to %s", dirSeries);
 	merged.setNavigation(merged.KEY,dirSeries);
+	console.info("setNav completed.");
 	this.mergeExternal();
+	console.info("mergeExternal completed.");
 
 	var size = getViewportSize();
-	this.debug("Viewport size %d,%d",size[0],size[1]);
-	this.model.patientLayout.resize(size[0],size[1], "width:100%; height:100%;");
+	console.info("Viewport size %d,%d",size[0],size[1]);
+	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
 
+	console.info("About to update view for navigation of series.");
 	this.updateView("navSer");
 	
 };
@@ -161,12 +165,11 @@ XeroController.prototype.setMode = function XC_setMode(md) {
  */
 XeroController.prototype.createPatientLayout = function PC_createPatientLayout(merged, stx,sty,sex,sey,imx,imy) {
 	var layout = new Layout("patientLayout");
-	layout.setGrid(1,2);
+	layout.setGrid(1,1);
 	var layouts = layout.layouts;
 	var patientMenu = new Layout("patientMenu", "image/patientMenu");
-	patientMenu.absHeight=25;
 	var childMerged = merged.addChildListener(patientMenu,PatientMergedListener,merged.KEY,0); 
-	layouts.push( patientMenu );
+	layout.tabMenu = patientMenu;
 	var studyArea = this.createStudyArea(childMerged, stx,sty,sex,sey,imx,imy);	
 	layouts.push( studyArea );
 

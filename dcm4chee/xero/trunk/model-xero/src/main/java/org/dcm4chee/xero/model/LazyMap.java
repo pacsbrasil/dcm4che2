@@ -40,8 +40,12 @@ package org.dcm4chee.xero.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings("serial")
 public class LazyMap extends HashMap<String, Object> {
+   private static final Logger log = LoggerFactory.getLogger(LazyMap.class); 
    Map<String, Object> lazy;
 
    public LazyMap(Map<String, Object> lazy) {
@@ -78,6 +82,7 @@ public class LazyMap extends HashMap<String, Object> {
 		 return null;
 	  if (v instanceof MapFactory) {
 		 v = ((MapFactory) v).create(this);
+		 if( v!=null ) log.info("Created lazy {} of class {}", key,v.getClass());
 	  }
 	  this.put((String) key, v);
 	  return v;

@@ -1,3 +1,3 @@
 <div style="float: left; width: 220px;">
-  <button value="Search" name="search" onclick="xeroController.findAction(this); return false;" type="button"><img alt="Find" src="/xero/img/find.png"/></button>
+  <span onclick="xeroController.findAction(this);"><img alt="Find" src="icon/find.png" width="92" height="92" style="width:48px; height: 48px; vertical-align: middle;"/> Find</span>
 </div>

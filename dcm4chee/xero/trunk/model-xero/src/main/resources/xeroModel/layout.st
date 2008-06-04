@@ -1,11 +1,11 @@
 /**
  * Handles a layout object 
  */
-function Layout(id, format) {
-	if( !format ) format = "html/layout";
+function Layout(id, template) {
+	if( !template ) template = "html/layout";
 	if( !id ) id = Layout.prototype.idCnt++;
 	this.id = id;
-	this.format = format;
+	this.template = template;
 	if( this.isDebug ) this.debug = console.debug;
 };
 
@@ -41,7 +41,7 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 	var absHeight = this.sumAbsHeight(usedLay);
 	var sumRelWidth = this.sumRelWidth(usedLay);
 	var sumRelHeight = this.sumRelHeight(usedLay);
-	this.debug("sum rel x,y=%f,%f on %s,%d,%d", sumRelWidth, sumRelHeight, this.format,this.gridX, this.gridY);
+	this.debug("sum rel x,y=%f,%f on %s,%d,%d", sumRelWidth, sumRelHeight, this.template,this.gridX, this.gridY);
 	width = width-absWidth;
 	height = height-absHeight;
 	
@@ -173,14 +173,15 @@ Layout.prototype.sumRelHeight = function Layout_sumRelHeight(usedLay) {
 
 /** Add another child object */
 Layout.prototype.add = function Layout_add(child) {
+	if( !this.layouts ) this.layouts =new Array();
 	this.layouts.push(child);
 };
 
 /**
  * This section defines some special image layout handling
  */
-function ImageLayout(id,format) {
-	if( format ) this.format = format;
+function ImageLayout(id,template) {
+	if( template ) this.template = template;
 	this.id = id;
 	if( this.isDebug ) {
 		this.debug = console.debug;

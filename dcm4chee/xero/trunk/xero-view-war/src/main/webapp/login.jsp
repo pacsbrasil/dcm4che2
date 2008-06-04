@@ -51,6 +51,9 @@
   }
 %>
 <form name="login" method="POST" action="j_security_check">
+<p>This is a Stringtemplate based version of Xero that is replacing the Xslt based Xero. 
+The GUI is different in appearance and is being worked on for useability and appearance.
+If you want the version with W/L etc support, try <a href="/xslt">XSLT Xero</a></p>
 <table>
 	<tr valign="middle">
 	  <td><div class="text">Name:</div></td>
@@ -73,7 +76,7 @@
 <a href="http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=236929">Xero Download</a><br />
 <h2>Known Issues</h2>
 <ul>
-<li>This version has no window levelling, zoom/pan, CINE, series/image navigation, GSPS etc</li>
+<li>This version has no window levelling, zoom/pan, CINE, GSPS etc</li>
 <li>This version DOES support IE 6,7 Firefox 2,3  Opera 9   Safari 3</li>
 <li>This version has query and multi-study display, unlike the previous version.</li>
 <li>Missing features from the previous version are being worked on.</li> 

@@ -2,6 +2,7 @@
   <meta http-equiv="Content-Type" content="text/xhtml"/>
   <meta content="initial-scale=1.0" name="viewport"/>
   <link type="text/css" rel="stylesheet" href="style/general.css"> </link>
+  <link type="text/css" rel="stylesheet" href="local/style.css"> </link>
   <title>Xero Query</title>
   <script src="firebug/firebug.js" type="text/ecmascript" > </script>
   <script src="js/Events.js" type="text/ecmascript"> </script>

@@ -37,26 +37,66 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.dcm4chee.xero.metadata.MetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A layout object is a block of structure containing information about the size/shape/model
  * that is used to display objects.
- * 
- * @author bwallace
+ * Do NOT attempt to "put" any element that has a setter - the put will not have any affect
+ * on those elements.
+ * To sub-class this, over-ride the get method with any local field getters and then 
+ * call the super.get method.
  *
+ * @author bwallace
  */
-public class Layout {
+@SuppressWarnings("serial")
+public class Layout extends HashMap<String,Object> {
+   private static final Logger log = LoggerFactory.getLogger(Layout.class);
    protected String template;
    
+   protected List<Layout> layouts;
+   
+   protected boolean used = true;
+   
    public Layout() {
-	  
+	  template = "html/layout";
    }
    
    public Layout(String template) {
+	  if( template==null ) template = "html/layout";
 	  this.template = template;
    }
    
+   /**
+    * Handle the values returned directly by this object, and then the
+    * regular hashmap values.  A simple comparison is more efficient than going through
+    * reflection for up to around 10-20 values, so this is better than using reflection
+    * while still providing complete support for arbitrary sub-elements.  
+    */
+   @Override
+   public Object get(Object key) {
+	  log.info("Getting key "+key);
+	  if( "template".equals(key) ) return getTemplate();
+	  if( "layouts".equals(key) ) return getLayouts();
+	  if( "used".equals(key) ) return used;
+	  return super.get(key);
+   }
+   
+   /** Include the template/layouts keys 
+    */
+   public boolean containsKey(Object key) {
+	  if( "template".equals(key) ) return true;
+	  if( "layouts".equals(key) ) return true;
+	  if( "used".equals(key) ) return true;
+	  return super.containsKey(key);
+   }
+
    @MetaData
    public void setTemplate(String template) {
 	  this.template = template;
@@ -67,8 +107,20 @@ public class Layout {
 	  return template;
    }
    
-   /** A synonym for template */
-   public String getFormat() {
-	  return template;
+   /** Returns the array of layouts - maybe null if none have been added. */
+   public List<Layout> getLayouts() {
+	  return layouts;
+   }
+   
+   /** Add a new layout to the child layouts */
+   public void add(Layout lay) {
+	  if( layouts==null ) layouts = new ArrayList<Layout>(2);
+	  layouts.add(lay);
+   }
+   
+   /** Indicate the layout object for this layout */
+   @Override
+   public String toString() {
+	  return "Layout("+template+")";  
    }
 }

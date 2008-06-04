@@ -11,7 +11,7 @@
 
   <target name="build" description="Build all components." depends="buildStringtemplate, buildBase" />
 
-  <target name="deploy" depends="deployWado, deployViewAll" description="Deploy Xero to the development Dcm4che server." />
+  <target name="deploy" depends="deployWado, deployViewAll, localDeploy" description="Deploy Xero to the development Dcm4che server." />
 
 
   <!-- Builds the WADO war file -->
@@ -66,7 +66,7 @@
   </target>
 
   <!-- An internal target to deploy all the view components - does not recompile -->
-  <target name="deployViewAll" depends="deployView">
+  <target name="deployViewAll" depends="buildBase,deployView">
       <copy todir="${developmentServer}/server/default/deploy/xero.war">
          <fileset dir="xero-view-war/target/xero-view" includes="**/*" />
       </copy>
@@ -101,7 +101,7 @@
      </copy>
    </target>
 
-  <target name="package" depends="localBuild,buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
+  <target name="package" depends="buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
      <mkdir dir="target" />
      <zip destfile="target/xero.zip" basedir="${stableServer}" />
   </target>
