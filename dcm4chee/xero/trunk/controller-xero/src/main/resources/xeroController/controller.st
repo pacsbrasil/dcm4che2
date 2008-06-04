@@ -98,7 +98,7 @@ XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
 	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
 		this.importHtml(node, text);
 	} else {
-		this.innerHtml(node,render);
+		this.innerHtml(node,text);
 	}
 }
 
@@ -107,6 +107,10 @@ XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
 XeroController.prototype.updateView = function XC_action(actionName) {
 	console.time(actionName);
 	var render = this.view.toString("xeroBody",this.model);
+	if( render==null || render==="" ) {
+		alert("Couldn't render view.");
+		return;
+	}
 	window._render = render;
 	
 	//console.info("Render: %s",render);
@@ -162,11 +166,11 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,layouts) {
 	if( layouts===undefined ) {
 		console.time(actionName);
-		if(! this.model.layouts ) {
-			console.warn("Layouts is null - can't update layouts.");
+		if(! this.model.layout.layouts ) {
+			console.warn("Layout is null - can't update layout.");
 			return;
 		}
-		this.updateLayouts(actionName,this.model.layouts);
+		this.updateLayouts(actionName,this.model.layout.layouts);
 		console.timeEnd(actionName);
 		return;
 	}
