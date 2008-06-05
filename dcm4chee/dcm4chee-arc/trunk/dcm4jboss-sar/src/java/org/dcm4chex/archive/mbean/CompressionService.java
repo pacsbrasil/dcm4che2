@@ -236,6 +236,32 @@ public class CompressionService extends ServiceMBeanSupport {
         CodecCmd.setMaxConcurrentCodec(maxConcurrentCodec);
     }
 
+    public final int getMaxBufferedImagePoolSize() {
+        return CodecCmd.getMaxBufferedImagePoolSize();
+    }
+
+    public final void setMaxBufferedImagePoolSize(int maxSize) {
+        CodecCmd.setMaxBufferedImagePoolSize(maxSize);
+    }
+
+    public final int getCurrentBufferedImagePoolSize() {
+        return CodecCmd.getCurrentBufferedImagePoolSize();
+    }
+
+    public final String getMaxBufferedImagePoolMemory() {
+        return FileUtils.formatSize(CodecCmd.getMaxBufferedImagePoolMemory());
+    }
+
+    public final void setMaxBufferedImagePoolMemory(String maxMemory) {
+        CodecCmd.setMaxBufferedImagePoolMemory(
+                FileUtils.parseSize(maxMemory, 0L));
+    }
+
+    public final String getCurrentBufferedImagePoolMemory() {
+        return FileUtils.formatSize(
+                CodecCmd.getCurrentBufferedImagePoolMemory());
+    }
+
     public final void setTempDir( String dirPath ) {
         tmpDir = new File(dirPath);
     }

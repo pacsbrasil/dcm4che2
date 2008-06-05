@@ -2,13 +2,17 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description><![CDATA[Compression Service. The Compression Service supports delayed, lossless compression
-of received images. This is an alternative to immediately compressing images when received. (The lossless compression rules are configured by the 
-<b>CompressionRules</b> attribute
-in the StorageSCP service.) The value of the <b>MaxConcurrentCodec</b> attribute in the Compression Service also effects the on-the-fly
-compression and decompression during the receive and retrieve of images by the
-StorageSCP and QueryRetrieveSCP  services. (For details, see the MaxConcurrentCodec attribute below.)]]></description>
-
+   <description><![CDATA[
+Compression Service. The Compression Service supports delayed, lossless
+compression of received images. This is an alternative to immediately
+compressing images when received. (The lossless compression rules are
+configured by the <b>CompressionRules</b> attribute in the StorageSCP
+service.) The value of the attributes <b>MaxConcurrentCodec</b>,
+<b>MaxBufferedImagePoolSize</b> and <b>MaxBufferedImagePoolMemoryattribute</b>
+of the Compression Service also effects the on-the-fly compression and
+decompression during the receive and retrieve of images by the StorageSCP and
+QueryRetrieveSCP  services. (For details, see the these attributes below.)
+]]></description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
@@ -22,25 +26,86 @@ StorageSCP and QueryRetrieveSCP  services. (For details, see the MaxConcurrentCo
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="getMaxConcurrentCodec" setMethod="setMaxConcurrentCodec">
-      <description><![CDATA[Maximum number of concurrent tasks for compressing and decompressing images.
-      When the default value is of MaxConcurrentCodec is 1, all
-compression and decompression operations are serialized. For example, if
-on-the-fly compression during an image receive is activated, and three modalities
-concurrently send uncompressed images to the archive, only one image
-received from one modality is compressed at the same time. This significantly reduces the receiving performance. The
-used codec allocates memory for uncompressed pixel data of at least
-one frame, so without limiting the maximum number of concurrent
+   <attribute access="read-write" getMethod="getMaxConcurrentCodec"
+     setMethod="setMaxConcurrentCodec">
+     <description><![CDATA[
+Maximum number of concurrent tasks for compressing and decompressing images.
+With the default value of <b>MaxConcurrentCodec</b> = 1, all compression and
+decompression operations are serialized. For example, if on-the-fly compression
+during an image receive is activated, and three modalities concurrently send
+uncompressed images to the archive, only one image received from one modality
+is compressed at the same time. This significantly reduces the receiving
+performance. The used codec allocates memory for uncompressed pixel data of at
+least one frame, so without limiting the maximum number of concurrent
 compression tasks, memory consumption could become unacceptable.
-You will receive an out of memory error if the memory consumption exceeds the configured -Xmx value in
-the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
-      <name>MaxConcurrentCodec</name>
-      <type>int</type>
-      <descriptors>
-         <value value="1"/>
-      </descriptors>
+You will receive an out of memory error if the memory consumption exceeds the
+configured -Xmx value in the $DCM4CHEE_HOME/bin/run.conf file).
+]]></description>
+     <name>MaxConcurrentCodec</name>
+     <type>int</type>
+     <descriptors>
+       <value value="1" />
+     </descriptors>
    </attribute>
-   
+
+   <attribute access="read-write"
+     getMethod="getMaxBufferedImagePoolSize"
+     setMethod="setMaxBufferedImagePoolSize">
+     <description><![CDATA[
+Maximum number of pooled BufferedImage objects. If
+<b>MaxBufferedImagePoolSize</b> > 0, BufferedImage objects allocated for
+compression and decompression operations are pooled so they can be reused by
+subsequent compression and decompression operations with matching pixel matrix
+dimensions. The pool size is additional limited by
+<b>MaxBufferedImagePoolMemory</b>, the maximum amount of memory allocated by
+pooled BufferedImage objects.
+]]></description>
+     <name>MaxBufferedImagePoolSize</name>
+     <type>int</type>
+     <descriptors>
+       <value value="10" />
+     </descriptors>
+   </attribute>
+
+   <attribute access="read-only"
+     getMethod="getCurrentBufferedImagePoolSize">
+     <description>
+       Current number of pooled BufferedImage objects.
+     </description>
+     <name>CurrentBufferedImagePoolSize</name>
+     <type>int</type>
+   </attribute>
+
+
+   <attribute access="read-write"
+     getMethod="getMaxBufferedImagePoolMemory"
+     setMethod="setMaxBufferedImagePoolMemory">
+     <description><![CDATA[
+Maximum amount of memory allocated by pooled BufferedImage objects.
+1MB = 1000000 bytes. If <b>MaxBufferedImagePoolSize</b> > 0, BufferedImage
+objects allocated for compression and decompression operations are pooled so
+they can be reused by subsequent compression and decompression operations with
+matching pixel matrix dimensions. The pool size is additional limited by
+<b>MaxBufferedImagePoolSize</b>, the maximum number of pooled BufferedImage
+objects.
+]]></description>
+     <name>MaxBufferedImagePoolMemory</name>
+     <type>java.lang.String</type>
+     <descriptors>
+       <value value="1MB" />
+     </descriptors>
+   </attribute>
+
+   <attribute access="read-only"
+     getMethod="getCurrentBufferedImagePoolMemory">
+     <description>
+       Current amount of memory allocated by pooled BufferedImage
+       objects. 1MB = 1000000 bytes.
+     </description>
+     <name>CurrentBufferedImagePoolMemory</name>
+     <type>java.lang.String</type>
+   </attribute>
+
    <attribute access="read-write" getMethod="getTaskInterval" setMethod="setTaskInterval">
       <description><![CDATA[Interval in which the database is checked for images to compress.
           <br>Format: 
@@ -96,7 +161,7 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
    <attribute access="read-write" getMethod="getTempDir" setMethod="setTempDir">
       <description><![CDATA[Directory used to spool decompressed files for 
       compression verification. Relative path names are resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>
+      $DCM4CHEE_HOME/server/default/.]]>
       </description>
       <name>TempDirectory</name>
       <type>java.lang.String</type>
@@ -130,7 +195,7 @@ the <i>archive-install-directory</i>/bin/run.conf file).]]></description>
    <attribute access="read-write" 
       getMethod="getFileSystemMgtName"
       setMethod="setFileSystemMgtName">
-      <description>Used internally. Do not modify.
+      <description>Used internally. Do NOT modify.
       </description>
       <name>FileSystemMgtName</name>
       <type>javax.management.ObjectName</type>

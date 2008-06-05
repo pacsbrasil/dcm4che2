@@ -39,18 +39,11 @@
 
 package org.dcm4chex.archive.codec;
 
-import java.awt.color.ColorSpace;
-import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
-import java.awt.image.PixelInterleavedSampleModel;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -97,15 +90,10 @@ public abstract class CompressCmd extends CodecCmd {
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
             (byte) 0x00, (byte) 0xe0};
 
-    private static final int[] GRAY_BAND_OFFSETS = { 0};
-
-    private static final int[] RGB_BAND_OFFSETS = { 0, 1, 2};
-
-
     private static class Jpeg2000 extends CompressCmd {
 
         public Jpeg2000(Dataset ds, String tsuid) {
-            super(ds, tsuid, true);
+            super(ds, tsuid);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -117,16 +105,16 @@ public abstract class CompressCmd extends CodecCmd {
 
         protected void initWriteParam(ImageWriteParam param) {
             if (param instanceof J2KImageWriteParam) {
-                J2KImageWriteParam j2KwParam = (J2KImageWriteParam) param;               
+                J2KImageWriteParam j2KwParam = (J2KImageWriteParam) param;
                 j2KwParam.setWriteCodeStreamOnly(true);
             }
         }
-    };
+    }
 
     private static class JpegLossless extends CompressCmd {
 
         public JpegLossless(Dataset ds, String tsuid) {
-            super(ds, tsuid, false);
+            super(ds, tsuid);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -143,7 +131,7 @@ public abstract class CompressCmd extends CodecCmd {
     private static class JpegLS extends CompressCmd {
 
         public JpegLS(Dataset ds, String tsuid) {
-            super(ds, tsuid, false);
+            super(ds, tsuid);
         }
 
         public void coerceDataset(Dataset ds) {
@@ -156,7 +144,7 @@ public abstract class CompressCmd extends CodecCmd {
         protected void initWriteParam(ImageWriteParam param) {
             param.setCompressionType(JPEG_LS);
         }
-    };
+    }
     
     public static byte[] compressFile(File inFile, File outFile, String tsuid,
     		int[] pxdataVR, byte[] buffer)
@@ -213,25 +201,8 @@ public abstract class CompressCmd extends CodecCmd {
         throw new IllegalArgumentException("tsuid:" + tsuid);
     }
 
-    protected final int dataType;
-
-    protected final String tsuid;
-
-    protected CompressCmd(Dataset ds, String tsuid, boolean supportSigned) {
-    	super(ds);
-    	this.tsuid = tsuid;
-        switch (bitsAllocated) {
-        case 8:
-            this.dataType = DataBuffer.TYPE_BYTE;
-            break;
-        case 16:
-            this.dataType = pixelRepresentation == 0 || !supportSigned ? DataBuffer.TYPE_USHORT
-                    : DataBuffer.TYPE_SHORT;
-            break;
-        default:
-            throw new IllegalArgumentException("bits allocated:"
-                    + bitsAllocated);
-        }
+    protected CompressCmd(Dataset ds, String tsuid) {
+        super(ds, tsuid);
     }
 
     public abstract void coerceDataset(Dataset ds);
@@ -242,6 +213,7 @@ public abstract class CompressCmd extends CodecCmd {
             throws Exception {
         long t1;
         ImageWriter w = null;
+        BufferedImage bi = null;
         boolean codecSemaphoreAquired = false;
         long end = 0;
         try {
@@ -257,11 +229,9 @@ public abstract class CompressCmd extends CodecCmd {
             w = f.getWriterForTransferSyntax(tsuid);
             ImageWriteParam wParam = w.getDefaultWriteParam();
             initWriteParam(wParam);
-            WritableRaster raster = Raster.createWritableRaster(
-                    getSampleModel(), null);
+            bi = getBufferedImage();
+            WritableRaster raster = bi.getRaster();
             DataBuffer db = raster.getDataBuffer();
-            BufferedImage bi = new BufferedImage(getColorModel(), raster,
-                    false, null);
             ios.write(ITEM_TAG);
             ios.writeInt(0);
             for (int i = 0; i < frames; ++i) {
@@ -296,6 +266,7 @@ public abstract class CompressCmd extends CodecCmd {
             }
         } finally {
             if (w != null) w.dispose();
+            if (bi != null) biPool.returnBufferedImage(bi);
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
@@ -351,30 +322,6 @@ public abstract class CompressCmd extends CodecCmd {
                 if ( read == -1 ) throw new EOFException("Length of pixel matrix is too short!");
                 toread -= read;
             }
-        }
-    }
-
-    private SampleModel getSampleModel() {
-        if (planarConfiguration == 0) {
-            return new PixelInterleavedSampleModel(dataType, columns, rows,
-                    samples, columns * samples,
-                    samples == 1 ? GRAY_BAND_OFFSETS : RGB_BAND_OFFSETS);
-        } else {
-            return new BandedSampleModel(dataType, columns, rows, samples);
-        }
-    }
-
-    private ColorModel getColorModel() {
-        
-        if (samples == 3) {
-            return new ComponentColorModel(ColorSpace
-                    .getInstance(ColorSpace.CS_sRGB), new int[] { bitsUsed,
-                    bitsUsed, bitsUsed}, false, false, ColorModel.OPAQUE,
-                    dataType);
-        } else {
-            return new ComponentColorModel(ColorSpace
-                    .getInstance(ColorSpace.CS_GRAY), new int[] { bitsUsed},
-                    false, false, ColorModel.OPAQUE, dataType);
         }
     }
 }

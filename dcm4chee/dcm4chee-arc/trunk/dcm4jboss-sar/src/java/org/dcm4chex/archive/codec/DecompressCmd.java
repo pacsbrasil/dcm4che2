@@ -90,8 +90,6 @@ public class DecompressCmd extends CodecCmd {
 
     private final ImageInputStream iis;
 
-    private String tsuid;
-
     private int[] simpleFrameList;
 
     public static byte[] decompressFile(File inFile, File outFile,
@@ -151,8 +149,7 @@ public class DecompressCmd extends CodecCmd {
 
     public DecompressCmd(Dataset ds, String tsuid, DcmParser parser)
             throws IOException {
-        super(ds);
-        this.tsuid = tsuid;
+        super(ds, tsuid);
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser);
         if (samples == 3) {
@@ -179,7 +176,7 @@ public class DecompressCmd extends CodecCmd {
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
-            bi = createBufferedImage();
+            bi = getBufferedImage();
             for (int i = 0, n = getNumberOfFrames(); i < n; ++i) {
                 int frame = simpleFrameList != null ? (simpleFrameList[i]-1) : i;
                 log.debug("start decompression of frame #" + (frame + 1));
@@ -202,6 +199,8 @@ public class DecompressCmd extends CodecCmd {
         } finally {
             if (reader != null)
                 reader.dispose();
+            if (bi != null)
+                biPool.returnBufferedImage(bi);
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();

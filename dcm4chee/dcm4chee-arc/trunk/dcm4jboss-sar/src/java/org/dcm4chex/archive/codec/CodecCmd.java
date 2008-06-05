@@ -39,22 +39,13 @@
 
 package org.dcm4chex.archive.codec;
 
-import java.awt.Point;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
-import java.awt.image.PixelInterleavedSampleModel;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 
 import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
 import EDU.oswego.cs.dl.util.concurrent.Semaphore;
@@ -85,14 +76,7 @@ public abstract class CodecCmd {
 
     static Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
 
-    public static void setMaxConcurrentCodec(int maxConcurrentCodec) {
-        codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
-        CodecCmd.maxConcurrentCodec = maxConcurrentCodec;
-    }
-
-    public static int getMaxConcurrentCodec() {
-        return maxConcurrentCodec;
-    }
+    static BufferedImagePool biPool = new BufferedImagePool();
 
     protected final int samples;
 
@@ -114,7 +98,11 @@ public abstract class CodecCmd {
 
     protected final int bitsUsed;
 
-    protected CodecCmd(Dataset ds) {
+    protected final String tsuid;
+
+    protected final int dataType;
+
+    protected CodecCmd(Dataset ds, String tsuid) {
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
         this.frames = ds.getInt(Tags.NumberOfFrames, 1);
         this.rows = ds.getInt(Tags.Rows, 1);
@@ -125,35 +113,68 @@ public abstract class CodecCmd {
         this.pixelRepresentation = ds.getInt(Tags.PixelRepresentation, 0);
         this.planarConfiguration = ds.getInt(Tags.PlanarConfiguration, 0);
         this.frameLength = rows * columns * samples * bitsAllocated / 8;
+        this.tsuid = tsuid;
+        switch (bitsAllocated) {
+        case 8:
+            this.dataType = DataBuffer.TYPE_BYTE;
+            break;
+        case 16:
+            this.dataType = (pixelRepresentation != 0 
+                    && (UIDs.JPEG2000Lossless.equals(tsuid)
+                            || UIDs.JPEG2000Lossy.equals(tsuid)))
+                                    ? DataBuffer.TYPE_SHORT
+                                    : DataBuffer.TYPE_USHORT;
+            break;
+        default:
+            throw new IllegalArgumentException("bits allocated:"
+                    + bitsAllocated);
+        }
     }
 
+    public static void setMaxConcurrentCodec(int maxConcurrentCodec) {
+        codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
+        CodecCmd.maxConcurrentCodec = maxConcurrentCodec;
+    }
+
+    public static int getMaxConcurrentCodec() {
+        return maxConcurrentCodec;
+    }
+
+    public static int getMaxBufferedImagePoolSize() {
+        return biPool.getMaxSize();
+    }
+
+    public static void setMaxBufferedImagePoolSize(int maxSize) {
+        biPool.setMaxSize(maxSize);
+    }
+
+    public static int getCurrentBufferedImagePoolSize() {
+        return biPool.getPoolSize();
+    }
+
+    public static long getMaxBufferedImagePoolMemory() {
+        return biPool.getMaxMemory();
+    }
+
+    public static void setMaxBufferedImagePoolMemory(long maxMemory) {
+        biPool.setMaxMemory(maxMemory);
+    }
+
+    public static long getCurrentBufferedImagePoolMemory() {
+        return biPool.getPoolMemory();
+    }
+    
     public int getPixelDataLength() {
         return frames * frameLength;
     }
 
-    protected BufferedImage createBufferedImage() {
-        int pixelStride;
-        int[] bandOffset;
-        int dataType;
-        int colorSpace;
-        if (samples == 3) {
-            pixelStride = 3;
-            bandOffset = new int[] { 0, 1, 2 };
-            dataType = DataBuffer.TYPE_BYTE;
-            colorSpace = ColorSpace.CS_sRGB;
-        } else {
-            pixelStride = 1;
-            bandOffset = new int[] { 0 };
-            dataType = bitsAllocated == 8 ? DataBuffer.TYPE_BYTE
-                    : DataBuffer.TYPE_USHORT;
-            colorSpace = ColorSpace.CS_GRAY;
-        }
-        SampleModel sm = new PixelInterleavedSampleModel(dataType, columns,
-                rows, pixelStride, columns * pixelStride, bandOffset);
-        ColorModel cm = new ComponentColorModel(ColorSpace
-                .getInstance(colorSpace), sm.getSampleSize(), false, false,
-                Transparency.OPAQUE, dataType);
-        WritableRaster r = Raster.createWritableRaster(sm, new Point(0, 0));
-        return new BufferedImage(cm, r, false, new Hashtable());
+    protected BufferedImage getBufferedImage() {
+        return biPool.borrowOrCreateBufferedImage(rows, columns, bitsUsed,
+                samples, planarConfiguration, dataType);
     }
+
+    protected void returnBufferedImage(BufferedImage bi) {
+        biPool.returnBufferedImage(bi);
+    }
+
 }
