@@ -152,6 +152,10 @@ public class FileSystemUtils {
                 Long l = (Long) jdk6getFreeSpace.invoke(
                 		new File(path), (Object[]) null);
                 long space = l.longValue();
+                // Following is a workaround for a bug in the Sun JDK 6. The
+                // File.getFreeSpace method always returns 0 on file systems
+                // greater than 4 TB. If we get a 0 back from the method call,
+                // fall through to the "df" style check.
                 if (space != 0) 
                     return space;
             } catch (Exception e) {
