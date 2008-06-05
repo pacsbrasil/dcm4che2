@@ -29,16 +29,16 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	};
 
 	if( ! model.patientLayout ) {
-		model.merged = new Merged();
-		model.patientLayout = this.createPatientLayout(model.merged,2,2,1,2,4,2);
+		model.navigate = new Navigation();
+		model.patientLayout = this.createPatientLayout(model.navigate,2,2,1,2,4,2);
 		model.layout.removeTab("Display");
 		model.layout.addTab("Display", model.patientLayout);
 	}
-	var merged = model.merged;
-	merged.setNavigation(merged.KEY, patientId);
-	merged.getChild(merged.KEY, 0).setNavigation(merged.KEY_SET,uids);
+	var navigate = model.navigate;
+	navigate.setNavigation(navigate.KEY, patientId);
+	navigate.getChild(navigate.KEY, 0).setNavigation(navigate.KEY_SET,uids);
 	
-	var external = merged.external;
+	var external = navigate.external;
 	if( (!external) || (!external.children[patientId]) ) {
 		external = new StudyData(uids);
 		external.request();
@@ -56,16 +56,16 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	this.updateView("displayPatient");
 };
 
-/** Merge the external data into the merged display data so that layouts can be seen. */
+/** Merge the external data into the navigate display data so that layouts can be seen. */
 XeroController.prototype.mergeExternal = function(external) {
-	var merged = this.model.merged;
-	if( !external ) external = merged.external;
-	var queries = merged.mergeExternal(external);
+	var navigate = this.model.navigate;
+	if( !external ) external = navigate.external;
+	var queries = navigate.mergeExternal(external);
 	i = 2;
 	while(queries && i>0) {
 		this.debug("Merging queries %s", queries);
 		external.addQueries(queries);
-		queries = merged.mergeExternal(external);
+		queries = navigate.mergeExternal(external);
 		i--;
 	}
 	if( i==0 && queries ) {
@@ -81,22 +81,39 @@ XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, 
 	this.displayPatient(src, patientId,uids);
 };
 
-/** Navigates at the series level */
+/** Navigates at the series level to a specific series */
+XeroController.prototype.navToSer = function XC_NavToSer(id,uid) {
+	console.info("Trying %s to navigate to %s", id, uid);
+	var lay = this.model.patientLayout.findLayout(id);
+	var navigate = lay.navigate;
+	navigate.setNavigation(navigate.KEY,uid);
+	console.info("setNavigation completed.");
+	this.mergeExternal();
+	console.info("mergeExternal completed.");
+	
+	var size = getViewportSize();
+	console.info("Viewport size %d,%d",size[0],size[1]);
+	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
+
+	this.waitUpdate("navToSer");
+};
+
+/** Navigates at the series level by dir +/- forward/backwards */
 XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	var lay = this.model.patientLayout.findLayout(id);
 	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
-	if( (!lay) || ! lay.merged ) {
+	if( (!lay) || ! lay.navigate ) {
 		console.warn("Didn't find a study to navigate on?");
 		return;
 	}
-	var merged = lay.merged;
-	var dirSeries = merged.lookupId(merged.KEY,dir);
+	var navigate = lay.navigate;
+	var dirSeries = navigate.lookupId(navigate.KEY,dir);
 	if(!dirSeries ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirSeries);
-	merged.setNavigation(merged.KEY,dirSeries);
+	navigate.setNavigation(navigate.KEY,dirSeries);
 	console.info("setNav completed.");
 	this.mergeExternal();
 	console.info("mergeExternal completed.");
@@ -106,7 +123,7 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
 
 	console.info("About to update view for navigation of series.");
-	this.updateView("navSer");
+	this.waitUpdate("navSer");
 	
 };
 
@@ -114,18 +131,18 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 XeroController.prototype.navImg = function XC_navImg(id,dir) {
 	var lay = this.model.patientLayout.findLayout(id);
 	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
-	if( (!lay) || ! lay.merged ) {
+	if( (!lay) || ! lay.navigate ) {
 		console.warn("Didn't find an image to navigate on?");
 		return;
 	}
-	var merged = lay.merged;
-	var dirImg = merged.lookupId(merged.POSITION,dir);
+	var navigate = lay.navigate;
+	var dirImg = navigate.lookupId(navigate.POSITION,dir);
 	if(dirImg==null ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirImg);
-	merged.setNavigation(merged.POSITION,dirImg);
+	navigate.setNavigation(navigate.POSITION,dirImg);
 	this.mergeExternal();
 	
 	this.waitUpdate("navImg");
@@ -151,7 +168,7 @@ XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
 	id.origGridY = h;
 	// Make an artificial change to re-layout the image area.
 	id.series = null;
-	id.mergedListener(id.merged);
+	id.navigateListener(id.navigate);
 	id.resize(id.width, id.height, id.style);
 	this.updateView("displayPatient");
 };
@@ -163,12 +180,12 @@ XeroController.prototype.setMode = function XC_setMode(md) {
 /**
  * Create a patient layout with the given sizing/design
  */
-XeroController.prototype.createPatientLayout = function PC_createPatientLayout(merged, stx,sty,sex,sey,imx,imy) {
+XeroController.prototype.createPatientLayout = function PC_createPatientLayout(navigate, stx,sty,sex,sey,imx,imy) {
 	var layout = new Layout("patientLayout");
 	layout.setGrid(1,1);
 	var layouts = layout.layouts;
 	var patientMenu = new Layout("patientMenu", "image/patientMenu");
-	var childMerged = merged.addChildListener(patientMenu,PatientMergedListener,merged.KEY,0); 
+	var childMerged = navigate.addChildListener(patientMenu,PatientMergedListener,navigate.KEY,0); 
 	layout.tabMenu = patientMenu;
 	var studyArea = this.createStudyArea(childMerged, stx,sty,sex,sey,imx,imy);	
 	layouts.push( studyArea );
@@ -177,7 +194,7 @@ XeroController.prototype.createPatientLayout = function PC_createPatientLayout(m
 };
 
 /** Create the study layouts containing the study tray and the image area */
-XeroController.prototype.createStudyArea = function PC_createStudyArea(merged, stx,sty,sex,sey,imx,imy) {
+XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate, stx,sty,sex,sey,imx,imy) {
 	var cnt = Layout.prototype.idCnt++;
 	var studyArea = new Layout("studyArea"+cnt);
 	studyArea.setGrid(stx*2,sty);
@@ -186,9 +203,8 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(merged, s
 	for(j=0; j<sty; j++) {
 		for(i=0; i<stx; i++) {
 			var studyTray = new Layout("studyTray"+cnt+","+i+","+j,"image/studyTray" );
-			var childMerged = merged.addChildListener(studyTray,StudyMergedListener,merged.KEY_SET,j*stx+i);
+			var childMerged = navigate.addChildListener(studyTray,StudyMergedListener,navigate.KEY_SET,j*stx+i);
 			studyTray.absWidth = 135;
-			var seriesArea
 			var seriesArea = this.createSeriesArea(childMerged,sex,sey,imx,imy);
 			studyTray.x = i;
 			studyTray.y = j;
@@ -207,26 +223,27 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(merged, s
 	return studyArea;
 };
 
-XeroController.prototype.createSeriesArea = function PC_createSeriesArea(merged,sex, sey, imx, imy) {
+XeroController.prototype.createSeriesArea = function PC_createSeriesArea(navigate,sex, sey, imx, imy) {
 	var cnt = Layout.prototype.idCnt++;
 	var seriesArea = new Layout("seriesArea"+cnt,"html/layout");
 	seriesArea.setGrid(sex,sey*2);
-	merged.addListener(seriesArea,StudyMergedListener);
+	navigate.addListener(seriesArea,StudyMergedListener);
 	var layouts = seriesArea.layouts;
 	var i,j,toolbar, imageArea;
 	var toolbars = new Array();
 	for(j=0; j<sey; j++) {
 		for(i=0; i<sex; i++) {
 			toolbar = new Layout("seriesToolbar"+cnt+","+i+","+j,"image/seriesToolbar");
+			toolbar.parent = seriesArea;
 			toolbars[i] = toolbar;
-			merged.addChildListener(toolbar,SeriesMergedListener,merged.KEY,j*sex+i);
+			navigate.addChildListener(toolbar,SeriesMergedListener,navigate.KEY,j*sex+i);
 			toolbar.absHeight = 25;
 			toolbar.x = i;
 			toolbar.y = j;
 			layouts.push(toolbar);
 		};
 		for(i=0; i<sex; i++) {
-			imageArea = this.createImageArea(toolbars[i].merged,imx,imy);
+			imageArea = this.createImageArea(toolbars[i].navigate,imx,imy);
 			toolbars[i].imageArea = imageArea;
 			layouts.push(imageArea);
 		};
@@ -234,7 +251,7 @@ XeroController.prototype.createSeriesArea = function PC_createSeriesArea(merged,
 	return seriesArea;
 };
 
-XeroController.prototype.createImageArea = function PC_createImageArea(merged,imx, imy) {
+XeroController.prototype.createImageArea = function PC_createImageArea(navigate,imx, imy) {
 	var cnt = Layout.prototype.idCnt++;
 	var imageArea = new Layout("imageArea"+cnt,"image/imageArea");
 	var xcThis = this;
@@ -242,7 +259,7 @@ XeroController.prototype.createImageArea = function PC_createImageArea(merged,im
 		console.info("Mouse wheel image area called.");
 		return xcThis.navWheelImg(imageArea,evt);
 	};
-	merged.addListener(imageArea,ImageAreaMergedListener);
+	navigate.addListener(imageArea,ImageAreaMergedListener);
 	imageArea.used = false;
 	imageArea.setGrid(imx,imy);
 	imageArea.origGridX = imx;
@@ -252,7 +269,7 @@ XeroController.prototype.createImageArea = function PC_createImageArea(merged,im
 	for(j=0; j<imy; j++) {
 		for(i=0; i<imx; i++) {
 			layout = new ImageLayout("imageLay"+cnt+","+i+","+j);
-			merged.addChildListener(layout,ImageMergedListener,merged.POSITION,j*imx+i);
+			navigate.addChildListener(layout,ImageMergedListener,navigate.POSITION,j*imx+i);
 			layout.resizeListener = ImageResizeListener;
 			layout.x = i;
 			layout.y = j;
@@ -263,49 +280,55 @@ XeroController.prototype.createImageArea = function PC_createImageArea(merged,im
 };
 
 /** The listener for the patient information */
-function PatientMergedListener(merged) {
-	this.merged = merged;
-	if( merged ) {
-		this.patient = merged.external;
+function PatientMergedListener(navigate) {
+	this.navigate = navigate;
+	if( navigate ) {
+		this.patient = navigate.external;
 	}
 };
 
-/** This defines the listeners for merged changes to the layout */
-function StudyMergedListener(merged) {
-	this.merged = merged;
-	this.used = (merged!=null && merged.external!=null);
-	if( merged ) {
-		this.study = merged.external;
+/** This defines the listeners for navigate changes to the layout */
+function StudyMergedListener(navigate) {
+	this.navigate = navigate;
+	this.used = (navigate!=null && navigate.external!=null);
+	if( navigate ) {
+		this.study = navigate.external;
 	}
 };
 
-/** This defines the listeners for merged changes to the layout */
-function SeriesMergedListener(merged) {
-	this.merged = merged;
-	this.used = (merged!=null && merged.external!=null);
-	if( merged ) {
-		this.series = merged.external;
+/** This defines the listeners for navigate changes to the layout */
+function SeriesMergedListener(navigate) {
+	this.navigate = navigate;
+	var changed = this.used;
+	this.used = (navigate!=null && navigate.external!=null);
+	changed = (changed!=this.used);
+	if( navigate ) console.info("Changing series on %s to %d",this.id, navigate.id);
+	if( changed && this.parent) {
+		this.parent.relayout = true;
+	}
+	if( navigate ) {
+		this.series = navigate.external;
 	}
 	this.relayout = true;
 };
 
-/** Defines the image area merged listener to reset the grid size and
+/** Defines the image area navigate listener to reset the grid size and
  * enable/disable child elements as appropriate.
  */
-function ImageAreaMergedListener(merged) {
-	this.merged = merged;
-	if(!merged) return;
-	if( merged.external===this.series ) {
+function ImageAreaMergedListener(navigate) {
+	this.navigate = navigate;
+	if(!navigate) return;
+	if( navigate.external===this.series ) {
 		return;
 	}
 	this.relayout = true;
-	this.series = merged.external;
+	this.series = navigate.external;
 	if( !this.series ) {
 		this.used = false;
 		return;
 	}
 	this.used = true;
-	var n,imageCount = merged.external.Viewable;
+	var n,imageCount = navigate.external.Viewable;
 	if( imageCount<=1 ) {
 		this.gridX = 1;
 		this.gridY = 1;
@@ -340,12 +363,12 @@ function ImageAreaMergedListener(merged) {
 	}
 }; 
 
-/** This defines the listeners for merged changes to the layout */
-function ImageMergedListener(merged) {
-	this.merged = merged;
-	if( merged && this.image!==merged.external ) {
+/** This defines the listeners for navigate changes to the layout */
+function ImageMergedListener(navigate) {
+	this.navigate = navigate;
+	if( navigate && this.image!==navigate.external ) {
 		this.relayout = true;
-		this.image = merged.external;
+		this.image = navigate.external;
 		if( this.image ) {
 			this.Position1 = 1+parseInt(this.image.Position);
 		}

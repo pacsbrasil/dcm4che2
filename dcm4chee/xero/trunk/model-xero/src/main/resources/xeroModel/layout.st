@@ -232,7 +232,9 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
  */
 ImageLayout.prototype.createFullUrl = function ImageLayout_computeSize(base) {
 	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.SOPInstanceUID, "top":0, "left":0 };
-
+	if( this.image.frame ) {
+		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
+	}
 	var intScale = 1;
 	// Only fetch sizes down to 256 -otherwise fetch full size.
 	for(ret.fetchScale=1; ret.fetchScale < this.image.Rows/this.fetchSize; ret.fetchScale *=2 ) {

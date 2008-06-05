@@ -8,10 +8,8 @@ $if(layout.study)$
 	<br />
 	Reports <br />
 	Key Image Sets <br />
-	Presentation State <br />
-	$image/seriesTray()$<br />
-	  Key Images <br />
-	  Other Series <br />
+	$series/presentation()$ <br />
+	$series/thumbnails()$<br />
 $else$
 No Study
 $endif$

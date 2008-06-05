@@ -44,12 +44,6 @@
 <h1>User Login at <%= nodeInfo %></h1>
 <br>
 
-<%
-  if( request.getParameter("logout")!=null ) {
-	 session.invalidate();
-	 %> <h1>Logged out.  To login again, enter your name/password below.</h1> <% 
-  }
-%>
 <form name="login" method="POST" action="j_security_check">
 <p>This is a Stringtemplate based version of Xero that is replacing the Xslt based Xero. 
 The GUI is different in appearance and is being worked on for useability and appearance.

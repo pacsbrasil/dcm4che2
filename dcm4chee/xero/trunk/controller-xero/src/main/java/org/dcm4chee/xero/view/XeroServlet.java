@@ -98,6 +98,9 @@ public class XeroServlet extends StringTemplateServlet {
 	  mwd.put(RequestValidator.PARAMETERS,req.getParameterMap());
 	  mwd.put(XmlModelFactory.URIRESOLVER, new UrlUriResolver(req,resp,getServletContext()));
 	  mwd.put("_session", new SessionMap(req.getSession()));
+	  String userName = req.getRemoteUser();
+	  mwd.put("userName", userName);
+	  log.info("Creating model for user {}",userName);
 	  return controller.action(mwd);
    }
    

@@ -2,6 +2,7 @@
   <div class="$if(it.used)$activeTab$else$tab$endif$" onclick="xeroController.switchTab(this,'$it.tabName$')">$it.tabName$</div>
 }$
 $if(layout.activeTab.tabMenu)$ $(layout.activeTab.tabMenu.template)(layout=layout.activeTab.tabMenu)$ $endif$
+$if(layout.tabMenu.template)$ $(layout.tabMenu.template)(layout=layout.tabMenu)$ $endif$
 </div>
 <div class="tabBody">
 $(layout.activeTab.template)(layout=layout.activeTab)$

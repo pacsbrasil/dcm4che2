@@ -1,8 +1,6 @@
 package org.dcm4chee.xero.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.xero.model.Layout;
@@ -53,7 +51,7 @@ public class QueryController implements MapFactory, MultiAction {
 	  tabs.addTab("Find", findLayout);
 	  
 	  tabs.addTab("Display", new Layout());
-	  log.info("Returning a TabsLayout object.");
+	  tabs.put("tabMenu", new Layout("userMenu"));
 	  return tabs;
    }
 

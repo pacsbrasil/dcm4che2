@@ -34,6 +34,10 @@ div.studyTray, div.seriesToolbar {
 	float: left;
 }
 
+div.userMenu {
+	float: right;
+}
+
 .image {
 	margin: 0px;
 	border: 0px;
@@ -74,6 +78,28 @@ div.innerBody {
 	background: #909090;
 }
 
+/*====================== Study Tray/Thumbnails ===========================*/
+div.studyTray {
+	overflow: scroll;
+}
+
+ul.thumbnails {
+	list-style-type:none;          /* we don't want to view the list as a list */
+	margin:0;
+	padding:0;
+	border:0;
+}
+
+li.thumbnail span {
+	clear: both;
+	display: block;
+}
+	
+li.thumbnail img {
+	width:92px;
+	height: auto;
+	display: block;
+}
 
 /*====================== Tabs Layout ==========================*/
 div.tab, div.activeTab {

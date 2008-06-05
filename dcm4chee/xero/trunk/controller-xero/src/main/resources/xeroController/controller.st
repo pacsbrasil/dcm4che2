@@ -147,7 +147,9 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 				this.debug("Re-rendering %s template %s",lay.id, lay.template);
 				origLay = this.model.layout;
 				this.model.layout = lay;
-				render =this.view.toString(lay.template,this.model);
+				console.time("rerender");
+				render = this.view.toString(lay.template,this.model);
+				console.timeEnd("rerender");
 				this.model.layout = origLay;
 				this.replaceHtml(lay.id,render);
 				lay.clearRelayout();
