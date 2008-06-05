@@ -262,6 +262,14 @@ public class CompressionService extends ServiceMBeanSupport {
                 CodecCmd.getCurrentBufferedImagePoolMemory());
     }
 
+    public final float getBufferedImagePoolHitRate() {
+        return CodecCmd.getBufferedImagePoolHitRate();
+    }
+
+    public final void resetBufferedImagePoolHitRate() {
+        CodecCmd.resetBufferedImagePoolHitRate();
+    }
+
     public final void setTempDir( String dirPath ) {
         tmpDir = new File(dirPath);
     }

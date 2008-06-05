@@ -69,10 +69,13 @@ class BufferedImagePool {
     private int maxSize = 10;
     private long maxMemory = FileUtils.MEGA;
     private long poolMemory = 0;
+    private float borrowOrCreateCount = 0.f;
+    private float borrowCount = 0.f;
 
     public synchronized BufferedImage borrowOrCreateBufferedImage(int rows,
             int columns, int bitsUsed, int samples, int planarConfiguration,
             int dataType) {
+        borrowOrCreateCount++;
         for (int index = pool.size(); --index >= 0;) {
             BufferedImage bi = pool.get(index);
             ColorModel cm = bi.getColorModel();
@@ -86,6 +89,7 @@ class BufferedImagePool {
                             : 1) && db.getDataType() == dataType) {
                 pool.remove(index);
                 poolMemory -= sizeOf(bi);
+                borrowCount++;
                 log("borrow", bi);
                 return bi;
             }
@@ -188,5 +192,13 @@ class BufferedImagePool {
 
     public final long getPoolMemory() {
         return poolMemory;
+    }
+
+    public float getHitRate() {
+        return borrowCount / borrowOrCreateCount;
+    }
+
+    public void resetHitRate() {
+        borrowOrCreateCount = borrowCount = 0.f;
     }
 }

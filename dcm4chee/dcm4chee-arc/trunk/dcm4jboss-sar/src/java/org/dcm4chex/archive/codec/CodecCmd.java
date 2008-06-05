@@ -163,7 +163,15 @@ public abstract class CodecCmd {
     public static long getCurrentBufferedImagePoolMemory() {
         return biPool.getPoolMemory();
     }
-    
+
+    public static float getBufferedImagePoolHitRate() {
+        return biPool.getHitRate();
+    }
+
+    public static void resetBufferedImagePoolHitRate() {
+        biPool.resetHitRate();
+    }
+
     public int getPixelDataLength() {
         return frames * frameLength;
     }
