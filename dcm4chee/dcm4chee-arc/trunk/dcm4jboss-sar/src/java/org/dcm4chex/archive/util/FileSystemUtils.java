@@ -151,7 +151,9 @@ public class FileSystemUtils {
             try {
                 Long l = (Long) jdk6getFreeSpace.invoke(
                 		new File(path), (Object[]) null);
-                return l.longValue();
+                long space = l.longValue();
+                if (space != 0) 
+                    return space;
             } catch (Exception e) {
                 // Should not happen
                 e.printStackTrace();
