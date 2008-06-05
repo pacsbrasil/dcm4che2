@@ -53,6 +53,13 @@ public class StoredDocument implements XDSDocumentIdentifier{
 		this.desc = desc;
 	}
 	
+    public StoredDocument(String docUid, long size, String hash, String desc){
+        this.docUid = docUid;
+        this.size = size;
+        this.hashString = hash;
+        this.desc = desc;
+    }
+	
 	private String toHexString(byte[] hash) {
 		StringBuffer sb = new StringBuffer();
 		String h;
