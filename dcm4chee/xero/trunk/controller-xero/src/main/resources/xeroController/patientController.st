@@ -369,6 +369,7 @@ function ImageMergedListener(navigate) {
 	if( navigate && this.image!==navigate.external ) {
 		this.relayout = true;
 		this.image = navigate.external;
+		this.merged = navigate.getMerged();
 		if( this.image ) {
 			this.Position1 = 1+parseInt(this.image.Position);
 		}
@@ -383,7 +384,10 @@ function AddImageUrl(imageLay, clear) {
 	imageLay.imageUrls.push(imageLay.createFullUrl(WADO_QUERY));
 	imageLay.preloadImage = new Image();
 	var src = imageLay.imageUrls[imageLay.imageUrls.length-1].imageUrl;
+	// This needs to be the unexpanded form as the src assignment does not undo this.
+	src = src.replace(/&amp;/g,"&");
 	imageLay.preloadImage.src = src;
+	console.info("Created a pre-load image for '%s'", src);
 };
 
 /** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place. */

@@ -49,12 +49,14 @@ Merged.prototype.get = function Merged_get(key) {
 	do {
 		val = parent[key];
 		if( val!==undefined ) return val;
-	} while(parent.level > 2);
+		parent = parent.parent;
+	} while(parent && parent.level > 2);
 	
 	parent = this;
 	do {
 		val = parent.external[key];
 		if( val!==undefined ) return val;
-	} while(parent.level > 2);  
+		parent = parent.parent;
+	} while(parent && parent.level > 2);  
 };
 

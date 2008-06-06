@@ -217,11 +217,13 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 
 /** Indicate if the image load is complete */
 ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
-	if( !this.preloadImage ) return true;
+	if( this.preloadImage===undefined ) return true;
 	if( this.preloadImage.complete ) {
+		console.info("Image %s is complete.", this.preloadImage.src);
 		this.preloadImage = undefined;
 		return true;
 	};
+	console.info("Waiting for %s", this.preloadImage.src);
 	return false;
 };
 

@@ -77,6 +77,7 @@ Navigation.prototype.QUERY = "/wado2/image.xml";
 Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external, ret) {
 	if( this.external!==external ) {
 		this.external = external;
+		if( this.merged ) this.merged.external = this.external;
 		this.fireChanged(this.EXTERNAL_CHANGED);
 	}
 	this.debug("Adding external data to %s at level %d", this.id,this.level);
@@ -102,7 +103,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 				position = child.id - this.QUERY_SIZE;
 				position -= (position % this.IMAGE_QUERY_SIZE);
 				position += this.QUERY_SIZE;
-				url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
+				url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
 				this.debug("Adding %s to queries.",url); 
 				ret[url] = url;
 			}
@@ -121,7 +122,8 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		// query
 		if( this.level===2 ) {
 			if( !ret ) ret =new Object();
-			url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id;
+			console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive.");
+			url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true";
 			ret[url] = url;
 			this.debug("Adding %s to queries.", url);
 			return ret; 
@@ -273,11 +275,21 @@ Navigation.prototype.findExternal = function Navigation_findExternal(val) {
  */
 Navigation.prototype.createConversation = function Navigation_createConversation() {
 	if( this.conversation ) return;
-	if( !this.id ) throw new Error("This navigate object doesn't yet have an ID - set the parent navigation/information first for "+this.keyRef);
+	if( this.id==null ) throw new Error("This navigate object doesn't yet have an ID - set the parent navigation/information first for "+this.keyRef);
 	this.parent.createConversation();
 	this.merged = this.parent.merged.getChild(this.id,this.external);
 	this.conversation = this.merged.getConversation();
 };
+
+/** Gets the merged context for this object, creating one if necessary.  Returns undefined
+ * if the id isn't set.
+ */
+Navigation.prototype.getMerged = function Navigation_getMerged() {
+	if(this.id==null) return undefined;
+	if(this.external==null ) return null;
+	this.createConversation();
+	return this.merged;
+}
 
 /** Assigns results information to the various levels.
  */

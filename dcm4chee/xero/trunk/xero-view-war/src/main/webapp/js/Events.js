@@ -47,6 +47,97 @@ function localName(node) {
 	return tn;
 };
 
+/** Get the target of the event */
+function target(e) {
+	var targ;
+	if( !e ) var e = window.event;
+	if ( e.target ) targ = e.target;
+	else if (e.srcElement) targ = e.srcElement;
+	if( targ.nodeType == 3 ) // defeat Safari bug
+	  targ = targ.parentNode;
+	return targ;
+}
+
+/** Tells if this is a left mouse button.  Works in IE, Firefox, Konq, Opera, Safari.
+ * @param evt to detect the mouse button on.
+ * @return true if left mouse button.
+ */
+function isLeftMouse(evt) {
+	if( evt.which ) return (evt.which<2);
+	return evt.button < 2;
+};
+
+/** Tells if this is a right mouse button.  Works in IE, Firefox, Konq, Opera, Safari.
+ * @param evt to detect the mouse button on.
+ * @return true if left mouse button.
+ */
+function isRightMouse(evt) {
+	if( evt.which ) return (evt.which==3);
+	return event.button == 2;
+};
+
+/** Telss if any mouse button is down. */
+function isMouseDown(evt) {
+	if( evt.which ) return true;
+	return event.button!=0;
+};
+
+/** Return the response to this function to prevent the default action from occurring */
+function evtPreventDefault(e) {
+	if( e.preventDefault ) {
+		e.preventDefault();
+	}
+	return false;
+}
+
+/**
+ * Finds the coordinates for a given event, multi-browser supported.
+ * Returns array with the DOCUMENT based coordinates
+ * @param (Event) e is the event to use.  Will use window.event for IE
+ * @return [x,y] document based coordinates.
+ * @author tarquinwj (public code in posted as demo)
+ */
+function docCoords(e) {
+   if( !e ) { e = window.event; } if( !e || ( typeof( e.pageX ) != 'number' && typeof( e.clientX ) != 'number' ) ) { return [ 0, 0 ]; }
+   if( typeof( e.pageX ) == 'number' ) { return [e.pageX,e.pageY];} else {
+      var posX = e.clientX; var posY = e.clientY;
+      if( !( ( window.navigator.userAgent.indexOf( 'Opera' ) + 1 ) || ( window.ScriptEngine && ScriptEngine().indexOf( 'InScript' ) + 1 ) || window.navigator.vendor == 'KDE' ) ) {
+         if( document.documentElement && ( document.documentElement.scrollTop || document.documentElement.scrollLeft ) ) {
+            posX += document.documentElement.scrollLeft; posY += document.documentElement.scrollTop;
+         } else if( document.body && ( document.body.scrollTop || document.body.scrollLeft ) ) {
+            posX += document.body.scrollLeft; posY += document.body.scrollTop;
+         }
+      }
+      return [ posX, posY ];
+   }
+};
+
+/** Strips the provided elements from the URL and returns the new URL */
+function stripUrl(url, rem) {
+	if( !url ) {
+		alert("No URL found.");
+		return undefined;
+	}
+	if(!rem) return url;
+	var i,j;
+    var search;
+	if( (typeof rem)==='string') {
+        search = '&'+rem+'=';
+		i = url.indexOf(search);
+		if( i<0 ) return url;
+		j = url.indexOf('&',i+2);
+		if( j<0 ) j = url.length;
+		url = url.substring(0,i) + url.substring(j,url.length);
+		return url;
+	}
+	else if( rem ) {
+	   for(i=0; i<rem.length; i++) {
+	   	  url = stripUrl(url,rem[i]);
+	   }
+	}
+	return url;
+};
+
 /** Provides information about the frame width.  Defaults to 1024, 768 if nothing else found.*/
 function getViewportSize() {
     var size = [1024, 768];
@@ -122,4 +213,5 @@ function cancelEvent(e)
   e.returnValue = false;
   return false;
 }
+
 

@@ -9,4 +9,8 @@
   <script src="js/sarissa.js" type="text/ecmascript"> </script>
   $head()$
   <script src="xeroModelController.js" type="text/ecmascript"> </script>
+  <script>
+/** Define per-user information as required TODO - move this to a child script */
+xeroModel.userName = "$userName$";  
+  </script>
 </head>

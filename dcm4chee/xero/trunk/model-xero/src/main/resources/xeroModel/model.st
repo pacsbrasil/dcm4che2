@@ -49,7 +49,6 @@ xeroModel.findLayout.add(xeroModel.queryBox);
 xeroModel.findLayout.add(xeroModel.searchLayout);
 
 xeroModel.layout = new TabsLayout();
-xeroModel.userName = "user";
 xeroModel.layout.tabMenu = new Layout("userMenu","userMenu"); 
 xeroModel.layout.addTab("Find", xeroModel.findLayout);
 xeroModel.layout.addTab("Display");

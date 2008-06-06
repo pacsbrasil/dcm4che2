@@ -7,6 +7,7 @@ tr.header {
 
 body {
 	margin: 4px;
+	color: black;
 }
 
 tr.even {
@@ -46,7 +47,7 @@ div.userMenu {
 	float: left;
 }
 
-.imageGroup {
+.imageDisplay {
 	margin: 0px;
 	border: 0px;
 	background: black;
@@ -107,6 +108,7 @@ div.tab, div.activeTab {
 	background: #999999;
 	color: black;
 	width: 6em;
+	height: 22px; /* Must match menu bar height. */
 	border-style: solid;
 	border-width: 1px;
 	border-color: black;

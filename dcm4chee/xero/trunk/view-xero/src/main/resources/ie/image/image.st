@@ -1,11 +1,11 @@
 <div class="image" $html/style()$ >
 
-<v:group class="imageGroup" $html/style()$>
+<v:group id="vml$layout.id$" class="imageDisplay" onmousedown="return xeroController.imageMouseDown();" $html/style()$>
 	<v:rect style="width: 100%; height: 100%;" fillcolor="black" />
 $if( layout.image )$
 	<v:group class="imageCoord" style="width:100%;height:100%;" coordOrigin="$layout.translateXDisp$,$layout.translateYDisp$" coordsize="$layout.widthImg$,$layout.heightImg$">
 $layout.imageUrls:{
-		<v:image src="$it.imageUrl$" style="width: $it.cols$; height:$it.rows$;" />
+		<v:image id="im$layout.id$" src="$it.imageUrl$" style="width: $it.cols$; height:$it.rows$;" />
 }$
 		<v:line from="0,0" to="0,$layout.image.Rows$" strokecolor="yellow" strokeweight="2" />
 	    <v:line from="0,0" to="$layout.image.Columns$,0" strokecolor="yellow" strokeweight="2" />

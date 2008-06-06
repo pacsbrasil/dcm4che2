@@ -120,7 +120,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 
 /** Performs a delayed update */
 XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
-	if( cnt===undefined ) cnt = 3;
+	if( cnt===undefined ) cnt = 5;
 	var missing = this.renderComplete(this.model.layout.layouts);
 	if( missing===0 ) return 0;
 	if( cnt===0 ) {
@@ -182,6 +182,7 @@ XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,la
 };
 
 $patientController()$
+$dynamic()$
 
 XeroController.prototype.performSearch = function XC_performSearch() {
 	var model = this.model;
@@ -209,3 +210,8 @@ XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 };
 
 var xeroController = new XeroController(xeroModel, xeroView);
+
+// Define short versions of the MVC components.
+var controller = xeroController;
+var model = xeroModel;
+var view = xeroView;
