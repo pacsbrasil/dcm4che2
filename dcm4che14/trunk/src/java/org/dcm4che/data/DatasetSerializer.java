@@ -40,6 +40,8 @@ package org.dcm4che.data;
 
 import java.io.IOException;
 
+import org.dcm4che.dict.UIDs;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -48,6 +50,12 @@ import java.io.IOException;
 public final class DatasetSerializer implements java.io.Serializable {
     
     static final long serialVersionUID =  -4404056689087154718L;
+
+    private static final int ITEM_DELIMITATION_ITEM_TAG = 0xFFFEE00D;
+    private static final byte[] ITEM_DELIMITATION_ITEM_ELEM_LE = { 
+            (byte) 0xFE, (byte) 0xFF, (byte) 0x0D, (byte) 0xE0, 0, 0, 0, 0};
+    private static final byte[] ITEM_DELIMITATION_ITEM_ELEM_BE = { 
+            (byte) 0xFF, (byte) 0xFE, (byte) 0xE0, (byte) 0x0D, 0, 0, 0, 0};
 
     private transient Dataset ds;
     
@@ -59,16 +67,27 @@ public final class DatasetSerializer implements java.io.Serializable {
     
     private void writeObject(java.io.ObjectOutputStream out)
             throws IOException {
-        boolean fmi = ds.getFileMetaInfo() != null;
-        out.writeBoolean(fmi);
-        ds.writeFile(out, fmi ? null : DcmEncodeParam.EVR_LE);
+        FileMetaInfo fmi = ds.getFileMetaInfo();
+        if (fmi == null) {
+            out.writeBoolean(false);
+            ds.writeFile(out, DcmEncodeParam.EVR_LE);
+            out.write(ITEM_DELIMITATION_ITEM_ELEM_LE);
+        } else {
+            out.writeBoolean(true);
+            ds.writeFile(out, null);
+            out.write(fmi.getTransferSyntaxUID() == UIDs.ExplicitVRBigEndian
+                    ? ITEM_DELIMITATION_ITEM_ELEM_BE
+                    : ITEM_DELIMITATION_ITEM_ELEM_LE);
+            
+        }
     }
     
     private void readObject(java.io.ObjectInputStream in)
             throws IOException, ClassNotFoundException {
         ds = DcmObjectFactory.getInstance().newDataset();
-        ds.readFile(in, in.readBoolean() ? FileFormat.DICOM_FILE
-                                     : FileFormat.EVR_LE_STREAM, -1);
+        ds.readFile(in,in.readBoolean() ? FileFormat.DICOM_FILE
+                                         : FileFormat.EVR_LE_STREAM,
+                ITEM_DELIMITATION_ITEM_TAG);
     }
     
     private Object readResolve() throws java.io.ObjectStreamException {

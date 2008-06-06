@@ -325,7 +325,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     public int parseHeader() throws IOException {
         eof = false;
         try {
-            b12[0] = readByteFromInput();
+            b12[0] = in.readByte();
         } catch (EOFException ex) {
             eof = true;
             log.debug("Detect EOF");
@@ -370,22 +370,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (log.isDebugEnabled())
             log.debug(logMsg());
         return retval;
-    }
-
-    // workaround for bug in JBoss's org.jboss.serial.persister.ObjectInputStreamProxy
-    // which DataInput.readByte() implementation returns -1 on EOF, instead
-    // throwing an EOFException.
-    private byte readByteFromInput() throws IOException {
-        if (in instanceof InputStream) {
-            InputStream is = (InputStream) in;
-            int b = is.read();
-            if (b == -1) {
-                throw new EOFException();
-            }
-            return (byte) b;
-        } else {
-            return in.readByte();
-        }
     }
 
     private byte[] parsePreamble() throws IOException {
