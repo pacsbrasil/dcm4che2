@@ -99,7 +99,6 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  DicomImageReadParam dParam = (DicomImageReadParam) param;
 	  dParam.setOverlayRGB((String) params.get("rgb"));
 
-	  // param.setAutoWindowing(true);
 	  String strFrame = (String) params.get(FRAME_NUMBER);
 	  int frame = 0;
 	  if (strFrame != null) {
@@ -137,6 +136,13 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			   log.debug("Color model for image is " + cm);
 			   bi = new BufferedImage(cm, r, false, null);
 			}
+		    Object input = reader.getInput();
+			if( ds.getInt(Tag.NumberOfFrames,1)==1 && (input instanceof ReopenableImageInputStream) ) {
+			   log.info("Closing re-openable stream for {}",params.get("objectUID"));
+			  ((ReopenableImageInputStream) input).close();
+			}
+			else log.info("Not closing re-openable multi-frame stream {}",params.get("objectUID"));
+
 			ret.setValue(bi);
 			log.info("Time to "+op+" image "+params.get("objectUID")+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
 				  + nanoTimeToString(System.nanoTime() - start));

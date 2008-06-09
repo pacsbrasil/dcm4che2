@@ -237,6 +237,11 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_computeSize(base) {
 	if( this.image.frame ) {
 		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
 	}
+	var ww = this.merged.get("windowWidth");
+	if( ww ) {
+		var wc = this.merged.get("windowCenter");
+		ret.imageUrl = ret.imageUrl + "&amp;windowWidth="+ww+"&amp;windowCenter="+wc;
+	}
 	var intScale = 1;
 	// Only fetch sizes down to 256 -otherwise fetch full size.
 	for(ret.fetchScale=1; ret.fetchScale < this.image.Rows/this.fetchSize; ret.fetchScale *=2 ) {

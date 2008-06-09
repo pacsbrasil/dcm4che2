@@ -29,13 +29,13 @@ XeroController.prototype.imageMouseDown = function XC_imageMouseDown(event) {
 XeroController.prototype.findImageTarget = function XC_findImageTarget(src) {
 	var clazz = src.className;
 	var prevChild = src;
-	if( clazz.baseVal ) clazz = baseVal;
+	if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
 	while( src && clazz!="imageDisplay" && src.nodeName!=="BODY" && src.nodeName!=="body") {
 		console.debug("findImageTarget %s %s %s", src.id, src.nodeName, clazz);
 		prevChild = src;
 		src = src.parentNode;
 		clazz = src.className;
-		if( clazz.baseVal ) clazz = clazz.baseVal;
+		if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
 		// Safari and Opera don't provide easy access to svg class.
 		if( clazz==="image" ) {
 			console.info("Returning previous child - not really a good test.");

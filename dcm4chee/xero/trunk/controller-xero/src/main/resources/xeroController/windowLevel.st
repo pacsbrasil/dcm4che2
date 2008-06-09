@@ -82,6 +82,14 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 
 /** Update the window level in the merged context and re-display the screen once the new image is fetched */
 WLController.prototype.end = function WLC_end(event) {
+	if( this.loadWidth && (this.loadWidth!=this.origWidth || this.loadCenter!=this.origCenter) ) {
+		console.info("Setting WL c/w=%d,%d", this.loadCenter, this.loadWidth);
+		this.layout.merged.windowCenter = this.loadCenter;
+		this.layout.merged.windowWidth = this.loadWidth;
+	}
+
+	// Clear the values.
+	this.loadImage = null;
 	this.image = undefined;
 	this.layout = undefined;
 	this.baseUrl = undefined;

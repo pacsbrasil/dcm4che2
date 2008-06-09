@@ -101,18 +101,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		 // can be in memory at once, which is rather handy for a stand-alone WAR that can
 		 // use either a provided version of the library or an included version.
 		 DicomImageReader reader = (DicomImageReader) dicomImageReaderSpi.createReaderInstance();
-		 String surl = location.toString();
-		 ImageInputStream in;
-		 if (surl.startsWith("file:")) {
-			String fileName = location.getFile();
-			log.info("Reading DICOM image from local cache file " + surl);
-			in = new FileImageInputStream(new File(fileName));
-		 } else {
-			// TODO change to FileCacheInputStream once we can configure the
-			// location.
-			log.info("Reading DICOM image from remote WADO url:" + surl);
-			in = new MemoryCacheImageInputStream(location.openStream());
-		 }
+		 ImageInputStream in = new ReopenableImageInputStream(location);
 		 reader.setInput(in);
 		 // We don't have any reliable size information right now.   
 		 params.put(MemoryCacheFilter.CACHE_SIZE, 2048);

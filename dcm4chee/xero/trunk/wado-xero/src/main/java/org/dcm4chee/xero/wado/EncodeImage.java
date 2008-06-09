@@ -314,8 +314,10 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  writer.setOutput(ios);
 	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
 	  writer.write(iiometadata, iioimage, imageWriteParam);
+	  writer.dispose();
 	  ios.close();
 	  byte[] data = baos.toByteArray();
+	  baos.close();
 	  long mid = System.nanoTime();
 	  log.info("Encoding image took " + nanoTimeToString(mid - start) + " with " + writer.getClass());
 	  os.write(data);

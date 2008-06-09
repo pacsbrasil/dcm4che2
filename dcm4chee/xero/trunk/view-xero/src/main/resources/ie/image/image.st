@@ -7,14 +7,12 @@ $if( layout.image )$
 $layout.imageUrls:{
 		<v:image id="im$layout.id$" src="$it.imageUrl$" style="width: $it.cols$; height:$it.rows$;" />
 }$
-		<v:line from="0,0" to="0,$layout.image.Rows$" strokecolor="yellow" strokeweight="2" />
-	    <v:line from="0,0" to="$layout.image.Columns$,0" strokecolor="yellow" strokeweight="2" />
-		<v:line from="0,$layout.image.Rows$" to="$layout.image.Columns$,$layout.image.Rows$" strokecolor="yellow" strokeweight="2" />
-		<v:line from="$layout.image.Columns$,0" to="$layout.image.Columns$,$layout.image.Rows$" strokecolor="yellow" strokeweight="2" />
+		<v:line from="0,0" to="0,$layout.image.Rows$" strokecolor="#202020" strokeweight="2" />
+	    <v:line from="0,0" to="$layout.image.Columns$,0" strokecolor="#202020" strokeweight="2" />
+		<v:line from="0,$layout.image.Rows$" to="$layout.image.Columns$,$layout.image.Rows$" strokecolor="#202020" strokeweight="2" />
+		<v:line from="$layout.image.Columns$,0" to="$layout.image.Columns$,$layout.image.Rows$" strokecolor="#202020" strokeweight="2" />
 	</v:group>
 	<v:group class="imageDisplayRel" style="width: 100%; height: 100%;" coordsize="1000,1000" coordorigin="0,0">
-		<v:line from="0,0" to="1000,1000" strokecolor="red" strokeweight="1" />
-		<v:line from="1000,0" to="0,1000" strokecolor="red" strokeweight="1" />
 	</v:group>
 $else$
 No Image
