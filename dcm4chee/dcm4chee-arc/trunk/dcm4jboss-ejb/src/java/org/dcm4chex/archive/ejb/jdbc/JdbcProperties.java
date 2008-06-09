@@ -15,13 +15,12 @@
  * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
- * Portions created by the Initial Developer are Copyright (C) 2003-2005
+ * Agfa-Gevaert Group.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -43,7 +42,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * @author Gunter.Zeilinger@tiani.com
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@agfa.com>
+ * @author Jan Pechanec <jpechanec@orcz.cz>
  * @version $Revision$ $Date$
  * @since 25.08.2003
  */
@@ -59,6 +60,7 @@ public class JdbcProperties extends Properties {
     public static final int DB2 = 3;
     public static final int ORACLE = 4;
     public static final int MSSQL = 5;
+    public static final int FIREBIRD = 6;
 
     private static final String DATASOURCE_KEY = "datasource";
     private static final String DS_TYPE_KEY = "datasource-type";

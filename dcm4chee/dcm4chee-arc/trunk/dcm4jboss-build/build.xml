@@ -63,7 +63,7 @@
   </target>
 
   <target name="dist"
-    depends="hsql-dist,psql-dist,mysql-dist,mssql-dist,oracle-dist,db2-dist"/>
+    depends="hsql-dist,psql-dist,mysql-dist,mssql-dist,oracle-dist,db2-dist,firebird-dist"/>
 
   <target name="hsql-dist" depends="jar,fixcrlf,auditlog-conf">
     <antcall target="db-dist">
@@ -93,6 +93,11 @@
   <target name="mssql-dist" depends="jar,fixcrlf,auditlog-conf">
     <antcall target="db-dist">
       <param name="db.name" value="mssql"/>
+    </antcall>
+  </target>
+  <target name="firebird-dist" depends="jar,fixcrlf,auditlog-conf">
+    <antcall target="db-dist">
+      <param name="db.name" value="firebird"/>
     </antcall>
   </target>
 

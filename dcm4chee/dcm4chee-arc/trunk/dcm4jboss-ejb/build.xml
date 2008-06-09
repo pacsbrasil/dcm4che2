@@ -46,10 +46,14 @@
 	<property name="log4j.jar" value="${jboss.conf}/lib/log4j.jar"/>		
 	<property name="getopt.jar" value="${jboss.client}/getopt.jar"/>		
 	<property name="jboss-system.jar" value="${jboss.home}/lib/jboss-system.jar"/>		
+	<property name="jboss.jar" value="${jboss.conf}/lib/jboss.jar"/>
+	<property name="jboss-common.jar" value="${jboss.home}/lib/jboss-common.jar"/>
 	<property name="jboss-common-jdbc-wrapper.jar" value="${jboss.conf}/lib/jboss-common-jdbc-wrapper.jar"/>		
 
 	<path id="base.path">
 		<pathelement location="${jboss-system.jar}"/>
+		<pathelement location="${jboss.jar}"/>
+		<pathelement location="${jboss-common.jar}"/>
 		<pathelement location="${jboss-common-jdbc-wrapper.jar}"/>
 		<pathelement location="${concurrent.jar}"/>
 		<pathelement location="${ejb.jar}"/>
@@ -115,6 +119,7 @@
 	<property name="target.meta-inf-mssql" value="${target.xdoclet}/META-INF-mssql"/>
 	<property name="target.meta-inf-oracle" value="${target.xdoclet}/META-INF-oracle"/>
 	<property name="target.meta-inf-db2" value="${target.xdoclet}/META-INF-db2"/>
+	<property name="target.meta-inf-firebird" value="${target.xdoclet}/META-INF-firebird"/>
 	<property name="target.res" value="${target.dir}/res"/>
 	<property name="target.classes" value="${target.dir}/classes"/>
 	<property name="target.common.bin" value="${target.dir}/common/bin"/>	
@@ -263,6 +268,20 @@
   				value="db2-fetch-key"/>
 		</replace>
     </target>
+
+    <target name="meta-inf-firebird" unless="meta-inf-firebird.notRequired">
+        <copy todir="${target.meta-inf-firebird}">
+            <fileset dir="${target.meta-inf-hsql}"/>
+        </copy>
+        <replace dir="${target.meta-inf-firebird}">
+            <replacefilter
+                token="Hypersonic SQL"
+                value="Firebird"/>
+            <replacefilter
+                token="hsqldb-fetch-key"
+                value="firebird-table-sequence"/>
+        </replace>
+    </target>
 		
    	<!-- =================================================================== -->
    	<!-- Compiles the source code                                            -->
@@ -346,6 +365,14 @@
     	<antcall target="meta-inf-db2"/>
     	<antcall target="ejb-jdbc-jar">
     		<param name="db.name" value="db2"/>
+    	</antcall>
+    	<uptodate property="meta-inf-firebird.notRequired"
+    		srcfile="${target.meta-inf-hsql}/jbosscmp-jdbc.xml"
+    		targetfile="${target.meta-inf-firebird}/jbosscmp-jdbc.xml"
+    	/>
+    	<antcall target="meta-inf-firebird"/>
+    	<antcall target="ejb-jdbc-jar">
+    		<param name="db.name" value="firebird"/>
     	</antcall>
         <mkdir dir="${target.common.lib}"/>
         <jar jarfile="${target.common.lib}/dcm4chee-ejb-client.jar">

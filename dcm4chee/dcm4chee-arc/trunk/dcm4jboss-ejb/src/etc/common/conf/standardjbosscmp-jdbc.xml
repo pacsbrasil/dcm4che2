@@ -3030,6 +3030,12 @@ Mapping proposed by Computer Associates, but does not work with JBoss properly
                       class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCDB2IdentityValLocalCreateCommand">
       </entity-command>
 
+      <!-- this command makes the use of a specific sequence for each table -->
+      <entity-command name="firebird-table-sequence"
+                      class="org.dcm4chex.archive.ejb.jdbc.JDBCFirebirdSequenceCreateCommand">
+         <attribute name="sequence_name">%%t_pk_seq</attribute>
+      </entity-command>
+
       <!-- uses key generator to fetch the next key value -->
       <entity-command name="key-generator"
                       class="org.jboss.ejb.plugins.cmp.jdbc.keygen.JDBCKeyGeneratorCreateCommand">

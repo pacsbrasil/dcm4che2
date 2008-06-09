@@ -15,13 +15,12 @@
  * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
- * Portions created by the Initial Developer are Copyright (C) 2003-2005
+ * Agfa-Gevaert Group.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -47,8 +46,10 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.PersonName;
 
 /**
- * @author Gunter.Zeilinger@tiani.com
+ * @author Gunter.Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@agfa.com>
  * @author Harald.Metterlein@heicare.com
+ * @author Jan Pechanec <jpechanec@orcz.cz>
  * @version $Revision$ $Date$
  * @since 26.08.2003
  */
@@ -67,8 +68,8 @@ class SqlBuilder {
     private String[] from;
     private String[] leftJoin;
     private String[] relations;
-    private ArrayList matches = new ArrayList();
-    private ArrayList orderby = new ArrayList();
+    private ArrayList<Match> matches = new ArrayList<Match>();
+    private ArrayList<String> orderby = new ArrayList<String>();
     private int limit = 0;
     private int offset = 0;
     private String whereOrAnd = WHERE;
@@ -167,7 +168,7 @@ class SqlBuilder {
 	/**
 	 * @return Returns the matches.
 	 */
-	protected ArrayList getMatches() {
+	protected ArrayList<Match> getMatches() {
 		return matches;
 	}
 	/**
@@ -176,7 +177,7 @@ class SqlBuilder {
 	 * if <code>matches is null</code> the current matches are cleared.
 	 * @param matches The matches to set.
 	 */
-	protected void setMatches(ArrayList matches) {
+	protected void setMatches(ArrayList<Match> matches) {
 		if ( matches == null ) 
 			this.matches.clear();
 		else
@@ -235,6 +236,7 @@ class SqlBuilder {
         case JdbcProperties.ORACLE :
         case JdbcProperties.MYSQL :
         case JdbcProperties.MSSQL :
+        case JdbcProperties.FIREBIRD :
             return value ? " != 0" : " = 0";
         default:
             return value ? " = true" : " = false";
@@ -288,15 +290,18 @@ class SqlBuilder {
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
         if (pn != null) {
-            addWildCardMatch(null, nameFields[0], type2, toUpperCase(pn.toComponentGroupMatch()));
-        }
-        PersonName ipn = pn.getIdeographic();
-        if (ipn != null) {
-        	addWildCardMatch(null, nameFields[1], type2, ipn.toComponentGroupMatch());
-        }
-        PersonName ppn = pn.getPhonetic();
-        if (ppn != null) {
-        	addWildCardMatch(null, nameFields[2], type2, ppn.toComponentGroupMatch());
+            addWildCardMatch(null, nameFields[0], type2,
+                    toUpperCase(pn.toComponentGroupMatch()));
+            PersonName ipn = pn.getIdeographic();
+            if (ipn != null) {
+                addWildCardMatch(null, nameFields[1], type2,
+                        ipn.toComponentGroupMatch());
+            }
+            PersonName ppn = pn.getPhonetic();
+            if (ppn != null) {
+                addWildCardMatch(null, nameFields[2], type2,
+                        ppn.toComponentGroupMatch());
+            }
         }
     }   
 
@@ -324,10 +329,9 @@ class SqlBuilder {
     }
     
     public Match addModalitiesInStudyNestedMatch(String alias, String[] mds) {
-        if ( mds != null && mds.length == 1 )  
-           return addMatch(new Match.ModalitiesInStudyNestedMatch(alias, mds[0]));
-        else
-           return addMatch(new Match.ModalitiesInStudyMultiNestedMatch(alias, mds));
+        return ( mds != null && mds.length == 1 )  
+           ? addMatch(new Match.ModalitiesInStudyNestedMatch(alias, mds[0]))
+           : addMatch(new Match.ModalitiesInStudyMultiNestedMatch(alias, mds));
     }
     
     public Match addCallingAETsNestedMatch(boolean privateTables, String[] callingAETs) {
@@ -374,9 +378,7 @@ class SqlBuilder {
                     sb.append("* FROM ( SELECT ");
                     appendTo(sb, select);
                     sb.append(", ROW_NUMBER() OVER (ORDER BY ");
-                    appendTo(
-                        sb,
-                        (String[]) orderby.toArray(new String[orderby.size()]));
+                    appendTo(sb, orderby.toArray(new String[orderby.size()]));
                     sb.append(") AS rownum ");
                     break;
                 case JdbcProperties.ORACLE :
@@ -399,7 +401,15 @@ class SqlBuilder {
                 		throw new IllegalArgumentException("LIMIT OFFSET feature needs order by in MS SQL Server!!");
                     }                    
                     break;
-                default:
+                case JdbcProperties.FIREBIRD :
+                    sb.append("FIRST ");
+                    sb.append(limit);
+                    sb.append(" SKIP ");
+                    sb.append(offset);
+                    sb.append(" ");
+                    appendTo(sb, select);
+                    break;
+               default:
                     appendTo(sb, select);
                     break;
             }
@@ -415,9 +425,7 @@ class SqlBuilder {
         appendMatchesTo(sb);
         if (!orderby.isEmpty()) {
             sb.append(" ORDER BY ");
-            appendTo(
-                sb,
-                (String[]) orderby.toArray(new String[orderby.size()]));
+            appendTo(sb, orderby.toArray(new String[orderby.size()]));
         }
         if (limit > 0 || offset > 0) {
             switch (getDatabase()) {
@@ -457,7 +465,7 @@ class SqlBuilder {
 		String[] inverted = new String[ orderby.size() ];
 		int pos;
 		for ( int i=0 ; i < inverted.length ; i++) {
-			pos = ((String)orderby.get(i)).lastIndexOf(ASC);
+			pos = orderby.get(i).lastIndexOf(ASC);
 			inverted[i] = "sort"+(i+1)+ ((pos==-1 ^ invert ) ? DESC : ASC);
 		}
 		return inverted;
@@ -488,7 +496,7 @@ class SqlBuilder {
         String[] retval = new String[orderby.size()];
         String s;
         for (int i = 0; i < retval.length; i++) {
-        	s = (String) orderby.get(i);
+        	s = orderby.get(i);
             retval[i] =  s.substring(0,s.lastIndexOf(' '))+ " AS sort" + (i+1);
         }
         return retval;
@@ -577,7 +585,7 @@ class SqlBuilder {
         for (int i = 0; i < matches.size(); i++) {
             sb.append(whereOrAnd);
             whereOrAnd = AND;
-            ((Match) matches.get(i)).appendTo(sb);
+            matches.get(i).appendTo(sb);
         }
     }
 
