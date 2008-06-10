@@ -272,11 +272,9 @@ public class DcmImageReader extends ImageReader {
 
         int rLen = theParser.getReadLength();
         if (rLen == -1) {
-            ImageReaderFactory f = ImageReaderFactory.getInstance();
-            String ts = theDataset.getFileMetaInfo().getTransferSyntaxUID();
+            String ts = getTransferSyntaxUID();
             this.ybr2rgb = ts.equals(UIDs.JPEGBaseline)
                     || ts.equals(UIDs.JPEGExtended);
-            this.decompressor = f.getReaderForTransferSyntax(ts);
             this.itemParser = new ItemParser(theParser);
             return;
         }
@@ -297,6 +295,10 @@ public class DcmImageReader extends ImageReader {
         if (frameLength < width * height * (alloc >> 3)) {
             throw new DcmValueException("Invalid Length of Pixel Data: " + rLen);
         }
+    }
+
+    private String getTransferSyntaxUID() {
+        return theDataset.getFileMetaInfo().getTransferSyntaxUID();
     }
 
     private float pixelRatio() {
@@ -398,7 +400,10 @@ public class DcmImageReader extends ImageReader {
         Iterator imageTypes = getImageTypes(imageIndex, readParam);
         this.theImage = getDestination(param, imageTypes, this.width,
                 this.height);
-        if (decompressor != null) {
+        if (itemParser != null) {
+            if (decompressor == null) {
+                this.decompressor = createDecompressor();
+            }
             ImageReadParam decompressorReadParam = decompressor
                     .getDefaultReadParam();
             decompressorReadParam.setDestination(theImage);
@@ -465,6 +470,11 @@ public class DcmImageReader extends ImageReader {
         }
 
         return adjustBufferedImage(this.theImage, readParam);
+    }
+
+    private ImageReader createDecompressor() {
+        ImageReaderFactory f = ImageReaderFactory.getInstance();
+        return f.getReaderForTransferSyntax(getTransferSyntaxUID());
     }
 
     private BufferedImage adjustBufferedImage(BufferedImage bi,
@@ -616,9 +626,7 @@ public class DcmImageReader extends ImageReader {
         // J2KImageReaderCodecLib.setInput()
         if (decompressor.getClass().getName().startsWith(J2KIMAGE_READER)) {
             decompressor.dispose();
-            ImageReaderFactory f = ImageReaderFactory.getInstance();
-            String ts = theDataset.getFileMetaInfo().getTransferSyntaxUID();
-            decompressor = f.getReaderForTransferSyntax(ts);
+            decompressor = null;
         } else {
             decompressor.reset();
         }
