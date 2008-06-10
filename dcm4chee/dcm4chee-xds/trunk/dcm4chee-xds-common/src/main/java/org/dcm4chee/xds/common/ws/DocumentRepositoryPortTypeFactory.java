@@ -11,7 +11,7 @@ import javax.xml.ws.soap.SOAPBinding;
 import org.jboss.ws.core.ConfigProvider;
 
 public class DocumentRepositoryPortTypeFactory {
-	
+
 	public static DocumentRepositoryPortType getDocumentRepositoryPortSoap11(String endpointAddress, String action, String messageId) {
 		DocumentRepositoryPortType port = new DocumentRepositoryService().getDocumentRepositoryPortSoap11();
 		configurePort(port, endpointAddress, action, messageId);
@@ -24,7 +24,7 @@ public class DocumentRepositoryPortTypeFactory {
 		return port;
 	}
 	
-	protected static DocumentRepositoryPortType configurePort(DocumentRepositoryPortType port, String endpointAddress, String action, String messageId) {
+	public static DocumentRepositoryPortType configurePort(DocumentRepositoryPortType port, String endpointAddress, String action, String messageId) {
 		BindingProvider bindingProvider = (BindingProvider)port;
 		ConfigProvider configProvider = (ConfigProvider)port;
 		SOAPBinding soapBinding = (SOAPBinding)bindingProvider.getBinding();
