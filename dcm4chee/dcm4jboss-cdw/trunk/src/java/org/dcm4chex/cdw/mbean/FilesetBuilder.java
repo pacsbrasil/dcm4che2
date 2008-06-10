@@ -58,6 +58,7 @@ import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -303,13 +304,29 @@ class FilesetBuilder {
                 log.info("Missing Patient ID in instance[uid=" + iuid + 
                         "] - use Study Instance UID " + pid + " as Patient ID");
             }
-            String sid = ds.getString(Tags.StudyID);
-            if (sid == null) {
-                sid = Integer.toString(suid.hashCode());
+
+            // ensure TYPE 1 Attributes in DICOMDIR record
+            if (!ds.containsValue(Tags.StudyID)) {
+                String sid = MessageFormat.format(service.getDefaultStudyID(),
+                        Long.valueOf(suid.hashCode() & 0xFFFFFFFFL));
                 ds.putSH(Tags.StudyID, sid);
-                log.info("Missing Study ID in instance[uid=" + iuid + 
-                        "] - use hash of Study Instance UID " + sid + " as Study ID");
             }
+            if (!ds.containsValue(Tags.StudyDate)) {
+                ds.putDA(Tags.StudyDate, service.getDefaultStudyDate());
+            }
+            if (!ds.containsValue(Tags.StudyTime)) {
+                ds.putTM(Tags.StudyTime, service.getDefaultStudyTime());
+            }
+            if (!ds.containsValue(Tags.Modality)) {
+                ds.putCS(Tags.Modality, service.getDefaultModality());
+            }
+            if (!ds.containsValue(Tags.SeriesNumber)) {
+                ds.putIS(Tags.SeriesNumber, service.getDefaultSeriesNumber());
+            }
+            if (!ds.containsValue(Tags.InstanceNumber)) {
+                ds.putIS(Tags.InstanceNumber, service.getDefaultInstanceNumber());
+            }
+
             // ensure TYPE 2 Attributes in DICOMDIR record
             if (!ds.contains(Tags.AccessionNumber)) {
                 ds.putLO(Tags.AccessionNumber); 

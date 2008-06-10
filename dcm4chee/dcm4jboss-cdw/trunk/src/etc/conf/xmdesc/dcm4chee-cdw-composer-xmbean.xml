@@ -70,6 +70,89 @@
          <value value="ISO_IR 100" />
       </descriptors>
    </attribute>
+
+   <attribute access="read-write" getMethod="getDefaultStudyID"
+     setMethod="setDefaultStudyID">
+     <description><![CDATA[
+Value of <code>Study ID</code> used in DICOMDIR records, if there is no
+value for <code>Study ID</code> in the referenced DICOM file.
+"<code>{#..0..}</code>" will be replaced by the hash value of the
+<code>Study Instance UID</code>, where the number of "0" characters defines
+the minimal, and the total number of "#" and "0" characters, the maximal number
+of used digits.]]>
+     </description>
+     <name>DefaultStudyID</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="S{0000000000}" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDefaultStudyDate"
+     setMethod="setDefaultStudyDate">
+     <description><![CDATA[
+Value of <code>Study Date</code> used in DICOMDIR records, if there is no
+value for <code>Study Date</code> in the referenced DICOM file.]]>
+     </description>
+     <name>DefaultStudyDate</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="19000101" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDefaultStudyTime"
+     setMethod="setDefaultStudyTime">
+     <description><![CDATA[
+Value of <code>Study Time</code> used in DICOMDIR records, if there is no
+value for <code>Study Time</code> in the referenced DICOM file.]]>
+     </description>
+     <name>DefaultStudyTime</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="000000" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDefaultModality"
+     setMethod="setDefaultModality">
+     <description><![CDATA[
+Value of <code>Modality</code> used in DICOMDIR records, if there is no
+value for <code>Modality</code> in the referenced DICOM file.]]>
+     </description>
+     <name>DefaultModality</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="OT" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDefaultSeriesNumber"
+     setMethod="setDefaultSeriesNumber">
+     <description><![CDATA[
+Value of <code>Series Number</code> used in DICOMDIR records, if there is no
+value for <code>Series Number</code> in the referenced DICOM file.]]>
+     </description>
+     <name>DefaultSeriesNumber</name>
+     <type>int</type>
+     <descriptors>
+       <value value="0" />
+     </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getDefaultInstanceNumber"
+     setMethod="setDefaultInstanceNumber">
+     <description><![CDATA[
+Value of <code>Instance Number</code> used in DICOMDIR records, if there is no
+value for <code>Instance Number</code> in the referenced DICOM file.]]>
+     </description>
+     <name>DefaultInstanceNumber</name>
+     <type>int</type>
+     <descriptors>
+       <value value="0" />
+     </descriptors>
+   </attribute>
+
    <attribute access="read-write"
       getMethod="getValuesForIndexFile"
       setMethod="setValuesForIndexFile">

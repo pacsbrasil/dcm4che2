@@ -41,6 +41,8 @@ package org.dcm4chex.cdw.mbean;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -109,6 +111,18 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private String fileSetDescriptorFile;
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
+
+    private String defaultStudyID = "S{0,number,0000000000}";
+
+    private String defaultStudyDate = "19000101";
+
+    private String defaultStudyTime = "00000000";
+
+    private String defaultModality = "UNKOWN";
+
+    private int defaultSeriesNumber = 0;
+
+    private int defaultInstanceNumber = 0;
 
     private boolean keepSpoolFiles = false;
 
@@ -296,6 +310,75 @@ public class MediaComposerService extends ServiceMBeanSupport {
             checkExists(new File(mergeDir, fname));
             this.fileSetDescriptorFile = fname;
         }
+    }
+
+    public final String getDefaultStudyID() {
+        return defaultStudyID.replace("S{0,number,", "S{");
+    }
+
+    public final void setDefaultStudyID(String defaultStudyID) {
+        this.defaultStudyID = defaultStudyID.replace("S{", "S{0,number,");
+    }
+
+    public final String getDefaultStudyDate() {
+        return defaultStudyDate;
+    }
+
+    public final void setDefaultStudyDate(String defaultStudyDate) {
+        checkDateFormat(defaultStudyDate);
+        this.defaultStudyDate = defaultStudyDate;
+    }
+
+    private static void checkDateFormat(String s) {
+        checkFormat(new SimpleDateFormat("yyyyMMdd"), s);
+    }
+
+    private static void checkFormat(SimpleDateFormat format, String s) {
+        try {
+            format.setLenient(false);
+            format.parse(s);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(s);
+        }
+    }
+
+    public final String getDefaultStudyTime() {
+        return defaultStudyTime;
+    }
+
+    public final void setDefaultStudyTime(String defaultStudyTime) {
+        checkTime(defaultStudyTime);
+        this.defaultStudyTime = defaultStudyTime;
+    }
+
+    private static void checkTime(String s) {
+        String pattern = "HHmmss.SSS".substring(0, s.length());
+        SimpleDateFormat format = new SimpleDateFormat(pattern);
+        checkFormat(format, s);
+    }
+
+    public final String getDefaultModality() {
+        return defaultModality;
+    }
+
+    public final void setDefaultModality(String defaultModality) {
+        this.defaultModality = defaultModality;
+    }
+
+    public final int getDefaultSeriesNumber() {
+        return defaultSeriesNumber;
+    }
+
+    public final void setDefaultSeriesNumber(int defaultSeriesNumber) {
+        this.defaultSeriesNumber = defaultSeriesNumber;
+    }
+
+    public final int getDefaultInstanceNumber() {
+        return defaultInstanceNumber;
+    }
+
+    public final void setDefaultInstanceNumber(int defaultInstanceNumber) {
+        this.defaultInstanceNumber = defaultInstanceNumber;
     }
 
     private static void checkCS(String s) {
