@@ -25,9 +25,8 @@
 	<attribute access="read-write" getMethod="getSecurityDomain"
 		setMethod="setSecurityDomain">
 		<description><![CDATA[
-			Name of security domain specified in <code>conf/login.conf</code>,
-			which defines authentication parameters and roles associated to
-			user names.]]>
+Name of security domain specified in <code>conf/login-config.xml</code>,
+which defines authentication parameters and roles associated to user names.]]>
 		</description>
 		<name>SecurityDomain</name>
 		<type>java.lang.String</type>
