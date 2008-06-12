@@ -50,6 +50,7 @@
 
     <path id="build.classpath">
         <pathelement location="${antlr2.jar}"/>
+        <pathelement location="lib/junit-3.8.1.jar" />
     </path>
 
 <!--
