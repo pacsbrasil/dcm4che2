@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -80,9 +80,8 @@ import org.dcm4cheri.image.ItemParser;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
 /**
- * 
- * @author gunter.zeilinger@tiani.com
- * @version 1.0.0
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
  */
 public class DcmImageReader extends ImageReader {
 
@@ -98,6 +97,8 @@ public class DcmImageReader extends ImageReader {
     private ImageReader decompressor = null;
 
     private ItemParser itemParser = null;
+
+    private SegmentedImageInputStream siis;
 
     // The image to be written.
     private BufferedImage theImage = null;
@@ -275,7 +276,7 @@ public class DcmImageReader extends ImageReader {
             String ts = getTransferSyntaxUID();
             this.ybr2rgb = ts.equals(UIDs.JPEGBaseline)
                     || ts.equals(UIDs.JPEGExtended);
-            this.itemParser = new ItemParser(theParser);
+            this.itemParser = new ItemParser(theParser, numberOfFrames, ts);
             return;
         }
         this.frame1StartPos = theParser.getStreamPosition();
@@ -403,6 +404,7 @@ public class DcmImageReader extends ImageReader {
         if (itemParser != null) {
             if (decompressor == null) {
                 this.decompressor = createDecompressor();
+                this.siis = new SegmentedImageInputStream(stream, itemParser);
             }
             ImageReadParam decompressorReadParam = decompressor
                     .getDefaultReadParam();
@@ -620,7 +622,8 @@ public class DcmImageReader extends ImageReader {
     private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
             throws IOException {
         log.debug("Start decompressing frame#" + (imageIndex + 1));
-        decompressor.setInput(itemStream(imageIndex));
+        itemParser.seekFrame(siis, imageIndex);
+        decompressor.setInput(siis);
         BufferedImage bi = decompressor.read(0, readParam);
         // workaround for Bug in J2KImageReader and
         // J2KImageReaderCodecLib.setInput()
@@ -632,17 +635,6 @@ public class DcmImageReader extends ImageReader {
         }
         log.debug("Finished decompressed frame#" + (imageIndex + 1));
         return bi;
-    }
-
-    private SegmentedImageInputStream itemStream(int imageIndex) {
-        if (numberOfFrames > 1) {
-            ItemParser.Item item = itemParser.getItem(imageIndex);
-            return new SegmentedImageInputStream(stream,
-                    new long[] { item.startPos },
-                    new int[] { item.length });
-        } else {
-            return new SegmentedImageInputStream(stream, itemParser);
-        }
     }
 
     private void readByteSamples(int samples, byte[] dest) throws IOException {

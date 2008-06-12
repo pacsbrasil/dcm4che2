@@ -126,6 +126,7 @@ public class Transcoder {
     private int frameIndex = 0;
     private boolean truncatePostPixelData = false;
     private ItemParser itemParser;
+    private SegmentedImageInputStream siis;
 
     /**
      * if true, input stream is directly copied into output stream without pixel
@@ -275,11 +276,13 @@ public class Transcoder {
     private void readPixelHeader() throws IOException {
         iis.setByteOrder(decodeParam.byteOrder);
         if (decodeParam.encapsulated) {
-            itemParser = new ItemParser(parser);
+            String tsuid = dsIn.getFileMetaInfo().getTransferSyntaxUID();
+            itemParser = new ItemParser(parser,
+                    pixelDataParam.getNumberOfFrames(), tsuid);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
-            reader = f.getReaderForTransferSyntax(dsIn.getFileMetaInfo()
-                    .getTransferSyntaxUID());
-            bi = (BufferedImage) createBufferedImage();
+            reader = f.getReaderForTransferSyntax(tsuid);
+            siis = new SegmentedImageInputStream(iis, itemParser);
+            bi = createBufferedImage();
         } else {
             bi = pixelDataParam.createBufferedImage(isCompressionLossless(),
                     getMaxBits());
@@ -499,10 +502,11 @@ public class Transcoder {
     public void readNextFrame() throws IOException {
         log.debug("reading frame #" + (frameIndex + 1));
         if (decodeParam.encapsulated) {
-            reader.setInput(itemStream());
             ImageReadParam param = reader.getDefaultReadParam();
             if (bi != null)
                 param.setDestination(bi);
+            itemParser.seekFrame(siis, frameIndex);
+            reader.setInput(siis);
             bi = reader.read(0, param);
         } else {
             DataBuffer db = bi.getRaster().getDataBuffer();
@@ -535,17 +539,6 @@ public class Transcoder {
                     + ", cstype=" + cs.getType() + "]");
         }
         ++frameIndex;
-    }
-
-    private SegmentedImageInputStream itemStream() {
-        if (pixelDataParam.getNumberOfFrames() > 1) {
-            ItemParser.Item item = itemParser.getItem(frameIndex);
-            return new SegmentedImageInputStream(iis,
-                    new long[] { item.startPos },
-                    new int[] { item.length });
-        } else {
-            return new SegmentedImageInputStream(iis, itemParser);
-        }
     }
 
     private static String classNameOf(Object o) {

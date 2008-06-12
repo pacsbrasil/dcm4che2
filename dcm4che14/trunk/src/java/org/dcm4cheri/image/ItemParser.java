@@ -39,13 +39,17 @@
 package org.dcm4cheri.image;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 import com.sun.media.imageio.stream.StreamSegment;
@@ -53,14 +57,27 @@ import com.sun.media.imageio.stream.StreamSegmentMapper;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date: 2007-12-18 13:23:57 +0100 (Tue, 18 Dec
- *          2007) $
+ * @version $Revision$ $Date$
  * @since 04.08.2004
  * 
  */
 public class ItemParser implements StreamSegmentMapper {
 
     private static final Logger log = Logger.getLogger(ItemParser.class);
+
+    private static final HashSet JPEG_TS = new HashSet(
+            Arrays.asList(new String[] { UIDs.JPEGBaseline,
+                            UIDs.JPEGExtended, UIDs.JPEGExtended35Retired,
+                            UIDs.JPEG68Retired, UIDs.JPEG79Retired,
+                            UIDs.JPEG1012Retired, UIDs.JPEG1113Retired,
+                            UIDs.JPEGLossless14, UIDs.JPEGLossless15Retired,
+                            UIDs.JPEG1618Retired, UIDs.JPEG1719Retired,
+                            UIDs.JPEG2022Retired, UIDs.JPEG2123Retired,
+                            UIDs.JPEG2426Retired, UIDs.JPEG2527Retired,
+                            UIDs.JPEGLoRetired, UIDs.JPEG29Retired,
+                            UIDs.JPEGLossless, UIDs.JPEGLSLossless,
+                            UIDs.JPEGLSLossy, UIDs.JPEG2000Lossless,
+                            UIDs.JPEG2000Lossy }));
 
     public static final class Item {
 
@@ -95,13 +112,39 @@ public class ItemParser implements StreamSegmentMapper {
 
     private final DcmParser parser;
     private final ImageInputStream iis;
+    private final ArrayList firstItemOfFrame;
+    private final int numberOfFrames;
+    private final boolean rle;
+    private final boolean jpeg;
+    private int[] basicOffsetTable;
+    private byte[] soi = new byte[2];
     private boolean lastItemSeen = false;
+    private int frame;
 
-    public ItemParser(DcmParser parser) throws IOException {
+    public ItemParser(DcmParser parser, int numberOfFrames, String tsuid)
+            throws IOException {
         this.parser = parser;
         this.iis = parser.getImageInputStream();
+        this.numberOfFrames = numberOfFrames;
+        this.firstItemOfFrame = new ArrayList(numberOfFrames);
+        this.rle = UIDs.RLELossless.equals(tsuid);
+        this.jpeg = !rle && JPEG_TS.contains(tsuid);
         parser.parseHeader();
-        iis.skipBytes(parser.getReadLength());
+        int offsetTableLen = parser.getReadLength();
+        if (offsetTableLen != 0) {
+            if (offsetTableLen != numberOfFrames * 4) {
+                log.warn("Skip Basic Offset Table with illegal length: "
+                        + offsetTableLen + " for image with " + numberOfFrames
+                        + " frames!");
+                iis.skipBytes(offsetTableLen);
+            } else {
+                basicOffsetTable = new int[numberOfFrames];
+                iis.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+                for (int i = 0; i < basicOffsetTable.length; i++) {
+                    basicOffsetTable[i] = iis.readInt();
+                }
+            }
+        }
         next();
     }
 
@@ -111,12 +154,13 @@ public class ItemParser implements StreamSegmentMapper {
         return items.size();
     }
 
-    public Item getItem(int index) {
-        while (items.size() <= index)
+    private Item getFirstItemOfFrame(int frame) throws IOException {
+        while (firstItemOfFrame.size() <= frame) {
             if (next() == null)
-                throw new IndexOutOfBoundsException("index:" + index
-                        + " >= size:" + items.size());
-        return (Item) items.get(index);
+                throw new IOException("Could not detect first item of frame #"
+                        + (frame+1));
+        }
+        return (Item) firstItemOfFrame.get(frame);
     }
 
     private Item next() {
@@ -132,6 +176,35 @@ public class ItemParser implements StreamSegmentMapper {
             if (parser.getReadTag() == Tags.Item) {
                 Item item = new Item(items.isEmpty() ? 0 : last().nextOffset(),
                         iis.getStreamPosition(), parser.getReadLength());
+                if (items.isEmpty() || rle) {
+                    addFirstItemOfFrame(item);
+                } else if (firstItemOfFrame.size() < numberOfFrames) {
+                    if (basicOffsetTable != null) {
+                        Item firstItem = (Item) firstItemOfFrame.get(0);
+                        int frame = firstItemOfFrame.size();
+                        if (item.startPos == firstItem.startPos
+                                + (basicOffsetTable[frame] & 0xFFFFFFFFL)) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Start position of item #"
+                                        + (items.size()+1) + " matches "
+                                        + (frame+1)
+                                        + ".entry of Basic Offset Table.");
+                            }
+                            addFirstItemOfFrame(item);
+                        }
+                    } else if (jpeg) {
+                        iis.read(soi, 0, 2);
+                        if (soi[0] == (byte) 0xFF
+                                && soi[1] == (byte) 0xD8) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Detect JPEG SOI at item #"
+                                        + (items.size()+1));
+                            }
+                            addFirstItemOfFrame(item);
+                        }
+                        iis.seek(item.startPos);
+                    }
+                }
                 items.add(item);
                 return item;
             }
@@ -148,6 +221,15 @@ public class ItemParser implements StreamSegmentMapper {
         return null;
     }
 
+    private void addFirstItemOfFrame(Item item) {
+        if (log.isDebugEnabled()) {
+            log.debug("Detect item #" + (items.size()+1)
+                    + " as first item of frame #"
+                    + (firstItemOfFrame.size()+1));
+        }
+        firstItemOfFrame.add(item);
+    }
+
     private Item last() {
         return (Item) items.get(items.size() - 1);
     }
@@ -161,10 +243,14 @@ public class ItemParser implements StreamSegmentMapper {
     public void getStreamSegment(long pos, int len, StreamSegment seg) {
         if (log.isDebugEnabled())
             log.debug("getStreamSegment(pos=" + pos + ", len=" + len + ")");
+        if (isEndOfFrame(pos)) {
+            setEOF(seg);
+            return;
+        }
         Item item = last();
         while (item.nextOffset() <= pos) {
-            if ((item = next()) == null) {
-                seg.setSegmentLength(-1);
+            if ((item = next()) == null || isEndOfFrame(pos)) {
+                setEOF(seg);
                 return;
             }
         }
@@ -179,16 +265,28 @@ public class ItemParser implements StreamSegmentMapper {
                     + ", len=" + seg.getSegmentLength() + "]");
     }
 
-    public long seekNextFrame(SegmentedImageInputStream siis)
+    private boolean isEndOfFrame(long pos) {
+        return frame+1 < firstItemOfFrame.size()
+            && ((Item) firstItemOfFrame.get(frame+1)).offset <= pos;
+    }
+
+    private void setEOF(StreamSegment seg) {
+        seg.setSegmentLength(-1);
+        if (log.isDebugEnabled())
+            log.debug("return StreamSegment[start=" + seg.getStartPos()
+                    + ", len=-1]");
+    }
+
+    public void seekFrame(SegmentedImageInputStream siis, int frame)
             throws IOException {
-        Item item = last();
-        long pos = siis.getStreamPosition();
-        int i = items.size() - 1;
-        while (item.offset >= pos)
-            item = (Item) items.get(--i);
-        siis.seek(item.nextOffset());
-        iis.seek(item.nextItemPos());
-        return item.nextOffset();
+        if (log.isDebugEnabled())
+            log.debug("seek frame #" + (frame+1));
+        Item item = getFirstItemOfFrame(frame);
+        siis.seek(item.offset);
+        iis.seek(item.startPos);
+        this.frame = frame;
+        if (log.isDebugEnabled())
+            log.debug("seek " + item);
     }
 
     public void seekFooter() throws IOException {
