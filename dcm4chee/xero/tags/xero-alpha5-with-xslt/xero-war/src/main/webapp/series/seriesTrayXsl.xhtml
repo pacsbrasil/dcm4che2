@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xsl
+   pageConfig="#{PageConfig.series}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/series"
+   m:xsl="../series/seriesTrayXsl.xsl"
+   m:docName="/documents/series"
+   m:jsXsl.inherit="js.jsXsl"
+   m:Event.script="../js/Events.js"   m:Event.script.priority="1000"
+>
+
+<xsl:variable name="tStudyUID" select="/documents/StudyInstanceUID/text()" />
+<xsl:variable name="startKO"><xsl:choose><xsl:when test="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID][@koUID]">&amp;koUID=<xsl:value-of select="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID]/@koUID" /></xsl:when><xsl:otherwise>&amp;koUID=*</xsl:otherwise></xsl:choose></xsl:variable>
+<xsl:variable name="docName"><xsl:value-of select="concat(/documents/series,$startKO)" /></xsl:variable>
+
+<ui:include src="seriesVars.xhtml" />
+
+<!-- Display the series tray debugging information -->
+<x:template name="seriesTrayDebug" m:debug.body="seriesTrayDebug" m:debug.body.priority="1000">
+    <xsl:if test="/documents/debug='true'">
+       ko info <xsl:if test="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID][@koUID]">&amp;koUID=<xsl:value-of select="/documents/layout/se:patient/se:study[@StudyInstanceUID=$tStudyUID]/@koUID" /></xsl:if> <br />
+       docName=<xsl:value-of select="$docName"/> <br />
+       #children patientNode=<xsl:value-of select="count($patientNode)" /><br />
+       #children studyNode=<xsl:value-of select="count($studyNode)" /><br />
+       studyUID=<xsl:value-of select="$studyUID" /><br />
+       seriesUID=<xsl:value-of select="$seriesUID" /><br />
+       @conversationId=<xsl:value-of select="/documents/@conversationId" /><br />
+       cid=<xsl:value-of select="$cid" /><br />
+    </xsl:if>
+</x:template>
+
+<!-- Display the series tray header information -->
+<x:template name="seriesTrayHeader" m:header.body="seriesTrayHeader" m:header.body.priority="950" >
+ <xsl:param name="node" />
+ <xsl:value-of select="$node/../@PatientName" /> <br />
+ <xsl:value-of select="$node/../@PatientID" /> <br />
+ <xsl:value-of select="$node/@StudyDescription" /> <br />
+</x:template>
+
+<!-- Display the series images that are key images-->
+<x:template name="keyImages" m:keyImages.body="keyImages" m:keyImages.body.priority="550">
+ <xsl:param name="node" />
+ <xsl:for-each select="$node/se:series[se:image/@koUID]">
+  <div style="float: left; background: black;">
+   <span xml:space="preserve"><img src="../img/key.png" style="width: 32px; height: 32px;" /><xsl:value-of select="@SeriesNumber" />
+     <xsl:value-of select="@SeriesDescription" />
+     <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
+   </span>
+   <br />
+   <xsl:variable name="images" select="(se:image[count(../se:image[@koUID])>5][@koUID][1]) | (se:image[5 >= count(../se:image[@koUID]) ][@koUID])" />
+   <xsl:for-each select="$images">
+    <a target="imageFrame">
+      <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
+      <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
+     <img style="height:128px; vertical-align: top;">
+       <xsl:attribute name="src">/wado2/wado?requestType=XERO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
+       <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
+      </img>
+    </a>
+   </xsl:for-each>
+  </div>
+ </xsl:for-each>
+</x:template>
+
+<!-- Display the series images that are key images-->
+<x:template name="seriesImages" m:images.body="seriesImages" m:images.body.priority="500">
+ <xsl:param name="node" />
+ <xsl:for-each select="$node/se:series[se:image][count(se:image/@koUID)=0]">
+  <div style="float: left; width: 132px; background: black;">
+   <span xml:space="preserve"><xsl:value-of select="@SeriesNumber" />
+     <xsl:value-of select="@SeriesDescription" />
+     <xsl:value-of select="@NumberOfSeriesRelatedInstances" />
+   </span>
+   <a target="imageFrame">
+     <xsl:attribute name="href">../image/image.seam?cid=<xsl:value-of select="$cid"/>&amp;studyUID=<xsl:value-of select="se:image/ancestor-or-self::*[@StudyInstanceUID]/@StudyInstanceUID" />&amp;seriesUID=<xsl:value-of select="se:image/ancestor-or-self::*[@SeriesInstanceUID]/@SeriesInstanceUID" /></xsl:attribute>
+     <!-- Use 128 displayed height, but grab it at 256 to re-use small display instance. -->
+     <img style="height:128px; vertical-align: top;">
+      <xsl:attribute name="src">/wado2/wado?requestType=XERO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=<xsl:value-of select="se:image/@SOPInstanceUID"/>&amp;rows=256</xsl:attribute>
+      <xsl:attribute name="alt"><xsl:value-of select="@SeriesDescription" /></xsl:attribute>
+     </img>
+   </a>
+  </div>
+ </xsl:for-each>
+</x:template>
+
+<!-- Display the html page for the series tray -->
+<x:template name="seriesTrayHtml" match="/" >
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>    
+    <x:callTemplates from="#{pageConfig}" mode="meta" />
+    <title>Xero Series Tray</title>
+    <x:callTemplates from="#{pageConfig}" mode="script" />
+</head>
+<body style="background: black; color: white; ">
+  <div id="body">
+    <x:callTemplates from="#{pageConfig}" mode="body" >
+      <xsl:with-param name="node" select="$studyNode" />
+    </x:callTemplates>
+  </div>
+</body>
+</html>
+</x:template>
+
+</x:xsl>
+

@@ -1,0 +1,36 @@
+<studies>
+<study>
+   <accessionNumber>RIS 2560103</accessionNumber>
+   <available>ONLINE</available>
+   <modalitiesInStudy>MG</modalitiesInStudy>
+   <objectsInStudy>4</objectsInStudy>
+   <numberOfSeries>4</numberOfSeries>
+   <birthdate sort="19380101">1-Jan-1938</birthdate>
+   <patientID>20030729</patientID>
+   <patientName>Alder</patientName>
+   <patientSex>F</patientSex>
+   <referringPhysiciansName></referringPhysiciansName>
+   <studyDateTime>29-Jul-2003</studyDateTime>
+   <studyDescription>Standard Screening</studyDescription>
+   <studyID>RIS 2560103</studyID>
+   <studyUID>1.2.124.113532.193.190.36.23.20030729.81055.4140024</studyUID>
+   <statusID></statusID>
+
+   <series>
+      <modality>MG</modality>
+      <seriesInstanceUID>1.2.840.113681.2200664339.765.3236934332.23</seriesInstanceUID>
+      <seriesNumber>3</seriesNumber>
+      <numberOfSeriesRelatedInstances>1</numberOfSeriesRelatedInstances>
+      <seriesDescription>L MLO</seriesDescription>
+      <bodyPartExamined>BREAST</bodyPartExamined>
+      <image>
+         <SOPInstanceUID>1.2.840.113681.2200664339.765.3236934332.29</SOPInstanceUID>
+         <SOPClassUID>1.2.840.10008.5.1.4.1.1.1.2</SOPClassUID>
+         <InstanceNumber>1</InstanceNumber>
+         <rows>3328</rows>
+         <columns>2560</columns>
+         <bitsAllocated>16</bitsAllocated>
+      </image>
+   </series>
+</study>
+</studies>

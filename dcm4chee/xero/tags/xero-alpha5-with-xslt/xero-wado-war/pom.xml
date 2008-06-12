@@ -1,0 +1,33 @@
+<?xml version="1.0"?><project>
+  <parent>
+    <artifactId>xero</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>xero-wado-war</artifactId>
+  <packaging>war</packaging>
+  <name>xero-wado-war</name>
+  <build>
+     <finalName>xero-wado</finalName>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>util-xero</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>wado-xero</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+</project>

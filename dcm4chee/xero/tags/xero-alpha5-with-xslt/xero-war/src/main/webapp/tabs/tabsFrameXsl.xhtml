@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xsl
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/tabsFrame"
+   m:xsl="tabsFrameXsl.xsl"
+   m:tabsVars.inherit="tabsVars"
+   pageConfig="#{metadata.tabsFrame}"
+>
+
+<xsl:template match="/"><html>
+   <head><title>Xero - Frames HTML</title></head>
+   <frameset rows="36px,*" border="0">
+      <frame>
+        <xsl:attribute name="id">topFrame</xsl:attribute>
+        <xsl:attribute name="name">topFrame</xsl:attribute>
+        <xsl:attribute name="src">../tabs/tabs.seam?cid=<xsl:value-of select="/documents/@conversationId" /></xsl:attribute>
+        <xsl:attribute name="scrolling">no</xsl:attribute>
+      </frame>
+      <frame>
+        <xsl:attribute name="id">mainFrame</xsl:attribute>
+        <xsl:attribute name="name">mainFrame</xsl:attribute>
+        <xsl:attribute name="src">../search/search.seam?cid=<xsl:value-of select="/documents/@conversationId" /></xsl:attribute>
+      </frame>
+   </frameset>
+</html>
+</xsl:template>
+
+</x:xsl>

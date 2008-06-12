@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Trace Page</title>
+<style type="text/css">
+<!--
+body {
+	background-color: #FFCC66;
+}
+.traceText {
+	font: 9px Arial, Helvetica, sans-serif;
+	height: 100%;
+	width: 100%;
+	margin-right: 15px;
+}
+-->
+</style>
+
+<script language="javascript">
+function goToUrl()
+{
+	var urlTxt = document.trace_form.testurl.value;
+	window.alert("urlTxt: " + urlTxt);
+	window.alert("contentFrame: " + window.parent.contentFrame.location);
+	if (window.parent.contentFrame){
+		window.parent.contentFrame.location = urlTxt;
+	}
+}
+</script>
+
+</head>
+
+<body>
+
+
+<form action="" method="post" name="trace_form" id="trace_form" > 
+  <input type="button" name="Clear" value="Clear" onClick="clearTrace()" />
+  <br />
+  <textarea name="trace_area" cols="50" rows="40" class="traceText" id="trace_area"></textarea>
+</form>
+
+<script language="javascript">
+
+var traceArea = document.getElementById("trace_area");
+var thisDoc = window.document;
+
+function trace(txt)
+{
+	if (traceArea.value.length == 0){
+		traceArea.value = txt;
+	}
+	else{
+		traceArea.value += "\n" + txt;
+	}
+}
+
+function clearTrace()
+{
+	traceArea.value = "";
+}
+
+
+</script>
+</body>
+</html>

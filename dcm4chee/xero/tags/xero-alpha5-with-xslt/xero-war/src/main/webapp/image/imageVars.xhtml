@@ -1,0 +1,19 @@
+<x:xsl
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image.imageXsl).imageVars}"
+  xmlns:x="http://www.dcm4che.org/xero/jsf"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl/imageVars"
+  m:includeXsl="/image/imageVars.xhtml"
+  m:includeXsl.priority="-10"
+>
+<xsl:variable name="layoutNode" select="/documents/layout" />
+<xsl:variable name="frameNode" select="document($layoutNode/@url)/se:results" />
+
+<xsl:variable name="cid" select="/documents/@conversationId" />
+<xsl:variable name="mode" select="/documents/mode" />
+<xsl:variable name="applyLevel" select="/documents/mode/@applyLevel" />
+<xsl:variable name="documentsNode" select="/documents" />
+<xsl:variable name="toolbarNode" select="document(/documents/toolbar)/*" />
+<xsl:variable name="jsEnabled" select="/documents/jsEnabled='true' or count(/documents/jsEnabled)=0" />
+
+</x:xsl>

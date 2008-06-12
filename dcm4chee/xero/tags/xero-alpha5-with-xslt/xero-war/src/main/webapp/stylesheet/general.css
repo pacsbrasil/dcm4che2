@@ -1,0 +1,17 @@
+tr {
+	text-align: left; 
+}
+
+tr.header {
+}
+
+tr.even {
+  background: #dfefff;
+}
+
+button {
+	float: right;
+	margin: 0;
+	border: 0;
+	background: white;
+}

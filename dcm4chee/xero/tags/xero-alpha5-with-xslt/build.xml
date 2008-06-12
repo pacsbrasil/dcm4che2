@@ -1,0 +1,133 @@
+<project name="dcm4che-xero" default="deploy">
+  <!-- Include build.properties first as it over-rides default.properties -->
+  <property file="build.properties" />
+
+  <property file="build.properties.default" />
+
+  <!-- Allow inclusion of local additions to the build.
+       These can ADD new targets, but cannot change/modify the base targets.
+  -->
+  <import file="${localBuildXml}" optional="true" />
+
+  <target name="build" description="Build all components." depends="buildStringtemplate, buildBase" />
+
+  <target name="deploy" depends="deployWado, deployViewAll, localDeploy" description="Deploy Xero to the development Dcm4che server." />
+
+
+  <!-- Builds the WADO war file -->
+  <target name="buildBase">
+     <exec executable="${mvn}" failonerror="true">
+        <arg line="install" />
+     </exec>
+  </target>
+
+  <!-- Builds the custom Xero stringtemplate library -->
+  <target name="buildStringtemplate">
+     <exec executable="${mvn}" failonerror="true" dir="stringtemplate">
+        <arg line="install" />
+     </exec>
+  </target>
+
+  <!-- Sets up the lib directory -->
+  <target name="setupLib">
+     <delete>
+        <fileset dir="${developmentServer}/server/default/lib">
+           <include name="jaxb*.jar" />
+        </fileset>
+        <fileset dir="${developmentServer}/server/default/deploy/jbossws.sar">
+           <include name="jaxb*.jar" />
+        </fileset>
+     </delete>
+     <copy todir="${developmentServer}/server/default/lib">
+        <fileset dir="xero-ear/target/xero" includes="jaxb*.jar" />
+     </copy>
+  </target>
+
+  <target name="setupConf">
+     <copy todir="${developmentServer}/server/default/conf" overwrite="true">
+        <fileset dir="conf" includes="**/*" />
+     </copy>
+  </target>
+
+  <target name="setup" description="Setup the development server from the JBoss base server." depends="deploy, setupLib, setupConf, setupDefaultUrl">
+  </target>
+
+  <!-- Adds default.htm and index.html to the wado war file -->
+  <target name="setupDefaultUrl">
+     <jar destfile="${developmentServer}/server/default/deploy/dcm4chee-wado.war" update="true">
+        <fileset dir="xero-war/src/main/webapp" includes="default.htm,index.html" />
+     </jar>
+  </target>
+
+  <target name="deployWado" depends="buildBase" description="Build and deploy WADO to ${developmentServer}">
+     <copy todir="${developmentServer}/server/default/deploy/wado2.war" preservelastmodified="true">
+        <fileset dir="xero-wado-war/target/xero-wado" />
+     </copy>
+  </target>
+
+  <!-- An internal target to deploy all the view components - does not recompile -->
+  <target name="deployViewAll" depends="buildBase,deployView">
+      <copy todir="${developmentServer}/server/default/deploy/xero.war">
+         <fileset dir="xero-view-war/target/xero-view" includes="**/*" />
+      </copy>
+  </target>
+
+   <target name="deployView" depends="localDeployView" description="Deploys JUST the resources to the Xero view - no recompile">
+      <copy todir="${developmentServer}/server/default/deploy/xero.war">
+         <fileset dir="xero-view-war/src/main/webapp" includes="**/*" />
+      </copy>
+      <copy todir="${developmentServer}/server/default/deploy/xero.war/WEB-INF/classes">
+         <fileset dir="view-xero/src/main/resources" includes="**/*" />
+         <fileset dir="model-xero/src/main/resources" includes="**/*" />
+         <fileset dir="controller-xero/src/main/resources" includes="**/*" />
+      </copy>
+   </target>
+
+   <target name="deployEar" description="Deploys the EAR view of Xero containing all the components to the server.">
+     <exec executable="${mvn}" failonerror="true" dir="xero-core">
+        <arg line="install" />
+     </exec>
+     <exec executable="${mvn}" failonerror="true" dir="xero-war">
+        <arg line="install" />
+     </exec>
+     <exec executable="${mvn}" failonerror="true" dir="xero-ear">
+        <arg line="install" />
+     </exec>
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear" preservelastmodified="true">
+        <fileset dir="xero-ear/target/xero" excludes="xero.war" />
+     </copy>
+     <copy todir="${developmentServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
+        <fileset dir="xero-war/target/xero" />
+     </copy>
+   </target>
+
+  <target name="package" depends="buildStringtemplate, build, copyPackage" description="Create a JAR file containing all the required files for Xero.  Depends on stable, so you must setup a directory to contain the stable build.">
+     <mkdir dir="target" />
+     <zip destfile="target/xero.zip" basedir="${stableServer}" />
+  </target>
+
+  <target name="copyPackage">
+     <mkdir dir="${stableServer}" />
+     <copy todir="${stableServer}/server/default/deploy/xero.ear" preservelastmodified="true">
+        <fileset dir="xero-ear/target/xero" excludes="xero.war,xero-wado.war,view-xero.war" />
+     </copy>
+     <copy todir="${stableServer}/server/default/deploy/xero.ear/xero-wado.war" preservelastmodified="true">
+        <fileset dir="xero-wado-war/target/xero-wado" excludes="xero-wado.war,**/*.jar" />
+     </copy>
+     <copy todir="${stableServer}/server/default/deploy/xero.ear/xero.war" preservelastmodified="true">
+        <fileset dir="xero-war/target/xero" excludes="xero.war" />
+        <fileset dir="xero-ipod/src/main/webapp">
+          <include name="**/*" />
+        </fileset>
+     </copy>
+     <copy todir="${stableServer}/server/default/deploy/xero.ear/view-xero.war" preservelastmodified="true">
+        <fileset dir="view-xero/target/view-xero" excludes="**/*.jar" />
+     </copy>
+     <copy todir="${stableServer}/server/default/conf">
+        <fileset dir="conf" includes="**/*" />
+     </copy>
+     <copy tofile="${stableServer}/server/default/lib/jaxb-api.jar" file="xero-ear/target/xero/jaxb-api-2.0.jar" />
+     <copy tofile="${stableServer}/server/default/lib/jaxb-impl.jar" file="xero-ear/target/xero/jaxb-impl-2.0.jar" />
+  </target> 
+
+</project>

@@ -1,0 +1,42 @@
+<se:results 
+  xmlns:se="http://www.dcm4chee.org/xero/search/study/" 
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:c="http://java.sun.com/jstl/core"
+  id="f-1"
+>
+  <se:patient id="p0" offset="0" height="1">
+   <div class="vbox">
+   <div class="layoutRef" ref="toolbar" item="studyToolbar" heightpx="22" />
+   <c:forEach var="sty" end="${LayoutEvent.studyHeight-1}">
+   <div class="hbox" height="1"><c:forEach var="stx" end="${LayoutEvent.studyWidth-1}">
+   <se:study id="st${stx+sty * LayoutEvent.studyWidth}" offset="${stx+sty * LayoutEvent.studyWidth}" layoutParam="st${stx+sty * LayoutEvent.studyWidth}" width="1">
+    <div class="hbox" id="x0">
+     <!-- <iframe widthpx="192" src="../series/seriesTray.seam?" /> -->
+     <div class="vbox" width="1">
+       <c:forEach var="sey" end="${LayoutEvent.seriesHeight-1}">
+        <div class="hbox" id="x1" height="25"><c:forEach var="sex" end="${LayoutEvent.seriesWidth-1}">
+         <se:series id="se${sex},${sey}" offset="${sex+sey * LayoutEvent.seriesWidth}" width="25" pageSize="${LayoutEvent.imageWidth * LayoutEvent.imageHeight}">
+          <div class="vbox" seriesLayout="se${sex},${sey}">
+	       <div class="layoutRef" ref="toolbar" item="seriesToolbar" heightpx="22" />
+         
+           <c:forEach var="imy" end="${LayoutEvent.imageHeight-1}">
+            <div class="hbox" height="1"><c:forEach var="imx" end="${LayoutEvent.imageWidth-1}">
+             <se:image id="se${sex},${sey}-im${imx},${imy}" offset="${imx+LayoutEvent.imageWidth * imy}" width="1">
+	 	       <div class="layoutRef" ref="toolbar" item="imageOverlay" />
+             </se:image>
+             <div class="container" widthpx="1" />
+            </c:forEach></div>
+           </c:forEach>         
+          </div>
+         </se:series>             
+         <div class="container" widthpx="1" />
+        </c:forEach>
+       </div>
+      </c:forEach>
+     </div>
+    </div>
+   </se:study>
+   </c:forEach></div></c:forEach>
+   </div>
+  </se:patient>
+</se:results>

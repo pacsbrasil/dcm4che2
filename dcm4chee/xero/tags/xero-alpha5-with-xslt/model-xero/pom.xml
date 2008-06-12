@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>xero</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.dcm4chee.xero</groupId>
+  <artifactId>model-xero</artifactId>
+  <name>Internal Xero Model</name>
+  <version>1.0-SNAPSHOT</version>
+  <description>Contains the default internal model for Xero - this contains
+  parts such as the XmlModel object and uses of that object.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>metadata</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>util-xero</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.0</version>
+      <scope>provided</scope>
+    </dependency>
+    
+  </dependencies>
+</project>

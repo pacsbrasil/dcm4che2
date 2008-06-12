@@ -1,0 +1,27 @@
+<se:results 
+  xmlns:se="http://www.dcm4chee.org/xero/search/study/" 
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+  xmlns="http://www.w3.org/1999/xhtml"
+  id="f-1"
+>
+ <xul:vbox id="xcontrol">
+  <se:patient id="p0" offset="0" height="1">
+   <se:study id="s0" offset="0">
+    <xul:vbox id="x0">
+     <div toolbarRef="studyToolbar" height="1" />
+     <xul:hbox id="x1" height="25">
+       <se:series id="se0" offset="0" width="25" pageSize="1">
+        <xul:vbox>
+         <div toolbarRef="seriesToolbar" height="1"/>
+         <se:image id="i0" offset="0" height='15'>
+           <div toolbarRef="imageOverlay" />
+         </se:image>
+        </xul:vbox>
+       </se:series>
+       <div width="7" />
+     </xul:hbox>
+    </xul:vbox>
+   </se:study>
+  </se:patient>
+ </xul:vbox>
+</se:results>

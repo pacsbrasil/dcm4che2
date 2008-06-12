@@ -1,0 +1,8 @@
+<documents conversationId="#{conversation.id}">
+   <cycle>#{cycleUrl}</cycle>
+   <PatientIdentifier>#{DisplayStudyLevel.pid}</PatientIdentifier>
+   <StudyInstanceUID>#{DisplayStudyLevel.studyUID}</StudyInstanceUID>
+   <series>/wado2/series.xml?StudyInstanceUID=#{DisplayStudyLevel.studyUID}</series>
+   <SeriesInstanceUID>#{DisplayStudyLevel.seriesUID}</SeriesInstanceUID>
+   <debug>false</debug>
+</documents>

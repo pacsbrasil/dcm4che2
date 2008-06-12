@@ -1,0 +1,77 @@
+<x:xsl
+   pageConfig="#{(pageConfig!=null ? pageConfig : metadata.image).imageXsl}"
+   xmlns:x="http://www.dcm4che.org/xero/jsf"
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:c="http://java.sun.com/jstl/core"
+   xmlns:m="http://www.dcm4che.org/xero/metadata/image/imageXsl"
+   m:includeXsl="/image/imageXsl.xhtml"
+   m:Display.script="../image/ImageEvent.js"
+   m:Display.script.priority="950"
+   m:WL.script="../image/windowLevel.js"
+   m:WL.script.priority="50"
+   m:WL.toolbar="wlToolbar"
+   m:Event.script="../js/Events.js"
+   m:Event.script.priority="1000"
+   m:jsEnabled.inherit="jsEnabled"
+   m:trace.script="../trace/trace.js"
+>
+
+ <xsl:output method="xml" version="1.0" doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN" />
+ <xsl:strip-space elements="h:*" /> 
+
+<ui:fragment>
+<x:template name="contentTypeMeta" m:Display.meta="contentTypeMeta" m:Display.meta.priority="25">
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=UTF-8"/>
+</x:template>
+</ui:fragment>
+
+<x:template name="display.debug" m:Debug.body="display.debug" m:Debug.body.priority="100">
+  <xsl:if test="/documents/debug='true'">
+  </xsl:if>
+</x:template>
+
+<!-- Declare the VML template and style information if IE -->
+<x:template name="vmlDeclare" m:vml.script="vmlDeclare">
+ <c:if test="#{browser=='MSIE'}">
+  <style type="text/css">v\:* { behavior: url(#default#VML);   }</style>
+ </c:if>
+</x:template>
+
+<x:template name="displayScriptVars" m:scriptVars.script="displayScriptVars" m:scriptVars.script.priority="-10">
+    <xsl:element name="script">
+      <xsl:attribute name="id">displayScriptVars</xsl:attribute>
+      <xsl:attribute name="type">text/ecmascript</xsl:attribute>
+var pageDebug=false;
+<xsl:if test="/documents/debug='true'">
+pageDebug=true;
+</xsl:if>
+var displayMode="<xsl:value-of select="/documents/mode" />";
+var xslRenderWindow = [<xsl:value-of select="concat(/documents/displayResolution/@width,',',/documents/displayResolution/@height)" />];
+    </xsl:element>
+</x:template>
+  
+<x:template name="displayHtml" match="/"><html style="background: black; color: white; " xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+	
+    <x:callTemplates from="#{pageConfig}" mode="meta" />
+    <title>Xero Image Frame</title>
+    <link rel="stylesheet" media="all" type="text/css" href="../layout/cssMenu.css" />
+    <xsl:if test="$jsEnabled">
+      <x:callTemplates from="#{pageConfig}" mode="script" />
+    </xsl:if>
+  </head>
+  <body style="background: black; color: white;">
+    <xsl:if test="$jsEnabled">
+      <xsl:attribute name="onmousemove">return imageHandler.mouseMove(event);</xsl:attribute>
+      <xsl:attribute name="onmouseout">return imageHandler.mouseOut(event);</xsl:attribute>
+      <xsl:attribute name="onmouseup">return imageHandler.mouseUp(event);</xsl:attribute>
+    </xsl:if>
+   <form id="body" name="body" method="post" action="#">
+    <x:callTemplates from="#{pageConfig}" mode="body" />
+   </form>
+  </body>
+</html>
+</x:template>
+
+</x:xsl>

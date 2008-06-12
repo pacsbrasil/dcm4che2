@@ -1,0 +1,27 @@
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+>
+<xsl:variable name="docNode" select="document($docName)"/>
+
+<!-- To figure out the right patient, use the patient id in sources, or the first one found in the file. -->
+<xsl:variable name="patientIdent">
+<xsl:if test="/documents/PatientIdentifier!=''"><xsl:value-of select="/documents/PatientIdentifier[.!='']" /></xsl:if>
+<xsl:if test="/documents/PatientIdentifier=''"><xsl:value-of select="$docNode/se:results/se:patient[1]/@PatientIdentifier" /></xsl:if>
+</xsl:variable>
+
+<xsl:variable name="studyUIDFromSource"><xsl:value-of select="/documents/StudyInstanceUID" /></xsl:variable>
+
+<xsl:variable name="patientNode" select="$docNode/se:results/se:patient[@PatientIdentifier=$patientIdent]" />
+
+<xsl:variable name="studyUID">
+<xsl:choose>
+<xsl:when test="count($docNode/se:results/se:patient/se:study[@StudyInstanceUID=$studyUIDFromSource])!=0"><xsl:value-of select="$studyUIDFromSource" /></xsl:when>
+<xsl:otherwise><xsl:value-of select="$patientNode/se:study/@StudyInstanceUID" /></xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="studyNode" select="$docNode/se:results/se:patient/se:study[@StudyInstanceUID=$studyUID]"></xsl:variable>
+
+<xsl:variable name="cid" select="/documents/@conversationId" />
+
+</ui:component>

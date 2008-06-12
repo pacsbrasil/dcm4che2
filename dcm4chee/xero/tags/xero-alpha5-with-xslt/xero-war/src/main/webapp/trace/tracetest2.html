@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Sample Test Page #2</title>
+<script language="javascript" type="text/javascript" src="trace.js"></script>
+
+</head>
+
+<body>
+<script language="javascript">
+trace("rendering tracetest2.html body");
+</script>
+<h2>Sample Test Page #2 </h2>
+<p>This page has a trace in its onload and onunload.</p>
+<p>Click here to go to <a href="tracetest1.html">tracetest1.html</a>.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</body>
+<script language="javascript">
+trace("finished rendering tracetest2.html body");
+</script>
+</html>
+
+<script language="javascript">
+window.onload = function() { trace("onload for tractest2.html fired"); }
+window.onunload = function() { trace("onunload for tractest2.html fired"); }
+</script>

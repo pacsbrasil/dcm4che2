@@ -1,0 +1,38 @@
+# Define the meta-data providers for seam, to allow pluging in seam meta-data.
+# Set the priority fairly high so that we can eventually have a JNDI meta-data provider
+# that takes precedence
+metaDataProvider.seam=${class:org.dcm4chee.xero.metadata.seam.SeamMetaDataProvider}
+metaDataProvider.seam.priority=25
+metaDataProvider.seam.prefixPath=xero
+metaDataProvider.xhtml=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+metaDataProvider.xhtml.priority=35
+metaDataProvider.xhtml.propertyFile=index.html
+metaDataProvider.xhtml.rootXml=http://www.dcm4che.org/xero/metadata
+valueProvider.seam=${class:org.dcm4chee.xero.metadata.seam.SeamELValueProvider}
+
+
+
+# Search form
+
+# Tabs 
+tabs.xsl=tabsXsl.xsl
+
+
+# Converters for one type to another
+# At some point, an input converter will be required as well.
+
+Modality.CT=CT
+Modality.CR=CR
+Modality.MR=MR
+Modality.NM=NM
+Modality.US=Ultrasound
+Modality.OT=Test
+Modality.SR=Report
+Modality.KO=Key
+Modality.PR=Presentation
+Modality.MG=Mammo
+Modality.DX=DX
+Modality.IO=Dental
+Modality.PX=Pano
+Modality.XC=XC
+Modality.XA=Angio

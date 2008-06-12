@@ -1,0 +1,26 @@
+<ui:fragment xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:x="http://www.dcm4che.org/xero/jsf"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+>
+<c:set var="MetaDataName" value="#{param.metadata}" />
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+<title>Metadata for #{MetaDataName}</title>
+</head>
+<body>
+<h1>Metadata for #{MetaDataName}</h1>
+<ul>
+
+<c:set var="parentMetaData" value="#{metadata}" />
+<c:forEach var="split" items="#{fn:split(MetaDataName,'\\.')}">
+  <c:set var="parentMetaData" value="#{parentMetaData[split]}" />
+</c:forEach>
+<c:forEach var="md" items="#{parentMetaData}">
+<li><a href="metadata.seam?metadata=#{MetaDataName}.#{md.key}">#{md.key}</a> = #{md.value}</li>
+</c:forEach>
+</ul>
+</body>
+</html>
+</ui:fragment>

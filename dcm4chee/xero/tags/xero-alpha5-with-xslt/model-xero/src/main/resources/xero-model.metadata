@@ -1,0 +1,37 @@
+# Define some meta-data about the dynamic portion of the model
+
+# Defines a URL query factory - something that knows how to produce a query result from
+# one or more parameters.
+model.query=${factory:org.dcm4chee.xero.controller.RequestValidator}
+model.query.PatientID=${class:org.dcm4chee.xero.parsers.StringParser}
+model.query.AccessionNumber=${class:org.dcm4chee.xero.parsers.StringParser}
+model.query.PatientName=${class:org.dcm4chee.xero.parsers.StringParser}
+model.query.StudyID=${class:org.dcm4chee.xero.parsers.StringParser}
+model.query.StudyDateTime=${class:org.dcm4chee.xero.parsers.StringParser}
+model.query.ModalitiesInStudy=${class:org.dcm4chee.xero.parsers.StringParser}
+model.query.url=${class:org.dcm4chee.xero.controller.UrlFactory}
+model.query.url.base=/wado2/study.xml
+model.query.url.ModalitiesInStudy=query
+model.query.url.PatientID=query
+model.query.url.PatientName=query
+model.query.url.AccessionNumber=query
+model.query.url.StudyDateTime=query
+
+# The result is the response query when displaying an image
+# Note that this is event based, thus the search results are retrieved when they are first looked up
+# within a given query.
+model.search=${factory:org.dcm4chee.xero.controller.XmlModelFactory}
+# The name of the query is based on the local settings name, and is assumed to be a UrlFactory object
+# In this case, the XmlModelFactory needs the HttpServletRequest object in order to forward requests
+# to get the actual XML data required.
+model.search.url=query
+
+# This will reference the queryController object as the default factory, IF no one else
+# sets this first - if someone else does set it, then it will be whatever the value is that was set.
+model.layout=${ref:controller.queryController}
+model.txt=Demo Value
+
+controller=${class:org.dcm4chee.xero.controller.XeroController}
+controller.defaultAction=${class:org.dcm4chee.xero.controller.InitializeAction}
+controller.queryController=${class:org.dcm4chee.xero.controller.QueryController}
+controller.patientController=${class:org.dcm4chee.xero.controller.PatientController}

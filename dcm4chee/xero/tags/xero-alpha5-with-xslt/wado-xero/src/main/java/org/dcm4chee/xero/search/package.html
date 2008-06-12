@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Xero Search Package</title>
+</head>
+<body>
+<h1>Xero Search Package</h1>
+
+<p>The general purpose of the Xero Search package is to provide a set of classes, markup and
+ejb's that provide generic search functionality.  This is complemented by the Xero Search Facelets
+package that provides HTML display and interaction with the given functionality.
+The intended functionality includes:</p>
+<ol>
+<li>Arbitrary columns defined as late as run time.</li>
+<li>Typed data in columns, including enumerated values, automatically internationalized.</li>
+<li>Differentiation between searchable columns and displayable columns.</li>
+<li>User preference for ordering of columns and inclusion/exclusion of display of columns.</li>
+<li>Separation of validation of search criteria type of search and inclusion into the
+generic functionality for the type being searched.</li>
+<li>Ability to provide/modify the available columns after searching has been initiated
+based on the actual data returned.</li>
+</ol>
+
+<p>The general design of this is to separate the search organization and logic into various
+pieces that can be added in later.  One part includes the information about the columns
+that can be displayed, another about the search conditions, another about the types and
+enumerated values etc.</p>
+
+
+<h1>Required Functionality</h1>
+<p>This package must provide the following functionality:</p>
+<ul>
+</ul>
+
+</body>
+</html>

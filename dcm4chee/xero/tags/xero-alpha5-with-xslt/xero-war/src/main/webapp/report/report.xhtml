@@ -1,0 +1,10 @@
+<x:source 
+  xmlns:x="http://www.dcm4che.org/xero/jsf" 
+  pageConfig="#{(pageConfig!=null ? pageConfig : metadata).report}"
+  xmlns:c="http://java.sun.com/jstl/core"
+  xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:m="http://www.dcm4che.org/xero/metadata/report"
+  m:xsl="../report/reportXsl.xsl"
+>
+  <layout objectUID="#{ActionStudyLevel.objectUID}" />
+</x:source>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <parent>
+    <artifactId>xero</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.dcm4chee.xero</groupId>
+  <name>Xero View Templates</name>
+  <artifactId>view-xero</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>metadata</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>model-xero</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+       <groupId>org.antlr</groupId>
+       <artifactId>stringtemplate</artifactId>
+       <version>3.1-XERO</version>
+    </dependency>
+    <dependency>
+       <groupId>antlr</groupId>
+       <artifactId>antlr</artifactId>
+       <version>2.7.7</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.0</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

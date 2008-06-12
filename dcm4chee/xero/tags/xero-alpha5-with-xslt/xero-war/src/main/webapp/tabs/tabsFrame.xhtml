@@ -1,0 +1,5 @@
+<x:source xmlns:x="http://www.dcm4che.org/xero/jsf" pageConfig="#{PageConfig.tabsFrame}">
+   <pageConfig>#{pageConfig.xsl}</pageConfig>
+   <searchResults>/wado2/study.xml?#{StudySearchCriteria.URLParameters}</searchResults>
+   <username login="#{facesContext.externalContext.remoteUser}"></username>
+</x:source>

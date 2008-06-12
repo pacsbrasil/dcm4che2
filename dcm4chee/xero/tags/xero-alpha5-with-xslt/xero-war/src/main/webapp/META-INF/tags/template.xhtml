@@ -1,0 +1,26 @@
+<!-- Creates an xsl template
+   @param name Is the XSL name of the template
+   @param select is the selection to act on
+  -->
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets" 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:c="http://java.sun.com/jstl/core"
+>
+  <c:choose>
+  <c:when test="#{match==null and mode==null}">
+  <xsl:template name="#{name}">
+    <ui:insert />
+  </xsl:template>
+  </c:when>
+  <c:when test="#{mode==null}">
+  <xsl:template name="#{name}" match="#{match}">
+    <ui:insert />
+  </xsl:template>
+  </c:when>
+  <c:otherwise>
+  <xsl:template name="#{name}" match="#{match}" mode="#{mode}">
+    <ui:insert />
+  </xsl:template>
+  </c:otherwise>
+  </c:choose>
+</ui:component>

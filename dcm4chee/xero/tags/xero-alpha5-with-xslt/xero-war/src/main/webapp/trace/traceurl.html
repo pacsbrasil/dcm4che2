@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Debug URL</title>
+<script language="javascript">
+function goToDebugURL()
+{
+	//alert("goto debug called");
+	var urlTxt = document.frmURL.debugUrl.value;
+	if (urlTxt.length > 0){
+		if (urlTxt.indexOf(":") == 1){
+			// Must be a drive letter.
+			urlTxt = "file:///" + urlTxt;
+		}
+		urlTxt = urlTxt.replace(/\\/g, "/");
+		if (urlTxt.indexOf("p:") == -1 && urlTxt.indexOf("file:///") == -1){
+			urlTxt = "http://" + urlTxt;
+		}
+		document.frmURL.debugUrl.value = urlTxt;
+		parent.contentFrame.location = urlTxt;
+	}
+}
+</script>
+</head>
+
+<body>
+<form action="javascript:goToDebugURL()" method="post" name="frmURL" id="frmURL">
+<p>Enter same-domain url here.  That web page must have trace statements in order to see anything in the trace window.</p>	
+<input name="debugUrl" type="text" id="debugUrl" size="80" />  
+  <input type="button" name="Button" value="go/refresh" onClick="goToDebugURL()" />
+</form>
+</body>
+</html>

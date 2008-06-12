@@ -1,0 +1,6 @@
+<!-- A series information XML starts at the study level and provides information about the series in the study.  It does not provide info about images in the series. -->
+<study numberOfStudyRelatedSeries="3" studyID='p60011' studyUID='2.840.113619.2.66.1777040964.60011' accessionNumber='A0000002103'>
+   <series modality='SR' seriesUID='1.2.840.113986.1.669445.20031031.151803.14' manufacturer='R2 Technology, Inc.' numberOfSeriesRelatedInstances='1' />
+   <series modality='MG' seriesUID='2.840.113619.2.66.1777040964.60011.1' manufacturer='GE MEDICAL SYSTEMS' numberOfSeriesRelatedInstances='4' />
+   <series modality='MG' seriesUID='1.2.840.113986.1.714753.20031010.92640.809' manufacturer='R2 Technology, Inc.' numberOfSeriesRelatedInstances='1' />
+</study>
