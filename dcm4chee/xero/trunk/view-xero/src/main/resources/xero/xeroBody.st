@@ -20,6 +20,8 @@ $html/layout()$
 $html/tabs()$
 $userMenu()$
 
+$report/report()$
+
 $query/query()$
 $search/studyTable()$
 

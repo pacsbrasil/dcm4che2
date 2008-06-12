@@ -48,7 +48,7 @@ TabsLayout.prototype.findTab = function TV_findTab(name) {
 	}
 };
 
-/** Selects the given tab.  Return true if a change is made. */
+/** Selects the given tab.  Return the new tab if a change is made. */
 TabsLayout.prototype.selectTab = function TV_selectTab(name) {
 	var tab = this.findTab(name);
 	if( !tab ) return false;
@@ -56,8 +56,21 @@ TabsLayout.prototype.selectTab = function TV_selectTab(name) {
 	if( tab.tabInactive ) return false;
 	if( this.activeTab ) {
 		this.activeTab.used = false;
+		if( this.activeTab.usedListener ) this.activeTab.usedListener();
 	}
 	this.activeTab = tab;
 	tab.used = true;
-	return true;
+	if( tab.usedListener ) tab.usedListener();
+	return this.activeTab;
+};
+
+/* This function can be used to activate/de-activate an array of objects */
+function TabsLayoutArrayUsedListener() {
+	var i,n=this.length;
+	for(i=0; i<n; i++) {
+		if( this[i].used!=this.used ) {
+			this[i].used = this.used;
+			if( this[i].usedListener ) this[i].usedListener();
+		}
+	}
 };

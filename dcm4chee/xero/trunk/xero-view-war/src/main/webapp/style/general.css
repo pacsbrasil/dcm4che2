@@ -21,6 +21,10 @@ button {
 	background: white;
 }
 
+iframe {
+	position: absolute;
+}
+
 .jslink {
 	text-decoration: underline;
 	color: blue;
@@ -29,6 +33,10 @@ button {
 
 div {
 	margin: 0px;
+}
+
+#searchTable {
+	width: 100%;	
 }
 
 div.studyTray, div.seriesToolbar {
@@ -84,7 +92,7 @@ div.studyTray {
 	overflow: scroll;
 }
 
-ul.thumbnails {
+ul.thumbnail {
 	list-style-type:none;          /* we don't want to view the list as a list */
 	margin:0;
 	padding:0;
@@ -94,12 +102,30 @@ ul.thumbnails {
 li.thumbnail span {
 	clear: both;
 	display: block;
+	font-size: 11px;
 }
 	
 li.thumbnail img {
 	width:92px;
 	height: auto;
 	display: block;
+}
+
+span.thumbnail, span.report, span.gsps, span.keyObject {
+	font-size: 13px;
+	font-weight: bold;
+}
+
+ul.report, ul.gsps, ul.keyObject {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+li.report, li.gsps, li.keyObject {
+	clear: both;
+	display: block;
+	font-size: 11px;
 }
 
 /*====================== Tabs Layout ==========================*/
@@ -124,6 +150,7 @@ div.activeTab {
 div.tabBody {
 	clear: both;
 	background: #D0D0D0;
+	width: 98%;
 }
 
 /*========================= TOP OF THE MENU CASCADE =========================*/

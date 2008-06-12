@@ -85,7 +85,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 	var childExt,url,position;
 	for(childKey in this.children) {
 		child = this.children[childKey];
-		if(!child.id) {
+		if(child.id==null) {
 			child.invalidate(false);
 		}
 		if( child.id!==undefined && external.children) {
@@ -123,7 +123,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		if( this.level===2 ) {
 			if( !ret ) ret =new Object();
 			console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive.");
-			url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true";
+			url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true&regroup=true";
 			ret[url] = url;
 			this.debug("Adding %s to queries.", url);
 			return ret; 
@@ -222,13 +222,13 @@ Navigation.prototype.lookupId = function Navigation_lookupId(key,offset) {
 				offset = offset + posn;
 			} else {
 				console.warn("Didn't find offset %d for %s at position %s",offset,key,posn);
-				return null;
+				return undefined;
 			}
 		}
 		if( extChildren.length > offset && offset>=0 ) {
 			return extChildren[offset][this.childIdVar];
 		}
-		return null;
+		return undefined;
 	}
 	else {
 		key.a.b;
@@ -243,7 +243,10 @@ Navigation.prototype.lookupId = function Navigation_lookupId(key,offset) {
  */
 Navigation.prototype.getExtChildren = function Navigation_getExtChildren() {
 	var ret = this.external[this.childType];
-	if( this.level!==1 || !ret) return ret;
+	if( this.level!==2 || !ret) return ret;
+	// For the study level, the getExtChildren returns only series image children in the default list.
+	// To explicitly use another type of list, use a different key type such as a key set.
+	
 	var seriesImage = this.external._seriesImage;
 	// The available series doesn't change unless the entire object is refreshed, once the
 	// first set of series has been loaded.

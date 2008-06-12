@@ -74,6 +74,25 @@ XeroController.prototype.mergeExternal = function(external) {
 
 };
 
+/** Redisplays the display tab, resizing and merging external information etc */
+XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab() {
+	var sameTab = !this.model.studyArea.tabs.selectTab("seriesAreas");
+	
+	this.mergeExternal();
+	console.info("mergeExternal completed.");
+
+	var size = getViewportSize();
+	console.info("Viewport size %d,%d",size[0],size[1]);
+	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
+
+	if( sameTab ) {
+		this.waitUpdate("displayTab");
+	}
+	else {
+		this.updateView("displayTab");
+	}
+};
+
 /** Displays the specified (backslashes) set of study UIDs */
 XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, studyUid) {
 	this.debug("Display study UID %s",studyUid);
@@ -88,14 +107,7 @@ XeroController.prototype.navToSer = function XC_NavToSer(id,uid) {
 	var navigate = lay.navigate;
 	navigate.setNavigation(navigate.KEY,uid);
 	console.info("setNavigation completed.");
-	this.mergeExternal();
-	console.info("mergeExternal completed.");
-	
-	var size = getViewportSize();
-	console.info("Viewport size %d,%d",size[0],size[1]);
-	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
-
-	this.waitUpdate("navToSer");
+	this.updateDisplayTab();	
 };
 
 /** Navigates at the series level by dir +/- forward/backwards */
@@ -115,16 +127,7 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	console.info("You are trying to navigate to %s", dirSeries);
 	navigate.setNavigation(navigate.KEY,dirSeries);
 	console.info("setNav completed.");
-	this.mergeExternal();
-	console.info("mergeExternal completed.");
-
-	var size = getViewportSize();
-	console.info("Viewport size %d,%d",size[0],size[1]);
-	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
-
-	console.info("About to update view for navigation of series.");
-	this.waitUpdate("navSer");
-	
+	this.updateDisplayTab();	
 };
 
 /** Navigates at the image level - can be called against either the imageToolbar or imageArea */
@@ -143,9 +146,8 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 	}
 	console.info("You are trying to navigate to %s", dirImg);
 	navigate.setNavigation(navigate.POSITION,dirImg);
-	this.mergeExternal();
 	
-	this.waitUpdate("navImg");
+	this.updateDisplayTab();
 };
 
 /** Navigates the series using the mouse wheel */
@@ -197,9 +199,22 @@ XeroController.prototype.createPatientLayout = function PC_createPatientLayout(n
 XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate, stx,sty,sex,sey,imx,imy) {
 	var cnt = Layout.prototype.idCnt++;
 	var studyArea = new Layout("studyArea"+cnt);
+	this.model.studyArea = studyArea;
 	studyArea.setGrid(stx*2,sty);
 	var layouts = studyArea.layouts;
 	var i,j
+	
+	// The report area can be displayed instead of all the series areas.
+	// The individual series are added to a virtual tabbed layout that can turn on/off the series areas.
+	var reportArea = this.createReportArea();
+	reportArea.spanX = stx;
+	reportArea.spanY = sty;
+	studyArea.tabs = new TabsLayout();
+	var seriesAreas = new Array();
+	seriesAreas.usedListener = TabsLayoutArrayUsedListener;
+	studyArea.tabs.addTab("seriesAreas",seriesAreas);
+	studyArea.tabs.addTab("reportArea", reportArea);
+	
 	for(j=0; j<sty; j++) {
 		for(i=0; i<stx; i++) {
 			var studyTray = new Layout("studyTray"+cnt+","+i+","+j,"image/studyTray" );
@@ -213,8 +228,12 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate,
 			if( even ) {
 				layouts.push(studyTray);
 			}
+			if( i==0 && j==0 ) {
+				layouts.push( reportArea );
+			}
 			this.debug("Adding a series area %d,%d",i,j);
 			layouts.push(seriesArea);
+			seriesAreas.push(seriesArea);
 			if( !even ) {
 				layouts.push(studyTray);
 			}
@@ -226,6 +245,7 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate,
 XeroController.prototype.createSeriesArea = function PC_createSeriesArea(navigate,sex, sey, imx, imy) {
 	var cnt = Layout.prototype.idCnt++;
 	var seriesArea = new Layout("seriesArea"+cnt,"html/layout");
+	
 	seriesArea.setGrid(sex,sey*2);
 	navigate.addListener(seriesArea,StudyMergedListener);
 	var layouts = seriesArea.layouts;

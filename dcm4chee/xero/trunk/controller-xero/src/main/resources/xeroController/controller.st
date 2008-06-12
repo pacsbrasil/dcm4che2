@@ -113,7 +113,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	}
 	window._render = render;
 	
-	//console.info("Render: %s",render);
+	// console.info("Render: %s",render);
 	this.replaceHtml("innerBody", render);
 	console.timeEnd(actionName);
 };
@@ -181,33 +181,17 @@ XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,la
 	this.renderComplete(this.model.layout.layouts,true);	 
 };
 
-$patientController()$
-$dynamic()$
-
-XeroController.prototype.performSearch = function XC_performSearch() {
-	var model = this.model;
-	console.info("Starting to perform search");
-	model.queryBox.query.updateUrl();
-	console.info("Updated URL to %s", model.queryBox.query.url);
-
-	console.time("SearchQuery");
-	model.searchLayout.search = new XmlModel(model.searchLayout.query);
-	model.searchLayout.search.request();
-	console.timeEnd("SearchQuery");
-};
-
-/** Finds the search results and causes them to be displayed */
-XeroController.prototype.findAction = function XC_findAction(src) {
-	this.performSearch();	
-	this.updateView("findAction");	
-};
-
 /** Switch to the given tab */
 XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 	if( this.model.layout.selectTab(tabName) ) {
 		this.updateView("switchTab");
 	}
 };
+
+$patientController()$
+$reportController()$
+$dynamic()$
+$searchController()$
 
 var xeroController = new XeroController(xeroModel, xeroView);
 

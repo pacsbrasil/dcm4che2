@@ -7,6 +7,7 @@
 	$image/wlmenu()$
 	
 	$html/nestedMenu(baseItem="Layouts", childItems=image/layoutMenu())$
+	
 	$else$
 	No Patient
 	$endif$	

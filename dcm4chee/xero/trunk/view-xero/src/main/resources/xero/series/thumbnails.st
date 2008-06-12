@@ -1,6 +1,7 @@
 <!-- Defines the series tray items - currently just creates an unordered list of
   class seriesTray, with list items each containing a link to a given series. -->
-<ul class="thumbnails">
+<span class="thumbnail">Series</span>
+<ul class="thumbnail">
 $layout.study.series:{$if(it.image)$
 	<li class="thumbnail">
 		<span>$it.SeriesDescription$ | $it.Viewable$</span>

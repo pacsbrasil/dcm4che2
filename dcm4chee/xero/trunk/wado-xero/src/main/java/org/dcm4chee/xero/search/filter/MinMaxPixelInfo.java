@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MinMaxPixelInfo implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(MinMaxPixelInfo.class);
-   
+
    public static final String MIN_MAX_PIXEL = "pixelInfo";
 
    /** Update any image beans with min/max pixel range information */
@@ -78,7 +78,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 	  for (PatientType pt : ret.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
 			for (SeriesType set : st.getSeries()) {
-			   if( set==null ) {
+			   if (set == null) {
 				  log.warn("Series should not be null...");
 			   }
 			   for (DicomObjectType dot : set.getDicomObject()) {
@@ -91,7 +91,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 					 continue;
 				  if (ib.getMacroItems().findMacro(MinMaxPixelMacro.class) != null)
 					 continue;
-				  log.debug("MinMaxPixelInfo on {}",ib.getSOPInstanceUID());
+				  log.debug("MinMaxPixelInfo on {}", ib.getSOPInstanceUID());
 				  updateImage(filterItem, params, ib);
 			   }
 			}
@@ -101,25 +101,25 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
    }
 
    /**
-     * This method uses the imageHeader filter to read the image header and then
-     * calls the updatePixelRange on the DICOM version of this function.
-     * 
-     * @param fi
-     * @param params
-     * @param ib
-     */
+    * This method uses the imageHeader filter to read the image header and then
+    * calls the updatePixelRange on the DICOM version of this function.
+    * 
+    * @param fi
+    * @param params
+    * @param ib
+    */
    protected void updateImage(FilterItem fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
 	  // create a new one
-	  DicomObject dobj = DicomFilter.filterDicomObject(fi,params,ib.getSOPInstanceUID());
+	  DicomObject dobj = DicomFilter.filterDicomObject(fi, params, ib.getSOPInstanceUID());
 	  if (dobj == null) {
 		 log.warn("Could not read dicom header for this object.");
 		 return;
 	  }
 	  Integer frame = ib.getFrame();
-	  MinMaxPixelMacro minMax = updatePixelRange(dobj,frame!=null ? frame : 0,ib.getMacroItems());
+	  MinMaxPixelMacro minMax = updatePixelRange(dobj, frame != null ? frame : 0, ib.getMacroItems());
 	  if (minMax != null)
-		 updateWindowLevel(dobj, null, frame!=null ? frame : 0, ib.getMacroItems());
+		 updateWindowLevel(dobj, null, frame != null ? frame : 0, ib.getMacroItems());
    }
 
    public static MinMaxPixelMacro updatePixelRange(DicomObject dobj, int frame, MacroItems macros) {
@@ -128,39 +128,48 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 
    public static MinMaxPixelMacro updatePixelRange(DicomObject img, DicomObject pr, int frame, MacroItems macros) {
 	  float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, null);
-	  float minPixelValue = cw[0]-cw[1]/2f;
-	  float maxPixelValue = cw[0]+cw[1]/2f;
+	  float minPixelValue = cw[0] - cw[1] / 2f;
+	  float maxPixelValue = cw[0] + cw[1] / 2f;
 	  MinMaxPixelMacro minMax = new MinMaxPixelMacro(minPixelValue, maxPixelValue);
 	  macros.addMacro(minMax);
-	  log.debug("Added {} to {}", minMax,macros);
+	  log.debug("Added {} to {}", minMax, macros);
 	  return minMax;
    }
 
    /**
-     * This method updates the header with VOI window level defaults (if any)
-     * using the first VOI LUT found.
-     * There should be some way of getting a default window level if none is found...
-     * 
-     * @param minMax
-     * @return The window level macro item added, or null if none.
-     */
+    * This method updates the header with VOI window level defaults (if any)
+    * using the first VOI LUT found. There should be some way of getting a
+    * default window level if none is found...
+    * 
+    * @param minMax
+    * @return The window level macro item added, or null if none.
+    */
    public static WindowLevelMacro updateWindowLevel(DicomObject img, DicomObject pr, int frame, MacroItems macros) {
-	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
-	  if( voiObj==null ) {
+	  DicomObject voiObj = VOIUtils.selectVoiObject(img, pr, frame);
+	  if (voiObj == null) {
 		 log.debug("No VOI Object found - not setting window level info.");
 		 return null;
 	  }
-	  float center = Float.parseFloat(voiObj.getString(Tag.WindowCenter));
-	  float width = Float.parseFloat(voiObj.getString(Tag.WindowWidth));
-
-	  WindowLevelMacro wl;
-	  if (width==0f) {
-		 log.debug("Image has no window width/center provided, not specifying WL.");
+	  String wc = voiObj.getString(Tag.WindowCenter);
+	  String ww = voiObj.getString(Tag.WindowWidth);
+	  if (wc == null || ww == null)
 		 return null;
-	  } else {
-		 wl = new WindowLevelMacro(center, width, "");
-	     macros.addMacro(wl);
-	     return wl;
+	  try {
+		 float center = Float.parseFloat(wc);
+		 float width = Float.parseFloat(ww);
+
+		 WindowLevelMacro wl;
+		 if (width == 0f) {
+			log.debug("Image has no window width/center provided, not specifying WL.");
+			return null;
+		 } else {
+			wl = new WindowLevelMacro(center, width, "");
+			macros.addMacro(wl);
+			return wl;
+		 }
+	  } catch (Exception e) {
+		 log.warn("Caught exception when determining WL information:" + e);
+		 return null;
 	  }
    }
 }
