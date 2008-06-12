@@ -98,7 +98,7 @@ public class DcmImageReader extends ImageReader {
 
     private ItemParser itemParser = null;
 
-    private SegmentedImageInputStream siis;
+    private SegmentedImageInputStream siis = null;
 
     // The image to be written.
     private BufferedImage theImage = null;
@@ -798,5 +798,6 @@ public class DcmImageReader extends ImageReader {
         decompressor = null;
         ybr2rgb = false;
         itemParser = null;
+        siis = null;
     }
 }
