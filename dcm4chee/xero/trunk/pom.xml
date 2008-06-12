@@ -17,7 +17,7 @@
       <module>model-xero</module>
       <module>view-xero</module>
       <module>controller-xero</module>
-      <module>xero-view-war</module>
+      <module>xero-war</module>
   </modules>
 
   <dependencies>
