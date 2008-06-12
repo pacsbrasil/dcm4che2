@@ -20,8 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -75,9 +74,9 @@ import org.dcm4cheri.image.ItemParser;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
 /**
- * @author gunter.zeilinter@tiani.com
- * @version $Revision$ $Date: 2007-08-09 13:10:23 +0000 (Thu, 09 Aug
- *          2007) $
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@agfa.com>
+ * @version $Revision$ $Date$
  * @since 22.05.2004
  * 
  */
@@ -89,6 +88,8 @@ public class DecompressCmd extends CodecCmd {
     private final ItemParser itemParser;
 
     private final ImageInputStream iis;
+
+    private SegmentedImageInputStream siis;
 
     private int[] simpleFrameList;
 
@@ -151,7 +152,8 @@ public class DecompressCmd extends CodecCmd {
             throws IOException {
         super(ds, tsuid);
         this.iis = parser.getImageInputStream();
-        this.itemParser = new ItemParser(parser);
+        this.itemParser = new ItemParser(parser, frames, tsuid);
+        this.siis = new SegmentedImageInputStream(iis, itemParser);
         if (samples == 3) {
             ds.putUS(Tags.PlanarConfiguration, 0);
             if (tsuid.equals(UIDs.JPEGBaseline)
@@ -180,7 +182,8 @@ public class DecompressCmd extends CodecCmd {
             for (int i = 0, n = getNumberOfFrames(); i < n; ++i) {
                 int frame = simpleFrameList != null ? (simpleFrameList[i]-1) : i;
                 log.debug("start decompression of frame #" + (frame + 1));
-                reader.setInput(itemStream(frame));
+                itemParser.seekFrame(siis, frame);
+                reader.setInput(siis);
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
                 bi = reader.read(0, param);
@@ -208,17 +211,6 @@ public class DecompressCmd extends CodecCmd {
         }
         long t2 = System.currentTimeMillis();
         log.info("finished decompression in " + (t2 - t1) + "ms.");
-    }
-
-    private SegmentedImageInputStream itemStream(int frameIndex) {
-        if (frames > 1) {
-            ItemParser.Item item = itemParser.getItem(frameIndex);
-            return new SegmentedImageInputStream(iis,
-                    new long[] { item.startPos },
-                    new int[] { item.length });                    
-        } else {
-            return new SegmentedImageInputStream(iis, itemParser);
-        }
     }
 
     private void write(WritableRaster raster, OutputStream out,
