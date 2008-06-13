@@ -108,7 +108,7 @@
     <repository>
        <id>dcm4che</id>
        <name>Dcm4che maven2</name>
-       <url>scpexe://www.dcm4che.org:443/home/maven2</url>
+       <url>scpexe://www.dcm4che.org/home/maven2</url>
     </repository>
  </distributionManagement>
 
