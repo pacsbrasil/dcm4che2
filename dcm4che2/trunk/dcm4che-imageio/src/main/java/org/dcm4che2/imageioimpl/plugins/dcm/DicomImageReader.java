@@ -134,7 +134,9 @@ public class DicomImageReader extends ImageReader {
     private ImageReader reader;
 
     private ItemParser itemParser;
-    
+
+    private SegmentedImageInputStream siis;
+
     /** Store the transfer syntax locally in case it gets modified to re-write the image */
     private String tsuid;
 
@@ -191,6 +193,7 @@ public class DicomImageReader extends ImageReader {
             reader = null;
         }
         itemParser = null;
+        siis = null;
     }
 
     @Override
@@ -288,7 +291,8 @@ public class DicomImageReader extends ImageReader {
     private void initCompressedImageReader() throws IOException {
         ImageReaderFactory f = ImageReaderFactory.getInstance();
         this.reader = f.getReaderForTransferSyntax(tsuid);
-        this.itemParser = new ItemParser(dis, iis);
+        this.itemParser = new ItemParser(dis, iis, frames, tsuid);
+        this.siis = new SegmentedImageInputStream(iis, itemParser);
     }
 
     private void initRawImageReader() {
@@ -442,11 +446,7 @@ public class DicomImageReader extends ImageReader {
 	{
 		initImageReader();
 		if (compressed) {
-			SegmentedImageInputStream siis = itemStream(imageIndex);
-			int size = itemStreamSize(imageIndex);
-			byte[] ret = new byte[size];
-			siis.read(ret);
-			return ret;
+			return itemParser.readFrame(siis, imageIndex);
 		}
 
 	        int frameLen = width * height * samples * (allocated >> 3);
@@ -471,7 +471,8 @@ public class DicomImageReader extends ImageReader {
 
     private BufferedImage decompress(int imageIndex, ImageReadParam param)
             throws IOException {
-        reader.setInput(itemStream(imageIndex));
+        itemParser.seekFrame(siis, imageIndex);
+        reader.setInput(siis);
         BufferedImage bi = reader.read(0, param);
         postDecompress();
         return bi;
@@ -482,42 +483,11 @@ public class DicomImageReader extends ImageReader {
         if (!reader.canReadRaster()) {
             return decompress(imageIndex, param).getRaster();
         }
-        reader.setInput(itemStream(imageIndex));
+        itemParser.seekFrame(siis, imageIndex);
+        reader.setInput(siis);
         Raster raster = reader.readRaster(0, param);
         postDecompress();
         return raster;
-    }
-
-    /** 
-     * Returns an ImageInputStream that can be used to read the given frame.
-     * @param imageIndex
-     * @return
-     */
-    private SegmentedImageInputStream itemStream(int imageIndex) {
-        if (frames > 1) {
-            ItemParser.Item item = itemParser.getItem(imageIndex);
-            return new SegmentedImageInputStream(iis,
-                    new long[] { item.startPos },
-                    new int[] { item.length });
-        }
-        return new SegmentedImageInputStream(iis, itemParser);
-    }
-
-    /**
-     * Returns the size of the given frame (combined size, all segments)
-     * @param imageIndex
-     * @return
-     */
-    private int itemStreamSize(int imageIndex) {
-        if (frames > 1) {
-            ItemParser.Item item = itemParser.getItem(imageIndex);
-            return item.length;
-        }
-        int size = 0;
-        for(int i=0, n=itemParser.getNumberOfDataFragments(); i<n; i++) {
-        	size += itemParser.getItem(i).length;
-        }
-        return size;
     }
 
     private void postDecompress() {
