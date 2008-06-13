@@ -102,9 +102,9 @@ class DicomServiceRegistry
 
     private void unregisterFrom(HashMap<String, DicomService> registry, DicomService service)
     {
-        for (Iterator iter = registry.entrySet().iterator(); iter.hasNext();)
+        for (Iterator<Map.Entry<String, DicomService>> iter = registry.entrySet().iterator(); iter.hasNext();)
         {
-            Map.Entry element = (Map.Entry) iter.next();
+            Map.Entry<String, DicomService> element = iter.next();
             if (element.getValue() == service)
                 iter.remove();
         }
@@ -276,6 +276,9 @@ class DicomServiceRegistry
                     break;
                 case CommandUtils.N_DELETE_RQ:
                     getNDeleteSCP(cmd).ndelete(as, pcid, cmd, dataset);
+                    break;
+                case CommandUtils.C_CANCEL_RQ:
+                    as.onCancelRQ(cmd);
                     break;
                 default:
                     throw new DicomServiceException(cmd,
