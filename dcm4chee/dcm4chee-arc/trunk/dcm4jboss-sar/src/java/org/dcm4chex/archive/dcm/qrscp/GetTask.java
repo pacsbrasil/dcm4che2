@@ -55,8 +55,6 @@ import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
-import org.dcm4chex.archive.perf.PerfCounterEnum;
-import org.dcm4chex.archive.perf.PerfPropertyEnum;
 import org.jboss.logging.Logger;
 
 /**
