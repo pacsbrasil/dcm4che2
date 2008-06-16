@@ -290,7 +290,12 @@ class PDUDecoder extends PDVInputStream
             if (pos + len > pdulen + 6)
                 throw new IndexOutOfBoundsException();
             String s;
-            s = new String(buf, pos, len, "US-ASCII");
+            // Skip illegal trailing NULL
+            int len0 = len;
+            while (len0 > 0 && buf[pos + len0 - 1] == 0) {
+                len0--;
+            }
+            s = new String(buf, pos, len0, "US-ASCII");
             pos += len;
             return s;
         } catch (UnsupportedEncodingException e) {
