@@ -1158,7 +1158,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     Dimse makeCStoreRQ(ActiveAssociation activeAssoc, FileInfo info,
             int priority, String moveOriginatorAET, int moveRqMsgID,
-            byte[] buffer, PerfMonDelegate perfMon) throws Exception {
+            PerfMonDelegate perfMon) throws Exception {
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
@@ -1191,7 +1191,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
-        FileDataSource ds = new FileDataSource(f, mergeAttrs, buffer);
+        byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
+        if (buf == null) {
+            buf = new byte[bufferSize];
+            assoc.putProperty(SEND_BUFFER, buf);
+        }
+        FileDataSource ds = new FileDataSource(f, mergeAttrs, buf);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
         Dimse rq = AssociationFactory.getInstance().newDimse(
                 presCtx.pcid(), storeRqCmd, ds);
@@ -1205,14 +1210,5 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return info.basedir.startsWith("tar:") 
                 ? retrieveFileFromTAR(info.basedir, info.fileID)
                 : FileUtils.toFile(info.basedir, info.fileID);
-    }
-
-    byte[] getByteBuffer(Association assoc) {
-        byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
-        if (buf == null) {
-            buf = new byte[bufferSize];
-            assoc.putProperty(SEND_BUFFER, buf);
-        }
-        return buf;
     }
 }
