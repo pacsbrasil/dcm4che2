@@ -1,14 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>xero</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
     <version>0.4-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4chee.xero</groupId>
   <name>Xero Controller</name>
   <artifactId>controller-xero</artifactId>
+  
+   
+  <profiles>
+     <profile>
+        <id>devDeploy</id>
+        <activation>
+           <property><name>env.developmentServer</name></property>
+        </activation>
+        <build>
+           <plugins>
+              <plugin>
+                 <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+
+                    <execution>
+                       <id>ViewCopy</id>
+                       <phase>package</phase>
+                       <configuration>
+                          <tasks>
+                             <echo>Copying controller to ${developmentServer} xero</echo>
+                             <copy todir="${developmentServer}/server/default/deploy/xero.war/WEB-INF/classes" preserveLastModified="true">
+                                <fileset dir="src/main/resources" includes="**/*" />
+                             </copy>
+                          </tasks>
+                       </configuration>
+                       <goals><goal>run</goal></goals>
+                    </execution>
+                 </executions>
+              </plugin>
+           </plugins>
+        </build>
+     </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
