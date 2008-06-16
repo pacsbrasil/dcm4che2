@@ -701,7 +701,8 @@ public class ExportManagerService extends AbstractScuService
         if ((s = config.getProperty("create-media-include-display-app")) != null) {
             mcrq.putCS(Tags.IncludeDisplayApplication, s);
         }
-        mcrq.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation, "NO");
+        mcrq.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation, 
+        		config.getProperty("create-media-preserve-instances", "NO"));
         String appProfile = config.getProperty("create-media-app-profile");
         DcmElement refSOPSeq = mcrq.putSQ(Tags.RefSOPSeq);
         DcmElement sopInstRefSeq = manifest
