@@ -2,28 +2,27 @@
   <parent>
     <artifactId>xero</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4chee.xero</groupId>
   <name>Xero View Templates</name>
   <artifactId>view-xero</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>metadata</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>model-xero</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-       <groupId>org.antlr</groupId>
+       <groupId>org.dcm4chee.xero</groupId>
        <artifactId>stringtemplate</artifactId>
-       <version>3.1-XERO</version>
+       <version>3.1.6-XERO-SNAPSHOT</version>
     </dependency>
     <dependency>
        <groupId>antlr</groupId>

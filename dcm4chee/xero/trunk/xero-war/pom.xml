@@ -2,13 +2,12 @@
   <parent>
     <artifactId>xero</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4chee.xero</groupId>
   <name>Xero View WAR Packaging</name>
   <artifactId>xero-war</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <packaging>war</packaging>
   <build>
      <finalName>xero</finalName>
@@ -23,7 +22,7 @@
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>controller-xero</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

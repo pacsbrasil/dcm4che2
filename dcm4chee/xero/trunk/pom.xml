@@ -4,7 +4,7 @@
    <groupId>org.dcm4chee.xero</groupId>
    <artifactId>xero</artifactId>
    <packaging>pom</packaging>
-   <version>1.0-SNAPSHOT</version>
+   <version>0.4-SNAPSHOT</version>
    <name>Xero</name>
    <description>Core Xero GUI MVC Components</description>
    <url>http://www.dcm4che.org/xero</url>
@@ -107,7 +107,6 @@
   </repository>
  </repositories>
 
- <!--
  <distributionManagement>
     <repository>
        <id>dcm4che</id>
@@ -115,6 +114,5 @@
        <url>scp://www.dcm4che.org:443/home/maven2</url>
     </repository>
  </distributionManagement>
- -->
 
 </project>
