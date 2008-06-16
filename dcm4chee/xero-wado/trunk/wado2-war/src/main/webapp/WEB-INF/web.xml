@@ -103,7 +103,7 @@
       <url-pattern>/*</url-pattern>
    </filter-mapping>
    
-   <security-constraint>
+   <security-constraint id="securityConstraint">
      <display-name>Xero Security Constraint</display-name>
      <web-resource-collection>
        <web-resource-name>dispatcher</web-resource-name>
@@ -119,7 +119,7 @@
      </auth-constraint>
    </security-constraint>
    
-   <login-config>
+   <login-config id="loginConfig">
       <auth-method>FORM</auth-method>
       <realm-name>Archive Web Admin</realm-name>
       <form-login-config>
