@@ -73,13 +73,8 @@
      <extensions>
         <extension>
            <groupId>org.apache.maven.wagon</groupId>
-           <artifactId>wagon-ssh-external</artifactId>
-           <version>1.0-beta-3</version>
-        </extension>
-        <extension>
-           <groupId>org.apache.maven.wagon</groupId>
            <artifactId>wagon-ssh</artifactId>
-           <version>1.0-beta-3</version>
+           <version>1.0-beta-2</version>
         </extension>
      </extensions>
    </build>
@@ -109,12 +104,14 @@
   </repository>
  </repositories>
 
+ <!--
  <distributionManagement>
     <repository>
        <id>dcm4che</id>
        <name>Dcm4che maven2</name>
-       <url>scp://www.dcm4che.org:443/home/maven2</url>
+       <url>scpexe://www.dcm4che.org:443/home/maven2</url>
     </repository>
  </distributionManagement>
+ -->
 
 </project>
