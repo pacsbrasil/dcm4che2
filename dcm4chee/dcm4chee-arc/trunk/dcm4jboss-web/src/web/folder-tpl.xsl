@@ -1207,7 +1207,7 @@
      </td>
      <td class="instance_mark" align="right">
       <a
-       href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf"
+       href="{/model/wadoBaseURL}rid/IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf"
        target="SRview">
        <img src="images/sr_pdf.gif" alt="icon" border="0"
         title="&ViewReportAsPDF;" />
@@ -1317,7 +1317,7 @@
     <xsl:choose>
      <xsl:when test="availability='ONLINE'">
       <a
-       href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf"
+       href="{/model/wadoBaseURL}rid/IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType=application/pdf"
        target="waveformview">
        <img src="images/waveform.gif" alt="icon" border="0"
         title="&ViewWaveform;" />
@@ -1424,7 +1424,7 @@
     <xsl:when test="availability='ONLINE'">
      <td class="instance_mark" align="right">
       <a
-       href="{/model/wadoBaseURL}IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType={mimeType}"
+       href="{/model/wadoBaseURL}rid/IHERetrieveDocument?requestType=DOCUMENT&amp;documentUID={sopIUID}&amp;preferredContentType={mimeType}"
        target="SRview">
        <img src="images/sr_pdf.gif" alt="icon" border="0"
         title="&ViewDocument;" />
