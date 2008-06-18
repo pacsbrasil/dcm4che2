@@ -51,7 +51,7 @@
 <!ENTITY StudyID "Studien ID">
 <!ENTITY StudyDate "Studien Datum">
 <!ENTITY formatStudyDate "Format: yyyy/mm/dd oder yyyy/mm/dd-yyyy/mm/dd">
-<!ENTITY AccessionNo "Fall Nr.">
+<!ENTITY AccessionNo "Auftragsnummer">
 <!ENTITY Modality "Modalität">
 <!ENTITY Patient "Patient">
 <!ENTITY Name "Name">
@@ -64,7 +64,7 @@
 <!ENTITY StudyDescription "Studienbeschreibung">
 <!ENTITY ShowStudyIUID "Studien Instance UID anzeigen">
 <!ENTITY ShowStudyDescription "Studienbeschreibung anzeigen">
-<!ENTITY AccNo "Fall Nr.">
+<!ENTITY AccNo "AuftragsNummer">
 <!ENTITY RefPhysician "Behandelnder Arzt">
 <!ENTITY Status "Status">
 <!ENTITY NoS "#&#160;S">
