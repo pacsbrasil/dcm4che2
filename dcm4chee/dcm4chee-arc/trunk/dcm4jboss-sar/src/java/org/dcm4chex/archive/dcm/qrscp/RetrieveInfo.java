@@ -51,12 +51,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AssociationFactory;
-import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
@@ -77,20 +75,23 @@ final class RetrieveInfo {
     }
 
     private static class IuidsAndTsuids {
-        final HashSet iuids = new HashSet();
-        final HashSet tsuids = new HashSet();
+        final Set<String> iuids = new HashSet<String>();
+        final Set<String> tsuids = new HashSet<String>();
     }
     
     private final int size;
-    private final HashMap iuidsAndTsuidsByCuid = new HashMap();
-    private final LinkedHashMap localFilesByIuid = new LinkedHashMap();
-    private final HashMap iuidsByRemoteAET = new HashMap();
-    private final HashMap iuidsByExternalAET = new HashMap();
-    private final HashSet notAvailableIuids = new HashSet();
-    private Entry curMoveForward;
+    private final Map<String, IuidsAndTsuids> iuidsAndTsuidsByCuid =
+            new HashMap<String, IuidsAndTsuids>();
+    private final Map<String, List<FileInfo>> localFilesByIuid =
+            new LinkedHashMap<String, List<FileInfo>>();
+    private final Map<String, Set<String>> iuidsByRemoteAET =
+            new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> iuidsByExternalAET =
+            new HashMap<String, Set<String>>();
+    private final Set<String> notAvailableIuids = new HashSet<String>();
+    private Map.Entry<String, Set<String>> curMoveForward;
     
-    RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos)
-            throws DcmServiceException {
+    RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos) {
         FileInfo[] fileInfos;
         FileInfo fileInfo;
         String iuid, cuid;
@@ -106,7 +107,7 @@ final class RetrieveInfo {
             if(fileInfos[0].availability >= Availability.OFFLINE)
             	continue;
             
-            iuidsAndTsuids = (IuidsAndTsuids) iuidsAndTsuidsByCuid.get(cuid);
+            iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
             if (iuidsAndTsuids == null) {
                 iuidsAndTsuids = new IuidsAndTsuids();
                 iuidsAndTsuidsByCuid.put(cuid, iuidsAndTsuids);
@@ -131,20 +132,21 @@ final class RetrieveInfo {
     }
 
     private void putLocalFile(String iuid, FileInfo fileInfo) {
-        List localFiles = (List) localFilesByIuid.get(iuid);
+        List<FileInfo> localFiles = localFilesByIuid.get(iuid);
         if (localFiles == null) {
-            localFiles = new ArrayList();
-            localFilesByIuid.put(iuid, localFiles);                        
+            localFiles = new ArrayList<FileInfo>();
+            localFilesByIuid.put(iuid, localFiles);
         }
         localFiles.add(fileInfo);
         notAvailableIuids.remove(iuid);
     }
 
-    private void putIuid(HashMap iuidsByAET, String aet, String iuid) {
-        Set iuids = (Set) iuidsByAET.get(aet);
+    private void putIuid(Map<String, Set<String>> iuidsByAET, String aet,
+            String iuid) {
+        Set<String> iuids = iuidsByAET.get(aet);
         if (iuids == null) {
-            iuids = new LinkedHashSet();
-            iuidsByAET.put(aet, iuids);                            
+            iuids = new LinkedHashSet<String>();
+            iuidsByAET.put(aet, iuids);
         }
         iuids.add(iuid);
         notAvailableIuids.remove(iuid);
@@ -158,14 +160,11 @@ final class RetrieveInfo {
         return localFilesByIuid.size() == size;
     }
     
-    public final boolean isAetWithAllIuids() {        
-        Iterator it = iuidsByRemoteAET.entrySet().iterator();
-        Map.Entry entry;
-        Collection iuids;
+    public final boolean isAetWithAllIuids() {
+        Iterator<Map.Entry<String, Set<String>>> it = 
+                iuidsByRemoteAET.entrySet().iterator();
         while (it.hasNext()) {
-            entry = (Entry) it.next();
-            iuids = (Collection) entry.getValue();
-            if (iuids.size() == size)
+            if (it.next().getValue().size() == size)
                 return true;
         }
         return false;
@@ -181,11 +180,12 @@ final class RetrieveInfo {
         String tsuid;
         IuidsAndTsuids iuidsAndTsuids;
         AssociationFactory asf = AssociationFactory.getInstance();
-        Iterator it = iuidsAndTsuidsByCuid.entrySet().iterator();        
+        Iterator<Map.Entry<String, IuidsAndTsuids>> it =
+                iuidsAndTsuidsByCuid.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry entry = (Entry) it.next();
-            cuid = (String) entry.getKey();
-            iuidsAndTsuids = (IuidsAndTsuids) entry.getValue();
+            Map.Entry<String, IuidsAndTsuids> entry = it.next();
+            cuid = entry.getKey();
+            iuidsAndTsuids = entry.getValue();
             if (sendWithDefaultTransferSyntax) {
                 rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                         UIDs.ImplicitVRLittleEndian)); 
@@ -193,9 +193,9 @@ final class RetrieveInfo {
             }
             rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                     NATIVE_LE_TS));
-            Iterator it2 = iuidsAndTsuids.tsuids.iterator();
+            Iterator<String> it2 = iuidsAndTsuids.tsuids.iterator();
             while (it2.hasNext()) {
-                tsuid = (String) it2.next();
+                tsuid = it2.next();
                 if (!isNativeLE_TS(tsuid)) {
                     rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                             new String[] { tsuid }));
@@ -204,17 +204,16 @@ final class RetrieveInfo {
         }        
     }
 
-    public Iterator getCUIDs() {
+    public Iterator<String> getCUIDs() {
         return iuidsAndTsuidsByCuid.keySet().iterator();
     }
     
-    public Set removeInstancesOfClass(String cuid) {
-        IuidsAndTsuids iuidsAndTsuids = 
-            (IuidsAndTsuids) iuidsAndTsuidsByCuid.get(cuid);
-        Iterator it = iuidsAndTsuids.iuids.iterator();
+    public Set<String> removeInstancesOfClass(String cuid) {
+        IuidsAndTsuids iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
+        Iterator<String> it = iuidsAndTsuids.iuids.iterator();
         String iuid;
         while (it.hasNext()) {
-            iuid = (String) it.next();
+            iuid = it.next();
             localFilesByIuid.remove(iuid);
             removeIuid(iuidsByRemoteAET, iuid);
             removeIuid(iuidsByExternalAET, iuid);
@@ -222,28 +221,26 @@ final class RetrieveInfo {
         return iuidsAndTsuids.iuids;
     }
 
-    private void removeIuid(Map iuidsByAET, String iuid) {
-        Iterator it = iuidsByAET.values().iterator();
-        Set iuids;
+    private void removeIuid(Map<String, Set<String>> iuidsByAET, String iuid) {
+        Iterator<Set<String>> it = iuidsByAET.values().iterator();
+        Set<String> iuids;
         while (it.hasNext()) {
-            iuids = (Set) it.next();
+            iuids = it.next();
             iuids.remove(iuid);
             if (iuids.isEmpty())
                 it.remove();
         }
     }
 
-    private static final Comparator ASC_IUIDS_SIZE = new Comparator() {
+    private static final Comparator<Map.Entry<String, Set<String>>>
+            ASC_IUIDS_SIZE = new Comparator<Map.Entry<String, Set<String>>>() {
 
-        public int compare(Object o1, Object o2) {
-            Map.Entry e1 = (Map.Entry) o1;
-            Set iuids1 = (Set) e1.getValue();
-            Map.Entry e2 = (Map.Entry) o2;
-            Set iuids2 = (Set) e2.getValue();
-            return iuids1.size() - iuids2.size();
+        public int compare(Map.Entry<String, Set<String>> o1,
+                Map.Entry<String, Set<String>> o2) {
+            return o1.getValue().size() - o2.getValue().size();
         }
     };
-    
+
     public boolean nextMoveForward() {
         if (!iuidsByRemoteAET.isEmpty()) {
             curMoveForward = removeNextRemoteAET(iuidsByRemoteAET);
@@ -257,40 +254,42 @@ final class RetrieveInfo {
         return false;
     }
 
-    private Map.Entry removeNextRemoteAET(Map iuidsByAET) {
-        Map.Entry entry = (Map.Entry) Collections.max(iuidsByAET.entrySet(), ASC_IUIDS_SIZE);
+    private Map.Entry<String, Set<String>>
+            removeNextRemoteAET(Map<String, Set<String>> iuidsByAET) {
+        Map.Entry<String, Set<String>> entry =
+                Collections.max(iuidsByAET.entrySet(), ASC_IUIDS_SIZE);
         iuidsByAET.remove(entry.getKey());
-        Set iuids = (Set) entry.getValue();
+        Set<String> iuids = entry.getValue();
         String iuid;
-        Iterator it = iuids.iterator();
+        Iterator<String> it = iuids.iterator();
         while (it.hasNext()) {
-            iuid = (String) it.next();
+            iuid = it.next();
             removeIuid(iuidsByRemoteAET, iuid);
             removeIuid(iuidsByExternalAET, iuid);            
         }
         return entry;
     }
 
-    public final Collection getLocalFiles() {
+    public final Collection<List<FileInfo>> getLocalFiles() {
         return localFilesByIuid.values();
     }
 
-    public final Collection removeLocalIUIDs() {
-        Set iuids = localFilesByIuid.keySet();
-        for (Iterator iter = iuids.iterator(); iter.hasNext();) {
-			String iuid = (String) iter.next();
+    public final Set<String> removeLocalIUIDs() {
+        Set<String> iuids = localFilesByIuid.keySet();
+        for (Iterator<String> iter = iuids.iterator(); iter.hasNext();) {
+            String iuid = iter.next();
             removeIuid(iuidsByRemoteAET, iuid);
-            removeIuid(iuidsByExternalAET, iuid);            
-		}
+            removeIuid(iuidsByExternalAET, iuid);
+        }
         return iuids;
     }
 
     public final String getMoveForwardAET() {
-        return (String) (curMoveForward != null ? curMoveForward.getKey() : null);
+        return curMoveForward != null ? curMoveForward.getKey() : null;
     }
 
-    public final Collection getMoveForwardUIDs() {
-        return (Collection) (curMoveForward != null ? curMoveForward.getValue() : null);
+    public final Set<String> getMoveForwardUIDs() {
+        return curMoveForward != null ? curMoveForward.getValue() : null;
     }
-        
+
 }
