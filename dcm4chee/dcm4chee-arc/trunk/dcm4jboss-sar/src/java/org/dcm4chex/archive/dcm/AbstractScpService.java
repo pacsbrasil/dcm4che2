@@ -140,7 +140,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
      * Map containing accepted Transfer Syntax UIDs. key is name (as in config
      * string), value is real uid)
      */
-    protected Map tsuidMap = new LinkedHashMap();
+    protected Map<String,String> tsuidMap = new LinkedHashMap<String,String>();
 
     protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
 
@@ -422,27 +422,28 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return changed;
     }
 
+    @SuppressWarnings("unchecked")
     private String[] getCallingAETsForPolicy() {
         if ( callingAETs == null ) return null;
         if ( callingAETs.length != 0 ) return callingAETs;
         log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
         try {
-            List l = aeMgr().findAll();
+            List<AEDTO> l = aeMgr().findAll();
             if (l.size() == 0 ) {
                 log.warn("No AETs configured! No calling AET is allowed!");
                 return callingAETs;
             }
-            List dicomAEs = new ArrayList(l.size());
+            List<String> dicomAEs = new ArrayList<String>(l.size());
             String aet;
-            for (Iterator iter = l.iterator(); iter.hasNext();) {
-                aet = ((AEDTO) iter.next()).getTitle();
+            for (Iterator<AEDTO> iter = l.iterator(); iter.hasNext();) {
+                aet = iter.next().getTitle();
                 if ( aet.indexOf('^') == -1 ) {//filter 'HL7' AETs
                     dicomAEs.add(aet);
                 }
             }
             log.debug("Use 'CONFIGURED_AETS'. Current list of configured (dicom) AETs"+dicomAEs);
             String[] sa = new String[dicomAEs.size()];
-            return (String[]) dicomAEs.toArray(sa);
+            return dicomAEs.toArray(sa);
         } catch (Exception e) {
             log.error("Failed to query configured AETs! No calling AET is allowed!", e);
             return callingAETs;
@@ -501,9 +502,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    protected void updateAcceptedSOPClass(Map cuidMap, String newval,
-            DcmService scp) {
-        Map tmp = parseUIDs(newval);
+    protected void updateAcceptedSOPClass(Map<String,String> cuidMap,
+            String newval, DcmService scp) {
+        Map<String,String> tmp = parseUIDs(newval);
         if (cuidMap.keySet().equals(tmp.keySet()))
             return;
         disableService();
@@ -520,8 +521,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     // return valuesToStringArray(tsuids);
     // }
 
-    protected static String[] valuesToStringArray(Map tsuid) {
-        return (String[]) tsuid.values().toArray(new String[tsuid.size()]);
+    protected static String[] valuesToStringArray(Map<String,String> tsuid) {
+        return tsuid.values().toArray(new String[tsuid.size()]);
     }
 
     protected void bindAll(String[] cuids, DcmService scp) {
@@ -550,8 +551,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         updateAcceptedTransferSyntax(tsuidMap, s);
     }
 
-    protected void updateAcceptedTransferSyntax(Map tsuidMap, String newval) {
-        Map tmp = parseUIDs(newval);
+    protected void updateAcceptedTransferSyntax(Map<String,String> tsuidMap,
+            String newval) {
+        Map<String,String> tmp = parseUIDs(newval);
         if (tsuidMap.keySet().equals(tmp.keySet()))
             return;
         tsuidMap.clear();
@@ -559,22 +561,22 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         enableService();
     }
 
-    protected String toString(Map uids) {
+    protected String toString(Map<String,String> uids) {
         if (uids == null || uids.isEmpty())
             return "";
         String nl = System.getProperty("line.separator", "\n");
         StringBuffer sb = new StringBuffer();
-        Iterator iter = uids.keySet().iterator();
+        Iterator<String> iter = uids.keySet().iterator();
         while (iter.hasNext()) {
             sb.append(iter.next()).append(nl);
         }
         return sb.toString();
     }
 
-    protected static Map parseUIDs(String uids) {
+    protected static Map<String,String> parseUIDs(String uids) {
         StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
         String uid, name;
-        Map map = new LinkedHashMap();
+        Map<String,String> map = new LinkedHashMap<String,String>();
         while (st.hasMoreTokens()) {
             uid = st.nextToken().trim();
             name = uid;
@@ -693,11 +695,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         coerceAttributes(ds, coerce, null);
     }
 
+    @SuppressWarnings({ "fallthrough", "unchecked" })
     private void coerceAttributes(DcmObject ds, DcmObject coerce,
             DcmElement parent) {
         boolean coerced = false;
-        for (Iterator it = coerce.iterator(); it.hasNext();) {
-            DcmElement el = (DcmElement) it.next();
+        for (Iterator<DcmElement> it = coerce.iterator(); it.hasNext();) {
+            DcmElement el = it.next();
             DcmElement oldEl = ds.get(el.tag());
             if (el.isEmpty()) {
                 coerced = oldEl != null && !oldEl.isEmpty();
@@ -737,6 +740,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                         }
                         break;
                     }
+                    // fall through
                 default:
                     coerced = oldEl != null && !oldEl.equals(el);
                     if (oldEl == null || coerced) {
@@ -806,24 +810,28 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
     
     public void supplementIssuerOfPatientID(Dataset ds, String callingAET) {
-    	if (supplementIssuerOfPatientID
-    			&& !ds.containsValue(Tags.IssuerOfPatientID)) {
-    		String pid = ds.getString(Tags.PatientID);
-    		if (pid != null) {
-    			try {
-    				AEDTO ae = aeMgr().findByAET(callingAET);
-    				String issuer = ae.getIssuerOfPatientID();
-    				ds.putLO(Tags.IssuerOfPatientID, issuer);
-    				if (log.isInfoEnabled()) {
-    					log.info("Add missing Issuer Of Patient ID " + issuer
-    							+ " for Patient ID " + pid);
-    				}
-    			} catch (UnknownAETException e) {
-    			} catch (Exception e) {
-    				log.warn("Failed to supplement Issuer Of Patient ID: ", e);
-    			}
-    		}
-    	}
+        if (supplementIssuerOfPatientID
+                && !ds.containsValue(Tags.IssuerOfPatientID)) {
+            String pid = ds.getString(Tags.PatientID);
+            if (pid != null) {
+                try {
+                    AEDTO ae = aeMgr().findByAET(callingAET);
+                    String issuer = ae.getIssuerOfPatientID();
+                    ds.putLO(Tags.IssuerOfPatientID, issuer);
+                    if (log.isInfoEnabled()) {
+                        log.info("Add missing Issuer Of Patient ID " + issuer
+                                + " for Patient ID " + pid);
+                    }
+                } catch (UnknownAETException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Missing AE configuration for " + callingAET
+                                + " - no supplement of Issuer Of Patient ID");
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to supplement Issuer Of Patient ID: ", e);
+                }
+            }
+        }
     }
 
 	public void generatePatientID(Dataset pat, Dataset sty) {
