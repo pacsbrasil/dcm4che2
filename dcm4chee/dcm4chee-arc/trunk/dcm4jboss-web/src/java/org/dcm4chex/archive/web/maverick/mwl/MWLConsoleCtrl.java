@@ -164,7 +164,6 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
     
     private void prepareLinkPreset(MWLFilter filter, MPPSModel mppsModel, String mppsIUID) throws ParseException {
         String patRule = getCtx().getServletConfig().getInitParameter("linkPresetPatientName");
-        System.out.println("patRule:"+patRule);
         if ( patRule != null ) {
             String pat = null;
             if ( ! "delete".equalsIgnoreCase(patRule) ) {
@@ -179,7 +178,6 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             filter.setPatientName(pat);
         }
         String dateRule = getCtx().getServletConfig().getInitParameter("linkPresetStartDate");
-        System.out.println("dateRule:"+dateRule);
         if ( dateRule != null ) {
             String date = null;
             if ( "today".equalsIgnoreCase(dateRule) ) {
@@ -193,7 +191,6 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             filter.setStartDate(date);
         }
         String modalityRule = getCtx().getServletConfig().getInitParameter("linkPresetModality");
-        System.out.println("modalityRule:"+modalityRule);
         if ( modalityRule != null ) {
             String modality = null;
             if ( ! "delete".equalsIgnoreCase(modalityRule) ) {

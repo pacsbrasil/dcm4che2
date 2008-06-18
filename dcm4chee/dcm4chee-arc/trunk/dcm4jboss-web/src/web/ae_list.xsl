@@ -10,7 +10,7 @@
 <xsl:include href="page.xsl"/>
 <xsl:template match="model">
 
-		<table width="100%" border="0" bordercolor="#ffffff" cellspacing="5" cellpadding="0">
+		<table width="100%" border="1" bordercolor="#ffffff" cellspacing="1" cellpadding="2">
 		<tr>	<center>
 			<td>
 				<tr>
@@ -23,7 +23,7 @@
 					<td width="10%"><h2>FS Group ID</h2></td>
 					<td width="20%"><h2>Description</h2></td>
 					<xsl:if test="$ae_mgr.edit='true'">	
-						<td colspan="2" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
+						<td colspan="3" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
 					</xsl:if>
 				</tr>
 					<xsl:apply-templates select="AEs/item">
@@ -39,48 +39,48 @@
 	<xsl:template match="item[@type='org.dcm4chex.archive.ejb.interfaces.AEDTO']">
 		<tr>
 	        <td title="AE Title" valign="top" >
-				<xsl:value-of select="title"/>
+				<xsl:value-of select="title"/>&#160;
 			</td>
 	        <td title="Hostname" valign="top" >
-				<xsl:value-of select="hostName"/>
+				<xsl:value-of select="hostName"/>&#160;
 	        </td>
 	        <td title="Port" valign="top" >
-					<xsl:value-of select="port"/>
+					<xsl:value-of select="port"/>&#160;
 	        </td>
 	        <td title="Cipher" valign="top" >
 	        	<xsl:for-each select="cipherSuites/item">
 	        		<xsl:value-of select="."/><br/>
-				</xsl:for-each>
+				</xsl:for-each>&#160;
 	        </td>
 	        <td title="Issuer of patient ID" valign="top" >
-					<xsl:value-of select="issuerOfPatientID"/>
+					<xsl:value-of select="issuerOfPatientID"/>&#160;
 	        </td>
 	        <td title="User ID" valign="top" >
-					<xsl:value-of select="userID"/>
+					<xsl:value-of select="userID"/>&#160;
 	        </td>
 	        <td title="File System Group ID" valign="top" >
-					<xsl:value-of select="fileSystemGroupID"/>
+					<xsl:value-of select="fileSystemGroupID"/>&#160;
 	        </td>
 	        <td title="Description" valign="top" >
-					<xsl:value-of select="description"/>
+					<xsl:value-of select="description"/>&#160;
 	        </td>
 	        <xsl:if test="$ae_mgr.edit='true'">
 				<td align="center" valign="top" >
 					<a href="aeedit.m?aet={title}">
 						<img src="images/edit.gif" alt="edit" border="0"/>		
-					</a>
+					</a>&#160;
 		        </td>
 				<td align="left" valign="top" >
 						<a href="aedelete.m?title={title}" onclick="return confirm('Are you sure you want to delete?')">
 						<img src="images/delete.gif" alt="delete" border="0"/>							
-						</a>					
+						</a>&#160;				
 				</td>
 			</xsl:if>
 			<td align="left" valign="top" >
 					<a href="aeecho.m?aet={title}" >
 					<xsl:attribute name="onclick" >return doEchoAET('<xsl:value-of select="title"/>')</xsl:attribute>
 					<img src="images/echo.gif" alt="Check AET({title}) with echo." border="0"/>							
-					</a>					
+					</a>&#160;					
 			</td>
 		</tr>
 	</xsl:template>
