@@ -153,7 +153,7 @@ public class DcmQR {
         public String getCode() {
             return code;
         }
-        
+
         public int[] getReturnKeys() {
             return returnKeys;
         }
@@ -287,41 +287,48 @@ public class DcmQR {
         UID.ImplicitVRLittleEndian };
 
     private static final String[] NATIVE_LE_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian  };
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
 
     private static final String[] NATIVE_BE_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRBigEndian  };
+        UID.ExplicitVRBigEndian,
+        UID.ImplicitVRLittleEndian};
 
     private static final String[] DEFLATED_TS = {
-        UID.ImplicitVRLittleEndian,
+        UID.DeflatedExplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
-        UID.DeflatedExplicitVRLittleEndian };
+        UID.ImplicitVRLittleEndian};
+
+    private static final String[] NOPX_TS = {
+        UID.NoPixelData,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
+
+    private static final String[] NOPXDEFL_TS = {
+        UID.NoPixelDataDeflate,
+        UID.NoPixelData,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
 
     private static final String[] JPLL_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
         UID.JPEGLossless,
         UID.JPEGLosslessNonHierarchical14,
         UID.JPEGLSLossless,
-        UID.JPEG2000LosslessOnly };
+        UID.JPEG2000LosslessOnly,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
 
     private static final String[] JPLY_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
         UID.JPEGBaseline1,
         UID.JPEGExtended24,
         UID.JPEGLSLossyNearLossless,
-        UID.JPEG2000 };
+        UID.JPEG2000,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
 
     private static final String[] MPEG2_TS = { UID.MPEG2 };
 
     private static final String[] DEF_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndian,
-        UID.DeflatedExplicitVRLittleEndian,
         UID.JPEGLossless,
         UID.JPEGLosslessNonHierarchical14,
         UID.JPEGLSLossless,
@@ -330,7 +337,11 @@ public class DcmQR {
         UID.JPEG2000,
         UID.JPEGBaseline1,
         UID.JPEGExtended24,
-        UID.MPEG2 };
+        UID.MPEG2,
+        UID.DeflatedExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
 
     private static enum TS {
         IVLE(IVRLE_TS),
@@ -339,7 +350,9 @@ public class DcmQR {
         DEFL(DEFLATED_TS),
         JPLL(JPLL_TS),
         JPLY(JPLY_TS),
-        MPEG2(MPEG2_TS);
+        MPEG2(MPEG2_TS),
+        NOPX(NOPX_TS),
+        NOPXD(NOPXDEFL_TS);
         
         final String[] uids;
         TS(String[] uids) { this.uids = uids; }
@@ -680,17 +693,20 @@ public class DcmQR {
                 + "                            words:\n"
                 + "                            IVRLE - offer only Implicit VR Little Endian\n"
                 + "                            Transfer Syntax\n"
-                + "                            LE    - offer Explicit and Implicit VR Little\n"
+                + "                            LE - offer Explicit and Implicit VR Little Endian\n"
+                + "                            Transfer Syntax\n"
+                + "                            BE - offer Explicit VR Big Endian Transfer Syntax\n"
+                + "                            DEFL - offer Deflated Explicit VR Little\n"
                 + "                            Endian Transfer Syntax\n"
-                + "                            BE    - offer Explicit VR Big Endian Transfer\n"
-                + "                            Syntax\n"
-                + "                            DEFL  - offer Deflated Explicit VR Little\n"
-                + "                            Endian Transfer Syntax\n"
-                + "                            JPLL  - offer JEPG Loss Less Transfer Syntaxes\n"
-                + "                            JPLY  - offer JEPG Lossy Transfer Syntaxes\n"
+                + "                            JPLL - offer JEPG Loss Less Transfer Syntaxes\n"
+                + "                            JPLY - offer JEPG Lossy Transfer Syntaxes\n"
                 + "                            MPEG2 - offer MPEG2 Transfer Syntax\n"
-                + "If only the Storage SOP Class is specified, all\n"
-                + "                            Transfer Syntaxes listed above are offered.");
+                + "                            NOPX - offer No Pixel Data Transfer Syntax\n"
+                + "                            NOPXD - offer No Pixel Data Delflate Transfer Syntax\n"
+                + "                            If only the Storage SOP Class is specified, all\n"
+                + "                            Transfer Syntaxes listed above except No Pixel Data\n"
+                + "                            and No Pixel Data Delflate Transfer Syntax are\n"
+                + "                            offered.");
         opts.addOption(OptionBuilder.create("cstore"));
 
         OptionBuilder.withArgName("dir");
