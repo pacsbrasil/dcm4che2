@@ -82,6 +82,8 @@ xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-aop-jdk50.deployer" "%DCM4CHEE_DEPLOY%\jboss-aop-jdk50.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-bean.deployer" "%DCM4CHEE_DEPLOY%\jboss-bean.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\jbossws.sar" "%DCM4CHEE_DEPLOY%\jbossws.sar\"
+move "%DCM4CHEE_DEPLOY%"\jbossws.sar\jaxb-api.jar "%DCM4CHEE_SERV%"\lib\"
+move "%DCM4CHEE_DEPLOY%"\jbossws.sar\jaxb-impl.jar "%DCM4CHEE_SERV%"\lib\"
 
 set JBOSS_WEB=%JBOSS_DEPLOY%\jboss-web.deployer
 set DCM4CHEE_WEB=%DCM4CHEE_DEPLOY%\jboss-web.deployer

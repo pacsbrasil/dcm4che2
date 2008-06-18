@@ -32,6 +32,7 @@
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="clean"/>
+    <ant inheritAll="false" dir="../dcm4jboss-rid" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="clean"/>
   </target>
@@ -40,7 +41,9 @@
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="jar"/>
+    <ant inheritAll="false" dir="../dcm4jboss-rid" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="war"/>
+    <ant inheritAll="false" dir="../dcm4jboss-rid" target="war"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="war">
       <property name="version" value="${version}" />
     </ant>
@@ -203,14 +206,22 @@
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-wado/target" prefix="${dist.db.config}">
-        <include name="lib/*"/>
-        <include name="deploy/*"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-wado/src/etc" prefix="${dist.db.config}">
-        <include name="conf/**"/>
-        <include name="deploy/**"/>
-      </zipfileset>
+        <zipfileset dir="../dcm4jboss-wado/target" prefix="${dist.db.config}">
+          <include name="lib/*"/>
+          <include name="deploy/*"/>
+        </zipfileset>
+        <zipfileset dir="../dcm4jboss-rid/target" prefix="${dist.db.config}">
+          <include name="lib/*"/>
+          <include name="deploy/*"/>
+        </zipfileset>
+        <zipfileset dir="../dcm4jboss-wado/src/etc" prefix="${dist.db.config}">
+           <include name="conf/**"/>
+           <include name="deploy/**"/>
+         </zipfileset>
+        <zipfileset dir="../dcm4jboss-rid/src/etc" prefix="${dist.db.config}">
+           <include name="conf/**"/>
+           <include name="deploy/**"/>
+         </zipfileset>
       <zipfileset dir="../dcm4jboss-web/target" prefix="${dist.db.config}">
         <include name="deploy/*"/>
       </zipfileset>
@@ -220,18 +231,6 @@
       <zipfileset dir="../dcm4jboss-xds-consumer/target"
         prefix="${dist.db.config}">
         <include name="deploy/*"/>
-      </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds-consumer" prefix="${dist.db.config}">
-        <include name="lib/FastInfoset.jar"/>
-        <include name="lib/jaxb-api.jar"/>
-        <include name="lib/jaxb-impl.jar"/>
-        <include name="lib/jaxb-libs.jar"/>
-        <include name="lib/jaxr-api.jar"/>
-        <include name="lib/jaxr-ebxml.jar"/>
-        <include name="lib/omar-common.jar"/>
-        <include name="lib/oasis-regrep.jar"/>
-        <include name="lib/relaxngDatatype.jar"/>
-        <include name="lib/xsdlib.jar"/>
       </zipfileset>
       <zipfileset dir="${fop.home}/build" prefix="${dist.db.config}/lib">
         <include name="fop.jar"/>
@@ -250,6 +249,8 @@
               value="../dcm4jboss-sar/src/etc/conf/xmdesc" />
     <property name="dcm4jboss-wado.xmdesc"
               value="../dcm4jboss-wado/src/etc/conf/xmdesc" />
+    <property name="dcm4jboss-rid.xmdesc"
+              value="../dcm4jboss-rid/src/etc/conf/xmdesc" />
     <property name="dcm4jboss-xds-consumer.xmdesc"
               value="../dcm4jboss-xds-consumer/src/etc/META-INF" />
     <antcall target="xslt">
@@ -608,7 +609,7 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
-             value="${dcm4jboss-wado.xmdesc}/dcm4chee-rid-xmbean.xml" />
+             value="${dcm4jboss-rid.xmdesc}/dcm4chee-rid-xmbean.xml" />
       <param name="out" value="rid-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=RIDService" />
     </antcall>

@@ -72,6 +72,8 @@ cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/jboss-bean.deployer \
   "$JBOSS_SERV"/deploy/jbossws.sar \
   "$DCM4CHEE_SERV"/deploy
+mv "$DCM4CHEE_SERV"/deploy/jbossws.sar/jaxb-api.jar "$DCM4CHEE_SERV"/lib
+mv "$DCM4CHEE_SERV"/deploy/jbossws.sar/jaxb-impl.jar "$DCM4CHEE_SERV"/lib
 
 cp -v "$JBOSS_SERV"/deploy/jboss-web.deployer/context.xml \
   "$JBOSS_SERV"/deploy/jboss-web.deployer/jasper-jdt.jar \
