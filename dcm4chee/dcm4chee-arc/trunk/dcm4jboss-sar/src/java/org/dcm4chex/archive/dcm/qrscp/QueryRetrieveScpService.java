@@ -118,6 +118,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private static final String NONE = "NONE";
 
+    private static final String[] EMPTY = {};
+
     private static final String SEND_BUFFER = "SEND_BUFFER";
 
     private static final Timer pendingRspTimer = new Timer(true);
@@ -127,7 +129,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private String[] sendNoPixelDataToAETs = null;
 
-    private String[] sendWithDefaultTransferSyntaxToAETitles = null;
+    private String[] offerNoPixelDataToAETs = null;
+
+    private String[] offerNoPixelDataDeflateToAETs = null;
+
+    private String[] sendWithDefaultTransferSyntaxToAETs = null;
 
     private String[] ignoreUnsupportedSOPClassFailuresByAETs = null;
     
@@ -334,12 +340,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
     
     public String getPixQueryCallingAETs() {
         return pixQueryCallingAETs == null ? ANY
+                : pixQueryCallingAETs.length == 0 ? NONE
                 : StringUtils.toString(pixQueryCallingAETs, '\\');
     }
 
     public void setPixQueryCallingAETs(String s) {
         String trim = s.trim();
         this.pixQueryCallingAETs = trim.equalsIgnoreCase(ANY) ? null
+                : trim.equalsIgnoreCase(NONE) ? EMPTY
                 : StringUtils.split(trim, '\\');
     }
     
@@ -696,15 +704,41 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 : StringUtils.split(aets, '\\');
     }
 
-    public final String getSendWithDefaultTransferSyntaxToAETitles() {
-        return sendWithDefaultTransferSyntaxToAETitles == null ? NONE
-                : StringUtils.toString(sendWithDefaultTransferSyntaxToAETitles,
+    public final String getOfferNoPixelDataToAETs() {
+        return offerNoPixelDataToAETs == null ? ANY
+                : offerNoPixelDataToAETs.length == 0 ? NONE
+                : StringUtils.toString(offerNoPixelDataToAETs, '\\');
+    }
+
+    public final void setOfferNoPixelDataToAETs(String aets) {
+        this.offerNoPixelDataToAETs = ANY.equalsIgnoreCase(aets) ? null
+                : NONE.equalsIgnoreCase(aets) ? EMPTY
+                : StringUtils.split(aets, '\\');
+    }
+
+    public final String getOfferNoPixelDataDeflateToAETs() {
+        return offerNoPixelDataDeflateToAETs == null ? ANY
+                : offerNoPixelDataDeflateToAETs.length == 0 ? NONE
+                : StringUtils.toString(offerNoPixelDataDeflateToAETs, '\\');
+    }
+
+    public final void setOfferNoPixelDataDeflateToAETs(String aets) {
+        this.offerNoPixelDataDeflateToAETs = ANY.equalsIgnoreCase(aets) ? null
+                : NONE.equalsIgnoreCase(aets) ? EMPTY
+                : StringUtils.split(aets, '\\');
+    }
+
+    public final String getSendWithDefaultTransferSyntaxToAETs() {
+        return sendWithDefaultTransferSyntaxToAETs == null ? ANY
+                : sendWithDefaultTransferSyntaxToAETs.length == 0 ? NONE
+                : StringUtils.toString(sendWithDefaultTransferSyntaxToAETs,
                         '\\');
     }
 
-    public final void setSendWithDefaultTransferSyntaxToAETitles(String aets) {
-        this.sendWithDefaultTransferSyntaxToAETitles = NONE
-                .equalsIgnoreCase(aets) ? null : StringUtils.split(aets, '\\');
+    public final void setSendWithDefaultTransferSyntaxToAETs(String aets) {
+        this.sendWithDefaultTransferSyntaxToAETs = ANY.equalsIgnoreCase(aets) 
+                ? null : NONE.equalsIgnoreCase(aets) ? EMPTY
+                        : StringUtils.split(aets, '\\');
     }
 
     public final String getIgnoreUnsupportedSOPClassFailuresByAETs() {
@@ -953,9 +987,19 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 && Arrays.asList(sendNoPixelDataToAETs).contains(moveDest);
     }
 
+    boolean isOfferNoPixelData(String moveDest) {
+        return offerNoPixelDataToAETs == null
+                || Arrays.asList(offerNoPixelDataToAETs).contains(moveDest);
+    }
+
+    boolean isOfferNoPixelDataDeflate(String moveDest) {
+        return offerNoPixelDataDeflateToAETs == null
+                || Arrays.asList(offerNoPixelDataDeflateToAETs).contains(moveDest);
+    }
+
     boolean isSendWithDefaultTransferSyntax(String moveDest) {
-        return sendWithDefaultTransferSyntaxToAETitles != null
-                && Arrays.asList(sendWithDefaultTransferSyntaxToAETitles)
+        return sendWithDefaultTransferSyntaxToAETs == null
+                || Arrays.asList(sendWithDefaultTransferSyntaxToAETs)
                         .contains(moveDest);
     }
 
@@ -1162,23 +1206,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
-        PresContext presCtx = assoc.getAcceptedPresContext(info.sopCUID,
-                info.tsUID);
-        if (presCtx == null) {
-            presCtx = assoc.getAcceptedPresContext(info.sopCUID,
-                    UIDs.ExplicitVRLittleEndian);
-            if (presCtx == null) {
-                presCtx = assoc.getAcceptedPresContext(info.sopCUID,
-                        UIDs.ImplicitVRLittleEndian);
-                if (presCtx == null)
-                    throw new NoPresContextException(
-                            "No Presentation Context for "
-                                + uidDict.toString(info.sopCUID)
-                                + (assoc.isRequestor() ? " accepted by "
-                                                       : " offered by ")
-                                + dest);
-            }
-        }
+        PresContext presCtx = selectAcceptedPresContext(assoc, info);
+        if (presCtx == null)
+            throw new NoPresContextException(
+                    "No Presentation Context for "
+                        + uidDict.toString(info.sopCUID)
+                        + (assoc.isRequestor() ? " accepted by "
+                                               : " offered by ")
+                        + dest);
         Command storeRqCmd = DcmObjectFactory.getInstance().newCommand();
         storeRqCmd.initCStoreRQ(assoc.nextMsgID(), info.sopCUID, info.sopIUID,
                 priority);
@@ -1204,6 +1239,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, f);
         }
         return rq;
+    }
+
+    private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
+        String[] tsuids = { UIDs.NoPixelDataDeflate, UIDs.NoPixelData,
+                info.tsUID, UIDs.ExplicitVRLittleEndian,
+                UIDs.ImplicitVRLittleEndian
+        };
+        PresContext presCtx = null;
+        for (int i = 0; presCtx == null && i < tsuids.length; i++) {
+            presCtx = a.getAcceptedPresContext(info.sopCUID, tsuids[i]);
+        }
+        return presCtx;
     }
 
     protected File getFile(FileInfo info) throws Exception {

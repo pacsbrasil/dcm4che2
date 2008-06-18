@@ -232,8 +232,10 @@ public class MoveTask implements Runnable {
             if (maxOpsInvoked != 1) {
                 rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
             }
-            retrieveInfo.addPresContext(rq, service
-                    .isSendWithDefaultTransferSyntax(moveDest));
+            retrieveInfo.addPresContext(rq,
+                    service.isSendWithDefaultTransferSyntax(moveDest),
+                    service.isOfferNoPixelData(moveDest),
+                    service.isOfferNoPixelDataDeflate(moveDest));
             
             perfMon.assocEstStart(a, Command.C_STORE_RQ);
             

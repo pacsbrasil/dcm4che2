@@ -60,15 +60,52 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getSendWithDefaultTransferSyntaxToAETitles"
-      setMethod="setSendWithDefaultTransferSyntaxToAETitles">
-      <description>Move Destination AE titles to which objects are sent 
-      always with Default (=Implicit VR Little Endian) Transfer Syntax, which
-      implies, that compressed stored images are always decompressed by this 
-      service for retrieval. Separate multiple values by \(backslash).
-      NONE = no AE titles match this criteria.
+      getMethod="getSendWithDefaultTransferSyntaxToAETs"
+      setMethod="setSendWithDefaultTransferSyntaxToAETs">
+      <description><![CDATA[Move Destination AE titles to which objects are
+      sent always with Default (=Implicit VR Little Endian) Transfer Syntax,
+      which implies, that compressed stored images are always decompressed by
+      this service for retrieval. Separate multiple values by \(backslash).
+      <br/>NONE = no AE titles match this criteria.
+      <br/>ANY = all AE titles match this criteria.]]>
       </description>
       <name>SendWithDefaultTransferSyntaxToAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getOfferNoPixelDataToAETs"
+      setMethod="setOfferNoPixelDataToAETs">
+      <description><![CDATA[Move Destination AE titles to which images are sent 
+      without pixel data, if offered Transfer Syntax <i>No Pixel Data</i>
+      was accepted by the Move Destination AE.
+      Separate multiple values by \(backslash).
+      <br/>NONE = do not offer <i>No Pixel Data</i> Transfer Syntax to any
+      Move Destination AE.
+      <br/>ANY = offer <i>No Pixel Data</i> Transfer Syntax to all
+      Move Destination AEs.]]>
+      </description>
+      <name>OfferNoPixelDataTransferSyntaxToAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getOfferNoPixelDataDeflateToAETs"
+      setMethod="setOfferNoPixelDataDeflateToAETs">
+      <description><![CDATA[Move Destination AE titles to which images are sent 
+      without pixel data, if offered Transfer Syntax <i>No Pixel Data Deflate</i>
+      or <i>No Pixel Data</i> was accepted by the Move Destination AE.
+      Separate multiple values by \(backslash).
+      <br/>NONE = do not offer <i>No Pixel Data Deflate</i> and
+      <i>No Pixel Data</i> Transfer Syntax to any Move Destination AE.
+      <br/>ANY = offer <i>No Pixel Data Deflate</i> and
+      <i>No Pixel Data</i> Transfer Syntax to all Move Destination AE.]]>
+      </description>
+      <name>OfferNoPixelDataDeflateTransferSyntaxToAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
@@ -110,7 +147,8 @@ QueryRetrieveScp service.</description>
       (PIX) Manager</i> shall be executed, if the query request contains a
       matching key for the Patient ID, to return also entities of linked
       patients. Separate multiple values by \(backslash).
-      ANY = Enable PIX Queries for all C-FIND SCUs.]]>
+      <br/>ANY = Enable PIX Queries for all C-FIND SCUs.
+      <br/>NONE = Disable PIX Queries for all C-FIND SCUs.]]>
       </description>
       <name>PIXQueryCallingAETitles</name>
       <type>java.lang.String</type>

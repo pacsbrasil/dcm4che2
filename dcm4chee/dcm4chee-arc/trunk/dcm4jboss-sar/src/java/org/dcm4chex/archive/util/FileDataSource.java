@@ -248,7 +248,9 @@ public class FileDataSource implements DataSource {
                 }
             }
             DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
-            if (withoutPixeldata || parser.getReadTag() != Tags.PixelData) {
+            if (withoutPixeldata || parser.getReadTag() != Tags.PixelData
+                    || UIDs.NoPixelData.equals(tsUID)
+                    || UIDs.NoPixelDataDeflate.equals(tsUID)) {
                 log.debug("Dataset:\n");
                 log.debug(ds);
                 write(ds, out, enc);

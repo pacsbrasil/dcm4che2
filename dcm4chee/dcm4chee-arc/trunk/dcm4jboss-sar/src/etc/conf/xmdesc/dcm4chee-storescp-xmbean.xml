@@ -513,6 +513,8 @@ StoreSCP service.
         JPEG2000Lossy,
         RLELossless,
         Dcm4cheURIReferenced
+        NoPixelData
+        NoPixelDataDeflate
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForImageSOPClasses</name>
@@ -531,7 +533,9 @@ StoreSCP service.
          JPEGExtended
          JPEGLSLossy
          JPEG2000Lossy
-         Dcm4cheURIReferenced"/>
+         Dcm4cheURIReferenced
+         NoPixelData
+         NoPixelDataDeflate"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -561,7 +565,9 @@ StoreSCP service.
         Transfer Syntaxes UID value or following defined symbolic names: 
         JPEGBaseline,
         MPEG2,
-        Dcm4cheURIReferenced        
+        Dcm4cheURIReferenced
+        NoPixelData
+        NoPixelDataDeflate
         ]]>
       </description>
       <name>AcceptedTransferSyntaxForVideoSOPClasses</name>
@@ -570,7 +576,9 @@ StoreSCP service.
          <value value="
            JPEGBaseline
            MPEG2
-           Dcm4cheURIReferenced"/>
+           Dcm4cheURIReferenced
+           NoPixelData
+           NoPixelDataDeflate"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

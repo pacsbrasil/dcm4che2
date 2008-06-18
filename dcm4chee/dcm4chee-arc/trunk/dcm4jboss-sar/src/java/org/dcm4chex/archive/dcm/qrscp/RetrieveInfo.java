@@ -69,6 +69,11 @@ final class RetrieveInfo {
     private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
         UIDs.ImplicitVRLittleEndian };
     
+    private static final String[] NO_PIXEL_TS = { UIDs.NoPixelData };
+    
+    private static final String[] NO_PIXEL_DEFL_TS = { UIDs.NoPixelDataDeflate,
+        UIDs.NoPixelData };
+    
     private static final boolean isNativeLE_TS(String uid) {
         return UIDs.ExplicitVRLittleEndian.equals(uid)
             || UIDs.ImplicitVRLittleEndian.equals(uid);
@@ -175,7 +180,9 @@ final class RetrieveInfo {
     }
    
     public void addPresContext(AAssociateRQ rq,
-            boolean sendWithDefaultTransferSyntax) {
+            boolean sendWithDefaultTransferSyntax,
+            boolean offerNoPixelData,
+            boolean offerNoPixelDataDeflate) {
         String cuid;
         String tsuid;
         IuidsAndTsuids iuidsAndTsuids;
@@ -193,6 +200,13 @@ final class RetrieveInfo {
             }
             rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                     NATIVE_LE_TS));
+            if (offerNoPixelDataDeflate) {
+                rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
+                        NO_PIXEL_DEFL_TS));
+            } else if (offerNoPixelData) {
+                rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
+                        NO_PIXEL_TS));
+            }
             Iterator<String> it2 = iuidsAndTsuids.tsuids.iterator();
             while (it2.hasNext()) {
                 tsuid = it2.next();
