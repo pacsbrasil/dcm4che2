@@ -75,28 +75,32 @@
 </xsl:template>
 
 <xsl:template match="item" mode="role-info">
-   	<xsl:param name="userID" />
-   	<xsl:variable name="role" select="name" />
-   	<xsl:variable name="displayName" select="displayName" />
-      <td title="$displayName" align="center">
-      	<xsl:if test="not(type='WebUser')">
-      		<xsl:attribute name="bgcolor" >#ffAA00</xsl:attribute>
-      	</xsl:if>
-		<xsl:choose>
+	<xsl:param name="userID" />
+	<xsl:variable name="role" select="name" />
+	<xsl:variable name="displayName" select="displayName" />
+	<td title="$displayName" align="center">
+        <xsl:attribute name="bgcolor" >
+        	<xsl:choose>
+				<xsl:when test="(type='StudyPermission')">#ccddcc</xsl:when>
+        		<xsl:when test="(type='ClientRole')">#779977</xsl:when>
+            	<xsl:otherwise>#cecece</xsl:otherwise>
+      		</xsl:choose>
+      	</xsl:attribute>&#160;
+        <xsl:choose>
 			<xsl:when test="/model/userList/item[userID=$userID]/roles[item=$role]">
-				<a title="Remove {$displayName} from user {$userID}" 
-					href="user_editsubmit.m?userID={$userID}&amp;cmd=removeRole&amp;role={$role}">
-	   				<img src="images/granted_xxs.gif" alt="granted" border="0" />
-	   			</a>
-	   		</xsl:when>
-			<xsl:otherwise>
-				<a title="Add {$displayName} to user {$userID}" 
-					href="user_editsubmit.m?userID={$userID}&amp;cmd=addRole&amp;role={$role}">
-	   				<img src="images/denied_xxs.gif" alt="denied" border="0" />
-	   			</a>
-	   		</xsl:otherwise>
-	   	</xsl:choose>&#160;
-      </td>
+            	<a title="Remove {$displayName} from user {$userID}"
+                	href="user_editsubmit.m?userID={$userID}&amp;cmd=removeRole&amp;role={$role}">
+                	<img src="images/granted_xxs.gif" alt="granted" border="0" />
+            	</a>
+            </xsl:when>
+            <xsl:otherwise>
+            	<a title="Add {$displayName} to user {$userID}"
+                	href="user_editsubmit.m?userID={$userID}&amp;cmd=addRole&amp;role={$role}">
+                    <img src="images/denied_xxs.gif" alt="denied" border="0" />
+                </a>
+            </xsl:otherwise>
+      	</xsl:choose>&#160;
+	</td>
 </xsl:template>
 
 <xsl:template match="item" mode="description">
