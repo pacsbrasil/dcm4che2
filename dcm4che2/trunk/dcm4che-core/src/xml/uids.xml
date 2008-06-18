@@ -35,6 +35,8 @@
 <uid value="1.2.840.10008.1.2.4.93" alias="JPEG2000Part2Multicomponent" type="Transfer Syntax">JPEG 2000 Part 2 Multi-component Image Compression</uid>
 <uid value="1.2.840.10008.1.2.4.94" alias="JPIPReferenced" type="Transfer Syntax">JPIP Referenced</uid>
 <uid value="1.2.840.10008.1.2.4.95" alias="JPIPReferencedDeflate" type="Transfer Syntax">JPIP Referenced Deflate</uid>
+<uid value="1.2.840.10008.1.2.4.96" alias="NoPixelData" type="Transfer Syntax">No Pixel Data</uid>
+<uid value="1.2.840.10008.1.2.4.97" alias="NoPixelDataDeflate" type="Transfer Syntax">No Pixel Data Deflate</uid>
 <uid value="1.2.840.10008.1.2.5" alias="RLELossless" type="Transfer Syntax">RLE Lossless</uid>
 <uid value="1.2.840.10008.1.2.6.1" alias="RFC2557MIMEencapsulation" type="Transfer Syntax">RFC 2557 MIME encapsulation</uid>
 <uid value="1.2.840.10008.1.2.6.2" alias="XMLEncoding" type="Transfer Syntax">XML Encoding</uid>

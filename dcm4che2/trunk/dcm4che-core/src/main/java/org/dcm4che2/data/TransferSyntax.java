@@ -56,6 +56,12 @@ public class TransferSyntax
     public static final TransferSyntax DeflatedExplicitVRLittleEndian = 
             new TransferSyntax("1.2.840.10008.1.2.1.99", true, false, true, false);
 
+    public static final TransferSyntax NoPixelData = 
+            new TransferSyntax("1.2.840.10008.1.2.4.96", true, false, false, false);
+
+    public static final TransferSyntax NoPixelDataDeflate = 
+        new TransferSyntax("1.2.840.10008.1.2.4.97", true, false, true, false);
+
     public static TransferSyntax valueOf(String uid)
     {
         if (uid == null)
@@ -68,6 +74,10 @@ public class TransferSyntax
             return ExplicitVRBigEndian;
         if (uid.equals(DeflatedExplicitVRLittleEndian.uid))
             return DeflatedExplicitVRLittleEndian;
+        if (uid.equals(NoPixelData.uid))
+            return NoPixelData;
+        if (uid.equals(NoPixelDataDeflate.uid))
+            return NoPixelDataDeflate;
         return new TransferSyntax(uid, true, false, false, true);
     }
 

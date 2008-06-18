@@ -38,9 +38,10 @@
 package org.dcm4che2.data;
 
 /** Provides tag constants.*/
-public final class UID {
+public class UID {
+
+    /** Private constructor */
     private UID() {
-        // private c'tor to avoid instantiation
     }
     
     public static final String forName(String name) {
@@ -157,6 +158,12 @@ public final class UID {
 
     /** JPIP Referenced Deflate - Transfer Syntax */
     public static final String JPIPReferencedDeflate = "1.2.840.10008.1.2.4.95";
+
+    /** No Pixel Data - Transfer Syntax */
+    public static final String NoPixelData = "1.2.840.10008.1.2.4.96";
+
+    /** No Pixel Data Deflate - Transfer Syntax */
+    public static final String NoPixelDataDeflate = "1.2.840.10008.1.2.4.97";
 
     /** RLE Lossless - Transfer Syntax */
     public static final String RLELossless = "1.2.840.10008.1.2.5";
