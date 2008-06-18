@@ -24,12 +24,14 @@ public class XDSDocumentObject implements XDSRegistryObject {
     
     private void init() throws JAXRException {
        	uri = getLongURI();
-        try {
-            url = URLEncoder.encode(uri, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error("URL encoding of URI failed! UTF-8 encoding not supported! Use URI unencoded!");
-            url = uri;
-        }
+       	if ( uri != null ) {
+	        try {
+	            url = URLEncoder.encode(uri, "UTF-8");
+	        } catch (UnsupportedEncodingException e) {
+	            log.error("URL encoding of URI failed! UTF-8 encoding not supported! Use URI unencoded!");
+	            url = uri;
+	        }
+       	}
         creationTime = getSlotValue("creationTime", null);
     }
 
@@ -39,6 +41,10 @@ public class XDSDocumentObject implements XDSRegistryObject {
 	 */
 	private String getLongURI() throws JAXRException {
 		Collection c = getSlotValues("URI");
+		if ( c == null ) { 
+			log.debug("XDSDocumentEntry doesn't contain a URI slot!");
+			return null;
+		}
 		String s=null;
 		if (c.size() == 1 ) {
 			s = (String) c.iterator().next();
@@ -105,6 +111,16 @@ public class XDSDocumentObject implements XDSRegistryObject {
      */
     public String getURL() throws JAXRException {
         return url;
+    }
+ 
+    /**
+     * Get the Unique ID of the Repository for XDS.b retrieve.
+     * @return Value of Slot repositoryUniqueId.
+     * 
+     * @throws JAXRException
+     */
+    public String getRepositoryUID() throws JAXRException {
+        return getSlotValue("repositoryUniqueId", null);
     }
     
     /**

@@ -77,6 +77,7 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
 
     private String documentID;
     private String url;
+    private String repositoryUID;
 
     List wadoUrls = new ArrayList();
     
@@ -96,19 +97,22 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         this.url = url;
     }
     
-    protected String perform() throws Exception {
+    public void setRepositoryUID(String repositoryUID) {
+		this.repositoryUID = repositoryUID;
+	}
+	protected String perform() throws Exception {
         if ( getCtx().getRequest().getParameter("clear") != null ) {
             repositoryHostMapping = null;
             aet2wado = null;
             cuidTypes = null;
         }
-        return url != null ? showManifestPage(url) : SUCCESS;
+        return url != null ? showManifestPage(loadDataset(new URL(url))) : 
+        	   repositoryUID != null ? showManifestPage(null) : SUCCESS;
     }
 
-    private String showManifestPage(String url) throws Exception {
+    private String showManifestPage(Dataset ds) throws Exception {
         wadoUrls.clear();
         FolderForm model = FolderForm.getFolderForm(getCtx());
-        Dataset ds = loadDataset(new URL(url));
         if ( ! UIDs.KeyObjectSelectionDocument.equals(ds.getString(Tags.SOPClassUID))) {
             model.setPopupMsg("xdsi.err", "Not a Manifest (DICOM Key Selection Object)!");
             return ERROR;

@@ -89,6 +89,7 @@ public class XDSQueryCtrl extends Dcm4cheeFormController {
 	            log.warn("Query type "+type+" not supported!");
 	        }
         } catch ( Exception x ) {
+        	log.error("XDS Query failed!",x);
         	model.setPopupMsg("xdsi.err",x.getMessage());
         }
         return SUCCESS;
