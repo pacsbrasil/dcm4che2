@@ -4,5 +4,5 @@
       login modules used to authentication users.
    -->
    <!--  <security-domain>java:/jaas/dcm4chee</security-domain> -->
-  <context-root>/</context-root>
+  <context-root>/wado</context-root>
 </jboss-web>

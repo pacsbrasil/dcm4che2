@@ -73,10 +73,6 @@ public class WADOCacheImpl implements WADOCache {
 
     public static final String DEFAULT_WADO_SUBDIR = "default";
 
-    public static final String DEFAULT_RID_SUBDIR = "rid";
-
-    public static final String DEFAULT_WADO_EXT_SUBDIR = "wfind";
-    
     public static final String DEFAULT_IMAGE_QUALITY = "75";
     
     /** Buffer size for read/write */
@@ -96,10 +92,6 @@ public class WADOCacheImpl implements WADOCache {
 
     private static WADOCacheImpl singletonWADO = null;
 
-    private static WADOCacheImpl singletonRID = null;
-
-    private static WADOCacheImpl singletonWADOExt = null;
-
     protected static Logger log = Logger.getLogger(WADOCacheImpl.class.getName());
 
     /** the root folder where this cache stores the image files. */
@@ -110,7 +102,7 @@ public class WADOCacheImpl implements WADOCache {
 
     /**
      * Default subdirectory. this is used to split directory structer for WADO
-     * and RID cache and for WADO cache to split 'default' requests and requests
+     * cache to split 'default' requests and requests
      * with rows and columns.
      */
     private String defaultSubdir = "default";
@@ -186,32 +178,6 @@ public class WADOCacheImpl implements WADOCache {
         return singletonWADO;
     }
 
-	/**
-     * Returns the singleton instance of WADOCache.
-     * 
-     * @return
-     */
-    public static WADOCache getRIDCache() {
-        if (singletonRID == null) {
-            singletonRID = createWADOCache();
-            singletonRID.defaultSubdir = DEFAULT_RID_SUBDIR;
-        }
-        return singletonRID;
-    }
-
-    /**
-     * Returns the singleton instance of WADOCache.
-     * 
-     * @return
-     */
-    public static WADOCache getWADOExtCache() {
-        if (singletonWADOExt == null) {
-            singletonWADOExt = createWADOCache();
-            singletonWADOExt.defaultSubdir = DEFAULT_WADO_EXT_SUBDIR;
-        }
-        return singletonWADOExt;
-    }
-
     /**
      * Get an image as BufferedImage from cache.
      * <p>
@@ -284,6 +250,7 @@ public class WADOCacheImpl implements WADOCache {
                 + "-" + windowWidth + "-" + windowCenter + "-" 
                 + maskNull(imageQuality, this.imageQuality),
                 studyUID, seriesUID, instanceUID, suffix, null);
+        if ( log.isDebugEnabled() ) log.debug("check cache file(exist:"+file.exists()+"):"+file);
         if (file.exists()) {
             file.setLastModified(System.currentTimeMillis()); // set last
                                                                 // modified
@@ -437,27 +404,15 @@ public class WADOCacheImpl implements WADOCache {
             log.info("Clear WADO cache!");
             File[] files = getAbsCacheRoot().listFiles();
             if (files == null) {
-                log
-                        .warn("WADO cache not cleared! Reason: cache root is not a directory or cant be read.");
+                log.warn("WADO cache not cleared! Reason: cache root is not a directory or cant be read.");
                 return;
             }
             for (int i = 0, len = files.length; i < len; i++) {
-                if (!files[i].getName().equals(DEFAULT_RID_SUBDIR)) {
-                    delTree(files[i]);
-                    if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {// dont
-                                                                            // del
-                                                                            // default
-                                                                            // dir
-                        files[i].delete();
-                    }
+                delTree(files[i]);
+                if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {// dont del default dir
+                	files[i].delete();
                 }
             }
-        } else if (this == singletonWADOExt) {
-            log.info("Clear WADOExt cache!");
-            delTree(new File(this.getAbsCacheRoot(), DEFAULT_WADO_EXT_SUBDIR));
-        } else {
-            log.info("Clear RID cache!");
-            delTree(new File(this.getAbsCacheRoot(), DEFAULT_RID_SUBDIR));
         }
     }
 
@@ -547,16 +502,14 @@ public class WADOCacheImpl implements WADOCache {
      * deleted.
      */
     private void _clean(long sizeToDel) {
-        log.info("Free disk space for "
-                + (this == singletonWADO ? "WADO" : "RID") + " cache!");
+        log.info("Free disk space for WADO cache!");
         FileToDelContainer ftd = new FileToDelContainer(new File(
                 getAbsCacheRoot(), defaultSubdir), sizeToDel);
         if (this == singletonWADO) {
             File[] files = getAbsCacheRoot().listFiles();
             if (files != null) {
                 for (int i = 0, len = files.length; i < len; i++) {
-                    if (!files[i].getName().equals(DEFAULT_RID_SUBDIR)
-                            && !files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {
+                    if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {
                         ftd.searchDirectory(new File(this.getAbsCacheRoot(),
                                 files[i].getName()));
                     }

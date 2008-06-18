@@ -56,7 +56,7 @@ import org.xml.sax.SAXException;
 public interface WADOResponseObject {
 	
 	/**
-	 * The RIDCommand to execute this.
+	 * The Command to execute this.
 	 * 
 	 * @return A command object to perform output process.
 	 * @throws SAXException
