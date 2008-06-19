@@ -11,6 +11,5 @@
 	<classpathentry kind="var" path="FOP_HOME/build/fop.jar"/>
 	<classpathentry kind="src" path="/dcm4jboss-ejb"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/activation.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/dcm4jboss-docstore"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
