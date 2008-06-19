@@ -1,0 +1,71 @@
+                 INSTALL INSTRUCTIONS FOR DCM4CHEE XDS Implementation 
+==========================================================================================
+
+Installed Modules:
+------------------------------------------------------------------------------------------
+dcm4chee-xds-common:	   Common classes for XDS implementation
+dcm4chee-xdsa-repository:  XDS.a Repository implementation
+dcm4chee-xdsb-repo:        XDS.b Repository implementation
+dcm4chee-xdsb-src:         XDS.b Source Service (XDS.a -> XDS.b Bridge
+dcm4chee-xds-docstore:     Persistence Layer Service for XDS documents
+dcm4chee-xds-store2dcm:    Service to store XDS documents as encapsulated DICOM objects
+dcm4chee-xdscfg:           XDS Configuration Management service
+------------------------------------------------------------------------------------------
+
+Requirements: 
+A) Add on to DCM4CHEE Archive
+	A DCM4CHEE installation with patched JBossWS Stack.
+B) A Standalone Webservice
+	A JBoss 4.2.2GA with patched JBossWS Stack.
+
+Downloads:
+   JBoss 4.2.2.GA:                 http://sourceforge.net/project/showfiles.php?group_id=22866&package_id=16942&release_id=548923
+   -JBossWs-3.0.1-native-2.0.4.GA: http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-3.0.1-native-2.0.4.GA.zip
+   -JBossWs-native-2.0.3.GA:       http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-native-2.0.3.GA.zip
+   dcm4chee:                       http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=195374
+
+Installation Procedure:
+
+A. As Add-On to DCM4CHEE
+1) Extract the binary distribution package of JBoss 4.2.2GA () to a temporary directory (<JBOSS422.home>).
+	(Avoid using a name that contains spaces)
+   
+2. Extract the JBossWS distribution (either JBossWs-native-2.0.3.GA , or JBossWs-3.0.1-native-2.0.4.GA ) to a temporary directory.
+
+3. Edit ant.properties (copy of ant.properties.example) so that jboss422.home points to your JBoss directory (JBOSS422.home>:
+	e.g.: jboss422.home=/tmp/jboss-4.2.2.GA
+
+4. a)Open console and change to your directory of the JBossWS distribution.
+   b)Run: ant deploy-jboss422
+
+5. Extract your DCM4CHEE distribution package to a temporary directory (<DCM4CHEE>).
+
+6. a) Change directory to <DCM4CHEE>/bin
+   b) Run install-jboss.sh <JBOSS422.home> (e.g. install-jboss.sh /tmp/jboss-4.2.2.GA)
+   
+7. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
+
+8. Copy <DCM4CHEE-XDS>/patches/<your-JBossWs-stack>/ to <DCM4CHEE>/server/default
+   
+9. a) change directory to <DCM4CHEE-XDS>/bin
+   b) Run install-as-addon <DCM4CHEE>
+
+
+B. Standalone
+1) Extract the binary distribution package of JBoss 4.2.2GA () to a directory (<JBOSS_HOME>).
+	(Avoid using a name that contains spaces)
+
+2. Extract the JBossWS distribution (either JBossWs-native-2.0.3.GA , or JBossWs-3.0.1-native-2.0.4.GA ) to a temporary directory.
+
+3. Edit ant.properties (copy of ant.properties.example) so that jboss422.home points to your JBoss directory (JBOSS_HOME>:
+	e.g.: jboss422.home=/opt/jboss-4.2.2.GA
+
+4. a)Open console and change to your directory of the JBossWS distribution.
+   b)Run: ant deploy-jboss422
+
+5. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
+
+6. Copy <DCM4CHEE-XDS>/patches/<your-JBossWs-stack>/ to <DCM4CHEE>/server/default
+
+7. a) change directory to <DCM4CHEE-XDS>/bin
+   b) Run install-as-addon <JBOSS_HOME>
