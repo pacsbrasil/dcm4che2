@@ -4,7 +4,6 @@
     <format>zip</format>
   </formats>
   <baseDirectory>dcm4chee-xds-${version}</baseDirectory>
-  <includeBaseDirectory>false</includeBaseDirectory>
   <fileSets>
 
 <!-- bin -->
