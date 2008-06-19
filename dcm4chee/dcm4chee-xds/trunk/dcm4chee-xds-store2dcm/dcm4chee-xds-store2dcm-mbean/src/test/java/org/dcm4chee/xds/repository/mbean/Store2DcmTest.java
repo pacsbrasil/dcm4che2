@@ -117,7 +117,7 @@ public class Store2DcmTest extends TestCase {
     public final void testEncapsulateXslFull() throws IOException, 
     		ParserConfigurationException, SAXException, 
     		TransformerException, NoSuchAlgorithmException {
-    	DicomObject obj = checkEncapsulateXsl("test.txt", "test1_Subm.xml", "test_full_subm.xsl");
+    	DicomObject obj = checkEncapsulateXsl("test.txt", "test1_subm.xml", "test_full_subm.xsl");
 		assertEquals("StudyDate incorrect!", "20051224", obj.getString(Tag.StudyDate));
 		assertEquals("SeriesDate incorrect!", "20051224", obj.getString(Tag.SeriesDate));
 		assertEquals("ContentDate incorrect!", "20051224", obj.getString(Tag.ContentDate));
