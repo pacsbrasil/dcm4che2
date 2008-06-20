@@ -15,19 +15,29 @@
     <!-- ================================= 
           target: dictionary              
          ================================= -->
-    <target name="dictionary" depends="p6_element" description="--> description">
-        <xslt in="src/main/xml/elements.xml" out="target/xml/dictionary.xml" style="src/main/xsl/elements.xsl">
+    <target name="dictionary"
+            depends="p6_element"
+            description="--> description">
+        <xslt in="src/main/xml/elements.xml"
+              out="target/xml/dictionary.xml"
+              style="src/main/xsl/elements.xsl">
         </xslt>
-        <xslt in="target/xml/dictionary.xml" out="target/java/${folder}/${tagclass}.java" style="src/main/xsl/Tag.xsl">
+        <xslt in="target/xml/dictionary.xml"
+              out="target/java/${folder}/${tagclass}.java"
+              style="src/main/xsl/Tag.xsl">
             <param name="package" expression="${package}" />
             <param name="class" expression="${tagclass}" />
         </xslt>
     </target>
 
     <target name="uids" depends="p6_uid" description="--> description">
-        <xslt in="src/main/xml/uids.xml" out="target/xml/uids.xml" style="src/main/xsl/uids.xsl">
+        <xslt in="src/main/xml/uids.xml"
+              out="target/xml/uids.xml"
+              style="src/main/xsl/uids.xsl">
         </xslt>
-        <xslt in="target/xml/uids.xml" out="target/java/${folder}/${uidclass}.java" style="src/main/xsl/UID.xsl">
+        <xslt in="target/xml/uids.xml"
+              out="target/java/${folder}/${uidclass}.java"
+              style="src/main/xsl/UID.xsl">
             <param name="package" expression="${package}" />
             <param name="class" expression="${uidclass}" />
         </xslt>
@@ -112,9 +122,12 @@
     </target>
 
     <target name="grep">
-        <xslt in="target/xml/${fname}/content.xml" out="target/xml/${style}/${fname}.xml" style="src/main/xsl/${style}.xsl">
+        <xslt in="target/xml/${fname}/content.xml"
+              out="target/xml/${style}/${fname}.xml"
+              style="src/main/xsl/${style}.xsl">
             <xmlcatalog>
-                <dtd publicId="-//OpenOffice.org//DTD OfficeDocument 1.0//EN" location="${office.dtd}" />
+                <dtd publicId="-//OpenOffice.org//DTD OfficeDocument 1.0//EN"
+                     location="${office.dtd}" />
             </xmlcatalog>
         </xslt>
     </target>
