@@ -60,12 +60,12 @@ public class ResourceLocator {
 
     private static final String PREFIX = "META-INF/dcm4che/";
 
-    public static List findResources(Class c) {
+    public static List<String> findResources(Class<?> c) {
         ArrayList<String> list = new ArrayList<String>();
         try {
-            for (Enumeration configs = enumResources(PREFIX + c.getName()); configs
-                    .hasMoreElements();) {
-                URL u = (URL) configs.nextElement();
+            for (Enumeration<URL> configs = enumResources(PREFIX + c.getName());
+                    configs.hasMoreElements();) {
+                URL u = configs.nextElement();
                 InputStream in = u.openStream();
                 try {
                     BufferedReader r = new BufferedReader(
@@ -89,9 +89,9 @@ public class ResourceLocator {
         }
     }
 
-    private static Enumeration enumResources(String name) throws IOException {
+    private static Enumeration<URL> enumResources(String name) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Enumeration e;
+        Enumeration<URL> e;
         return (cl != null && (e = cl.getResources(name)).hasMoreElements()) ? e
                 : ResourceLocator.class.getClassLoader().getResources(name);
     }
@@ -108,7 +108,7 @@ public class ResourceLocator {
         }
     }
 
-    private static Class loadClass(String name) throws ClassNotFoundException {
+    private static Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             if (cl != null) {

@@ -114,11 +114,12 @@ public class ElementDictionary implements Serializable {
 
     public static void reloadDictionaries() {
         ElementDictionary newStdDict = null;
-        Hashtable<String, ElementDictionary> newPrivDicts = new Hashtable<String, ElementDictionary>();
-        List list = ResourceLocator.findResources(ElementDictionary.class);
+        Hashtable<String, ElementDictionary> newPrivDicts = 
+                new Hashtable<String, ElementDictionary>();
+        List<String> list = ResourceLocator.findResources(ElementDictionary.class);
         for (int i = 0, n = list.size(); i < n; ++i) {
-            ElementDictionary d = (ElementDictionary) ResourceLocator
-                    .loadResource((String) list.get(i));
+            ElementDictionary d = 
+                (ElementDictionary) ResourceLocator.loadResource(list.get(i));
             if (d.getPrivateCreator() == null) {
                 newStdDict = d;
             } else {
