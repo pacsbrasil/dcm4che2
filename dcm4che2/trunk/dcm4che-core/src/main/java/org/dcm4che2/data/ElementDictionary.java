@@ -59,87 +59,86 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class ElementDictionary implements Serializable {
 
-	private static final long serialVersionUID = 3834593209899757880L;
+    private static final long serialVersionUID = 3834593209899757880L;
 
-	private static final String USAGE = 
-        "Usage: mkelmdic <xml-file> <resource-file>\n" +
-		"         (Store serialized dictionary in <resource-file>).\n" +
-		"       mkelmdic <xml-file> <resource-name> <zip-file>\n" +
-        "         (Create <zip-file> with serialized dictionary under <resource-name>\n" +
-        "          and appendant META-INF/dcm4che/org.dcm4che2.data.ElementDictionary.)\n";
+    private static final String USAGE = "Usage: mkelmdic <xml-file> <resource-file>\n"
+            + "         (Store serialized dictionary in <resource-file>).\n"
+            + "       mkelmdic <xml-file> <resource-name> <zip-file>\n"
+            + "         (Create <zip-file> with serialized dictionary under <resource-name>\n"
+            + "          and appendant META-INF/dcm4che/org.dcm4che2.data.ElementDictionary.)\n";
 
-	private static String unkown = "?";
+    private static String unkown = "?";
 
-	public static final String PRIVATE_CREATOR = "Private Creator Data Element";
+    public static final String PRIVATE_CREATOR = "Private Creator Data Element";
 
-	public static final String GROUP_LENGTH = "Group Length";
+    public static final String GROUP_LENGTH = "Group Length";
 
-	private static final ElementDictionary EMPTY = new ElementDictionary();
+    private static final ElementDictionary EMPTY = new ElementDictionary();
 
-	private static ElementDictionary stdDict;
+    private static ElementDictionary stdDict;
 
-	private static Hashtable<String, ElementDictionary> privDicts;
+    private static Hashtable<String, ElementDictionary> privDicts;
 
-	static {
+    static {
         try {
             ElementDictionary.reloadDictionaries();
         } catch (java.lang.Throwable e) {
             e.printStackTrace();
-            while (e.getCause() != null)
-            {
+            while (e.getCause() != null) {
                 e = e.getCause();
                 e.printStackTrace();
             }
         }
-	}
+    }
 
-	public static void main(String args[]) {
-		if (args.length < 2) {
-			System.out.println(USAGE);
-			System.exit(1);
-		}
-		ElementDictionary dict = new ElementDictionary(2300);
-		try {
-			dict.loadXML(new File(args[0]));
-			if (args.length > 2) {
-				ResourceLocator.createResource(args[1], dict, new File(args[2]));
-				System.out.println("Create Dictionary Resource  - " + args[2]);
-			} else {
-				ResourceLocator.serializeTo(dict, new File(args[1]));
-				System.out.println("Serialize Dictionary to - " + args[1]);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    public static void main(String args[]) {
+        if (args.length < 2) {
+            System.out.println(USAGE);
+            System.exit(1);
+        }
+        ElementDictionary dict = new ElementDictionary(2300);
+        try {
+            dict.loadXML(new File(args[0]));
+            if (args.length > 2) {
+                ResourceLocator
+                        .createResource(args[1], dict, new File(args[2]));
+                System.out.println("Create Dictionary Resource  - " + args[2]);
+            } else {
+                ResourceLocator.serializeTo(dict, new File(args[1]));
+                System.out.println("Serialize Dictionary to - " + args[1]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	public static void reloadDictionaries() {
-		ElementDictionary newStdDict = null;
-		Hashtable<String, ElementDictionary> newPrivDicts = new Hashtable<String, ElementDictionary>();
-		List list = ResourceLocator.findResources(ElementDictionary.class);
-		for (int i = 0, n = list.size(); i < n; ++i) {
-			ElementDictionary d = (ElementDictionary) ResourceLocator
-					.loadResource((String) list.get(i));
-			if (d.getPrivateCreator() == null) {
-				newStdDict = d;
-			} else {
-				newPrivDicts.put(d.getPrivateCreator(), d);
-			}
-		}
-		ElementDictionary.stdDict = newStdDict;
-		ElementDictionary.privDicts = newPrivDicts;
-	}
+    public static void reloadDictionaries() {
+        ElementDictionary newStdDict = null;
+        Hashtable<String, ElementDictionary> newPrivDicts = new Hashtable<String, ElementDictionary>();
+        List list = ResourceLocator.findResources(ElementDictionary.class);
+        for (int i = 0, n = list.size(); i < n; ++i) {
+            ElementDictionary d = (ElementDictionary) ResourceLocator
+                    .loadResource((String) list.get(i));
+            if (d.getPrivateCreator() == null) {
+                newStdDict = d;
+            } else {
+                newPrivDicts.put(d.getPrivateCreator(), d);
+            }
+        }
+        ElementDictionary.stdDict = newStdDict;
+        ElementDictionary.privDicts = newPrivDicts;
+    }
 
-	public static void loadDictionary(String resourceName) {
-		ElementDictionary d = (ElementDictionary) ResourceLocator
-				.loadResource(resourceName);
-		if (d.getPrivateCreator() == null) {
-			ElementDictionary.stdDict = d;
-		} else {
-			ElementDictionary.privDicts.put(d.getPrivateCreator(), d);
-		}
-	}
-	
+    public static void loadDictionary(String resourceName) {
+        ElementDictionary d = (ElementDictionary) ResourceLocator
+                .loadResource(resourceName);
+        if (d.getPrivateCreator() == null) {
+            ElementDictionary.stdDict = d;
+        } else {
+            ElementDictionary.privDicts.put(d.getPrivateCreator(), d);
+        }
+    }
+
     public static final String getUnkown() {
         return unkown;
     }
@@ -147,133 +146,134 @@ public class ElementDictionary implements Serializable {
     public static final void setUnkown(String unkown) {
         ElementDictionary.unkown = unkown;
     }
-	public final String getPrivateCreator() {
-		return privateCreator;
-	}
 
-	public static ElementDictionary getDictionary() {
-		return maskNull(stdDict);
-	}
+    public final String getPrivateCreator() {
+        return privateCreator;
+    }
 
-	public static ElementDictionary getPrivateDictionary(String creatorID) {
-		return maskNull(creatorID != null && creatorID.length() != 0 
-                ? (ElementDictionary) privDicts.get(creatorID)
+    public static ElementDictionary getDictionary() {
+        return maskNull(stdDict);
+    }
+
+    public static ElementDictionary getPrivateDictionary(String creatorID) {
+        return maskNull(creatorID != null && creatorID.length() != 0 ? (ElementDictionary) privDicts
+                .get(creatorID)
                 : stdDict);
-	}
+    }
 
-	private static ElementDictionary maskNull(ElementDictionary dict) {
-		return dict != null  ? dict : EMPTY;
-	}
+    private static ElementDictionary maskNull(ElementDictionary dict) {
+        return dict != null ? dict : EMPTY;
+    }
 
-	private transient IntHashtable<String> table;
+    private transient IntHashtable<String> table;
 
-	private transient String privateCreator;
+    private transient String privateCreator;
 
-	private ElementDictionary() {
-	    // empty private c'tor.
-	}
+    private ElementDictionary() {
+        // empty private c'tor.
+    }
 
-	private ElementDictionary(int initialCapacity) {
-		this.table = new IntHashtable<String>(initialCapacity);
-	}
+    private ElementDictionary(int initialCapacity) {
+        this.table = new IntHashtable<String>(initialCapacity);
+    }
 
-	private void writeObject(final ObjectOutputStream os) throws IOException {
-		os.defaultWriteObject();
-		os.writeObject(privateCreator);
-		os.writeInt(table.size());
-		try {
-			table.accept(new IntHashtable.Visitor() {
-				public boolean visit(int key, Object value) {
-					try {
-						os.writeInt(key);
-						os.writeUTF((String) value);
-						return true;
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			});
-		} catch (Exception e) {
-			throw (IOException) e;
-		}
-	}
+    private void writeObject(final ObjectOutputStream os) throws IOException {
+        os.defaultWriteObject();
+        os.writeObject(privateCreator);
+        os.writeInt(table.size());
+        try {
+            table.accept(new IntHashtable.Visitor() {
+                public boolean visit(int key, Object value) {
+                    try {
+                        os.writeInt(key);
+                        os.writeUTF((String) value);
+                        return true;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            throw (IOException) e;
+        }
+    }
 
-	private void readObject(ObjectInputStream is) throws IOException,
-			ClassNotFoundException {
-		is.defaultReadObject();
-		privateCreator = (String) is.readObject();
-		int size = is.readInt();
-		table = new IntHashtable<String>(size);
-		for (int i = 0, tag; i < size; ++i) {
-			tag = is.readInt();
-			table.put(tag, is.readUTF());
-		}
-	}
+    private void readObject(ObjectInputStream is) throws IOException,
+            ClassNotFoundException {
+        is.defaultReadObject();
+        privateCreator = (String) is.readObject();
+        int size = is.readInt();
+        table = new IntHashtable<String>(size);
+        for (int i = 0, tag; i < size; ++i) {
+            tag = is.readInt();
+            table.put(tag, is.readUTF());
+        }
+    }
 
-	public String nameOf(int tag) {
-		if ((tag & 0x0000ffff) == 0)
-			return GROUP_LENGTH;
-		if ((tag & 0x00010000) != 0) { // Private Element
-			if ((tag & 0x0000ff00) == 0)
-				return PRIVATE_CREATOR;
-			tag &= 0xffff00ff;
-		} else if ((tag & 0xffffff00) == 0x00203100)
-			tag &= 0xffffff00; // (0020,31xx) Source Image Ids
-		else {
-			final int ggg00000 = tag & 0xffe00000;
-			if (ggg00000 == 0x50000000 || ggg00000 == 0x60000000)
-				tag &= 0xff00ffff; // (50xx,eeee), (60xx,eeee)
-		}
-		if (table == null)
-			return unkown;
-		String name = table.get(tag);
-		return name != null ? name : unkown;
-	}
+    public String nameOf(int tag) {
+        if ((tag & 0x0000ffff) == 0)
+            return GROUP_LENGTH;
+        if ((tag & 0x00010000) != 0) { // Private Element
+            if ((tag & 0x0000ff00) == 0)
+                return PRIVATE_CREATOR;
+            tag &= 0xffff00ff;
+        } else if ((tag & 0xffffff00) == 0x00203100)
+            tag &= 0xffffff00; // (0020,31xx) Source Image Ids
+        else {
+            final int ggg00000 = tag & 0xffe00000;
+            if (ggg00000 == 0x50000000 || ggg00000 == 0x60000000)
+                tag &= 0xff00ffff; // (50xx,eeee), (60xx,eeee)
+        }
+        if (table == null)
+            return unkown;
+        String name = table.get(tag);
+        return name != null ? name : unkown;
+    }
 
-	public void loadXML(File f) throws IOException, SAXException {
-		try {
-			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-			parser.parse(f, new SAXAdapter());
-		} catch (ParserConfigurationException e) {
-			throw new RuntimeException(e);
-		} catch (FactoryConfigurationError e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public void loadXML(File f) throws IOException, SAXException {
+        try {
+            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+            parser.parse(f, new SAXAdapter());
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (FactoryConfigurationError e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	private final class SAXAdapter extends DefaultHandler {
-		int tag = -1;
+    private final class SAXAdapter extends DefaultHandler {
+        int tag = -1;
 
-		StringBuffer name = new StringBuffer(80);
+        StringBuffer name = new StringBuffer(80);
 
-		@Override
-		public void characters(char[] ch, int start, int length)
-				throws SAXException {
-			if (tag != -1) {
-				name.append(ch, start, length);
-			}
-		}
+        @Override
+        public void characters(char[] ch, int start, int length)
+                throws SAXException {
+            if (tag != -1) {
+                name.append(ch, start, length);
+            }
+        }
 
-		@Override
-		public void startElement(String uri, String localName, String qName,
-				Attributes attributes) throws SAXException {
-			if ("element".equals(qName)) {
-				tag = (int) Long.parseLong(attributes.getValue("tag").replace(
-						'x', '0'), 16);
-			} else if ("dictionary".equals(qName)) {
-				privateCreator = attributes.getValue("creator");
-			}
-		}
+        @Override
+        public void startElement(String uri, String localName, String qName,
+                Attributes attributes) throws SAXException {
+            if ("element".equals(qName)) {
+                tag = (int) Long.parseLong(attributes.getValue("tag").replace(
+                        'x', '0'), 16);
+            } else if ("dictionary".equals(qName)) {
+                privateCreator = attributes.getValue("creator");
+            }
+        }
 
-		@Override
-		public void endElement(String uri, String localName, String qName)
-				throws SAXException {
-			if ("element".equals(qName)) {
-				table.put(tag, name.toString());
-				name.setLength(0);
-				tag = -1;
-			}
-		}
-	}
+        @Override
+        public void endElement(String uri, String localName, String qName)
+                throws SAXException {
+            if ("element".equals(qName)) {
+                table.put(tag, name.toString());
+                name.setLength(0);
+                tag = -1;
+            }
+        }
+    }
 
 }

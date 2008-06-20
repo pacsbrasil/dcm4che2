@@ -58,41 +58,41 @@ import org.dcm4che2.util.CloseUtils;
 
 public class ResourceLocator {
 
-	private static final String PREFIX = "META-INF/dcm4che/";
+    private static final String PREFIX = "META-INF/dcm4che/";
 
-	public static List findResources(Class c) {
-		ArrayList<String> list = new ArrayList<String>();
-		try {
-			for (Enumeration configs = enumResources(PREFIX + c.getName()); 
-					configs.hasMoreElements();) {
-				URL u = (URL) configs.nextElement();
-				InputStream in = u.openStream();
-				try {
-					BufferedReader r = new BufferedReader(
-							new InputStreamReader(in, "utf-8"));
-					String ln;
-					while ((ln = r.readLine()) != null) {
-						int end = ln.indexOf('#');
-						if (end >= 0)
-							ln = ln.substring(0, end);
-						ln = ln.trim();
-						if (ln.length() > 0)
-							list.add(ln);
-					}
-				} finally {
-					CloseUtils.safeClose(in);
-				}
-			}
-			return list;
-		} catch (IOException e) {
-			throw new ConfigurationError("Failed to find Resources for " + c, e);
-		}
-	}
+    public static List findResources(Class c) {
+        ArrayList<String> list = new ArrayList<String>();
+        try {
+            for (Enumeration configs = enumResources(PREFIX + c.getName()); configs
+                    .hasMoreElements();) {
+                URL u = (URL) configs.nextElement();
+                InputStream in = u.openStream();
+                try {
+                    BufferedReader r = new BufferedReader(
+                            new InputStreamReader(in, "utf-8"));
+                    String ln;
+                    while ((ln = r.readLine()) != null) {
+                        int end = ln.indexOf('#');
+                        if (end >= 0)
+                            ln = ln.substring(0, end);
+                        ln = ln.trim();
+                        if (ln.length() > 0)
+                            list.add(ln);
+                    }
+                } finally {
+                    CloseUtils.safeClose(in);
+                }
+            }
+            return list;
+        } catch (IOException e) {
+            throw new ConfigurationError("Failed to find Resources for " + c, e);
+        }
+    }
 
     private static Enumeration enumResources(String name) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Enumeration e;      
-        return (cl != null && (e = cl.getResources(name)).hasMoreElements()) ? e 
+        Enumeration e;
+        return (cl != null && (e = cl.getResources(name)).hasMoreElements()) ? e
                 : ResourceLocator.class.getClassLoader().getResources(name);
     }
 
@@ -100,12 +100,12 @@ public class ResourceLocator {
         try {
             return loadClass(name).newInstance();
         } catch (ClassNotFoundException ex) {
-            throw new ConfigurationError("Class not found: " + name, ex); 
+            throw new ConfigurationError("Class not found: " + name, ex);
         } catch (InstantiationException ex) {
-            throw new ConfigurationError("Could not instantiate: " + name, ex); 
+            throw new ConfigurationError("Could not instantiate: " + name, ex);
         } catch (IllegalAccessException ex) {
-            throw new ConfigurationError("could not instantiate: " + name, ex); 
-        }        
+            throw new ConfigurationError("could not instantiate: " + name, ex);
+        }
     }
 
     private static Class loadClass(String name) throws ClassNotFoundException {
@@ -122,39 +122,39 @@ public class ResourceLocator {
     }
 
     public static Object loadResource(String name) {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         InputStream is;
         if (cl == null || (is = cl.getResourceAsStream(name)) == null) {
-            is = ResourceLocator.class.getClassLoader()
-                    .getResourceAsStream(name);
-    		if (is == null) {
-    			throw new ConfigurationError("Missing Resource: " + name);
-    		}
+            is = ResourceLocator.class.getClassLoader().getResourceAsStream(
+                    name);
+            if (is == null) {
+                throw new ConfigurationError("Missing Resource: " + name);
+            }
         }
-		try {
-			ObjectInputStream ois = new ObjectInputStream(is);
-			return ois.readObject();
-		} catch (Exception e) {
-			throw new ConfigurationError("Failed to load Resource " + name, e);
-		} finally {
-			CloseUtils.safeClose(is);
-		}
-	}
-	
-	public static void createResource(String name, Object o, File out)
-			throws IOException {
-		ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(out));
-		try {
-			zip.putNextEntry(new ZipEntry(PREFIX + o.getClass().getName()));
-			zip.write(name.getBytes("utf-8"));
-			zip.putNextEntry(new ZipEntry(name));
-			ObjectOutputStream oos = new ObjectOutputStream(zip);
-			oos.writeObject(o);
-			oos.close();
-		} finally {
-			zip.close();
-		}					
-	}
+        try {
+            ObjectInputStream ois = new ObjectInputStream(is);
+            return ois.readObject();
+        } catch (Exception e) {
+            throw new ConfigurationError("Failed to load Resource " + name, e);
+        } finally {
+            CloseUtils.safeClose(is);
+        }
+    }
+
+    public static void createResource(String name, Object o, File out)
+            throws IOException {
+        ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(out));
+        try {
+            zip.putNextEntry(new ZipEntry(PREFIX + o.getClass().getName()));
+            zip.write(name.getBytes("utf-8"));
+            zip.putNextEntry(new ZipEntry(name));
+            ObjectOutputStream oos = new ObjectOutputStream(zip);
+            oos.writeObject(o);
+            oos.close();
+        } finally {
+            zip.close();
+        }
+    }
 
     public static void serializeTo(Object o, File out) throws IOException {
         FileOutputStream fos = new FileOutputStream(out);
