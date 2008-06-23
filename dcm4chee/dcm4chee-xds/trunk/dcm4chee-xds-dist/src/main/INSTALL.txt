@@ -20,8 +20,7 @@ B) A Standalone Webservice
 
 Downloads:
    JBoss 4.2.2.GA:                 http://sourceforge.net/project/showfiles.php?group_id=22866&package_id=16942&release_id=548923
-   -JBossWs-3.0.1-native-2.0.4.GA: http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-3.0.1-native-2.0.4.GA.zip
-   -JBossWs-native-2.0.3.GA:       http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-native-2.0.3.GA.zip
+   JBossWs-3.0.1-native-2.0.4.GA:  http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-3.0.1-native-2.0.4.GA.zip
    dcm4chee:                       http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=195374
 
 Installation Procedure:
@@ -30,42 +29,34 @@ A. As Add-On to DCM4CHEE
 1) Extract the binary distribution package of JBoss 4.2.2GA () to a temporary directory (<JBOSS422.home>).
 	(Avoid using a name that contains spaces)
    
-2. Extract the JBossWS distribution (either JBossWs-native-2.0.3.GA , or JBossWs-3.0.1-native-2.0.4.GA ) to a temporary directory.
+2. Extract the JBossWS distribution (JBossWs-3.0.1-native-2.0.4.GA) to a temporary directory (JBossWS.home).
 
-3. Edit ant.properties (copy of ant.properties.example) so that jboss422.home points to your JBoss directory (JBOSS422.home>:
-	e.g.: jboss422.home=/tmp/jboss-4.2.2.GA
+3. Extract your DCM4CHEE distribution package to a temporary directory (<DCM4CHEE>).
 
-4. a)Open console and change to your directory of the JBossWS distribution.
-   b)Run: ant deploy-jboss422
+4. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
 
-5. Extract your DCM4CHEE distribution package to a temporary directory (<DCM4CHEE>).
-
-6. a) Change directory to <DCM4CHEE>/bin
+5. a) Change directory to <DCM4CHEE>/bin
    b) Run install-jboss.sh <JBOSS422.home> (e.g. install-jboss.sh /tmp/jboss-4.2.2.GA)
-   
-7. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
-
-8. Copy <DCM4CHEE-XDS>/patches/<your-JBossWs-stack>/ to <DCM4CHEE>/server/default
-   
-9. a) change directory to <DCM4CHEE-XDS>/bin
-   b) Run install-as-addon <DCM4CHEE>
+   c) Run patch-jboss.sh <JBOSSWS.home> (e.g. patch-jboss.sh /tmp/jbossws-native-dist)
+   d) Run install-xds <DCM4CHEE-XDS>
 
 
 B. Standalone
-1) Extract the binary distribution package of JBoss 4.2.2GA () to a directory (<JBOSS_HOME>).
+1) Extract the binary distribution package of JBoss 4.2.2GA () to a directory (<JBOSS422.home>).
 	(Avoid using a name that contains spaces)
 
-2. Extract the JBossWS distribution (either JBossWs-native-2.0.3.GA , or JBossWs-3.0.1-native-2.0.4.GA ) to a temporary directory.
+2. Extract the JBossWS distribution (JBossWs-3.0.1-native-2.0.4.GA) to a temporary directory (JBossWS.home).
 
-3. Edit ant.properties (copy of ant.properties.example) so that jboss422.home points to your JBoss directory (JBOSS_HOME>:
-	e.g.: jboss422.home=/opt/jboss-4.2.2.GA
-
-4. a)Open console and change to your directory of the JBossWS distribution.
-   b)Run: ant deploy-jboss422
-
-5. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
-
-6. Copy <DCM4CHEE-XDS>/patches/<your-JBossWs-stack>/ to <DCM4CHEE>/server/default
+3. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
 
 7. a) change directory to <DCM4CHEE-XDS>/bin
-   b) Run install-as-addon <JBOSS_HOME>
+   b) Run install-jboss.sh <JBOSS422.home> (e.g. install-jboss.sh /tmp/jboss-4.2.2.GA)
+   c) Run patch-jboss.sh <JBOSSWS.home> (e.g. patch-jboss.sh /tmp/jbossws-native-dist)
+
+----------------------------------------------------------
+Optional: Additional patches for Axis2 client support and/or 'no internet access'.
+   - Axis2 SwA (SOAP with Attachment) requests are not correct nd JBossWS will fil for such requests.
+   - JBossWS needs internet access for schema validation during deployment.
+     (if you need a http proxy for internet access you can configure http.proxy-host! (see run.conf or run.bat))
+   Install patches:  
+   Copy <DCM4CHEE-XDS>/patches/JBossWs-3.0.1-native-2.0.4.GA/ to <DCM4CHEE>/server/default
