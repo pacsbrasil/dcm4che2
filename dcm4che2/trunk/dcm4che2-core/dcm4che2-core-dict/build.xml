@@ -21,6 +21,8 @@
         <xslt in="src/main/xml/elements.xml"
               out="target/xml/dictionary.xml"
               style="src/main/xsl/elements.xsl">
+            <param name="package" expression="${package}" />
+            <param name="class" expression="${tagclass}" />
         </xslt>
         <xslt in="target/xml/dictionary.xml"
               out="target/java/${folder}/${tagclass}.java"

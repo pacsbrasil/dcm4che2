@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dictionary>
+<dictionary tagclass="org.dcm4che2.data.Tag">
 <element tag="00000000" alias="GroupLength00000000" vr="UL" vm="1" ret="">Group Length</element>
 <element tag="00000001" alias="LengthToEndRET00000001" vr="UL" vm="1" ret="RET">Length to End</element>
 <element tag="00000002" alias="AffectedSOPClassUID" vr="UI" vm="1" ret="">Affected SOP Class UID</element>
@@ -846,7 +846,7 @@
 <element tag="00189440" alias="CenterOfCircularExposureControlSensingRegion" vr="SS" vm="2" ret="">Center of Circular Exposure Control Sensing Region</element>
 <element tag="00189441" alias="RadiusOfCircularExposureControlSensingRegion" vr="US" vm="1" ret="">Radius of Circular Exposure Control Sensing Region</element>
 <element tag="00189442" alias="VerticesOfThePolygonalExposureControlSensingRegion" vr="SS" vm="2-n" ret="">Vertices of the Polygonal Exposure Control Sensing Region</element>
-<element tag="00189445" alias="RET" vr="" vm="" ret="RET"></element>
+<element tag="00189445" alias="RET" vr="" vm="" ret="RET"/>
 <element tag="00189447" alias="ColumnAngulationPatient" vr="FL" vm="1" ret="">Column Angulation (Patient)</element>
 <element tag="00189449" alias="BeamAngle" vr="FL" vm="1" ret="">Beam Angle</element>
 <element tag="00189451" alias="FrameDetectorParametersSequence" vr="SQ" vm="1" ret="">Frame Detector Parameters Sequence</element>

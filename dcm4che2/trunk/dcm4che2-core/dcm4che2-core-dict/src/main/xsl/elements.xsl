@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="xml" indent="yes"/>
+    <xsl:param name="package">org.dcm4che2.data</xsl:param>
+    <xsl:param name="class">Tag</xsl:param>
     <xsl:variable name="noascii">&#xF06D;&#x2019;&#x2013;</xsl:variable>
     <xsl:variable name="ascii">u'-</xsl:variable>
     <xsl:variable name="apos">'</xsl:variable>
@@ -8,7 +10,7 @@
     <xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable>
     <xsl:variable name="upper">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
     <xsl:template match="/">
-        <dictionary>
+        <dictionary tagclass="{$package}.{$class}">
             <xsl:apply-templates select="elements/element">
                 <xsl:sort select="@tag"/>
             </xsl:apply-templates>

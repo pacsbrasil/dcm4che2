@@ -82,4 +82,23 @@ public class ElementDictionaryTest extends TestCase {
         assertEquals(ElementDictionary.getUnkown(), dict.nameOf(0x00991111));
     }
 
+    public final void testTagNameOfStdDictionary() {
+        ElementDictionary dict = ElementDictionary.getDictionary();
+        assertEquals("org.dcm4che2.data.Tag", dict.getTagClassName());
+        assertEquals(0x00000002, dict.tagForName("AffectedSOPClassUID"));
+        assertEquals(0x00020001, dict.tagForName("FileMetaInformationVersion"));
+        assertEquals(0x00080005, dict.tagForName("SpecificCharacterSet"));
+        assertEquals(0x60000010, dict.tagForName("OverlayRows"));
+        assertEquals(0x7FE00010, dict.tagForName("PixelData"));
+    }
+
+    public final void testTagNameOfPrivateDictionary() {
+        ElementDictionary dict = ElementDictionary
+                .getPrivateDictionary("dcm4che2");
+        assertEquals("your.PrivateTag", dict.getTagClassName());
+        assertEquals(0x00990000, dict.tagForName("PrivateUS"));
+        assertEquals(0x00990010, dict.tagForName("PrivateUL"));
+        assertEquals(0x009900E0, dict.tagForName("PrivateOB"));
+    }
+
 }

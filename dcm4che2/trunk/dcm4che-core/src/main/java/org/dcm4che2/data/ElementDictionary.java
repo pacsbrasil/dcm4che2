@@ -59,7 +59,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class ElementDictionary implements Serializable {
 
-    private static final long serialVersionUID = 3834593209899757880L;
+    private static final long serialVersionUID = 2010071664961951181L;
 
     private static final String USAGE = "Usage: mkelmdic <xml-file> <resource-file>\n"
             + "         (Store serialized dictionary in <resource-file>).\n"
@@ -152,6 +152,10 @@ public class ElementDictionary implements Serializable {
         return privateCreator;
     }
 
+    public final String getTagClassName() {
+        return tagClassName;
+    }
+
     public static ElementDictionary getDictionary() {
         return maskNull(stdDict);
     }
@@ -168,7 +172,11 @@ public class ElementDictionary implements Serializable {
 
     private transient IntHashtable<String> table;
 
+    private transient String tagClassName;
+
     private transient String privateCreator;
+
+    private Class<?> tagClass;
 
     private ElementDictionary() {
         // empty private c'tor.
@@ -180,6 +188,7 @@ public class ElementDictionary implements Serializable {
 
     private void writeObject(final ObjectOutputStream os) throws IOException {
         os.defaultWriteObject();
+        os.writeObject(tagClassName);
         os.writeObject(privateCreator);
         os.writeInt(table.size());
         try {
@@ -202,6 +211,7 @@ public class ElementDictionary implements Serializable {
     private void readObject(ObjectInputStream is) throws IOException,
             ClassNotFoundException {
         is.defaultReadObject();
+        tagClassName = (String) is.readObject();
         privateCreator = (String) is.readObject();
         int size = is.readInt();
         table = new IntHashtable<String>(size);
@@ -229,6 +239,25 @@ public class ElementDictionary implements Serializable {
             return unkown;
         String name = table.get(tag);
         return name != null ? name : unkown;
+    }
+
+    public int tagForName(String name) {
+        if (tagClassName == null) {
+            throw new UnsupportedOperationException(
+                    "No tag class associated to dictionary");
+        }
+        try {
+            if (tagClass == null) {
+                tagClass = ResourceLocator.loadClass(tagClassName);
+            }
+            return tagClass.getField(name).getInt(null);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException("Unknown Tag Name: " + name);
+        } catch (Exception e) {
+            throw new ConfigurationError(e);
+        }
     }
 
     public void loadXML(File f) throws IOException, SAXException {
@@ -262,6 +291,7 @@ public class ElementDictionary implements Serializable {
                 tag = (int) Long.parseLong(attributes.getValue("tag").replace(
                         'x', '0'), 16);
             } else if ("dictionary".equals(qName)) {
+                tagClassName = attributes.getValue("tagclass");
                 privateCreator = attributes.getValue("creator");
             }
         }

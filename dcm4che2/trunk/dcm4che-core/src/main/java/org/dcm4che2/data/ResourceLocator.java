@@ -108,7 +108,7 @@ public class ResourceLocator {
         }
     }
 
-    private static Class<?> loadClass(String name) throws ClassNotFoundException {
+    public static Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             if (cl != null) {
