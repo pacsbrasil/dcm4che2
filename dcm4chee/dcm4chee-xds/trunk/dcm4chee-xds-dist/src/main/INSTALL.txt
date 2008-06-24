@@ -55,8 +55,9 @@ B. Standalone
 
 ----------------------------------------------------------
 Optional: Additional patches for Axis2 client support and/or 'no internet access'.
-   - Axis2 SwA (SOAP with Attachment) requests are not correct nd JBossWS will fil for such requests.
+   - Axis2 SwA (SOAP with Attachment) requests are not correct (AttachmentPart Id mismatch) and JBossWS will fail for such requests.
    - JBossWS needs internet access for schema validation during deployment.
-     (if you need a http proxy for internet access you can configure http.proxy-host! (see run.conf or run.bat))
+     (if you need a http proxy for internet access you can configure http.proxyHost! (see run.conf or run.bat))
+     
    Install patches:  
    Copy <DCM4CHEE-XDS>/patches/JBossWs-3.0.1-native-2.0.4.GA/ to <DCM4CHEE>/server/default
