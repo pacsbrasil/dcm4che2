@@ -193,6 +193,9 @@ ImageLayout.prototype = new Layout("baseImage","image/image");
 // and fetch on fetchSize index boundaries 
 ImageLayout.prototype.fetchSize = 256;
 ImageLayout.prototype.isDebug = false;
+ImageLayout.prototype.MAGNIFY = "MAGNIFY";
+ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
+ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 
 /** Updates the image position information
  */
@@ -202,13 +205,24 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	}
 	
 	// Need to add layout & query information to make the image fit the displayed area.
-	this.layoutType = "SCALE_TO_FIT";
+	this.layoutType = this.merged.get("size");
+	console.info("Found layout type %s", this.layoutType);
+	if(!this.layoutType ) this.layoutType = this.SCALE_TO_FIT;
 	// Reset the positional information...
 	this.scale = 1;
+	this.scaleY = 1;
 	this.translateX = 0;
 	this.translateY = 0;
 	this.rotate = 0;
-	this.region = [0,0,this.image.Columns, this.image.Rows];
+	var tl = this.merged.get("topLeft");
+	if( tl ) {
+		var br = this.merged.get("bottomRight");
+		this.region = parsePoint(tl+","+br);
+		console.info("Using specified region %s", this.region);
+	} else {
+		this.region = [0,0,this.image.Columns, this.image.Rows];
+	}
+	
 	this.debug("Region to display %s in %d,%d", this.region, this.width,this.height);
 	if( !this.width ) return;
 	
@@ -321,7 +335,7 @@ ImageLayout.prototype.computeTranslate = function ImageLayout_computeTranslate()
 	if( this.translateY > -1 && this.translateY < 1 ) this.translateY = 0;
 	// Needed for IE only to get the right position.
 	this.translateXDisp = -this.translateX / this.scale;
-	this.translateYDisp = -this.translateY / this.scale;
+	this.translateYDisp = -this.translateY / this.scaleY;
 	this.debug("ImageLayout translation %d,%d", this.translateX, this.translateY);
 };
 
@@ -338,7 +352,7 @@ ImageLayout.prototype.toImage = function ImageLayout_toImage(xy,offset) {
 	}
 	if( this.scale ) {
 		xd = xd / this.scale;
-		yd = yd / this.scale;
+		yd = yd / this.scaleY;
 	}
 	return [xd,yd];
 }; 
@@ -352,7 +366,7 @@ ImageLayout.prototype.toDisplay = function ImageLayout_toDisplay(xy,offset) {
 	var yd = xy[offset+1];
 	if( this.scale ) {
 		xd = xd * this.scale;
-		yd = yd * this.scale;
+		yd = yd * this.scaleY;
 	}
 	if( this.translateX ) {
 		xd = xd+this.translateX;
@@ -366,23 +380,46 @@ ImageLayout.prototype.toDisplay = function ImageLayout_toDisplay(xy,offset) {
 
 
 /** Compute the scale to display the image at so that it all appears (or
- * for ZOOM/True Size, whatever scale is appropriate.)
+ * for SCALE_TO_FIT, MAGNIFY or TRUE_SIZE, whatever scale is appropriate.)
  */
 ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
-	var imgTL = this.toDisplay(this.region,0);
-	var imgBR = this.toDisplay(this.region,2);
+	this.aspect = this.merged.get("aspect");
+	if(!this.aspect) this.aspect = 1;
+	if( this.layoutType=="TRUE_SIZE") {
+		var spx = parseFloat(this.merged.get("spacingX"));
+		var dpi = screen.logicalXDPI;
+		if( !dpi ) dpi = screen.deviceXDPI;
+		if( !dpi ) {
+			dpi = 0.294;
+			console.warn("Using %f mm/pixel screen size - may not correspond to true screen size.",dpi);
+			console.dir(screen);
+		}
+		else {
+			dpi = 25.4/dpi;
+			console.info("Using %f mm/pixel screen size as provided by screen.", dpi);
+		}
+		this.scale = spx/dpi;
+	} else if( this.layoutType=="MAGNIFY" ) {
+		this.scale = parseFloat(this.merged.get("magnify"));
+		this.debug("Magnify scaling %f size %f,%f", this.scale, this.widthImg, this.heightImg);
+	} else {
+		console.info("Setting scale to fit type %s", this.layoutType);
+		var imgTL = this.toDisplay(this.region,0);
+		var imgBR = this.toDisplay(this.region,2);
 	
-	var imageX = imgBR[0]-imgTL[0];
-	var imageY = imgBR[1]-imgTL[1];
+		var imageX = imgBR[0]-imgTL[0];
+		var imageY = imgBR[1]-imgTL[1];
 
-	var scaleX = this.width/imageX;
-	var scaleY = this.height/imageY;
-	if( scaleX > scaleY ) scaleX = scaleY;
-	if( scaleX > 1 ) scaleX = 1;
-	this.scale = scaleX;
+		var scaleX = this.width/imageX;
+		var scaleY = this.height/(imageY*this.aspect);
+		console.info("scale %f,%f", scaleX,scaleY);
+		if( scaleX > scaleY ) scaleX = scaleY;
+		if( scaleX > 1 ) scaleX = 1;
+		this.scale = scaleX;
+	}
 	this.widthImg = this.width / this.scale;
-	this.heightImg = this.height / this.scale;
-	
-	this.debug("Computed scale %f",scaleX);
-	return this.scale;
+	this.heightImg = this.height / (this.scale * this.aspect);
+	this.scaleY = this.scale * this.aspect;
+	console.info("Computed scale %f,%f w,h=%f,%f",this.scale,this.scaleY, this.widthImg, this.heightImg);
+	return this.scale;	
 };
