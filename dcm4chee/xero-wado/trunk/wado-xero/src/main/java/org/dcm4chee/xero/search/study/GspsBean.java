@@ -30,7 +30,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 	 *            to copy image level data into this from.
 	 */
 	protected void initAttributes(DicomObject dcmobj) {
-		setSOPInstanceUID(dcmobj.getString(Tag.SOPInstanceUID));
+		setObjectUID(dcmobj.getString(Tag.SOPInstanceUID));
 		setContentLabel(sanitizeXmlString(dcmobj.getString(Tag.ContentLabel)));
 		Date date = null;
 		try {
@@ -48,7 +48,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 		}
 		if (date == null) {
 			log.warn("GSPS presentation and content dates both null for "
-					+ getSOPInstanceUID());
+					+ getObjectUID());
 			date = new Date(0);
 		}
 		GregorianCalendar cal = new GregorianCalendar();
@@ -71,7 +71,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 				if (sqImage == null || !sqImage.hasItems()) {
 					log
 							.warn("GSPS object "
-									+ getSOPInstanceUID()
+									+ getObjectUID()
 									+ " has no referenced images for one of the series.");
 					continue;
 				}
@@ -81,7 +81,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 					String uid = imageDcm
 							.getString(Tag.ReferencedSOPInstanceUID);
 					if (uid == null) {
-						log.warn("GSPS object " + getSOPInstanceUID()
+						log.warn("GSPS object " + getObjectUID()
 								+ " has a null SOP instance reference.");
 						continue;
 					}
@@ -89,7 +89,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 				}
 			}
 		} else {
-			log.warn("GSPS object " + getSOPInstanceUID()
+			log.warn("GSPS object " + getObjectUID()
 					+ " has no referenced series.");
 		}
 	}
@@ -104,7 +104,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 
 	/** The SOP Instance is the ID for a GSPS object */
 	public String getId() {
-		return getSOPInstanceUID();
+		return getObjectUID();
 	}
 
 	/** This method replaces illegal charaters in a string with spaces. */

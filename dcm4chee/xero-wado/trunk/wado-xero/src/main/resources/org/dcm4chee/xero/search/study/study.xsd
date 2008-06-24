@@ -98,7 +98,7 @@
     </simpleType>
 
     <complexType name="dicomObjectType">
-       <attribute name="SOPInstanceUID" type="tns:UID" />
+       <attribute name="objectUID" type="tns:UID" />
        <attribute name="InstanceNumber" type="int" />
        <!-- Position is the absolute position within the series, 0 based without duplicates, from [0,viewable). -->
        <attribute name="Position" type="int" />

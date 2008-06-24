@@ -97,7 +97,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 	  if( image==null ) image = new ImageBean(seriesBean);
 	  image.columns = this.columns;
 	  image.rows = this.rows;
-	  image.sopInstanceUID = this.sopInstanceUID;
+	  image.objectUID = this.objectUID;
 	  image.instanceNumber = this.instanceNumber;
 	  image.macroItems = getMacroItems();
 	  return image;
@@ -114,7 +114,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 	  setColumns(data.getInt(Tag.Columns));
 	  setRows(data.getInt(Tag.Rows));
 	  // setSOPClassUID(data.getString(Tag.SOPClassUID));
-	  setSOPInstanceUID(data.getString(Tag.SOPInstanceUID));
+	  setObjectUID(data.getString(Tag.SOPInstanceUID));
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
    }
 
@@ -140,7 +140,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    
    /** Return the id for this element, in this case the SOP Instance UID */
    public String getId() {
-	 return key(getSOPInstanceUID());
+	 return key(getObjectUID());
    }
    
    /** Return the key for the given object */

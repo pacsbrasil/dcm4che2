@@ -98,7 +98,7 @@ public class TestMultiFrameImage {
 	  assert image != null;
 	  assert image.getFrame() == 1;
 	  // Assert object identity, not merely same contents.
-	  assert image.getSOPInstanceUID() == frames.getSOPInstanceUID();
+	  assert image.getObjectUID() == frames.getObjectUID();
 	  assert image.getGspsUID() == frames.getGspsUID();
 	  assert image.getInstanceNumber() == frames.getInstanceNumber();
 

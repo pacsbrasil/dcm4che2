@@ -299,7 +299,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
     * @return
     */
    public static boolean betterMatch(String key, SearchableDicomObject sdo1, SearchableDicomObject sdo2) {
-	  boolean sdo1Match = key.equals("*") | key.equals(sdo1.getContentName()) || key.equals(sdo1.getSOPInstanceUID());
+	  boolean sdo1Match = key.equals("*") | key.equals(sdo1.getContentName()) || key.equals(sdo1.getObjectUID());
 	  if( !sdo1Match ) return false;
 	  if( sdo2==null ) return true;
 	  Date d1 = sdo1.getContentDate();
@@ -309,7 +309,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  if( cmp!=0 ) return cmp>0;
 	  cmp = sdo1.getContentName().compareTo(sdo2.getContentName());
 	  if( cmp!=0 ) return cmp>0;
-	  cmp = sdo1.getSOPInstanceUID().compareTo(sdo2.getSOPInstanceUID());
+	  cmp = sdo1.getObjectUID().compareTo(sdo2.getObjectUID());
 	  return cmp>0;
    }
 }

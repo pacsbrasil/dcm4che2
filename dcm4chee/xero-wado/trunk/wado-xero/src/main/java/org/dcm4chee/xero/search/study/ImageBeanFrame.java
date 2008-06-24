@@ -60,7 +60,7 @@ public class ImageBeanFrame extends ImageBean {
 	  super(image.getSeriesBean());
 	  this.parentImage = image;
 	  this.frame = frame;
-	  this.sopInstanceUID = image.getSOPInstanceUID();
+	  this.objectUID = image.getObjectUID();
 	  this.instanceNumber = image.getInstanceNumber();
 	  this.gspsUID = image.getGspsUID();
 	  if (image.position != null)
@@ -74,7 +74,7 @@ public class ImageBeanFrame extends ImageBean {
 	  super(seriesBean);
 	  this.seriesBean = null;
 	  this.frame = frame;
-	  this.sopInstanceUID = objectUID;
+	  this.objectUID = objectUID;
    }
    
    private ImageBeanFrame() {
@@ -87,7 +87,7 @@ public class ImageBeanFrame extends ImageBean {
    public ImageBean clone(ImageBean dest) {
 	  if( dest==null ) {
 		 if( parentImage!=null ) dest = new ImageBeanFrame(parentImage, frame);
-		 else dest = new ImageBeanFrame(seriesBean, sopInstanceUID, frame);
+		 else dest = new ImageBeanFrame(seriesBean, objectUID, frame);
 	  }
 	  return super.clone(dest);
    }
@@ -105,7 +105,7 @@ public class ImageBeanFrame extends ImageBean {
    /** Return the id for this element, in this case the SOP Instance UID */
    @Override
    public String getId() {
-	 return getSOPInstanceUID()+","+frame;
+	 return getObjectUID()+","+frame;
    }
 
    /** Gets all the attributes from the parent, multi-frame object, and secondly from this specific object */

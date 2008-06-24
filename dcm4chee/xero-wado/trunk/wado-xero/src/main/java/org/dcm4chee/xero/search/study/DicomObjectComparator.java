@@ -65,7 +65,7 @@ public class DicomObjectComparator implements Comparator<DicomObjectType> {
 			   GspsType g2 = (GspsType) o2;
 			   if( g1.getContentLabel()!=null ) return g1.getContentLabel().compareTo(g2.getContentLabel());
 			}
-			return o1.getSOPInstanceUID().compareTo(o2.getSOPInstanceUID());
+			return o1.getObjectUID().compareTo(o2.getObjectUID());
 		}
 		int ret = o1.getInstanceNumber() - o2.getInstanceNumber();
 		if( ret!=0 ) return ret;

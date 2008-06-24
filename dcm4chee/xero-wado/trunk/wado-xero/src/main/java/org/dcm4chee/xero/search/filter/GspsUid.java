@@ -69,7 +69,7 @@ public class GspsUid  implements Filter<ResultsBean> {
 	public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 		String gspsName = (String) params.get(GspsDiscover.GSPS_KEY);
 		Object presentationUID = params.get("presentationUID");
-		if( gspsName==null && presentationUID==null) {
+		if( (gspsName==null || gspsName.equals("*")) && presentationUID==null) {
 			log.debug("Not applying GSPS Uid lookup.");
 			return (ResultsBean) filterItem.callNextFilter(params);
 		}
@@ -88,11 +88,11 @@ public class GspsUid  implements Filter<ResultsBean> {
 						if( ! (dot instanceof GspsBean) ) continue;
 						GspsBean gsps = (GspsBean) dot;
 						if( gspsName!=null && !gsps.getContentLabel().equals(gspsName)) continue;
-						log.debug("Add GSPS "+gsps.getSOPInstanceUID() + " to  gspsResults map.");
+						log.debug("Add GSPS "+gsps.getObjectUID() + " to  gspsResults map.");
 						for(String uid : gsps.getReferencedSOPInstance() ) {
 							GspsBean oldGsps = uidToGsps.get(uid);
 							if( oldGsps==null || oldGsps.getPresentationDateTime().compare(gsps.getPresentationDateTime())<0 ) {
-								log.debug("Putting a GSPS match for "+uid+" to "+gsps.getSOPInstanceUID());
+								log.debug("Putting a GSPS match for "+uid+" to "+gsps.getObjectUID());
 								uidToGsps.put(uid,gsps);
 							}
 						}
@@ -111,13 +111,13 @@ public class GspsUid  implements Filter<ResultsBean> {
 				for(SeriesType se : st.getSeries() ) {
 					for(DicomObjectType dot : se.getDicomObject()) {
 						if( !(dot instanceof ImageType) ) continue;
-						GspsBean gspsBean = uidToGsps.get(dot.getSOPInstanceUID());
+						GspsBean gspsBean = uidToGsps.get(dot.getObjectUID());
 						if( gspsBean==null ) {
-							log.debug("GSPS not found for "+dot.getSOPInstanceUID());
+							log.debug("GSPS not found for "+dot.getObjectUID());
 							continue;
 						}
 						ImageType image = (ImageType) dot;
-						image.setGspsUID(gspsBean.getSOPInstanceUID());
+						image.setGspsUID(gspsBean.getObjectUID());
 					}
 				}
 			}

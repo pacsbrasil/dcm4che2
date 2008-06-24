@@ -240,7 +240,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 			i += addList.size()-1;
 		 }
 		 else {
-			log.debug("Not splitting non-multi-frame object "+modified.get(i).getSOPInstanceUID());
+			log.debug("Not splitting non-multi-frame object "+modified.get(i).getObjectUID());
 		 }
 	  }
 	  return ret;

@@ -148,7 +148,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 	  if( ! koUid.equals("*") ) return koUid;
 	  KeyObjectBean kob = (KeyObjectBean) study.searchStudy(koUid, "KO");
 	  if( kob==null ) return null;
-	  return kob.getSOPInstanceUID();
+	  return kob.getObjectUID();
    }
 
    /** Assigns the key object macro instance for the listed selection */

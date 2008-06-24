@@ -42,7 +42,7 @@ import org.dcm4chee.xero.search.Column;
 public interface DicomObjectInterface {
 
 	/**
-	 * Gets the value of the sopInstanceUID property.
+	 * Gets the value of the objectUID property.
 	 * 
 	 * @return
 	 *     possible object is
@@ -50,7 +50,7 @@ public interface DicomObjectInterface {
 	 *     
 	 */
 	@Column(searchable=true,type="UID")
-	String getSOPInstanceUID();
+	String getObjectUID();
 
 	/** Get the instance number - this is a value starting at 1 that defines the position of this object
 	 * in terms of when it was received.  

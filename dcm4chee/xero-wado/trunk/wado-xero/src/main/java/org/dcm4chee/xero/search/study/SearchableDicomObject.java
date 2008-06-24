@@ -54,5 +54,5 @@ public interface SearchableDicomObject {
    public String getContentName();
    
    /** Get the sop instance UID for this object */
-   public String getSOPInstanceUID();
+   public String getObjectUID();
 }

@@ -49,11 +49,15 @@ dicom.memcache.cacheSize=2000000
 dicom.memcache.priority=200
 dicom.memcache.queryStr=objectUID
 
-#Now, add a study filter that provides study searches. 
+#Now, add a study filter that provides study searches.
+studyFilter.source.imageSearch=${ref:imageSource}
+studyFilter.source.imageSearch.priority=-1 
 studyFilter.inherit=servletFilter
 studyFilter.source.inherit=source
 studyFilter.source.studySearch=${class:org.dcm4chee.xero.search.study.StudySearch}
 studyFilter.source.searchCondition=${class:org.dcm4chee.xero.search.study.StudySearchConditionParser}
+studyFilter.source.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
+studyFilter.source.gsps.priority=100
 studyFilter.source.emptyFilter=${class:org.dcm4chee.xero.search.EmptyQueryParameterFilter}
 studyFilter.source.emptyFilter.priority=1000
 

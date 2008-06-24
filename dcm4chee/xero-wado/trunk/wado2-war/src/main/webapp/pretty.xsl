@@ -124,7 +124,7 @@ instruction below. This is recommended if you are a beginner.
     <xsl:text>"</xsl:text>
   </xsl:template>
 
-  <xsl:template match="@SOPInstanceUID" mode="render">
+  <xsl:template match="@objectUID" mode="render">
      <a href="/xero/wado?objectUID=" target="wadoTab"><xsl:attribute name="href">/wado2/wado?objectUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 

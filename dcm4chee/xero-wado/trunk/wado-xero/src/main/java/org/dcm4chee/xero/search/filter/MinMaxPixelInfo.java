@@ -91,7 +91,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 					 continue;
 				  if (ib.getMacroItems().findMacro(MinMaxPixelMacro.class) != null)
 					 continue;
-				  log.debug("MinMaxPixelInfo on {}", ib.getSOPInstanceUID());
+				  log.debug("MinMaxPixelInfo on {}", ib.getObjectUID());
 				  updateImage(filterItem, params, ib);
 			   }
 			}
@@ -111,7 +111,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
    protected void updateImage(FilterItem fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
 	  // create a new one
-	  DicomObject dobj = DicomFilter.filterDicomObject(fi, params, ib.getSOPInstanceUID());
+	  DicomObject dobj = DicomFilter.filterDicomObject(fi, params, ib.getObjectUID());
 	  if (dobj == null) {
 		 log.warn("Could not read dicom header for this object.");
 		 return;

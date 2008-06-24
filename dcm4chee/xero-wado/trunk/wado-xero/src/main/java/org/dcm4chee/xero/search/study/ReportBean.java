@@ -68,7 +68,7 @@ public class ReportBean extends ReportType implements DicomObjectInterface, Loca
 	 */
 	protected void initAttributes(DicomObject data) {
 		if( data==null ) throw new IllegalArgumentException("A valid dicom object must be supplied to initialize the report from.");
-		setSOPInstanceUID(data.getString(Tag.SOPInstanceUID));
+		setObjectUID(data.getString(Tag.SOPInstanceUID));
 		setInstanceNumber(data.getInt(Tag.InstanceNumber));
 		setCompletion(data.getString(Tag.CompletionFlag));
 		setVerification(data.getString(Tag.VerificationFlag));
@@ -104,7 +104,7 @@ public class ReportBean extends ReportType implements DicomObjectInterface, Loca
 
 	/** Return the SOP Instance UID for this object as the ID */
 	public String getId() {
-		return getSOPInstanceUID();
+		return getObjectUID();
 	}
 
 }

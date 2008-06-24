@@ -148,7 +148,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
    /** Returns the URL of the local file for the given image bean */
    public static URL findImageBeanUrl(DicomObjectType dot, FilterItem<?> filterItem, Map<String, Object> params) {
 	  Map<String, Object> newParams = new HashMap<String, Object>();
-	  newParams.put("objectUID", dot.getSOPInstanceUID());
+	  newParams.put("objectUID", dot.getObjectUID());
 	  if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilter.NO_CACHE))) {
 		 newParams.put("no-cache", "true");
 	  }

@@ -89,7 +89,7 @@ import org.w3.svg.Use;
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
- * This class enocdes GSPS as XML in either VML or SVG formats. This class will
+ * This class encodes GSPS as XML in either VML or SVG formats. This class will
  * encode data based on GSPS UID's for all GSPS UID's referenced from ImageBean
  * objects.
  * 
@@ -190,6 +190,10 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 	  if (results == null)
 		 return null;
+	  Object modality = params.get("Modality");
+	  // Sometimes searches for PR, SR or KO are made - if so, there isn't any point running this filter
+	  // as no images will be returned.
+	  if( "PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality) ) return results;
 
 	  Map<String, StudyBean> gspsUids = initGspsUidsMap(results);
 
@@ -1083,7 +1087,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 					 // It has the series, so just add the gsps object, which
 					 // it should not have.
 					 for (DicomObjectType dot : series.getDicomObject()) {
-						if (dot.getSOPInstanceUID().equals(gspsType.getSOPInstanceUID())) {
+						if (dot.getObjectUID().equals(gspsType.getObjectUID())) {
 						   log.warn("Should not already have GSPS type for the same type -- something has gone wrong here.");
 						   series.getDicomObject().remove(dot);
 						   break;
@@ -1354,7 +1358,7 @@ public class GspsEncode implements Filter<ResultsBean> {
    protected GType getG(GspsType gspsType, String name) {
 	  SvgType svg = getSvg(gspsType);
 	  GType g = new GType();
-	  g.setId(gspsType.getSOPInstanceUID() + "-" + name);
+	  g.setId(gspsType.getObjectUID() + "-" + name);
 	  svg.getChildren().add(g);
 	  return g;
    }

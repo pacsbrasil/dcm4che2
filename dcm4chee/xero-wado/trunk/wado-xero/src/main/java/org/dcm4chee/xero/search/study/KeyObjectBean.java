@@ -92,7 +92,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
     * @param data
     */
    protected void initAttributes(DicomObject data) {
-	  setSOPInstanceUID(data.getString(Tag.SOPInstanceUID));
+	  setObjectUID(data.getString(Tag.SOPInstanceUID));
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
 	  setCompletion(data.getString(Tag.CompletionFlag));
 	  setVerification(data.getString(Tag.VerificationFlag));
@@ -186,7 +186,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
 
    /** The SOP Instance is the ID for a KO object */
    public String getId() {
-	  return getSOPInstanceUID();
+	  return getObjectUID();
    }
 
    public List<KeySelection> getKeySelection() {

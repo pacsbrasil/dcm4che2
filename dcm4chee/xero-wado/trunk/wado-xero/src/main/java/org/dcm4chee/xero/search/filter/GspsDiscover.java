@@ -44,6 +44,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsType;
 import org.dcm4chee.xero.search.study.PatientType;
@@ -55,16 +56,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a series level filter that performs lookups to figure out the default
+ * This is a study/series level filter that performs lookups to figure out the default
  * GSPS object to apply to a study, if any. There are 3 ways to specify GSPS
  * status: gsps=* will find the latest GSPS and attempt to apply it.
  * 
  * gsps=<NAME>{,<NAME>}* will find the first named GSPS matching the pattern,
  * and attempt to apply it.
- * 
- * koUID=UID will find a KO document or a structured report containing objects
- * and apply those GSPS objects. This over-rides gsps for those images where
- * both exist. TODO implement this one.
  * 
  * @author bwallace
  */
@@ -74,6 +71,10 @@ public class GspsDiscover implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(GspsDiscover.class);
 
    public static final String GSPS_KEY = "gsps";
+   
+   public GspsDiscover() {
+	   log.info("Allocated a GspsDiscover.");
+   }
 
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  log.debug("Discovering if any GSPS is applicable.");
@@ -135,13 +136,15 @@ public class GspsDiscover implements Filter<ResultsBean> {
 
    /**
      * This method queries for PR objects associated with any study in the
-     * results bean, returning a new results bean object.
+     * results bean, returning a new results bean object.  Will return null if no studies have PR objects.
      */
-   public static ResultsBean queryForGsps(FilterItem filterItem, ResultsBean rb, Object presentationUID) {
+   public static ResultsBean queryForGsps(FilterItem<ResultsBean> filterItem, ResultsBean rb, Object presentationUID) {
 	  Map<String, Object> prParams = new HashMap<String, Object>();
 	  List<String> uids = new ArrayList<String>();
 	  for (PatientType pt : rb.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
+			String modality = st.getModalitiesInStudy();
+			if( modality.indexOf("PR")<0 ) continue;
 			uids.add(st.getStudyInstanceUID());
 		 }
 	  }
@@ -149,8 +152,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 		 return null;
 	  prParams.put("Modality", "PR");
 	  prParams.put("StudyInstanceUID", uids.toArray(STRING_ARRAY_TYPE));
-	  if (presentationUID != null)
-		 prParams.put("SOPInstanceUID", presentationUID);
+	  MemoryCacheFilter.computeQueryString(prParams, "Modality", "StudyInstanceUID");
 	  log.debug("Doing a search on {} Study UID's for PR objects uid[0]={}", uids.size(), uids.get(0));
 	  ResultsBean gspsRB = (ResultsBean) filterItem.callNamedFilter("imageSearch", prParams);
 	  return gspsRB;

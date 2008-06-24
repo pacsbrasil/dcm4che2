@@ -327,10 +327,10 @@ public class TestUrlRetrieve {
 				  imageRet.runnables.add(new ImageRun(se.getSeriesInstanceUID()));
 				  if( se.getDicomObject().size()>0 && se.getDicomObject().get(0) instanceof ImageType ) {
 					 ImageType image = (ImageType) se.getDicomObject().get(0);
-					 WadoRun wado = new WadoRun(image.getSOPInstanceUID(),null);
+					 WadoRun wado = new WadoRun(image.getObjectUID(),null);
 					 wado.thumb = true;
 					 thumbRet.runnables.add(wado);
-					 wado = new WadoRun(image.getSOPInstanceUID(), null);
+					 wado = new WadoRun(image.getObjectUID(), null);
 					 wado.useOrig = true;
 					 origRet.runnables.add(wado);
 				  }
@@ -384,15 +384,15 @@ public class TestUrlRetrieve {
 					 if (dot instanceof ImageType) {
 						synchronized (wadoRet) {
 						   Integer frame = null;
-						   frame = frameNumber.get(dot.getSOPInstanceUID());
-						   WadoRun wr = new WadoRun(dot.getSOPInstanceUID(), frame);
+						   frame = frameNumber.get(dot.getObjectUID());
+						   WadoRun wr = new WadoRun(dot.getObjectUID(), frame);
 						   //wr.useMime = true;
 						   wadoRet.runnables.add(wr);
 						   if (frame == null)
 							  frame = 2;
 						   else
 							  frame = frame + 1;
-						   frameNumber.put(dot.getSOPInstanceUID(), frame);
+						   frameNumber.put(dot.getObjectUID(), frame);
 						}
 					 }
 				  }

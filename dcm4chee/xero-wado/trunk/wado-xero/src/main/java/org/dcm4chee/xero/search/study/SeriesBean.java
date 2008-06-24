@@ -119,11 +119,11 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 
    /** Add any image level information to this series. */
    public void addResult(DicomObject data) {
-	  String sopInstanceUID = data.getString(Tag.SOPInstanceUID);
+	  String objectUID = data.getString(Tag.SOPInstanceUID);
 	  DicomElement instances = data.get(ImageSearch.InstanceSeq);
-	  if (sopInstanceUID == null && instances==null)
+	  if (objectUID == null && instances==null)
 		 return;
-	  String key = ImageBean.key(sopInstanceUID);
+	  String key = ImageBean.key(objectUID);
 	  if (getChildren().containsKey(key)) {
 		 log.debug("Series " + getSeriesInstanceUID() + " already contains a child " + key);
 	  } else if( instances!=null && instances.countItems()>0 ) {
@@ -136,7 +136,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 		 DicomObjectType dobj = createChildByModality(data);
 		 LocalModel<?> localModel = (LocalModel<?>) dobj;
 		 if (dobj == null) {
-			log.warn("No object created for child " + sopInstanceUID + " of modality " + modality);
+			log.warn("No object created for child " + objectUID + " of modality " + modality);
 			return;
 		 }
 		 getChildren().put(localModel.getId(), dobj);
