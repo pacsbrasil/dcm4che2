@@ -122,10 +122,12 @@ ul.report, ul.gsps, ul.keyObject {
 	padding: 0;
 	border: 0;
 }
+
 li.report, li.gsps, li.keyObject {
 	clear: both;
 	display: block;
 	font-size: 11px;
+	text-decoration: underline;
 }
 
 /*====================== Tabs Layout ==========================*/

@@ -29,7 +29,7 @@ function XeroController(model, view) {
 	
 };
 
-XeroController.prototype.isDebug = true;
+XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
 
 XeroController.prototype.getBody = function XC_getBody() {
@@ -68,7 +68,7 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 
 	var dp = new DOMParser();
 	var parsed = dp.parseFromString('<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">'+html+"</div>","text/xml");
-	console.info("Parsed=%s",parsed);
+	this.debug("Parsed=%s",parsed);
 	//var parsed = dp.parseFromString(html,"text/xml");
 	if( !parsed ) {
 		console.warn("No parsed value found - not changing display, source text %s", html);
@@ -83,18 +83,20 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	var newEl = document.importNode(parsed,true);
 	newEl = newEl.firstChild;
 	if(!newEl ) console.warn("newEl not defined.");
-	if(!oldEl ) console.warn("oldEl not defined.");
+	if(!oldEl ) console.warn("oldEl '%s' not defined.", el);
 	if( !oldEl.parentNode ) console.warn("parentNode of oldEl not defined.");
 	this.debug("Finished importing node.");
 	oldEl.parentNode.replaceChild(newEl, oldEl);
 	this.debug("Replaced body node directly.");
 	this.fixWheelMouse();
+	this.debug("fixMouseWheel");
 	/* Since we just removed the old element from the DOM, return a reference
 	to the new element, which can be used to restore variable references. */
 	return newEl;
 };
 
 XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
+	this.debug("Replacing %s with %s", node, text);
 	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
 		this.importHtml(node, text);
 	} else {
@@ -124,11 +126,11 @@ XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
 	var missing = this.renderComplete(this.model.layout.layouts);
 	if( missing===0 ) return 0;
 	if( cnt===0 ) {
-		console.info("Rendering with cnt=%d with %d missing", cnt, missing);
+		this.debug("Rendering with cnt=%d with %d missing", cnt, missing);
 		this.updateLayouts(actionName);
 		return;
 	}
-	console.info("Waiting till everything is complete - cnt=%d", cnt);
+	this.debug("Waiting till everything is complete - cnt=%d", cnt);
 	var usethis = this;
 	window.setTimeout( function() {
 		usethis.waitUpdate(actionName,cnt-1);

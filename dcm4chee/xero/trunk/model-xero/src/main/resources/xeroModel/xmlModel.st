@@ -26,22 +26,35 @@ XmlModel.prototype.debug = function() {};
 XmlModel.prototype.request = function XM_request() {
 	if( !this.url ) {
 		this.url = this.urlSource.url;
+		if( !this.url ) {
+			console.warn("No URL specified.");
+			return;
+		}
 	}
 	this.requestUrl(this.url);
 };
 
-XmlModel.prototype.requestUrl = function XM_requestUrl(url) {
+/**
+ * Makes the given request, along with any modifiers such as GSPS application.  
+ */
+XmlModel.prototype.requestUrl = function XM_requestUrl(url, modifiers) {
 	var request;
+	if( modifiers ) {
+		for(key in modifiers) {
+			url = url + modifiers[key]; 
+		}
+	}
 	this.debug("Requesting XML data "+url);
 	request = new XMLHttpRequest();
 	request.open("GET",url,false);
 	request.send(null);
 	// TODO - add error handling.
-	this.parse(request.responseXML.documentElement);
+	this.parse(request.responseXML.documentElement,modifiers);
+	this.url = "Done Request.";
 };
 
 /** Parses the XML into the object */
-XmlModel.prototype.parse = function XM_parse(el) {
+XmlModel.prototype.parse = function XM_parse(el, modifiers) {
     // Handle attribute children
 	var children = el.attributes;
 	var i,n=children.length;
@@ -59,15 +72,22 @@ XmlModel.prototype.parse = function XM_parse(el) {
 		child = children.item(i);
 		if( child.nodeType!==1 ) continue;
 		name = localName(child);
-		xchild = this.getChild(name,child);
+		xchild = this.getChild(name,child,modifiers);
 		xchild._parent = this;
-		xchild.parse(child);
+		xchild.parse(child,modifiers);
 		xchild._parent = this;
 	};
 };
 
+/** Parses a String into XML and thence into this object */
+XmlModel.prototype.parseString = function XM_parse(str,modifiers) {
+	var parser = new DOMParser();
+	var doc = parser.parseFromString(str,"text/xml");
+	return this.parse(doc.documentElement,modifiers);
+};
+
 /** Gets a given child, specified by the given name.  May use other attributes from el to look it up. */
-XmlModel.prototype.getChild = function XM_getChild(name,el) {		
+XmlModel.prototype.getChild = function XM_getChild(name,el,modifiers) {		
 	var lst = this[name];
 	var xchild = new XmlModel();
 	if( !lst ) {

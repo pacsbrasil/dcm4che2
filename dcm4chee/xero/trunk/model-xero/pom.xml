@@ -1,51 +1,49 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project>
-  <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?><project>
   <parent>
     <artifactId>xero</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
     <version>0.4-SNAPSHOT</version>
   </parent>
-
+  <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4chee.xero</groupId>
   <artifactId>model-xero</artifactId>
   <name>Internal Xero Model</name>
   <description>Contains the default internal model for Xero - this contains
-  parts such as the XmlModel object and uses of that object.
-  </description>
-
+  parts such as the XmlModel object and uses of that object.</description>
   <profiles>
-     <profile>
-        <id>devDeploy</id>
-        <activation>
-           <property><name>env.developmentServer</name></property>
-        </activation>
-        <build>
-           <plugins>
-              <plugin>
-                 <artifactId>maven-antrun-plugin</artifactId>
-                 <executions>
-
-                    <execution>
-                       <id>ViewCopy</id>
-                       <phase>package</phase>
-                       <configuration>
-                          <tasks>
-                             <echo>Copying model to ${developmentServer} xero</echo>
-                             <copy todir="${developmentServer}/server/default/deploy/xero.war/WEB-INF/classes" preserveLastModified="true">
-                                <fileset dir="src/main/resources" includes="**/*" />
-                             </copy>
-                          </tasks>
-                       </configuration>
-                       <goals><goal>run</goal></goals>
-                    </execution>
-                 </executions>
-              </plugin>
-           </plugins>
-        </build>
-     </profile>
+    <profile>
+      <id>devDeploy</id>
+      <activation>
+        <property>
+          <name>env.developmentServer</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>ViewCopy</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <tasks>
+                    <echo>Copying model to ${developmentServer} xero</echo>
+                    <copy todir="${developmentServer}/server/default/deploy/xero.war/WEB-INF/classes" preserveLastModified="true">
+                      <fileset dir="src/main/resources" includes="**/*" />
+                    </copy>
+                  </tasks>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
-
   <dependencies>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
@@ -63,6 +61,10 @@
       <version>2.0</version>
       <scope>provided</scope>
     </dependency>
-    
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>stringtemplate</artifactId>
+      <version>3.1.6-XERO-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>

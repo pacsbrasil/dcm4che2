@@ -8,6 +8,10 @@ function TabsLayout(id) {
  
 TabsLayout.prototype = new Layout(null,"html/tabs");
 
+/** The height of the header section */
+TabsLayout.prototype.headerHeight = 22;
+
+
 /** Adds the given tab/Layout  to the display */
 TabsLayout.prototype.addTab = function TV_addTab(name,layout) {
 	if(layout==null) {
@@ -48,10 +52,33 @@ TabsLayout.prototype.findTab = function TV_findTab(name) {
 	}
 };
 
+/** Sets the tab to be headerless */
+TabsLayout.setNoHeader = function TL_setNoHeader(val) {
+	if( val ) {
+		this.template = "html/tabs";
+		this.noHeader = true;
+	}
+	else {
+		this.template= "html/noHeaderTabs";
+		this.noHeader = false;
+	}
+};
+
+/** Handle the resize operation for tabs */
+TabsLayout.resize = function TL_resize(width, height, style) {
+	if( this.noHeader ) {
+		this.activeTab.resize(width,height,style);
+	} else {
+		var ht = height-this.headerHeight;
+		this.style = "width: "+width+"px; height:"+ht+"px;";
+		this.activeTab.resize(width,ht,this.style);
+	};
+};
+
 /** Selects the given tab.  Return the new tab if a change is made. */
 TabsLayout.prototype.selectTab = function TV_selectTab(name) {
 	var tab = this.findTab(name);
-	if( !tab ) return false;
+	if( !tab ) throw new Error("Tab "+name+" not found.");
 	if( this.activeTab===tab ) return false;
 	if( tab.tabInactive ) return false;
 	if( this.activeTab ) {
@@ -67,10 +94,21 @@ TabsLayout.prototype.selectTab = function TV_selectTab(name) {
 /* This function can be used to activate/de-activate an array of objects */
 function TabsLayoutArrayUsedListener() {
 	var i,n=this.length;
-	for(i=0; i<n; i++) {
-		if( this[i].used!=this.used ) {
-			this[i].used = this.used;
-			if( this[i].usedListener ) this[i].usedListener();
+	var wasUsed;
+	if( this.used ) {
+		for(i=0; i<n; i++) {
+			if( this[i].used!=this.wasUsed ) {
+				this[i].used = this[i].wasUsed;
+				if( this[i].usedListener ) this[i].usedListener();
+			}
+		}
+	} else {
+		for(i=0; i<n; i++) {
+			this[i].wasUsed = this[i].used;
+			if( this[i].used ) {
+				this[i].used = false;
+				if( this[i].usedListener ) this[i].usedListener();
+			}
 		}
 	}
 };

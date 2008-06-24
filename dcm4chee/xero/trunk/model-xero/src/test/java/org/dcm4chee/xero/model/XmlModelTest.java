@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.model;
 
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 

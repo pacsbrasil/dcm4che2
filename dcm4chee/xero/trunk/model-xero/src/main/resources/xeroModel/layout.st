@@ -1,5 +1,6 @@
 /**
- * Handles a layout object 
+ * Handles a layout object.  A layout object is a templatable object that specifies what template to display it with
+ * plus information on what/how to display it.
  */
 function Layout(id, template) {
 	if( !template ) template = "html/layout";
@@ -196,7 +197,7 @@ ImageLayout.prototype.isDebug = false;
 /** Updates the image position information
  */
 ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
-	if(!this.image ) {
+	if(!this.merged ) {
 		return;
 	}
 	
@@ -219,11 +220,11 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
 	if( this.preloadImage===undefined ) return true;
 	if( this.preloadImage.complete ) {
-		console.info("Image %s is complete.", this.preloadImage.src);
+		this.debug("Image %s is complete.", this.preloadImage.src);
 		this.preloadImage = undefined;
 		return true;
 	};
-	console.info("Waiting for %s", this.preloadImage.src);
+	this.debug("Waiting for %s", this.preloadImage.src);
 	return false;
 };
 
@@ -232,8 +233,8 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
  * This is technically controller code, but it is so intimately connected with this model
  * details that it is better to keep it part of the model.  
  */
-ImageLayout.prototype.createFullUrl = function ImageLayout_computeSize(base) {
-	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.SOPInstanceUID, "top":0, "left":0 };
+ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
+	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0 };
 	if( this.image.frame ) {
 		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
 	}
@@ -242,6 +243,11 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_computeSize(base) {
 		var wc = this.merged.get("windowCenter");
 		ret.imageUrl = ret.imageUrl + "&amp;windowWidth="+ww+"&amp;windowCenter="+wc;
 	}
+	var puid = this.merged.get("gspsUID");
+	if( puid ) {
+		ret.imageUrl = ret.imageUrl + "&amp;presentationUID="+puid;
+	}
+	
 	var intScale = 1;
 	// Only fetch sizes down to 256 -otherwise fetch full size.
 	for(ret.fetchScale=1; ret.fetchScale < this.image.Rows/this.fetchSize; ret.fetchScale *=2 ) {

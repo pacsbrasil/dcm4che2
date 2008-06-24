@@ -10,18 +10,18 @@
  * can be computed from the external information.
  * 
  */
- function Navigation(level, keyRef, offset) {
+ function Navigation(level, offset) {
 	// Listeners includes both explicit listeners, in implicitly, children of this object.
 	this.children = new Object();
 	if( level && level>0 ) {
 		this.level = level;
-		this.keyRef = keyRef;
 		this.offset = offset;
 		this.levelName = this.names[level];
 		this.listeners = new Array();
 	} else {
 		this.merged = new Merged();
-		this.conversation = this.merged.getConversation();
+		this.conversation = new NavConversation();
+		this.external = new StudyData();
 		// The id is an indicator that the parent is valid and has a valid location.
 		this.id = "results";
 	}
@@ -32,28 +32,18 @@
 /** A key is used to identify a particular element in the set, typically a UID.
  * Offsets from this follow the natural list order.
  */
-Navigation.prototype.KEY="key";
+Navigation.prototype.KEY="nav";
 
 Navigation.prototype.isDebug = false;
 if( Navigation.prototype.isDebug ) Navigation.prototype.debug = console.debug;
 else Navigation.prototype.debug = function() {};
 
-/** A keySet is used to explicitly list the available/interesting items */
-Navigation.prototype.KEY_SET="keySet";
-
-/** A position is used to indicate an offset position overall from the start - this does NOT
- * necessarily mean that all items are present in the returned set - it maybe required to
- * make specific queries that get offset values directly - in specific, images use positions to
- * indicate the images.
- */
-Navigation.prototype.POSITION="position";
-
 Navigation.prototype.names = ["result", "patient", "study", "series", "image"];
 Navigation.prototype.level =0;
 Navigation.prototype.idVars = ["PatientIdentifier", "StudyInstanceUID", "SeriesInstanceUID", "Position"];
 
-Navigation.prototype.keyTypes = {"key":"key", "keySet":"keySet", "position":"position"};
 Navigation.prototype.childTypes = ["patient", "study", "series", "image"];
+
 Navigation.prototype.IMAGE_QUERY_SIZE=64;
 Navigation.prototype.QUERY_SIZE=16;
 
@@ -63,18 +53,66 @@ Navigation.prototype.INVALID = 110;
 Navigation.prototype.EXTERNAL_CHANGED = 120;
 
 Navigation.prototype.QUERY = "/wado2/image.xml";
+Navigation.prototype.STUDY_QUERY = "/wado2/study.xml";
 
-/** Sets external data for the the study.
- * There are 3 types of external data that can be queried for:
- *    Patient/Study - this is the initial information on the studies selected to be displayed
- * and contains no series/image information.
- *    Initial Study/Series/Image - contains all series and within each series, a given number of images.
- *    Subsequent Images - contains additional images not found in the first study/series query.
- * Clear is true if existing information is to be removed.
- * Returns undefined if no additional data is needed, or an array of the required queries for
- * data.  
+Navigation.prototype.error = function(msg) {
+	console.error(msg);
+	throw new Error(msg);
+};
+
+/** 
+ * Generates the URL that loads the external data for the given child Id (which maybe undefined to mean all/unknown child.)
+ * Puts the new value into the return object if it isn't already
+ * present, and returns that object.
+ * TODO - strictly speaking, this is controller logic, NOT model logic so at some point there should be a setter
+ * method that indicates how these queries are to be generated.  However, until such a time as that is actually needed
+ * this method can be left here
+ */
+Navigation.prototype.generateQuery = function Navigation_generateQuery(child, ret) {
+	// So we don't have any external data for the child object, but we do have it's id
+	if(!ret) ret = new Object();
+	var url, modifiers;
+	
+	var childId = child.id;
+	if( child.conversation ) {
+		modifiers = child.conversation.assignDefaultModifiers(child.external);
+	}
+	if( this.level===3 ) {
+		this.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
+		position = childId - this.QUERY_SIZE;
+		position -= (position % this.IMAGE_QUERY_SIZE);
+		position += this.QUERY_SIZE;
+		url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
+		console.info("Adding series extension query %s",url); 
+	} else if( this.level===2 ) {
+		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true&regroup=true";
+		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
+		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+	} else if( this.level===1 && child.external) {
+		// Fix the modifiers, and do an image level query.
+		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+child.id+"&pixelInfo=true&regroup=true";
+		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
+		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+	} else if( this.level===1 ) {
+		// This happens when the user views a NEW study in the same patient
+		url = this.STUDY_QUERY+"?gsps=*&StudyInstanceUID="+childId;
+		console.info("Adding new study query %s", url);
+	} else {
+		console.error("Unknown id/query level %d for child id %s", this.level, childId);
+		return ret;
+	}
+	if( url ) ret[url] = modifiers;
+	return ret;
+};
+
+/** 
+ * Adds external data for the the study.
+ * The external data is owned by this object, but the act of updating/reading the data is handled by the controller.
+ * This function returns undefined to indicate all required external data is available, or it returns a set of URLs as the keys in an object.  (The values are
+ * used to store information about what has been retrieved and how to merge it into the StudyData object).
  */  
-Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external, ret) {
+Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,ret) {
+	if( external==null && this.level==0 ) external = this.external;
 	if( this.external!==external ) {
 		this.external = external;
 		if( this.merged ) this.merged.external = this.external;
@@ -82,62 +120,33 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 	}
 	this.debug("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
-	var childExt,url,position;
+	var childExt,url,position,extId;
 	for(childKey in this.children) {
 		child = this.children[childKey];
 		if(child.id==null) {
 			child.invalidate(false);
 		}
+		// Null means no object there, whereas undefined means unknown, so if it is null, just continue.
+		if( child.id===null ) continue;
 		if( child.id!==undefined && external.children) {
-			if( child.id===null ) continue;
-			childExt = external.children[child.id];
+			extId = child.conversation.getUrlId();
+			this.debug("Looking for external id %s on base id %s",extId,child.id);
+			childExt = external.children[extId];
 			if( childExt ) {
 				ret = child.mergeExternal(childExt,ret);
 				continue;
 			}
-			// So we don't have any external data for the child object, but we DO have it's id
-			// That has to mean that it is an image query, and that this is the series level,
-			if(!ret) ret = new Object();
-			if( this.level===3 ) {
-				this.debug("Adding image level query at %d of size %d initial offset %d", child.id, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
-				position = child.id - this.QUERY_SIZE;
-				position -= (position % this.IMAGE_QUERY_SIZE);
-				position += this.QUERY_SIZE;
-				url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
-				this.debug("Adding %s to queries.",url); 
-				ret[url] = url;
-			}
-			else if( this.level===1 ) {
-				// This happens when the user views a NEW study in the same patient
-				url = this.STUDY_QUERY+"?StudyInstanceUID="+child.id;
-				this.debug("Adding new study query %s",url);
-				ret[url] = url;
-			}
-			else {
-				console.error("Unknown id/query this level %d in for child id %s", this.level, child.id);
-			}
-			continue;
 		}
-		// We don't have a child id - that has to mean that we need to make an initial study
-		// query
-		if( this.level===2 ) {
-			if( !ret ) ret =new Object();
-			console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive.");
-			url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true&regroup=true";
-			ret[url] = url;
-			this.debug("Adding %s to queries.", url);
-			return ret; 
-		}
-		else {
-			assert(false);
-			throw new Error("Unknown Navigation query level "+this.level);
-		} 
+		ret = this.generateQuery(child,ret);
+		// No point continuing to look at series children as a single query is used to get ALL series children information at once.		
+		if( this.level==2 ) break;
 	}
 	return ret;
 }; 
 
 /** Sets a given named navigation key object value. */
-Navigation.prototype.setNavigation = function Navigation_setNavigation(key,value) {
+Navigation.prototype.setNavigation = function Navigation_setNavigation(value,key) {
+	if(! key ) key = this.KEY;
 	this.createConversation();
 	if( this.conversation[key] == value ) {
 		this.debug("setNavigation key is unchanged - continuing with doing anything.");
@@ -147,23 +156,32 @@ Navigation.prototype.setNavigation = function Navigation_setNavigation(key,value
 	this.conversation[key] = value;
 
 	this.fireChanged(this.NAVIGATION_CHANGED);
+	console.info("Finished fire changed - about to invalidate.");
 	this.invalidate(true);
+	console.info("Finished invalidate.");
 };
 
 /** Invalidates the given key element, if there are any children depending on it. */
 Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 	if( !isTop ) {
+		this.debug("Invalidating child object - resetting ids at level %d",this.level);
 		var oldId = this.id;
 		// Compute the new id if we can
-		this.id = this.parent.lookupId(this.keyRef,this.offset);
+		this.id = this.parent.lookupId(this.offset);
+		this.debug("Looked up id = %s", this.id);
 		if( this.id === oldId ) {
 			return;
 		}
 		this.debug("Changed data for old id %s is now %s",oldId,this.id);
-		this.external = undefined;
 		this.conversation = undefined;
+		var msg = this.INVALID;
+		this.external = undefined;
 		this.merged = undefined;
-		this.fireChanged(this.INVALID);	
+		if( this.id!=null ) {
+			this.createMerged();
+			if( this.external ) msg = this.EXTERNAL_CHANGED;
+		}	
+		this.fireChanged(msg);
 	};
 	
 	var childKey, child;
@@ -175,6 +193,8 @@ Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 
 Navigation.prototype.fireChanged = function Merge_fireChanged(type) {
 	if( this.level===0 ) return;
+	if( this.conversation && this.conversation.navigateListener ) 
+		this.conversation.navigateListener(this,type);
 	var i,n=this.listeners.length;
 	var listener;
 	for(i=0; i<n;i++) {
@@ -184,18 +204,27 @@ Navigation.prototype.fireChanged = function Merge_fireChanged(type) {
 
 /** Given a particular key name, figure out what the child element should be. 
  */
-Navigation.prototype.lookupId = function Navigation_lookupId(key,offset) {
+Navigation.prototype.lookupId = function Navigation_lookupId(offset,key) {
 	if( !this.id ) return null;
 	this.createConversation();
 	
+	if(! key ) key = this.KEY;
+	
 	var val = this.conversation[key];
-	var type = this.keyTypes[key];
-	if( type===this.KEY_SET ) {
-		if(! val ) return undefined;
+	var type = typeof(val);
+	if(val==undefined ) {
+		this.debug("Failed to find any navigation information for key %s at level %d id %s", key, this.level, this.id);
+		if( this.level===3 ) type = "number";
+		else type="string";
+	}
+	
+	if( type==="object" ) {
+		console.info("Looking up offset %s in array/object value %s", offset, val[offset]);
 		if( offset < val.length && offset >=0 ) return val[offset];
 		return null;
 	}
-	else if( type===this.POSITION ) {
+	else if( type==="number" ) {
+		this.debug("Looking up offset %s from number %s", offset, val);
 		if(! this.external ) return undefined;
 		if(!val) val = 0;
 		if( val+offset<0 ) return null;
@@ -203,17 +232,18 @@ Navigation.prototype.lookupId = function Navigation_lookupId(key,offset) {
 		if( this.external.Viewable > val+offset ) return val+offset;
 		return null;
 	}
-	else if( type===this.KEY ) {
+	else if( type==="string" ) {
+		this.debug("Looking up relative position to %s offset %s external %s", val, offset, this.external);
 		// Key type - one case is to avoid any searching at all, although it doesn't
 		// allow you to find out much extra information in the child.
 		if( offset===0 && val ) {
-			console.info("Returning 0 offset information directly.");
+			this.debug("Returning 0 offset information directly.");
 			return val;
 		}
 		if( !this.external ) return undefined;
 		var extChildren = this.getExtChildren();
 		if( !extChildren ) {
-			console.info("Found no children defined for %s under the name %s", this.id,this.childType);
+			console.info("Found no children defined for %s under the name %s at level %d offset %s", this.id,this.childType, this.level, offset);
 			return undefined;
 		}
 		if( val ) {
@@ -228,11 +258,12 @@ Navigation.prototype.lookupId = function Navigation_lookupId(key,offset) {
 		if( extChildren.length > offset && offset>=0 ) {
 			return extChildren[offset][this.childIdVar];
 		}
-		return undefined;
+		// Return null because there ARE children, but the offset is outside the bounds
+		// so that means none available as opposed to unknown.
+		return null;
 	}
 	else {
-		key.a.b;
-		throw new Error("Unknown key type "+key);
+		this.error("Unknown key type "+key);
 	}
 };
 
@@ -271,17 +302,37 @@ Navigation.prototype.findExternal = function Navigation_findExternal(val) {
 	}
 }
 
-
-/** Gets the conversational and merged contexts for this object, or creates one if they aren't already defined/setup. 
- * Throws an exception if the navigation information for the parent has not yet been retrieved - 
- * that is, if the navigation is currently undefined.
+/** Creates the conversation context for this object - does not setup the merged context, as there might be changes to the conversation context
+ * before the merged context is retrieved.
  */
 Navigation.prototype.createConversation = function Navigation_createConversation() {
 	if( this.conversation ) return;
-	if( this.id==null ) throw new Error("This navigate object doesn't yet have an ID - set the parent navigation/information first for "+this.keyRef);
+	if( this.id==null ) this.error("This navigate object at level "+this.level+" doesn't yet have an ID - set the parent navigation/information first");
 	this.parent.createConversation();
-	this.merged = this.parent.merged.getChild(this.id,this.external);
-	this.conversation = this.merged.getConversation();
+	this.conversation = this.parent.conversation.getChild(this.id);
+};
+
+/** Creates the merged and external contexts as appropriate */
+Navigation.prototype.createMerged = function Navigation_createMerged() {
+	if( this.merged ) return;
+	this.createConversation();
+	this.parent.createMerged();
+	var mid = this.conversation.getPresentationId();
+	if( mid==null ) this.error("Unable to get presentation id for "+this.id);
+	this.merged = this.parent.merged.getChild(mid);
+	this.createExternal();
+};
+
+/** Creates/sets up the external object, if it can be found, returning true if available.  id, merged and conversation must be setup already.
+ */
+Navigation.prototype.createExternal = function Navigation_createExternal() {
+	if( this.external ) return true;
+	if( !this.parent.createExternal() ) return false;
+	if( !this.parent.external.children ) this.parent.external.children = new Object();
+	var eid = this.conversation.getUrlId();
+	this.external = this.parent.external.children[eid];
+	if( this.external ) this.merged.external = this.external;	
+	return this.external!=undefined;
 };
 
 /** Gets the merged context for this object, creating one if necessary.  Returns undefined
@@ -300,13 +351,17 @@ Navigation.prototype.getMerged = function Navigation_getMerged() {
 /** Gets the given navigate child element.  The object will be disconnected from this navigate object
  * if on the next apply, no child elements are found reflecting that child information.
  */
-Navigation.prototype.getChild = function Navigation_getChild(key,offset) {
-	var ckey = key+"://"+offset;
+Navigation.prototype.getChild = function Navigation_getChild(offset,key) {
+	if(!key ) key = this.KEY;
+
+	var ckey = key+":"+offset;
 	var child =this.children[ckey];
 	if( ! child ) {
-		child = new Navigation(this.level+1, key, offset);
+		child = new Navigation(this.level+1, offset);
 		child.parent = this;
 		this.children[ckey] = child;
+		// This will try to find information for this child element, at a minimum the id.
+		child.invalidate(false);
 	}
 	return child;
 };
@@ -318,8 +373,8 @@ Navigation.prototype.getChild = function Navigation_getChild(key,offset) {
  * object can't have 2 or more functions without some other means of combining them.
  * @return the child object that is being listened to.
  */
-Navigation.prototype.addChildListener = function Navigation_addChildListener(obj, listenerF, key, offset) {
-	return this.getChild(key,offset).addListener(obj,listenerF);
+Navigation.prototype.addChildListener = function Navigation_addChildListener(obj, listenerF, offset, key) {
+	return this.getChild(offset,key).addListener(obj,listenerF);
 };
 
 Navigation.prototype.addListener = function Navigation_addListener(obj,listenerF) {

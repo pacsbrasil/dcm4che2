@@ -1,8 +1,9 @@
 $urlFactory()$
 $xmlModel()$
-$studyData()$
 $layout()$
 $merged()$
+$navConversation()$
+$studyData()$
 $navigation()$
 $tabs()$
 
@@ -55,4 +56,4 @@ xeroModel.layout.addTab("Display");
 
 var STUDY_QUERY="/wado2/study.xml";
 var IMAGE_QUERY="/wado2/image.xml";
-var WADO_QUERY="/wado2/wado?requestType=WADO";
+var WADO_QUERY="/wado2/wado?requestType=XERO";

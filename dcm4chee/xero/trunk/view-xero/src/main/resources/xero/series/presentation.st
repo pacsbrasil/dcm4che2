@@ -3,7 +3,7 @@ $layout.study.series:{$if(it.gsps)$
   <ul class="gsps">
     $it.gsps:{
 	  <li class="gsps">
-		<span>$it.contentLabel$</span>
+		<span onclick="controller.selectGsps('$layout.id$','$it.contentLabel$')">$it.contentLabel$</span>
 	  </li>
     }$
   </ul>

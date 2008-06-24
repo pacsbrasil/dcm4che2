@@ -14,7 +14,8 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 		this.performSearch();
 	};
 	
-	var study = model.searchLayout.search.find("patient","PatientIdentifier", patientId).study;
+	var patient = model.searchLayout.search.find("patient","PatientIdentifier", patientId);
+	var study = patient.study;
 	var i,n=study.length;
 	model.studies = new Object();
 	var xmlSeries;
@@ -26,7 +27,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 		for(i=0; i<n; i++) {
 			uids.push(study[i].StudyInstanceUID);
 		};
-	};
+	}; 
 
 	if( ! model.patientLayout ) {
 		model.navigate = new Navigation();
@@ -34,16 +35,18 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 		model.layout.removeTab("Display");
 		model.layout.addTab("Display", model.patientLayout);
 	}
+	model.studyArea.tabs.selectTab("seriesAreas")
 	var navigate = model.navigate;
-	navigate.setNavigation(navigate.KEY, patientId);
-	navigate.getChild(navigate.KEY, 0).setNavigation(navigate.KEY_SET,uids);
+	navigate.setNavigation(patientId);
+	navigate.getChild(0).setNavigation(uids);
 	
 	var external = navigate.external;
 	if( (!external) || (!external.children[patientId]) ) {
 		external = new StudyData(uids);
+		console.info("Setup external study data root on url %s", external.url);
 		external.request();
+		console.info("Loaded study data.");
 	}
-
 	this.mergeExternal(external);
 
 	model.layout.selectTab("Display");
@@ -60,18 +63,28 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 XeroController.prototype.mergeExternal = function(external) {
 	var navigate = this.model.navigate;
 	if( !external ) external = navigate.external;
-	var queries = navigate.mergeExternal(external);
-	i = 2;
-	while(queries && i>0) {
-		this.debug("Merging queries %s", queries);
-		external.addQueries(queries);
+	var i=2, queries;
+	do { 
+		if( queries ) external.addQueries(queries);
+		console.warn("Delivering queries to mergeExternal.");
 		queries = navigate.mergeExternal(external);
 		i--;
-	}
+	} while(queries && i>0);
 	if( i==0 && queries ) {
 		console.warn("Too many queries without getting all data...");
 	}
 
+};
+
+XeroController.prototype.selectGsps = function XC_selectGsps(navId, gsps) {
+	console.info("You selected to apply %s to %s", gsps, navId);
+	var lay = this.model.patientLayout.findLayout(navId);
+	var nav = lay.navigate;
+	nav.conversation.setPresentation("&gsps="+gsps);
+	console.info("Conversation info set on %s at level %d external id now %s", nav.conversation.id, 
+		nav.conversation.level, nav.conversation.getUrlId());
+	this.updateDisplayTab();
+	console.info("Completed applying gsps %s", gsps);	
 };
 
 /** Redisplays the display tab, resizing and merging external information etc */
@@ -105,7 +118,7 @@ XeroController.prototype.navToSer = function XC_NavToSer(id,uid) {
 	console.info("Trying %s to navigate to %s", id, uid);
 	var lay = this.model.patientLayout.findLayout(id);
 	var navigate = lay.navigate;
-	navigate.setNavigation(navigate.KEY,uid);
+	navigate.setNavigation(uid);
 	console.info("setNavigation completed.");
 	this.updateDisplayTab();	
 };
@@ -119,13 +132,13 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 		return;
 	}
 	var navigate = lay.navigate;
-	var dirSeries = navigate.lookupId(navigate.KEY,dir);
+	var dirSeries = navigate.lookupId(dir);
 	if(!dirSeries ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirSeries);
-	navigate.setNavigation(navigate.KEY,dirSeries);
+	navigate.setNavigation(dirSeries);
 	console.info("setNav completed.");
 	this.updateDisplayTab();	
 };
@@ -139,13 +152,13 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 		return;
 	}
 	var navigate = lay.navigate;
-	var dirImg = navigate.lookupId(navigate.POSITION,dir);
+	var dirImg = navigate.lookupId(dir);
 	if(dirImg==null ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirImg);
-	navigate.setNavigation(navigate.POSITION,dirImg);
+	navigate.setNavigation(dirImg);
 	
 	this.updateDisplayTab();
 };
@@ -187,7 +200,7 @@ XeroController.prototype.createPatientLayout = function PC_createPatientLayout(n
 	layout.setGrid(1,1);
 	var layouts = layout.layouts;
 	var patientMenu = new Layout("patientMenu", "image/patientMenu");
-	var childMerged = navigate.addChildListener(patientMenu,PatientMergedListener,navigate.KEY,0); 
+	var childMerged = navigate.addChildListener(patientMenu,PatientMergedListener,0); 
 	layout.tabMenu = patientMenu;
 	var studyArea = this.createStudyArea(childMerged, stx,sty,sex,sey,imx,imy);	
 	layouts.push( studyArea );
@@ -218,7 +231,7 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate,
 	for(j=0; j<sty; j++) {
 		for(i=0; i<stx; i++) {
 			var studyTray = new Layout("studyTray"+cnt+","+i+","+j,"image/studyTray" );
-			var childMerged = navigate.addChildListener(studyTray,StudyMergedListener,navigate.KEY_SET,j*stx+i);
+			var childMerged = navigate.addChildListener(studyTray,StudyMergedListener,j*stx+i);
 			studyTray.absWidth = 135;
 			var seriesArea = this.createSeriesArea(childMerged,sex,sey,imx,imy);
 			studyTray.x = i;
@@ -256,7 +269,7 @@ XeroController.prototype.createSeriesArea = function PC_createSeriesArea(navigat
 			toolbar = new Layout("seriesToolbar"+cnt+","+i+","+j,"image/seriesToolbar");
 			toolbar.parent = seriesArea;
 			toolbars[i] = toolbar;
-			navigate.addChildListener(toolbar,SeriesMergedListener,navigate.KEY,j*sex+i);
+			navigate.addChildListener(toolbar,SeriesMergedListener,j*sex+i);
 			toolbar.absHeight = 25;
 			toolbar.x = i;
 			toolbar.y = j;
@@ -289,7 +302,7 @@ XeroController.prototype.createImageArea = function PC_createImageArea(navigate,
 	for(j=0; j<imy; j++) {
 		for(i=0; i<imx; i++) {
 			layout = new ImageLayout("imageLay"+cnt+","+i+","+j);
-			navigate.addChildListener(layout,ImageMergedListener,navigate.POSITION,j*imx+i);
+			navigate.addChildListener(layout,ImageMergedListener,j*imx+i);
 			layout.resizeListener = ImageResizeListener;
 			layout.x = i;
 			layout.y = j;

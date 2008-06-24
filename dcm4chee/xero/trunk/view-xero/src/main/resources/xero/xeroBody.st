@@ -18,6 +18,7 @@ $image/layoutMenu()$
 $html/nestedRow()$
 $html/layout()$
 $html/tabs()$
+$html/noHeaderTabs()$
 $userMenu()$
 
 $report/report()$

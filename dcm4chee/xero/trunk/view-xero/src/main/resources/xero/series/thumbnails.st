@@ -5,7 +5,7 @@
 $layout.study.series:{$if(it.image)$
 	<li class="thumbnail">
 		<span>$it.SeriesDescription$ | $it.Viewable$</span>
-		<img onclick="xeroController.navToSer('$layout.id$', '$it.SeriesInstanceUID$')" height="256" src="/wado2/wado?objectUID=$it.image.("0").SOPInstanceUID$&amp;rows=256" />
+		<img onclick="xeroController.navToSer('$layout.id$', '$it.SeriesInstanceUID$')" height="256" src="/wado2/wado?objectUID=$it.image.("0").objectUID$&amp;rows=256" />
 	</li>
 $endif$
 }$
