@@ -25,6 +25,22 @@
       <lineEnding>lf</lineEnding>
       <fileMode>0755</fileMode>
     </fileSet>
+<!-- deploy -->
+    <fileSet>
+      <directory>src/main</directory>
+      <outputDirectory>server/default</outputDirectory>
+      <includes>
+        <include>deploy/**</include>
+       </includes>
+    </fileSet>
+<!-- conf -->
+    <fileSet>
+      <directory>src/main</directory>
+      <outputDirectory>server/default</outputDirectory>
+      <includes>
+        <include>conf/**</include>
+       </includes>
+    </fileSet>
 <!-- XDS common -->
     <fileSet>
       <directory>../dcm4chee-xds-common/target</directory>
@@ -126,6 +142,7 @@
       <includes>
         <include>dcm4che:dcm4che-core</include>
         <include>dcm4che:dcm4che-audit</include>
+        <include>dcm4che:dcm4chee-audit-tomcat</include>
         <include>dcm4che:dcm4che-net</include> <!-- Store2Dcm -->
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
