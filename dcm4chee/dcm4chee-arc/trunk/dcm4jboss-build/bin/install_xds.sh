@@ -20,8 +20,8 @@ if [ ! -f "$DCM4CHEE_HOME"/bin/run.jar ]; then
   exit 1
 fi
 
-cp -v -R "$XDS_SERV/deploy" "$DCM4CHEE_SERV/deploy"
-cp -v -R "$XDS_SERV/conf" "$DCM4CHEE_SERV/conf"
+cp -v -R "$XDS_SERV/deploy" "$DCM4CHEE_SERV"
+cp -v -R "$XDS_SERV/conf" "$DCM4CHEE_SERV"
 cp -v "$XDS_SERV/lib/dcm4chee-xdsa-repository-mbean-0.0.1.jar" "$DCM4CHEE_SERV/lib"
 cp -v "$XDS_SERV/lib/dcm4chee-xds-docstore-spi-0.0.1.jar" "$DCM4CHEE_SERV/lib"
 cp -v "$XDS_SERV/lib/dcm4chee-xds-common-0.0.1.jar" "$DCM4CHEE_SERV/lib"
