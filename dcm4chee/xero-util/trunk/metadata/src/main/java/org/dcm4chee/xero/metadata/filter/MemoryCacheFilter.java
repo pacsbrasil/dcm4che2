@@ -64,7 +64,7 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 		 return filterItem.callNextFilter(params);
 	  }
 	  String key = computeKey(params);
-	  SizeableFuture sf = new SizeableFutureFilter<T>(filterItem, params);
+	  SizeableFuture<T> sf = new SizeableFutureFilter<T>(filterItem, params);
 
 	  long start = System.nanoTime();
 	  log.debug("Looking in cache "+cacheName +" for " + key);
@@ -155,6 +155,24 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 		 map.put(MemoryCacheFilter.KEY_NAME,sb.toString());
 	  }
    }
+   
+   /** Computes and sets the query string, based on either all objects, or the provide set, in order.
+    * Not all listed objects need be in the actual query.
+    */
+   public static String computeQueryString(Map<String,Object> map, String... objects) {
+	   if( objects==null || objects.length==0 ) {
+		   objects = map.keySet().toArray(new String[0]);
+	   }
+	   StringBuffer queryStr = new StringBuffer();
+	   for(String key : objects) {
+		   Object val = map.get(key);
+		   if( val==null ) continue;
+		   queryStr.append("&").append(key).append("=").append(map.get(key));
+	   }
+	   String ret = queryStr.toString();
+	   map.put(MemoryCacheFilter.KEY_NAME, ret);
+	   return ret;
+   }
 
    /**
      * This class removes the provided strings from the query string, updating
@@ -218,13 +236,13 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
    static class SizeableFutureFilter<T> implements SizeableFuture<T> {
 	  private long size;
 
-	  FilterItem filterItem;
+	  FilterItem<T> filterItem;
 
 	  Map<String, Object> params;
 
 	  T value;
 
-	  SizeableFutureFilter(FilterItem filterItem, Map<String, Object> params) {
+	  SizeableFutureFilter(FilterItem<T> filterItem, Map<String, Object> params) {
 		 this.filterItem = filterItem;
 		 this.params = params;
 	  }
