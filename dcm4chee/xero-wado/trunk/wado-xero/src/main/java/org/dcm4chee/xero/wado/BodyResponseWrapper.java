@@ -54,13 +54,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Given an HTTPServletResponse object, this wrapper
- *  buffers any header changes requested, and any 
- *  written output, until the buffer is full, or until
- *  a flush is requested.  At that point, the contents
- *  of the response are written to the body of the underlying
- *  response, and this wrapped response is considered to
- *  be committed.
+/**  
+ *  This class wraps the provided HttpServletResponse.
  *  
  *  The output stream or print writer used by this wrapper
  *  will be the same as the wrapped object. This allows responses
@@ -70,8 +65,10 @@ import org.slf4j.LoggerFactory;
  *  Note: this class doesn't (at the moment) correctly handle character encoding
  *  for individual segments of the multi-part response.
  */
-public class BodyResponseWrapper extends HttpServletResponseWrapper {
-    private static final Logger log = LoggerFactory.getLogger(BodyResponseWrapper.class);
+public class BodyResponseWrapper extends HttpServletResponseWrapper 
+{
+    private static final Logger log = 
+    	LoggerFactory.getLogger(BodyResponseWrapper.class);
     
     private HashMap<String, String> headers = new HashMap <String,String> ();
     
@@ -79,7 +76,6 @@ public class BodyResponseWrapper extends HttpServletResponseWrapper {
     
     private BodyServletOutputStream myOutputStream = null;
     
-
     public BodyResponseWrapper(HttpServletResponse response) 
     {
     	super(response);

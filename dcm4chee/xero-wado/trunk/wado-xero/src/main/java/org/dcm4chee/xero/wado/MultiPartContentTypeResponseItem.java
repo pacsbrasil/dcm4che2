@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author tcollins
+ *  This class stores a collection of ServletResponseItems and will
+ *  write out a multi-part response when {@link #writeResponse(HttpServletRequest, HttpServletResponse)}
+ *  is called.
  *
  */
 public class MultiPartContentTypeResponseItem implements ServletResponseItem 

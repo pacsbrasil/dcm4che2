@@ -49,9 +49,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * When the response content-type is to be multi-part, coordinates multiple responses and
- * assembles them into a single response object
- * 
+ * When the response content-type is to be multi-part/mixed, 
+ * coordinates multiple responses and assembles them into a single 
+ * response object.
  */
 public class MultiPartContentTypeFilter implements Filter<ServletResponseItem> 
 {
@@ -128,7 +128,8 @@ public class MultiPartContentTypeFilter implements Filter<ServletResponseItem>
         return ri;
     }
     
-    protected ServletResponseItem getResponseItem( FilterItem<ServletResponseItem> filterItem, 
+    protected ServletResponseItem getResponseItem( 
+    		FilterItem<ServletResponseItem> filterItem, 
     		Map<String,Object> newParams )
     {
         // rather than understand all the variations for all return types, we'll invoke the

@@ -46,6 +46,15 @@ import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 
+/**
+ * Given an HTTPServletResponse (BodyResponseWrapper)
+ * object, this output stream buffers any changes requested, and any 
+*  written output, until the buffer is full, or until
+*  a flush is requested.  At that point, the contents
+*  of the response are written to the body of the underlying
+*  response, and this wrapped response is considered to
+*  be committed.
+*  **/
 public class BodyServletOutputStream extends ServletOutputStream 
 {
 	public static final int DEFAULT_BUFFER_SIZE = 2048;
@@ -54,7 +63,7 @@ public class BodyServletOutputStream extends ServletOutputStream
 	
 	private OutputStream bufferedOutputStream;
 	
-	private OutputStream providedOutputStream;
+	private OutputStream originalOutputStream;
 	
 	private BodyResponseWrapper wrapper;
 	
@@ -95,10 +104,11 @@ public class BodyServletOutputStream extends ServletOutputStream
 
 	protected void writeHeaders(HashMap<String, String> headers) throws IOException
 	{
-        for ( Map.Entry<String, String> e: headers.entrySet() ) {
+        for ( Map.Entry<String, String> e: headers.entrySet() ) 
+        {
         	println(e.getKey() + ": " + e.getValue());
         }
-        // and one extra spacing line before the content proper...
+       
         println();
 	}
 
@@ -109,7 +119,8 @@ public class BodyServletOutputStream extends ServletOutputStream
 	}
 
 	@Override
-	public void write(int b) throws IOException {
+	public void write(int b) throws IOException 
+	{
 		singleByteBuffer[0] = (byte) (b & 255); // need the bottom byte;
         write(singleByteBuffer, 0, 1);
 	}
@@ -132,20 +143,7 @@ public class BodyServletOutputStream extends ServletOutputStream
 			
 		bufferedOutputStream.flush();
 	}
-
-	protected OutputStream createOutputStream( OutputStream os, int bufferSize )
-	{
-		return new BufferedOutputStream( os, bufferSize );
-	}
-
-	protected OutputStream getOriginalOutputStream() throws IOException
-	{
-		if ( providedOutputStream == null )
-			providedOutputStream = wrapper.getOriginalOutputStream();
-		
-		return providedOutputStream;
-	}
-
+	
 	public int getBufferSize() 
 	{
 		return bufferSize;
@@ -157,6 +155,19 @@ public class BodyServletOutputStream extends ServletOutputStream
 		if( wrapper.isCommitted() ) throw new IllegalStateException();
 		
 		bufferSize = assignedBufferSize;
+	}
+
+	protected OutputStream createOutputStream( OutputStream os, int bufferSize )
+	{
+		return new BufferedOutputStream( os, bufferSize );
+	}
+
+	protected OutputStream getOriginalOutputStream() throws IOException
+	{
+		if ( originalOutputStream == null )
+			originalOutputStream = wrapper.getOriginalOutputStream();
+		
+		return originalOutputStream;
 	}
 
 }
