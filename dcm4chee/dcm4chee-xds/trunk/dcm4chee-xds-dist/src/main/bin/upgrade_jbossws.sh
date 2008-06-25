@@ -22,19 +22,19 @@ fi
 
 JBOSS_WS_LIB="$JBOSS_WS_DEPLOY/lib"
 DCM4CHEE_CLIENT="$DCM4CHEE_HOME/client"
-DCM4CHEE_LIB="$DCM4CHEE_SERV%/lib"
+DCM4CHEE_LIB="$DCM4CHEE_SERV/lib"
 DCM4CHEE_JBOSSWS="$DCM4CHEE_SERV/deploy/jbossws.sar"
 
 rm "$DCM4CHEE_JBOSSWS/jbossws-deploy.conf"
 
-cp -v "$JBOSS_WS_HOME"/bin/wsconsume.bat \
-  "$JBOSS_WS_HOME"/bin/wsconsume.sh \
-  "$JBOSS_WS_HOME"/bin/wsprovide.bat \
-  "$JBOSS_WS_HOME"/bin/wsprovide.sh \
-  "$JBOSS_WS_HOME"/bin/wsrunclient.bat \
-  "$JBOSS_WS_HOME"/bin/wsrunclient.sh \
-  "$JBOSS_WS_HOME"/bin/wstools.bat \
-  "$JBOSS_WS_HOME"/bin/wstools.sh \
+cp -v "$JBOSS_WS_DEPLOY"/bin/wsconsume.bat \
+  "$JBOSS_WS_DEPLOY"/bin/wsconsume.sh \
+  "$JBOSS_WS_DEPLOY"/bin/wsprovide.bat \
+  "$JBOSS_WS_DEPLOY"/bin/wsprovide.sh \
+  "$JBOSS_WS_DEPLOY"/bin/wsrunclient.bat \
+  "$JBOSS_WS_DEPLOY"/bin/wsrunclient.sh \
+  "$JBOSS_WS_DEPLOY"/bin/wstools.bat \
+  "$JBOSS_WS_DEPLOY"/bin/wstools.sh \
   "$DCM4CHEE_HOME"/bin
 
 cp -v "$JBOSS_WS_LIB"/FastInfoset.jar \
@@ -79,5 +79,3 @@ cp -v "$JBOSS_WS_DEPLOY/resources/jbossws-jboss42.sar/META-INF/jboss-service.xml
 
 cp -v "$JBOSS_WS_DEPLOY/resources/standard-jaxws-client-config.xml" "$DCM4CHEE_JBOSSWS/META-INF"
 cp -v "$JBOSS_WS_DEPLOY/resources/standard-jaxws-endpoint-config.xml" "$DCM4CHEE_JBOSSWS/META-INF"
-
-  
