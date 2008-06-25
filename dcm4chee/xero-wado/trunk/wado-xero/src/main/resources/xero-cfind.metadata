@@ -199,7 +199,8 @@ WADO.text/xml=${class:org.dcm4chee.xero.wado.EncodeXml}
 WADO.text/xml.priority=-1
 WADO.application/dicom=${ref:wadoDcm}
 WADO.application/dicom.priority=10
-
+WADO.multipart=${class:org.dcm4chee.xero.wado.MultiPartContentTypeFilter}
+WADO.multipart.priority=-1
 
 WADO.dicom=${ref:dicom}
 WADO.dicom.priority=-1
