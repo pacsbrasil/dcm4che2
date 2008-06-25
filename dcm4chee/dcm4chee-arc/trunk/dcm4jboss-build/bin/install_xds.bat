@@ -37,6 +37,10 @@ copy  "%XDS_SERV%"\lib\dcm4chee-xds-docstore-spi-0.0.1.jar "%DCM4CHEE_SERV%\lib"
 copy  "%XDS_SERV%"\lib\dcm4chee-xds-common-0.0.1.jar "%DCM4CHEE_SERV%\lib"
 copy "%XDS_SERV%\lib\dcm4che-core-2.0.14.jar" "%DCM4CHEE_SERV%\lib"
 copy "%XDS_SERV%\lib\dcm4che-net-2.0.14.jar" "%DCM4CHEE_SERV%\lib"
+copy "%XDS_HOME%\bin\upgrade_jbossws.sh" "%DCM4CHEE_HOME%\bin"
+copy "%XDS_HOME%\bin\upgrade_jbossws.bat" "%DCM4CHEE_HOME%\bin"
+copy "%XDS_HOME%\bin\patch_jbossws.sh" "%DCM4CHEE_HOME%\bin"
+copy "%XDS_HOME%\bin\patch_jbossws.bat" "%DCM4CHEE_HOME%\bin"
 
 echo XDS components installed!
 

@@ -17,7 +17,7 @@ goto end
 
 :found_dcm4chee
 if not [%1] == [] goto found_arg1
-echo "Usage: install_jboss <path-to-jbossws-3.0.1-native-2.0.4.GA-installation-directory>"
+echo "Usage: upgrade_jbossws <path-to-jbossws-3.0.1-native-2.0.4.GA-installation-directory>"
 goto end
 
 :found_arg1
