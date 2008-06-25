@@ -101,10 +101,10 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 frameNo = (String) page[3];
 		 log.debug("Looking for study/series containing "+objectUID+" frame "+frameNo);
 		 Map<String,Object> newQueryParams = new HashMap<String,Object>(params);
-		 newQueryParams.put("SOPInstanceUID", objectUID);
-		 newQueryParams.put(MemoryCacheFilter.KEY_NAME, "SOPInstanceUID="+objectUID);
+		 newQueryParams.put("objectUID", objectUID);
+		 newQueryParams.put(MemoryCacheFilter.KEY_NAME, "objectUID="+objectUID);
 		 ResultsType results = (ResultsType) filterItem.callNextFilter(newQueryParams);
-		 params.remove("SOPInstanceUID");
+		 params.remove("objectUID");
 		 if( results==null ) return null;
 		 assert results.getPatient().size()==1;
 		 PatientType patient = results.getPatient().get(0);

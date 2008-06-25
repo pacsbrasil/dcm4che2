@@ -64,8 +64,8 @@ public class SearchFilterUtils {
     */
    public static ResultsBean filterImage(FilterItem<?> filterItem, Map<String,Object> params, String uid, String presentationUID) {
 	  Map<String,Object> newParams = new HashMap<String,Object>();
-	  StringBuffer queryStr = new StringBuffer("&SOPInstanceUID=").append(uid).append("&presentationUID=").append(presentationUID);
-	  newParams.put("SOPInstanceUID", uid);
+	  StringBuffer queryStr = new StringBuffer("&object=").append(uid).append("&presentationUID=").append(presentationUID);
+	  newParams.put("objectUID", uid);
 	  newParams.put("presentationUID", presentationUID);
 	  String frame = (String) params.get("frameNumber");
 	  if( frame!=null ) {

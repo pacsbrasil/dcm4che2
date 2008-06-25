@@ -51,7 +51,6 @@ public class RenameAttributeFilter<T> implements Filter<T> {
    String[] renames = new String[]{
 		 "studyUID", "StudyInstanceUID",
 		 "seriesUID", "SeriesInstanceUID",
-		 "objectUID", "SOPInstanceUID",
    };
 
    /** Rename the given items in the map */

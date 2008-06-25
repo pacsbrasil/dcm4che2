@@ -265,7 +265,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			   if (exemplar != null)
 				  break;
 			}
-		 } else {
+		 } else if( images.keySet().size()>0 ){
 			String uid = images.keySet().iterator().next();
 			exemplar = images.get(uid);
 		 }
@@ -344,6 +344,10 @@ public class GspsEncode implements Filter<ResultsBean> {
 			   continue;
 			}
 			ImageBean image = (ImageBean) child;
+			if( image.getGspsUID()==null ) {
+				log.warn("Image {} has null gspsuid", image.getObjectUID());
+				continue;
+			}
 			if (!image.getGspsUID().equals(gspsUid))
 			   continue;
 			// Try to handle the case where all frames are referenced in the one

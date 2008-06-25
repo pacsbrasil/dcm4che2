@@ -79,11 +79,11 @@ public class KeyObjectSeries extends KeyObjectFilter {
 		 if (uids.contains(key.getObjectUid()))
 			continue;
 		 uids.add(key.getObjectUid());
-		 queryStr.append("&SOPInstanceUID=").append(key.getObjectUid());
+		 queryStr.append("&objectUID=").append(key.getObjectUid());
 	  }
 	  String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
 	  log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
-	  newParams.put("SOPInstanceUID", uidArr);
+	  newParams.put("objectUID", uidArr);
 	  newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
 	  newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
 	  filterItem.callNamedFilter("imageSearch", newParams);
