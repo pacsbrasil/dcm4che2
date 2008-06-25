@@ -13,6 +13,7 @@ MySQL 4.1+
 Oracle 9i/10g
 SQL Server
 DB2 8.1+
+Firebird 2.1
 Hypersonic SQL (Embedded in JBoss AS) - not suitable for production use!
 
 For image compression/decompression, dcm4chee 2.13.6 utilize Sun's Java Advanced
@@ -266,6 +267,29 @@ You may deploy dcm4chee-cdw-2.13.6 in the same JBoss instance as dcm4che archive
 install_cdw.bat or install_cdw.sh script, as appropriate for your operating
 system, with the path of the dcm4chee-cdw-2.13.6 installation directory as
 parameter.
+
+
+DEPLOY DCM4CHEE XDS REPOSITORY 0.0.1 with DCM4CHEE ARCHIVE:
+==========================================================
+There is a separate binary distribution packages for dcm4chee XDS Repository
+0.0.1 (dcm4chee-xds-0.0.1) available at
+http://sourceforge.net/projects/dcm4che .
+You may deploy dcm4chee-xds-0.0.1 in the same JBoss instance as dcm4che archive:
+
+1. Download and extract the binary distribution package of dcm4chee-xds-0.0.1.
+
+2. Download the binary distribution package of JBoss Web Service
+jbossws-3.0.1-native-2.0.4.GA from http://www.jboss.org/jbossws/downloads
+and extract it into a different directory.
+
+3. Move to the dcm4chee-xxx-2.13.6/bin directory and execute the
+upgrade_jbossws.bat or upgrade_jbossws.sh script, as appropriate for your
+operating system, with the path of the jbossws-3.0.1-native-2.0.4.GA
+installation directory as parameter.
+
+4. Execute the install_xds.bat or install_xds.sh script, as appropriate for
+your operating system, with the path of the dcm4chee-xds-0.0.1 installation
+directory as parameter.
 
 
 DEPLOY DCM4CHEE AUDIT RECORD REPOSITORY 3.0.6 with DCM4CHEE ARCHIVE:
