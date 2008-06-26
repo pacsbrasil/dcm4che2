@@ -51,6 +51,8 @@ div.userMenu {
 	margin: 0px;
 	border: 0px;
 	background: black;
+	position: relative;
+	overflow: hidden;
 	color: white;
 	float: left;
 }
@@ -61,11 +63,7 @@ div.userMenu {
 	background: black;
 	color: white;
 	overflow: hidden;
-	position: relative;
-}
-
-v:* {
-	position: relative;
+	position: absolute;
 }
 
 .icon {

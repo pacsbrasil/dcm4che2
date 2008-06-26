@@ -88,7 +88,7 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true&regroup=true";
 		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
 		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
-	} else if( this.level===1 && child.external) {
+	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
 		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+child.id+"&pixelInfo=true&regroup=true";
 		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);

@@ -59,6 +59,7 @@
      </profile>
   </profiles>
 
+  <build><finalName>xero</finalName></build>
   
   <dependencies>
     <dependency>

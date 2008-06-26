@@ -13,6 +13,11 @@ function assertEquals(val, expected, varname) {
 	fail("Expected value "+expected+" was "+val+" for variable "+varname);
 };
 
+function assertFloat(val, expected, varname) {
+	if( Math.abs(val-expected)<0.0001 ) return;
+	fail("Expected value "+expected+" was "+val+" for variable "+varname);
+};
+
 function assertNotNull(val, varname) {
 	if( val!=null ) return;
 	fail("Expected non-null value but was null for variable "+varname);

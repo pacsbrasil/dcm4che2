@@ -70,9 +70,13 @@ If you want the version with W/L etc support, try <a href="/xslt">XSLT Xero</a><
 <a href="http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=236929">Xero Download</a><br />
 <h2>Known Issues</h2>
 <ul>
-<li>This version has no window levelling, zoom/pan, CINE, GSPS etc</li>
-<li>This version DOES support IE 6,7 Firefox 2,3  Opera 9   Safari 3</li>
-<li>This version has query and multi-study display, unlike the previous version.</li>
+<li>This version has no interactive zoom/pan or CINE, or markup/text annotations</li>
+<li>This version does support IE 6,7 Firefox 2,3  Opera 9   Safari 3</li>
+<li>This version has:</li>
+<li>Query and multi-study display, unlike the previous version.</li>
+<li>GSPS selection/display per-study.</li>
+<li>Report viewing (some bugs here still)</li>
+<li>IHE Image Consistency tests: DISA, SPAT, VLUT, MLUT, PLUT, XLUT all pass in Firefox (true size works IF your monitor is the same as mine :-)</li>
 <li>Missing features from the previous version are being worked on.</li> 
 </ul>
 <% } %>

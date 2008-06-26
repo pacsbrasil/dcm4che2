@@ -1,6 +1,7 @@
 $urlFactory()$
 $xmlModel()$
 $layout()$
+$imageLayout()$
 $merged()$
 $navConversation()$
 $studyData()$
