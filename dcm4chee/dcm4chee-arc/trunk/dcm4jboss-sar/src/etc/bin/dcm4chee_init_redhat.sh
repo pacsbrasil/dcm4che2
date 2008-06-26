@@ -28,14 +28,11 @@ JAVAPTH=${JAVAPTH:-"/usr/java/jdk/bin"}
 #configuration to use, usually one of 'minimal', 'default', 'all'
 JBOSS_CONF=${JBOSS_CONF:-"default"}
 
-#enable remote access to jboss services and web interface
-JBOSS_BIND_ADDR="-b 0.0.0.0"
-
 #define the classpath for the shutdown class
 JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
 
 #define the script to use to start jboss
-JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c $JBOSS_CONF $JBOSS_BIND_ADDR"}
+JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c $JBOSS_CONF"}
 
 if [ "$JBOSS_USER" = "RUNASIS" ]; then
   SUBIT=""

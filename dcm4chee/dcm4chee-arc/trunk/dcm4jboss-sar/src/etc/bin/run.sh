@@ -184,6 +184,9 @@ JAVA_OPTS="-Dprogram.name=$PROGNAME $JAVA_OPTS"
 # Setup the java endorsed dirs
 JBOSS_ENDORSED_DIRS="$JBOSS_HOME/lib/endorsed"
 
+#enable remote access to jboss services and web interface
+JBOSS_BIND_ADDR=${JBOSS_BIND_ADDR:-"0.0.0.0"}
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
@@ -214,7 +217,7 @@ while true; do
       "$JAVA" $JAVA_OPTS \
          -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
          -classpath "$JBOSS_CLASSPATH" \
-         org.jboss.Main "$@"
+         org.jboss.Main -b $JBOSS_BIND_ADDR "$@"
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background

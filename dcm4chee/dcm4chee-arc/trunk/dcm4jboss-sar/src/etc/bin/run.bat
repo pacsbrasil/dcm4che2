@@ -105,6 +105,9 @@ rem set JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=8787,server=y,su
 rem Setup the java endorsed dirs
 set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 
+rem Enable remote access to jboss services and web interface
+if "%JBOSS_BIND_ADDR%" == "" set JBOSS_BIND_ADDR=0.0.0.0
+
 rem Sample SSL debugging option:
 rem set JAVA_OPTS=%JAVA_OPTS% -Djavax.net.debug=ssl,handshake,data,trustmanager,help
 rem set JAVA_OPTS=%JAVA_OPTS% -Djavax.net.debug=ssl,handshake
@@ -125,7 +128,7 @@ echo ===========================================================================
 echo.
 
 :RESTART
-"%JAVA%" %JAVA_OPTS% "-Djava.endorsed.dirs=%JBOSS_ENDORSED_DIRS%" -classpath "%JBOSS_CLASSPATH%" org.jboss.Main %*
+"%JAVA%" %JAVA_OPTS% "-Djava.endorsed.dirs=%JBOSS_ENDORSED_DIRS%" -classpath "%JBOSS_CLASSPATH%" org.jboss.Main -b %JBOSS_BIND_ADDR% %*
 if ERRORLEVEL 10 goto RESTART
 
 :END

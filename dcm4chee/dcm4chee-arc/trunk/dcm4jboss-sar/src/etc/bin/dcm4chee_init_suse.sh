@@ -31,14 +31,11 @@ JBOSS_HOME=${JBOSS_HOME:-"/usr/local/dcm4chee"}
 #make java is on your path
 JAVAPTH=${JAVAPTH:-"/usr/java/jdk/bin"}
 
-#enable remote access to jboss services and web interface
-JBOSS_BIND_ADDR="-b 0.0.0.0"
-
 #define the classpath for the shutdown class
 JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
 
 #define the script to use to start jboss
-JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c $JBOSS_CONF $JBOSS_BIND_ADDR"}
+JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c $JBOSS_CONF"}
 
 # Shell functions sourced from /etc/rc.status:
 #      rc_check         check and set local and overall rc status

@@ -121,9 +121,8 @@ and $DCM4CHEE_HOME/server/default/conf/xmdesc/dcm4chee-wado-xmbean.xml:
 
 9. To test your installation, move to the dcm4chee-xxx-2.13.6/bin directory
 and execute the run.bat or run.sh script, as appropriate for your operating
-system. To enable remote access to jboss services and web interface, you have
-to invoke the start script with parameter '-b 0.0.0.0'! Your output should look
-like the following and contain no error or exception messages:
+system. Your output should look like the following and contain no error or
+exception messages:
 
 =========================================================================
 
