@@ -73,6 +73,18 @@ cp -v "$JBOSS_WS_LIB"/jaxb-api.jar \
   "$JBOSS_WS_LIB"/jbossws-spi.jar \
  "$DCM4CHEE_LIB"
 
+cp -v "$JBOSS_WS_LIB"/jboss-jaxb-intros.jar \
+  "$JBOSS_WS_LIB"/jboss-jaxrpc.jar \
+  "$JBOSS_WS_LIB"/jboss-jaxws.jar \
+  "$JBOSS_WS_LIB"/jboss-saaj.jar \
+  "$JBOSS_WS_LIB"/jbossws-core.jar \
+  "$JBOSS_WS_LIB"/policy.jar \
+  "$JBOSS_WS_LIB"/stax-api.jar \
+  "$JBOSS_WS_LIB"/wsdl4j.jar \
+  "$JBOSS_WS_LIB"/wstx.jar \
+  "$JBOSS_WS_LIB"/xmlsec.jar \
+ "$DCM4CHEE_JBOSSWS"
+
 cp -v "$JBOSS_WS_HOME/build/jbossws-default-deploy.conf" "$DCM4CHEE_JBOSSWS/jbossws-deploy.conf"
 
 cp -v "$JBOSS_WS_DEPLOY/resources/jbossws-jboss42.sar/META-INF/jboss-service.xml" "$DCM4CHEE_JBOSSWS/META-INF/jboss-service.xml"
