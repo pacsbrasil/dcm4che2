@@ -12,52 +12,41 @@ dcm4chee-xds-store2dcm:    Service to store XDS documents as encapsulated DICOM 
 dcm4chee-xdscfg:           XDS Configuration Management service
 ------------------------------------------------------------------------------------------
 
+Minimum System Requirements
+JDK 5 or higher.
+512 MB RAM
+200 MB hard disk space (additional to archive storage disk space)  
+400 MHz CPU
+
 Requirements: 
-A) Add on to DCM4CHEE Archive
-	A DCM4CHEE installation with patched JBossWS Stack.
-B) A Standalone Webservice
-	A JBoss 4.2.2GA with patched JBossWS Stack.
+	- JBoss 4.2.2GA Application server
+	- JBossWs-3.0.1-native-2.0.4.GA Webservice Stack.
 
 Downloads:
    JBoss 4.2.2.GA:                 http://sourceforge.net/project/showfiles.php?group_id=22866&package_id=16942&release_id=548923
    JBossWs-3.0.1-native-2.0.4.GA:  http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-3.0.1-native-2.0.4.GA.zip
-   dcm4chee:                       http://sourceforge.net/project/showfiles.php?group_id=37982&package_id=195374
 
 Installation Procedure:
 
-A. As Add-On to DCM4CHEE
-1) Extract the binary distribution package of JBoss 4.2.2GA () to a temporary directory (<JBOSS422.home>).
-	(Avoid using a name that contains spaces)
-   
-2. Extract the JBossWS distribution (JBossWs-3.0.1-native-2.0.4.GA) to a temporary directory (JBossWS.home).
+1. Download and extract the binary distribution package of JBoss 4.2.2GA.
 
-3. Extract your DCM4CHEE distribution package to a temporary directory (<DCM4CHEE>).
+2. Download and extract the binary distribution package of dcm4chee-xds-0.0.1.
 
-4. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
+3. Download and extract the binary distribution package of JBoss Web Service jbossws-3.0.1-native-2.0.4.GA.
 
-5. a) Change directory to <DCM4CHEE>/bin
-   b) Run install-jboss.sh <JBOSS422.home> (e.g. install-jboss.sh /tmp/jboss-4.2.2.GA)
-   c) Run patch-jboss.sh <JBOSSWS.home> (e.g. patch-jboss.sh /tmp/jbossws-native-dist)
-   d) Run install-xds <DCM4CHEE-XDS>
+4. Change directory to dcm4chee-xds-0.0.1/bin
 
+5. Execute the install_jboss.bat or install_jboss.sh script, as appropriate for your operating system, 
+   with the path of the JBoss 4.2.2GA installation directory as parameter.
 
-B. Standalone
-1) Extract the binary distribution package of JBoss 4.2.2GA () to a directory (<JBOSS422.home>).
-	(Avoid using a name that contains spaces)
+6. Execute the upgrade_jbossws.bat or upgrade_jbossws.sh script, as appropriate for your operating system, 
+   with the path of the jbossws-3.0.1-native-2.0.4.GA installation directory as parameter.
 
-2. Extract the JBossWS distribution (JBossWs-3.0.1-native-2.0.4.GA) to a temporary directory (JBossWS.home).
+7. Execute the patch_jbossws.bat or patch_jbossws.sh script, as appropriate
+   for your operating system, with the path of the dcm4chee-xds-0.0.1 installation
+   installation directory as parameter. Necessary to accept faulty
+   (AttachmentPart Id mismatch) SwA (SOAP with Attachment) requests from Axis2
+   based Web Service clients and to disable schema validation during deployment,
+   which requires internet access. If you need a http proxy for internet access
+   you can configure http.proxyHost! (see run.conf or run.bat)
 
-3. Extract this XDS distribution to a temporary directory (<DCM4CHEE-XDS>).
-
-7. a) change directory to <DCM4CHEE-XDS>/bin
-   b) Run install-jboss.sh <JBOSS422.home> (e.g. install-jboss.sh /tmp/jboss-4.2.2.GA)
-   c) Run patch-jboss.sh <JBOSSWS.home> (e.g. patch-jboss.sh /tmp/jbossws-native-dist)
-
-----------------------------------------------------------
-Optional: Additional patches for Axis2 client support and/or 'no internet access'.
-   - Axis2 SwA (SOAP with Attachment) requests are not correct (AttachmentPart Id mismatch) and JBossWS will fail for such requests.
-   - JBossWS needs internet access for schema validation during deployment.
-     (if you need a http proxy for internet access you can configure http.proxyHost! (see run.conf or run.bat))
-     
-   Install patches:  
-   Copy <DCM4CHEE-XDS>/patches/JBossWs-3.0.1-native-2.0.4.GA/ to <DCM4CHEE>/server/default
