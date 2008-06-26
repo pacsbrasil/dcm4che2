@@ -37,6 +37,8 @@ WLController.prototype.start = function WLC_start(event) {
 		this.origCenter = Number(this.origCenter);
 		this.origWidth = Number(this.origWidth);
 	};
+	this.center = this.origCenter;
+	this.width = this.origWidth;
 	console.info("Initial c/w=%d,%d min/max=%d,%d", this.origCenter, this.origWidth, this.minPixel, this.maxPixel);
 	this.mousemove(event);
 	return true;
@@ -52,7 +54,7 @@ WLController.prototype.mousemove = function WLC_mousemove(event) {
 	if( center >= this.minPixel && center < this.maxPixel ) {
 		this.center = center;
 	}
-	if( width>10 && width < this.maxPixel-this.minPixel ) {
+	if( width>10 && width < this.pixelRange ) {
 		this.width = width;
 	}
 	//console.info("dx,dy=%d,%d c/w=%d,%d", dx,dy,center,width);
