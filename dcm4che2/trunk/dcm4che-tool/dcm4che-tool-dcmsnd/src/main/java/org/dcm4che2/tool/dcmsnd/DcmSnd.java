@@ -889,7 +889,7 @@ public class DcmSnd extends StorageCommitmentService {
         System.out.print('.');
     }
 
-    private void addTransferCapability(String cuid, String tsuid) {
+    public void addTransferCapability(String cuid, String tsuid) {
         Set<String> ts = as2ts.get(cuid);
         if (fileref) {
             if (ts == null) {
@@ -906,7 +906,7 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
-    private void configureTransferCapability() {
+    public void configureTransferCapability() {
         int off = stgcmt ? 1 : 0;
         TransferCapability[] tc = new TransferCapability[off + as2ts.size()];
         if (stgcmt) {
