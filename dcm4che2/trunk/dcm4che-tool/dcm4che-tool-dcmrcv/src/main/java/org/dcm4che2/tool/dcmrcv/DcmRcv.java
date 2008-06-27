@@ -319,7 +319,7 @@ public class DcmRcv extends StorageService {
         nc.setSendBufferSize(bufferSize);
     }
 
-    private void setDimseRspDelay(int delay) {
+    public void setDimseRspDelay(int delay) {
         rspdelay = delay;
     }
 
@@ -602,11 +602,11 @@ public class DcmRcv extends StorageService {
         }
     }
 
-    private void setTransferSyntax(String[] tsuids) {
+    public void setTransferSyntax(String[] tsuids) {
         this.tsuids = tsuids;
     }
 
-    private void initTransferCapability() {
+    public void initTransferCapability() {
         TransferCapability[] tc = new TransferCapability[CUIDS.length + 1];
         tc[0] = new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS,
                 TransferCapability.SCP);
@@ -616,15 +616,15 @@ public class DcmRcv extends StorageService {
         ae.setTransferCapability(tc);
     }
 
-    private void setFileBufferSize(int size) {
+    public void setFileBufferSize(int size) {
         fileBufferSize = size;
     }
 
-    private void setMaxOpsPerformed(int maxOps) {
+    public void setMaxOpsPerformed(int maxOps) {
         ae.setMaxOpsPerformed(maxOps);
     }
 
-    private void setDestination(String filePath) {
+    public void setDestination(String filePath) {
         this.destination = new File(filePath);
         this.devnull = "/dev/null".equals(filePath);
         if (!devnull)
