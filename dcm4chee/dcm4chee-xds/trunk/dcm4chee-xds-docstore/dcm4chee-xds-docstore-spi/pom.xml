@@ -4,18 +4,18 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xds-docstore</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xds-docstore-spi</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>XDS Document Storage Service Provider</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-common</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.2-SNAPSHOT</version>
        <scope>provided</scope>
     </dependency>
     <dependency>
