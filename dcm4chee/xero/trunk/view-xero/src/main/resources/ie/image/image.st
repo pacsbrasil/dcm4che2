@@ -1,5 +1,8 @@
  <div class="image"  $html/style()$  >
-     <v:group style="width:$layout.width$px; height: $layout.height$px;" coordorigin="0,0" coordsize="$layout.width$,$layout.height$">
+     <v:group id="vml$layout.id$" style="width:$layout.width$px; height: $layout.height$px;"
+        coordorigin="0,0" coordsize="$layout.width$,$layout.height$"
+        onmousedown="xeroController.imageMouseDown()"
+     >
       <v:group 
         style="width: $layout.dblColsDisp$px; height:$layout.dblRowsDisp$px; left: $layout.translateXIE$px; top: $layout.translateYIE$px; $if(layout.rotation)$rotation:$layout.rotation$;$endif$ $if(layout.flip)$flip:x;$endif$"
       	coordorigin="-$layout.image.Columns$,-$layout.image.Rows$" 

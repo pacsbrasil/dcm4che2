@@ -115,7 +115,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	}
 	window._render = render;
 	
-	console.info("Render: %s",render);
+	//console.info("Render: %s",render);
 	this.replaceHtml("innerBody", render);
 	console.timeEnd(actionName);
 };
