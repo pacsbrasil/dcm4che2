@@ -325,6 +325,22 @@ public class WebViewService extends ServiceMBeanSupport {
         if ( ! keys.contains(Tag.StudyDescription)) keys.putNull(Tag.StudyDescription, null);
         return getLaunchPropertiesForQuery(keys, ignorePR, selectPR );
     }
+	public Properties getLaunchPropertiesForPatId(String patId, Boolean ignorePR, Boolean selectPR) {
+        DicomObject keys = new BasicDicomObject();
+        String issuer = null;
+        if ( patId.indexOf('^') > 0) {
+        	int pos = patId.lastIndexOf('^'); //assumption that issuer is the last part of patId String
+        	issuer = patId.substring(pos+1);
+        	patId = patId.substring(0, patId.indexOf('^'));
+        }
+        keys.putString(Tag.PatientID, VR.LO, patId);
+        keys.putString(Tag.IssuerOfPatientID, VR.LO, issuer);
+        //put attributes that are needed for study selection when result refers to multible studies!
+        if ( ! keys.contains(Tag.PatientName)) keys.putNull(Tag.PatientName, null);
+        if ( ! keys.contains(Tag.PatientBirthDate)) keys.putNull(Tag.PatientBirthDate, null);
+        if ( ! keys.contains(Tag.StudyDescription)) keys.putNull(Tag.StudyDescription, null);
+        return getLaunchPropertiesForQuery(keys, ignorePR, selectPR );
+    }
     public Properties getLaunchProperties(String studyUID, String seriesUID, String iuid, Boolean ignorePR, Boolean selectPR) {
         DicomObject keys = new BasicDicomObject();
         keys.putString(Tag.StudyInstanceUID, VR.UI, studyUID);

@@ -158,6 +158,10 @@ public class WebViewDelegate {
         if ( accNr != null ) {
             return getLaunchPropertiesForAccNr( accNr );
         }
+        String patId = getValue(paraMap, "patId");
+        if ( patId != null ) {
+            return getLaunchPropertiesForPatId( patId );
+        }
         String url = getValue(paraMap, "manifestURL");
         if ( url != null ) {
             return getLaunchPropertiesForManifest( url );
@@ -190,6 +194,17 @@ public class WebViewDelegate {
                     new String[] { String.class.getName(), Boolean.class.getName(), Boolean.class.getName() });
         } catch (Exception e) {
             return getErrorProperties("Failed to get LaunchProperties for Accession Number! Exception:", "ERROR", e);
+        }
+    }
+    public Properties getLaunchPropertiesForPatId(String patId) {
+        try {
+            if ( server == null ) init();
+            return (Properties) server.invoke(webviewName,
+                    "getLaunchPropertiesForPatId",
+                    new Object[] { patId, ignorePR, selectPR },
+                    new String[] { String.class.getName(), Boolean.class.getName(), Boolean.class.getName() });
+        } catch (Exception e) {
+            return getErrorProperties("Failed to get LaunchProperties for Patient ID! Exception:", "ERROR", e);
         }
     }
     public Properties getLaunchPropertiesForManifest(String url) {
