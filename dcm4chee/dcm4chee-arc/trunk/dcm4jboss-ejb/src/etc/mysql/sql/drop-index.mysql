@@ -35,6 +35,7 @@ ALTER TABLE rel_study_pcode DROP INDEX study_pcode_fk;
 ALTER TABLE study_permission DROP INDEX study_perm_idx;
 ALTER TABLE mpps DROP INDEX mpps_iuid;
 ALTER TABLE mpps DROP INDEX mpps_patient_fk;
+ALTER TABLE mpps DROP INDEX mpps_drcode_fk;
 ALTER TABLE mpps DROP INDEX mpps_pps_start;
 ALTER TABLE mpps DROP INDEX mpps_station_aet;
 ALTER TABLE mpps DROP INDEX mpps_modality;

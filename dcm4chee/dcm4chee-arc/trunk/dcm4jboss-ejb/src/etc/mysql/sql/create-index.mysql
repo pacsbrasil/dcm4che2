@@ -35,6 +35,7 @@ CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 CREATE UNIQUE INDEX study_perm_idx ON study_permission(study_iuid(64), action(1), roles(16));
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
 CREATE INDEX mpps_patient_fk ON mpps(patient_fk);
+CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 CREATE INDEX mpps_pps_start ON mpps (pps_start);
 CREATE INDEX mpps_station_aet ON mpps (station_aet(16));
 CREATE INDEX mpps_modality ON mpps (modality(16));
