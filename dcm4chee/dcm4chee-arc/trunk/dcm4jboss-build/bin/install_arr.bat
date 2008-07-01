@@ -24,12 +24,12 @@ goto end
 set ARR_HOME=%1
 set ARR_SERV=%ARR_HOME%\server\default
 
-if exist "%ARR_SERV%\deploy\dcm4chee-arr-db2-3.0.5.ear" set ARR_DB=db2
-if exist "%ARR_SERV%\deploy\dcm4chee-arr-hsql-3.0.5.ear" set ARR_DB=hsql
-if exist "%ARR_SERV%\deploy\dcm4chee-arr-mssql-3.0.5.ear" set ARR_DB=mssql
-if exist "%ARR_SERV%\deploy\dcm4chee-arr-mysql-3.0.5.ear" set ARR_DB=mysql
-if exist "%ARR_SERV%\deploy\dcm4chee-arr-oracle-3.0.5.ear" set ARR_DB=oracle
-if exist "%ARR_SERV%\deploy\dcm4chee-arr-psql-3.0.5.ear" set ARR_DB=psql
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-db2-3.0.6.ear" set ARR_DB=db2
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-hsql-3.0.6.ear" set ARR_DB=hsql
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-mssql-3.0.6.ear" set ARR_DB=mssql
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-mysql-3.0.6.ear" set ARR_DB=mysql
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-oracle-3.0.6.ear" set ARR_DB=oracle
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-psql-3.0.6.ear" set ARR_DB=psql
 if not [%ARR_DB%] == [] goto found_arr
 echo Could not locate dcm4chee-arr in %ARR_HOME%.
 goto end
@@ -37,7 +37,7 @@ goto end
 :found_arr
 copy "%ARR_SERV%\conf\dcm4chee-auditlog\arr-udplistener-xmbean.xml" "%DCM4CHEE_SERV%\conf\dcm4chee-auditlog"
 
-copy "%ARR_SERV%\deploy\dcm4chee-arr-%ARR_DB%-3.0.5.ear" "%DCM4CHEE_SERV%\deploy"
+copy "%ARR_SERV%\deploy\dcm4chee-arr-%ARR_DB%-3.0.6.ear" "%DCM4CHEE_SERV%\deploy"
 copy "%ARR_SERV%\deploy\arr-%ARR_DB%-ds.xml" "%DCM4CHEE_SERV%\deploy"
 copy "%DCM4CHEE_HOME%\doc\dcm4chee-auditlog-service.xml" "%DCM4CHEE_SERV%\deploy"
 
