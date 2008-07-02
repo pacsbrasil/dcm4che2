@@ -109,10 +109,12 @@ extends AbstractHPComparator
                 return -sign;
             if (v1 > v2)
                 return sign;
+        } catch (NullPointerException ignore) {
+            // missing image position/orientation information - treat as equal
         } catch (NumberFormatException ignore) {
-            // invalid patient position data - treat as equal
+            // invalid image position/orientation information - treat as equal
         } catch (IndexOutOfBoundsException ignore) {
-            // invalid patient position data - treat as equal
+            // invalid image position/orientation information - treat as equal
         }
         return 0;
     }
