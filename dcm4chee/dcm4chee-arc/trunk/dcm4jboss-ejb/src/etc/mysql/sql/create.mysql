@@ -40,7 +40,7 @@ CREATE TABLE patient (
 FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 ) ENGINE=INNODB;
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
-CREATE UNIQUE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
+CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 CREATE INDEX pat_name ON patient(pat_name(64));
 CREATE INDEX pat_i_name ON patient(pat_i_name(64));
 CREATE INDEX pat_p_name ON patient(pat_p_name(64));
