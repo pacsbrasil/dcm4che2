@@ -1150,7 +1150,7 @@ public class DcmQR {
             dcmqr.start();
         } catch (Exception e) {
             System.err.println("ERROR: Failed to start server for receiving " +
-                    "Storage Commitment results:" + e.getMessage());
+                    "requested objects:" + e.getMessage());
             System.exit(2);
         }
         try {
