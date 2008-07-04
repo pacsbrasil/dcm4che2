@@ -16,7 +16,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.utils.SOAPUtil;
-import org.jboss.ws.core.jaxws.handler.GenericSOAPHandler;
+import org.jboss.wsf.common.handler.GenericSOAPHandler;
 import org.jboss.ws.core.soap.attachment.MimeConstants;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.slf4j.Logger;

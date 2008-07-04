@@ -3,12 +3,12 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xdsb-repo</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.1-jbossws302</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo-ws</artifactId>
   <packaging>war</packaging>
-  <version>0.0.1</version>
+  <version>0.0.1-jbossws302</version>
   <description></description>
   <build>
     <plugins>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
   	<artifactId>dcm4chee-xds-common</artifactId>
-  	<version>0.0.1</version>
+  	<version>0.0.1-jbossws302</version>
       <scope>provided</scope>
     </dependency>  
     <dependency>
@@ -35,21 +35,27 @@
       <scope>provided</scope>
     </dependency>  
     <dependency>
-      <groupId>jboss.jbossws</groupId>
-      <artifactId>jboss-jaxws</artifactId>
-      <version>2.0.1.GA</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-jmx</artifactId>
       <version>4.2.2.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss.jbossws</groupId>
-      <artifactId>jbossws-core</artifactId>
-      <version>3.0.1-native-2.0.4.GA</version>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-ejb3x</artifactId>
+      <version>4.2.2.GA</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ws.native</groupId>
+      <artifactId>jbossws-native-jaxws</artifactId>
+      <version>3.0.2.GA</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ws.native</groupId>
+      <artifactId>jbossws-native-core</artifactId>
+      <version>3.0.2.GA</version>
       <scope>provided</scope>
     </dependency>    
     <dependency>
