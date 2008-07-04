@@ -4,11 +4,11 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xdsb-src</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.1-jbossws302</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-src-mbean</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.1-jbossws302</version>
   <packaging>jboss-sar</packaging>
   <name>JMX service for XDS.b Document Source Actor</name>
   <build>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-common</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.1-jbossws302</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -59,15 +59,15 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
+      <groupId>org.jboss.ws</groupId>
       <artifactId>jbossws-common</artifactId>
-      <version>1.0.0.GA</version>
+      <version>1.0.5.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss.jbossws</groupId>
-      <artifactId>jbossws-core</artifactId>
-      <version>3.0.1-native-2.0.4.GA</version>
+      <groupId>org.jboss.ws.native</groupId>
+      <artifactId>jbossws-native-core</artifactId>
+      <version>3.0.2.GA</version>
       <scope>provided</scope>
     </dependency>    
     <dependency>
@@ -83,9 +83,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-        <groupId>jboss.jbossws</groupId>
-        <artifactId>jboss-jaxws</artifactId>
-        <version>2.0.1.GA</version>
+        <groupId>org.jboss.ws.native</groupId>
+        <artifactId>jbossws-native-jaxws</artifactId>
+        <version>3.0.2.GA</version>
         <scope>provided</scope>
     </dependency>
     <dependency>
