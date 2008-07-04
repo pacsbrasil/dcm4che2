@@ -25,9 +25,10 @@ goto :test_patches
 set XDS_HOME=%1
 
 :test_patches
-set XDS_PATCHES_JBOSSWS=%XDS_HOME%\patches\jbossws-3.0.1-native-2.0.4.GA
+set XDS_PATCHES_JBOSSWS=%XDS_HOME%\patches\jbossws-native-3.0.2.GA
 
 if exist "%XDS_PATCHES_JBOSSWS%" goto found_patches
+echo "%XDS_PATCHES_JBOSSWS% doesn't exist!"
 echo "Usage: patch_jbossws <path-to-dcm4chee-xds-installation-directory>"
 goto end
 
