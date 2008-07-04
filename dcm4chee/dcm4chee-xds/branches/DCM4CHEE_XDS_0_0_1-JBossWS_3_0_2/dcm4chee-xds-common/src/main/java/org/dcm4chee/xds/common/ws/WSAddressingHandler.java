@@ -11,7 +11,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.dcm4chee.xds.common.XDSConstants;
-import org.jboss.ws.core.jaxws.handler.GenericSOAPHandler;
+import org.jboss.wsf.common.handler.GenericSOAPHandler;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
