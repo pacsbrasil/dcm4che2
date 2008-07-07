@@ -113,7 +113,6 @@ public class ORUService extends ORU_MDMService
     public void process(Document msg) throws HL7Exception {
         try {
             Dataset doc = xslt(msg, xslPath);
-            DcmObjectFactory.getInstance().newDataset();
             addIUIDs(doc);
             storeSR(doc);
         } catch (Exception e) {
