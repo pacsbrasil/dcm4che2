@@ -127,6 +127,9 @@ public class Instance implements Serializable {
     @Column(name = "inst_status")
     private StorageStatus storageStatus;
 
+    @Column(name = "all_attrs")
+    private boolean allAttributes;
+
     @Column(name = "commitment")
     private boolean storageComitted;
 
@@ -232,6 +235,14 @@ public class Instance implements Serializable {
         this.storageStatus = storageStatus;
     }
 
+    public boolean isAllAttributes() {
+        return allAttributes;
+    }
+
+    public void setAllAttributes(boolean allAttributes) {
+        this.allAttributes = allAttributes;
+    }
+
     public boolean isStorageComitted() {
         return storageComitted;
     }
@@ -292,6 +303,7 @@ public class Instance implements Serializable {
                 + (verificationFlag != null
                         ? ", verification=" + verificationFlag
                         : "")
+                + ", allattrs=" + allAttributes
                 + ", comitted=" + storageComitted
                 + ", status=" + storageStatus
                 + ", avail=" + availability
