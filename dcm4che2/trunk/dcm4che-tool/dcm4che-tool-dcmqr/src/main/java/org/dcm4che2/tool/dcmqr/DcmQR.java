@@ -1638,9 +1638,8 @@ public class DcmQR {
         String tsuid = selectTransferSyntax(tc);
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
             DicomObject keys = findResults.get(i).subSet(MOVE_KEYS);
-            if (isEvalRetrieveAET()
-                    && moveDest.equals(findResults.get(i)
-                            .getString(Tag.RetrieveAETitle))) {
+            if (isEvalRetrieveAET() && containsMoveDest(
+                    findResults.get(i).getStrings(Tag.RetrieveAETitle))) {
                 LOG.info("Skipping {}:\n{}",
                         UIDDictionary.getDictionary().prompt(cuid), keys);
             } else {
@@ -1652,6 +1651,17 @@ public class DcmQR {
         assoc.waitForDimseRSP();
     }
 
+
+    private boolean containsMoveDest(String[] retrieveAETs) {
+        if (retrieveAETs != null) {
+            for (String aet : retrieveAETs) {
+                if (moveDest.equals(aet)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public void get(List<DicomObject> findResults)
             throws IOException, InterruptedException {
