@@ -42,12 +42,10 @@ import java.io.IOException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Reversion$ $Date$
+ * @version $Revision$ $Date$
  * @since Sep 15, 2005
  */
-public class AAssociateRJ extends IOException
-{
-
+public class AAssociateRJ extends IOException {
     private static final long serialVersionUID = 7878137718648065429L;
 
     public static final int RESULT_REJECTED_PERMANENT = 1;
@@ -67,32 +65,96 @@ public class AAssociateRJ extends IOException
     public static final int REASON_TEMPORARY_CONGESTION = 1;
     public static final int REASON_LOCAL_LIMIT_EXCEEDED = 2;
 
+    /**
+     * Holds descriptions for common codes.
+     */
+    private static class Lookup {
+        private int source;
+        private int reason;
+        private String description;
+
+        public Lookup(int source, int reason, String desc) {
+            this.source = source;
+            this.reason = reason;
+            this.description = desc;
+        }
+
+        public boolean matches(int sourceIn, int reasonIn) {
+            return this.source == sourceIn && this.reason == reasonIn;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
+
+    private static final Lookup[] DESCRIPTIONS = new Lookup[] {
+            new Lookup(SOURCE_SERVICE_USER, REASON_NO_REASON_GIVEN,
+                    "no-reason-given"),
+            new Lookup(SOURCE_SERVICE_USER, REASON_APP_CTX_NAME_NOT_SUPPORTED,
+                    "application-context-name-not-supported"),
+            new Lookup(SOURCE_SERVICE_USER, REASON_CALLING_AET_NOT_RECOGNIZED,
+                    "calling-AE-title-not-recognized"),
+            new Lookup(SOURCE_SERVICE_USER, REASON_CALLED_AET_NOT_RECOGNIZED,
+                    "called-AE-title-not-recognized"),
+
+            new Lookup(SOURCE_SERVICE_PROVIDER_ACSE, REASON_NO_REASON_GIVEN,
+                    "no-reason-given"),
+            new Lookup(SOURCE_SERVICE_PROVIDER_ACSE,
+                    REASON_PROTOCOL_VERSION_NOT_SUPPORTED,
+                    "protocol-version-not-supported"),
+
+            new Lookup(SOURCE_SERVICE_PROVIDER_PRES,
+                    REASON_TEMPORARY_CONGESTION, "temporary-congestion"),
+            new Lookup(SOURCE_SERVICE_PROVIDER_PRES,
+                    REASON_LOCAL_LIMIT_EXCEEDED, "local-limit-exceeded") };
+
     private final int result;
     private final int source;
     private final int reason;
 
-    public AAssociateRJ(int result, int source, int reason)
-    {
-        super("A-ASSOCIATE-RJ[result=" + result + ", source=" + source
-                + ", reason=" + reason + "]");
+    public AAssociateRJ(int result, int source, int reason) {
+        super(createDescription(result, source, reason));
         this.result = result;
         this.source = source;
         this.reason = reason;
     }
 
-    public final int getResult()
-    {
+    public final int getResult() {
         return result;
     }
 
-    public final int getSource()
-    {
+    public final int getSource() {
         return source;
     }
 
-    public final int getReason()
-    {
+    public final int getReason() {
         return reason;
     }
 
+    private static String createDescription(int result, int source, int reason) {
+        StringBuilder msg = new StringBuilder();
+        msg.append("A-ASSOCIATE-RJ[result=");
+        msg.append(result);
+        msg.append(", source=");
+        msg.append(source);
+        msg.append(", reason=");
+        msg.append("]: ");
+
+        if (result == 1) {
+            msg.append("permanent ");
+        } else if (result == 2) {
+            msg.append("transient ");
+        }
+
+        for (Lookup desc : DESCRIPTIONS) {
+            if (desc.matches(source, reason)) {
+                msg.append(desc.getDescription());
+                return msg.toString();
+            }
+        }
+
+        msg.append("reserved");
+        return msg.toString();
+    }
 }
