@@ -155,18 +155,17 @@
    </appender>
    -->
 
-   <!--  Emit events as JMX notifications
+   <!--  Emit events as JMX notifications -->
    <appender name="JMX" class="org.jboss.monitor.services.JMXNotificationAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
       
-      <param name="Threshold" value="WARN"/>
+      <param name="Threshold" value="ERROR"/>
       <param name="ObjectName" value="jboss.system:service=Logging,type=JMXNotificationAppender"/>
       
       <layout class="org.apache.log4j.PatternLayout">
          <param name="ConversionPattern" value="%d %-5p [%c] %m"/>
       </layout>
    </appender>
-   -->
 
    <!-- ==================== -->
    <!-- Audit Trail Messages -->
@@ -381,6 +380,7 @@
    <root>
       <appender-ref ref="CONSOLE"/>
       <appender-ref ref="FILE"/>
+      <appender-ref ref="JMX"/>
    </root>
 
    <!-- Clustering logging -->
