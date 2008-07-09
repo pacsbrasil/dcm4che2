@@ -59,7 +59,6 @@ cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/jmx-invoker-service.xml \
   "$JBOSS_SERV"/deploy/jsr88-service.xml \
   "$JBOSS_SERV"/deploy/mail-service.xml \
-  "$JBOSS_SERV"/deploy/monitoring-service.xml \
   "$JBOSS_SERV"/deploy/properties-service.xml \
   "$JBOSS_SERV"/deploy/quartz-ra.rar \
   "$JBOSS_SERV"/deploy/sqlexception-service.xml \
