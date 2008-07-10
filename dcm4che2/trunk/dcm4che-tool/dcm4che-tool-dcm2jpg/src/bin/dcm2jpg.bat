@@ -52,6 +52,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.16-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-2.0.16-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-2.0.16-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-rle-2.0.16-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.4.3.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.4.3.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.13.jar
