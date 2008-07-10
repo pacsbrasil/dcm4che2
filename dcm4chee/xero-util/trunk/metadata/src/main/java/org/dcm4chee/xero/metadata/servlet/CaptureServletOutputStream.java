@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Bill Wallace, Agfa HealthCare Inc., 
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,16 +35,46 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.model;
+package org.dcm4chee.xero.metadata.servlet;
 
-import java.util.Map;
-/**
- * A MapFactory takes a Map of values and produces one or more additional values computed from them.
- * 
- * @author bwallace
- */
-public interface MapFactory {
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-   /** Create a computed value from the src value */
-   public Object create(Map<String,Object> src);
+import javax.servlet.ServletOutputStream;
+
+/** Captures the output from a servlet output stream */
+public class CaptureServletOutputStream extends ServletOutputStream {
+	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+	@Override
+	public void write(int b) throws IOException {
+		baos.write(b);
+	}
+
+	/** Get the output stream that was used */
+	public ByteArrayOutputStream getByteArrayOutputStream() {
+		return baos;
+	}
+
+	@Override
+	public void close() throws IOException {
+		super.close();
+		baos.close();
+	}
+
+	@Override
+	public void flush() throws IOException {
+		super.flush();
+		baos.close();
+	}
+
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		baos.write(b, off, len);
+	}
+
+	@Override
+	public void write(byte[] b) throws IOException {
+		baos.write(b);
+	}
 }

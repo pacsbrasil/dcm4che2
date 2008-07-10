@@ -51,6 +51,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -310,7 +311,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 		 return;
 	  }
 	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	  ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+	  ImageOutputStream ios = new MemoryCacheImageOutputStream(baos);
 	  writer.setOutput(ios);
 	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
 	  writer.write(iiometadata, iioimage, imageWriteParam);

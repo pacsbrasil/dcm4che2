@@ -53,8 +53,8 @@ import org.dcm4chee.xero.controller.RequestValidator;
 import org.dcm4chee.xero.controller.XmlModelFactory;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.model.MapWithDefaults;
 import org.dcm4chee.xero.model.UrlUriResolver;
+import org.dcm4chee.xero.template.MapWithDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +77,15 @@ import org.slf4j.LoggerFactory;
 public class XeroServlet extends StringTemplateServlet {
    static final Logger log = LoggerFactory.getLogger(XeroServlet.class);
 
+   /** The name of the controller to use */
+   String controllerName="controller";
+   
+   /** The name of the model to use */
+   String modelName = "model";
+   
+   /** The meta-data name to lookup */
+   String metadataName = "xero-view.metadata";
+   
    Action controller;
    
    StringTemplateGroup stgIE;
@@ -117,14 +126,13 @@ public class XeroServlet extends StringTemplateServlet {
    }
 
 
-
    /** Initialize the data and ie specific stg. */
    @Override
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
-	  MetaDataBean root = StaticMetaData.getMetaData("xero-view.metadata");
-	  model = root.get("model");
-	  controller = (Action) root.get("controller").getValue();
+	  MetaDataBean root = StaticMetaData.getMetaData(metadataName);
+	  model = root.get(modelName);
+	  controller = (Action) root.get(controllerName).getValue();
 	  stgIE = createStringTemplateGroup("ie");
 	  stgIE.setSuperGroup(stg);
 	  stgIE.setAttributeRenderers(StringSafeRenderer.RENDERERS);

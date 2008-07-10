@@ -35,37 +35,26 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.model;
+package org.dcm4chee.xero.template;
 
-import java.util.Map;
-
+import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.StaticMetaData;
+import org.testng.annotations.Test;
 
-/**
- * A MapWithDefaults is a map of values, where it can ask some pre-configured meta-data about what
- * defaults it should use coming from the meta-data bean.
- * This is closely related to a lazy map that knows how to create objects from a factory if needed.
- * 
- * @author bwallace
- *
- */
-@SuppressWarnings("serial")
-public class MapWithDefaults extends LazyMap {
-   MetaDataBean mdb;
-   
-   public MapWithDefaults(MetaDataBean mdb) {
-	  this.mdb = mdb;
-   }
-   
-   public MapWithDefaults(MetaDataBean mdb, Map<String,Object> lazy) {
-	  super(lazy);
-	  this.mdb = mdb;
-   }
+/** Tests the auto string template group by ensuring that the various attributes get correctly set. */
+public class AutoStringTemplateGroupTest {
 
-   /** Get the lazy object from the meta-data object associated with this map. */
-   protected Object getLazy(Object key) {
-	  Object v = mdb.getValue((String) key);
-	  if( v!=null ) return v;
-	  return super.getLazy(key);
-   }
+	@Test
+	public void testAttributeSet() {
+		  MetaDataBean root = StaticMetaData.getMetaData("util-test.metadata");
+		  MetaDataBean mdb = root.get("model");
+		  AutoStringTemplateGroup stg = (AutoStringTemplateGroup) mdb.getValue(StringTemplateFilter.TEMPLATE_GROUP);
+		  assert stg!=null;
+		  assert stg.getName().equals("utilTestTemplates");
+		  assert stg.getRefreshInterval()==5;
+		  assert stg.getSuperGroup().getName().equals("testSuper");
+		  // TODO - figure out a better test for this...
+		  assert stg.getAttributeRenderers()==StringSafeRenderer.JS_RENDERERS;
+	}
 }

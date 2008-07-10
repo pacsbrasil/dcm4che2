@@ -35,47 +35,41 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.view;
+package org.dcm4chee.xero.metadata.servlet;
 
-import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.template.MapWithDefaults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * Renders a table using default data set and tests the resulting output.
+ * Returns an error code/text.
+ * 
  * @author bwallace
- *
+ * 
  */
-public class TableTest {
-   static final Logger log = LoggerFactory.getLogger(TableTest.class);
-   static ClassLoader cl = Thread.currentThread().getContextClassLoader();
-   
-   static boolean print = false;
+public class ErrorResponseItem implements ServletResponseItem {
+	String message;
+	int code;
 
-   MetaDataBean mdb = StaticMetaData.getMetaData("test-view.metadata");
-   MetaDataBean model = mdb.get("model");
+	/** Create an error response item that just does a sendError on the response */
+	public ErrorResponseItem(int code, String message) { 
+		this.message = message;
+		this.code = code;
+	}
+	
+	public ErrorResponseItem(int code) {
+		this(code,null);
+	}
 
-   @Test
-   public void searchResultsTableTest() {
-	  MapWithDefaults mwd = new MapWithDefaults(model);
-	  String rootDir = cl.getResource("xero").getFile();
-	  StringTemplateGroup stg = new StringTemplateGroup("xero",rootDir);
-	  StringTemplate st = stg.getInstanceOf("xero",mwd);
-	  String result = st.toString();
-	  if( print ) log.info("Result=\n"+result);
-	  int cnt = 100;
-	  long start = System.nanoTime();
-	  for(int i=0; i<cnt; i++) {
-		 mwd = new MapWithDefaults(model);
-		 st = stg.getInstanceOf("xero",mwd);
-		 st.toString();
-	  }
-	  log.info("Table generation took "+(System.nanoTime()-start)/(1e6*cnt)+" ms/iteration.");
-	  // TODO - add some asserts about the table setup
-   }
+	/** Write the given error response */
+	public void writeResponse(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		if( message!=null ) {
+			response.sendError(code,message);
+		} else {
+			response.sendError(code);
+		}
+		return;
+	}
 }

@@ -120,6 +120,20 @@
       </init-param>
    </servlet>
    
+   <servlet>
+      <servlet-name>Xero Filter JS Servlet</servlet-name>
+      <servlet-class>org.antlr.stringtemplate.servlet.StringTemplateServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>xero-view.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>jscontroller</param-value>
+      </init-param>
+   </servlet>
+
    <servlet-mapping>
       <servlet-name>Xero Servlet</servlet-name>
       <url-pattern>/xero</url-pattern>

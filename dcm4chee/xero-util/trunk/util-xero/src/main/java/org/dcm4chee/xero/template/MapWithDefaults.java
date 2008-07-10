@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Bill Wallace, Agfa HealthCare Inc., 
- * Portions created by the Initial Developer are Copyright (C) 2007
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,46 +35,44 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.wado;
+package org.dcm4chee.xero.template;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.util.Map;
 
-import javax.servlet.ServletOutputStream;
+import org.dcm4chee.xero.metadata.MetaDataBean;
 
-/** Captures the output from a servlet output stream */
-public class CaptureServletOutputStream extends ServletOutputStream {
-	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+/**
+ * A MapWithDefaults is a map of values, where it can ask some pre-configured meta-data about what
+ * defaults it should use coming from the meta-data bean.
+ * This is closely related to a lazy map that knows how to create objects from a factory if needed.
+ * 
+ * @author bwallace
+ *
+ */
+@SuppressWarnings("serial")
+public class MapWithDefaults extends LazyMap {
+   MetaDataBean mdb;
+   
+   public MapWithDefaults(MetaDataBean mdb) {
+	  this.mdb = mdb;
+   }
+   
+   public MapWithDefaults(MetaDataBean mdb, Map<String,Object> lazy) {
+	  super(lazy);
+	  this.mdb = mdb;
+   }
 
-	@Override
-	public void write(int b) throws IOException {
-		baos.write(b);
-	}
-
-	/** Get the output stream that was used */
-	public ByteArrayOutputStream getByteArrayOutputStream() {
-		return baos;
-	}
-
-	@Override
-	public void close() throws IOException {
-		super.close();
-		baos.close();
-	}
-
-	@Override
-	public void flush() throws IOException {
-		super.flush();
-		baos.close();
-	}
-
-	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
-		baos.write(b, off, len);
-	}
-
-	@Override
-	public void write(byte[] b) throws IOException {
-		baos.write(b);
-	}
+   /** Get the lazy object from the meta-data object associated with this map. */
+   protected Object getLazy(Object key) {
+	  Object v = mdb.getValue((String) key);
+	  if( v!=null ) return v;
+	  return super.getLazy(key);
+   }
+   
+   /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
+   public void eager() {
+	   for(Map.Entry<String,MetaDataBean> me : mdb.entrySet()) {
+		   this.get(me.getKey());
+	   }
+   }
 }

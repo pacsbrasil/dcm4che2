@@ -35,47 +35,35 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.view;
+package org.dcm4chee.xero.template;
 
-import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
+import java.util.Map;
+
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.template.MapWithDefaults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
+import org.dcm4chee.xero.metadata.MetaDataUser;
+import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.metadata.filter.FilterItem;
 
-/**
- * Renders a table using default data set and tests the resulting output.
- * @author bwallace
- *
+/** This class returns a lazy event model based on the given meta-data object base class. 
+ * The rules for the meta-data are that data lookup etc can be lazy, but that all lookups must be order
+ * independent, and idempotent (same result every time and it doesn't matter how many times you call the get function,
+ * other than performance)
  */
-public class TableTest {
-   static final Logger log = LoggerFactory.getLogger(TableTest.class);
-   static ClassLoader cl = Thread.currentThread().getContextClassLoader();
-   
-   static boolean print = false;
+public class EventModelFilter implements Filter<Map<String,Object> >, MetaDataUser {
+	MetaDataBean mdb;
+	
+	/** Returns a lazy map based on the metadata contents.   */
+	public Map<String, Object> filter(
+			FilterItem<Map<String, Object>> filterItem,
+			Map<String, Object> params) {
+		MapWithDefaults ret = new MapWithDefaults(mdb);
+		ret.put("params", params);
+		return ret;
+	}
 
-   MetaDataBean mdb = StaticMetaData.getMetaData("test-view.metadata");
-   MetaDataBean model = mdb.get("model");
-
-   @Test
-   public void searchResultsTableTest() {
-	  MapWithDefaults mwd = new MapWithDefaults(model);
-	  String rootDir = cl.getResource("xero").getFile();
-	  StringTemplateGroup stg = new StringTemplateGroup("xero",rootDir);
-	  StringTemplate st = stg.getInstanceOf("xero",mwd);
-	  String result = st.toString();
-	  if( print ) log.info("Result=\n"+result);
-	  int cnt = 100;
-	  long start = System.nanoTime();
-	  for(int i=0; i<cnt; i++) {
-		 mwd = new MapWithDefaults(model);
-		 st = stg.getInstanceOf("xero",mwd);
-		 st.toString();
-	  }
-	  log.info("Table generation took "+(System.nanoTime()-start)/(1e6*cnt)+" ms/iteration.");
-	  // TODO - add some asserts about the table setup
-   }
+	/** Records the MetaDataBean for use later as the basis for the event map */
+	public void setMetaData(MetaDataBean metaDataBean) {
+		this.mdb = metaDataBean;
+	}
+	
 }

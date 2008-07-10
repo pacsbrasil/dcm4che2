@@ -46,6 +46,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterList;
+import org.dcm4chee.xero.metadata.servlet.CaptureServletOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.easymock.EasyMock;
 import org.testng.annotations.Test;

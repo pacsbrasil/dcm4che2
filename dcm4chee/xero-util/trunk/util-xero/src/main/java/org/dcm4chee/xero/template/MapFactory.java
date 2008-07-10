@@ -35,68 +35,16 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.model;
+package org.dcm4chee.xero.template;
 
-import java.util.HashMap;
 import java.util.Map;
+/**
+ * A MapFactory takes a Map of values and produces one or more additional values computed from them.
+ * 
+ * @author bwallace
+ */
+public interface MapFactory {
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@SuppressWarnings("serial")
-public class LazyMap extends HashMap<String, Object> {
-   private static final Logger log = LoggerFactory.getLogger(LazyMap.class); 
-   Map<String, Object> lazy;
-
-   public LazyMap(Map<String, Object> lazy) {
-	  this.lazy = lazy;
-   }
-   
-   public LazyMap() {
-   }
-
-   public Object get(Object key) {
-	  Object ret = super.get(key);
-	  if (ret != null)
-		 return ret;
-	  ret = checkLazy(key);
-	  return ret;
-   }
-
-   public boolean containsKey(Object key) {
-	  if (super.containsKey(key))
-		 return true;
-	  Object v = checkLazy(key);
-	  if (v != null)
-		 return true;
-	  return false;
-   }
-
-   /** Check to see if there is a lazy created object, and if so, see if it is a map factory,
-    * and use the factory if so, and put the result into this map.
-    * Used by containsKey and get to retrieve the values.
-    */
-   protected Object checkLazy(Object key) {
-	  Object v = getLazy(key);
-	  if (v == null)
-		 return null;
-	  if (v instanceof MapFactory) {
-		 v = ((MapFactory) v).create(this);
-		 if( v!=null ) log.info("Created lazy {} of class {}", key,v.getClass());
-	  }
-	  this.put((String) key, v);
-	  return v;
-   }
-
-   /**
-    * Get the lazily created object.
-    * 
-    * @param key
-    * @return
-    */
-   protected Object getLazy(Object key) {
-	  if (lazy == null)
-		 return null;
-	  return lazy.get(key);
-   }
+   /** Create a computed value from the src value */
+   public Object create(Map<String,Object> src);
 }
