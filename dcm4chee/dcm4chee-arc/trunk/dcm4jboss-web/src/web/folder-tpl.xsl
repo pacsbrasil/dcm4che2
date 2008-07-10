@@ -599,9 +599,7 @@
  </xsl:if>
  <xsl:variable name="studyOrder">
   <xsl:choose>
-   <xsl:when test="/model/latestStudiesFirst = 'true'">
-    descending
-   </xsl:when>
+   <xsl:when test="/model/latestStudiesFirst = 'true'">descending</xsl:when>
    <xsl:otherwise>ascending</xsl:otherwise>
   </xsl:choose>
  </xsl:variable>
