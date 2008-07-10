@@ -119,8 +119,8 @@ public class Dcm2Jpg {
     }
 
     public void convert(File src, File dest) throws IOException {
-        Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
-        ImageReader reader = (ImageReader) iter.next();
+        Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
+        ImageReader reader = iter.next();
         DicomImageReadParam param = 
             (DicomImageReadParam) reader.getDefaultReadParam();
         param.setWindowCenter(center);
@@ -149,11 +149,11 @@ public class Dcm2Jpg {
         System.out.print('.');
     }
 
-    public int mconvert(List args, int optind, File destDir)
+    public int mconvert(List<String> args, int optind, File destDir)
             throws IOException {
         int count = 0;
         for (int i = optind, n = args.size() - 1; i < n; ++i) {
-            File src = new File((String) args.get(i));
+            File src = new File(args.get(i));
             count += mconvert(src, new File(destDir, src2dest(src)));
         }
         return count;
@@ -193,6 +193,7 @@ public class Dcm2Jpg {
         return count;
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String args[]) throws Exception {
         CommandLine cl = parse(args);
         Dcm2Jpg dcm2jpg = new Dcm2Jpg();
@@ -221,16 +222,16 @@ public class Dcm2Jpg {
         if (cl.hasOption("jpgext")) {
             dcm2jpg.setFileExt(cl.getOptionValue("jpgext"));
         }
-        final List argList = cl.getArgList();
+        final List<String> argList = cl.getArgList();
         int argc = argList.size();
 
-        File dest = new File((String) argList.get(argc-1));
+        File dest = new File(argList.get(argc-1));
         long t1 = System.currentTimeMillis();
         int count = 1;
         if (dest.isDirectory()) {
             count = dcm2jpg.mconvert(argList, 0, dest);
         } else {
-            File src = new File((String) argList.get(0));
+            File src = new File(argList.get(0));
             if (argc > 2 || src.isDirectory()) {
                 exit("dcm2jpg: when converting several files, "
                         + "last argument must be a directory\n");
