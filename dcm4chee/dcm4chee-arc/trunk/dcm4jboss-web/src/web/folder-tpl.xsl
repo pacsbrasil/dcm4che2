@@ -525,26 +525,22 @@
    <td title="&PatientName;">
     <strong>
      <xsl:value-of select="patientName" />
-     &#160;
-    </strong>
+    </strong>&#160;
    </td>
    <td title="&PatientID;">
     <strong>
      <xsl:value-of select="patientID" />
-     &#160;
-    </strong>
+    </strong>&#160;
    </td>
    <td title="&BirthDate;">
     <strong>
      <xsl:value-of select="patientBirthDate" />
-     &#160;
-    </strong>
+    </strong>&#160;
    </td>
    <td title="&Sex;">
     <strong>
      <xsl:value-of select="patientSex" />
-     &#160;
-    </strong>
+    </strong>&#160;
    </td>
    <td>&#160;</td>
    <td class="patient_mark" align="right">
@@ -646,34 +642,34 @@
     </xsl:choose>
    </td>
    <td title="&StudyDateTime;">
-    <xsl:value-of select="studyDateTime" />
+    <xsl:value-of select="studyDateTime" />&#160;
    </td>
    <td title="&StudyIDMedia;">
     <xsl:value-of select="studyID" />
     <xsl:if test="filesetId != '_NA_'">
      @<xsl:value-of select="filesetId" />
-    </xsl:if>
+    </xsl:if>&#160;
    </td>
    <td title="&Modality;">
-    <xsl:value-of select="modalitiesInStudy" />
+    <xsl:value-of select="modalitiesInStudy" />&#160;
     </td>
    <xsl:choose>
     <xsl:when test="/model/showStudyIUID='false'">
      <td title="&StudyDescription;">
-      <xsl:value-of select="studyDescription" />
+      <xsl:value-of select="studyDescription" />&#160;
      </td>
     </xsl:when>
     <xsl:otherwise>
      <td title="&StudyIUID;">
-      <xsl:value-of select="studyIUID" />
+      <xsl:value-of select="studyIUID" />&#160;
      </td>
     </xsl:otherwise>
    </xsl:choose>
    <td title="&AccessionNo;">
-    <xsl:value-of select="accessionNumber" />
+    <xsl:value-of select="accessionNumber" />&#160;
    </td>
    <td title="&RefPhysican;">
-    <xsl:value-of select="referringPhysician" />
+    <xsl:value-of select="referringPhysician" />&#160;
    </td>
    <td title="&StudyStatusID;" align="center">
     <xsl:choose>
@@ -681,16 +677,16 @@
       <img src="{studyStatusImage}" border="0" alt="icon" />
      </xsl:when>
      <xsl:when test="studyStatusId!=''">
-      <xsl:value-of select="studyStatusId" />
+      <xsl:value-of select="studyStatusId" />&#160;
      </xsl:when>
      <xsl:otherwise>&#160;</xsl:otherwise>
     </xsl:choose>
    </td>
    <td title="&NumberOfSeries;" align="center">
-    <xsl:value-of select="numberOfSeries" />
+    <xsl:value-of select="numberOfSeries" />&#160;
    </td>
    <td title="&NumberOfInstances;" align="center">
-    <xsl:value-of select="numberOfInstances" />
+    <xsl:value-of select="numberOfInstances" />&#160;
    </td>
    <td class="study_mark" align="right">
     <xsl:if test="/model/webViewer='true'">
@@ -790,28 +786,28 @@
     </xsl:choose>
    </td>
    <td title="&SeriesDateTime;">
-    <xsl:value-of select="seriesDateTime" />
+    <xsl:value-of select="seriesDateTime" />&#160;
    </td>
    <td title="&SeriesNoMedia;">
     <xsl:value-of select="seriesNumber" />
     <xsl:if test="filesetId != '_NA_'">
      @<xsl:value-of select="filesetId" />
-    </xsl:if>
+    </xsl:if>&#160;
    </td>
    <td title="&Modality;">
-    <xsl:value-of select="modality" />
+    <xsl:value-of select="modality" />&#160;
    </td>
    <xsl:choose>
     <xsl:when test="/model/showSeriesIUID='false'">
      <td title="&SeriesDescription;/&BodyPart;">
       <xsl:value-of select="seriesDescription" />
       /
-      <xsl:value-of select="bodyPartExamined" />
+      <xsl:value-of select="bodyPartExamined" />&#160;
      </td>
     </xsl:when>
     <xsl:otherwise>
      <td title="&SeriesIUID;">
-      <xsl:value-of select="seriesIUID" />
+      <xsl:value-of select="seriesIUID" />&#160;
      </td>
     </xsl:otherwise>
    </xsl:choose>
@@ -834,7 +830,7 @@
     &#160;
    </td>
    <td title="&NumberOfInstances;" align="center">
-    <xsl:value-of select="numberOfInstances" />
+    <xsl:value-of select="numberOfInstances" />&#160;
    </td>
    <td class="series_mark" align="right">
     <xsl:if test="/model/webViewer='true'">
@@ -932,16 +928,16 @@
    </td>
 
    <td title="&ContentDateTime;">
-    <xsl:value-of select="contentDateTime" />
+    <xsl:value-of select="contentDateTime" />&#160;
    </td>
    <td title="&InstanceNumber;">
-    <xsl:value-of select="instanceNumber" />
+    <xsl:value-of select="instanceNumber" />&#160;
    </td>
    <td title="&ImageType;">
-    <xsl:value-of select="imageType" />
+    <xsl:value-of select="imageType" />&#160;
    </td>
    <td title="&PixelMatrix;">
-    <xsl:value-of select="photometricInterpretation" />
+    <xsl:value-of select="photometricInterpretation" />&#160;
     <xsl:text> </xsl:text>
     <xsl:value-of select="rows" />
     <xsl:text>x</xsl:text>
@@ -953,13 +949,13 @@
     <xsl:text>&#160;bits</xsl:text>
    </td>
    <td title="&NumberOfFiles;">
-    <xsl:value-of select="numberOfFiles" />
+    <xsl:value-of select="numberOfFiles" />&#160;
    </td>
    <td title="&RetrieveAET;">
-    <xsl:value-of select="retrieveAETs" />
+    <xsl:value-of select="retrieveAETs" />&#160;
    </td>
    <td title="&SopIUID;">
-    <xsl:value-of select="sopIUID" />
+    <xsl:value-of select="sopIUID" />&#160;
    </td>
    <td class="instance_mark" align="right">
     <xsl:choose>
@@ -1044,29 +1040,29 @@
     </xsl:choose>
    </td>
    <td title="&CreationDateTime;">
-    <xsl:value-of select="presentationCreationDateTime" />
+    <xsl:value-of select="presentationCreationDateTime" />&#160;
    </td>
    <td title="&InstanceNumber;">
-    <xsl:value-of select="instanceNumber" />
+    <xsl:value-of select="instanceNumber" />&#160;
    </td>
    <td title="&PresentationDescription;">
-    <xsl:value-of select="presentationDescription" />
+    <xsl:value-of select="presentationDescription" />&#160;
    </td>
    <td title="&PresentationLabel;">
-    <xsl:value-of select="presentationLabel" />
+    <xsl:value-of select="presentationLabel" />&#160;
    </td>
    <td title="&NumberOfReferencedImages;">
     <xsl:text>-&gt;</xsl:text>
-    <xsl:value-of select="numberOfReferencedImages" />
+    <xsl:value-of select="numberOfReferencedImages" />&#160;
    </td>
    <td title="&NumberOfFiles;">
-    <xsl:value-of select="numberOfFiles" />
+    <xsl:value-of select="numberOfFiles" />&#160;
    </td>
    <td title="&RetrieveAET;">
-    <xsl:value-of select="retrieveAETs" />
+    <xsl:value-of select="retrieveAETs" />&#160;
    </td>
    <td title="&SopIUID;">
-    <xsl:value-of select="sopIUID" />
+    <xsl:value-of select="sopIUID" />&#160;
    </td>
    <td class="instance_mark" align="right">
     <xsl:choose>
@@ -1159,27 +1155,27 @@
     </xsl:choose>
    </td>
    <td title="&ContentDateTime;">
-    <xsl:value-of select="contentDateTime" />
+    <xsl:value-of select="contentDateTime" />&#160;
    </td>
    <td title="&InstanceNumber;">
-    <xsl:value-of select="instanceNumber" />
+    <xsl:value-of select="instanceNumber" />&#160;
    </td>
    <td title="&DocumentTitle;">
-    <xsl:value-of select="documentTitle" />
+    <xsl:value-of select="documentTitle" />&#160;
    </td>
    <td title="&DocumentStatus;">
     <xsl:value-of select="completionFlag" />
     <xsl:text>/</xsl:text>
-    <xsl:value-of select="verificationFlag" />
+    <xsl:value-of select="verificationFlag" />&#160;
    </td>
    <td title="&NumberOfFiles;">
-    <xsl:value-of select="numberOfFiles" />
+    <xsl:value-of select="numberOfFiles" />&#160;
    </td>
    <td title="&RetrieveAET;">
-    <xsl:value-of select="retrieveAETs" />
+    <xsl:value-of select="retrieveAETs" />&#160;
    </td>
    <td title="&SopIUID;">
-    <xsl:value-of select="sopIUID" />
+    <xsl:value-of select="sopIUID" />&#160;
    </td>
    <xsl:choose>
     <xsl:when test="availability='ONLINE'">
@@ -1295,21 +1291,21 @@
     </xsl:choose>
    </td>
    <td title="&ContentDateTime;">
-    <xsl:value-of select="contentDateTime" />
+    <xsl:value-of select="contentDateTime" />&#160;
    </td>
    <td title="&InstanceNumber;">
-    <xsl:value-of select="instanceNumber" />
+    <xsl:value-of select="instanceNumber" />&#160;
    </td>
    <td title="&WaveformType;">
-    <xsl:value-of select="waveformType" />
+    <xsl:value-of select="waveformType" />&#160;
    </td>
    <td>&#160;</td>
    <td>&#160;</td>
    <td title="&RetrieveAET;">
-    <xsl:value-of select="retrieveAETs" />
+    <xsl:value-of select="retrieveAETs" />&#160;
    </td>
    <td title="&SopIUID;">
-    <xsl:value-of select="sopIUID" />
+    <xsl:value-of select="sopIUID" />&#160;
    </td>
    <td class="instance_mark" align="right">
     <xsl:choose>
@@ -1398,25 +1394,25 @@
     </xsl:choose>
    </td>
    <td title="&ContentDateTime;">
-    <xsl:value-of select="contentDateTime" />
+    <xsl:value-of select="contentDateTime" />&#160;
    </td>
    <td title="&InstanceNumber;">
-    <xsl:value-of select="instanceNumber" />
+    <xsl:value-of select="instanceNumber" />&#160;
    </td>
    <td title="&DocumentTitle;">
-    <xsl:value-of select="documentTitle" />
+    <xsl:value-of select="documentTitle" />&#160;
    </td>
    <td title="&MIMEType;">
-    <xsl:value-of select="mimeType" />
+    <xsl:value-of select="mimeType" />&#160;
    </td>
    <td title="&NumberOfFiles;">
-    <xsl:value-of select="numberOfFiles" />
+    <xsl:value-of select="numberOfFiles" />&#160;
    </td>
    <td title="&RetrieveAET;">
-    <xsl:value-of select="retrieveAETs" />
+    <xsl:value-of select="retrieveAETs" />&#160;
    </td>
    <td title="&SopIUID;">
-    <xsl:value-of select="sopIUID" />
+    <xsl:value-of select="sopIUID" />&#160;
    </td>
    <xsl:choose>
     <xsl:when test="availability='ONLINE'">
@@ -1488,10 +1484,10 @@
    </colgroup>
    <td>&#160;</td>
    <td title="&TSUID;">
-    <xsl:value-of select="fileTsuid" />
+    <xsl:value-of select="fileTsuid" />&#160;
    </td>
    <td title="&RetrieveAET;">
-    <xsl:value-of select="retrieveAET" />
+    <xsl:value-of select="retrieveAET" />&#160;
    </td>
    <td title="&Status;">
     <xsl:choose>
@@ -1512,19 +1508,19 @@
      <xsl:otherwise>
       <xsl:value-of select="fileStatus" />
      </xsl:otherwise>
-    </xsl:choose>
+    </xsl:choose>&#160;
    </td>
    <td title="&FileSize;">
     <xsl:value-of select="fileSize" />
-    <xsl:text>&#160;bytes</xsl:text>
+    <xsl:text>&#160;bytes&#160;</xsl:text>
    </td>
    <td title="&FilePath;">
     <xsl:value-of select="directoryPath" />
     <xsl:text>/</xsl:text>
-    <xsl:value-of select="filePath" />
+    <xsl:value-of select="filePath" />&#160;
    </td>
    <td title="&MD5Sum;">
-    <xsl:value-of select="md5String" />
+    <xsl:value-of select="md5String" />&#160;
    </td>
    <td>
     <xsl:if test="position()=1 and ../../availability='ONLINE'">
@@ -1603,19 +1599,19 @@
  <tr>
   <td title="">&#160;</td>
   <td title="&DocumentTitle;">
-   <xsl:value-of select="name" />
+   <xsl:value-of select="name" />&#160;
   </td>
   <td title="&CreationDateTime;">
-   <xsl:value-of select="creationTime" />
+   <xsl:value-of select="creationTime" />&#160;
   </td>
   <td title="&DocumentStatus;">
-   <xsl:value-of select="statusAsString" />
+   <xsl:value-of select="statusAsString" />&#160;
   </td>
   <td title="&MIMEType;">
-   <xsl:value-of select="mimeType" />
+   <xsl:value-of select="mimeType" />&#160;
   </td>
   <td title="&DocumentID;">
-   <xsl:value-of select="id" />
+   <xsl:value-of select="id" />&#160;
   </td>
   <td>
    <xsl:choose>
