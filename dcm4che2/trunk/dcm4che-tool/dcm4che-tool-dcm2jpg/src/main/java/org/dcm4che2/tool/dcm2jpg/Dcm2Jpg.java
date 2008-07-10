@@ -82,6 +82,7 @@ public class Dcm2Jpg {
     private static final String DESCRIPTION = 
         "Convert DICOM image(s) to JPEG(s)\nOptions:";
     private static final String EXAMPLE = null;
+    private int frame = 1;
     private float center;
     private float width;
     private String vlutFct;
@@ -89,6 +90,10 @@ public class Dcm2Jpg {
     private DicomObject prState;
     private short[] pval2gray;
     private String fileExt = ".jpg";
+
+    private void setFrameNumber(int frame) {
+        this.frame = frame;
+    }
 
     private void setWindowCenter(float center) {
         this.center = center;        
@@ -134,7 +139,7 @@ public class Dcm2Jpg {
         OutputStream out = null;
         try {
             reader.setInput(iis, false);
-            bi = reader.read(0, param);
+            bi = reader.read(frame - 1, param);
             if (bi == null) {
                 System.out.println("\nError: " + src + " - couldn't read!");
                 return;
@@ -197,6 +202,12 @@ public class Dcm2Jpg {
     public static void main(String args[]) throws Exception {
         CommandLine cl = parse(args);
         Dcm2Jpg dcm2jpg = new Dcm2Jpg();
+        if (cl.hasOption("f")) {
+            dcm2jpg.setFrameNumber(
+                    parseInt(cl.getOptionValue("f"),
+                            "illegal argument of option -f",
+                            1, Integer.MAX_VALUE));
+        }
         if (cl.hasOption("p")) {
             dcm2jpg.setPresentationState(loadDicomObject(
                     new File(cl.getOptionValue("p"))));
@@ -295,6 +306,11 @@ public class Dcm2Jpg {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+        OptionBuilder.withArgName("frame");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "frame to convert, 1 (= first frame) by default");
+        opts.addOption(OptionBuilder.create("f"));
         OptionBuilder.withArgName("prfile");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -344,6 +360,18 @@ public class Dcm2Jpg {
             System.exit(0);
         }
         return cl;
+    }
+
+    private static int parseInt(String s, String errPrompt, int min, int max) {
+        try {
+            int i = Integer.parseInt(s);
+            if (i >= min && i <= max)
+                return i;
+        } catch (NumberFormatException e) {
+            // parameter is not a valid integer; fall through to exit
+        }
+        exit(errPrompt);
+        throw new RuntimeException();
     }
 
     private static float parseFloat(String s, String errPrompt) {
