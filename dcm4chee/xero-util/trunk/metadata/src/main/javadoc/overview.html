@@ -47,14 +47,15 @@ an implementation of the
  
  <h2>Accessing MetaData</h2>
  <p>The meta-data information is intended to be easily accessed.  To that purpose, there are a couple of access 
- mechanisms designed.  The first, direct access is through the MetaDataBean object itself.  This is an implementation
+ mechanisms designed, in the package {@see org.dcm4chee.xero.metadata.access}.  The first, direct access is through the MetaDataBean object itself.  This is an implementation
  of map, where all child elements are also meta-data objects.  To get the VALUE of an element, use the getValue
  call.  Other mechanisms include a map interface to the values, and an injection mechanism.</p>
  
  <h3>Map Access to Values</h3>
- <p>A simple map mechanism allows access to the values for a single level of meta-data.  This mechanism is the "MapWithDefaults"
+ <p>A simple map mechanism allows access to the values for a single level of meta-data.  This mechanism is the 
+ {@see org.dcm4chee.xero.metadata.access.MapWithDefaults}
  See the Javadocs for that class for more details.  This is the recommended access for non-Java values.  It is easy
- to create multi-level values by declaring child-instances of MapWithDefaults.  An example use is shown below.
+ to create multi-level values by declaring child-instances of {@see org.dcm4chee.xero.metadata.access.MapWithDefaults}.  An example use is shown below.
  </p>
  
  <pre>
@@ -97,8 +98,8 @@ declares another meta-data provider to load information from xero-model.metadata
 <h3>Existing MetaData Providers</h3>
 <p>See the individual class pages for documentation on how to use these.</p>
 <pre>
-PropertyProvider
-XmlMetaDataProvider
+{@see org.dcm4chee.xero.metadata.PropertyProvider}
+{@see org.dcm4chee.xero.metadata.XmlMetaDataProvider}
 </pre>
  
  <h2>Providing Values</h2>

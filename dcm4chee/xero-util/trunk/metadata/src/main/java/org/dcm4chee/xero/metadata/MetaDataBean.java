@@ -48,7 +48,7 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.dcm4chee.xero.metadata.list.ValueList;
+import org.dcm4chee.xero.metadata.access.ValueList;
 
 /**
  * This is a metadata information object that provides meta-data at a single

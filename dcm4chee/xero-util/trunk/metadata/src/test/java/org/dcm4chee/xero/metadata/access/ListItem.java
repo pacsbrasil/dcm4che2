@@ -35,52 +35,18 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.list;
-
-import java.util.HashMap;
-import java.util.Map;
+package org.dcm4chee.xero.metadata.access;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.list.ValueList;
-import org.testng.annotations.Test;
+import org.dcm4chee.xero.metadata.MetaDataUser;
 
-public class ValueListTest {
-	static Map<String,Object> prop = new HashMap<String,Object>();
-	static {
-	   prop.put("list","${class:org.dcm4chee.xero.metadata.list.ValueList}");
-	   prop.put("list.className","org.dcm4chee.xero.metadata.list.ListItem");
-	   prop.put("list.a","${class:org.dcm4chee.xero.metadata.list.ListItem}");
-	   prop.put("list.a.priority","50");
-	   prop.put("list.b","${class:org.dcm4chee.xero.metadata.list.ListItem}");
-	   prop.put("list.b.priority","25");
-	   prop.put("list.c","${class:org.dcm4chee.xero.metadata.list.ListItem}");
-	   prop.put("list.c.priority","75");
-	   prop.put("list.d","${class:org.dcm4chee.xero.metadata.list.ValueListTest}");
-	   prop.put("list.d.priority","0");
-	   prop.put("empty","${class:org.dcm4chee.xero.metadata.list.ValueList}");
-	}
-	
-	static MetaDataBean mdb = new MetaDataBean(prop);
-	
+/** This is a class to be contained in a value list */
+public class ListItem  implements MetaDataUser
+{
+	String name;
 
-	@Test
-	@SuppressWarnings("unchecked")
-	public void testEmptyList() {
-	   ValueList<ListItem> vl = (ValueList<ListItem>)mdb.getValue("empty");
-	   assert vl!=null;
-	   assert vl.size()==0;
+	public void setMetaData(MetaDataBean metaDataBean) {
+		this.name = metaDataBean.getChildName();
 	}
-	
-	@Test
-	@SuppressWarnings("unchecked")
-	public void testValueList() {
-		ValueList<ListItem> vl = (ValueList<ListItem>) mdb.getValue("list");
-		assert vl!=null;
-		// Item d is not included as it is the wrong type.  Thus 3 items.  
-		assert vl.size()==3;
-		assert vl.get(0).name.equals("b");
-		assert vl.get(1).name.equals("a");
-		assert vl.get(2).name.equals("c");
-	}
+
 }
-

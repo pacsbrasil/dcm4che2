@@ -35,68 +35,35 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.template;
+package org.dcm4chee.xero.metadata.access;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.MetaDataUser;
+import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.metadata.filter.FilterItem;
 
-@SuppressWarnings("serial")
-public class LazyMap extends HashMap<String, Object> {
-   private static final Logger log = LoggerFactory.getLogger(LazyMap.class); 
-   Map<String, Object> lazy;
+/** This class returns a lazy event model based on the given meta-data object base class. 
+ * The rules for the meta-data are that data lookup etc can be lazy, but that all lookups must be order
+ * independent, and idempotent (same result every time and it doesn't matter how many times you call the get function,
+ * other than performance)
+ */
+public class MapWithDefaultsFilter implements Filter<Map<String,Object> >, MetaDataUser {
+	MetaDataBean mdb;
+	
+	/** Returns a lazy map based on the metadata contents.   */
+	public Map<String, Object> filter(
+			FilterItem<Map<String, Object>> filterItem,
+			Map<String, Object> params) {
+		MapWithDefaults ret = new MapWithDefaults(mdb);
+		ret.put("params", params);
+		return ret;
+	}
 
-   public LazyMap(Map<String, Object> lazy) {
-	  this.lazy = lazy;
-   }
-   
-   public LazyMap() {
-   }
-
-   public Object get(Object key) {
-	  Object ret = super.get(key);
-	  if (ret != null)
-		 return ret;
-	  ret = checkLazy(key);
-	  return ret;
-   }
-
-   public boolean containsKey(Object key) {
-	  if (super.containsKey(key))
-		 return true;
-	  Object v = checkLazy(key);
-	  if (v != null)
-		 return true;
-	  return false;
-   }
-
-   /** Check to see if there is a lazy created object, and if so, see if it is a map factory,
-    * and use the factory if so, and put the result into this map.
-    * Used by containsKey and get to retrieve the values.
-    */
-   protected Object checkLazy(Object key) {
-	  Object v = getLazy(key);
-	  if (v == null)
-		 return null;
-	  if (v instanceof MapFactory) {
-		 v = ((MapFactory) v).create(this);
-		 if( v!=null ) log.info("Created lazy {} of class {}", key,v.getClass());
-	  }
-	  this.put((String) key, v);
-	  return v;
-   }
-
-   /**
-    * Get the lazily created object.
-    * 
-    * @param key
-    * @return
-    */
-   protected Object getLazy(Object key) {
-	  if (lazy == null)
-		 return null;
-	  return lazy.get(key);
-   }
+	/** Records the MetaDataBean for use later as the basis for the event map */
+	public void setMetaData(MetaDataBean metaDataBean) {
+		this.mdb = metaDataBean;
+	}
+	
 }

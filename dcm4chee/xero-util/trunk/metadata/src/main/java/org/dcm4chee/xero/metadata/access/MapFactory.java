@@ -35,44 +35,16 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.template;
+package org.dcm4chee.xero.metadata.access;
 
 import java.util.Map;
-
-import org.dcm4chee.xero.metadata.MetaDataBean;
-
 /**
- * A MapWithDefaults is a map of values, where it can ask some pre-configured meta-data about what
- * defaults it should use coming from the meta-data bean.
- * This is closely related to a lazy map that knows how to create objects from a factory if needed.
+ * A MapFactory takes a Map of values and produces one or more additional values computed from them.
  * 
  * @author bwallace
- *
  */
-@SuppressWarnings("serial")
-public class MapWithDefaults extends LazyMap {
-   MetaDataBean mdb;
-   
-   public MapWithDefaults(MetaDataBean mdb) {
-	  this.mdb = mdb;
-   }
-   
-   public MapWithDefaults(MetaDataBean mdb, Map<String,Object> lazy) {
-	  super(lazy);
-	  this.mdb = mdb;
-   }
+public interface MapFactory {
 
-   /** Get the lazy object from the meta-data object associated with this map. */
-   protected Object getLazy(Object key) {
-	  Object v = mdb.getValue((String) key);
-	  if( v!=null ) return v;
-	  return super.getLazy(key);
-   }
-   
-   /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
-   public void eager() {
-	   for(Map.Entry<String,MetaDataBean> me : mdb.entrySet()) {
-		   this.get(me.getKey());
-	   }
-   }
+   /** Create a computed value from the src value */
+   public Object create(Map<String,Object> src);
 }

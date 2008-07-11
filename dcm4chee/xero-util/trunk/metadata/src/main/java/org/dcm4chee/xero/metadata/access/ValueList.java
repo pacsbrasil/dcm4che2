@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.list;
+package org.dcm4chee.xero.metadata.access;
 
 import java.util.ArrayList;
 import java.util.Collections;

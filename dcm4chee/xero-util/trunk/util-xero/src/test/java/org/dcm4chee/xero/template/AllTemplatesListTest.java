@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
+import org.dcm4chee.xero.metadata.access.MapWithDefaults;
 import org.testng.annotations.Test;
 import org.antlr.stringtemplate.StringTemplate;
 

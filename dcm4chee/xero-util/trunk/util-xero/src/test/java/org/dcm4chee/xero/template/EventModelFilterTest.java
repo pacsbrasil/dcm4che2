@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
+import org.dcm4chee.xero.metadata.access.MapWithDefaults;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.testng.annotations.Test;
 

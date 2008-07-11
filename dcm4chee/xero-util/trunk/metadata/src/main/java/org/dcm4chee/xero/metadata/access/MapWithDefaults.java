@@ -35,35 +35,44 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.template;
+package org.dcm4chee.xero.metadata.access;
 
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.MetaDataUser;
-import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
 
-/** This class returns a lazy event model based on the given meta-data object base class. 
- * The rules for the meta-data are that data lookup etc can be lazy, but that all lookups must be order
- * independent, and idempotent (same result every time and it doesn't matter how many times you call the get function,
- * other than performance)
+/**
+ * A MapWithDefaults is a map of values, where it can ask some pre-configured meta-data about what
+ * defaults it should use coming from the meta-data bean.
+ * This is closely related to a lazy map that knows how to create objects from a factory if needed.
+ * 
+ * @author bwallace
+ *
  */
-public class EventModelFilter implements Filter<Map<String,Object> >, MetaDataUser {
-	MetaDataBean mdb;
-	
-	/** Returns a lazy map based on the metadata contents.   */
-	public Map<String, Object> filter(
-			FilterItem<Map<String, Object>> filterItem,
-			Map<String, Object> params) {
-		MapWithDefaults ret = new MapWithDefaults(mdb);
-		ret.put("params", params);
-		return ret;
-	}
+@SuppressWarnings("serial")
+public class MapWithDefaults extends LazyMap {
+   MetaDataBean mdb;
+   
+   public MapWithDefaults(MetaDataBean mdb) {
+	  this.mdb = mdb;
+   }
+   
+   public MapWithDefaults(MetaDataBean mdb, Map<String,Object> lazy) {
+	  super(lazy);
+	  this.mdb = mdb;
+   }
 
-	/** Records the MetaDataBean for use later as the basis for the event map */
-	public void setMetaData(MetaDataBean metaDataBean) {
-		this.mdb = metaDataBean;
-	}
-	
+   /** Get the lazy object from the meta-data object associated with this map. */
+   protected Object getLazy(Object key) {
+	  Object v = mdb.getValue((String) key);
+	  if( v!=null ) return v;
+	  return super.getLazy(key);
+   }
+   
+   /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
+   public void eager() {
+	   for(Map.Entry<String,MetaDataBean> me : mdb.entrySet()) {
+		   this.get(me.getKey());
+	   }
+   }
 }

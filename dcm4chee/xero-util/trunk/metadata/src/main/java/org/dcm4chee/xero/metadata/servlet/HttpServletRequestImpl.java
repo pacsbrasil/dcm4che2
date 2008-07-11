@@ -43,11 +43,11 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 		return (String) headers.get(key);
 	}
 
-	public Enumeration getHeaderNames() {
+	public Enumeration<String> getHeaderNames() {
 		return null;
 	}
 
-	public Enumeration getHeaders(String arg0) {
+	public Enumeration<String> getHeaders(String arg0) {
 		return null;
 	}
 
@@ -127,7 +127,7 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 		return null;
 	}
 
-	public Enumeration getAttributeNames() {
+	public Enumeration<String> getAttributeNames() {
 		return null;
 	}
 
@@ -163,7 +163,7 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 		return null;
 	}
 
-	public Enumeration getLocales() {
+	public Enumeration<Locale> getLocales() {
 		return null;
 	}
 
@@ -171,11 +171,11 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 		return null;
 	}
 
-	public Map getParameterMap() {
+	public Map<String,String[]> getParameterMap() {
 		return null;
 	}
 
-	public Enumeration getParameterNames() {
+	public Enumeration<String> getParameterNames() {
 		return null;
 	}
 

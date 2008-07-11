@@ -66,11 +66,35 @@ import org.slf4j.LoggerFactory;
  * time. If filtering per user/role/group is required, then the user/role/group
  * should be a parameter to this servlet and understood by the underlying
  * filters.
+ * 
+ * Usage in web.xml:
+ * <pre>
+ *  &lt;servlet>
+ *     &lt;servlet-name>WADO&lt;/servlet-name>
+ *     &lt;servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet&lt;/servlet-class>
+ *     &lt;init-param>
+ *        &lt;param-name>metaData&lt;/param-name>
+ *        &lt;param-value>/xero-cfind.metadata&lt;/param-value>
+ *     &lt;/init-param>
+ *     &lt;init-param>
+ *        &lt;param-name>filter&lt;/param-name>
+ *        &lt;param-value>wado&lt;/param-value>
+ *     &lt;/init-param>
+ *  &lt;/servlet>
+ *  &lt;servlet-mapping>
+ *     &lt;servlet-name>WADO&lt;/servlet-name>
+ *     &lt;url-pattern>/wado&lt;/url-pattern>
+ *  &lt;/servlet-mapping>
+ *
+ * </pre>
  */
 @SuppressWarnings("serial")
 public class MetaDataServlet extends HttpServlet {
    private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
 
+   /** A key value to use to fetch the full request URI - t */
+   public static final String REQUEST_URI = "_requestURI";
+   
    /** The meta data needs to be read from the appropriate location. */
    MetaDataBean metaData;
 
@@ -78,7 +102,7 @@ public class MetaDataServlet extends HttpServlet {
     * The filterItem contains the fixed information about how to handle this
     * request
     */
-   FilterItem filterItem;
+   FilterItem<ServletResponseItem> filterItem;
 
    /**
     * The filter needs to supply a type and a stream/byte array/data object to
@@ -133,6 +157,12 @@ public class MetaDataServlet extends HttpServlet {
 		 sri.writeResponse(request, response);
 	  } catch (Exception e) {
 		 log.error("Caught error " + e + " for URI " + request.getRequestURI() + " with parameters " + request.getQueryString(), e);
+		 try {
+			 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Internal server error:"+e);
+		 }
+		 catch(Exception e2) {
+			 // No-op
+		 }
 	  }
    }
 
@@ -161,6 +191,7 @@ public class MetaDataServlet extends HttpServlet {
 			ret.put(me.getKey(), me.getValue());
 	  }
 	  ret.put(MemoryCacheFilter.KEY_NAME, request.getQueryString());
+	  ret.put(REQUEST_URI,request.getRequestURI());
 	  return ret;
    }
 

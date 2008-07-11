@@ -49,7 +49,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class provides meta-data from a given string-string map.
+ * This class provides meta-data from a given string-string map.  It is used as both the initial, top level
+ * property provider, and also within the child properties.  To include a child-property, declare in the parent
+ * metadata:
+ * <pre>
+ * metaDataProvider.property=${class:org.dcm4chee.xero.metadata.PropertyProvider}
+ * metaDataProvider.property.model=xero-view.metadata
+ * </pre>
  * 
  * @author bwallace
  * 

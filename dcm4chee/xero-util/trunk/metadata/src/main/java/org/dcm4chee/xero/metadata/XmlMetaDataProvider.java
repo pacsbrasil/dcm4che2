@@ -40,7 +40,6 @@ package org.dcm4chee.xero.metadata;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,7 +59,29 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This class reads metadata from XML files such as Facelet files or other XML
- * tagged files (JSP would work as long as it is well-formed XML).
+ * tagged files (JSP would work as long as it is well-formed XML).  To use the XML metadata provider, 3 things
+ * need to be done.  First, create a property or other file that can be found as a resource.  This will be used
+ * as the base property file.  Second, include the XmlMetaDataProvider in your base metadata properties, something
+ * like:
+ * <pre>
+ * metaDataProvider.model=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
+ * metaDataProvider.model.priority=35
+ * metaDataProvider.model.propertyFile=xero-view.metadata
+ * metaDataProvider.model.rootXml=http://www.dcm4che.org/xero/metadata
+ * metaDataProvider.model.suffix=.xml
+ * </pre>
+ * 
+ * 
+ * Thirdly, in your XML files contained in the same directory or a child directory, use attributes with the
+ * namespace starting at rootXml, eg:
+ * 
+ * <pre>
+ *   &lt;root xmlns:m="http://www.dcm4che.org/xero/metadata/view"
+ *      m:script="script.js"
+ *      m:script.priority="15" />
+ * </pre>
+ * 
+ * The above declaration would declare view.script with value script.js and view.script.priority with value 15.
  * 
  * @author bwallace
  * 
