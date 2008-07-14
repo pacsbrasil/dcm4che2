@@ -148,7 +148,7 @@ public class MetaDataServlet extends HttpServlet {
 			throw new ServletException("Didn't find requestType=" + requestType + " from " + filter + " in " + metaData.getPath());
 		 }
 		 log.debug("Found request type " + requestType + " = " + useFilterItem);
-		 ServletResponseItem sri = (ServletResponseItem) useFilterItem.filter.filter(useFilterItem, params);
+		 ServletResponseItem sri = (ServletResponseItem) useFilterItem.callThisFilter(params);
 		 response.setCharacterEncoding("UTF-8");
 		 if (sri == null) {
 			response.sendError(HttpServletResponse.SC_NO_CONTENT, "No content found for this request.");

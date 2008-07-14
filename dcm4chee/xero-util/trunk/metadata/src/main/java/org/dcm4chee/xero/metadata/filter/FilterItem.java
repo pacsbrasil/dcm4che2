@@ -40,6 +40,7 @@ package org.dcm4chee.xero.metadata.filter;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,5 +167,13 @@ public class FilterItem<T> implements Comparable<FilterItem> {
 	public String getName() {
 		if( metaData==null ) return null;
 		return metaData.getPath();
+	}
+
+	/** Calls the filter that this filter item is specified for.  
+	 * The return type is Object since this could be a named item.
+	 */
+	@SuppressWarnings("unchecked")
+	public Object callThisFilter(Map<String, Object> params) {
+		return filter.filter(((FilterItem) this),params);
 	}
 }
