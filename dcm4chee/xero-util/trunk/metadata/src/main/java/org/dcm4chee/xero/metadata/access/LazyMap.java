@@ -43,6 +43,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A LazyMap contains values that are lazily looked up when requested (or checked to see if they exist using
+ * containsKey).  They can also be created from a MapFactory object, based on other values in the map.  Part of the
+ * purpose is to allow values to only be created when required, and partly to allow computed values to be created
+ * based on other values in the map such as URL locations.
+ * @author bwallace
+ */
 @SuppressWarnings("serial")
 public class LazyMap extends HashMap<String, Object> {
    private static final Logger log = LoggerFactory.getLogger(LazyMap.class); 

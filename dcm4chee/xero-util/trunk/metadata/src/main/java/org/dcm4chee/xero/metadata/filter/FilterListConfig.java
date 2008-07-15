@@ -44,20 +44,28 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A FilterListConfig defines the configuration information for a specific set of filters in a filter list at
+ * a specific location in the meta-data tree.  The SAME instance of the filter can have different filter list 
+ * config instances in order to allow different instances in different parts of the tree.
+ * @author bwallace
+ *
+ */
 public class FilterListConfig {
 	private static Logger log = LoggerFactory.getLogger(FilterListConfig.class);
 	
-	List<FilterItem> filterList;
+	List<FilterItem<?>> filterList;
 	
+	/** Create the filter list config instance at teh given meta-data bean value. */
 	public FilterListConfig(MetaDataBean mdb)
 	{
 		List<MetaDataBean> sortedList = mdb.sorted(); 
-		filterList = new ArrayList<FilterItem>();
-		FilterItem previous = null;
+		filterList = new ArrayList<FilterItem<?>>();
+		FilterItem<?> previous = null;
 		for(MetaDataBean valueMdb : sortedList ) {
 			Object value = valueMdb.getValue();
 			if( value instanceof Filter ) {
-				FilterItem fi = new FilterItem(valueMdb, (Filter<?>) value);
+				FilterItem<?> fi = new FilterItem<Object>(valueMdb, (Filter<?>) value);
 				if( previous!=null ) previous.nextFilterItem = fi;
 				previous = fi;
 				log.debug("Adding filter to "+mdb.getPath()+" item "+fi.getName());
@@ -72,7 +80,7 @@ public class FilterListConfig {
 	
 	/** This gets the named filter */
 	public FilterItem<?> getNamedFilter(String childName) {
-		for(FilterItem fi : filterList){	
+		for(FilterItem<?> fi : filterList){	
 			if( fi.name.equals(childName) ) {
 				return fi;
 			}
@@ -81,7 +89,7 @@ public class FilterListConfig {
 	}
 	
 	/** Get the first filter to use */
-	public FilterItem getFirstFilter()
+	public FilterItem<?> getFirstFilter()
 	{
 		if( filterList.size()>0 ) return filterList.get(0);
 		return null;

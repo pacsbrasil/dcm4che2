@@ -15,10 +15,18 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+/**
+ * This is a simple implementation of an HttpServletRequest that just has a user agent and set of 
+ * headers.  Useful for filters that access the request in order to do some language or other validation
+ * but where the original request isn't the correct one to use.
+ * @author bwallace
+ *
+ */
 public class HttpServletRequestImpl implements HttpServletRequest {
 	
 	Map<String,Object> headers = new HashMap<String,Object>();
 	
+	/** Create a HttpServletRequestImpl */
 	public HttpServletRequestImpl() {
 		headers.put("USER-AGENT", "HttpServletRequestImpl");
 	}
