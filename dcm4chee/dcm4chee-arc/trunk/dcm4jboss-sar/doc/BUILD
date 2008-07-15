@@ -12,7 +12,7 @@ to download and install:
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
 
-- Jakarta Cactus 1.7.2 for J2EE 1.3 [http://jakarta.apache.org/cactus/]
+- Jakarta Cactus 1.8.0 [http://jakarta.apache.org/cactus/]
 (only needed to build test suite for dcm4jboss-ejb - not need to build
 application)
 
