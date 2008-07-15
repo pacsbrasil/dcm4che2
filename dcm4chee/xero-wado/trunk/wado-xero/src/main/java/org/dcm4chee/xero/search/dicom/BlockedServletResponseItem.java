@@ -46,7 +46,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -57,6 +56,16 @@ import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This returns a blocked set or search queries in a DirectoryRecordSequence.  The return results
+ * come from the request queries, defaulting to an image level query.  The results are directly
+ * streamed as they are received, and child blocked results are unblocked before being streamed.
+ * The queries always try to use the return all private C-FIND SOP classes, or if those are not available,
+ * then use the defintions in the {@see org.dcm4chee.xero.search.study} package to define the return
+ * results (well, actually whatever is at study/series/image search levels.)
+ * @author bwallace
+ *
+ */
 public class BlockedServletResponseItem implements ServletResponseItem, ResultFromDicom {
    private static final Logger log = LoggerFactory.getLogger(BlockedServletResponseItem.class);
    

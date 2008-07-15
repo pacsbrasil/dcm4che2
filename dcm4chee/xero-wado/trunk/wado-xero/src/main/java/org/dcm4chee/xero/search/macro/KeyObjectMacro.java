@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
  * key. The default if a key object instance isn't present is false, but
  * sometimes those are overridden by an explicit value during edits, so
  * sometimes a KeyObject will be used with a false value.
+ * Attribute: koUID=true/false (false is default so usually not present)
  * 
  * @author bwallace
  * 

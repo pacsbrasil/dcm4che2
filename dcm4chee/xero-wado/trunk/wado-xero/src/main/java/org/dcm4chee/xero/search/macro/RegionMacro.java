@@ -44,6 +44,15 @@ import javax.xml.namespace.QName;
 import org.dcm4chee.xero.search.study.Macro;
 import org.dcm4chee.xero.search.study.PresentationSizeMode;
 
+/** Defines a sub-region to display for the image or series, as well as how to display that object.
+ * 
+ * Attributes size=TRUE_SIZE, MAGNIFY, SCALE_TO_FIT
+ * topLeft, bottomRight are pairs of coordinates in image space.
+ * magnify is the amount to magnify (only in magnify mode).
+ * 
+ * @author bwallace
+ *
+ */
 public class RegionMacro implements Macro {
    public static final QName Q_PRESENTATION_SIZE_MODE = new QName(null, "size");
    public static final QName Q_TOP_LEFT = new QName(null,"topLeft");

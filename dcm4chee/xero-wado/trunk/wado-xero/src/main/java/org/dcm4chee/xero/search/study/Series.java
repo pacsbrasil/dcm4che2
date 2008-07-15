@@ -39,6 +39,11 @@ package org.dcm4chee.xero.search.study;
 
 import org.dcm4chee.xero.search.Column;
 
+/**
+ * Defines the series level query and return attributes mapping to the SeriesBean object.
+ * @author bwallace
+ *
+ */
 public interface Series {
 
 	/**

@@ -61,6 +61,7 @@ public class BlockedSearchFilter implements Filter<ServletResponseItem> {
     * Returns a DICOM Directory 
     */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
+	  log.debug("Doing a blocked servlet response to stream the C-Find data to the client.");
 	  return new BlockedServletResponseItem(filterItem, params);
    }
    

@@ -43,7 +43,14 @@ import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
 
-/** Stores min/max pixel information, for use by window levelling */
+/** 
+ * Stores min/max pixel information, for use by window levelling.
+ * 
+ * Attributes: minPixel, maxPixel
+ * These are the min/max pixel AFTER the modality LUT has been applied, but before
+ * any window levelling has been applied, assuming a modality LUT is applied (if none is applied then
+ * of course it is the image min/max).
+ */
 public class MinMaxPixelMacro implements Macro {
    public static final QName Q_MIN_PIXEL = new QName(null,"minPixel");
    public static final QName Q_MAX_PIXEL = new QName(null,"maxPixel");

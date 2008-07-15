@@ -53,6 +53,11 @@ import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
+/**
+ * Defines the series bean, along with intializers from the dicom object.
+ * @author bwallace
+ *
+ */
 public class SeriesBean extends SeriesType implements Series, ResultFromDicom, CacheItem, LocalModel<String> {
    static Logger log = LoggerFactory.getLogger(SeriesBean.class);
 

@@ -45,17 +45,20 @@ import java.util.Map;
 import static org.easymock.classextension.EasyMock.*;
 
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.testng.annotations.*;
 
 
 /**
+ * Tests the multi-part content type return.
  * @author tcollins
  *
  */
+@SuppressWarnings("unchecked")
 public class MultiPartContentTypeFilterTest 
 {
-	FilterItem filterItemMock;
+	FilterItem<ServletResponseItem> filterItemMock;
 	
 	MultiPartContentTypeFilter filter;
 
@@ -84,7 +87,7 @@ public class MultiPartContentTypeFilterTest
 	public void testFilter_WhenObjectUIDIsNull_ShouldReturnNull() 
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( filter.CONTENT_TYPE, "myType" );
+		params.put( MultiPartContentTypeFilter.CONTENT_TYPE, "myType" );
 		
 		assert( filter.filter(filterItemMock, params) == null );
 	}
@@ -97,7 +100,7 @@ public class MultiPartContentTypeFilterTest
 	public void testFilter_WhenContentTypeIsNull_ShouldReturnNull() 
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( filter.OBJECT_UID, "1.2.3" );
+		params.put( MultiPartContentTypeFilter.OBJECT_UID, "1.2.3" );
 		
 		assert( filter.filter(filterItemMock, params) == null );
 	}
@@ -107,8 +110,8 @@ public class MultiPartContentTypeFilterTest
 	public void testFilter_WhenContentTypeOnlyHasOneItem_ShouldReturnNull()
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( filter.CONTENT_TYPE, "myType");
-		params.put( filter.OBJECT_UID, "1.2.3" );
+		params.put( MultiPartContentTypeFilter.CONTENT_TYPE, "myType");
+		params.put( MultiPartContentTypeFilter.OBJECT_UID, "1.2.3" );
 		
 		assert( filter.filter(filterItemMock, params) == null );
 	}
@@ -117,8 +120,8 @@ public class MultiPartContentTypeFilterTest
 	public void testFilter_WhenContentTypeOnlyHasMultiPart_ShouldReturnNull()
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( filter.CONTENT_TYPE, filter.MULTIPART_MIXED );
-		params.put( filter.OBJECT_UID, "1.2.3" );
+		params.put( MultiPartContentTypeFilter.CONTENT_TYPE, filter.MULTIPART_MIXED );
+		params.put( MultiPartContentTypeFilter.OBJECT_UID, "1.2.3" );
 		
 		assert( filter.filter(filterItemMock, params) == null );
 	}
@@ -128,8 +131,8 @@ public class MultiPartContentTypeFilterTest
 	public void testFilter_WhenContentTypeDoesNotHaveMultiPartFirst_ShouldReturnNull()
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( filter.CONTENT_TYPE, "myType," + filter.MULTIPART_MIXED );
-		params.put( filter.OBJECT_UID, "1.2.3" );
+		params.put( MultiPartContentTypeFilter.CONTENT_TYPE, "myType," + filter.MULTIPART_MIXED );
+		params.put( MultiPartContentTypeFilter.OBJECT_UID, "1.2.3" );
 		
 		assert( filter.filter(filterItemMock, params) == null );
 	}
@@ -156,11 +159,11 @@ public class MultiPartContentTypeFilterTest
 					FilterItem<ServletResponseItem> filterItem,
 					Map<String, Object> newParams) 
 			{
-				if ( newParams.get(filter.CONTENT_TYPE).equals("Filter1"))
+				if ( newParams.get(MultiPartContentTypeFilter.CONTENT_TYPE).equals("Filter1"))
 				{
 					return servletItem1;
 				}
-				else if ( newParams.get(filter.CONTENT_TYPE).equals("Filter2"))
+				else if ( newParams.get(MultiPartContentTypeFilter.CONTENT_TYPE).equals("Filter2"))
 				{
 					return servletItem2;
 				}
@@ -177,8 +180,8 @@ public class MultiPartContentTypeFilterTest
 
 
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( filter.CONTENT_TYPE, filter.MULTIPART_MIXED + ",Filter1,Filter2,Filter3" );
-		params.put( filter.OBJECT_UID, "1.2.3" );
+		params.put( MultiPartContentTypeFilter.CONTENT_TYPE, filter.MULTIPART_MIXED + ",Filter1,Filter2,Filter3" );
+		params.put( MultiPartContentTypeFilter.OBJECT_UID, "1.2.3" );
 		
 		assert( filter.filter(filterItemMock, params) == multiResponseItem );
 		
@@ -229,7 +232,7 @@ public class MultiPartContentTypeFilterTest
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
 		
-		ErrorServletResponseItem errorResponseItem = createNiceMock( ErrorServletResponseItem.class );
+		ErrorResponseItem errorResponseItem = createNiceMock( ErrorResponseItem.class );
 		replay( errorResponseItem );
 		
 		reset( filterItemMock );

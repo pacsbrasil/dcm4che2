@@ -44,7 +44,11 @@ import javax.xml.namespace.QName;
 import org.dcm4chee.xero.search.study.Macro;
 
 
-/** Represents a window level default - other window levels are represented by other macros */
+/**
+ *  Represents a window level default - other window levels are represented by other macros.
+ *  Attributes: windowCenter, windowWidth, windowExplanation.
+ *  TODO support multi-valued choices for the window levels to allow a selection to be made.
+ */
 public class WindowLevelMacro implements Macro {
    public static final QName Q_WINDOW_CENTER = new QName(null,"windowCenter");
    public static final QName Q_WINDOW_WIDTH = new QName(null,"windowWidth");

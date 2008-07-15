@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.util.StringUtil;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class MultiPartContentTypeFilter implements Filter<ServletResponseItem>
 
     static String OBJECT_UID = "objectUID";
     static String CONTENT_TYPE = "contentType";
-    static String MULTIPART_MIXED = "multipart/mixed";
+    String MULTIPART_MIXED = "multipart/mixed";
     
     private static char CONTENT_DELIMITER = ',';
     private static char OBJECT_DELIMITER = '\\';
@@ -149,7 +150,7 @@ public class MultiPartContentTypeFilter implements Filter<ServletResponseItem>
         {
             log.warn("WADO Filter not found for parameters " + newParams);
         }
-        else if (sri instanceof ErrorServletResponseItem) 
+        else if (sri instanceof ErrorResponseItem) 
         {
             log.warn("WADO Filter for parameters " + newParams + "fails with error response...skipping");
             sri = null;

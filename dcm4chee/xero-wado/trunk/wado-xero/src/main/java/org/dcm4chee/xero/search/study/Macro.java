@@ -40,6 +40,12 @@ package org.dcm4chee.xero.search.study;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
+/**
+ * Defines a way to add additional attributes or child elements to a Patient/Study/Series/Dicom Object instance.
+ * These are separated out to allow adding arbitrary elements at any level.
+ * @author bwallace
+ *
+ */
 public interface Macro {
    /** Add items to either attrs or elements, or both.  Do nothing if the item is null that needs to have
     * new items.

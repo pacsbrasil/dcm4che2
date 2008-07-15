@@ -44,6 +44,12 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+/**
+ * A convenient collection of macros with some helper methods to add them cleanly allocating the lists etc
+ * as required.
+ * @author bwallace
+ *
+ */
 public class MacroItems {
    /** Contains the macros and sub-elements for the parent object. */
    private List<Object> macros;

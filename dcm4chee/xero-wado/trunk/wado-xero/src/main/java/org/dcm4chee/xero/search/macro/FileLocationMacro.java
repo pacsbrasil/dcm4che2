@@ -43,6 +43,13 @@ import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
 
+/**
+ * Add the file location (URL) that was used for this object.  This is expected to be a debugging option
+ * primarily, rather than a run time option.  Do not count on the file location to be valid cross platform/AE.
+ * Attribute: fileLocation=path to file
+ * 
+ * @author bwallace
+ */
 public class FileLocationMacro implements Macro {
    public QName FILE_LOCATION= new QName("fileLocation");
    

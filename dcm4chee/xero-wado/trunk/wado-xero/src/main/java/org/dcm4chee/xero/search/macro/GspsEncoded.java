@@ -45,7 +45,9 @@ import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
 
-/** Used to track which GSPS objects have been encoded on a given result set already. */
+/** Used to track which GSPS objects have been encoded on a given result set already. 
+ * This contains a set of strings that indicates which UID's are encoded already.
+ */
 public class GspsEncoded implements Macro {
    private Set<String> encoded = new HashSet<String>();
    

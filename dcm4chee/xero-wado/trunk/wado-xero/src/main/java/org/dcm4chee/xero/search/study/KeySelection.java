@@ -37,6 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+/**
+ * A key selection object defines a single image (or a multi-frame entire selection), along with potentially any
+ * GSPS objects assigned to that image.
+ * @author bwallace
+ *
+ */
 public class KeySelection {
    String objectUid;
    String gspsUid;

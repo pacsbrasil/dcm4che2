@@ -39,6 +39,14 @@ package org.dcm4chee.xero.search;
 
 import org.dcm4che2.data.DicomObject;
 
+/**
+ * Handles a single C-Find item response.   By using an interface, the DicomObject can be passed on or different
+ * types of handlers can be used.  This allows, for instance, the C-FIND blocked web services to return the 
+ * raw DICOM by using this same interface.
+ * 
+ * @author bwallace
+ *
+ */
 public interface ResultFromDicom {
 
 	/** Add child-studies, if there are any. */

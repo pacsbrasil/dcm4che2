@@ -41,6 +41,11 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 
+/** A C-Find searcher for series level data.
+ * Uses the private SOP classes to get all the available series level data, if these are supported.
+ *
+ * @author bwallace
+ */
 public class SeriesSearch extends DicomCFindFilter{
 
 	static final String SERIES_SEARCH_LEVEL = "SERIES";

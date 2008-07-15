@@ -61,6 +61,7 @@ import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,7 +158,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		 }
 	  }
 	  if( eri==null ) {
-		 return new ErrorServletResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
+		 return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
 	  }
 	  WadoImage image = (WadoImage) filterItem.callNamedFilter("wadoImg", map);
 	  return new ImageServletResponseItem(image, eri, quality);

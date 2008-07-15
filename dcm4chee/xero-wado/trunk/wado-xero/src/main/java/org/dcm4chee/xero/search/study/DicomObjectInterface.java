@@ -39,6 +39,12 @@ package org.dcm4chee.xero.search.study;
 
 import org.dcm4chee.xero.search.Column;
 
+/** 
+ * Defines the standard fields and search criteria available at the object instance level.  THis is used for
+ * images, reports, key objects, ecg objects etc.
+ * @author bwallace
+ *
+ */
 public interface DicomObjectInterface {
 
 	/**

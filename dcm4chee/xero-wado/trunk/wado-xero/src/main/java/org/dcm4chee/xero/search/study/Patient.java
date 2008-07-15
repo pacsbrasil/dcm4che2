@@ -41,6 +41,11 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.dcm4chee.xero.search.Column;
 
+/**
+ * Defines the patient level query and return attributes mapping to the PatientBean object.
+ * @author bwallace
+ *
+ */
 public interface Patient {
 
 	@Column(searchable=true,type="PatientName")

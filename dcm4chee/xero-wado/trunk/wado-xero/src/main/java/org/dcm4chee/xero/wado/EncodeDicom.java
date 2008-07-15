@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
 	  URL url = FileLocationMgtFilter.filterURL(filterItem, params, null);
 	  if( url==null ) {
 		 log.warn("DICOM File not found.");
-		 return new ErrorServletResponseItem(HttpServletResponse.SC_NOT_FOUND,"DICOM File not found.");
+		 return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"DICOM File not found.");
 	  }
 	  return new UrlServletResponseItem(url,"application/dicom");
    }

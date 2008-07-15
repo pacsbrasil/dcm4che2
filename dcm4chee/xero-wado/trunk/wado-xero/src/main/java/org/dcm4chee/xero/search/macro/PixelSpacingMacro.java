@@ -43,7 +43,10 @@ import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
 
-/** Adds pixel spacing X,Y values to a series/image */
+/** Adds pixel spacing X,Y values to a series/image.
+ * 
+ * Attributes spacingX, spacingY, in mm.
+ */
 public class PixelSpacingMacro implements Macro {
    public static final QName Q_SPACING_X = new QName("spacingX");
 

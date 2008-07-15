@@ -42,6 +42,15 @@ import java.util.List;
 import org.dcm4chee.xero.search.SearchConditionParser;
 import org.dcm4chee.xero.search.TableColumn;
 
+/**
+ * A filter to create the search conditions for using for the C-FIND at the object/image level.
+ * Technically should be called ObjectSearchConditionParser, but most of the time what is meant by that is
+ * ImageSearchConditionParser, so that is what this class is called.  Includes all search conditions and columns
+ * from patient, study and series as well as from this object.
+ * 
+ * @author bwallace
+ *
+ */
 public class ImageSearchConditionParser extends SearchConditionParser
 {
 	static List<TableColumn> searchColumns = TableColumn.generateSearchableColumnsForClass(DicomObjectInterface.class);

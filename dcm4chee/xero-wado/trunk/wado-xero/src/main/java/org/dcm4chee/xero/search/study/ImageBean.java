@@ -53,6 +53,15 @@ import org.dcm4chee.xero.search.LocalModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** 
+ * Represents a viewable image DICOM object.  There are a few different types of image beans - 
+ * multi-frames, frames and regular (this one).  The multi-frame objects refer to many child frames,
+ * but the child frames don't have individual object definitions, whereas the frame object includes
+ * the parent multi-frame information and is a reference to a specific frame.  This object ONLY
+ * works for single-frame objects (and not for multi-frames containing just 1 image). 
+ * @author bwallace
+ *
+ */
 @XmlRootElement
 public class ImageBean extends ImageType implements Image, LocalModel<String>, MacroMixIn {
    private static final Logger log = LoggerFactory.getLogger(ImageBean.class);

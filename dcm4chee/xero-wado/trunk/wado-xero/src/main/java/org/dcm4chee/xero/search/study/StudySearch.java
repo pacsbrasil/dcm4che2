@@ -41,6 +41,12 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 
+/**
+ * A C-Find filter that knows how to perform C-Find queries to get study level data.  Prefers to use the return all
+ * private SOP class if available, otherwiseuses the regular study root retrieve. 
+ * @author bwallace
+ *
+ */
 public class StudySearch extends DicomCFindFilter {
     private static final String STUDY_QUERY_LEVEL = "STUDY";
 

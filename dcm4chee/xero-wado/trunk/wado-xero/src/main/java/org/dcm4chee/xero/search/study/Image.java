@@ -37,6 +37,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+/**
+ * Defines the additional fields available at the Image level beyond what is available in the base Dicom Object level.
+ * @author bwallace
+ *
+ */
 public interface Image extends DicomObjectInterface {
 
 	/**

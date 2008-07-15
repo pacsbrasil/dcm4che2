@@ -12,6 +12,10 @@ import org.dcm4chee.xero.search.LocalModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Represents a GSPS (Presentation State) DICOM Object, potentially including the child markups and text annotations.
+ * @author bwallace
+ */
 public class GspsBean extends GspsType implements LocalModel<String> {
 	static Logger log = LoggerFactory.getLogger(GspsBean.class.getName());
 

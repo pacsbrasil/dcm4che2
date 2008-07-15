@@ -57,6 +57,11 @@ import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A Study representation that can initialize itself from the DICOM object and knows about macros and parent/child
+ * relationships.
+ * @author bwallace
+ */
 @XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "study")
 public class StudyBean extends StudyType implements Study, CacheItem, LocalModel<String>, ResultFromDicom {
    private static Logger log = LoggerFactory.getLogger(StudyBean.class);

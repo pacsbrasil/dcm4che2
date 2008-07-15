@@ -43,11 +43,15 @@ import javax.xml.namespace.QName;
 
 import org.dcm4chee.xero.search.study.Macro;
 
+/**
+ *  Adds the rotation and horizontal flip attributes for an image.
+ *  Attributes: rotation=degrees, horizontalFlip=true/false
+ * 
+ * @author bwallace
+ */
 public class FlipRotateMacro implements Macro {
    public static final QName Q_HORIZONTAL_FLIP = new QName("horizontalFlip");
    public static final QName Q_ROTATION = new QName("rotation");
-   public static final QName Q_SIN = new QName("sin");
-   public static final QName Q_COS = new QName("cos");
    
    private int rotation;
    private boolean horizontalFlip;
@@ -59,25 +63,9 @@ public class FlipRotateMacro implements Macro {
    
    public int updateAny(Map<QName, String> attrs) {
 	  int ret = 0;
-	  float cos,sin;
 	  if( rotation!=0 ) {
 		 attrs.put(Q_ROTATION, Integer.toString(rotation));
-		 if( rotation==90 ) {
-			cos = 0f; sin=1f;
-		 }
-		 else if( rotation==180 ) {
-			cos = -1f; sin=0f;
-		 }
-		 else if( rotation==270 ) {
-			cos = 0f; sin=-1f;
-		 }
-		 else {
-			cos = (float) Math.cos(rotation*Math.PI/180);
-			sin = (float) Math.sin(rotation*Math.PI/180);
-		 }
-		 attrs.put(Q_COS,Float.toString(cos));
-		 attrs.put(Q_SIN,Float.toString(sin));
-		 ret+=3;
+		 ret+=1;
 	  }
 	  if( horizontalFlip ) {
 		 attrs.put(Q_HORIZONTAL_FLIP,"TRUE");

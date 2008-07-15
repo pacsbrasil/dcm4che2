@@ -51,6 +51,7 @@ import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +91,7 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 		 DicomImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
 		 if( reader==null || reader.getStreamMetadata()==null ) {
 			log.warn("No image/dicom object found for objectUID="+params.get("objectUID"));
-			return new ErrorServletResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
+			return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
 		 }
 		 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 		 DicomObject ds = streamData.getDicomObject();

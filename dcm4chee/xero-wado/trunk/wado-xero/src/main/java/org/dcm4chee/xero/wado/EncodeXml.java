@@ -7,9 +7,14 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 
+/**
+ * Calls the filter to get the DICOM header and then returns an XML encoder for the object.
+ * @author bwallace
+ *
+ */
 public class EncodeXml implements Filter<ServletResponseItem>{
 
-   /** Enocodes the raw dicom object as XML */
+   /** Encodes the raw dicom object as XML */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  DicomObject ds = DicomFilter.filterDicomObject(filterItem, params,null);
 	  if( ds==null ) return filterItem.callNextFilter(params);

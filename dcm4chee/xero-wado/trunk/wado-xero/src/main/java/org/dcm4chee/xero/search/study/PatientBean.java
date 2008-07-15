@@ -55,6 +55,10 @@ import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Represents a patient object, plus any macros and other customizations.
+ * @author bwallace
+ */
 @XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "patient")
 public class PatientBean extends PatientType implements Patient,
 		ResultFromDicom, CacheItem, LocalModel<PatientIdentifier> {

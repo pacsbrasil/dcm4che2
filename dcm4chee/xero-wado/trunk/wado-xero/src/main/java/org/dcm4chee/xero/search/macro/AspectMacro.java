@@ -46,6 +46,7 @@ import org.dcm4chee.xero.search.study.Macro;
 /**
  * Add the aspect ratio for the Y component.  This is a value by which you MULTIPLY the y sizes to
  * get normalized Y sizes.
+ * Attribute: aspect - assume 1 if not specified.
  * @author bwallace
  *
  */
