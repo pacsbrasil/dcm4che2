@@ -39,6 +39,7 @@
 package org.dcm4chee.xds.common.utils;
 
 import java.io.ByteArrayInputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -157,6 +158,12 @@ public class InfoSetUtil {
 		m.marshal(o, sw);
 		String s = sw.toString();
 		return s;
+	}
+
+	public static void writeObject(Object o, OutputStream os, boolean indent) throws JAXBException {
+		Marshaller m = getJAXBContext().createMarshaller();
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.valueOf(indent));
+		m.marshal(o, os);
 	}
 	
     public static JAXBContext getJAXBContext() throws JAXBException {
