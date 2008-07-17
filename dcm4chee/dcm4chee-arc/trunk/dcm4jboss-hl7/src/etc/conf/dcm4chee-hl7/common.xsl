@@ -64,7 +64,21 @@
       </attr>
       <attr tag="{$tmtag}" vr="TM">
         <xsl:if test="$str != '&quot;&quot;'">
-          <xsl:value-of select="substring($str,9)"/>
+          <xsl:variable name="tm" select="substring($str,9)"/>
+          <!-- Skip Time Zone -->
+          <xsl:variable name="tm_plus" select="substring-before($tm,'+')"/>
+          <xsl:variable name="tm_minus" select="substring-before($tm,'-')"/>
+          <xsl:choose>
+            <xsl:when test="$tm_plus">
+                <xsl:value-of select="$tm_plus"/>
+            </xsl:when>
+            <xsl:when test="$tm_minus">
+                <xsl:value-of select="$tm_minus"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$tm"/>
+            </xsl:otherwise>
+          </xsl:choose>
         </xsl:if>
       </attr>
     </xsl:if>
