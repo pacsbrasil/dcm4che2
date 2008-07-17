@@ -1,6 +1,6 @@
 -- Update DB from dcm4chee-2.13.x to dcm4chee-2.14.x
 
-DROP INDEX patient.pat_id;
+ALTER TABLE patient DROP INDEX pat_id;
 CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 
 CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
