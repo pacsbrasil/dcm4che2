@@ -329,6 +329,13 @@ public class DicomInputStream extends FilterInputStream implements
             if (vr.explicitVRHeaderLength() == 8) {
                 vallen = ts.bigEndian() ? ByteUtils.bytesBE2ushort(header, 6)
                         : ByteUtils.bytesLE2ushort(header, 6);
+                if (vr == VR.UN_SIEMENS) {
+                    if (log.isInfoEnabled()) {
+                        log.info("Replace invalid VR '??' of "
+                                + TagUtils.toString(tag) + " by 'UN'");
+                    }
+                    vr = VR.UN;
+                }
                 return tag;
             }
             readFully(header, 4, 4);

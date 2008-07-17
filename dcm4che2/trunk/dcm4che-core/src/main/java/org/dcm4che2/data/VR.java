@@ -598,6 +598,15 @@ public abstract class VR {
         }
     }
 
+    private static final class UN_SIEMENS extends VR 
+    {
+
+        private UN_SIEMENS()
+        {
+            super(0x3F3F, 0, 8);
+        }
+    }
+
     private static final class AE extends ASCIIVR
     {
 
@@ -2172,6 +2181,9 @@ public abstract class VR {
             super(0x5554, ' ', 12);
         }
     }
+
+    /** Illegal VR='??' used by old SIEMENS Modalities */
+    public static final VR UN_SIEMENS = new UN_SIEMENS();
     
     /** Application Entity (<= 16 chars) */
     public static final VR AE = new AE();
@@ -2258,6 +2270,8 @@ public abstract class VR {
     {
         switch (code)
         {
+        case 0x3F3F:
+            return UN_SIEMENS;
         case 0x4145:
             return AE;
         case 0x4153:
