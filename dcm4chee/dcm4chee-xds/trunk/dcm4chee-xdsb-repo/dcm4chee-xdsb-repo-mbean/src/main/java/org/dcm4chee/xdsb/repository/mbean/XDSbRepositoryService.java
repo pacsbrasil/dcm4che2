@@ -348,9 +348,14 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			   f.getParentFile().mkdirs();
 			   FileOutputStream fos = new FileOutputStream(f);
 			   CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-			   SOAPMessage msg = msgContext.getSOAPMessage();
-			   SOAPElementWriter writer = new SOAPElementWriter(fos, "UTF-8");
-			   writer.writeElement((SOAPElementImpl) msg.getSOAPPart().getEnvelope());
+			   if ( msgContext != null ) {
+				   SOAPMessage msg = msgContext.getSOAPMessage();
+				   SOAPElementWriter writer = new SOAPElementWriter(fos, "UTF-8");
+				   writer.writeElement((SOAPElementImpl) msg.getSOAPPart().getEnvelope());
+			   } else {
+				   log.info("No Message Context found (Request is not part of a webservice request)! Save ProvideAndRegisterDocumentSetRequestType instead of SOAP message!");
+				   InfoSetUtil.writeObject(req, fos, true);
+			   }
 			   fos.close();
 		   }
 		   storedDocuments = exportDocuments(req);
