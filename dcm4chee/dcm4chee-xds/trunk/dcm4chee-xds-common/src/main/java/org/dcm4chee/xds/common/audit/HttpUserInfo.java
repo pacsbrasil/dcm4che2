@@ -72,24 +72,31 @@ public class HttpUserInfo {
     }
     
     private void init(HttpServletRequest rq, boolean enableDNSLookups) {
-        userId = rq.getRemoteUser();
-        String xForward = (String) rq.getHeader("x-forwarded-for");
-        if (xForward != null) {
-            int pos = xForward.indexOf(',');
-            ip = (pos > 0 ? xForward.substring(0,pos) : xForward).trim();
-        } else {
-            ip = rq.getRemoteAddr();
-        }
-        if ( enableDNSLookups ) {
-            try {
-                hostName = InetAddress.getByName(ip).getHostName();
-            } catch (UnknownHostException ignore) {
-                hostName = ip;
-            }
-        } else {
-            hostName = ip;
-        }
-        requestURI = rq.getRequestURI();
+    	if ( rq == null ) { //direct JMX call? (no http request)
+    		userId = "process_user";
+    		ip = "127.0.0.1";
+    		hostName = "localhost";
+    		requestURI = ""; 
+    	} else {
+	        userId = rq.getRemoteUser();
+	        String xForward = (String) rq.getHeader("x-forwarded-for");
+	        if (xForward != null) {
+	            int pos = xForward.indexOf(',');
+	            ip = (pos > 0 ? xForward.substring(0,pos) : xForward).trim();
+	        } else {
+	            ip = rq.getRemoteAddr();
+	        }
+	        if ( enableDNSLookups ) {
+	            try {
+	                hostName = InetAddress.getByName(ip).getHostName();
+	            } catch (UnknownHostException ignore) {
+	                hostName = ip;
+	            }
+	        } else {
+	            hostName = ip;
+	        }
+	        requestURI = rq.getRequestURI();
+    	}
     }
     
     public String getUserId() {
