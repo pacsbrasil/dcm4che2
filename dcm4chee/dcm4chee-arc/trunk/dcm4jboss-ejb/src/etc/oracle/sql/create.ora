@@ -505,7 +505,7 @@ CREATE TABLE gppps (
 	patient_fk			NUMBER(38,0),
 	pps_iuid			VARCHAR2(255) NOT NULL,
 	pps_start			TIMESTAMP,
-	pps_status			VARCHAR2(255) NOT NULL,
+	pps_status          NUMERIC(18,0) NOT NULL,
 	created_time	    TIMESTAMP,
 	updated_time	    TIMESTAMP,
 	pps_attrs			BLOB,
