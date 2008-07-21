@@ -62,10 +62,6 @@ public class GPSPS implements Serializable {
 
     private long pk;
 
-    private Date createdTime;
-
-    private Date updatedTime;
-
     private String sopInstanceUID;
 
     private String transactionUID;
@@ -102,14 +98,6 @@ public class GPSPS implements Serializable {
 
     public long getPk() {
         return pk;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
     }
 
     public String getSOPInstanceUID() {
@@ -239,14 +227,6 @@ public class GPSPS implements Serializable {
                                 + "]"
                         : "")
                 + "]";
-    }
-
-    public void onPrePersist() {
-        createdTime = new Date();
-    }
-
-    public void onPreUpdate() {
-        updatedTime = new Date();
     }
 
     public DicomObject getAttributes() throws IOException {
