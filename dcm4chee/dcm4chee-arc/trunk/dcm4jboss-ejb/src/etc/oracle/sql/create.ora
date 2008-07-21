@@ -32,7 +32,7 @@ CREATE TABLE patient (
 	pat_name    	NVARCHAR2(255),
 	pat_i_name    	NVARCHAR2(255),
 	pat_p_name    	NVARCHAR2(255),
-	pat_birthdate  	TIMESTAMP,
+	pat_birthdate  	DATE,
 	pat_sex		  	VARCHAR2(255),
 	pat_custom1		VARCHAR2(255),
 	pat_custom2		VARCHAR2(255),

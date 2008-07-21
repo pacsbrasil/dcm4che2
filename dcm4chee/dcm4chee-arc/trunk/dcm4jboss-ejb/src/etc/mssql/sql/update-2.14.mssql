@@ -4,3 +4,5 @@ DROP INDEX patient.pat_id;
 CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 
 CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
+
+ALTER TABLE patient ALTER COLUMN pat_birthdate DATE;
