@@ -1,5 +1,5 @@
 CREATE TABLE ae (
-	pk          	SERIAL NOT NULL CONSTRAINT ae_pk PRIMARY KEY,
+	pk          	SERIAL8 NOT NULL CONSTRAINT ae_pk PRIMARY KEY,
 	aet          	TEXT NOT NULL,
 	hostname     	TEXT NOT NULL,
 	port			INTEGER NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE ae (
 CREATE UNIQUE INDEX aet ON ae(aet);
 
 CREATE TABLE code (
-	pk          	SERIAL NOT NULL CONSTRAINT code_pk PRIMARY KEY,
+	pk          	SERIAL8 NOT NULL CONSTRAINT code_pk PRIMARY KEY,
 	code_value     	TEXT NOT NULL,
 	code_designator	TEXT NOT NULL,
 	code_version   	TEXT,
@@ -22,8 +22,8 @@ CREATE TABLE code (
 CREATE UNIQUE INDEX code_value ON code(code_value,code_designator);
 
 CREATE TABLE patient (
-	pk          	SERIAL NOT NULL CONSTRAINT patient_pk PRIMARY KEY,
-	merge_fk        INTEGER,
+	pk          	SERIAL8 NOT NULL CONSTRAINT patient_pk PRIMARY KEY,
+	merge_fk        INT8,
 	pat_id         	TEXT,
 	pat_id_issuer  	TEXT,
 	pat_name    	TEXT,
@@ -51,15 +51,15 @@ CREATE INDEX pat_custom2 ON patient(pat_custom2);
 CREATE INDEX pat_custom3 ON patient(pat_custom3);
 
 CREATE TABLE other_pid (
-	pk          	SERIAL NOT NULL CONSTRAINT other_pid_pk PRIMARY KEY,
+	pk          	SERIAL8 NOT NULL CONSTRAINT other_pid_pk PRIMARY KEY,
 	pat_id         	TEXT NOT NULL,
 	pat_id_issuer  	TEXT NOT NULL
 );
 CREATE UNIQUE INDEX other_pat_id ON other_pid(pat_id, pat_id_issuer);
 
 CREATE TABLE rel_pat_other_pid (
-	patient_fk      INTEGER,
-	other_pid_fk    INTEGER,
+	patient_fk      INT8,
+	other_pid_fk    INT8,
 FOREIGN KEY (patient_fk) REFERENCES patient(pk),
 FOREIGN KEY (other_pid_fk) REFERENCES other_pid(pk)
 );
@@ -67,8 +67,8 @@ CREATE INDEX other_pid_pat_fk ON rel_pat_other_pid(patient_fk);
 CREATE INDEX pat_other_pid_fk ON rel_pat_other_pid(other_pid_fk);
 
 CREATE TABLE study (
-	pk              SERIAL NOT NULL CONSTRAINT study_pk PRIMARY KEY,
-	patient_fk      INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT study_pk PRIMARY KEY,
+	patient_fk      INT8,
 	study_iuid      TEXT NOT NULL,
 	study_id        TEXT,
 	study_datetime	TIMESTAMP,
@@ -115,8 +115,8 @@ CREATE INDEX study_updated ON study(updated_time);
 CREATE INDEX study_status ON study(study_status);
 
 CREATE TABLE rel_study_pcode (
-	study_fk       INTEGER,
-	pcode_fk       INTEGER,
+	study_fk       INT8,
+	pcode_fk       INT8,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (pcode_fk) REFERENCES code(pk)
 );
@@ -124,7 +124,7 @@ CREATE INDEX pcode_study_fk ON rel_study_pcode(study_fk);
 CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
 
 CREATE TABLE study_permission (
-	pk              SERIAL NOT NULL CONSTRAINT study_permission_pk PRIMARY KEY,
+	pk              SERIAL8 NOT NULL CONSTRAINT study_permission_pk PRIMARY KEY,
 	study_iuid      TEXT NOT NULL,
 	action          TEXT NOT NULL,
 	roles           TEXT NOT NULL
@@ -132,9 +132,9 @@ CREATE TABLE study_permission (
 CREATE UNIQUE INDEX study_perm_idx ON study_permission(study_iuid, action, roles);
 
 CREATE TABLE mpps (
-	pk          		SERIAL NOT NULL CONSTRAINT mpps_pk PRIMARY KEY,
-	patient_fk			INTEGER,
-	drcode_fk			INTEGER,
+	pk          		SERIAL8 NOT NULL CONSTRAINT mpps_pk PRIMARY KEY,
+	patient_fk			INT8,
+	drcode_fk			INT8,
 	mpps_iuid			TEXT NOT NULL,
 	pps_start			TIMESTAMP,
 	station_aet			TEXT,
@@ -156,9 +156,9 @@ CREATE INDEX mpps_modality ON mpps (modality);
 CREATE INDEX mpps_accession_no ON mpps (accession_no);	
 
 CREATE TABLE series (
-	pk              SERIAL NOT NULL CONSTRAINT series_pk PRIMARY KEY,
-	study_fk		INTEGER,
-	mpps_fk			INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT series_pk PRIMARY KEY,
+	study_fk		INT8,
+	mpps_fk			INT8,
 	series_iuid     TEXT NOT NULL,
 	series_no		TEXT,
 	modality		TEXT,
@@ -215,8 +215,8 @@ CREATE INDEX series_created ON series(created_time);
 CREATE INDEX series_updated ON series(updated_time);
 
 CREATE TABLE series_req (
-	pk              SERIAL NOT NULL CONSTRAINT series_req_pk PRIMARY KEY,
-	series_fk       INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT series_req_pk PRIMARY KEY,
+	series_fk       INT8,
 	study_iuid      TEXT,
 	req_proc_id     TEXT,
 	sps_id          TEXT,
@@ -236,7 +236,7 @@ CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name);
 CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name);
 
 CREATE TABLE media (
-	pk          		SERIAL NOT NULL CONSTRAINT media_pk PRIMARY KEY,
+	pk          		SERIAL8 NOT NULL CONSTRAINT media_pk PRIMARY KEY,
 	fileset_iuid		TEXT NOT NULL,
 	fileset_id			TEXT, 
 	media_rq_iuid		TEXT,
@@ -250,10 +250,10 @@ CREATE UNIQUE INDEX fileset_iuid ON media(fileset_iuid);
 CREATE INDEX media_status ON media(media_status);
 
 CREATE TABLE instance (
-	pk              	SERIAL NOT NULL CONSTRAINT instance_pk PRIMARY KEY,
-	series_fk			INTEGER,
-	srcode_fk			INTEGER,
-	media_fk			INTEGER,
+	pk              	SERIAL8 NOT NULL CONSTRAINT instance_pk PRIMARY KEY,
+	series_fk			INT8,
+	srcode_fk			INT8,
+	media_fk			INT8,
 	sop_iuid			TEXT NOT NULL,
 	sop_cuid			TEXT NOT NULL,
 	inst_no				TEXT,
@@ -293,8 +293,8 @@ CREATE INDEX commitment ON instance(commitment);
 CREATE INDEX instance_status ON instance(inst_status);
 
 CREATE TABLE verify_observer (
-	pk              SERIAL NOT NULL CONSTRAINT verify_observer_pk PRIMARY KEY,
-	instance_fk     INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT verify_observer_pk PRIMARY KEY,
+	instance_fk     INT8,
 	verify_datetime TIMESTAMP,
 	observer_name   TEXT,
 	observer_i_name TEXT,
@@ -308,8 +308,8 @@ CREATE INDEX observer_i_name ON verify_observer(observer_i_name);
 CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
 
 CREATE TABLE filesystem (
-	pk          	SERIAL NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
-	next_fk         INTEGER,
+	pk          	SERIAL8 NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
+	next_fk         INT8,
 	dirpath			TEXT NOT NULL,
 	fs_group_id		TEXT NOT NULL,
 	retrieve_aet	TEXT NOT NULL,
@@ -326,9 +326,9 @@ CREATE INDEX fs_availability ON filesystem(availability);
 CREATE INDEX fs_status ON filesystem(fs_status);
 
 CREATE TABLE files (
-	pk              SERIAL NOT NULL CONSTRAINT files_pk PRIMARY KEY,
-	instance_fk     INTEGER,
-	filesystem_fk	INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT files_pk PRIMARY KEY,
+	instance_fk     INT8,
+	filesystem_fk	INT8,
 	filepath		TEXT NOT NULL,
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
@@ -347,9 +347,9 @@ CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
 
 CREATE TABLE study_on_fs (
-	pk              SERIAL NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
-	study_fk		INTEGER,
-	filesystem_fk	INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
+	study_fk		INT8,
+	filesystem_fk	INT8,
 	access_time		TIMESTAMP NOT NULL,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
@@ -359,8 +359,8 @@ CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
 CREATE INDEX access_time ON study_on_fs(access_time);
 
 CREATE TABLE mwl_item (
-	pk          	SERIAL NOT NULL CONSTRAINT mwl_item_pk PRIMARY KEY,
-	patient_fk      INTEGER,
+	pk          	SERIAL8 NOT NULL CONSTRAINT mwl_item_pk PRIMARY KEY,
+	patient_fk      INT8,
 	sps_status      INTEGER,
 	sps_id			TEXT,
 	start_datetime	TIMESTAMP NOT NULL,
@@ -393,9 +393,9 @@ CREATE INDEX mwl_accession_no ON mwl_item (accession_no);
 CREATE INDEX mwl_study_iuid ON mwl_item(study_iuid);
 
 CREATE TABLE gpsps (
-	pk              SERIAL NOT NULL CONSTRAINT gpsps_pk PRIMARY KEY,
-	patient_fk      INTEGER,
-	code_fk         INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT gpsps_pk PRIMARY KEY,
+	patient_fk      INT8,
+	code_fk         INT8,
 	gpsps_iuid      TEXT NOT NULL,
 	gpsps_tuid      TEXT,
 	start_datetime  TIMESTAMP NOT NULL,
@@ -418,8 +418,8 @@ CREATE INDEX gpsps_prior ON gpsps(gpsps_prior);
 CREATE INDEX in_availability ON gpsps(in_availability);
 
 CREATE TABLE rel_gpsps_appcode (
-	gpsps_fk       INTEGER,
-	appcode_fk     INTEGER,
+	gpsps_fk       INT8,
+	appcode_fk     INT8,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (appcode_fk) REFERENCES code(pk)
 );
@@ -427,8 +427,8 @@ CREATE INDEX appcode_gpsps_fk ON rel_gpsps_appcode(gpsps_fk);
 CREATE INDEX gpsps_appcode_fk ON rel_gpsps_appcode(appcode_fk);
 
 CREATE TABLE rel_gpsps_devname (
-	gpsps_fk       INTEGER,
-	devname_fk     INTEGER,
+	gpsps_fk       INT8,
+	devname_fk     INT8,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (devname_fk) REFERENCES code(pk)
 );
@@ -436,8 +436,8 @@ CREATE INDEX devname_gpsps_fk ON rel_gpsps_devname(gpsps_fk);
 CREATE INDEX gpsps_devname_fk ON rel_gpsps_devname(devname_fk);
 
 CREATE TABLE rel_gpsps_devclass (
-	gpsps_fk       INTEGER,
-	devclass_fk     INTEGER,
+	gpsps_fk       INT8,
+	devclass_fk     INT8,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (devclass_fk) REFERENCES code(pk)
 );
@@ -445,8 +445,8 @@ CREATE INDEX devclass_gpsps_fk ON rel_gpsps_devclass(gpsps_fk);
 CREATE INDEX gpsps_devclass_fk ON rel_gpsps_devclass(devclass_fk);
 
 CREATE TABLE rel_gpsps_devloc (
-	gpsps_fk       INTEGER,
-	devloc_fk  INTEGER,
+	gpsps_fk       INT8,
+	devloc_fk  INT8,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (devloc_fk) REFERENCES code(pk)
 );
@@ -454,9 +454,9 @@ CREATE INDEX devloc_gpsps_fk ON rel_gpsps_devloc(gpsps_fk);
 CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
 
 CREATE TABLE gpsps_perf (
-	pk                 SERIAL NOT NULL CONSTRAINT gpsps_perf_pk PRIMARY KEY,
-	gpsps_fk           INTEGER,
-	code_fk            INTEGER,
+	pk                 SERIAL8 NOT NULL CONSTRAINT gpsps_perf_pk PRIMARY KEY,
+	gpsps_fk           INT8,
+	code_fk            INT8,
 	human_perf_name    TEXT,
 	hum_perf_i_name    TEXT,
 	hum_perf_p_name    TEXT,
@@ -470,8 +470,8 @@ CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name);
 CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name);
 
 CREATE TABLE gpsps_req (
-	pk          	SERIAL NOT NULL CONSTRAINT gpsps_req_pk PRIMARY KEY,
-	gpsps_fk        INTEGER,
+	pk          	SERIAL8 NOT NULL CONSTRAINT gpsps_req_pk PRIMARY KEY,
+	gpsps_fk        INT8,
 	req_proc_id		TEXT,
 	accession_no	TEXT,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
@@ -481,8 +481,8 @@ CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
 CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);	
 
 CREATE TABLE gppps (
-	pk          		SERIAL NOT NULL CONSTRAINT gppps_pk PRIMARY KEY,
-	patient_fk			INTEGER,
+	pk          		SERIAL8 NOT NULL CONSTRAINT gppps_pk PRIMARY KEY,
+	patient_fk			INT8,
 	pps_iuid			TEXT NOT NULL,
 	pps_start			TIMESTAMP,
 	pps_status			INTEGER NOT NULL,
@@ -496,8 +496,8 @@ CREATE INDEX gppps_patient_fk ON gppps(patient_fk);
 CREATE INDEX gppps_pps_start ON gppps (pps_start);
 
 CREATE TABLE rel_gpsps_gppps (
-	gpsps_fk        INTEGER,
-	gppps_fk        INTEGER,
+	gpsps_fk        INT8,
+	gppps_fk        INT8,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
 FOREIGN KEY (gppps_fk) REFERENCES gppps(pk)
 );
@@ -505,8 +505,8 @@ CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
 CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);
 
 CREATE TABLE hp (
-	pk              SERIAL NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
-	user_fk         INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT hp_pk PRIMARY KEY,
+	user_fk         INT8,
 	hp_iuid         TEXT NOT NULL,
 	hp_cuid         TEXT,
 	hp_name         TEXT,
@@ -526,8 +526,8 @@ CREATE INDEX num_priors ON hp(num_priors);
 CREATE INDEX num_screens ON hp(num_screens);
 
 CREATE TABLE hpdef (
-	pk              SERIAL NOT NULL CONSTRAINT hpdef_pk PRIMARY KEY,
-	hp_fk           INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT hpdef_pk PRIMARY KEY,
+	hp_fk           INT8,
 	modality        TEXT,
 	laterality      TEXT,
 FOREIGN KEY (hp_fk) REFERENCES hp(pk)
@@ -537,8 +537,8 @@ CREATE INDEX hpdef_modality ON hpdef(modality);
 CREATE INDEX hpdef_laterality ON hpdef(laterality);
 
 CREATE TABLE rel_hpdef_region (
-	hpdef_fk        INTEGER,
-	region_fk       INTEGER,
+	hpdef_fk        INT8,
+	region_fk       INT8,
 FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
 FOREIGN KEY (region_fk) REFERENCES code(pk)
 );
@@ -546,8 +546,8 @@ CREATE INDEX region_hpdef_fk ON rel_hpdef_region(hpdef_fk);
 CREATE INDEX hpdef_region_fk ON rel_hpdef_region(region_fk);
 
 CREATE TABLE rel_hpdef_proc (
-	hpdef_fk        INTEGER,
-	proc_fk       INTEGER,
+	hpdef_fk        INT8,
+	proc_fk       INT8,
 FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
 FOREIGN KEY (proc_fk) REFERENCES code(pk)
 );
@@ -555,8 +555,8 @@ CREATE INDEX proc_hpdef_fk ON rel_hpdef_proc(hpdef_fk);
 CREATE INDEX hpdef_proc_fk ON rel_hpdef_proc(proc_fk);
 
 CREATE TABLE rel_hpdef_reason (
-	hpdef_fk        INTEGER,
-	reason_fk       INTEGER,
+	hpdef_fk        INT8,
+	reason_fk       INT8,
 FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
 FOREIGN KEY (reason_fk) REFERENCES code(pk)
 );
@@ -564,7 +564,7 @@ CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
 CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
 
 CREATE TABLE priv_patient (
-	pk          	SERIAL NOT NULL CONSTRAINT priv_patient_pk PRIMARY KEY,
+	pk          	SERIAL8 NOT NULL CONSTRAINT priv_patient_pk PRIMARY KEY,
 	priv_type		INTEGER NOT NULL,
 	pat_id         	TEXT,
 	pat_id_issuer  	TEXT,
@@ -576,8 +576,8 @@ CREATE INDEX priv_pat_type ON priv_patient(priv_type);
 CREATE INDEX priv_patient_name ON priv_patient(pat_name);
 
 CREATE TABLE priv_study (
-	pk              SERIAL NOT NULL CONSTRAINT priv_study_pk PRIMARY KEY,
-	patient_fk      INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT priv_study_pk PRIMARY KEY,
+	patient_fk      INT8,
 	priv_type		INTEGER NOT NULL,
 	study_iuid      TEXT NOT NULL,
 	accession_no 	TEXT,
@@ -590,8 +590,8 @@ CREATE INDEX priv_study_iuid ON priv_study(study_iuid);
 CREATE INDEX priv_study_accs_no ON priv_study(accession_no);
 
 CREATE TABLE priv_series (
-	pk              SERIAL NOT NULL CONSTRAINT priv_series_pk PRIMARY KEY,
-	study_fk		INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT priv_series_pk PRIMARY KEY,
+	study_fk		INT8,
 	priv_type		INTEGER NOT NULL,
 	series_iuid     TEXT NOT NULL,
 	src_aet 		TEXT,
@@ -605,8 +605,8 @@ CREATE INDEX priv_ser_src_aet ON priv_series(src_aet);
 
 
 CREATE TABLE priv_instance (
-	pk             	SERIAL NOT NULL CONSTRAINT priv_instance_pk PRIMARY KEY,
-	series_fk		INTEGER,
+	pk             	SERIAL8 NOT NULL CONSTRAINT priv_instance_pk PRIMARY KEY,
+	series_fk		INT8,
 	priv_type		INTEGER NOT NULL,
 	sop_iuid		TEXT NOT NULL,
 	inst_attrs		BYTEA,
@@ -617,9 +617,9 @@ CREATE INDEX priv_inst_type ON priv_instance(priv_type);
 CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
 
 CREATE TABLE priv_file (
-	pk              SERIAL NOT NULL CONSTRAINT priv_file_pk PRIMARY KEY,
-	instance_fk     INTEGER,
-	filesystem_fk   INTEGER,
+	pk              SERIAL8 NOT NULL CONSTRAINT priv_file_pk PRIMARY KEY,
+	instance_fk     INT8,
+	filesystem_fk   INT8,
 	filepath		TEXT NOT NULL,
 	file_tsuid      TEXT NOT NULL,
 	file_md5        TEXT,
@@ -633,7 +633,7 @@ CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
 
 
 CREATE TABLE device (
-	pk          	SERIAL NOT NULL CONSTRAINT device_pk PRIMARY KEY,
+	pk          	SERIAL8 NOT NULL CONSTRAINT device_pk PRIMARY KEY,
 	station_name    TEXT NOT NULL,
 	station_aet     TEXT NOT NULL,
 	modality		TEXT NOT NULL
@@ -641,8 +641,8 @@ CREATE TABLE device (
 CREATE UNIQUE INDEX dev_station_name ON device(station_name);
 
 CREATE TABLE rel_dev_proto (
-	device_fk      INTEGER,
-	prcode_fk      INTEGER,
+	device_fk      INT8,
+	prcode_fk      INT8,
 FOREIGN KEY (device_fk) REFERENCES device(pk),
 FOREIGN KEY (prcode_fk) REFERENCES code(pk)
 );
