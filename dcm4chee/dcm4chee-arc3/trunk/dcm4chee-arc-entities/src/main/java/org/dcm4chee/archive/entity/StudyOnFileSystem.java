@@ -40,41 +40,21 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "study_on_fs")
 public class StudyOnFileSystem implements Serializable {
 
     private static final long serialVersionUID = -4529151202029255741L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "access_time", nullable = false)
     private Date accessTime;
 
-    @ManyToOne
-    @JoinColumn(name = "study_fk")
     private Study study;
 
-    @ManyToOne
-    @JoinColumn(name = "filesystem_fk")
     private FileSystemInfo fileSystemInfo;
 
     public long getPk() {

@@ -41,16 +41,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -61,32 +51,20 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "priv_instance")
 public class PrivateInstance implements Serializable {
 
     private static final long serialVersionUID = -7577387511052455446L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "priv_type")
     private int privateType;
 
-    @Column(name = "sop_iuid", nullable = false)
     private String sopInstanceUID;
 
-    @Column(name = "inst_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "series_fk")
     private PrivateSeries series;
 
-    @OneToMany(mappedBy = "instance")
     private Set<PrivateFileInfo> files;
 
     public long getPk() {

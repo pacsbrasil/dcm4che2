@@ -40,17 +40,6 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -59,39 +48,67 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Mar 2, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "hpdef")
 public class HPDefinition implements Serializable {
 
     private static final long serialVersionUID = 608638906765588946L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "modality")
     private String modality;
 
-    @Column(name = "laterality")
     private String laterality;
 
-    @ManyToMany
-    @JoinTable(name = "rel_hpdef_region", joinColumns = { @JoinColumn(name = "hpdef_fk") }, inverseJoinColumns = { @JoinColumn(name = "region_fk") })
     private Set<Code> anatomicRegionCodes;
 
-    @ManyToMany
-    @JoinTable(name = "rel_hpdef_region", joinColumns = { @JoinColumn(name = "hpdef_fk") }, inverseJoinColumns = { @JoinColumn(name = "proc_fk") })
     private Set<Code> procedureCodes;
 
-    @ManyToMany
-    @JoinTable(name = "rel_hpdef_region", joinColumns = { @JoinColumn(name = "hpdef_fk") }, inverseJoinColumns = { @JoinColumn(name = "reason_fk") })
     private Set<Code> reasonforRequestedCodes;
 
-    @ManyToOne
-    @JoinColumn(name = "hp_fk", nullable = false)
     private HangingProtocol hangingProtocol;
+
+    public long getPk() {
+        return pk;
+    }
+
+    public String getModality() {
+        return modality;
+    }
+
+    public String getLaterality() {
+        return laterality;
+    }
+
+    public Set<Code> getAnatomicRegionCodes() {
+        return anatomicRegionCodes;
+    }
+
+    public void setAnatomicRegionCodes(Set<Code> anatomicRegionCodes) {
+        this.anatomicRegionCodes = anatomicRegionCodes;
+    }
+
+    public Set<Code> getProcedureCodes() {
+        return procedureCodes;
+    }
+
+    public void setProcedureCodes(Set<Code> procedureCodes) {
+        this.procedureCodes = procedureCodes;
+    }
+
+    public Set<Code> getReasonforRequestedCodes() {
+        return reasonforRequestedCodes;
+    }
+
+    public void setReasonforRequestedCodes(Set<Code> reasonforRequestedCodes) {
+        this.reasonforRequestedCodes = reasonforRequestedCodes;
+    }
+
+    public HangingProtocol getHangingProtocol() {
+        return hangingProtocol;
+    }
+
+    public void setHangingProtocol(HangingProtocol hangingProtocol) {
+        this.hangingProtocol = hangingProtocol;
+    }
 
     @Override
     public String toString() {

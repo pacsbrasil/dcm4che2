@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Patient">
+    <table name="patient" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updated_time" />
+      </basic>
+      <basic name="patientID">
+        <column name="pat_id" />
+      </basic>
+      <basic name="issuerOfPatientID">
+        <column name="pat_id_issuer" />
+      </basic>
+      <basic name="patientName">
+        <column name="pat_name" />
+      </basic>
+      <basic name="patientIdeographicName">
+        <column name="pat_i_name" />
+      </basic>
+      <basic name="patientPhoneticName">
+        <column name="pat_p_name" />
+      </basic>
+      <basic name="patientBirthDate">
+        <column name="pat_birthdate" />
+      </basic>
+      <basic name="patientSex">
+        <column name="pat_sex" />
+      </basic>
+      <basic name="patientCustomAttribute1">
+        <column name="pat_custom1" />
+      </basic>
+      <basic name="patientCustomAttribute2">
+        <column name="pat_custom2" />
+      </basic>
+      <basic name="patientCustomAttribute3">
+        <column name="pat_custom3" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="pat_attrs" />
+      </basic>
+      <many-to-one name="mergedWith">
+        <join-column name="merge_fk" />
+      </many-to-one>
+      <one-to-many name="previous" mapped-by="mergedWith" />
+      <one-to-many name="studies" mapped-by="patient" />
+      <one-to-many name="modalityWorklistItems" mapped-by="patient" />
+      <one-to-many name="modalityPerformedProcedureSteps"
+        mapped-by="patient" />
+      <one-to-many name="generalPurposeScheduledProcedureSteps"
+        mapped-by="patient" />
+      <one-to-many name="generalPurposePerformedProcedureSteps"
+        mapped-by="patient" />
+      <many-to-many name="otherPatientIDs">
+        <join-table name="rel_pat_other_pid">
+          <join-column name="patient_fk" />
+          <inverse-join-column name="other_pid_fk" />
+        </join-table>
+      </many-to-many>
+    </attributes>
+  </entity>
+</entity-mappings>

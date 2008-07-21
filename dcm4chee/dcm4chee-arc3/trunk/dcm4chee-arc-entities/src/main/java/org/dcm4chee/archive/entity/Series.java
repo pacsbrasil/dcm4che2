@@ -42,18 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -70,114 +58,74 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @since Feb 25, 2008
  */
 
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "series")
 public class Series implements Serializable {
 
     private static final long serialVersionUID = -5882522097745649285L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "series_iuid", nullable = false, unique = true)
     private String seriesInstanceUID;
 
-    @Column(name = "series_no")
     private String seriesNumber;
 
-    @Column(name = "series_desc")
     private String seriesDescription;
 
-    @Column(name = "modality")
     private String modality;
 
-    @Column(name = "department")
     private String institutionalDepartmentName;
 
-    @Column(name = "institution")
     private String institutionName;
 
-    @Column(name = "station_name")
     private String stationName;
 
-    @Column(name = "body_part")
     private String bodyPartExamined;
 
-    @Column(name = "laterality")
     private String laterality;
 
-    @Column(name = "perf_physician")
     private String performingPhysicianName;
 
-    @Column(name = "perf_phys_i_name")
     private String performingPhysicianIdeographicName;
 
-    @Column(name = "perf_phys_p_name")
     private String performingPhysicianPhoneticName;
 
-    @Column(name = "pps_start")
     private Date performedProcedureStepStartDateTime;
 
-    @Column(name = "pps_iuid")
     private String performedProcedureStepInstanceUID;
 
-    @Column(name = "series_custom1")
     private String seriesCustomAttribute1;
 
-    @Column(name = "series_custom2")
     private String seriesCustomAttribute2;
 
-    @Column(name = "series_custom3")
     private String seriesCustomAttribute3;
 
-    @Column(name = "series_attrs")
     private byte[] encodedAttributes;
 
-    @Column(name = "num_instances")
     private int numberOfSeriesRelatedInstances;
 
-    @Column(name = "src_aet")
     private String sourceAET;
 
-    @Column(name = "retrieve_aets")
     private String retrieveAETs;
 
-    @Column(name = "ext_retr_aet")
     private String externalRetrieveAET;
 
-    @Column(name = "fileset_iuid")
     private String fileSetUID;
 
-    @Column(name = "fileset_id")
     private String fileSetID;
 
-    @Column(name = "availability")
     private Availability availability;
 
-    @Column(name = "series_status")
     private StorageStatus storageStatus;
 
-    @OneToMany(mappedBy = "series")
     private Set<RequestAttributes> requestAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "mpps_fk")
     private MPPS modalityPerformedProcedureStep;
 
-    @ManyToOne
-    @JoinColumn(name = "study_fk", nullable = false)
     private Study study;
 
-    @OneToMany(mappedBy = "series")
     private Set<Instance> instances;
 
     public final long getPk() {
@@ -389,12 +337,10 @@ public class Series implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Device">
+    <table name="device" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="stationName">
+        <column name="station_name" nullable="false" />
+      </basic>
+      <basic name="stationAET">
+        <column name="station_aet" nullable="false" />
+      </basic>
+      <basic name="modality">
+        <column name="modality" nullable="false" />
+      </basic>
+      <many-to-many name="protocolCodes">
+        <join-table name="rel_dev_proto">
+          <join-column name="prcode_fk" />
+          <inverse-join-column name="device_fk" />
+        </join-table>
+      </many-to-many>
+    </attributes>
+  </entity>
+</entity-mappings>

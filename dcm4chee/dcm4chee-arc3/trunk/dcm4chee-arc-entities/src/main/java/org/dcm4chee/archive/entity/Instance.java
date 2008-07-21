@@ -42,18 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.common.Availability;
@@ -67,88 +55,56 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "instance")
 public class Instance implements Serializable {
 
     private static final long serialVersionUID = -924140016923828861L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "sop_iuid")
     private String sopInstanceUID;
 
-    @Column(name = "sop_cuid")
     private String sopClassUID;
 
-    @Column(name = "inst_no")
     private String instanceNumber;
 
-    @Column(name = "content_datetime")
     private Date contentDateTime;
 
-    @Column(name = "sr_complete")
     private String completionFlag;
 
-    @Column(name = "sr_verified")
     private String verificationFlag;
 
-    @Column(name = "inst_custom1")
     private String instanceCustomAttribute1;
 
-    @Column(name = "inst_custom2")
     private String instanceCustomAttribute2;
 
-    @Column(name = "inst_custom3")
     private String instanceCustomAttribute3;
 
-    @Column(name = "inst_attrs")
     private byte[] encodedAttributes;
 
-    @Column(name = "retrieve_aets")
     private String retrieveAETs;
 
-    @Column(name = "ext_retr_aet")
     private String externalRetrieveAET;
 
-    @Column(name = "availability")
     private Availability availability;
 
-    @Column(name = "inst_status")
     private StorageStatus storageStatus;
 
-    @Column(name = "all_attrs")
     private boolean allAttributes;
 
-    @Column(name = "commitment")
     private boolean storageComitted;
 
-    @ManyToOne
-    @JoinColumn(name = "srcode_fk")
     private Code conceptNameCode;
 
-    @ManyToOne
-    @JoinColumn(name = "media_fk")
     private Media media;
 
-    @OneToMany(mappedBy = "instance")
     private Set<VerifyingObserver> verifyingObservers;
 
-    @ManyToOne
-    @JoinColumn(name = "series_fk", nullable = false)
     private Series series;
 
-    @OneToMany(mappedBy = "instance")
     private Set<FileInfo> fileInfos;
 
     public final long getPk() {
@@ -318,12 +274,10 @@ public class Instance implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

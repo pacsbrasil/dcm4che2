@@ -42,18 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -66,54 +54,34 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "mpps")
 public class MPPS implements Serializable {
 
     private static final long serialVersionUID = -599495313070741738L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "mpps_iuid", nullable = false, unique = true)
     private String sopInstanceUID;
 
-    @Column(name = "pps_start")
     private Date startDateTime;
 
-    @Column(name = "station_aet")
     private String performedStationAET;
 
-    @Column(name = "modality")
     private String modality;
 
-    @Column(name = "accession_no")
     private String accessionNumber;
 
-    @Column(name = "mpps_status")
     private PPSStatus status;
 
-    @Column(name = "mpps_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "drcode_fk")
     private Code discontinuationReasonCode;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_fk", nullable = false)
     private Patient patient;
 
-    @OneToMany(mappedBy = "modalityPerformedProcedureStep")
     private Set<Series> series;
 
     public long getPk() {
@@ -202,12 +170,10 @@ public class MPPS implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

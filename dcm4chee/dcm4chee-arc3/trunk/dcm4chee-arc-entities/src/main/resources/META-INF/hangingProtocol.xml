@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.HangingProtocol">
+    <table name="hp" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="sopInstanceUID">
+        <column name="hp_iuid" />
+      </basic>
+      <basic name="sopClassUID">
+        <column name="hp_cuid" />
+      </basic>
+      <basic name="name">
+        <column name="hp_name" />
+      </basic>
+      <basic name="level">
+        <column name="hp_level" />
+      </basic>
+      <basic name="numberOfPriorsReferenced">
+        <column name="num_priors" />
+      </basic>
+      <basic name="userGroupName">
+        <column name="hp_group" />
+      </basic>
+      <basic name="numberOfScreens">
+        <column name="num_screens" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="hp_attrs" />
+      </basic>
+      <many-to-one name="userIDCode">
+        <join-column name="user_fk" />
+      </many-to-one>
+      <one-to-many name="definitions" mapped-by="hangingProtocol"/>
+    </attributes>
+  </entity>
+</entity-mappings>

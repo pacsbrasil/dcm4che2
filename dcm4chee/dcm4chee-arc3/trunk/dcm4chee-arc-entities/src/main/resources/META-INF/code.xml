@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Code">
+    <table name="code" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="codeValue">
+        <column name="code_value" nullable="false" />
+      </basic>
+      <basic name="codingSchemeDesignator">
+        <column name="code_designator" nullable="false" />
+      </basic>
+      <basic name="codingSchemeVersion">
+        <column name="code_version" />
+      </basic>
+      <basic name="codeMeaning">
+        <column name="code_meaning" />
+      </basic>
+    </attributes>
+  </entity>
+</entity-mappings>

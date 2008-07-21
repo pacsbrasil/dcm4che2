@@ -40,15 +40,6 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -57,26 +48,16 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Feb 28, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "other_pid", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "pat_id", "pat_id_issuer" }) })
 public class OtherPatientID implements Serializable {
 
     private static final long serialVersionUID = -7983218873187437331L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "pat_id", nullable = false)
     private String patientID;
 
-    @Column(name = "pat_id_issuer", nullable = false)
     private String issuerOfPatientID;
 
-    @ManyToMany(mappedBy = "otherPatientIDs")
     private Set<Patient> patients;
 
     public long getPk() {

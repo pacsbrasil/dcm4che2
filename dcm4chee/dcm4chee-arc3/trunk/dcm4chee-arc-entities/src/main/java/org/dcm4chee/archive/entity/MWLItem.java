@@ -41,17 +41,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -65,65 +54,42 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "mwl_item")
 public class MWLItem implements Serializable {
 
     private static final long serialVersionUID = 5655030469102270878L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "sps_id")
     private String scheduledProcedureStepID;
 
-    @Column(name = "req_proc_id")
     private String requestedProcedureID;
 
-    @Column(name = "study_iuid")
     private String studyInstanceUID;
 
-    @Column(name = "accession_no")
     private String accessionNumber;
 
-    @Column(name = "modality")
     private String modality;
 
-    @Column(name = "station_aet")
     private String scheduledStationAET;
 
-    @Column(name = "station_name")
     private String scheduledStationName;
 
-    @Column(name = "start_datetime")
     private Date startDateTime;
 
-    @Column(name = "perf_physician")
     private String scheduledPerformingPhysicianName;
 
-    @Column(name = "perf_phys_i_name")
     private String scheduledPerformingPhysicianIdeographicName;
 
-    @Column(name = "perf_phys_p_name")
     private String scheduledPerformingPhysicianPhoneticName;
 
-    @Column(name = "sps_status")
     private SPSStatus status;
 
-    @Column(name = "item_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_fk", nullable = false)
     private Patient patient;
 
     public long getPk() {
@@ -223,12 +189,10 @@ public class MWLItem implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

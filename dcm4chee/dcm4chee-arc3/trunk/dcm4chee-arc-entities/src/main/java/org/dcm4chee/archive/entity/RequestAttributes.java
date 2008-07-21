@@ -39,15 +39,6 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -57,41 +48,26 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "series_req")
 public class RequestAttributes implements Serializable {
 
     private static final long serialVersionUID = -5693026277386978780L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "study_iuid")
     private String studyInstanceUID;
 
-    @Column(name = "req_proc_id")
     private String requestedProcedureID;
 
-    @Column(name = "sps_id")
     private String scheduledProcedureStepID;
 
-    @Column(name = "req_service")
     private String requestingService;
 
-    @Column(name = "req_physician")
     private String requestingPhysician;
 
-    @Column(name = "req_phys_i_name")
     private String requestingPhysicianIdeographicName;
 
-    @Column(name = "req_phys_p_name")
     private String requestingPhysicianPhoneticName;
 
-    @ManyToOne
-    @JoinColumn(name = "series_fk")
     private Series series;
 
     public long getPk() {

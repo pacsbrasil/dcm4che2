@@ -39,53 +39,29 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "priv_file")
 public class PrivateFileInfo implements Serializable {
 
     private static final long serialVersionUID = 88587213724521925L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "filepath", nullable = false)
     private String filePath;
 
-    @Column(name = "file_tsuid", nullable = false)
     private String transferSyntaxUID;
 
-    @Column(name = "file_md5")
     private String fileMD5;
 
-    @Column(name = "file_status")
     private int fileStatus;
 
-    @Column(name = "file_size")
     private long fileSize;
 
-    @ManyToOne
-    @JoinColumn(name = "instance_fk")
     private PrivateInstance instance;
 
-    @ManyToOne
-    @JoinColumn(name = "filesystem_fk")
     private FileSystemInfo fileSystemInfo;
 
     public long getPk() {

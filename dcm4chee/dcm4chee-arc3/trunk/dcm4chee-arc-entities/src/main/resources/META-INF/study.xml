@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Study">
+    <table name="study" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updated_time" />
+      </basic>
+      <basic name="studyInstanceUID">
+        <column name="study_iuid" nullable="false" />
+      </basic>
+      <basic name="studyID">
+        <column name="study_id" />
+      </basic>
+      <basic name="studyDateTime">
+        <column name="study_datetime" />
+      </basic>
+      <basic name="accessionNumber">
+        <column name="accession_no" />
+      </basic>
+      <basic name="referringPhysicianName">
+        <column name="ref_physician" />
+      </basic>
+      <basic name="referringPhysicianIdeographicName">
+        <column name="ref_phys_i_name" />
+      </basic>
+      <basic name="referringPhysicianPhoneticName">
+        <column name="ref_phys_p_name" />
+      </basic>
+      <basic name="studyDescription">
+        <column name="study_desc" />
+      </basic>
+      <basic name="studyCustomAttribute1">
+        <column name="study_custom1" />
+      </basic>
+      <basic name="studyCustomAttribute2">
+        <column name="study_custom2" />
+      </basic>
+      <basic name="studyCustomAttribute3">
+        <column name="study_custom3" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="study_attrs" />
+      </basic>
+      <basic name="numberOfStudyRelatedSeries">
+        <column name="num_series" />
+      </basic>
+      <basic name="numberOfStudyRelatedInstances">
+        <column name="num_instances" />
+      </basic>
+      <basic name="modalitiesInStudy">
+        <column name="mods_in_study" />
+      </basic>
+      <basic name="retrieveAETs">
+        <column name="retrieve_aets" />
+      </basic>
+      <basic name="externalRetrieveAET">
+        <column name="ext_retr_aet" />
+      </basic>
+      <basic name="fileSetID">
+        <column name="fileset_id" />
+      </basic>
+      <basic name="fileSetUID">
+        <column name="fileset_iuid" />
+      </basic>
+      <basic name="availability">
+        <column name="availability" />
+      </basic>
+      <basic name="studyStatus">
+        <column name="study_status" />
+      </basic>
+      <basic name="studyStatusID">
+        <column name="study_status_id" />
+      </basic>
+      <many-to-one name="patient">
+        <join-column name="patient_fk" />
+      </many-to-one>
+      <one-to-many name="series" mapped-by="study" />
+      <many-to-many name="procedureCodes">
+        <join-table name="rel_study_pcode">
+          <join-column name="study_fk" />
+          <inverse-join-column name="pcode_fk" />
+        </join-table>
+      </many-to-many>
+    </attributes>
+  </entity>
+</entity-mappings>

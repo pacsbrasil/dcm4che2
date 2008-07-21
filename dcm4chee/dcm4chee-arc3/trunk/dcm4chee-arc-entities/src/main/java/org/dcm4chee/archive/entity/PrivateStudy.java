@@ -41,16 +41,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.util.DicomObjectUtils;
@@ -60,35 +50,22 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "priv_study")
 public class PrivateStudy implements Serializable {
 
     private static final long serialVersionUID = -7571163230633648191L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "priv_type", nullable = false)
     private int privateType;
 
-    @Column(name = "study_iuid", nullable = false)
     private String studyInstanceUID;
 
-    @Column(name = "accession_no")
     private String accessionNumber;
 
-    @Column(name = "study_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_fk", nullable = false)
     private PrivatePatient patient;
 
-    @OneToMany(mappedBy = "study")
     private Set<PrivateSeries> series;
 
     public long getPk() {

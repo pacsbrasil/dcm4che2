@@ -42,20 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -70,79 +56,48 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 1, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "gpsps")
 public class GPSPS implements Serializable {
 
     private static final long serialVersionUID = 4800913651614346013L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "gpsps_iuid")
     private String sopInstanceUID;
 
-    @Column(name = "gpsps_tuid")
     private String transactionUID;
 
-    @Column(name = "start_datetime")
     private Date startDateTime;
 
-    @Column(name = "end_datetime")
     private Date expectedCompletionDateTime;
 
-    @Column(name = "gpsps_status")
     private GPSPSStatus status;
 
-    @Column(name = "gpsps_prior")
     private GPSPSPriority priority;
 
-    @Column(name = "in_availability")
     private InputAvailabilityFlag inputAvailability;
 
-    @Column(name = "item_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
-    @ManyToOne
-    @JoinColumn(name = "code_fk")
     private Code scheduledWorkItemCode;
 
-    @ManyToMany
-    @JoinTable(name = "rel_gpsps_appcode", joinColumns = { @JoinColumn(name = "appcode_fk") }, inverseJoinColumns = { @JoinColumn(name = "gpsps_fk") })
     private Set<Code> scheduledProcessingApplicationsCodes;
 
-    @ManyToMany
-    @JoinTable(name = "rel_gpsps_devname", joinColumns = { @JoinColumn(name = "devname_fk") }, inverseJoinColumns = { @JoinColumn(name = "gpsps_fk") })
     private Set<Code> scheduledStationNameCodes;
 
-    @ManyToMany
-    @JoinTable(name = "rel_gpsps_devclass", joinColumns = { @JoinColumn(name = "devclass_fk") }, inverseJoinColumns = { @JoinColumn(name = "gpsps_fk") })
     private Set<Code> scheduledStationClassCodes;
 
-    @ManyToMany
-    @JoinTable(name = "rel_gpsps_devloc", joinColumns = { @JoinColumn(name = "devloc_fk") }, inverseJoinColumns = { @JoinColumn(name = "gpsps_fk") })
     private Set<Code> scheduledStationGeographicLocationCodes;
 
-    @OneToMany(mappedBy = "gpsps")
     private Set<GPSPSRequest> referencedRequests;
 
-    @OneToMany(mappedBy = "gpsps")
     private Set<GPSPSPerformer> scheduledHumanPerformers;
 
-    @ManyToMany(mappedBy = "scheduledProcedureSteps")
     private Set<GPPPS> performedProcedureSteps;
 
     public long getPk() {
@@ -286,12 +241,10 @@ public class GPSPS implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

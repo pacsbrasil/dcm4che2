@@ -42,20 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -69,99 +55,64 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "study")
 public class Study implements Serializable {
 
     private static final long serialVersionUID = -5851890695263668359L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "study_iuid", nullable = false, unique = true)
     private String studyInstanceUID;
 
-    @Column(name = "study_id")
     private String studyID;
 
-    @Column(name = "study_datetime")
     private Date studyDateTime;
 
-    @Column(name = "accession_no")
     private String accessionNumber;
 
-    @Column(name = "ref_physician")
     private String referringPhysicianName;
 
-    @Column(name = "ref_phys_i_name")
     private String referringPhysicianIdeographicName;
 
-    @Column(name = "ref_phys_p_name")
     private String referringPhysicianPhoneticName;
 
-    @Column(name = "study_desc")
     private String studyDescription;
 
-    @Column(name = "study_custom1")
     private String studyCustomAttribute1;
 
-    @Column(name = "study_custom2")
     private String studyCustomAttribute2;
 
-    @Column(name = "study_custom3")
     private String studyCustomAttribute3;
 
-    @Column(name = "study_attrs")
     private byte[] encodedAttributes;
 
-    @Column(name = "num_series")
     private int numberOfStudyRelatedSeries;
 
-    @Column(name = "num_instances")
     private int numberOfStudyRelatedInstances;
 
-    @Column(name = "mods_in_study")
     private String modalitiesInStudy;
 
-    @Column(name = "retrieve_aets")
     private String retrieveAETs;
 
-    @Column(name = "ext_retr_aet")
     private String externalRetrieveAET;
 
-    @Column(name = "fileset_id")
     private String fileSetID;
 
-    @Column(name = "fileset_iuid")
     private String fileSetUID;
 
-    @Column(name = "availability")
     private Availability availability;
 
-    @Column(name = "study_status")
     private int studyStatus;
 
-    @Column(name = "study_status_id")
     private String studyStatusID;
 
-    @ManyToMany
-    @JoinTable(name = "rel_study_pcode", joinColumns = { @JoinColumn(name = "study_fk") }, inverseJoinColumns = { @JoinColumn(name = "pcode_fk") })
     private Set<Code> procedureCodes;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_fk", nullable = false)
     private Patient patient;
 
-    @OneToMany(mappedBy = "study")
     private Set<Series> series;
 
     public final long getPk() {
@@ -359,12 +310,10 @@ public class Study implements Serializable {
         + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

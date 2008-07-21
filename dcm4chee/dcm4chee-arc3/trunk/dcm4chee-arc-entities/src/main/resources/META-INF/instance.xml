@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Instance">
+    <table name="instance" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updatedTime" />
+      </basic>
+      <basic name="sopInstanceUID">
+        <column name="sop_iuid" />
+      </basic>
+      <basic name="sopClassUID">
+        <column name="sop_cuid" />
+      </basic>
+      <basic name="instanceNumber">
+        <column name="inst_no" />
+      </basic>
+      <basic name="contentDateTime">
+        <column name="content_datetime" />
+      </basic>
+      <basic name="completionFlag">
+        <column name="sr_complete" />
+      </basic>
+      <basic name="verificationFlag">
+        <column name="sr_verified" />
+      </basic>
+      <basic name="instanceCustomAttribute1">
+        <column name="inst_custom1" />
+      </basic>
+      <basic name="instanceCustomAttribute2">
+        <column name="instanceCustomAttribute2" />
+      </basic>
+      <basic name="instanceCustomAttribute3">
+        <column name="inst_custom3" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="inst_attrs" />
+      </basic>
+      <basic name="retrieveAETs">
+        <column name="retrieve_aets" />
+      </basic>
+      <basic name="externalRetrieveAET">
+        <column name="ext_retr_aet" />
+      </basic>
+      <basic name="availability">
+        <column name="availability" />
+      </basic>
+      <basic name="storageStatus">
+        <column name="inst_status" />
+      </basic>
+      <basic name="allAttributes">
+        <column name="all_attrs" />
+      </basic>
+      <basic name="storageComitted">
+        <column name="commitment" />
+      </basic>
+      <many-to-one name="conceptNameCode">
+        <join-column name="srcode_fk" />
+      </many-to-one>
+      <many-to-one name="media">
+        <join-column name="media_fk" />
+      </many-to-one>
+      <many-to-one name="series">
+        <join-column name="series_fk" />
+      </many-to-one>
+      <one-to-many name="verifyingObservers" mapped-by="instance" />
+      <one-to-many name="fileInfos" mapped-by="instance" />
+    </attributes>
+  </entity>
+</entity-mappings>

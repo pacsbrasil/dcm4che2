@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Series">
+    <table name="series" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updated_time" />
+      </basic>
+      <basic name="seriesInstanceUID">
+        <column name="series_iuid" nullable="false" />
+      </basic>
+      <basic name="seriesNumber">
+        <column name="series_no" />
+      </basic>
+      <basic name="seriesDescription">
+        <column name="series_desc" />
+      </basic>
+      <basic name="modality">
+        <column name="modality" />
+      </basic>
+      <basic name="institutionalDepartmentName">
+        <column name="department" />
+      </basic>
+      <basic name="institutionName">
+        <column name="institution" />
+      </basic>
+      <basic name="stationName">
+        <column name="station_name" />
+      </basic>
+      <basic name="bodyPartExamined">
+        <column name="body_part" />
+      </basic>
+      <basic name="laterality">
+        <column name="laterality" />
+      </basic>
+      <basic name="performingPhysicianName">
+        <column name="perf_physician" />
+      </basic>
+      <basic name="performingPhysicianIdeographicName">
+        <column name="perf_phys_i_name" />
+      </basic>
+      <basic name="performingPhysicianPhoneticName">
+        <column name="perf_phys_p_name" />
+      </basic>
+      <basic name="performedProcedureStepStartDateTime">
+        <column name="pps_start" />
+      </basic>
+      <basic name="performedProcedureStepInstanceUID">
+        <column name="pps_iuid" />
+      </basic>
+      <basic name="seriesCustomAttribute1">
+        <column name="series_custom1" />
+      </basic>
+      <basic name="seriesCustomAttribute2">
+        <column name="series_custom2" />
+      </basic>
+      <basic name="seriesCustomAttribute3">
+        <column name="series_custom3" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="series_attrs" />
+      </basic>
+      <basic name="numberOfSeriesRelatedInstances">
+        <column name="num_instances" />
+      </basic>
+      <basic name="sourceAET">
+        <column name="src_aet" />
+      </basic>
+      <basic name="retrieveAETs">
+        <column name="retrieve_aets" />
+      </basic>
+      <basic name="externalRetrieveAET">
+        <column name="ext_retr_aet" />
+      </basic>
+      <basic name="fileSetID">
+        <column name="fileset_id" />
+      </basic>
+      <basic name="fileSetUID">
+        <column name="fileset_iuid" />
+      </basic>
+      <basic name="availability">
+        <column name="availability" />
+      </basic>
+      <basic name="storageStatus">
+        <column name="series_status" />
+      </basic>
+      <many-to-one name="modalityPerformedProcedureStep">
+        <join-column name="mpps_fk" />
+      </many-to-one>
+      <many-to-one name="study">
+        <join-column name="study_fk" />
+      </many-to-one>
+      <one-to-many name="requestAttributes" mapped-by="series" />
+      <one-to-many name="instances" mapped-by="series" />
+    </attributes>
+  </entity>
+</entity-mappings>

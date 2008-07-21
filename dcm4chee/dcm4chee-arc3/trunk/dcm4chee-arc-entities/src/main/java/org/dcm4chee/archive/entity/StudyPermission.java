@@ -39,21 +39,11 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "study_permission")
 public class StudyPermission implements Serializable {
 
     private static final long serialVersionUID = -4389532918446366208L;
@@ -92,30 +82,16 @@ public class StudyPermission implements Serializable {
      */
     public static final String DELETE_ACTION = "D";
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "study_iuid", nullable = false)
     private String studyInstanceUID;
 
-    @Column(name = "action", nullable = false)
     private String action;
 
-    @Column(name = "roles", nullable = false)
     private String role;
 
-    /**
-     * 
-     */
-    public StudyPermission() {
-    }
-
-    public StudyPermission(String suid, String action, String role) {
-        this.studyInstanceUID = suid;
-        this.action = action;
-        this.role = role;
+    public long getPk() {
+        return pk;
     }
 
     public String getAction() {

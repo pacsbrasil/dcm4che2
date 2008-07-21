@@ -41,58 +41,33 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "media")
 public class Media implements Serializable {
 
     private static final long serialVersionUID = -4054710856453638118L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "media_rq_iuid")
     private String mediaCreationRequestInstanceUID;
 
-    @Column(name = "media_status")
     private int mediaStatus;
 
-    @Column(name = "media_status_info")
     private String mediaStatusInfo;
 
-    @Column(name = "media_usage")
     private long mediaUsage;
 
-    @Column(name = "fileset_id")
     private String fileSetID;
 
-    @Column(name = "fileset_iuid")
     private String fileSetUID;
 
-    @OneToMany(mappedBy = "media")
     private Set<Instance> instances;
 
     public final long getPk() {
@@ -174,12 +149,10 @@ public class Media implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

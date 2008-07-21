@@ -40,60 +40,33 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
-import javax.persistence.Table;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "files")
 public class FileInfo implements Serializable {
 
     private static final long serialVersionUID = 4043304968513421877L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "filepath")
     private String filePath;
 
-    @Column(name = "file_tsuid")
     private String transferSyntaxUID;
 
-    @Column(name = "file_size")
     private long fileSize;
 
-    @Column(name = "file_md5")
     private String md5Sum;
 
-    @Column(name = "md5_check_time")
     private Date timeOfLastMD5SumCheck;
 
-    @Column(name = "file_status")
     private int fileStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "instance_fk")
     private Instance instance;
 
-    @ManyToOne
-    @JoinColumn(name = "filesystem_fk")
     private FileSystemInfo fileSystemInfo;
 
     public long getPk() {
@@ -189,7 +162,6 @@ public class FileInfo implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }

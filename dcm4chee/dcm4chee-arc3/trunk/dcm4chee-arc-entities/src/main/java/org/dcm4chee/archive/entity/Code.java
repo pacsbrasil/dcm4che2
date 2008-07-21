@@ -39,13 +39,6 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -54,28 +47,18 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Feb 28, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "code")
 public class Code implements Serializable {
 
     private static final long serialVersionUID = 3626021926959276349L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "code_value", nullable = false)
     private String codeValue;
 
-    @Column(name = "code_designator", nullable = false)
     private String codingSchemeDesignator;
 
-    @Column(name = "code_version")
     private String codingSchemeVersion;
 
-    @Column(name = "code_meaning")
     private String codeMeaning;
 
     public long getPk() {

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.StudyOnFileSystem">
+    <table name="study_on_fs" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="accessTime">
+        <column name="access_time" nullable="false" />
+      </basic>
+      <many-to-one name="study">
+        <join-column name="study_fk" />
+      </many-to-one>
+      <many-to-one name="fileSystemInfo">
+        <join-column name="filesystem_fk" />
+      </many-to-one>
+    </attributes>
+  </entity>
+</entity-mappings>

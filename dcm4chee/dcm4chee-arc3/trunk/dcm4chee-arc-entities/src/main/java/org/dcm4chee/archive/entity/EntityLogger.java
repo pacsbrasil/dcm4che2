@@ -37,14 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.archive.entity;
 
-import javax.persistence.PostLoad;
-import javax.persistence.PostPersist;
-import javax.persistence.PostRemove;
-import javax.persistence.PostUpdate;
-import javax.persistence.PrePersist;
-import javax.persistence.PreRemove;
-import javax.persistence.PreUpdate;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,37 +51,30 @@ public class EntityLogger {
         return LoggerFactory.getLogger(entity.getClass());
     }
 
-    @PrePersist
     public void onPrePersist(Object entity) {
         getLogger(entity).debug("Creating {}", entity);
     }
 
-    @PostPersist
     public void onPostPersist(Object entity) {
         getLogger(entity).debug("Created {}", entity);
     }
 
-    @PostLoad
     public void onPostLoad(Object entity) {
         getLogger(entity).debug("Loaded {}", entity);
     }
 
-    @PreUpdate
     public void onPreUpdate(Object entity) {
         getLogger(entity).debug("Updating {}", entity);
     }
 
-    @PostUpdate
     public void onPostUpdate(Object entity) {
         getLogger(entity).debug("Updated {}", entity);
     }
 
-    @PreRemove
     public void onPreRemove(Object entity) {
         getLogger(entity).debug("Deleting {}", entity);
     }
 
-    @PostRemove
     public void onPostRemove(Object entity) {
         getLogger(entity).debug("Deleted {}", entity);
     }

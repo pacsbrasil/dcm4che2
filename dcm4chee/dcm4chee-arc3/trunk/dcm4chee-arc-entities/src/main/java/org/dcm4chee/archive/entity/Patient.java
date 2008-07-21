@@ -42,20 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -68,81 +54,52 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 23, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "patient")
 public class Patient implements Serializable {
 
     private static final long serialVersionUID = -1348274766865261645L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "pat_id")
     private String patientID;
 
-    @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
 
-    @Column(name = "pat_name")
     private String patientName;
 
-    @Column(name = "pat_i_name")
     private String patientIdeographicName;
 
-    @Column(name = "pat_p_name")
     private String patientPhoneticName;
 
-    @Column(name = "pat_birthdate")
     private Date patientBirthDate;
 
-    @Column(name = "pat_sex")
     private String patientSex;
 
-    @Column(name = "pat_custom1")
     private String patientCustomAttribute1;
 
-    @Column(name = "pat_custom2")
     private String patientCustomAttribute2;
 
-    @Column(name = "pat_custom3")
     private String patientCustomAttribute3;
 
-    @Column(name = "pat_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToMany
-    @JoinTable(name = "rel_pat_other_pid", joinColumns = { @JoinColumn(name = "patient_fk") }, inverseJoinColumns = { @JoinColumn(name = "other_pid_fk") })
     private Set<OtherPatientID> otherPatientIDs;
 
-    @ManyToOne
-    @JoinColumn(name = "merge_fk")
     private Patient mergedWith;
 
-    @OneToMany(mappedBy = "mergedWith")
     private Set<Patient> previous;
 
-    @OneToMany(mappedBy = "patient")
     private Set<Study> studies;
 
-    @OneToMany(mappedBy = "patient")
     private Set<MWLItem> modalityWorklistItems;
 
-    @OneToMany(mappedBy = "patient")
     private Set<MPPS> modalityPerformedProcedureSteps;
 
-    @OneToMany(mappedBy = "patient")
     private Set<GPSPS> generalPurposeScheduledProcedureSteps;
 
-    @OneToMany(mappedBy = "patient")
     private Set<GPPPS> generalPurposePerformedProcedureSteps;
 
     public long getPk() {
@@ -269,12 +226,10 @@ public class Patient implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

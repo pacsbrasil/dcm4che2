@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.GPPPS">
+    <table name="gppps" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updated_time" />
+      </basic>
+      <basic name="sopInstanceUID">
+        <column name="pps_iuid" nullable="false" />
+      </basic>
+      <basic name="startDateTime">
+        <column name="pps_start" />
+      </basic>
+      <basic name="status">
+        <column name="pps_status" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="pps_attrs" />
+      </basic>
+      <many-to-one name="patient">
+        <join-column name="patient_fk" />
+      </many-to-one>
+      <many-to-many name="scheduledProcedureSteps">
+        <join-table name="rel_gpsps_gppps">
+          <join-column name="gppps_fk" />
+          <inverse-join-column name="gpsps_fk" />
+        </join-table>
+      </many-to-many>
+    </attributes>
+  </entity>
+</entity-mappings>

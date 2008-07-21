@@ -40,46 +40,23 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "device")
 public class Device implements Serializable {
 
     private static final long serialVersionUID = -4843360661541297998L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "station_name", nullable = false)
     private String stationName;
 
-    @Column(name = "station_aet", nullable = false)
     private String stationAET;
 
-    @Column(name = "modality", nullable = false)
     private String modality;
 
-    @ManyToMany
-    @JoinTable(name = "rel_dev_proto", 
-            joinColumns = { @JoinColumn(name = "prcode_fk") },
-            inverseJoinColumns = { @JoinColumn(name = "device_fk") })
     private Set<Code> protocolCodes;
 
     public long getPk() {

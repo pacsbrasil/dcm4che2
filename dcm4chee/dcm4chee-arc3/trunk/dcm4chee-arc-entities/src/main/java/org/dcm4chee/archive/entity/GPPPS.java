@@ -42,19 +42,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -67,42 +54,26 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 1, 2008
  */
-@Entity
-@EntityListeners( { EntityLogger.class })
-@Table(name = "gppps")
 public class GPPPS implements Serializable {
 
     private static final long serialVersionUID = 5358842743055077420L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "pk")
     private long pk;
 
-    @Column(name = "created_time")
     private Date createdTime;
 
-    @Column(name = "updated_time")
     private Date updatedTime;
 
-    @Column(name = "pps_iuid", nullable = false)
     private String sopInstanceUID;
 
-    @Column(name = "pps_start")
     private Date startDateTime;
 
-    @Column(name = "pps_status")
     private PPSStatus status;
 
-    @Column(name = "pps_attrs")
     private byte[] encodedAttributes;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
-    @ManyToMany
-    @JoinTable(name = "rel_gpsps_gppps", joinColumns = { @JoinColumn(name = "gppps_fk") }, inverseJoinColumns = { @JoinColumn(name = "gpsps_fk") })
     private Set<GPSPS> scheduledProcedureSteps;
 
     public long getPk() {
@@ -163,12 +134,10 @@ public class GPPPS implements Serializable {
                 + "]";
     }
 
-    @PrePersist
     public void onPrePersist() {
         createdTime = new Date();
     }
 
-    @PreUpdate
     public void onPreUpdate() {
         updatedTime = new Date();
     }

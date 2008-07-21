@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.PrivatePatient">
+    <table name="priv_patient" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value />
+      </id>
+      <basic name="privateType">
+        <column name="priv_type" />
+      </basic>
+      <basic name="patientID">
+        <column name="pat_id" />
+      </basic>
+      <basic name="issuerOfPatientID">
+        <column name="pat_id_issuer" />
+      </basic>
+      <basic name="patientName">
+        <column name="pat_name" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="pat_attrs" />
+      </basic>
+      <one-to-many name="studies" mapped-by="patient" />
+    </attributes>
+  </entity>
+</entity-mappings>
