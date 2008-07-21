@@ -3,12 +3,13 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
   version="1.0">
-  <entity class="org.dcm4chee.archive.entity.FileSystemInfo">
+  <entity class="org.dcm4chee.archive.entity.FileSystemInfo" access="FIELD">
     <table name="filesystem" />
     <attributes>
       <id name="pk">
         <column name="pk" />
-        <generated-value />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="filesystem_pk_seq" />
       </id>
       <basic name="directoryPath">
         <column name="dirpath" nullable="false" unique="true" />

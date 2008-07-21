@@ -3,14 +3,15 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
   version="1.0">
-  <entity class="org.dcm4chee.archive.entity.Study">
+  <entity class="org.dcm4chee.archive.entity.Study" access="FIELD">
     <table name="study" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
       <id name="pk">
         <column name="pk" />
-        <generated-value />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="study_pk_seq" />
       </id>
       <basic name="createdTime">
         <column name="created_time" />
@@ -31,16 +32,16 @@
         <column name="accession_no" />
       </basic>
       <basic name="referringPhysicianName">
-        <column name="ref_physician" />
+        <column name="ref_physician" column-definition="@nvarchar2@" />
       </basic>
       <basic name="referringPhysicianIdeographicName">
-        <column name="ref_phys_i_name" />
+        <column name="ref_phys_i_name" column-definition="@nvarchar2@" />
       </basic>
       <basic name="referringPhysicianPhoneticName">
-        <column name="ref_phys_p_name" />
+        <column name="ref_phys_p_name" column-definition="@nvarchar2@" />
       </basic>
       <basic name="studyDescription">
-        <column name="study_desc" />
+        <column name="study_desc" column-definition="@nvarchar2@" />
       </basic>
       <basic name="studyCustomAttribute1">
         <column name="study_custom1" />
@@ -52,7 +53,7 @@
         <column name="study_custom3" />
       </basic>
       <basic name="encodedAttributes">
-        <column name="study_attrs" />
+        <column name="study_attrs" column-definition="@blob@" />
       </basic>
       <basic name="numberOfStudyRelatedSeries">
         <column name="num_series" />

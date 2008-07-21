@@ -3,14 +3,15 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
   version="1.0">
-  <entity class="org.dcm4chee.archive.entity.Patient">
+  <entity class="org.dcm4chee.archive.entity.Patient" access="FIELD">
     <table name="patient" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
       <id name="pk">
         <column name="pk" />
-        <generated-value />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="patient_pk_seq" />
       </id>
       <basic name="createdTime">
         <column name="created_time" />
@@ -25,16 +26,17 @@
         <column name="pat_id_issuer" />
       </basic>
       <basic name="patientName">
-        <column name="pat_name" />
+        <column name="pat_name" column-definition="@nvarchar2@" />
       </basic>
       <basic name="patientIdeographicName">
-        <column name="pat_i_name" />
+        <column name="pat_i_name" column-definition="@nvarchar2@" />
       </basic>
       <basic name="patientPhoneticName">
-        <column name="pat_p_name" />
+        <column name="pat_p_name" column-definition="@nvarchar2@" />
       </basic>
       <basic name="patientBirthDate">
         <column name="pat_birthdate" />
+        <temporal>DATE</temporal>
       </basic>
       <basic name="patientSex">
         <column name="pat_sex" />
@@ -49,7 +51,7 @@
         <column name="pat_custom3" />
       </basic>
       <basic name="encodedAttributes">
-        <column name="pat_attrs" />
+        <column name="pat_attrs" column-definition="@blob@" />
       </basic>
       <many-to-one name="mergedWith">
         <join-column name="merge_fk" />

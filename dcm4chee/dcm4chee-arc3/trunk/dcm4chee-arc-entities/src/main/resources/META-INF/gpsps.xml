@@ -3,21 +3,14 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
   version="1.0">
-  <entity class="org.dcm4chee.archive.entity.GPSPS">
+  <entity class="org.dcm4chee.archive.entity.GPSPS" access="FIELD">
     <table name="gpsps" />
-    <pre-persist method-name="onPrePersist" />
-    <pre-update method-name="onPreUpdate" />
     <attributes>
       <id name="pk">
         <column name="pk" />
-        <generated-value />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gpsps_pk_seq" />
       </id>
-      <basic name="createdTime">
-        <column name="created_time" />
-      </basic>
-      <basic name="updatedTime">
-        <column name="updated_time" />
-      </basic>
       <basic name="sopInstanceUID">
         <column name="gpsps_iuid" />
       </basic>
@@ -40,7 +33,7 @@
         <column name="in_availability" />
       </basic>
       <basic name="encodedAttributes">
-        <column name="item_attrs" />
+        <column name="item_attrs" column-definition="@blob@" />
       </basic>
       <many-to-one name="patient">
         <join-column name="patient_fk" />

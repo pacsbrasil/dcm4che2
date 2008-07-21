@@ -3,12 +3,13 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
   version="1.0">
-  <entity class="org.dcm4chee.archive.entity.PrivateStudy">
+  <entity class="org.dcm4chee.archive.entity.PrivateStudy" access="FIELD">
     <table name="priv_study" />
     <attributes>
       <id name="pk">
         <column name="pk" />
-        <generated-value />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="priv_study_pk_seq" />
       </id>
       <basic name="privateType">
         <column name="priv_type" />
@@ -20,7 +21,7 @@
       	<column name="accession_no"/>
       </basic>
       <basic name="encodedAttributes">
-      	<column name="study_attrs"/>
+      	<column name="study_attrs" column-definition="@blob@"/>
       </basic>
       <many-to-one name="patient">
       	<join-column name="patient_fk"/>
