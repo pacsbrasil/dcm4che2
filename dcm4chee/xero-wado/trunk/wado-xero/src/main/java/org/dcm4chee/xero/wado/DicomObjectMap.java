@@ -54,6 +54,7 @@ public class DicomObjectMap extends AbstractMap<String, DicomElementWrap> {
 		if (ikey <= 0)
 			return null;
 		DicomElement de = ds.get(ikey);
+		if( de==null ) return null;
 		return new DicomElementWrap(de,scs);
 	}
 

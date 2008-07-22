@@ -12,10 +12,8 @@ By $ds.("0x80080").value$, Ref. Phys. $ds.("0x80090").value$</font><br />
 </table>
 <hr />
 $ds.ContentSequence.dicomObjects:{
-<font size="+1">$it.ConceptNameCodeSequence.dicomObjects:{$it.CodeMeaning$}$</font>
-<ul>
-  
-</ul>
+  $srcontentitem()$
+  <br />
 }$
 </body>
 </html>
