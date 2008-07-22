@@ -119,7 +119,6 @@
   </repository>
  </repositories>
 
-<!--
  <distributionManagement>
     <repository>
        <id>dcm4che</id>
@@ -127,5 +126,4 @@
        <url>scp://www.dcm4che.org:443/home/maven2</url>
     </repository>
  </distributionManagement>
- -->
 </project>
