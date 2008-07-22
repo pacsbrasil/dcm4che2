@@ -71,13 +71,6 @@
       </plugin>
 
      </plugins>
-     <extensions>
-        <extension>
-           <groupId>org.apache.maven.wagon</groupId>
-           <artifactId>wagon-ssh</artifactId>
-           <version>1.0-beta-2</version>
-        </extension>
-     </extensions>
    </build>
 
    <repositories>
@@ -105,7 +98,6 @@
   </repository>
  </repositories>
 
- <!--
  <distributionManagement>
     <repository>
        <id>dcm4che</id>
@@ -113,6 +105,5 @@
        <url>scpexe://www.dcm4che.org:443/home/maven2</url>
     </repository>
  </distributionManagement>
- -->
 
 </project>
