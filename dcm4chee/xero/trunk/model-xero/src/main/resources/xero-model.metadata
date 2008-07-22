@@ -1,8 +1,5 @@
 # Define some meta-data about the dynamic portion of the model
 
-# The model is defined by the child values and factories registered in the model.
-model=${class:org.dcm4chee.xero.template.EventModelFilter}
-
 # Defines a URL query factory - something that knows how to produce a query result from
 # one or more parameters.
 model.query=${factory:org.dcm4chee.xero.controller.RequestValidator}

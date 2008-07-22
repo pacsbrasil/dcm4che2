@@ -1,7 +1,7 @@
 # xero-util test metadata to ensure the various objects are correcltly created/can be used.
 
 
-model=${class:org.dcm4chee.xero.metadata.access.MapWithDefaultsFilter}
+model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaultsFilter}
 model.templateGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
 model.templateGroup.refreshInterval=5
 model.templateGroup.groupNames=utilTestTemplates,testSuper

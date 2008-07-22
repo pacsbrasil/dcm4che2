@@ -1,6 +1,6 @@
 package org.dcm4chee.xero.model;
 
-import org.dcm4chee.xero.template.LazyMap;
+import org.dcm4chee.xero.metadata.access.LazyMap;
 
 /** A Query Box is a simple model object that is used to layout a query search criteria object. */
 public class QueryLayout extends Layout {

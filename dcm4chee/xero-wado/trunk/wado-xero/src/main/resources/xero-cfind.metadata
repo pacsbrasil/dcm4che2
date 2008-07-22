@@ -187,16 +187,33 @@ wado.XERO.wadoImg.priority=-1
 wado.XERO.dicom=${ref:dicom}
 wado.XERO.dicom.priority=-1
 
+xmlReport=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+xmlReport.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplateFilter}
+xmlReport.stringTemplateFilter.defaultView=xml
+xmlReport.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
+xmlReport.stringTemplateFilter.defaultGroup.refreshInterval=10
+xmlReport.stringTemplateFilter.defaultGroup.groupNames=reports/base
+xmlReport.stringTemplateFilter.priority=1000
+xmlReport.dsmodel=${class:org.dcm4chee.xero.wado.DSModel}
+xmlReport.dicom=${ref:dicom}
+xmlReport.dicom.priority=-1
+
+htmlReport.inherit=xmlReport
+htmlReport.stringTemplateFilter.defaultView=srhtml
+htmlReport.stringTemplateFilter.contentType=text/html
+
 WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
 WADO.choose.priority=100
 
 WADO.image=${class:org.dcm4chee.xero.wado.EncodeImage}
 WADO.image.priority=25
-WADO.application/xml=${class:org.dcm4chee.xero.wado.EncodeXml}
+WADO.application/xml=${ref:xmlReport}
 WADO.application/xml.priority=15
-WADO.text/xml=${class:org.dcm4chee.xero.wado.EncodeXml}
+WADO.text/xml=${ref:xmlReport}
 WADO.text/xml.priority=-1
+WADO.text/html=${ref:htmlReport}
+WADO.text/html.priority=-1
 WADO.application/dicom=${ref:wadoDcm}
 WADO.application/dicom.priority=10
 WADO.multipart=${class:org.dcm4chee.xero.wado.MultiPartContentTypeFilter}

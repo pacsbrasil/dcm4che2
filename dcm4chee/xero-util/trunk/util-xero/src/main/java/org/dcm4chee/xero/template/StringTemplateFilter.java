@@ -37,11 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.template;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
@@ -51,17 +54,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class provides a filter based on StringTemplate.  It just calls the next filter, and uses the stringtemplate
- * named "template" and from the set of stringtemplates "stringtemplategroup".  It is possible to define a static
- * stringetemplategroup to use if none is otherwise defined, as well as a default view if no view is defined, and a default
- * error page view if an exception is thrown.
+ * This class provides a filter based on StringTemplate.  
+ * It creates the model, adds it to the params, and then calls the next filter.
+ * It then renders the specified template in the templateGroup, as defined by the model, or sets them to be the values
+ * as defined by the defaults.  If no default is specified, 
+ * the template will be the servlet path, excluding the dot elements, eg:
+ * /xero/controller/display.jst would map to the view controller.display, unless a default view name is used,
+ * in which case the default view will always be used, or a view is specified in the model after the next 
+ * filter is called.  The next filter can modify the model by calling various events or directly,
+ * returning null to cause this filter to render, 
+ * or it can return a servlet response item directly, causing this servlet to just return the item.
+ *
+ * If no model object is found in the metadata, a default hash map will be used.
  * 
- * The model used is the returned map from the next filter - thus, the view always has access to the name of the template,
- * and 
+ * The params are NOT available by default in the model - they MUST be copied over into the model by some controller
+ * object.  This prevents their being used directly in the view with some XSS type attack.  The only thing available
+ * in the model by default (unless items are defined in the metadata), is the template name, the templateGroup,
+ * and the contentType.  (TODO - consider whether to allow params to be available)
+ * 
  * @author bwallace
  *
  */
-public class StringTemplateFilter implements Filter<ServletResponseItem> {
+public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDataUser {
 	private static Logger log = LoggerFactory.getLogger(StringTemplateFilter.class);
 
 	/** The filter that returns the model object */
@@ -81,37 +95,52 @@ public class StringTemplateFilter implements Filter<ServletResponseItem> {
 	/** The default group is the string template set to use if no other one is specified. */
 	StringTemplateGroup defaultGroup;
 	
+	MetaDataBean mdbModel;
+	
 	/** This method will return an object that renders the specified view */
 	@SuppressWarnings("unchecked")
 	public ServletResponseItem filter(
 			FilterItem<ServletResponseItem> filterItem,
 			Map<String, Object> params) {
 		try {
-			Map<String,Object> model = (Map<String,Object>) filterItem.callNamedFilter(MODEL_FILTER, params);
-			if( model==null ) throw new NullPointerException("Model pointer is null for filter named "+MODEL_FILTER);
-			String view = (String) model.get(TEMPLATE_NAME);
+			Map<String, Object> model;
+			if( mdbModel!=null ) model = (Map<String,Object>) mdbModel.getValue();
+			else model = new HashMap<String,Object>();
+			params.put("model", model);
+			ServletResponseItem sri = filterItem.callNextFilter(params);
+			if( sri!=null ) return sri;
+			
+			String template = (String) model.get(TEMPLATE_NAME);
 			StringTemplateGroup stg = (StringTemplateGroup) model.get(TEMPLATE_GROUP);
 			String contentType = (String) model.get(CONTENT_TYPE_NAME);
 			if( contentType==null ) contentType = defaultContentType;
-			if( stg==null ) stg = defaultGroup;
-			if( view==null ) view = defaultView;
-			if( view==null ) view = templateFromParams(params); 
-			if( view==null ) {
-				log.warn("View {} not found - returning 404", view);
-				return new ErrorResponseItem(404,"View name not defined.");				
+			if( stg==null ) {
+				stg = defaultGroup;
+				// No group - could mean another filter will return the stg.
+				if( stg==null ) return null;
+				model.put(TEMPLATE_GROUP, stg);
+			}
+			if( template==null ) {
+				template = defaultView;
+				if( template==null ) template = templateFromParams(params);
+				if( template==null ) {
+					log.warn("View {} not found - returning 404", template);
+					return new ErrorResponseItem(404,"View name not defined.");				
+				}
+				model.put("template", template);
 			}
 			if( stg==null ) {
 				log.warn("String template group {} not found - returning 404", TEMPLATE_GROUP);
 				return new ErrorResponseItem(404,"String template group not defined.");
 			}
-			log.info("Templating view {} from {}", view, stg.getName());
-			StringTemplate st = stg.getInstanceOf(view,model);
+			log.info("Templating view {} from {}", template, stg.getName());
+			StringTemplate st = stg.getInstanceOf(template,model);
 			StringTemplateResponseItem stri = new StringTemplateResponseItem(st,stg,errorView);
 			if( contentType!=null ) stri.setContentType(contentType);
 			return stri;
 		}
 		catch(Exception e){
-			log.error("Caugt exception "+e,e);
+			log.error("Caught exception "+e,e);
 			return new ErrorResponseItem(404,"Internal server error:"+e);
 		}
 	}
@@ -168,6 +197,12 @@ public class StringTemplateFilter implements Filter<ServletResponseItem> {
 	}
 
 	public void setDefaultGroupName(String defaultGroupName) {
+		
+	}
+
+	@Override
+	public void setMetaData(MetaDataBean metaDataBean) {
+		// TODO Auto-generated method stub
 		
 	}
 }

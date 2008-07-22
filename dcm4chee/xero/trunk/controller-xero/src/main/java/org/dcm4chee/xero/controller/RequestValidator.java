@@ -42,11 +42,11 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
+import org.dcm4chee.xero.metadata.access.LazyMap;
+import org.dcm4chee.xero.metadata.access.MapFactory;
 import org.dcm4chee.xero.parsers.Parser;
 import org.dcm4chee.xero.parsers.ParserException;
 import org.dcm4chee.xero.parsers.StringParser;
-import org.dcm4chee.xero.template.LazyMap;
-import org.dcm4chee.xero.template.MapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

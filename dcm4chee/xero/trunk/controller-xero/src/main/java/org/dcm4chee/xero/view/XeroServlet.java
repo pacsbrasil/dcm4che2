@@ -53,8 +53,8 @@ import org.dcm4chee.xero.controller.RequestValidator;
 import org.dcm4chee.xero.controller.XmlModelFactory;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
+import org.dcm4chee.xero.metadata.access.MapWithDefaults;
 import org.dcm4chee.xero.model.UrlUriResolver;
-import org.dcm4chee.xero.template.MapWithDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

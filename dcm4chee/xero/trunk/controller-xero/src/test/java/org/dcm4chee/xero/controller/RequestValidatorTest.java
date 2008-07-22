@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.template.MapWithDefaults;
+import org.dcm4chee.xero.metadata.access.MapWithDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;

@@ -122,17 +122,22 @@
    
    <servlet>
       <servlet-name>Xero Filter JS Servlet</servlet-name>
-      <servlet-class>org.antlr.stringtemplate.servlet.StringTemplateServlet</servlet-class>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
       <init-param>
 	      <param-name>metaData</param-name>
-    	  <param-value>xero-view.metadata</param-value>
+    	  <param-value>xero.metadata</param-value>
       </init-param>
       <init-param>
 	      <param-name>filter</param-name>
     	  <param-value>jscontroller</param-value>
       </init-param>
    </servlet>
+   
+   <servlet-mapping>
+      <servlet-name>Xero Filter JS Servlet</servlet-name>
+   	  <url-pattern>*.jst</url-pattern>
+   </servlet-mapping>
 
    <servlet-mapping>
       <servlet-name>Xero Servlet</servlet-name>

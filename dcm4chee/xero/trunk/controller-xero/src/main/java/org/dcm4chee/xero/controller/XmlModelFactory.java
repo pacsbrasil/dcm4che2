@@ -45,8 +45,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 
 import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.access.MapFactory;
 import org.dcm4chee.xero.model.XmlModel;
-import org.dcm4chee.xero.template.MapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;

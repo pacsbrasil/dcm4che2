@@ -8,21 +8,6 @@ model.studyColumns=${class:org.dcm4chee.xero.model.XmlModel}
 model.studyColumns.resource=studyColumns.xml
 
   
-# Include view path related objects - doesn't work in packaged object - another method will be required.
-#metaDataProvider.model=${class:org.dcm4chee.xero.metadata.XmlMetaDataProvider}
-#metaDataProvider.model.priority=35
-#metaDataProvider.model.propertyFile=xero-view.metadata
-#metaDataProvider.model.rootXml=http://www.dcm4che.org/xero/metadata
-#metaDataProvider.model.suffix=.xml
-
-jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-jscontroller.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplateFilter}
-jscontroller.stringTemplateFilter.defaultView=jstemplate
-jscontroller.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
-jscontroller.stringTemplateFilter.defaultGroup.groupNames=xeroController,jstemplate
-jscontroller.model=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-jscontroller.model.priority=-1
-jscontroller.model.baseModel=${ref:model}
 
 model.templatesName=xeroView
 model.templates=xeroBody

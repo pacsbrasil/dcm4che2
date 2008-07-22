@@ -8,6 +8,39 @@
   <artifactId>wado-xero</artifactId>
   <name>wado-xero</name>
 
+  <profiles>
+     <profile>
+        <id>devDeploy</id>
+        <activation>
+           <property><name>env.developmentServer</name></property>
+        </activation>
+        <build>
+           <finalName>wado2</finalName>
+           <plugins>
+              <plugin>
+                 <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+
+                    <execution>
+                       <id>ViewCopy</id>
+                       <phase>process-resources</phase>
+                       <configuration>
+                          <tasks>
+                             <echo>Copying templates to ${developmentServer} wado2</echo>
+                             <copy todir="${developmentServer}/server/default/deploy/wado2.war/WEB-INF/classes" preserveLastModified="true">
+                                <fileset dir="src/main/resources" includes="**/*" />
+                             </copy>
+                          </tasks>
+                       </configuration>
+                       <goals><goal>run</goal></goals>
+                    </execution>
+                 </executions>
+              </plugin>
+           </plugins>
+        </build>
+     </profile>
+  </profiles>
+
   <build>
     <plugins>
        <plugin>
@@ -50,6 +83,12 @@
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>metadata</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>dicomTest</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>

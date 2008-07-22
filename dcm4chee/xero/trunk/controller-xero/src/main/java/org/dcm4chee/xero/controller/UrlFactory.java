@@ -44,7 +44,7 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
-import org.dcm4chee.xero.template.MapFactory;
+import org.dcm4chee.xero.metadata.access.MapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
