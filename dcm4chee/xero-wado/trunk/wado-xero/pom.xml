@@ -1,8 +1,8 @@
-<?xml version="1.0"?><project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>xero-wado</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>wado-xero</artifactId>
@@ -93,7 +93,7 @@
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>util-xero</artifactId>
-      <version>${project.version}</version>
+      <version>0.4</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
