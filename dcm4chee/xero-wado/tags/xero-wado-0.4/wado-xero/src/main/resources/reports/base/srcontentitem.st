@@ -1,0 +1,1 @@
+Content item $i$ is $it.("0x40A043").dicomObjects:{sub-item $i$}$
