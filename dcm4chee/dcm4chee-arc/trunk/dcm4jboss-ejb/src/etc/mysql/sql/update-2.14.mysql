@@ -4,3 +4,7 @@ ALTER TABLE patient DROP INDEX pat_id;
 CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 
 CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
+
+ALTER TABLE instance
+  MODIFY all_attrs BIT NOT NULL,
+  MODIFY commitment BIT NOT NULL;
