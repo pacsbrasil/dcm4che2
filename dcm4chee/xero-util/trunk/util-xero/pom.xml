@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>metadata</artifactId>
-      <version>0.5-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>
