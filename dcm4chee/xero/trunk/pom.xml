@@ -4,13 +4,13 @@
    <groupId>org.dcm4chee.xero</groupId>
    <artifactId>xero</artifactId>
    <packaging>pom</packaging>
-   <version>0.4</version>
+   <version>0.5-SNAPSHOT</version>
    <name>Xero</name>
    <description>Core Xero GUI MVC Components</description>
    <url>http://www.dcm4che.org/xero</url>
 
    <scm>
-      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero/tags/xero-0.4</developerConnection>
+      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero/trunk</developerConnection>
    </scm>
 
    <modules>
