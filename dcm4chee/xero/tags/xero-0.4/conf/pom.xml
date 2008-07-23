@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>xero</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>0.4-SNAPSHOT</version>
+  </parent>
+  <groupId>org.dcm4chee.xero</groupId>
+  <name>Xero Configuration/release packaging</name>
+  <artifactId>conf</artifactId>
+
+  <build>
+     <plugins>
+        <plugin>
+           <artifactId>maven-dependency-plugin</artifactId>
+           <executions>
+              <execution>
+                 <id>copyXeroWar</id>
+                 <phase>process-resources</phase>
+                 <goals>
+                    <goal>copy</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.dcm4chee.xero</groupId>
+                           <artifactId>wado2-war</artifactId>
+                           <version>${project.version}</version>
+                           <type>war</type>
+                           <outputDirectory>target/classes</outputDirectory>
+                           <destFileName>wado2.war</destFileName>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.dcm4chee.xero</groupId>
+                           <artifactId>xero-war</artifactId>
+                           <version>${project.version}</version>
+                           <type>war</type>
+                           <outputDirectory>target/classes</outputDirectory>
+                           <destFileName>xero.war</destFileName>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>wado2-war</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>xero-war</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>
+  </dependencies>
+</project>

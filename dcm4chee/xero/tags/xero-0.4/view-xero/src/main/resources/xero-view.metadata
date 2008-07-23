@@ -1,0 +1,13 @@
+## To include the model meta-data as well, use the following:
+metaDataProvider.property=${class:org.dcm4chee.xero.metadata.PropertyProvider}
+metaDataProvider.property.model=xero-model.metadata
+
+# The static study columns information - this can't be auto-discovered if it is packaged as a war file instead of a dir.
+# The study columns is view data, so is declared here.
+model.studyColumns=${class:org.dcm4chee.xero.model.XmlModel}
+model.studyColumns.resource=studyColumns.xml
+
+  
+
+model.templatesName=xeroView
+model.templates=xeroBody

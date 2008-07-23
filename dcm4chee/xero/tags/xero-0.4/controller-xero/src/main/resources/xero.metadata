@@ -1,0 +1,20 @@
+# Defines the overall Xero metadata, including the view and model metadata components.
+metaDataProvider.property=${class:org.dcm4chee.xero.metadata.PropertyProvider}
+metaDataProvider.property.model=xero-view.metadata
+
+# The model is defined by the child values and factories registered in the model.
+model=${class:org.dcm4chee.xero.metadata.access.MapWithDefaultsFilter}
+
+# The static object contains all the statically defined (at startup)
+static=${class:org.dcm4chee.xero.metadata.access.MapWithDefaultsFilter}
+
+# Define the JSController - the controller that handles the JavaScript generation/creation.
+jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+jscontroller.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplateFilter}
+jscontroller.stringTemplateFilter.defaultContentType=text/javascript
+jscontroller.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
+jscontroller.stringTemplateFilter.defaultGroup.groupNames=xeroController,jstemplate
+jscontroller.model=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+jscontroller.model.priority=-1
+jscontroller.model.baseModel=${ref:static}
+

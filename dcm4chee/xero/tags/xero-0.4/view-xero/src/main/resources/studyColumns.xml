@@ -1,0 +1,16 @@
+<headers 
+  xmlns:m="http://www.dcm4che.org/xero/metadata/model" 
+  m:studyColumns="${class:org.dcm4chee.xero.model.XmlModel}"
+  m:studyColumns.resource="studyColumns.xml"
+>
+  
+  <header name="Patient Name" var="PatientName" template="image/patientNameSel"/>
+  <header name="Patient ID" var="PatientID"  template="html/displayFirst"/>
+  <header name="Study Description" var="StudyDescription"  template="image/studyDescriptionSel"/>
+  <header name="Modality" var="ModalitiesInStudy"  template="html/displayIt"/>
+  <header name="Acc#" var="AccessionNumber"  template="html/displayIt"/>
+  <header name="Study Date/Time" var="StudyDateTime"  template="html/displayIt"/>
+  <header name="# Series" var="NumberOfStudyRelatedSeries"  template="html/displayIt"/>
+  <header name="# Objects" var="NumberOfStudyRelatedInstances"  template="html/displayIt"/>
+    
+</headers>
