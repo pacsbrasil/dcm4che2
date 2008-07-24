@@ -164,7 +164,7 @@ public class FilterMetaDataTest {
 		
 		// This retrieves an int filter - this is the overall filter for this level, 
 		// not a filter instance object.
-		MetaDataBean mdbInt = mdb.get("int");
+		MetaDataBean mdbInt = mdb.getChild("int");
 		FilterList<?> filter = (FilterList<?>) mdbInt.getValue();
 		FilterItem fi = new FilterItem(mdbInt);
 		assert filter!=null;
@@ -180,7 +180,7 @@ public class FilterMetaDataTest {
 	{
 		Map<String,Object> params = new HashMap<String,Object>();
 		
-		MetaDataBean mdbStr = mdb.get("str");
+		MetaDataBean mdbStr = mdb.getChild("str");
 		FilterList<?> filter = (FilterList<?>) mdbStr.getValue();
 		FilterItem fi = new FilterItem(mdbStr);
 		assert filter!=null;

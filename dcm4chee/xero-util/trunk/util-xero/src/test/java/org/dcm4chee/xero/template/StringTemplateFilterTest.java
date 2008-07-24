@@ -16,7 +16,7 @@ public class StringTemplateFilterTest {
 	@Test
 	public void testStringTemplateFilter() {
 		  MetaDataBean root = StaticMetaData.getMetaData("util-test.metadata");
-		  MetaDataBean mdb = root.get("controller");
+		  MetaDataBean mdb = root.getChild("controller");
 		  Filter filter = (Filter) mdb.getValue();
 		  FilterItem fi = new FilterItem(mdb);
 		  Map<String,Object> params = new HashMap<String,Object>();

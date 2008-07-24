@@ -19,7 +19,7 @@ public class AllTemplatesListTest {
 	@Test
 	public void testAllTemplates() {
 		  MetaDataBean root = StaticMetaData.getMetaData("util-test.metadata");
-		  MetaDataBean mdb = root.get("model");
+		  MetaDataBean mdb = root.getChild("model");
 		  MapWithDefaults mwd = new MapWithDefaults(mdb);
 		  Map<String,StringTemplate> templates = (Map<String,StringTemplate>) mwd.get("templates");
 		  assert templates!=null;

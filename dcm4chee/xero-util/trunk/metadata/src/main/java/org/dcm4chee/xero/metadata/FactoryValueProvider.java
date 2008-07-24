@@ -61,7 +61,7 @@ public class FactoryValueProvider implements ValueProvider {
 	  className = sourceValueStr.substring(10, sourceValueStr.length() - 1);
 	  try {
 		 Class<?> clazz = Class.forName(className);
-		 log.debug("Found class for meta-data value " + className);
+		 log.debug("Found factory class for meta-data value " + className);
 		 return clazz;
 	  } catch (ClassNotFoundException e) {
 		 log.warn("No class found for " + className);
@@ -81,6 +81,7 @@ public class FactoryValueProvider implements ValueProvider {
    public Object convertValue(MetaDataBean mdb, Object sourceValue) {
 	  try {
 		 Class<?> clazz = (Class<?>) sourceValue;
+		 log.debug("Creating a new instance of {}",clazz);
 		 Object instance = clazz.newInstance();
 		 mdb.inject(instance);
 		 return instance;

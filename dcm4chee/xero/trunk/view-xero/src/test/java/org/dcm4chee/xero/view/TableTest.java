@@ -58,7 +58,7 @@ public class TableTest {
    static boolean print = false;
 
    MetaDataBean mdb = StaticMetaData.getMetaData("test-view.metadata");
-   MetaDataBean model = mdb.get("model");
+   MetaDataBean model = mdb.getChild("model");
 
    @Test
    public void searchResultsTableTest() {

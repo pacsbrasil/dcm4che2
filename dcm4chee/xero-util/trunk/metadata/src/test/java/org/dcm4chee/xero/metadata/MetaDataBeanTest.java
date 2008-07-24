@@ -112,27 +112,27 @@ public class MetaDataBeanTest {
 		assert "dbcv2".equals(i2bc.getValue("v2"));
 		assert "dbcv3".equals(i2bc.getValue("v3"));
 		assert "i2bcv4".equals(i2bc.getValue("v4"));
-		assert "av5".equals(mdb.get("i2").getValue("v5"));
+		assert "av5".equals(mdb.getChild("i2").getValue("v5"));
 	}
 
 	@Test
 	public void testSimpleMetaDataBean() {
-		assert mdb.get("singleton1").getValue().equals("singleton 1");
-		assert mdb.get("singleton2").getValue().equals("singleton 2");
-		MetaDataBean mdbChild1 = mdb.get("child1");
+		assert mdb.getChild("singleton1").getValue().equals("singleton 1");
+		assert mdb.getChild("singleton2").getValue().equals("singleton 2");
+		MetaDataBean mdbChild1 = mdb.getChild("child1");
 		assert mdbChild1 != null;
-		assert mdbChild1.get("meta1").getValue().equals("meta 1");
-		assert mdbChild1.get("meta1abs") == null;
-		assert mdbChild1.get("meta2").getValue().equals("meta 2");
+		assert mdbChild1.getChild("meta1").getValue().equals("meta 1");
+		assert mdbChild1.getChild("meta1abs") == null;
+		assert mdbChild1.getChild("meta2").getValue().equals("meta 2");
 	}
 
 	@Test
 	public void testInheritedMetaData() {
-		MetaDataBean mdb2 = mdb.get("child2");
+		MetaDataBean mdb2 = mdb.getChild("child2");
 		// Simple inheritance
-		assert "meta 1".equals(mdb2.get("meta1").getValue());
-		assert mdb2.get("meta2").getValue().equals("alternate 2");
-		assert mdb2.get("meta3").getValue() == null;
+		assert "meta 1".equals(mdb2.getChild("meta1").getValue());
+		assert mdb2.getChild("meta2").getValue().equals("alternate 2");
+		assert mdb2.getChild("meta3").getValue() == null;
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class MetaDataBeanTest {
 	 */
 	@Test
 	public void testInjection() {
-		MetaDataBean mdbTB = mdb.get("tb");
+		MetaDataBean mdbTB = mdb.getChild("tb");
 		TestBean tb = new TestBean();
 		// The next step is typically done as part of a setMetaData method.
 		mdbTB.inject(tb);
@@ -163,7 +163,7 @@ public class MetaDataBeanTest {
 	 */
 	@Test
 	public void testOutjection() {
-		MetaDataBean mdbOut = mdb.get("out");
+		MetaDataBean mdbOut = mdb.getChild("out");
 		assert (mdbOut) != null;
 		TestBean bean = (TestBean) mdbOut.getValue();
 		assert bean != null;

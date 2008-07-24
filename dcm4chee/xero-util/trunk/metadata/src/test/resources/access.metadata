@@ -1,0 +1,10 @@
+# xero-util test metadata to ensure the various objects are correcltly created/can be used.
+
+model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+model.view=simpleMacro
+model.errorView=errorMacro
+model.testKey=testKeyValue
+model.testFactory=${class:org.dcm4chee.xero.metadata.access.TestFactory}
+
+static=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+

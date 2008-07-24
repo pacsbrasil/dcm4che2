@@ -1,4 +1,4 @@
-package org.dcm4chee.xero.template;
+package org.dcm4chee.xero.metadata.access;
 
 import java.util.Map;
 

@@ -66,7 +66,7 @@ public class EncodeImageTest {
 	public void testJpegEncoding() throws Exception
 	{
 		assert mdb!=null;
-		MetaDataBean mdbEncode = mdb.get("encode");
+		MetaDataBean mdbEncode = mdb.getChild("encode");
 		assert mdbEncode!=null;
 		FilterList<?> fl = (FilterList<?>) mdbEncode.getValue();
 		assert fl!=null;

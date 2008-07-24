@@ -73,6 +73,7 @@ public class InstanceValueProvider implements ValueProvider {
 			log.warn("No class found for "+className);
 			return null;
 		} catch (InstantiationException e) {
+			log.warn("Unable to instantiate '{}' error:{}", className,e);
 			e.printStackTrace();
 			return null;
 		} catch (IllegalAccessException e) {

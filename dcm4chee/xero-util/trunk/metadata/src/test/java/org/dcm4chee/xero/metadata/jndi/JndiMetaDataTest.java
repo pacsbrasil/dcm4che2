@@ -107,7 +107,7 @@ public class JndiMetaDataTest {
 			mdb = new MetaDataBean(prop);
 		assert mdb.get("TestBean")!=null;
 		assert mdb.getValue("TestBean")!=null;
-		assert mdb.get("TestBean").get("jndiValue")!=null;
+		assert mdb.getChild("TestBean").getChild("jndiValue")!=null;
 		assert mdb.getValue("TestBean.jndiValue")!=null;
 		// This isn't get a property of the bean, but is rather getting
 		// the meta-data associated with the bean - these don't have to agree,

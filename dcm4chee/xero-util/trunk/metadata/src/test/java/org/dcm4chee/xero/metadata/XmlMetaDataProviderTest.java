@@ -51,7 +51,7 @@ public class XmlMetaDataProviderTest {
 		assert mdb!=null;
 		assert mdb.getValue("fromXml")!=null;
 		assert mdb.getValue("fromXml").equals("valueFromXml");
-		MetaDataBean fromXml = mdb.get("fromXml");
+		MetaDataBean fromXml = mdb.getChild("fromXml");
 		assert fromXml!=null;
 		assert "a".equals(fromXml.getValue("a"));
 		assert "EH".equals(fromXml.getValue("A"));
@@ -61,7 +61,7 @@ public class XmlMetaDataProviderTest {
 	@Test
 	public void testNestedXmlMetaDataLoad() {
 		assert mdb!=null;
-		MetaDataBean nested = mdb.get("nested");
+		MetaDataBean nested = mdb.getChild("nested");
 		assert nested!=null;
 		assert "Nested".equals(nested.getValue("nested"));
 	}

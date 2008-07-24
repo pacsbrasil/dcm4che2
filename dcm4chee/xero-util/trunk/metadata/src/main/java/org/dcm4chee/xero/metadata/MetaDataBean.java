@@ -58,7 +58,7 @@ import org.dcm4chee.xero.metadata.access.ValueList;
  * 
  * @author bwallace
  */
-public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
+public class MetaDataBean extends AbstractMap<String, Object> {
    static Logger log = LoggerFactory.getLogger(MetaDataBean.class);
    
    /**
@@ -116,7 +116,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 	  this.initChildren();
 	  if( children==null ) return;
 	  for(String child : children.keySet()) {
-		 MetaDataBean mdbChild = get(child);
+		 MetaDataBean mdbChild = getChild(child);
 		 mdbChild.initAll();
 	  }
    }
@@ -140,8 +140,8 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 	  metaDataProviders.add(InheritProvider.getInheritProvider());
 
 	  while (true) {
-		 MetaDataBean metaProviderMeta = get("metaDataProvider");
-		 MetaDataBean valueProviderMeta = get("valueProvider");
+		 MetaDataBean metaProviderMeta = getChild("metaDataProvider");
+		 MetaDataBean valueProviderMeta = getChild("valueProvider");
 
 		 if (valueProviderMeta != null) {
 			log.debug("Updating value provider.");
@@ -427,8 +427,8 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
 		 return this;
 	  int nextDot = subpath.indexOf('.');
 	  if (nextDot < 0)
-		 return get(subpath);
-	  MetaDataBean child = get(subpath.substring(0, nextDot));
+		 return getChild(subpath);
+	  MetaDataBean child = getChild(subpath.substring(0, nextDot));
 	  if (child == null)
 		 return null;
 	  return child.getForPath(subpath.substring(nextDot + 1));
@@ -456,25 +456,50 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
      * Return the meta-data associated with this object. If the meta-data is of
      * the form ${...} then lookup the object instead of returning the string.
      */
-   @Override
-   public MetaDataBean get(Object property) {
+   public MetaDataBean getChild(String property) {
 	  initChildren();
 	  if (children == null)
 		 return null;
 	  return children.get(property);
    }
+   
+   /**
+    * Returns the named element - special element "value" gets the value of this element, otherwise
+    * return the child meta data bean value.
+    */
+   @Override
+   public Object get(Object property) {
+	   if( "value".equals(property) ) return getValue();
+	   return getChild((String) property);
+   }
+   
+   /** Find out if the given element is present */
+   @Override
+   public boolean containsKey(Object property) {
+	   if( "value".equals(property) ) return true;
+	   return getChildren().containsKey(property);
+   }
 
    /**
      * Allow iteration over the meta-data elements. This only iterates over
-     * direct children, not nested children.
+     * direct children, not nested children, and does not include the value/keys or other customized entries.
      */
    @SuppressWarnings("unchecked")
    @Override
-   public Set<Map.Entry<String, MetaDataBean>> entrySet() {
-	  initChildren();
-	  if (children == null)
-		 return Collections.EMPTY_MAP.entrySet();
-	  return children.entrySet();
+   public Set<Map.Entry<String, Object>> entrySet() {
+	  // Hide the actual return types, as the return value is read only and MetaDataBean is a child of Object so it
+	  // is safe to do.
+	  Set ret = metaDataEntrySet();
+	  return ret;
+   }
+   
+   /** Return the entry set containing the children meta-data entries. */
+   @SuppressWarnings("unchecked")
+   public Set<Map.Entry<String,MetaDataBean>> metaDataEntrySet() {
+		  initChildren();
+		  if (children == null)
+			 return Collections.EMPTY_MAP.entrySet();
+		  return children.entrySet();
    }
 
    /**
@@ -522,7 +547,7 @@ public class MetaDataBean extends AbstractMap<String, MetaDataBean> {
    public List<MetaDataBean> sorted(String havingKey, String sortKey, int defaultValue) {
 	  initChildren();
 	  List<MetaDataBean> ret = new ArrayList<MetaDataBean>();
-	  for (Map.Entry<String, MetaDataBean> me : entrySet()) {
+	  for (Map.Entry<String, MetaDataBean> me : metaDataEntrySet()) {
 		 if (havingKey != null && me.getValue().get(havingKey) == null)
 			continue;
 		 ret.add(me.getValue());

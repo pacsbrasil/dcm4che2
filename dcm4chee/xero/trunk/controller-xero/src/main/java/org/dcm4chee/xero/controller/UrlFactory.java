@@ -85,7 +85,7 @@ public class UrlFactory implements MapFactory, MetaDataUser {
 
    /** Gets the set of query parameters from the metadata. */
    public void setMetaData(MetaDataBean mdb) {
-	  for(Map.Entry<String,MetaDataBean> me : mdb.entrySet() ) {		 
+	  for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet() ) {		 
 		 Object value = me.getValue().getValue();
 		 if( "query".equals(value) ) {
 			queryParams.add(me.getKey());

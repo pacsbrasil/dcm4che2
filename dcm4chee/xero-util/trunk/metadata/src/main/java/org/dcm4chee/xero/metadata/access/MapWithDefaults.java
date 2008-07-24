@@ -40,6 +40,7 @@ package org.dcm4chee.xero.metadata.access;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.MetaDataUser;
 
 /**
  * A MapWithDefaults is a map of values, where it can ask some pre-configured meta-data about what
@@ -50,8 +51,11 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
  *
  */
 @SuppressWarnings("serial")
-public class MapWithDefaults extends LazyMap {
+public class MapWithDefaults extends LazyMap implements MetaDataUser {
    MetaDataBean mdb;
+   
+   public MapWithDefaults() {   
+   }
    
    public MapWithDefaults(MetaDataBean mdb) {
 	  this.mdb = mdb;
@@ -71,8 +75,13 @@ public class MapWithDefaults extends LazyMap {
    
    /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
    public void eager() {
-	   for(Map.Entry<String,MetaDataBean> me : mdb.entrySet()) {
+	   for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet()) {
 		   this.get(me.getKey());
 	   }
+   }
+
+   /** Sets the meta data to use. */
+   public void setMetaData(MetaDataBean metaDataBean) {
+	   this.mdb = metaDataBean;
    }
 }

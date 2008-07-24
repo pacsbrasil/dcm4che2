@@ -115,7 +115,7 @@ public class RequestValidator implements MetaDataUser, MapFactory {
     */
    public void setMetaData(MetaDataBean mdb) {
 	  log.info("Set meta data on request validator.");
-	  for(Map.Entry<String,MetaDataBean> me : mdb.entrySet() ) {		 
+	  for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet() ) {		 
 		 Object value = me.getValue().getValue();
 		 log.info("Testing "+me.getKey()+"="+value + " instanceof MapFactory "+(value instanceof MapFactory));
 		 if( value instanceof Parser ) {

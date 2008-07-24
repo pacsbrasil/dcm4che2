@@ -15,7 +15,7 @@ public class XmlModelFactoryTest {
    @SuppressWarnings("unused")
    private static final Logger log = LoggerFactory.getLogger(XmlModelFactoryTest.class);
    MetaDataBean mdb = StaticMetaData.getMetaData("xero-model.metadata");
-   MetaDataBean model = mdb.get("model");
+   MetaDataBean model = mdb.getChild("model");
 
    /** Tests to see that the study rows object can be successfully read, if the
     * correct URIResolver is provided.

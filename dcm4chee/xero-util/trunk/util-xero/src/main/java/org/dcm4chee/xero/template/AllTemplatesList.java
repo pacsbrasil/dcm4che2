@@ -67,7 +67,7 @@ public class AllTemplatesList implements MetaDataUser, MapFactory {
 	 */
 	public void setMetaData(MetaDataBean metaDataBean) {
 		startingTemplates = new ArrayList<String>();
-		for(Map.Entry<String,MetaDataBean> me : metaDataBean.entrySet()) {
+		for(Map.Entry<String,MetaDataBean> me : metaDataBean.metaDataEntrySet()) {
 			Object val = me.getValue().getValue();
 			if( val instanceof String ) {
 				startingTemplates.add((String) val);

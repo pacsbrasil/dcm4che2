@@ -57,7 +57,7 @@ import org.testng.annotations.Test;
 public class XmlModelTest {
    private static final Logger log = LoggerFactory.getLogger(XmlModelTest.class);
    MetaDataBean mdb = StaticMetaData.getMetaData("test-model.metadata");
-   MetaDataBean studyColumns = mdb.get("model").get("studyColumns");
+   MetaDataBean studyColumns = mdb.getChild("model").getChild("studyColumns");
    
    /** Test that a simple model can be parsed and has some header data. */
    @SuppressWarnings("unchecked")
@@ -77,7 +77,7 @@ public class XmlModelTest {
    @SuppressWarnings("unchecked")
    @Test
    public void studyRowsTest() throws Exception {
-	  MetaDataBean studyRows = mdb.get("model").get("studyRows");
+	  MetaDataBean studyRows = mdb.getChild("model").getChild("studyRows");
 	  Map<String,Object> srValue = (Map<String,Object>) studyRows.getValue();
 	  assert srValue!=null;
 	  List<XmlModel> patients = (List<XmlModel>) srValue.get("patient");

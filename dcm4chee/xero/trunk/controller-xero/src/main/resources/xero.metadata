@@ -3,10 +3,21 @@ metaDataProvider.property=${class:org.dcm4chee.xero.metadata.PropertyProvider}
 metaDataProvider.property.model=xero-view.metadata
 
 # The model is defined by the child values and factories registered in the model.
-model=${class:org.dcm4chee.xero.metadata.access.MapWithDefaultsFilter}
+model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+model.static=${ref:static}
 
 # The static object contains all the statically defined (at startup)
 static=${class:org.dcm4chee.xero.metadata.access.MapWithDefaultsFilter}
+
+# Define the static scripts to include
+static.scripts=${class:org.dcm4chee.xero.metadata.access.ValueList}
+static.scripts.stringtemplate=stringtemplate.jst
+static.scripts.stringtemplate.priority=1000
+static.scripts.model=model/xeroModel.jst
+static.scripts.model.priority=900
+
+# Define the base instances to include into the model overall script
+static.xeroModel=${class:org.dcm4chee.xero.metadata.access.ValueList}
 
 # Define the JSController - the controller that handles the JavaScript generation/creation.
 jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}

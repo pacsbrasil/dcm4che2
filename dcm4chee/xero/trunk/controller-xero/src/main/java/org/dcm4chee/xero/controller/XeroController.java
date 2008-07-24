@@ -92,7 +92,7 @@ public class XeroController implements MetaDataUser, Action {
 
    /** Reads the model and actions */
    public void setMetaData(MetaDataBean mdb) {
-	  for(Map.Entry<String,MetaDataBean> me : mdb.entrySet() ) {
+	  for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet() ) {
 		 Object value = me.getValue().getValue();
 		 if( value instanceof Action ) {
 			actions.put(me.getKey(), (Action) value);

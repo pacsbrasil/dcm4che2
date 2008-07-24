@@ -111,7 +111,9 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 		// Allow creation of anonymous or untyped value list.  
 	}
 
-	/** Creates a value list on the given class */
+	/** 
+	 * Creates a value list on the given class - only elements of the given class are added.
+	 */
 	public ValueList(Class<T> clazz) {
 		this.clazz = clazz;
 	}
@@ -141,7 +143,7 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 	public void setMetaData(MetaDataBean metaDataBean) {
 		if( metaDataBean==null ) return;
 		List<ValueListItem<T>> list = new ArrayList<ValueListItem<T>>();
-		for (Map.Entry<String, MetaDataBean> me : metaDataBean.entrySet()) {
+		for (Map.Entry<String, MetaDataBean> me : metaDataBean.metaDataEntrySet()) {
 			T child = lookupChildInstance(me.getValue());
 			if (child == null)
 				continue;

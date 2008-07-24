@@ -131,8 +131,8 @@ public class XeroServlet extends StringTemplateServlet {
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
 	  MetaDataBean root = StaticMetaData.getMetaData(metadataName);
-	  model = root.get(modelName);
-	  controller = (Action) root.get(controllerName).getValue();
+	  model = root.getChild(modelName);
+	  controller = (Action) root.getChild(controllerName).getValue();
 	  stgIE = createStringTemplateGroup("ie");
 	  stgIE.setSuperGroup(stg);
 	  stgIE.setAttributeRenderers(StringSafeRenderer.RENDERERS);

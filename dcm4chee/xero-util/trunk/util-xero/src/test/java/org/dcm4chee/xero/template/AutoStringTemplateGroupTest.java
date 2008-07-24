@@ -48,7 +48,7 @@ public class AutoStringTemplateGroupTest {
 	@Test
 	public void testAttributeSet() {
 		  MetaDataBean root = StaticMetaData.getMetaData("util-test.metadata");
-		  MetaDataBean mdb = root.get("model");
+		  MetaDataBean mdb = root.getChild("model");
 		  AutoStringTemplateGroup stg = (AutoStringTemplateGroup) mdb.getValue(StringTemplateFilter.TEMPLATE_GROUP);
 		  assert stg!=null;
 		  assert stg.getName().equals("utilTestTemplates");

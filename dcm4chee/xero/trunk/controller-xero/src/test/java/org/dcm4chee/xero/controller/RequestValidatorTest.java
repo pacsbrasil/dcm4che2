@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 public class RequestValidatorTest {
    private static final Logger log = LoggerFactory.getLogger(RequestValidatorTest.class);
    MetaDataBean mdb = StaticMetaData.getMetaData("xero-model.metadata");
-   MetaDataBean model = mdb.get("model");
+   MetaDataBean model = mdb.getChild("model");
 
    /**
     * Tests that the default study query tests succeeds on valid data.

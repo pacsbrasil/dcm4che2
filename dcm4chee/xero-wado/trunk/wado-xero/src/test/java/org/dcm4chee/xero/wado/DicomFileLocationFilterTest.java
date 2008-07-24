@@ -20,7 +20,7 @@ public class DicomFileLocationFilterTest {
 	/** Call the dicom.metadata named filter, providing the given filename */
 	public static Object callFilter(String mdbName, String filename) {
 		assert mdb != null;
-		MetaDataBean wado = mdb.get(mdbName);
+		MetaDataBean wado = mdb.getChild(mdbName);
 		assert wado != null;
 		FilterList<?> fl = (FilterList<?>) wado.getValue();
 		assert (fl != null);
