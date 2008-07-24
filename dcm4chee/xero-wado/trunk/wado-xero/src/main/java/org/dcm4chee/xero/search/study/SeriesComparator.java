@@ -77,7 +77,7 @@ public class SeriesComparator implements Comparator<SeriesType> {
 		if( ret==0 ) {
 		   // TODO - when we have real SR report creators with multiple instances at
 		   // various statii, use a better comparator.
-		   ret = ser1.getSeriesInstanceUID().compareTo(ser2.getSeriesInstanceUID());
+		   ret = ser1.getSeriesUID().compareTo(ser2.getSeriesUID());
 		}
 		if( ser1NonImage && ser2NonImage ) return -ret;
 		return ret;

@@ -94,7 +94,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 		 for (StudyType st : pt.getStudy()) {
 			GspsType gspsType = findMostRecentGsps((StudyBean) st, gspsResults, gspsNames);
 			if (gspsType != null) {
-			   log.debug("Setting GSPS to apply for " + st.getStudyInstanceUID() + " to " + gspsType.getContentLabel());
+			   log.debug("Setting GSPS to apply for " + st.getStudyUID() + " to " + gspsType.getContentLabel());
 			   st.setGspsLabel(gspsType.getContentLabel());
 			}
 		 }
@@ -104,7 +104,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 
    /** Finds the most recent GSPS matching the given content names */
    private GspsType findMostRecentGsps(StudyBean st, ResultsBean gspsResults, String gspsNames) {
-	  log.debug("Looking for GSPS for study " + st.getStudyInstanceUID());
+	  log.debug("Looking for GSPS for study " + st.getStudyUID());
 	  StudyBean gspsSb = (StudyBean) gspsResults.getChildren().get(st.getId());
 	  if (gspsSb == null) {
 		 log.debug("Didn't find any GSPS objects for study.");
@@ -129,7 +129,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 			}
 		 }
 	  }
-	  log.debug("Found " + count + " gsps objects for study " + st.getStudyInstanceUID() + " name:"
+	  log.debug("Found " + count + " gsps objects for study " + st.getStudyUID() + " name:"
 			+ (foundGsps != null ? foundGsps.getContentLabel() : " no GSPS"));
 	  return foundGsps;
    }
@@ -145,14 +145,14 @@ public class GspsDiscover implements Filter<ResultsBean> {
 		 for (StudyType st : pt.getStudy()) {
 			String modality = st.getModalitiesInStudy();
 			if( modality.indexOf("PR")<0 ) continue;
-			uids.add(st.getStudyInstanceUID());
+			uids.add(st.getStudyUID());
 		 }
 	  }
 	  if (uids.size() == 0)
 		 return null;
 	  prParams.put("Modality", "PR");
-	  prParams.put("StudyInstanceUID", uids.toArray(STRING_ARRAY_TYPE));
-	  MemoryCacheFilter.computeQueryString(prParams, "Modality", "StudyInstanceUID");
+	  prParams.put("studyUID", uids.toArray(STRING_ARRAY_TYPE));
+	  MemoryCacheFilter.computeQueryString(prParams, "Modality", "studyUID");
 	  log.debug("Doing a search on {} Study UID's for PR objects uid[0]={}", uids.size(), uids.get(0));
 	  ResultsBean gspsRB = (ResultsBean) filterItem.callNamedFilter("imageSearch", prParams);
 	  return gspsRB;

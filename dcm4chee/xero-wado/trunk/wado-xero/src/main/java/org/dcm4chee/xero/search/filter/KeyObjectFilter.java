@@ -162,7 +162,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 	  Map<String, SeriesBean> availSeries = new HashMap<String, SeriesBean>();
 	  for (Object set : study.getSeries()) {
 		 SeriesBean se = (SeriesBean) set;
-		 availSeries.put(se.getSeriesInstanceUID(), se);
+		 availSeries.put(se.getSeriesUID(), se);
 	  }
 
 	  for (KeySelection key : selection) {
@@ -189,17 +189,17 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 		 if (mmi instanceof ImageBean) {
 			ImageBean image = (ImageBean) mmi;
 			SeriesBean imgSeries = image.getSeriesBean();
-			SeriesBean series = availSeries.get(imgSeries.getSeriesInstanceUID());
+			SeriesBean series = availSeries.get(imgSeries.getSeriesUID());
 			// Identity comparison is acceptable here.
 			if (series == null) {
 			   series = new SeriesBean(study, imgSeries);
 			   series.getDicomObject().clear();
 			   series.setViewable(null);
 			   study.getSeries().add(series);
-			   log.info("Creating new synthetic series for key objects in " + study.getStudyInstanceUID() + " for series "
-					 + series.getSeriesInstanceUID());
-			   ret.getChildren().put("ko" + imgSeries.getSeriesInstanceUID(), series);
-			   availSeries.put(series.getSeriesInstanceUID(), series);
+			   log.info("Creating new synthetic series for key objects in " + study.getStudyUID() + " for series "
+					 + series.getSeriesUID());
+			   ret.getChildren().put("ko" + imgSeries.getSeriesUID(), series);
+			   availSeries.put(series.getSeriesUID(), series);
 			}
 			if (series != imgSeries) {
 			   log.info("Adding existing image to synthetic series.");

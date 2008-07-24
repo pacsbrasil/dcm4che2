@@ -112,22 +112,22 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 			if( ((SeriesBean) se).getNumberOfSeriesRelatedInstances() < 10 ||
 				modality.equals("PR") || modality.equals("MG") || modality.equals("SR") || modality.equals("KO") ) 
 			{
-				uidsToSearch.add(se.getSeriesInstanceUID());
+				uidsToSearch.add(se.getSeriesUID());
 			}
 			else {
 				// TODO - figure out what to do here. This one is really rather
 				// ugly
-				log.warn("There are too many children to be able to extend series "+se.getSeriesInstanceUID() + " of modality "+se.getModality());
+				log.warn("There are too many children to be able to extend series "+se.getSeriesUID() + " of modality "+se.getModality());
 			}
 		}
 		if( uidsToSearch.size()>0 ) {
 		    log.info("Searching ",uidsToSearch.size()," series completely.");
 			String[] seriesUids = uidsToSearch.toArray(EMPTY_STRING_ARRAY);
-			Object origValue = params.put("SeriesInstanceUID", seriesUids);
+			Object origValue = params.put("seriesUID", seriesUids);
 			Object updated = filterItem.callNamedFilter("imageSearch", params);
 			assert updated==rb;
-			if( origValue==null ) params.remove("SeriesInstanceUID");
-			else params.put("SeriesInstanceUID", origValue);
+			if( origValue==null ) params.remove("seriesUID");
+			else params.put("seriesUID", origValue);
 		}
 		return rb;
 	}

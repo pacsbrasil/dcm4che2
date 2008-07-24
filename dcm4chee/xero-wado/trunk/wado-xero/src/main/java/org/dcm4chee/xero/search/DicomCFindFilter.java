@@ -42,7 +42,6 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -272,7 +271,11 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     	}
     	Map<String,TableColumn> searchCondition = searchCriteria.getAttributeByName();
     	for(String key : searchCondition.keySet()) {
-    		String keyTag = Character.toUpperCase(key.charAt(0))+key.substring(1);
+    		String keyTag;
+    		if( key.equals("seriesUID") ) keyTag = "SeriesInstanceUID";
+    		else if( key.equals("studyUID") ) keyTag = "StudyInstanceUID";
+    		else if( key.equals("objectUID") ) keyTag = "SOPInstanceUID";
+    		else keyTag = Character.toUpperCase(key.charAt(0))+key.substring(1);
     		TableColumn tc = searchCondition.get(key);
     		List content = tc.getContent();
     		String value;

@@ -40,7 +40,7 @@ else Navigation.prototype.debug = function() {};
 
 Navigation.prototype.names = ["result", "patient", "study", "series", "image"];
 Navigation.prototype.level =0;
-Navigation.prototype.idVars = ["PatientIdentifier", "StudyInstanceUID", "SeriesInstanceUID", "Position"];
+Navigation.prototype.idVars = ["PatientIdentifier", "studyUID", "seriesUID", "Position"];
 
 Navigation.prototype.childTypes = ["patient", "study", "series", "image"];
 
@@ -82,20 +82,20 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
-		url = this.QUERY+"?SeriesInstanceUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
+		url = this.QUERY+"?seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
 		console.info("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
-		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+this.id+"&pixelInfo=true&regroup=true";
+		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+this.id+"&pixelInfo=true&regroup=true";
 		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
 		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
-		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&StudyInstanceUID="+child.id+"&pixelInfo=true&regroup=true";
+		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+child.id+"&pixelInfo=true&regroup=true";
 		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
 		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a NEW study in the same patient
-		url = this.STUDY_QUERY+"?gsps=*&StudyInstanceUID="+childId;
+		url = this.STUDY_QUERY+"?gsps=*&studyUID="+childId;
 		console.info("Adding new study query %s", url);
 	} else {
 		console.error("Unknown id/query level %d for child id %s", this.level, childId);

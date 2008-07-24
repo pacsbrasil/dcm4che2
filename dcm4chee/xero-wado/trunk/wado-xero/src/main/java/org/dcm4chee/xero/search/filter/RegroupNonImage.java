@@ -64,7 +64,7 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 			   SeriesType se = sel.get(i);
 			   String modality = se.getModality();
 			   if (("PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality))
-					 && !se.getSeriesInstanceUID().startsWith(modality)) {
+					 && !se.getSeriesUID().startsWith(modality)) {
 				  SeriesBean ser = addSeries(sb, modality, (SeriesBean) se);
 				  if (ser != null)
 					 addedSeries.add(ser);
@@ -88,12 +88,12 @@ public class RegroupNonImage implements Filter<ResultsBean> {
     * don't add them)
     */
    SeriesBean addSeries(StudyBean sb, String modality, SeriesBean origSer) {
-	  String key = modality + ":" + sb.getStudyInstanceUID();
+	  String key = modality + ":" + sb.getStudyUID();
 	  SeriesBean seb = (SeriesBean) sb.getChildById(key);
 	  SeriesBean ret = null;
 	  if (seb == null) {
 		 seb = new SeriesBean(sb);
-		 seb.setSeriesInstanceUID(key);
+		 seb.setSeriesUID(key);
 		 seb.setModality(modality);
 		 seb.getChildren().put(key, seb);
 		 sb.getSeries().add(seb);

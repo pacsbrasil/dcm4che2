@@ -66,7 +66,7 @@ public class TestMultiFrameImage {
 	  log.debug("Ran single frame load successfully.");
 	  StudyBean study = (StudyBean) patient.getStudy().get(0);
 	  assert study != null;
-	  assert study.getStudyInstanceUID().equals("1.2.840.113674.514.212.200");
+	  assert study.getStudyUID().equals("1.2.840.113674.514.212.200");
 	  SeriesBean series = (SeriesBean) study.getSeries().get(0);
 	  assert series != null;
 	  ImageBean image = (ImageBean) series.getDicomObject().get(0);
@@ -136,7 +136,7 @@ public class TestMultiFrameImage {
 	  log.debug("Ran multi frame load successfully.");
 	  StudyBean study = (StudyBean) patient.getStudy().get(0);
 	  assert study != null;
-	  assert study.getStudyInstanceUID().equals("1.3.6.1.4.1.5962.1.2.1.1106149053.29346");
+	  assert study.getStudyUID().equals("1.3.6.1.4.1.5962.1.2.1.1106149053.29346");
 	  SeriesBean series = (SeriesBean) study.getSeries().get(0);
 	  assert series != null;
 	  ImageBean image = (ImageBean) series.getDicomObject().get(0);

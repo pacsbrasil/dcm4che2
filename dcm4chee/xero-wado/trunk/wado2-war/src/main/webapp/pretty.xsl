@@ -128,11 +128,11 @@ instruction below. This is recommended if you are a beginner.
      <a href="/xero/wado?objectUID=" target="wadoTab"><xsl:attribute name="href">/wado2/wado?objectUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
-  <xsl:template match="@StudyInstanceUID" mode="render">
+  <xsl:template match="@studyUID" mode="render">
      <a target="studyTab"><xsl:attribute name="href">/wado2/series.xml?studyUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
-  <xsl:template match="@SeriesInstanceUID" mode="render">
+  <xsl:template match="@seriesUID" mode="render">
      <a target="seriesTab"><xsl:attribute name="href">/wado2/image.xml?seriesUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 

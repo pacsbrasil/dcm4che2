@@ -112,9 +112,9 @@ public class PagedImageFilter implements Filter<ResultsType> {
 		 StudyType study = patient.getStudy().get(0);
 		 assert study.getSeries().size()==1;
 		 SeriesType series = study.getSeries().get(0);
-		 String seriesUID = series.getSeriesInstanceUID();
-		 params.put("SeriesInstanceUID", seriesUID);
-		 params.put(MemoryCacheFilter.KEY_NAME, "SeriesInstanceUID="+seriesUID);
+		 String seriesUID = series.getSeriesUID();
+		 params.put("seriesUID", seriesUID);
+		 params.put(MemoryCacheFilter.KEY_NAME, "seriesUID="+seriesUID);
 		 log.debug("Looking for series UID "+seriesUID);
 	  }
 	  else {

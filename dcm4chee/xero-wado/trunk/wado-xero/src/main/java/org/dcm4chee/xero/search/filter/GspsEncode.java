@@ -339,7 +339,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			if (child == null)
 			   continue;
 			if (!(child instanceof ImageBean)) {
-			   log.warn("In study " + study.getStudyInstanceUID() + " the gsps reference " + objectUid
+			   log.warn("In study " + study.getStudyUID() + " the gsps reference " + objectUid
 					 + " does not reference an image, but references some other type of object.");
 			   continue;
 			}
@@ -1082,12 +1082,12 @@ public class GspsEncode implements Filter<ResultsBean> {
 	  // Add it into the results as well.
 	  for (PatientType patient : results.getPatient()) {
 		 for (StudyType studyIt : patient.getStudy()) {
-			if (studyIt.getStudyInstanceUID() == study.getStudyInstanceUID()) {
+			if (studyIt.getStudyUID() == study.getStudyUID()) {
 			   if (study == studyIt)
 				  return gspsType;
 			   String seriesUid = dcmobj.getString(Tag.SeriesInstanceUID);
 			   for (SeriesType series : studyIt.getSeries()) {
-				  if (series.getSeriesInstanceUID().equals(seriesUid)) {
+				  if (series.getSeriesUID().equals(seriesUid)) {
 					 // It has the series, so just add the gsps object, which
 					 // it should not have.
 					 for (DicomObjectType dot : series.getDicomObject()) {
@@ -1416,7 +1416,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 				  if (studyBean == null) {
 					 StudyBean originalStudy = ((StudyBean) st).getOriginalStudy();
 					 gspsUids.put(image.getGspsUID(), originalStudy);
-					 log.info("GSPS " + image.getGspsUID() + " references study " + originalStudy.getStudyInstanceUID());
+					 log.info("GSPS " + image.getGspsUID() + " references study " + originalStudy.getStudyUID());
 				  }
 			   }
 			}

@@ -26,8 +26,8 @@ var patient = studyData.patient[0];
 var patid = ""+patient.PatientIdentifier;
 var study0 = patient.study[0];
 var study1 = patient.study[1];
-var stuid0 = ""+study0.StudyInstanceUID;
-var stuid1 = ""+study1.StudyInstanceUID;
+var stuid0 = ""+study0.studyUID;
+var stuid1 = ""+study1.studyUID;
 console.info("Study id 0 %s", stuid0);
 console.info("Study id 1 %s", stuid1);
 

@@ -83,7 +83,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  this.parent = newParent;
 	  setModality(series.getModality());
 	  setSeriesDescription(series.getSeriesDescription());
-	  setSeriesInstanceUID(series.getSeriesInstanceUID());
+	  setSeriesUID(series.getSeriesUID());
 	  setSeriesNumber(series.getSeriesNumber());
 	  setViewable(series.getViewable());
 	  getDicomObject().addAll(series.getDicomObject());
@@ -113,7 +113,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
    protected void initAttributes(DicomObject data) {
 	  setModality(data.getString(Tag.Modality));
 	  setSeriesDescription(data.getString(Tag.SeriesDescription));
-	  setSeriesInstanceUID(data.getString(Tag.SeriesInstanceUID));
+	  setSeriesUID(data.getString(Tag.SeriesInstanceUID));
 	  setNumberOfSeriesRelatedInstances(data.getInt(Tag.NumberOfSeriesRelatedInstances));
 	  try {
 		 setSeriesNumber(data.getInt(Tag.SeriesNumber));
@@ -130,7 +130,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 		 return;
 	  String key = ImageBean.key(objectUID);
 	  if (getChildren().containsKey(key)) {
-		 log.debug("Series " + getSeriesInstanceUID() + " already contains a child " + key);
+		 log.debug("Series " + getSeriesUID() + " already contains a child " + key);
 	  } else if( instances!=null && instances.countItems()>0 ) {
 // TODO Remove this code or fix it to match whatever VMF code is final.
 		 for(int i=0, n=instances.countItems(); i<n; i++) {
@@ -202,7 +202,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 
    /** Get the ID for this object, in this case the series instance UID */
    public String getId() {
-	  return key(getSeriesInstanceUID());
+	  return key(getSeriesUID());
    }
    
    public static String key(String seriesUid) {

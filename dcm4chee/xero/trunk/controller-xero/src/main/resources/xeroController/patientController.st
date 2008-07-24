@@ -25,7 +25,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 		uids = new Array();
 		// Gets the series level information for all studies.
 		for(i=0; i<n; i++) {
-			uids.push(study[i].StudyInstanceUID);
+			uids.push(study[i].studyUID);
 		};
 	}; 
 

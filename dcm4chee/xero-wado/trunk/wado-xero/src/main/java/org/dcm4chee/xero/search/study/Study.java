@@ -66,7 +66,7 @@ public interface Study {
 	public String getStudyID();
 
 	@Column(searchable=true,type="UID")
-	public String getStudyInstanceUID();
+	public String getStudyUID();
 
 	@Column(searchable=true,type="string")
 	public String getStudyStatusID();

@@ -297,7 +297,7 @@ public class TestUrlRetrieve {
 
 	  @Override
 	  public int runLoadUrl() throws Exception {
-		 String url = WADO2_URL+"study.xml?StudyInstanceUID=" + uid;
+		 String url = WADO2_URL+"study.xml?studyUID=" + uid;
 		 readFully(url);
 		 return 1;
 	  }
@@ -324,7 +324,7 @@ public class TestUrlRetrieve {
 		 for (PatientType pt : rt.getPatient()) {
 			for (StudyType st : pt.getStudy()) {
 			   for (SeriesType se : st.getSeries()) {
-				  imageRet.runnables.add(new ImageRun(se.getSeriesInstanceUID()));
+				  imageRet.runnables.add(new ImageRun(se.getSeriesUID()));
 				  if( se.getDicomObject().size()>0 && se.getDicomObject().get(0) instanceof ImageType ) {
 					 ImageType image = (ImageType) se.getDicomObject().get(0);
 					 WadoRun wado = new WadoRun(image.getObjectUID(),null);
@@ -334,8 +334,8 @@ public class TestUrlRetrieve {
 					 wado.useOrig = true;
 					 origRet.runnables.add(wado);
 				  }
-				  seamRet.runnables.add(new TimeRunnable(XERO_URL+"image/image.seam?studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
-				  actionRet.runnables.add(new TimeRunnable(XERO_URL+"image/action/WindowLevel.seam?windowWidth=32767&windowCenter=65536&studyUID="+st.getStudyInstanceUID()+"&seriesUID="+se.getSeriesInstanceUID()));
+				  seamRet.runnables.add(new TimeRunnable(XERO_URL+"image/image.seam?studyUID="+st.getStudyUID()+"&seriesUID="+se.getSeriesUID()));
+				  actionRet.runnables.add(new TimeRunnable(XERO_URL+"image/action/WindowLevel.seam?windowWidth=32767&windowCenter=65536&studyUID="+st.getStudyUID()+"&seriesUID="+se.getSeriesUID()));
 				  ret++;
 			   }
 			}
@@ -366,7 +366,7 @@ public class TestUrlRetrieve {
 
 	  @Override
 	  public int runLoadUrl() throws Exception {
-		 String urlS = WADO2_URL+"image.xml?Position=" + pos + "&Count=" + count + "&SeriesInstanceUID=" + uid;
+		 String urlS = WADO2_URL+"image.xml?Position=" + pos + "&Count=" + count + "&seriesUID=" + uid;
 		 URL url = new URL(urlS);
 		 ResultsType rt = (ResultsType) ((JAXBElement) unmarshaller.unmarshal(url)).getValue();
 		 int ret = 0;

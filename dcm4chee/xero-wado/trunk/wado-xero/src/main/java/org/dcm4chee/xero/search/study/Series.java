@@ -77,7 +77,7 @@ public interface Series {
 	 *     
 	 */
 	@Column(searchable=true,type="UID")
-	String getSeriesInstanceUID();
+	String getSeriesUID();
 
 	/**
 	 * Gets the value of the seriesNumber property.

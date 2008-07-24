@@ -113,7 +113,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setStudyDateTime(study.getStudyDateTime());
 	  setStudyDescription(study.getStudyDescription());
 	  setStudyID(study.getStudyID());
-	  setStudyInstanceUID(study.getStudyInstanceUID());
+	  setStudyUID(study.getStudyUID());
 	  setStudyStatusID(study.getStudyStatusID());
 	  getSeries().addAll(study.getSeries());
    }
@@ -158,7 +158,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 
 	  setStudyDescription(data.getString(Tag.StudyDescription));
 	  setStudyID(data.getString(Tag.StudyID));
-	  setStudyInstanceUID(data.getString(Tag.StudyInstanceUID));
+	  setStudyUID(data.getString(Tag.StudyInstanceUID));
 	  setStudyStatusID(data.getString(Tag.StudyStatusIDRET));
    }
 
@@ -192,7 +192,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 			getSeries().add(child);
 		 }
 	  } else
-		 log.debug("Study " + studyInstanceUID + " does not contain a series information.");
+		 log.debug("Study " + studyUID + " does not contain a series information.");
    }
 
    /** Figure out how many bytes this consumes */
@@ -212,7 +212,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
    }
 
    public String getId() {
-	  return key(getStudyInstanceUID());
+	  return key(getStudyUID());
    }
    
    public static String key(String studyUid) {

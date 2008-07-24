@@ -1,1 +1,1 @@
-$if(row.xmlFirst)$<a href="nojs?action=displayPatient&patientID=$row.PatientID$&studyUID=$rowTop.study:{$it.StudyInstanceUID$};separator="\\"$">$if(row.(var))$$row.(var)$$else$Unknown$endif$</a>$endif$
+$if(row.xmlFirst)$<a href="nojs?action=displayPatient&patientID=$row.PatientID$&studyUID=$rowTop.study:{$it.studyUID$};separator="\\"$">$if(row.(var))$$row.(var)$$else$Unknown$endif$</a>$endif$

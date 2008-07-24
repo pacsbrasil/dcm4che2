@@ -50,7 +50,7 @@
     		<element ref="tns:series" minOccurs="0" maxOccurs="unbounded"/>
        	</sequence>
     	<attribute name="ModalitiesInStudy" />
-    	<attribute name="StudyInstanceUID" type="tns:UID" />
+    	<attribute name="studyUID" type="tns:UID" />
     	<attribute name="StudyID" type="string" />
     	<attribute name="StudyDateTime" type="dateTime" />
     	<attribute name="StudyStatusID" />
@@ -76,7 +76,7 @@
     		<element ref="tns:report" />
     		<element ref="tns:keyObject" />
     	</sequence>
-    	<attribute name="SeriesInstanceUID" type="tns:UID" />
+    	<attribute name="seriesUID" type="tns:UID" />
     	<attribute name="SeriesNumber" type="int" />
     	<!-- A synthetic series is one artifially split out or otherwise modified,
     		and in this case, it will be identified by a new (unique) series number,

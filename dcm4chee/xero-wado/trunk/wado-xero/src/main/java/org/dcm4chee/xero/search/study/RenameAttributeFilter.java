@@ -49,8 +49,10 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
  */
 public class RenameAttributeFilter<T> implements Filter<T> {
    String[] renames = new String[]{
-		 "studyUID", "StudyInstanceUID",
-		 "seriesUID", "SeriesInstanceUID",
+		 "studyUID", "studyUID",
+		 "SeriesInstanceUID", "seriesUID",
+		 "patient_id", "PatientID",
+		 "series_iuid", "seriesUID",
    };
 
    /** Rename the given items in the map */

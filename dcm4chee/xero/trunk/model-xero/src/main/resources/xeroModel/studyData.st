@@ -13,13 +13,13 @@ function StudyData(uids) {
 		for(i=1; i<n; i++) {
 			uidsBack = uidsBack + "\\\\"+uids[i];
 		}
-		this.url = STUDY_QUERY+"?gsps=*&StudyInstanceUID="+uidsBack;
+		this.url = STUDY_QUERY+"?gsps=*&studyUID="+uidsBack;
 	}
 };
 
 StudyData.prototype = new XmlModel();
 StudyData.prototype.level = 0;
-StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"StudyInstanceUID", "series":"SeriesInstanceUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "ko":"objectUID"};
+StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "ko":"objectUID"};
 
 /** Gets a StudyData child, re-using the existing one of the right id if present, and indexing them
  * in a "children" element.

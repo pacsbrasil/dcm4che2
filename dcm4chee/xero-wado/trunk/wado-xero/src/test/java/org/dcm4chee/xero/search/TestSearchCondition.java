@@ -52,7 +52,7 @@ public class TestSearchCondition {
 	static SearchConditionParser scp = new StudySearchConditionParser();
 	static Map<String,Object> scpMap = new HashMap<String,Object>();
 	static {
-		scpMap.put("StudyInstanceUID", "1.2.3");
+		scpMap.put("studyUID", "1.2.3");
 		scpMap.put("PatientID", "5");
 		scpMap.put("ModalitiesInStudy", "CT");
 	}
