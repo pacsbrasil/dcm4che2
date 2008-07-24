@@ -66,7 +66,7 @@ import org.jboss.logging.Logger;
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date$
  */
-class MPPSScp extends DcmServiceBase {
+public class MPPSScp extends DcmServiceBase {
 
 	private static final String CREATE_XSL = "mpps-ncreaterq.xsl";
 	private static final String SET_XSL = "mpps-nsetrq.xsl";
