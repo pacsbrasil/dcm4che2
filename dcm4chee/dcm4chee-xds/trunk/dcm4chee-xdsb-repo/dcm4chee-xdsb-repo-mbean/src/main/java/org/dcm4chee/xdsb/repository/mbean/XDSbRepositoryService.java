@@ -557,7 +557,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 						e = new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,
 								"Document already exists!", x);
 					}
-					return null;
+					throw e;
 				}
 			}
 		}
