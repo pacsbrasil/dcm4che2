@@ -378,6 +378,10 @@ public class DcmSnd extends StorageCommitmentService {
     public final long getTotalSizeSent() {
         return totalSize;
     }
+    
+    public List<FileInfo> getFileInfos() {
+        return files;
+    }
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
@@ -1081,7 +1085,7 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
-    private static final class FileInfo {
+    public static final class FileInfo {
         File f;
 
         String cuid;
@@ -1095,6 +1099,8 @@ public class DcmSnd extends StorageCommitmentService {
         long length;
         
         boolean transferred;
+        
+        int status;
 
         public FileInfo(File f) {
             this.f = f;
@@ -1163,6 +1169,7 @@ public class DcmSnd extends StorageCommitmentService {
         int status = cmd.getInt(Tag.Status);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo);
         FileInfo info = files.get(msgId - 1);
+        info.status = status;
         switch (status) {
         case 0:
             info.transferred = true;
