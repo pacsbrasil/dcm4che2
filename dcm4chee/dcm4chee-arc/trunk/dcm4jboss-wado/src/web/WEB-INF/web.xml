@@ -58,7 +58,7 @@
 	
 	<servlet-mapping>
 		<servlet-name>wado</servlet-name>
-		<url-pattern>/wado</url-pattern>
+		<url-pattern>*</url-pattern>
 	</servlet-mapping>
 
 	<welcome-file-list>
