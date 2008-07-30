@@ -96,13 +96,13 @@ public class FileSystemUtils {
         OS = os;
     }
     
-    /** JDK6 File.getFileSpace(), if available. */
-    private static Method jdk6getFreeSpace;
+    /** JDK6 File.getUsableSpace(), if available. */
+    private static Method jdk6getUsableSpace;
     static {
         try {
-            jdk6getFreeSpace = File.class.getMethod("getFreeSpace", (Class[]) null);
+            jdk6getUsableSpace = File.class.getMethod("getUsableSpace", (Class[]) null);
         } catch (Exception e) {
-            jdk6getFreeSpace = null;
+            jdk6getUsableSpace = null;
         }        
     }
     
@@ -147,9 +147,9 @@ public class FileSystemUtils {
      * @throws IOException if an error occurs when finding the free space
      */
     public static long freeSpace(String path) throws IOException {
-        if (jdk6getFreeSpace != null) {
+        if (jdk6getUsableSpace != null) {
             try {
-                Long l = (Long) jdk6getFreeSpace.invoke(
+                Long l = (Long) jdk6getUsableSpace.invoke(
                 		new File(path), (Object[]) null);
                 long space = l.longValue();
                 // Following is a workaround for a bug in the Sun JDK 6. The
