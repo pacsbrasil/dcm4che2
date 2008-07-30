@@ -141,7 +141,7 @@ public class HPImageSet {
     public void setAbstractPriorValue(AbstractPriorValue abstractPriorValue) {
         dcmobj.putString(Tag.ImageSetSelectorCategory, VR.CS,
                 CodeString.ABSTRACT_PRIOR);
-        dcmobj.putInts(Tag.AbstractPriorValue, VR.US, abstractPriorValue
+        dcmobj.putInts(Tag.AbstractPriorValue, VR.SS, abstractPriorValue
                 .getValues());
     }
 
