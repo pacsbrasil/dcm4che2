@@ -115,9 +115,13 @@ public class IntHashtable<T> {
             return;
         }
         sorted = false;
+        int index = find(key);
+        if (values[index] == null)
+            count++;
+        keyList[index] = key;
+        values[index] = value;
         if (count > highWaterMark)
             rehash();
-        putInternal(key, value);
     }
 
     public T get(int key) {
@@ -147,12 +151,13 @@ public class IntHashtable<T> {
         return retval;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object that) {
-        if (that.getClass() != this.getClass())
+        if (!(that instanceof IntHashtable))
             return false;
 
-        IntHashtable other = (IntHashtable) that;
+        IntHashtable<T> other = (IntHashtable<T>) that;
         if (other.size() != count) {
             return false;
         }
@@ -188,7 +193,7 @@ public class IntHashtable<T> {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        IntHashtable result = (IntHashtable) super.clone();
+        Object result = super.clone();
         values = values.clone();
         keyList = keyList.clone();
         sortedKeys = sortedKeys != null ? (int[]) sortedKeys.clone() : null;
@@ -241,17 +246,13 @@ public class IntHashtable<T> {
         for (int i = oldkeyList.length - 1; i >= 0; --i) {
             T value = oldValues[i];
             if (value != null) {
-                putInternal(oldkeyList[i], value);
+                int key = oldkeyList[i];
+                int index = find(key);
+                keyList[index] = key;
+                values[index] = value;
+                ++count;
             }
         }
-    }
-
-    private void putInternal(int key, T value) {
-        int index = find(key);
-        keyList[index] = key;
-        if (values[index] == null)
-            ++count;
-        values[index] = value;
     }
 
     private int find(int key) {
