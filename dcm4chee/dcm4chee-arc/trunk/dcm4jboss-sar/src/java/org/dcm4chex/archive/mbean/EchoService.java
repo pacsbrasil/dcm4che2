@@ -76,6 +76,9 @@ public class EchoService extends AbstractScuService {
         return sa;
     }
 
+    public String echo(String aet) throws Exception {
+        return echo(aeMgt().findByAET(aet), 1);
+    }
     public String echo(String aet, Integer nrOfTests) throws Exception {
         return echo(aeMgt().findByAET(aet), nrOfTests);
     }
