@@ -1,7 +1,11 @@
 $rhino()$
 $logging()$
 
+$if(unittest)$
+var $unittest$ = new Object();
+$else$
 var suite = new Object();
+$endif$
 
 function assert(bool,msg) {
 	if( bool ) return;

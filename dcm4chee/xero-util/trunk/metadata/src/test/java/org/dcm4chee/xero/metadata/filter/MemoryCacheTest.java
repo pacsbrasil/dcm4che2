@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.easymock.EasyMock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -52,11 +54,12 @@ import org.testng.annotations.Test;
  *
  */
 public class MemoryCacheTest extends EasyMock {
+	private static Logger log = LoggerFactory.getLogger(MemoryCacheTest.class);
 	
 	/** Create a default memory cache - 1 meg stored, 2 accesses required to promote,
 	 * and 2 levels L1, and L2.
 	 */
-	MemoryCache<String,Object> memoryCache = new MemoryCache<String,Object>(1024*1024l);
+	MemoryCache<String,Object> memoryCache;
 	
 	static String key1 = "key1";
 	static String key2 = "key2";
@@ -68,6 +71,7 @@ public class MemoryCacheTest extends EasyMock {
 	void init() {
 	   item1 = new FutureImpl(new Object(), 10240l);
 	   item2 = new FutureImpl(new Object(), 20480l);
+	   memoryCache = new MemoryCache<String,Object>(1024*1024l);
 	}
 	
 	/** This tests a simple cached item */
@@ -84,13 +88,19 @@ public class MemoryCacheTest extends EasyMock {
 	@Test
 	public void testCacheSize() throws Exception
 	{
+		assert item2.get()!=null;
+		assert item2.get()==item2.get();
+		log.debug("item1={}, item2={}", item1.get(), item2.get());
 		memoryCache.get("key0", item1);
 		for(int i=1; i<60; i++) {
 			if( i==48 ) {
 				// Don't cause it to be promoted here - just make it most recent in L1.
 				assert memoryCache.get("key0",null)==item1.get();
 			}
-			assert memoryCache.get("key"+i, item2)==item2.get();
+			Object val = memoryCache.get("key"+i, item2);
+			assert val!=null;
+			log.debug("Testing key"+i+" value={} expected val={}",val,item2.get());
+			assert val==item2.get();
 		}
 		// key 1 should have been thrown away.
 		assert memoryCache.get("key1",null)==null;

@@ -1,13 +1,3 @@
-$urlFactory()$
-$xmlModel()$
-$layout()$
-$imageLayout()$
-$merged()$
-$navConversation()$
-$studyData()$
-$navigation()$
-$tabs()$
-
 /** Contains the model for Xero.
   * The model has a few parts:
   * 1. Static layout/menu/prefs information - this can be hardcoded or read as XML or JSON from the server.
@@ -20,6 +10,10 @@ function XeroModel() {
 };
 
 var xeroModel = new XeroModel();
+/** Shared data is the static data that is shared between server and client. */
+XeroModel.prototype.shared = new Object();
+
+$xeroModels:{ $(it)()$ }$
 
 /** The pieces from here to the end of this file are very ugly as they need to be replicated
  * server and client side - it would be far preferable to have a single definition that works
@@ -54,6 +48,8 @@ xeroModel.layout = new TabsLayout();
 xeroModel.layout.tabMenu = new Layout("userMenu","userMenu"); 
 xeroModel.layout.addTab("Find", xeroModel.findLayout);
 xeroModel.layout.addTab("Display");
+
+xeroModel.IS_IE = _SARISSA_IS_IE;
 
 var STUDY_QUERY="/wado2/study.xml";
 var IMAGE_QUERY="/wado2/image.xml";

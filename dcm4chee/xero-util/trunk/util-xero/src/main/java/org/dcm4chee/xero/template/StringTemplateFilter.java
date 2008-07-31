@@ -104,8 +104,14 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 			Map<String, Object> params) {
 		try {
 			Map<String, Object> model;
-			if( mdbModel!=null ) model = (Map<String,Object>) mdbModel.getValue();
-			else model = new HashMap<String,Object>();
+			if( mdbModel!=null ) {
+				log.info("Using model "+mdbModel.getPath());
+				model = (Map<String,Object>) mdbModel.getValue();
+			} else {
+				log.info("Using a new instance of a hash-map model, with nothing extra in it.");
+				model = new HashMap<String,Object>();
+			}
+			
 			params.put("model", model);
 			ServletResponseItem sri = filterItem.callNextFilter(params);
 			if( sri!=null ) return sri;
@@ -202,7 +208,6 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 
 	@Override
 	public void setMetaData(MetaDataBean metaDataBean) {
-		// TODO Auto-generated method stub
-		
+		mdbModel = metaDataBean.getChild("model");
 	}
 }

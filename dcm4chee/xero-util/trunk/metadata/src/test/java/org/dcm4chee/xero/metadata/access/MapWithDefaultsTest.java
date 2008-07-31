@@ -31,4 +31,14 @@ public class MapWithDefaultsTest {
 		  MetaDataBean stat = root.getChild("static");
 		  assert stat.getValue()==stat.getValue();
 	}
+	
+	/** Tests that meta-data children that have no value are returned as meta-data objects */
+	@Test
+	public void testNoValueChild() {
+		  MetaDataBean root = StaticMetaData.getMetaData("access.metadata");
+		  MetaDataBean mdb = root.getChild("model");
+		  MapWithDefaults mwd = (MapWithDefaults) mdb.getValue();
+		  assert mwd.get("shared")!=null;
+		  assert mwd.get("shared") instanceof MetaDataBean;
+	}
 }

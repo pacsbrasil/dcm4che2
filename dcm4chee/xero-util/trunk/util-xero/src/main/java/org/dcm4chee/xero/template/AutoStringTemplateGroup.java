@@ -38,8 +38,10 @@
 package org.dcm4chee.xero.template;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
+import org.antlr.stringtemplate.AttributeRenderer;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaData;
@@ -56,6 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AutoStringTemplateGroup extends StringTemplateGroup {
 	private static final Logger log = LoggerFactory.getLogger(AutoStringTemplateGroup.class);
+	StringTemplateGroup[] stgParents;
 	
 	/** Create a StringTempalteGroup */
 	public AutoStringTemplateGroup() {
@@ -69,14 +72,25 @@ public class AutoStringTemplateGroup extends StringTemplateGroup {
 	}
 	
 	/** Sets the group names - if this has only 1 name, then the super group won't be set, otherwise the
-	 * super group will also be set.
+	 * super group will also be set.  Takes either a comma-separated String, or a List of Strings.
 	 * @param names
 	 */
 	@MetaData(required=false)
-	public void setGroupNames(String names) {
+	public void setGroupNames(Object names) {
 		  ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		  String[] parents = names.split(",");
+		  String[] parents;
+		  if( names instanceof String ) {
+			  parents = ((String) names).split(",");
+		  } else if( names instanceof List ) {
+			  List<?> lnames = (List<?>) names;
+			  parents = new String[lnames.size()];
+			  lnames.toArray(parents);
+		  } else {
+			  throw new IllegalArgumentException("Names must be a String or a List, but is "+ (names==null ? "null" : (names.getClass().toString())));
+		  }
+		  stgParents =new StringTemplateGroup[parents.length];
 		  StringTemplateGroup parentSTG = null;
+		  int refresh = this.getRefreshInterval();
 		  for(int i=parents.length-1; i>=0; i--) {
 			  parents[i] = parents[i].trim();
 			  URL url = cl.getResource(parents[i]);
@@ -85,12 +99,16 @@ public class AutoStringTemplateGroup extends StringTemplateGroup {
 			  }
 			  String rootDir = url.getFile();
 			  StringTemplateGroup ret;
-			  if( i>0 ) ret = new StringTemplateGroup(parents[i], rootDir);
+			  if( i>0 ) {
+				  ret = new StringTemplateGroup(parents[i], rootDir);
+				  if( refresh>0 ) ret.setRefreshInterval(refresh);
+			  }
 			  else {
 				  ret = this;
 				  setName(parents[i]);
 				  setRootDir(rootDir);
 			  }
+			  stgParents[i] = ret;
 			  log.info("root resource for {} is {}", parents[i],rootDir);
 			  if( rootDir==null || rootDir.indexOf('!')>0) {
 				 log.info("Using root resource {}",parents[i]);
@@ -112,6 +130,11 @@ public class AutoStringTemplateGroup extends StringTemplateGroup {
 	@MetaData(required=false)
 	public void setRefreshInterval(int refreshInterval) {
 		super.setRefreshInterval(refreshInterval);
+		if( stgParents==null ) return;
+		log.info("Setting refresh interval to %d", refreshInterval);
+		for(int i=1; i<stgParents.length; i++) {
+			stgParents[i].setRefreshInterval(refreshInterval);
+		}
 	}
 	
 	/** This is not declared in the parent class, so add it here */

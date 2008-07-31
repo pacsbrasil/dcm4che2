@@ -38,11 +38,12 @@
 package org.dcm4chee.xero.template;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.MetaDataUser;
+import org.dcm4chee.xero.metadata.MetaDataUser; 
 import org.dcm4chee.xero.metadata.access.MapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +54,14 @@ import org.antlr.stringtemplate.servlet.FindAllTemplates;
 /**
  * This is a factory that uses the FindAllTemplates, plus a list of registered templates to create a combined
  * list containing all the templates references from the given set of templates.
+ * 
+ * This is a map factory because it computes the total list dynamically, so as to allow for refreshes
+ * of the child maps - there should be a way to make it use a fixed value instead (non-debug mode).
  * @author bwallace
  *
  */
-public class AllTemplatesList implements MetaDataUser, MapFactory {
-	private static final Logger log = LoggerFactory.getLogger(AllTemplatesList.class);
+public class AllTemplatesMap implements MetaDataUser, MapFactory {
+	private static final Logger log = LoggerFactory.getLogger(AllTemplatesMap.class);
 	
 	List<String> startingTemplates;
 	StringTemplateGroup templates;
@@ -65,13 +69,31 @@ public class AllTemplatesList implements MetaDataUser, MapFactory {
 	/** The meta-data is used to allow registration of additional lists of
 	 * templates
 	 */
+	@SuppressWarnings("unchecked")
 	public void setMetaData(MetaDataBean metaDataBean) {
 		startingTemplates = new ArrayList<String>();
 		for(Map.Entry<String,MetaDataBean> me : metaDataBean.metaDataEntrySet()) {
 			Object val = me.getValue().getValue();
+			if( val==null ) continue;
 			if( val instanceof String ) {
 				startingTemplates.add((String) val);
-				log.debug("Adding {} as a starting template.", val);
+				log.info("Adding {} as a starting template.", val);
+			}
+			else if( val instanceof Map ) {
+				log.info("Adding a child map set of values.");
+				startingTemplates.addAll( ((Map<String,Object>) val).keySet() );
+			}
+			else if( val instanceof Collection ) {
+				log.info("Adding a child list set of values.");
+				startingTemplates.addAll( (Collection<String>) val );
+			}
+			else if( val instanceof AllTemplatesMap ) {
+				log.info("Adding an all-templates list sub-child.");
+				startingTemplates.addAll( ((AllTemplatesMap) val).startingTemplates );
+			}
+			else if( val instanceof StringTemplateGroup ) continue;
+			else {
+				log.warn("Unknown child type {}, not adding.", val.getClass());
 			}
 		}
 		if( metaDataBean.getValue("templates")!=null ) templates = (StringTemplateGroup) metaDataBean.getValue("templateGroup");

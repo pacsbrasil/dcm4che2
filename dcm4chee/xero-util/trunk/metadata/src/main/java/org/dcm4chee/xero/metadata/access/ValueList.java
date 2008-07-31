@@ -63,6 +63,7 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 	 */
 	static class ValueListItem<T> implements Comparable<ValueListItem> {
 		int priority = Integer.MAX_VALUE-1;
+		String key;
 
 		List<T> values;
 
@@ -73,6 +74,7 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 				priority = Integer.parseInt((String) priorityObj);
 			}
 			this.values = Collections.singletonList(value);
+			this.key = mdb.getChildName();
 		}
 
 		/** Create a value list item with multiple elements */
@@ -82,11 +84,16 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 				priority = Integer.parseInt((String) priorityObj);
 			}
 			this.values = values;
+			this.key = mdb.getChildName();
 		}
 
-		/** Compare by priority values */
+		/** Compare by priority values - make it deterministic by comparing on both
+		 * priority and name
+		 */
 		public int compareTo(ValueListItem vli) {
-			return this.priority - vli.priority;
+			int ret = this.priority - vli.priority;
+			if( ret!=0 ) return ret;
+			return this.key.compareTo(vli.key);
 		}
 
 		/** Return the value provided */

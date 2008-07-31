@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 
 public class RequestValidatorTest {
    private static final Logger log = LoggerFactory.getLogger(RequestValidatorTest.class);
-   MetaDataBean mdb = StaticMetaData.getMetaData("xero-model.metadata");
+   MetaDataBean mdb = StaticMetaData.getMetaData("xero.metadata");
    MetaDataBean model = mdb.getChild("model");
 
    /**

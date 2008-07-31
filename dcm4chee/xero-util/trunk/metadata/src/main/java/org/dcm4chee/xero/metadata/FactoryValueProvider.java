@@ -64,7 +64,7 @@ public class FactoryValueProvider implements ValueProvider {
 		 log.debug("Found factory class for meta-data value " + className);
 		 return clazz;
 	  } catch (ClassNotFoundException e) {
-		 log.warn("No class found for " + className);
+		 log.warn("No class found for '" + className +"'");
 		 return null;
 	  }
    }

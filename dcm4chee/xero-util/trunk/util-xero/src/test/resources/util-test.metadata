@@ -7,8 +7,8 @@ model.templateGroup.attributeRenderersName=js
 model.view=simpleMacro
 model.errorView=errorMacro
 
-model.templates=${class:org.dcm4chee.xero.template.AllTemplatesList}
-model.templates.allTemplatesListTest=allTemplatesListTest
+model.templates=${class:org.dcm4chee.xero.template.AllTemplatesMap}
+model.templates.allTemplatesMapTest=allTemplatesMapTest
 
 controller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 controller.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplateFilter}

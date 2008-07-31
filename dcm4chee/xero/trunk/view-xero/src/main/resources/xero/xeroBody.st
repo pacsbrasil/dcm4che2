@@ -3,28 +3,7 @@ $if(layout.template)$
 $(layout.template)()$
 $elseif(layout.template)$
 
-<!-- List templates here that are required but are listed indirectly. -->
-$html/displayIt()$
-$html/displayFirst()$
-
-$image/patientNameSel()$
-$image/studyDescriptionSel()$
-$image/patientMenu()$
-$image/image()$
-$image/imageArea()$
-$image/studyTray()$
-$image/seriesToolbar()$
-$image/layoutMenu()$
-$html/nestedRow()$
-$html/layout()$
-$html/tabs()$
-$html/noHeaderTabs()$
-$userMenu()$
-
-$report/report()$
-
-$query/query()$
-$search/studyTable()$
+<!-- List templates here that are required but are listed indirectly - temporary until restart. -->
 
 $else$
 No layout found.

@@ -100,6 +100,7 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 	 * property files.  Add these to any existing meta-data provided in the 
 	 * initial constructor.
 	 */
+	@SuppressWarnings("unchecked")
 	public void setMetaData(MetaDataBean metaDataBean) {
 		List<MetaDataBean> children = metaDataBean.sorted();
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -113,7 +114,7 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 				Properties props = new Properties();
 				if( is==null ) {
 					// This happens when the PropertyProvider is sub-classed with a direct map object.
-					log.debug("Child of "+metaDataBean.path + " has null resource stream "+child.path);
+					log.info("Child of "+metaDataBean.path + " has null resource stream "+child.path + " for path "+child.getValue());
 					continue;
 				}
 				assert is!=null;

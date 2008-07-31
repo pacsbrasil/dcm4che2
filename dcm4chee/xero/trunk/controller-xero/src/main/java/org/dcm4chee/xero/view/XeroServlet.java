@@ -84,7 +84,7 @@ public class XeroServlet extends StringTemplateServlet {
    String modelName = "model";
    
    /** The meta-data name to lookup */
-   String metadataName = "xero-view.metadata";
+   String metadataName = "xero.metadata";
    
    Action controller;
    
@@ -107,6 +107,8 @@ public class XeroServlet extends StringTemplateServlet {
 	  mwd.put(RequestValidator.PARAMETERS,req.getParameterMap());
 	  mwd.put(XmlModelFactory.URIRESOLVER, new UrlUriResolver(req,resp,getServletContext()));
 	  mwd.put("_session", new SessionMap(req.getSession()));
+	  String userAgent = req.getHeader("USER-AGENT").toLowerCase();
+	  mwd.put("IS_IE", (userAgent.indexOf("msie")>=0) && (userAgent.indexOf("opera")==-1) );
 	  String userName = req.getRemoteUser();
 	  mwd.put("userName", userName);
 	  log.info("Creating model for user {}",userName);
@@ -130,9 +132,15 @@ public class XeroServlet extends StringTemplateServlet {
    @Override
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
+	  String test = config.getInitParameter("metaData");
+	  if( test!=null ) metadataName = test;
 	  MetaDataBean root = StaticMetaData.getMetaData(metadataName);
+	  if( root==null ) throw new ServletException("Unable to find metadata '"+metadataName+"'");
+	  
 	  model = root.getChild(modelName);
-	  controller = (Action) root.getChild(controllerName).getValue();
+	  if( model==null ) throw new ServletException("Unable to find model "+modelName+" in metadata "+metadataName);
+	  controller = (Action) root.getValue(controllerName);
+	  if( controller==null ) throw new ServletException("Unable to find controller "+controllerName+" in metadata "+metadataName);
 	  stgIE = createStringTemplateGroup("ie");
 	  stgIE.setSuperGroup(stg);
 	  stgIE.setAttributeRenderers(StringSafeRenderer.RENDERERS);

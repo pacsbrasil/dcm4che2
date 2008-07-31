@@ -5,6 +5,8 @@ model.view=simpleMacro
 model.errorView=errorMacro
 model.testKey=testKeyValue
 model.testFactory=${class:org.dcm4chee.xero.metadata.access.TestFactory}
+# Shared must not have a value.
+model.shared.child=child
 
 static=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 

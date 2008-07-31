@@ -29,6 +29,10 @@ function XeroController(model, view) {
 	
 };
 
+$xeroControllers:{ $(it)()$ }$
+
+var xeroController = new XeroController(xeroModel, xeroView);
+
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
 
@@ -190,12 +194,6 @@ XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 	}
 };
 
-$patientController()$
-$reportController()$
-$dynamic()$
-$searchController()$
-
-var xeroController = new XeroController(xeroModel, xeroView);
 
 // Define short versions of the MVC components.
 var controller = xeroController;

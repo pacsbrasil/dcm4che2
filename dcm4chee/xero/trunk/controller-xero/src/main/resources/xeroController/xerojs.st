@@ -1,3 +1,3 @@
 $model()$
+$xeroView()$
 $controller()$
-$tabsController()$

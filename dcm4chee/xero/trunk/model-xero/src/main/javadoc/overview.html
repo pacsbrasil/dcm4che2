@@ -43,15 +43,39 @@
   makes it easy to add additional server side on-demand components just be registering them in the metadata.</p>
   
   <h2>Adding Client Side Model Components</h2>
-  <b>TODO - once the plugin model is better defined.</b>
+  <p>To add client side javascript model components, declare additional metadata, for example, in the
+  xero-model.metadata file, the declaration:
+<pre>
+model.xeroModels.merged=model/merged
+</pre>
+  adds the merged.st javascript template.
+  The new template file will be included in the xerojs.st file the next time it is requested.
+  </p>
   
   <h2>Adding Server Side Model Components</h2>
   <p>Server side model components can be added just by declaring them in the model.* context of the metadata, for example:
-  <pre>
+<pre>
 model.query=${factory:org.dcm4chee.xero.controller.RequestValidator}
 </pre>
    defines the query object as a request validator.  In this case, it is a factory request, so a new instance is made
-   the first time the object is accessed.</p>
+   the first time the object is accessed.
+   </p>
+   
+   <h2>Mixed Client/Server Side Data</h2>
+   <p>Some types of data should be duplicated both client and server side.  To do this, ensure that the model 
+   data is added to the server side model, create a javascript template that defines the same data, and
+   then declare that data client side.  For example, the list of templates to render for the study tray
+   is defined in the metadata using:
+<pre>
+model.shared.studyTrayItems=${class:org.dcm4chee.xero.metadata.access.ValueList}
+model.shared.studyTrayItems.1000nextPrevSeries=image/nextPrevSeries	
+# Add the data to the client side
+model.xeroModels.studyTrayItems=model/studyTrayItems
+</pre>
+	and then is converted to JavaScript using studyTrayItems.st by:
+<pre>
+XeroModel.prototype.studyTrayItems = [ $studyTrayItems:{"$it$"};separator=","$ ];
+</pre></p>
 
 </body>
 </html>

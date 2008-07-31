@@ -1,8 +1,6 @@
-$unittest()$
+$unittest(unittest="imageLayoutTests")$
 $layout()$
 $imageLayout()$
-
-var imageLayoutTests = new Object();
 
 /** A test object that pretends to be a "merged" object, and contains imageLayout as a child element for testing. */
 function ILTest(width,height, presets) {
@@ -39,7 +37,7 @@ imageLayoutTests.scaleToFitTest = function ILT_scaleToFitTest() {
 	ilt = new ILTest(600,700, {"Rows":"512", "Columns":512});
 	il = ilt.imageLayout;
 	il.updatePosition();
-	assertEquals(il.scale,1,"Scale should be unused");
+	$assert(test="il.scale==1",msg="Scale should be unused")$;
 	assertEquals(il.translateX,44,"Should translate 44 to center.");
 	assertEquals(il.translateY,94,"Should translate 94 to center.");
 

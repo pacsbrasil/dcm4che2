@@ -58,6 +58,7 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
    }
    
    public MapWithDefaults(MetaDataBean mdb) {
+	  super(mdb);
 	  this.mdb = mdb;
    }
    
@@ -82,6 +83,7 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
 
    /** Sets the meta data to use. */
    public void setMetaData(MetaDataBean metaDataBean) {
+	   this.lazy = metaDataBean;
 	   this.mdb = metaDataBean;
    }
 }

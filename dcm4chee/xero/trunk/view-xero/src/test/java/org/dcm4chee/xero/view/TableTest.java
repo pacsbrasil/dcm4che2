@@ -38,10 +38,10 @@
 package org.dcm4chee.xero.view;
 
 import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.access.MapWithDefaults;
+import org.dcm4chee.xero.template.AutoStringTemplateGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -63,8 +63,8 @@ public class TableTest {
    @Test
    public void searchResultsTableTest() {
 	  MapWithDefaults mwd = new MapWithDefaults(model);
-	  String rootDir = cl.getResource("xero").getFile();
-	  StringTemplateGroup stg = new StringTemplateGroup("xero",rootDir);
+	  AutoStringTemplateGroup stg = new AutoStringTemplateGroup();
+	  stg.setGroupNames("xero,xeroModel");
 	  StringTemplate st = stg.getInstanceOf("xero",mwd);
 	  String result = st.toString();
 	  if( print ) log.info("Result=\n"+result);

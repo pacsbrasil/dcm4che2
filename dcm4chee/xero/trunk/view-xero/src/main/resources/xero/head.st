@@ -1,1 +1,0 @@
-  <script src="xeroView.js" type="text/ecmascript"> </script>

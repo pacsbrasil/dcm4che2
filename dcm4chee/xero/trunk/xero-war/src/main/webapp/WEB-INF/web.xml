@@ -19,12 +19,16 @@
       <servlet-class>org.dcm4chee.xero.view.XeroServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
       <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>xero.metadata</param-value>
+      </init-param>
+      <init-param>
 	      <param-name>refreshInterval</param-name>
     	  <param-value>10</param-value>
       </init-param>
       <init-param>
 	      <param-name>templates</param-name>
-    	  <param-value>xero</param-value>
+    	  <param-value>xero,xeroModel</param-value>
       </init-param>
       <init-param>
       	<param-name>contentType</param-name>
@@ -37,6 +41,10 @@
       <servlet-class>org.dcm4chee.xero.view.XeroServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
       <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>xero.metadata</param-value>
+      </init-param>
+      <init-param>
 	      <param-name>refreshInterval</param-name>
     	  <param-value>10</param-value>
       </init-param>
@@ -47,76 +55,6 @@
       <init-param>
       	<param-name>contentType</param-name>
       	<param-value>xhtml</param-value>
-      </init-param>
-   </servlet>
-   
-   <servlet>
-      <servlet-name>Xero View Servlet</servlet-name>
-      <servlet-class>org.antlr.stringtemplate.servlet.JSTemplateServlet</servlet-class>
-      <load-on-startup>1</load-on-startup>
-      <init-param>
-	      <param-name>refreshInterval</param-name>
-    	  <param-value>10</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>startTemplates</param-name>
-    	  <param-value>xeroBody</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>dataName</param-name>
-    	  <param-value>xero</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>jsName</param-name>
-    	  <param-value>xeroView</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>contentType</param-name>
-    	  <param-value>text/javascript</param-value>
-      </init-param>
-   </servlet>
-   
-   <servlet>
-      <servlet-name>Xero IE View Servlet</servlet-name>
-      <servlet-class>org.antlr.stringtemplate.servlet.JSTemplateServlet</servlet-class>
-      <load-on-startup>1</load-on-startup>
-      <init-param>
-	      <param-name>refreshInterval</param-name>
-    	  <param-value>10</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>startTemplates</param-name>
-    	  <param-value>xeroBody</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>dataName</param-name>
-    	  <param-value>ie,xero</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>jsName</param-name>
-    	  <param-value>xeroView</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>contentType</param-name>
-    	  <param-value>text/javascript</param-value>
-      </init-param>
-   </servlet>
-
-   <servlet>
-      <servlet-name>Xero JS Servlet</servlet-name>
-      <servlet-class>org.antlr.stringtemplate.servlet.StringTemplateServlet</servlet-class>
-      <load-on-startup>1</load-on-startup>
-      <init-param>
-	      <param-name>refreshInterval</param-name>
-    	  <param-value>10</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>templates</param-name>
-    	  <param-value>xeroModel,xeroController</param-value>
-      </init-param>
-      <init-param>
-	      <param-name>contentType</param-name>
-    	  <param-value>text/javascript</param-value>
       </init-param>
    </servlet>
    
@@ -148,21 +86,6 @@
       <servlet-name>NoJS Servlet</servlet-name>
       <url-pattern>/nojs</url-pattern>
    </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>Xero JS Servlet</servlet-name>
-      <url-pattern>/xeroModelController.js</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>Xero View Servlet</servlet-name>
-      <url-pattern>/xeroView.js</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>Xero IE View Servlet</servlet-name>
-      <url-pattern>/xeroViewIE.js</url-pattern>
-   </servlet-mapping>
-
    
    <security-constraint>
      <display-name>Xero Security Constraint</display-name>

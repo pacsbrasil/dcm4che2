@@ -65,6 +65,9 @@ public class RequestValidator implements MetaDataUser, MapFactory {
    Map<String,Parser> parsers = new HashMap<String,Parser>();
    Map<String,Object> factories;
    
+   /** The name of the variable that this will try to create */
+   String variable;
+   
    public static final String PARAMETERS = "_parameters";
    public static final String PARSERS_KEY = "_parsers";
    
@@ -72,7 +75,7 @@ public class RequestValidator implements MetaDataUser, MapFactory {
    public Object create(Map<String,Object> src) {
 	  // We actually want the request map itself, not the root map.
 	  Map<String,Object> requestMap = getParameters(src);
-	  if( requestMap==null ) throw new IllegalArgumentException("src map must have a parameters map containing the http request parameters.");
+	  if( requestMap==null ) throw new IllegalArgumentException("src map must have a parameters map containing the http request parameters when creating "+variable);
 	  Object ret = lookupInstanceValue();
 	  Map<String,Object> map = getMapView(ret);
 	  log.info("Creating validated request object.");
@@ -130,6 +133,7 @@ public class RequestValidator implements MetaDataUser, MapFactory {
 			factories.put(me.getKey(), (MapFactory) value);
 		 }
 	  }
+	  this.variable = mdb.getChildName();
    }
  
    /** The the map of parameters provided for this query. */

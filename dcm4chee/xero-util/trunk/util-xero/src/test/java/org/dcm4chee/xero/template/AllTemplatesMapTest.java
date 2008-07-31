@@ -14,7 +14,7 @@ import org.antlr.stringtemplate.StringTemplate;
  * @author bwallace
  *
  */
-public class AllTemplatesListTest {
+public class AllTemplatesMapTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testAllTemplates() {
@@ -24,7 +24,7 @@ public class AllTemplatesListTest {
 		  Map<String,StringTemplate> templates = (Map<String,StringTemplate>) mwd.get("templates");
 		  assert templates!=null;
 		  assert templates.containsKey("simpleMacro");
-		  assert templates.containsKey("allTemplatesListTest");
+		  assert templates.containsKey("allTemplatesMapTest");
 	}
 
 }

@@ -44,6 +44,10 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.access.ValueList;
 import org.testng.annotations.Test;
 
+/** Tests the overall value list code.
+ * @author bwallace
+ *
+ */
 public class ValueListTest {
 	static Map<String,Object> prop = new HashMap<String,Object>();
 	static {
@@ -55,6 +59,10 @@ public class ValueListTest {
 	   prop.put("list.b.priority","25");
 	   prop.put("list.c","${class:org.dcm4chee.xero.metadata.access.ListItem}");
 	   prop.put("list.c.priority","75");
+	   prop.put("list.f","${class:org.dcm4chee.xero.metadata.access.ListItem}");
+	   prop.put("list.f.priority","100");
+	   prop.put("list.e","${class:org.dcm4chee.xero.metadata.access.ListItem}");
+	   prop.put("list.e.priority","100");
 	   prop.put("list.d","${class:org.dcm4chee.xero.metadata.access.ValueListTest}");
 	   prop.put("list.d.priority","0");
 	   prop.put("empty","${class:org.dcm4chee.xero.metadata.access.ValueList}");
@@ -63,6 +71,7 @@ public class ValueListTest {
 	static MetaDataBean mdb = new MetaDataBean(prop);
 	
 
+	/** Tests that empty lists can be safely created */
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testEmptyList() {
@@ -71,16 +80,21 @@ public class ValueListTest {
 	   assert vl.size()==0;
 	}
 	
+	/** Tests the ordering and content type of the value list. */
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testValueList() {
 		ValueList<ListItem> vl = (ValueList<ListItem>) mdb.getValue("list");
 		assert vl!=null;
 		// Item d is not included as it is the wrong type.  Thus 3 items.  
-		assert vl.size()==3;
+		assert vl.size()==5;
 		assert vl.get(0).name.equals("b");
 		assert vl.get(1).name.equals("a");
 		assert vl.get(2).name.equals("c");
+		// Items with same priority must be alphabetical by name
+		assert vl.get(3).name.equals("e");
+		assert vl.get(4).name.equals("f");
 	}
+	
 }
 

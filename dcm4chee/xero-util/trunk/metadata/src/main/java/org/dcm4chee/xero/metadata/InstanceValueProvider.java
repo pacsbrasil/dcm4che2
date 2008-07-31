@@ -70,7 +70,7 @@ public class InstanceValueProvider implements ValueProvider {
 			// The return value is auto-injected on return, so don't do it here.
 			return instance;
 		} catch (ClassNotFoundException e) {
-			log.warn("No class found for "+className);
+			log.warn("No class found for '"+className+"'");
 			return null;
 		} catch (InstantiationException e) {
 			log.warn("Unable to instantiate '{}' error:{}", className,e);
