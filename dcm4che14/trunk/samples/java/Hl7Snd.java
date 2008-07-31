@@ -88,6 +88,7 @@ public class Hl7Snd {
         new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
         new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
         new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+        new LongOpt("check", LongOpt.NO_ARGUMENT, null, 'c')
     };
     
     // Variables -----------------------------------------------------
@@ -95,7 +96,7 @@ public class Hl7Snd {
     private static final HL7Factory hl7Fact = HL7Factory.getInstance();
     private static ResourceBundle messages = 
         ResourceBundle.getBundle("Hl7Snd", Locale.getDefault());
-    
+    private static boolean checkInputFile = false;
     private MLLP_URL url;
     private int ackTimeout = 0;
     private SSLContextAdapter tls = null;
@@ -119,6 +120,8 @@ public class Hl7Snd {
                 case '?':
                     exit(null, true);
                     break;
+                case 'c':
+                	checkInputFile = true;
             }
         }
         int optind = g.getOptind();
@@ -216,15 +219,21 @@ public class Hl7Snd {
                 try { fin.close(); } catch (IOException ignore) {}
             }
         }
-        if (log.isInfoEnabled()) {
+        if (log.isInfoEnabled() || checkInputFile ) {
             try {
                 HL7Message hl7 = hl7Fact.parse(msg);
                 log.info("Send: " + hl7);
                 if (log.isDebugEnabled()) {
                     log.debug(hl7.toVerboseString());
                 }
-            } catch (HL7Exception e) {
-                log.warn("Could not parse HL7 message load from " + file, e);
+            } catch (Exception e) {
+                if ( checkInputFile ) {
+                    log.warn("Could not parse HL7 message load from " + file, e);
+                	System.exit(2);
+                } else {
+                    log.warn("Could not parse HL7 message load from " + file + "! Ignored!");
+                	return 0;
+                }
             }
         }
         out.writeMessage(msg);
