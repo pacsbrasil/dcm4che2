@@ -25,6 +25,7 @@ set ARR_HOME=%1
 set ARR_SERV=%ARR_HOME%\server\default
 
 if exist "%ARR_SERV%\deploy\dcm4chee-arr-db2-3.0.6.ear" set ARR_DB=db2
+if exist "%ARR_SERV%\deploy\dcm4chee-arr-firebird-3.0.6.ear" set ARR_DB=firebird
 if exist "%ARR_SERV%\deploy\dcm4chee-arr-hsql-3.0.6.ear" set ARR_DB=hsql
 if exist "%ARR_SERV%\deploy\dcm4chee-arr-mssql-3.0.6.ear" set ARR_DB=mssql
 if exist "%ARR_SERV%\deploy\dcm4chee-arr-mysql-3.0.6.ear" set ARR_DB=mysql

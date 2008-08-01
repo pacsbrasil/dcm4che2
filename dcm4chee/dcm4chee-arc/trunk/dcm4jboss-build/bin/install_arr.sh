@@ -17,6 +17,8 @@ ARR_SERV="$ARR_HOME"/server/default
 
 if [ -f "$ARR_SERV"/deploy/dcm4chee-arr-db2-3.0.6.ear ]; then
   ARR_DB=db2
+elif [ -f "$ARR_SERV"/deploy/dcm4chee-arr-firebird-3.0.6.ear ]; then
+  ARR_DB=firebird
 elif [ -f "$ARR_SERV"/deploy/dcm4chee-arr-hsql-3.0.6.ear ]; then
   ARR_DB=hsql
 elif [ -f "$ARR_SERV"/deploy/dcm4chee-arr-mssql-3.0.6.ear ]; then
