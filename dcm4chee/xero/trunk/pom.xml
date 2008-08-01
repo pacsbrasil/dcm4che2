@@ -107,6 +107,22 @@
   </repository>
  </repositories>
 
+ <profiles>
+   <profile>
+      <id>HAP Deploy</id>
+      <activation>
+         <property><name>env.hapDeploy</name></property>
+      </activation>
+      <distributionManagement>
+        <repository>
+          <id>HAP</id>
+          <name>Agfa HAP</name>
+	  <url>scp://hap.mitra.com/maven-repository</url>
+        </repository>
+      </distributionManagement>
+   </profile>
+ </profiles>
+
  <distributionManagement>
     <repository>
        <id>dcm4che</id>
