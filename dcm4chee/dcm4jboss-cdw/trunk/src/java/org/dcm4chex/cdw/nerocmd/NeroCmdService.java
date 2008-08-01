@@ -56,9 +56,11 @@ import org.dcm4chex.cdw.common.MediaWriterServiceSupport;
  */
 public class NeroCmdService extends MediaWriterServiceSupport {
 
-    private boolean dvd = false;
+    private String mediaType;
 
     private String driveLetter;
+    
+    private String driveId;
 
     public final String getDriveLetter() {
         return driveLetter;
@@ -68,33 +70,25 @@ public class NeroCmdService extends MediaWriterServiceSupport {
         this.driveLetter = driveLetter;
         super.setDriveLetterOrMountDirectory(driveLetter + ':');
     }
-    
-    public final boolean isDvd() {
-        return dvd;
-    }
-
-    public final void setDvd(boolean dvd) {
-        this.dvd = dvd;
-    }
 
     public boolean checkDrive() throws MediaCreationException {
-        String[] cmdarray = { executable, "--driveinfo", "--drivename", driveLetter};
+        String[] cmdarray = { executable, "--info", "drive", "--drive", driveId};
         return super.check(cmdarray, "Device");
     }
 
     public boolean checkDisk() throws MediaCreationException {
-        String[] cmdarray = { executable, "--cdinfo", "--drivename", driveLetter};
+        String[] cmdarray = { executable, "--info", "disc", "--drive", driveId};
         return super.check(cmdarray, "writeable");
     }
 
     public boolean hasTOC() throws MediaCreationException {
-        String[] cmdarray = { executable, "--cdinfo", "--drivename", driveLetter};
+        String[] cmdarray = { executable, "--info", "disc", "--drive", driveId};
         return super.check(cmdarray, "not writeable");
     }
 
     private boolean nerocmd(String option, String match)
             throws MediaCreationException {
-        String[] cmdarray = { executable, option, "--drivename", driveLetter};
+        String[] cmdarray = { executable, option, "--drive", driveId};
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Executer ex = new Executer(cmdarray, stdout, null);
@@ -116,28 +110,44 @@ public class NeroCmdService extends MediaWriterServiceSupport {
         ArrayList cmd = new ArrayList();
         cmd.add(executable);
         cmd.add("--write");
-        cmd.add("--drivename");
-        cmd.add(driveLetter);
-        if (!simulate) cmd.add("--real");
-        if (dvd) cmd.add("--dvd");
+        cmd.add("--drive");
+        cmd.add(driveId);
+        if (simulate) cmd.add("--simulate");
+        if (verify) cmd.add("--verify");
+        if(!mediaType.equals("cd")) cmd.add("--" + mediaType);
         cmd.add("--image");
         cmd.add(isoImageFile.getAbsolutePath());
         if (writeSpeed >= 0) {
 	        cmd.add("--speed");
 	        cmd.add(String.valueOf(writeSpeed));
         }
-        if (!eject && !verify) cmd.add("--disable_eject");
-        if (!multiSession) cmd.add("--close_session");
+        if (!multiSession) cmd.add("--close-session");
         return (String[]) cmd.toArray(new String[cmd.size()]);
     }
 
     protected String[] makeEjectCmd() {
-        return new String[] { executable, "--eject", "--drivename", 
-                driveLetter};
+        return new String[] { executable, "--eject", "--drive", 
+                driveId};
     }
 
     protected String[] makeLoadCmd() {
-        return new String[] { executable, "--load", "--drivename",
-                driveLetter};
+        return new String[] { executable, "--load", "--drive",
+                driveId};
+    }
+
+    public final String getMediaType() {
+        return mediaType;
+    }
+
+    public final void setMediaType(String mediaType) {
+        this.mediaType = mediaType.toLowerCase();
+    }
+
+    public final String getDriveId() {
+        return driveId;
+    }
+
+    public final void setDriveId(String driveId) {
+        this.driveId = driveId;
     }
 }

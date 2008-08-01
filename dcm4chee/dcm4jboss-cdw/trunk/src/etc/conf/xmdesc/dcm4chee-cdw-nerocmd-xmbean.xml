@@ -36,6 +36,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDriveId"
+      setMethod="setDriveId">
+      <description>Drive ID(e.g.: "0,0"). Check with nerocmd --list-drives
+      </description>
+      <name>DriveId</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="0,0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDriveLetter"
       setMethod="setDriveLetter">
       <description>Drive Letter(e.g.: "X").
@@ -47,14 +58,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isDvd"
-      setMethod="setDvd">
-      <description>Switch between CD(=false) and DVD(=true) writing.
+      getMethod="getMediaType"
+      setMethod="setMediaType">
+      <description>Used Media-Type. Possible values are: cd,dvd,hd-dvd,bd
       </description>
-      <name>Dvd</name>
-      <type>boolean</type>      
+      <name>MediaType</name>
+      <type>java.lang.String</type>      
       <descriptors>
-         <value value="false" />
+         <value value="cd" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
