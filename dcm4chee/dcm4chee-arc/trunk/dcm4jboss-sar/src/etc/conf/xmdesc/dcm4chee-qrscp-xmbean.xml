@@ -760,6 +760,59 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTarWaitEchoInterval"
+      setMethod="setTarWaitEchoInterval">
+      <description>
+      		<![CDATA[Interval in ##s (seconds) or ##m (minutes) in which DICOM Echo requests are sent to STORE-SCP when 
+      		Tar Retrieve takes too long.<br/>
+      		This echo requests are 'keep alive' requests to prevent that the Store SCP abort the association.<br/>
+      		The first echo will be sent after this interval from the start of Tar Retrieve.< br/>
+   			NEVER = Disable 'Keep Alive' Echo.
+      ]]></description>
+      <name>TarWaitEchoInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="5s"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTarWaitEchoTimeout"
+      setMethod="setTarWaitEchoTimeout">
+      <description>
+      		<![CDATA[Max time in ##s (seconds) or ##m (minutes) in which 'Keep Alive' Echo Request are sent.<br/>
+      		After this timeout the C-MOVE will end with remaining (failed) instances.<br/>
+      ]]></description>
+      <name>TarWaitEchoTimeout</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="10m"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getWaitLockTimeout"
+      setMethod="setWaitLockTimeout">
+      <description>
+      		<![CDATA[Timeout in ##s (seconds) or ##m (minutes) for waiting of C-STORE responses.<br/>
+      ]]></description>
+      <name>WaitLockTimeout</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="2m"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isPreserveOrder"
+      setMethod="setPreserveOrder">
+      <description><![CDATA[Preserve order of instances in move request.<br/>
+      		That will serialize the STORE requests]]>
+      </description>
+      <name>PreserveOrder</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isRetrieveWithoutLeftJoins"
       setMethod="setRetrieveWithoutLeftJoins">
       <description><![CDATA[Controls usage of LEFT JOINS in executed SQL

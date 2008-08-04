@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC "DCMSCU attributes template extends jboss_xmbean_1_1.dtd" "dcm4chee-scu-xmbean.dtd">
 
 <mbean>
    <description>Media Creation Management SCU.  Used to where and how media are created, including the automatic creation of media.</description>
@@ -239,7 +239,9 @@
       <name>TimerIDCheckMediaStatus</name>
       <type>java.lang.String</type>
    </attribute>
-   
+
+	&defaultSCUAttributes;
+	   
    <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
@@ -275,7 +277,8 @@
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   
+ 
+  
    <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
