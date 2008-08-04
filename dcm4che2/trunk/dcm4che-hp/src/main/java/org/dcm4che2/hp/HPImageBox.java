@@ -70,6 +70,15 @@ public class HPImageBox {
         this.dcmobj = new BasicDicomObject();
     }
 
+    /**
+     * Returns the <tt>DicomObject</tt> that backs this <tt>HPImageBox</tt>.
+     * 
+     * Direct modifications of the returned <tt>DicomObject</tt> is strongly
+     * discouraged as it may cause inconsistencies in the internal state
+     * of this object.
+     * 
+     * @return the <tt>DicomObject</tt> that backs this <tt>HPImageBox</tt>
+     */
     public DicomObject getDicomObject() {
         return dcmobj;
     }

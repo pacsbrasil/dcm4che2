@@ -112,6 +112,15 @@ public class HPDisplaySet {
         return new HPImageBox(item, numImageBoxes);
     }
     
+    /**
+     * Returns the <tt>DicomObject</tt> that backs this <tt>HPDisplaySet</tt>.
+     * 
+     * Direct modifications of the returned <tt>DicomObject</tt> is strongly
+     * discouraged as it may cause inconsistencies in the internal state
+     * of this object.
+     * 
+     * @return the <tt>DicomObject</tt> that backs this <tt>HPDisplaySet</tt>
+     */
     public final DicomObject getDicomObject() {
         return dcmobj;
     }
@@ -125,7 +134,7 @@ public class HPDisplaySet {
         this.imageSet = imageSet;
     }
 
-    public List getImageBoxes() {
+    public List<HPImageBox> getImageBoxes() {
         return Collections.unmodifiableList(imageBoxes);
     }
 
@@ -155,7 +164,7 @@ public class HPDisplaySet {
         imageBoxes.clear();
     }    
 
-    public List getFilterOperations() {
+    public List<HPSelector> getFilterOperations() {
         return Collections.unmodifiableList(filters);
     }
 
@@ -180,7 +189,7 @@ public class HPDisplaySet {
         filters.clear();
     }
 
-    public List getSortingOperations() {
+    public List<HPComparator> getSortingOperations() {
         return Collections.unmodifiableList(cmps);
     }
 

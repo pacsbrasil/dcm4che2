@@ -79,6 +79,15 @@ public class HPImageSet {
         tbissq.addDicomObject(dcmobj);
     }
 
+    /**
+     * Returns the <tt>DicomObject</tt> that backs this <tt>HPImageSet</tt>.
+     * 
+     * Direct modifications of the returned <tt>DicomObject</tt> is strongly
+     * discouraged as it may cause inconsistencies in the internal state
+     * of this object.
+     * 
+     * @return the <tt>DicomObject</tt> that backs this <tt>HPImageSet</tt>
+     */
     public DicomObject getDicomObject() {
         return dcmobj;
     }
@@ -169,7 +178,7 @@ public class HPImageSet {
         return dcmobj.getParent().get(Tag.TimeBasedImageSetsSequence);
     }
 
-    public List getImageSetSelectors() {
+    public List<HPSelector> getImageSetSelectors() {
         return Collections.unmodifiableList(selectors);
     }
 

@@ -50,6 +50,15 @@ public interface HPSelector {
 
     boolean matches(DicomObject dcmobj, int frame);
     
+    /**
+     * Returns the <tt>DicomObject</tt> that backs this <tt>HPSelector</tt>.
+     * 
+     * Direct modifications of the returned <tt>DicomObject</tt> is strongly
+     * discouraged as it may cause inconsistencies in the internal state
+     * of this object.
+     * 
+     * @return the <tt>DicomObject</tt> that backs this <tt>HPSelector</tt>
+     */
     DicomObject getDicomObject();
 
     String getImageSetSelectorUsageFlag();

@@ -84,11 +84,20 @@ public class HPScrollingGroup {
         }
     }
  
+    /**
+     * Returns the <tt>DicomObject</tt> that backs this <tt>HPScrollingGroup</tt>.
+     * 
+     * Direct modifications of the returned <tt>DicomObject</tt> is strongly
+     * discouraged as it may cause inconsistencies in the internal state
+     * of this object.
+     * 
+     * @return the <tt>DicomObject</tt> that backs this <tt>HPScrollingGroup</tt>
+     */
     public final DicomObject getDicomObject() {        
         return dcmobj;
     }
     
-    public List getDisplaySets() {
+    public List<HPDisplaySet> getDisplaySets() {
         return Collections.unmodifiableList(displaySets);
     }
 

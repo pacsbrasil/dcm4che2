@@ -50,6 +50,15 @@ public interface HPComparator {
 
     int compare(DicomObject o1, int frame1, DicomObject o2, int frame2);
 
+    /**
+     * Returns the <tt>DicomObject</tt> that backs this <tt>HPComparator</tt>.
+     * 
+     * Direct modifications of the returned <tt>DicomObject</tt> is strongly
+     * discouraged as it may cause inconsistencies in the internal state
+     * of this object.
+     * 
+     * @return the <tt>DicomObject</tt> that backs this <tt>HPComparator</tt>
+     */
     DicomObject getDicomObject();
     
     String getImageSetSelectorUsageFlag();
