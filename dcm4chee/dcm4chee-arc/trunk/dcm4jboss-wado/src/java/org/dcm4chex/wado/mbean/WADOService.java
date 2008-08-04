@@ -78,7 +78,8 @@ import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
  */
 public class WADOService extends AbstractCacheService {
 
-    private WADOSupport support = new WADOSupport(this.server);
+    private static final String NONE = "NONE";
+	private WADOSupport support = new WADOSupport(this.server);
 
     public WADOService() {
         cache = WADOCacheImpl.getWADOCache();
@@ -164,6 +165,15 @@ public class WADOService extends AbstractCacheService {
         support.setUseTransferSyntaxOfFileAsDefault(b);
     }
 
+
+    public String getSrImageRows() {
+    	String rows = support.getSrImageRows();
+		return rows == null ? NONE : support.getSrImageRows();
+	}
+
+	public void setSrImageRows(String srImageRows) {
+		support.setSrImageRows( NONE.equals(srImageRows) ? null : srImageRows );
+	}
     /**
      * Set URL to XSLT stylesheet that should be used to transform DICOM SR to
      * HTML document.
@@ -329,7 +339,7 @@ public class WADOService extends AbstractCacheService {
         if (s == null)
             return "ALL";
         if (s.isEmpty())
-            return "NONE";
+            return NONE;
         StringBuffer sb = new StringBuffer(s.size() << 4);
         for (Iterator it = s.iterator(); it.hasNext();) {
             sb.append(it.next()).append(
@@ -343,7 +353,7 @@ public class WADOService extends AbstractCacheService {
             support.setDisabledAuditLogHosts(null);
         } else {
             Set disabledHosts = new HashSet();
-            if (!"NONE".equals(disabledAuditLogHosts)) {
+            if (!NONE.equals(disabledAuditLogHosts)) {
                 StringTokenizer st = new StringTokenizer(disabledAuditLogHosts,
                         "\r\n;");
                 while (st.hasMoreTokens()) {

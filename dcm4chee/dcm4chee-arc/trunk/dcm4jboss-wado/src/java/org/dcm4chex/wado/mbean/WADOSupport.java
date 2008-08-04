@@ -76,6 +76,7 @@ import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -193,6 +194,8 @@ public class WADOSupport {
 
     private Map mapTemplates = new HashMap();
 
+    private String srImageRows;
+    
     public WADOSupport(MBeanServer mbServer) {
         if (server != null) {
             server = mbServer;
@@ -720,6 +723,10 @@ public class WADOSupport {
                 log.debug("Use XSLT stylesheet:" + xslURL);
             }
             TransformerHandler th = getTransformerHandler(xslURL);
+            if ( srImageRows != null ) {
+	            Transformer t = th.getTransformer();
+	            t.setParameter("srImageRows", srImageRows);
+            }
             DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th,
                     dict);
             WADOTransformResponseObjectImpl resp = new WADOTransformResponseObjectImpl(
@@ -734,7 +741,17 @@ public class WADOSupport {
         }
     }
 
-    /**
+    public String getSrImageRows() {
+		return srImageRows;
+	}
+
+	public void setSrImageRows(String srImageRows) {
+		if ( srImageRows != null )
+			Integer.parseInt(srImageRows);
+		this.srImageRows = srImageRows;
+	}
+
+	/**
      * @return
      */
     public String getHtmlXslURL() {

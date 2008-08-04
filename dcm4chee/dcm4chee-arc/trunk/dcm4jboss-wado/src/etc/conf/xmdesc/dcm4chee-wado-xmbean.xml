@@ -83,7 +83,7 @@
       <name>PreferredFreeSpace</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="10MB" />
+         <value value="100MB" />
       </descriptors>
     </attribute>
 
@@ -182,6 +182,18 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="getSrImageRows"
+      setMethod="setSrImageRows">
+      <description>Set fixed size of referenced images in rendered Structured Reports (by rows). 
+      				NONE means original image size.          
+      </description>
+      <name>SRfixedImageRows</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getHtmlXslURL"
       setMethod="setHtmlXslURL">
