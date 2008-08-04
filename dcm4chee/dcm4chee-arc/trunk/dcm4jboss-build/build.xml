@@ -551,6 +551,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-mwlreplica-xmbean.xml" />
+      <param name="out" value="mwlreplica-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=MWLReplica" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-hl7.xmdesc}/dcm4chee-hl7adt-xmbean.xml" />
       <param name="out" value="hl7adt-xmbean.xml" />
       <param name="mbean"
