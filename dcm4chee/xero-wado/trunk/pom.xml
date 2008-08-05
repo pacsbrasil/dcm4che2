@@ -4,13 +4,13 @@
    <groupId>org.dcm4chee.xero</groupId>
    <artifactId>xero-wado</artifactId>
    <packaging>pom</packaging>
-   <version>0.6-SNAPSHOT</version>
+   <version>0.6</version>
    <name>Xero Wado Parent</name>
    <description>Overall Xero WADO Parent</description>
    <url>http://www.dcm4che.org/xero</url>
 
    <scm>
-      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero-wado/trunk</developerConnection>
+      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero-wado/tags/xero-wado-0.6</developerConnection>
    </scm>
 
    <modules>
@@ -121,7 +121,7 @@
 
  <profiles>
    <profile>
-      <id>HAP Deploy</id>
+      <id>HapDeploy</id>
       <activation>
          <property><name>env.hapDeploy</name></property>
       </activation>
