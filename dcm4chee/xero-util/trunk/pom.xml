@@ -100,7 +100,7 @@
 
  <profiles>
    <profile>
-      <id>HAP Deploy</id>
+      <id>HapDeploy</id>
       <activation>
          <property><name>env.hapDeploy</name></property>
       </activation>
