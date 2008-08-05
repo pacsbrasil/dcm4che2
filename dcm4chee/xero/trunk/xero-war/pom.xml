@@ -3,7 +3,7 @@
   <parent>
     <artifactId>xero</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>0.6</version>
+    <version>0.7-SNAPSHOT</version>
   </parent>
   <groupId>org.dcm4chee.xero</groupId>
   <name>Xero View WAR Packaging</name>

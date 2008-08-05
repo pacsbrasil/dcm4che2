@@ -107,7 +107,9 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 		// Reverse in-place so as to add least-relevent items first, and
 		// override them later.
 		Collections.reverse(children);
-		for (MetaDataBean child : children) {
+		// Use an indexed loop to allow extending the items in the loop itself.
+		for(int i=0; i< children.size(); i++) {
+			MetaDataBean child = children.get(i);
 			try {
 				InputStream is = cl.getResourceAsStream((String) child
 						.getValue());
@@ -119,8 +121,16 @@ public class PropertyProvider implements MetaDataProvider, MetaDataUser {
 				}
 				assert is!=null;
 				props.load(is);
+				String prefix = props.getProperty("metadata.prefix");
+				
+				if( prefix!=null ) {
+					prefix = prefix.trim();
+					if( !prefix.endsWith(".") ) prefix = prefix+".";
+				}
 				for (Map.Entry me : props.entrySet()) {
-					properties.put((String) me.getKey(), (String) me.getValue());
+					String key = (String) me.getKey();
+					if( prefix!=null ) key = prefix+key;
+					properties.put(key, (String) me.getValue());
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
