@@ -2,7 +2,7 @@
   <parent>
     <artifactId>xero</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.6</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4chee.xero</groupId>
@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>metadata</artifactId>
-      <version>${project.version}</version>
+      <version>0.6</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
@@ -55,7 +55,7 @@
     <dependency>
        <groupId>org.dcm4chee.xero</groupId>
        <artifactId>stringtemplate</artifactId>
-       <version>3.1.8-XERO-SNAPSHOT</version>
+       <version>3.1.8-XERO</version>
     </dependency>
     <dependency>
        <groupId>antlr</groupId>
