@@ -2,7 +2,7 @@
   <parent>
      <artifactId>xero-wado</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.6</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>wado2-war</artifactId>
@@ -68,7 +68,7 @@
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>util-xero</artifactId>
-      <version>${project.version}</version>
+      <version>0.6</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
