@@ -339,8 +339,8 @@ public class BasicDicomObject extends AbstractDicomObject {
             return false;
         }
         DicomObject other = (DicomObject) o;
-        Iterator it = iterator();
-        Iterator otherIt = other.iterator();
+        Iterator<DicomElement> it = iterator();
+        Iterator<DicomElement> otherIt = other.iterator();
         while (it.hasNext() && otherIt.hasNext()) {
             if (!it.next().equals(otherIt.next()))
                 return false;
