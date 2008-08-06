@@ -102,6 +102,9 @@ public abstract class AssociationFactory {
     
     public abstract PresContext newPresContext(int pcid, int result,
             String tsuid);
+    
+    public abstract PresContext newPresContext(int pcid, int result, String asuid,
+            String[] tsuids);
 
     public abstract AsyncOpsWindow newAsyncOpsWindow(int maxOpsInvoked,
             int maxOpsPerfomed);

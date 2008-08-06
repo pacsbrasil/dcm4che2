@@ -167,6 +167,12 @@ public final class AssociationFactoryImpl extends AssociationFactory {
                 new String[] { StringUtils.checkUID(tsuid) });
     }
 
+    public PresContext newPresContext(int pcid, int result, String asuid,
+            String[] tsuids) {
+        return new PresContextImpl(0x021, pcid, result, StringUtils
+                .checkUID(asuid), StringUtils.checkUIDs(tsuids));
+    }
+
     public AsyncOpsWindow newAsyncOpsWindow(int maxOpsInvoked,
             int maxOpsPerfomed) {
         return new AsyncOpsWindowImpl(maxOpsInvoked, maxOpsPerfomed);
