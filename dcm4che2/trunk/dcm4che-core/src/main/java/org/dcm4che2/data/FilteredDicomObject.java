@@ -48,6 +48,8 @@ import org.dcm4che2.util.TagUtils;
 abstract class FilteredDicomObject extends AbstractDicomObject
 {
 
+    private static final long serialVersionUID = -3541514478162843135L;
+
     static final class Include extends FilteredDicomObject
     {
         private static final long serialVersionUID = 1L;
@@ -157,7 +159,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         final class FilterItr extends Itr
         {
 
-            public FilterItr(Iterator itr)
+            public FilterItr(Iterator<DicomElement> itr)
             {
                 super(itr);
             }
@@ -264,10 +266,10 @@ abstract class FilteredDicomObject extends AbstractDicomObject
 
     protected class Itr implements Iterator<DicomElement>
     {
-        final Iterator itr;
+        final Iterator<DicomElement> itr;
         DicomElement next;
 
-        public Itr(Iterator itr)
+        public Itr(Iterator<DicomElement> itr)
         {
             this.itr = itr;
             findNext();
