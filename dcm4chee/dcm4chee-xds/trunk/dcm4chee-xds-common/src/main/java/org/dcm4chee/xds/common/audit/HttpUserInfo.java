@@ -76,7 +76,7 @@ public class HttpUserInfo {
     		userId = "process_user";
     		ip = "127.0.0.1";
     		hostName = "localhost";
-    		requestURI = ""; 
+    		requestURI = "http:localhost"; 
     	} else {
 	        userId = rq.getRemoteUser();
 	        String xForward = (String) rq.getHeader("x-forwarded-for");
