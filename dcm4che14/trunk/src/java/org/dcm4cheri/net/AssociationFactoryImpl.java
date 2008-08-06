@@ -110,35 +110,35 @@ import java.io.InputStream;
 import java.net.Socket;
 
 /**
- *
- * @author  gunter.zeilinger@tiani.com
+ * 
+ * @author gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
 public final class AssociationFactoryImpl extends AssociationFactory {
-    
+
     public AssociationFactoryImpl() {
     }
 
     public AAssociateRQ newAAssociateRQ() {
         return new AAssociateRQImpl();
     }
-    
+
     public AAssociateAC newAAssociateAC() {
         return new AAssociateACImpl();
     }
-    
+
     public AAssociateRJ newAAssociateRJ(int result, int source, int reason) {
         return new AAssociateRJImpl(result, source, reason);
     }
-    
+
     public PDataTF newPDataTF(int maxLength) {
         return new PDataTFImpl(maxLength);
     }
-        
+
     public AReleaseRQ newAReleaseRQ() {
         return AReleaseRQImpl.getInstance();
     }
-    
+
     public AReleaseRP newAReleaseRP() {
         return AReleaseRPImpl.getInstance();
     }
@@ -146,57 +146,53 @@ public final class AssociationFactoryImpl extends AssociationFactory {
     public AAbort newAAbort(int source, int reason) {
         return new AAbortImpl(source, reason);
     }
-    
+
     public PresContext newPresContext(int pcid, String asuid, String[] tsuids) {
-        return new PresContextImpl(0x020, pcid, 0,
-            StringUtils.checkUID(asuid),
-            StringUtils.checkUIDs(tsuids));
+        return new PresContextImpl(0x020, pcid, 0, StringUtils.checkUID(asuid),
+                StringUtils.checkUIDs(tsuids));
     }
-    
-	public PresContext newPresContext(int pcid, String asuid) {
-		return new PresContextImpl(0x020, pcid, 0,
-			StringUtils.checkUID(asuid),
-			new String[]{ UIDs.ImplicitVRLittleEndian });
-	}
-	
+
+    public PresContext newPresContext(int pcid, String asuid) {
+        return new PresContextImpl(0x020, pcid, 0, StringUtils.checkUID(asuid),
+                new String[] { UIDs.ImplicitVRLittleEndian });
+    }
+
     public PresContext newPresContext(int pcid, String asuid, String tsuid) {
-        return new PresContextImpl(0x020, pcid, 0,
-            StringUtils.checkUID(asuid),
-            new String[]{ StringUtils.checkUID(tsuid) });
+        return new PresContextImpl(0x020, pcid, 0, StringUtils.checkUID(asuid),
+                new String[] { StringUtils.checkUID(tsuid) });
     }
 
     public PresContext newPresContext(int pcid, int result, String tsuid) {
         return new PresContextImpl(0x021, pcid, result, null,
-                new String[]{ StringUtils.checkUID(tsuid) } );
+                new String[] { StringUtils.checkUID(tsuid) });
     }
-    
-    public AsyncOpsWindow newAsyncOpsWindow(
-            int maxOpsInvoked, int maxOpsPerfomed) {
+
+    public AsyncOpsWindow newAsyncOpsWindow(int maxOpsInvoked,
+            int maxOpsPerfomed) {
         return new AsyncOpsWindowImpl(maxOpsInvoked, maxOpsPerfomed);
     }
-    
-    public RoleSelection newRoleSelection(String uid, boolean scu, boolean scp)
-    {
+
+    public RoleSelection newRoleSelection(String uid, boolean scu, boolean scp) {
         return new RoleSelectionImpl(uid, scu, scp);
     }
-    
+
     public ExtNegotiation newExtNegotiation(String uid, byte[] info) {
         return new ExtNegotiationImpl(uid, info);
     }
-    
+
     public CommonExtNegotiation newCommonExtNegotiation(String sopCUID,
             String serviceCUID, String[] relGenSopCUIDs) {
-        return new CommonExtNegotiationImpl(sopCUID, serviceCUID, 
+        return new CommonExtNegotiationImpl(sopCUID, serviceCUID,
                 relGenSopCUIDs);
     }
 
-    public UserIdentityRQ newUserIdentity(boolean positiveResponseRequested, 
+    public UserIdentityRQ newUserIdentity(boolean positiveResponseRequested,
             String username, String passcode) {
         return new UserIdentityRQImpl(positiveResponseRequested, username,
                 passcode);
     }
 
-    public UserIdentityRQ newUserIdentity(int userIdentityType, 
+    public UserIdentityRQ newUserIdentity(int userIdentityType,
             boolean positiveResponseRequested, byte[] primaryField) {
         return new UserIdentityRQImpl(userIdentityType,
                 positiveResponseRequested, primaryField);
@@ -205,67 +201,65 @@ public final class AssociationFactoryImpl extends AssociationFactory {
     public UserIdentityAC newUserIdentity() {
         return new UserIdentityACImpl();
     }
-    
+
     public UserIdentityAC newUserIdentity(byte[] serverResponse) {
         return new UserIdentityACImpl(serverResponse);
     }
-    
-    public PDU readFrom(InputStream in, byte[] buf)
-            throws IOException {
+
+    public PDU readFrom(InputStream in, byte[] buf) throws IOException {
         UnparsedPDUImpl raw = new UnparsedPDUImpl(in, buf);
         switch (raw.type()) {
-            case 1:
-                return AAssociateRQImpl.parse(raw);
-            case 2:
-                return AAssociateACImpl.parse(raw);
-            case 3:
-                return AAssociateRJImpl.parse(raw);
-            case 4:
-                return PDataTFImpl.parse(raw);
-            case 5:
-                return AReleaseRQImpl.parse(raw);
-            case 6:
-                return AReleaseRPImpl.parse(raw);
-            case 7:
-                return AAbortImpl.parse(raw);
-            default:
-                throw new PDUException("Unrecognized " + raw,
-                    new AAbortImpl(AAbort.SERVICE_PROVIDER,
-                                   AAbort.UNRECOGNIZED_PDU));
+        case 1:
+            return AAssociateRQImpl.parse(raw);
+        case 2:
+            return AAssociateACImpl.parse(raw);
+        case 3:
+            return AAssociateRJImpl.parse(raw);
+        case 4:
+            return PDataTFImpl.parse(raw);
+        case 5:
+            return AReleaseRQImpl.parse(raw);
+        case 6:
+            return AReleaseRPImpl.parse(raw);
+        case 7:
+            return AAbortImpl.parse(raw);
+        default:
+            throw new PDUException("Unrecognized " + raw, new AAbortImpl(
+                    AAbort.SERVICE_PROVIDER, AAbort.UNRECOGNIZED_PDU));
         }
     }
-    
+
     public Association newRequestor(Socket s) throws IOException {
         return new AssociationImpl(s, true);
     }
-    
+
     public Association newAcceptor(Socket s) throws IOException {
         return new AssociationImpl(s, false);
     }
 
     public ActiveAssociation newActiveAssociation(Association assoc,
             DcmServiceRegistry services) {
-         return new ActiveAssociationImpl(assoc, services);
+        return new ActiveAssociationImpl(assoc, services);
     }
 
     public Dimse newDimse(int pcid, Command cmd) {
         return new DimseImpl(pcid, cmd, null, null);
     }
-    
+
     public Dimse newDimse(int pcid, Command cmd, Dataset ds) {
         return new DimseImpl(pcid, cmd, ds, null);
     }
-    
+
     public Dimse newDimse(int pcid, Command cmd, DataSource src) {
         return new DimseImpl(pcid, cmd, null, src);
     }
-    
+
     public AcceptorPolicy newAcceptorPolicy() {
-       return new AcceptorPolicyImpl();
+        return new AcceptorPolicyImpl();
     }
-   
+
     public DcmServiceRegistry newDcmServiceRegistry() {
-       return new DcmServiceRegistryImpl();
+        return new DcmServiceRegistryImpl();
     }
 
 }
