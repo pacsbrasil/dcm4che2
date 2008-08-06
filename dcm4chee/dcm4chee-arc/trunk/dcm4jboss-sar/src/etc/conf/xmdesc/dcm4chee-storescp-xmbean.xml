@@ -850,6 +850,19 @@ StoreSCP service.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isWriteCoercionXmlLog"
+      setMethod="setWriteCoercionXmlLog">
+      <description><![CDATA[Enable logging of coercions in separate log files.<br/>
+      	FileName: &lt;LOG_DIR&gt;/coercion/&lt;timestamp&gt;.&lt;xsl file&gt;.[in]|[out]<br/>
+      	Coercion logs are only written for Calling AETs specified in LogAETitles!]]>
+      </description>
+      <name>WriteCoercionXmlLog</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTimerIDCheckPendingSeriesStored"
       setMethod="setTimerIDCheckPendingSeriesStored">
       <description>Used internally. Do NOT modify.

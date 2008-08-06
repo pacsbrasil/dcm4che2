@@ -129,6 +129,34 @@
          <value value="conf/dcm4chee-ae"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isWriteCoercionXmlLog"
+      setMethod="setWriteCoercionXmlLog">
+      <description><![CDATA[Enable logging of coercions in separate log files.<br/>
+      	FileName: &lt;LOG_DIR&gt;/coercion/&lt;timestamp&gt;.&lt;xsl file&gt;.[in]|[out]<br/>
+      	Coercion logs are only written for Calling AETs specified in LogAETitles!]]>
+      </description>
+      <name>WriteCoercionXmlLog</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLogCallingAETs"
+      setMethod="setLogCallingAETs">
+      <description><![CDATA[List of the AE titles for the MPPS SCUs for which
+      coercion input and output should be logged in the log directory.
+      Useful for creation of XSL stylesheets for attribute coercion.
+      Separate multiple values by \ (backslash).
+      NONE = no calling AE titles.]]>  
+      </description>
+      <name>LogAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
   
    <attribute access="read-write"
       getMethod="getMaxPDULength"
