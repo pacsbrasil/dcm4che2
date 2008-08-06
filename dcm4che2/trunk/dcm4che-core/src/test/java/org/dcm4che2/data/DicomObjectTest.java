@@ -57,62 +57,60 @@ public class DicomObjectTest extends TestCase {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         return new File(cl.getResource(name).toString().substring(5));
     }
-    
+
     public static void main(java.lang.String[] args) {
-		junit.textui.TestRunner.run(suite());
-	}
+        junit.textui.TestRunner.run(suite());
+    }
 
-	public DicomObjectTest(String testName) {
-		super(testName);
-	}
+    public DicomObjectTest(String testName) {
+        super(testName);
+    }
 
-	public static Test suite() {
-		return new TestSuite(DicomObjectTest.class);
-	}
+    public static Test suite() {
+        return new TestSuite(DicomObjectTest.class);
+    }
 
-	public void testSerialize() throws IOException, ClassNotFoundException {
-        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
-		DicomObject dicomdir = dis.readDicomObject();
-		File ofile = new File("target/test-out/DICOMDIR.dcm.ser");
-		ofile.getParentFile().mkdirs();
-		FileOutputStream fos = new FileOutputStream(ofile);
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		oos.writeObject(dicomdir);
-		oos.close();
-		FileInputStream fis = new FileInputStream(ofile);
-		ObjectInputStream ois = new ObjectInputStream(fis);
-		DicomObject dicomdir2 = (DicomObject) ois.readObject();
-		ois.close();
-		assertEquals(dicomdir, dicomdir2);
-	}
-
-	public void testSerializeElements() throws IOException,
-			ClassNotFoundException {
+    public void testSerialize() throws IOException, ClassNotFoundException {
         DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
         DicomObject dicomdir = dis.readDicomObject();
-		File ofile = new File("target/test-out/DICOMDIR.attr.ser");
-		ofile.getParentFile().mkdirs();
-		FileOutputStream fos = new FileOutputStream(ofile);
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		dicomdir.serializeElements(oos);
-		oos.close();
-		FileInputStream fis = new FileInputStream(ofile);
-		ObjectInputStream ois = new ObjectInputStream(fis);
-		DicomObject dicomdir2 = (DicomObject) ois.readObject();
-		ois.close();
-		assertEquals(dicomdir, dicomdir2);
-	}
-    
+        File ofile = new File("target/test-out/DICOMDIR.dcm.ser");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(dicomdir);
+        oos.close();
+        FileInputStream fis = new FileInputStream(ofile);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        DicomObject dicomdir2 = (DicomObject) ois.readObject();
+        ois.close();
+        assertEquals(dicomdir, dicomdir2);
+    }
+
+    public void testSerializeElements() throws IOException,
+            ClassNotFoundException {
+        DicomInputStream dis = new DicomInputStream(locateFile("DICOMDIR"));
+        DicomObject dicomdir = dis.readDicomObject();
+        File ofile = new File("target/test-out/DICOMDIR.attr.ser");
+        ofile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(ofile);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        dicomdir.serializeElements(oos);
+        oos.close();
+        FileInputStream fis = new FileInputStream(ofile);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        DicomObject dicomdir2 = (DicomObject) ois.readObject();
+        ois.close();
+        assertEquals(dicomdir, dicomdir2);
+    }
+
     public void testPut() {
         DicomObject dcm = new BasicDicomObject();
         dcm.putNull(Tag.AcquisitionDate, null);
         assertEquals(VR.DA, dcm.get(Tag.AcquisitionDate).vr());
     }
 
-    private static final String[] IMAGE_TYPES = {
-        "ORIGINAL", "PRIMARY", "AXIAL"
-    };
-
+    private static final String[] IMAGE_TYPES = { "ORIGINAL", "PRIMARY",
+            "AXIAL" };
 
     public void testVm() {
         DicomObject dcm = new BasicDicomObject();
