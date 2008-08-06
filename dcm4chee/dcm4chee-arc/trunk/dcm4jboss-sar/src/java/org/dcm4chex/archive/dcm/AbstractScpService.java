@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.dcm;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -58,6 +59,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.RemoteNode;
@@ -151,6 +153,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] logCallingAETs = {};
 
     protected File logDir;
+	private boolean writeCoercionXmlLog;    
 
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
 
@@ -221,7 +224,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
         };
         
-    public final ObjectName getDcmServerName() {
+	public final ObjectName getDcmServerName() {
         return dcmServerName;
     }
 
@@ -385,7 +388,15 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         templates.setConfigDir(path);
     }
         
-    protected boolean enableService() {
+    public boolean isWriteCoercionXmlLog() {
+		return writeCoercionXmlLog;
+	}
+
+	public void setWriteCoercionXmlLog(boolean writeCoercionXmlLog) {
+		this.writeCoercionXmlLog = writeCoercionXmlLog;
+	}
+
+	protected boolean enableService() {
         if (dcmHandler == null)
             return false;
         boolean changed = false;
@@ -649,7 +660,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public File getLogFile(Date now, String callingAET, String suffix) {
         File dir = new File(logDir, callingAET);
-        dir.mkdir();
+        dir.mkdirs();
         return new File(dir, new DTFormat().format(now) + suffix);
     }
 
@@ -684,6 +695,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         Dataset out = DcmObjectFactory.getInstance().newDataset();
         try {
             XSLTUtils.xslt(in, stylesheet, a, out);
+            if ( writeCoercionXmlLog && contains(logCallingAETs, callingAET)) {
+            	Date now = new Date();
+				XSLTUtils.writeTo(in,
+				        getLogFile(now, "coercion", "."+xsl+".in"));
+				XSLTUtils.writeTo(out,
+				        getLogFile(now, "coercion", "."+xsl+".out"));
+            }
         } catch (Exception e) {
             log.error("Attribute coercion failed:", e);
             return null;
