@@ -196,10 +196,18 @@ public class MetaDataServlet extends HttpServlet {
    }
 
    /**
-    * The initialization needs to read the meta data object in, from one of 3
-    * places: JndiMetaData SeamMetaData PropertiesMetaData TODO - see if we can
-    * figure out how to make this just kind of work by inheriting from something
-    * else...
+    * The initialization needs to read the meta data object in from 
+    * the StaticMetaData coming from a file or resource with the name specified
+    * by the metaData property to the servlet, eg:
+    * <pre>
+    * &lt;init-param>
+	*  &lt;param-name>metaData&lt;/param-name>
+    *  &lt;param-value>xero-cfind.metadata&lt;/param-value>
+    * &lt;/init-param>
+    * </pre>
+    * 
+    * The FILTER used for this object is the filter list named by the filter servlet
+    * parameter found in the above MetaData file (or in anything referenced/used by that file)
     * 
     * @throws MalformedURLException
     */
