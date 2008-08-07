@@ -65,6 +65,12 @@
       <artifactId>jbossws-core</artifactId>
       <version>3.0.1-native-2.0.4.GA</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>jboss</groupId>
+    	<artifactId>jboss-common</artifactId>
+    	<version>4.2.2.GA</version>
+    	<scope>provided</scope>
     </dependency>  	
   </dependencies>  
 </project>

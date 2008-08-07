@@ -72,6 +72,7 @@ import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.xds.common.UUID;
 import org.dcm4chee.xds.common.XDSConstants;
+import org.dcm4chee.xds.common.XDSPerformanceLogger;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.audit.XDSImportMessage;
@@ -319,8 +320,10 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	public RegistryResponseType storeAndRegisterDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
 	   Map<String, StoredDocument> storedDocuments = null;
 	   boolean success = false;
+	   XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "ProvideAndRegisterDocumentSet");
 	   try {
 		   log.debug("------------ProvideAndRegisterDocumentSetRequest:"+req);
+		   perfLogger.startSubEvent("LogAndVerify");
 		   if ( logReceivedMessage ) {
 			   List<Document> docList = new ArrayList<Document>();
 			   docList.addAll(req.getDocument());
@@ -342,7 +345,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
             		   XDSConstants.XDS_ERR_MISSING_REGISTRY_PACKAGE, null);
            }
-		   String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId,registryPackage); 
+		   String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId,registryPackage);
+		   perfLogger.setEventProperty("SubmissionSetUID", submissionUID);
 		   if ( saveRequestAsFile ) {
 			   File f = new File(resolvePath("log/xdsb/pnr-"+submissionUID+".xml"));
 			   f.getParentFile().mkdirs();
@@ -358,20 +362,23 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			   }
 			   fos.close();
 		   }
-		   storedDocuments = exportDocuments(req);
+		   perfLogger.endSubEvent();
+		   storedDocuments = exportDocuments(req, perfLogger);
 		   if ( logRegisterMessage ) {
 			   String xmlReq = InfoSetUtil.marshallObject(submitRequest, this.indentXmlLog);
 			   log.debug("'Register Document Set' SubmitRequest:"+xmlReq);
 		   }
 		   log.info("SubmissionUID:"+submissionUID);
 		   logImport(submissionUID, true);
-		   RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest);
+		   RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest, perfLogger);
 		   success = checkResponse( rsp );
+		   perfLogger.startSubEvent("AuditAndBuildResponse");
 		   logExport(submissionUID, success);
 		   log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
 		   if ( logResponseMessage ) {
 			   log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog));
 		   }
+		   perfLogger.endSubEvent();
 		   return rsp;
 	   } catch (XDSException x) {
 			throw x;
@@ -381,15 +388,18 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		   if ( storedDocuments != null ) {
 			   postProcessStorage(storedDocuments, success);
 		   }
+		   perfLogger.flush();
 	   }
 	}
 	private RegistryResponseType dispatchSubmitObjectsRequest(
-			SubmitObjectsRequest submitRequest) throws MalformedURLException,
+			SubmitObjectsRequest submitRequest, XDSPerformanceLogger perfLogger) throws MalformedURLException,
 			JAXBException, XDSException {
 		if ( mockRegistryResponse ) {
 			   log.info("Mock RegistryResponse! Bypass 'Register Document Set' transaction!");
-			   return getMockResponse();
+			   return getMockResponse(perfLogger);
 		}
+		perfLogger.startSubEvent("RegisterDocuments");
+		perfLogger.setSubEventProperty("RegistryURI", xdsRegistryURI);
 		DocumentRegistryPortType port = new DocumentRegistryService().getDocumentRegistryPortSoap12();
 		   Map<String, Object> reqCtx = ((BindingProvider)port).getRequestContext();
 	       List customHandlerChain = new ArrayList();
@@ -409,12 +419,15 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		RegistryResponseType rsp = port.registerDocumentSetB(submitRequest);
 	   log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
 					   objFac.createRegistryResponse(rsp), indentXmlLog) );
+	   perfLogger.endSubEvent();
 		return rsp;
 	}
 
-	private RegistryResponseType getMockResponse() {
+	private RegistryResponseType getMockResponse(XDSPerformanceLogger perfLogger) {
 		RegistryResponseType rsp = objFac.createRegistryResponseType();
 		log.info("MockError:"+mockError);
+		perfLogger.startSubEvent("RegisterDocuments");
+		perfLogger.setSubEventProperty("RegistryURI", "none - mocked");
 		if ( mockError == null ) {
 			rsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
 		} else {
@@ -429,6 +442,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			err.setCodeContext(errMsg);
 			errors.add(err);
 		}
+		perfLogger.endSubEvent();
 		return rsp;
 	}
 	private void postProcessStorage( Map<String, StoredDocument> storedDocuments, 
@@ -441,6 +455,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	}
 
 	public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req) throws XDSException {
+		XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "RetrieveDocumentSet");
 		String docUid;
 		BasicXDSDocument doc;
 		RetrieveDocumentSetRequestType.DocumentRequest docReq;
@@ -451,6 +466,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			docReq = iter.next();
 			docUid = docReq.getDocumentUniqueId();
 			if ( docReq.getRepositoryUniqueId().equals(this.repositoryUniqueId) ) {
+				perfLogger.startSubEvent("RetrieveDocument");
+				perfLogger.setEventProperty("DocumentUUID", docUid);
 				doc = docStoreDelegate.retrieveDocument(docUid);
 				if ( doc != null ) {
 					localDocUids.add(docUid);
@@ -463,15 +480,19 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 				} else {
 					log.warn("Document not found! document UID:"+docUid);
 				}
+				perfLogger.endSubEvent();
 			} else {
 				log.info("Retrieve Document Request for other Repository!("+docReq.getRepositoryUniqueId()+
 						") docUid:"+docUid);
 			}
 		}
+		perfLogger.startSubEvent("AuditAndCreateResponse");
 		logRetrieve(localDocUids,true);
         RegistryResponseType regRsp = objFac.createRegistryResponseType();
         regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
         rsp.setRegistryResponse(regRsp);
+        perfLogger.endSubEvent();
+        perfLogger.flush();
 		return rsp;
 	}
 	
@@ -501,7 +522,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 		return null;
 	}
 	
-	public Map exportDocuments( ProvideAndRegisterDocumentSetRequestType req ) throws XDSException {
+	public Map exportDocuments(ProvideAndRegisterDocumentSetRequestType req, XDSPerformanceLogger perfLogger) throws XDSException {
 		Map extrObjs = InfoSetUtil.getExtrinsicObjects(req.getSubmitObjectsRequest());
 		Map docs = InfoSetUtil.getDocuments(req);
 		if ( extrObjs.size() > docs.size() ) {
@@ -530,12 +551,15 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			log.info("search for ExtrinsicObjectType RegistryObject:\n"+o+"\n"+ExtrinsicObjectType.class.getName());
 			if ( o instanceof ExtrinsicObjectType) {
 				try {
+					perfLogger.startSubEvent("StoreDocument");
 					extrObj = (ExtrinsicObjectType) o;
 					document = (Document) docs.get(extrObj.getId());
 					xdsDoc = new XDSDocument(extrObj, wrFac.getDocumentWriter(document.getValue()));
+					perfLogger.setSubEventProperty("DocumentUUID", xdsDoc.getDocumentUID());
 					doc = docStoreDelegate.storeDocument(xdsDoc);
 					if ( doc != null ) {
 						log.info("xdsDoc:"+xdsDoc+"  doc:"+doc);
+						perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getSize()));
 						storedDocuments.put(extrObj.getId(),doc);
 						slots = xdsDoc.getSlots();
 						addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_REPOSITORY_UNIQUE_ID, this.getRepositoryUniqueId());
@@ -547,6 +571,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 					} else {
 						log.warn("Document already exists! docUid:"+xdsDoc.getDocumentUID());
 					}
+					perfLogger.endSubEvent();
 				} catch ( Throwable x ) {
 					log.error("Export document failed!",x);
 					docStoreDelegate.rollbackDocuments(storedDocuments.values());
