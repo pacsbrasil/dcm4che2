@@ -704,7 +704,7 @@ public class DcmQR {
                 + "                            JPLY - offer JEPG Lossy Transfer Syntaxes\n"
                 + "                            MPEG2 - offer MPEG2 Transfer Syntax\n"
                 + "                            NOPX - offer No Pixel Data Transfer Syntax\n"
-                + "                            NOPXD - offer No Pixel Data Delflate Transfer Syntax\n"
+                + "                            NOPXD - offer No Pixel Data Deflate Transfer Syntax\n"
                 + "                            If only the Storage SOP Class is specified, all\n"
                 + "                            Transfer Syntaxes listed above except No Pixel Data\n"
                 + "                            and No Pixel Data Delflate Transfer Syntax are\n"
