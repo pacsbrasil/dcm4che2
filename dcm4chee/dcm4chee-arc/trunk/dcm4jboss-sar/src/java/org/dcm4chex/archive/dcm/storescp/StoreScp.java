@@ -182,8 +182,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private boolean md5sumReferencedFile = true;
 
-    private boolean coerceBeforeWrite = false;
-    
     private PerfMonDelegate perfMon;
 
     public StoreScp(StoreScpService service) {
@@ -320,14 +318,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.md5sumReferencedFile = md5ReferencedFile;
     }
 
-    public final boolean isCoerceBeforeWrite() {
-        return this.coerceBeforeWrite;
-    }
-    
-    public final void setCoerceBeforeWrite(boolean coerceBeforeWrite) {
-        this.coerceBeforeWrite = coerceBeforeWrite;
-    }
-    
     public final boolean isReadReferencedFile() {
         return readReferencedFile;
     }
@@ -484,14 +474,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             FileSystemDTO fsDTO;
             String filePath;
             byte[] md5sum = null;
-            Dataset coerced = service.getCoercionAttributesFor(assoc,
-                    STORE_XSL, ds);
-            if ( coerceBeforeWrite ) {
-                if (coerced != null) {
-                    service.coerceAttributes(ds, coerced);
-                }
-                service.postCoercionProcessing(ds);
-            }
             if (tianiURIReferenced) {
                 String uri = ds.getString(Tags.RetrieveURI);
                 if (uri == null) {
@@ -588,12 +570,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(PrivateTags.CallingAET, callingAET);
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-            if ( ! coerceBeforeWrite ) {
-                if (coerced != null) {
-                    service.coerceAttributes(ds, coerced);
-                }
-                service.postCoercionProcessing(ds);
+            Dataset coerced = service.getCoercionAttributesFor(assoc,
+                    STORE_XSL, ds);
+            if (coerced != null) {
+                service.coerceAttributes(ds, coerced);
             }
+            service.postCoercionProcessing(ds);
             checkPatientIdAndName(ds, callingAET);
             service.supplementIssuerOfPatientID(ds, callingAET);
             service.generatePatientID(ds, ds);

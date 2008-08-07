@@ -368,14 +368,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setCoerceWarnCallingAETs(aets);
     }
 
-    public final boolean isCoerceBeforeWrite() {
-        return scp.isCoerceBeforeWrite();
-    }
-
-    public final void setCoerceBeforeWrite(boolean CoerceBeforeWrite) {
-        scp.setCoerceBeforeWrite(CoerceBeforeWrite);
-    }
-    
     public String getAcceptMismatchIUIDCallingAETs() {
         return scp.getAcceptMismatchIUIDCallingAETs();
     }
