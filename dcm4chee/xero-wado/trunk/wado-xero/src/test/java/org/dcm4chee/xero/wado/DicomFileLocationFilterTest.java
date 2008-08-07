@@ -29,8 +29,8 @@ public class DicomFileLocationFilterTest {
 		params.put(MemoryCacheFilter.KEY_NAME,filename);
 		URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
 		assert url != null;
-		File f = new File(url.getFile());
-		assert f.canRead();
+		//File f = new File(url.getFile());
+		//assert f.canRead();
 		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, url);
 		return fl.filter(fi, params);
 	}

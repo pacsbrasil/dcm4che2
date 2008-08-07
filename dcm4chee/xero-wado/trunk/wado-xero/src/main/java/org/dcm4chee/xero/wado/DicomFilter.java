@@ -105,7 +105,8 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		 reader.setInput(in);
 		 // We don't have any reliable size information right now.   
 		 params.put(MemoryCacheFilter.CACHE_SIZE, 2048);
-		 // Makes this a bit more thread safe if the header has been read
+		 // Makes this a bit more thread safe if the header has been read, then it will
+		 // be safe to get the stream meta-data.
 		 reader.getStreamMetadata();
 		 log.info("Time to open "+params.get("objectUID")+" read meta-data "+nanoTimeToString(System.nanoTime() - start));
 		 return reader;
@@ -128,7 +129,8 @@ public class DicomFilter implements Filter<DicomImageReader> {
 
    /**
     * Get just the image relevant attributes for this object, eg Bit Stored, LUT's etc - things required
-    * for actual display of the object.
+    * for actual display of the object.  Will not update the headers etc, so don't count on
+    * accurate patient name etc.
     * @param filterItem
     * @param params
     * @param uid
@@ -141,7 +143,8 @@ public class DicomFilter implements Filter<DicomImageReader> {
    }
    /**
      * Returns the complete DICOM header.  Use this for returning the the client or for complete access
-     * to all dicom attributes.
+     * to all dicom attributes.  WILL update the header information, so you can count on
+     * accurate headers.
      * 
      * @param filterItem
      * @param params
@@ -153,6 +156,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
    public static DicomObject filterDicomObject(FilterItem filterItem, Map<String, Object> params, String uid) {
 	  // This might come from a different series or even study, so don't
 	  // assume anything here.
+	  params.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
 	  Object ret = callInstanceFilter(filterItem, params, uid);
 	  if (ret == null)
 		 return null;
