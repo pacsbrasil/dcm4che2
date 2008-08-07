@@ -48,7 +48,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
- * This class tests the common WADO access patterns for memory cached
+ * This class tests the common access patterns for the memory cache.
  * data.
  * @author bwallace
  *
