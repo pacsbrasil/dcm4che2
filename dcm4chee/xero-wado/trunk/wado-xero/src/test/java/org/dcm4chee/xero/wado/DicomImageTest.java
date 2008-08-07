@@ -75,7 +75,7 @@ public class DicomImageTest {
    }
 
    protected void smpteTest(String img) {
-	  String fname = "org/dcm4chee/xero/wado/" + img + ".dcm";
+	  String fname = "imgconsistency/" + img + ".dcm";
 	  if (debug)
 		 System.out.println("SMPTE Test on " + fname);
 	  Object dobj = callFilter("wlimage", fname);
