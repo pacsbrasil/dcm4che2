@@ -83,12 +83,12 @@ public class XDSDocumentWriterFactory {
             throw new IllegalArgumentException("File is to large! "+fileSize+" exceeds maximum of "+Integer.MAX_VALUE+" bytes");
         }
         FileDataSource ds = new FileDataSource(f);
-        return new DataHandlerWriter(new DataHandler(ds));
+        return new DataHandlerWriter(new DataHandler(ds), (int)fileSize);
     }
     
-    public XDSDocumentWriter getDocumentWriter(InputStream inputStream) throws IOException {
+    public XDSDocumentWriter getDocumentWriter(InputStream inputStream, int size) throws IOException {
         InputStreamDataSource ds = new InputStreamDataSource(inputStream);
-        return new DataHandlerWriter(new DataHandler(ds));
+        return new DataHandlerWriter(new DataHandler(ds), size);
     }
     
     public XDSDocumentWriter getDocumentWriter(AttachmentPart part) throws SOAPException, IOException {
@@ -124,8 +124,8 @@ public class XDSDocumentWriterFactory {
         return new DataWriter(data);
     }
     
-    public XDSDocumentWriter getDocumentWriter(DataHandler dh) throws IOException {
-        return new DataHandlerWriter(dh);
+    public XDSDocumentWriter getDocumentWriter(DataHandler dh, int size) throws IOException {
+        return new DataHandlerWriter(dh, size);
     }
     
     // TODO: remove if not needed
@@ -261,8 +261,10 @@ public class XDSDocumentWriterFactory {
     
     class DataHandlerWriter implements XDSDocumentWriter {
         DataHandler dh;
-        DataHandlerWriter( DataHandler dh ){
+        int size = 0;
+        DataHandlerWriter( DataHandler dh, int size ){
             this.dh = dh;
+            this.size = size;
         }
         public void writeTo(OutputStream os) throws IOException {
             dh.writeTo(os);
@@ -270,8 +272,7 @@ public class XDSDocumentWriterFactory {
         public void close() throws IOException {
         }
         public int size() {
-            // TODO: remove size() from XDSDocumentWriter interface if only used for logging purposes  
-            return 9999;
+        	return size;
         }
         public DataHandler getDataHandler() {
         	return dh;

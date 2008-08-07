@@ -467,9 +467,10 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 			docUid = docReq.getDocumentUniqueId();
 			if ( docReq.getRepositoryUniqueId().equals(this.repositoryUniqueId) ) {
 				perfLogger.startSubEvent("RetrieveDocument");
-				perfLogger.setEventProperty("DocumentUUID", docUid);
+				perfLogger.setSubEventProperty("DocumentUUID", docUid);
 				doc = docStoreDelegate.retrieveDocument(docUid);
 				if ( doc != null ) {
+					perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getXdsDocWriter().size()));
 					localDocUids.add(docUid);
 					try {
 						docRsp = getDocumentResponse(doc);
@@ -554,7 +555,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 					perfLogger.startSubEvent("StoreDocument");
 					extrObj = (ExtrinsicObjectType) o;
 					document = (Document) docs.get(extrObj.getId());
-					xdsDoc = new XDSDocument(extrObj, wrFac.getDocumentWriter(document.getValue()));
+					xdsDoc = new XDSDocument(extrObj, wrFac.getDocumentWriter(document.getValue(), -1));
 					perfLogger.setSubEventProperty("DocumentUUID", xdsDoc.getDocumentUID());
 					doc = docStoreDelegate.storeDocument(xdsDoc);
 					if ( doc != null ) {
