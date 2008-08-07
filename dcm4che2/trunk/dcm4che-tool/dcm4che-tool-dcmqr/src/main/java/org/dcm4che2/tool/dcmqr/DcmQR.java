@@ -364,6 +364,7 @@ public class DcmQR {
         MR(UID.MRImageStorage),
         US(UID.UltrasoundImageStorage),
         NM(UID.NuclearMedicineImageStorage),
+        PET(UID.PositronEmissionTomographyImageStorage),
         SC(UID.SecondaryCaptureImageStorage),
         XA(UID.XRayAngiographicImageStorage),
         XRF(UID.XRayRadiofluoroscopicImageStorage),
@@ -679,6 +680,7 @@ public class DcmQR {
                 + "MR  - MRImageStorage\n"
                 + "US  - Ultrasound Image Storage\n"
                 + "NM  - Nuclear Medicine Image Storage\n"
+                + "PET - PET Image Storage\n"
                 + "SC  - Secondary Capture Image Storage\n"
                 + "XA  - XRay Angiographic Image Storage\n"
                 + "XRF - XRay Radiofluoroscopic Image Storage\n"
