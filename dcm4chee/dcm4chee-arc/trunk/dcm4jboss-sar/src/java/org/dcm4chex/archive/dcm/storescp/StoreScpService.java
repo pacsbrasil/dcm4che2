@@ -237,6 +237,14 @@ public class StoreScpService extends AbstractScpService {
     public final void setStudyDateInFilePath(boolean enable) {
         scp.setStudyDateInFilePath(enable);
     }
+    
+    public final boolean isSourceAETInFilePath() {
+        return scp.isSourceAETInFilePath();
+    }
+
+    public final void setSourceAETInFilePath(boolean enable) {
+        scp.setSourceAETInFilePath(enable);
+    }
 
     public final boolean isYearInFilePath() {
         return scp.isYearInFilePath();
@@ -808,7 +816,7 @@ public class StoreScpService extends AbstractScpService {
     public FileDTO makeFile(Dataset dataset) throws Exception {
         FileSystemDTO fsDTO = selectStorageFileSystem();
         File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-        File file = scp.makeFile(baseDir, dataset);
+        File file = scp.makeFile(baseDir, dataset, null);
         String filePath = file.getPath().substring(
                 baseDir.getPath().length() + 1)
                 .replace(File.separatorChar, '/');

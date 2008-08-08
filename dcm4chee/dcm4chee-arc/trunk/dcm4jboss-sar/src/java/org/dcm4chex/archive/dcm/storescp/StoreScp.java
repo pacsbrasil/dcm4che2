@@ -139,7 +139,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private final Logger log;
 
     private boolean studyDateInFilePath = false;
-
+    
+    private boolean sourceAETInFilePath = false;
+    
     private boolean yearInFilePath = true;
 
     private boolean monthInFilePath = true;
@@ -265,6 +267,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.studyDateInFilePath = studyDateInFilePath;
     }
 
+    public final boolean isSourceAETInFilePath() {
+        return sourceAETInFilePath;
+    }
+
+    public final void setSourceAETInFilePath(boolean sourceAETInFilePath) {
+        this.sourceAETInFilePath = sourceAETInFilePath;
+    }
+    
     public final boolean isYearInFilePath() {
         return yearInFilePath;
     }
@@ -555,7 +565,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             } else {
                 fsDTO = service.selectStorageFileSystem();
                 File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-                file = makeFile(baseDir, ds);
+                file = makeFile(baseDir, ds, callingAET);
                 filePath = file.getPath().substring(
                         baseDir.getPath().length() + 1).replace(
                         File.separatorChar, '/');
@@ -891,14 +901,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return store;
     }
 
-    File makeFile(File basedir, Dataset ds) throws Exception {
+    File makeFile(File basedir, Dataset ds, String callingAET) throws Exception {
         Calendar date = Calendar.getInstance();
+        StringBuffer filePath = new StringBuffer();
+        if( sourceAETInFilePath && callingAET != null) {
+        	filePath.append(callingAET);
+            filePath.append(File.separatorChar);
+        }
         if (studyDateInFilePath) {
             Date studyDate = ds.getDateTime(Tags.StudyDate, Tags.StudyTime);
             if (studyDate != null)
                 date.setTime(studyDate);
         }
-        StringBuffer filePath = new StringBuffer();
         if (yearInFilePath) {
             filePath.append(String.valueOf(date.get(Calendar.YEAR)));
             filePath.append(File.separatorChar);

@@ -195,6 +195,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSourceAETInFilePath"
+      setMethod="setSourceAETInFilePath">
+      <description><![CDATA[Include Source AE Title in storage directory structure.]]>
+      </description>
+      <name>SourceAETInFilePath</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isYearInFilePath"
       setMethod="setYearInFilePath">
       <description><![CDATA[Use the year of Study or receiving Date to structure directories of the storage file system.
