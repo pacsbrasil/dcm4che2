@@ -48,14 +48,21 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class FilterItem<T> implements Comparable<FilterItem> {
+public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	private static Logger log = LoggerFactory.getLogger(FilterItem.class);
 	String name;
 	public Filter<?> filter;
-	private int priority;
+	int priority;
 	MetaDataBean metaData;
 	Object config;
 	FilterItem nextFilterItem;
+	
+	/**
+	 * This constructor can be used when all methods are being over-ridden, eg for test
+	 * purposes.
+	 */
+	public FilterItem() {	
+	}
 	
 	/**
 	 * Create a filter item based on the given meta-data node.
@@ -84,7 +91,7 @@ public class FilterItem<T> implements Comparable<FilterItem> {
 	/** Compare this filter item to another filter item.
 	 * @return int comparison value +ve/0/-ve for <, = and >
 	 */
-	public int compareTo(FilterItem o) {
+	public int compareTo(FilterItem<?> o) {
 		int ret = o.priority - this.priority;
 		if( ret!=0 ) return ret;
 		ret = o.name.compareTo(this.name);
