@@ -3,12 +3,10 @@ package org.dcm4chee.xdsb.repository.ws.client;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPHeaderElement;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
@@ -53,7 +51,8 @@ public class RegistryClientHeaderHandler extends GenericSOAPHandler
 			
 			SOAPHeaderElement hdrMsgId = msg.getSOAPHeader().addHeaderElement(
 					new QName(XDSConstants.NS_WS_ADDRESSING, XDSConstants.SOAP_HEADER_MSG_ID, "wsa"));
-			hdrMsgId.setValue(XDSConstants.MSG_ID_REGISTER_DOCUMENT_SET_B);
+			hdrMsgId.setValue(UUID.randomUUID().toString());
+			
 			/*_*/
 			log.info("@@@@@@@@@@@@ REGISTRY CLIENT @@@@@@@@@@@@@@@@ handleOutbound --SOAP Message with added Action header.");
 			SOAPUtil.getInstance().logSOAPMessage(log, msg, true);

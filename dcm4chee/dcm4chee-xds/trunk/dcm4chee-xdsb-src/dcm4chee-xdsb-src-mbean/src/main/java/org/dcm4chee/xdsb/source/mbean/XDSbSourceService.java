@@ -464,12 +464,12 @@ public class XDSbSourceService extends ServiceMBeanSupport {
 				   port = DocumentRepositoryPortTypeFactory.getDocumentRepositoryPortSoap11(
 						   xdsRepositoryURI, 
 						   XDSConstants.URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B, 
-						   XDSConstants.MSG_ID_PROVIDE_AND_REGISTER_DOCUMENT_SET_B);
+						   java.util.UUID.randomUUID().toString());
 			   } else {
 				   port = DocumentRepositoryPortTypeFactory.getDocumentRepositoryPortSoap12(
 						   xdsRepositoryURI, 
 						   XDSConstants.URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B, 
-						   XDSConstants.MSG_ID_PROVIDE_AND_REGISTER_DOCUMENT_SET_B);
+						   java.util.UUID.randomUUID().toString());
 			   }
 			   log.info("####################################################");
 			   log.info("####################################################");
