@@ -385,9 +385,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 	   } catch (Throwable t) {
 		   throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Provide And Register failed!",t);
 	   } finally {
+		   perfLogger.startSubEvent("PostProcess");
+		   perfLogger.setSubEventProperty("Success", String.valueOf(success));
 		   if ( storedDocuments != null ) {
 			   postProcessStorage(storedDocuments, success);
 		   }
+		   perfLogger.endSubEvent();
 		   perfLogger.flush();
 	   }
 	}
