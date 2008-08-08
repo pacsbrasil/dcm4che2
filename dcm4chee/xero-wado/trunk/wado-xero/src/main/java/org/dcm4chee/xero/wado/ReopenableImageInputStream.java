@@ -34,6 +34,7 @@ public class ReopenableImageInputStream extends ImageInputStreamImpl {
    public ReopenableImageInputStream(URL location) throws IOException {
 	  this.location = location;
 	  String surl = location.toString();
+	  log.debug("String url={}",surl);
 	  if( surl.startsWith("file:") ) {
 		 this.fileName = location.getFile();
 		 location = null;

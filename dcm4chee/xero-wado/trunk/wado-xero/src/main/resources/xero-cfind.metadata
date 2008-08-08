@@ -48,6 +48,15 @@ dicom.memcache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 dicom.memcache.cacheSize=2000000
 dicom.memcache.priority=200
 dicom.memcache.queryStr=objectUID
+# Dicom Update happens relatively late.
+dicom.update=${class:org.dcm4chee.xero.wado.DicomUpdateFilter}
+dicom.update.priority=250
+
+dicom.seriesCFind=${class:org.dcm4chee.xero.search.study.SeriesSearch}
+dicom.seriesCFind.priority=-1
+dicom.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+dicom.searchCondition.priority=-1
+
 
 #Now, add a study filter that provides study searches.
 studyFilter.source.imageSearch=${ref:imageSource}

@@ -125,7 +125,7 @@ instruction below. This is recommended if you are a beginner.
   </xsl:template>
 
   <xsl:template match="@objectUID" mode="render">
-     <a href="/xero/wado?objectUID=" target="wadoTab"><xsl:attribute name="href">/wado2/wado?objectUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <a target="wadoTab"><xsl:attribute name="href">/wado2/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="@studyUID" mode="render">

@@ -39,15 +39,12 @@ package org.dcm4chee.xero.wado;
 
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
@@ -136,7 +133,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
     * @param uid
     * @return
     */
-   public static DicomObject filterImageDicomObject(FilterItem filterItem, Map<String,Object> params, String uid) {
+   public static DicomObject filterImageDicomObject(FilterItem<?> filterItem, Map<String,Object> params, String uid) {
 	  // When the filterDicomObject returns something else, then this can be updated to use the dicom object
 	  // from the DicomImageReader or from some other location.
 	  return filterDicomObject(filterItem,params,uid);
@@ -153,11 +150,13 @@ public class DicomFilter implements Filter<DicomImageReader> {
      *            existing params.
      * @return
      */
-   public static DicomObject filterDicomObject(FilterItem filterItem, Map<String, Object> params, String uid) {
+   public static DicomObject filterDicomObject(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
 	  // This might come from a different series or even study, so don't
 	  // assume anything here.
+     log.debug("Performing full dicom object header retrieval including C-Find updates.");
 	  params.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
 	  Object ret = callInstanceFilter(filterItem, params, uid);
+	  params.remove(DicomUpdateFilter.UPDATE_HEADER);
 	  if (ret == null)
 		 return null;
 	  if (ret instanceof DicomObject)
@@ -177,7 +176,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 	  return null;
    }
 
-   private static Object callInstanceFilter(FilterItem filterItem, Map<String, Object> params, String uid) {
+   private static Object callInstanceFilter(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
 	  Map<String, Object> newParams;
 	  if (uid == null) {
 		 // This case is used for filters where the request is directly for as single instance 
@@ -188,6 +187,8 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		 // UID is required.
 		 newParams = new HashMap<String, Object>();
 		 newParams.put("objectUID", uid);
+		 if( params.containsKey(DicomUpdateFilter.UPDATE_HEADER) )
+			 newParams.put(DicomUpdateFilter.UPDATE_HEADER,"TRUE");
 	  }
 	  Object ret = filterItem.callNamedFilter("dicom", newParams);
 	  return ret;
@@ -201,7 +202,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
      * @param uid
      * @return
      */
-   public static DicomImageReader filterDicomImageReader(FilterItem filterItem, Map<String, Object> params, String uid) {
+   public static DicomImageReader filterDicomImageReader(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
 	  // This might come from a different series or even study, so don't
 	  // assume anything here.
 	  Object ret = callInstanceFilter(filterItem, params, uid);
