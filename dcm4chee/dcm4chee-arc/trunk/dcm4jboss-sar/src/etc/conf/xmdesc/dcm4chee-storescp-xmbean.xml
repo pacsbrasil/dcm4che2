@@ -114,7 +114,8 @@
       <descriptors>
          <value value="NONE"/>
       </descriptors>
-   </attribute>   <attribute access="read-write"
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptMissingPatientID"
       setMethod="setAcceptMissingPatientID">
       <description><![CDATA[Accept storage of objects/images without patient ID]]>
@@ -857,6 +858,17 @@ StoreSCP service.
       	Coercion logs are only written for Calling AETs specified in LogAETitles!]]>
       </description>
       <name>WriteCoercionXmlLog</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isCoerceBeforeWrite"
+      setMethod="setCoerceBeforeWrite">
+      <description><![CDATA[Perform attribute coercion prior to writing to online filesystem.]]>
+      </description>
+      <name>CoerceBeforeWrite</name>
       <type>boolean</type>
       <descriptors>
          <value value="false"/>
