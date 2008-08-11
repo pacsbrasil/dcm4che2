@@ -40,8 +40,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.BufferedInputStream;
@@ -93,7 +95,7 @@ class ImageBox extends JPanel {
         super(new BorderLayout());
         this.reader = reader;
         this.dataset = ((DcmMetadata)reader.getStreamMetadata()).getDataset();
-        this.image = this.origImage = reader.read(0);
+        this.image = this.origImage = readFrame(0);
         origWidth = origImage.getWidth();
         origHeight = origImage.getHeight();
         view.setPreferredSize(new Dimension(origWidth, origHeight));
@@ -289,13 +291,32 @@ class ImageBox extends JPanel {
 
     public void frameChanged() {
         try {
-            this.origImage = reader.read(frameSlider.getValue());
+            this.origImage = readFrame(frameSlider.getValue());
             zoomChanged();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }
-    
+
+    private BufferedImage readFrame(int frameIndex) throws IOException {
+        BufferedImage bi = reader.read(frameIndex);
+        // workaround for java.awt.image.ImagingOpException: Unable to transform src image
+        // if bi.getSampleModel() instanceof BandedSampleModel
+        if (bi.getSampleModel() instanceof BandedSampleModel) {
+            BufferedImage newbi = new BufferedImage(bi.getWidth(),
+                    bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D big = newbi.createGraphics();
+            try {
+                big.drawImage(bi, 0, 0, null);
+            } finally {
+                big.dispose();
+            }
+            bi.flush();
+            bi = newbi;
+        }
+        return bi;
+    }
+
     class View extends JPanel {
         public void paint(Graphics g) {
             if (getWidth() > image.getWidth()
