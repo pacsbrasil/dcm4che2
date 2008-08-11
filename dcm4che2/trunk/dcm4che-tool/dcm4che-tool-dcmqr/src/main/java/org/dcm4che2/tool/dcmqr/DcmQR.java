@@ -946,7 +946,7 @@ public class DcmQR {
             String[] callingAETHost = split(localPort[0], '@');
             dcmqr.setCalling(callingAETHost[0]);
             if (callingAETHost[1] != null) {
-                dcmqr.setLocalHost(callingAETHost[0]);
+                dcmqr.setLocalHost(callingAETHost[1]);
             }
         }
         if (cl.hasOption("username")) {
