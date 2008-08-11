@@ -489,7 +489,9 @@ public class DcmRcv extends StorageService {
         if (aetPort[0] != null) {
             String[] aetHost = split(aetPort[0], '@', 0);
             dcmrcv.setAEtitle(aetHost[0]);
-            dcmrcv.setHostname(aetHost[1]);
+            if (aetHost[1] != null) {
+                dcmrcv.setHostname(aetHost[1]);
+            }
         }
 
         if (cl.hasOption("dest"))
