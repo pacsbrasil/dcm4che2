@@ -46,6 +46,7 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,8 +56,8 @@ import java.security.MessageDigest;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmEncodeParam;
@@ -96,10 +97,11 @@ public class DecompressCmd extends CodecCmd {
     public static byte[] decompressFile(File inFile, File outFile,
             String outTS, int pxdataVR, byte[] buffer) throws Exception {
         log.info("M-READ file:" + inFile);
-        FileImageInputStream fiis = new FileImageInputStream(inFile);
+        ImageInputStream iis = new MemoryCacheImageInputStream(
+                new FileInputStream(inFile));
         try {
             DcmParser parser = DcmParserFactory.getInstance()
-                    .newDcmParser(fiis);
+                    .newDcmParser(iis);
             DcmObjectFactory dof = DcmObjectFactory.getInstance();
             Dataset ds = dof.newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
@@ -136,7 +138,7 @@ public class DecompressCmd extends CodecCmd {
             return md.digest();
         } finally {
             try {
-                fiis.close();
+                iis.close();
             } catch (IOException ignore) {
             }
         }
@@ -183,6 +185,7 @@ public class DecompressCmd extends CodecCmd {
                 int frame = simpleFrameList != null ? (simpleFrameList[i]-1) : i;
                 log.debug("start decompression of frame #" + (frame + 1));
                 itemParser.seekFrame(siis, frame);
+                iis.flush();
                 reader.setInput(siis);
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
