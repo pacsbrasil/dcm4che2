@@ -69,8 +69,8 @@ final class MonochromeParam extends BasicColorModelParam  {
    private final static float[] nullToEmpty(float[] a) {
       return a == null ? EMPTY : a;
    }
-   private final static float correctZeroSlope(float f) {
-      return f == 0.f ? 1.f : f;
+   private final float correctSlope(float f) {
+      return f == 0.f || Math.abs(f) > max ? 1.f : f;
    }
    private final static int inBits(int len) {
       for (int i = 8, n = 256; i <= 16; ++i, n <<= 1) {
@@ -93,7 +93,7 @@ final class MonochromeParam extends BasicColorModelParam  {
    public MonochromeParam(Dataset ds, boolean inverse1, byte[] pv2dll) {
       super(ds);
       this.inverse = inverse1 ? -1 : 0;
-      this.slope = correctZeroSlope(ds.getFloat(Tags.RescaleSlope, 1.f));
+      this.slope = correctSlope(ds.getFloat(Tags.RescaleSlope, 1.f));
       this.intercept = ds.getFloat(Tags.RescaleIntercept, 0.f);
       this.center = nullToEmpty(ds.getFloats(Tags.WindowCenter));
       this.width = nullToEmpty(ds.getFloats(Tags.WindowWidth));
