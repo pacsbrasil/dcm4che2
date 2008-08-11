@@ -601,7 +601,7 @@ public class DcmSnd extends StorageCommitmentService {
             String[] callingAETHost = split(localPort[0], '@');
             dcmsnd.setCalling(callingAETHost[0]);
             if (callingAETHost[1] != null) {
-                dcmsnd.setLocalHost(callingAETHost[0]);
+                dcmsnd.setLocalHost(callingAETHost[1]);
             }
         }
         dcmsnd.setOfferDefaultTransferSyntaxInSeparatePresentationContext(
