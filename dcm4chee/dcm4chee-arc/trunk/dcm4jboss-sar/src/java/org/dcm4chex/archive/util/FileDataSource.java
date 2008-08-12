@@ -39,9 +39,13 @@
 
 package org.dcm4chex.archive.util;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -199,20 +203,65 @@ public class FileDataSource implements DataSource {
     }
 
     public void writeTo(OutputStream out, String tsUID) throws IOException {
-
         log.info("M-READ file:" + file);
-        FileImageInputStream fiis = new FileImageInputStream(file);
+        DataInputStream dis = new DataInputStream(
+                new BufferedInputStream(new FileInputStream(file)));
+        FileImageInputStream fiis = null;
         try {
-            DcmParser parser = DcmParserFactory.getInstance()
-                    .newDcmParser(fiis);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(null, Tags.PixelData);
-            if (!parser.hasSeenEOF() && parser.getReadTag() != Tags.PixelData) {
+            boolean hasPixelData = parser.getReadTag() == Tags.PixelData;
+            if (!hasPixelData && !parser.hasSeenEOF()) {
                 parser.unreadHeader();
                 parser.parseDataset(parser.getDcmDecodeParam(), -1);
             }
             ds.putAll(mergeAttrs);
+            String tsOrig = DecompressCmd.getTransferSyntax(ds);
+            if (writeFile) {
+                if (tsUID != null) {
+                    if (tsUID.equals(UIDs.ExplicitVRLittleEndian)
+                            || !tsUID.equals(tsOrig)) { // can only decompress
+                                                        // here!
+                        tsUID = UIDs.ExplicitVRLittleEndian;
+                        ds.setFileMetaInfo(DcmObjectFactory.getInstance()
+                                .newFileMetaInfo(ds, tsUID));
+                    }
+                } else {
+                    tsUID = tsOrig;
+                }
+            }
+            DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
+            if (!hasPixelData) {
+                log.debug("Dataset:\n");
+                log.debug(ds);
+                write(ds, out, enc);
+                return;
+            }
+            int pixelDataLen = parser.getReadLength();
+            boolean encapsulated = pixelDataLen == -1;
+            if (withoutPixeldata || UIDs.NoPixelData.equals(tsUID)
+                    || UIDs.NoPixelDataDeflate.equals(tsUID)) {
+                // skip Pixel Data
+                if (!encapsulated) {
+                    dis.skipBytes(pixelDataLen);
+                } else {
+                    do {
+                        parser.parseHeader();
+                        dis.skipBytes(parser.getReadLength());
+                    } while (parser.getReadTag() == Tags.Item);
+                }
+                // parse attributes after Pixel Data
+                parser.parseDataset(parser.getDcmDecodeParam(), -1);
+                log.debug("Dataset:\n");
+                log.debug(ds);
+                write(ds, out, enc);
+                return;
+            }
+            log.debug("Dataset:\n");
+            log.debug(ds);
+            write(ds, out, enc);
             int framesInFile = ds.getInt(Tags.NumberOfFrames, 1);
             if (simpleFrameList != null) {
                 if (simpleFrameList[simpleFrameList.length - 1] > framesInFile) {
@@ -233,39 +282,79 @@ public class FileDataSource implements DataSource {
                 adjustNumberOfFrames(ds);
                 replaceIUIDs(ds);
             }
-            String tsOrig = DecompressCmd.getTransferSyntax(ds);
-            if (writeFile) {
-                if (tsUID != null) {
-                    if (tsUID.equals(UIDs.ExplicitVRLittleEndian)
-                            || !tsUID.equals(tsOrig)) { // can only decompress
-                                                        // here!
-                        tsUID = UIDs.ExplicitVRLittleEndian;
-                        ds.setFileMetaInfo(DcmObjectFactory.getInstance()
-                                .newFileMetaInfo(ds, tsUID));
-                    }
+            if (!encapsulated) {
+                // copy native Pixel Data
+                if (simpleFrameList == null) {
+                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
+                            pixelDataLen);
+                    copyBytes(dis, out, pixelDataLen, buffer);
                 } else {
-                    tsUID = tsOrig;
+                    int frameLength = pixelDataLen / framesInFile;
+                    int newPixelDataLength =
+                        frameLength * simpleFrameList.length;
+                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
+                            (newPixelDataLength+1)&~1);
+                    int frameIndex = 0;
+                    for (int i = 0; i < simpleFrameList.length; i++) {
+                        while (++frameIndex < simpleFrameList[i]) {
+                            dis.skipBytes(frameLength);
+                        }
+                        copyBytes(dis, out, frameLength, buffer);
+                    }
+                    if ((newPixelDataLength & 1) != 0)
+                        out.write(0);
+                    // ignore attributes after Pixel Data
+                    return;
                 }
-            }
-            DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
-            if (withoutPixeldata || parser.getReadTag() != Tags.PixelData
-                    || UIDs.NoPixelData.equals(tsUID)
-                    || UIDs.NoPixelDataDeflate.equals(tsUID)) {
-                log.debug("Dataset:\n");
-                log.debug(ds);
-                write(ds, out, enc);
-                return;
-            }
-            int len = parser.getReadLength();
-            if (len == -1 && !enc.encapsulated) {
+            } else if (enc.encapsulated) {
+                // copy encapsulated Pixel Data
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, -1);
+                if (simpleFrameList == null) {
+                    do {
+                        parser.parseHeader();
+                        int itemlen = parser.getReadLength();
+                        ds.writeHeader(out, enc, parser.getReadTag(),
+                                VRs.NONE, itemlen);
+                        copyBytes(dis, out, itemlen, buffer);
+                    } while (parser.getReadTag() == Tags.Item);
+                } else {
+                    parser.parseHeader();
+                    int itemlen = parser.getReadLength();
+                    // write empty Basic Offset Table
+                    ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
+                    // skip Basic Offset Table
+                    dis.skipBytes(itemlen);
+                    // WARN frames spanning multiple data fragments not supported
+                    // assume one item per frame
+                    int frameIndex = 0;
+                    for (int i = 0; i < simpleFrameList.length; i++) {
+                        parser.parseHeader();
+                        itemlen = parser.getReadLength();
+                        while (++frameIndex < simpleFrameList[i]) {
+                            dis.skipBytes(itemlen);
+                            parser.parseHeader();
+                            itemlen = parser.getReadLength();
+                        }
+                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
+                        copyBytes(dis, out, itemlen, buffer);
+                    }
+                    ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
+                            VRs.NONE, 0);
+                    // ignore attributes after Pixel Data
+                    return;
+                }
+            } else {
+                // decompress encapsulated Pixel Data
+                dis.close();
+                dis = null;
+                fiis = new FileImageInputStream(file);
+                fiis.seek(parser.getStreamPosition());
+                parser = DcmParserFactory.getInstance().newDcmParser(fiis);
                 DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
                 cmd.setSimpleFrameList(simpleFrameList);
-                len = cmd.getPixelDataLength();
-                log.debug("Dataset:\n");
-                log.debug(ds);
-                write(ds, out, enc);
-                ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, 
-                        (len + 1) & ~1);
+                int newPixelDataLen = cmd.getPixelDataLength();
+                ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
+                        (newPixelDataLen+1)&~1);
                 try {
                     cmd.decompress(enc.byteOrder, out);
                 } catch (IOException e) {
@@ -273,74 +362,28 @@ public class FileDataSource implements DataSource {
                 } catch (Throwable e) {
                     throw new RuntimeException("Decompression failed:", e);
                 }
-                if ((len & 1) != 0)
+                if ((newPixelDataLen&1) != 0)
                     out.write(0);
-            } else {
-                log.debug("Dataset:\n");
-                log.debug(ds);
-                write(ds, out, enc);
-                if (len == -1) {
-                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, len);
-                    parser.parseHeader();
-                    int itemlen;
-                    if (simpleFrameList != null) {
-                        itemlen = parser.getReadLength();
-                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
-                        fiis.skipBytes(itemlen);
-                        parser.parseHeader();
-                        for (int srcFrame = 1, destFrame = 0;
-                                parser.getReadTag() == Tags.Item; srcFrame++) {
-                            itemlen = parser.getReadLength();
-                            if (destFrame < simpleFrameList.length
-                                    && srcFrame == simpleFrameList[destFrame]) {
-                                ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-                                copy(fiis, out, itemlen, buffer);
-                                destFrame++;
-                            } else {
-                                fiis.skipBytes(itemlen);
-                            }
-                            parser.parseHeader();
-                        }
-                    } else {
-                        while (parser.getReadTag() == Tags.Item) {
-                            itemlen = parser.getReadLength();
-                            ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-                            copy(fiis, out, itemlen, buffer);
-                            parser.parseHeader();
-                        }
-                    }
-                    ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
-                            VRs.NONE, 0);
-                } else if (simpleFrameList != null) {
-                    int frameLength = len / framesInFile;
-                    int newPixelDataLength =
-                        frameLength * simpleFrameList.length;
-                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
-                            (newPixelDataLength+1)&~1);
-                    long pixelDataPos = fiis.getStreamPosition();
-                    for (int i = 0; i < simpleFrameList.length; i++) {
-                        fiis.seek(pixelDataPos
-                                + frameLength * (simpleFrameList[i]-1));
-                        copy(fiis, out, frameLength, buffer);
-                    }
-                    if ((newPixelDataLength & 1) != 0)
-                        out.write(0);
-                    fiis.seek(pixelDataPos + len);
-                } else {
-                    ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, len);
-                    copy(fiis, out, len, buffer);
-                }
             }
+            // parse attributes after Pixel Data
             parser.parseDataset(parser.getDcmDecodeParam(), -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
         } finally {
             try {
-                fiis.close();
+                if (dis != null)
+                    dis.close();
+            } catch (IOException ignore) {
+            }
+            try {
+                if (fiis != null) {
+                    fiis.close();
+                }
             } catch (IOException ignore) {
             }
         }
     }
     
+
     private void adjustNumberOfFrames(Dataset ds) {
         ds.putIS(Tags.NumberOfFrames, simpleFrameList.length);
         DcmElement src = ds.remove(Tags.PerFrameFunctionalGroupsSeq);
@@ -419,10 +462,10 @@ public class FileDataSource implements DataSource {
 
     }
 
-    private void copy(FileImageInputStream fiis, OutputStream out, int totLen,
+    private void copyBytes(InputStream is, OutputStream out, int totLen,
             byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
-            len = fiis.read(buffer, 0, Math.min(toRead, buffer.length));
+            len = is.read(buffer, 0, Math.min(toRead, buffer.length));
             if (len == -1) {
                 throw new EOFException();
             }
