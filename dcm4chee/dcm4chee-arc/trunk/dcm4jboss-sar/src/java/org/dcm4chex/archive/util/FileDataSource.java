@@ -41,13 +41,10 @@ package org.dcm4chex.archive.util;
 
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -204,11 +201,10 @@ public class FileDataSource implements DataSource {
     public void writeTo(OutputStream out, String tsUID) throws IOException {
 
         log.info("M-READ file:" + file);
-        ImageInputStream iis = new MemoryCacheImageInputStream(
-                new FileInputStream(file));
+        FileImageInputStream fiis = new FileImageInputStream(file);
         try {
             DcmParser parser = DcmParserFactory.getInstance()
-                    .newDcmParser(iis);
+                    .newDcmParser(fiis);
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             parser.setDcmHandler(ds.getDcmHandler());
             parser.parseDcmFile(null, Tags.PixelData);
@@ -290,7 +286,7 @@ public class FileDataSource implements DataSource {
                     if (simpleFrameList != null) {
                         itemlen = parser.getReadLength();
                         ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
-                        iis.skipBytes(itemlen);
+                        fiis.skipBytes(itemlen);
                         parser.parseHeader();
                         for (int srcFrame = 1, destFrame = 0;
                                 parser.getReadTag() == Tags.Item; srcFrame++) {
@@ -298,10 +294,10 @@ public class FileDataSource implements DataSource {
                             if (destFrame < simpleFrameList.length
                                     && srcFrame == simpleFrameList[destFrame]) {
                                 ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-                                copy(iis, out, itemlen, buffer);
+                                copy(fiis, out, itemlen, buffer);
                                 destFrame++;
                             } else {
-                                iis.skipBytes(itemlen);
+                                fiis.skipBytes(itemlen);
                             }
                             parser.parseHeader();
                         }
@@ -309,7 +305,7 @@ public class FileDataSource implements DataSource {
                         while (parser.getReadTag() == Tags.Item) {
                             itemlen = parser.getReadLength();
                             ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-                            copy(iis, out, itemlen, buffer);
+                            copy(fiis, out, itemlen, buffer);
                             parser.parseHeader();
                         }
                     }
@@ -321,25 +317,25 @@ public class FileDataSource implements DataSource {
                         frameLength * simpleFrameList.length;
                     ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
                             (newPixelDataLength+1)&~1);
-                    long pixelDataPos = iis.getStreamPosition();
+                    long pixelDataPos = fiis.getStreamPosition();
                     for (int i = 0; i < simpleFrameList.length; i++) {
-                        iis.seek(pixelDataPos
+                        fiis.seek(pixelDataPos
                                 + frameLength * (simpleFrameList[i]-1));
-                        copy(iis, out, frameLength, buffer);
+                        copy(fiis, out, frameLength, buffer);
                     }
                     if ((newPixelDataLength & 1) != 0)
                         out.write(0);
-                    iis.seek(pixelDataPos + len);
+                    fiis.seek(pixelDataPos + len);
                 } else {
                     ds.writeHeader(out, enc, Tags.PixelData, VRs.OW, len);
-                    copy(iis, out, len, buffer);
+                    copy(fiis, out, len, buffer);
                 }
             }
             parser.parseDataset(parser.getDcmDecodeParam(), -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
         } finally {
             try {
-                iis.close();
+                fiis.close();
             } catch (IOException ignore) {
             }
         }
@@ -423,15 +419,14 @@ public class FileDataSource implements DataSource {
 
     }
 
-    private void copy(ImageInputStream iis, OutputStream out, int totLen,
+    private void copy(FileImageInputStream fiis, OutputStream out, int totLen,
             byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
-            len = iis.read(buffer, 0, Math.min(toRead, buffer.length));
+            len = fiis.read(buffer, 0, Math.min(toRead, buffer.length));
             if (len == -1) {
                 throw new EOFException();
             }
             out.write(buffer, 0, len);
-            iis.flush();
         }
     }
 }
