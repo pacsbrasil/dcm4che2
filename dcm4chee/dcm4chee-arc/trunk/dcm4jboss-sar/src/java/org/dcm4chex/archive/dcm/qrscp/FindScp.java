@@ -47,6 +47,7 @@ import java.util.List;
 
 import javax.management.ObjectName;
 import javax.security.auth.Subject;
+import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -301,7 +302,9 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
         private int pendingStatus = Status.Pending;
 
-        private boolean skipCoerce = false;
+        private int count = 0;
+
+        private Templates coerceTpl;
 
         public MultiCFindRsp(QueryCmd queryCmd) {
             this.queryCmd = queryCmd;
@@ -341,14 +344,13 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 log.debug("Identifier:\n");
                 log.debug(data);
                 service.logDIMSE(a, RESULT_XML, data);
-                if (!skipCoerce) {
-                    Dataset coerce = service.getCoercionAttributesFor(a,
-                            RESULT_XSL, data);
-                    if (coerce != null) {
-                        service.coerceAttributes(data, coerce);
-                    } else {
-                        skipCoerce = true;
-                    }
+                if (count++ == 0) {
+                    coerceTpl = service.getCoercionTemplates(a, RESULT_XSL);
+                }
+                Dataset coerce = service.getCoercionAttributesFor(a,
+                        RESULT_XSL, data, coerceTpl);
+                if (coerce != null) {
+                    service.coerceAttributes(data, coerce);
                 }
                 return data;
             } catch (DcmServiceException e) {

@@ -687,15 +687,23 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public Dataset getCoercionAttributesFor(Association a, String xsl,
             Dataset in) {
-        String callingAET = a.getCallingAET();
-        Templates stylesheet = templates.getTemplatesForAET(callingAET, xsl);
+        return getCoercionAttributesFor(a, xsl, in,
+                getCoercionTemplates(a, xsl));
+    }
+
+    public Templates getCoercionTemplates(Association a, String xsl) {
+        return templates.getTemplatesForAET(a.getCallingAET(), xsl);
+    }
+
+    public Dataset getCoercionAttributesFor(Association a, String xsl,
+            Dataset in, Templates stylesheet) {
         if (stylesheet == null) {
             return null;
         }
         Dataset out = DcmObjectFactory.getInstance().newDataset();
         try {
             XSLTUtils.xslt(in, stylesheet, a, out);
-            if ( writeCoercionXmlLog && contains(logCallingAETs, callingAET)) {
+            if ( writeCoercionXmlLog && contains(logCallingAETs, a.getCallingAET())) {
                 Date now = new Date();
                 XSLTUtils.writeTo(in,
                         getLogFile(now, "coercion", "."+xsl+".in"));
