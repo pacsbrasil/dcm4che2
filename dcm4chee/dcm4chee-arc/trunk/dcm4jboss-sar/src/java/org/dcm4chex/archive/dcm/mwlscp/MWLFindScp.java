@@ -58,8 +58,7 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date: 2008-01-02 13:07:12 +0100 (Wed, 02 Jan
- *          2008) $
+ * @version $Revision$ $Date$
  */
 public class MWLFindScp extends DcmServiceBase {
     private static final String QUERY_XSL = "mwl-cfindrq.xsl";
