@@ -301,6 +301,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
         private int pendingStatus = Status.Pending;
 
+        private boolean skipCoerce = false;
+
         public MultiCFindRsp(QueryCmd queryCmd) {
             this.queryCmd = queryCmd;
             if (queryCmd.isMatchNotSupported()) {
@@ -339,10 +341,14 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 log.debug("Identifier:\n");
                 log.debug(data);
                 service.logDIMSE(a, RESULT_XML, data);
-                Dataset coerce = service.getCoercionAttributesFor(a,
-                        RESULT_XSL, data);
-                if (coerce != null) {
-                    service.coerceAttributes(data, coerce);
+                if (!skipCoerce) {
+                    Dataset coerce = service.getCoercionAttributesFor(a,
+                            RESULT_XSL, data);
+                    if (coerce != null) {
+                        service.coerceAttributes(data, coerce);
+                    } else {
+                        skipCoerce = true;
+                    }
                 }
                 return data;
             } catch (DcmServiceException e) {

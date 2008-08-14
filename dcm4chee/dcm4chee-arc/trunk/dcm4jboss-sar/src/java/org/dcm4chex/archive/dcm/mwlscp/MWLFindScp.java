@@ -104,6 +104,7 @@ public class MWLFindScp extends DcmServiceBase {
         private final Iterator iterResults;
         private boolean canceled = false;
         private final int pendingStatus;
+        private boolean skipCoerce = false;
 
         public MultiCFindRsp(List results, int pendingStatus) {
             iterResults = results.iterator();
@@ -136,10 +137,14 @@ public class MWLFindScp extends DcmServiceBase {
                 log.debug("Identifier:\n");
                 log.debug(rspData);
                 service.logDIMSE(a, RESULT_XML, rspData);
-                Dataset coerce = service.getCoercionAttributesFor(a,
-                        RESULT_XSL, rspData);
-                if (coerce != null) {
-                    service.coerceAttributes(rspData, coerce);
+                if (!skipCoerce) {
+                    Dataset coerce = service.getCoercionAttributesFor(a,
+                            RESULT_XSL, rspData);
+                    if (coerce != null) {
+                        service.coerceAttributes(rspData, coerce);
+                    } else {
+                        skipCoerce = true;
+                    }
                 }
                 return rspData;
             } catch (Exception e) {
