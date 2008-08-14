@@ -696,11 +696,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         try {
             XSLTUtils.xslt(in, stylesheet, a, out);
             if ( writeCoercionXmlLog && contains(logCallingAETs, callingAET)) {
-            	Date now = new Date();
-				XSLTUtils.writeTo(in,
-				        getLogFile(now, "coercion", "."+xsl+".in"));
-				XSLTUtils.writeTo(out,
-				        getLogFile(now, "coercion", "."+xsl+".out"));
+                Date now = new Date();
+                XSLTUtils.writeTo(in,
+                        getLogFile(now, "coercion", "."+xsl+".in"));
+                XSLTUtils.writeTo(out,
+                        getLogFile(now, "coercion", "."+xsl+".out"));
             }
         } catch (Exception e) {
             log.error("Attribute coercion failed:", e);
