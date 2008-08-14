@@ -71,7 +71,8 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-02-27 22:38:35 +0100 (Wed, 27 Feb
+ *          2008) $
  * @since 31.08.2003
  */
 public class FindScp extends DcmServiceBase implements AssociationListener {
@@ -81,8 +82,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
     private static final String RESULT_XML = "-cfindrsp.xml";
-    
-    private static final MultiDimseRsp NO_MATCH_RSP = new MultiDimseRsp(){
+
+    private static final MultiDimseRsp NO_MATCH_RSP = new MultiDimseRsp() {
 
         public DimseListener getCancelListener() {
             return null;
@@ -94,53 +95,53 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             return null;
         }
 
-        public void release() {           
+        public void release() {
         }
     };
 
     protected final QueryRetrieveScpService service;
-            
+
     private final boolean filterResult;
 
-	protected final Logger log;
-	
+    protected final Logger log;
+
     private PerfMonDelegate perfMon;
 
     public FindScp(QueryRetrieveScpService service, boolean filterResult) {
         this.service = service;
-		this.log = service.getLog();
+        this.log = service.getLog();
         this.filterResult = filterResult;
         perfMon = new PerfMonDelegate(this.service);
     }
- 
-    public final ObjectName getPerfMonServiceName() {
-		return perfMon.getPerfMonServiceName();
-	}
 
-	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
-		perfMon.setPerfMonServiceName(perfMonServiceName);
-	}
+    public final ObjectName getPerfMonServiceName() {
+        return perfMon.getPerfMonServiceName();
+    }
+
+    public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+        perfMon.setPerfMonServiceName(perfMonServiceName);
+    }
 
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Association a = assoc.getAssociation();
         String callingAET = a.getCallingAET();
         try {
-        	perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
-        	
-            Dataset rqData = rq.getDataset();
-        	perfMon.setProperty(assoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
+            perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
 
-            if(log.isDebugEnabled()) {
-            	log.debug("Identifier:\n");
-            	log.debug(rqData);
+            Dataset rqData = rq.getDataset();
+            perfMon.setProperty(assoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
+
+            if (log.isDebugEnabled()) {
+                log.debug("Identifier:\n");
+                log.debug(rqData);
             }
-            
+
             service.logDIMSE(a, QUERY_XML, rqData);
             service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
                     rqData);
-            Dataset coerce = 
-                service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
+            Dataset coerce = service.getCoercionAttributesFor(a, QUERY_XSL,
+                    rqData);
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
@@ -155,9 +156,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
-                    rsp = newMultiCFindRsp(rqData, subject);                    
+                    rsp = newMultiCFindRsp(rqData, subject);
                 } else {
-                    log.info("Missing user identification -> no records returned");
+                    log
+                            .info("Missing user identification -> no records returned");
                     rsp = NO_MATCH_RSP;
                 }
             }
@@ -177,7 +179,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         for (int i = 0; i < a.length; i++) {
             if (a[i] != '*') {
                 return false;
-            }          
+            }
         }
         return true;
     }
@@ -208,10 +210,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
         }
     }
-   
+
     private void setPID(Dataset rqData, String[] pid) {
         rqData.putLO(Tags.PatientID, pid[PID]);
-        rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);       
+        rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
     }
 
     private boolean pixQuery(Dataset rqData, ArrayList result)
@@ -220,23 +222,23 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         if (isUniversalMatching(pid)) {
             return false;
         }
-        String issuer = rqData.getString(Tags.IssuerOfPatientID);       
-        if (!service.isPixQueryIssuer(issuer)
-                || isWildCardMatching(pid) && !service.isPixQueryLocal()) {
+        String issuer = rqData.getString(Tags.IssuerOfPatientID);
+        if (!service.isPixQueryIssuer(issuer) || isWildCardMatching(pid)
+                && !service.isPixQueryLocal()) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;
         }
         List l = service.queryCorrespondingPIDs(pid, issuer);
         if (l.isEmpty() && !service.isPixQueryLocal()) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
-            return false;            
+            return false;
         }
         for (Iterator iter = l.iterator(); iter.hasNext();) {
-            addNewPidAndIssuerTo((String[]) iter.next(), result);            
+            addNewPidAndIssuerTo((String[]) iter.next(), result);
         }
         return true;
     }
-    
+
     private boolean addNewPidAndIssuerTo(String[] pidAndIssuer, List result) {
         for (Iterator iter = result.iterator(); iter.hasNext();) {
             String[] e = (String[]) iter.next();
@@ -251,60 +253,60 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData, Subject subject)
             throws SQLException {
-        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
-                service.isNoMatchForNoValue(), subject);
+        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult, service
+                .isNoMatchForNoValue(), subject);
         queryCmd.execute();
-		return new MultiCFindRsp(queryCmd);
-	}
+        return new MultiCFindRsp(queryCmd);
+    }
 
-	protected Dataset getDataset(QueryCmd queryCmd) throws SQLException, 
-    		DcmServiceException {
-		return queryCmd.getDataset();
-	}
-    
-    protected void doMultiRsp(ActiveAssociation assoc, Dimse rq, Command rspCmd,
-	        MultiDimseRsp mdr)
-	    throws IOException, DcmServiceException {
-	        try {
-	            DimseListener cl = mdr.getCancelListener();
-                    if (cl != null) {
-                        assoc.addCancelListener(
-                                rspCmd.getMessageIDToBeingRespondedTo(), cl);
-                    }
-	            
-            	do {
-                	perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_RESP_OUT);
+    protected Dataset getDataset(QueryCmd queryCmd) throws SQLException,
+            DcmServiceException {
+        return queryCmd.getDataset();
+    }
 
-	                Dataset rspData = mdr.next(assoc, rq, rspCmd);
-	                Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
-	                doBeforeRsp(assoc, rsp);
-	                assoc.getAssociation().write(rsp);
-	                
-                	perfMon.setProperty(assoc, rq, PerfPropertyEnum.RSP_DATASET, rspData);
-                	perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_RESP_OUT);
-	                
-	                doAfterRsp(assoc, rsp);
-	            } while (rspCmd.isPending());
-	        } finally {
-	            mdr.release();
-	        }
-   	}
-    
-    
+    protected void doMultiRsp(ActiveAssociation assoc, Dimse rq,
+            Command rspCmd, MultiDimseRsp mdr) throws IOException,
+            DcmServiceException {
+        try {
+            DimseListener cl = mdr.getCancelListener();
+            if (cl != null) {
+                assoc.addCancelListener(
+                        rspCmd.getMessageIDToBeingRespondedTo(), cl);
+            }
 
-	protected class MultiCFindRsp implements MultiDimseRsp {
+            do {
+                perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_RESP_OUT);
+
+                Dataset rspData = mdr.next(assoc, rq, rspCmd);
+                Dimse rsp = fact.newDimse(rq.pcid(), rspCmd, rspData);
+                doBeforeRsp(assoc, rsp);
+                assoc.getAssociation().write(rsp);
+
+                perfMon.setProperty(assoc, rq, PerfPropertyEnum.RSP_DATASET,
+                        rspData);
+                perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_RESP_OUT);
+
+                doAfterRsp(assoc, rsp);
+            } while (rspCmd.isPending());
+        } finally {
+            mdr.release();
+        }
+    }
+
+    protected class MultiCFindRsp implements MultiDimseRsp {
 
         private final QueryCmd queryCmd;
 
         private boolean canceled = false;
-        
+
         private int pendingStatus = Status.Pending;
-        
+
         public MultiCFindRsp(QueryCmd queryCmd) {
             this.queryCmd = queryCmd;
-            if ( queryCmd.isMatchNotSupported() ) { 
+            if (queryCmd.isMatchNotSupported()) {
                 pendingStatus = 0xff01;
-            } else if ( service.isCheckMatchingKeySupported() && queryCmd.isMatchingKeyNotSupported() ) {
+            } else if (service.isCheckMatchingKeySupported()
+                    && queryCmd.isMatchingKeyNotSupported()) {
                 pendingStatus = 0xff01;
             }
         }
@@ -326,24 +328,25 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             try {
                 Association a = assoc.getAssociation();
-                queryCmd.setCoercePatientIds( service.isCoerceRequestPatientIdsAET(a.getCallingAET()) );
+                queryCmd.setCoercePatientIds(service
+                        .isCoerceRequestPatientIdsAET(a.getCallingAET()));
                 if (!queryCmd.next()) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;
                 }
                 rspCmd.putUS(Tags.Status, pendingStatus);
-                Dataset data = getDataset(queryCmd);				
+                Dataset data = getDataset(queryCmd);
                 log.debug("Identifier:\n");
                 log.debug(data);
-                service.logDIMSE(a , RESULT_XML, data);
-                Dataset coerce = 
-                    service.getCoercionAttributesFor(a, RESULT_XSL, data);
+                service.logDIMSE(a, RESULT_XML, data);
+                Dataset coerce = service.getCoercionAttributesFor(a,
+                        RESULT_XSL, data);
                 if (coerce != null) {
                     service.coerceAttributes(data, coerce);
                 }
                 return data;
             } catch (DcmServiceException e) {
-            	throw e;
+                throw e;
             } catch (SQLException e) {
                 log.error("Retrieve DB record failed:", e);
                 throw new DcmServiceException(Status.UnableToProcess, e);
@@ -358,32 +361,32 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-	public void write(Association src, PDU pdu) {
-    	if (pdu instanceof AAssociateAC)
-    		perfMon.assocEstEnd(src, Command.C_FIND_RQ);
-	}
+    public void write(Association src, PDU pdu) {
+        if (pdu instanceof AAssociateAC)
+            perfMon.assocEstEnd(src, Command.C_FIND_RQ);
+    }
 
-	public void received(Association src, PDU pdu) {
-    	if(pdu instanceof AAssociateRQ)
-    		perfMon.assocEstStart(src, Command.C_FIND_RQ);
-	}
+    public void received(Association src, PDU pdu) {
+        if (pdu instanceof AAssociateRQ)
+            perfMon.assocEstStart(src, Command.C_FIND_RQ);
+    }
 
-	public void write(Association src, Dimse dimse) {
-	}
+    public void write(Association src, Dimse dimse) {
+    }
 
-	public void received(Association src, Dimse dimse) {
-	}
+    public void received(Association src, Dimse dimse) {
+    }
 
-	public void error(Association src, IOException ioe) {
-	}
+    public void error(Association src, IOException ioe) {
+    }
 
-	public void closing(Association assoc) {
-    	if(assoc.getAAssociateAC() != null)
-    		perfMon.assocRelStart(assoc, Command.C_FIND_RQ);
-	}
+    public void closing(Association assoc) {
+        if (assoc.getAAssociateAC() != null)
+            perfMon.assocRelStart(assoc, Command.C_FIND_RQ);
+    }
 
-	public void closed(Association assoc) {
-    	if(assoc.getAAssociateAC() != null)
-    		perfMon.assocRelEnd(assoc, Command.C_FIND_RQ);
-	}
+    public void closed(Association assoc) {
+        if (assoc.getAAssociateAC() != null)
+            perfMon.assocRelEnd(assoc, Command.C_FIND_RQ);
+    }
 }
