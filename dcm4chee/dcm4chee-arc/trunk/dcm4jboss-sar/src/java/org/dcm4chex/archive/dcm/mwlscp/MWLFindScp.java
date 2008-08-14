@@ -58,14 +58,15 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-01-02 13:07:12 +0100 (Wed, 02 Jan
+ *          2008) $
  */
 public class MWLFindScp extends DcmServiceBase {
     private static final String QUERY_XSL = "mwl-cfindrq.xsl";
     private static final String RESULT_XSL = "mwl-cfindrsp.xsl";
     private static final String QUERY_XML = "-mwl-cfindrq.xml";
     private static final String RESULT_XML = "-mwl-cfindrsp.xml";
-    
+
     private final MWLFindScpService service;
     private final Logger log;
 
@@ -73,8 +74,8 @@ public class MWLFindScp extends DcmServiceBase {
         this.service = service;
         this.log = service.getLog();
     }
-	
-	protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
+
+    protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Association a = assoc.getAssociation();
         Dataset rqData = rq.getDataset();
@@ -87,9 +88,10 @@ public class MWLFindScp extends DcmServiceBase {
         if (coerce != null) {
             service.coerceAttributes(rqData, coerce);
         }
-        
+
         List l = new ArrayList();
-        boolean forceLocal = !( service.isUseProxy() && service.checkMWLScuConfig());
+        boolean forceLocal = !(service.isUseProxy() && service
+                .checkMWLScuConfig());
         try {
             int pendingStatus = service.findMWLEntries(rqData, l, forceLocal);
             return new MultiCFindRsp(l, pendingStatus);
@@ -97,16 +99,17 @@ public class MWLFindScp extends DcmServiceBase {
             log.error("Forwarding request to proxy failed!", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-     }
+    }
 
-	private class MultiCFindRsp implements MultiDimseRsp {
+    private class MultiCFindRsp implements MultiDimseRsp {
         private final Iterator iterResults;
         private boolean canceled = false;
         private final int pendingStatus;
 
         public MultiCFindRsp(List results, int pendingStatus) {
             iterResults = results.iterator();
-            this.pendingStatus = service.isCheckMatchingKeySupported() ? pendingStatus : 0xff00;
+            this.pendingStatus = service.isCheckMatchingKeySupported() ? pendingStatus
+                    : 0xff00;
         }
 
         public DimseListener getCancelListener() {
@@ -118,33 +121,32 @@ public class MWLFindScp extends DcmServiceBase {
         }
 
         public Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-            throws DcmServiceException
-        {
+                throws DcmServiceException {
             if (canceled) {
                 rspCmd.putUS(Tags.Status, Status.Cancel);
-                return null;                
+                return null;
             }
             try {
                 if (!iterResults.hasNext()) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;
                 }
-        		Association a = assoc.getAssociation();
-                rspCmd.putUS(Tags.Status, pendingStatus );
+                Association a = assoc.getAssociation();
+                rspCmd.putUS(Tags.Status, pendingStatus);
                 Dataset rspData = (Dataset) iterResults.next();
-				log.debug("Identifier:\n");
-				log.debug(rspData);
+                log.debug("Identifier:\n");
+                log.debug(rspData);
                 service.logDIMSE(a, RESULT_XML, rspData);
-                Dataset coerce = 
-                    service.getCoercionAttributesFor(a, RESULT_XSL, rspData);
+                Dataset coerce = service.getCoercionAttributesFor(a,
+                        RESULT_XSL, rspData);
                 if (coerce != null) {
                     service.coerceAttributes(rspData, coerce);
                 }
                 return rspData;
             } catch (Exception e) {
                 log.error("Process MWL C-FIND failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);                
-            }                        
+                throw new DcmServiceException(Status.ProcessingFailure, e);
+            }
         }
 
         public void release() {
