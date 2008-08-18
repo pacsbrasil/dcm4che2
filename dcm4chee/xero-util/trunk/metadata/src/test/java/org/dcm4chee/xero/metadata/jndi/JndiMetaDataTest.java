@@ -40,9 +40,9 @@ package org.dcm4chee.xero.metadata.jndi;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingEnumeration;
+//import javax.naming.Context;
+//import javax.naming.InitialContext;
+//import javax.naming.NamingEnumeration;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 //import org.jboss.ejb3.embedded.EJB3StandaloneBootstrap;

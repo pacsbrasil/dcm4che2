@@ -40,7 +40,6 @@ package org.dcm4chee.xero.metadata.filter;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

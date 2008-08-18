@@ -78,7 +78,7 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	/**
 	 * Gets the first filter item.  Returns null if there isn't a first filter.
 	 */
-	public FilterItem getFirstFilter(FilterItem filterItem) {
+	public FilterItem<T> getFirstFilter(FilterItem<T> filterItem) {
 		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
 		FilterItem firstFilter = filterListConfig.getFirstFilter();
 		if( firstFilter==null ) {
@@ -92,7 +92,7 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	/**
 	 * Gets the named filter item.
 	 */
-	public FilterItem getNamedFilter(FilterItem filterItem, String name) {
+	public FilterItem getNamedFilter(FilterItem<T> filterItem, String name) {
 		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
 		FilterItem firstFilter = filterListConfig.getNamedFilter(name);
 		if( firstFilter==null ) {

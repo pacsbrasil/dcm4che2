@@ -145,7 +145,7 @@ public class FilterMetaDataTest {
 		properties.put("str.source", new SourceFilter<String>(String.class));
 		properties.put("str.source.priority", "10");
 		// An int filter
-		properties.put("int",new FilterList());
+		properties.put("int",new FilterList<Integer>());
 		// A -1 priority means don't use this filter unless explicitly requested.
 		properties.put("int.priority", "-1");
 		properties.put("int.baseItem",new SourceFilter<Integer>(Integer.class));		
@@ -157,7 +157,8 @@ public class FilterMetaDataTest {
 	
 	MetaDataBean mdb = new MetaDataBean(properties);
 	
-	@Test
+	@SuppressWarnings("unchecked")
+   @Test
 	public void singleIntFilterTest()
 	{
 		Map<String,Object> params = new HashMap<String,Object>();
@@ -165,31 +166,32 @@ public class FilterMetaDataTest {
 		// This retrieves an int filter - this is the overall filter for this level, 
 		// not a filter instance object.
 		MetaDataBean mdbInt = mdb.getChild("int");
-		FilterList<?> filter = (FilterList<?>) mdbInt.getValue();
-		FilterItem fi = new FilterItem(mdbInt);
+		FilterList<Integer> filter = (FilterList<Integer>) mdbInt.getValue();
+		FilterItem<Integer> fi = new FilterItem<Integer>(mdbInt);
 		assert filter!=null;
 		params.put("src", new Integer(13));
 		params.put("add", new Integer(7));
-		assert ((Integer) filter.filter(fi, params))==20;
+		assert filter.filter(fi, params)==20;
 		params.put("src", "fred");
 		assert filter.filter(fi, params)==null;
 	}
 
-	@Test
+	@SuppressWarnings("unchecked")
+   @Test
 	public void multipleFilterTest()
 	{
 		Map<String,Object> params = new HashMap<String,Object>();
 		
 		MetaDataBean mdbStr = mdb.getChild("str");
-		FilterList<?> filter = (FilterList<?>) mdbStr.getValue();
-		FilterItem fi = new FilterItem(mdbStr);
+		FilterList<String> filter = (FilterList<String>) mdbStr.getValue();
+		FilterItem<String> fi = new FilterItem<String>(mdbStr);
 		assert filter!=null;
 		params.put("src", new Integer(5));
 		// Going throught the src filter.
 		String str = (String) filter.filter(fi, params);
 		assert "5".equals(str);
 		params.put("add", new Integer(-3));
-		str = (String) filter.filter(fi, params);
+		str = filter.filter(fi, params);
 		assert "2".equals(str);
 		params.put("src", "14");
 		assert "14".equals(filter.filter(fi, params));

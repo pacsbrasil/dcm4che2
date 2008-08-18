@@ -61,7 +61,7 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 	 * @author bwallace
 	 * 
 	 */
-	static class ValueListItem<T> implements Comparable<ValueListItem> {
+	static class ValueListItem<T> implements Comparable<ValueListItem<?>> {
 		int priority = Integer.MAX_VALUE-1;
 		String key;
 
@@ -90,7 +90,7 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 		/** Compare by priority values - make it deterministic by comparing on both
 		 * priority and name
 		 */
-		public int compareTo(ValueListItem vli) {
+		public int compareTo(ValueListItem<?> vli) {
 			int ret = this.priority - vli.priority;
 			if( ret!=0 ) return ret;
 			return this.key.compareTo(vli.key);
