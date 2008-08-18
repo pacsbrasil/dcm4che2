@@ -83,7 +83,7 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
      */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  if (params.get("useOrig") != null) {
-		 return (ServletResponseItem) filterItem.callNextFilter(params);
+		 return filterItem.callNextFilter(params);
 	  }
 
 	  try {

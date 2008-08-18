@@ -73,7 +73,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
 
    protected List<Integer> frames;
 
-   protected FilterItem filterItem;
+   protected FilterItem<ServletResponseItem> filterItem;
 
    protected Map<String, Object> params;
 
@@ -88,7 +88,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
    /** Create the dicom image writers directly rather than trying to find them. */
    static ImageWriterSpi dicomImageWriterCreator = new DicomImageWriterSpi();
 
-   public DicomImageServletResponse(DicomObject ds, String tsuid, List<Integer> frames, FilterItem filterItem,
+   public DicomImageServletResponse(DicomObject ds, String tsuid, List<Integer> frames, FilterItem<ServletResponseItem> filterItem,
 		 Map<String, Object> params) {
 	  this.ds = ds;
 	  this.tsuid = tsuid;

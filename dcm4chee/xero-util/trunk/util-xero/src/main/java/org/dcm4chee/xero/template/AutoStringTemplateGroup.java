@@ -41,7 +41,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.stringtemplate.AttributeRenderer;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaData;

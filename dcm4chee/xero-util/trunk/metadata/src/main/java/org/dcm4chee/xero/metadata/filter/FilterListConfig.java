@@ -56,7 +56,7 @@ public class FilterListConfig {
 	
 	List<FilterItem<?>> filterList;
 	
-	/** Create the filter list config instance at teh given meta-data bean value. */
+	/** Create the filter list config instance at the given meta-data bean value. */
 	public FilterListConfig(MetaDataBean mdb)
 	{
 		List<MetaDataBean> sortedList = mdb.sorted(); 

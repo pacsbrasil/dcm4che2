@@ -5,7 +5,9 @@ package org.dcm4chee.xero.model;
  * @author bwallace
  */
 public class SearchLayout extends Layout {
-   XmlModel search;
+   private static final long serialVersionUID = 76290242354976748L;
+   
+	XmlModel search;
    XmlModel columns;
    
    public SearchLayout(XmlModel search) {

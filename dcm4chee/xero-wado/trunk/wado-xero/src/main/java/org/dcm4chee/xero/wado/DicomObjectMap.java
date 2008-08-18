@@ -11,7 +11,6 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 
 /**
  * This class provides a map view onto a DicomObject instance - for use by
