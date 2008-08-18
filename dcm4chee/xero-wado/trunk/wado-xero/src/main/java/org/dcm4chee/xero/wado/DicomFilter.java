@@ -193,8 +193,16 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		 // UID is required.
 		 newParams = new HashMap<String, Object>();
 		 newParams.put("objectUID", uid);
-		 if( params.containsKey(DicomUpdateFilter.UPDATE_HEADER) )
+		 if( params.containsKey(DicomUpdateFilter.UPDATE_HEADER) ) {
 			 newParams.put(DicomUpdateFilter.UPDATE_HEADER,"TRUE");
+			 if( params!=null ) {
+				 // Try to copy over enough information to get study/series level updates.
+				 String studyUID = (String) params.get("studyUID");
+				 String seriesUID = (String) params.get("seriesUID");
+				 if( studyUID!=null ) newParams.put("studyUID",studyUID);
+				 if( seriesUID!=null ) newParams.put("seriesUID", seriesUID);
+			 }
+		 }
 	  }
 	  Object ret = filterItem.callNamedFilter("dicom", newParams);
 	  return ret;

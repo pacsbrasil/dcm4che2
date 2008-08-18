@@ -134,7 +134,8 @@ public class WLFilter implements Filter<WadoImage> {
 	  }
 	  DicomObject pr = null;
 	  if( values[2]!=null ) {
-		 pr = DicomFilter.filterDicomObject(filterItem, params, (String) values[2]);
+		 // Only image type attributes are required, so filter the image dicomobject.
+		 pr = DicomFilter.filterImageDicomObject(filterItem, params, (String) values[2]);
 		 if( pr==null ) log.warn("Coudn't find presentation state "+values[2]);
 	  }
 

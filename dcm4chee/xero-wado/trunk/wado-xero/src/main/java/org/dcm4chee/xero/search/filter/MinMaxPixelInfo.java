@@ -72,9 +72,10 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 
    /** Update any image beans with min/max pixel range information */
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
-	  ResultsBean ret = filterItem.callNextFilter(params);
+     ResultsBean ret = filterItem.callNextFilter(params);
 	  if (ret == null || !("true".equalsIgnoreCase((String) params.get(MIN_MAX_PIXEL))))
 		 return ret;
+	  log.debug("Adding min/max pixel info.");
 	  for (PatientType pt : ret.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
 			for (SeriesType set : st.getSeries()) {
@@ -111,7 +112,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
    protected void updateImage(FilterItem<?> fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
 	  // create a new one
-	  DicomObject dobj = DicomFilter.filterDicomObject(fi, params, ib.getObjectUID());
+	  DicomObject dobj = DicomFilter.filterImageDicomObject(fi, params, ib.getObjectUID());
 	  if (dobj == null) {
 		 log.warn("Could not read dicom header for this object.");
 		 return;

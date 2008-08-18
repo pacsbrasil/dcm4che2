@@ -228,7 +228,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
      * returned, as well as being added to the results bean object.
      */
    public static KeyObjectBean queryForKO(FilterItem<ResultsBean> filterItem, Map<String, Object> params, String koUid, ResultsBean rb) {
-	  DicomObject dobj = DicomFilter.filterDicomObject(filterItem, null, koUid);
+	  DicomObject dobj = DicomFilter.filterDicomObject(filterItem, params, koUid);
 	  if (dobj == null)
 		 return null;
 	  KeyObjectBean kob = (KeyObjectBean) rb.getChildren().get(koUid);
