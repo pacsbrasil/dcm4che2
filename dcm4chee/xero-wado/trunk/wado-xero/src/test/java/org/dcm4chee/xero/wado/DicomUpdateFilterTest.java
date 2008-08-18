@@ -20,6 +20,8 @@ import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.StudyInfo;
 import org.dcm4chee.xero.search.StudyInfoCache;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -43,6 +45,7 @@ public class DicomUpdateFilterTest {
 	StudyInfo si;
 
 	/** This initializes the variables for a test run with some common values. */
+	@BeforeMethod
 	public void init() throws IOException {
 		duf = new DicomUpdateFilter();
 		sic = new StudyInfoCache();
@@ -73,7 +76,6 @@ public class DicomUpdateFilterTest {
 	/** Tests whether an update is required */
 	@Test
 	public void updateRequiredTest() throws Exception {
-		init();
 		assert !DicomUpdateFilter.needsUpdate(cfindSame, dicom);
 		assert DicomUpdateFilter.needsUpdate(cfindDiff, dicom);
 	}
@@ -81,7 +83,6 @@ public class DicomUpdateFilterTest {
 	/** Tests that reading the series headers works as expected */
 	@Test
 	public void readSeriesHeaderTest() throws Exception {
-		init();
 		TestFilterItem filterItem = new TestFilterItem(cfindSame);
 		assert !si.containsKey("seriesQuery");
 		DicomObject readHeader = DicomUpdateFilter.readSeriesHeader(si, dicom
@@ -92,7 +93,6 @@ public class DicomUpdateFilterTest {
 	/** Tests that updating the dicom header works as expected */
 	@Test
 	public void updateHeaderTest() throws Exception {
-		init();
 		TestFilterItem filterItem = new TestFilterItem(cfindDiff);
 		DicomObject readHeader = DicomUpdateFilter.readSeriesHeader(si, dicom
 				.getString(Tag.SeriesInstanceUID), filterItem);
