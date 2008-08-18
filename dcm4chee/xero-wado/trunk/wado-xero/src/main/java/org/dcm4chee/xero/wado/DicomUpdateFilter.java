@@ -36,6 +36,10 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 
 	private static Logger log = LoggerFactory.getLogger(DicomUpdateFilter.class);
 
+	/** Skip these tags on the comparison - MUST be sorted */
+	static int[] skipUpdate = new int[]{Tag.QueryRetrieveLevel, Tag.RetrieveAETitle, 
+		Tag.InstanceAvailability, Tag.ModalitiesInStudy, Tag.SOPClassesInStudy, Integer.MAX_VALUE};
+	
 	/**
 	 * Set this value in the params to cause the header to be updated by this
 	 * filter. In general this is not set by end-users, but is rather set by
@@ -96,7 +100,8 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 					return ret;
 				}
 				log.debug("Applying DICOM update header as there are changes.");
-				DicomObject newHeader = new BasicDicomObject(header);
+				DicomObject newHeader = new BasicDicomObject();
+				header.copyTo(newHeader);
 				series.copyTo(newHeader);
 				dsmd.setDicomObject(newHeader);
 			}
@@ -117,14 +122,23 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 	 * @return
 	 */
 	public static boolean needsUpdate(DicomObject header, DicomObject series) {
-		Iterator<DicomElement> it = header.iterator();
+		Iterator<DicomElement> it = series.datasetIterator();
+		int skipi = 0, skip = skipUpdate[0];
 		while (it.hasNext()) {
 			DicomElement de = it.next();
-			DicomElement hde = series.get(de.tag());
-			if (hde == null)
+			if( de.tag()>=skip ) {
+				while( de.tag()>skip ) skip = skipUpdate[++skipi];
+				if( de.tag()==skip ) continue;
+			}
+			DicomElement hde = header.get(de.tag());
+			if (hde == null) {
+				log.debug("Need to add dicom element {} as it isn't present.", de);
 				return true;
-			if (!hde.equals(de))
+			}
+			if (!hde.equals(de)) {
+				log.debug("Tags {} and {} differ.", de, hde);
 				return true;
+			}
 		}
 		return false;
 	}

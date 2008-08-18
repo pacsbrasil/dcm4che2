@@ -136,7 +136,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
    public static DicomObject filterImageDicomObject(FilterItem<?> filterItem, Map<String,Object> params, String uid) {
 	  // When the filterDicomObject returns something else, then this can be updated to use the dicom object
 	  // from the DicomImageReader or from some other location.
-	  return filterDicomObject(filterItem,params,uid);
+	  return filterDicomObject(filterItem,params,uid,false);
    }
    /**
      * Returns the complete DICOM header.  Use this for returning the the client or for complete access
@@ -151,31 +151,37 @@ public class DicomFilter implements Filter<DicomImageReader> {
      * @return
      */
    public static DicomObject filterDicomObject(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
-	  // This might come from a different series or even study, so don't
-	  // assume anything here.
-     log.debug("Performing full dicom object header retrieval including C-Find updates.");
-	  params.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
-	  Object ret = callInstanceFilter(filterItem, params, uid);
-	  params.remove(DicomUpdateFilter.UPDATE_HEADER);
-	  if (ret == null)
-		 return null;
-	  if (ret instanceof DicomObject)
-		 return (DicomObject) ret;
-	  if (ret instanceof DicomImageReader) {
-		 DicomStreamMetaData streamData;
-		 try {
-			streamData = (DicomStreamMetaData) ((DicomImageReader) ret).getStreamMetadata();
-		 } catch (IOException e) {
-			log.error("Unable to reader dicom header:" + e);
-			return null;
-		 }
-		 DicomObject ds = streamData.getDicomObject();
-		 return ds;
-	  }
-	  log.warn("Unknown return type " + ret.getClass().getName());
-	  return null;
+   	return filterDicomObject(filterItem, params, uid, true);
    }
 
+   protected static DicomObject filterDicomObject(FilterItem<?> filterItem, Map<String, Object> params, String uid, boolean updateHeader) {
+ 	  // This might come from a different series or even study, so don't
+ 	  // assume anything here.
+     if(updateHeader) {
+    	  log.debug("Performing full dicom object header retrieval including C-Find updates.");
+   	  params.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
+     }
+     else log.debug("Performing partial dicom object header retrieval.");
+ 	  Object ret = callInstanceFilter(filterItem, params, uid);
+ 	  if( updateHeader ) params.remove(DicomUpdateFilter.UPDATE_HEADER);
+ 	  if (ret == null)
+ 		 return null;
+ 	  if (ret instanceof DicomObject)
+ 		 return (DicomObject) ret;
+ 	  if (ret instanceof DicomImageReader) {
+ 		 DicomStreamMetaData streamData;
+ 		 try {
+ 			streamData = (DicomStreamMetaData) ((DicomImageReader) ret).getStreamMetadata();
+ 		 } catch (IOException e) {
+ 			log.error("Unable to reader dicom header:" + e);
+ 			return null;
+ 		 }
+ 		 DicomObject ds = streamData.getDicomObject();
+ 		 return ds;
+ 	  }
+ 	  log.warn("Unknown return type " + ret.getClass().getName());
+ 	  return null;
+    }
    private static Object callInstanceFilter(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
 	  Map<String, Object> newParams;
 	  if (uid == null) {

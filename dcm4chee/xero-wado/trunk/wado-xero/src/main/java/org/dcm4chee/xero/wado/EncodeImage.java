@@ -119,7 +119,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  String contentType = (String) map.get("contentType");
 	  if (contentType == null)
 		 contentType = "image/jpeg";
-	  DicomObject ds = DicomFilter.filterImageDicomObject(filterItem, map,null);
+	  DicomObject ds = DicomFilter.filterImageDicomObject(filterItem, map, null);
 	  if( ds!=null && !ds.contains(Tag.PixelRepresentation) ) {
 		 log.info("DICOM does not contain pixel representation.");
 		 return filterItem.callNextFilter(map);

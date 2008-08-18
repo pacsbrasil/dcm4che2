@@ -64,6 +64,7 @@ public class DicomUpdateFilterTest {
 		cfindSame.putString(Tag.StudyID, VR.SH, "");
 		cfindSame.putString(Tag.StudyInstanceUID, VR.UI, dicom
 				.getString(Tag.StudyInstanceUID));
+		cfindSame.putString(Tag.QueryRetrieveLevel, VR.CS, "SERIES");
 		cfindSame.putString(Tag.SeriesInstanceUID, VR.UI, dicom
 				.getString(Tag.SeriesInstanceUID));
 		cfindSame.putString(Tag.PatientName, VR.PN, dicom.getString(Tag.PatientName));
@@ -75,8 +76,8 @@ public class DicomUpdateFilterTest {
 	/** Tests whether an update is required */
 	@Test
 	public void updateRequiredTest() throws Exception {
-		assert !DicomUpdateFilter.needsUpdate(cfindSame, dicom);
-		assert DicomUpdateFilter.needsUpdate(cfindDiff, dicom);
+		assert !DicomUpdateFilter.needsUpdate(dicom, cfindSame);
+		assert DicomUpdateFilter.needsUpdate(dicom, cfindDiff);
 	}
 
 	/** Tests that reading the series headers works as expected */
@@ -108,8 +109,9 @@ public class DicomUpdateFilterTest {
 		params.put(DicomUpdateFilter.UPDATE_HEADER,"TRUE");
 		dir = duf.filter(filterItemSingleton,params);
 		d2 = ((DicomStreamMetaData) dir.getStreamMetadata()).getDicomObject();
-		assert !DicomUpdateFilter.needsUpdate(cfindDiff,d2);
-		assert DicomUpdateFilter.needsUpdate(cfindSame, d2);
+		assert !DicomUpdateFilter.needsUpdate(d2, cfindDiff);
+		assert DicomUpdateFilter.needsUpdate(d2, cfindSame);
+		assert d2.contains(Tag.VerificationFlag);
 	}
 
 	/** Implement a simple test filter that returns the given, fixed items. */

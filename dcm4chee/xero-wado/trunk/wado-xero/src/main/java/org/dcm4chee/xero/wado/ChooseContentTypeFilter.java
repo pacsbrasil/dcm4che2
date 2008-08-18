@@ -68,7 +68,8 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 	  String contentType = (String) params.get("contentType");
 	  if( contentType==null ) {
 		 log.info("No content type found, looking for modality of the image to determine contentType");
-		 DicomObject dobj = DicomFilter.filterDicomObject(filterItem, params, null);
+		 // Use the image dicom object - that contains the modality
+		 DicomObject dobj = DicomFilter.filterImageDicomObject(filterItem, params, null);
 		 if( dobj==null ) {
 			return null;
 		 }
