@@ -60,6 +60,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.RemoteNode;
@@ -695,6 +696,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return templates.getTemplatesForAET(a.getCallingAET(), xsl);
     }
 
+    public TransformerHandler getCoercionTransformerHandler(Association a,
+            String xsl) throws TransformerConfigurationException {
+        Templates tpl = getCoercionTemplates(a, xsl);
+        return tpl != null ? XSLTUtils.getTransformerHandler(tpl, a) : null;
+    }
+
     public Dataset getCoercionAttributesFor(Association a, String xsl,
             Dataset in, Templates stylesheet) {
         if (stylesheet == null) {
@@ -703,18 +710,39 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         Dataset out = DcmObjectFactory.getInstance().newDataset();
         try {
             XSLTUtils.xslt(in, stylesheet, a, out);
-            if ( writeCoercionXmlLog && contains(logCallingAETs, a.getCallingAET())) {
-                Date now = new Date();
-                XSLTUtils.writeTo(in,
-                        getLogFile(now, "coercion", "."+xsl+".in"));
-                XSLTUtils.writeTo(out,
-                        getLogFile(now, "coercion", "."+xsl+".out"));
-            }
+            logCoercion(a, xsl, in, out);
         } catch (Exception e) {
             log.error("Attribute coercion failed:", e);
             return null;
         }
         return out;
+    }
+
+    public Dataset getCoercionAttributesFor(Association a, String xsl,
+            Dataset in, TransformerHandler th) {
+        if (th == null) {
+            return null;
+        }
+        Dataset out = DcmObjectFactory.getInstance().newDataset();
+        try {
+            XSLTUtils.xslt(in, th, out);
+            logCoercion(a, xsl, in, out);
+        } catch (Exception e) {
+            log.error("Attribute coercion failed:", e);
+            return null;
+        }
+        return out;
+    }
+
+    private void logCoercion(Association a, String xsl, Dataset in, Dataset out)
+            throws TransformerConfigurationException, IOException {
+        if ( writeCoercionXmlLog && contains(logCallingAETs, a.getCallingAET())) {
+            Date now = new Date();
+            XSLTUtils.writeTo(in,
+                    getLogFile(now, "coercion", "."+xsl+".in"));
+            XSLTUtils.writeTo(out,
+                    getLogFile(now, "coercion", "."+xsl+".out"));
+        }
     }
 
     public void coerceAttributes(DcmObject ds, DcmObject coerce) {
