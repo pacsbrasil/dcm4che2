@@ -915,24 +915,36 @@ abstract class StringElement extends ValueElement {
             return false;
         }
 
+        private Date toDate(String s) throws DcmValueException {
+            try {
+                return parseDate(getFormat(), s);
+            } catch (ParseException e) {
+                throw new DcmValueException(s);
+            }
+        }
+
         public final Date getDate() throws DcmValueException {
-            return toDate(getFormat(), super.getString(null));
+            return toDate(super.getString(null));
         }
 
         public final Date getDate(int index) throws DcmValueException {
-            return toDate(getFormat(), super.getString(index, null));
+            return toDate(super.getString(index, null));
         }
 
         public final Date[] getDateRange() throws DcmValueException {
-            return toDateRange(getFormat(), super.getString(null), getTimeResolution());
+            String s = super.getString(null);
+            try {
+                return parseDateRange(getFormat(), s, getTimeResolution());
+            } catch (ParseException e) {
+                throw new DcmValueException(s);
+            }
         }
 
         public final Date[] getDates() throws DcmValueException {
-            DateFormat f = getFormat();
             String[] ss = super.getStrings(null);
             Date[] a = new Date[ss.length];
             for (int i = 0; i < a.length; ++i) {
-                a[i] = toDate(f, ss[i]);
+                a[i] = toDate(ss[i]);
             }
             return a;
         }
@@ -950,7 +962,13 @@ abstract class StringElement extends ValueElement {
                 throw new IllegalArgumentException("key: " + key);
             }
             for (int i = 0; i < keys.length; ++i) {
-                Date[] range = toDateRange(getFormat(), keys[i], getTimeResolution());
+                Date[] range;
+                try {
+                    range = parseDateRange(getFormat(), keys[i],
+                            getTimeResolution());
+                } catch (ParseException e1) {
+                    throw new IllegalArgumentException("key: " + key);
+                }
                 long from =
                     range[0] != null ? range[0].getTime() : Long.MIN_VALUE;
                 long to =
@@ -979,36 +997,30 @@ abstract class StringElement extends ValueElement {
 
     }
 
-    private static Date toDate(DateFormat f, String s) {
-        try {
-            return s != null ? f.parse(s) : null;
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(s);
-        }
+    private static Date parseDate(DateFormat f, String s)
+            throws ParseException {
+        return s != null ? f.parse(s) : null;
     }
 
-    private static Date[] toDateRange(DateFormat f, String s, long resolution) {
+    private static Date[] parseDateRange(DateFormat f, String s,
+            long resolution) throws ParseException {
         if (s == null) {
             return null;
         }
         Date[] range = new Date[2];
         int delim = s.indexOf('-');
-        try {
-            if (delim == -1) {
-                range[0] = f.parse(s);
-                range[1] = new Date(range[0].getTime() + resolution - 1);
-            } else {
-                if (delim > 0) {
-                    range[0] = f.parse(s.substring(0, delim));
-                }
-                if (delim + 1 < s.length()) {
-                    range[1] = new Date(
-                    		f.parse(s.substring(delim + 1)).getTime()
-                    		+ resolution - 1);
-                }
+        if (delim == -1) {
+            range[0] = f.parse(s);
+            range[1] = new Date(range[0].getTime() + resolution - 1);
+        } else {
+            if (delim > 0) {
+                range[0] = f.parse(s.substring(0, delim));
             }
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(s);
+            if (delim + 1 < s.length()) {
+                range[1] = new Date(
+                		f.parse(s.substring(delim + 1)).getTime()
+                		+ resolution - 1);
+            }
         }
         return range;
     }
@@ -1086,21 +1098,35 @@ abstract class StringElement extends ValueElement {
     }
 
     static DcmElement createDA(int tag, String value) {
-        DAFormat f = new DAFormat();
-        if (value.indexOf('-') != -1) {
-            toDateRange(f, value, MS_PER_DAY);
-        } else {
-            toDate(f, value);
-        }
+        checkDate(new DAFormat(), value);
         return new DA(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
     }
 
-    static DcmElement createDA(int tag, String[] values) {
-        DAFormat f = new DAFormat();
-        for (int i = 0; i < values.length; ++i) {
-            toDate(f, values[i]);
+    static void checkDate(DateFormat f, String value) {
+        try {
+            if (value.indexOf('-') != -1) {
+                parseDateRange(f, value, MS_PER_DAY);
+            } else {
+                parseDate(f, value);
+            }
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(value);
         }
+    }
+
+    static DcmElement createDA(int tag, String[] values) {
+        checkDates(new DAFormat(), values);
         return new DA(tag, toByteBuffer(values, NO_TRIM, NO_CHECK, null));
+    }
+
+    static void checkDates(DateFormat f, String[] values) {
+        for (int i = 0; i < values.length; ++i) {
+            try {
+                parseDate(f, values[i]);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException(values[i]);
+            }
+        }
     }
 
     private final static class DT extends DateString {
@@ -1155,20 +1181,12 @@ abstract class StringElement extends ValueElement {
     }
 
     static DcmElement createDT(int tag, String value) {
-        DTFormat f = new DTFormat();
-        if (value.indexOf('-') != -1) {
-            toDateRange(f, value, 0);
-        } else {
-            toDate(f, value);
-        }
+        checkDate(new DTFormat(), value);
         return new DT(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
     }
 
     static DcmElement createDT(int tag, String[] values) {
-        DTFormat f = new DTFormat();
-        for (int i = 0; i < values.length; ++i) {
-            toDate(f, values[i]);
-        }
+        checkDates(new DTFormat(), values);
         return new DT(tag, toByteBuffer(values, NO_TRIM, NO_CHECK, null));
     }
 
@@ -1224,20 +1242,12 @@ abstract class StringElement extends ValueElement {
     }
 
     static DcmElement createTM(int tag, String value) {
-        TMFormat f = new TMFormat();
-        if (value.indexOf('-') != -1) {
-            toDateRange(f, value, 0);
-        } else {
-            toDate(f, value);
-        }
+        checkDate(new TMFormat(), value);
         return new TM(tag, toByteBuffer(value, NO_TRIM, NO_CHECK, null));
     }
 
     static DcmElement createTM(int tag, String[] values) {
-        TMFormat f = new TMFormat();
-        for (int i = 0; i < values.length; ++i) {
-            toDate(f, values[i]);
-        }
+        checkDates(new TMFormat(), values);
         return new TM(tag, toByteBuffer(values, NO_TRIM, NO_CHECK, null));
     }
 
