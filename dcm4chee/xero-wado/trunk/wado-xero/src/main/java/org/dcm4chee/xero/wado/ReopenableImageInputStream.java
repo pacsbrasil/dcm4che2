@@ -3,10 +3,8 @@ package org.dcm4chee.xero.wado;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteOrder;
 
 import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 import javax.imageio.stream.MemoryCacheImageInputStream;

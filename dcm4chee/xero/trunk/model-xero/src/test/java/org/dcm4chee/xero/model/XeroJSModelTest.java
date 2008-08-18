@@ -37,16 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.model;
 
-import java.util.Map;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
-import org.antlr.stringtemplate.servlet.StringSafeRenderer;
-import org.dcm4chee.xero.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;

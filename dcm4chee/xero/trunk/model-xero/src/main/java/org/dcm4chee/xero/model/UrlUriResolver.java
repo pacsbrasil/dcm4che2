@@ -16,7 +16,6 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -169,12 +168,12 @@ class IncludeHttpServletRequest extends HttpServletRequestWrapper {
    }
 
    @Override
-   public Map getParameterMap() {
+   public Map<String,String[]> getParameterMap() {
 	  return parameterMap;
    }
 
    @Override
-   public Enumeration getParameterNames() {
+   public Enumeration<String> getParameterNames() {
 	  throw new UnsupportedOperationException();
    }
 

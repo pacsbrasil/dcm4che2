@@ -45,8 +45,8 @@ public class XmlServletResponseItem implements ServletResponseItem {
    }
 
    protected void writeDicomObject(Writer w, DicomObject ds2) throws IOException {
-	  for (Iterator it = ds2.iterator(); it.hasNext();) {
-		 DicomElement de = (DicomElement) it.next();
+	  for (Iterator<DicomElement> it = ds2.iterator(); it.hasNext();) {
+		 DicomElement de = it.next();
 		 w.write("<attr tag=\"");
 		 String hexTag = Integer.toString(de.tag(), 16).toUpperCase();
 		 for (int i = 0, n = 8 - hexTag.length(); i < n; i++)
