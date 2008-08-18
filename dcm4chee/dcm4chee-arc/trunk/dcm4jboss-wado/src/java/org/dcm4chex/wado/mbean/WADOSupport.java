@@ -1049,7 +1049,6 @@ public class WADOSupport {
                 regionRectangle = new Rectangle(topX, topY, w, h);
                 param.setSourceRegion(regionRectangle);
             }
-
             if (windowWidth != null && windowCenter != null) {
                 Dataset data = ((DcmMetadata) reader.getStreamMetadata())
                         .getDataset();
@@ -1062,9 +1061,9 @@ public class WADOSupport {
             log.error("Can't read image:", x);
             return null;
         }
-
-        if (rows != null || columns != null) {
-            bi = resize(bi, rows, columns);
+        float aspectRatio = reader.getAspectRatio(frame);
+        if (rows != null || columns != null || aspectRatio != 1.0f) {
+            bi = resize(bi, rows, columns, aspectRatio);
         }
         return bi;
     }
@@ -1078,13 +1077,14 @@ public class WADOSupport {
      *                Image height in pixel.
      * @param columns
      *                Image width in pixel.
+     * @param aspectRatio 
      * 
      * @return
      */
-    private BufferedImage resize(BufferedImage bi, String rows, String columns) {
+    private BufferedImage resize(BufferedImage bi, String rows, String columns, float aspectRatio) {
         int h0 = bi.getHeight();
         int w0 = bi.getWidth();
-        double ratio = (double) w0 / h0;
+        double ratio = (double) aspectRatio;
         int newH = -1, newW = -1;
         if (rows != null) {
             newH = Integer.parseInt(rows);
@@ -1092,9 +1092,11 @@ public class WADOSupport {
         if (columns != null) {
             newW = Integer.parseInt(columns);
         }
-        if (newW == -1)
+        if (newW == -1) {
+            if ( newH == -1)
+                newH = h0;
             newW = (int) (newH * ratio);
-        else if (newH == -1)
+        } else if (newH == -1)
             newH = (int) (newW / ratio);
         int w = newW;
         int h = newH;
