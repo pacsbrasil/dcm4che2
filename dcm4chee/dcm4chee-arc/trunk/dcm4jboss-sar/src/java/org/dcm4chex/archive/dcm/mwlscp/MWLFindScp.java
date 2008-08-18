@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -107,7 +107,7 @@ public class MWLFindScp extends DcmServiceBase {
         private boolean canceled = false;
         private final int pendingStatus;
         private int count = 0;
-        private TransformerHandler coerceHandler;
+        private Templates coerceTpl;
 
         public MultiCFindRsp(List results, int pendingStatus) {
             iterResults = results.iterator();
@@ -141,11 +141,10 @@ public class MWLFindScp extends DcmServiceBase {
                 log.debug(rspData);
                 service.logDIMSE(a, RESULT_XML, rspData);
                 if (count++ == 0) {
-                    coerceHandler = service.getCoercionTransformerHandler(a,
-                            RESULT_XSL);
+                    coerceTpl = service.getCoercionTemplates(a, RESULT_XSL);
                 }
                 Dataset coerce = service.getCoercionAttributesFor(a,
-                        RESULT_XSL, rspData, coerceHandler);
+                        RESULT_XSL, rspData, coerceTpl);
                 if (coerce != null) {
                     service.coerceAttributes(rspData, coerce);
                 }
