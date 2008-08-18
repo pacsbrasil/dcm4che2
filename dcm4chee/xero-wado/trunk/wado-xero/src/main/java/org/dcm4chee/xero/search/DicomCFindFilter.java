@@ -277,7 +277,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     		else if( key.equals("objectUID") ) keyTag = "SOPInstanceUID";
     		else keyTag = Character.toUpperCase(key.charAt(0))+key.substring(1);
     		TableColumn tc = searchCondition.get(key);
-    		List content = tc.getContent();
+    		List<?> content = tc.getContent();
     		String value;
     		if( content.size()== 1 ) {
     			Object contentVal = content.get(0);

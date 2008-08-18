@@ -1,6 +1,5 @@
 package org.dcm4chee.xero.wado;
 
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,8 @@ public class DicomFileLocationFilterTest {
 	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata"); 
 
 	/** Call the dicom.metadata named filter, providing the given filename */
-	public static Object callFilter(String mdbName, String filename) {
+	@SuppressWarnings("unchecked")
+   public static Object callFilter(String mdbName, String filename) {
 		assert mdb != null;
 		MetaDataBean wado = mdb.getChild(mdbName);
 		assert wado != null;

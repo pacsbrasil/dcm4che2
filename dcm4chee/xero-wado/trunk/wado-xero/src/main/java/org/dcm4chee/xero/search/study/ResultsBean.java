@@ -139,10 +139,10 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 	  for (int i = 0; i < list.size(); i++) {
 		 Object obj = list.get(i);
 		 if (obj instanceof LocalModel) {
-			boolean empty = ((LocalModel) obj).clearEmpty();
+			boolean empty = ((LocalModel<?>) obj).clearEmpty();
 			if (empty) {
 			   list.remove(i);
-			   children.remove(((LocalModel) obj).getId());
+			   children.remove(((LocalModel<?>) obj).getId());
 			   i--;
 			}
 		 }

@@ -211,7 +211,7 @@ public class BodyServletOutputStreamTest
 	@Test
 	public void testCallToGetBufferSize_WhenInitialized_ShouldReturn2K()
 	{
-		assert( stream.getBufferSize() == stream.DEFAULT_BUFFER_SIZE );
+		assert( stream.getBufferSize() == BodyServletOutputStream.DEFAULT_BUFFER_SIZE );
 	}
 	
 	@Test

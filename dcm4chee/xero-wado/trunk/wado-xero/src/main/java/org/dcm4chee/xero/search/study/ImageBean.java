@@ -77,7 +77,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      * Create an empty image bean object.  
      * @deprecated Not recommended for use except through JAXB deserialization.
      */
-   private ImageBean() {
+   protected ImageBean() {
    };
 
    /**

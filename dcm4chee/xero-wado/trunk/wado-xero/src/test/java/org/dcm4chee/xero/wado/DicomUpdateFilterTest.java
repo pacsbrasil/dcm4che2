@@ -21,7 +21,6 @@ import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.StudyInfo;
 import org.dcm4chee.xero.search.StudyInfoCache;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**

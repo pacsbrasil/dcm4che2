@@ -108,7 +108,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
     * @param params
     * @param ib
     */
-   protected void updateImage(FilterItem fi, Map<String, Object> params, ImageBean ib) {
+   protected void updateImage(FilterItem<?> fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
 	  // create a new one
 	  DicomObject dobj = DicomFilter.filterDicomObject(fi, params, ib.getObjectUID());

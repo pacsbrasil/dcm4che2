@@ -169,7 +169,7 @@ public class MultiPartContentTypeResponseItemTest {
 	{
 		ServletOutputStream os = createMock( ServletOutputStream.class );
 		os.println();
-		os.println( eq( responseItem.BOUNDARY_START ) );
+		os.println( eq( MultiPartContentTypeResponseItem.BOUNDARY_START ) );
 		replay(os);
 		
 		responseItem.writeStartBoundary(os);
@@ -183,7 +183,7 @@ public class MultiPartContentTypeResponseItemTest {
 	{
 		ServletOutputStream os = createMock( ServletOutputStream.class );
 		os.println();
-		os.println( eq( responseItem.BOUNDARY_END ) );
+		os.println( eq( MultiPartContentTypeResponseItem.BOUNDARY_END ) );
 		os.flush();
 		replay(os);
 		

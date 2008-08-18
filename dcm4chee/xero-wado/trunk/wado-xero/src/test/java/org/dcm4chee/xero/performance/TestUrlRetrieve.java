@@ -319,7 +319,7 @@ public class TestUrlRetrieve {
 		 String urlS = WADO2_URL+"series.xml?studyUID=" + uid;
 		 URL url = new URL(urlS);
 		 System.out.println("Series URL="+urlS);
-		 ResultsType rt = (ResultsType) ((JAXBElement) unmarshaller.unmarshal(url)).getValue();
+		 ResultsType rt = (ResultsType) ((JAXBElement<?>) unmarshaller.unmarshal(url)).getValue();
 		 int ret = 0;
 		 for (PatientType pt : rt.getPatient()) {
 			for (StudyType st : pt.getStudy()) {
@@ -368,7 +368,7 @@ public class TestUrlRetrieve {
 	  public int runLoadUrl() throws Exception {
 		 String urlS = WADO2_URL+"image.xml?Position=" + pos + "&Count=" + count + "&seriesUID=" + uid;
 		 URL url = new URL(urlS);
-		 ResultsType rt = (ResultsType) ((JAXBElement) unmarshaller.unmarshal(url)).getValue();
+		 ResultsType rt = (ResultsType) ((JAXBElement<?>) unmarshaller.unmarshal(url)).getValue();
 		 int ret = 0;
 		 for (PatientType pt : rt.getPatient()) {
 			for (StudyType st : pt.getStudy()) {

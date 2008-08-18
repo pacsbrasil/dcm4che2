@@ -1,7 +1,6 @@
 package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

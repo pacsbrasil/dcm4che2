@@ -142,7 +142,7 @@ public class TableColumn extends AttributeType {
 	 *            to generate the columns for.
 	 * @return List of table columns, one for each property that is readable.
 	 */
-	public static List<TableColumn> generateColumnsForClass(Class type) {
+	public static List<TableColumn> generateColumnsForClass(Class<?> type) {
 		List<TableColumn> cols;
 		try {
 			BeanInfo bi = Introspector.getBeanInfo(type);
@@ -162,7 +162,7 @@ public class TableColumn extends AttributeType {
 		return cols;
 	}
 
-	public static List<TableColumn> generateSearchableColumnsForClass(Class type) {
+	public static List<TableColumn> generateSearchableColumnsForClass(Class<?> type) {
 		List<TableColumn> ret = generateColumnsForClass(type);
 		for (Iterator<TableColumn> it = ret.iterator(); it.hasNext();) {
 			TableColumn tc = it.next();

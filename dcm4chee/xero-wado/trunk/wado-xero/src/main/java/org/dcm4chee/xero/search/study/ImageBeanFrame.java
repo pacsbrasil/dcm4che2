@@ -77,7 +77,8 @@ public class ImageBeanFrame extends ImageBean {
 	  this.objectUID = objectUID;
    }
    
-   private ImageBeanFrame() {
+   /** Only used by JAXB deserialization */
+   protected ImageBeanFrame() {
 	  super(null);
 	  // Should only be used by JAXB.
    }
