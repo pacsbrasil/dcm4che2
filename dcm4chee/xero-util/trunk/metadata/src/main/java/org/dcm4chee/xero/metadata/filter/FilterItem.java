@@ -50,11 +50,11 @@ import org.slf4j.LoggerFactory;
 public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	private static Logger log = LoggerFactory.getLogger(FilterItem.class);
 	String name;
-	public Filter<?> filter;
+	public Filter<T> filter;
 	int priority;
 	MetaDataBean metaData;
 	Object config;
-	FilterItem nextFilterItem;
+	FilterItem<T> nextFilterItem;
 	
 	/**
 	 * This constructor can be used when all methods are being over-ridden, eg for test
@@ -68,13 +68,11 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	 * @param mdb to get information such as priority.
 	 * @param filter to use.
 	 */
-	public FilterItem(MetaDataBean mdb, Filter<?> filter)
+	public FilterItem(MetaDataBean mdb, Filter<T> filter)
 	{
 		this.name = mdb.getChildName();
 		this.filter = filter;
-		String strPriority = (String) mdb.getValue("priority");
-		if( strPriority ==null ) strPriority = "0";
-		priority = Integer.parseInt(strPriority);
+		priority = mdb.getIntValue("priority", 0);
 		log.debug("Created filter item at "+mdb.getPath()+" name "+this.name+" priority "+this.priority);
 		metaData = mdb;
 	}
@@ -83,8 +81,9 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	 * from the value of the mdb.
 	 * @param mdb to get filter and meta-data from.
 	 */	
-	public FilterItem(MetaDataBean mdb) {
-		this(mdb, (Filter<?>) mdb.getValue());
+	@SuppressWarnings("unchecked")
+   public FilterItem(MetaDataBean mdb) {
+		this(mdb, (Filter<T>) mdb.getValue());
 	}
 	
 	/** Compare this filter item to another filter item.
@@ -110,12 +109,20 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 		return config;
 	}
 	
+	/** Returns the filter list config - this will be the normal method called rather than
+	 * getConfig, but getConfig can be used for non FilterList items.
+	 */
+	@SuppressWarnings("unchecked")
+   public FilterListConfig<T> getFilterListConfig() 
+	{
+		return (FilterListConfig<T>) getConfig();
+	}
+	
 	/** Calls the next filter item in the chain.  The next filter is required to return the
 	 * correct type.
 	 * @param params to pass to the next filter
 	 * @return The filtered return value.
 	 */
-	@SuppressWarnings("unchecked")
    public T callNextFilter(Map<String,Object> params)
 	{
 		if( nextFilterItem==null ) return null;
@@ -123,7 +130,7 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 		if( log.isDebugEnabled() ) {
 		   log.debug("Calling next filter "+nextFilterItem.name);
 		}
-		return (T) nextFilterItem.filter.filter(nextFilterItem, params);
+		return nextFilterItem.filter.filter(nextFilterItem, params);
 	}
 	
 	/** Calls the given, named filter item from this chain.  Named filters can return anything.
@@ -131,7 +138,8 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	 * @param params are the parameters to pass.
 	 * @return value from the filter.
 	 */
-	public Object callNamedFilter(String filterName, Map<String,Object> params)
+	@SuppressWarnings("unchecked")
+   public Object callNamedFilter(String filterName, Map<String,Object> params)
 	 {
 		 FilterListConfig fl = (FilterListConfig) metaData.getParent().getValueConfig();
 		 if( fl==null ) {
@@ -151,12 +159,12 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	
 	/** Indicates if the given filter is available in this filter list. */
 	public boolean contains(String filterName) {
-		 FilterListConfig fl = (FilterListConfig) metaData.getParent().getValueConfig();
+		 FilterListConfig<?> fl = (FilterListConfig<?>) metaData.getParent().getValueConfig();
 		 if( fl==null ) {
 			 log.warn("Parent "+metaData.getParent().getPath()+" did not have a filter list configuration item.");
 			 return false;
 		 }
-		 FilterItem namedFilter = fl.getNamedFilter(filterName);
+		 FilterItem<?> namedFilter = fl.getNamedFilter(filterName);
 		 if( namedFilter==null ) {
 			 return false;			 
 		 }
@@ -172,7 +180,7 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	/** Returns the filter name - that is, the path, for the filter */
 	public String getName() {
 		if( metaData==null ) return null;
-		return metaData.getPath();
+		return metaData.getChildName();
 	}
 
 	/** Calls the filter that this filter item is specified for.  

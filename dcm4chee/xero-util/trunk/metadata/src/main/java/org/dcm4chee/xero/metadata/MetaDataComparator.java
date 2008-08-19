@@ -87,12 +87,8 @@ public class MetaDataComparator implements Comparator<MetaDataBean>{
 	 * @return positive if o2 is bigger than o1 (that is, if the sortKey value is bigger), zero if they are the same, and negative otherwise.
 	 */
 	public int compare(MetaDataBean o1, MetaDataBean o2) {
-		String o1SortStr = (String) o1.getValue(sortKey);
-		String o2SortStr = (String) o2.getValue(sortKey);
-		int o1Sort = defaultValue;
-		int o2Sort = defaultValue;
-		if( o1SortStr!=null ) o1Sort = Integer.parseInt(o1SortStr);
-		if( o2SortStr!=null ) o2Sort = Integer.parseInt(o2SortStr);
+		int o1Sort = o1.getIntValue(sortKey,defaultValue);
+		int o2Sort = o2.getIntValue(sortKey,defaultValue);
 		int ret = o2Sort - o1Sort;
 		return ret; 
 	}

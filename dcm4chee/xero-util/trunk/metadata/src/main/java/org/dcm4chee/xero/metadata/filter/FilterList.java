@@ -40,6 +40,7 @@ package org.dcm4chee.xero.metadata.filter;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.PreConfigMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +55,10 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListConfig>
+public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListConfig<T>>, MetaDataUser
 {
 	private static final Logger log = LoggerFactory.getLogger(FilterList.class);
+	FilterItem<T> filterItem;
 
 	/** Filters the data.  
 	 * 
@@ -66,7 +68,8 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	 * @return The filtered item, or null if not applicable.
 	 */
 	@SuppressWarnings("unchecked")
-	public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
+   public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
+		if( filterItem==null ) filterItem = this.filterItem;
 	   FilterItem firstFilter = getFirstFilter(filterItem);
 		if( firstFilter!=null ) {
 			T ret = (T) firstFilter.filter.filter(firstFilter, params);
@@ -78,9 +81,10 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	/**
 	 * Gets the first filter item.  Returns null if there isn't a first filter.
 	 */
-	public FilterItem<T> getFirstFilter(FilterItem<T> filterItem) {
-		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
-		FilterItem firstFilter = filterListConfig.getFirstFilter();
+   public FilterItem<T> getFirstFilter(FilterItem<T> filterItem) {
+		if( filterItem==null ) filterItem = this.filterItem;
+		FilterListConfig<T> filterListConfig = (FilterListConfig<T>) filterItem.getFilterListConfig();
+		FilterItem<T> firstFilter = filterListConfig.getFirstFilter();
 		if( firstFilter==null ) {
 		   log.warn("First filter isn't found.");
 		   return null;
@@ -92,25 +96,38 @@ public class FilterList<T> implements Filter<T>, PreConfigMetaData<FilterListCon
 	/**
 	 * Gets the named filter item.
 	 */
-	public FilterItem getNamedFilter(FilterItem<T> filterItem, String name) {
-		FilterListConfig filterListConfig = (FilterListConfig) filterItem.getConfig();
-		FilterItem firstFilter = filterListConfig.getNamedFilter(name);
-		if( firstFilter==null ) {
+   public FilterItem<?> getNamedFilter(FilterItem<T> filterItem, String name) {
+		if( filterItem==null ) filterItem = this.filterItem;
+		FilterListConfig<T> filterListConfig = (FilterListConfig<T>) filterItem.getFilterListConfig();
+		FilterItem<?> namedFilter = filterListConfig.getNamedFilter(name);
+		if( namedFilter==null ) {
 		   log.warn("Unable to find filter named "+name);
 		   return null;
 		}
-		log.debug("Filter "+name+" is "+firstFilter.getName());
-		return firstFilter;
+		log.debug("Filter "+name+" is "+namedFilter.getName());
+		return namedFilter;
 	}
 	
 	/** Retrieve any pre-computed list of child elements for this filter list,
-	 * based on the given position in the meta-data - that allows a single
-	 * instance of a filter list to have different contents based on where
-	 * it is in the tree.
+	 * based on the given position in the meta-data - that allows multiple instances
+	 * of the FilterList to re-use the same set of child elements based on the original
+	 * location of the filter by using a ref, but still to have the correct next/previous
+	 * elements.
+	 * 
 	 * @param mdb to get the configuration data from.  
 	 * @return The filter config to use for the particular meta data bean.
 	 */
-	public FilterListConfig getConfigMetaData(MetaDataBean mdb) {
-		return new FilterListConfig(mdb);
+	public FilterListConfig<T> getConfigMetaData(MetaDataBean mdb) {
+		return new FilterListConfig<T>(mdb);
 	}
+
+	/**
+	 * Defaults the filter item to a filter item created for the location of this
+	 * filter item instnace - does not allow over-rides as a ref: instance, 
+	 * but as a class: instance it has a separate instance for
+	 * each location, so it does allow instances to be overridden.
+	 */
+   public void setMetaData(MetaDataBean metaDataBean) {
+		this.filterItem = new FilterItem<T>(metaDataBean);
+   }
 }

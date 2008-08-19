@@ -38,7 +38,9 @@
 package org.dcm4chee.xero.metadata.filter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.slf4j.Logger;
@@ -51,25 +53,29 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class FilterListConfig {
+public class FilterListConfig<T> {
 	private static Logger log = LoggerFactory.getLogger(FilterListConfig.class);
 	
-	List<FilterItem<?>> filterList;
+	List<FilterItem<T>> filterList = new ArrayList<FilterItem<T>>();
+	Map<String,FilterItem<?>> filterMap = new HashMap<String,FilterItem<?>>();
 	
 	/** Create the filter list config instance at the given meta-data bean value. */
-	public FilterListConfig(MetaDataBean mdb)
+	@SuppressWarnings("unchecked")
+   public FilterListConfig(MetaDataBean mdb)
 	{
 		List<MetaDataBean> sortedList = mdb.sorted(); 
-		filterList = new ArrayList<FilterItem<?>>();
-		FilterItem<?> previous = null;
+		FilterItem<T> previous = null;
 		for(MetaDataBean valueMdb : sortedList ) {
 			Object value = valueMdb.getValue();
 			if( value instanceof Filter ) {
-				FilterItem<?> fi = new FilterItem<Object>(valueMdb, (Filter<?>) value);
-				if( previous!=null ) previous.nextFilterItem = fi;
-				previous = fi;
+				FilterItem<?> fi = new FilterItem<Object>(valueMdb, (Filter<Object>) value);
+				filterMap.put(fi.getName(),fi);
+				if( fi.priority<0 ) continue;
+				FilterItem<T> fit = (FilterItem<T>) fi;
+				if( previous!=null ) previous.nextFilterItem = fit;
+				previous = fit;
 				log.debug("Adding filter to "+mdb.getPath()+" item "+fi.getName());
-				filterList.add(fi);
+				filterList.add((FilterItem<T>) fi);
 			}
 			else {
 			   log.debug("Skipping item "+valueMdb.getPath()+"="+value);
@@ -80,16 +86,13 @@ public class FilterListConfig {
 	
 	/** This gets the named filter */
 	public FilterItem<?> getNamedFilter(String childName) {
-		for(FilterItem<?> fi : filterList){	
-			if( fi.name.equals(childName) ) {
-				return fi;
-			}
-		}
-		return null;
+		return filterMap.get(childName);
 	}
 	
-	/** Get the first filter to use */
-	public FilterItem<?> getFirstFilter()
+	/** Get the first filter to use - only returns a first filter if there is a priority>=0 filter,
+	 * otherwise returns null.
+	 */
+	public FilterItem<T> getFirstFilter()
 	{
 		if( filterList.size()>0 ) return filterList.get(0);
 		return null;

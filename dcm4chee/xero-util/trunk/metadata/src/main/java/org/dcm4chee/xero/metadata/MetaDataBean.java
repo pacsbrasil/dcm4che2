@@ -570,4 +570,25 @@ public class MetaDataBean extends AbstractMap<String, Object> {
    public List<MetaDataBean> sorted(String havingKey) {
 	  return sorted(havingKey, havingKey + "." + DEFAULT_SORT_KEY, 0);
    }
+
+   /** Get an integer value - returns defaultValue if not found.  May throw
+    * an exception if the value isn't convertable to an integer.
+    * @param key
+    * @param defaultValue
+    * @return the value for key.
+    */
+	public int getIntValue(String key, int defaultValue) {
+		Object v=getValue(key);
+		if( v==null ) return defaultValue;
+		if( v instanceof String ) return Integer.parseInt((String) v);
+		if( v instanceof Number ) return ((Number) v).intValue();
+		return defaultValue;
+   }
+	/** Gets a string value - uses toString if the base value isn't already a string */
+	public String getStringValue(String key) {
+		Object v=getValue(key);
+		if( v==null ) return null;
+		return v.toString();
+	}
+	
 }

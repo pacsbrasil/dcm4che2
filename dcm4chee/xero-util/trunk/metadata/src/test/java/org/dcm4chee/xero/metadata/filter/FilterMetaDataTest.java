@@ -139,20 +139,21 @@ public class FilterMetaDataTest {
 		// A string filter
 		properties.put("str","${class:org.dcm4chee.xero.metadata.filter.FilterList}");
 		properties.put("str.priority", "-1");
-		properties.put("str.int.inherit", "int");
+		properties.put("str.int", "${ref:int}");
+		properties.put("str.int.priority", -1);
 		properties.put("str.convert",new ConvertFilter("int"));
 		properties.put("str.convert.priority", "20");
 		properties.put("str.source", new SourceFilter<String>(String.class));
 		properties.put("str.source.priority", "10");
 		// An int filter
-		properties.put("int",new FilterList<Integer>());
+		properties.put("int","${class:org.dcm4chee.xero.metadata.filter.FilterList}");
 		// A -1 priority means don't use this filter unless explicitly requested.
 		properties.put("int.priority", "-1");
 		properties.put("int.baseItem",new SourceFilter<Integer>(Integer.class));		
 		// TODO modify this to use meta-data to retrieve the filter priority. 
 		properties.put("int.baseItem.priority","5");
 		properties.put("int.addFilter", new AddFilter());
-		properties.put("int.addFilter.priority", "10");
+		properties.put("int.addFilter.priority", 10);
 	}
 	
 	MetaDataBean mdb = new MetaDataBean(properties);
@@ -167,13 +168,13 @@ public class FilterMetaDataTest {
 		// not a filter instance object.
 		MetaDataBean mdbInt = mdb.getChild("int");
 		FilterList<Integer> filter = (FilterList<Integer>) mdbInt.getValue();
-		FilterItem<Integer> fi = new FilterItem<Integer>(mdbInt);
+		//FilterItem<Integer> fi = new FilterItem<Integer>(mdbInt);
 		assert filter!=null;
 		params.put("src", new Integer(13));
 		params.put("add", new Integer(7));
-		assert filter.filter(fi, params)==20;
+		assert filter.filter(null, params)==20;
 		params.put("src", "fred");
-		assert filter.filter(fi, params)==null;
+		assert filter.filter(null, params)==null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -184,17 +185,16 @@ public class FilterMetaDataTest {
 		
 		MetaDataBean mdbStr = mdb.getChild("str");
 		FilterList<String> filter = (FilterList<String>) mdbStr.getValue();
-		FilterItem<String> fi = new FilterItem<String>(mdbStr);
 		assert filter!=null;
 		params.put("src", new Integer(5));
-		// Going throught the src filter.
-		String str = (String) filter.filter(fi, params);
+		// Going through the src filter.
+		String str = filter.filter(null, params);
 		assert "5".equals(str);
 		params.put("add", new Integer(-3));
-		str = filter.filter(fi, params);
+		str = filter.filter(null, params);
 		assert "2".equals(str);
 		params.put("src", "14");
-		assert "14".equals(filter.filter(fi, params));
+		assert "14".equals(filter.filter(null, params));
 	}
 
 }

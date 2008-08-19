@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterList;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.filter.DicomFileLocationFilter;
@@ -24,7 +23,6 @@ public class DicomFileLocationFilterTest {
 		assert wado != null;
 		FilterList<?> fl = (FilterList<?>) wado.getValue();
 		assert (fl != null);
-		FilterItem fi = new FilterItem(wado);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(MemoryCacheFilter.KEY_NAME,filename);
 		URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
@@ -32,7 +30,7 @@ public class DicomFileLocationFilterTest {
 		//File f = new File(url.getFile());
 		//assert f.canRead();
 		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, url);
-		return fl.filter(fi, params);
+		return fl.filter(null, params);
 	}
 	
 	@Test
