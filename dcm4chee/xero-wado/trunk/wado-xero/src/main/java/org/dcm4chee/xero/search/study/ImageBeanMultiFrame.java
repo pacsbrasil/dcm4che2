@@ -37,7 +37,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -52,6 +56,9 @@ public class ImageBeanMultiFrame extends ImageBean {
    @XmlTransient
    MacroItems[] frameItems;
 
+   @XmlTransient
+   public static final QName NUMBER_OF_FRAMES_QNAME = new QName("NumberOfFrames");
+   
    /** Construct this object, complete with child frames. */
    public ImageBeanMultiFrame(SeriesBean seriesBean, DicomObject dcmObj) {
 	  super(seriesBean, dcmObj);
@@ -108,5 +115,14 @@ public class ImageBeanMultiFrame extends ImageBean {
 			if( m!=null ) frameItems[i].removeMacro(m);
 		 }
 	  }
+   }
+   
+   /** Add the number of frames to the return attributes */
+   @Override
+   public Map<QName, String> getOtherAttributes() {
+   	Map<QName,String> ret = super.getOtherAttributes();
+   	if( ret==null ) ret = new HashMap<QName,String>();
+   	ret.put(NUMBER_OF_FRAMES_QNAME, Integer.toString(frameItems.length));
+   	return ret;
    }
 }
