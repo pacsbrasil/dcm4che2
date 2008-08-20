@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1516,7 +1515,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws RemoteException, CreateException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
-        dto.setFileSystemGroupID(groupId);
+        dto.setGroupID(groupId);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(availability);
         dto.setStatus(status);
@@ -1529,7 +1528,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws RemoteException, FinderException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
-        dto.setFileSystemGroupID(availability + _STORAGE);
+        dto.setGroupID(availability + _STORAGE);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(Availability.toInt(availability));
         dto.setStatus(FileSystemStatus.toInt(status));
@@ -1805,7 +1804,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             throws FinderException, CreateException, RemoteException {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(dirPath);
-        dto.setFileSystemGroupID(groupId);
+        dto.setGroupID(groupId);
         dto.setRetrieveAET(retrieveAET);
         dto.setAvailability(availability);
         dto.setStatus(status);

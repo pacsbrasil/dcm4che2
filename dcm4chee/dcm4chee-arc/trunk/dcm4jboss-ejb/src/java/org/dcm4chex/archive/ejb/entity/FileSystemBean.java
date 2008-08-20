@@ -51,6 +51,8 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 
@@ -68,48 +70,44 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="filesystem"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.read-ahead strategy="on-find" eager-load-group="*"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findAll()"
- *             strategy="on-find" eager-load-group="*"
  *
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.directoryPath = ?1"
  *             transaction-type="Supports"
- * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByDirectoryPath(java.lang.String path)"
- *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.FileSystemLocal findByGroupIdAndDirectoryPath(java.lang.String groupID, java.lang.String path)"
+ *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupID = ?1 AND fs.directoryPath = ?2"
+ *             transaction-type="Supports"
  *
  * @ejb.finder signature="java.util.Collection findByLikeDirectoryPath(java.lang.String path, int availability, int status)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByLikeDirectoryPath(java.lang.String path, int availability, int status)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.directoryPath LIKE ?1 AND fs.availability = ?2 AND fs.status = ?3"
- *             strategy="on-find" eager-load-group="*"
  *
- * @ejb.finder signature="java.util.Collection findByGroupId(java.lang.String id)"
- *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.fileSystemGroupID = ?1"
+ * @ejb.finder signature="java.util.Collection findByGroupId(java.lang.String groupID)"
+ *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupID = ?1"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByGroupId(java.lang.String id)"
- *             strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByGroupIdAndStatus(java.lang.String groupID, int status)"
+ *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupID = ?1 AND fs.status = ?2"
+ *             transaction-type="Supports"
  *             
  * @ejb.finder signature="java.util.Collection findByRetrieveAET(java.lang.String aet)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.retrieveAET = ?1"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByRetrieveAET(java.lang.String aet)"
- *             strategy="on-find" eager-load-group="*"
  *             
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.retrieveAET = ?1 AND fs.availability = ?2 AND fs.status = ?3"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus(java.lang.String aet, int availability, int status)"
- *             strategy="on-find" eager-load-group="*"
  *
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.retrieveAET = ?1 AND fs.availability = ?2 AND (fs.status = ?3 OR fs.status = ?4)"
  *             transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByRetrieveAETAndAvailabilityAndStatus2(java.lang.String aet, int availability, int status, int alt)"
- *             strategy="on-find" eager-load-group="*"
  *             
  * @jboss.query signature="int ejbSelectNumberOfFiles(java.lang.Long pk)"
  *              query="SELECT COUNT(f) FROM File f WHERE f.fileSystem.pk = ?1"
@@ -219,25 +217,20 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      */ 
-    public String asString()
-    {
-        return "FileSystem[pk="
-            + getPk()
-            + ", dirpath="
-            + getDirectoryPath()
-            + ", groupID="
-            + getFileSystemGroupID()
-            + ", retrieveAET="
-            + getRetrieveAET()
-            + ", availability="
-            + getAvailability()
-            + ", status="
-            + getStatus()
-            + ", userInfo="
-            + getUserInfo()
-            + ", next="
-            + getNextFileSystem()
-            + "]";
+    public String asString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FileSystem[pk=").append(getPk());
+        sb.append(", ").append(getDirectoryPath());
+        sb.append(", groupID=").append(getGroupID());
+        sb.append(", aet=").append(getRetrieveAET());
+        sb.append(", ").append(Availability.toString(getAvailability()));
+        sb.append(", ").append(FileSystemStatus.toString(getStatus()));
+        sb.append(", userinfo=").append(getUserInfo());
+        FileSystemLocal next = getNextFileSystem();
+        if (next != null)
+            sb.append(", next=").append(next.getDirectoryPath());
+        sb.append("]");
+        return sb.toString();
     }
     
     /**
@@ -268,12 +261,12 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="fs_group_id"
      */
-    public abstract String getFileSystemGroupID();
+    public abstract String getGroupID();
 
     /**
      * @ejb.interface-method
      */ 
-    public abstract void setFileSystemGroupID(String id);
+    public abstract void setGroupID(String id);
 
     /**
      * @ejb.interface-method
@@ -362,7 +355,7 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public void fromDTO(FileSystemDTO dto) {
         setDirectoryPath(dto.getDirectoryPath());
-        setFileSystemGroupID(dto.getFileSystemGroupID());
+        setGroupID(dto.getGroupID());
         setRetrieveAET(dto.getRetrieveAET());
         setAvailability(dto.getAvailability());
         setStatus(dto.getStatus());
@@ -375,7 +368,7 @@ public abstract class FileSystemBean implements EntityBean {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setPk(getPk().longValue());
         dto.setDirectoryPath(getDirectoryPath());
-        dto.setFileSystemGroupID(getFileSystemGroupID());
+        dto.setGroupID(getGroupID());
         dto.setRetrieveAET(getRetrieveAET());
         dto.setAvailability(getAvailability());
         dto.setStatus(getStatus());

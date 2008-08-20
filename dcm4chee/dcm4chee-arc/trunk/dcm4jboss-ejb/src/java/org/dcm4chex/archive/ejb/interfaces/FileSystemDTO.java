@@ -54,7 +54,7 @@ public class FileSystemDTO implements Serializable {
 
     private static final long serialVersionUID = -1301228596642462447L;
 
-    private long pk = -1; // unkown mark
+    private long pk = -1; // unknown mark
 
     private String directoryPath;
 
@@ -104,11 +104,11 @@ public class FileSystemDTO implements Serializable {
         this.directoryPath = directoryPath;
     }
 
-    public final String getFileSystemGroupID() {
+    public final String getGroupID() {
         return groupID;
     }
 
-    public final void setFileSystemGroupID(String groupID) {
+    public final void setGroupID(String groupID) {
         this.groupID = groupID;
     }
 

@@ -98,7 +98,7 @@ public class FileBeanTest extends ServletTestCase {
     public void testCreate() throws Exception {
         FileSystemDTO dto = new FileSystemDTO();
         dto.setDirectoryPath(DIRPATH);
-        dto.setFileSystemGroupID(FS_GROUP_ID);
+        dto.setGroupID(FS_GROUP_ID);
         dto.setRetrieveAET(RETRIEVE_AET);
         dto.setAvailability(Availability.ONLINE);
         dto.setStatus(FileSystemStatus.DEF_RW);
