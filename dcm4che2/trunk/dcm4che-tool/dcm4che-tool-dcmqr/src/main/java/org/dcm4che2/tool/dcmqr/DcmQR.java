@@ -1165,51 +1165,49 @@ public class DcmQR {
             }
             long t2 = System.currentTimeMillis();
             LOG.info("Connected to {} in {} s", remoteAE, Float.valueOf((t2 - t1) / 1000f));
-    
+
             for (;;) {
-                try {
-                    List<DicomObject> result = dcmqr.query();
-                    long t3 = System.currentTimeMillis();
-                    LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
-                            Float.valueOf((t3 - t2) / 1000f));
-                    if (dcmqr.isCMove() || dcmqr.isCGet()) {
-                        if (dcmqr.isCMove())
-                            dcmqr.move(result);
-                        else
-                            dcmqr.get(result);
-                        long t4 = System.currentTimeMillis();
-                        LOG.info("Retrieved {} objects (warning: {}, failed: {}) in {}s",
-                                        new Object[] {
-                                                Integer.valueOf(dcmqr
-                                                        .getTotalRetrieved()),
-                                                Integer.valueOf(dcmqr.getWarning()),
-                                                Integer.valueOf(dcmqr.getFailed()),
-                                                Float.valueOf((t4 - t3) / 1000f) });
-                    }
-                    if (repeat == 0 || closeAssoc) {
-                        try {
-                            dcmqr.close();
-                        } catch (InterruptedException e) {
-                            LOG.error(e.getMessage(), e);
-                        }
-                        LOG.info("Released connection to {}",remoteAE);
-                    }
-                    if (repeat-- == 0)
-                        break;
-                    Thread.sleep(interval);
+                List<DicomObject> result = dcmqr.query();
+                long t3 = System.currentTimeMillis();
+                LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
+                        Float.valueOf((t3 - t2) / 1000f));
+                if (dcmqr.isCMove() || dcmqr.isCGet()) {
+                    if (dcmqr.isCMove())
+                        dcmqr.move(result);
+                    else
+                        dcmqr.get(result);
                     long t4 = System.currentTimeMillis();
-                    dcmqr.open();
-                    t2 = System.currentTimeMillis();
-                    LOG.info("Reconnect or reuse connection to {} in {} s",
-                            remoteAE, Float.valueOf((t2 - t4) / 1000f));
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                } catch (InterruptedException e) {
-                    LOG.error(e.getMessage(), e);
-                } catch (ConfigurationException e) {
-                    LOG.error(e.getMessage(), e);
+                    LOG.info("Retrieved {} objects (warning: {}, failed: {}) in {}s",
+                            new Object[] {
+                            Integer.valueOf(dcmqr
+                                    .getTotalRetrieved()),
+                                    Integer.valueOf(dcmqr.getWarning()),
+                                    Integer.valueOf(dcmqr.getFailed()),
+                                    Float.valueOf((t4 - t3) / 1000f) });
                 }
+                if (repeat == 0 || closeAssoc) {
+                    try {
+                        dcmqr.close();
+                    } catch (InterruptedException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                    LOG.info("Released connection to {}",remoteAE);
+                }
+                if (repeat-- == 0)
+                    break;
+                Thread.sleep(interval);
+                long t4 = System.currentTimeMillis();
+                dcmqr.open();
+                t2 = System.currentTimeMillis();
+                LOG.info("Reconnect or reuse connection to {} in {} s",
+                        remoteAE, Float.valueOf((t2 - t4) / 1000f));
             }
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (ConfigurationException e) {
+            LOG.error(e.getMessage(), e);
         } finally {
             dcmqr.stop();
         }
