@@ -45,7 +45,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
@@ -53,7 +53,6 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.study.DicomObjectType;
-import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    private ObjectName fileSystemMgtName;
 
-   private static MBeanServer server;
+   private static MBeanServerConnection server;
 
    public FileLocationMgtFilter() {
 	  try {
@@ -81,7 +80,11 @@ public class FileLocationMgtFilter implements Filter<URL> {
 		 fileSystemMgtName = null;
 		 e.printStackTrace();
 	  }
-	  server = MBeanServerLocator.locate();
+	  try {
+		server = MBeanConnectionManager.getConnectionManager().getMBeanServerConnection();
+	  } catch (IOException e) {
+		e.printStackTrace();
+	  }
    }
 
    /**
