@@ -41,7 +41,6 @@ package org.dcm4che2.net.pdu;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import org.dcm4che2.data.Implementation;
@@ -70,11 +69,16 @@ public abstract class AAssociateRQAC {
     protected String applicationContext = UID.DICOMApplicationContextName;
     protected String implClassUID = Implementation.classUID();
     protected String implVersionName = Implementation.versionName();
-    protected final ArrayList<PresentationContext> pcs = new ArrayList<PresentationContext>();
-    protected final IntHashtable<PresentationContext> pcidMap = new IntHashtable<PresentationContext>();
-    protected final LinkedHashMap<String, RoleSelection> roleSelMap = new LinkedHashMap<String, RoleSelection>();
-    protected final LinkedHashMap<String, ExtendedNegotiation> extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
-    protected final LinkedHashMap<String, CommonExtendedNegotiation> commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
+    protected final ArrayList<PresentationContext>
+            pcs = new ArrayList<PresentationContext>();
+    protected final IntHashtable<PresentationContext>
+            pcidMap = new IntHashtable<PresentationContext>();
+    protected final LinkedHashMap<String, RoleSelection>
+            roleSelMap = new LinkedHashMap<String, RoleSelection>();
+    protected final LinkedHashMap<String, ExtendedNegotiation>
+            extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
+    protected final LinkedHashMap<String, CommonExtendedNegotiation>
+            commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
 
     public final int getProtocolVersion() {
         return protocolVersion;
@@ -173,7 +177,7 @@ public abstract class AAssociateRQAC {
         this.implVersionName = implVersionName;
     }
 
-    public Collection getPresentationContexts() {
+    public Collection<PresentationContext> getPresentationContexts() {
         return Collections.unmodifiableCollection(pcs);
     }
 
@@ -202,7 +206,7 @@ public abstract class AAssociateRQAC {
         return true;
     }
 
-    public Collection getRoleSelections() {
+    public Collection<RoleSelection> getRoleSelections() {
         return Collections.unmodifiableCollection(roleSelMap.values());
     }
 
@@ -218,7 +222,7 @@ public abstract class AAssociateRQAC {
         return roleSelMap.remove(cuid);
     }
 
-    public Collection getExtendedNegotiations() {
+    public Collection<ExtendedNegotiation> getExtendedNegotiations() {
         return Collections.unmodifiableCollection(extNegMap.values());
     }
 
@@ -234,7 +238,7 @@ public abstract class AAssociateRQAC {
         return extNegMap.remove(cuid);
     }
 
-    public Collection getCommonExtendedNegotiations() {
+    public Collection<CommonExtendedNegotiation> getCommonExtendedNegotiations() {
         return Collections.unmodifiableCollection(commonExtNegMap.values());
     }
 
@@ -255,8 +259,9 @@ public abstract class AAssociateRQAC {
     public int length() {
         int len = 68; // Fix AA-RQ/AC PDU fields
         len += 4 + applicationContext.length();
-        for (Iterator it = pcs.iterator(); it.hasNext();)
-            len += 4 + ((PresentationContext) it.next()).length();
+        for (PresentationContext pc : pcs) {
+            len += 4 + pc.length();
+        }
         len += 4 + userInfoLength();
         return len;
     }
@@ -266,14 +271,17 @@ public abstract class AAssociateRQAC {
         len += 4 + implClassUID.length();
         if (isAsyncOps())
             len += 8; // Asynchronous Operations Window Sub-Item
-        for (Iterator it = roleSelMap.values().iterator(); it.hasNext();)
-            len += 4 + ((RoleSelection) it.next()).length();
+        for (RoleSelection rs : roleSelMap.values()) {
+            len += 4 + rs.length();
+        }
         if (implVersionName != null)
             len += 4 + implVersionName.length();
-        for (Iterator it = extNegMap.values().iterator(); it.hasNext();)
-            len += 4 + ((ExtendedNegotiation) it.next()).length();
-        for (Iterator it = commonExtNegMap.values().iterator(); it.hasNext();)
-            len += 4 + ((CommonExtendedNegotiation) it.next()).length();
+        for (ExtendedNegotiation en : extNegMap.values()) {
+            len += 4 + en.length();
+        }
+        for (CommonExtendedNegotiation cen : commonExtNegMap.values()) {
+            len += 4 + cen.length();
+        }
         return len;
     }
 
