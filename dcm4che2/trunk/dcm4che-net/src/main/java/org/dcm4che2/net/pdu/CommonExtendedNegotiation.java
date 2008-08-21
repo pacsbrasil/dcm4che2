@@ -40,7 +40,6 @@ package org.dcm4che2.net.pdu;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -98,8 +97,9 @@ public class CommonExtendedNegotiation
             throw new IllegalStateException();
 
         int len = 4 + sopCUID.length() + serviceCUID.length();
-        for (Iterator it = relSopCUIDs.iterator(); it.hasNext();)
-            len += 2 + ((String) it.next()).length();
+        for (String cuid : relSopCUIDs) {
+            len += 2 + cuid.length();
+        }
         return len;
     }
 

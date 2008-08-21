@@ -62,7 +62,6 @@ public class NSetService extends DicomService implements NSetSCP {
         as.writeDimseRSP(pcid, rsp, doNSet(as, pcid, rq, data, rsp));
     }
 
-    @SuppressWarnings("unused")
     protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
         return null;
