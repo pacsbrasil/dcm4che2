@@ -111,6 +111,7 @@ public class XeroServlet extends StringTemplateServlet {
 	  mwd.put("IS_IE", (userAgent.indexOf("msie")>=0) && (userAgent.indexOf("opera")==-1) );
 	  String userName = req.getRemoteUser();
 	  mwd.put("userName", userName);
+	  
 	  log.info("Creating model for user {}",userName);
 	  return controller.action(mwd);
    }
