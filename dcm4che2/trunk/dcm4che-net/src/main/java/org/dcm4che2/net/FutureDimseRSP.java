@@ -46,71 +46,59 @@ import org.dcm4che2.data.DicomObject;
  * @author gunter zeilinger(gunterze@gmail.com)
  * @version $Reversion$ $Date$
  * @since Oct 8, 2005
- *
+ * 
  */
-class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
-{
-    private static class Entry
-    {
+class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
+    private static class Entry {
         final DicomObject command;
         final DicomObject dataset;
         Entry next;
-        public Entry(DicomObject command, DicomObject dataset)
-        {
+
+        public Entry(DicomObject command, DicomObject dataset) {
             this.command = command;
             this.dataset = dataset;
         }
     }
-    
+
     private Entry entry = new Entry(null, null);
     private boolean finished;
     private int autoCancel;
     private IOException ex;
-    
+
     @Override
     public synchronized void onDimseRSP(Association as, DicomObject cmd,
-            DicomObject data)
-    {
+            DicomObject data) {
         super.onDimseRSP(as, cmd, data);
         Entry last = entry;
         while (last.next != null)
             last = last.next;
 
         last.next = new Entry(cmd, data);
-        if (CommandUtils.isPending(cmd))
-        {
+        if (CommandUtils.isPending(cmd)) {
             if (autoCancel > 0 && --autoCancel == 0)
-                try
-                {
+                try {
                     super.cancel(as);
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     ex = e;
                 }
-        }
-        else
-        {
+        } else {
             finished = true;
         }
         notifyAll();
     }
 
     @Override
-    public synchronized void onClosed(Association as)
-    {
-        if (!finished)
-        {
+    public synchronized void onClosed(Association as) {
+        if (!finished) {
             ex = as.getException();
             notifyAll();
         }
     }
-    
-    public final void setAutoCancel(int autoCancel)
-    {
+
+    public final void setAutoCancel(int autoCancel) {
         this.autoCancel = autoCancel;
     }
-    
+
     @Override
     public void cancel(Association a) throws IOException {
         if (ex != null)
@@ -118,22 +106,17 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
         if (!finished)
             super.cancel(a);
     }
-    
-    public final DicomObject getCommand()
-    {
+
+    public final DicomObject getCommand() {
         return entry.command;
     }
 
-    public final DicomObject getDataset()
-    {
+    public final DicomObject getDataset() {
         return entry.dataset;
     }
 
-    public synchronized boolean next()
-    throws IOException, InterruptedException
-    {
-        if (entry.next == null)
-        {
+    public synchronized boolean next() throws IOException, InterruptedException {
+        if (entry.next == null) {
             if (finished)
                 return false;
 
@@ -145,6 +128,6 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP
         }
         entry = entry.next;
         return true;
-     }
+    }
 
 }
