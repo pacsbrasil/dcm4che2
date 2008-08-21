@@ -653,7 +653,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     	
     }
 
-	void sendJMXNotification(Object o) {
+    protected void sendJMXNotification(Object o) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(o.getClass().getName(), this, eventID);
         notif.setUserData(o);
