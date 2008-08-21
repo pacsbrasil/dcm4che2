@@ -174,11 +174,9 @@ public class CommandUtils
        return rq;
     }
     
-    public static DicomObject mkNGetRQ(int msgId, String cuid, String iuid,
-            DicomObject data)
+    public static DicomObject mkNGetRQ(int msgId, String cuid, String iuid)
     {
-       DicomObject rq = mkRQ(msgId, N_GET_RQ, 
-               data == null ? NO_DATASET : withDatasetType);
+       DicomObject rq = mkRQ(msgId, N_GET_RQ, NO_DATASET);
        rq.putString(Tag.RequestedSOPClassUID, VR.UI, cuid);
        rq.putString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
        return rq;

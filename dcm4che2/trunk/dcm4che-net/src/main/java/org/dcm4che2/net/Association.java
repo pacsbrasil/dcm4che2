@@ -509,7 +509,9 @@ public class Association implements Runnable {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject neventrq = CommandUtils.mkNEventReportRQ(++msgID, cuid,
                 iuid, eventTypeId, attrs);
-        invoke(pc.getPCID(), neventrq, new DataWriterAdapter(attrs), rspHandler);
+        invoke(pc.getPCID(), neventrq,
+                attrs != null ? new DataWriterAdapter(attrs) : null,
+                rspHandler);
     }
 
     public DimseRSP nevent(String cuid, String iuid, int eventTypeId,
@@ -526,30 +528,28 @@ public class Association implements Runnable {
         return rsp;
     }
 
-    public void nget(String cuid, String iuid, DicomObject attrs, String tsuid,
-            DimseRSPHandler rspHandler) throws IOException,
-            InterruptedException {
-        nget(cuid, cuid, iuid, attrs, tsuid, rspHandler);
+    public void nget(String cuid, String iuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        nget(cuid, cuid, iuid, rspHandler);
     }
 
-    public void nget(String asuid, String cuid, String iuid, DicomObject attrs,
-            String tsuid, DimseRSPHandler rspHandler) throws IOException,
-            InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid, attrs);
-        invoke(pc.getPCID(), ngetrq, new DataWriterAdapter(attrs), rspHandler);
+    public void nget(String asuid, String cuid, String iuid,
+            DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, null);
+        DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid);
+        invoke(pc.getPCID(), ngetrq, null, rspHandler);
     }
 
-    public DimseRSP nget(String cuid, String iuid, DicomObject attrs,
-            String tsuid) throws IOException, InterruptedException {
-        return nget(cuid, cuid, iuid, attrs, tsuid);
+    public DimseRSP nget(String cuid, String iuid)
+            throws IOException, InterruptedException {
+        return nget(cuid, cuid, iuid);
     }
 
-    public DimseRSP nget(String asuid, String cuid, String iuid,
-            DicomObject attrs, String tsuid) throws IOException,
-            InterruptedException {
+    public DimseRSP nget(String asuid, String cuid, String iuid)
+            throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        nget(asuid, cuid, iuid, attrs, tsuid, rsp);
+        nget(asuid, cuid, iuid, rsp);
         return rsp;
     }
 
@@ -593,7 +593,8 @@ public class Association implements Runnable {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject nactionrq = CommandUtils.mkNActionRQ(++msgID, cuid, iuid,
                 actionTypeId, attrs);
-        invoke(pc.getPCID(), nactionrq, new DataWriterAdapter(attrs),
+        invoke(pc.getPCID(), nactionrq,
+                attrs != null ? new DataWriterAdapter(attrs) : null,
                 rspHandler);
     }
 
@@ -622,7 +623,8 @@ public class Association implements Runnable {
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject ncreaterq = CommandUtils.mkNCreateRQ(++msgID, cuid, iuid);
-        invoke(pc.getPCID(), ncreaterq, new DataWriterAdapter(attrs),
+        invoke(pc.getPCID(), ncreaterq,
+                attrs != null ? new DataWriterAdapter(attrs) : null,
                 rspHandler);
     }
 
