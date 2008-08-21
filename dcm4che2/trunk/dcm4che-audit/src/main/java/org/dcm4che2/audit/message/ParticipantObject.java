@@ -61,6 +61,10 @@ public class ParticipantObject extends BaseElement {
     private final ArrayList<ParticipantObjectDescription> descs =
             new ArrayList<ParticipantObjectDescription>();
     
+    /** Create a participant object identified by the given id,
+     * of type specified by idTypeCode.  Additionally, participant details
+     * can be added afterwards to specify the participant more completely.
+     */
     public ParticipantObject(String id, IDTypeCode idTypeCode) {
         super("ParticipantObjectIdentification");
         if (idTypeCode == null) {
@@ -70,6 +74,7 @@ public class ParticipantObject extends BaseElement {
         this.idTypeCode = idTypeCode;
     }
 
+    /** Returns the id specified for this object when it was created */
     public final String getParticipantObjectID() {
         return (String) getAttribute("ParticipantObjectID");
     }
@@ -207,6 +212,12 @@ public class ParticipantObject extends BaseElement {
         return pat;
     }
 
+    /**
+     * Create a participant object with type code STUDY_INSTANCE_UID,
+     * and the specified description (which maybe null).
+     * @param uid Study Instance UID
+     * @param desc (null) Description including patient name/id
+     */
     public static ParticipantObject createStudy(String uid,
             ParticipantObjectDescription desc) {
         ParticipantObject study = new ParticipantObject(uid, 
