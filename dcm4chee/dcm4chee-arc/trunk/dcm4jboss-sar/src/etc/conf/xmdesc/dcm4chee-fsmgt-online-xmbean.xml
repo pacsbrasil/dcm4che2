@@ -138,6 +138,76 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-only" getMethod="getFreeDiskSpaceOnCurFS">
+    <description><![CDATA[Get free available disk space on the current storage
+      file system in bytes.]]>
+    </description>
+    <name>FreeDiskSpaceOnCurrentStorageFileSystem</name>
+    <type>long</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getFreeDiskSpaceOnCurFSString">
+    <description><![CDATA[Get free available disk space on the current storage
+      file system as string.]]>
+    </description>
+    <name>FreeDiskSpaceOnCurrentStorageFileSystemString</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getUsableDiskSpaceOnCurFS">
+    <description><![CDATA[Get usable free disk space on the current storage
+      file system, considering the configured value for
+      <i>MinimumFreeDiskSpace</i>, by substracting that value from
+      <i>FreeDiskSpaceOnCurrentStorageFileSystem</i>, in bytes.]]>
+    </description>
+    <name>UsableDiskSpaceOnCurrentStorageFileSystem</name>
+    <type>long</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getUsableDiskSpaceOnCurFSString">
+    <description><![CDATA[Get usable free disk space on the current storage
+      file system, considering the configured value for
+      <i>MinimumFreeDiskSpace</i>, by substracting that value from
+      <i>FreeDiskSpaceOnCurrentStorageFileSystem</i>, as string.]]>
+    </description>
+    <name>UsableDiskSpaceOnCurrentStorageFileSystemString</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getFreeDiskSpace">
+    <description><![CDATA[Get free available disk space on writable file
+      systems of the file system group managed my this service.]]>
+    </description>
+    <name>FreeDiskSpace</name>
+    <type>long</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getFreeDiskSpaceString">
+    <description><![CDATA[Get free available disk space on writable file
+      systems of the file system group managed my this service as string.]]>
+    </description>
+    <name>FreeDiskSpaceString</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getUsableDiskSpace">
+    <description><![CDATA[Get usable free disk space on writable file
+      systems of the file system group managed my this service, considering
+      the configured value for <i>MinimumFreeDiskSpace</i>, in bytes.]]>
+    </description>
+    <name>UsableDiskSpace</name>
+    <type>long</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getUsableDiskSpaceOnCurFSString">
+    <description><![CDATA[Get usable free disk space on writable file
+      systems of the file system group managed my this service, considering
+      the configured value for <i>MinimumFreeDiskSpace</i>, as string.]]>
+    </description>
+    <name>UsableDiskSpaceString</name>
+    <type>java.lang.String</type>
+  </attribute>
+
   <attribute access="read-write" getMethod="getCheckFreeDiskSpaceMinimalInterval"
     setMethod="setCheckFreeDiskSpaceMinimalInterval">
     <description><![CDATA[Minimal Interval for checking free available disk

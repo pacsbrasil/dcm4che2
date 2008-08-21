@@ -180,10 +180,9 @@ public class FileUtils {
     }
     
     public static String formatSize(long size) {
-        if (size < GIGA)
-            return ((float) size / MEGA) + "MB";
-        else
-            return ((float) size / GIGA) + "GB";
+        return (size == -1) ? "UNKOWN"
+                : (size < GIGA) ? ((float) size / MEGA) + "MB"
+                                : ((float) size / GIGA) + "GB";
     }
 
     public static long parseSize(String s, long minSize) {

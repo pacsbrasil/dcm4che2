@@ -91,7 +91,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private FileSystemDTO storageFileSystem;
 
-   public String getFileSystemGroupID() {
+    public String getFileSystemGroupID() {
         return serviceName.getKeyProperty(GROUP);
     }
 
@@ -159,6 +159,71 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public final void setMinFreeDiskSpace(String str) {
         this.minFreeDiskSpace = FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
+    }
+
+    public long getFreeDiskSpaceOnCurFS() throws IOException {
+        if (storageFileSystem == null)
+            return -1L;
+        File dir = FileUtils.toFile(storageFileSystem.getDirectoryPath());
+        return dir.isDirectory() ? FileSystemUtils.freeSpace(dir.getPath())
+                                 : -1L;
+    }
+
+    public String getFreeDiskSpaceOnCurFSString() throws IOException {
+        return FileUtils.formatSize(getFreeDiskSpaceOnCurFS());
+    }
+
+    public long getUsableDiskSpaceOnCurFS() throws IOException {
+        long free = getFreeDiskSpaceOnCurFS();
+        return free == -1L ? -1L : Math.max(0, free - minFreeDiskSpace);
+    }
+
+    public String getUsableDiskSpaceOnCurFSString() throws IOException {
+        return FileUtils.formatSize(getFreeDiskSpaceOnCurFS());
+    }
+
+    public long getFreeDiskSpace() throws Exception {
+        FileSystemDTO[] fsDTOs =
+            fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupID());
+        long free = 0L;
+        for (FileSystemDTO fsDTO : fsDTOs) {
+            int status = fsDTO.getStatus();
+            if (status == FileSystemStatus.RW
+                    || status == FileSystemStatus.DEF_RW) {
+                File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
+                if (dir.isDirectory()) {
+                    free += FileSystemUtils.freeSpace(dir.getPath());
+                }
+            }
+        }
+        return free;
+    }
+
+    public String getFreeDiskSpaceString() throws Exception {
+        return FileUtils.formatSize(getFreeDiskSpace());
+    }
+
+    public long getUsableDiskSpace() throws Exception {
+        FileSystemDTO[] fsDTOs =
+            fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupID());
+        long free = 0L;
+        for (FileSystemDTO fsDTO : fsDTOs) {
+            int status = fsDTO.getStatus();
+            if (status == FileSystemStatus.RW
+                    || status == FileSystemStatus.DEF_RW) {
+                File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
+                if (dir.isDirectory()) {
+                    free += Math.max(0,
+                            FileSystemUtils.freeSpace(dir.getPath())
+                            - minFreeDiskSpace);
+                }
+            }
+        }
+        return free;
+    }
+
+    public String getUsableDiskSpaceString() throws Exception {
+        return FileUtils.formatSize(getUsableDiskSpace());
     }
 
     public final String getCheckFreeDiskSpaceMinimalInterval() {
