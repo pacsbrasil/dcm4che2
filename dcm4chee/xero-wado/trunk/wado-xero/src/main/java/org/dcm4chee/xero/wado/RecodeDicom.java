@@ -114,6 +114,7 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
    /** Computes the frames to return */
    protected static List<Integer> computeFrames(DicomObject ds, Map<String, Object> params) {
 	  String sframes = (String) params.get("simpleFrameList");
+	  if( sframes==null ) sframes = (String) params.get("frameNumber");
 	  if( sframes!=null ) {
 		 List<Integer> ret = new ArrayList<Integer>();
 		 String[] parts = sframes.split(",");
