@@ -82,7 +82,7 @@ public class AEService extends ServiceMBeanSupport {
 
     private int[] portNumbers;
 
-	private int maxCacheSize;
+    private int maxCacheSize;
 
     /**
      * @return Returns the echoServiceName.
@@ -98,7 +98,7 @@ public class AEService extends ServiceMBeanSupport {
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
     }
-    
+
     public ObjectName getAuditLoggerName() {
         return auditLogger.getAuditLoggerName();
     }
@@ -153,27 +153,27 @@ public class AEService extends ServiceMBeanSupport {
             }
         }
     }
-    
+
     public int getCacheSize() throws Exception {
         return aeMgr().getCacheSize();
     }
 
     public int getMaxCacheSize() throws Exception {
-    	return maxCacheSize;
+        return maxCacheSize;
     }
 
     public void setMaxCacheSize(int maxCacheSize) throws Exception {
-    	if (maxCacheSize < 0 || maxCacheSize > MAX_MAX_CACHE_SIZE) {
-    		throw new IllegalArgumentException("maxCacheSize: " + maxCacheSize);
-    	}
+        if (maxCacheSize < 0 || maxCacheSize > MAX_MAX_CACHE_SIZE) {
+            throw new IllegalArgumentException("maxCacheSize: " + maxCacheSize);
+        }
         this.maxCacheSize = maxCacheSize;
         if (getState() == ServiceMBean.STARTED) {
-        	aeMgr().setMaxCacheSize(maxCacheSize);
+            aeMgr().setMaxCacheSize(maxCacheSize);
         }
     }
 
     public void clearCache() throws Exception {
-    	aeMgr().clearCache();
+        aeMgr().clearCache();
     }
 
     public String getAEs() throws Exception {
@@ -212,9 +212,9 @@ public class AEService extends ServiceMBeanSupport {
             return false;
         }
     }
-    
+
     public AEDTO getAE(String title, String host) throws RemoteException,
-            Exception {
+    Exception {
         return getAE(title, host == null ? null : InetAddress.getByName(host));
     }
 
@@ -228,14 +228,14 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     private AEDTO autoConfigAE(String aet, InetAddress addr, AEManager aetMgr) 
-            throws Exception {
+    throws Exception {
         if (portNumbers == null || addr == null) {
             return null;
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
             AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null,
-            		null, null, null, null);
+                    null, null, null, null, null);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -272,8 +272,8 @@ public class AEService extends ServiceMBeanSupport {
      */
     public void updateAE(long pk, String title, String host, int port,
             String cipher, String issuer, String user, String passwd,
-            String fsGroupID, String desc, boolean checkHost)
-            throws Exception {
+            String fsGroupID, String desc, String wadoUrl, boolean checkHost)
+    throws Exception {
         if (checkHost) {
             try {
                 host = InetAddress.getByName(host).getCanonicalHostName();
@@ -285,16 +285,16 @@ public class AEService extends ServiceMBeanSupport {
 
         AEManager aeManager = aeMgr();
         if (pk == -1) {
-        	AEDTO newAE = new AEDTO(-1, title, host, port, cipher,
-            		issuer, user, passwd, fsGroupID, desc);
+            AEDTO newAE = new AEDTO(-1, title, host, port, cipher,
+                    issuer, user, passwd, fsGroupID, desc, wadoUrl);
             aeManager.newAE(newAE);
             logActorConfig("Add AE " + newAE + " cipher:"
                     + newAE.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
             notifyAETchange(null, title);
 
         } else {
-        	AEDTO oldAE = aeManager.findByPrimaryKey(pk);
-        	String oldAET = null;
+            AEDTO oldAE = aeManager.findByPrimaryKey(pk);
+            String oldAET = null;
             if (!oldAE.getTitle().equals(title)) {
                 try {
                     AEDTO aeOldByTitle = aeManager.findByAET(title);
@@ -304,20 +304,20 @@ public class AEService extends ServiceMBeanSupport {
                 oldAET = oldAE.getTitle();
             }
             AEDTO newAE = new AEDTO(pk, title, host, port, cipher,
-            		issuer, user, passwd, fsGroupID, desc);
+                    issuer, user, passwd, fsGroupID, desc, wadoUrl);
             aeManager.updateAE(newAE);
             logActorConfig("Modify AE " + oldAE + " -> " + newAE,
-            		SecurityAlertMessage.NETWORK_CONFIGURATION);
+                    SecurityAlertMessage.NETWORK_CONFIGURATION);
             if ( oldAET != null )
-            	notifyAETchange(oldAET, title);
+                notifyAETchange(oldAET, title);
         }
     }
 
     public void addAE(String title, String host, int port, String cipher,
             String issuer, String user, String passwd, String fsGroupID,
-            String desc, boolean checkHost) throws Exception {
+            String desc, String wadoUrl, boolean checkHost) throws Exception {
         updateAE(-1, title, host, port, cipher, issuer, user, passwd, fsGroupID,
-                desc, checkHost);
+                desc, wadoUrl, checkHost);
     }
 
     public void removeAE(String titles) throws Exception {
@@ -328,11 +328,11 @@ public class AEService extends ServiceMBeanSupport {
             ae = aeManager.findByAET(st.nextToken());
             aeManager.removeAE(ae.getPk());
             logActorConfig("Remove AE " + ae,
-            		SecurityAlertMessage.NETWORK_CONFIGURATION);
+                    SecurityAlertMessage.NETWORK_CONFIGURATION);
             notifyAETchange(ae.getTitle(),null);
         }
     }
-   
+
     private void logActorConfig(String desc, AuditEvent.TypeCode eventTypeCode) {
         log.info(desc);
         try {
@@ -357,7 +357,7 @@ public class AEService extends ServiceMBeanSupport {
             log.warn("Failed to log ActorConfig:", e);
         }
     }
-    
+
     private void notifyAETchange(String oldTitle, String newTitle) {
         long eventID = this.getNextNotificationSequenceNumber();
         Notification notif = new Notification(AetChanged.class.getName(), this, eventID );
@@ -382,11 +382,11 @@ public class AEService extends ServiceMBeanSupport {
 
     protected AEManager aeMgr() throws Exception {
         AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
+        .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
     }
 
-	protected void startService() throws Exception {
-    	aeMgr().setMaxCacheSize(maxCacheSize);
-	}
+    protected void startService() throws Exception {
+        aeMgr().setMaxCacheSize(maxCacheSize);
+    }
 }

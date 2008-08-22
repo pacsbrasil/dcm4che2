@@ -184,6 +184,11 @@
        <type>java.lang.String</type>
      </parameter>
      <parameter>
+       <description>WADO URL for this AE</description>
+       <name>wadoUrl</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
        <description>Enable/disable check if host can be resolved to an IP address</description>
        <name>checkHost</name>
        <type>boolean</type>
@@ -237,6 +242,11 @@
      <parameter>
        <description>Free text description of this AE</description>
        <name>description</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>WADO URL for this AE</description>
+       <name>wadoUrl</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
