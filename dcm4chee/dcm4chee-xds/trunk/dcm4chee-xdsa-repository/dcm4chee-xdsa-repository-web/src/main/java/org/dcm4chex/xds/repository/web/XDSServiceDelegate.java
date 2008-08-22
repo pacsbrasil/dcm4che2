@@ -57,8 +57,8 @@ import org.jboss.mx.util.MBeanServerLocator;
 public class XDSServiceDelegate {
 
     private static ObjectName xdsServiceName = null;
-	private static MBeanServer server;
-	
+    private static MBeanServer server;
+
     private static Logger log = Logger.getLogger( XDSServiceDelegate.class.getName() );
 
     /** 
@@ -68,40 +68,40 @@ public class XDSServiceDelegate {
      * 
      * @param config The ServletConfig object.
      */
-	public void init( ServletConfig config ) {
+    public void init( ServletConfig config ) {
         if (server != null) return;
         server = MBeanServerLocator.locate();
         String s = config.getInitParameter("xdsServiceName");
         try {
-			xdsServiceName = new ObjectName(s);
-			
-		} catch (Exception e) {
-			log.error( "Exception in init! Servlet init parameter 'xdsServiceName' not valid",e );
-		}
-     
+            xdsServiceName = new ObjectName(s);
+
+        } catch (Exception e) {
+            log.error( "Exception in init! Servlet init parameter 'xdsServiceName' not valid",e );
+        }
+
     }
 
-	
-	
-	/**
-	 * Makes the MBean call to export the document packed in a SOAP message.
-	 * 
-	 * @param msg	The document packed in a SOAP message.
-	 * 
-	 * @return The XDS response object.
-	 */
-	public XDSResponseObject exportDocument( SOAPMessage msg ) {
-		XDSResponseObject resp = null;
-		try {
-			resp = (XDSResponseObject) server.invoke(xdsServiceName,
-	                "exportDocument",
-	                new Object[] { msg },
-	                new String[] { SOAPMessage.class.getName() } );
-		} catch ( Exception x ) {
-			log.error( "Exception occured in exportDocument: "+x.getMessage(), x );
-			resp = new XDSRegistryResponse( false, "XDSRepositoryError", "Unexpected error in XDS service !: "+x.getMessage(),x);
-		}
+
+
+    /**
+     * Makes the MBean call to export the document packed in a SOAP message.
+     * 
+     * @param msg    The document packed in a SOAP message.
+     * 
+     * @return The XDS response object.
+     */
+    public XDSResponseObject exportDocument( SOAPMessage msg ) {
+        XDSResponseObject resp = null;
+        try {
+            resp = (XDSResponseObject) server.invoke(xdsServiceName,
+                    "exportDocument",
+                    new Object[] { msg },
+                    new String[] { SOAPMessage.class.getName() } );
+        } catch ( Exception x ) {
+            log.error( "Exception occured in exportDocument: "+x.getMessage(), x );
+            resp = new XDSRegistryResponse( false, "XDSRepositoryError", "Unexpected error in XDS service !: "+x.getMessage(),x);
+        }
         return resp;
-	}
-	
+    }
+
 }

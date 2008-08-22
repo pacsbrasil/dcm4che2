@@ -66,112 +66,112 @@ import org.dcm4chex.xds.mbean.XDSRegistryResponse;
  */
 public class XDSRepositoryServlet extends HttpServlet {
 
-	public static final int BUFFER_SIZE = 65535;
-	private MessageFactory messageFactory;
-	
-	private XDSServiceDelegate delegate; 
+    public static final int BUFFER_SIZE = 65535;
+    private MessageFactory messageFactory;
 
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = 1L;
+    private XDSServiceDelegate delegate; 
 
-	private static Logger log = LoggerFactory.getLogger(XDSRepositoryServlet.class.getName());
-	
+    /**
+     * Comment for <code>serialVersionUID</code>
+     */
+    private static final long serialVersionUID = 1L;
+
+    private static Logger log = LoggerFactory.getLogger(XDSRepositoryServlet.class.getName());
+
     public void init(ServletConfig config) throws ServletException {
         try {
-        	messageFactory = MessageFactory.newInstance();
-        	delegate = new XDSServiceDelegate();
-        	delegate.init(config);
+            messageFactory = MessageFactory.newInstance();
+            delegate = new XDSServiceDelegate();
+            delegate.init(config);
         } catch (SOAPException e) {
             throw new ServletException("Failed to create MessageFactory" , e);
         }
-        
+
     }
-	
-	public void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException{
-		log.info("XDSRepositoryServlet.doGet called from "+request.getRemoteHost()+" !"+" doTest:"+request.getParameter("doTest"));
-		if ( request.getParameter("doTest") != null) {
-			doTest(request, response);
-		} else {
-			response.setContentType("text/plain");
-			PrintWriter w = response.getWriter();
-			w.println("You call this service using GET method (with a Browser?).");
-			w.println("To use this Service you need a proper SOAP Client (using POST method)!");
-			w.println("Nonetheless you can simply test this service with a Browser by setting request parameter doTest!");
-			w.close();
-		}
-	}
-	/**
-	 * @param request
-	 * @param response
-	 * @throws IOException
-	 */
-	private void doTest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		response.setContentType("text/plain");
-		PrintWriter w = response.getWriter();
-		w.println("Test not implemented!");
-		w.close();
-	}
-	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
+
+    public void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException{
+        log.info("XDSRepositoryServlet.doGet called from "+request.getRemoteHost()+" !"+" doTest:"+request.getParameter("doTest"));
+        if ( request.getParameter("doTest") != null) {
+            doTest(request, response);
+        } else {
+            response.setContentType("text/plain");
+            PrintWriter w = response.getWriter();
+            w.println("You call this service using GET method (with a Browser?).");
+            w.println("To use this Service you need a proper SOAP Client (using POST method)!");
+            w.println("Nonetheless you can simply test this service with a Browser by setting request parameter doTest!");
+            w.close();
+        }
+    }
+    /**
+     * @param request
+     * @param response
+     * @throws IOException
+     */
+    private void doTest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("text/plain");
+        PrintWriter w = response.getWriter();
+        w.println("Test not implemented!");
+        w.close();
+    }
+    public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
         log.debug("request.getContentLength():"+request.getContentLength());
         DebugInputStream bis = new DebugInputStream( request );
         SOAPMessage message = null;
         XDSResponseObject xdsResponse;
         try{
             message = messageFactory.createMessage(getMimeHeaders(request),bis);
-    		log.info("SOAP message parsed! "+request.getRemoteHost()+" ! len:"+bis.getReadCount());
-    		xdsResponse = delegate.exportDocument(message);
-    		log.info("Export done! remoteHost:"+request.getRemoteHost()+" ! xdsResponse:"+xdsResponse);
+            log.info("SOAP message parsed! "+request.getRemoteHost()+" ! len:"+bis.getReadCount());
+            xdsResponse = delegate.exportDocument(message);
+            log.info("Export done! remoteHost:"+request.getRemoteHost()+" ! xdsResponse:"+xdsResponse);
         } catch (Exception x) {
-        	xdsResponse = new XDSRegistryResponse( false, "XDSRepositoryError", "Unexpected error in XDS Repository Service !: "+x.getMessage(),x);
-		}
-        try {
-        	xdsResponse.execute(response);
-        } catch (Throwable t) {
-        	log.error("Sending response failed! remoteHost:"+request.getRemoteHost());
+            xdsResponse = new XDSRegistryResponse( false, "XDSRepositoryError", "Unexpected error in XDS Repository Service !: "+x.getMessage(),x);
         }
-	}
+        try {
+            xdsResponse.execute(response);
+        } catch (Throwable t) {
+            log.error("Sending response failed! remoteHost:"+request.getRemoteHost());
+        }
+    }
 
-	public static MimeHeaders getMimeHeaders(HttpServletRequest request) {
+    public static MimeHeaders getMimeHeaders(HttpServletRequest request) {
         MimeHeaders mimeHeaders = new MimeHeaders();
         String name, value, tk;
         for (Enumeration names = request.getHeaderNames() ; names.hasMoreElements() ; ) {
             name = (String) names.nextElement();
             value = request.getHeader(name);
             for (StringTokenizer st = new StringTokenizer(value, ",") ; st.hasMoreTokens() ; ) {
-            	tk = st.nextToken().trim();
-            	if ( name.equalsIgnoreCase("content-type" ) ) {
-            		log.debug("Check content-type header!");
-            		tk = checkStartParam(tk);
-            	}
+                tk = st.nextToken().trim();
+                if ( name.equalsIgnoreCase("content-type" ) ) {
+                    log.debug("Check content-type header!");
+                    tk = checkStartParam(tk);
+                }
                 mimeHeaders.addHeader(name, tk);
             }
         }
         return mimeHeaders;
     }
 
-	private static String checkStartParam(String value) {
-		String tmp= value.toLowerCase();
-		int posStart = tmp.indexOf("start");
-		if (posStart != -1 ) {
-			int pos = tmp.indexOf('\"', posStart);
-			pos++;
-			if ( value.charAt(pos) != '<') {
-				StringBuffer sb = new StringBuffer(value.subSequence(0, pos));
-				sb.append('<');
-				int pos2 = value.indexOf('\"',pos);
-				sb.append(value.substring(pos,pos2)).append('>');
-				sb.append(value.substring(pos2));
-				log.debug("corrected content-type header:"+sb);
-				return sb.toString();
-			}
-		} else {
-			log.info("No start parameter in content-type header! Ignore correction");
-		}
-		return value;
-	}
-	
+    private static String checkStartParam(String value) {
+        String tmp= value.toLowerCase();
+        int posStart = tmp.indexOf("start");
+        if (posStart != -1 ) {
+            int pos = tmp.indexOf('\"', posStart);
+            pos++;
+            if ( value.charAt(pos) != '<') {
+                StringBuffer sb = new StringBuffer(value.subSequence(0, pos));
+                sb.append('<');
+                int pos2 = value.indexOf('\"',pos);
+                sb.append(value.substring(pos,pos2)).append('>');
+                sb.append(value.substring(pos2));
+                log.debug("corrected content-type header:"+sb);
+                return sb.toString();
+            }
+        } else {
+            log.info("No start parameter in content-type header! Ignore correction");
+        }
+        return value;
+    }
+
 }
 class DebugInputStream extends InputStream {
 
@@ -183,7 +183,7 @@ class DebugInputStream extends InputStream {
         in = request.getInputStream();
         contentLength = request.getContentLength();
     }
-    
+
     public int read() throws IOException {
         int val = in.read();
         if ( val != -1 ) {
@@ -191,7 +191,7 @@ class DebugInputStream extends InputStream {
         }
         return val;
     }
- 
+
     public int read(byte[] ba) throws IOException {
         int read = in.read(ba);
         readCount+=read;
@@ -207,26 +207,26 @@ class DebugInputStream extends InputStream {
     public int available() throws IOException {
         return contentLength - readCount;
     }
-    
+
     public void close() throws IOException {
         in.close();
     }
- 
+
     public void reset() throws IOException {
         in.reset();
     }
-    
+
     public void mark( int readlimit ) {
         in.mark(readlimit);
     }
-    
+
     public boolean markSupported() {
         return in.markSupported();
     }
     public long skip( long l ) throws IOException {
         return in.skip(l);
     }
-    
+
     public long getReadCount() {
         return readCount;
     }
