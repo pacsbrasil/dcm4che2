@@ -215,6 +215,19 @@
       </descriptors>
     </attribute>
  
+   <attribute access="read-write"
+      getMethod="getSrImageRows"
+      setMethod="setSrImageRows">
+      <description>Set fixed size of referenced images in rendered Structured Reports (by rows). 
+      				NONE means original image size.          
+      </description>
+      <name>SRfixedImageRows</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+
     <attribute access="read-write"
       getMethod="getTimerID"
       setMethod="setTimerID">
@@ -282,5 +295,5 @@
       </parameter>
       <return-type>java.io.File</return-type>
    </operation>
-  
+
 </mbean>
