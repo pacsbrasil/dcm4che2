@@ -55,33 +55,20 @@ public class AEModel extends BasicFormModel {
     public static final String AE_ATTR_NAME = "aeModel";
 
     private String user;
-
     private String title;
-    
     private String hostName;
-    
     private String cipherSuites;
-    
     private String cipher1;
-    
     private String cipher2;
-    
     private String cipher3;
-    
     private String issuerOfPatientID;
-
     private String userID;
-    
     private String passwd;
-    
     private String fileSystemGroupID;
-    
     private String description;
-
+    private String wadoUrl;
     private int port = -1;
-
     private long pk = -1;
-
     private boolean checkHost = false;
 
     /**
@@ -170,6 +157,10 @@ public class AEModel extends BasicFormModel {
         this.description = description;
     }
 
+    public void setWadoUrl(String wadoUrl) {
+        this.wadoUrl = wadoUrl;
+    }
+
     public AEDTO getAE() {
         if (cipherSuites == null || cipherSuites.length() < 1) {
             StringBuffer sb = new StringBuffer();
@@ -183,7 +174,7 @@ public class AEModel extends BasicFormModel {
         }
         return new AEDTO(pk, this.title, this.hostName, this.port,
                 this.cipherSuites, this.issuerOfPatientID, this.userID,
-                this.passwd, this.fileSystemGroupID, this.description);
+                this.passwd, this.fileSystemGroupID, this.description, this.wadoUrl);
     }
 
     public void setAE(AEDTO ae) {
@@ -197,6 +188,7 @@ public class AEModel extends BasicFormModel {
         passwd = ae.getPassword();
         fileSystemGroupID = ae.getFileSystemGroupID();
         description = ae.getDescription();
+        wadoUrl = ae.getWadoUrl();
     }
 
     public void setAet(String aet) {
@@ -210,6 +202,7 @@ public class AEModel extends BasicFormModel {
         passwd = null;
         fileSystemGroupID = null;
         description = null;
+        wadoUrl = null;
     }
 
     /**

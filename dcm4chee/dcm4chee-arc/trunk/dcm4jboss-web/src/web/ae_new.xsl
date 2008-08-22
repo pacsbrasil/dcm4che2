@@ -90,12 +90,18 @@
 			                <input size="25" name="fileSystemGroupID" type="text" value=""/>
 				        </td>
 					</tr>
-					<tr>				        
-						<td width="50">Description</td>														
-				        <td title="Description">
-			                <input size="25" name="description" type="text" value=""/>
-				        </td>
-					</tr>
+                    <tr>                        
+                        <td width="50">Description</td>                                                     
+                        <td title="Description">
+                            <input size="25" name="description" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>                        
+                        <td width="50">WADO URL</td>                                                     
+                        <td title="WadoUrl">
+                            <input size="25" name="wadoUrl" type="text" value=""/>
+                        </td>
+                    </tr>
 					<tr>
 						<td colspan="2">
 							<center>
