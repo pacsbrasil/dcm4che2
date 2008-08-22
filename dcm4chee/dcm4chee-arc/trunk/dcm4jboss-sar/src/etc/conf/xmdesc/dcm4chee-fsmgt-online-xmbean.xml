@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-    "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
-    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+<!DOCTYPE mbean PUBLIC 
+    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" 
+    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 <mbean>
   <description><![CDATA[File System Management Service. Specifies the location
     of file systems in which DICOM objects received from the Store SCP Server

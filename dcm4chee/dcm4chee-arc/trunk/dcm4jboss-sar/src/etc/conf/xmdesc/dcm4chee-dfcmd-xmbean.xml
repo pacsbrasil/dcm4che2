@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC
-    "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
-    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+<!DOCTYPE mbean PUBLIC 
+    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" 
+    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 <mbean>
   <description><![CDATA[df Command Service. Defines command used on *nix
     operation systems to assess free available disk space on storage file
