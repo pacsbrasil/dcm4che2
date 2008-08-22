@@ -5,6 +5,7 @@
 
   <property name="version" value="2.14.0"/>
   <property name="audit-version" value="2.14.0"/>
+  <property name="docstore-version" value="1.0"/>
   <property name="target.dir" value="${basedir}/target"/>
 
   <!-- Override with your dcm4che-1.4.x source dist location -->
@@ -19,6 +20,8 @@
     value="${m2.repos}/dcm4che/dcm4chee-audit-logger/${audit-version}"/>
   <property name="dcm4chee-audit-tomcat.lib" 
     value="${m2.repos}/dcm4che/dcm4chee-audit-tomcat/${audit-version}"/>
+  <property name="dcm4chee-docstore.lib" 
+    value="${m2.repos}/dcm4che/dcm4chee-docstore-store/${docstore-version}"/>
 
   <!-- Override with your JBoss server bundle dist location -->
   <property name="jboss.home" value="${user.home}/jboss-4.2.2.GA"/>
@@ -182,6 +185,10 @@
         <include name="*jar"/>
       </zipfileset>
       <zipfileset dir="${dcm4chee-audit-tomcat.lib}"
+        prefix="${dist.db.config}/lib">
+        <include name="*jar"/>
+      </zipfileset>
+      <zipfileset dir="${dcm4chee-docstore.lib}"
         prefix="${dist.db.config}/lib">
         <include name="*jar"/>
       </zipfileset>
