@@ -49,21 +49,6 @@
         <include>*.jar</include>
       </includes>
     </fileSet>
-<!-- XDS Doc Storage -->
-    <fileSet>
-      <directory>../dcm4chee-xds-docstore/dcm4chee-xds-docstore-mbean/target</directory>
-      <outputDirectory>server/default/deploy</outputDirectory>
-      <includes>
-        <include>*.sar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-xds-docstore/dcm4chee-xds-docstore-spi/target</directory>
-      <outputDirectory>server/default/lib</outputDirectory>
-      <includes>
-        <include>*.jar</include>
-      </includes>
-    </fileSet>
 <!-- XDS.b Source -->
     <fileSet>
       <directory>../dcm4chee-xdsb-src/dcm4chee-xdsb-src-mbean/target</directory>
@@ -110,9 +95,9 @@
         <include>*.war</include>
       </includes>
     </fileSet>
-<!-- Store2Dcm -->
+<!-- XDS Storage (using DocumentStorage)-->
     <fileSet>
-      <directory>../dcm4chee-xds-store2dcm/dcm4chee-xds-store2dcm-mbean/target</directory>
+      <directory>../dcm4chee-xds-store/dcm4chee-xds-store-mbean/target</directory>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
         <include>*.sar</include>
