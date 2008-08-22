@@ -41,13 +41,13 @@ package org.dcm4chex.xds.mbean.store;
 
 public interface StoredDocument {
 
-	/** Description of this Stored XDS Document */
-	String getDescription();
-	/** Size of the Document */
-	long getSize();
-	/** Hash of this Document (SHA1 MessageDigest) */
-	String getHash();
-	
-	/** delete this Document */
-	boolean delete();
+    /** Description of this Stored XDS Document */
+    String getDescription();
+    /** Size of the Document */
+    long getSize();
+    /** Hash of this Document (SHA1 MessageDigest) */
+    String getHash();
+
+    /** delete this Document */
+    boolean delete();
 }

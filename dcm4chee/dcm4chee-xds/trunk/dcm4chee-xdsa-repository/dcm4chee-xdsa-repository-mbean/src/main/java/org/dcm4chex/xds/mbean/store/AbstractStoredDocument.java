@@ -49,34 +49,34 @@ import java.io.File;
  */
 public abstract class AbstractStoredDocument implements StoredDocument {
 
-	private final String hashString;
+    private final String hashString;
 
-	public AbstractStoredDocument( byte[] hash) {
-		hashString = toHexString(hash);
-	}
-	
-	private String toHexString(byte[] hash) {
-		StringBuffer sb = new StringBuffer();
-		String h;
-   		for(int i=0 ; i < hash.length ; i++) {
-        	h = Integer.toHexString(hash[i] & 0xff);
-        	if(h.length() == 1) h = "0" + h;
-        	sb.append(h);
-    	}
-   		return sb.toString();
-	}
-	
-	public abstract boolean delete();
-	
-	public String getHash() {
-		return hashString;
-	}
-	
-	public abstract long getSize();
-	
-	public abstract String getDescription();
-	
-	public String toString() {
-		return getDescription();
-	}
+    public AbstractStoredDocument( byte[] hash) {
+        hashString = toHexString(hash);
+    }
+
+    private String toHexString(byte[] hash) {
+        StringBuffer sb = new StringBuffer();
+        String h;
+        for(int i=0 ; i < hash.length ; i++) {
+            h = Integer.toHexString(hash[i] & 0xff);
+            if(h.length() == 1) h = "0" + h;
+            sb.append(h);
+        }
+        return sb.toString();
+    }
+
+    public abstract boolean delete();
+
+    public String getHash() {
+        return hashString;
+    }
+
+    public abstract long getSize();
+
+    public abstract String getDescription();
+
+    public String toString() {
+        return getDescription();
+    }
 }

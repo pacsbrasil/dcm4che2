@@ -56,7 +56,7 @@ public class ClassificationMatch {
         }
         sbMatch.append("')");
     }
-    
+
     public static ClassificationMatch getClassCodeMatch(List l) {
         return getCodeMatch(l, "clCode", "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a");
     }
@@ -69,12 +69,12 @@ public class ClassificationMatch {
     public static ClassificationMatch getEVCodeMatch(List l) {
         return getCodeMatch(l, "ecl", "urn:uuid:2c6b8cb7-8b2a-4051-b291-b1ae6a575ef4");
     }
-    
+
     private static ClassificationMatch getCodeMatch(List l, String name, String urn) {
         if ( l == null || l.size() < 1 ) return null;
         return new ClassificationMatch(l, name, urn);
     }
-    
+
     public String getName() {
         return name;
     }

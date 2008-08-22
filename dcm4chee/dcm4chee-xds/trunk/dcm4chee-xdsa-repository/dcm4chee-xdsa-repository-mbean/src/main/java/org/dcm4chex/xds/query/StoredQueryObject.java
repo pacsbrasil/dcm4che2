@@ -82,9 +82,9 @@ public class StoredQueryObject extends XDSQueryObject {
 
     private String storedQueryId;
     private Map queryParams = new HashMap();
-    
+
     private static Logger log = Logger.getLogger(StoredQueryObject.class);
-    
+
     public StoredQueryObject(String storedQueryId) {
         this.storedQueryId = storedQueryId;
     }
@@ -93,12 +93,12 @@ public class StoredQueryObject extends XDSQueryObject {
         setReturnType(returnType);
         this.setReturnComposedObjects(returnComposedObjects);
     }
-    
+
     public void addQueryParameter( String name, Object value ) {
         queryParams.put(name, value);
     }
-    
-    
+
+
     public void addAdhocQueryRequest() throws SAXException {
         //th.startPrefixMapping(XMLNS_DEFAULT,URN_Q);
         th.startPrefixMapping(XMLNS_Q,URN_Q);
@@ -124,7 +124,7 @@ public class StoredQueryObject extends XDSQueryObject {
         th.endPrefixMapping(XMLNS_Q);
         //th.endPrefixMapping(XMLNS_DEFAULT);
     }
-    
+
     private void addQueryParameters() throws SAXException {
         Map.Entry e;
         AttributesImpl attrs;
@@ -154,11 +154,11 @@ public class StoredQueryObject extends XDSQueryObject {
             th.endElement(URN_RIM, TAG_SLOT, TAG_SLOT );
         }
     }
-    
+
     private String getQueryValue( Object o ) {
         return ( o instanceof Number ) ? o.toString() : "'"+o.toString()+"'";
     }
-    
+
     private void addValue(String value) throws SAXException {
         th.startElement(URN_RIM, TAG_VALUE, TAG_VALUE, EMPTY_ATTRIBUTES );
         th.characters( value.toCharArray(),0,value.length());

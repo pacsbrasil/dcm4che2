@@ -75,8 +75,8 @@ public class StoredQueryObjectFactory extends XDSQueryObjectFatory {
         return sqo;
     }
     public XDSQueryObject newFindDocumentQuery(String patId, String status, 
-                    String dateTimeAtt, String dateTimeFrom, String dateTimeTo, 
-                    List classCodes, List psCodes, List hcftCodes, List evCodes) {
+            String dateTimeAtt, String dateTimeFrom, String dateTimeTo, 
+            List classCodes, List psCodes, List hcftCodes, List evCodes) {
         StoredQueryObject sqo = (StoredQueryObject) newFindDocumentQuery(patId, status);
         if ( dateTimeAtt != null ) sqo.addQueryParameter("$XDSDocumentEntryCreationTimeFrom", dateTimeAtt);
         if ( classCodes != null ) sqo.addQueryParameter("$XDSDocumentEntryClassCode", classCodes);
@@ -96,6 +96,6 @@ public class StoredQueryObjectFactory extends XDSQueryObjectFatory {
         sqo.setReturnType(XDSQueryObject.RETURN_TYPE_LEAF);
         return sqo;
     }
-    
+
 
 }

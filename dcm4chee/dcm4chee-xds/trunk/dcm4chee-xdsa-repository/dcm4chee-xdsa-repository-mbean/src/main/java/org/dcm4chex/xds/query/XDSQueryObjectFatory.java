@@ -59,5 +59,5 @@ public abstract class XDSQueryObjectFatory {
             List evCodes);
 
     public abstract XDSQueryObject newGetDocumentQuery(String[] uuids);
-    
+
 }

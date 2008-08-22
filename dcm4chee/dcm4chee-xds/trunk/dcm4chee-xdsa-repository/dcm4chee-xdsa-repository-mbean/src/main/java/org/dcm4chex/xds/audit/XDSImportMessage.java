@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4chex.xds.audit;
 
 import org.dcm4che2.audit.message.AuditEvent;
@@ -52,7 +52,7 @@ import org.dcm4che2.audit.message.AuditEvent;
  */
 public class XDSImportMessage extends BasicXDSAuditMessage {
 
-	public XDSImportMessage() {
+    public XDSImportMessage() {
         super(AuditEvent.ID.IMPORT, AuditEvent.ActionCode.READ, TYPE_CODE_ITI15);
     }
 }

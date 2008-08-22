@@ -37,6 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+
 package org.dcm4chex.xds.mbean.store;
 
 import java.io.File;
@@ -49,22 +50,22 @@ import java.io.File;
  */
 public class StoredDocumentAsFile extends AbstractStoredDocument {
 
-	private final File file;
+    private final File file;
 
-	public StoredDocumentAsFile( File file, byte[] hash) {
-		super(hash);
-		this.file = file;
-	}
-	
-	public boolean delete() {
-		return file.delete();
-	}
-	
-	public long getSize() {
-		return file.length();
-	}
-	
-	public String getDescription() {
-		return file.toString();
-	}
+    public StoredDocumentAsFile( File file, byte[] hash) {
+        super(hash);
+        this.file = file;
+    }
+
+    public boolean delete() {
+        return file.delete();
+    }
+
+    public long getSize() {
+        return file.length();
+    }
+
+    public String getDescription() {
+        return file.toString();
+    }
 }

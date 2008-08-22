@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4chex.xds.audit;
 
 import org.dcm4che2.audit.message.AuditEvent;
@@ -59,21 +59,21 @@ public class XDSExportMessage extends BasicXDSAuditMessage {
     public XDSExportMessage(TypeCode typeCode) {
         super(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ, typeCode);
     }
-    
+
     public static XDSExportMessage createDocumentSourceExportMessage(String submissionUID, String patID, String name) {
-    	XDSExportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI15);
-    	msg.setPatient(patID, name);
-    	return msg;
+        XDSExportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI15);
+        msg.setPatient(patID, name);
+        return msg;
     }
-    
+
     public static XDSExportMessage createDocumentRepositoryExportMessage(String submissionUID) {
-    	return createMessage(submissionUID, TYPE_CODE_ITI14);
+        return createMessage(submissionUID, TYPE_CODE_ITI14);
     }
-    
+
     private static XDSExportMessage createMessage(String submissionUID, TypeCode typeCode) {
-    	XDSExportMessage msg = new XDSExportMessage(typeCode);
-    	msg.setSubmissionSet(submissionUID);
-    	return msg;
+        XDSExportMessage msg = new XDSExportMessage(typeCode);
+        msg.setSubmissionSet(submissionUID);
+        return msg;
     }
 
 }

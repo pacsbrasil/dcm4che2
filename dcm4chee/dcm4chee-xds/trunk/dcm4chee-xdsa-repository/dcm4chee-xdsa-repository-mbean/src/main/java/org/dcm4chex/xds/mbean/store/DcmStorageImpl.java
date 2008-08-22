@@ -55,61 +55,61 @@ import org.w3c.dom.Document;
 
 public class DcmStorageImpl implements Storage {
 
-	private ObjectName store2DcmServicename;
+    private ObjectName store2DcmServicename;
 
     private static MBeanServer server = MBeanServerLocator.locate();
     private static Logger log = Logger.getLogger(DcmStorageImpl.class.getName());
 
     private static DcmStorageImpl singleton;
-    
+
     private DcmStorageImpl() {
     }
-    
+
     public static final DcmStorageImpl getInstance() {
-    	if ( singleton == null )
-    		singleton = new DcmStorageImpl();
-    	return singleton;
+        if ( singleton == null )
+            singleton = new DcmStorageImpl();
+        return singleton;
     }
-	/**
-	 * @return Returns the ridServiceName.
-	 */
-	public ObjectName getStore2DcmServicename() {
-		return store2DcmServicename;
-	}
-	/**
-	 * @param ridServiceName The ridServiceName to set.
-	 */
-	public void setStore2DcmServicename(ObjectName name) {
-		this.store2DcmServicename = name;
-	}
+    /**
+     * @return Returns the ridServiceName.
+     */
+    public ObjectName getStore2DcmServicename() {
+        return store2DcmServicename;
+    }
+    /**
+     * @param ridServiceName The ridServiceName to set.
+     */
+    public void setStore2DcmServicename(ObjectName name) {
+        this.store2DcmServicename = name;
+    }
 
-	public File get(String uid) throws IOException {
-		return null;
-	}
+    public File get(String uid) throws IOException {
+        return null;
+    }
 
-	public StoredDocument store(String uid, AttachmentPart part, XDSDocumentMetadata metadata) throws IOException {
-		if ( uidExists(uid) ) {
-			throw new IOException("Store Document failed! UID already exist!");
-		}
-		byte[] hash = null;
-		long size = -1;
-		try {
-			//Document doc = metadata.getMetadata().getOwnerDocument();
-			DOMSource metadataSrc = new DOMSource(metadata.getMetadata());
-			hash = storeAttachment( uid, part, metadataSrc );
-			size = (long)part.getSize();
-		} catch ( Throwable t ) {
-			throw (IOException) new IOException("Store document (uid:"+uid+") failed! Reason:"+t.getMessage()).initCause(t);
-		}
-		if ( hash == null )
-			throw new IOException("Store document (uid:"+uid+") failed!");
-		return new StoredDocumentAsDcm(uid, size, hash, true);
-	}
+    public StoredDocument store(String uid, AttachmentPart part, XDSDocumentMetadata metadata) throws IOException {
+        if ( uidExists(uid) ) {
+            throw new IOException("Store Document failed! UID already exist!");
+        }
+        byte[] hash = null;
+        long size = -1;
+        try {
+            //Document doc = metadata.getMetadata().getOwnerDocument();
+            DOMSource metadataSrc = new DOMSource(metadata.getMetadata());
+            hash = storeAttachment( uid, part, metadataSrc );
+            size = (long)part.getSize();
+        } catch ( Throwable t ) {
+            throw (IOException) new IOException("Store document (uid:"+uid+") failed! Reason:"+t.getMessage()).initCause(t);
+        }
+        if ( hash == null )
+            throw new IOException("Store document (uid:"+uid+") failed!");
+        return new StoredDocumentAsDcm(uid, size, hash, true);
+    }
 
-	private boolean uidExists(String uid) {
-		return false;
-	}
-	private byte[] storeAttachment( String uid, AttachmentPart part, Source metadata ) throws IOException {
+    private boolean uidExists(String uid) {
+        return false;
+    }
+    private byte[] storeAttachment( String uid, AttachmentPart part, Source metadata ) throws IOException {
         try {
             return (byte[]) server.invoke(store2DcmServicename,
                     "storeDocument",
@@ -119,6 +119,6 @@ public class DcmStorageImpl implements Storage {
             log.error("Failed to store Attachment for "+uid, e);
             return null;
         }
-	}
+    }
 
 }

@@ -47,7 +47,7 @@ import org.dcm4chex.xds.query.match.ClassificationMatch;
 public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
 
     private static Logger log = Logger.getLogger(SQLQueryObjectFactory.class);
-    
+
     /* (non-Javadoc)
      * @see org.dcm4chex.xds.query.XDSQueryObjectFatory#newFindDocumentQuery(java.lang.String, java.lang.String)
      */
@@ -58,8 +58,8 @@ public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
      * @see org.dcm4chex.xds.query.XDSQueryObjectFatory#newFindDocumentQuery(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.List, java.util.List, java.util.List, java.util.List)
      */
     public XDSQueryObject newFindDocumentQuery(String patId, String status, 
-                    String dateTimeAtt, String dateTimeFrom, String dateTimeTo, 
-                    List classCodes, List psCodes, List hcftCodes, List evCodes) {
+            String dateTimeAtt, String dateTimeFrom, String dateTimeTo, 
+            List classCodes, List psCodes, List hcftCodes, List evCodes) {
         StringBuffer sbSelect = new StringBuffer();
         StringBuffer sbWhere = new StringBuffer();
         sbSelect.append("SELECT eo.id  FROM ExtrinsicObject eo, ExternalIdentifier ei");
@@ -74,9 +74,9 @@ public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
         addCodeMatch(ClassificationMatch.getEVCodeMatch(evCodes), sbSelect, sbWhere);
         sbSelect.append(sbWhere);
         log.info("getDocument SQL String:"+sbSelect);
-       return new SQLQueryObject(sbSelect.toString());
+        return new SQLQueryObject(sbSelect.toString());
     }
-    
+
     public XDSQueryObject newGetDocumentQuery( String[] uuids ) {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT doc.id FROM ExtrinsicObject doc WHERE doc.id IN ( ");
@@ -84,7 +84,7 @@ public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
         sb.append(" )");
         return new SQLQueryObject(sb.toString(),XDSQueryObject.RETURN_TYPE_LEAF,true);
     }
-    
+
     private static void addTimeMatch(String dateTimeAtt, String dateTimeFrom, String dateTimeTo, StringBuffer sbSelect, StringBuffer sbWhere) {
         if (dateTimeAtt == null || ( dateTimeFrom == null && dateTimeTo == null)) return;
         sbSelect.append(", Slot dateTime");
@@ -97,7 +97,7 @@ public class SQLQueryObjectFactory extends XDSQueryObjectFatory  {
         sbSelect.append(", Classification ").append(classMatch.getName());
         sbWhere.append(" AND ").append(classMatch);
     }
-    
+
     private void addListString( StringBuffer sb, String[] values ) {
         if ( values == null || values.length < 1 ) return;
         sb.append('\'').append( values[0] ).append('\'');

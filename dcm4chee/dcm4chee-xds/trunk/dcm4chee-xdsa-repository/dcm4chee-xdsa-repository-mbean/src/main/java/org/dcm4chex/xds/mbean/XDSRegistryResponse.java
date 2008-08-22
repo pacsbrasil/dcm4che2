@@ -54,52 +54,52 @@ import org.xml.sax.SAXException;
  */
 public class XDSRegistryResponse implements XDSResponseObject {
 
-	private boolean success;
-	private String errorCode;
-	private String msg;
-	private Throwable error;
-	
-	public XDSRegistryResponse( boolean success, String errorCode, String msg, Throwable t) {
-		this.success = success;
-		this.errorCode = errorCode;
-		this.msg = msg;
-		this.error = t;
-	}
-	public void execute(HttpServletResponse response)
-			throws TransformerConfigurationException, SAXException, IOException {
-		response.setContentType(getContentType());
-		response.setStatus(getReturnCode());
-		PrintWriter w = response.getWriter();
-		w.write("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n");
-		w.write("  <SOAP-ENV:Header>\n");
-		w.write("  </SOAP-ENV:Header>\n");
-		w.write("  <SOAP-ENV:Body>\n");
-		w.write("	 <RegistryResponse status=\"");
-		w.write( success ? "Success":"Failure");
-		w.write("\" xmlns=\"urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1\">\n"); 
-		if ( !success ) {
-			w.write("	    <RegistryErrorList>\n");
-			w.write("	       <RegistryError ");
-			w.write("	          errorCode=\""+errorCode+"\"\n"); 
-			w.write("	          codeContext=\""+msg+"\"\n");
-			w.write("	          severity=\"Error\" />\n");
-			w.write("	    </RegistryErrorList>\n");
-		}
-		w.write("    </RegistryResponse>\n");
-		w.write("  </SOAP-ENV:Body>\n");
-		w.write("</SOAP-ENV:Envelope>");
-		w.close();
-	}
+    private boolean success;
+    private String errorCode;
+    private String msg;
+    private Throwable error;
 
-	public String getContentType() {
-		return "text/xml";
-	}
+    public XDSRegistryResponse( boolean success, String errorCode, String msg, Throwable t) {
+        this.success = success;
+        this.errorCode = errorCode;
+        this.msg = msg;
+        this.error = t;
+    }
+    public void execute(HttpServletResponse response)
+    throws TransformerConfigurationException, SAXException, IOException {
+        response.setContentType(getContentType());
+        response.setStatus(getReturnCode());
+        PrintWriter w = response.getWriter();
+        w.write("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n");
+        w.write("  <SOAP-ENV:Header>\n");
+        w.write("  </SOAP-ENV:Header>\n");
+        w.write("  <SOAP-ENV:Body>\n");
+        w.write("     <RegistryResponse status=\"");
+        w.write( success ? "Success":"Failure");
+        w.write("\" xmlns=\"urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1\">\n"); 
+        if ( !success ) {
+            w.write("        <RegistryErrorList>\n");
+            w.write("           <RegistryError ");
+            w.write("              errorCode=\""+errorCode+"\"\n"); 
+            w.write("              codeContext=\""+msg+"\"\n");
+            w.write("              severity=\"Error\" />\n");
+            w.write("        </RegistryErrorList>\n");
+        }
+        w.write("    </RegistryResponse>\n");
+        w.write("  </SOAP-ENV:Body>\n");
+        w.write("</SOAP-ENV:Envelope>");
+        w.close();
+    }
 
-	public int getReturnCode() {
-		return HttpServletResponse.SC_OK;
-	}
+    public String getContentType() {
+        return "text/xml";
+    }
 
-	public String getMessage() {
-		return msg;
-	}
+    public int getReturnCode() {
+        return HttpServletResponse.SC_OK;
+    }
+
+    public String getMessage() {
+        return msg;
+    }
 }

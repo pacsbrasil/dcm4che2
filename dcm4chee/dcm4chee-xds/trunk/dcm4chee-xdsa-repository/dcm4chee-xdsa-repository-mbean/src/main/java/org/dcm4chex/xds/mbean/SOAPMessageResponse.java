@@ -56,32 +56,32 @@ import org.xml.sax.SAXException;
  */
 public class SOAPMessageResponse implements XDSResponseObject {
 
-	SOAPMessage message;
-	public SOAPMessageResponse( SOAPMessage message ) {
-		this.message = message;
-	}
-	public void execute(HttpServletResponse response)
-			throws TransformerConfigurationException, SAXException, IOException {
-		response.setContentType(getContentType());
-		response.setStatus(getReturnCode());
-		OutputStream os = response.getOutputStream();
-		try {
-			message.writeTo(os);
-		} catch (SOAPException x) {
-			throw (IOException) new IOException("Cant write SOAP response!").initCause(x);
-		}
-		os.close();
-	}
+    SOAPMessage message;
+    public SOAPMessageResponse( SOAPMessage message ) {
+        this.message = message;
+    }
+    public void execute(HttpServletResponse response)
+    throws TransformerConfigurationException, SAXException, IOException {
+        response.setContentType(getContentType());
+        response.setStatus(getReturnCode());
+        OutputStream os = response.getOutputStream();
+        try {
+            message.writeTo(os);
+        } catch (SOAPException x) {
+            throw (IOException) new IOException("Cant write SOAP response!").initCause(x);
+        }
+        os.close();
+    }
 
-	public String getContentType() {
-		return "text/xml";
-	}
+    public String getContentType() {
+        return "text/xml";
+    }
 
-	public int getReturnCode() {
-		return HttpServletResponse.SC_OK;
-	}
+    public int getReturnCode() {
+        return HttpServletResponse.SC_OK;
+    }
 
-	public String getMessage() {
-		return message.getContentDescription();
-	}
+    public String getMessage() {
+        return message.getContentDescription();
+    }
 }

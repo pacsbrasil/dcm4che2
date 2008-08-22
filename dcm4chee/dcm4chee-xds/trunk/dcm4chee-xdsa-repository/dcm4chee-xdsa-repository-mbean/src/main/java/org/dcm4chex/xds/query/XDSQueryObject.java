@@ -60,25 +60,25 @@ public abstract class XDSQueryObject implements SoapBodyProvider {
     public static final String STATUS_SUBMITTED = "Submitted";
     public static final String STATUS_APPROVED = "Approved";
     public static final String STATUS_DEPRECATED = "Deprecated";
-    
+
     public static final String XMLNS_DEFAULT = "xmlns";
     public static final String XMLNS_RIM = "xmlns:rim";
     public static final String XMLNS_RS = "xmlns:rs";
     public static final String XMLNS_XSI = "xmlns:xsi";
     public static final String XMLNS_Q = "xmlns:q";
-    
+
     public static final String RETURN_TYPE_OBJREF = "ObjectRef";
     public static final String RETURN_TYPE_LEAF = "LeafClass";
 
     public static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
-    
+
     private String returnType = RETURN_TYPE_OBJREF;
     private boolean returnComposedObjects = true;
     private URL xslt;
     TransformerHandler th;
-    
+
     private static Logger log = Logger.getLogger(XDSQueryObject.class);
-    
+
     /**
      * @return the returnComposedObjects
      */
@@ -133,7 +133,7 @@ public abstract class XDSQueryObject implements SoapBodyProvider {
             if (xslt != null) {
                 try {
                     th = tf.newTransformerHandler(new StreamSource(xslt.openStream(),
-                        xslt.toExternalForm()));
+                            xslt.toExternalForm()));
                 } catch ( IOException x ) {
                     log.error("Cant open xsl file:"+xslt, x );
                 }
@@ -145,7 +145,7 @@ public abstract class XDSQueryObject implements SoapBodyProvider {
             t.printStackTrace();
         }
     }
-    
+
     public Document getDocument() {
         initTransformHandler();
         DOMResult result = new DOMResult();
@@ -160,9 +160,9 @@ public abstract class XDSQueryObject implements SoapBodyProvider {
         }
         return (Document) result.getNode();
     }
-    
+
     public abstract void addAdhocQueryRequest() throws SAXException;
-    
+
     /**
      * Returns the root tag of the response message.
      * <p>

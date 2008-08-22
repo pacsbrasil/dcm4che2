@@ -52,24 +52,24 @@ import org.xml.sax.SAXException;
  * @since Mar 08, 2006
  */
 public interface XDSResponseObject {
-	
-	void execute( HttpServletResponse response ) throws TransformerConfigurationException, SAXException, IOException;
-	
-	/**
-	 * Returns the content type that should be set in the response.
-	 * 
-	 * @return a content type like 'image/jpeg'
-	 */
-	String getContentType();
-	
-	/**
-	 * Returns the HTTP return code for the response.
-	 * <p>
-	 * This can be used to send an error back to the client.
-	 * 
-	 * @return An http return code.
-	 */
-	int getReturnCode();
-	
-	String getMessage();
+
+    void execute( HttpServletResponse response ) throws TransformerConfigurationException, SAXException, IOException;
+
+    /**
+     * Returns the content type that should be set in the response.
+     * 
+     * @return a content type like 'image/jpeg'
+     */
+    String getContentType();
+
+    /**
+     * Returns the HTTP return code for the response.
+     * <p>
+     * This can be used to send an error back to the client.
+     * 
+     * @return An http return code.
+     */
+    int getReturnCode();
+
+    String getMessage();
 }

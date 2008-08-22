@@ -51,7 +51,7 @@ import org.dcm4chex.xds.XDSDocumentMetadata;
  * @since Mar 08, 2006
  */
 public interface Storage {
-	StoredDocument store( String uid, AttachmentPart part, XDSDocumentMetadata metadata) throws IOException;
-	
-	File get(String uid) throws IOException;
+    StoredDocument store( String uid, AttachmentPart part, XDSDocumentMetadata metadata) throws IOException;
+
+    File get(String uid) throws IOException;
 }

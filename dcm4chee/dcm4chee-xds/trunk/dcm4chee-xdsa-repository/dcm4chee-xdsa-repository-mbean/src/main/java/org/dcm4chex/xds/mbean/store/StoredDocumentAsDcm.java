@@ -50,32 +50,32 @@ import org.apache.log4j.Logger;
  */
 public class StoredDocumentAsDcm extends AbstractStoredDocument {
 
-	private final String desc;
-	private final long size;
-	private final boolean ignoreDelete;
-	
-	private static Logger log = Logger.getLogger( StoredDocumentAsDcm.class.getName() );
+    private final String desc;
+    private final long size;
+    private final boolean ignoreDelete;
 
-	public StoredDocumentAsDcm( String desc, long size, byte[] hash, boolean ignoreDelete) {
-		super(hash);
-		this.desc = desc;
-		this.size = size;
-		this.ignoreDelete = ignoreDelete;
-	}
-	
-	public boolean delete() {
-		if ( ignoreDelete ) {
-			log.warn("Deletion of "+getDescription()+" ignored!");
-			return true;
-		}
-		return false;
-	}
-	
-	public long getSize() {
-		return size;
-	}
-	
-	public String getDescription() {
-		return desc;
-	}
+    private static Logger log = Logger.getLogger( StoredDocumentAsDcm.class.getName() );
+
+    public StoredDocumentAsDcm( String desc, long size, byte[] hash, boolean ignoreDelete) {
+        super(hash);
+        this.desc = desc;
+        this.size = size;
+        this.ignoreDelete = ignoreDelete;
+    }
+
+    public boolean delete() {
+        if ( ignoreDelete ) {
+            log.warn("Deletion of "+getDescription()+" ignored!");
+            return true;
+        }
+        return false;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public String getDescription() {
+        return desc;
+    }
 }

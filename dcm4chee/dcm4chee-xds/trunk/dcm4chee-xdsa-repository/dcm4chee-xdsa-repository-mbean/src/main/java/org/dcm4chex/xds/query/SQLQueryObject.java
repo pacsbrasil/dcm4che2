@@ -54,16 +54,16 @@ public class SQLQueryObject extends XDSQueryObject {
 
     public static final String ATTR_RETURN_TYPE  = "returnType";
     public static final String ATTR_RETURN_COMPOSED_OBJ  = "returnComposedObjects";
-    
+
     public static final String URN_RIM = "urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.1";
     public static final String URN_RS = "urn:oasis:names:tc:ebxml-regrep:registry:xsd:2.1";
     public static final String URN_Q = "urn:oasis:names:tc:ebxml-regrep:query:xsd:2.1";
 
 
     private String sql;
-    
+
     private static Logger log = Logger.getLogger(SQLQueryObject.class);
-    
+
     public SQLQueryObject(String sql) {
         this.sql = sql;
     }
@@ -72,7 +72,7 @@ public class SQLQueryObject extends XDSQueryObject {
         setReturnType(returnType);
         this.setReturnComposedObjects(returnComposedObjects);
     }
-    
+
     public void addAdhocQueryRequest() throws SAXException {
         th.startPrefixMapping(XMLNS_DEFAULT,URN_Q);
         th.startPrefixMapping(XMLNS_Q,URN_Q);
