@@ -23,7 +23,6 @@ fi
 cp -v -R "$XDS_SERV/deploy" "$DCM4CHEE_SERV"
 cp -v -R "$XDS_SERV/conf" "$DCM4CHEE_SERV"
 cp -v "$XDS_SERV/lib/dcm4chee-xdsa-repository-mbean-0.0.1.jar" \
-  "$XDS_SERV/lib/dcm4chee-xds-docstore-spi-0.0.1.jar" \
   "$XDS_SERV/lib/dcm4chee-xds-common-0.0.1.jar" \
   "$XDS_SERV/lib/dcm4che-core-2.0.14.jar" \
   "$XDS_SERV/lib/dcm4che-net-2.0.14.jar" \
