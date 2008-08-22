@@ -389,7 +389,7 @@ public class XDSService extends ServiceMBeanSupport {
     }
 
     public XDSResponseObject exportDocument( SOAPMessage message ) {
-        List storedDocuments = new ArrayList();
+        List<XDSDocument> storedDocuments = new ArrayList<XDSDocument>();
         if ( logReceivedSOAPMessage ) {
             log.info("Received SOAP message:");
             this.dumpSOAPMessage(message);
@@ -483,6 +483,10 @@ public class XDSService extends ServiceMBeanSupport {
         }
 
     }
+    private void deleteDocuments(List storedDocuments) {
+        docStoreDelegate.rollbackDocuments(storedDocuments);
+    }
+    
     private String getSystemProperty(String name) {
         return System.getProperty(getClass().getName()+"."+name);
     }
@@ -692,31 +696,6 @@ public class XDSService extends ServiceMBeanSupport {
         log.info("Attachment ("+docUid+") stored in file "+storedDoc+" (size:"+storedDoc.getSize()+" hash:"+storedDoc.getHash());
         return storedDoc;
     }
-    /**
-     * @param storedDocuments
-     */
-    private void deleteDocuments(List storedDocuments) {
-        StoredDocument doc;
-        for ( Iterator iter = storedDocuments.iterator() ; iter.hasNext() ; ) {
-            doc = (StoredDocument) iter.next();
-            doc.delete();
-        }
-    }
-    /**
-     * @param parentFile
-     */
-    private void deleteEmptyDir(File dir) {
-        if ( dir == null ) return; 
-        if ( dir.isDirectory() ) {
-            File[] files = dir.listFiles(); 
-            if ( files == null || files.length < 1 ) {
-                dir.delete();
-                deleteEmptyDir(dir.getParentFile());
-            }
-        }
-
-    }
-
 
     public SOAPMessage sendSOAP( SOAPMessage message, String url ) throws SOAPException {
         SOAPConnection conn = null;
