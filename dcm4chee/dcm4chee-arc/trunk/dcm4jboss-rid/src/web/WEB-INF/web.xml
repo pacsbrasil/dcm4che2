@@ -54,11 +54,11 @@
 <!--
    <security-constraint>
      <web-resource-collection>
-       <web-resource-name>wado</web-resource-name>
+       <web-resource-name>rid</web-resource-name>
        <description>Only allows users with the role WebAdmin
        		to access the Archive Web Administration pages
        </description>
-       <url-pattern>/*</url-pattern>
+       <url-pattern>*</url-pattern>
        <http-method>GET</http-method>
        <http-method>POST</http-method>
      </web-resource-collection>

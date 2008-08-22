@@ -88,7 +88,7 @@ public class ECGSupport {
 	
     private final Driver fop = new Driver();
 	
-	private StorageDelegate storage = StorageDelegate.getInstance();
+	private RIDStorageDelegate storage = RIDStorageDelegate.getInstance();
 
     public ECGSupport( RIDSupport ridSupport ) {
     	this.ridSupport = ridSupport;
