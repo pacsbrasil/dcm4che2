@@ -9,6 +9,8 @@
 	<property name="javac.source" value="1.5"/>
 	<property name="javac.target" value="1.5"/>
 
+	<property name="lib" value="${basedir}/lib"/>
+
 	<!-- Override with your JBoss dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.2.2.GA" />
 	<property name="jboss.lib" value="${jboss.home}/lib"/>
@@ -30,7 +32,13 @@
 	<property name="dcm4chee-sar.lib" value="${dcm4chee-sar.home}/lib" />
 	<property name="dcm4chee-sar.target" value="${dcm4chee-sar.home}/target" />
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.target}/lib/dcm4chee.jar" />
-	
+
+	<!-- Override with your local Maven2 repository location -->
+	<property name="docstore-version" value="1.0"/>
+    <property name="m2.repos" value="${user.home}/.m2/repository"/>
+	<property name="dcm4chee-docstore.lib" 
+	    value="${m2.repos}/dcm4che/dcm4chee-docstore-store/${docstore-version}"/>
+
 	<!-- Override with your FOP dist location -->
 	<property name="fop.home" value="${user.home}/fop-0.20.5"/>
 
@@ -52,6 +60,7 @@
 	<property name="jar.deploy.dir" value="${deploy.root}/lib"/>
 	<property name="service.deploy.dir" value="${deploy.root}/deploy"/>
 	<property name="xmbean.deploy.dir" value="${deploy.root}/conf/xmdesc"/>
+	<property name="conf.deploy.dir" value="${deploy.root}/conf/dcm4chee-docstore"/>
 
 	<path id="class.path">
 		<pathelement location="${dcm4che.jar}"/>
@@ -59,6 +68,9 @@
 		<pathelement location="${dcm4chee-ejb-server.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
 		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.14.jar"/>		
+		<fileset dir="${dcm4chee-docstore.lib}">
+			<include name="*.jar"/>
+		</fileset>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>
@@ -139,6 +151,10 @@
 		</copy>
 		<copy todir="${xmbean.deploy.dir}" >
 			<fileset dir="${xmbean.xml.dir}" includes="**/*.xml" />
+		</copy>
+		<copy todir="${conf.deploy.dir}" >
+			<fileset dir="${etc.dir}/conf/dcm4chee-docstore" includes="**/*.xml" />
+			<fileset dir="${etc.dir}/conf/dcm4chee-docstore" includes="**/*.xsd" />
 		</copy>
 	</target>
 	
