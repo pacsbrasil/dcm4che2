@@ -152,10 +152,6 @@
 		<copy todir="${xmbean.deploy.dir}" >
 			<fileset dir="${xmbean.xml.dir}" includes="**/*.xml" />
 		</copy>
-		<copy todir="${conf.deploy.dir}" >
-			<fileset dir="${etc.dir}/conf/dcm4chee-docstore" includes="**/*.xml" />
-			<fileset dir="${etc.dir}/conf/dcm4chee-docstore" includes="**/*.xsd" />
-		</copy>
 	</target>
 	
 </project>

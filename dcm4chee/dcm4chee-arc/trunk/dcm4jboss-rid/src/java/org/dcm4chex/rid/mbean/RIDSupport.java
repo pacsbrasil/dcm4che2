@@ -162,7 +162,7 @@ public class RIDSupport {
 
     private boolean encapsulatedPDFSupport = true;
     private boolean useOrigFile = false;
-    private RIDStorageDelegate storage = RIDStorageDelegate.getInstance();
+    private RIDStorageDelegate storage;
     private String srImageRows;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -658,13 +658,13 @@ public class RIDSupport {
     }
 
     public BaseDocument retrieveDocument(String objectUID, String contentType) throws IOException {
-        BaseDocument doc = storage.getDocument( objectUID, contentType );
+        BaseDocument doc = getStorage().getDocument( objectUID, contentType );
         return doc;
     }
 
     public BaseDocument getOrCreateDocument(String objectUID, String contentType) throws IOException {
-        BaseDocument doc = storage.getDocument( objectUID, contentType );
-        return doc != null ? doc : storage.createDocument(objectUID, contentType);
+        BaseDocument doc = getStorage().getDocument( objectUID, contentType );
+        return doc != null ? doc : getStorage().createDocument(objectUID, contentType);
     }
 
     private RIDResponseObject getDocument( RIDRequestObject reqObj ) {
@@ -689,11 +689,11 @@ public class RIDSupport {
         if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_PDF } ) == null ) {
             return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
         }
-        BaseDocument doc = storage.getDocument( docUID, contentType );
+        BaseDocument doc = getStorage().getDocument( docUID, contentType );
         OutputStream out = null;
         try {
             if ( doc == null ) {
-                doc = storage.createDocument( docUID, contentType );
+                doc = getStorage().createDocument( docUID, contentType );
                 out = doc.getOutputStream();
                 File inFile = getDICOMFile( docUID );
                 if ( inFile == null ) {
@@ -731,7 +731,7 @@ public class RIDSupport {
             if ( out != null) try {
                 out.close();
             } catch (IOException ignore) {}
-            storage.removeDocument( docUID );
+            getStorage().removeDocument( docUID );
         }
         return null;
     }
@@ -982,5 +982,11 @@ public class RIDSupport {
     public File getDICOMFile(String string, String string2, String iuid) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public RIDStorageDelegate getStorage() {
+        if ( storage == null)
+            storage= RIDStorageDelegate.getInstance();
+        return storage;
     }
 }
